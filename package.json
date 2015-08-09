@@ -1,7 +1,7 @@
 {
   "name": "ember",
   "license": "MIT",
-  "version": "1.13.6",
+  "version": "1.13.7",
   "scripts": {
     "build": "ember build --environment production",
     "postinstall": "bower install",
