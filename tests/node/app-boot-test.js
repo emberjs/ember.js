@@ -149,7 +149,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
   QUnit.test("It is possible to render a view in Node", function(assert) {
     var View = Ember.Component.extend({
       renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
-      template: compile("<h1>Hello</h1>")
+      layout: compile("<h1>Hello</h1>")
     });
 
     var view = View.create({
@@ -194,7 +194,7 @@ if (canUseInstanceInitializers && canUseApplicationVisit) {
     });
 
     registry.register('component:foo-bar', Ember.Component.extend({
-      template: compile("<p>The files are *inside* the computer?!</p>")
+      layout: compile("<p>The files are *inside* the computer?!</p>")
     }));
 
     var view = View.create();

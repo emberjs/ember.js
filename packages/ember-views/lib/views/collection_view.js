@@ -10,10 +10,7 @@ import EmberArray from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
-import {
-  observer,
-  _beforeObserver
-} from 'ember-metal/mixin';
+import { observer } from 'ember-metal/mixin';
 import { readViewFactory } from 'ember-views/streams/utils';
 import EmptyViewSupport from 'ember-views/mixins/empty_view_support';
 
@@ -215,21 +212,6 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
   },
 
   /**
-    Invoked when the content property is about to change. Notifies observers that the
-    entire array content will change.
-
-    @private
-    @method _contentWillChange
-  */
-  _contentWillChange: _beforeObserver('content', function() {
-    var content = this.get('content');
-
-    if (content) { content.removeArrayObserver(this); }
-    var len = content ? get(content, 'length') : 0;
-    this.arrayWillChange(content, 0, len);
-  }),
-
-  /**
     Check to make sure that the content has changed, and if so,
     update the children directly. This is always scheduled
     asynchronously, to allow the element to be created before
@@ -239,14 +221,20 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @method _contentDidChange
   */
   _contentDidChange: observer('content', function() {
+    var prevContent = this._prevContent;
+    if (prevContent) { prevContent.removeArrayObserver(this); }
+    var len = prevContent ? get(prevContent, 'length') : 0;
+    this.arrayWillChange(prevContent, 0, len);
+
     var content = get(this, 'content');
 
     if (content) {
+      this._prevContent = content;
       this._assertArrayLike(content);
       content.addArrayObserver(this);
     }
 
-    var len = content ? get(content, 'length') : 0;
+    len = content ? get(content, 'length') : 0;
     this.arrayDidChange(content, 0, null, len);
   }),
 

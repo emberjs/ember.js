@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // Ember.assert, Ember.Handlebars
 
-import ComponentTemplateDeprecation from 'ember-views/mixins/component_template_deprecation';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';
 
@@ -113,7 +112,7 @@ function validateAction(component, actionName) {
   @extends Ember.View
   @public
 */
-var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
+var Component = View.extend(TargetActionSupport, {
   isComponent: true,
   /*
     This is set so that the proto inspection in appendTemplatedView does not
@@ -135,65 +134,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     set(this, 'context', this);
   },
 
-  /**
-  A components template property is set by passing a block
-  during its invocation. It is executed within the parent context.
-
-  Example:
-
-  ```handlebars
-  {{#my-component}}
-    // something that is run in the context
-    // of the parent context
-  {{/my-component}}
-  ```
-
-  Specifying a template directly to a component is deprecated without
-  also specifying the layout property.
-
-  @deprecated
-  @property template
-  @public
-  */
-  template: computed('_template', {
-    get() {
-      Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`,
-                      false,
-                      { id: 'ember-views.component-template-get', until: '3.0.0' });
-
-      return get(this, '_template');
-    },
-
-    set(key, value) {
-      return set(this, '_template', value);
-    }
-  }),
-
-  _template: computed('templateName', {
-    get() {
-      if (this._deprecatedFlagForBlockProvided) {
-        return true;
-      }
-      var templateName = get(this, 'templateName');
-      var template = this.templateForName(templateName, 'template');
-
-      Ember.assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
-      return template || get(this, 'defaultTemplate');
-    },
-    set(key, value) {
-      return value;
-    }
-  }),
-
-  /**
-  Specifying a components `templateName` is deprecated without also
-  providing the `layout` or `layoutName` properties.
-
-  @deprecated
-  @property templateName
-  @public
-  */
-  templateName: null,
+  template: null,
 
   /**
     If the component is currently inserted into the DOM of a parent view, this
@@ -316,10 +257,10 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   send(actionName, ...args) {
     var target;
-    var hasAction = this._actions && this._actions[actionName];
+    var hasAction = this.actions && this.actions[actionName];
 
     if (hasAction) {
-      var shouldBubble = this._actions[actionName].apply(this, args) === true;
+      var shouldBubble = this.actions[actionName].apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 

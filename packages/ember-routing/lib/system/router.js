@@ -179,7 +179,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     Triggers the router level `didTransition` hook.
 
     @method didTransition
-    @private
+    @public
     @since 1.2.0
   */
   didTransition(infos) {
@@ -241,7 +241,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     Triggers the router level `willTransition` hook.
 
     @method willTransition
-    @private
+    @public
     @since 1.11.0
   */
   willTransition(oldInfos, newInfos, transition) {
@@ -845,8 +845,8 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
 
-    if (handler._actions && handler._actions[name]) {
-      if (handler._actions[name].apply(handler, args) === true) {
+    if (handler.actions && handler.actions[name]) {
+      if (handler.actions[name].apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
         return;

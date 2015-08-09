@@ -65,7 +65,7 @@ export default Mixin.create({
     @type Function
     @private
   */
-  template: computed('templateName', {
+  template: computed({
     get() {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
@@ -93,7 +93,7 @@ export default Mixin.create({
     @type Function
     @private
   */
-  layout: computed('layoutName', {
+  layout: computed({
     get(key) {
       var layoutName = get(this, 'layoutName');
       var layout = this.templateForName(layoutName, 'layout');
@@ -610,6 +610,11 @@ export default Mixin.create({
 
     this._super(...arguments);
     this.renderer.componentInitAttrs(this, this.attrs || {});
+
+    Ember.assert(
+      'Using a custom `.render` function is no longer supported.',
+      !this.render
+    );
   },
 
   __defineNonEnumerable(property) {

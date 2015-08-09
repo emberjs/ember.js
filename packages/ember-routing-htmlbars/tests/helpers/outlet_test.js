@@ -161,34 +161,6 @@ QUnit.test('Outlets bind to the current template\'s view, not inner contexts [DE
   equal(output, 'BOTTOM', 'all templates were rendered');
 });
 
-QUnit.test('should support layouts [DEPRECATED]', function() {
-  expectDeprecation(/Using deprecated `template` property on a View/);
-  var template = '{{outlet}}';
-  var layout = '<h1>HI</h1>{{yield}}';
-  var routerState = {
-    render: {
-      ViewClass: EmberView.extend({
-        template: compile(template),
-        layout: compile(layout)
-      })
-    },
-    outlets: {}
-  };
-  top.setOutletState(routerState);
-  runAppend(top);
-
-  equal(top.$().text(), 'HI');
-
-  routerState.outlets.main = withTemplate('<p>BYE</p>');
-
-  run(function() {
-    top.setOutletState(routerState);
-  });
-
-  // Replace whitespace for older IE
-  equal(trim(top.$().text()), 'HIBYE');
-});
-
 QUnit.test('should not throw deprecations if {{outlet}} is used without a name', function() {
   expectNoDeprecation();
   top.setOutletState(withTemplate('{{outlet}}'));

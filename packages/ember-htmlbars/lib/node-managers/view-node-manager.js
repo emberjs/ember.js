@@ -8,7 +8,6 @@ import View from 'ember-views/views/view';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import { handleLegacyRender } from 'ember-htmlbars/node-managers/component-node-manager';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -59,14 +58,6 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     let layout = get(component, 'layout');
     if (layout) {
       componentInfo.layout = layout;
-      if (!contentTemplate) {
-        let template = getTemplate(component);
-
-        if (template) {
-          Ember.deprecate('Using deprecated `template` property on a ' + (component.isView ? 'View' : 'Component') + '.', false, { id: 'ember-htmlbars.view-node-manager-create', until: '3.0.0' });
-          contentTemplate = template.raw;
-        }
-      }
     } else {
       componentInfo.layout = getTemplate(component) || componentInfo.layout;
     }
@@ -105,7 +96,6 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
 
     if (component) {
       var element = this.expectElement && this.renderNode.firstNode;
-      handleLegacyRender(component, element);
 
       env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
       env.renderer.willInsertElement(component, element);
@@ -153,7 +143,11 @@ ViewNodeManager.prototype.destroy = function() {
 };
 
 function getTemplate(componentOrView) {
-  return componentOrView.isComponent ? get(componentOrView, '_template') : get(componentOrView, 'template');
+  if (!componentOrView.isComponent) {
+    return get(componentOrView, 'template');
+  }
+
+  return null;
 }
 
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {

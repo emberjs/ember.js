@@ -3,7 +3,7 @@ import { get } from 'ember-metal/property_get';
 
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
-import ActionHandler from 'ember-runtime/mixins/action_handler';
+import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import { typeOf } from 'ember-runtime/utils';
 
 import Renderer from 'ember-metal-views/renderer';
@@ -128,6 +128,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   _transitionTo: K,
   destroyElement: K
 });
+
+deprecateUnderscoreActions(CoreView);
 
 CoreView.reopenClass({
   isViewFactory: true
