@@ -5,6 +5,9 @@ import View from "ember-views/views/view";
 var view, parentView;
 
 QUnit.module("ember-views: View#render hook", {
+  setup() {
+    expectDeprecation('Using a custom `.render` function is deprecated and will be removed in Ember 2.0.0.');
+  },
   teardown() {
     runDestroy(view);
     runDestroy(parentView);
