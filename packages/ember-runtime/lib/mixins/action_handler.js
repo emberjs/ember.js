@@ -3,15 +3,11 @@
 @submodule ember-runtime
 */
 import Ember from 'ember-metal/core';
-import merge from 'ember-metal/merge';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
+import { deprecateProperty } from 'ember-metal/deprecate_property';
 
 /**
-  The `Ember.ActionHandler` mixin implements support for moving an `actions`
-  property to an `_actions` property at extend time, and adding `_actions`
-  to the object's mergedProperties list.
-
   `Ember.ActionHandler` is available on some familiar classes including
   `Ember.Route`, `Ember.View`, `Ember.Component`, and `Ember.Controller`.
   (Internally the mixin is used by `Ember.CoreView`, `Ember.ControllerMixin`,
@@ -23,7 +19,7 @@ import { get } from 'ember-metal/property_get';
   @private
 */
 var ActionHandler = Mixin.create({
-  mergedProperties: ['_actions'],
+  mergedProperties: ['actions'],
 
   /**
     The collection of functions, keyed by name, available on this
@@ -147,26 +143,6 @@ var ActionHandler = Mixin.create({
   */
 
   /**
-    Moves `actions` to `_actions` at extend time. Note that this currently
-    modifies the mixin themselves, which is technically dubious but
-    is practically of little consequence. This may change in the future.
-
-    @private
-    @method willMergeMixin
-  */
-  willMergeMixin(props) {
-    if (!props._actions) {
-      Ember.assert('\'actions\' should not be a function', typeof(props.actions) !== 'function');
-
-      if (!!props.actions && typeof props.actions === 'object') {
-        let hashName = 'actions';
-        props._actions = merge(props._actions || {}, props[hashName]);
-        delete props[hashName];
-      }
-    }
-  },
-
-  /**
     Triggers a named action on the `ActionHandler`. Any parameters
     supplied after the `actionName` string will be passed as arguments
     to the action target function.
@@ -199,8 +175,8 @@ var ActionHandler = Mixin.create({
   send(actionName, ...args) {
     var target;
 
-    if (this._actions && this._actions[actionName]) {
-      var shouldBubble = this._actions[actionName].apply(this, args) === true;
+    if (this.actions && this.actions[actionName]) {
+      var shouldBubble = this.actions[actionName].apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
@@ -213,3 +189,9 @@ var ActionHandler = Mixin.create({
 });
 
 export default ActionHandler;
+
+export function deprecateUnderscoreActions(factory) {
+  deprecateProperty(factory.prototype, '_actions', 'actions', {
+    id: 'ember-runtime.action-handler-_actions', until: '3.0.0'
+  });
+}

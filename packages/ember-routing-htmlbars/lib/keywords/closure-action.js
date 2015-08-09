@@ -39,8 +39,6 @@ export default function closureAction(morph, env, scope, params, hash, template,
         }
         if (target.actions) {
           action = target.actions[actionName];
-        } else if (target._actions) {
-          action = target._actions[actionName];
         }
 
         if (!action) {
