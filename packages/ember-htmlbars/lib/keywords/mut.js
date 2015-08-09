@@ -16,7 +16,7 @@ export let MUTABLE_REFERENCE = symbol('MUTABLE_REFERENCE');
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
-  (mutable) value passed to it, which will __change the value of the parent compnent__.
+  (mutable) value passed to it, which will __change the value of the parent component__.
 
   This is very helpful for passing mutable values to a `Component` of any size, but
   critical to understanding the logic of a large/complex `Component`.
