@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-templates
+*/
+
 import Ember from 'ember-metal/core';
 import merge from 'ember-metal/merge';
 import { symbol } from 'ember-metal/utils';
@@ -9,6 +14,39 @@ import { INVOKE, ACTION } from 'ember-routing-htmlbars/keywords/closure-action';
 
 export let MUTABLE_REFERENCE = symbol('MUTABLE_REFERENCE');
 
+/**
+  The `mut` helper lets you __clearly specify__ that a child `Component` can update the
+  (mutable) value passed to it, which will __change the value of the parent compnent__.
+
+  This is very helpful for passing mutable values to a `Component` of any size, but
+  critical to understanding the logic of a large/complex `Component`.
+
+  To specify that a parameter is mutable, when invoking the child `Component`:
+
+  ```handlebars
+  <my-child child-click-count={{mut totalClicks}} />
+  ```
+
+  The child `Component` can then modify the parent's value as needed:
+
+  ```javascript
+  // my-child.js
+  export default Component.extend({
+    click: function() {
+      this.attrs.childClickCount.update(this.attrs.childClickCount.value + 1);
+    }
+  });
+  ```
+
+  See a [2.0 blog post](http://emberjs.com/blog/2015/05/10/run-up-to-two-oh.html#toc_the-code-mut-code-helper) for
+  additional information on using `{{mut}}`.
+
+  @public
+  @method mut
+  @param {Object} [attr] the "two-way" attribute that can be modified.
+  @for Ember.Templates.helpers
+  @public
+*/
 export default function mut(morph, env, scope, originalParams, hash, template, inverse) {
   // If `morph` is `null` the keyword is being invoked as a subexpression.
   if (morph === null) {
