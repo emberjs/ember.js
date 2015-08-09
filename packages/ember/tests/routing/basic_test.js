@@ -3849,34 +3849,6 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
   assert.strictEqual(otherComponentCounter, 1, 'didInsertElement invoked on displayed component');
 });
 
-QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
-  expect(1);
-  Ember.TEMPLATES.application = compile('{{outlet}}');
-  Ember.TEMPLATES.index = compile('index');
-  Ember.TEMPLATES.other = compile('other');
-
-  Router.map(function() {
-    this.route('other', function() {
-    });
-  });
-
-  App.IndexRoute = Ember.Route.extend({
-    actions: {
-      willTransition() {
-        throw new Error('boom');
-      }
-    }
-  });
-
-  bootApplication();
-
-  throws(function() {
-    Ember.run(function() {
-      router.handleURL('/other');
-    });
-  }, /boom/, 'expected an exception that didnt happen');
-});
-
 QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
   App.ApplicationRoute = Ember.Route.extend({
     actions: {
