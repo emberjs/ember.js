@@ -58,14 +58,6 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     let layout = get(component, 'layout');
     if (layout) {
       componentInfo.layout = layout;
-      if (!contentTemplate) {
-        let template = getTemplate(component);
-
-        if (template) {
-          Ember.deprecate('Using deprecated `template` property on a ' + (component.isView ? 'View' : 'Component') + '.', false, { id: 'ember-htmlbars.view-node-manager-create', until: '3.0.0' });
-          contentTemplate = template.raw;
-        }
-      }
     } else {
       componentInfo.layout = getTemplate(component) || componentInfo.layout;
     }
@@ -151,7 +143,11 @@ ViewNodeManager.prototype.destroy = function() {
 };
 
 function getTemplate(componentOrView) {
-  return componentOrView.isComponent ? get(componentOrView, '_template') : get(componentOrView, 'template');
+  if (!componentOrView.isComponent) {
+    return get(componentOrView, 'template');
+  }
+
+  return null;
 }
 
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {
