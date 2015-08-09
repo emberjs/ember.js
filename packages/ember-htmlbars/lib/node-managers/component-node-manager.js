@@ -66,10 +66,10 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     createOptions._controller = getValue(parentScope.locals.controller);
   }
 
-  let proto = extractPositionalParams(renderNode, component, params, attrs);
+  extractPositionalParams(renderNode, component, params, attrs);
 
   // Instantiate the component
-  component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs, proto);
+  component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
   // If the component specifies its template via the `layout` or `template`
   // properties instead of using the template looked up in the container, get
@@ -88,27 +88,10 @@ ComponentNodeManager.create = function(renderNode, env, options) {
 
 function extractPositionalParams(renderNode, component, params, attrs) {
   let positionalParams = component.positionalParams;
-  let proto;
-
-  if (!positionalParams) {
-    proto = component.proto();
-    positionalParams = proto.positionalParams;
-
-    Ember.deprecate(
-      'Calling `var Thing = Ember.Component.extend({ positionalParams: [\'a\', \'b\' ]});` ' +
-        'is deprecated in favor of `Thing.reopenClass({ positionalParams: [\'a\', \'b\'] });',
-      !positionalParams,
-      { id: 'ember-htmlbars.component-positional-params', until: '2.0.0' }
-    );
-  }
 
   if (positionalParams) {
     processPositionalParams(renderNode, positionalParams, params, attrs);
   }
-
-  // returns `proto` here so that we can avoid doing this
-  // twice for each initial render per component (it is also needed in `createComponent`)
-  return proto;
 }
 
 function processPositionalParams(renderNode, positionalParams, params, attrs) {
@@ -267,10 +250,12 @@ ComponentNodeManager.prototype.destroy = function() {
   component.destroy();
 };
 
-export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}, proto = _component.proto()) {
+export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}) {
   let props = assign({}, _props);
 
   if (!isAngleBracket) {
+    let proto = _component.proto();
+
     Ember.assert('controller= is no longer supported', !('controller' in attrs));
 
     let snapshot = takeSnapshot(attrs);
