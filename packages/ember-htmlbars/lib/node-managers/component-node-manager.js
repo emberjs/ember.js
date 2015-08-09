@@ -71,12 +71,10 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // Instantiate the component
   component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
-  // If the component specifies its template via the `layout` or `template`
+  // If the component specifies its template via the `layout`
   // properties instead of using the template looked up in the container, get
   // them now that we have the component instance.
-  let result = extractComponentTemplates(component, templates);
-  layout = result.layout || layout;
-  templates = result.templates || templates;
+  layout = get(component, 'layout') || layout;
 
 
   let results = buildComponentTemplate(
@@ -121,50 +119,6 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
       attrs[positionalParams[i]] = param;
     }
   }
-}
-
-function extractComponentTemplates(component, _templates) {
-  // Even though we looked up a layout from the container earlier, the
-  // component may specify a `layout` property that overrides that.
-  // The component may also provide a `template` property we should
-  // respect (though this behavior is deprecated).
-  let componentLayout = get(component, 'layout');
-  let hasBlock = _templates && _templates.default;
-  let layout, templates, componentTemplate;
-  if (hasBlock) {
-    componentTemplate = null;
-  } else {
-    componentTemplate = get(component, 'template');
-  }
-
-  if (componentLayout) {
-    layout = componentLayout;
-    templates = extractLegacyTemplate(_templates, componentTemplate);
-  } else if (componentTemplate) {
-    // If the component has a `template` but no `layout`, use the template
-    // as the layout.
-    layout = componentTemplate;
-    templates = _templates;
-    Ember.deprecate('Using deprecated `template` property on a Component.', false, { id: 'ember-htmlbars.extract-component-templates', until: '3.0.0' });
-  }
-
-  return { layout, templates };
-}
-
-// 2.0TODO: Remove legacy behavior
-function extractLegacyTemplate(_templates, componentTemplate) {
-  let templates;
-
-  // There is no block template provided but the component has a
-  // `template` property.
-  if ((!_templates || !_templates.default) && componentTemplate) {
-    Ember.deprecate('Using deprecated `template` property on a Component.', false, { id: 'ember-htmlbars.extract-legacy-template', until: '3.0.0' });
-    templates = { default: componentTemplate.raw };
-  } else {
-    templates = _templates;
-  }
-
-  return templates;
 }
 
 function configureTagName(attrs, tagName, component, isAngleBracket, createOptions) {
