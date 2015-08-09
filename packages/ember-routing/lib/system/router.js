@@ -845,8 +845,8 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
 
-    if (handler._actions && handler._actions[name]) {
-      if (handler._actions[name].apply(handler, args) === true) {
+    if (handler.actions && handler.actions[name]) {
+      if (handler.actions[name].apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
         return;

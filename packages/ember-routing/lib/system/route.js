@@ -17,7 +17,7 @@ import {
 } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
-import ActionHandler from 'ember-runtime/mixins/action_handler';
+import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import generateController from 'ember-routing/system/generate_controller';
 import {
   generateControllerFactory
@@ -308,7 +308,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     router._updatingQPChanged(qp.urlKey);
   },
 
-  mergedProperties: ['events', 'queryParams'],
+  mergedProperties: ['queryParams'],
 
   /**
     Retrieves parameters, for current route using the state.params
@@ -743,7 +743,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @private
   */
 
-  _actions: {
+  actions: {
 
     queryParamsDidChange(changed, totalPresent, removed) {
       var qpMap = get(this, '_qp').map;
@@ -843,15 +843,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       router._qpUpdates = null;
     }
   },
-
-  /**
-    @deprecated
-
-    Please use `actions` instead.
-    @method events
-    @private
-  */
-  events: null,
 
   /**
     This hook is executed when the router completely exits this route. It is
@@ -1155,9 +1146,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     } else {
       var name = args[0];
       args = slice.call(args, 1);
-      var action = this._actions[name];
+      var action = this.actions[name];
       if (action) {
-        return this._actions[name].apply(this, args);
+        return this.actions[name].apply(this, args);
       }
     }
   },
@@ -2069,6 +2060,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   }
 });
 
+deprecateUnderscoreActions(Route);
 
 Route.reopenClass({
   isRouteFactory: true

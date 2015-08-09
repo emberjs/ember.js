@@ -197,6 +197,22 @@ QUnit.test('.send just calls an action if the routers internal router property i
   equal(undefined, route.send('nonexistent', 1, 2, 3));
 });
 
+QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
+  expect(2);
+
+  var route = EmberRoute.extend({
+    actions: {
+      foo: function() {
+        ok(true, 'called foo action');
+      }
+    }
+  }).create();
+
+  expectDeprecation(function() {
+    route._actions.foo();
+  }, 'Usage of `_actions` is deprecated, use `actions` instead.');
+});
+
 QUnit.module('Ember.Route serialize', {
   setup: setup,
   teardown: teardown

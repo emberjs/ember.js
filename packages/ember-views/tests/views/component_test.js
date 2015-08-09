@@ -27,6 +27,22 @@ QUnit.module('Ember.Component', {
   }
 });
 
+QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
+  expect(2);
+
+  component = Component.extend({
+    actions: {
+      foo: function() {
+        ok(true, 'called foo action');
+      }
+    }
+  }).create();
+
+  expectDeprecation(function() {
+    component._actions.foo();
+  }, 'Usage of `_actions` is deprecated, use `actions` instead.');
+});
+
 QUnit.test('The context of an Ember.Component is itself', function() {
   strictEqual(component, component.get('context'), 'A component\'s context is itself');
 });

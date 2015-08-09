@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import EmberObject from 'ember-runtime/system/object';
 import Mixin from 'ember-runtime/mixins/controller';
 import { createInjectionHelper } from 'ember-runtime/inject';
+import { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 
 /**
 @module ember
@@ -16,6 +17,8 @@ import { createInjectionHelper } from 'ember-runtime/inject';
   @public
 */
 var Controller = EmberObject.extend(Mixin);
+
+deprecateUnderscoreActions(Controller);
 
 function controllerInjectionHelper(factory) {
   Ember.assert('Defining an injected controller property on a ' +
