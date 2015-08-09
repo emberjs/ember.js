@@ -86,15 +86,13 @@ QUnit.test('If a component is registered, it is used', function() {
 });
 
 
-QUnit.test('Late-registered components can be rendered with custom `template` property (DEPRECATED)', function() {
+QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
-
-  expectDeprecation(/Do not specify template on a Component/);
 
   boot(function() {
     registry.register('component:my-hero', Ember.Component.extend({
       classNames: 'testing123',
-      template: compile('watch him as he GOES')
+      layout: compile('watch him as he GOES')
     }));
   });
 
@@ -137,13 +135,11 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   equal(Ember.$('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
-QUnit.test('Assigning templateName to a component should setup the template as a layout (DEPRECATED)', function() {
-  expect(2);
+QUnit.test('Assigning templateName to a component should setup the template as a layout', function() {
+  expect(1);
 
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
   Ember.TEMPLATES['foo-bar-baz'] = compile('{{text}}-{{yield}}');
-
-  expectDeprecation(/Do not specify templateName on a Component/);
 
   boot(function() {
     registry.register('controller:application', Ember.Controller.extend({
@@ -152,7 +148,7 @@ QUnit.test('Assigning templateName to a component should setup the template as a
 
     registry.register('component:my-component', Ember.Component.extend({
       text: 'inner',
-      templateName: 'foo-bar-baz'
+      layoutName: 'foo-bar-baz'
     }));
   });
 
