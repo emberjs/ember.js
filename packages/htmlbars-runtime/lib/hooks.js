@@ -451,6 +451,8 @@ export function bindShadowScope(env /*, parentScope, shadowScope */) {
 export function createChildScope(parent) {
   var scope = Object.create(parent);
   scope.locals = Object.create(parent.locals);
+  scope.localPresent = Object.create(parent.localPresent);
+  scope.blocks = Object.create(parent.blocks);
   return scope;
 }
 

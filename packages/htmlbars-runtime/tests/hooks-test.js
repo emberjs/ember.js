@@ -70,3 +70,18 @@ test("inline hook correctly handles false-like values", function() {
   equalTokens(result.fragment, '<div></div>');
 
 });
+
+test("createChildScope hook creates a new object for `blocks`", function() {
+  let scope = env.hooks.createFreshScope();
+  let child = env.hooks.createChildScope(scope);
+
+  let parentBlock = function() {};
+  env.hooks.bindBlock(env, scope, parentBlock, 'inherited');
+  strictEqual(scope.blocks.inherited, parentBlock);
+  strictEqual(child.blocks.inherited, parentBlock);
+
+  let childBlock = function() {};
+  env.hooks.bindBlock(env, child, childBlock, 'notInherited');
+  strictEqual(scope.blocks.notInherited, undefined);
+  strictEqual(child.blocks.notInherited, childBlock);
+});
