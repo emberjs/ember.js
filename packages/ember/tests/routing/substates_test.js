@@ -417,10 +417,57 @@ QUnit.test("Default error event moves into nested route", function() {
   equal(appController.get('currentPath'), 'grandma.error', "Initial route fully loaded");
 });
 
+QUnit.test('Setting a query param during a slow transition should work', function() {
+  var deferred = Ember.RSVP.defer();
+
+  Router.map(function() {
+    this.route('grandma', { path: '/grandma/:seg' },  function() { });
+  });
+
+  templates['grandma/loading'] = 'GMONEYLOADING';
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.IndexRoute = Ember.Route.extend({
+    beforeModel: function() {
+      this.transitionTo('grandma', 1);
+    }
+  });
+
+  App.GrandmaRoute = Ember.Route.extend({
+    queryParams: {
+      test: { defaultValue: 1 }
+    }
+  });
+
+  App.GrandmaIndexRoute = Ember.Route.extend({
+    model() {
+      return deferred.promise;
+    }
+  });
+
+  bootApplication('/');
+
+  var appController = container.lookup('controller:application');
+  var grandmaController = container.lookup('controller:grandma');
+
+  equal(appController.get('currentPath'), 'grandma.loading', 'Initial route should be loading');
+
+  Ember.run(function() {
+    grandmaController.set('test', 3);
+  });
+
+  equal(appController.get('currentPath'), 'grandma.loading', 'Route should still be loading');
+  equal(grandmaController.get('test'), 3, 'Controller query param value should have changed');
+
+  Ember.run(deferred, 'resolve', {});
+
+  equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
+});
+
 if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
   QUnit.test("Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present", function() {
-
     expect(2);
 
     // fake a modules resolver

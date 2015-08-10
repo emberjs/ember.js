@@ -152,11 +152,13 @@ ControllerMixin.reopen({
       var part = parts[i];
       var cacheValuePrefix = _calculateCacheValuePrefix(prefix, part);
       var value;
-      if (cacheValuePrefix && cacheValuePrefix in values) {
-        var partRemovedPrefix = (part.indexOf(cacheValuePrefix) === 0) ? part.substr(cacheValuePrefix.length + 1) : part;
-        value = get(values[cacheValuePrefix], partRemovedPrefix);
-      } else {
-        value = get(values, part);
+      if (values) {
+        if (cacheValuePrefix && cacheValuePrefix in values) {
+          var partRemovedPrefix = (part.indexOf(cacheValuePrefix) === 0) ? part.substr(cacheValuePrefix.length + 1) : part;
+          value = get(values[cacheValuePrefix], partRemovedPrefix);
+        } else {
+          value = get(values, part);
+        }
       }
       suffixes += '::' + part + ':' + value;
     }
