@@ -14,7 +14,7 @@ function isObject(obj) {
 }
 
 function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && obj._cacheable);
+  return !(isObject(obj) && obj.isDescriptor && !obj._volatile);
 }
 
 function Chains() { }
