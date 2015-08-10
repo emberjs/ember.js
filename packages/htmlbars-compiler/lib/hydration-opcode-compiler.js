@@ -163,7 +163,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childCount
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childCount) {
-  this.pushMorphPlaceholderNode(childIndex, childCount);
+  this.pushMorphPlaceholderNode(childIndex, childCount, component.isStatic);
 
   var program = component.program || {};
   var blockParams = program.blockParams || [];
@@ -238,15 +238,18 @@ HydrationOpcodeCompiler.prototype.elementModifier = function(modifier) {
   this.opcode('printElementHook', meta(modifier));
 };
 
-HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount) {
-  if (this.paths.length === 0) {
-    if (childIndex === 0) {
-      this.opcode('openBoundary');
-    }
-    if (childIndex === childCount - 1) {
-      this.opcode('closeBoundary');
+HydrationOpcodeCompiler.prototype.pushMorphPlaceholderNode = function(childIndex, childCount, skipBoundaryNodes) {
+  if (!skipBoundaryNodes) {
+    if (this.paths.length === 0) {
+      if (childIndex === 0) {
+        this.opcode('openBoundary');
+      }
+      if (childIndex === childCount - 1) {
+        this.opcode('closeBoundary');
+      }
     }
   }
+
   this.comment();
 };
 

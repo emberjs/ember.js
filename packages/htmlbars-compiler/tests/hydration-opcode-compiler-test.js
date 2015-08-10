@@ -124,6 +124,22 @@ let s = {
   }
 };
 
+
+QUnit.module(`Compiling <my-component> with isStatic plugin: <my-component />`);
+
+test("isStatic skips boundary nodes", function() {
+  var ast = preprocess('<my-component />');
+  ast.body[0].isStatic = true;
+  var compiler1 = new HydrationOpcodeCompiler();
+  compiler1.compile(ast);
+  equalOpcodes(compiler1.opcodes, [
+    ['createMorph',[0,[],0,0,true]],
+    ['prepareObject',[0]],
+    ['pushLiteral',['my-component']],
+    ['printComponentHook',[0,0,['loc',[null,[1,0],[1,16]]]]]
+  ]);
+});
+
 testCompile("simple example", "<div>{{foo}} bar {{baz}}</div>", [
   [ "consumeParent", [ 0 ] ],
   [ "shareElement", [ 0 ] ],
