@@ -109,6 +109,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     this.getChildTemplateVars(indent + '  ') +
     indent+'  return {\n' +
     this.buildMeta(indent+'    ', program) +
+    indent+'    isEmpty: ' + (program.body.length ? 'false' : 'true') + ',\n' +
     indent+'    arity: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +

@@ -80,7 +80,7 @@ RenderResult.build = function(env, scope, template, options, contextualElement) 
   return new RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent);
 };
 
-export function manualElement(tagName, attributes) {
+export function manualElement(tagName, attributes, _isEmpty) {
   var statements = [];
 
   for (var key in attributes) {
@@ -88,7 +88,11 @@ export function manualElement(tagName, attributes) {
     statements.push(["attribute", key, attributes[key]]);
   }
 
-  statements.push(['content', 'yield']);
+  var isEmpty = _isEmpty || voidMap[tagName];
+
+  if (!isEmpty) {
+    statements.push(['content', 'yield']);
+  }
 
   var template = {
     arity: 0,
@@ -106,7 +110,7 @@ export function manualElement(tagName, attributes) {
         dom.setAttribute(el1, key, attributes[key]);
       }
 
-      if (!voidMap[tagName]) {
+      if (!isEmpty) {
         var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
       }
@@ -124,7 +128,10 @@ export function manualElement(tagName, attributes) {
         morphs.push(dom.createAttrMorph(element, key));
       }
 
-      morphs.push(dom.createMorphAt(element, 0, 0));
+      if (!isEmpty) {
+        morphs.push(dom.createMorphAt(element, 0, 0));
+      }
+
       return morphs;
     },
     statements: statements,
