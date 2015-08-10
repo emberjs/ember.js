@@ -76,7 +76,14 @@ export function buildComponent(tag, attributes, program, loc) {
     tag: tag,
     attributes: attributes,
     program: program,
-    loc: buildLoc(loc)
+    loc: buildLoc(loc),
+
+    // this should be true only if this component node is guaranteed
+    // to produce start and end points that can never change after the
+    // initial render, regardless of changes to dynamic inputs. If
+    // a component represents a "fragment" (any number of top-level nodes),
+    // this will usually not be true.
+    isStatic: false
   };
 }
 
