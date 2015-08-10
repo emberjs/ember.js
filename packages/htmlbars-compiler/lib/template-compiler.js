@@ -20,37 +20,11 @@ function TemplateCompiler(options) {
 
 export default TemplateCompiler;
 
-var dynamicNodes = {
-  mustache: true,
-  block: true,
-  component: true
-};
-
 TemplateCompiler.prototype.compile = function(ast) {
   var templateVisitor = new TemplateVisitor();
   templateVisitor.visit(ast);
 
-  var normalizedActions = [];
-  var actions = templateVisitor.actions;
-
-  for (var i=0, l=actions.length - 1; i<l; i++) {
-    var action = actions[i];
-    var nextAction = actions[i + 1];
-
-    normalizedActions.push(action);
-
-    if (action[0] === "startProgram" && nextAction[0] in dynamicNodes) {
-      normalizedActions.push(['insertBoundary', [true]]);
-    }
-
-    if (nextAction[0] === "endProgram" && action[0] in dynamicNodes) {
-      normalizedActions.push(['insertBoundary', [false]]);
-    }
-  }
-
-  normalizedActions.push(actions[actions.length - 1]);
-
-  processOpcodes(this, normalizedActions);
+  processOpcodes(this, templateVisitor.actions);
 
   return this.templates.pop();
 };
