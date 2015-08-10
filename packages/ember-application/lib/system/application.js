@@ -987,9 +987,9 @@ Application.reopenClass({
     @method initializer
     @param initializer {Object}
     @public
-   */
+  */
 
-   /**
+  /**
     InstanceInitializers run after all initializers have run. Because
     instanceInitializers run after the app is fully set up. We have access
     to the store, container, and other items. However, these initializers run
