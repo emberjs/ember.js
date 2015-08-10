@@ -857,6 +857,13 @@ Application.reopenClass({
   instanceInitializers: create(null),
 
   /**
+    The goal of initializers should be to register dependencies and injections.
+    This phase runs once. Because these initializers may load code, they are
+    allowed to defer application readiness and advance it. If you need to access
+    the container or store you should use an InstanceInitializer that will be run
+    after all initializers and therefore after all code is loaded and the app is
+    ready.
+
     Initializer receives an object which has the following attributes:
     `name`, `before`, `after`, `initialize`. The only required attribute is
     `initialize`, all others are optional.
@@ -955,6 +962,7 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'preload-data',
+      after: 'ember-data',   // ember-data must be loaded before we can access store
 
       initialize: function(container, application) {
         var store = container.lookup('store:main');
@@ -979,7 +987,72 @@ Application.reopenClass({
     @method initializer
     @param initializer {Object}
     @public
-   */
+  */
+
+  /**
+    InstanceInitializers run after all initializers have run. Because
+    instanceInitializers run after the app is fully set up. We have access
+    to the store, container, and other items. However, these initializers run
+    after code has loaded and are not allowed to defer readiness.
+
+    InstanceInitializer receives an object which has the following attributes:
+    `name`, `before`, `after`, `initialize`. The only required attribute is
+    `initialize`, all others are optional.
+
+    * `name` allows you to specify under which name the instanceInitializer is
+    registered. This must be a unique name, as trying to register two
+    instanceInitializer with the same name will result in an error.
+
+    ```javascript
+    Ember.Application.instanceInitializer({
+      name: 'namedinstanceInitializer',
+
+      initialize: function(application) {
+        Ember.debug('Running namedInitializer!');
+      }
+    });
+    ```
+
+    * `before` and `after` are used to ensure that this initializer is ran prior
+    or after the one identified by the value. This value can be a single string
+    or an array of strings, referencing the `name` of other initializers.
+
+    * See Ember.Application.initializer for discussion on the usage of before
+    and after.
+
+    Example instanceInitializer to preload data into the store.
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'preload-data',
+
+      initialize: function(application) {
+        var userConfig, userConfigEncoded, store;
+        // We have a HTML escaped JSON representation of the user's basic
+        // configuration generated server side and stored in the DOM of the main
+        // index.html file. This allows the app to have access to a set of data
+        // without making any additional remote calls. Good for basic data that is
+        // needed for immediate rendering of the page. Keep in mind, this data,
+        // like all local models and data can be manipulated by the user, so it
+        // should not be relied upon for security or authorization.
+        //
+        // Grab the encoded data from the meta tag
+        userConfigEncoded = Ember.$('head meta[name=app-user-config]').attr('content');
+        // Unescape the text, then parse the resulting JSON into a real object
+        userConfig = JSON.parse(unescape(userConfigEncoded));
+        // Lookup the store
+        store = application.container.lookup('service:store');
+        // Push the encoded JSON into the store
+        store.pushPayload(userConfig);
+      }
+    });
+    ```
+
+    @method instanceInitializer
+    @param instanceInitializer
+    @public
+  */
+
   initializer: buildInitializerMethod('initializers', 'initializer'),
 
   /**
