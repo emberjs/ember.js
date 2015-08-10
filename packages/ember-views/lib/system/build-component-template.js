@@ -47,6 +47,30 @@ export default function buildComponentTemplate({ component, tagName, layout, isA
   return { createdElement: !!tagName, block: blockToRender };
 }
 
+export function buildHTMLTemplate(tagName, _attrs, content) {
+  let attrs = {};
+
+  for (let prop in _attrs) {
+    let val = _attrs[prop];
+
+    if (typeof val === 'string') {
+      attrs[prop] = val;
+    } else {
+      attrs[prop] = ['value', val];
+    }
+  }
+
+  let childTemplate = content.templates.default;
+  let elementTemplate = internal.manualElement(tagName, attrs, childTemplate.isEmpty);
+
+  if (childTemplate.isEmpty) {
+    return blockFor(elementTemplate, { scope: content.scope });
+  } else {
+    let blockToRender = blockFor(content.templates.default, content);
+    return blockFor(elementTemplate, { yieldTo: blockToRender, scope: content.scope });
+  }
+}
+
 function mergeAttrs(innerAttrs, outerAttrs) {
   let result = assign({}, innerAttrs, outerAttrs);
 

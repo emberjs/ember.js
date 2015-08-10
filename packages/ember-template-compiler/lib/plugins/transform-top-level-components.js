@@ -16,11 +16,20 @@ TransformTopLevelComponents.prototype.transform = function TransformTopLevelComp
   hasSingleComponentNode(ast.body, component => {
     if (component.type === 'ComponentNode') {
       component.tag = `@${component.tag}`;
+      component.isStatic = true;
     }
   }, element => {
-    // TODO: Properly copy loc from children
-    let program = b.program(element.children);
-    return b.component(`@<${element.tag}>`, element.attributes, program, element.loc);
+    let hasTripleCurlies = element.attributes.some(attr => attr.value.escaped === false);
+
+    if (element.modifiers.length || hasTripleCurlies) {
+      return element;
+    } else {
+      // TODO: Properly copy loc from children
+      let program = b.program(element.children);
+      let component = b.component(`@<${element.tag}>`, element.attributes, program, element.loc);
+      component.isStatic = true;
+      return component;
+    }
   });
 
   return ast;
