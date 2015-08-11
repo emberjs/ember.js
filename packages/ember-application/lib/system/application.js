@@ -615,11 +615,12 @@ var Application = Namespace.extend(RegistryProxy, {
   */
   didBecomeReady() {
     if (this.autoboot) {
+      this.runInstanceInitializers(this.__deprecatedInstance__);
+
       if (environment.hasDOM) {
         this.__deprecatedInstance__.setupEventDispatcher();
       }
 
-      this.runInstanceInitializers(this.__deprecatedInstance__);
       this.ready(); // user hook
       this.__deprecatedInstance__.startRouting();
 

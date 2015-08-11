@@ -84,3 +84,41 @@ QUnit.test('customEvents added to the application before setupEventDispatcher', 
 
   appInstance.setupEventDispatcher();
 });
+
+QUnit.test('customEvents added to the application before setupEventDispatcher', function(assert) {
+  assert.expect(1);
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+  });
+
+  app.customEvents = {
+    awesome: 'sauce'
+  };
+
+  var eventDispatcher = appInstance.lookup('event_dispatcher:main');
+  eventDispatcher.setup = function(events) {
+    assert.equal(events.awesome, 'sauce');
+  };
+
+  appInstance.setupEventDispatcher();
+});
+
+QUnit.test('customEvents added to the application instance before setupEventDispatcher', function(assert) {
+  assert.expect(1);
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+  });
+
+  appInstance.customEvents = {
+    awesome: 'sauce'
+  };
+
+  var eventDispatcher = appInstance.lookup('event_dispatcher:main');
+  eventDispatcher.setup = function(events) {
+    assert.equal(events.awesome, 'sauce');
+  };
+
+  appInstance.setupEventDispatcher();
+});

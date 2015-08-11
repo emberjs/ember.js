@@ -4,11 +4,11 @@ import isEnabled from 'ember-metal/features';
 
 var compile = Ember.HTMLBars.compile;
 
-var ApplicationSubclass, App, container, router;
+var App, container, router;
 
-function setupApp() {
+function setupApp(klass) {
   Ember.run(function() {
-    App = ApplicationSubclass.create({
+    App = klass.create({
       rootElement: '#qunit-fixture'
     });
 
@@ -24,9 +24,7 @@ function setupApp() {
 
 QUnit.module('Application Lifecycle', {
   setup() {
-    ApplicationSubclass = Ember.Application.extend();
-
-    setupApp();
+    setupApp(Ember.Application.extend());
   },
 
   teardown() {
@@ -129,6 +127,8 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   Ember.run(App, 'destroy');
 
+  var ApplicationSubclass = Ember.Application.extend();
+
   if (isEnabled('ember-registry-container-reform')) {
     ApplicationSubclass.initializer({
       name: 'customize-things',
@@ -149,7 +149,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
     });
   }
 
-  setupApp();
+  setupApp(ApplicationSubclass);
 
   App.FooBarComponent = Ember.Component.extend({
     wowza() {
@@ -164,5 +164,39 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   Ember.run(function() {
     Ember.$('#wowza-thingy').trigger('wowza');
+  });
+});
+
+QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
+  assert.expect(1);
+
+  Ember.run(App, 'destroy');
+
+  var ApplicationSubclass = Ember.Application.extend();
+
+  ApplicationSubclass.instanceInitializer({
+    name: 'customize-things',
+    initialize(application) {
+      application.customEvents = {
+        herky: 'jerky'
+      };
+    }
+  });
+
+  setupApp(ApplicationSubclass);
+
+  App.FooBarComponent = Ember.Component.extend({
+    jerky() {
+      assert.ok(true, 'fired the event!');
+    }
+  });
+
+  Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
+  Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='herky-thingy'></div>`);
+
+  Ember.run(App, 'advanceReadiness');
+
+  Ember.run(function() {
+    Ember.$('#herky-thingy').trigger('herky');
   });
 });
