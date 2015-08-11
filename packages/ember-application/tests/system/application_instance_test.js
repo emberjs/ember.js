@@ -65,3 +65,22 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
     strictEqual(appInstance.registry, appInstance.__registry__, '#registry alias should be assigned');
   }
 });
+
+QUnit.test('customEvents added to the application before setupEventDispatcher', function(assert) {
+  assert.expect(1);
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+  });
+
+  app.customEvents = {
+    awesome: 'sauce'
+  };
+
+  var eventDispatcher = appInstance.lookup('event_dispatcher:main');
+  eventDispatcher.setup = function(events) {
+    assert.equal(events.awesome, 'sauce');
+  };
+
+  appInstance.setupEventDispatcher();
+});
