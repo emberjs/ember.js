@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-templates
+*/
+
 import Ember from 'ember-metal/core';
 import { internal } from 'htmlbars-runtime';
 
