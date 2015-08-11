@@ -25,7 +25,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('component is looked up from the container', function() {
-    registry.register('template:components/foo-bar', compile('yippie!'));
+    registry.register('template:components/foo-bar', compile('<foo-bar>yippie!</foo-bar>'));
 
     view = EmberView.create({
       container: container,

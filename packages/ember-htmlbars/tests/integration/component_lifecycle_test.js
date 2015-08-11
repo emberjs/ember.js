@@ -127,9 +127,9 @@ styles.forEach(style => {
     registry.register('component:the-middle', component('middle'));
     registry.register('component:the-bottom', component('bottom'));
 
-    registry.register('template:components/the-top', compile(`Twitter: {{attrs.twitter}} ${invoke('the-middle', { name: string('Tom Dale') })}`));
-    registry.register('template:components/the-middle', compile(`Name: {{attrs.name}} ${invoke('the-bottom', { website: string('tomdale.net') })}`));
-    registry.register('template:components/the-bottom', compile('Website: {{attrs.website}}'));
+    registry.register('template:components/the-top', compile(`<div>Twitter: {{attrs.twitter}} ${invoke('the-middle', { name: string('Tom Dale') })}</div>`));
+    registry.register('template:components/the-middle', compile(`<div>Name: {{attrs.name}} ${invoke('the-bottom', { website: string('tomdale.net') })}</div>`));
+    registry.register('template:components/the-bottom', compile('<div>Website: {{attrs.website}}</div>'));
 
     view = EmberView.extend({
       template: compile(invoke('the-top', { twitter: 'view.twitter' })),
@@ -278,9 +278,9 @@ styles.forEach(style => {
     registry.register('component:the-middle', component('middle'));
     registry.register('component:the-bottom', component('bottom'));
 
-    registry.register('template:components/the-top', compile(`Top: ${invoke('the-middle', { twitterTop: 'attrs.twitter' })}`));
-    registry.register('template:components/the-middle', compile(`Middle: ${invoke('the-bottom', { twitterMiddle: 'attrs.twitterTop' })}`));
-    registry.register('template:components/the-bottom', compile('Bottom: {{attrs.twitterMiddle}}'));
+    registry.register('template:components/the-top', compile(`<div>Top: ${invoke('the-middle', { twitterTop: 'attrs.twitter' })}</div>`));
+    registry.register('template:components/the-middle', compile(`<div>Middle: ${invoke('the-bottom', { twitterMiddle: 'attrs.twitterTop' })}</div>`));
+    registry.register('template:components/the-bottom', compile('<div>Bottom: {{attrs.twitterMiddle}}</div>'));
 
     view = EmberView.extend({
       template: compile(invoke('the-top', { twitter: 'view.twitter' })),

@@ -85,6 +85,25 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // now that we have the component instance.
   layout = get(component, 'layout') || layout;
 
+  Ember.runInDebug(() => {
+    if (!layout) { return; }
+
+    let fragmentReason = layout.meta.fragmentReason;
+    if (isAngleBracket && fragmentReason) {
+      switch (fragmentReason.name) {
+        case 'missing-wrapper':
+          Ember.assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
+          break;
+        case 'modifiers':
+          let modifiers = fragmentReason.modifiers.map(m => `{{${m} ...}}`);
+          Ember.assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          break;
+        case 'triple-curlies':
+          Ember.assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          break;
+      }
+    }
+  });
 
   let results = buildComponentTemplate(
     { layout, component, isAngleBracket }, attrs, { templates, scope: parentScope }

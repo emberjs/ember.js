@@ -799,14 +799,6 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     }
   });
 
-  QUnit.test('non-block without properties replaced with a fragment when the content is just text', function() {
-    registry.register('template:components/non-block', compile('In layout'));
-
-    view = appendViewFor('<non-block />');
-
-    equal(view.$().html(), 'In layout', 'Just the fragment was used');
-  });
-
   QUnit.test('legacy components cannot be invoked with angle brackets', function() {
     registry.register('template:components/non-block', compile('In layout'));
     registry.register('component:non-block', Component.extend());
@@ -816,12 +808,36 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     }, /cannot invoke the 'non-block' component with angle brackets/);
   });
 
-  QUnit.test('non-block without properties replaced with a fragment when the content is multiple elements', function() {
+  QUnit.test('using a text-fragment in a GlimmerComponent layout gives an error', function() {
+    registry.register('template:components/non-block', compile('In layout'));
+
+    expectAssertion(() => {
+      view = appendViewFor('<non-block />');
+    }, `The <non-block> template must have a single top-level element because it is a GlimmerComponent.`);
+  });
+
+  QUnit.test('having multiple top-level elements in a GlimmerComponent layout gives an error', function() {
     registry.register('template:components/non-block', compile('<div>This is a</div><div>fragment</div>'));
 
-    view = appendViewFor('<non-block />');
+    expectAssertion(() => {
+      view = appendViewFor('<non-block />');
+    }, `The <non-block> template must have a single top-level element because it is a GlimmerComponent.`);
+  });
 
-    equal(view.$().html(), '<div>This is a</div><div>fragment</div>', 'Just the fragment was used');
+  QUnit.test('using a modifier in a GlimmerComponent layout gives an error', function() {
+    registry.register('template:components/non-block', compile('<div {{action "foo"}}></div>'));
+
+    expectAssertion(() => {
+      view = appendViewFor('<non-block />');
+    }, `You cannot use {{action ...}} in the top-level element of the <non-block> template because it is a GlimmerComponent.`);
+  });
+
+  QUnit.test('using triple-curlies in a GlimmerComponent layout gives an error', function() {
+    registry.register('template:components/non-block', compile('<div style={{{bar}}}>This is a</div>'));
+
+    expectAssertion(() => {
+      view = appendViewFor('<non-block />');
+    }, `You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <non-block> template because it is a GlimmerComponent.`);
   });
 
   QUnit.test('non-block without properties replaced with a div', function() {
@@ -1070,7 +1086,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$('non-block').attr('data-dynamic'), 'stuff');
   });
 
-  QUnit.test('non-block rendering a fragment', function() {
+  QUnit.skip('[FRAGMENT] non-block rendering a fragment', function() {
     registry.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
 
     view = appendViewFor('<non-block first={{view.first}} second={{view.second}} />', {
@@ -1088,7 +1104,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(view.$().html(), '<p>first2</p><p>second2</p>', 'The fragment was updated');
   });
 
-    QUnit.test('block without properties', function() {
+  QUnit.test('block without properties', function() {
     registry.register('template:components/with-block', compile('<with-block>In layout - {{yield}}</with-block>'));
 
     view = appendViewFor('<with-block>In template</with-block>');
@@ -1249,7 +1265,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('computed property alias on attrs', function() {
-    registry.register('template:components/computed-alias', compile('{{otherProp}}'));
+    registry.register('template:components/computed-alias', compile('<computed-alias>{{otherProp}}</computed-alias>'));
 
     registry.register('component:computed-alias', GlimmerComponent.extend({
       otherProp: Ember.computed.alias('attrs.someProp')
