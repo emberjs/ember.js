@@ -27,6 +27,7 @@ export default Service.extend({
   targetState: readOnly('router.targetState'),
   currentState: readOnly('router.currentState'),
   currentRouteName: readOnly('router.currentRouteName'),
+  currentPath: readOnly('router.currentPath'),
 
   availableRoutes() {
     return Object.keys(get(this, 'router').router.recognizer.names);

@@ -881,7 +881,14 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
 }
 
 function updatePaths(router) {
-  var appController = router.container.lookup('controller:application');
+  let infos = router.router.currentHandlerInfos;
+  let path = EmberRouter._routePath(infos);
+  let currentRouteName = infos[infos.length - 1].name;
+
+  set(router, 'currentPath', path);
+  set(router, 'currentRouteName', currentRouteName);
+
+  let appController = router.container.lookup('controller:application');
 
   if (!appController) {
     // appController might not exist when top-level loading/error
@@ -890,22 +897,17 @@ function updatePaths(router) {
     return;
   }
 
-  var infos = router.router.currentHandlerInfos;
-  var path = EmberRouter._routePath(infos);
-
   if (!('currentPath' in appController)) {
     defineProperty(appController, 'currentPath');
   }
 
   set(appController, 'currentPath', path);
-  set(router, 'currentPath', path);
 
   if (!('currentRouteName' in appController)) {
     defineProperty(appController, 'currentRouteName');
   }
 
-  set(appController, 'currentRouteName', infos[infos.length - 1].name);
-  set(router, 'currentRouteName', infos[infos.length - 1].name);
+  set(appController, 'currentRouteName', currentRouteName);
 }
 
 EmberRouter.reopenClass({
