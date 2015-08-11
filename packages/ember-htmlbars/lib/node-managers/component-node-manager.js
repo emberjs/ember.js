@@ -191,7 +191,7 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
       // Glimmer components may have whitespace or boundary nodes around the
       // top-level element.
       if (element && element.nodeType !== 1) {
-        element = element.nextElementSibling;
+        element = nextElementSibling(element);
       }
     }
 
@@ -201,6 +201,15 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
     env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
   }, this);
 };
+
+function nextElementSibling(node) {
+  let current = node;
+
+  while (current) {
+    if (current.nodeType === 1) { return current; }
+    current = node.nextSibling;
+  }
+}
 
 ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   var component = this.component;
