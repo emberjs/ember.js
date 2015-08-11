@@ -320,7 +320,7 @@ var LinkComponent = EmberComponent.extend({
     }
 
     var routing = get(this, '_routing');
-    var targetRouteName = get(this, 'targetRouteName');
+    var targetRouteName = this._handleOnlyQueryParamsSupplied(get(this, 'targetRouteName'));
     var models = get(this, 'models');
     var queryParamValues = get(this, 'queryParams.values');
     var shouldReplace = get(this, 'attrs.replace');
