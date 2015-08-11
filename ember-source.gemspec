@@ -15,3 +15,5 @@ Gem::Specification.new do |gem|
 
   gem.files = %w(VERSION) + Dir['dist/*.js', 'lib/ember/*.rb']
 end
+
+# lolwut
