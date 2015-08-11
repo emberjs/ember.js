@@ -72,34 +72,34 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // Instantiate the component
   component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
-  Ember.runInDebug(() => {
-    if (isAngleBracket) {
-      Ember.assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
-    } else {
-      Ember.assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
-    }
-  });
-
   // If the component specifies its template via the `layout properties
   // instead of using the template looked up in the container, get them
   // now that we have the component instance.
   layout = get(component, 'layout') || layout;
 
   Ember.runInDebug(() => {
+    var assert = Ember.assert;
+
+    if (isAngleBracket) {
+      assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
+    } else {
+      assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
+    }
+
     if (!layout) { return; }
 
     let fragmentReason = layout.meta.fragmentReason;
     if (isAngleBracket && fragmentReason) {
       switch (fragmentReason.name) {
         case 'missing-wrapper':
-          Ember.assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
+          assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
           break;
         case 'modifiers':
           let modifiers = fragmentReason.modifiers.map(m => `{{${m} ...}}`);
-          Ember.assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
         case 'triple-curlies':
-          Ember.assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
       }
     }
