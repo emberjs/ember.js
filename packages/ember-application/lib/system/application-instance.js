@@ -198,8 +198,10 @@ export default EmberObject.extend({
     @private
   */
   setupEventDispatcher() {
-    var dispatcher = this.container.lookup('event_dispatcher:main');
-    dispatcher.setup(this.customEvents, this.rootElement);
+    var dispatcher = this.lookup('event_dispatcher:main');
+    var applicationCustomEvents = get(this.application, 'customEvents');
+
+    dispatcher.setup(applicationCustomEvents, this.rootElement);
 
     return dispatcher;
   },

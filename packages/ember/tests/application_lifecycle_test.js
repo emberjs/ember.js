@@ -1,27 +1,36 @@
 import "ember";
 
-var App, container, router;
+var compile = Ember.HTMLBars.compile;
 
-QUnit.module("Application Lifecycle", {
-  setup() {
-    Ember.run(function() {
-      App = Ember.Application.create({
-        rootElement: '#qunit-fixture'
-      });
+var ApplicationSubclass, App, container, router;
 
-      App.Router = App.Router.extend({
-        location: 'none'
-      });
-
-      App.deferReadiness();
-
-      container = App.__container__;
+function setupApp() {
+  Ember.run(function() {
+    App = ApplicationSubclass.create({
+      rootElement: '#qunit-fixture'
     });
+
+    App.Router = App.Router.extend({
+      location: 'none'
+    });
+
+    App.deferReadiness();
+
+    container = App.__container__;
+  });
+}
+
+QUnit.module('Application Lifecycle', {
+  setup() {
+    ApplicationSubclass = Ember.Application.extend();
+
+    setupApp();
   },
 
   teardown() {
     router = null;
     Ember.run(App, 'destroy');
+    Ember.TEMPLATES = {};
   }
 });
 
@@ -111,4 +120,47 @@ QUnit.test("Destroying the application resets the router before the container is
 
   equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
   equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
+});
+
+QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
+  assert.expect(1);
+
+  Ember.run(App, 'destroy');
+
+  if (Ember.FEATURES.isEnabled('ember-registry-container-reform')) {
+    ApplicationSubclass.initializer({
+      name: 'customize-things',
+      initialize(application) {
+        application.customEvents = {
+          wowza: 'wowza'
+        };
+      }
+    });
+  } else {
+    ApplicationSubclass.initializer({
+      name: 'customize-things',
+      initialize(registry, application) {
+        application.customEvents = {
+          wowza: 'wowza'
+        };
+      }
+    });
+  }
+
+  setupApp();
+
+  App.FooBarComponent = Ember.Component.extend({
+    wowza() {
+      assert.ok(true, 'fired the event!');
+    }
+  });
+
+  Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
+  Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='wowza-thingy'></div>`);
+
+  Ember.run(App, 'advanceReadiness');
+
+  Ember.run(function() {
+    Ember.$('#wowza-thingy').trigger('wowza');
+  });
 });
