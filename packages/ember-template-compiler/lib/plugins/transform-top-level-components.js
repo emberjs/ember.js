@@ -13,7 +13,7 @@ function TransformTopLevelComponents() {
 TransformTopLevelComponents.prototype.transform = function TransformTopLevelComponents_transform(ast) {
   let b = this.syntax.builders;
 
-  hasSingleComponentNode(ast.body, component => {
+  hasSingleComponentNode(ast, component => {
     if (component.type === 'ComponentNode') {
       component.tag = `@${component.tag}`;
       component.isStatic = true;
@@ -35,7 +35,10 @@ TransformTopLevelComponents.prototype.transform = function TransformTopLevelComp
   return ast;
 };
 
-function hasSingleComponentNode(body, componentCallback, elementCallback) {
+function hasSingleComponentNode(program, componentCallback, elementCallback) {
+  let { loc, body } = program;
+  if (!loc || loc.start.line !== 1 || loc.start.column !== 0) { return; }
+
   let lastComponentNode;
   let lastIndex;
   let nodeCount = 0;
