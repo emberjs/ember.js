@@ -318,7 +318,13 @@ var LinkComponent = EmberComponent.extend({
       return false;
     }
 
-    get(this, '_routing').transitionTo(get(this, 'targetRouteName'), get(this, 'models'), get(this, 'queryParams.values'), get(this, 'attrs.replace'));
+    var routing = get(this, '_routing');
+    var targetRouteName = this._handleOnlyQueryParamsSupplied(get(this, 'targetRouteName'));
+    var models = get(this, 'models');
+    var queryParamValues = get(this, 'queryParams.values');
+    var shouldReplace = get(this, 'attrs.replace');
+
+    routing.transitionTo(targetRouteName, models, queryParamValues, shouldReplace);
   },
 
   queryParams: null,
