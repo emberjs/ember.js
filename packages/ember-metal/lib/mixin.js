@@ -42,38 +42,6 @@ import { isStream } from 'ember-metal/streams/utils';
 var REQUIRED;
 var a_slice = [].slice;
 
-function superFunction() {
-  var func = this.__nextSuper;
-  var ret;
-
-  if (func) {
-    var length = arguments.length;
-    this.__nextSuper = null;
-    if (length === 0) {
-      ret = func.call(this);
-    } else if (length === 1) {
-      ret = func.call(this, arguments[0]);
-    } else if (length === 2) {
-      ret = func.call(this, arguments[0], arguments[1]);
-    } else {
-      ret = func.apply(this, arguments);
-    }
-    this.__nextSuper = func;
-    return ret;
-  }
-}
-
-// ensure we prime superFunction to mitigate
-// v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
-var primer = {
-  __nextSuper(a, b, c, d) { }
-};
-
-superFunction.call(primer);
-superFunction.call(primer, 1);
-superFunction.call(primer, 1, 2);
-superFunction.call(primer, 1, 2, 3);
-
 function mixinsMeta(obj) {
   return metaFor(obj, true).writableMixins();
 }
@@ -154,10 +122,6 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   return property;
 }
 
-var sourceAvailable = (function() {
-  return this;
-}).toString().indexOf('return this;') > -1;
-
 function giveMethodSuper(obj, key, method, values, descs) {
   var superMethod;
 
@@ -176,21 +140,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
     return method;
   }
 
-  var hasSuper;
-  if (sourceAvailable) {
-    hasSuper = method.__hasSuper;
-
-    if (hasSuper === undefined) {
-      hasSuper = method.toString().indexOf('_super') > -1;
-      method.__hasSuper = hasSuper;
-    }
-  }
-
-  if (sourceAvailable === false || hasSuper) {
-    return wrap(method, superMethod);
-  } else {
-    return method;
-  }
+  return wrap(method, superMethod);
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
@@ -235,7 +185,7 @@ function applyMergedProperties(obj, key, value, values) {
   }
 
   if (hasFunction) {
-    newBase._super = superFunction;
+    newBase._super = function () {};
   }
 
   return newBase;
@@ -246,7 +196,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     if (value === REQUIRED && descs[key]) { return CONTINUE; }
 
     // Wrap descriptor function to implement
-    // __nextSuper() if needed
+    // _super() if needed
     if (value._getter) {
       value = giveDescriptorSuper(meta, key, value, values, descs, base);
     }
@@ -422,7 +372,7 @@ function applyMixin(obj, mixins, partial) {
   var keys = [];
   var key, value, desc;
 
-  obj._super = superFunction;
+  obj._super = function () {};
 
   // Go through all mixins and hashes passed in, and:
   //
