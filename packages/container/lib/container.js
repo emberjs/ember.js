@@ -147,6 +147,10 @@ Container.prototype = {
   }
 };
 
+function isSingleton(container, fullName) {
+  return container.registry.getOption(fullName, 'singleton') !== false;
+}
+
 function lookup(container, fullName, options) {
   options = options || {};
 
@@ -158,11 +162,19 @@ function lookup(container, fullName, options) {
 
   if (value === undefined) { return; }
 
-  if (container.registry.getOption(fullName, 'singleton') !== false && options.singleton !== false) {
+  if (isSingleton(container, fullName) && options.singleton !== false) {
     container.cache[fullName] = value;
   }
 
   return value;
+}
+
+function markInjectionsAsDynamic(injections) {
+  injections._dynamic = true;
+}
+
+function areInjectionsDynamic(injections) {
+  return !!injections._dynamic;
 }
 
 function buildInjections(container) {
@@ -184,6 +196,9 @@ function buildInjections(container) {
     for (i = 0, l = injections.length; i < l; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
+      if (!isSingleton(container, injection.fullName)) {
+        markInjectionsAsDynamic(hash);
+      }
     }
   }
 
@@ -212,6 +227,7 @@ function factoryFor(container, fullName) {
   } else {
     var injections = injectionsFor(container, fullName);
     var factoryInjections = factoryInjectionsFor(container, fullName);
+    var cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
 
     factoryInjections._toString = registry.makeToString(factory, fullName);
 
@@ -222,7 +238,9 @@ function factoryFor(container, fullName) {
       factory._onLookup(fullName);
     }
 
-    cache[fullName] = injectedFactory;
+    if (cacheable) {
+      cache[fullName] = injectedFactory;
+    }
 
     return injectedFactory;
   }
