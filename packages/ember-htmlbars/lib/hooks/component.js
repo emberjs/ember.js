@@ -1,5 +1,7 @@
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
+import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import Ember from 'ember-metal/core';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.state;
@@ -40,9 +42,9 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   //     <div> are defined by the compiled template, and we need to emulate
   //     those semantics.
 
-  let component = env.view;
-  let isInvokedWithAngles = component && component._isAngleBracket;
-  let isInvokedWithCurlies = component && !component._isAngleBracket;
+  let currentComponent = env.view;
+  let isInvokedWithAngles = currentComponent && currentComponent._isAngleBracket;
+  let isInvokedWithCurlies = currentComponent && !currentComponent._isAngleBracket;
 
   // <div> at the top level of a <foo-bar> invocation
   let isComponentHTMLElement = isAngleBracket && !isDasherized && isInvokedWithAngles;
@@ -53,9 +55,25 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   // <div> at the top level of a {{foo-bar}} invocation
   let isNormalHTMLElement = isAngleBracket && !isDasherized && isInvokedWithCurlies;
 
+  let component, layout;
+  if (isDasherized || !isAngleBracket) {
+    let result = lookupComponent(env.container, tagName);
+    component = result.component;
+    layout = result.layout;
+
+    if (isAngleBracket && isDasherized && !component && !layout) {
+      isComponentHTMLElement = true;
+    } else {
+      Ember.assert(`HTMLBars error: Could not find component named "${tagName}" (no component or template with that name was found)`, !!(component || layout));
+    }
+  }
+
   if (isComponentIdentityElement || isComponentHTMLElement) {
+    // Inside the layout for <foo-bar> invoked with angles, this is the top-level element
+    // for the component. It can either be `<foo-bar>` (the "identity element") or any
+    // normal HTML element (non-dasherized).
     let templateOptions = {
-      component,
+      component: currentComponent,
       tagName,
       isAngleBracket: true,
       isComponentElement: true,
@@ -71,7 +89,8 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     let block = buildHTMLTemplate(tagName, attrs, { templates, scope });
     block(env, [], undefined, renderNode, scope, visitor);
   } else {
-    // "No special semantics" aka we are invoking a component
+    // Invoking a component from the outside (either via <foo-bar> angle brackets
+    // or {{foo-bar}} legacy curlies).
 
     var manager = ComponentNodeManager.create(renderNode, env, {
       tagName,
@@ -81,6 +100,8 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
       templates,
       isAngleBracket,
       isTopLevel,
+      component,
+      layout,
       parentScope: scope
     });
 

@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import assign from 'ember-metal/assign';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
-import lookupComponent from 'ember-htmlbars/utils/lookup-component';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -38,17 +37,11 @@ ComponentNodeManager.create = function(renderNode, env, options) {
         parentView,
         parentScope,
         isAngleBracket,
+        component,
+        layout,
         templates } = options;
 
   attrs = attrs || {};
-
-  // Try to find the Component class and/or template for this component name in
-  // the container.
-  let { component, layout } = lookupComponent(env.container, tagName);
-
-  Ember.assert('HTMLBars error: Could not find component named "' + tagName + '" (no component or template with that name was found)', function() {
-    return component || layout;
-  });
 
   component = component || (isAngleBracket ? GlimmerComponent : LegacyEmberComponent);
 
