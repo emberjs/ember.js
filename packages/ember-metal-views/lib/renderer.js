@@ -4,9 +4,20 @@ import { set } from 'ember-metal/property_set';
 import assign from 'ember-metal/assign';
 import setProperties from 'ember-metal/set_properties';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
+import environment from 'ember-metal/environment';
 
-function Renderer(_helper) {
-  this._dom = _helper;
+function Renderer(domHelper, destinedForDOM) {
+  this._dom = domHelper;
+
+  // This flag indicates whether the resulting rendered element will be
+  // inserted into the DOM. This should be set to `false` if the rendered
+  // element is going to be serialized to HTML without being inserted into
+  // the DOM (e.g., in FastBoot mode). By default, this flag is the same
+  // as whether we are running in an environment with DOM, but may be
+  // overridden.
+  this._destinedForDOM = destinedForDOM === undefined ?
+    environment.hasDOM :
+    destinedForDOM;
 }
 
 Renderer.prototype.prerenderTopLevelView =

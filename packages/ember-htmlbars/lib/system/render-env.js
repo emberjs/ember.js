@@ -17,6 +17,7 @@ export default function RenderEnv(options) {
   this.hooks = defaultEnv.hooks;
   this.helpers = defaultEnv.helpers;
   this.useFragmentCache = defaultEnv.useFragmentCache;
+  this.destinedForDOM = this.renderer._destinedForDOM;
 }
 
 RenderEnv.build = function(view) {
