@@ -23,6 +23,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
       case 'unless':
       case 'if': params[0] = shouldDisplay(params[0]); break;
       case 'each': params[0] = eachParam(params[0]); break;
+      case '@content-helper': break;
       default:
         helper = findHelper(path, env.view, env);
 
