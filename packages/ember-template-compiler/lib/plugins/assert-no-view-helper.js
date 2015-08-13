@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
-function DeprecateViewHelper(options) {
+function AssertNoViewHelper(options) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
   this.options = options || {};
@@ -12,7 +12,7 @@ function DeprecateViewHelper(options) {
   @method transform
   @param {AST} ast The AST to be transformed.
 */
-DeprecateViewHelper.prototype.transform = function DeprecateViewHelper_transform(ast) {
+AssertNoViewHelper.prototype.transform = function AssertNoViewHelper_transform(ast) {
   if (!!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
     return ast;
   }
@@ -22,26 +22,22 @@ DeprecateViewHelper.prototype.transform = function DeprecateViewHelper_transform
   walker.visit(ast, function(node) {
     if (!validate(node)) { return; }
 
-    deprecateHelper(moduleName, node);
+    assertHelper(moduleName, node);
   });
 
   return ast;
 };
 
-function deprecateHelper(moduleName, node) {
+function assertHelper(moduleName, node) {
   const paramValue = node.params.length && node.params[0].value;
 
   if (!paramValue) {
     return;
-  } else if (paramValue === 'select') {
-    deprecateSelect(moduleName, node);
   } else {
-    Ember.deprecate(`Using the \`{{view "string"}}\` helper is deprecated. ${calculateLocationDisplay(moduleName, node.loc)}`, false, { url: 'http://emberjs.com/deprecations/v1.x#toc_ember-view', id: 'view.helper' });
+    Ember.assert(`Using the \`{{view "string"}}\` helper is removed in 2.0. ${calculateLocationDisplay(moduleName, node.loc)}`,
+                 Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+                 { id: 'view.helper', until: '2.0.0' });
   }
-}
-
-function deprecateSelect(moduleName, node) {
-  Ember.deprecate(`Using \`{{view "select"}}\` is deprecated. ${calculateLocationDisplay(moduleName, node.loc)}`, false, { url: 'http://emberjs.com/deprecations/v1.x#toc_ember-select', id: 'view.helper.select' });
 }
 
 function validate(node) {
@@ -49,4 +45,4 @@ function validate(node) {
     (node.path.parts[0] === 'view');
 }
 
-export default DeprecateViewHelper;
+export default AssertNoViewHelper;

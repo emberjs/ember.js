@@ -169,9 +169,8 @@ QUnit.test('calling reopen on DeprecatedView delegates to View', function() {
 
   EmberView.reopen = function(arg) { ok(arg === obj); };
 
-  expectDeprecation(() => {
-    DeprecatedView.reopen(obj);
-  }, /Ember.View is deprecated./);
+  expectNoDeprecation();
+  DeprecatedView.reopen(obj);
 
   EmberView.reopen = originalReopen;
 });

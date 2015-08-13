@@ -457,46 +457,46 @@ QUnit.test('if a ContainerView starts with a currentView and then a different cu
   equal(trim(container.$().text()), 'This is the tertiary view.', 'should render its child');
 });
 
-QUnit.test('should be able to modify childViews many times during an run loop', function () {
+var child, count;
+QUnit.module('Ember.ContainerView - modify childViews', {
+  setup() {
+    originalViewKeyword = registerKeyword('view',  viewKeyword);
+    registry = new Registry();
+    container = ContainerView.create({
+      _viewRegistry: { }
+    });
 
-  container = ContainerView.create();
+    run(function() {
+      container.appendTo('#qunit-fixture');
+    });
 
-  run(function() {
-    container.appendTo('#qunit-fixture');
-  });
-
-  var one = View.create({
-    template: compile('one')
-  });
-
-  var two = View.create({
-    template: compile('two')
-  });
-
-  var three = View.create({
-    template: compile('three')
-  });
-
-  run(function() {
-    // initial order
-    container.pushObjects([three, one, two]);
-    // sort
-    container.removeObject(three);
-    container.pushObject(three);
-  });
-
-  // Remove whitespace added by IE 8
-  equal(trim(container.$().text()), 'onetwothree');
+    count = 0;
+    child = View.create({
+      template: function () {
+        count++;
+        return 'child';
+      }
+    });
+  },
+  teardown() {
+    run(function() {
+      container.destroy();
+      if (view) { view.destroy(); }
+      if (child) { child.destroy(); }
+      if (otherContainer) { otherContainer.destroy(); }
+    });
+  }
 });
-
 QUnit.test('should be able to modify childViews then rerender the ContainerView in same run loop', function () {
-  container = ContainerView.create();
+  container = ContainerView.create({
+  });
 
   run(function() {
     container.appendTo('#qunit-fixture');
   });
 
   var child = View.create({
+    _viewRegistry: { },
     template: compile('child')
   });
 
@@ -814,9 +814,8 @@ QUnit.test('calling reopen on DeprecatedContainerView delegates to ContainerView
 
   ContainerView.reopen = function(arg) { ok(arg === obj); };
 
-  expectDeprecation(() => {
-    DeprecatedContainerView.reopen(obj);
-  }, /Ember.ContainerView is deprecated./);
+  expectNoDeprecation();
+  DeprecatedContainerView.reopen(obj);
 
   ContainerView.reopen = originalReopen;
 });

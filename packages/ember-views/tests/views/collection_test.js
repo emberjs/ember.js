@@ -673,7 +673,7 @@ QUnit.test('Collection with style attribute supports changing content', function
 
 });
 
-QUnit.module('DeprecatedCollectionView');
+QUnit.module('DeprecatedCollectionView [LEGACY]');
 
 QUnit.test('calling reopen on DeprecatedCollectionView delegates to CollectionView', function() {
   expect(2);
@@ -682,9 +682,8 @@ QUnit.test('calling reopen on DeprecatedCollectionView delegates to CollectionVi
 
   CollectionView.reopen = function(arg) { ok(arg === obj); };
 
-  expectDeprecation(() => {
-    DeprecatedCollectionView.reopen(obj);
-  }, /Ember.CollectionView is deprecated./);
+  expectNoDeprecation();
+  DeprecatedCollectionView.reopen(obj);
 
   CollectionView.reopen = originalReopen;
 });

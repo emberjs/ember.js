@@ -12,8 +12,8 @@ import TransformComponentCurlyToReadonly from 'ember-template-compiler/plugins/t
 import TransformAngleBracketComponents from 'ember-template-compiler/plugins/transform-angle-bracket-components';
 import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
-import DeprecateViewAndControllerPaths from 'ember-template-compiler/plugins/deprecate-view-and-controller-paths';
-import DeprecateViewHelper from 'ember-template-compiler/plugins/deprecate-view-helper';
+import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
+import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-helper';
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import 'ember-template-compiler/compat';
@@ -28,8 +28,9 @@ registerPlugin('ast', TransformInputOnToOnEvent);
 
 if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerPlugin('ast', TransformEachIntoCollection);
-  registerPlugin('ast', DeprecateViewAndControllerPaths);
-  registerPlugin('ast', DeprecateViewHelper);
+} else {
+  registerPlugin('ast', AssertNoViewAndControllerPaths);
+  registerPlugin('ast', AssertNoViewHelper);
 }
 
 export {

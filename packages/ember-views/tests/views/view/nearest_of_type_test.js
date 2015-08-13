@@ -4,14 +4,23 @@ import View from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
+import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
+import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var parentView, view;
 var originalViewKeyword;
 
+var Mixin, Parent;
+
 QUnit.module('View#nearest*', {
   setup() {
+    removeAstPlugin(AssertNoViewAndControllerPaths);
     originalViewKeyword = registerKeyword('view',  viewKeyword);
+    Mixin = EmberMixin.create({});
+    Parent = View.extend(Mixin, {
+      template: compile(`{{view}}`)
+    });
   },
   teardown() {
     run(function() {
@@ -19,67 +28,60 @@ QUnit.module('View#nearest*', {
       if (view) { view.destroy(); }
     });
     resetKeyword('view', originalViewKeyword);
+    registerAstPlugin(AssertNoViewAndControllerPaths);
   }
 });
 
-(function() {
-  var Mixin = EmberMixin.create({});
-  var Parent = View.extend(Mixin, {
-    template: compile(`{{view}}`)
+QUnit.test('nearestOfType should find the closest view by view class', function() {
+  var child;
+
+  run(function() {
+    parentView = Parent.create();
+    parentView.appendTo('#qunit-fixture');
   });
 
-  QUnit.test('nearestOfType should find the closest view by view class', function() {
-    var child;
+  child = parentView.get('childViews')[0];
+  equal(child.nearestOfType(Parent), parentView, 'finds closest view in the hierarchy by class');
+});
 
-    run(function() {
-      parentView = Parent.create();
-      parentView.appendTo('#qunit-fixture');
-    });
+QUnit.test('nearestOfType should find the closest view by mixin', function() {
+  var child;
 
-    child = parentView.get('childViews')[0];
-    equal(child.nearestOfType(Parent), parentView, 'finds closest view in the hierarchy by class');
+  run(function() {
+    parentView = Parent.create();
+    parentView.appendTo('#qunit-fixture');
   });
 
-  QUnit.test('nearestOfType should find the closest view by mixin', function() {
-    var child;
+  child = parentView.get('childViews')[0];
+  equal(child.nearestOfType(Mixin), parentView, 'finds closest view in the hierarchy by class');
+});
 
-    run(function() {
-      parentView = Parent.create();
-      parentView.appendTo('#qunit-fixture');
-    });
+QUnit.test('nearestWithProperty should search immediate parent', function() {
+  var childView;
 
-    child = parentView.get('childViews')[0];
-    equal(child.nearestOfType(Mixin), parentView, 'finds closest view in the hierarchy by class');
+  view = View.create({
+    myProp: true,
+    template: compile('{{view}}')
   });
 
-  QUnit.test('nearestWithProperty should search immediate parent', function() {
-    var childView;
-
-    view = View.create({
-      myProp: true,
-      template: compile('{{view}}')
-    });
-
-    run(function() {
-      view.appendTo('#qunit-fixture');
-    });
-
-    childView = view.get('childViews')[0];
-    equal(childView.nearestWithProperty('myProp'), view);
-
+  run(function() {
+    view.appendTo('#qunit-fixture');
   });
 
-  QUnit.test('nearestChildOf should be deprecated', function() {
-    var child;
+  childView = view.get('childViews')[0];
+  equal(childView.nearestWithProperty('myProp'), view);
+});
 
-    run(function() {
-      parentView = Parent.create();
-      parentView.appendTo('#qunit-fixture');
-    });
+QUnit.test('nearestChildOf should be deprecated', function() {
+  var child;
 
-    child = parentView.get('childViews')[0];
-    expectDeprecation(function() {
-      child.nearestChildOf(Parent);
-    }, 'nearestChildOf has been deprecated.');
+  run(function() {
+    parentView = Parent.create();
+    parentView.appendTo('#qunit-fixture');
   });
-}());
+
+  child = parentView.get('childViews')[0];
+  expectDeprecation(function() {
+    child.nearestChildOf(Parent);
+  }, 'nearestChildOf has been deprecated.');
+});
