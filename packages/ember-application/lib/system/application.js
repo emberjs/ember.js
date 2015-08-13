@@ -123,6 +123,20 @@ var librariesRegistered = false;
   });
   ```
 
+  To prevent Ember from setting up a listener for a default event,
+  specify the event name with a `null` value in the `customEvents`
+  property:
+
+  ```javascript
+  var App = Ember.Application.create({
+    customEvents: {
+      // prevent listeners for mouseenter/mouseleave events
+      mouseenter: null,
+      mouseleave: null
+    }
+  });
+  ```
+
   By default, the application sets up these event listeners on the document
   body. However, in cases where you are embedding an Ember application inside
   an existing page, you may want it to set up the listeners on an element
@@ -243,7 +257,11 @@ var Application = Namespace.extend(RegistryProxy, {
     If you would like additional bubbling events to be delegated to your
     views, set your `Ember.Application`'s `customEvents` property
     to a hash containing the DOM event name as the key and the
-    corresponding view method name as the value. For example:
+    corresponding view method name as the value. Setting an event to
+    a value of `null` will prevent a default event listener from being
+    added for that event.
+
+    To add new events to be listened to:
 
     ```javascript
     var App = Ember.Application.create({
@@ -254,6 +272,17 @@ var Application = Namespace.extend(RegistryProxy, {
     });
     ```
 
+    To prevent default events from being listened to:
+
+    ```javascript
+    var App = Ember.Application.create({
+      customEvents: {
+        // remove support for mouseenter / mouseleave events
+        mouseenter: null,
+        mouseleave: null
+      }
+    });
+    ```
     @property customEvents
     @type Object
     @default null

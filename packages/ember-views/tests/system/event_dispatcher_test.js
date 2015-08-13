@@ -312,3 +312,34 @@ QUnit.test('additional events and rootElement can be specified', function () {
 
   jQuery('#leView').trigger('myevent');
 });
+
+QUnit.test('default events can be disabled via `customEvents`', function () {
+  expect(1);
+
+  run(function () {
+    dispatcher.setup({
+      click: null
+    });
+
+    view = View.create({
+      elementId: 'leView',
+
+      null() {
+        // yes, at one point `click: null` made an event handler
+        // for `click` that called `null` on the view
+        ok(false, 'null event has been triggered');
+      },
+
+      click() {
+        ok(false, 'click event has been triggered');
+      },
+
+      doubleClick() {
+        ok(true, 'good event was still triggered');
+      }
+    }).appendTo(dispatcher.get('rootElement'));
+  });
+
+  jQuery('#leView').trigger('click');
+  jQuery('#leView').trigger('dblclick');
+});
