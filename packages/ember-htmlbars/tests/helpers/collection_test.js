@@ -36,7 +36,7 @@ function firstGrandchild(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
 }
 
-QUnit.module('collection helper', {
+QUnit.module('collection helper [LEGACY]', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
