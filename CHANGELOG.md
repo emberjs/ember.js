@@ -128,6 +128,105 @@
 - [#11383](https://github.com/emberjs/ember.js/pull/11383) Update {{each-in}} to use ember-metal/should-display.
 - [#11396](https://github.com/emberjs/ember.js/pull/11396) Make Ember.Checkbox extend from Ember.Component.
 
+### 1.13.8 (August 13, 2015)
+
+- [#12056](https://github.com/emberjs/ember.js/pull/12056) [BUGFIX] Ensure initializers can augment `customEvents`.
+- [#12037](https://github.com/emberjs/ember.js/pull/12037) [BUGFIX] Fix error in some query params scenarios.
+- [#12058](https://github.com/emberjs/ember.js/pull/12058) [BUGFIX] Fix link-to with only qps linking to outdated route.
+- [#12061](https://github.com/emberjs/ember.js/pull/12061) [PERF] Improve performance of guidFor when reading an existing Ember.Object.
+- [#12067](https://github.com/emberjs/ember.js/pull/12067) [BUGFIX] Prevent `helper:@content-helper` lookup errors when using a paramless helper.
+- [#12071](https://github.com/emberjs/ember.js/pull/12071) [BUGFIX] Fix issue with accessing component attributes before initial render.
+- [#12073](https://github.com/emberjs/ember.js/pull/12073) [BUGFIX] Fix issue with events when invoking a component and specifying `classNames=`.
+
+
+### 1.13.7 (August 9, 2015)
+
+- [#12000](https://github.com/emberjs/ember.js/pull/12000) [DEPRECATION] Deprecate using `controller` for {{with}}
+- [#11946](https://github.com/emberjs/ember.js/pull/11946) [PERF] Speed up `AttrProxy` implementation.
+- [#11956](https://github.com/emberjs/ember.js/pull/11956) [BUGFIX] Ensure that `Ember.View.views` is present on deprecated `Ember.View`.
+- [#11960](https://github.com/emberjs/ember.js/pull/11960) [BUGFIX] Fix issue preventing proper rerendering when specifying bound properties to `{{link-to}}`.
+- [#12018](https://github.com/emberjs/ember.js/pull/12018) [DEPRECATION] Deprecate `{{#unbound}}{{/unbound}}`.
+- [#12018](https://github.com/emberjs/ember.js/pull/12018) [DEPRECATION] Deprecate `{{unbound}}` with multiple params.
+- [#11964](https://github.com/emberjs/ember.js/pull/11964) [BUGFIX] Update htmlbars to v0.13.35.
+- [#12017](https://github.com/emberjs/ember.js/pull/12017) [DEPRECATION] Deprecate specifying `render` function to `Ember.View` or `Ember.Component` at extend time.
+- [#11993](https://github.com/emberjs/ember.js/pull/11993) [DEPRECATION] Deprecate `Ember.TrackedArray` and `Ember.SubArray`.
+- [#11994](https://github.com/emberjs/ember.js/pull/11994) [DEPRECATION] Deprecate using `@each` as a leaf node in a dependent key. Refactor from `Ember.computed('foo.@each', function() {});` to `Ember.computed('foo.[]', function() { });`.
+- [#12026](https://github.com/emberjs/ember.js/pull/12026) [BUGFIX] Remove wasted dependent keys for `template` and `layout` properties of `Ember.View`/`Ember.Component`.
+
+
+### 1.13.6 (July 31, 2015)
+
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.makeViewHelper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.HTMLBars.makeViewHelper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.HTMLBars._registerHelper` (manual registration is no longer needed).
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.HTMLBars.makeBoundHelper` in favor of `Ember.Helper.helper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.makeBoundHelper` in favor of `Ember.Helper.helper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.registerBoundHelper` in favor of `Ember.Helper.helper`.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.helper` in favor of `Ember.Helper.helper` and automatic helper resolution.
+- [#11900](https://github.com/emberjs/ember.js/pull/11900) [DEPRECATION] Deprecate `Ember.Handlebars.registerHelper` in favor of `Ember.Helper.helper` and automatic helper resolution.
+- [#11832](https://github.com/emberjs/ember.js/pull/11832) [BUGFIX] Fix memory leaks with application creation and acceptance test helpers.
+- [#11826](https://github.com/emberjs/ember.js/pull/11826) [DEPRECATION] Deprecate Ember.ContainerView
+- [#11864](https://github.com/emberjs/ember.js/pull/11864) [BUGFIX] Ensure acceptance test helpers are removed during teardown.
+- [#11861](https://github.com/emberjs/ember.js/pull/11861) [BUGFIX] Update HTMLBars to allow duplicate {{each}} keys.
+- [#11889](https://github.com/emberjs/ember.js/pull/11889) [BUGFIX] Fix `attributeBindings` for `id` attribute.
+- [#11866](https://github.com/emberjs/ember.js/pull/11866) [BUGFIX] Fix DeprecatedView (and friends) reopen function to delegate to original.
+- [#11891](https://github.com/emberjs/ember.js/pull/11891) [DEPRECATION] Deprecate Ember.CollectionView
+- [#11910](https://github.com/emberjs/ember.js/pull/11910) [BUGFIX] Ensure `Ember.CollectionView.CONTAINER_MAP` is present on deprecated `CollectionView`.
+- [#11917](https://github.com/emberjs/ember.js/pull/11917) [BUGFIX] Ensure `"use strict";` is properly added for modules.
+- [#11934](https://github.com/emberjs/ember.js/pull/11934) [DEPRECATION] Deprecate specifying `positionalParams` at extend time in favor of using static factory properties.
+- [#11935](https://github.com/emberjs/ember.js/pull/11935) [BUGFIX] Avoid unnecessary change events during initial render.
+
+### 1.13.5 (July 19, 2015)
+
+- [#11767](https://github.com/emberjs/ember.js/pull/11767) [DEPRECATION] Deprecate Controller#needs
+- [#11468](https://github.com/emberjs/ember.js/pull/11468) [DEPRECATION] Deprecate `Ember.Freezable` and `frozenCopy`.
+- [#11762](https://github.com/emberjs/ember.js/pull/11762) / [#11744](https://github.com/emberjs/ember.js/pull/11744) [BUGFIX] Ensure deprecated `Ember.beforeObserver` is available in production.
+- [#11765](https://github.com/emberjs/ember.js/pull/11765) [DEPRECATION] Mark `Ember.oneWay` as deprecated
+- [#11774](https://github.com/emberjs/ember.js/pull/11774) [BUGFIX] Add deprecation warnings to deprecated Enumerable methods.
+- [#11778](https://github.com/emberjs/ember.js/pull/11778) [DEPRECATION] Deprecate reverse argument ordering in `Ember.observer`.
+- [#11787](https://github.com/emberjs/ember.js/pull/11787) [DEPRECATION] Deprecate slash for a namespace in the `{{render}}` helper.
+- [#11798](https://github.com/emberjs/ember.js/pull/11798) [DEPRECATION] Deprecate `Function#observesBefore`.
+- [#11812](https://github.com/emberjs/ember.js/pull/11812) [DEPRECATION] Add deprecation messages when using `Ember.get` / `Ember.set` in a certain ways.
+
+### 1.13.4 (July 13, 2015)
+
+- [#11651](https://github.com/emberjs/ember.js/pull/11651) [BUGFIX] Ensure child views of non-dirty components get the correct parentView when rerendered.
+- [#11662](https://github.com/emberjs/ember.js/pull/11662) [BUGFIX] Prevent ArrayController deprecation on generated controllers.
+- [#11655](https://github.com/emberjs/ember.js/pull/11655) [BUGFIX] Fix issue with blockless link-to with only query params.
+- [#11664](https://github.com/emberjs/ember.js/pull/11664) [BUGFIX] Ensure Route actions can be unit tested.
+- [#11667](https://github.com/emberjs/ember.js/pull/11667) [BUGFIX] Fix memory leak in rendering engine.
+
+### 1.13.3 (July 5, 2015)
+
+- [#11510](https://github.com/emberjs/ember.js/pull/11510) [DEPRECATION] Deprecate `Ember.Object.createWithMixins`.
+- [#11512](https://github.com/emberjs/ember.js/pull/11512) [DEPRECATION] Deprecate `Ember.oneWay` in favor of `Ember.computed.oneWay`.
+- [#11525](https://github.com/emberjs/ember.js/pull/11525) [BUGFIX] Add helpful error when using `{{each}}` with duplicate keys. This replaces a difficult to understand error deep in the HTMLBars internals, with an error that explains the duplicate key issue a bit better.
+- [#11511](https://github.com/emberjs/ember.js/pull/11511) [DEPRECATION] Deprecate `Ember.keys` in favor of `Object.keys`.
+- [#11511](https://github.com/emberjs/ember.js/pull/11511) [DEPRECATION] Deprecate `Ember.create` in favor of `Object.create`.
+- [#11543](https://github.com/emberjs/ember.js/pull/11543) / [#11594](https://github.com/emberjs/ember.js/pull/11594) / [#11603](https://github.com/emberjs/ember.js/pull/11603) - [BUGFIX] Fix extending or reopening `Ember.LinkView`.
+- [#11561](https://github.com/emberjs/ember.js/pull/11561) [BUGFIX] Fix issue with `{{link-to}}` not properly updating the link for certain routing state changes.
+- [#11572](https://github.com/emberjs/ember.js/pull/11572) [BUGFIX] Ensure local component state can shadow attributes provided during invocation.
+- [#11570](https://github.com/emberjs/ember.js/pull/11570) [BUGFIX] Prevent infinite loop when a yielded block param is changed.
+- [#11577](https://github.com/emberjs/ember.js/pull/11577) [BUGFIX] Ensure route backed views are properly destroyed.
+- [#11636](https://github.com/emberjs/ember.js/pull/11636) [BUGFIX] Fix sticky query params for nested and for dynamic routes.
+- [#11639](https://github.com/emberjs/ember.js/pull/11639) [BUGFIX] Fix testing of components containing `{{link-to}}`'s.
+- [#11650](https://github.com/emberjs/ember.js/pull/11650) [BUGFIX] Update HTMLBars to 0.13.32. Fixes a number of issues with the property first strategy used:
+  * for exceptions `input.form`, `input.list`, `button.type` always use `elem.setAttribute`
+  * for `form.action` always escape
+  * always assign handlers to props, even if the case appears strange
+
+### 1.13.2 (June 17, 2015)
+
+- [#11461](https://github.com/emberjs/ember.js/pull/11461) Remove `{{each}}` without `key=` warning. Deprecates `@guid` and `@item` in favor of the new default `@identity`.
+- [#11495](https://github.com/emberjs/ember.js/pull/11495) [PERFORMANCE] Remove debug statements from production builds.
+
+### 1.13.1 (June 16, 2015)
+
+- [#11445](https://github.com/emberjs/ember.js/pull/11445) [BUGFIX] Allow recomputation for `Ember.Helper` with arguments.
+- [#11317](https://github.com/emberjs/ember.js/pull/11317) [BUGFIX] Ensure handleURL called after setURL in visit helper.
+- [#11464](https://github.com/emberjs/ember.js/pull/11464) [DEPRECATION] Deprecate `Ember.immediateObserver`.
+- [#11476](https://github.com/emberjs/ember.js/pull/11476) [DEPRECATION] Deprecate `Ember.ArrayController`.
+- [#11478](https://github.com/emberjs/ember.js/pull/11478) [DEPRECATION] Deprecate `Ember.RenderBuffer`.
 
 ### 1.13.0 (June 12, 2015)
 
