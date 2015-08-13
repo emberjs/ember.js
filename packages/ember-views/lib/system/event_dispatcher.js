@@ -365,14 +365,22 @@ export default EmberObject.extend({
 
 function filterCaptureFunction(idHandler, actionHandler, walker) {
   return function(e) {
-    var node = walker.closest(e.target);
-    if (node) {
-      if (node[0] === 'id') {
-        return idHandler.call(node[1], e);
-      } else {
-        return actionHandler.call(node[1], e);
+    let node;
+    let result;
+    do {
+      node = walker.closest(e.target);
+      if (node) {
+        if (node[0] === 'id') {
+          result = idHandler.call(node[1], e);
+        } else {
+          result = actionHandler.call(node[1], e);
+        }
+        if (result) {
+          node = node.parentNode;
+        }
       }
-    }
+    } while (result && node);
+    return result;
   };
 }
 
