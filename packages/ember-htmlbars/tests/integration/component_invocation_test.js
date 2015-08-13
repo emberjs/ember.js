@@ -1004,10 +1004,24 @@ if (isEnabled('ember-htmlbars-component-generation')) {
       });
 
       let el = view.$(style.tagName);
-      ok(el, 'precond - the view was rendered');
+      equal(el.length, 1, 'precond - the view was rendered');
+      equal(el.text(), 'In layout');
       equal(el.attr('static-prop'), 'static text');
       equal(el.attr('concat-prop'), 'dynamic text');
       equal(el.attr('dynamic-prop'), undefined);
+    });
+
+    QUnit.skip(`partials templates should not be treated like a component layout for ${style.name}`, function() {
+      registry.register('template:_zomg', compile(`<p>In partial</p>`));
+      registry.register('template:components/non-block', compile(`<${style.tagName}>{{partial "zomg"}}</${style.tagName}>`));
+
+      view = appendViewFor('<non-block />');
+
+      let el = view.$(style.tagName).find('p');
+      equal(el.length, 1, 'precond - the partial was rendered');
+      equal(el.text(), 'In partial');
+      strictEqual(el.attr('id'), undefined, 'the partial should not get an id');
+      strictEqual(el.attr('class'), undefined, 'the partial should not get a class');
     });
   });
 
