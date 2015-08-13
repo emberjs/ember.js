@@ -2,6 +2,8 @@ import _default from 'ember-views/views/states/default';
 import assign from 'ember-metal/assign';
 import jQuery from 'ember-views/system/jquery';
 import run from 'ember-metal/run_loop';
+import { instrument } from 'ember-metal/instrumentation';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -10,6 +12,15 @@ import run from 'ember-metal/run_loop';
 
 import { get } from 'ember-metal/property_get';
 import { internal } from 'htmlbars-runtime';
+
+let flaggedInstrument;
+if (isEnabled('ember-improved-instrumentation')) {
+  flaggedInstrument = instrument;
+} else {
+  flaggedInstrument = function(name, payload, callback) {
+    return callback();
+  };
+}
 
 var hasElement = Object.create(_default);
 
@@ -58,11 +69,13 @@ assign(hasElement, {
   },
 
   // Handle events from `Ember.EventDispatcher`
-  handleEvent(view, eventName, evt) {
+  handleEvent(view, eventName, event) {
     if (view.has(eventName)) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
-      return run.join(view, view.trigger, eventName, evt);
+      return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
+        return run.join(view, view.trigger, eventName, event);
+      });
     } else {
       return true; // continue event propagation
     }

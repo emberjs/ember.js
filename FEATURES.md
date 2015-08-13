@@ -52,3 +52,9 @@ for a detailed explanation.
   ```
 
   Implements RFC [#64](https://github.com/emberjs/rfcs/blob/master/text/0064-contextual-component-lookup.md)
+
+* `ember-improved-instrumentation`
+
+  Adds additional instrumentation to Ember:
+
+  - `interaction.<event-name>` for events handled by a component.
