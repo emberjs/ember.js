@@ -320,7 +320,7 @@ var LinkComponent = EmberComponent.extend({
     }
 
     var routing = get(this, '_routing');
-    var targetRouteName = this._handleOnlyQueryParamsSupplied(get(this, 'targetRouteName'));
+    var targetRouteName = this._computeRouteNameWithQueryParams(get(this, 'targetRouteName'));
     var models = get(this, 'models');
     var queryParamValues = get(this, 'queryParams.values');
     var shouldReplace = get(this, 'attrs.replace');
@@ -348,7 +348,7 @@ var LinkComponent = EmberComponent.extend({
 
     if (get(this, 'loading')) { return get(this, 'loadingHref'); }
 
-    targetRouteName = this._handleOnlyQueryParamsSupplied(targetRouteName);
+    targetRouteName = this._computeRouteNameWithQueryParams(targetRouteName);
 
     var routing = get(this, '_routing');
     var queryParams = get(this, 'queryParams.values');
@@ -364,7 +364,7 @@ var LinkComponent = EmberComponent.extend({
     }
   }),
 
-  _handleOnlyQueryParamsSupplied(route) {
+  _computeRouteNameWithQueryParams(route) {
     var params = this.attrs.params.slice();
     var lastParam = params[params.length - 1];
     if (lastParam && lastParam.isQueryParams) {
@@ -448,7 +448,7 @@ var LinkComponent = EmberComponent.extend({
 
     let targetRouteName;
     let models = [];
-    targetRouteName = this._handleOnlyQueryParamsSupplied(params[0]);
+    targetRouteName = this._computeRouteNameWithQueryParams(params[0]);
 
     for (let i = 1; i < params.length; i++) {
       models.push(params[i]);
