@@ -91,7 +91,6 @@ registerKeyword('component', componentKeyword);
 registerKeyword('partial', partial);
 registerKeyword('input', input);
 registerKeyword('textarea', textarea);
-registerKeyword('collection', collection);
 registerKeyword('legacy-yield', legacyYield);
 registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);
@@ -99,6 +98,7 @@ registerKeyword('each', each);
 registerKeyword('readonly', readonly);
 
 if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  registerKeyword('collection', collection);
   registerKeyword('view', view);
 }
 
