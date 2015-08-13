@@ -12,6 +12,7 @@
     "ember-container-inject-owner": true,
     "ember-htmlbars-local-lookup": null,
     "ember-application-engines": null,
-    "ember-glimmer": null
+    "ember-glimmer": null,
+    "ember-improved-instrumentation": null
   }
 }
