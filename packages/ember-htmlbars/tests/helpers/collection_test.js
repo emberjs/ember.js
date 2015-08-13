@@ -36,7 +36,7 @@ function firstGrandchild(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
 }
 
-QUnit.module('collection helper', {
+QUnit.module('collection helper [LEGACY]', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
@@ -186,6 +186,7 @@ QUnit.test('empty views should be removed when content is added to the collectio
   });
 
   view = EmberView.create({
+    _viewRegistry: {},
     listView: ListView,
     listController: listController,
     template: compile('{{#collection view.listView content=view.listController tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')

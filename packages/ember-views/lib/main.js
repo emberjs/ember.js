@@ -33,7 +33,7 @@ import TextField from 'ember-views/views/text_field';
 import TextArea from 'ember-views/views/text_area';
 
 import {
-  DeprecatedSelect,
+  Select,
   SelectOption,
   SelectOptgroup
 } from 'ember-views/views/select';
@@ -77,7 +77,7 @@ Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember.Select = DeprecatedSelect;
+  Ember.Select = Select;
 }
 
 Ember.SelectOption = SelectOption;

@@ -40,13 +40,19 @@ let AttrsProxyMixin = {
 
   _propagateAttrsToThis() {
     let attrs = this.attrs;
-    let values = {};
+
     for (let prop in attrs) {
-      if (prop !== 'attrs') {
-        values[prop] = this.getAttr(prop);
+      if (prop !== 'attrs' &&
+          // These list of properties are concatenated and merged properties of
+          // Ember.View / Ember.Component. Setting them here results in them being
+          // completely stomped and not handled properly, BAIL OUT!
+          prop !== 'actions' &&
+          prop !== 'classNames' &&
+          prop !== 'classNameBindings' &&
+          prop !== 'attributeBindings') {
+        this.set(prop, this.getAttr(prop));
       }
     }
-    this.setProperties(values);
   },
 
   initializeShape: on('init', function() {
@@ -70,7 +76,7 @@ let AttrsProxyMixin = {
       // do not deprecate accessing `this[key]` at this time.
       // add this back when we have a proper migration path
       // Ember.deprecate(deprecation(key), { id: 'ember-views.', until: '3.0.0' });
-      let possibleCell = attrs.key;
+      let possibleCell = attrs[key];
 
       if (possibleCell && possibleCell[MUTABLE_CELL]) {
         return possibleCell.value;

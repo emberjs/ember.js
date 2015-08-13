@@ -82,3 +82,29 @@ QUnit.test('should be able to modify a provided attr into local state #11571 / #
   equal(view.$().text(), 'FIRST ATTR', 'template lookup uses local state');
   equal(component.get('first'), 'FIRST ATTR', 'component lookup uses local state');
 });
+
+QUnit.test('should be able to access unspecified attr #12035', function() {
+  var component;
+
+  registry.register('component:foo-bar', Component.extend({
+    init() {
+      this._super(...arguments);
+      component = this;
+    },
+
+    didReceiveAttrs() {
+      equal(this.get('woot'), 'yes', 'found attr in didReceiveAttrs');
+    }
+  }));
+  // registry.register('template:components/foo-bar', compile('{{first}}'));
+
+  view = EmberView.extend({
+    template: compile('{{foo-bar woot="yes"}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  // equal(view.$().text(), 'FIRST ATTR', 'template lookup uses local state');
+  equal(component.get('woot'), 'yes', 'component found attr');
+});

@@ -14,6 +14,7 @@ import { computed } from 'ember-metal/computed';
 import Registry from 'container/registry';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
+import assign from 'ember-metal/assign';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -75,7 +76,6 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
     var application = get(this, 'application');
 
-    set(this, 'customEvents', get(application, 'customEvents'));
     set(this, 'rootElement', get(application, 'rootElement'));
 
     // Create a per-instance registry that will use the application's registry
@@ -188,7 +188,11 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   */
   setupEventDispatcher() {
     var dispatcher = this.lookup('event_dispatcher:main');
-    dispatcher.setup(this.customEvents, this.rootElement);
+    var applicationCustomEvents = get(this.application, 'customEvents');
+    var instanceCustomEvents = get(this, 'customEvents');
+
+    var customEvents = assign({}, applicationCustomEvents, instanceCustomEvents);
+    dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
   },

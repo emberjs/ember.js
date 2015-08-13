@@ -787,6 +787,28 @@ QUnit.test('non-block with each rendering child components', function() {
   equal(jQuery('#qunit-fixture').text(), 'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: James.]');
 });
 
+QUnit.test('specifying classNames results in correct class', function(assert) {
+  expect(1);
+
+  registry.register('component:some-clicky-thing', Component.extend({
+    tagName: 'button',
+    classNames: ['foo', 'bar'],
+    click() {
+      assert.ok(true, 'click was fired!');
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{#some-clicky-thing classNames="baz"}}Click Me{{/some-clicky-thing}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  let button = view.$('button');
+  ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
+});
+
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-component-generation')) {
   QUnit.module('component - invocation (angle brackets)', {

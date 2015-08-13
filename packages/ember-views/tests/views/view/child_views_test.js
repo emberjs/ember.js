@@ -108,6 +108,10 @@ QUnit.test('should remove childViews inside {{if}} on destroy', function() {
   run(outerView, 'set', 'value', false);
 
   equal(outerView.get('childViews.length'), 0, 'expected no views to be leaked');
+
+  run(function() {
+    outerView.destroy();
+  });
 });
 
 QUnit.test('should remove childViews inside {{each}} on destroy', function() {
@@ -156,4 +160,8 @@ QUnit.test('should remove childViews inside {{each}} on destroy', function() {
   run(outerView, 'set', 'value', false);
 
   equal(outerView.get('childViews.length'), 0, 'expected no views to be leaked');
+
+  run(function() {
+    outerView.destroy();
+  });
 });
