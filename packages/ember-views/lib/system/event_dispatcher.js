@@ -386,19 +386,21 @@ function filterCaptureFunction(idHandler, actionHandler, walker) {
 
 
 function EventWalker(registry) {
-  function inRegistry(id) {
-    return !!registry[id];
-  }
-
-  this.closest = function(closest) {
-    do {
-      if (closest.id && inRegistry(closest.id)) {
-        return ['id', closest];
-      }
-      if (closest.hasAttribute('data-ember-action')) {
-        return ['action', closest];
-      }
-    } while (closest = closest.parentNode);
-    return null;
-  };
+  this.registry = registry;
 }
+
+EventWalker.prototype.inRegistry = function EventWalker_inRegistry(id) {
+  return !!this.registry[id];
+};
+
+EventWalker.prototype.closest = function EventWalker_closest(closest) {
+  do {
+    if (closest.id && this.inRegistry(closest.id)) {
+      return ['id', closest];
+    }
+    if (closest.hasAttribute('data-ember-action')) {
+      return ['action', closest];
+    }
+  } while (closest = closest.parentNode);
+  return null;
+};
