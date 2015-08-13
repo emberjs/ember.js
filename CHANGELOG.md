@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### 1.13.8 (August 13, 2015)
+
+- [#12056](https://github.com/emberjs/ember.js/pull/12056) [BUGFIX] Ensure initializers can augment `customEvents`.
+- [#12037](https://github.com/emberjs/ember.js/pull/12037) [BUGFIX] Fix error in some query params scenarios.
+- [#12058](https://github.com/emberjs/ember.js/pull/12058) [BUGFIX] Fix link-to with only qps linking to outdated route.
+- [#12061](https://github.com/emberjs/ember.js/pull/12061) [PERF] Improve performance of guidFor when reading an existing Ember.Object.
+- [#12067](https://github.com/emberjs/ember.js/pull/12067) [BUGFIX] Prevent `helper:@content-helper` lookup errors when using a paramless helper.
+- [#12071](https://github.com/emberjs/ember.js/pull/12071) [BUGFIX] Fix issue with accessing component attributes before initial render.
+- [#12073](https://github.com/emberjs/ember.js/pull/12073) [BUGFIX] Fix issue with events when invoking a component and specifying `classNames=`.
+
+
 ### 1.13.7 (August 9, 2015)
 
 - [#12000](https://github.com/emberjs/ember.js/pull/12000) [DEPRECATION] Deprecate using `controller` for {{with}}
