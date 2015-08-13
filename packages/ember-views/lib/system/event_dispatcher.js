@@ -15,6 +15,17 @@ import View from 'ember-views/views/view';
 import assign from 'ember-metal/assign';
 
 /**
+ Whether or not to cache handler paths on the element
+ when `useCapture` is also true.
+
+ This needs to be replaced by a feature flag.
+
+ @private
+ @type {boolean}
+*/
+const useFastPaths = true;
+
+/**
   `Ember.EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
   `Ember.EventDispatcher` ensures that that view's `mouseDown` method gets
@@ -269,12 +280,24 @@ export default EmberObject.extend({
     @param eventWalker an instance of a walker used to find the closest action or view element
   */
   setupCaptureHandler(viewRegistry, rootElement, event, eventName, eventWalker) {
-    var self = this;
-    function didFindId(evt, triggeringManager) {
-      var view = viewRegistry[this.id];
-      var result = true;
+    let self = this;
+
+    function didFindId(evt, triggeringManager, handlers) {
+      let view = viewRegistry[this.id];
+      let result = true;
 
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
+
+      // collect handler
+      if (useFastPaths && handlers) {
+        // TODO this logic needs pulled out of _dispatchEvent and _bubbleEvent
+        // TODO and we should collect the actual handler, not just the element
+        if (manager[eventName] && typeof manager[eventName] === 'function') {
+          handlers.push(['id', this]);
+        } else if (view.has(eventName)) {
+          handlers.push(['id', this]);
+        }
+      }
 
       if (manager && manager !== triggeringManager) {
         result = self._dispatchEvent(manager, evt, eventName, view);
@@ -285,7 +308,7 @@ export default EmberObject.extend({
       return result;
     }
 
-    function didFindAction(evt) {
+    function didFindAction(evt, handlers) {
       var actionId = this.getAttribute('data-ember-action');
       var actions   = ActionManager.registeredActions[actionId];
 
@@ -300,6 +323,12 @@ export default EmberObject.extend({
         let action = actions[index];
 
         if (action && action.eventName === eventName) {
+          // collect handler
+          // TODO this should collect the actual handler instead
+          if (useFastPaths && handlers) {
+            handlers.push(['action', this]);
+          }
+
           return action.handler(evt);
         }
       }
@@ -363,24 +392,52 @@ export default EmberObject.extend({
 
 
 
-function filterCaptureFunction(idHandler, actionHandler, walker) {
+function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
   return function(e) {
-    let node;
+    // normalize the event object
+    // this also let's us set currentTarget correctly
+    let event = jQuery.event.fix(e);
+
+    let element = event.target;
     let result;
-    do {
-      node = walker.closest(e.target);
-      if (node) {
-        if (node[0] === 'id') {
-          result = idHandler.call(node[1], e);
+    let handlers;
+
+    // trigger from cached handlers
+    if (useFastPaths && element._handlers && element._handlers[eventName]) {
+      element._handlers[eventName].forEach((handler) => {
+        event.currentTarget = handler[1];
+        if (handler[0] === 'id') {
+          result = idHandler.call(handler[1], event);
         } else {
-          result = actionHandler.call(node[1], e);
+          result = actionHandler.call(handler[1], event);
         }
-        if (result) {
-          node = node.parentNode;
-        }
+      });
+      return result;
+
+    // collect and trigger handlers
+    } else {
+      if (useFastPaths) {
+        element._handlers = element._handlers || {};
+        handlers = element._handlers[eventName] = element._handlers[eventName] || [];
       }
-    } while (result && node);
-    return result;
+
+      let node;
+      do {
+        node = walker.closest(element);
+        if (node) {
+          event.currentTarget = node[1];
+          if (node[0] === 'id') {
+            result = idHandler.call(node[1], event, null, handlers);
+          } else {
+            result = actionHandler.call(node[1], event, handlers);
+          }
+          if (result) {
+            node = node.parentNode;
+          }
+        }
+      } while (result && node);
+      return result;
+    }
   };
 }
 
