@@ -250,6 +250,7 @@ QUnit.test('it works inside a table element', function() {
 });
 
 QUnit.test('it supports {{itemView=}}', function() {
+  runDestroy(view);
   var itemView = EmberView.extend({
     template: compile('itemView:{{name}}')
   });
@@ -270,6 +271,7 @@ QUnit.test('it supports {{itemView=}}', function() {
 });
 
 QUnit.test('it defers all normalization of itemView names to the resolver', function() {
+  runDestroy(view);
   var itemView = EmberView.extend({
     template: compile('itemView:{{name}}')
   });
@@ -289,6 +291,7 @@ QUnit.test('it defers all normalization of itemView names to the resolver', func
 });
 
 QUnit.test('it supports {{itemViewClass=}} via container', function() {
+  runDestroy(view);
   expectDeprecation(() => {
     view = EmberView.create({
       container: container,
@@ -303,6 +306,7 @@ QUnit.test('it supports {{itemViewClass=}} via container', function() {
 });
 
 QUnit.test('it supports {{itemViewClass=}} with each view tagName (DEPRECATED)', function() {
+  runDestroy(view);
   expectDeprecation(() => {
     view = EmberView.create({
       template: compile('{{each view.people itemViewClass="my-view" tagName="ul"}}'),
@@ -318,6 +322,7 @@ QUnit.test('it supports {{itemViewClass=}} with each view tagName (DEPRECATED)',
 });
 
 QUnit.test('it supports {{itemViewClass=}} with tagName in itemViewClass (DEPRECATED)', function() {
+  runDestroy(view);
   registry.register('view:li-view', EmberView.extend({
     tagName: 'li'
   }));
@@ -338,6 +343,7 @@ QUnit.test('it supports {{itemViewClass=}} with tagName in itemViewClass (DEPREC
 });
 
 QUnit.test('it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)', function() {
+  runDestroy(view);
   expectDeprecation(() => {
     view = EmberView.create({
       template: compile(`
@@ -357,6 +363,7 @@ QUnit.test('it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)', fu
 });
 
 QUnit.test('it supports {{emptyView=}}', function() {
+  runDestroy(view);
   var emptyView = EmberView.extend({
     template: compile('emptyView:sad panda')
   });
@@ -377,6 +384,7 @@ QUnit.test('it supports {{emptyView=}}', function() {
 });
 
 QUnit.test('it defers all normalization of emptyView names to the resolver', function() {
+  runDestroy(view);
   var emptyView = EmberView.extend({
     template: compile('emptyView:sad panda')
   });
@@ -397,6 +405,7 @@ QUnit.test('it defers all normalization of emptyView names to the resolver', fun
 });
 
 QUnit.test('it supports {{emptyViewClass=}} via container', function() {
+  runDestroy(view);
   expectDeprecation(() => {
     view = EmberView.create({
       container: container,
@@ -411,6 +420,7 @@ QUnit.test('it supports {{emptyViewClass=}} via container', function() {
 });
 
 QUnit.test('it supports {{emptyViewClass=}} with tagName (DEPRECATED)', function() {
+  runDestroy(view);
   expectDeprecation(() => {
     view = EmberView.create({
       template: compile('{{each view.people emptyViewClass="my-empty-view" tagName="b"}}'),
@@ -426,6 +436,7 @@ QUnit.test('it supports {{emptyViewClass=}} with tagName (DEPRECATED)', function
 });
 
 QUnit.test('it supports {{emptyViewClass=}} with in format', function() {
+  runDestroy(view);
   expectDeprecation(() => {
     view = EmberView.create({
       container: container,
@@ -440,6 +451,7 @@ QUnit.test('it supports {{emptyViewClass=}} with in format', function() {
 });
 
 QUnit.test('it uses {{else}} when replacing model with an empty array', function() {
+  runDestroy(view);
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{item}}{{else}}Nothing{{/each}}'),
     items: A(['one', 'two'])
@@ -457,6 +469,7 @@ QUnit.test('it uses {{else}} when replacing model with an empty array', function
 });
 
 QUnit.test('it uses {{else}} when removing all items in an array', function() {
+  runDestroy(view);
   var items = A(['one', 'two']);
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{item}}{{else}}Nothing{{/each}}'),
@@ -476,6 +489,7 @@ QUnit.test('it uses {{else}} when removing all items in an array', function() {
 });
 
 QUnit.test('it can move to and from {{else}} properly when the backing array gains and looses items (#11140)', function() {
+  runDestroy(view);
   var items = A(['one', 'two']);
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{item}}{{else}}Nothing{{/each}}'),

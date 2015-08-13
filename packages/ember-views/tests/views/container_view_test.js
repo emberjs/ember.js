@@ -461,7 +461,9 @@ QUnit.module('Ember.ContainerView - modify childViews', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     registry = new Registry();
-    container = ContainerView.create();
+    container = ContainerView.create({
+      _viewRegistry: { }
+    });
 
     run(function() {
       container.appendTo('#qunit-fixture');
@@ -479,6 +481,7 @@ QUnit.module('Ember.ContainerView - modify childViews', {
     run(function() {
       container.destroy();
       if (view) { view.destroy(); }
+      if (child) { child.destroy(); }
       if (otherContainer) { otherContainer.destroy(); }
     });
   }
@@ -510,13 +513,15 @@ QUnit.test('should be able to modify childViews many times during a run loop', f
 });
 
 QUnit.test('should be able to modify childViews then rerender the ContainerView in same run loop', function () {
-  container = ContainerView.create();
+  container = ContainerView.create({
+  });
 
   run(function() {
     container.appendTo('#qunit-fixture');
   });
 
   var child = View.create({
+    _viewRegistry: { },
     template: compile('child')
   });
 
@@ -860,9 +865,8 @@ QUnit.test('calling reopen on DeprecatedContainerView delegates to ContainerView
 
   ContainerView.reopen = function(arg) { ok(arg === obj); };
 
-  expectDeprecation(() => {
-    DeprecatedContainerView.reopen(obj);
-  }, /Ember.ContainerView is deprecated./);
+  expectNoDeprecation();
+  DeprecatedContainerView.reopen(obj);
 
   ContainerView.reopen = originalReopen;
 });
