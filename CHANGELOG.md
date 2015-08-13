@@ -1,7 +1,8 @@
 # Ember Changelog
 
-### 2.0.0-beta.5 (August 9, 2015)
+### 2.0.0 (August 13, 2015)
 
+- [#12036](https://github.com/emberjs/ember.js/pull/12036) Cleanup CP Set and  Volatile
 - [#11993](https://github.com/emberjs/ember.js/pull/11993) [CLEANUP] Remove `Ember.TrackedArray` and `Ember.SubArray`.
 - [#11550](https://github.com/emberjs/ember.js/pull/11550) [BUGFIX] Ensure that specifying an observer in a child class only observes changes to the childs dependent keys.
 - [#10259](https://github.com/emberjs/ember.js/pull/10259) [BUGFIX] Make `Ember.computed.or` return the last falsey value (similar to `||`).
@@ -25,9 +26,6 @@
 - [#12027](https://github.com/emberjs/ember.js/pull/12027) [CLEANUP] Remove support for specifying `template` in a component.
 - [#12027](https://github.com/emberjs/ember.js/pull/12027) [CLEANUP] Remove deprecated `template` access in Ember.Component.
 - [#12028](https://github.com/emberjs/ember.js/pull/12028) [CLEANUP] Store actions in `actions` not `_actions`.
-
-### 2.0.0-beta.4 (July 31, 2015)
-
 - [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `length` from `OrderedSet` and `Map`.
 - [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `OrderedSet.prototype.length`.
 - [#11854](https://github.com/emberjs/ember.js/pull/11854) [CLEANUP] Remove `Ember.libraries.each`.
@@ -60,9 +58,6 @@
 - [#11914](https://github.com/emberjs/ember.js/pull/11914) [CLEANUP] Remove `Ember.oneWay`.
 - [#11895](https://github.com/emberjs/ember.js/pull/11895) [BUGFIX] Properly detect if the environment is Node.
 - [#11897](https://github.com/emberjs/ember.js/pull/11897) [CLEANUP] Remove globals lookup from templates.
-
-### 2.0.0-beta.3 (July 19, 2015)
-
 - [#11777](https://github.com/emberjs/ember.js/pull/11777) [CLEANUP] Remove context switching form of `{{#each model}}{{/each}}`, use `{{#each model as |item|}}{{/each}}` instead.
 - [#11484](https://github.com/emberjs/ember.js/pull/11484) [CLEANUP] Remove `Ember.ArrayController` support, use `ember-legacy-controllers` addon for support until 2.4.
 - [#11782](https://github.com/emberjs/ember.js/pull/11782) [CLEANUP] Remove support for reversed args in `Ember.observer`.
@@ -98,10 +93,6 @@
 - [#11807](https://github.com/emberjs/ember.js/pull/11807) [CLEANUP] Remove deprecated `Ember.Handlebars.get`.
 - [#11808](https://github.com/emberjs/ember.js/pull/11808) [CLEANUP] Remove deprecated `Binding#oneWay`.
 - [#11809](https://github.com/emberjs/ember.js/pull/11809) [CLEANUP] Remove deprecated `Map#remove`.
-
-
-### 2.0.0-beta.2 (July 12, 2015)
-
 - [#11213](https://github.com/emberjs/ember.js/pull/11213) [CLEANUP] Remove chaining in Observable.set
 - [#11438](https://github.com/emberjs/ember.js/pull/11438) [CLEANUP] Remove CP semantics
 - [#11447](https://github.com/emberjs/ember.js/pull/11447) [CLEANUP] Remove `Ember.Set` (**not** `Ember.set`).
@@ -131,9 +122,6 @@
 - [#11710](https://github.com/emberjs/ember.js/pull/11710) Add repository field to package.json
 - [#11700](https://github.com/emberjs/ember.js/pull/11700) [CLEANUP] Removes `Enumerable.findProperty`.
 - [#11707](https://github.com/emberjs/ember.js/pull/11707) [CLEANUP] Remove `Enumerable.everyBy`.
-
-### 2.0.0-beta.1 (June 12, 2015)
-
 - [#10701](https://github.com/emberjs/ember.js/pull/10701) Refactor `lazyGet`.
 - [#11262](https://github.com/emberjs/ember.js/pull/11262) Fix basic Fastboot usage.
 - [#11375](https://github.com/emberjs/ember.js/pull/11375) Transition feature flag infrastructure to modules.
