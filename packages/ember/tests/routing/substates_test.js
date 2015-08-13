@@ -434,6 +434,7 @@ QUnit.test('Setting a query param during a slow transition should work', functio
     }
   });
 
+  App.GrandmaController = Ember.Controller.extend();
   App.GrandmaRoute = Ember.Route.extend({
     queryParams: {
       test: { defaultValue: 1 }
