@@ -256,7 +256,7 @@ export default EmberObject.extend({
   },
 
   _bubbleEvent(view, evt, eventName) {
-    return run.join(view, view.handleEvent, eventName, evt);
+    return view.handleEvent(eventName, evt);
   },
 
   destroy() {
