@@ -94,3 +94,4 @@ for a detailed explanation.
   Adds additional instrumentation to Ember:
 
   - `interaction.<event-name>` for events handled by a component.
+  - `interaction.ember-action` for closure actions.

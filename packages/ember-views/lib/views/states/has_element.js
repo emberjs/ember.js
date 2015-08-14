@@ -1,8 +1,7 @@
 import _default from 'ember-views/views/states/default';
 import merge from 'ember-metal/merge';
 import jQuery from 'ember-views/system/jquery';
-import { instrument } from 'ember-metal/instrumentation';
-import isEnabled from 'ember-metal/features';
+import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 /**
 @module ember
@@ -11,15 +10,6 @@ import isEnabled from 'ember-metal/features';
 
 import { get } from 'ember-metal/property_get';
 import { internal } from 'htmlbars-runtime';
-
-let flaggedInstrument;
-if (isEnabled('ember-improved-instrumentation')) {
-  flaggedInstrument = instrument;
-} else {
-  flaggedInstrument = function(name, payload, callback) {
-    return callback();
-  };
-}
 
 var hasElement = Object.create(_default);
 
