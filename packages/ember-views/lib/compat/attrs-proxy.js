@@ -2,6 +2,7 @@ import { Mixin } from 'ember-metal/mixin';
 import { symbol } from 'ember-metal/utils';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import { on } from 'ember-metal/events';
+import EmptyObject from 'ember-metal/empty_object';
 
 export function deprecation(key) {
   return `You tried to look up an attribute directly on the component. This is deprecated. Use attrs.${key} instead.`;
@@ -13,8 +14,36 @@ function isCell(val) {
   return val && val[MUTABLE_CELL];
 }
 
+function setupAvoidPropagating(instance) {
+  // This caches the list of properties to avoid setting onto the component instance
+  // inside `_propagateAttrsToThis`.  We cache them so that every instantiated component
+  // does not have to pay the calculation penalty.
+  let constructor = instance.constructor;
+  if (!constructor.__avoidPropagating) {
+    constructor.__avoidPropagating = new EmptyObject();
+    let i, l;
+    for (i = 0, l = instance.concatenatedProperties.length; i < l; i++) {
+      let prop = instance.concatenatedProperties[i];
+
+      constructor.__avoidPropagating[prop] = true;
+    }
+
+    for (i = 0, l = instance.mergedProperties.length; i < l; i++) {
+      let prop = instance.mergedProperties[i];
+
+      constructor.__avoidPropagating[prop] = true;
+    }
+  }
+}
+
 let AttrsProxyMixin = {
   attrs: null,
+
+  init() {
+    this._super(...arguments);
+
+    setupAvoidPropagating(this);
+  },
 
   getAttr(key) {
     let attrs = this.attrs;
@@ -42,14 +71,7 @@ let AttrsProxyMixin = {
     let attrs = this.attrs;
 
     for (let prop in attrs) {
-      if (prop !== 'attrs' &&
-          // These list of properties are concatenated and merged properties of
-          // Ember.View / Ember.Component. Setting them here results in them being
-          // completely stomped and not handled properly, BAIL OUT!
-          prop !== 'actions' &&
-          prop !== 'classNames' &&
-          prop !== 'classNameBindings' &&
-          prop !== 'attributeBindings') {
+      if (prop !== 'attrs' && !this.constructor.__avoidPropagating[prop]) {
         this.set(prop, this.getAttr(prop));
       }
     }
