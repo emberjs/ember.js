@@ -1,30 +1,49 @@
 <html>
   <head>
     <title>HTMLBars example</title>
+    <style type="text/css">
+      #inputs {
+        overflow: hidden;
+      }
+
+      #inputs label {
+        float: left;
+      }
+
+      #inputs textarea {
+        display: block;
+        width: 300px;
+        height: 150px;
+        margin: 5px 10px 5px 0px;
+        font-family: monospace;
+      }
+    </style>
   </head>
   <body>
-    <label>
-      Data
-      <textarea id="data">{"name": "Bob"}</textarea>
-    </label>
+    <div id="inputs">
+      <label>
+        Data
+        <textarea id="data">{"name": "Bob"}</textarea>
+      </label>
 
-    <label>
-      Template
-      <textarea id="template">Howdy {{name}}</textarea>
-    </label>
+      <label>
+        Template
+        <textarea id="template">Howdy {{name}}</textarea>
+      </label>
 
-    <label>
-      Options
-      <textarea id="options">{ "disableComponentGeneration": true }</textarea>
-    </label>
+      <label>
+        Options
+        <textarea id="options">{ "disableComponentGeneration": true }</textarea>
+      </label>
+    </div>
 
-    <label>
-      <input id="skip-render" type="checkbox">
-      Skip render?
-    </label>
+    <div id="actions">
+      <button id="compile-template">Compile</button>
+      <button id="run-template">Compile and Render</button>
+    </div>
 
-    <button id="run-template">Compile and Render</button>
     <hr>
+
     <div id="output"></div>
 
     <script src="../assets/loader.js"></script>
@@ -32,7 +51,8 @@
     <script src="../amd/htmlbars-compiler.amd.js"></script>
     <script src="../amd/htmlbars-runtime.amd.js"></script>
     <script>
-      var button     = document.getElementById('run-template'),
+      var compileBtn = document.getElementById('compile-template'),
+          runBtn     = document.getElementById('run-template'),
           dataarea   = document.getElementById('data'),
           textarea   = document.getElementById('template'),
           output     = document.getElementById('output'),
@@ -46,7 +66,6 @@
 
       var templateSource = localStorage.getItem('templateSource');
       var data = localStorage.getItem('templateData');
-      var shouldRender = localStorage.getItem('shouldRender');
 
       if (templateSource) {
         textarea.value = templateSource;
@@ -56,19 +75,16 @@
         dataarea.value = data;
       }
 
-      if (shouldRender === "false") {
-        skipRender.checked = true;
-      }
+      compileBtn.addEventListener('click', function() { compile(false); });
+      runBtn.addEventListener('click', function() { compile(true); });
 
-      button.addEventListener('click', function() {
+      function compile(shouldRender) {
         var source = textarea.value,
             data = dataarea.value,
-            shouldRender = !skipRender.checked,
             compileOptions;
 
         localStorage.setItem('templateSource', source);
         localStorage.setItem('templateData', data);
-        localStorage.setItem('shouldRender', shouldRender);
 
         try {
           data = JSON.parse(data);
@@ -104,7 +120,7 @@
           output.innerHTML += 'Failure to run template: '+e.message;
           throw(e);
         }
-      });
+      }
     </script>
   </body>
 </html>
