@@ -6,7 +6,7 @@ import { A as a } from 'ember-runtime/system/native_array';
 
 QUnit.module('Ember.ArrayProxy - content change (length)');
 
-QUnit.test('asdfasdf', function() {
+QUnit.test('array proxy + aliasedProperty complex test', function() {
   var aCalled, bCalled, cCalled, dCalled, eCalled;
 
   aCalled = bCalled = cCalled = dCalled = eCalled = 0;
