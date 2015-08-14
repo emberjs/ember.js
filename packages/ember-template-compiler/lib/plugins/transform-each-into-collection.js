@@ -26,8 +26,6 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
     let list = node.params.shift();
     node.path = b.path('collection');
 
-    node.params.unshift(b.string('-legacy-each'));
-
     let pair = b.pair('content', list);
     pair.loc = list.loc;
 
