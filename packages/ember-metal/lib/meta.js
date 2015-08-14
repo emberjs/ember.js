@@ -46,14 +46,14 @@ let members = {
 let memberNames = Object.keys(members);
 
 function Meta(obj, parentMeta) {
-  this.cache = undefined;
-  this.watching = undefined;
-  this.mixins = undefined;
-  this.bindings = undefined;
-  this.values = undefined;
-  this.deps = undefined;
-  this.chainWatchers = undefined;
-  this.chains = undefined;
+  this._cache = undefined;
+  this._watching = undefined;
+  this._mixins = undefined;
+  this._bindings = undefined;
+  this._values = undefined;
+  this._deps = undefined;
+  this._chainWatchers = undefined;
+  this._chains = undefined;
   // used only internally
   this.source = obj;
 
