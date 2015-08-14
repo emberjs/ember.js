@@ -8,7 +8,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
 
 /**
   Use the `if` block helper to conditionally render a block depending on a
-  property. If the property is "falsey", for example: `false`, `undefined
+  property. If the property is "falsey", for example: `false`, `undefined`,
  `null`, `""`, `0` or an empty array, the block will not be rendered.
 
  ```handlebars
