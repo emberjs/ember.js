@@ -3,7 +3,6 @@ import Ember from 'ember-metal/core'; // Ember.lookup;
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import LegacyEachView from 'ember-views/views/legacy_each_view';
 import { A } from 'ember-runtime/system/native_array';
 import EmberController from 'ember-runtime/controllers/controller';
 import { Registry } from 'ember-runtime/system/container';
@@ -41,7 +40,6 @@ QUnit.module('the #each helper', {
     container = registry.container();
 
     registry.register('view:toplevel', EmberView.extend());
-    registry.register('view:-legacy-each', LegacyEachView);
 
     view = EmberView.create({
       container: container,
@@ -305,43 +303,6 @@ QUnit.test('it supports {{itemViewClass=}} via container', function() {
   assertText(view, 'Steve HoltAnnabelle');
 });
 
-QUnit.test('it supports {{itemViewClass=}} with each view tagName (DEPRECATED)', function() {
-  runDestroy(view);
-  expectDeprecation(() => {
-    view = EmberView.create({
-      template: compile('{{each view.people itemViewClass="my-view" tagName="ul"}}'),
-      people: people,
-      container: container
-    });
-  }, /Using 'itemViewClass' with '{{each}}'/);
-
-  runAppend(view);
-  equal(view.$('ul').length, 1, 'rendered ul tag');
-  equal(view.$('ul li').length, 2, 'rendered 2 li tags');
-  equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
-});
-
-QUnit.test('it supports {{itemViewClass=}} with tagName in itemViewClass (DEPRECATED)', function() {
-  runDestroy(view);
-  registry.register('view:li-view', EmberView.extend({
-    tagName: 'li'
-  }));
-
-  expectDeprecation(() => {
-    view = EmberView.create({
-      template: compile('<ul>{{#each view.people itemViewClass="li-view" as |item|}}{{item.name}}{{/each}}</ul>'),
-      people: people,
-      container: container
-    });
-  }, /Using 'itemViewClass' with '{{each}}'/);
-
-  runAppend(view);
-
-  equal(view.$('ul').length, 1, 'rendered ul tag');
-  equal(view.$('ul li').length, 2, 'rendered 2 li tags');
-  equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
-});
-
 QUnit.test('it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)', function() {
   runDestroy(view);
   expectDeprecation(() => {
@@ -528,7 +489,6 @@ QUnit.module('{{each bar as |foo|}}', {
     container = registry.container();
 
     registry.register('view:toplevel', EmberView.extend());
-    registry.register('view:-legacy-each', LegacyEachView);
   },
   teardown() {
     runDestroy(container);
