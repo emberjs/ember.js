@@ -1,13 +1,15 @@
 import { Stream } from 'ember-metal/streams/stream';
 import {
   read,
-  readArray
+  readArray,
+  labelFor
 } from 'ember-metal/streams/utils';
 import symbol from 'ember-metal/symbol';
 import { get } from 'ember-metal/property_get';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
+import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
@@ -56,7 +58,7 @@ export default function closureAction(morph, env, scope, params, hash, template,
       valuePath = read(hash.value);
     }
 
-    return createClosureAction(target, action, valuePath, actionArguments);
+    return createClosureAction(this, target, action, valuePath, actionArguments);
   }, function() {
     return labelForSubexpr(params, hash, 'action');
   });
@@ -67,7 +69,7 @@ export default function closureAction(morph, env, scope, params, hash, template,
   return s;
 }
 
-function createClosureAction(target, action, valuePath, actionArguments) {
+function createClosureAction(stream, target, action, valuePath, actionArguments) {
   var closureAction;
 
   if (actionArguments.length > 0) {
@@ -88,7 +90,10 @@ function createClosureAction(target, action, valuePath, actionArguments) {
         args[0] = get(args[0], valuePath);
       }
 
-      return run.join(target, action, ...args);
+      let payload = { target, args, label: labelFor(stream) };
+      return flaggedInstrument('interaction.ember-action', payload, () => {
+        return action.apply(target, args);
+      });
     };
   }
 

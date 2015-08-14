@@ -1,12 +1,8 @@
 import _default from 'ember-views/views/states/default';
 import assign from 'ember-metal/assign';
 import jQuery from 'ember-views/system/jquery';
-<<<<<<< 552e2840a1c48a09e528cfcfdbbb55ebe3f237cd
 import run from 'ember-metal/run_loop';
-=======
-import { instrument } from 'ember-metal/instrumentation';
-import isEnabled from 'ember-metal/features';
->>>>>>> Instrument interaction events
+import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 /**
 @module ember
@@ -14,15 +10,6 @@ import isEnabled from 'ember-metal/features';
 */
 
 import { get } from 'ember-metal/property_get';
-
-let flaggedInstrument;
-if (isEnabled('ember-improved-instrumentation')) {
-  flaggedInstrument = instrument;
-} else {
-  flaggedInstrument = function(name, payload, callback) {
-    return callback();
-  };
-}
 
 var hasElement = Object.create(_default);
 
