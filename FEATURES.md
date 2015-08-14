@@ -264,6 +264,6 @@ for a detailed explanation.
 
 * `ember-routing-routable-components`
 
-  Implemencts RFC https://github.com/emberjs/rfcs/pull/38, adding support for
+  Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
   routable components.
 
