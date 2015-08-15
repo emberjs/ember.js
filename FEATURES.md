@@ -90,13 +90,6 @@ for a detailed explanation.
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
   invocation (instead of a standard HTML5 style element).
 
-* `ember-htmlbars-inline-if-helper`
-
-  Enables the use of the if helper in inline form. The truthy
-  and falsy values are passed as params, instead of using the block form.
-
-  Added in [#9718](https://github.com/emberjs/ember.js/pull/9718).
-
 * `ember-htmlbars-attribute-syntax`
 
   Adds the `class="{{color}}"` syntax to Ember HTMLBars templates.

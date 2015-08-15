@@ -10,11 +10,6 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-var isInlineIfEnabled = false;
-if (isEnabled('ember-htmlbars-inline-if-helper')) {
-  isInlineIfEnabled = true;
-}
-
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-attribute-syntax')) {
   QUnit.module('ember-htmlbars: class attribute', {
@@ -77,27 +72,25 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   strictEqual(view.element.firstChild.className, 'large blue round', 'classes are set');
 });
 
-  if (isInlineIfEnabled) {
-    QUnit.test('class attribute accepts nested helpers, and updates', function() {
-  view = EmberView.create({
-    context: {
-      size: 'large',
-      hasColor: true,
-      hasShape: false,
-      shape: 'round'
-    },
-    template: compile('<div class=\'{{if true size}} {{if hasColor \'blue\'}} {{if hasShape shape \'no-shape\'}}\'></div>')
+  QUnit.test('class attribute accepts nested helpers, and updates', function() {
+    view = EmberView.create({
+      context: {
+        size: 'large',
+        hasColor: true,
+        hasShape: false,
+        shape: 'round'
+      },
+      template: compile('<div class=\'{{if true size}} {{if hasColor \'blue\'}} {{if hasShape shape \'no-shape\'}}\'></div>')
+    });
+    appendView(view);
+
+    strictEqual(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
+
+    run(view, view.set, 'context.hasColor', false);
+    run(view, view.set, 'context.hasShape', true);
+
+    strictEqual(view.element.firstChild.className, 'large  round', 'classes are updated');
   });
-  appendView(view);
-
-  strictEqual(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
-
-  run(view, view.set, 'context.hasColor', false);
-  run(view, view.set, 'context.hasShape', true);
-
-  strictEqual(view.element.firstChild.className, 'large  round', 'classes are updated');
-});
-  }
 
   QUnit.test('class attribute can accept multiple classes from a single value, and update', function() {
   view = EmberView.create({
