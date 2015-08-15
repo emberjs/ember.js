@@ -84,21 +84,6 @@ for a detailed explanation.
 
   Added in [#10160](https://github.com/emberjs/ember.js/pull/10160)
 
-* `ember-router-willtransition`
-
-  Adds `willTransition` hook to `Ember.Router`. For example,
-
-  ```js
-  Ember.Router.extend({
-    onBeforeTransition: function(transition) {
-      //doSomething
-    }.on('willTransition')
-  });
-  ```
-
-  Added in [#10274](https://github.com/emberjs/ember.js/pull/10274)
-
-
 * `ember-routing-htmlbars-improved-actions`
 
   Using the `(action` subexpression, allow for the creation of closure-wrapped

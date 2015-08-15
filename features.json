@@ -4,7 +4,6 @@
     "ember-htmlbars-component-generation": null,
     "ember-testing-checkbox-helpers": null,
     "ember-metal-stream": null,
-    "ember-router-willtransition": true,
     "ember-application-visit": null,
     "ember-routing-core-outlet": null,
     "ember-routing-route-configured-query-params": null,
