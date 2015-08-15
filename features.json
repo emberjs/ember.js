@@ -23,7 +23,8 @@
     "ember-htmlbars-dashless-helpers": true,
     "ember-debug-handlers": null,
     "ember-registry-container-reform": null,
-    "ember-routing-routable-components": null
+    "ember-routing-routable-components": null,
+    "ember-routing-namespace": null
   },
   "debugStatements": [
     "Ember.warn",

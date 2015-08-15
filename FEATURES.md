@@ -267,3 +267,38 @@ for a detailed explanation.
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
   routable components.
 
+* `ember-routing-namespace`
+
+  Adds `this.namespace()` to Router DSL  along side `this.route()` and `this.resource()`.
+
+  The new namespace function allows you to define a set of routes that exist under the
+  one namespace which isn't a parent route.
+
+  The following 2 examples produce the same results:
+
+  ```js
+  this.route('admin.users', { path: 'admin/users' });
+  this.route('admin.groups', { path: 'admin/groups' });
+  this.route('admin.environments', { path: 'admin/environments' });
+  ```
+
+  ```js
+  this.namespace('admin', function() {
+    this.route('users');
+    this.route('groups');
+    this.route('environments');
+  });
+  ```
+
+  The above code examples create the following 3 routes:
+
+  1. `admin.users` at the URL `/admin/users`
+  2. `admin.groups` at the URL `/admin/groups`
+  3. `admin.environments` at the URL `/admin/environments`
+
+  This differs to nested routes in that the following routes are not created/resolved/used:
+
+  1. The parent route, `admin`
+  2. `admin.index`
+  3. `admin.error`
+  4. `admin.loading`

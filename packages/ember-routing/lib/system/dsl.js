@@ -6,9 +6,18 @@ import isEnabled from 'ember-metal/features';
 @submodule ember-routing
 */
 
+function assertName(name, type) {
+  Ember.assert(`'${name}' cannot be used as a ${type} name.`, ['array', 'basic', 'object', 'application'].indexOf(name) === -1);
+}
+
 function DSL(name, options) {
   this.parent = name;
   this.enableLoadingSubstates = options && options.enableLoadingSubstates;
+
+  if (isEnabled('ember-routing-namespace')) {
+    this.isNamespace = options && options.isNamespace;
+  }
+
   this.matches = [];
 }
 export default DSL;
@@ -25,14 +34,9 @@ DSL.prototype = {
       options = {};
     }
 
-    Ember.assert(
-      `'${name}' cannot be used as a route name.`,
-      (function() {
-        if (options.overrideNameAssertion === true) { return true; }
-
-        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
-      })()
-    );
+    if (options.overrideNameAssertion !== true) {
+      assertName(name, 'route');
+    }
 
     Ember.warn(
       `Using a route named 'select' (and defining a App.SelectView) will prevent you from using {{view 'select'}}`,
@@ -102,6 +106,58 @@ DSL.prototype = {
   }
 };
 
+if (isEnabled('ember-routing-namespace')) {
+  DSL.prototype.namespace = function namespace(name, options, callback) {
+    if (arguments.length === 2 && typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+
+    Ember.assert(`You cannot create namespace '${name}' without a function provided.`, !!callback);
+
+    assertName(name, 'namespace');
+
+    options.isNamespace = true;
+
+    var fullName = getFullName(this, name);
+    var dsl = new DSL(fullName, { isNamespace: true });
+
+    callback.call(dsl);
+
+    createRoute(this, name, options, dsl.generate());
+  };
+
+  // you can just replace this whole function with the one above
+  // if/when ember-routing-namespace is on by default.
+  DSL.prototype.generate = function generate() {
+    var dslMatches = this.matches;
+
+    if (!this.explicitIndex && !this.isNamespace) {
+      this.route('index', { path: '/' });
+    }
+
+    return function(match) {
+      for (var i = 0, l = dslMatches.length; i < l; i++) {
+        var dslMatch = dslMatches[i];
+        if (dslMatch[1] === null) {
+          match(dslMatch[0], dslMatch[2]);
+        } else {
+          match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+        }
+      }
+    };
+  };
+
+  // you can just replace this whole function with the one above
+  // if/when ember-routing-namespace is on by default.
+  DSL.prototype.push = function push(url, name, callback) {
+    var parts = (name === null) ? [] : name.split('.');
+    if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
+
+    this.matches.push([url, name, callback]);
+  };
+}
+
 function canNest(dsl) {
   return dsl.parent && dsl.parent !== 'application';
 }
@@ -119,6 +175,12 @@ function createRoute(dsl, name, options, callback) {
 
   var fullName = getFullName(dsl, name, options.resetNamespace);
 
+  if (isEnabled('ember-routing-namespace')) {
+    if (options.isNamespace) {
+      fullName = null;
+    }
+  }
+
   if (typeof options.path !== 'string') {
     options.path = `/${name}`;
   }
@@ -131,4 +193,3 @@ DSL.map = function(callback) {
   callback.call(dsl);
   return dsl;
 };
-
