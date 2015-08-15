@@ -96,15 +96,13 @@ registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);
 registerKeyword('each', each);
 registerKeyword('readonly', readonly);
+registerKeyword('get', getKeyword);
 
 if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerKeyword('collection', collection);
   registerKeyword('view', view);
 }
 
-if (isEnabled('ember-htmlbars-get-helper')) {
-  registerKeyword('get', getKeyword);
-}
 
 export default {
   hooks: emberHooks,

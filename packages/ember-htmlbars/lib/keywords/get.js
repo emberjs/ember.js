@@ -23,152 +23,150 @@ function labelFor(source, key) {
   return `(get ${sourceLabel} ${keyLabel})`;
 }
 
-if (isEnabled('ember-htmlbars-get-helper')) {
-  const buildStream = function buildStream(params) {
-    const [objRef, pathRef] = params;
+const buildStream = function buildStream(params) {
+  const [objRef, pathRef] = params;
 
-    Ember.assert('The first argument to {{get}} must be a stream', isStream(objRef));
-    Ember.assert('{{get}} requires at least two arguments', params.length > 1);
+  Ember.assert('The first argument to {{get}} must be a stream', isStream(objRef));
+  Ember.assert('{{get}} requires at least two arguments', params.length > 1);
 
-    const stream = new DynamicKeyStream(objRef, pathRef);
+  const stream = new DynamicKeyStream(objRef, pathRef);
 
-    return stream;
-  };
+  return stream;
+};
 
 
-  /**
-    Dynamically look up a property on an object. The second argument to `{{get}}`
-    should have a string value, although it can be bound.
+/**
+  Dynamically look up a property on an object. The second argument to `{{get}}`
+  should have a string value, although it can be bound.
 
-    For example, these two usages are equivilent:
+  For example, these two usages are equivilent:
 
-    ```handlebars
-    {{person.height}}
-    {{get person "height"}}
-    ```
+  ```handlebars
+  {{person.height}}
+  {{get person "height"}}
+  ```
 
-    If there were several facts about a person, the `{{get}}` helper can dynamically
-    pick one:
+  If there were several facts about a person, the `{{get}}` helper can dynamically
+  pick one:
 
-    ```handlebars
-    {{get person factName}}
-    ```
+  ```handlebars
+  {{get person factName}}
+  ```
 
-    For a more complex example, this template would allow the user to switch
-    between showing the user's height and weight with a click:
+  For a more complex example, this template would allow the user to switch
+  between showing the user's height and weight with a click:
 
-    ```handlebars
-    {{get person factName}}
-    <button {{action (mut factName) "height"}}>Show height</button>
-    <button {{action (mut factName) "weight"}}>Show weight</button>
-    ```
+  ```handlebars
+  {{get person factName}}
+  <button {{action (mut factName) "height"}}>Show height</button>
+  <button {{action (mut factName) "weight"}}>Show weight</button>
+  ```
 
-    The `{{get}}` helper can also respect mutable values itself. For example:
+  The `{{get}}` helper can also respect mutable values itself. For example:
 
-    ```handlebars
-    {{input value=(mut (get person factName)) type="text"}}
-    <button {{action (mut factName) "height"}}>Show height</button>
-    <button {{action (mut factName) "weight"}}>Show weight</button>
-    ```
+  ```handlebars
+  {{input value=(mut (get person factName)) type="text"}}
+  <button {{action (mut factName) "height"}}>Show height</button>
+  <button {{action (mut factName) "weight"}}>Show weight</button>
+  ```
 
-    Would allow the user to swap what fact is being displayed, and also edit
-    that fact via a two-way mutable binding.
+  Would allow the user to swap what fact is being displayed, and also edit
+  that fact via a two-way mutable binding.
 
-    @public
-    @method get
-    @for Ember.Templates.helpers
-  */
-  var getKeyword = function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
-    if (morph === null) {
-      return buildStream(params);
+  @public
+  @method get
+  @for Ember.Templates.helpers
+*/
+var getKeyword = function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
+  if (morph === null) {
+    return buildStream(params);
+  } else {
+    let stream;
+    if (morph.linkedResult) {
+      stream = morph.linkedResult;
     } else {
-      let stream;
-      if (morph.linkedResult) {
-        stream = morph.linkedResult;
-      } else {
-        stream = buildStream(params);
+      stream = buildStream(params);
 
-        subscribe(morph, env, scope, stream);
-        env.hooks.linkRenderNode(morph, env, scope, null, params, hash);
+      subscribe(morph, env, scope, stream);
+      env.hooks.linkRenderNode(morph, env, scope, null, params, hash);
 
-        morph.linkedResult = stream;
-      }
-      env.hooks.range(morph, env, scope, null, stream, visitor);
+      morph.linkedResult = stream;
     }
+    env.hooks.range(morph, env, scope, null, stream, visitor);
+  }
 
-    return true;
-  };
+  return true;
+};
 
-  var DynamicKeyStream = function DynamicKeyStream(source, keySource) {
-    if (!isStream(keySource)) {
-      return new KeyStream(source, keySource);
+var DynamicKeyStream = function DynamicKeyStream(source, keySource) {
+  if (!isStream(keySource)) {
+    return new KeyStream(source, keySource);
+  }
+  Ember.assert('DynamicKeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
+
+  // used to get the original path for debugging and legacy purposes
+  var label = labelFor(source, keySource);
+
+  this.init(label);
+  this.path = label;
+  this.sourceDep = this.addMutableDependency(source);
+  this.keyDep = this.addMutableDependency(keySource);
+  this.observedObject = null;
+  this.observedKey = null;
+};
+
+DynamicKeyStream.prototype = Object.create(KeyStream.prototype);
+
+merge(DynamicKeyStream.prototype, {
+  key() {
+    const key = this.keyDep.getValue();
+    if (typeof key === 'string') {
+      Ember.assert('DynamicKeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
+      return key;
     }
-    Ember.assert('DynamicKeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
+  },
 
-    // used to get the original path for debugging and legacy purposes
-    var label = labelFor(source, keySource);
+  compute() {
+    var object = this.sourceDep.getValue();
+    var key = this.key();
+    if (object && key) {
+      return get(object, key);
+    }
+  },
 
-    this.init(label);
-    this.path = label;
-    this.sourceDep = this.addMutableDependency(source);
-    this.keyDep = this.addMutableDependency(keySource);
-    this.observedObject = null;
-    this.observedKey = null;
-  };
+  setValue(value) {
+    var object = this.sourceDep.getValue();
+    var key = this.key();
+    if (object) {
+      set(object, key, value);
+    }
+  },
 
-  DynamicKeyStream.prototype = Object.create(KeyStream.prototype);
+  _super$revalidate: Stream.prototype.revalidate,
 
-  merge(DynamicKeyStream.prototype, {
-    key() {
-      const key = this.keyDep.getValue();
-      if (typeof key === 'string') {
-        Ember.assert('DynamicKeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
-        return key;
-      }
-    },
+  revalidate(value) {
+    this._super$revalidate(value);
 
-    compute() {
-      var object = this.sourceDep.getValue();
-      var key = this.key();
-      if (object && key) {
-        return get(object, key);
-      }
-    },
+    var object = this.sourceDep.getValue();
+    var key = this.key();
+    if (object !== this.observedObject || key !== this.observedKey) {
+      this._clearObservedObject();
 
-    setValue(value) {
-      var object = this.sourceDep.getValue();
-      var key = this.key();
-      if (object) {
-        set(object, key, value);
-      }
-    },
-
-    _super$revalidate: Stream.prototype.revalidate,
-
-    revalidate(value) {
-      this._super$revalidate(value);
-
-      var object = this.sourceDep.getValue();
-      var key = this.key();
-      if (object !== this.observedObject || key !== this.observedKey) {
-        this._clearObservedObject();
-
-        if (object && typeof object === 'object' && key) {
-          addObserver(object, key, this, this.notify);
-          this.observedObject = object;
-          this.observedKey = key;
-        }
-      }
-    },
-
-    _clearObservedObject() {
-      if (this.observedObject) {
-        removeObserver(this.observedObject, this.observedKey, this, this.notify);
-        this.observedObject = null;
-        this.observedKey = null;
+      if (object && typeof object === 'object' && key) {
+        addObserver(object, key, this, this.notify);
+        this.observedObject = object;
+        this.observedKey = key;
       }
     }
-  });
-}
+  },
+
+  _clearObservedObject() {
+    if (this.observedObject) {
+      removeObserver(this.observedObject, this.observedKey, this, this.notify);
+      this.observedObject = null;
+      this.observedKey = null;
+    }
+  }
+});
 
 export default getKeyword;
