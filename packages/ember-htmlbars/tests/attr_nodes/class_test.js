@@ -10,9 +10,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-// jscs:disable validateIndentation
-if (isEnabled('ember-htmlbars-attribute-syntax')) {
-  QUnit.module('ember-htmlbars: class attribute', {
+QUnit.module('ember-htmlbars: class attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -20,7 +18,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   }
 });
 
-  QUnit.test('class renders before didInsertElement', function() {
+QUnit.test('class renders before didInsertElement', function() {
   var matchingElement;
   view = EmberView.create({
     didInsertElement() {
@@ -35,7 +33,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
 });
 
-  QUnit.test('class property can contain multiple classes', function() {
+QUnit.test('class property can contain multiple classes', function() {
   view = EmberView.create({
     context: { classes: 'large blue' },
     template: compile('<div class={{classes}}></div>')
@@ -48,7 +46,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   ok(view.$('.blue')[0], 'second class found');
 });
 
-  QUnit.test('class property is removed when updated with a null value', function() {
+QUnit.test('class property is removed when updated with a null value', function() {
   view = EmberView.create({
     context: { class: 'large' },
     template: compile('<div class={{class}}></div>')
@@ -62,7 +60,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equal(view.element.firstChild.className, '', 'attribute is removed');
 });
 
-  QUnit.test('class attribute concats bound values', function() {
+QUnit.test('class attribute concats bound values', function() {
   view = EmberView.create({
     context: { size: 'large', color: 'blue' },
     template: compile('<div class=\'{{size}} {{color}} round\'></div>')
@@ -72,27 +70,27 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   strictEqual(view.element.firstChild.className, 'large blue round', 'classes are set');
 });
 
-  QUnit.test('class attribute accepts nested helpers, and updates', function() {
-    view = EmberView.create({
-      context: {
-        size: 'large',
-        hasColor: true,
-        hasShape: false,
-        shape: 'round'
-      },
-      template: compile('<div class=\'{{if true size}} {{if hasColor \'blue\'}} {{if hasShape shape \'no-shape\'}}\'></div>')
-    });
-    appendView(view);
-
-    strictEqual(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
-
-    run(view, view.set, 'context.hasColor', false);
-    run(view, view.set, 'context.hasShape', true);
-
-    strictEqual(view.element.firstChild.className, 'large  round', 'classes are updated');
+QUnit.test('class attribute accepts nested helpers, and updates', function() {
+  view = EmberView.create({
+    context: {
+      size: 'large',
+      hasColor: true,
+      hasShape: false,
+      shape: 'round'
+    },
+    template: compile('<div class=\'{{if true size}} {{if hasColor \'blue\'}} {{if hasShape shape \'no-shape\'}}\'></div>')
   });
+  appendView(view);
 
-  QUnit.test('class attribute can accept multiple classes from a single value, and update', function() {
+  strictEqual(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
+
+  run(view, view.set, 'context.hasColor', false);
+  run(view, view.set, 'context.hasShape', true);
+
+  strictEqual(view.element.firstChild.className, 'large  round', 'classes are updated');
+});
+
+QUnit.test('class attribute can accept multiple classes from a single value, and update', function() {
   view = EmberView.create({
     context: {
       size: 'large small'
@@ -108,7 +106,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   strictEqual(view.element.firstChild.className, 'medium', 'classes are updated');
 });
 
-  QUnit.test('class attribute can grok concatted classes, and update', function() {
+QUnit.test('class attribute can grok concatted classes, and update', function() {
   view = EmberView.create({
     context: {
       size: 'large',
@@ -126,7 +124,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   strictEqual(view.element.firstChild.className, 'btn-large -post    whoop', 'classes are updated');
 });
 
-  QUnit.test('class attribute stays in order', function() {
+QUnit.test('class attribute stays in order', function() {
   view = EmberView.create({
     context: {
       showA: 'a',
@@ -141,5 +139,3 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   strictEqual(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
-}
-// jscs:enable validateIndentation

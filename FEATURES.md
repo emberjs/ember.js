@@ -90,13 +90,6 @@ for a detailed explanation.
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
   invocation (instead of a standard HTML5 style element).
 
-* `ember-htmlbars-attribute-syntax`
-
-  Adds the `class="{{color}}"` syntax to Ember HTMLBars templates.
-  Works with arbitrary attributes and properties.
-
-  Added in [#9721](https://github.com/emberjs/ember.js/pull/9721).
-
 * `ember-htmlbars-each-in`
 
   Adds a helper for enumerating over the properties of an object in a

@@ -11,9 +11,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-// jscs:disable validateIndentation
-if (isEnabled('ember-htmlbars-attribute-syntax')) {
-  QUnit.module('ember-htmlbars: svg attribute', {
+QUnit.module('ember-htmlbars: svg attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -21,7 +19,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   }
 });
 
-  QUnit.test('unquoted viewBox property is output', function() {
+QUnit.test('unquoted viewBox property is output', function() {
   var viewBoxString = '0 0 100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -35,7 +33,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equal(view.element.getAttribute('svg'), null, 'attribute is removed');
 });
 
-  QUnit.test('quoted viewBox property is output', function() {
+QUnit.test('quoted viewBox property is output', function() {
   var viewBoxString = '0 0 100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -46,7 +44,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equalInnerHTML(view.element, `<svg viewBox="${viewBoxString}"></svg>`, 'attribute is output');
 });
 
-  QUnit.test('quoted viewBox property is concat', function() {
+QUnit.test('quoted viewBox property is concat', function() {
   var viewBoxString = '100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -62,7 +60,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equalInnerHTML(view.element, `<svg viewBox="0 0 ${newViewBoxString}"></svg>`, 'attribute is output');
 });
 
-  QUnit.test('class is output', function() {
+QUnit.test('class is output', function() {
   view = EmberView.create({
     context: { color: 'blue' },
     template: compile('<svg class=\'{{color}} tall\'></svg>')
@@ -75,5 +73,3 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   equalInnerHTML(view.element, '<svg class="red tall"></svg>', 'attribute is output');
 });
-}
-// jscs:enable validateIndentation
