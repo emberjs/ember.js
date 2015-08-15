@@ -799,6 +799,29 @@ QUnit.test('specifying classNames results in correct class', function(assert) {
   ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
 });
 
+QUnit.test('specifying custom concatenatedProperties avoids clobbering', function(assert) {
+  expect(1);
+
+  let clickyThing;
+  registry.register('component:some-clicky-thing', Component.extend({
+    concatenatedProperties: ['blahzz'],
+    blahzz: ['blark', 'pory'],
+    init() {
+      this._super(...arguments);
+      clickyThing = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{#some-clicky-thing blahzz="baz"}}Click Me{{/some-clicky-thing}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  assert.deepEqual(clickyThing.get('blahzz'),  ['blark', 'pory', 'baz'], 'property is properly combined');
+});
+
 // jscs:disable validateIndentation
 if (isEnabled('ember-htmlbars-component-generation')) {
   QUnit.module('component - invocation (angle brackets)', {
