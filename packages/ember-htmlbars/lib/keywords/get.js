@@ -4,7 +4,6 @@
 */
 
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import Stream from 'ember-metal/streams/stream';
 import KeyStream from 'ember-metal/streams/key-stream';
 import { isStream } from 'ember-metal/streams/utils';

@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';

@@ -1,36 +1,11 @@
 import 'ember';
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
 
 var Router, App, router, registry, container;
 var set = Ember.set;
 
 var aboutDefer, otherDefer;
-
-function basicEagerURLUpdateTest(setTagName) {
-  expect(6);
-
-  if (setTagName) {
-    Ember.TEMPLATES.application = compile('{{outlet}}{{link-to \'Index\' \'index\' id=\'index-link\'}}{{link-to \'About\' \'about\' id=\'about-link\' tagName=\'span\'}}');
-  }
-
-  bootApplication();
-  equal(updateCount, 0);
-  Ember.run(Ember.$('#about-link'), 'click');
-
-  // URL should be eagerly updated now
-  equal(updateCount, 1);
-  equal(router.get('location.path'), '/about');
-
-  // Resolve the promise.
-  Ember.run(aboutDefer, 'resolve');
-  equal(router.get('location.path'), '/about');
-
-  // Shouldn't have called update url again.
-  equal(updateCount, 1);
-  equal(router.get('location.path'), '/about');
-}
 
 function bootApplication() {
   router = container.lookup('router:main');

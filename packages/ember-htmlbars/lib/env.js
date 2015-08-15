@@ -1,5 +1,4 @@
 import _Ember from 'ember-metal';
-import isEnabled from 'ember-metal/features';
 import environment from 'ember-metal/environment';
 
 import { hooks } from 'htmlbars-runtime';

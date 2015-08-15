@@ -1,6 +1,5 @@
 /* jshint scripturl:true */
 
-import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { SafeString } from 'ember-htmlbars/utils/string';

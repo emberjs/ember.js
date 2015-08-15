@@ -3,7 +3,6 @@
 @submodule ember-templates
 */
 
-import isEnabled from 'ember-metal/features';
 import shouldDisplay from 'ember-views/streams/should_display';
 
 /**

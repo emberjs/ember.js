@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import Registry from 'container/registry';
 import Helper from 'ember-htmlbars/helper';
 import { runDestroy } from 'ember-runtime/tests/utils';

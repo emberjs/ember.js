@@ -1,6 +1,5 @@
 import 'ember';
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';

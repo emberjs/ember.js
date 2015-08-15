@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // assert
-import isEnabled from 'ember-metal/features';
 import { uuid } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import { readUnwrappedModel } from 'ember-views/streams/utils';

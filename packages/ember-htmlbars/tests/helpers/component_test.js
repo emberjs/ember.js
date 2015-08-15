@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';

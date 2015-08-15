@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // A, FEATURES, assert
-import isEnabled from 'ember-metal/features';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EventDispatcher from 'ember-views/system/event_dispatcher';

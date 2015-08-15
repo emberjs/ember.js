@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // FEATURES, assert
-import isEnabled from 'ember-metal/features';
 
 /**
 @module ember

@@ -1,6 +1,5 @@
 /*globals Ember */
 import 'ember';
-import isEnabled from 'ember-metal/features';
 
 QUnit.module('Global API Tests');
 

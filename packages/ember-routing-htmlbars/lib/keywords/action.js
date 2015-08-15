@@ -3,7 +3,6 @@
 @submodule ember-templates
 */
 
-import isEnabled from 'ember-metal/features';
 import { keyword } from 'htmlbars-runtime/hooks';
 import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 

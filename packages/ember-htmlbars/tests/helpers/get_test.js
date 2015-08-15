@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
