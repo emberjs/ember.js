@@ -85,19 +85,6 @@ for a detailed explanation.
   });
   ```
 
-* `ember-routing-named-substates`
-
-  Add named substates; e.g. when resolving a `loading` or `error`
-  substate to enter, Ember will take into account the name of the
-  immediate child route that the `error`/`loading` action originated
-  from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or
-  `foo_loading` if it exists. This also adds the ability for a
-  top-level `application_loading` or `application_error` state to
-  be entered for `loading`/`error` events emitted from
-  `ApplicationRoute`.
-
-  Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
-
 * `ember-htmlbars-component-generation`
 
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
@@ -266,4 +253,3 @@ for a detailed explanation.
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
   routable components.
-

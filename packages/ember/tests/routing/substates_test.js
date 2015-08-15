@@ -458,297 +458,295 @@ QUnit.test('Setting a query param during a slow transition should work', functio
   equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
 });
 
-if (isEnabled('ember-routing-named-substates')) {
-  QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
-    expect(2);
+QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
+  expect(2);
 
-    var appDeferred = Ember.RSVP.defer();
+  var appDeferred = Ember.RSVP.defer();
 
-    App.ApplicationRoute = Ember.Route.extend({
-      model() {
-        return appDeferred.promise;
-      }
-    });
-
-    var loadingRouteEntered = false;
-    App.ApplicationLoadingRoute = Ember.Route.extend({
-      setupController() {
-        loadingRouteEntered = true;
-      }
-    });
-
-    bootApplication();
-
-    ok(loadingRouteEntered, 'ApplicationLoadingRoute was entered');
-
-    Ember.run(appDeferred, 'resolve', {});
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  App.ApplicationRoute = Ember.Route.extend({
+    model() {
+      return appDeferred.promise;
+    }
   });
 
-  QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
-    expect(3);
-
-    templates['application_loading'] = 'TOPLEVEL LOADING';
-
-    var appDeferred = Ember.RSVP.defer();
-    App.ApplicationRoute = Ember.Route.extend({
-      model() {
-        return appDeferred.promise;
-      }
-    });
-
-    var loadingRouteEntered = false;
-    App.ApplicationLoadingRoute = Ember.Route.extend({
-      setupController() {
-        loadingRouteEntered = true;
-      }
-    });
-
-    App.ApplicationLoadingView = EmberView.extend({
-      elementId: 'toplevel-loading'
-    });
-
-    bootApplication();
-
-    equal(Ember.$('#qunit-fixture > #toplevel-loading').text(), 'TOPLEVEL LOADING');
-
-    Ember.run(appDeferred, 'resolve', {});
-
-    equal(Ember.$('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  var loadingRouteEntered = false;
+  App.ApplicationLoadingRoute = Ember.Route.extend({
+    setupController() {
+      loadingRouteEntered = true;
+    }
   });
 
-  QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
-    expect(6);
+  bootApplication();
 
-    templates['grandma'] = 'GRANDMA {{outlet}}';
-    templates['grandma/error'] = 'ERROR: {{model.msg}}';
-    templates['grandma/mom_error'] = 'MOM ERROR: {{model.msg}}';
+  ok(loadingRouteEntered, 'ApplicationLoadingRoute was entered');
 
-    Router.map(function() {
-      this.route('grandma', function() {
-        this.route('mom', { resetNamespace: true }, function() {
-          this.route('sally');
-        });
+  Ember.run(appDeferred, 'resolve', {});
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+});
+
+QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
+  expect(3);
+
+  templates['application_loading'] = 'TOPLEVEL LOADING';
+
+  var appDeferred = Ember.RSVP.defer();
+  App.ApplicationRoute = Ember.Route.extend({
+    model() {
+      return appDeferred.promise;
+    }
+  });
+
+  var loadingRouteEntered = false;
+  App.ApplicationLoadingRoute = Ember.Route.extend({
+    setupController() {
+      loadingRouteEntered = true;
+    }
+  });
+
+  App.ApplicationLoadingView = EmberView.extend({
+    elementId: 'toplevel-loading'
+  });
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture > #toplevel-loading').text(), 'TOPLEVEL LOADING');
+
+  Ember.run(appDeferred, 'resolve', {});
+
+  equal(Ember.$('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+});
+
+QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
+  expect(6);
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+  templates['grandma/error'] = 'ERROR: {{model.msg}}';
+  templates['grandma/mom_error'] = 'MOM ERROR: {{model.msg}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
       });
     });
-
-    App.ApplicationController = Ember.Controller.extend();
-
-    App.MomSallyRoute = Ember.Route.extend({
-      model() {
-        step(1, 'MomSallyRoute#model');
-
-        return Ember.RSVP.reject({
-          msg: 'did it broke?'
-        });
-      },
-      actions: {
-        error() {
-          step(2, 'MomSallyRoute#actions.error');
-          return true;
-        }
-      }
-    });
-
-    throws(function() {
-      bootApplication('/grandma/mom/sally');
-    }, function(err) { return err.msg === 'did it broke?'; });
-
-    step(3, 'App finished booting');
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM ERROR: did it broke?', 'the more specifically-named mom error substate was entered over the other error route');
-
-    var appController = container.lookup('controller:application');
-    equal(appController.get('currentPath'), 'grandma.mom_error', 'Initial route fully loaded');
   });
 
-  QUnit.test('Prioritized substate entry works with preserved-namespace nested routes', function() {
-    expect(2);
+  App.ApplicationController = Ember.Controller.extend();
 
-    templates['foo/bar_loading'] = 'FOOBAR LOADING';
-    templates['foo/bar/index'] = 'YAY';
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
 
-    Router.map(function() {
-      this.route('foo', function() {
-        this.route('foo.bar', { path: '/bar', resetNamespace: true }, function() {
-        });
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
       });
-    });
-
-    App.ApplicationController = Ember.Controller.extend();
-
-    var deferred = Ember.RSVP.defer();
-    App.FooBarRoute = Ember.Route.extend({
-      model() {
-        return deferred.promise;
-      }
-    });
-
-    bootApplication('/foo/bar');
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
-
-    Ember.run(deferred, 'resolve');
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
-  });
-
-  QUnit.test('Prioritized loading substate entry works with preserved-namespace nested routes', function() {
-    expect(2);
-
-    templates['foo/bar_loading'] = 'FOOBAR LOADING';
-    templates['foo/bar'] = 'YAY';
-
-    Router.map(function() {
-      this.route('foo', function() {
-        this.route('bar');
-      });
-    });
-
-    App.ApplicationController = Ember.Controller.extend();
-
-    var deferred = Ember.RSVP.defer();
-    App.FooBarRoute = Ember.Route.extend({
-      model() {
-        return deferred.promise;
-      }
-    });
-
-    bootApplication('/foo/bar');
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
-
-    Ember.run(deferred, 'resolve');
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
-  });
-
-  QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
-    expect(2);
-
-    templates['foo/bar_error'] = 'FOOBAR ERROR: {{model.msg}}';
-    templates['foo/bar'] = 'YAY';
-
-    Router.map(function() {
-      this.route('foo', function() {
-        this.route('bar');
-      });
-    });
-
-    App.ApplicationController = Ember.Controller.extend();
-
-    App.FooBarRoute = Ember.Route.extend({
-      model() {
-        return Ember.RSVP.reject({
-          msg: 'did it broke?'
-        });
-      }
-    });
-
-    throws(function() {
-      bootApplication('/foo/bar');
-    }, function(err) { return err.msg === 'did it broke?'; });
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
-  });
-
-  QUnit.test('Prioritized loading substate entry works with auto-generated index routes', function() {
-    expect(2);
-
-    templates['foo/index_loading'] = 'FOO LOADING';
-    templates['foo/index'] = 'YAY';
-    templates['foo'] = '{{outlet}}';
-
-    Router.map(function() {
-      this.route('foo', function() {
-        this.route('bar');
-      });
-    });
-
-    App.ApplicationController = Ember.Controller.extend();
-
-    var deferred = Ember.RSVP.defer();
-    App.FooIndexRoute = Ember.Route.extend({
-      model() {
-        return deferred.promise;
-      }
-    });
-    App.FooRoute = Ember.Route.extend({
-      model() {
+    },
+    actions: {
+      error() {
+        step(2, 'MomSallyRoute#actions.error');
         return true;
       }
-    });
+    }
+  });
 
+  throws(function() {
+    bootApplication('/grandma/mom/sally');
+  }, function(err) { return err.msg === 'did it broke?'; });
+
+  step(3, 'App finished booting');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM ERROR: did it broke?', 'the more specifically-named mom error substate was entered over the other error route');
+
+  var appController = container.lookup('controller:application');
+  equal(appController.get('currentPath'), 'grandma.mom_error', 'Initial route fully loaded');
+});
+
+QUnit.test('Prioritized substate entry works with preserved-namespace nested routes', function() {
+  expect(2);
+
+  templates['foo/bar_loading'] = 'FOOBAR LOADING';
+  templates['foo/bar/index'] = 'YAY';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('foo.bar', { path: '/bar', resetNamespace: true }, function() {
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  var deferred = Ember.RSVP.defer();
+  App.FooBarRoute = Ember.Route.extend({
+    model() {
+      return deferred.promise;
+    }
+  });
+
+  bootApplication('/foo/bar');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+
+  Ember.run(deferred, 'resolve');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+});
+
+QUnit.test('Prioritized loading substate entry works with preserved-namespace nested routes', function() {
+  expect(2);
+
+  templates['foo/bar_loading'] = 'FOOBAR LOADING';
+  templates['foo/bar'] = 'YAY';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar');
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  var deferred = Ember.RSVP.defer();
+  App.FooBarRoute = Ember.Route.extend({
+    model() {
+      return deferred.promise;
+    }
+  });
+
+  bootApplication('/foo/bar');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+
+  Ember.run(deferred, 'resolve');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+});
+
+QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
+  expect(2);
+
+  templates['foo/bar_error'] = 'FOOBAR ERROR: {{model.msg}}';
+  templates['foo/bar'] = 'YAY';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar');
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.FooBarRoute = Ember.Route.extend({
+    model() {
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    }
+  });
+
+  throws(function() {
+    bootApplication('/foo/bar');
+  }, function(err) { return err.msg === 'did it broke?'; });
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
+});
+
+QUnit.test('Prioritized loading substate entry works with auto-generated index routes', function() {
+  expect(2);
+
+  templates['foo/index_loading'] = 'FOO LOADING';
+  templates['foo/index'] = 'YAY';
+  templates['foo'] = '{{outlet}}';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar');
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  var deferred = Ember.RSVP.defer();
+  App.FooIndexRoute = Ember.Route.extend({
+    model() {
+      return deferred.promise;
+    }
+  });
+  App.FooRoute = Ember.Route.extend({
+    model() {
+      return true;
+    }
+  });
+
+  bootApplication('/foo');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO LOADING', 'foo.index_loading was entered');
+
+  Ember.run(deferred, 'resolve');
+
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+});
+
+QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
+  expect(2);
+
+  templates['foo/index_error'] = 'FOO ERROR: {{model.msg}}';
+  templates['foo/index'] = 'YAY';
+  templates['foo'] = '{{outlet}}';
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar');
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.FooIndexRoute = Ember.Route.extend({
+    model() {
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    }
+  });
+  App.FooRoute = Ember.Route.extend({
+    model() {
+      return true;
+    }
+  });
+
+  throws(function() {
     bootApplication('/foo');
+  }, function(err) { return err.msg === 'did it broke?'; });
 
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO LOADING', 'foo.index_loading was entered');
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
+});
 
-    Ember.run(deferred, 'resolve');
+QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
+  expect(3);
 
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+  templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
+
+  var reject = true;
+  App.ApplicationRoute = Ember.Route.extend({
+    model() {
+      if (reject) {
+        return Ember.RSVP.reject({ msg: 'BAD NEWS BEARS' });
+      } else {
+        return {};
+      }
+    }
   });
 
-  QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
-    expect(2);
+  throws(function() {
+    bootApplication();
+  }, function(err) { return err.msg === 'BAD NEWS BEARS'; });
 
-    templates['foo/index_error'] = 'FOO ERROR: {{model.msg}}';
-    templates['foo/index'] = 'YAY';
-    templates['foo'] = '{{outlet}}';
+  equal(Ember.$('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
 
-    Router.map(function() {
-      this.route('foo', function() {
-        this.route('bar');
-      });
-    });
+  reject = false;
+  Ember.run(router, 'transitionTo', 'index');
 
-    App.ApplicationController = Ember.Controller.extend();
-
-    App.FooIndexRoute = Ember.Route.extend({
-      model() {
-        return Ember.RSVP.reject({
-          msg: 'did it broke?'
-        });
-      }
-    });
-    App.FooRoute = Ember.Route.extend({
-      model() {
-        return true;
-      }
-    });
-
-    throws(function() {
-      bootApplication('/foo');
-    }, function(err) { return err.msg === 'did it broke?'; });
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
-  });
-
-  QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
-    expect(3);
-
-    templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
-
-    var reject = true;
-    App.ApplicationRoute = Ember.Route.extend({
-      model() {
-        if (reject) {
-          return Ember.RSVP.reject({ msg: 'BAD NEWS BEARS' });
-        } else {
-          return {};
-        }
-      }
-    });
-
-    throws(function() {
-      bootApplication();
-    }, function(err) { return err.msg === 'BAD NEWS BEARS'; });
-
-    equal(Ember.$('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
-
-    reject = false;
-    Ember.run(router, 'transitionTo', 'index');
-
-    equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
-  });
-}
+  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+});

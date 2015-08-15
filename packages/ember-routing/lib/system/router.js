@@ -809,12 +809,10 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
   var targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
   var namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
-  if (isEnabled('ember-routing-named-substates')) {
-    // First, try a named loading state, e.g. 'foo_loading'
-    childName = namespace + targetChildRouteName + '_' + name;
-    if (routeHasBeenDefined(router, childName)) {
-      return childName;
-    }
+  // First, try a named loading state, e.g. 'foo_loading'
+  childName = namespace + targetChildRouteName + '_' + name;
+  if (routeHasBeenDefined(router, childName)) {
+    return childName;
   }
 
   // Second, try general loading state, e.g. 'loading'
