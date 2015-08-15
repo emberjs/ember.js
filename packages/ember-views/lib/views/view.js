@@ -810,7 +810,7 @@ var View = CoreView.extend(
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
            or an instance of Ember.Mixin.
     @return Ember.View
-    @private
+    @public
   */
   nearestOfType(klass) {
     var view = get(this, 'parentView');
