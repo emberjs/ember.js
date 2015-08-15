@@ -2,7 +2,6 @@
   "features": {
     "features-stripped-test": null,
     "ember-htmlbars-component-generation": null,
-    "ember-htmlbars-component-helper": true,
     "ember-htmlbars-inline-if-helper": true,
     "ember-htmlbars-attribute-syntax": true,
     "ember-htmlbars-each-in": true,

@@ -475,35 +475,33 @@ QUnit.test('moduleName is available on _renderNode when no layout is present', f
   runAppend(view);
 });
 
-if (isEnabled('ember-htmlbars-component-helper')) {
-  QUnit.test('{{component}} helper works with positional params', function() {
-    var SampleComponent = Component.extend();
-    SampleComponent.reopenClass({
-      positionalParams: ['name', 'age']
-    });
-
-    registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-    registry.register('component:sample-component', SampleComponent);
-
-    view = EmberView.extend({
-      layout: compile('{{component "sample-component" myName myAge}}'),
-      container: container,
-      context: {
-        myName: 'Quint',
-        myAge: 4
-      }
-    }).create();
-
-    runAppend(view);
-    equal(jQuery('#qunit-fixture').text(), 'Quint4');
-    run(function() {
-      set(view.context, 'myName', 'Edward');
-      set(view.context, 'myAge', '5');
-    });
-
-    equal(jQuery('#qunit-fixture').text(), 'Edward5');
+QUnit.test('{{component}} helper works with positional params', function() {
+  var SampleComponent = Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['name', 'age']
   });
-}
+
+  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  registry.register('component:sample-component', SampleComponent);
+
+  view = EmberView.extend({
+    layout: compile('{{component "sample-component" myName myAge}}'),
+    container: container,
+    context: {
+      myName: 'Quint',
+      myAge: 4
+    }
+  }).create();
+
+  runAppend(view);
+  equal(jQuery('#qunit-fixture').text(), 'Quint4');
+  run(function() {
+    set(view.context, 'myName', 'Edward');
+    set(view.context, 'myAge', '5');
+  });
+
+  equal(jQuery('#qunit-fixture').text(), 'Edward5');
+});
 
 QUnit.test('yield to inverse', function() {
   registry.register('template:components/my-if', compile('{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}'));
