@@ -90,18 +90,6 @@ for a detailed explanation.
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
   invocation (instead of a standard HTML5 style element).
 
-* `ember-routing-transitioning-classes`
-
-  Disables eager URL updates during slow transitions in favor of new CSS
-  classes added to `link-to`s (in addition to `active` class):
-
-  - `ember-transitioning-in`: link-to is not currently active, but will be
-    when the current underway (slow) transition completes.
-  - `ember-transitioning-out`: link-to is currently active, but will no longer
-    be active when the current underway (slow) transition completes.
-
-  Added in [#9919](https://github.com/emberjs/ember.js/pull/9919)
-
 * `ember-metal-stream`
 
   Exposes the basic internal stream implementation as `Ember.Stream`.

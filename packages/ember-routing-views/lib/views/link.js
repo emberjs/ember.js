@@ -19,10 +19,6 @@ import ControllerMixin from 'ember-runtime/mixins/controller';
 import linkToTemplate from 'ember-htmlbars/templates/link-to';
 linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
-var linkComponentClassNameBindings = ['active', 'loading', 'disabled'];
-if (isEnabled('ember-routing-transitioning-classes')) {
-  linkComponentClassNameBindings = ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'];
-}
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -162,7 +158,7 @@ var LinkComponent = EmberComponent.extend({
     @default ['active', 'loading', 'disabled']
     @public
   */
-  classNameBindings: linkComponentClassNameBindings,
+  classNameBindings: ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'],
 
   /**
     By default the `{{link-to}}` helper responds to the `click` event. You
