@@ -877,33 +877,31 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-if (isEnabled('ember-routing-htmlbars-improved-actions')) {
-  QUnit.test('a quoteless function parameter should be called, including arguments', function() {
-    expect(2);
+QUnit.test('a quoteless function parameter should be called, including arguments', function() {
+  expect(2);
 
-    var arg = 'rough ray';
+  var arg = 'rough ray';
 
-    view = EmberView.create({
-      template: compile(`<a {{action submit '${arg}'}}></a>`)
-    });
-
-    var controller = EmberController.extend({
-      submit(actualArg) {
-        ok(true, 'submit function called');
-        equal(actualArg, arg, 'argument passed');
-      }
-    }).create();
-
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-
-    run(function() {
-      view.$('a').click();
-    });
+  view = EmberView.create({
+    template: compile(`<a {{action submit '${arg}'}}></a>`)
   });
-}
+
+  var controller = EmberController.extend({
+    submit(actualArg) {
+      ok(true, 'submit function called');
+      equal(actualArg, arg, 'argument passed');
+    }
+  }).create();
+
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  run(function() {
+    view.$('a').click();
+  });
+});
 
 QUnit.test('a quoteless parameter that does not resolve to a value asserts', function() {
   var controller = EmberController.extend({
