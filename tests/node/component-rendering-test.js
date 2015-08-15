@@ -55,8 +55,12 @@ function buildComponent(template, props) {
 }
 
 function renderComponent(component) {
-  run(component, component.createElement);
+  var element;
+
+  run(function() {
+    element = component.renderToElement();
+  });
 
   var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-  return serializer.serialize(component.element);
+  return serializer.serialize(element);
 }

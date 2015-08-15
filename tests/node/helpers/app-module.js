@@ -68,7 +68,13 @@ features['ember-application-visit'] = true;
 
 /*jshint -W079 */
 global.EmberENV = {
-  FEATURES: features
+  FEATURES: features,
+  // Views are disabled but can be re-enabled via an addon.
+  // This flag simulates the addon so we can verify those
+  // views remain compatible with FastBoot. This can
+  // be removed in Ember 2.4 when view support is dropped
+  // entirely.
+  _ENABLE_LEGACY_VIEW_SUPPORT: true
 };
 
 module.exports = function(moduleName) {
@@ -89,6 +95,7 @@ module.exports = function(moduleName) {
       this.template = registerTemplate;
       this.component = registerComponent;
       this.controller = registerController;
+      this.view = registerView;
       this.routes = registerRoutes;
       this.registry = {};
       this.renderToElement = renderToElement;
@@ -199,6 +206,11 @@ function registerComponent(name, componentProps) {
 function registerController(name, controllerProps) {
   var controller = this.Ember.Controller.extend(controllerProps);
   this.register('controller:'+name, controller);
+}
+
+function registerView(name, viewProps) {
+  var view = this.Ember.View.extend(viewProps);
+  this.register('view:'+name, view);
 }
 
 function registerRoutes(cb) {

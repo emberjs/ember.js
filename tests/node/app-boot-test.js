@@ -80,3 +80,44 @@ QUnit.test("outlets", function(assert) {
 
   return this.all(promises);
 });
+
+QUnit.test("lifecycle hooks disabled", function(assert) {
+  expect(2);
+
+  this.template('application', "{{my-component}}{{outlet}}");
+
+  this.component('my-component', {
+    willRender: function() {
+      ok(true, "should trigger component willRender hook");
+    },
+    didRender: function() {
+      ok(false, "should not trigger didRender hook");
+    },
+    willInsertElement: function() {
+      ok(false, "should not trigger willInsertElement hook");
+    },
+    didInsertElement: function() {
+      ok(false, "should not trigger didInsertElement hook");
+    }
+  });
+
+  this.view('index', {
+    _willRender: function() {
+      ok(true, "should trigger view _willRender hook");
+    },
+    didRender: function() {
+      ok(false, "should not trigger didRender hook");
+    },
+    willInsertElement: function() {
+      ok(false, "should not trigger willInsertElement hook");
+    },
+    didCreateElement: function() {
+      ok(false, "should not trigger didCreateElement hook");
+    },
+    didInsertElement: function() {
+      ok(false, "should not trigger didInsertElement hook");
+    }
+  });
+
+  return this.renderToHTML('/');
+});

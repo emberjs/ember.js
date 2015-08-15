@@ -153,10 +153,14 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
 
     var element = this.expectElement && this.renderNode.firstNode;
 
-    env.renderer.didCreateElement(component, element);
-    env.renderer.willInsertElement(component, element); // 2.0TODO remove legacy hook
+    // In environments like FastBoot, disable any hooks that would cause the component
+    // to access the DOM directly.
+    if (env.destinedForDOM) {
+      env.renderer.didCreateElement(component, element);
+      env.renderer.willInsertElement(component, element); // 2.0TODO remove legacy hook
 
-    env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
+      env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
+    }
   }, this);
 };
 

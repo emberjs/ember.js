@@ -97,9 +97,13 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
     if (component) {
       var element = this.expectElement && this.renderNode.firstNode;
 
-      env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
-      env.renderer.willInsertElement(component, element);
-      env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
+      // In environments like FastBoot, disable any hooks that would cause the component
+      // to access the DOM directly.
+      if (env.destinedForDOM) {
+        env.renderer.didCreateElement(component, element); // 2.0TODO: Remove legacy hooks.
+        env.renderer.willInsertElement(component, element);
+        env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
+      }
     }
   }, this);
 };
