@@ -4,7 +4,6 @@
     "ember-htmlbars-component-generation": null,
     "ember-testing-checkbox-helpers": null,
     "ember-metal-stream": null,
-    "ember-application-instance-initializers": true,
     "ember-application-initializer-context": true,
     "ember-router-willtransition": true,
     "ember-application-visit": null,

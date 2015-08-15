@@ -29,27 +29,6 @@ for a detailed explanation.
   serially and call `reset()` each time), as well as being critical to
   for FastBoot.
 
-* `ember-application-instance-initializers`
-
-  Splits apart initializers into two phases:
-
-  * Boot-time Initializers that receive a registry, and use it to set up
-    code structures
-  * Instance Initializers that receive an application instance, and use
-    it to set up application state per run of the application.
-
-  In FastBoot, each request will have its own run of the application,
-  and will only need to run the instance initializers.
-
-  In the future, tests will also be able to use this differentiation to
-  run just the instance initializers per-test.
-
-  With this change, `App.initializer` becomes a "boot-time" initializer,
-  and issues a deprecation warning if instances are accessed.
-
-  Apps should migrate any initializers that require instances to the new
-  `App.instanceInitializer` API.
-
 * `ember-application-initializer-context`
 
   Sets the context of the initializer function to its object instead of the
