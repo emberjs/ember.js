@@ -84,16 +84,6 @@ for a detailed explanation.
 
   Added in [#10160](https://github.com/emberjs/ember.js/pull/10160)
 
-* `ember-htmlbars-helper`
-
-  Implements RFC https://github.com/emberjs/rfcs/pull/53, a public helper
-  api.
-
-* `ember-htmlbars-dashless-helpers`
-
-  Implements RFC https://github.com/emberjs/rfcs/pull/58, adding support for
-  dashless helpers.
-
 * `ember-debug-handlers`
 
   Implemencts RFC https://github.com/emberjs/rfcs/pull/65, adding support for

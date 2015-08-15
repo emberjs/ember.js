@@ -26,35 +26,24 @@ QUnit.test('returns an empty hash when no helpers are known', function() {
   deepEqual(result, {}, 'no helpers were known');
 });
 
-if (isEnabled('ember-htmlbars-dashless-helpers')) {
-  QUnit.test('includes helpers in the registry', function() {
-    registry.register('helper:t', Helper);
-    let result = discoverKnownHelpers(container);
-    let helpers = Object.keys(result);
+QUnit.test('includes helpers in the registry', function() {
+  registry.register('helper:t', Helper);
+  let result = discoverKnownHelpers(container);
+  let helpers = Object.keys(result);
 
-    deepEqual(helpers, ['t'], 'helpers from the registry were known');
-  });
+  deepEqual(helpers, ['t'], 'helpers from the registry were known');
+});
 
-  QUnit.test('includes resolved helpers', function() {
-    resolver.knownForType = function() {
-      return {
-        'helper:f': true
-      };
+QUnit.test('includes resolved helpers', function() {
+  resolver.knownForType = function() {
+    return {
+      'helper:f': true
     };
+  };
 
-    registry.register('helper:t', Helper);
-    let result = discoverKnownHelpers(container);
-    let helpers = Object.keys(result);
+  registry.register('helper:t', Helper);
+  let result = discoverKnownHelpers(container);
+  let helpers = Object.keys(result);
 
-    deepEqual(helpers, ['t', 'f'], 'helpers from the registry were known');
-  });
-} else {
-  QUnit.test('returns empty object when disabled', function() {
-    registry.register('helper:t', Helper);
-
-    let result = discoverKnownHelpers(container);
-    let helpers = Object.keys(result);
-
-    deepEqual(helpers, [], 'helpers from the registry were known');
-  });
-}
+  deepEqual(helpers, ['t', 'f'], 'helpers from the registry were known');
+});

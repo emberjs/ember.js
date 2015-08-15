@@ -161,7 +161,5 @@ Ember.HTMLBars = {
   DOMHelper
 };
 
-if (isEnabled('ember-htmlbars-helper')) {
-  Helper.helper = makeHelper;
-  Ember.Helper = Helper;
-}
+Helper.helper = makeHelper;
+Ember.Helper = Helper;

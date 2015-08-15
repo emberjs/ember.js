@@ -86,42 +86,21 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
   ok(!helpers['x-reverse'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
-if (isEnabled('ember-htmlbars-dashless-helpers')) {
-  QUnit.test('Undashed helpers registered on the container can be invoked', function() {
-    Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>');
+QUnit.test('Undashed helpers registered on the container can be invoked', function() {
+  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>');
 
-    boot(function() {
-      registry.register('helper:omg', helper(function() {
-        return 'OMG';
-      }));
+  boot(function() {
+    registry.register('helper:omg', helper(function() {
+      return 'OMG';
+    }));
 
-      registry.register('helper:yorp', helper(function([ value ]) {
-        return value;
-      }));
-    });
-
-    equal(Ember.$('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
+    registry.register('helper:yorp', helper(function([ value ]) {
+      return value;
+    }));
   });
-} else {
-  QUnit.test('Undashed helpers registered on the container can not (presently) be invoked', function() {
-    // Note: the reason we're not allowing undashed helpers is to avoid
-    // a possible perf hit in hot code paths, i.e. _triageMustache.
-    // We only presently perform container lookups if prop.indexOf('-') >= 0
 
-    Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{omg}}|{{omg \'GRRR\'}}|{{yorp}}|{{yorp \'ahh\'}}</div>');
-
-    expectAssertion(function() {
-      boot(function() {
-        registry.register('helper:omg', function() {
-          return 'OMG';
-        });
-        registry.register('helper:yorp', helper(function() {
-          return 'YORP';
-        }));
-      });
-    }, /A helper named 'omg' could not be found/);
-  });
-}
+  equal(Ember.$('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
+});
 
 QUnit.test('Helpers can receive injections', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{full-name}}</div>');

@@ -8,8 +8,6 @@
     "ember-routing-core-outlet": null,
     "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
-    "ember-htmlbars-helper": true,
-    "ember-htmlbars-dashless-helpers": true,
     "ember-debug-handlers": null,
     "ember-registry-container-reform": null,
     "ember-routing-routable-components": null
