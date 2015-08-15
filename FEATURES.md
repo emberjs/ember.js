@@ -29,13 +29,6 @@ for a detailed explanation.
   serially and call `reset()` each time), as well as being critical to
   for FastBoot.
 
-* `ember-application-initializer-context`
-
-  Sets the context of the initializer function to its object instead of the
-  global object.
-
-  Added in [#10179](https://github.com/emberjs/ember.js/pull/10179).
-
 * `ember-testing-checkbox-helpers`
 
   Add `check` and `uncheck` test helpers.
