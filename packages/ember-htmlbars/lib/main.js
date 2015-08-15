@@ -141,9 +141,7 @@ registerHelper('with', withHelper);
 registerHelper('loc', locHelper);
 registerHelper('log', logHelper);
 registerHelper('each', eachHelper);
-if (isEnabled('ember-htmlbars-each-in')) {
-  registerHelper('each-in', eachInHelper);
-}
+registerHelper('each-in', eachInHelper);
 registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);

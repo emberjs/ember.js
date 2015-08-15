@@ -90,33 +90,6 @@ for a detailed explanation.
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
   invocation (instead of a standard HTML5 style element).
 
-* `ember-htmlbars-each-in`
-
-  Adds a helper for enumerating over the properties of an object in a
-  Handlebars templates. For example, given this data:
-
-  ```javascript
-  {
-    "Item 1": 1234,
-    "Item 2": 3456
-  }
-  ```
-
-  And this template:
-
-  ```handlebars
-  {{#each-in items as |key value|}}
-    <p>{{key}}: {{value}}</p>
-  {{/each-in}}
-  ```
-
-  The following output would be produced:
-
-  ```html
-  <p>Item 1: 1234</p>
-  <p>Item 2: 3456</p>
-  ```
-
 * `ember-routing-transitioning-classes`
 
   Disables eager URL updates during slow transitions in favor of new CSS
