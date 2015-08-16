@@ -4,7 +4,7 @@ import Stream from './stream';
 /*
  Check whether an object is a stream or not
 
- @public
+ @private
  @for Ember.stream
  @function isStream
  @param {Object|Stream} object object to check whether it is a stream
@@ -36,7 +36,7 @@ export function subscribe(object, callback, context) {
  A method of unsubscribing from a stream which is safe for use with a non-stream
  object. If a non-stream object is passed, the function does nothing.
 
- @public
+ @private
  @for Ember.stream
  @function unsubscribe
  @param {Object|Stream} object object or stream to potentially unsubscribe from
@@ -53,7 +53,7 @@ export function unsubscribe(object, callback, context) {
  Retrieve the value of a stream, or in the case a non-stream object is passed,
  return the object itself.
 
- @public
+ @private
  @for Ember.stream
  @function read
  @param {Object|Stream} object object to return the value of
@@ -70,7 +70,7 @@ export function read(object) {
 /*
  Map an array, replacing any streams with their values.
 
- @public
+ @private
  @for Ember.stream
  @function readArray
  @param {Array} array The array to read values from
@@ -92,7 +92,7 @@ export function readArray(array) {
  Map a hash, replacing any stream property values with the current value of that
  stream.
 
- @public
+ @private
  @for Ember.stream
  @function readHash
  @param {Object} object The hash to read keys and values from
@@ -112,7 +112,7 @@ export function readHash(object) {
 /*
  Check whether an array contains any stream values
 
- @public
+ @private
  @for Ember.stream
  @function scanArray
  @param {Array} array array given to a handlebars helper
@@ -136,7 +136,7 @@ export function scanArray(array) {
 /*
  Check whether a hash has any stream property values
 
- @public
+ @private
  @for Ember.stream
  @function scanHash
  @param {Object} hash "hash" argument given to a handlebars helper
@@ -159,7 +159,7 @@ export function scanHash(hash) {
 /*
  Join an array, with any streams replaced by their current values
 
- @public
+ @private
  @for Ember.stream
  @function concat
  @param {Array} array An array containing zero or more stream objects and
@@ -308,7 +308,7 @@ export function zipHash(object, callback, label) {
  In the example, result is a stream if source is a stream, or a number of
  source was numeric.
 
- @public
+ @private
  @for Ember.stream
  @function chain
  @param {Object|Stream} value A stream or non-stream object

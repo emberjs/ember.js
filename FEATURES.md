@@ -62,12 +62,6 @@ for a detailed explanation.
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
   invocation (instead of a standard HTML5 style element).
 
-* `ember-metal-stream`
-
-  Exposes the basic internal stream implementation as `Ember.Stream`.
-
-  Added in [#9693](https://github.com/emberjs/ember.js/pull/9693)
-
 * `ember-htmlbars-each-with-index`
 
   Adds an optional second parameter to `{{each}}` block parameters that is the index of the item.
