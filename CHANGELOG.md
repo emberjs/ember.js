@@ -1,5 +1,20 @@
 # Ember Changelog
 
+### 2.1.0-beta.1 (August 16, 2015)
+
+- [#10173](https://github.com/emberjs/ember.js/pull/10173) [BUGFIX] Ensure non-singleton injections are not cached incorrectly.
+- [#11966](https://github.com/emberjs/ember.js/pull/11966) [PERF] Refactor Meta.
+- [#12057](https://github.com/emberjs/ember.js/pull/12057) Allow `instanceInitializers` to set `customEvents`.
+- [#12059](https://github.com/emberjs/ember.js/pull/12059) [BUGFIX] Allow setting an entry in `Application#customEvents` to `null` to opt out of event listeners.
+- [#12034](https://github.com/emberjs/ember.js/pull/12034) [BUGFIX] Ensure `currentRouteName` and `currentPath` are set properly for loading and error routes.
+- [#12062](https://github.com/emberjs/ember.js/pull/12062) Remove the need for `this.__nextSuper`, and make debugging methods with `this._super` calls much easier.
+- [#12116](https://github.com/emberjs/ember.js/pull/12116) [FEATURE ember-debug-handlers] Enable by default.
+- [#12117](https://github.com/emberjs/ember.js/pull/12117) [FEATURE ember-registry-container-reform] Enable by default.
+- [#11440](https://github.com/emberjs/ember.js/pull/11440) [DEPRECATION] Deprecate using `instance.container.lookup` on first argument to `instanceInitializers`. Use `instance.lookup` instead.
+- [#11440](https://github.com/emberjs/ember.js/pull/11440) [DEPRECATION] Deprecate passing two arguments to an initializers `initialize` function.
+
+
+
 ### 2.0.0 (August 13, 2015)
 
 - [#12036](https://github.com/emberjs/ember.js/pull/12036) Cleanup CP Set and  Volatile
