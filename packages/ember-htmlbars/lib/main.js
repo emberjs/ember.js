@@ -95,7 +95,6 @@
   @public
 */
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 
 import {
   precompile,
