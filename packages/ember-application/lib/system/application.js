@@ -985,7 +985,9 @@ Application.reopenClass({
     registry.register('renderer:-dom', { create() { return new Renderer(new DOMHelper()); } });
 
     registry.injection('view', 'renderer', 'renderer:-dom');
-    registry.register('view:select', SelectView);
+    if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+      registry.register('view:select', SelectView);
+    }
     registry.register('view:-outlet', OutletView);
 
     registry.register('-view-registry:main', { create() { return {}; } });
