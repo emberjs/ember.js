@@ -162,7 +162,9 @@ Ember.HTMLBars = {
   DOMHelper
 };
 
-Ember.GlimmerComponent = GlimmerComponent;
+if (isEnabled('ember-htmlbars-component-generation')) {
+  Ember.GlimmerComponent = GlimmerComponent;
+}
 
 Helper.helper = makeHelper;
 Ember.Helper = Helper;
