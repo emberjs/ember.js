@@ -7,7 +7,7 @@
     "ember-routing-core-outlet": null,
     "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
-    "ember-debug-handlers": null,
+    "ember-debug-handlers": true,
     "ember-registry-container-reform": null,
     "ember-routing-routable-components": null
   },
