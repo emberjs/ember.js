@@ -336,23 +336,6 @@ Ember.isPresent = isPresent;
 
 Ember.merge = merge;
 
-if (isEnabled('ember-metal-stream')) {
-  Ember.stream = {
-    Stream: Stream,
-
-    isStream: isStream,
-    subscribe: subscribe,
-    unsubscribe: unsubscribe,
-    read: read,
-    readHash: readHash,
-    readArray: readArray,
-    scanArray: scanArray,
-    scanHash: scanHash,
-    concat: concat,
-    chain: chain
-  };
-}
-
 Ember.FEATURES = FEATURES;
 Ember.FEATURES.isEnabled = isEnabled;
 
