@@ -1,7 +1,6 @@
 /* globals EmberDev */
 
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { SafeString } from 'ember-htmlbars/utils/string';
@@ -27,10 +26,8 @@ QUnit.module('ember-htmlbars: style attribute', {
   }
 });
 
-// jscs:disable validateIndentation
-if (isEnabled('ember-htmlbars-attribute-syntax')) {
-  if (!EmberDev.runningProdBuild) {
-    QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
+if (!EmberDev.runningProdBuild) {
+  QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
     view = EmberView.create({
       userValue: 'width: 42px',
       template: compile('<div style={{view.userValue}}></div>')
@@ -41,7 +38,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
     deepEqual(warnings, [styleWarning]);
   });
 
-    QUnit.test('specifying `attributeBindings: ["style"]` generates a warning', function() {
+  QUnit.test('specifying `attributeBindings: ["style"]` generates a warning', function() {
     view = EmberView.create({
       userValue: 'width: 42px',
       template: compile('<div style={{view.userValue}}></div>')
@@ -51,9 +48,9 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
     deepEqual(warnings, [styleWarning]);
   });
-  }
+}
 
-  QUnit.test('specifying `<div style={{{userValue}}}></div>` works properly without a warning', function() {
+QUnit.test('specifying `<div style={{{userValue}}}></div>` works properly without a warning', function() {
   view = EmberView.create({
     userValue: 'width: 42px',
     template: compile('<div style={{{view.userValue}}}></div>')
@@ -64,7 +61,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   deepEqual(warnings, [ ]);
 });
 
-  QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a SafeString', function() {
+QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a SafeString', function() {
   view = EmberView.create({
     userValue: new SafeString('width: 42px'),
     template: compile('<div style={{view.userValue}}></div>')
@@ -74,5 +71,3 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
 
   deepEqual(warnings, [ ]);
 });
-}
-// jscs:enable validateIndentation

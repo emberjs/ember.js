@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // FEATURES, assert
-import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -40,11 +39,9 @@ DSL.prototype = {
       { id: 'ember-routing.dsl-select-route' }
     );
 
-    if (isEnabled('ember-routing-named-substates')) {
-      if (this.enableLoadingSubstates) {
-        createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
-        createRoute(this, `${name}_error`, { path: dummyErrorRoute });
-      }
+    if (this.enableLoadingSubstates) {
+      createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
+      createRoute(this, `${name}_error`, { path: dummyErrorRoute });
     }
 
     if (callback) {
@@ -131,4 +128,3 @@ DSL.map = function(callback) {
   callback.call(dsl);
   return dsl;
 };
-

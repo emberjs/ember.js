@@ -141,9 +141,7 @@ registerHelper('with', withHelper);
 registerHelper('loc', locHelper);
 registerHelper('log', logHelper);
 registerHelper('each', eachHelper);
-if (isEnabled('ember-htmlbars-each-in')) {
-  registerHelper('each-in', eachInHelper);
-}
+registerHelper('each-in', eachInHelper);
 registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
@@ -163,7 +161,5 @@ Ember.HTMLBars = {
   DOMHelper
 };
 
-if (isEnabled('ember-htmlbars-helper')) {
-  Helper.helper = makeHelper;
-  Ember.Helper = Helper;
-}
+Helper.helper = makeHelper;
+Ember.Helper = Helper;
