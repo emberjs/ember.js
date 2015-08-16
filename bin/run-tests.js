@@ -141,12 +141,9 @@ switch (process.env.TEST_SUITE) {
     console.log('suite: built-tests');
     generateBuiltTests();
     break;
-  case 'old-jquery':
-    console.log('suite: old-jquery');
+  case 'old-jquery-and-extend-prototypes':
+    console.log('suite: old-jquery-and-extend-prototypes');
     generateOldJQueryTests();
-    break;
-  case 'extend-prototypes':
-    console.log('suite: extend-prototypes');
     generateExtendPrototypeTests();
     break;
   case 'all':
