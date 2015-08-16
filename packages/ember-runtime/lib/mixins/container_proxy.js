@@ -60,11 +60,11 @@ export default Mixin.create({
    Given a fullName return the corresponding factory.
 
    @private
-   @method lookupFactory
+   @method _lookupFactory
    @param {String} fullName
    @return {any}
    */
-  lookupFactory: containerAlias('lookupFactory'),
+  _lookupFactory: containerAlias('lookupFactory'),
 
   /**
    @private
