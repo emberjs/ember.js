@@ -25,7 +25,6 @@ import {
 import {
   generateGuid,
   GUID_KEY_PROPERTY,
-  NEXT_SUPER_PROPERTY,
   makeArray
 } from 'ember-metal/utils';
 import { meta } from 'ember-metal/meta';
@@ -73,7 +72,6 @@ function makeCtor() {
     }
 
     this.__defineNonEnumerable(GUID_KEY_PROPERTY);
-    this.__defineNonEnumerable(NEXT_SUPER_PROPERTY);
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;

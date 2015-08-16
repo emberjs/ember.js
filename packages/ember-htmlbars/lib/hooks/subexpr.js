@@ -34,7 +34,7 @@ export default function subexpr(env, scope, helperName, params, hash) {
   return helperStream;
 }
 
-function labelForSubexpr(params, hash, helperName) {
+export function labelForSubexpr(params, hash, helperName) {
   var paramsLabels = labelsForParams(params);
   var hashLabels = labelsForHash(hash);
   var label = `(${helperName}`;

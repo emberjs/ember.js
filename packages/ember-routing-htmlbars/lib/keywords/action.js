@@ -3,7 +3,6 @@
 @submodule ember-templates
 */
 
-import isEnabled from 'ember-metal/features';
 import { keyword } from 'htmlbars-runtime/hooks';
 import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
@@ -239,15 +238,10 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
-  if (isEnabled('ember-routing-htmlbars-improved-actions')) {
-    if (morph) {
-      keyword('@element_action', morph, env, scope, params, hash, template, inverse, visitor);
-      return true;
-    }
-
-    return closureAction(morph, env, scope, params, hash, template, inverse, visitor);
-  } else {
+  if (morph) {
     keyword('@element_action', morph, env, scope, params, hash, template, inverse, visitor);
     return true;
   }
+
+  return closureAction(morph, env, scope, params, hash, template, inverse, visitor);
 }

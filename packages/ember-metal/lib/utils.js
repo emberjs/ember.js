@@ -123,13 +123,6 @@ export var GUID_DESC = {
   value: null
 };
 
-var undefinedDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: undefined
-};
-
 var nullDescriptor = {
   configurable: true,
   writable: true,
@@ -141,12 +134,6 @@ export var GUID_KEY_PROPERTY = {
   name: GUID_KEY,
   descriptor: nullDescriptor
 };
-
-export var NEXT_SUPER_PROPERTY = {
-  name: '__nextSuper',
-  descriptor: undefinedDescriptor
-};
-
 
 /**
   Generates a new guid, optionally saving the guid to the object that you
@@ -267,6 +254,9 @@ export function guidFor(obj) {
 }
 
 
+var sourceAvailable = (function() {
+  return this;
+}).toString().indexOf('return this;') > -1;
 
 /**
   Wraps the passed function so that `this._super` will point to the superFunc
@@ -280,35 +270,45 @@ export function guidFor(obj) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
+export function wrap(func, _superFunc) {
+  var superFunc = _superFunc;
+  var hasSuper;
+  if (sourceAvailable) {
+    hasSuper = func.__hasSuper;
 
-export function wrap(func, superFunc) {
+    if (hasSuper === undefined) {
+      hasSuper = func.toString().indexOf('_super') > -1;
+      func.__hasSuper = hasSuper;
+    }
+
+    if (!hasSuper) {
+      return func;
+    }
+  }
+
+  if (superFunc.wrappedFunction === undefined) {
+    // terminate _super to prevent infinite recursion
+    superFunc = wrap(superFunc, function () {});
+  }
+
+  return _wrap(func, superFunc);
+}
+
+function _wrap(func, superFunc) {
   function superWrapper() {
     var ret;
-    var sup  = this && this.__nextSuper;
-    var length = arguments.length;
-
-    if (this) {
-      this.__nextSuper = superFunc;
+    var orig = this._super;
+    this._super = superFunc;
+    switch (arguments.length) {
+      case 0:  ret = func.call(this); break;
+      case 1:  ret = func.call(this, arguments[0]); break;
+      case 2:  ret = func.call(this, arguments[0], arguments[1]); break;
+      case 3:  ret = func.call(this, arguments[0], arguments[1], arguments[2]); break;
+      case 4:  ret = func.call(this, arguments[0], arguments[1], arguments[2], arguments[3]); break;
+      case 5:  ret = func.call(this, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]); break;
+      default: ret = func.apply(this, arguments); break;
     }
-
-    if (length === 0) {
-      ret = func.call(this);
-    } else if (length === 1) {
-      ret = func.call(this, arguments[0]);
-    } else if (length === 2) {
-      ret = func.call(this, arguments[0], arguments[1]);
-    } else {
-      var args = new Array(length);
-      for (var i = 0; i < length; i++) {
-        args[i] = arguments[i];
-      }
-      ret = apply(this, func, args);
-    }
-
-    if (this) {
-      this.__nextSuper = sup;
-    }
-
+    this._super = orig;
     return ret;
   }
 

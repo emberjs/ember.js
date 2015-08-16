@@ -1,16 +1,9 @@
 import Ember from 'ember-metal/core'; // assert
-import isEnabled from 'ember-metal/features';
 import { uuid } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import { readUnwrappedModel } from 'ember-views/streams/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
-
-function assert(message, test) {
-  // This only exists to prevent defeatureify from error when attempting
-  // to transform the same source twice (tldr; you can't nest stripped statements)
-  Ember.assert(message, test);
-}
 
 export default {
   setupState: function(state, env, scope, params, hash) {
@@ -19,17 +12,10 @@ export default {
 
     var actionName = read(params[0]);
 
-    if (isEnabled('ember-routing-htmlbars-improved-actions')) {
-      assert('You specified a quoteless path to the {{action}} helper ' +
-             'which did not resolve to an action name (a string). ' +
-             'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
-             typeof actionName === 'string' || typeof actionName === 'function');
-    } else {
-      assert('You specified a quoteless path to the {{action}} helper ' +
-             'which did not resolve to an action name (a string). ' +
-             'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
-             typeof actionName === 'string');
-    }
+    Ember.assert('You specified a quoteless path to the {{action}} helper ' +
+                 'which did not resolve to an action name (a string). ' +
+                 'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
+                 typeof actionName === 'string' || typeof actionName === 'function');
 
     var actionArgs = [];
     for (var i = 1, l = params.length; i < l; i++) {
@@ -106,11 +92,9 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
       let { target, actionName, actionArgs } = node.state;
 
       run(function runRegisteredAction() {
-        if (isEnabled('ember-routing-htmlbars-improved-actions')) {
-          if (typeof actionName === 'function') {
-            actionName.apply(target, actionArgs);
-            return;
-          }
+        if (typeof actionName === 'function') {
+          actionName.apply(target, actionArgs);
+          return;
         }
         if (target.send) {
           target.send.apply(target, [actionName, ...actionArgs]);

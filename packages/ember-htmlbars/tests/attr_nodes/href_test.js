@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
@@ -10,9 +9,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-// jscs:disable validateIndentation
-if (isEnabled('ember-htmlbars-attribute-syntax')) {
-  QUnit.module('ember-htmlbars: href attribute', {
+QUnit.module('ember-htmlbars: href attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -20,7 +17,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   }
 });
 
-  QUnit.test('href is set', function() {
+QUnit.test('href is set', function() {
   view = EmberView.create({
     context: { url: 'http://example.com' },
     template: compile('<a href={{url}}></a>')
@@ -30,5 +27,3 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equalInnerHTML(view.element, '<a href="http://example.com"></a>',
                  'attribute is output');
 });
-}
-// jscs:enable validateIndentation

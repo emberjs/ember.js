@@ -1,6 +1,5 @@
 /* jshint scripturl:true */
 
-import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { SafeString } from 'ember-htmlbars/utils/string';
@@ -15,51 +14,49 @@ QUnit.module('ember-htmlbars: sanitized attribute', {
   }
 });
 
-// jscs:disable validateIndentation
 // jscs:disable disallowTrailingWhitespace
-if (isEnabled('ember-htmlbars-attribute-syntax')) {
-  var badTags = [
-    { tag: 'a', attr: 'href',
-      unquotedTemplate: compile('<a href={{url}}></a>'),
-      quotedTemplate: compile('<a href=\'{{url}}\'></a>'),
-      multipartTemplate: compile('<a href=\'{{protocol}}{{path}}\'></a>') },
+var badTags = [
+  { tag: 'a', attr: 'href',
+    unquotedTemplate: compile('<a href={{url}}></a>'),
+    quotedTemplate: compile('<a href=\'{{url}}\'></a>'),
+    multipartTemplate: compile('<a href=\'{{protocol}}{{path}}\'></a>') },
 
-    { tag: 'base', attr: 'href',
-      unquotedTemplate: compile('<base href={{url}} />'),
-      quotedTemplate: compile('<base href=\'{{url}}\'/>'),
-      multipartTemplate: compile('<base href=\'{{protocol}}{{path}}\'/>') },
+  { tag: 'base', attr: 'href',
+    unquotedTemplate: compile('<base href={{url}} />'),
+    quotedTemplate: compile('<base href=\'{{url}}\'/>'),
+    multipartTemplate: compile('<base href=\'{{protocol}}{{path}}\'/>') },
 
-    { tag: 'embed', attr: 'src',
-      unquotedTemplate: compile('<embed src={{url}} />'),
-      quotedTemplate: compile('<embed src=\'{{url}}\'/>'),
-      multipartTemplate: compile('<embed src=\'{{protocol}}{{path}}\'/>') },
+  { tag: 'embed', attr: 'src',
+    unquotedTemplate: compile('<embed src={{url}} />'),
+    quotedTemplate: compile('<embed src=\'{{url}}\'/>'),
+    multipartTemplate: compile('<embed src=\'{{protocol}}{{path}}\'/>') },
 
-    { tag: 'body', attr: 'background',
-      unquotedTemplate: compile('<body background={{url}}></body>'),
-      quotedTemplate: compile('<body background=\'{{url}}\'></body>'),
-      multipartTemplate: compile('<body background=\'{{protocol}}{{path}}\'></body>') },
+  { tag: 'body', attr: 'background',
+    unquotedTemplate: compile('<body background={{url}}></body>'),
+    quotedTemplate: compile('<body background=\'{{url}}\'></body>'),
+    multipartTemplate: compile('<body background=\'{{protocol}}{{path}}\'></body>') },
 
-    { tag: 'link', attr: 'href',
-      unquotedTemplate: compile('<link href={{url}}>'),
-      quotedTemplate: compile('<link href=\'{{url}}\'>'),
-      multipartTemplate: compile('<link href=\'{{protocol}}{{path}}\'>') },
+  { tag: 'link', attr: 'href',
+    unquotedTemplate: compile('<link href={{url}}>'),
+    quotedTemplate: compile('<link href=\'{{url}}\'>'),
+    multipartTemplate: compile('<link href=\'{{protocol}}{{path}}\'>') },
 
-    { tag: 'img', attr: 'src',
-      unquotedTemplate: compile('<img src={{url}}>'),
-      quotedTemplate: compile('<img src=\'{{url}}\'>'),
-      multipartTemplate: compile('<img src=\'{{protocol}}{{path}}\'>') },
+  { tag: 'img', attr: 'src',
+    unquotedTemplate: compile('<img src={{url}}>'),
+    quotedTemplate: compile('<img src=\'{{url}}\'>'),
+    multipartTemplate: compile('<img src=\'{{protocol}}{{path}}\'>') },
 
-    { tag: 'iframe', attr: 'src',
-      // Setting an iframe with a bad protocol results in the browser
-      // being redirected. in IE8. Skip the iframe tests on that platform.
-      skip: (environment.hasDOM && document.documentMode && document.documentMode <= 8),
-      unquotedTemplate: compile('<iframe src={{url}}></iframe>'),
-      quotedTemplate: compile('<iframe src=\'{{url}}\'></iframe>'),
-      multipartTemplate: compile('<iframe src=\'{{protocol}}{{path}}\'></iframe>') }
-  ];
+  { tag: 'iframe', attr: 'src',
+    // Setting an iframe with a bad protocol results in the browser
+    // being redirected. in IE8. Skip the iframe tests on that platform.
+    skip: (environment.hasDOM && document.documentMode && document.documentMode <= 8),
+    unquotedTemplate: compile('<iframe src={{url}}></iframe>'),
+    quotedTemplate: compile('<iframe src=\'{{url}}\'></iframe>'),
+    multipartTemplate: compile('<iframe src=\'{{protocol}}{{path}}\'></iframe>') }
+];
 
-  for (var i = 0, l = badTags.length; i < l; i++) {
-    (function() {
+for (var i = 0, l = badTags.length; i < l; i++) {
+  (function() {
     var subject = badTags[i];
 
     if (subject.skip) {
@@ -75,8 +72,8 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
       view.createElement();
 
       equal(view.element.firstChild.getAttribute(subject.attr),
-             'unsafe:javascript://example.com',
-             'attribute is output');
+            'unsafe:javascript://example.com',
+            'attribute is output');
     });
 
     QUnit.test(`${subject.tag} ${subject.attr} is sanitized when using quoted non-whitelisted protocol`, function() {
@@ -88,8 +85,8 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
       view.createElement();
 
       equal(view.element.firstChild.getAttribute(subject.attr),
-             'unsafe:javascript://example.com',
-             'attribute is output');
+            'unsafe:javascript://example.com',
+            'attribute is output');
     });
 
     QUnit.test(`${subject.tag} ${subject.attr} is not sanitized when using non-whitelisted protocol with a SafeString`, function() {
@@ -102,8 +99,8 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
         view.createElement();
 
         equal(view.element.firstChild.getAttribute(subject.attr),
-               'javascript://example.com',
-               'attribute is output');
+              'javascript://example.com',
+              'attribute is output');
       } catch(e) {
         // IE does not allow javascript: to be set on img src
         ok(true, 'caught exception ' + e);
@@ -118,11 +115,9 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
       view.createElement();
 
       equal(view.element.firstChild.getAttribute(subject.attr),
-             'unsafe:javascript://example.com',
-             'attribute is output');
+            'unsafe:javascript://example.com',
+            'attribute is output');
     });
   })(); //jshint ignore:line
-  }
 }
 // jscs:enable disallowTrailingWhitespace
-// jscs:enable validateIndentation

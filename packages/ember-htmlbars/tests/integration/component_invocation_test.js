@@ -485,35 +485,33 @@ QUnit.test('moduleName is available on _renderNode when no layout is present', f
   runAppend(view);
 });
 
-if (isEnabled('ember-htmlbars-component-helper')) {
-  QUnit.test('{{component}} helper works with positional params', function() {
-    var SampleComponent = Component.extend();
-    SampleComponent.reopenClass({
-      positionalParams: ['name', 'age']
-    });
-
-    registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-    registry.register('component:sample-component', SampleComponent);
-
-    view = EmberView.extend({
-      layout: compile('{{component "sample-component" myName myAge}}'),
-      container: container,
-      context: {
-        myName: 'Quint',
-        myAge: 4
-      }
-    }).create();
-
-    runAppend(view);
-    equal(jQuery('#qunit-fixture').text(), 'Quint4');
-    run(function() {
-      set(view.context, 'myName', 'Edward');
-      set(view.context, 'myAge', '5');
-    });
-
-    equal(jQuery('#qunit-fixture').text(), 'Edward5');
+QUnit.test('{{component}} helper works with positional params', function() {
+  var SampleComponent = Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['name', 'age']
   });
-}
+
+  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  registry.register('component:sample-component', SampleComponent);
+
+  view = EmberView.extend({
+    layout: compile('{{component "sample-component" myName myAge}}'),
+    container: container,
+    context: {
+      myName: 'Quint',
+      myAge: 4
+    }
+  }).create();
+
+  runAppend(view);
+  equal(jQuery('#qunit-fixture').text(), 'Quint4');
+  run(function() {
+    set(view.context, 'myName', 'Edward');
+    set(view.context, 'myAge', '5');
+  });
+
+  equal(jQuery('#qunit-fixture').text(), 'Edward5');
+});
 
 QUnit.test('yield to inverse', function() {
   registry.register('template:components/my-if', compile('{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}'));
@@ -807,6 +805,29 @@ QUnit.test('specifying classNames results in correct class', function(assert) {
 
   let button = view.$('button');
   ok(button.is('.foo.bar.baz.ember-view'), 'the element has the correct classes: ' + button.attr('class'));
+});
+
+QUnit.test('specifying custom concatenatedProperties avoids clobbering', function(assert) {
+  expect(1);
+
+  let clickyThing;
+  registry.register('component:some-clicky-thing', Component.extend({
+    concatenatedProperties: ['blahzz'],
+    blahzz: ['blark', 'pory'],
+    init() {
+      this._super(...arguments);
+      clickyThing = this;
+    }
+  }));
+
+  view = EmberView.extend({
+    template: compile('{{#some-clicky-thing blahzz="baz"}}Click Me{{/some-clicky-thing}}'),
+    container: container
+  }).create();
+
+  runAppend(view);
+
+  assert.deepEqual(clickyThing.get('blahzz'),  ['blark', 'pory', 'baz'], 'property is properly combined');
 });
 
 // jscs:disable validateIndentation

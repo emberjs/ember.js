@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
@@ -10,9 +9,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-// jscs:disable validateIndentation
-if (isEnabled('ember-htmlbars-attribute-syntax')) {
-  QUnit.module('ember-htmlbars: boolean attribute', {
+QUnit.module('ember-htmlbars: boolean attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -20,7 +17,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   }
 });
 
-  QUnit.test('disabled property can be set true', function() {
+QUnit.test('disabled property can be set true', function() {
   view = EmberView.create({
     context: { isDisabled: true },
     template: compile('<input disabled={{isDisabled}}>')
@@ -32,7 +29,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
         'boolean property is set true');
 });
 
-  QUnit.test('disabled property can be set false with a blank string', function() {
+QUnit.test('disabled property can be set false with a blank string', function() {
   view = EmberView.create({
     context: { isDisabled: '' },
     template: compile('<input disabled={{isDisabled}}>')
@@ -44,7 +41,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
         'boolean property is set false');
 });
 
-  QUnit.test('disabled property can be set false', function() {
+QUnit.test('disabled property can be set false', function() {
   view = EmberView.create({
     context: { isDisabled: false },
     template: compile('<input disabled={{isDisabled}}>')
@@ -57,7 +54,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
         'boolean property is set false');
 });
 
-  QUnit.test('disabled property can be set true with a string', function() {
+QUnit.test('disabled property can be set true with a string', function() {
   view = EmberView.create({
     context: { isDisabled: 'oh, no a string' },
     template: compile('<input disabled={{isDisabled}}>')
@@ -69,7 +66,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
         'boolean property is set true');
 });
 
-  QUnit.test('disabled attribute turns a value to a string', function() {
+QUnit.test('disabled attribute turns a value to a string', function() {
   view = EmberView.create({
     context: { isDisabled: false },
     template: compile('<input disabled=\'{{isDisabled}}\'>')
@@ -81,7 +78,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
         'boolean property is set true');
 });
 
-  QUnit.test('disabled attribute preserves a blank string value', function() {
+QUnit.test('disabled attribute preserves a blank string value', function() {
   view = EmberView.create({
     context: { isDisabled: '' },
     template: compile('<input disabled=\'{{isDisabled}}\'>')
@@ -93,5 +90,3 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   equal(view.element.firstChild.disabled, false,
         'boolean property is set false');
 });
-}
-// jscs:enable validateIndentation

@@ -1,6 +1,5 @@
 /*globals Ember */
 import 'ember';
-import isEnabled from 'ember-metal/features';
 
 QUnit.module('Global API Tests');
 
@@ -12,7 +11,5 @@ function confirmExport(property) {
 
 confirmExport('Ember.DefaultResolver');
 confirmExport('Ember.generateController');
-if (isEnabled('ember-htmlbars-helper')) {
-  confirmExport('Ember.Helper');
-  confirmExport('Ember.Helper.helper');
-}
+confirmExport('Ember.Helper');
+confirmExport('Ember.Helper.helper');

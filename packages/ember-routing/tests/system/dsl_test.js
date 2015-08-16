@@ -1,5 +1,4 @@
 /* globals EmberDev */
-import isEnabled from 'ember-metal/features';
 import EmberRouter from 'ember-routing/system/router';
 import { HANDLERS } from 'ember-debug/handlers';
 import {
@@ -115,9 +114,7 @@ QUnit.test('should retain resource namespace if nested with routes', function() 
   ok(router.router.recognizer.names['bleep.bloop.blork'], 'parent name was used as base of nested routes');
 });
 
-// jscs:disable validateIndentation
-if (isEnabled('ember-routing-named-substates')) {
-  QUnit.test('should add loading and error routes if _isRouterMapResult is true', function() {
+QUnit.test('should add loading and error routes if _isRouterMapResult is true', function() {
   Router.map(function() {
     this.route('blork');
   });
@@ -130,7 +127,7 @@ if (isEnabled('ember-routing-named-substates')) {
   ok(router.router.recognizer.names['blork_error'], 'error route was added');
 });
 
-  QUnit.test('should not add loading and error routes if _isRouterMapResult is false', function() {
+QUnit.test('should not add loading and error routes if _isRouterMapResult is false', function() {
   Router.map(function() {
     this.route('blork');
   });
@@ -142,5 +139,3 @@ if (isEnabled('ember-routing-named-substates')) {
   ok(!router.router.recognizer.names['blork_loading'], 'loading route was not added');
   ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
 });
-}
-// jscs:enable validateIndentation

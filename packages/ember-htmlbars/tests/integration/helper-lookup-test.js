@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
@@ -26,21 +25,19 @@ QUnit.module('component - invocation', {
   }
 });
 
-if (isEnabled('ember-htmlbars-dashless-helpers')) {
-  QUnit.test('non-dashed helpers are found', function() {
-    expect(1);
+QUnit.test('non-dashed helpers are found', function() {
+  expect(1);
 
-    registry.register('helper:fullname', helper(function( [first, last]) {
-      return `${first} ${last}`;
-    }));
+  registry.register('helper:fullname', helper(function( [first, last]) {
+    return `${first} ${last}`;
+  }));
 
-    component = Component.extend({
-      layout: compile('{{fullname "Robert" "Jackson"}}'),
-      container: container
-    }).create();
+  component = Component.extend({
+    layout: compile('{{fullname "Robert" "Jackson"}}'),
+    container: container
+  }).create();
 
-    runAppend(component);
+  runAppend(component);
 
-    equal(component.$().text(), 'Robert Jackson');
-  });
-}
+  equal(component.$().text(), 'Robert Jackson');
+});

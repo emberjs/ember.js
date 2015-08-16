@@ -15,7 +15,7 @@ function isObject(obj) {
 }
 
 function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && !obj._volatile);
+  return !(isObject(obj) && obj.isDescriptor && obj._volatile === false);
 }
 
 function ChainWatchers(obj) {
