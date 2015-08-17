@@ -29,8 +29,6 @@ import { Binding } from 'ember-metal/binding';
 import {
   addObserver,
   removeObserver,
-  _addBeforeObserver,
-  _removeBeforeObserver,
   _suspendObserver
 } from 'ember-metal/observer';
 import {
@@ -362,13 +360,11 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
   var prev = obj[key];
 
   if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
     updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
     updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
   }
 
   if ('function' === typeof observerOrListener) {
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', _addBeforeObserver);
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
   }
@@ -816,75 +812,6 @@ export function _immediateObserver() {
   }
 
   return observer.apply(this, arguments);
-}
-
-/**
-  When observers fire, they are called with the arguments `obj`, `keyName`.
-
-  Note, `@each.property` observer is called per each add or replace of an element
-  and it's not called with a specific enumeration item.
-
-  A `_beforeObserver` fires before a property changes.
-
-  A `_beforeObserver` is an alternative form of `.observesBefore()`.
-
-  ```javascript
-  App.PersonView = Ember.View.extend({
-    friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
-
-    valueDidChange: Ember.observer('content.value', function(obj, keyName) {
-        // only run if updating a value already in the DOM
-        if (this.get('state') === 'inDOM') {
-          var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
-          // logic
-        }
-    }),
-
-    friendsDidChange: Ember.observer('friends.@each.name', function(obj, keyName) {
-      // some logic
-      // obj.get(keyName) returns friends array
-    })
-  });
-  ```
-
-  Also available as `Function.prototype.observesBefore` if prototype extensions are
-  enabled.
-
-  @method beforeObserver
-  @for Ember
-  @param {String} propertyNames*
-  @param {Function} func
-  @return func
-  @deprecated
-  @private
-*/
-export function _beforeObserver(...args) {
-  var func  = args.slice(-1)[0];
-  var paths;
-
-  var addWatchedProperty = function(path) { paths.push(path); };
-
-  var _paths = args.slice(0, -1);
-
-  if (typeof func !== 'function') {
-    // revert to old, soft-deprecated argument ordering
-
-    func  = args[0];
-    _paths = args.slice(1);
-  }
-
-  paths = [];
-
-  for (var i = 0; i < _paths.length; ++i) {
-    expandProperties(_paths[i], addWatchedProperty);
-  }
-
-  if (typeof func !== 'function') {
-    throw new Ember.Error('Ember.beforeObserver called without a function');
-  }
-
-  func.__ember_observesBefore__ = paths;
-  return func;
 }
 
 export {

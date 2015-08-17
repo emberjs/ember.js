@@ -21,7 +21,6 @@ import {
   Mixin,
   mixin,
   observer,
-  _beforeObserver,
   _immediateObserver
 } from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
@@ -677,53 +676,6 @@ testBoth('observer should fire before dependent property is modified', function(
 
   set(obj, 'bar', 'baz');
   equal(count, 1, 'should have invoked observer');
-});
-
-testBoth('before observer watching multiple properties via brace expansion should fire when properties change', function (get, set) {
-  var obj = {};
-  var count = 0;
-
-  mixin(obj, {
-    fooAndBarWatcher: _beforeObserver('{foo,bar}', function () {
-      count++;
-    })
-  });
-
-  set(obj, 'foo', 'foo');
-  equal(count, 1, 'observer specified via brace expansion invoked on property change');
-
-  set(obj, 'bar', 'bar');
-  equal(count, 2, 'observer specified via brace expansion invoked on property change');
-
-  set(obj, 'baz', 'baz');
-  equal(count, 2, 'observer not invoked on unspecified property');
-});
-
-testBoth('before observer watching multiple properties via brace expansion should fire when dependent property changes', function (get, set) {
-  var obj = { baz: 'Initial' };
-  var count = 0;
-
-  defineProperty(obj, 'foo', computed(function() {
-    return get(this, 'bar').toLowerCase();
-  }).property('bar'));
-
-  defineProperty(obj, 'bar', computed(function() {
-    return get(this, 'baz').toUpperCase();
-  }).property('baz'));
-
-  mixin(obj, {
-    fooAndBarWatcher: _beforeObserver('{foo,bar}', function () {
-      count++;
-    })
-  });
-
-  get(obj, 'foo');
-  set(obj, 'baz', 'Baz');
-  // fire once for foo, once for bar
-  equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
-
-  set(obj, 'quux', 'Quux');
-  equal(count, 2, 'observer not fired on unspecified property');
 });
 
 testBoth('_addBeforeObserver should propagate through prototype', function(get, set) {
