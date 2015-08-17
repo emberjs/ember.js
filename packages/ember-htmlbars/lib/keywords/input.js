@@ -80,7 +80,7 @@ import assign from 'ember-metal/assign';
   you only need to setup the action name to the event name property.
 
   ```handlebars
-  {{input focus-in="alertMessage"}}
+  {{input focus-out="alertMessage"}}
   ```
 
   See more about [Text Support Actions](/api/classes/Ember.TextField.html)
