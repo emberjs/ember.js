@@ -183,20 +183,6 @@ import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import Backburner from 'backburner';
-import {
-  isStream,
-  subscribe,
-  unsubscribe,
-  read,
-  readHash,
-  readArray,
-  scanArray,
-  scanHash,
-  concat,
-  chain
-} from 'ember-metal/streams/utils';
-
-import Stream from 'ember-metal/streams/stream';
 
 // END IMPORTS
 
