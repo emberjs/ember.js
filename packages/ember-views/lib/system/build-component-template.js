@@ -6,27 +6,24 @@ import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { isStream } from 'ember-metal/streams/utils';
 
-export default function buildComponentTemplate({ component, layout, isAngleBracket, isComponentElement, outerAttrs }, attrs, content) {
-  var blockToRender, tagName, meta;
+export default function buildComponentTemplate({ component, tagName, layout, isAngleBracket, isComponentElement, outerAttrs }, attrs, content) {
+  var blockToRender, meta;
 
   if (component === undefined) {
     component = null;
   }
 
   if (layout && layout.raw) {
-    let attributes = (component && component._isAngleBracket) ? normalizeComponentAttributes(component, true, attrs) : undefined;
-
     let yieldTo = createContentBlocks(content.templates, content.scope, content.self, component);
-    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs, attributes);
+    blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs);
     meta = layout.raw.meta;
   } else if (content.templates && content.templates.default) {
-    let attributes = (component && component._isAngleBracket) ? normalizeComponentAttributes(component, true, attrs) : undefined;
-    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component, attributes);
+    blockToRender = createContentBlock(content.templates.default, content.scope, content.self, component);
     meta = content.templates.default.meta;
   }
 
   if (component && !component._isAngleBracket || isComponentElement) {
-    tagName = tagNameFor(component);
+    tagName = tagName || tagNameFor(component);
 
     // If this is not a tagless component, we need to create the wrapping
     // element. We use `manualElement` to create a template that represents
@@ -50,6 +47,30 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   return { createdElement: !!tagName, block: blockToRender };
 }
 
+export function buildHTMLTemplate(tagName, _attrs, content) {
+  let attrs = {};
+
+  for (let prop in _attrs) {
+    let val = _attrs[prop];
+
+    if (typeof val === 'string') {
+      attrs[prop] = val;
+    } else {
+      attrs[prop] = ['value', val];
+    }
+  }
+
+  let childTemplate = content.templates.default;
+  let elementTemplate = internal.manualElement(tagName, attrs, childTemplate.isEmpty);
+
+  if (childTemplate.isEmpty) {
+    return blockFor(elementTemplate, { scope: content.scope });
+  } else {
+    let blockToRender = blockFor(content.templates.default, content);
+    return blockFor(elementTemplate, { yieldTo: blockToRender, scope: content.scope });
+  }
+}
+
 function mergeAttrs(innerAttrs, outerAttrs) {
   let result = assign({}, innerAttrs, outerAttrs);
 
@@ -65,13 +86,12 @@ function blockFor(template, options) {
   return internal.blockFor(render, template, options);
 }
 
-function createContentBlock(template, scope, self, component, attributes) {
+function createContentBlock(template, scope, self, component) {
   Ember.assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
 
   return blockFor(template, {
     scope,
     self,
-    attributes,
     options: { view: component }
   });
 }
@@ -92,10 +112,9 @@ function createContentBlocks(templates, scope, self, component) {
   return output;
 }
 
-function createLayoutBlock(template, yieldTo, self, component, attrs, attributes) {
+function createLayoutBlock(template, yieldTo, self, component, attrs) {
   return blockFor(template, {
     yieldTo,
-    attributes,
 
     // If we have an old-style Controller with a template it will be
     // passed as our `self` argument, and it should be the context for

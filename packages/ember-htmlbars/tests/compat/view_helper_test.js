@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import EmberComponent from 'ember-views/views/component';
+import EmberComponent from 'ember-views/components/component';
 import EmberView from 'ember-views/views/view';
 import EmberSelectView from 'ember-views/views/select';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

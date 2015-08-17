@@ -40,7 +40,7 @@ export default function(_options) {
 
   options.buildMeta = function buildMeta(program) {
     return {
-      topLevel: detectTopLevel(program),
+      fragmentReason: fragmentReason(program),
       revision: 'Ember@VERSION_STRING_PLACEHOLDER',
       loc: program.loc,
       moduleName: options.moduleName
@@ -50,13 +50,14 @@ export default function(_options) {
   return options;
 }
 
-function detectTopLevel(program) {
+function fragmentReason(program) {
   let { loc, body } = program;
-  if (!loc || loc.start.line !== 1 || loc.start.column !== 0) { return null; }
+  if (!loc || loc.start.line !== 1 || loc.start.column !== 0) { return false; }
 
-  let lastComponentNode;
-  let lastIndex;
+  let candidate;
   let nodeCount = 0;
+
+  let problems = {};
 
   for (let i = 0, l = body.length; i < l; i++) {
     let curr = body[i];
@@ -65,21 +66,31 @@ function detectTopLevel(program) {
     if (curr.type === 'TextNode' && /^[\s]*$/.test(curr.chars)) { continue; }
 
     // has multiple root elements if we've been here before
-    if (nodeCount++ > 0) { return false; }
+    if (nodeCount++ > 0) { problems['multiple-nodes'] = true; }
 
     if (curr.type === 'ComponentNode' || curr.type === 'ElementNode') {
-      lastComponentNode = curr;
-      lastIndex = i;
+      candidate = curr;
+    } else {
+      problems['wrong-type'] = true;
     }
   }
 
-  if (!lastComponentNode) { return null; }
-
-  if (lastComponentNode.type === 'ComponentNode') {
-    let tag = lastComponentNode.tag;
-    if (tag.charAt(0) !== '<') { return null; }
-    return tag.slice(1, -1);
+  if (nodeCount === 0) {
+    return { name: 'missing-wrapper', problems: ['empty-body'] };
   }
 
-  return null;
+  let problemList = Object.keys(problems);
+  if (problemList.length) {
+    return { name: 'missing-wrapper', problems: problemList };
+  }
+
+  if (candidate.type === 'ComponentNode') {
+    return false;
+  } else if (candidate.modifiers.length) {
+    return { name: 'modifiers', modifiers: candidate.modifiers.map(m => m.path.original) };
+  } else if (candidate.attributes.some(attr => !attr.value.escaped)) {
+    return { name: 'triple-curlies' };
+  } else {
+    return false;
+  }
 }

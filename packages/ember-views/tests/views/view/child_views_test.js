@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import { compile } from 'ember-template-compiler';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';

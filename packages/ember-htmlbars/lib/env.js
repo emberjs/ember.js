@@ -28,7 +28,6 @@ import lookupHelper from 'ember-htmlbars/hooks/lookup-helper';
 import hasHelper from 'ember-htmlbars/hooks/has-helper';
 import invokeHelper from 'ember-htmlbars/hooks/invoke-helper';
 import element from 'ember-htmlbars/hooks/element';
-import attributes from 'ember-htmlbars/hooks/attributes';
 
 import helpers from 'ember-htmlbars/helpers';
 import keywords, { registerKeyword } from 'ember-htmlbars/keywords';
@@ -62,8 +61,7 @@ merge(emberHooks, {
   lookupHelper,
   hasHelper,
   invokeHelper,
-  element,
-  attributes
+  element
 });
 
 import debuggerKeyword from 'ember-htmlbars/keywords/debugger';

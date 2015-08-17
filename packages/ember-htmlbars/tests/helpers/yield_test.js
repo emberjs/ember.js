@@ -6,7 +6,7 @@ import { computed } from 'ember-metal/computed';
 import { Registry } from 'ember-runtime/system/container';
 //import { set } from "ember-metal/property_set";
 import { A } from 'ember-runtime/system/native_array';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import helpers from 'ember-htmlbars/helpers';
 import ComponentLookup from 'ember-views/component_lookup';
 

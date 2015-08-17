@@ -1,6 +1,6 @@
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import EmberView from 'ember-views/views/view';
-import EmberComponent from 'ember-views/views/component';
+import EmberComponent from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';

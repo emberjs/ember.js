@@ -1,7 +1,7 @@
 import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import { helper } from 'ember-htmlbars/helper';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 

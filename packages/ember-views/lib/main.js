@@ -21,8 +21,8 @@ import Renderer from 'ember-metal-views/renderer';
 import { DeprecatedCoreView } from 'ember-views/views/core_view';
 import { DeprecatedView } from 'ember-views/views/view';
 import { DeprecatedContainerView } from 'ember-views/views/container_view';
-import { DeprecatedCollectionView } from 'ember-views/views/collection_view';
-import Component from 'ember-views/views/component';
+import CollectionView from 'ember-views/views/collection_view';
+import Component from 'ember-views/components/component';
 
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
@@ -67,7 +67,7 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   Ember.View.cloneStates = cloneStates;
   Ember.View._Renderer = Renderer;
   Ember.ContainerView = DeprecatedContainerView;
-  Ember.CollectionView = DeprecatedCollectionView;
+  Ember.CollectionView = CollectionView;
 }
 
 Ember._Renderer = Renderer;

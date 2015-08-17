@@ -8,7 +8,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 var view, registry, container;
 
 if (isEnabled('ember-htmlbars-component-generation')) {
-  QUnit.module('ember-htmlbars: component hook', {
+  QUnit.module('ember-htmlbars: dasherized components that are not in the container ("web components")', {
     setup() {
       registry = new Registry();
       container = registry.container();
@@ -24,8 +24,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     }
   });
 
-  QUnit.test('component is looked up from the container', function() {
-    registry.register('template:components/foo-bar', compile('yippie!'));
+  QUnit.test('non-component dasherized elements can be used as top-level elements', function() {
+    registry.register('template:components/foo-bar', compile('<baz-bat>yippie!</baz-bat>'));
 
     view = EmberView.create({
       container: container,
@@ -34,17 +34,17 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     runAppend(view);
 
-    equal(view.$().text(), 'yippie!', 'component was looked up and rendered');
+    equal(view.$('baz-bat').length, 1, 'regular element fallback occurred');
   });
 
-  QUnit.test('asserts if component is not found', function() {
+  QUnit.test('falls back to web component when invoked with angles', function() {
     view = EmberView.create({
       container: container,
       template: compile('<foo-bar />')
     });
 
-    expectAssertion(function() {
-      runAppend(view);
-    }, /Could not find component named "foo-bar" \(no component or template with that name was found\)/);
+    runAppend(view);
+
+    equal(view.$('foo-bar').length, 1, 'regular element fallback occurred');
   });
 }

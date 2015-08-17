@@ -125,6 +125,7 @@ import legacyEachWithKeywordHelper from 'ember-htmlbars/helpers/-legacy-each-wit
 import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
+import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -159,6 +160,10 @@ Ember.HTMLBars = {
   registerPlugin: registerPlugin,
   DOMHelper
 };
+
+if (isEnabled('ember-htmlbars-component-generation')) {
+  Ember.GlimmerComponent = GlimmerComponent;
+}
 
 Helper.helper = makeHelper;
 Ember.Helper = Helper;

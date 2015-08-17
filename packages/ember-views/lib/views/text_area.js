@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-views
 */
-import Component from 'ember-views/views/component';
+import Component from 'ember-views/components/component';
 import TextSupport from 'ember-views/mixins/text_support';
 
 /**

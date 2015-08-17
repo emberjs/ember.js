@@ -9,7 +9,7 @@ import EmberController from 'ember-runtime/controllers/controller';
 
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';
-import EmberComponent from 'ember-views/views/component';
+import EmberComponent from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 
 import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
