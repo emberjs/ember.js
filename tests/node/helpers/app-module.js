@@ -61,21 +61,27 @@ var URL = require('url');
  *     });
 */
 
-// Server-side rendering relies on the `ember-application-visit` feature flag,
-// which we enable explicitly for these tests. Once that flag is enabled by
-// default, you may remove this guard.
-features['ember-application-visit'] = true;
+// Server-side rendering relies on the `ember-application-visit` feature flag.
+// If the flag is enabled, or if the flag is disabled but not stripped, we can
+// run the tests. Otherwise, for builds that have the feature stripped, we just
+// skip the tests.
+var canRunTests = features['ember-application-visit'] != false;
 
-/*jshint -W079 */
-global.EmberENV = {
-  FEATURES: features,
-  // Views are disabled but can be re-enabled via an addon.
-  // This flag simulates the addon so we can verify those
-  // views remain compatible with FastBoot. This can
-  // be removed in Ember 2.4 when view support is dropped
-  // entirely.
-  _ENABLE_LEGACY_VIEW_SUPPORT: true
-};
+if (canRunTests) {
+  // Enable the flag if it was disabled but not stripped.
+  features['ember-application-visit'] = true;
+
+  /*jshint -W079 */
+  global.EmberENV = {
+    FEATURES: features,
+    // Views are disabled but can be re-enabled via an addon.
+    // This flag simulates the addon so we can verify those
+    // views remain compatible with FastBoot. This can
+    // be removed in Ember 2.4 when view support is dropped
+    // entirely.
+    _ENABLE_LEGACY_VIEW_SUPPORT: true
+  };
+}
 
 module.exports = function(moduleName) {
   QUnit.module(moduleName, {
@@ -113,6 +119,8 @@ module.exports = function(moduleName) {
     }
   });
 };
+
+module.exports.canRunTests = canRunTests;
 
 function createApplication() {
   var app = this.Ember.Application.extend().create({
