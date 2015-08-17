@@ -161,4 +161,21 @@ export { K };
 Ember.K = K;
 //TODO: ES6 GLOBAL TODO
 
+
+import {
+  assert,
+  warn,
+  debug,
+  deprecate,
+  deprecateFunc,
+  runInDebug
+} from 'ember-metal/assert';
+
+Ember.assert = assert;
+Ember.warn = warn;
+Ember.debug = debug;
+Ember.deprecate = deprecate;
+Ember.deprecateFunc = deprecateFunc;
+Ember.runInDebug = runInDebug;
+
 export default Ember;
