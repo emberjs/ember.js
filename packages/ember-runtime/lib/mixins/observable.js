@@ -63,9 +63,9 @@ import isNone from 'ember-metal/is_none';
 
   ```javascript
   Ember.Object.extend({
-    valueObserver: function() {
+    valueObserver: Ember.observer('value', function() {
       // Executes whenever the "value" property changes
-    }.observes('value')
+    })
   });
   ```
 
