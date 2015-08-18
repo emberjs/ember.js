@@ -34,7 +34,6 @@ export function blockFor(render, template, blockOptions) {
 
       var scope = blockOptions.scope;
       var shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
-      var attributes = blockOptions.attributes;
 
       env.hooks.bindShadowScope(env, parentScope, shadowScope, blockOptions.options);
 
@@ -48,7 +47,7 @@ export function blockFor(render, template, blockOptions) {
 
       renderAndCleanup(renderNode, env, options, null, function() {
         options.renderState.morphToClear = null;
-        render(template, env, shadowScope, { renderNode, blockArguments, attributes });
+        render(template, env, shadowScope, { renderNode, blockArguments });
       });
     }
   };
