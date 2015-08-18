@@ -20,7 +20,7 @@ QUnit.module("htmlbars-runtime", {
   }
 });
 
-test("manualElement function honors namespaces", function() {
+QUnit.skip("manualElement function honors namespaces", function() {
   hooks.keywords['manual-element'] = {
       render: function(morph, env, scope, params, hash, template, inverse, visitor) {
         var attributes = {
