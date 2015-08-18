@@ -92,7 +92,8 @@ function makeCtor() {
       for (var i = 0, l = props.length; i < l; i++) {
         var properties = props[i];
 
-        Ember.assert('Ember.Object.create no longer supports mixing in other definitions, use .extend & .create seperately instead.', !(properties instanceof Mixin));
+        Ember.assert('Ember.Object.create no longer supports mixing in other ' +
+          'definitions, use .extend & .create seperately instead.', !(properties instanceof Mixin));
 
         if (typeof properties !== 'object' && properties !== undefined) {
           throw new EmberError('Ember.Object.create only accepts objects.');
@@ -113,8 +114,11 @@ function makeCtor() {
           var possibleDesc = this[keyName];
           var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-          Ember.assert('Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().', !(value instanceof ComputedProperty));
-          Ember.assert('Ember.Object.create no longer supports defining methods that call _super.', !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
+          Ember.assert('Ember.Object.create no longer supports defining computed ' +
+            'properties. Define computed properties using extend() or reopen() ' +
+            'before calling create().', !(value instanceof ComputedProperty));
+          Ember.assert('Ember.Object.create no longer supports defining methods ' +
+            'that call _super.', !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
           Ember.assert('`actions` must be provided at extend time, not at create ' +
                        'time, when Ember.ActionHandler is used (i.e. views, ' +
                        'controllers & routes).', !((keyName === 'actions') && ActionHandler.detect(this)));
@@ -478,7 +482,8 @@ var ClassMixinProps = {
 
     This defines a new subclass of Ember.Object: `App.Person`. It contains one method: `say()`.
 
-    You can also create a subclass from any existing class by calling its `extend()`  method. For example, you might want to create a subclass of Ember's built-in `Ember.View` class:
+    You can also create a subclass from any existing class by calling its `extend()` method.
+    For example, you might want to create a subclass of Ember's built-in `Ember.View` class:
 
     ```javascript
     App.PersonView = Ember.View.extend({
@@ -487,7 +492,8 @@ var ClassMixinProps = {
     });
     ```
 
-    When defining a subclass, you can override methods but still access the implementation of your parent class by calling the special `_super()` method:
+    When defining a subclass, you can override methods but still access the
+    implementation of your parent class by calling the special `_super()` method:
 
     ```javascript
     App.Person = Ember.Object.extend({
@@ -502,7 +508,7 @@ var ClassMixinProps = {
         this._super(thing + ", sir!");
       },
       march: function(numberOfHours) {
-        alert(this.get('name') + ' marches for ' + numberOfHours + ' hours.')
+        alert(this.get('name') + ' marches for ' + numberOfHours + ' hours.');
       }
     });
 
@@ -513,7 +519,9 @@ var ClassMixinProps = {
     yehuda.say("Yes");  // alerts "Yehuda Katz says: Yes, sir!"
     ```
 
-    The `create()` on line #17 creates an *instance* of the `App.Soldier` class. The `extend()` on line #8 creates a *subclass* of `App.Person`. Any instance of the `App.Person` class will *not* have the `march()` method.
+    The `create()` on line #17 creates an *instance* of the `App.Soldier` class.
+    The `extend()` on line #8 creates a *subclass* of `App.Person`. Any instance
+    of the `App.Person` class will *not* have the `march()` method.
 
     You can also pass `Mixin` classes to add additional properties to the subclass.
 
@@ -667,8 +675,8 @@ var ClassMixinProps = {
     o = MyObject.create();
     ```
 
-    In other words, this creates static properties and functions for the class. These are only available on the class
-    and not on any instance of that class.
+    In other words, this creates static properties and functions for the class.
+    These are only available on the class and not on any instance of that class.
 
     ```javascript
     App.Person = Ember.Object.extend({
@@ -760,7 +768,8 @@ var ClassMixinProps = {
     var possibleDesc = proto[key];
     var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-    Ember.assert('metaForProperty() could not find a computed property with key \'' + key + '\'.', !!desc && desc instanceof ComputedProperty);
+    Ember.assert('metaForProperty() could not find a computed property ' +
+      'with key \'' + key + '\'.', !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};
   },
 
