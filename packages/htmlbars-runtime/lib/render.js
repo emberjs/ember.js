@@ -41,11 +41,6 @@ function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment,
 
   this.bindScope();
 
-  if (options.attributes !== undefined) {
-    nodes.push({ state: {} });
-    this.statements.push(['attributes', attachAttributes(options.attributes)]);
-  }
-
   if (options.self !== undefined) { this.bindSelf(options.self); }
   if (options.blockArguments !== undefined) { this.bindLocals(options.blockArguments); }
 
@@ -253,7 +248,6 @@ RenderResult.prototype.populateNodes = function(visitor) {
       case 'element': visitor.element(statement, morph, env, scope, template, visitor); break;
       case 'attribute': visitor.attribute(statement, morph, env, scope); break;
       case 'component': visitor.component(statement, morph, env, scope, template, visitor); break;
-      case 'attributes': visitor.attributes(statement, morph, env, scope, this.fragment, visitor); break;
     }
 
     if (env.hooks.didRenderNode) {
