@@ -147,6 +147,8 @@ Renderer.prototype.setAttrs = function (view, attrs) {
 }; // set attrs the first time
 
 Renderer.prototype.componentInitAttrs = function (component, attrs) {
+  // for attrs-proxy support
+  component.trigger('_internalDidReceiveAttrs');
   component.trigger('didInitAttrs', { attrs });
   component.trigger('didReceiveAttrs', { newAttrs: attrs });
 }; // set attrs the first time
@@ -181,6 +183,8 @@ Renderer.prototype.componentUpdateAttrs = function (component, newAttrs) {
     set(component, 'attrs', newAttrs);
   }
 
+  // for attrs-proxy support
+  component.trigger('_internalDidReceiveAttrs');
   component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
   component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
 };

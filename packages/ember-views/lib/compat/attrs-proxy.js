@@ -81,7 +81,7 @@ let AttrsProxyMixin = {
     this._isDispatchingAttrs = false;
   }),
 
-  didReceiveAttrs() {
+  _internalDidReceiveAttrs() {
     this._super();
     this._isDispatchingAttrs = true;
     this._propagateAttrsToThis();
