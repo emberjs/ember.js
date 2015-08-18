@@ -39,6 +39,9 @@ import {
 } from 'ember-metal/events';
 import { isStream } from 'ember-metal/streams/utils';
 
+function ROOT() {}
+ROOT.__hasSuper = false;
+
 var REQUIRED;
 var a_slice = [].slice;
 
@@ -185,7 +188,7 @@ function applyMergedProperties(obj, key, value, values) {
   }
 
   if (hasFunction) {
-    newBase._super = function () {};
+    newBase._super = ROOT;
   }
 
   return newBase;
@@ -372,7 +375,7 @@ function applyMixin(obj, mixins, partial) {
   var keys = [];
   var key, value, desc;
 
-  obj._super = function () {};
+  obj._super = ROOT;
 
   // Go through all mixins and hashes passed in, and:
   //
