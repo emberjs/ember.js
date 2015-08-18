@@ -104,122 +104,6 @@ test("a simple implementation of a dirtying rerender without inverse", function(
   equalTokens(result.fragment, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
 });
 
-test("a dirtying rerender using `yieldIn`", function() {
-  var component = compile("<p>{{yield}}</p>");
-  var template = compile("<div><simple-component>{{title}}</simple-component></div>");
-
-  registerHelper("simple-component", function() {
-    return this.yieldIn(component);
-  });
-
-  var object = { title: "Hello world" };
-  var result = template.render(object, env);
-
-  var valueNode = getValueNode();
-  equalTokens(result.fragment, '<div><p>Hello world</p></div>');
-
-  result.rerender();
-
-  equalTokens(result.fragment, '<div><p>Hello world</p></div>');
-  strictEqual(getValueNode(), valueNode);
-
-  object.title = "Goodbye world";
-
-  result.rerender();
-  equalTokens(result.fragment, '<div><p>Goodbye world</p></div>');
-  strictEqual(getValueNode(), valueNode);
-
-  function getValueNode() {
-    return result.fragment.firstChild.firstChild.firstChild;
-  }
-});
-
-test("a dirtying rerender using `yieldIn` and self", function() {
-  var component = compile("<p><span>{{attrs.name}}</span>{{yield}}</p>");
-  var template = compile("<div><simple-component name='Yo! '>{{title}}</simple-component></div>");
-
-  registerHelper("simple-component", function(params, hash) {
-    return this.yieldIn(component, { attrs: hash });
-  });
-
-  var object = { title: "Hello world" };
-  var result = template.render(object, env);
-
-  var nameNode = getNameNode();
-  var titleNode = getTitleNode();
-  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
-
-  rerender();
-  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
-  assertStableNodes();
-
-  object.title = "Goodbye world";
-
-  rerender();
-  equalTokens(result.fragment, '<div><p><span>Yo! </span>Goodbye world</p></div>');
-  assertStableNodes();
-
-  function rerender() {
-    result.rerender();
-  }
-
-  function assertStableNodes() {
-    strictEqual(getNameNode(), nameNode);
-    strictEqual(getTitleNode(), titleNode);
-  }
-
-  function getNameNode() {
-    return result.fragment.firstChild.firstChild.firstChild.firstChild;
-  }
-
-  function getTitleNode() {
-    return result.fragment.firstChild.firstChild.firstChild.nextSibling;
-  }
-});
-
-test("a dirtying rerender using `yieldIn`, self and block args", function() {
-  var component = compile("<p>{{yield attrs.name}}</p>");
-  var template = compile("<div><simple-component name='Yo! ' as |key|><span>{{key}}</span>{{title}}</simple-component></div>");
-
-  registerHelper("simple-component", function(params, hash) {
-    return this.yieldIn(component, { attrs: hash });
-  });
-
-  var object = { title: "Hello world" };
-  var result = template.render(object, env);
-
-  var nameNode = getNameNode();
-  var titleNode = getTitleNode();
-  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
-
-  rerender();
-  equalTokens(result.fragment, '<div><p><span>Yo! </span>Hello world</p></div>');
-  assertStableNodes();
-
-  object.title = "Goodbye world";
-
-  rerender();
-  equalTokens(result.fragment, '<div><p><span>Yo! </span>Goodbye world</p></div>');
-  assertStableNodes();
-
-  function rerender() {
-    result.rerender();
-  }
-
-  function assertStableNodes() {
-    strictEqual(getNameNode(), nameNode);
-    strictEqual(getTitleNode(), titleNode);
-  }
-
-  function getNameNode() {
-    return result.fragment.firstChild.firstChild.firstChild.firstChild;
-  }
-
-  function getTitleNode() {
-    return result.fragment.firstChild.firstChild.firstChild.nextSibling;
-  }
-});
-
 test("block helpers whose template has a morph at the edge", function() {
   registerHelper('id', function(params, hash, options) {
     return options.template.yield();
@@ -644,7 +528,7 @@ QUnit.module("Manual elements", {
   beforeEach: commonSetup
 });
 
-test("Setting up a manual element renders and revalidates", function() {
+QUnit.skip("Setting up a manual element renders and revalidates", function() {
   hooks.keywords['manual-element'] = {
     render: function(morph, env, scope, params, hash, template, inverse, visitor) {
       var attributes = {

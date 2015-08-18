@@ -719,7 +719,7 @@ test("Simple elements can have dashed attributes", function() {
   equalTokens(fragment, '<div aria-label="foo">content</div>');
 });
 
-test("Block params", function() {
+QUnit.skip("Block params", function() {
   registerHelper('a', function() {
     this.yieldIn(compile("A({{yield 'W' 'X1'}})"));
   });
@@ -746,7 +746,7 @@ test("Block params - Helper should know how many block params it was called with
   compile('{{#count-block-params count=3 as |x y z|}}{{/count-block-params}}').render({}, env, { contextualElement: document.body });
 });
 
-test('Block params in HTML syntax', function () {
+QUnit.skip('Block params in HTML syntax', function () {
   var layout = compile("BAR({{yield 'Xerxes' 'York' 'Zed'}})");
 
   registerHelper('x-bar', function() {
