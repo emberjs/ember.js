@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
 import { inspect } from 'ember-metal/utils';
-import { meta } from 'ember-metal/meta';
+import { meta as metaFor } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import EmberError from 'ember-metal/error';
 import {
@@ -22,7 +22,6 @@ import {
 @submodule ember-metal
 */
 
-var metaFor = meta;
 
 function UNDEFINED() { }
 
