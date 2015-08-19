@@ -925,7 +925,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     this.transitionTo({queryParams: {sort: 'date'}});
     ```
 
-    See also 'replaceWith'.
+    See also [replaceWith](#method_replaceWith).
 
     Simple Transition Example
 

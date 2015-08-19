@@ -177,6 +177,24 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     Triggers the router level `didTransition` hook.
 
+    For example, to notify google analytics when the route changes,
+    you could use this hook.  (Note: requires also including GA scripts, etc.)
+
+    ```javascript
+    var Router = Ember.Router.extend({
+      location: config.locationType,
+
+      didTransition: function() {
+        this._super(...arguments);
+
+        return ga('send', 'pageview', {
+            'page': this.get('url'),
+            'title': this.get('url')
+          });
+      }
+    });
+    ```
+
     @method didTransition
     @public
     @since 1.2.0
