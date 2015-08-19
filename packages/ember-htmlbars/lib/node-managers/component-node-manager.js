@@ -192,7 +192,7 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
     // to access the DOM directly.
     if (env.destinedForDOM) {
       env.renderer.didCreateElement(component, element);
-      env.renderer.willInsertElement(component, element); // 2.0TODO remove legacy hook
+      env.renderer.willInsertElement(component, element);
 
       env.lifecycleHooks.push({ type: 'didInsertElement', view: component });
     }
