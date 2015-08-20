@@ -167,7 +167,13 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
-  Ember.assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !Array.isArray(value));
+  Ember.runInDebug(function() {
+    var assert = Ember.assert; // prevent defeatureify errors
+
+    if (Array.isArray(value)) { // use conditional to avoid stringifying every time
+      assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
+    }
+  });
 
   if (!baseValue) { return value; }
 
