@@ -30,7 +30,7 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
 
     @property target
     @default null
-    @private
+    @public
   */
   target: null,
 
