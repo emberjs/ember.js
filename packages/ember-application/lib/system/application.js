@@ -39,7 +39,7 @@ import LinkToComponent from 'ember-routing-views/views/link';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import { _loaded } from 'ember-runtime/system/lazy_load';
-import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import environment from 'ember-metal/environment';
 
 function props(obj) {
@@ -710,6 +710,16 @@ var Application = Namespace.extend(RegistryProxy, {
     this.constructor.initializer(options);
   }
 });
+
+if (isEnabled('ember-registry-container-reform')) {
+  Object.defineProperty(Application.prototype, 'registry', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return buildFakeRegistryWithDeprecations(this, 'Application');
+    }
+  });
+}
 
 Application.reopenClass({
   /**
