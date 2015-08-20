@@ -26,6 +26,29 @@ QUnit.test('computed property should be an instance of descriptor', function() {
   ok(computed(function() {}) instanceof Descriptor);
 });
 
+QUnit.test('computed properties assert the presence of a getter or setter function', function() {
+  expectAssertion(function() {
+    computed('nogetternorsetter', {});
+  }, 'Computed properties must receive a getter or a setter, you passed none.');
+});
+
+QUnit.test('computed properties check for the presence of a function or configuration object', function() {
+  expectAssertion(function() {
+    computed('nolastargument');
+  }, 'Ember.computed expects a function or an object as last argument.');
+});
+
+QUnit.test('computed properties defined with an object only allow `get` and `set` keys', function() {
+  expectAssertion(function() {
+    computed({
+      get() {},
+      set() {},
+      other() {}
+    });
+  }, 'Config object pased to a Ember.computed can only contain `get` or `set` keys.');
+});
+
+
 QUnit.test('defining computed property should invoke property on get', function() {
   var obj = {};
   var count = 0;
