@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { Mixin } from 'ember-metal/mixin';
 
 export default Mixin.create({
@@ -244,5 +245,36 @@ export default Mixin.create({
 function registryAlias(name) {
   return function () {
     return this.__registry__[name](...arguments);
+  };
+}
+
+export function buildFakeRegistryWithDeprecations(instance, typeForMessage) {
+  var fakeRegistry = {};
+  var registryProps = {
+    resolve: 'resolveRegistration',
+    register: 'register',
+    unregister: 'unregister',
+    has: 'hasRegistration',
+    option: 'registerOption',
+    options: 'registerOptions',
+    getOptions: 'registeredOptions',
+    optionsForType: 'registerOptionsForType',
+    getOptionsForType: 'registeredOptionsForType',
+    injection: 'inject'
+  };
+
+  for (var deprecatedProperty in registryProps) {
+    fakeRegistry[deprecatedProperty] = buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, registryProps[deprecatedProperty]);
+  }
+
+  return fakeRegistry;
+}
+
+function buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, nonDeprecatedProperty) {
+  return function() {
+    Ember.deprecate(`Using \`${typeForMessage}.registry.${deprecatedProperty}\` is deprecated. Please use \`${typeForMessage}.${nonDeprecatedProperty}\` instead.`,
+                    false,
+                    { id: 'ember-application.app-instance-registry', until: '3.0.0' });
+    return instance[nonDeprecatedProperty](...arguments);
   };
 }
