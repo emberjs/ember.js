@@ -83,7 +83,7 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // If the component specifies its template via the `layout` or `template`
   // properties instead of using the template looked up in the container, get
   // them now that we have the component instance.
-  let result = extractComponentTemplates(component, templates);
+  let result = extractComponentTemplates(component, templates, layout);
   layout = result.layout || layout;
   templates = result.templates || templates;
 
@@ -149,7 +149,7 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
   }
 }
 
-function extractComponentTemplates(component, _templates) {
+function extractComponentTemplates(component, _templates, _layout) {
   // Even though we looked up a layout from the container earlier, the
   // component may specify a `layout` property that overrides that.
   // The component may also provide a `template` property we should
@@ -169,11 +169,17 @@ function extractComponentTemplates(component, _templates) {
     layout = componentLayout;
     templates = extractLegacyTemplate(_templates, componentTemplate);
   } else if (componentTemplate) {
-    // If the component has a `template` but no `layout`, use the template
-    // as the layout.
-    layout = componentTemplate;
+    if (_layout) {
+      // If the component has no `layout`, but one was found during
+      // `lookupComponent` in calling `create` function, use that
+      layout = _layout;
+    } else {
+      // If the component has a `template` but no `layout`, use the template
+      // as the layout.
+      layout = componentTemplate;
+      Ember.deprecate("Using deprecated `template` property on a Component.");
+    }
     templates = _templates;
-    Ember.deprecate("Using deprecated `template` property on a Component.");
   }
 
   return { layout, templates };

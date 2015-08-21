@@ -1110,6 +1110,17 @@ QUnit.test('non-block with properties on attrs and component class', function() 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
+QUnit.test('no local layout component', function() {
+  registry.register('component:foo-bar', Component.extend({
+    defaultTemplate: { some: 'thing' }
+  }));
+  registry.register('template:components/foo-bar', compile('In layout - no local layout'));
+
+  view = appendViewFor('{{foo-bar}}');
+
+  equal(jQuery('#qunit-fixture').text(), 'In layout - no local layout');
+});
+
 QUnit.test('rerendering component with attrs from parent', function() {
   var willUpdate = 0;
   var didReceiveAttrs = 0;
