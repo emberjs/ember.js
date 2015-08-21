@@ -221,6 +221,8 @@ In general bug fixes are pulled into the beta branch. As such, the prefix is: `[
 
 For bugs related to canary features, follow the prefixing rules for features.
 
+For bugs specifically for past releases, tag for that release `[BUGFIX release-1-13]` and submit the PR against the stable branch for that release: `emberjs:stable-1-13`
+
 ### Cleanup
 
 Cleanup commits are for removing deprecated functionality and should be tagged
