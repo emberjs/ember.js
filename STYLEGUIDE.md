@@ -376,14 +376,13 @@ var [
 var person = {
   firstName: 'Stefan',
   lastName: 'Penner'
-}
+};
 
 var {
   firstName,
   lastName
 } = person;
 ```
-
 
 ## Comments
 
