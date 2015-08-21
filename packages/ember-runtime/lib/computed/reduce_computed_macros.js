@@ -13,7 +13,11 @@ import { isArray } from 'ember-runtime/utils';
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
-    return get(this, dependentKey).reduce((previousValue, currentValue, index, array) => {
+    const arr = get(this, dependentKey);
+
+    if (arr === null || typeof arr !== 'object') { return initialValue; }
+
+    return arr.reduce((previousValue, currentValue, index, array) => {
       return callback.call(this, previousValue, currentValue, index, array);
     }, initialValue);
   }).readOnly();
