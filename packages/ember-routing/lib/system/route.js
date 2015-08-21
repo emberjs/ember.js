@@ -1036,7 +1036,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
     @since 1.2.0
-    @private
+    @public
    */
   intermediateTransitionTo() {
     var router = this.router;
