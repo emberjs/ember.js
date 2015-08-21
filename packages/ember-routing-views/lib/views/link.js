@@ -14,6 +14,7 @@ import EmberComponent from 'ember-views/views/component';
 import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
+import { HAS_BLOCK, RELATED_VIEW } from 'ember-views/system/link-to';
 
 import linkToTemplate from 'ember-htmlbars/templates/link-to';
 linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -365,7 +366,7 @@ var LinkComponent = EmberComponent.extend({
     if (lastParam && lastParam.isQueryParams) {
       params.pop();
     }
-    let onlyQueryParamsSupplied = (this.attrs.hasBlock ? params.length === 0 : params.length === 1);
+    let onlyQueryParamsSupplied = (this[HAS_BLOCK] ? params.length === 0 : params.length === 1);
     if (onlyQueryParamsSupplied) {
       var appController = this.container.lookup('controller:application');
       if (appController) {
@@ -416,8 +417,7 @@ var LinkComponent = EmberComponent.extend({
       this.set('disabled', attrs.disabledWhen);
     }
 
-    // TODO: Change to built-in hasBlock once it's available
-    if (!attrs.hasBlock) {
+    if (!this[HAS_BLOCK]) {
       this.set('linkTitle', params.shift());
     }
 
@@ -431,7 +431,7 @@ var LinkComponent = EmberComponent.extend({
       while (ControllerMixin.detect(value)) {
         Ember.deprecate(
           'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
-            'Please update `' + attrs.view + '` to use `{{link-to "post" someController.model}}` instead.',
+            (attrs[RELATED_VIEW] ? 'Please update `' + attrs[RELATED_VIEW] + '` to use `{{link-to "post" someController.model}}` instead.' : ''),
           false,
           { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' }
         );
@@ -502,5 +502,9 @@ function getResolvedQueryParams(queryParamsObject, targetRouteName) {
 
   return resolvedQueryParams;
 }
+
+LinkComponent.reopenClass({
+  positionalParams: 'params'
+});
 
 export default LinkComponent;

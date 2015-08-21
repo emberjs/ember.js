@@ -7,6 +7,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import { HAS_BLOCK } from 'ember-views/system/link-to';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import EmberComponent from 'ember-views/views/component';
 import Stream from 'ember-metal/streams/stream';
@@ -51,7 +52,10 @@ ComponentNodeManager.create = function(renderNode, env, options) {
 
   component = component || EmberComponent;
 
-  let createOptions = { parentView };
+  let createOptions = {
+    parentView,
+    [HAS_BLOCK]: !!templates.default
+  };
 
   configureTagName(attrs, tagName, component, isAngleBracket, createOptions);
 
@@ -71,9 +75,9 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // Instantiate the component
   component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
 
-  // If the component specifies its template via the `layout`
-  // properties instead of using the template looked up in the container, get
-  // them now that we have the component instance.
+  // If the component specifies its layout via the `layout` property
+  // instead of using the template looked up in the container, get it
+  // now that we have the component instance.
   layout = get(component, 'layout') || layout;
 
 
