@@ -327,8 +327,6 @@ export default {
     // TODO: Remove once `hasBlock` is working again
     attrs.hasBlock = !!template;
 
-    attrs.escaped = !morph.parseTextAsHTML;
-
     env.hooks.component(morph, env, scope, '-link-to', params, attrs, { default: template }, visitor);
   },
 
