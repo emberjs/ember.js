@@ -1501,6 +1501,17 @@ QUnit.test('sums the values in the dependentKey', function() {
   equal(obj.get('total'), 6, 'sums the values');
 });
 
+QUnit.test('if the dependentKey is neither an array nor object, it will return `0`', () => {
+  set(obj, 'array', null);
+  equal(get(obj, 'total'), 0, 'returns 0');
+
+  set(obj, 'array', undefined);
+  equal(get(obj, 'total'), 0, 'returns 0');
+
+  set(obj, 'array', 'not an array');
+  equal(get(obj, 'total'), 0, 'returns 0');
+});
+
 QUnit.test('updates when array is modified', function() {
   obj.get('array').pushObject(1);
 
