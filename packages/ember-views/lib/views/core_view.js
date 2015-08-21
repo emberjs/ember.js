@@ -43,7 +43,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   init() {
     this._super.apply(this, arguments);
     this._state = 'preRender';
-    this.currentState = this._states.preRender;
+    this._currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
 
     // Fallback for legacy cases where the view was created directly
@@ -108,7 +108,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   destroy() {
     if (!this._super(...arguments)) { return; }
 
-    this.currentState.cleanup(this);
+    this._currentState.cleanup(this);
 
     // If the destroyingSubtreeForView property is not set but we have an
     // associated render node, it means this view is being destroyed from user
