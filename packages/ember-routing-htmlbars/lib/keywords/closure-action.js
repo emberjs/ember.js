@@ -70,11 +70,11 @@ export default function closureAction(morph, env, scope, params, hash, template,
 }
 
 function createClosureAction(stream, target, action, valuePath, actionArguments) {
-  var closureAction;
+  let closureAction;
 
   if (actionArguments.length > 0) {
     closureAction = function(...passedArguments) {
-      var args = actionArguments;
+      let args = actionArguments;
       if (passedArguments.length > 0) {
         args = actionArguments.concat(passedArguments);
       }
@@ -82,7 +82,10 @@ function createClosureAction(stream, target, action, valuePath, actionArguments)
         args[0] = get(args[0], valuePath);
       }
 
-      return run.join(target, action, ...args);
+      let payload = { target, args, label: labelFor(stream) };
+      return flaggedInstrument('interaction.ember-action', payload, () => {
+         return run.join(target, action, ...args);
+      });
     };
   } else {
     closureAction = function(...args) {
