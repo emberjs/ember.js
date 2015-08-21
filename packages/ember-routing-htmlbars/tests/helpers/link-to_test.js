@@ -103,6 +103,18 @@ QUnit.test('escaped inline form (double curlies) escapes link title', function()
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
+QUnit.test('escaped inline form with (-html-safe) does not escape link title', function() {
+  view = EmberView.create({
+    title: '<b>blah</b>',
+    template: compile('{{link-to (-html-safe view.title)}}'),
+    container: container
+  });
+
+  runAppend(view);
+
+  equal(view.$('b').length, 1, '<b> was found');
+});
+
 QUnit.test('unescaped inline form (triple curlies) does not escape link title', function() {
   view = EmberView.create({
     title: '<b>blah</b>',
