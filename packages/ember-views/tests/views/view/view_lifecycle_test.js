@@ -367,10 +367,9 @@ QUnit.test('trigger rerender on a view in the inDOM state keeps its state as inD
     view.rerender();
   });
 
-  equal(view.currentState, view._states.inDOM, 'the view is still in the inDOM state');
+  equal(view._currentState, view._states.inDOM, 'the view is still in the inDOM state');
 
   run(function() {
     view.destroy();
   });
 });
-

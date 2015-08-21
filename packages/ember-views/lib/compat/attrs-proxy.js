@@ -117,8 +117,8 @@ AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
   if (this._isAngleBracket) { return; }
   if (this._isDispatchingAttrs) { return; }
 
-  if (this.currentState) {
-    this.currentState.legacyPropertyDidChange(this, key);
+  if (this._currentState) {
+    this._currentState.legacyPropertyDidChange(this, key);
   }
 };
 
