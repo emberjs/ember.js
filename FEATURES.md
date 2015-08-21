@@ -59,3 +59,5 @@ for a detailed explanation.
 
   - `interaction.<event-name>` for events handled by a component.
   - `interaction.ember-action` for closure actions.
+  - `routing.transition.url` for transitions to a URL.
+  - `routing.transition.named` for transitions to a named route.
