@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-templates
+*/
+
 import Ember from 'ember-metal/core'; // assert
 import { get } from 'ember-metal/property_get';
 import EmptyObject from 'ember-metal/empty_object';
@@ -8,6 +13,73 @@ import generateController from 'ember-routing/system/generate_controller';
 import { generateControllerFactory } from 'ember-routing/system/generate_controller';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 
+/**
+  Calling ``{{render}}`` from within a template will insert another
+  template that matches the provided name. The inserted template will
+  access its properties on its own controller (rather than the controller
+  of the parent template).
+  If a view class with the same name exists, the view class also will be used.
+  Note: A given controller may only be used *once* in your app in this manner.
+  A singleton instance of the controller will be created for you.
+  Example:
+
+  ```javascript
+  App.NavigationController = Ember.Controller.extend({
+    who: "world"
+  });
+  ```
+
+  ```handlebars
+  <!-- navigation.hbs -->
+  Hello, {{who}}.
+  ```
+
+  ```handlebars
+  <!-- application.hbs -->
+  <h1>My great app</h1>
+  {{render "navigation"}}
+  ```
+
+  ```html
+  <h1>My great app</h1>
+  <div class='ember-view'>
+    Hello, world.
+  </div>
+  ```
+
+  Optionally you may provide a second argument: a property path
+  that will be bound to the `model` property of the controller.
+  If a `model` property path is specified, then a new instance of the
+  controller will be created and `{{render}}` can be used multiple times
+  with the same name.
+
+  For example if you had this `author` template.
+
+  ```handlebars
+  <div class="author">
+    Written by {{firstName}} {{lastName}}.
+    Total Posts: {{postCount}}
+  </div>
+  ```
+
+  You could render it inside the `post` template using the `render` helper.
+
+  ```handlebars
+  <div class="post">
+    <h1>{{title}}</h1>
+    <div>{{body}}</div>
+    {{render "author" author}}
+  </div>
+  ```
+
+  @method render
+  @for Ember.Templates.helpers
+  @param {String} name
+  @param {Object?} context
+  @param {Hash} options
+  @return {String} HTML string
+  @public
+*/
 export default {
   willRender(renderNode, env) {
     if (env.view.ownerView._outlets) {
