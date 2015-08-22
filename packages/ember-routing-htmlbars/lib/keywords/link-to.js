@@ -3,9 +3,8 @@
 @submodule ember-routing-htmlbars
 */
 
-import { readArray } from 'ember-metal/streams/utils';
 import Ember from 'ember-metal/core'; // assert
-import merge from 'ember-metal/merge';
+import { RELATED_VIEW } from 'ember-views/system/link-to';
 
 /**
   The `{{link-to}}` helper renders a link to the supplied
@@ -315,19 +314,13 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    var attrs = merge({}, hash);
+    Ember.runInDebug(() => {
+      // Used for deprecations (to tell the user what view the deprecated syntax was used in).
+      // Until: 3.0.0
+      hash[RELATED_VIEW] = env.view;
+    });
 
-    // TODO: Rewrite link-to to use arbitrary length positional params.
-    attrs.params = readArray(params);
-
-    // Used for deprecations (to tell the user what view the deprecated syntax
-    // was used in).
-    attrs.view = env.view;
-
-    // TODO: Remove once `hasBlock` is working again
-    attrs.hasBlock = !!template;
-
-    env.hooks.component(morph, env, scope, '-link-to', params, attrs, { default: template }, visitor);
+    env.hooks.component(morph, env, scope, '-link-to', params, hash, { default: template }, visitor);
   },
 
   rerender(morph, env, scope, params, hash, template, inverse, visitor) {
