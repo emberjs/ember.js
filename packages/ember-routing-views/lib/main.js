@@ -4,7 +4,7 @@
 */
 
 import Ember from 'ember-metal/core';
-import LinkComponent from 'ember-routing-views/views/link';
+import LinkComponent from 'ember-routing-views/components/link-to';
 import { OutletView } from 'ember-routing-views/views/outlet';
 
 Ember.LinkComponent = LinkComponent;
