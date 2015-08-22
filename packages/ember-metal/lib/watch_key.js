@@ -12,11 +12,10 @@ export function watchKey(obj, keyName, meta) {
   if (keyName === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
-  var watching = m.writableWatching();
 
   // activate watching first time
-  if (!watching[keyName]) {
-    watching[keyName] = 1;
+  if (!m.peekWatching(keyName)) {
+    m.writeWatching(keyName, 1);
 
     var possibleDesc = obj[keyName];
     var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
@@ -30,7 +29,7 @@ export function watchKey(obj, keyName, meta) {
       handleMandatorySetter(m, obj, keyName);
     }
   } else {
-    watching[keyName] = (watching[keyName] || 0) + 1;
+    m.writeWatching(keyName, (m.peekWatching(keyName) || 0) + 1);
   }
 }
 
@@ -48,7 +47,7 @@ if (isEnabled('mandatory-setter')) {
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
-      m.writableValues()[keyName] = obj[keyName];
+      m.writeValues(keyName, obj[keyName]);
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
@@ -65,10 +64,9 @@ if (isEnabled('mandatory-setter')) {
 
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
-  var watching = m.writableWatching();
-
-  if (watching[keyName] === 1) {
-    watching[keyName] = 0;
+  let count = m.peekWatching(keyName);
+  if (count === 1) {
+    m.writeWatching(keyName, 0);
 
     var possibleDesc = obj[keyName];
     var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
@@ -91,13 +89,13 @@ export function unwatchKey(obj, keyName, meta) {
               enumerable: true,
               value: val
             });
-            delete m.writableValues()[keyName];
+            m.deleteFromValues(keyName);
           },
           get: DEFAULT_GETTER_FUNCTION(keyName)
         });
       }
     }
-  } else if (watching[keyName] > 1) {
-    watching[keyName]--;
+  } else if (count > 1) {
+    m.writeWatching(keyName, count - 1);
   }
 }

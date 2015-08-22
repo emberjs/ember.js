@@ -7,9 +7,7 @@ import { meta as metaFor } from 'ember-metal/meta';
 QUnit.module('mandatory-setters');
 
 function hasMandatorySetter(object, property) {
-  var meta = metaFor(object);
-  let values = meta.readableValues();
-  return values && property in values;
+  return metaFor(object).hasInValues(property);
 }
 
 if (isEnabled('mandatory-setter')) {
@@ -105,7 +103,6 @@ if (isEnabled('mandatory-setter')) {
         return 'custom-object';
       }
     };
-    var meta = metaFor(obj);
 
     Object.defineProperty(obj, 'someProp', {
       configurable: false,
@@ -114,7 +111,7 @@ if (isEnabled('mandatory-setter')) {
     });
 
     watch(obj, 'someProp');
-    ok(!('someProp' in meta.readableValues()), 'blastix');
+    ok(!(hasMandatorySetter(obj, 'someProp')), 'blastix');
   });
 
   QUnit.test('sets up mandatory-setter if property comes from prototype', function() {
@@ -129,9 +126,8 @@ if (isEnabled('mandatory-setter')) {
     var obj2 = Object.create(obj);
 
     watch(obj2, 'someProp');
-    var meta = metaFor(obj2);
 
-    ok(('someProp' in meta.readableValues()), 'mandatory setter has been setup');
+    ok(hasMandatorySetter(obj2, 'someProp'), 'mandatory setter has been setup');
 
     expectAssertion(function() {
       obj2.someProp = 'foo-bar';

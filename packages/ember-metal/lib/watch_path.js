@@ -19,24 +19,23 @@ export function watchPath(obj, keyPath, meta) {
   if (keyPath === 'length' && Array.isArray(obj)) { return; }
 
   var m = meta || metaFor(obj);
-  var watching = m.writableWatching();
-
-  if (!watching[keyPath]) { // activate watching first time
-    watching[keyPath] = 1;
+  let counter = m.peekWatching(keyPath) || 0;
+  if (!counter) { // activate watching first time
+    m.writeWatching(keyPath, 1);
     chainsFor(obj, m).add(keyPath);
   } else {
-    watching[keyPath] = (watching[keyPath] || 0) + 1;
+    m.writeWatching(keyPath, counter + 1);
   }
 }
 
 export function unwatchPath(obj, keyPath, meta) {
   var m = meta || metaFor(obj);
-  var watching = m.writableWatching();
+  let counter = m.peekWatching(keyPath) || 0;
 
-  if (watching[keyPath] === 1) {
-    watching[keyPath] = 0;
+  if (counter === 1) {
+    m.writeWatching(keyPath, 0);
     chainsFor(obj, m).remove(keyPath);
-  } else if (watching[keyPath] > 1) {
-    watching[keyPath]--;
+  } else if (counter > 1) {
+    m.writeWatching(keyPath, counter - 1);
   }
 }

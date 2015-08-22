@@ -3,7 +3,6 @@
 //
 'REMOVE_USE_STRICT: true';
 
-import isEnabled from 'ember-metal/features';
 import { protoMethods as listenerMethods } from 'ember-metal/meta_listeners';
 import EmptyObject from 'ember-metal/empty_object';
 
@@ -23,11 +22,11 @@ import EmptyObject from 'ember-metal/empty_object';
  The following methods will get generated metaprogrammatically, and
  I'm including them here for greppability:
 
- writableCache, readableCache, writableWatching, readableWatching,
- peekWatching, clearWatching, writableMixins, readableMixins,
- peekMixins, clearMixins, writableBindings, readableBindings,
- peekBindings, clearBindings, writableValues, readableValues,
- peekValues, clearValues, writableDeps, readableDeps, getAllDeps
+ writableCache, readableCache, writeWatching,
+ peekWatching, clearWatching, writeMixins,
+ peekMixins, clearMixins, writeBindings,
+ peekBindings, clearBindings, writeValues,
+ peekValues, clearValues, writeDeps, forEachInDeps
  writableChainWatchers, readableChainWatchers, writableChains,
  readableChains
 
@@ -100,37 +99,44 @@ function inheritedMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['writable' + capitalized] = function() {
-    return this._getOrCreateInheritedMap(key);
-  };
-
-  Meta.prototype['readable' + capitalized] = function() {
-    return this._getInherited(key);
+  Meta.prototype['write' + capitalized] = function(subkey, value) {
+    let map = this._getOrCreateOwnMap(key);
+    map[subkey] = value;
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
-    let map = this._getInherited(key);
-    if (map) {
-      return map[subkey];
+    return this._findInherited(key, subkey);
+  };
+
+  Meta.prototype['forEach' + capitalized] = function(fn) {
+    let pointer = this;
+    let seen = new EmptyObject();
+    while (pointer !== undefined) {
+      let map = pointer[key];
+      if (map) {
+        Object.keys(map).forEach(key => {
+          if (!seen[key]) {
+            seen[key] = true;
+            fn(key, map[key]);
+          }
+        });
+      }
+      pointer = pointer.parent;
     }
   };
 
   Meta.prototype['clear' + capitalized] = function() {
     this[key] = new EmptyObject();
   };
-}
 
-Meta.prototype._getOrCreateInheritedMap = function(key) {
-  let ret = this[key];
-  if (!ret) {
-    if (this.parent) {
-      ret = this[key] = Object.create(this.parent._getOrCreateInheritedMap(key));
-    } else {
-      ret = this[key] = new EmptyObject();
-    }
-  }
-  return ret;
-};
+  Meta.prototype['deleteFrom' + capitalized] = function(subkey) {
+    delete this._getOrCreateOwnMap(key)[subkey];
+  };
+
+  Meta.prototype['hasIn' + capitalized] = function(subkey) {
+    return this._findInherited(key, subkey) !== undefined;
+  };
+}
 
 Meta.prototype._getInherited = function(key) {
   let pointer = this;
@@ -142,34 +148,81 @@ Meta.prototype._getInherited = function(key) {
   }
 };
 
+Meta.prototype._findInherited = function(key, subkey) {
+  let pointer = this;
+  while (pointer !== undefined) {
+    let map = pointer[key];
+    if (map) {
+      let value = map[subkey];
+      if (value !== undefined) {
+        return value;
+      }
+    }
+    pointer = pointer.parent;
+  }
+};
+
+
 // Implements a member that provides a lazily created map of maps,
 // with inheritance at both levels.
 function inheritedMapOfMaps(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['writable' + capitalized] = function(subkey) {
-    let outerMap = this._getOrCreateInheritedMap(key);
+  Meta.prototype['write' + capitalized] = function(subkey, itemkey, value) {
+    let outerMap = this._getOrCreateOwnMap(key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
       innerMap = outerMap[subkey] = new EmptyObject();
-    } else if (!Object.hasOwnProperty.call(outerMap, subkey)) {
-      innerMap = outerMap[subkey] = Object.create(innerMap);
     }
-    return innerMap;
+    innerMap[itemkey] = value;
   };
 
-  Meta.prototype['readable' + capitalized] = function(subkey) {
+  Meta.prototype['peek' + capitalized] = function(subkey, itemkey) {
+    let pointer = this;
+    while (pointer !== undefined) {
+      let map = pointer[key];
+      if (map) {
+        let value = map[subkey];
+        if (value) {
+          if (value[itemkey] !== undefined) {
+            return value[itemkey];
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  };
+
+  Meta.prototype['has' + capitalized] = function(subkey) {
     let map = this._getInherited(key);
-    if (map) {
-      return map[subkey];
-    }
+    return map && !!map[subkey];
   };
 
-  Meta.prototype['getAll' + capitalized] = function() {
-    return this._getInherited(key);
+  Meta.prototype['forEachIn' + capitalized] = function(subkey, fn) {
+    return this._forEachIn(key, subkey, fn);
   };
 }
+
+Meta.prototype._forEachIn = function(key, subkey, fn) {
+  let pointer = this;
+  let seen = new EmptyObject();
+  while (pointer !== undefined) {
+    let map = pointer[key];
+    if (map) {
+      let innerMap = map[subkey];
+      if (innerMap) {
+        Object.keys(innerMap).forEach(key => {
+          if (!seen[key]) {
+            seen[key] = true;
+            fn(key, innerMap[key]);
+          }
+        });
+      }
+    }
+    pointer = pointer.parent;
+  }
+};
 
 // Implements a member that provides a non-heritable, lazily-created
 // object using the method you provide.
@@ -236,10 +289,6 @@ var EMBER_META_PROPERTY = {
 // Placeholder for non-writable metas.
 export var EMPTY_META = new Meta(null);
 
-if (isEnabled('mandatory-setter')) {
-  EMPTY_META.writableValues();
-}
-
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
@@ -270,9 +319,6 @@ export function meta(obj, writable) {
 
   if (!ret) {
     ret = new Meta(obj);
-    if (isEnabled('mandatory-setter')) {
-      ret.writableValues();
-    }
   } else {
     ret = new Meta(obj, ret);
   }
