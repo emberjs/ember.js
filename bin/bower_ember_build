@@ -33,10 +33,10 @@ case $TRAVIS_BRANCH in
     CHANNEL="canary" ;;
   "beta" )
     CHANNEL="beta" ;;
-  "stable"  )
-    CHANNEL="release" ;;
   "release" )
     CHANNEL="release" ;;
+  "release-1-13" )
+      CHANNEL="release-1-13" ;;
   "metal-views" )
     CHANNEL="metal-views" ;;
   "idempotent-rerender" )
@@ -62,4 +62,3 @@ git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/co
 # sending output to /dev/null to prevent GH_TOKEN leak on error
 git push -fq origin ${CHANNEL} &> /dev/null
 echo -e "Done\n"
-
