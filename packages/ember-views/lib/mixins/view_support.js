@@ -178,7 +178,7 @@ export default Mixin.create({
     @public
   */
   rerender() {
-    return this.currentState.rerender(this);
+    return this._currentState.rerender(this);
   },
 
   // ..........................................................
@@ -209,7 +209,7 @@ export default Mixin.create({
   */
   $(sel) {
     Ember.assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
-    return this.currentState.$(this, sel);
+    return this._currentState.$(this, sel);
   },
 
   forEachChildView(callback) {
@@ -496,7 +496,7 @@ export default Mixin.create({
     @private
   */
   destroyElement() {
-    return this.currentState.destroyElement(this);
+    return this._currentState.destroyElement(this);
   },
 
   /**
@@ -713,7 +713,7 @@ export default Mixin.create({
     @private
   */
   handleEvent(eventName, evt) {
-    return this.currentState.handleEvent(this, eventName, evt);
+    return this._currentState.handleEvent(this, eventName, evt);
   },
 
   /**
@@ -765,7 +765,7 @@ export default Mixin.create({
   _wrapAsScheduled(fn) {
     var view = this;
     var stateCheckedFn = function() {
-      view.currentState.invokeObserver(this, fn);
+      view._currentState.invokeObserver(this, fn);
     };
     var scheduledFn = function() {
       run.scheduleOnce('render', this, stateCheckedFn);

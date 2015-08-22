@@ -44,7 +44,7 @@ merge(hasElement, {
   },
 
   cleanup(view) {
-    view.currentState.destroyElement(view);
+    view._currentState.destroyElement(view);
   },
 
   // once the view is already in the DOM, destroying it removes it
