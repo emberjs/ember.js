@@ -351,6 +351,58 @@ var Component = View.extend(TargetActionSupport, {
     @property hasBlockParams
     @returns Boolean
   */
+
+  /**
+    Enables components to take a list of parameters as arguments
+
+    For example a component that takes two parameters with the names
+    `name` and `age`:
+
+    ```javascript
+    let MyComponent = Ember.Component.extend;
+    MyComponent.reopenClass({
+      positionalParams: ['name', 'age']
+    });
+    ```
+
+    It can then be invoked like this:
+
+    ```hbs
+    {{my-component "John" 38}}
+    ```
+
+    The parameters can be refered to just like named parameters:
+
+    ```hbs
+    Name: {{attrs.name}}, Age: {{attrs.age}}.
+    ```
+
+    Using a string instead of an array allows for an arbitrary number of
+    parameters:
+
+    ```javascript
+    let MyComponent = Ember.Component.extend;
+    MyComponent.reopenClass({
+      positionalParams: 'names'
+    });
+    ```
+
+    It can then be invoked like this:
+
+    ```hbs
+    {{my-component "John" "Michael" "Scott"}}
+    ```
+
+    The parameters can then be refered to by enumerating over the list:
+
+    ```hbs
+    {{#each attrs.names as |name|}}{{name}}{{/each}}
+    ```
+
+    @static
+    @public
+    @property positionalParams
+  */
 });
 
 Component.reopenClass({
