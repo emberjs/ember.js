@@ -46,11 +46,11 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
   ok(appInstance.__registry__, '#__registry__ is accessible');
 
   if (isEnabled('ember-registry-container-reform')) {
-    expect(6);
+    expect(9);
 
     ok(typeof appInstance.container.lookup === 'function', '#container.lookup is available as a function');
 
-    // stub `lookup` with a no-op to keep deprecation test simple
+    // stub with a no-op to keep deprecation test simple
     appInstance.__container__.lookup = function() {
       ok(true, '#loookup alias is called correctly');
     };
@@ -58,6 +58,16 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
     expectDeprecation(function() {
       appInstance.container.lookup();
     }, /Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead./);
+
+
+    ok(typeof appInstance.registry.register === 'function', '#registry.register is available as a function');
+    appInstance.__registry__.register = function() {
+      ok(true, '#register alias is called correctly');
+    };
+
+    expectDeprecation(function() {
+      appInstance.registry.register();
+    }, /Using `ApplicationInstance.registry.register` is deprecated. Please use `ApplicationInstance.register` instead./);
   } else {
     expect(5);
 

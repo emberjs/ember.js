@@ -12,7 +12,7 @@ import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import Registry from 'container/registry';
-import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import assign from 'ember-metal/assign';
 
@@ -99,7 +99,10 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     // in tests, or rendered to a string in the case of FastBoot.
     this.register('-application-instance:main', this, { instantiate: false });
 
-    assignAliases(this);
+    if (!isEnabled('ember-registry-container-reform')) {
+      this.container = this.__container__;
+      this.registry = this.__registry__;
+    }
   },
 
   router: computed(function() {
@@ -210,27 +213,30 @@ function isResolverModuleBased(applicationInstance) {
   return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
 }
 
-function assignAliases(applicationInstance) {
-  if (isEnabled('ember-registry-container-reform')) {
-    Object.defineProperty(applicationInstance, 'container', {
-      configurable: true,
-      enumerable: false,
-      get() {
-        var instance = this;
-        return {
-          lookup() {
-            Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-                            false,
-                            { id: 'ember-application.app-instance-container', until: '3.0.0' });
-            return instance.lookup(...arguments);
-          }
-        };
-      }
-    });
-  } else {
-    applicationInstance.container = applicationInstance.__container__;
-    applicationInstance.registry = applicationInstance.__registry__;
-  }
+if (isEnabled('ember-registry-container-reform')) {
+  Object.defineProperty(ApplicationInstance.prototype, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      var instance = this;
+      return {
+        lookup() {
+          Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
+                          false,
+                          { id: 'ember-application.app-instance-container', until: '3.0.0' });
+          return instance.lookup(...arguments);
+        }
+      };
+    }
+  });
+
+  Object.defineProperty(ApplicationInstance.prototype, 'registry', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      return buildFakeRegistryWithDeprecations(this, 'ApplicationInstance');
+    }
+  });
 }
 
 export default ApplicationInstance;
