@@ -32,6 +32,7 @@ import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
 import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
+import { deprecateProperty } from 'ember-metal/deprecate_property';
 
 function K() { return this; }
 
@@ -1475,6 +1476,11 @@ var View = CoreView.extend(
   }
 });
 // jscs:enable validateIndentation
+
+deprecateProperty(View.prototype, 'currentState', '_currentState', {
+  id: 'ember-view.current-state',
+  until: '2.3.0'
+});
 
 /*
   Describe how the specified actions should behave in the various
