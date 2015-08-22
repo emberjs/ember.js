@@ -17,5 +17,15 @@
 var S3Publisher = require('ember-publisher');
 var configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js');
 
-var publisher = new S3Publisher({projectConfigPath: configPath});
+var publisher = new S3Publisher({ projectConfigPath: configPath });
+
+publisher.currentBranch = function() {
+  return {
+    master: 'canary',
+    beta: 'beta',
+    release: 'release',
+    'release-1-13': 'release-1-13'
+  }[this.CURRENT_BRANCH] || process.env.BUILD_TYPE;
+};
+
 publisher.publish();
