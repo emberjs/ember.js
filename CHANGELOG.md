@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.0.1 (August 22, 2015)
+
+- [#12093](https://github.com/emberjs/ember.js/pull/12093) [BUGFIX] Fix issue with `Ember.computed.alias`, `Ember.computed.oneWay`, and `Ember.computed.reads` that prevented them from invalidating properly.
+- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require calling `this._super(...arguments)` in views/components when implementing `didRecieveAttrs`.
+- [#12170](https://github.com/emberjs/ember.js/pull/12170) [BUGFIX] Ensure `Ember.computed.sum` returns `0` when the underlying array property is `null` or `undefined`.
+
+
 ### 2.0.0 (August 13, 2015)
 
 - [#12036](https://github.com/emberjs/ember.js/pull/12036) Cleanup CP Set and  Volatile
