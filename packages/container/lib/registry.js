@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.assert
+import { assert } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import assign from 'ember-metal/assign';
 import Container from './container';
@@ -158,7 +158,7 @@ Registry.prototype = {
    @param {Object} options
    */
   register(fullName, factory, options) {
-    Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     if (factory === undefined) {
       throw new TypeError('Attempting to register an unknown factory: `' + fullName + '`');
@@ -193,7 +193,7 @@ Registry.prototype = {
    @param {String} fullName
    */
   unregister(fullName) {
-    Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     var normalizedName = this.normalize(fullName);
 
@@ -237,7 +237,7 @@ Registry.prototype = {
    @return {Function} fullName's factory
    */
   resolve(fullName) {
-    Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
     var factory = resolve(this, this.normalize(fullName));
     if (factory === undefined && this.fallback) {
       factory = this.fallback.resolve(fullName);
@@ -310,7 +310,7 @@ Registry.prototype = {
    @return {Boolean}
    */
   has(fullName) {
-    Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
     return has(this, this.normalize(fullName));
   },
 
@@ -430,7 +430,7 @@ Registry.prototype = {
    @param {String} fullName
    */
   typeInjection(type, property, fullName) {
-    Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     var fullNameType = fullName.split(':')[0];
     if (fullNameType === type) {
@@ -501,7 +501,7 @@ Registry.prototype = {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
-    Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
     var normalizedName = this.normalize(fullName);
 
     var injections = this._injections[normalizedName] ||
@@ -678,7 +678,7 @@ Registry.prototype = {
 
     for (var key in hash) {
       if (hash.hasOwnProperty(key)) {
-        Ember.assert('Expected a proper full name, given \'' + hash[key] + '\'', this.validateFullName(hash[key]));
+        assert('Expected a proper full name, given \'' + hash[key] + '\'', this.validateFullName(hash[key]));
 
         injections.push({
           property: key,
