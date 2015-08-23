@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { registerDebugFunction } from 'ember-metal/assert';
+import { setDebugFunction } from 'ember-metal/assert';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
@@ -11,8 +11,6 @@ import warn, {
   registerHandler as registerWarnHandler
 } from 'ember-debug/warn';
 import isPlainFunction from 'ember-debug/is-plain-function';
-
-Ember.deprecate = deprecate;
 
 /**
 @module ember
@@ -136,12 +134,12 @@ function runInDebug(func) {
   func();
 }
 
-registerDebugFunction('assert', assert);
-registerDebugFunction('warn', warn);
-registerDebugFunction('debug', debug);
-registerDebugFunction('deprecate', deprecate);
-registerDebugFunction('deprecateFunc', deprecateFunc);
-registerDebugFunction('runInDebug', runInDebug);
+setDebugFunction('assert', assert);
+setDebugFunction('warn', warn);
+setDebugFunction('debug', debug);
+setDebugFunction('deprecate', deprecate);
+setDebugFunction('deprecateFunc', deprecateFunc);
+setDebugFunction('runInDebug', runInDebug);
 
 /**
   Will call `Ember.warn()` if ENABLE_ALL_FEATURES, ENABLE_OPTIONAL_FEATURES, or

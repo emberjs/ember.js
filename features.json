@@ -32,6 +32,11 @@
     "_emberMetal.default.warn",
     "_emberMetal.default.assert",
     "_emberMetal.default.debug",
-    "_emberMetal.default.runInDebug"
+    "_emberMetal.default.runInDebug",
+    "_emberMetalAssert.deprecate",
+    "_emberMetalAssert.warn",
+    "_emberMetalAssert.assert",
+    "_emberMetalAssert.debug",
+    "_emberMetalAssert.runInDebug"
   ]
 }

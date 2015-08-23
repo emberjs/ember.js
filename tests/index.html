@@ -133,7 +133,13 @@
 
         var EmberDevTestHelperAssert = window.Ember.__loader.require('ember-dev/test-helper/index')['default'];
         var setupQUnit = window.Ember.__loader.require('ember-dev/test-helper/setup-qunit')['default'];
-        var testHelpers = new EmberDevTestHelperAssert(window.Ember, EmberDev.runningProdBuild);
+        var assertModule = window.Ember.__loader.require('ember-metal/assert');
+        var testHelpers = new EmberDevTestHelperAssert({
+          Ember: window.Ember,
+          runningProdBuild: EmberDev.runningProdBuild,
+          getDebugFunction: assertModule.getDebugFunction,
+          setDebugFunction: assertModule.setDebugFunction
+        });
         setupQUnit(testHelpers);
 
         // Tests should time out after 5 seconds
