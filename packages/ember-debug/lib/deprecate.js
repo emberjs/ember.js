@@ -4,6 +4,7 @@ import Ember from 'ember-metal/core';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
+import isPlainFunction from 'ember-debug/is-plain-function';
 
 export function registerHandler(handler) {
   genericRegisterHandler('deprecate', handler);
@@ -76,6 +77,9 @@ export let missingOptionsDeprecation = 'When calling `Ember.deprecate` you ' +
   '`options` should include `id` and `until` properties.';
 export let missingOptionsIdDeprecation = 'When calling `Ember.deprecate` you must provide `id` in options.';
 export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you must provide `until` in options.';
+export let testFunctionArgDeprecation = 'Functional arguments are ambiguous with constructors. ' +
+  'Please use !!Constructor for constructors, or an IIFE to compute the deprecation value. ' +
+  'In a future version of Ember functions will be treated as truthy values instead of being executed.';
 
 /**
   Display a deprecation warning with the provided message and a stack trace
@@ -84,9 +88,8 @@ export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you 
 
   @method deprecate
   @param {String} message A description of the deprecation.
-  @param {Boolean|Function} test A boolean. If falsy, the deprecation
-    will be displayed. If this is a function, it will be executed and its return
-    value will be used as condition.
+  @param {Boolean} test A boolean. If falsy, the deprecation
+    will be displayed.
   @param {Object} options An object that can be used to pass
     in a `url` to the transition guide on the emberjs.com website, and a unique
     `id` for this deprecation. The `id` can be used by Ember debugging tools
@@ -116,6 +119,14 @@ export default function deprecate(message, test, options) {
       missingOptionsUntilDeprecation,
       options && options.until,
       { id: 'ember-debug.deprecate-until-missing', until: '3.0.0' }
+    );
+  }
+
+  if (isPlainFunction(test)) {
+    deprecate(
+      testFunctionArgDeprecation,
+      false,
+      { id: 'ember-debug.deprecate-test-function', until: '2.0.0' }
     );
   }
 

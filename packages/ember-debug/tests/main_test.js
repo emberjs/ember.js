@@ -4,7 +4,8 @@ import {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation
+  missingOptionsUntilDeprecation,
+  testFunctionArgDeprecation
 } from 'ember-debug/deprecate';
 
 import {
@@ -105,14 +106,13 @@ QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', fun
   });
 });
 
-QUnit.test('Ember.deprecate does not throw deprecation if second argument is a function and it returns true', function() {
+QUnit.test('Ember.deprecate throws if second argument is a function and it returns true', function() {
   expect(1);
-
-  Ember.deprecate('Deprecation is thrown', function() {
-    return true;
-  }, { id: 'test', until: 'forever' });
-
-  ok(true, 'deprecation was not thrown');
+  throws(function() {
+    Ember.deprecate('Deprecation is thrown', function() {
+      return true;
+    }, { id: 'test', until: 'forever' });
+  });
 });
 
 QUnit.test('Ember.deprecate throws if second argument is a function and it returns false', function() {
@@ -271,6 +271,20 @@ QUnit.test('Ember.deprecate without options.until triggers a deprecation', funct
   });
 
   Ember.deprecate('foo', false, { id: 'test' });
+});
+
+QUnit.test('Ember.deprecate with test function argument triggers a deprecation', function(assert) {
+  assert.expect(1);
+
+  registerHandler(function(message) {
+    if (message === testFunctionArgDeprecation) {
+      assert.ok(true, 'proper deprecation is triggered when test is a function');
+    }
+  });
+
+  Ember.deprecate('foo', function() {
+    return true;
+  }, { id: 'test' });
 });
 
 QUnit.test('Ember.warn without options triggers a deprecation', function(assert) {
