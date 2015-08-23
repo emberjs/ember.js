@@ -169,7 +169,7 @@ import {
   deprecate,
   deprecateFunc,
   runInDebug
-} from 'ember-metal/assert';
+} from 'ember-metal/debug';
 
 Ember.assert = assert;
 Ember.warn = warn;

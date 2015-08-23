@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { setDebugFunction } from 'ember-metal/assert';
+import { setDebugFunction } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
