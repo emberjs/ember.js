@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // deprecate, assert
+import { assert } from 'ember-metal/debug';
 import environment from 'ember-metal/environment';
 import { getHash } from 'ember-routing/location/util';
 
@@ -148,10 +148,10 @@ export default {
   */
   create(options) {
     var implementation = options && options.implementation;
-    Ember.assert('Ember.Location.create: you must specify a \'implementation\' option', !!implementation);
+    assert('Ember.Location.create: you must specify a \'implementation\' option', !!implementation);
 
     var implementationClass = this.implementations[implementation];
-    Ember.assert(`Ember.Location.create: ${implementation} is not a valid implementation`, !!implementationClass);
+    assert(`Ember.Location.create: ${implementation} is not a valid implementation`, !!implementationClass);
 
     return implementationClass.create(...arguments);
   },

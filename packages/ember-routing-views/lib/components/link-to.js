@@ -311,8 +311,8 @@
 @submodule ember-routing-views
 */
 
-import Ember from 'ember-metal/core'; // FEATURES, Logger, assert
-
+import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -703,7 +703,7 @@ var LinkComponent = EmberComponent.extend({
     // Do not mutate params in place
     var params = attrs.params.slice();
 
-    Ember.assert('You must provide one or more parameters to the link-to helper.', params.length);
+    assert('You must provide one or more parameters to the link-to helper.', params.length);
 
     var lastParam = params[params.length - 1];
 
@@ -737,7 +737,7 @@ var LinkComponent = EmberComponent.extend({
       var value = params[i];
 
       while (ControllerMixin.detect(value)) {
-        Ember.deprecate(
+        deprecate(
           'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
             (this.parentView ? 'Please update `' + this.parentView + '` to use `{{link-to "post" someController.model}}` instead.' : ''),
           false,

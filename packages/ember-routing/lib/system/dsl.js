@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // FEATURES, assert
+import { assert, deprecate, warn } from 'ember-metal/debug';
 
 /**
 @module ember
@@ -24,7 +24,7 @@ DSL.prototype = {
       options = {};
     }
 
-    Ember.assert(
+    assert(
       `'${name}' cannot be used as a route name.`,
       (function() {
         if (options.overrideNameAssertion === true) { return true; }
@@ -33,7 +33,7 @@ DSL.prototype = {
       })()
     );
 
-    Ember.warn(
+    warn(
       `Using a route named 'select' (and defining a App.SelectView) will prevent you from using {{view 'select'}}`,
       name !== 'select',
       { id: 'ember-routing.dsl-select-route' }
@@ -79,7 +79,7 @@ DSL.prototype = {
     }
 
     options.resetNamespace = true;
-    Ember.deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.', false, { id: 'ember-routing.router-resource', until: '3.0.0' });
+    deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.', false, { id: 'ember-routing.router-resource', until: '3.0.0' });
     this.route(name, options, callback);
   },
 
