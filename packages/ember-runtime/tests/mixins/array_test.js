@@ -390,6 +390,24 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   equal(count, 1, '@each.isDone should have notified');
 });
 
+test("Binds correctly to firstObject", function() {
+  var testClass = EmberObject.extend({
+    init: function() {
+      this._super(arguments);
+      this.get('firstObject');
+    },
+    firstObjectBinding: 'arr.firstObject'
+  });
+
+  Ember.run(function() {
+    var arr = Ember.A([1,2]);
+    var testObject = testClass.create({arr: arr});
+    equal(get(testObject, 'firstObject'), get(arr, 'firstObject'));
+    arr.removeAt(0);
+    equal(get(testObject, 'firstObject'), get(arr, 'firstObject'));
+  });
+});
+
 
 testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set) {
   var obj = EmberObject.extend({
