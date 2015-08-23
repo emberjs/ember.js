@@ -8,7 +8,7 @@ import { Registry } from 'ember-runtime/system/container';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import EmberObject from 'ember-runtime/system/object';
 import ComponentLookup from 'ember-views/component_lookup';
-import LinkComponent from 'ember-routing-views/views/link';
+import LinkComponent from 'ember-routing-views/components/link-to';
 
 var view;
 var container;
@@ -28,7 +28,7 @@ registry.register('service:-routing', EmberObject.extend({
 }));
 
 registry.register('component-lookup:main', ComponentLookup);
-registry.register('component:-link-to', LinkComponent);
+registry.register('component:link-to', LinkComponent);
 registry.register('component:custom-link-to', LinkComponent.extend());
 
 QUnit.module('ember-routing-htmlbars: link-to helper', {

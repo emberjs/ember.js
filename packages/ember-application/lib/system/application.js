@@ -35,7 +35,7 @@ import TextField from 'ember-views/views/text_field';
 import TextArea from 'ember-views/views/text_area';
 import Checkbox from 'ember-views/views/checkbox';
 import LegacyEachView from 'ember-views/views/legacy_each_view';
-import LinkToComponent from 'ember-routing-views/views/link';
+import LinkToComponent from 'ember-routing-views/components/link-to';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import { _loaded } from 'ember-runtime/system/lazy_load';
@@ -1031,7 +1031,7 @@ Application.reopenClass({
     registry.register('component:-text-area', TextArea);
     registry.register('component:-checkbox', Checkbox);
     registry.register('view:-legacy-each', LegacyEachView);
-    registry.register('component:-link-to', LinkToComponent);
+    registry.register('component:link-to', LinkToComponent);
 
     // Register the routing service...
     registry.register('service:-routing', RoutingService);

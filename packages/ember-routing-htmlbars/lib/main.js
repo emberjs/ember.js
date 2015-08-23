@@ -11,14 +11,12 @@ import { registerKeyword } from 'ember-htmlbars/keywords';
 import { queryParamsHelper } from 'ember-routing-htmlbars/helpers/query-params';
 import action from 'ember-routing-htmlbars/keywords/action';
 import elementAction from 'ember-routing-htmlbars/keywords/element-action';
-import linkTo from 'ember-routing-htmlbars/keywords/link-to';
 import render from 'ember-routing-htmlbars/keywords/render';
 
 registerHelper('query-params', queryParamsHelper);
 
 registerKeyword('action', action);
 registerKeyword('@element_action', elementAction);
-registerKeyword('link-to', linkTo);
 registerKeyword('render', render);
 
 export default Ember;

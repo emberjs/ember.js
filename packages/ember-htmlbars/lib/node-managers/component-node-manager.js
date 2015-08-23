@@ -6,12 +6,15 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
-import { HAS_BLOCK } from 'ember-views/system/link-to';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import Stream from 'ember-metal/streams/stream';
 import { readArray } from 'ember-metal/streams/utils';
+import { symbol } from 'ember-metal/utils';
+
+// These symbols will be used to limit link-to's public API surface area.
+export let HAS_BLOCK = symbol('HAS_BLOCK');
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
