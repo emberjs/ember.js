@@ -133,12 +133,12 @@
 
         var EmberDevTestHelperAssert = window.Ember.__loader.require('ember-dev/test-helper/index')['default'];
         var setupQUnit = window.Ember.__loader.require('ember-dev/test-helper/setup-qunit')['default'];
-        var assertModule = window.Ember.__loader.require('ember-metal/assert');
+        var debugModule = window.Ember.__loader.require('ember-metal/debug');
         var testHelpers = new EmberDevTestHelperAssert({
           Ember: window.Ember,
           runningProdBuild: EmberDev.runningProdBuild,
-          getDebugFunction: assertModule.getDebugFunction,
-          setDebugFunction: assertModule.setDebugFunction
+          getDebugFunction: debugModule.getDebugFunction,
+          setDebugFunction: debugModule.setDebugFunction
         });
         setupQUnit(testHelpers);
 
