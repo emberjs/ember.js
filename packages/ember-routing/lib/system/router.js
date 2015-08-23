@@ -48,10 +48,12 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     The following location types are currently available:
 
-    * `auto`
-    * `hash`
-    * `history`
-    * `none`
+    * `history` - use the browser's history API to make the URLs look just like any standard URL
+    * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
+    * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
+    * `auto` - use the best option based on browser capabilites: `history` if possible, then `hash` if possible, otherwise `none`
+
+    Note: If using ember-cli, this value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
 
     @property location
     @default 'hash'
