@@ -7,7 +7,11 @@ export let debugFunctions = {
   runInDebug() {}
 };
 
-export function registerDebugFunction(name, fn) {
+export function getDebugFunction(name) {
+  return debugFunctions[name];
+}
+
+export function setDebugFunction(name, fn) {
   debugFunctions[name] = fn;
 }
 
