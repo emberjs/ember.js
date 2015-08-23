@@ -228,10 +228,6 @@ function normalizeClass(component, attrs) {
     normalizeClasses(attrs.classBinding.split(' '), normalizedClass);
   }
 
-  if (attrs.classNames) {
-    normalizedClass.push(['value', attrs.classNames]);
-  }
-
   if (classNames) {
     for (i = 0, l = classNames.length; i < l; i++) {
       normalizedClass.push(classNames[i]);
