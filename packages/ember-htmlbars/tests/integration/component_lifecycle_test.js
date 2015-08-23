@@ -365,7 +365,7 @@ styles.forEach(style => {
 
   QUnit.test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
     let component = style.class.extend({
-      layout: compile('<div>{{debugger}}{{handle}}</div>'),
+      layout: compile('<div>{{handle}}</div>'),
       handle: '@wycats',
       container: container,
 
