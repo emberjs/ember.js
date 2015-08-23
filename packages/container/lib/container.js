@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core'; // Ember.assert
+import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
 
@@ -97,7 +98,7 @@ Container.prototype = {
    @return {any}
    */
   lookup(fullName, options) {
-    Ember.assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   },
 
@@ -110,7 +111,7 @@ Container.prototype = {
    @return {any}
    */
   lookupFactory(fullName) {
-    Ember.assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return factoryFor(this, this.registry.normalize(fullName));
   },
 
