@@ -81,7 +81,7 @@ export function set(obj, keyName, value, tolerant) {
           ) {
             defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
-            meta.writableValues()[keyName] = value;
+            meta.writeValues(keyName, value);
           }
         } else {
           obj[keyName] = value;

@@ -37,9 +37,9 @@ QUnit.test('basic lifecycle', function() {
   defineProperty(obj, 'bar', alias('foo.faz'));
   var m = meta(obj);
   addObserver(obj, 'bar', incrementCount);
-  equal(m.readableDeps('foo.faz').bar, 1);
+  equal(m.peekDeps('foo.faz', 'bar'), 1);
   removeObserver(obj, 'bar', incrementCount);
-  equal(m.readableDeps('foo.faz').bar, 0);
+  equal(m.peekDeps('foo.faz', 'bar'), 0);
 });
 
 QUnit.test('old dependent keys should not trigger property changes', function() {

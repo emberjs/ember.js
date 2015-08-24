@@ -20,7 +20,7 @@ import {
 export function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
-  var idx, len, depKey, keys;
+  var idx, len, depKey;
   var depKeys = desc._dependentKeys;
   if (!depKeys) {
     return;
@@ -28,10 +28,8 @@ export function addDependentKeys(desc, obj, keyName, meta) {
 
   for (idx = 0, len = depKeys.length; idx < len; idx++) {
     depKey = depKeys[idx];
-    // Lookup keys meta for depKey
-    keys = meta.writableDeps(depKey);
     // Increment the number of times depKey depends on keyName.
-    keys[keyName] = (keys[keyName] || 0) + 1;
+    meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName)|| 0) + 1);
     // Watch the depKey
     watch(obj, depKey, meta);
   }
@@ -41,17 +39,15 @@ export function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // remove all of its dependent keys.
   var depKeys = desc._dependentKeys;
-  var idx, len, depKey, keys;
+  var idx, len, depKey;
   if (!depKeys) {
     return;
   }
 
   for (idx = 0, len = depKeys.length; idx < len; idx++) {
     depKey = depKeys[idx];
-    // Lookup keys meta for depKey
-    keys = meta.writableDeps(depKey);
     // Decrement the number of times depKey depends on keyName.
-    keys[keyName] = (keys[keyName] || 0) - 1;
+    meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName) || 0) - 1);
     // Unwatch the depKey
     unwatch(obj, depKey, meta);
   }
