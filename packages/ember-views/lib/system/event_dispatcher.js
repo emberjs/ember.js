@@ -15,6 +15,17 @@ import View from 'ember-views/views/view';
 import assign from 'ember-metal/assign';
 
 /**
+ Whether or not to cache handler paths on the element
+ when `useCapture` is also true.
+
+ This needs to be replaced by a feature flag.
+
+ @private
+ @type {boolean}
+*/
+const useFastPaths = true;
+
+/**
   `Ember.EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
   `Ember.EventDispatcher` ensures that that view's `mouseDown` method gets
@@ -133,6 +144,13 @@ export default EmberObject.extend({
   canDispatchToEventManager: true,
 
   /**
+   Enables capturing of events immediately instead of during bubble
+   @private
+  */
+  useCapture: true,
+
+
+  /**
     Sets up event listeners for standard browser events.
 
     This will be called after the browser sends a `DOMContentReady` event. By
@@ -145,8 +163,10 @@ export default EmberObject.extend({
     @param addedEvents {Object}
   */
   setup(addedEvents, rootElement) {
-    var event;
-    var events = assign({}, get(this, 'events'), addedEvents);
+    let event;
+    let events = assign({}, get(this, 'events'), addedEvents);
+    let viewRegistry = this.container && this.container.lookup('-view-registry:main') || View.views;
+    let eventWalker;
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
@@ -162,9 +182,19 @@ export default EmberObject.extend({
 
     Ember.assert('Unable to add "ember-application" class to rootElement. Make sure you set rootElement to the body or an element in the body.', rootElement.is('.ember-application'));
 
-    for (event in events) {
-      if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
+    if (get(this, 'useCapture')) {
+      rootElement = rootElement.get(0);
+      eventWalker = new EventWalker(viewRegistry);
+      for (event in events) {
+        if (events.hasOwnProperty(event)) {
+          this.setupCaptureHandler(viewRegistry, rootElement, event, events[event], eventWalker);
+        }
+      }
+    } else {
+      for (event in events) {
+        if (events.hasOwnProperty(event)) {
+          this.setupBubbleHandler(viewRegistry, rootElement, event, events[event]);
+        }
       }
     }
   },
@@ -178,14 +208,14 @@ export default EmberObject.extend({
     bubble to each successive parent view until it reaches the top.
 
     @private
-    @method setupHandler
+    @method setupBubbleHandler
+    @param viewRegistry registry for ember views
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
   */
-  setupHandler(rootElement, event, eventName) {
+  setupBubbleHandler(viewRegistry, rootElement, event, eventName) {
     var self = this;
-    var viewRegistry = this.container && this.container.lookup('-view-registry:main') || View.views;
 
     if (eventName === null) {
       return;
@@ -227,6 +257,88 @@ export default EmberObject.extend({
     });
   },
 
+  /**
+    Cache for event listeners attached with `useCapture`
+
+    @private
+  */
+  _handlers: [],
+  /**
+    Registers an event listener on the rootElement. If the given event is
+    triggered, the provided event handler will be triggered on the target view.
+
+    If the target view does not implement the event handler, or if the handler
+    returns `false`, the parent view will be called. The event will continue to
+    bubble to each successive parent view until it reaches the top.
+
+    @private
+    @method setupCaptureHandler
+    @param viewRegistry registry for ember views
+    @param {Element} rootElement
+    @param {String} event the browser-originated event to listen to
+    @param {String} eventName the name of the method to call on the view
+    @param eventWalker an instance of a walker used to find the closest action or view element
+  */
+  setupCaptureHandler(viewRegistry, rootElement, event, eventName, eventWalker) {
+    let self = this;
+
+    function didFindId(evt, triggeringManager, handlers) {
+      let view = viewRegistry[this.id];
+      let result = true;
+
+      var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
+
+      // collect handler
+      if (useFastPaths && handlers) {
+        // TODO this logic needs pulled out of _dispatchEvent and _bubbleEvent
+        // TODO and we should collect the actual handler, not just the element
+        if (manager[eventName] && typeof manager[eventName] === 'function') {
+          handlers.push(['id', this]);
+        } else if (view.has(eventName)) {
+          handlers.push(['id', this]);
+        }
+      }
+
+      if (manager && manager !== triggeringManager) {
+        result = self._dispatchEvent(manager, evt, eventName, view);
+      } else if (view) {
+        result = self._bubbleEvent(view, evt, eventName);
+      }
+
+      return result;
+    }
+
+    function didFindAction(evt, handlers) {
+      var actionId = this.getAttribute('data-ember-action');
+      var actions   = ActionManager.registeredActions[actionId];
+
+      // We have to check for actions here since in some cases, jQuery will trigger
+      // an event on `removeChild` (i.e. focusout) after we've already torn down the
+      // action handlers for the view.
+      if (!actions) {
+        return;
+      }
+
+      for (let index = 0, length = actions.length; index < length; index++) {
+        let action = actions[index];
+
+        if (action && action.eventName === eventName) {
+          // collect handler
+          // TODO this should collect the actual handler instead
+          if (useFastPaths && handlers) {
+            handlers.push(['action', this]);
+          }
+
+          return action.handler(evt);
+        }
+      }
+    }
+
+    let filterFn = filterCaptureFunction(didFindId, didFindAction, eventWalker);
+    this._handlers.push({ event: event, method: filterFn });
+    rootElement.addEventListener(event, filterFn, true);
+  },
+
   _findNearestEventManager(view, eventName) {
     var manager = null;
 
@@ -256,12 +368,20 @@ export default EmberObject.extend({
   },
 
   _bubbleEvent(view, evt, eventName) {
-    return run.join(view, view.handleEvent, eventName, evt);
+    return view.handleEvent(eventName, evt);
   },
 
   destroy() {
     var rootElement = get(this, 'rootElement');
-    jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
+    if (get(this, 'useCapture')) {
+      this._handlers.forEach(function(item) {
+        rootElement.removeEventListener(item.event, item.method, true);
+      });
+      this._handlers = [];
+      jQuery(rootElement).removeClass('ember-application');
+    } else {
+      jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
+    }
     return this._super(...arguments);
   },
 
@@ -269,3 +389,75 @@ export default EmberObject.extend({
     return '(EventDispatcher)';
   }
 });
+
+
+
+function filterCaptureFunction(eventName, idHandler, actionHandler, walker) {
+  return function(e) {
+    // normalize the event object
+    // this also let's us set currentTarget correctly
+    let event = jQuery.event.fix(e);
+
+    let element = event.target;
+    let result;
+    let handlers;
+
+    // trigger from cached handlers
+    if (useFastPaths && element._handlers && element._handlers[eventName]) {
+      element._handlers[eventName].forEach((handler) => {
+        event.currentTarget = handler[1];
+        if (handler[0] === 'id') {
+          result = idHandler.call(handler[1], event);
+        } else {
+          result = actionHandler.call(handler[1], event);
+        }
+      });
+      return result;
+
+    // collect and trigger handlers
+    } else {
+      if (useFastPaths) {
+        element._handlers = element._handlers || {};
+        handlers = element._handlers[eventName] = element._handlers[eventName] || [];
+      }
+
+      let node;
+      do {
+        node = walker.closest(element);
+        if (node) {
+          event.currentTarget = node[1];
+          if (node[0] === 'id') {
+            result = idHandler.call(node[1], event, null, handlers);
+          } else {
+            result = actionHandler.call(node[1], event, handlers);
+          }
+          if (result) {
+            node = node.parentNode;
+          }
+        }
+      } while (result && node);
+      return result;
+    }
+  };
+}
+
+
+function EventWalker(registry) {
+  this.registry = registry;
+}
+
+EventWalker.prototype.inRegistry = function EventWalker_inRegistry(id) {
+  return !!this.registry[id];
+};
+
+EventWalker.prototype.closest = function EventWalker_closest(closest) {
+  do {
+    if (closest.id && this.inRegistry(closest.id)) {
+      return ['id', closest];
+    }
+    if (closest.hasAttribute('data-ember-action')) {
+      return ['action', closest];
+    }
+  } while (closest = closest.parentNode);
+  return null;
+};
