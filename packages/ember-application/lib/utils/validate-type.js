@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 
-import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 
 let VALIDATED_TYPES = {
   route:     ['assert',    'isRouteFactory',     'Ember.Route'],
@@ -22,7 +22,7 @@ export default function validateType(resolvedType, parsedName) {
   let [action, factoryFlag, expectedType] = validationAttributes;
 
   if (action === 'deprecate') {
-    Ember.deprecate(
+    deprecate(
       `In Ember 2.0 ${parsedName.type} factories must have an \`${factoryFlag}\` ` +
       `property set to true. You registered ${resolvedType} as a ${parsedName.type} ` +
       `factory. Either add the \`${factoryFlag}\` property to this factory or ` +
@@ -31,7 +31,7 @@ export default function validateType(resolvedType, parsedName) {
       { id: 'ember-application.validate-type', until: '3.0.0' }
     );
   } else {
-    Ember.assert(
+    assert(
       `Expected ${parsedName.fullName} to resolve to an ${expectedType} but ` +
       `instead it was ${resolvedType}.`,
       function() {

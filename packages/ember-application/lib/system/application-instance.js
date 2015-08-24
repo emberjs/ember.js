@@ -4,7 +4,7 @@
 @private
 */
 
-import Ember from 'ember-metal'; // Ember.deprecate
+import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -221,9 +221,10 @@ if (isEnabled('ember-registry-container-reform')) {
       var instance = this;
       return {
         lookup() {
-          Ember.deprecate('Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-                          false,
-                          { id: 'ember-application.app-instance-container', until: '3.0.0' });
+          deprecate(
+            'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
+            false, { id: 'ember-application.app-instance-container', until: '3.0.0' }
+          );
           return instance.lookup(...arguments);
         }
       };

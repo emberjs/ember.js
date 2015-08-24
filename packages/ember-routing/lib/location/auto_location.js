@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // FEATURES
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { tryInvoke } from 'ember-metal/utils';
@@ -116,7 +116,7 @@ export default EmberObject.extend({
   detect() {
     var rootURL = this.rootURL;
 
-    Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"',
+    assert('rootURL must end with a trailing forward slash e.g. "/app/"',
                  rootURL.charAt(rootURL.length - 1) === '/');
 
     var implementation = detectImplementation({
@@ -136,7 +136,7 @@ export default EmberObject.extend({
     var concrete = this.container.lookup(`location:${implementation}`);
     set(concrete, 'rootURL', rootURL);
 
-    Ember.assert(`Could not find location '${implementation}'.`, !!concrete);
+    assert(`Could not find location '${implementation}'.`, !!concrete);
 
     set(this, 'concreteImplementation', concrete);
   },
@@ -160,7 +160,7 @@ export default EmberObject.extend({
 function delegateToConcreteImplementation(methodName) {
   return function(...args) {
     var concreteImplementation = get(this, 'concreteImplementation');
-    Ember.assert('AutoLocation\'s detect() method should be called before calling any other hooks.', !!concreteImplementation);
+    assert('AutoLocation\'s detect() method should be called before calling any other hooks.', !!concreteImplementation);
     return tryInvoke(concreteImplementation, methodName, args);
   };
 }
@@ -244,7 +244,7 @@ export function getHistoryPath(rootURL, location) {
   var rootURLIndex = path.indexOf(rootURL);
   var routeHash, hashParts;
 
-  Ember.assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
+  assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
   // By convention, Ember.js routes using HashLocation are required to start
   // with `#/`. Anything else should NOT be considered a route and should
