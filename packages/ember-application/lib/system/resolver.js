@@ -3,7 +3,8 @@
 @submodule ember-application
 */
 
-import Ember from 'ember-metal/core'; // Ember.TEMPLATES, Ember.assert
+import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import Logger from 'ember-metal/logger';
 import {
@@ -126,9 +127,12 @@ export default EmberObject.extend({
       name
     ] = fullName.split(':', 2);
 
-    Ember.assert('Tried to normalize a container name without a colon (:) in it.' +
-                 ' You probably tried to lookup a name that did not contain a type,' +
-                 ' a colon, and a name. A proper lookup name would be `view:post`.', fullName.split(':').length === 2);
+    assert(
+      'Tried to normalize a container name without a colon (:) in it. ' +
+      'You probably tried to lookup a name that did not contain a type, ' +
+      'a colon, and a name. A proper lookup name would be `view:post`.',
+      fullName.split(':').length === 2
+    );
 
     if (type !== 'template') {
       var result = name;
@@ -223,9 +227,11 @@ export default EmberObject.extend({
       var namespaceName = capitalize(parts.slice(0, -1).join('.'));
       root = Namespace.byName(namespaceName);
 
-      Ember.assert('You are looking for a ' + name + ' ' + type +
-                   ' in the ' + namespaceName +
-                   ' namespace, but the namespace could not be found', root);
+      assert(
+        'You are looking for a ' + name + ' ' + type + ' in the ' +
+        namespaceName + ' namespace, but the namespace could not be found',
+        root
+      );
     }
 
     var resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);

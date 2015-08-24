@@ -5,7 +5,8 @@
 import DAG from 'dag-map';
 import Registry from 'container/registry';
 
-import Ember from 'ember-metal'; // Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import Ember from 'ember-metal'; // Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import { assert, deprecate, debug } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -430,8 +431,8 @@ var Application = Namespace.extend(RegistryProxy, {
     @public
   */
   deferReadiness() {
-    Ember.assert('You must call deferReadiness on an instance of Ember.Application', this instanceof Application);
-    Ember.assert('You cannot defer readiness since the `ready()` hook has already been called.', this._readinessDeferrals > 0);
+    assert('You must call deferReadiness on an instance of Ember.Application', this instanceof Application);
+    assert('You cannot defer readiness since the `ready()` hook has already been called.', this._readinessDeferrals > 0);
     this._readinessDeferrals++;
   },
 
@@ -445,7 +446,7 @@ var Application = Namespace.extend(RegistryProxy, {
     @public
   */
   advanceReadiness() {
-    Ember.assert('You must call advanceReadiness on an instance of Ember.Application', this instanceof Application);
+    assert('You must call advanceReadiness on an instance of Ember.Application', this instanceof Application);
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
@@ -464,7 +465,7 @@ var Application = Namespace.extend(RegistryProxy, {
     @method initialize
    **/
   initialize() {
-    Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
+    deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
   },
 
   /**
@@ -601,10 +602,10 @@ var Application = Namespace.extend(RegistryProxy, {
   runInitializers() {
     var App = this;
     this._runInitializer('initializers', function(name, initializer) {
-      Ember.assert('No application initializer named \'' + name + '\'', !!initializer);
+      assert('No application initializer named \'' + name + '\'', !!initializer);
       if (initializer.initialize.length === 2) {
         if (isEnabled('ember-registry-container-reform')) {
-          Ember.deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.',
+          deprecate('The `initialize` method for Application initializer \'' + name + '\' should take only one argument - `App`, an instance of an `Application`.',
                           false,
                           { id: 'ember-application.app-initializer-initialize-arguments', until: '3.0.0' });
         }
@@ -617,7 +618,7 @@ var Application = Namespace.extend(RegistryProxy, {
 
   runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', function(name, initializer) {
-      Ember.assert('No instance initializer named \'' + name + '\'', !!initializer);
+      assert('No instance initializer named \'' + name + '\'', !!initializer);
       initializer.initialize(instance);
     });
   },
@@ -1125,13 +1126,13 @@ function logLibraryVersions() {
 
     var maxNameLength = Math.max.apply(this, nameLengths);
 
-    Ember.debug('-------------------------------');
+    debug('-------------------------------');
     for (var i = 0, l = libs.length; i < l; i++) {
       var lib = libs[i];
       var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
-      Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
+      debug([lib.name, spaces, ' : ', lib.version].join(''));
     }
-    Ember.debug('-------------------------------');
+    debug('-------------------------------');
   }
 }
 
@@ -1147,9 +1148,9 @@ function buildInitializerMethod(bucketName, humanName) {
       this.reopenClass(attrs);
     }
 
-    Ember.assert('The ' + humanName + ' \'' + initializer.name + '\' has already been registered', !this[bucketName][initializer.name]);
-    Ember.assert('An ' + humanName + ' cannot be registered without an initialize function', canInvoke(initializer, 'initialize'));
-    Ember.assert('An ' + humanName + ' cannot be registered without a name property', initializer.name !== undefined);
+    assert('The ' + humanName + ' \'' + initializer.name + '\' has already been registered', !this[bucketName][initializer.name]);
+    assert('An ' + humanName + ' cannot be registered without an initialize function', canInvoke(initializer, 'initialize'));
+    assert('An ' + humanName + ' cannot be registered without a name property', initializer.name !== undefined);
 
     this[bucketName][initializer.name] = initializer;
   };
