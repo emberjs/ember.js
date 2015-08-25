@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 export default function TransformEachIntoCollection(options) {
@@ -17,7 +17,7 @@ TransformEachIntoCollection.prototype.transform = function TransformEachIntoColl
 
     let moduleInfo = calculateLocationDisplay(moduleName, legacyHashKey.loc);
 
-    Ember.deprecate(
+    deprecate(
       `Using '${legacyHashKey.key}' with '{{each}}' ${moduleInfo}is deprecated.  Please refactor to a component.`,
       false,
       { id: 'ember-template-compiler.transform-each-into-collection', until: '2.0.0' }

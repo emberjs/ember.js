@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 export default function TransformOldBindingSyntax(options) {
@@ -21,12 +21,12 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
 
       if (key === 'classBinding') { return; }
 
-      Ember.assert(`Setting 'attributeBindings' via template helpers is not allowed ${sourceInformation}`, key !== 'attributeBindings');
+      assert(`Setting 'attributeBindings' via template helpers is not allowed ${sourceInformation}`, key !== 'attributeBindings');
 
       if (key.substr(-7) === 'Binding') {
         let newKey = key.slice(0, -7);
 
-        Ember.deprecate(
+        deprecate(
           `You're using legacy binding syntax: ${key}=${exprToString(value)} ${sourceInformation}. Please replace with ${newKey}=${value.original}`,
           false,
           { id: 'ember-template-compiler.transform-old-binding-syntax', until: '3.0.0' }

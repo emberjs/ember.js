@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 function AssertNoViewAndControllerPaths(options) {
@@ -51,7 +52,7 @@ function assertPaths(moduleName, node, paths) {
 }
 
 function assertPath(moduleName, node, path) {
-  Ember.assert(
+  assert(
     `Using \`{{${path && path.type === 'PathExpression' && path.parts[0]}}}\` or any path based on it ${calculateLocationDisplay(moduleName, node.loc)}has been removed in Ember 2.0`,
     function assertPath_test() {
       let noAssertion = true;

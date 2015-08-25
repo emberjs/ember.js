@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 /**
@@ -50,7 +50,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
       let moduleInfo = calculateLocationDisplay(moduleName, node.loc);
 
       if (normalizedOn && normalizedOn.value.type !== 'StringLiteral') {
-        Ember.deprecate(
+        deprecate(
           `Using a dynamic value for '#{normalizedOn.key}=' with the '{{input}}' helper ${moduleInfo}is deprecated.`,
           false,
           { id: 'ember-template-compiler.transform-input-on-to-onEvent.dynamic-value', until: '3.0.0' }
@@ -64,7 +64,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
       removeFromHash(node.hash, action);
 
       if (!action) {
-        Ember.deprecate(
+        deprecate(
           `Using '{{input ${normalizedOn.key}="${normalizedOn.value.value}" ...}}' without specifying an action ${moduleInfo}will do nothing.`,
           false,
           { id: 'ember-template-compiler.transform-input-on-to-onEvent.no-action', until: '3.0.0' }
@@ -83,7 +83,7 @@ TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEve
 
       let expected = `${normalizedOn ? normalizedOn.value.value : 'enter'}="${action.value.original}"`;
 
-      Ember.deprecate(
+      deprecate(
         `Using '{{input ${specifiedOn}action="${action.value.original}"}}' ${moduleInfo}is deprecated. Please use '{{input ${expected}}}' instead.`,
         false,
         { id: 'ember-template-compiler.transform-input-on-to-onEvent.normalized-on', until: '3.0.0' }
