@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 import { isStream } from 'ember-metal/streams/utils';
@@ -91,7 +92,7 @@ Stream.prototype = {
     // TODO: Ensure value is never called on a destroyed stream
     // so that we can uncomment this assertion.
     //
-    // Ember.assert("Stream error: value was called after the stream was destroyed", !this.isDestroyed);
+    // assert("Stream error: value was called after the stream was destroyed", !this.isDestroyed);
 
     // TODO: Remove this block. This will require ensuring we are
     // not treating streams as "volatile" anywhere.
@@ -222,7 +223,7 @@ Stream.prototype = {
   },
 
   subscribe(callback, context) {
-    Ember.assert('You tried to subscribe to a stream but the callback provided was not a function.', typeof callback === 'function');
+    assert('You tried to subscribe to a stream but the callback provided was not a function.', typeof callback === 'function');
 
     var subscriber = new Subscriber(callback, context, this);
     if (this.subscriberHead === null) {

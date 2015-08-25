@@ -9,6 +9,7 @@
 */
 
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
+import { assert, deprecate, runInDebug } from 'ember-metal/debug';
 import merge from 'ember-metal/merge';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
@@ -161,11 +162,12 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
-  Ember.runInDebug(function() {
-    var assert = Ember.assert; // prevent defeatureify errors
+  runInDebug(function() {
+    // TODO: Remove this hack when defeatureify is removed.
+    let _assert = assert;
 
     if (Array.isArray(value)) { // use conditional to avoid stringifying every time
-      assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
+      _assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
   });
 
@@ -232,8 +234,10 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
 
   for (var i = 0, l = mixins.length; i < l; i++) {
     currentMixin = mixins[i];
-    Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-                 typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]');
+    assert(
+      `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
+      typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]'
+    );
 
     props = mixinProperties(m, currentMixin);
     if (props === CONTINUE) { continue; }
@@ -549,9 +553,11 @@ MixinPrototype.reopen = function() {
 
   for (idx = 0; idx < len; idx++) {
     currentMixin = arguments[idx];
-    Ember.assert(`Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-                 typeof currentMixin === 'object' && currentMixin !== null &&
-                   Object.prototype.toString.call(currentMixin) !== '[object Array]');
+    assert(
+      `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
+      typeof currentMixin === 'object' && currentMixin !== null &&
+        Object.prototype.toString.call(currentMixin) !== '[object Array]'
+    );
 
     if (currentMixin instanceof Mixin) {
       mixins.push(currentMixin);
@@ -665,7 +671,11 @@ REQUIRED.toString = function() { return '(Required Property)'; };
   @private
 */
 export function required() {
-  Ember.deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false, { id: 'ember-metal.required', until: '3.0.0' });
+  deprecate(
+    'Ember.required is deprecated as its behavior is inconsistent and unreliable.',
+    false,
+    { id: 'ember-metal.required', until: '3.0.0' }
+  );
   return REQUIRED;
 }
 
@@ -732,9 +742,9 @@ export function observer(...args) {
   var paths;
 
   var addWatchedProperty = function(path) {
-    Ember.assert(
+    assert(
       `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. ` +
-        `Please refactor from \`Ember.observer('${path}', function() {});\` to \`Ember.observer('${path.slice(0, -6)}.[]', function() {})\`.`,
+      `Please refactor from \`Ember.observer('${path}', function() {});\` to \`Ember.observer('${path.slice(0, -6)}.[]', function() {})\`.`,
       path.slice(-5) !== '@each'
     );
 
@@ -744,7 +754,7 @@ export function observer(...args) {
 
   if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
-    Ember.deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
+    deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
 
     func  = args[0];
     _paths = args.slice(1);
@@ -790,12 +800,14 @@ export function observer(...args) {
   @private
 */
 export function _immediateObserver() {
-  Ember.deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
+  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
 
   for (var i = 0, l = arguments.length; i < l; i++) {
     var arg = arguments[i];
-    Ember.assert('Immediate observers must observe internal properties only, not properties on other objects.',
-                 typeof arg !== 'string' || arg.indexOf('.') === -1);
+    assert(
+      'Immediate observers must observe internal properties only, not properties on other objects.',
+      typeof arg !== 'string' || arg.indexOf('.') === -1
+    );
   }
 
   return observer.apply(this, arguments);

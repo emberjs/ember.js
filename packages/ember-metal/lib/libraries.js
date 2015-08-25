@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { warn } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 
 /**
@@ -38,7 +38,7 @@ Libraries.prototype = {
       }
       this._registry.splice(index, 0, { name: name, version: version });
     } else {
-      Ember.warn(`Library "${name}" is already registered with Ember.`, false, { id: 'ember-metal.libraries-register' });
+      warn(`Library "${name}" is already registered with Ember.`, false, { id: 'ember-metal.libraries-register' });
     }
   },
 

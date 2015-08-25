@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import Stream from './stream';
 
 /*
@@ -248,14 +248,14 @@ export function or(first, second) {
 }
 
 export function addDependency(stream, dependency) {
-  Ember.assert('Cannot add a stream as a dependency to a non-stream', isStream(stream) || !isStream(dependency));
+  assert('Cannot add a stream as a dependency to a non-stream', isStream(stream) || !isStream(dependency));
   if (isStream(stream)) {
     stream.addDependency(dependency);
   }
 }
 
 export function zip(streams, callback, label) {
-  Ember.assert('Must call zip with a label', !!label);
+  assert('Must call zip with a label', !!label);
 
   var stream = new Stream(function() {
     var array = readArray(streams);
@@ -272,7 +272,7 @@ export function zip(streams, callback, label) {
 }
 
 export function zipHash(object, callback, label) {
-  Ember.assert('Must call zipHash with a label', !!label);
+  assert('Must call zipHash with a label', !!label);
 
   var stream = new Stream(function() {
     var hash = readHash(object);
@@ -321,7 +321,7 @@ export function zipHash(object, callback, label) {
                          function `fn`.
  */
 export function chain(value, fn, label) {
-  Ember.assert('Must call chain with a label', !!label);
+  assert('Must call chain with a label', !!label);
   if (isStream(value)) {
     var stream = new Stream(fn, function() { return `${label}(${labelFor(value)})`; });
     stream.addDependency(value);

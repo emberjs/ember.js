@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { set } from 'ember-metal/property_set';
 import { inspect } from 'ember-metal/utils';
 import { meta as metaFor } from 'ember-metal/meta';
@@ -115,8 +115,8 @@ function ComputedProperty(config, opts) {
   if (typeof config === 'function') {
     this._getter = config;
   } else {
-    Ember.assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-    Ember.assert('Config object pased to a Ember.computed can only contain `get` or `set` keys.', (function() {
+    assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
+    assert('Config object pased to a Ember.computed can only contain `get` or `set` keys.', (function() {
       let keys = Object.keys(config);
       for (let i = 0; i < keys.length; i++) {
         if (keys[i] !== 'get' && keys[i] !== 'set') {
@@ -128,7 +128,7 @@ function ComputedProperty(config, opts) {
     this._getter = config.get;
     this._setter = config.set;
   }
-  Ember.assert('Computed properties must receive a getter or a setter, you passed none.', !!this._getter || !!this._setter);
+  assert('Computed properties must receive a getter or a setter, you passed none.', !!this._getter || !!this._setter);
   this._dependentKeys = undefined;
   this._suspended = undefined;
   this._meta = undefined;
@@ -192,7 +192,7 @@ ComputedPropertyPrototype.volatile = function() {
 */
 ComputedPropertyPrototype.readOnly = function() {
   this._readOnly = true;
-  Ember.assert('Computed properties that define a setter using the new syntax cannot be read-only', !(this._readOnly && this._setter && this._setter !== this._getter));
+  assert('Computed properties that define a setter using the new syntax cannot be read-only', !(this._readOnly && this._setter && this._setter !== this._getter));
   return this;
 };
 
@@ -228,7 +228,7 @@ ComputedPropertyPrototype.property = function() {
   var args;
 
   var addArg = function(property) {
-    Ember.assert(
+    assert(
       `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. ` +
         `Please refactor from \`Ember.computed('${property}', function() {});\` to \`Ember.computed('${property.slice(0, -6)}.[]', function() {})\`.`,
       property.slice(-5) !== '@each'

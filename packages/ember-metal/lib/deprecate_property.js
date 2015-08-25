@@ -3,7 +3,7 @@
 @submodule ember-metal
 */
 
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 
@@ -21,19 +21,23 @@ import { set } from 'ember-metal/property_set';
 */
 
 export function deprecateProperty(object, deprecatedKey, newKey, options) {
-  function deprecate() {
-    Ember.deprecate(`Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`, false, options);
+  function _deprecate() {
+    deprecate(
+      `Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`,
+      false,
+      options
+    );
   }
 
   Object.defineProperty(object, deprecatedKey, {
     configurable: true,
     enumerable: false,
     set(value) {
-      deprecate();
+      _deprecate();
       set(this, newKey, value);
     },
     get() {
-      deprecate();
+      _deprecate();
       return get(this, newKey);
     }
   });

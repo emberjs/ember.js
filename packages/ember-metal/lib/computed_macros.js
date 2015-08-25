@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -650,11 +651,11 @@ export function readOnly(dependentKey) {
 export function deprecatingAlias(dependentKey, options) {
   return computed(dependentKey, {
     get(key) {
-      Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`, false, options);
+      deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`, false, options);
       return get(this, dependentKey);
     },
     set(key, value) {
-      Ember.deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`, false, options);
+      deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`, false, options);
       set(this, dependentKey, value);
       return value;
     }

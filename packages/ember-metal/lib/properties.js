@@ -2,7 +2,7 @@
 @module ember-metal
 */
 
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { meta as metaFor } from 'ember-metal/meta';
 import { overrideChains } from 'ember-metal/property_events';
@@ -27,7 +27,7 @@ export function Descriptor() {
 
 export function MANDATORY_SETTER_FUNCTION(name) {
   return function SETTER_FUNCTION(value) {
-    Ember.assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
+    assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
   };
 }
 
