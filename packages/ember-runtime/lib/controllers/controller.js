@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.assert
+import { assert } from 'ember-metal/debug';
 import EmberObject from 'ember-runtime/system/object';
 import Mixin from 'ember-runtime/mixins/controller';
 import { createInjectionHelper } from 'ember-runtime/inject';
@@ -21,8 +21,11 @@ var Controller = EmberObject.extend(Mixin);
 deprecateUnderscoreActions(Controller);
 
 function controllerInjectionHelper(factory) {
-  Ember.assert('Defining an injected controller property on a ' +
-               'non-controller is not allowed.', Mixin.detect(factory.PrototypeMixin));
+  assert(
+    'Defining an injected controller property on a ' +
+    'non-controller is not allowed.',
+    Mixin.detect(factory.PrototypeMixin)
+  );
 }
 
 /**

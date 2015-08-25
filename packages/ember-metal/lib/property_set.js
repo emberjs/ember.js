@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { _getPath as getPath } from 'ember-metal/property_get';
 import {
@@ -28,12 +28,13 @@ import {
   @public
 */
 export function set(obj, keyName, value, tolerant) {
-  Ember.assert(
+  assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
-    arguments.length === 3 || arguments.length === 4);
-  Ember.assert(`Cannot call set with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
-  Ember.assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  Ember.assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+    arguments.length === 3 || arguments.length === 4
+  );
+  assert(`Cannot call set with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
+  assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
+  assert(`'this' in paths is not supported`, !pathHasThis(keyName));
 
   var meta, possibleDesc, desc;
   if (obj) {
@@ -47,7 +48,7 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  Ember.assert('calling set on destroyed object', !obj.isDestroyed);
+  assert('calling set on destroyed object', !obj.isDestroyed);
 
   if (desc) {
     desc.set(obj, keyName, value);

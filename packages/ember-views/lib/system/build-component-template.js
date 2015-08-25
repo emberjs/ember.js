@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import assign from 'ember-metal/assign';
 import { isGlobal } from 'ember-metal/path_cache';
@@ -82,12 +82,12 @@ function mergeAttrs(innerAttrs, outerAttrs) {
 }
 
 function blockFor(template, options) {
-  Ember.assert('BUG: Must pass a template to blockFor', !!template);
+  assert('BUG: Must pass a template to blockFor', !!template);
   return internal.blockFor(render, template, options);
 }
 
 function createContentBlock(template, scope, self, component) {
-  Ember.assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
+  assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
 
   return blockFor(template, {
     scope,
@@ -139,9 +139,11 @@ function tagNameFor(view) {
 
   if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
     tagName = get(view, 'tagName');
-    Ember.deprecate('In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.',
-                    !tagName,
-                    { id: 'ember-views.computed-tag-name', until: '2.0.0' });
+    deprecate(
+      'In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.',
+      !tagName,
+      { id: 'ember-views.computed-tag-name', until: '2.0.0' }
+    );
   }
 
   if (tagName === null || tagName === undefined) {
@@ -188,7 +190,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
         expression = ['get', 'view.' + attr];
       }
 
-      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
+      assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
 
       normalized[attrName] = expression;
     }
@@ -267,7 +269,7 @@ function normalizeClasses(classes, output) {
 
   for (i = 0, l = classes.length; i < l; i++) {
     var className = classes[i];
-    Ember.assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', className.indexOf(' ') === -1);
+    assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', className.indexOf(' ') === -1);
 
     var [propName, activeClass, inactiveClass] = className.split(':');
 
@@ -293,7 +295,7 @@ function normalizeClasses(classes, output) {
 }
 
 function validateTaglessComponent(component) {
-  Ember.assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), function() {
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), function() {
     var classNameBindings = component.classNameBindings;
     return !classNameBindings || classNameBindings.length === 0;
   });

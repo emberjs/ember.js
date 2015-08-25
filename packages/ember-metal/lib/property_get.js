@@ -3,6 +3,7 @@
 */
 
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import {
@@ -46,10 +47,10 @@ var FIRST_KEY = /^([^\.]+)/;
   @public
 */
 export function get(obj, keyName) {
-  Ember.assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
-  Ember.assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
-  Ember.assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  Ember.assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+  assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
+  assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
+  assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
+  assert(`'this' in paths is not supported`, !pathHasThis(keyName));
 
   // Helpers that operate with 'this' within an #each
   if (keyName === '') {

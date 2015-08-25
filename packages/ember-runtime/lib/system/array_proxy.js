@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.assert
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {
   isArray
@@ -182,7 +182,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var content = get(this, 'content');
     this._teardownContent(this._prevContent);
 
-    Ember.assert('Can\'t set ArrayProxy\'s content to itself', content !== this);
+    assert('Can\'t set ArrayProxy\'s content to itself', content !== this);
 
     this._setupContent();
   }),
@@ -192,7 +192,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this._prevContent = content;
 
     if (content) {
-      Ember.assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof content}`, isArray(content) || content.isDestroyed);
+      assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof content}`, isArray(content) || content.isDestroyed);
 
       content.addArrayObserver(this, {
         willChange: 'contentArrayWillChange',
@@ -206,7 +206,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var arrangedContent = get(this, 'arrangedContent');
     var len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
-    Ember.assert('Can\'t set ArrayProxy\'s content to itself', arrangedContent !== this);
+    assert('Can\'t set ArrayProxy\'s content to itself', arrangedContent !== this);
 
     this._setupArrangedContent();
 
@@ -219,7 +219,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this._prevArrangedContent = arrangedContent;
 
     if (arrangedContent) {
-      Ember.assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof arrangedContent}`,
+      assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof arrangedContent}`,
         isArray(arrangedContent) || arrangedContent.isDestroyed);
 
       arrangedContent.addArrayObserver(this, {
@@ -255,7 +255,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
 
   _replace(idx, amt, objects) {
     var content = get(this, 'content');
-    Ember.assert('The content property of ' + this.constructor + ' should be set before modifying it', content);
+    assert('The content property of ' + this.constructor + ' should be set before modifying it', content);
     if (content) {
       this.replaceContent(idx, amt, objects);
     }

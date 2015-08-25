@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import merge from 'ember-metal/merge';
 import { symbol } from 'ember-metal/utils';
 import ProxyStream from 'ember-metal/streams/proxy-stream';
@@ -78,7 +78,7 @@ function mutParam(read, stream, internal) {
       };
     }
   } else {
-    Ember.assert('You can only pass a path to mut', isStream(stream));
+    assert('You can only pass a path to mut', isStream(stream));
   }
 
   if (stream[MUTABLE_REFERENCE]) {

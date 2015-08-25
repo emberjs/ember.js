@@ -3,6 +3,7 @@
 @submodule ember-runtime
 */
 import Ember from 'ember-metal/core'; // Ember.STRINGS
+import { deprecate } from 'ember-metal/debug';
 import {
   inspect as emberInspect
 } from 'ember-metal/utils';
@@ -81,7 +82,7 @@ function _fmt(str, formats) {
 }
 
 function fmt(str, formats) {
-  Ember.deprecate(
+  deprecate(
     'Ember.String.fmt is deprecated, use ES6 template strings instead.',
     false,
     { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'https://babeljs.io/docs/learn-es6/#template-strings' }

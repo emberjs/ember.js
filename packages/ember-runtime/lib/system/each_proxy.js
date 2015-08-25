@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.assert
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {
   _addBeforeObserver,
@@ -112,7 +112,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     let item = content.objectAt(loc);
     if (item) {
-      Ember.assert('When using @each to observe the array ' + content + ', the array must return an object', typeof item === 'object');
+      assert('When using @each to observe the array ' + content + ', the array must return an object', typeof item === 'object');
       _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
     }

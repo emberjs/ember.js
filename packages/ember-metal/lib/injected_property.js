@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.assert
+import { assert } from 'ember-metal/debug';
 import { ComputedProperty } from 'ember-metal/computed';
 import { AliasedProperty } from 'ember-metal/alias';
 import { Descriptor } from 'ember-metal/properties';
@@ -25,8 +25,8 @@ function InjectedProperty(type, name) {
 function injectedPropertyGet(keyName) {
   var desc = this[keyName];
 
-  Ember.assert(`InjectedProperties should be defined with the Ember.inject computed property macros.`, desc && desc.isDescriptor && desc.type);
-  Ember.assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, this.container);
+  assert(`InjectedProperties should be defined with the Ember.inject computed property macros.`, desc && desc.isDescriptor && desc.type);
+  assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, this.container);
 
   return this.container.lookup(desc.type + ':' + (desc.name || keyName));
 }

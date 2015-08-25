@@ -1,5 +1,6 @@
 /*globals EmberDev */
 import Ember from 'ember-metal/core';
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/components/component';
 import Registry from 'container/registry';
@@ -217,13 +218,12 @@ QUnit.test('mixing old and new styles of property binding fires a warning, treat
 
   expect(2);
 
-  var oldWarn = Ember.warn;
-
-  Ember.warn = function(msg, disableWarning) {
+  let oldWarn = getDebugFunction('warn');
+  setDebugFunction('warn', function(msg, disableWarning) {
     if (!disableWarning) {
       ok(msg.match(/You're attempting to render a view by passing borfBinding.+, but this syntax is ambiguous./));
     }
-  };
+  });
 
   let compiled;
   expectDeprecation(function() {
@@ -239,7 +239,7 @@ QUnit.test('mixing old and new styles of property binding fires a warning, treat
 
   equal(jQuery('#lol').text(), 'nerd', 'awkward mixed syntax treated like binding');
 
-  Ember.warn = oldWarn;
+  setDebugFunction('warn', oldWarn);
 });
 
 QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', function() {

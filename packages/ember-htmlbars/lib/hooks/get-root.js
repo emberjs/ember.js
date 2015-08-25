@@ -28,7 +28,7 @@ function getKey(scope, key) {
     return self.getKey(key);
   } else if (scope.attrs && key in scope.attrs) {
     // TODO: attrs
-    // Ember.deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
+    // deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
     return scope.attrs[key];
   }
 }

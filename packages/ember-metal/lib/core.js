@@ -71,7 +71,7 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
 if (Ember.ENV) {
   // do nothing if Ember.ENV is already setup
-  Ember.assert('Ember.ENV should be an object.', 'object' !== typeof Ember.ENV);
+  assert('Ember.ENV should be an object.', 'object' !== typeof Ember.ENV);
 } else if ('undefined' !== typeof EmberENV) {
   Ember.ENV = EmberENV;
 } else if ('undefined' !== typeof ENV) {

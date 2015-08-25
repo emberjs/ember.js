@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { warn } from 'ember-metal/debug';
 import DOMHelper from 'dom-helper';
 
 var HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
@@ -19,7 +19,7 @@ var proto = EmberAttrMorph.prototype = Object.create(HTMLBarsAttrMorph.prototype
 proto.HTMLBarsAttrMorph$setContent = HTMLBarsAttrMorph.prototype.setContent;
 
 proto._deprecateEscapedStyle = function EmberAttrMorph_deprecateEscapedStyle(value) {
-  Ember.warn(
+  warn(
     styleWarning,
     (function(name, value, escaped) {
       // SafeString

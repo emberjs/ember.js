@@ -1,5 +1,5 @@
 /* globals EmberDev */
-import Ember from 'ember-metal/core';
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import Libraries from 'ember-metal/libraries';
 
@@ -60,19 +60,20 @@ QUnit.test('attempting to register a library that is already registered warns yo
 
   expect(1);
 
-  var oldWarn = Ember.warn;
+  let originalWarn = getDebugFunction('warn');
+
   libs.register('magic', 1.23);
 
-  Ember.warn = function(msg, test) {
+  setDebugFunction('warn', function(msg, test) {
     if (!test) {
       equal(msg, 'Library "magic" is already registered with Ember.');
     }
-  };
+  });
 
   // Should warn us
   libs.register('magic', 2.23);
 
-  Ember.warn = oldWarn;
+  setDebugFunction('warn', originalWarn);
 });
 
 QUnit.test('libraries can be de-registered', function() {

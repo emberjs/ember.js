@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.deprecate
+import { deprecate } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 
 /*
@@ -39,9 +39,11 @@ export default Mixin.create({
       props.model = props.content;
       delete props['content'];
 
-      Ember.deprecate('Do not specify `content` on a Controller, use `model` instead.',
-                      false,
-                      { id: 'ember-runtime.will-merge-mixin', until: '3.0.0' });
+      deprecate(
+        'Do not specify `content` on a Controller, use `model` instead.',
+        false,
+        { id: 'ember-runtime.will-merge-mixin', until: '3.0.0' }
+      );
     }
   }
 });

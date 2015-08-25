@@ -3,6 +3,7 @@
 @submodule ember-views
 */
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -107,12 +108,12 @@ export default Mixin.create({
       var fullName = 'view:' + maybeViewClass;
       var ViewKlass = this.container.lookupFactory(fullName);
 
-      Ember.assert('Could not find view: \'' + fullName + '\'', !!ViewKlass);
+      assert('Could not find view: \'' + fullName + '\'', !!ViewKlass);
 
       view = ViewKlass.create(attrs);
     } else {
       view = maybeViewClass;
-      Ember.assert('You must pass instance or subclass of View', view.isView);
+      assert('You must pass instance or subclass of View', view.isView);
 
       attrs.container = this.container;
       setProperties(view, attrs);

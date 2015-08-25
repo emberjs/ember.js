@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Ember from 'ember-metal/core'; // assert
+import { assert } from 'ember-metal/debug';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,
@@ -34,11 +34,11 @@ import Ember from 'ember-metal/core'; // assert
 */
 
 export default function unbound(morph, env, scope, params, hash, template, inverse, visitor) {
-  Ember.assert(
+  assert(
     'unbound helper cannot be called with multiple params or hash params',
     params.length === 1 && Object.keys(hash).length === 0
   );
-  Ember.assert(
+  assert(
     'unbound helper cannot be called as a block',
     !template
   );

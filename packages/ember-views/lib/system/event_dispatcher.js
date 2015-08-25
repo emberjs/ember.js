@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-views
 */
-import Ember from 'ember-metal/core'; // Ember.assert
 
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import isNone from 'ember-metal/is_none';
@@ -157,13 +157,13 @@ export default EmberObject.extend({
 
     rootElement = jQuery(get(this, 'rootElement'));
 
-    Ember.assert(`You cannot use the same root element (${rootElement.selector || rootElement[0].tagName}) multiple times in an Ember.Application`, !rootElement.is(ROOT_ELEMENT_SELECTOR));
-    Ember.assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest(ROOT_ELEMENT_SELECTOR).length);
-    Ember.assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find(ROOT_ELEMENT_SELECTOR).length);
+    assert(`You cannot use the same root element (${rootElement.selector || rootElement[0].tagName}) multiple times in an Ember.Application`, !rootElement.is(ROOT_ELEMENT_SELECTOR));
+    assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest(ROOT_ELEMENT_SELECTOR).length);
+    assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find(ROOT_ELEMENT_SELECTOR).length);
 
     rootElement.addClass(ROOT_ELEMENT_CLASS);
 
-    Ember.assert(`Unable to add '${ROOT_ELEMENT_CLASS}' class to rootElement. Make sure you set rootElement to the body or an element in the body.`, rootElement.is(ROOT_ELEMENT_SELECTOR));
+    assert(`Unable to add '${ROOT_ELEMENT_CLASS}' class to rootElement. Make sure you set rootElement to the body or an element in the body.`, rootElement.is(ROOT_ELEMENT_SELECTOR));
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {

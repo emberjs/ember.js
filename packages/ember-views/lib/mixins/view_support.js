@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
@@ -69,7 +69,7 @@ export default Mixin.create({
     get() {
       var templateName = get(this, 'templateName');
       var template = this.templateForName(templateName, 'template');
-      Ember.assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
+      assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
       return template || get(this, 'defaultTemplate');
     },
     set(key, value) {
@@ -98,7 +98,7 @@ export default Mixin.create({
       var layoutName = get(this, 'layoutName');
       var layout = this.templateForName(layoutName, 'layout');
 
-      Ember.assert('You specified the layoutName ' + layoutName + ' for ' + this + ', but it did not exist.', !layoutName || !!layout);
+      assert('You specified the layoutName ' + layoutName + ' for ' + this + ', but it did not exist.', !layoutName || !!layout);
 
       return layout || get(this, 'defaultLayout');
     },
@@ -110,7 +110,7 @@ export default Mixin.create({
 
   templateForName(name, type) {
     if (!name) { return; }
-    Ember.assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
+    assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
     if (!this.container) {
       throw new EmberError('Container was not found when looking up a views template. ' +
@@ -208,7 +208,7 @@ export default Mixin.create({
     @public
   */
   $(sel) {
-    Ember.assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
     return this._currentState.$(this, sel);
   },
 
@@ -252,8 +252,8 @@ export default Mixin.create({
   appendTo(selector) {
     var target = jQuery(selector);
 
-    Ember.assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-    Ember.assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+    assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+    assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
     this.renderer.appendTo(this, target[0]);
 
@@ -330,8 +330,8 @@ export default Mixin.create({
   replaceIn(selector) {
     var target = jQuery(selector);
 
-    Ember.assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-    Ember.assert('You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+    assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+    assert('You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
     this.renderer.replaceIn(this, target[0]);
 
@@ -611,7 +611,7 @@ export default Mixin.create({
     this._super(...arguments);
     this.renderer.componentInitAttrs(this, this.attrs || {});
 
-    Ember.assert(
+    assert(
       'Using a custom `.render` function is no longer supported.',
       !this.render
     );
@@ -629,21 +629,27 @@ export default Mixin.create({
   scheduleRevalidate(node, label, manualRerender) {
     if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
       if (manualRerender) {
-        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,
-                        false,
-                        { id: 'ember-views.manual-parent-rerender', until: '3.0.0' });
+        deprecate(
+          `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,
+          false,
+          { id: 'ember-views.manual-parent-rerender', until: '3.0.0' }
+        );
       } else {
-        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`,
-                        false,
-                        { id: 'ember-views.render-double-modify', until: '3.0.0' });
+        deprecate(
+          `You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`,
+          false,
+          { id: 'ember-views.render-double-modify', until: '3.0.0' }
+        );
       }
       run.scheduleOnce('render', this, this.revalidate);
       return;
     }
 
-    Ember.deprecate(`A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
-                    !this._dispatching,
-                    { id: 'ember-views.dispatching-modify-property', until: '3.0.0' });
+    deprecate(
+      `A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
+      !this._dispatching,
+      { id: 'ember-views.dispatching-modify-property', until: '3.0.0' }
+    );
 
     if (!this.scheduledRevalidation || this._dispatching) {
       this.scheduledRevalidation = true;
@@ -728,7 +734,7 @@ export default Mixin.create({
     @private
   */
   _register() {
-    Ember.assert('Attempted to register a view with an id already in use: ' + this.elementId, !this._viewRegistry[this.elementId]);
+    assert('Attempted to register a view with an id already in use: ' + this.elementId, !this._viewRegistry[this.elementId]);
     this._viewRegistry[this.elementId] = this;
   },
 

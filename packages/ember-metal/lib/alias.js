@@ -1,6 +1,6 @@
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import Ember from 'ember-metal/core'; // Ember.assert
 import EmberError from 'ember-metal/error';
 import {
   Descriptor,
@@ -43,7 +43,7 @@ AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
 };
 
 AliasedProperty.prototype.setup = function(obj, keyName) {
-  Ember.assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
+  assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
   var m = meta(obj);
   if (m.peekWatching(keyName)) {
     addDependentKeys(this, obj, keyName, m);

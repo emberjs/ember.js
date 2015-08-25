@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Ember from 'ember-metal/core'; // Ember.assert
+import { assert } from 'ember-metal/debug';
 import shouldDisplay from 'ember-views/streams/should_display';
 
 /**
@@ -80,13 +80,13 @@ function unlessHelper(params, hash, options) {
 }
 
 function ifUnless(params, hash, options, truthy) {
-  Ember.assert(
+  assert(
     'The block form of the `if` and `unless` helpers expect exactly one ' +
     'argument, e.g. `{{#if newMessages}} You have new messages. {{/if}}.`',
     !options.template.yield || params.length === 1
   );
 
-  Ember.assert(
+  assert(
     'The inline form of the `if` and `unless` helpers expect two or ' +
     'three arguments, e.g. `{{if trialExpired \'Expired\' expiryDate}}` ' +
     'or `{{unless isFirstLogin \'Welcome back!\'}}`.',

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import merge from 'ember-metal/merge';
 import { get } from 'ember-metal/property_get';
 import { isArray } from 'ember-runtime/utils';
@@ -29,7 +29,7 @@ export default function shouldDisplay(predicate) {
 }
 
 function ShouldDisplayStream(predicate) {
-  Ember.assert('ShouldDisplayStream error: predicate must be a stream', isStream(predicate));
+  assert('ShouldDisplayStream error: predicate must be a stream', isStream(predicate));
 
   var isTruthy = predicate.get('isTruthy');
 

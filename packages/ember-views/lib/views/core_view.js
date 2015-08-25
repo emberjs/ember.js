@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 
 import EmberObject from 'ember-runtime/system/object';
@@ -117,7 +118,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     // make sure that any render nodes created as part of the rendering process
     // are cleaned up.
     if (!this.ownerView._destroyingSubtreeForView && this._renderNode) {
-      Ember.assert('BUG: Render node exists without concomitant env.', this.ownerView.env);
+      assert('BUG: Render node exists without concomitant env.', this.ownerView.env);
       internal.clearMorph(this._renderNode, this.ownerView.env, true);
     }
 
@@ -137,9 +138,10 @@ CoreView.reopenClass({
 
 export var DeprecatedCoreView = CoreView.extend({
   init() {
-    Ember.deprecate('Ember.CoreView is deprecated. Please use Ember.View.',
-                    false,
-                    { id: 'ember-views.core-view', until: '2.4.0' });
+    deprecate(
+      'Ember.CoreView is deprecated. Please use Ember.View.',
+      false, { id: 'ember-views.core-view', until: '2.4.0' }
+    );
     this._super.apply(this, arguments);
   }
 });

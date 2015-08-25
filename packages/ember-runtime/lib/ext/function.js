@@ -3,7 +3,8 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
+import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES
+import { assert, deprecateFunc } from 'ember-metal/debug';
 import { computed } from 'ember-metal/computed';
 import { observer } from 'ember-metal/mixin';
 
@@ -109,15 +110,18 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
 
   FunctionPrototype._observesImmediately = function () {
-    Ember.assert('Immediate observers must observe internal properties only, ' +
-                 'not properties on other objects.', function checkIsInternalProperty() {
-      for (var i = 0, l = arguments.length; i < l; i++) {
-        if (arguments[i].indexOf('.') !== -1) {
-          return false;
+    assert(
+      'Immediate observers must observe internal properties only, ' +
+      'not properties on other objects.',
+      function checkIsInternalProperty() {
+        for (var i = 0, l = arguments.length; i < l; i++) {
+          if (arguments[i].indexOf('.') !== -1) {
+            return false;
+          }
         }
+        return true;
       }
-      return true;
-    });
+    );
 
     // observes handles property expansion
     return this.observes(...arguments);
@@ -149,9 +153,11 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @deprecated
     @private
   */
-  FunctionPrototype.observesImmediately = Ember.deprecateFunc('Function#observesImmediately is deprecated. Use Function#observes instead',
-                                                              { id: 'ember-runtime.ext-function', until: '3.0.0' },
-                                                              FunctionPrototype._observesImmediately);
+  FunctionPrototype.observesImmediately = deprecateFunc(
+    'Function#observesImmediately is deprecated. Use Function#observes instead',
+    { id: 'ember-runtime.ext-function', until: '3.0.0' },
+    FunctionPrototype._observesImmediately
+  );
 
   /**
     The `on` extension of Javascript's Function prototype is available

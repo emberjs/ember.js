@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { read, isStream } from 'ember-metal/streams/utils';
 import ControllerMixin from 'ember-runtime/mixins/controller';
@@ -8,13 +8,13 @@ export function readViewFactory(object, container) {
   var viewClass;
 
   if (typeof value === 'string') {
-    Ember.assert('View requires a container to resolve views not passed in through the context', !!container);
+    assert('View requires a container to resolve views not passed in through the context', !!container);
     viewClass = container.lookupFactory('view:' + value);
   } else {
     viewClass = value;
   }
 
-  Ember.assert(`${value} must be a subclass or an instance of Ember.View, not ${viewClass}`, (function(viewClass) {
+  assert(`${value} must be a subclass or an instance of Ember.View, not ${viewClass}`, (function(viewClass) {
     return viewClass && (viewClass.isViewFactory || viewClass.isView || viewClass.isComponentFactory || viewClass.isComponent);
   })(viewClass));
 
@@ -24,8 +24,11 @@ export function readViewFactory(object, container) {
 export function readComponentFactory(nameOrStream, container) {
   var name = read(nameOrStream);
   var componentLookup = container.lookup('component-lookup:main');
-  Ember.assert('Could not find \'component-lookup:main\' on the provided container,' +
-               ' which is necessary for performing component lookups', componentLookup);
+  assert(
+    'Could not find \'component-lookup:main\' on the provided container, ' +
+    'which is necessary for performing component lookups',
+    componentLookup
+  );
 
   return componentLookup.lookupFactory(name, container);
 }

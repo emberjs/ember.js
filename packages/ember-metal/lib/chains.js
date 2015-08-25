@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // warn, assert, etc;
+import { warn } from 'ember-metal/debug';
 import { get, normalizeTuple } from 'ember-metal/property_get';
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
@@ -120,7 +120,7 @@ export function flushPendingChains() {
 
   queue.forEach((q) => q[0].add(q[1]));
 
-  Ember.warn(
+  warn(
     'Watching an undefined global, Ember expects watched globals to be ' +
     'setup by the time the run loop is flushed, check for typos',
     pendingQueue.length === 0,

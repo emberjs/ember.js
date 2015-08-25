@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { runInDebug } from 'ember-metal/debug';
 import merge from 'ember-metal/merge';
 import EmberError from 'ember-metal/error';
 import { _addBeforeObserver } from 'ember-metal/observer';
@@ -19,7 +19,7 @@ merge(inDOM, {
       view._register();
     }
 
-    Ember.runInDebug(function() {
+    runInDebug(function() {
       _addBeforeObserver(view, 'elementId', function() {
         throw new EmberError('Changing a view\'s elementId after creation is not allowed');
       });

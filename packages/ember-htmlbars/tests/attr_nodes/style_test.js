@@ -1,6 +1,6 @@
 /* globals EmberDev */
 
-import Ember from 'ember-metal/core';
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { SafeString } from 'ember-htmlbars/utils/string';
@@ -12,17 +12,17 @@ var view, originalWarn, warnings;
 QUnit.module('ember-htmlbars: style attribute', {
   setup() {
     warnings = [];
-    originalWarn = Ember.warn;
-    Ember.warn = function(message, test) {
+    originalWarn = getDebugFunction('warn');
+    setDebugFunction('warn', function(message, test) {
       if (!test) {
         warnings.push(message);
       }
-    };
+    });
   },
 
   teardown() {
     runDestroy(view);
-    Ember.warn = originalWarn;
+    setDebugFunction('warn', originalWarn);
   }
 });
 

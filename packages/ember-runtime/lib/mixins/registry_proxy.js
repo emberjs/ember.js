@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 
 export default Mixin.create({
@@ -272,9 +272,11 @@ export function buildFakeRegistryWithDeprecations(instance, typeForMessage) {
 
 function buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, nonDeprecatedProperty) {
   return function() {
-    Ember.deprecate(`Using \`${typeForMessage}.registry.${deprecatedProperty}\` is deprecated. Please use \`${typeForMessage}.${nonDeprecatedProperty}\` instead.`,
-                    false,
-                    { id: 'ember-application.app-instance-registry', until: '3.0.0' });
+    deprecate(
+      `Using \`${typeForMessage}.registry.${deprecatedProperty}\` is deprecated. Please use \`${typeForMessage}.${nonDeprecatedProperty}\` instead.`,
+      false,
+      { id: 'ember-application.app-instance-registry', until: '3.0.0' }
+    );
     return instance[nonDeprecatedProperty](...arguments);
   };
 }
