@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import EmberError from 'ember-metal/error';
@@ -95,8 +96,10 @@ function check(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   var type = $el.prop('type');
 
-  Ember.assert('To check \'' + selector +
-      '\', the input must be a checkbox', type === 'checkbox');
+  assert(
+    `To check '${selector}', the input must be a checkbox`,
+    type === 'checkbox'
+  );
 
   if (!$el.prop('checked')) {
     app.testHelpers.click(selector, context);
@@ -109,8 +112,10 @@ function uncheck(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   var type = $el.prop('type');
 
-  Ember.assert('To uncheck \'' + selector +
-      '\', the input must be a checkbox', type === 'checkbox');
+  assert(
+    `To uncheck '${selector}', the input must be a checkbox`,
+    type === 'checkbox'
+  );
 
   if ($el.prop('checked')) {
     app.testHelpers.click(selector, context);
