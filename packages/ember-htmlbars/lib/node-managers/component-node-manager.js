@@ -300,6 +300,9 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
 function shadowedAttrs(target, attrs) {
   let shadowed = {};
 
+  // component has opted out of shadowing
+  if (target._disableAttrsProxy) { return shadowed; }
+
   // For backwards compatibility, set the component property
   // if it has an attr with that name. Undefined attributes
   // are handled on demand via the `unknownProperty` hook.
@@ -325,6 +328,8 @@ function takeSnapshot(attrs) {
 }
 
 function mergeBindings(target, attrs) {
+  if (target._disableAttrsProxy) { return target; }
+
   for (var prop in attrs) {
     if (!attrs.hasOwnProperty(prop)) { continue; }
     // when `attrs` is an actual value being set in the

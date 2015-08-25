@@ -1,4 +1,5 @@
 import View from 'ember-views/views/view';
+import Component from 'ember-views/components/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 import Registry from 'container/registry';
@@ -104,4 +105,36 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
   });
 
   equal(view.$().text(), 'qux - 2', 'observer is fired on update');
+});
+
+QUnit.test('can be disabled', function() {
+  let foo;
+
+  registry.register('view:foo', Component.extend({
+    _disableAttrsProxy: true,
+    bar: 'qux',
+
+    layout: compile('{{bar}} - {{attrs.bar}}'),
+
+    init() {
+      this._super(...arguments);
+      foo = this;
+    }
+  }));
+
+  view = View.extend({
+    bar: 'baz',
+    container: registry.container(),
+    template: compile('{{view "foo" bar=view.bar}}')
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().text(), 'qux - baz', 'value specified in root of the object is not clobbered');
+
+  run(function() {
+    foo.set('bar', 'blah');
+  });
+
+  equal(view.$().text(), 'blah - baz', 'a set is not pushed upstream');
 });
