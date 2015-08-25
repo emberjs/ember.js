@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
 import { Freezable } from 'ember-runtime/mixins/freezable';
@@ -56,9 +56,11 @@ export default Mixin.create({
     @private
   */
   frozenCopy() {
-    Ember.deprecate('`frozenCopy` is deprecated, use `Object.freeze` instead.',
-                     false,
-                     { id: 'ember-runtime.frozen-copy', until: '3.0.0' });
+    deprecate(
+      '`frozenCopy` is deprecated, use `Object.freeze` instead.',
+      false,
+      { id: 'ember-runtime.frozen-copy', until: '3.0.0' }
+    );
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {

@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -69,9 +69,11 @@ import { set } from 'ember-metal/property_set';
 export var Freezable = Mixin.create({
 
   init() {
-    Ember.deprecate('`Ember.Freezable` is deprecated, use `Object.freeze` instead.',
-                    false,
-                    { id: 'ember-runtime.freezable-init', until: '3.0.0' });
+    deprecate(
+      '`Ember.Freezable` is deprecated, use `Object.freeze` instead.',
+      false,
+      { id: 'ember-runtime.freezable-init', until: '3.0.0' }
+    );
     this._super.apply(this, arguments);
   },
 

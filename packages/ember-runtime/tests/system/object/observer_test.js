@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { observer } from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
 import { testBoth } from 'ember-metal/tests/props_helper';
@@ -102,13 +101,9 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
   run(function() { obj.destroy(); });
 
-  if (Ember.assert) {
-    expectAssertion(function() {
-      set(obj, 'bar', 'BAZ');
-    }, 'calling set on destroyed object');
-  } else {
+  expectAssertion(function() {
     set(obj, 'bar', 'BAZ');
-  }
+  }, 'calling set on destroyed object');
 
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 });

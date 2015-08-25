@@ -11,9 +11,9 @@
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
 import Ember from 'ember-metal';
+import { assert, runInDebug } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import merge from 'ember-metal/merge';
-// Ember.assert, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -92,8 +92,11 @@ function makeCtor() {
       for (var i = 0, l = props.length; i < l; i++) {
         var properties = props[i];
 
-        Ember.assert('Ember.Object.create no longer supports mixing in other ' +
-          'definitions, use .extend & .create seperately instead.', !(properties instanceof Mixin));
+        assert(
+          'Ember.Object.create no longer supports mixing in other ' +
+          'definitions, use .extend & .create seperately instead.',
+          !(properties instanceof Mixin)
+        );
 
         if (typeof properties !== 'object' && properties !== undefined) {
           throw new EmberError('Ember.Object.create only accepts objects.');
@@ -114,14 +117,21 @@ function makeCtor() {
           var possibleDesc = this[keyName];
           var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-          Ember.assert('Ember.Object.create no longer supports defining computed ' +
+          assert(
+            'Ember.Object.create no longer supports defining computed ' +
             'properties. Define computed properties using extend() or reopen() ' +
-            'before calling create().', !(value instanceof ComputedProperty));
-          Ember.assert('Ember.Object.create no longer supports defining methods ' +
-            'that call _super.', !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
-          Ember.assert('`actions` must be provided at extend time, not at create ' +
-                       'time, when Ember.ActionHandler is used (i.e. views, ' +
-                       'controllers & routes).', !((keyName === 'actions') && ActionHandler.detect(this)));
+            'before calling create().',
+            !(value instanceof ComputedProperty)
+          );
+          assert(
+            'Ember.Object.create no longer supports defining methods that call _super.',
+            !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
+          );
+          assert(
+            '`actions` must be provided at extend time, not at create time, ' +
+            'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+            !((keyName === 'actions') && ActionHandler.detect(this))
+          );
 
           if (concatenatedProperties &&
               concatenatedProperties.length > 0 &&
@@ -768,8 +778,11 @@ var ClassMixinProps = {
     var possibleDesc = proto[key];
     var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-    Ember.assert('metaForProperty() could not find a computed property ' +
-      'with key \'' + key + '\'.', !!desc && desc instanceof ComputedProperty);
+    assert(
+      'metaForProperty() could not find a computed property ' +
+      'with key \'' + key + '\'.',
+      !!desc && desc instanceof ComputedProperty
+    );
     return desc._meta || {};
   },
 
@@ -817,10 +830,10 @@ var ClassMixinProps = {
 };
 
 function injectedPropertyAssertion() {
-  Ember.assert('Injected properties are invalid', validatePropertyInjections(this));
+  assert('Injected properties are invalid', validatePropertyInjections(this));
 }
 
-Ember.runInDebug(function() {
+runInDebug(function() {
   /**
     Provides lookup-time type validation for injected properties.
 

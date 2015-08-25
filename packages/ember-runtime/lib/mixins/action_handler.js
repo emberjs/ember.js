@@ -2,7 +2,8 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core';
+
+import { assert, deprecate } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 
@@ -180,17 +181,20 @@ var ActionHandler = Mixin.create({
     }
 
     if (target = get(this, 'target')) {
-      Ember.assert('The `target` for ' + this + ' (' + target +
-                   ') does not have a `send` method', typeof target.send === 'function');
+      assert(
+        'The `target` for ' + this + ' (' + target +
+        ') does not have a `send` method',
+        typeof target.send === 'function'
+      );
       target.send(...arguments);
     }
   },
 
   willMergeMixin(props) {
-    Ember.assert('Specifying `_actions` and `actions` in the same mixin is not supported.', !props.actions || !props._actions);
+    assert('Specifying `_actions` and `actions` in the same mixin is not supported.', !props.actions || !props._actions);
 
     if (props._actions) {
-      Ember.deprecate(
+      deprecate(
         'Specifying actions in `_actions` is deprecated, please use `actions` instead.',
         false,
         { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
@@ -205,22 +209,18 @@ var ActionHandler = Mixin.create({
 export default ActionHandler;
 
 export function deprecateUnderscoreActions(factory) {
-  function deprecate() {
-    Ember.deprecate(
-      `Usage of \`_actions\` is deprecated, use \`actions\` instead.`,
-      false,
-      { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
-    );
-  }
-
   Object.defineProperty(factory.prototype, '_actions', {
     configurable: true,
     enumerable: false,
     set(value) {
-      Ember.assert(`You cannot set \`_actions\` on ${this}, please use \`actions\` instead.`);
+      assert(`You cannot set \`_actions\` on ${this}, please use \`actions\` instead.`);
     },
     get() {
-      deprecate();
+      deprecate(
+        `Usage of \`_actions\` is deprecated, use \`actions\` instead.`,
+        false,
+        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
+      );
       return get(this, 'actions');
     }
   });
