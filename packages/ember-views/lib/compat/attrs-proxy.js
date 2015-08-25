@@ -42,6 +42,8 @@ let AttrsProxyMixin = {
   init() {
     this._super(...arguments);
 
+    if (this._disableAttrsProxy) { return; }
+
     setupAvoidPropagating(this);
   },
 
@@ -68,6 +70,8 @@ let AttrsProxyMixin = {
   },
 
   _propagateAttrsToThis() {
+    if (this._disableAttrsProxy) { return; }
+
     let attrs = this.attrs;
 
     for (let prop in attrs) {
@@ -83,6 +87,9 @@ let AttrsProxyMixin = {
 
   _internalDidReceiveAttrs() {
     this._super();
+
+    if (this._disableAttrsProxy) { return; }
+
     this._isDispatchingAttrs = true;
     this._propagateAttrsToThis();
     this._isDispatchingAttrs = false;
@@ -91,6 +98,7 @@ let AttrsProxyMixin = {
 
   unknownProperty(key) {
     if (this._isAngleBracket) { return; }
+    if (this._disableAttrsProxy) { return; }
 
     var attrs = this.attrs;
 
@@ -116,6 +124,7 @@ let AttrsProxyMixin = {
 AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
   if (this._isAngleBracket) { return; }
   if (this._isDispatchingAttrs) { return; }
+  if (this._disableAttrsProxy) { return; }
 
   if (this._currentState) {
     this._currentState.legacyPropertyDidChange(this, key);
