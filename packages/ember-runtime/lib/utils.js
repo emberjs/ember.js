@@ -49,7 +49,8 @@ export function isArray(obj) {
 
   let type = typeOf(obj);
   if ('array' === type) { return true; }
-  if ((obj.length !== undefined) && 'object' === type) { return true; }
+  let length = obj.length;
+  if (typeof length === 'number' && length === length && 'object' === type) { return true; }
   return false;
 }
 
