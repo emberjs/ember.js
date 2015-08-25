@@ -1,11 +1,12 @@
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import EmberObject from 'ember-runtime/system/object';
 import { CONTAINS_DASH_CACHE } from 'ember-htmlbars/system/lookup-helper';
 
 export default EmberObject.extend({
   invalidName(name) {
     if (!CONTAINS_DASH_CACHE.get(name)) {
-      Ember.assert(`You cannot use '${name}' as a component name. Component names must contain a hyphen.`);
+      assert(`You cannot use '${name}' as a component name. Component names must contain a hyphen.`);
       return true;
     }
   },

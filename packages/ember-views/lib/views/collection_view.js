@@ -3,7 +3,8 @@
 @submodule ember-views
 */
 
-import Ember from 'ember-metal/core'; // Ember.assert
+import Ember from 'ember-metal/core';
+import { assert, deprecate } from 'ember-metal/debug';
 import ContainerView from 'ember-views/views/container_view';
 import View from 'ember-views/views/view';
 import EmberArray from 'ember-runtime/mixins/array';
@@ -245,7 +246,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     @method _assertArrayLike
   */
   _assertArrayLike(content) {
-    Ember.assert(`an Ember.CollectionView's content must implement Ember.Array. You passed ${content}`, EmberArray.detect(content));
+    assert(`an Ember.CollectionView's content must implement Ember.Array. You passed ${content}`, EmberArray.detect(content));
   },
 
   /**
@@ -438,13 +439,15 @@ function buildItemViewProps(template, attrs) {
 }
 
 function viewDeprecationMessage() {
-  Ember.deprecate(`Ember.CollectionView is deprecated. Consult the Deprecations Guide for a migration strategy.`,
-                  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
-                  {
-                    url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-collectionview',
-                    id: 'ember-views.collection-view-deprecated',
-                    until: '2.4.0'
-                  });
+  deprecate(
+    `Ember.CollectionView is deprecated. Consult the Deprecations Guide for a migration strategy.`,
+    !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+    {
+      url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-collectionview',
+      id: 'ember-views.collection-view-deprecated',
+      until: '2.4.0'
+    }
+  );
 }
 
 var DeprecatedCollectionView = CollectionView.extend({

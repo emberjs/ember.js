@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core'; // Ember.assert, Ember.Handlebars
+import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';
@@ -15,9 +16,11 @@ function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {
     actionName = actionName.value;
   }
-  Ember.assert('The default action was triggered on the component ' + component.toString() +
-               ', but the action name (' + actionName + ') was not a string.',
-               isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
+  assert(
+    'The default action was triggered on the component ' + component.toString() +
+    ', but the action name (' + actionName + ') was not a string.',
+    isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function'
+  );
   return actionName;
 }
 
@@ -265,8 +268,11 @@ var Component = View.extend(TargetActionSupport, {
     }
 
     if (target = get(this, 'target')) {
-      Ember.assert('The `target` for ' + this + ' (' + target +
-                   ') does not have a `send` method', typeof target.send === 'function');
+      assert(
+        'The `target` for ' + this + ' (' + target +
+        ') does not have a `send` method',
+        typeof target.send === 'function'
+      );
       target.send(...arguments);
     } else {
       if (!hasAction) {

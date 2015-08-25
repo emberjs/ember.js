@@ -1,8 +1,8 @@
-// Ember.assert, Ember.deprecate, Ember.warn, Ember.TEMPLATES,
 // jQuery, Ember.lookup,
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
+import { deprecate, warn } from 'ember-metal/debug';
 
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
@@ -29,9 +29,13 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
 @submodule ember-views
 */
 
-Ember.warn('The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.',
-           Ember.ENV.VIEW_PRESERVES_CONTEXT !== false,
-           { id: 'ember-views.view-preserves-context-flag', until: '2.0.0' });
+warn(
+  'The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.',
+  Ember.ENV.VIEW_PRESERVES_CONTEXT !== false,
+  {
+    id: 'ember-views.view-preserves-context-flag',
+    until: '2.0.0'
+  });
 
 /**
   Global hash of shared templates. This will automatically be populated
@@ -750,13 +754,15 @@ View.reopenClass({
 });
 
 function viewDeprecationMessage() {
-  Ember.deprecate(`Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`,
-                  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
-                  {
-                    url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view',
-                    id: 'ember-views.view-deprecated',
-                    until: '2.4.0'
-                  });
+  deprecate(
+    `Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`,
+    !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+    {
+      url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view',
+      id: 'ember-views.view-deprecated',
+      until: '2.4.0'
+    }
+  );
 }
 
 var DeprecatedView = View.extend({

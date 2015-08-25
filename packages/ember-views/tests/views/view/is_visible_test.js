@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
@@ -18,12 +18,12 @@ QUnit.module('EmberView#isVisible', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     warnings = [];
-    originalWarn = Ember.warn;
-    Ember.warn = function(message, test) {
+    originalWarn = getDebugFunction('warn');
+    setDebugFunction('warn', function(message, test) {
       if (!test) {
         warnings.push(message);
       }
-    };
+    });
   },
 
   teardown() {
@@ -31,6 +31,7 @@ QUnit.module('EmberView#isVisible', {
       run(function() { view.destroy(); });
     }
     resetKeyword('view', originalViewKeyword);
+    setDebugFunction('warn', originalWarn);
   }
 });
 

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { isArray } from 'ember-metal/utils';
 import { chain, read } from 'ember-metal/streams/utils';
@@ -113,7 +113,7 @@ export function classStringForValue(path, val, className, falsyClassName) {
 
 export function streamifyClassNameBinding(view, classNameBinding, prefix) {
   prefix = prefix || '';
-  Ember.assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', classNameBinding.indexOf(' ') === -1);
+  assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', classNameBinding.indexOf(' ') === -1);
   var parsedPath = parsePropertyPath(classNameBinding);
   if (parsedPath.path === '') {
     return classStringForValue(
