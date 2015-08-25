@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import Cache from 'ember-metal/cache';
 
 export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
@@ -43,7 +43,7 @@ export function findHelper(name, view, env) {
       var helperName = 'helper:' + name;
       if (container.registry.has(helperName)) {
         helper = container.lookupFactory(helperName);
-        Ember.assert(`Expected to find an Ember.Helper with the name ${helperName}, but found an object of type ${typeof helper} instead.`, helper.isHelperFactory || helper.isHelperInstance);
+        assert(`Expected to find an Ember.Helper with the name ${helperName}, but found an object of type ${typeof helper} instead.`, helper.isHelperFactory || helper.isHelperInstance);
       }
     }
   }
@@ -54,7 +54,7 @@ export function findHelper(name, view, env) {
 export default function lookupHelper(name, view, env) {
   let helper = findHelper(name, view, env);
 
-  Ember.assert(`A helper named '${name}' could not be found`, !!helper);
+  assert(`A helper named '${name}' could not be found`, !!helper);
 
   return helper;
 }

@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import { internal } from 'htmlbars-runtime';
 
 export default {
@@ -16,13 +16,13 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    Ember.assert(
+    assert(
       '{{#with foo}} must be called with a single argument or the use the ' +
       '{{#with foo as |bar|}} syntax',
       params.length === 1
     );
 
-    Ember.assert(
+    assert(
       'The {{#with}} helper must be called with a block',
       !!template
     );

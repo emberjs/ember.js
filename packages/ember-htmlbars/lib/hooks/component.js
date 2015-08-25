@@ -1,7 +1,7 @@
+import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
-import Ember from 'ember-metal/core';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.state;
@@ -64,7 +64,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     if (isAngleBracket && isDasherized && !component && !layout) {
       isComponentHTMLElement = true;
     } else {
-      Ember.assert(`HTMLBars error: Could not find component named "${tagName}" (no component or template with that name was found)`, !!(component || layout));
+      assert(`HTMLBars error: Could not find component named "${tagName}" (no component or template with that name was found)`, !!(component || layout));
     }
   }
 

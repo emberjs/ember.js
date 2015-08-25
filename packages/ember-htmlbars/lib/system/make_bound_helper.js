@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-htmlbars
 */
-import Ember from 'ember-metal/core';
+import { deprecate } from 'ember-metal/debug';
 import { helper } from 'ember-htmlbars/helper';
 
 /**
@@ -49,7 +49,7 @@ import { helper } from 'ember-htmlbars/helper';
   @since 1.10.0
 */
 export default function makeBoundHelper(fn) {
-  Ember.deprecate(
+  deprecate(
     'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to using `Ember.Helper` or `Ember.Helper.helper`.',
     false,
     { id: 'ember-htmlbars.make-bound-helper', until: '3.0.0' }

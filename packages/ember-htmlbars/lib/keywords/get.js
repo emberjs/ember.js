@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import Stream from 'ember-metal/streams/stream';
 import KeyStream from 'ember-metal/streams/key-stream';
 import { isStream } from 'ember-metal/streams/utils';
@@ -25,8 +25,8 @@ function labelFor(source, key) {
 const buildStream = function buildStream(params) {
   const [objRef, pathRef] = params;
 
-  Ember.assert('The first argument to {{get}} must be a stream', isStream(objRef));
-  Ember.assert('{{get}} requires at least two arguments', params.length > 1);
+  assert('The first argument to {{get}} must be a stream', isStream(objRef));
+  assert('{{get}} requires at least two arguments', params.length > 1);
 
   const stream = new DynamicKeyStream(objRef, pathRef);
 
@@ -101,7 +101,7 @@ var DynamicKeyStream = function DynamicKeyStream(source, keySource) {
   if (!isStream(keySource)) {
     return new KeyStream(source, keySource);
   }
-  Ember.assert('DynamicKeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
+  assert('DynamicKeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
 
   // used to get the original path for debugging and legacy purposes
   var label = labelFor(source, keySource);
@@ -120,7 +120,7 @@ merge(DynamicKeyStream.prototype, {
   key() {
     const key = this.keyDep.getValue();
     if (typeof key === 'string') {
-      Ember.assert('DynamicKeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
+      assert('DynamicKeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
       return key;
     }
   },

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { assert, warn, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
@@ -77,13 +77,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // now that we have the component instance.
   layout = get(component, 'layout') || layout;
 
-  Ember.runInDebug(() => {
-    var assert = Ember.assert;
+  // TODO: Remove this hack when defeatureify is removed.
+  let _assert = assert;
 
+  runInDebug(() => {
     if (isAngleBracket) {
-      assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
+      _assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
     } else {
-      assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
+      _assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
     }
 
     if (!layout) { return; }
@@ -92,14 +93,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     if (isAngleBracket && fragmentReason) {
       switch (fragmentReason.name) {
         case 'missing-wrapper':
-          assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
+          _assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
           break;
         case 'modifiers':
           let modifiers = fragmentReason.modifiers.map(m => `{{${m} ...}}`);
-          assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          _assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
         case 'triple-curlies':
-          assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          _assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
       }
     }
@@ -268,7 +269,7 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   if (!isAngleBracket) {
     let proto = _component.proto();
 
-    Ember.assert('controller= is no longer supported', !('controller' in attrs));
+    assert('controller= is no longer supported', !('controller' in attrs));
 
     mergeBindings(props, shadowedAttrs(proto, snapshot));
   } else {
@@ -306,7 +307,7 @@ function shadowedAttrs(target, attrs) {
   for (var attr in attrs) {
     if (attr in target) {
       // TODO: Should we issue a deprecation here?
-      //Ember.deprecate(deprecation(attr));
+      // deprecate(deprecation(attr));
       shadowed[attr] = attrs[attr];
     }
   }
@@ -332,7 +333,7 @@ function mergeBindings(target, attrs) {
     // set `"blah"` to the root of the target because
     // that would replace all attrs with `attrs.attrs`
     if (prop === 'attrs') {
-      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.component-unsupported-attrs' });
+      warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.component-unsupported-attrs' });
       continue;
     }
     let value = attrs[prop];

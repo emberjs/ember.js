@@ -1,5 +1,5 @@
 import merge from 'ember-metal/merge';
-import Ember from 'ember-metal/core';
+import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -26,7 +26,7 @@ function ViewNodeManager(component, scope, renderNode, block, expectElement) {
 export default ViewNodeManager;
 
 ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
-  Ember.assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
+  assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
     if (path) {
       return found.component || found.layout;
     } else {
@@ -65,7 +65,7 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     renderNode.emberView = component;
   }
 
-  Ember.assert('BUG: ViewNodeManager.create can take a scope or a self, but not both', !(contentScope && found.self));
+  assert('BUG: ViewNodeManager.create can take a scope or a self, but not both', !(contentScope && found.self));
 
   var results = buildComponentTemplate(componentInfo, attrs, {
     templates: { default: contentTemplate },
@@ -211,7 +211,7 @@ function shadowedAttrs(target, attrs) {
   for (var attr in attrs) {
     if (attr in target) {
       // TODO: Should we issue a deprecation here?
-      //Ember.deprecate(deprecation(attr));
+      // deprecate(deprecation(attr));
       shadowed[attr] = attrs[attr];
     }
   }
@@ -237,7 +237,7 @@ function mergeBindings(target, attrs) {
     // set `"blah"` to the root of the target because
     // that would replace all attrs with `attrs.attrs`
     if (prop === 'attrs') {
-      Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.view-unsupported-attrs' });
+      warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.view-unsupported-attrs' });
       continue;
     }
     let value = attrs[prop];
