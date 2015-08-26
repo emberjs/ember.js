@@ -221,6 +221,10 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
     var snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
+      if (component.propagateAttrsToThis) {
+        component.propagateAttrsToThis(takeLegacySnapshot(attrs));
+      }
+
       env.renderer.componentUpdateAttrs(component, snapshot);
       component._renderNode.shouldReceiveAttrs = false;
     }
@@ -258,11 +262,9 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   props.attrs = snapshot;
 
   if (!isAngleBracket) {
-    let proto = _component.proto();
-
     assert('controller= is no longer supported', !('controller' in attrs));
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    mergeBindings(props, snapshot);
   } else {
     props._isAngleBracket = true;
   }
@@ -289,28 +291,21 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   return component;
 }
 
-function shadowedAttrs(target, attrs) {
-  let shadowed = {};
-
-  // For backwards compatibility, set the component property
-  // if it has an attr with that name. Undefined attributes
-  // are handled on demand via the `unknownProperty` hook.
-  for (var attr in attrs) {
-    if (attr in target) {
-      // TODO: Should we issue a deprecation here?
-      // deprecate(deprecation(attr));
-      shadowed[attr] = attrs[attr];
-    }
-  }
-
-  return shadowed;
-}
-
 function takeSnapshot(attrs) {
   let hash = {};
 
   for (var prop in attrs) {
     hash[prop] = getCellOrValue(attrs[prop]);
+  }
+
+  return hash;
+}
+
+export function takeLegacySnapshot(attrs) {
+  let hash = {};
+
+  for (var prop in attrs) {
+    hash[prop] = getValue(attrs[prop]);
   }
 
   return hash;
