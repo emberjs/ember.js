@@ -571,6 +571,8 @@ function propertySort(itemsKey, sortPropertiesKey) {
     var items = itemsKey === '@this' ? this : get(this, itemsKey);
     var sortProperties = get(this, sortPropertiesKey);
 
+    if (items === null || typeof items !== 'object') { return Ember.A(); }
+
     // TODO: Ideally we'd only do this if things have changed
     if (cp._sortPropObservers) {
       cp._sortPropObservers.forEach(args => removeObserver.apply(null, args));
