@@ -76,14 +76,11 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // now that we have the component instance.
   layout = get(component, 'layout') || layout;
 
-  // TODO: Remove this hack when defeatureify is removed.
-  let _assert = assert;
-
   runInDebug(() => {
     if (isAngleBracket) {
-      _assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
+      assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
     } else {
-      _assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
+      assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
     }
 
     if (!layout) { return; }
@@ -92,14 +89,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     if (isAngleBracket && fragmentReason) {
       switch (fragmentReason.name) {
         case 'missing-wrapper':
-          _assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
+          assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
           break;
         case 'modifiers':
           let modifiers = fragmentReason.modifiers.map(m => `{{${m} ...}}`);
-          _assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
         case 'triple-curlies':
-          _assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
       }
     }

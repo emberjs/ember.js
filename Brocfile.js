@@ -11,6 +11,7 @@ var EmberBuild = require('emberjs-build');
 var packages   = require('./lib/packages');
 
 var applyFeatureFlags = require('babel-plugin-feature-flags');
+var filterImports = require('babel-plugin-filter-imports');
 
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
@@ -20,18 +21,25 @@ var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
 function babelConfigFor(environment) {
   var isDevelopment = (environment === 'development');
+  var isProduction = (environment === 'production');
 
   var features = JSON.parse(featuresJson).features;
   features["mandatory-setter"] = isDevelopment;
 
-  return {
-    plugins: [
-      applyFeatureFlags({
-        import: { module: 'ember-metal/features' },
-        features: features
-      })
-    ]
-  };
+  var plugins = [];
+
+  plugins.push(applyFeatureFlags({
+    import: { module: 'ember-metal/features' },
+    features: features
+  }));
+
+  if (isProduction) {
+    plugins.push(filterImports({
+      'ember-metal/debug': ['assert','debug','deprecate','runInDebug','warn']
+    }));
+  }
+
+  return { plugins: plugins };
 }
 
 var emberBuild = new EmberBuild({
