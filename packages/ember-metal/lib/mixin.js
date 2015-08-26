@@ -163,11 +163,8 @@ function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
   runInDebug(function() {
-    // TODO: Remove this hack when defeatureify is removed.
-    let _assert = assert;
-
     if (Array.isArray(value)) { // use conditional to avoid stringifying every time
-      _assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
+      assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
   });
 
