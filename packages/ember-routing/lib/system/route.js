@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core'; // FEATURES, A, deprecate, assert, Logger
-import { assert, deprecate } from 'ember-metal/debug';
+import { assert, deprecate, info } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
@@ -2161,7 +2161,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     assert(`Could not find "${name}" template, view, or component.`, isDefaultRender);
     if (LOG_VIEW_LOOKUPS) {
       var fullName = `template:${name}`;
-      Ember.Logger.info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
+      info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
     }
   }
 

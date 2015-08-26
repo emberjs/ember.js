@@ -1,5 +1,6 @@
 export let debugFunctions = {
   assert() {},
+  info() {},
   warn() {},
   debug() {},
   deprecate() {},
@@ -17,6 +18,10 @@ export function setDebugFunction(name, fn) {
 
 export function assert() {
   return debugFunctions.assert.apply(undefined, arguments);
+}
+
+export function info() {
+  return debugFunctions.info.apply(undefined, arguments);
 }
 
 export function warn() {
