@@ -1,5 +1,5 @@
-import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
+import { deprecate } from 'ember-metal/debug';
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
 
 export function registerHandler(handler) {
@@ -30,7 +30,7 @@ export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must pro
 */
 export default function warn(message, test, options) {
   if (!options) {
-    Ember.deprecate(
+    deprecate(
       missingOptionsDeprecation,
       false,
       { id: 'ember-debug.warn-options-missing', until: '3.0.0' }
@@ -38,7 +38,7 @@ export default function warn(message, test, options) {
   }
 
   if (options && !options.id) {
-    Ember.deprecate(
+    deprecate(
       missingOptionsIdDeprecation,
       false,
       { id: 'ember-debug.warn-id-missing', until: '3.0.0' }

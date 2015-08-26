@@ -3,6 +3,7 @@
 import Ember from 'ember-metal/core';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
+
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
 
 export function registerHandler(handler) {
