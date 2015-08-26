@@ -4,7 +4,6 @@ import buildComponentTemplate from 'ember-views/system/build-component-template'
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import setProperties from 'ember-metal/set_properties';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
@@ -226,11 +225,6 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
 
     if (component._renderNode.shouldReceiveAttrs) {
       env.renderer.componentUpdateAttrs(component, snapshot);
-
-      if (!component._isAngleBracket) {
-        setProperties(component, mergeBindings({}, shadowedAttrs(component, snapshot)));
-      }
-
       component._renderNode.shouldReceiveAttrs = false;
     }
 
