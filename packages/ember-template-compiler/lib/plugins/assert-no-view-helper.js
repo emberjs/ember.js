@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
 function AssertNoViewHelper(options) {
@@ -34,9 +35,11 @@ function assertHelper(moduleName, node) {
   if (!paramValue) {
     return;
   } else {
-    Ember.assert(`Using the \`{{view "string"}}\` helper is removed in 2.0. ${calculateLocationDisplay(moduleName, node.loc)}`,
-                 Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
-                 { id: 'view.helper', until: '2.0.0' });
+    assert(
+      `Using the \`{{view "string"}}\` helper is removed in 2.0. ${calculateLocationDisplay(moduleName, node.loc)}`,
+      Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+      { id: 'view.helper', until: '2.0.0' }
+    );
   }
 }
 

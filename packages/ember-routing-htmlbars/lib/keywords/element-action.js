@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // assert
+import { assert } from 'ember-metal/debug';
 import { uuid } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import { readUnwrappedModel } from 'ember-views/streams/utils';
@@ -12,10 +12,12 @@ export default {
 
     var actionName = read(params[0]);
 
-    Ember.assert('You specified a quoteless path to the {{action}} helper ' +
-                 'which did not resolve to an action name (a string). ' +
-                 'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
-                 typeof actionName === 'string' || typeof actionName === 'function');
+    assert(
+      'You specified a quoteless path to the {{action}} helper ' +
+      'which did not resolve to an action name (a string). ' +
+      'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
+      typeof actionName === 'string' || typeof actionName === 'function'
+    );
 
     var actionArgs = [];
     for (var i = 1, l = params.length; i < l; i++) {
@@ -99,7 +101,7 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
         if (target.send) {
           target.send.apply(target, [actionName, ...actionArgs]);
         } else {
-          Ember.assert(
+          assert(
             'The action \'' + actionName + '\' did not exist on ' + target,
             typeof target[actionName] === 'function'
           );

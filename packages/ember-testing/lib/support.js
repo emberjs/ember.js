@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { warn } from 'ember-metal/debug';
 import jQuery from 'ember-views/system/jquery';
 
 import environment from 'ember-metal/environment';
@@ -53,7 +53,7 @@ if (environment.hasDOM) {
 
     // Try again to verify that the patch took effect or blow up.
     testCheckboxClick(function() {
-      Ember.warn(
+      warn(
         'clicked checkboxes should be checked! the jQuery patch didn\'t work',
         this.checked,
         { id: 'ember-testing.test-checkbox-click' }
