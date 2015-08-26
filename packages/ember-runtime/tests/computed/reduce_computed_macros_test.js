@@ -1223,13 +1223,15 @@ QUnit.test('sorts correctly as only one property changes', function() {
 });
 
 
+var klass;
 QUnit.module('sort - concurrency', {
   setup() {
-    obj = EmberObject.extend({
+    klass = EmberObject.extend({
       sortProps: ['count'],
       sortedItems: sort('items', 'sortProps'),
       customSortedItems: sort('items.@each.count', (a, b) => a.count - b.count)
-    }).create({
+    });
+    obj = klass.create({
       items: Ember.A([
         { name: 'A', count: 1 },
         { name: 'B', count: 2 },
@@ -1254,7 +1256,7 @@ QUnit.test('sorts correctly after mutation to the sort properties', function() {
   deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
 });
 
-QUnit.test('sort correctl after mutation to the sor ', function() {
+QUnit.test('sort correctly after mutation to the sort', function() {
   deepEqual(obj.get('customSortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
 
   set(obj.get('items')[1], 'count', 5);
@@ -1263,6 +1265,28 @@ QUnit.test('sort correctl after mutation to the sor ', function() {
   deepEqual(obj.get('customSortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
 
   deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+});
+
+QUnit.test('sort correctly on multiple instances of the same class', function() {
+  var obj2 = klass.create({
+    items: Ember.A([
+      { name: 'W', count: 23 },
+      { name: 'X', count: 24 },
+      { name: 'Y', count: 25 },
+      { name: 'Z', count: 26 }
+    ])
+  });
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
+  deepEqual(obj2.get('sortedItems').mapBy('name'), ['W', 'X', 'Y', 'Z'], 'initial');
+
+  set(obj.get('items')[1], 'count', 5);
+  set(obj.get('items')[2], 'count', 6);
+  set(obj2.get('items')[1], 'count', 27);
+  set(obj2.get('items')[2], 'count', 28);
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
+  deepEqual(obj2.get('sortedItems').mapBy('name'), ['W', 'Z', 'X', 'Y'], 'final');
 });
 
 QUnit.module('max', {
