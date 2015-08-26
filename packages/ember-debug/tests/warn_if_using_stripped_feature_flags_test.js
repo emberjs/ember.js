@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { _warnIfUsingStrippedFeatureFlags } from 'ember-debug';
 
 var oldWarn, oldRunInDebug, origEnvFeatures, origEnableAll, origEnableOptional;
@@ -7,15 +8,15 @@ function confirmWarns(expectedMsg) {
   var featuresWereStripped = true;
   var FEATURES = Ember.ENV.FEATURES;
 
-  Ember.warn = function(msg, test) {
+  setDebugFunction('warn', function(msg, test) {
     if (!test) {
       equal(msg, expectedMsg);
     }
-  };
+  });
 
-  Ember.runInDebug = function (func) {
+  setDebugFunction('runInDebug', function (func) {
     func();
-  };
+  });
 
   // Should trigger our 1 warning
   _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped);
@@ -27,16 +28,16 @@ function confirmWarns(expectedMsg) {
 
 QUnit.module('ember-debug - _warnIfUsingStrippedFeatureFlags', {
   setup() {
-    oldWarn            = Ember.warn;
-    oldRunInDebug      = Ember.runInDebug;
+    oldWarn            = getDebugFunction('warn');
+    oldRunInDebug      = getDebugFunction('runInDebug');
     origEnvFeatures    = Ember.ENV.FEATURES;
     origEnableAll      = Ember.ENV.ENABLE_ALL_FEATURES;
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
 
   teardown() {
-    Ember.warn                         = oldWarn;
-    Ember.runInDebug                   = oldRunInDebug;
+    setDebugFunction('warn', oldWarn);
+    setDebugFunction('runInDebug', oldRunInDebug);
     Ember.ENV.FEATURES                 = origEnvFeatures;
     Ember.ENV.ENABLE_ALL_FEATURES      = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;
@@ -76,4 +77,3 @@ QUnit.test('Enabling a FEATURES flag in non-canary, debug build causes a warning
 
   confirmWarns('FEATURE["fred"] is set as enabled, but FEATURE flags are only available in canary builds.');
 });
-
