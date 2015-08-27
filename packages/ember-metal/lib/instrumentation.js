@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -104,6 +105,38 @@ export function instrument(name, _payload, callback, binding) {
     return callback.call(binding);
   }
 }
+
+function DEFAULT_FINALIZER() {}
+
+/**
+  Begins an asynchronous instrumentation. The caller is required
+  to call the finalizer that this function returns at some point
+  in the future.
+
+  @method asyncInstrument
+  @param {String} [name] Namespaced event name
+  @param {Function} _payload
+  @return {Function} a finalizer function to call when the instrumented
+    work has finished.
+*/
+export function asyncInstrument(name, _payload) {
+  if (subscribers.length === 0) {
+    return DEFAULT_FINALIZER;
+  }
+
+  var payload = _payload || {};
+  return _instrumentStart(name, payload) || DEFAULT_FINALIZER;
+}
+
+var flaggedInstrument;
+if (isEnabled('ember-improved-instrumentation')) {
+  flaggedInstrument = instrument;
+} else {
+  flaggedInstrument = function(name, payload, callback) {
+    return callback();
+  };
+}
+export { flaggedInstrument };
 
 function withFinalizer(callback, finalizer, payload, binding) {
   try {

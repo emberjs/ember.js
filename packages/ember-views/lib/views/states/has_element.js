@@ -1,6 +1,7 @@
 import _default from 'ember-views/views/states/default';
 import merge from 'ember-metal/merge';
 import jQuery from 'ember-views/system/jquery';
+import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 /**
 @module ember
@@ -57,11 +58,13 @@ merge(hasElement, {
   },
 
   // Handle events from `Ember.EventDispatcher`
-  handleEvent(view, eventName, evt) {
+  handleEvent(view, eventName, event) {
     if (view.has(eventName)) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
-      return view.trigger(eventName, evt);
+      return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
+        return view.trigger(eventName, event);
+      });
     } else {
       return true; // continue event propagation
     }

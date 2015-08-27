@@ -22,6 +22,7 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
+let subscriber;
 QUnit.module('View Instrumentation', {
   setup() {
     run(function() {
@@ -40,6 +41,7 @@ QUnit.module('View Instrumentation', {
   },
 
   teardown() {
+    if (subscriber) { unsubscribe(subscriber); }
     run(App, 'destroy');
     App = null;
     Ember.TEMPLATES = {};
@@ -48,7 +50,7 @@ QUnit.module('View Instrumentation', {
 
 QUnit.test('Nodes without view instances are instrumented', function(assert) {
   var called = false;
-  var subscriber = subscribe('render', {
+  subscriber = subscribe('render', {
     before() {
       called = true;
     },
@@ -59,5 +61,4 @@ QUnit.test('Nodes without view instances are instrumented', function(assert) {
   called = false;
   handleURL('/posts');
   assert.ok(called, 'instrumentation called on transition to non-view backed route');
-  unsubscribe(subscriber);
 });

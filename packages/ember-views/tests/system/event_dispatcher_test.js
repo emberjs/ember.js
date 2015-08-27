@@ -8,9 +8,12 @@ import View from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
+import isEnabled from 'ember-metal/features';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+
+import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
 
 var view, originalViewKeyword;
 var dispatcher;
@@ -85,6 +88,58 @@ QUnit.test('should dispatch events to views', function() {
   equal(childKeyDownCalled, 1, 'calls keyDown on child view');
   equal(parentKeyDownCalled, 0, 'does not call keyDown on parent if child handles event');
 });
+
+if (isEnabled('ember-improved-instrumentation')) {
+  QUnit.test('should instrument triggered events', function() {
+    let clicked = 0;
+    view = View.extend({
+      click(evt) {
+        clicked++;
+      },
+
+      template: compile('<p>hello</p>')
+    }).create();
+
+    run(view, 'appendTo', '#qunit-fixture');
+
+    view.$().trigger('click');
+
+    equal(clicked, 1, 'precond - The click handler was invoked');
+
+    let clickInstrumented = 0;
+    let clickSubscriber = subscribe('interaction.click', {
+      before() {
+        clickInstrumented++;
+        equal(clicked, 1, 'invoked before event is handled');
+      },
+      after() {
+        clickInstrumented++;
+        equal(clicked, 2, 'invoked after event is handled');
+      }
+    });
+
+    let keypressInstrumented = 0;
+    let keypressSubscriber = subscribe('interaction.keypress', {
+      before() {
+        keypressInstrumented++;
+      },
+      after() {
+        keypressInstrumented++;
+      }
+    });
+
+    try {
+      view.$().trigger('click');
+      view.$().trigger('change');
+      equal(clicked, 2, 'precond - The click handler was invoked');
+      equal(clickInstrumented, 2, 'The click was instrumented');
+      strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
+    } finally {
+      unsubscribe(clickSubscriber);
+      unsubscribe(keypressSubscriber);
+    }
+  });
+}
 
 QUnit.test('should not dispatch events to views not inDOM', function() {
   var receivedEvent;

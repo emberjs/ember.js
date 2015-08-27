@@ -88,3 +88,12 @@ for a detailed explanation.
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
   routable components.
+
+* `ember-improved-instrumentation`
+
+  Adds additional instrumentation to Ember:
+
+  - `interaction.<event-name>` for events handled by a component.
+  - `interaction.ember-action` for closure actions.
+  - `routing.transition.url` for transitions to a URL.
+  - `routing.transition.named` for transitions to a named route.
