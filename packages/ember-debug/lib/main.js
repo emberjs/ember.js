@@ -80,6 +80,16 @@ setDebugFunction('debug', function debug(message) {
 });
 
 /**
+  Display an info notice.
+
+  @method info
+  @private
+*/
+setDebugFunction('info', function info() {
+  Logger.info.apply(undefined, arguments);
+});
+
+/**
   Alias an old, deprecated method with its new counterpart.
 
   Display a deprecation warning with the provided message and a stack trace

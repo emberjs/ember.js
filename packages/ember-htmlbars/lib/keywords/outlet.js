@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Ember from 'ember-metal/core';
+import { info } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
@@ -141,7 +141,7 @@ export default {
       template = template || toRender.template && toRender.template.raw;
 
       if (LOG_VIEW_LOOKUPS && ViewClass) {
-        Ember.Logger.info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
+        info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
       }
     }
 

@@ -4,9 +4,8 @@
 */
 
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import { assert, info } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
-import Logger from 'ember-metal/logger';
 import {
   classify,
   capitalize,
@@ -431,7 +430,7 @@ export default EmberObject.extend({
       padding = new Array(60 - parsedName.fullName.length).join('.');
     }
 
-    Logger.info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+    info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
   },
 
   /**

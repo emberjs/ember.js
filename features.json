@@ -10,8 +10,5 @@
     "ember-registry-container-reform": true,
     "ember-routing-routable-components": null
   },
-  "debugStatements": [
-    "Ember.Logger.info",
-    "Ember.default.Logger.info"
-  ]
+  "debugStatements": []
 }

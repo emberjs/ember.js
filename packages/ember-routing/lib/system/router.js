@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import { assert, info } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -503,7 +503,7 @@ var EmberRouter = EmberObject.extend(Evented, {
         handler = container.lookup(routeName);
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
-          Ember.Logger.info(`generated -> ${routeName}`, { fullName: routeName });
+          info(`generated -> ${routeName}`, { fullName: routeName });
         }
       }
 

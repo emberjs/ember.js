@@ -1,6 +1,7 @@
+/* globals EmberDev */
 import Ember from 'ember-metal/core'; // Ember.TEMPLATES
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
-import Logger from 'ember-metal/logger';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import Component from 'ember-views/components/component';
@@ -15,7 +16,7 @@ import {
   registerHelper
 } from 'ember-htmlbars/helpers';
 
-var registry, locator, application, originalLookup, originalLoggerInfo;
+var registry, locator, application, originalLookup, originalInfo;
 
 QUnit.module('Ember.Application Dependency Injection - default resolver', {
   setup() {
@@ -24,7 +25,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
 
     registry = application.__registry__;
     locator = application.__container__;
-    originalLoggerInfo = Logger.info;
+    originalInfo = getDebugFunction('info');
   },
 
   teardown() {
@@ -34,7 +35,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
     var UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
     if (UserInterfaceNamespace) { run(UserInterfaceNamespace, 'destroy'); }
 
-    Logger.info = originalLoggerInfo;
+    setDebugFunction('info', originalInfo);
   }
 });
 
@@ -158,44 +159,59 @@ QUnit.test('the default resolver throws an error if the fullName to resolve is i
 });
 
 QUnit.test('the default resolver logs hits if `LOG_RESOLVER` is set', function() {
+  if (EmberDev && EmberDev.runningProdBuild) {
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   expect(3);
 
   application.LOG_RESOLVER = true;
   application.ScoobyDoo = EmberObject.extend();
   application.toString = function() { return 'App'; };
 
-  Logger.info = function(symbol, name, padding, lookupDescription) {
+  setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
     equal(symbol, '[✓]', 'proper symbol is printed when a module is found');
     equal(name, 'doo:scooby', 'proper lookup value is logged');
     equal(lookupDescription, 'App.ScoobyDoo');
-  };
+  });
 
   registry.resolve('doo:scooby');
 });
 
 QUnit.test('the default resolver logs misses if `LOG_RESOLVER` is set', function() {
+  if (EmberDev && EmberDev.runningProdBuild) {
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   expect(3);
 
   application.LOG_RESOLVER = true;
   application.toString = function() { return 'App'; };
 
-  Logger.info = function(symbol, name, padding, lookupDescription) {
+  setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
     equal(symbol, '[ ]', 'proper symbol is printed when a module is not found');
     equal(name, 'doo:scooby', 'proper lookup value is logged');
     equal(lookupDescription, 'App.ScoobyDoo');
-  };
+  });
 
   registry.resolve('doo:scooby');
 });
 
 QUnit.test('doesn\'t log without LOG_RESOLVER', function() {
+  if (EmberDev && EmberDev.runningProdBuild) {
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   var infoCount = 0;
 
   application.ScoobyDoo = EmberObject.extend();
 
-  Logger.info = function(symbol, name) {
+  setDebugFunction('info', function(symbol, name) {
     infoCount = infoCount + 1;
-  };
+  });
 
   registry.resolve('doo:scooby');
   registry.resolve('doo:scrappy');
