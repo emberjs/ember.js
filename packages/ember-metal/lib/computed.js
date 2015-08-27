@@ -280,6 +280,25 @@ ComputedPropertyPrototype.meta = function(meta) {
   }
 };
 
+/**
+  @private
+
+  @method _remove
+  @param keysToRemove {Array}
+ */
+ComputedPropertyPrototype._remove = function(_keysToRemove) {
+  var keysToRemove = _keysToRemove.slice();
+
+  for (var i = this._dependentKeys.length - 1; i >= 0; i--) {
+    for (var j = keysToRemove.length - 1; j >= 0; j--) {
+      if (this._dependentKeys[i] === keysToRemove[j]) {
+        this._dependentKeys.splice(i, 1);
+        keysToRemove.splice(j, 1);
+      }
+    }
+  }
+};
+
 // invalidate cache when CP key changes
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // _suspended is set via a CP.set to ensure we don't clear

@@ -8,9 +8,9 @@ import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import EmberError from 'ember-metal/error';
 import { ComputedProperty, computed } from 'ember-metal/computed';
-import { addObserver, removeObserver } from 'ember-metal/observer';
 import compare from 'ember-runtime/compare';
 import { isArray } from 'ember-runtime/utils';
+import { symbol } from 'ember-metal/utils';
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
@@ -559,26 +559,22 @@ function customSort(itemsKey, comparator) {
     return value.slice().sort((x, y) => comparator.call(this, x, y));
   });
 }
-
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  var cp = new ComputedProperty(function(key) {
-    function didChange() {
-      this.notifyPropertyChange(key);
-    }
+  var sym = symbol('sortDependentKeys');
 
+  var cp = new ComputedProperty(function(key) {
     var items = itemsKey === '@this' ? this : get(this, itemsKey);
     var sortProperties = get(this, sortPropertiesKey);
 
     if (items === null || typeof items !== 'object') { return Ember.A(); }
 
-    // TODO: Ideally we'd only do this if things have changed
-    if (cp._sortPropObservers) {
-      cp._sortPropObservers.forEach(args => removeObserver.apply(null, args));
-    }
+    var sortDependentKeys = cp[sym];
 
-    cp._sortPropObservers = [];
+    if (sortDependentKeys) {
+      cp._remove(sortDependentKeys);
+    }
 
     if (!isArray(sortProperties)) { return items; }
 
@@ -590,13 +586,13 @@ function propertySort(itemsKey, sortPropertiesKey) {
       return [prop, direction];
     });
 
-    // TODO: Ideally we'd only do this if things have changed
-    // Add observers
-    normalizedSort.forEach(prop => {
-      var args = [this, `${itemsKey}.@each.${prop[0]}`, didChange];
-      cp._sortPropObservers.push(args);
-      addObserver.apply(null, args);
-    });
+    sortDependentKeys = normalizedSort.map(prop => `${itemsKey}.@each.${prop[0]}`);
+
+    cp[sym] = sortDependentKeys;
+
+    // NOTE: This mechanism of dynamically adding/remove DK’s is not public API.
+    // I is likely something that should eventually be explored,
+    cp._dependentKeys.push.apply(cp._dependentKeys, sortDependentKeys);
 
     return Ember.A(items.slice().sort((itemA, itemB) => {
       for (var i = 0; i < normalizedSort.length; ++i) {
