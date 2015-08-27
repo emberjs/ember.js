@@ -313,7 +313,7 @@ QUnit.module('ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: r
 });
 
 QUnit.test('should be able to render an unbound helper invocation', function() {
-  registry.register('helper:-repeat', helper(function([value], {count}) {
+  registry.register('helper:-repeat', helper(function([value], { count }) {
     var a = [];
     while (a.length < count) {
       a.push(value);

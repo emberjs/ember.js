@@ -24,7 +24,7 @@ function babelConfigFor(environment) {
   var isProduction = (environment === 'production');
 
   var features = JSON.parse(featuresJson).features;
-  features["mandatory-setter"] = isDevelopment;
+  features['mandatory-setter'] = isDevelopment;
 
   var plugins = [];
 
@@ -35,21 +35,22 @@ function babelConfigFor(environment) {
 
   if (isProduction) {
     plugins.push(filterImports({
-      'ember-metal/debug': ['assert','debug','deprecate','info','runInDebug','warn']
+      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn']
     }));
   }
 
   return { plugins: plugins };
 }
 
-var emberBuild = new EmberBuild({
-  babel: {
-    development: babelConfigFor('development'),
-    production: babelConfigFor('production')
-  },
-  htmlbars: require('htmlbars'),
-  packages: packages,
-  vendoredPackages: {
+module.exports = function() {
+  var emberBuild = new EmberBuild({
+    babel: {
+      development: babelConfigFor('development'),
+      production: babelConfigFor('production')
+    },
+    htmlbars: require('htmlbars'),
+    packages: packages,
+    vendoredPackages: {
       'loader':                vendoredPackage('loader'),
       'rsvp':                  vendoredES6Package('rsvp'),
       'backburner':            vendoredES6Package('backburner'),
@@ -66,6 +67,7 @@ var emberBuild = new EmberBuild({
       'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
       'htmlbars-util':         htmlbarsPackage('htmlbars-util')
     }
-});
+  });
 
-module.exports = emberBuild.getDistTrees();
+  return emberBuild.getDistTrees();
+};
