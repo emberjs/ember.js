@@ -9,6 +9,5 @@
     "ember-debug-handlers": true,
     "ember-registry-container-reform": true,
     "ember-routing-routable-components": null
-  },
-  "debugStatements": []
+  }
 }
