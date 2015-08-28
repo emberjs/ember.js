@@ -1,7 +1,6 @@
+'no use strict';
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
-//
-'REMOVE_USE_STRICT: true';
 
 import { protoMethods as listenerMethods } from 'ember-metal/meta_listeners';
 import EmptyObject from 'ember-metal/empty_object';
