@@ -1,4 +1,3 @@
-import 'ember';
 import Ember from 'ember-metal/core';
 import compile from 'ember-template-compiler/system/compile';
 

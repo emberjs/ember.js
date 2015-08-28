@@ -1,5 +1,4 @@
 /*globals Ember */
-import 'ember';
 import { isArray } from 'ember-runtime/utils';
 
 QUnit.module('Global API Tests');
