@@ -1,4 +1,4 @@
-var define, requireModule, require, requirejs, Ember;
+var enifed, requireModule, require, requirejs, Ember;
 var mainContext = this;
 
 (function() {
@@ -15,7 +15,7 @@ var mainContext = this;
     var registry = {};
     var seen = {};
 
-    define = function(name, deps, callback) {
+    enifed = function(name, deps, callback) {
       var value = { };
 
       if (!callback) {
@@ -72,12 +72,12 @@ var mainContext = this;
     requirejs._eak_seen = registry;
 
     Ember.__loader = {
-      define: define,
+      define: enifed,
       require: require,
       registry: registry
     };
   } else {
-    define = Ember.__loader.define;
+    enifed = Ember.__loader.define;
     requirejs = require = requireModule = Ember.__loader.require;
   }
 })();
