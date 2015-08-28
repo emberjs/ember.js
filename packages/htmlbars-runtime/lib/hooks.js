@@ -764,7 +764,7 @@ export var keywords = {
 
     var to = env.hooks.getValue(hash.to) || 'default';
     if (scope.blocks[to]) {
-      scope.blocks[to](env, params, hash.self, morph, scope, visitor);
+      scope.blocks[to].invoke(env, params, hash.self, morph, scope, visitor);
     }
     return true;
   },
