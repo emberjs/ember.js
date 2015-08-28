@@ -578,7 +578,7 @@ test("It is possible to nest multiple templates into a manual element", function
         self: hash
       });
 
-      elementBlock(env, null, undefined, morph, null, visitor);
+      elementBlock.invoke(env, null, undefined, morph, null, visitor);
     },
 
     isStable: function() { return true; }

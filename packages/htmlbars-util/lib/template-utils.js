@@ -25,43 +25,47 @@ export function RenderState(renderNode, morphList) {
   this.shadowOptions = null;
 }
 
-export function blockFor(render, template, blockOptions) {
-  var block = function(env, blockArguments, self, renderNode, parentScope, visitor) {
-    if (renderNode.lastResult) {
-      renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
-    } else {
-      var options = { renderState: new RenderState(renderNode) };
+function Block(render, template, blockOptions) {
+  this.render = render;
+  this.template = template;
+  this.blockOptions = blockOptions;
+  this.arity = template.arity;
+}
 
-      var scope = blockOptions.scope;
-      var shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
+Block.prototype.invoke = function(env, blockArguments, self, renderNode, parentScope, visitor) {
+  if (renderNode.lastResult) {
+    renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
+  } else {
+    let options = { renderState: new RenderState(renderNode) };
+    let { render, template, blockOptions: { scope } } = this;
+    let shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
 
-      env.hooks.bindShadowScope(env, parentScope, shadowScope, blockOptions.options);
+    env.hooks.bindShadowScope(env, parentScope, shadowScope, this.blockOptions.options);
 
-      if (self !== undefined) {
-        env.hooks.bindSelf(env, shadowScope, self);
-      } else if (blockOptions.self !== undefined) {
-        env.hooks.bindSelf(env, shadowScope, blockOptions.self);
-      }
-
-      bindBlocks(env, shadowScope, blockOptions.yieldTo);
-
-      renderAndCleanup(renderNode, env, options, null, function() {
-        options.renderState.morphToClear = null;
-        render(template, env, shadowScope, { renderNode, blockArguments });
-      });
+    if (self !== undefined) {
+      env.hooks.bindSelf(env, shadowScope, self);
+    } else if (this.blockOptions.self !== undefined) {
+      env.hooks.bindSelf(env, shadowScope, this.blockOptions.self);
     }
-  };
 
-  block.arity = template.arity;
+    bindBlocks(env, shadowScope, this.blockOptions.yieldTo);
 
-  return block;
+    renderAndCleanup(renderNode, env, options, null, function() {
+      options.renderState.morphToClear = null;
+      render(template, env, shadowScope, { renderNode, blockArguments });
+    });
+  }
+};
+
+export function blockFor(render, template, blockOptions) {
+  return new Block(render, template, blockOptions);
 }
 
 function bindBlocks(env, shadowScope, blocks) {
   if (!blocks) {
     return;
   }
-  if (typeof blocks === 'function') {
+  if (blocks instanceof Block) {
     env.hooks.bindBlock(env, shadowScope, blocks);
   } else {
     for (var name in blocks) {
