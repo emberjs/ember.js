@@ -1,4 +1,3 @@
-import 'ember';
 import Ember from 'ember-metal/core';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';

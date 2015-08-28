@@ -1,4 +1,3 @@
-import 'ember';
 import Ember from 'ember-metal/core';
 import keys from 'ember-metal/keys';
 
