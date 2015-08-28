@@ -10,14 +10,8 @@ export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') !== -1;
 });
 
-export function validateLazyHelperName(helperName, container, keywords, knownHelpers) {
-  if (!container || (helperName in keywords)) {
-    return false;
-  }
-
-  if (knownHelpers[helperName] || CONTAINS_DASH_CACHE.get(helperName)) {
-    return true;
-  }
+export function validateLazyHelperName(helperName, container, keywords) {
+  return container && !(helperName in keywords);
 }
 
 /**
@@ -39,7 +33,7 @@ export function findHelper(name, view, env) {
 
   if (!helper) {
     var container = env.container;
-    if (validateLazyHelperName(name, container, env.hooks.keywords, env.knownHelpers)) {
+    if (validateLazyHelperName(name, container, env.hooks.keywords)) {
       var helperName = 'helper:' + name;
       if (container.registry.has(helperName)) {
         helper = container.lookupFactory(helperName);
