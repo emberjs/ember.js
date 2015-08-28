@@ -99,7 +99,7 @@ QUnit.test('escaped inline form (double curlies) escapes link title', function()
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{link-to view.title}}')
+    template: compile('{{link-to view.title "index"}}')
   });
 
   runAppend(view);
@@ -111,7 +111,7 @@ QUnit.test('escaped inline form with (-html-safe) does not escape link title', f
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{link-to (-html-safe view.title)}}')
+    template: compile('{{link-to (-html-safe view.title) "index"}}'),
   });
 
   runAppend(view);
@@ -123,7 +123,7 @@ QUnit.test('unescaped inline form (triple curlies) does not escape link title', 
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{{link-to view.title}}}')
+    template: compile('{{{link-to view.title "index"}}}')
   });
 
   runAppend(view);
@@ -153,7 +153,7 @@ QUnit.test('able to safely extend the built-in component and use the normal path
   view = EmberView.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
-    template: compile('{{custom-link-to view.title}}')
+    template: compile('{{#custom-link-to \'index\'}}{{view.title}}{{/custom-link-to}}')
   });
 
   runAppend(view);
