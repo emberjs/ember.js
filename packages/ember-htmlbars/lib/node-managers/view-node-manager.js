@@ -91,7 +91,7 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
     }
 
     if (this.block) {
-      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     if (component) {
@@ -131,7 +131,7 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       env.renderedViews.push(component.elementId);
     }
     if (this.block) {
-      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     return newEnv;

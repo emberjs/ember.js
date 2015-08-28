@@ -154,7 +154,7 @@ ComponentNodeManager.prototype.render = function(_env, visitor) {
     env.renderedViews.push(component.elementId);
 
     if (this.block) {
-      this.block(env, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     var element = this.expectElement && this.renderNode.firstNode;
@@ -190,7 +190,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
     env.renderedViews.push(component.elementId);
 
     if (this.block) {
-      this.block(env, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     env.lifecycleHooks.push({ type: 'didUpdate', view: component });

@@ -14,9 +14,9 @@ export default function legacyYield(morph, env, _scope, params, hash, template, 
       scope.locals.controller = new ProxyStream(hash.controller, 'controller');
       scope.overrideController = true;
     }
-    scope.blocks.default(env, [], params[0], morph, scope, visitor);
+    scope.blocks.default.invoke(env, [], params[0], morph, scope, visitor);
   } else {
-    scope.blocks.default(env, params, undefined, morph, scope, visitor);
+    scope.blocks.default.invoke(env, params, undefined, morph, scope, visitor);
   }
 
   return true;
