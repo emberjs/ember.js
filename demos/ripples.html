@@ -1,0 +1,165 @@
+<html>
+  <head>
+    <title>HTMLBars Ripples</title>
+    <style type="text/css">
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+    <script data-template-name="application" type="text/x-handlebars-template">
+<svg width="{{width}}" height="{{height}}">
+  <rect x="0" y="0" width="{{width}}" height="{{height}}" fill="#1B1B1B" />
+
+  {{#each points as |point|}}
+    <circle cx="{{point.x}}" cy="{{point.y}}" r="{{point.size}}" stroke-width="1" stroke="lightblue" stroke-opacity="{{point.opacity}}" fill-opacity="0" />
+  {{/each}}
+
+  <text fill="#ffffff" font-size="45" font-family="Verdana" x="0" y="{{height}}">{{count}} circles @ {{fps}} FPS</text>
+</svg>
+    </script>
+  </head>
+  <body>
+
+    <div id="output"></div>
+
+    <script src="../assets/loader.js"></script>
+    <script src="../amd/dom-helper.amd.js"></script>
+    <script src="../amd/htmlbars-compiler.amd.js"></script>
+    <script src="../amd/htmlbars-runtime.amd.js"></script>
+
+    <script>
+      function RingBuffer(capacity) {
+        this.capacity = capacity;
+        this.head     = 0;
+        this.items    = new Array(capacity);
+      }
+
+      RingBuffer.prototype.push = function(item) {
+        this.items[this.head] = item;
+
+        this.head++;
+        this.head %= this.capacity;
+      };
+
+      RingBuffer.prototype.remove = function(i) {
+        this.items[i] = undefined;
+      };
+
+      RingBuffer.prototype.forEach = function(callback, thisArg) {
+        this.items.forEach(callback, thisArg);
+      };
+
+      function Point(timestamp, x, y) {
+        this.key = "" + timestamp;
+        this.timestamp = timestamp;
+
+        this.x = x;
+        this.y = y;
+        this.size = 0.0;
+        this.opacity = 1.0;
+      };
+
+      Point.prototype.update = function(currentTimestamp) {
+        var delta = currentTimestamp - this.timestamp;
+
+        this.size    = Math.max(delta/10, 0);
+        this.opacity = Math.exp(-delta/250);
+      };
+
+      var compiler  = requireModule("htmlbars-compiler"),
+          DOMHelper = requireModule("dom-helper").default,
+          hooks     = requireModule("htmlbars-runtime").hooks,
+          render    = requireModule("htmlbars-runtime").render,
+      TEMPLATES = {};
+
+      Array.prototype.slice.call(document.querySelectorAll("[data-template-name]")).forEach(function(node) {
+        var name   = node.getAttribute("data-template-name"),
+            source = node.textContent,
+            spec   = compiler.compileSpec(source);
+
+        TEMPLATES[name] = compiler.template(spec);
+      });
+
+      function ifHelper(args) {
+        if (args[0]) {
+          this.yield();
+        }
+      }
+
+      function eachHelper(args) {
+        if (args[0]) {
+          args[0].forEach(function(item, i) {
+            item && this.yieldItem(item.key, [item]);
+          }, this);
+        }
+      }
+
+      var env = { dom: new DOMHelper(), hooks: hooks, helpers: { if: ifHelper, each: eachHelper } };
+
+      var scope = hooks.createFreshScope();
+
+      var data = {
+        width:  window.innerWidth,
+        height: window.innerHeight,
+        points: new RingBuffer(500), // in practice we only have 100-200 circles on screen
+        count:  0,
+        fps:    0
+      };
+
+      hooks.bindSelf(env, scope, data);
+
+      var result = render(TEMPLATES["application"], env, scope, {});
+
+      document.getElementById("output").appendChild(result.fragment);
+
+      window.addEventListener("resize", function() {
+        data.width  = window.innerWidth;
+        data.height = window.innerHeight;
+      });
+
+      document.addEventListener("mousemove", function(e) {
+        data.points.push( new Point(e.timeStamp, e.offsetX, e.offsetY) );
+      });
+
+      var baseOffset = Date.now() - window.performance.now();
+      var timestamp  = window.performance.now();
+
+      function tick() {
+        var _timestamp = window.performance.now()
+
+        var delta = _timestamp - timestamp;
+
+        timestamp = _timestamp;
+
+        data.fps   = ("" + 1000 / delta).substr(0, 5);
+        data.count = 0;
+
+        var walltime = baseOffset + timestamp;
+
+        data.points.forEach(function(point, i) {
+          if (point) {
+            point.update(walltime);
+
+            if (point.opacity > 0.01) {
+              data.count++;
+            } else {
+              data.points.remove(i);
+            }
+          }
+        });
+
+        result.rerender();
+
+        window.requestAnimationFrame(tick);
+      }
+
+      tick();
+    </script>
+  </body>
+</html>
+
+
+
+
