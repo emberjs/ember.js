@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import newStream from 'ember-htmlbars/utils/new-stream';
+import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 export default function bindSelf(env, scope, _self) {
   let self = _self;
@@ -12,25 +12,32 @@ export default function bindSelf(env, scope, _self) {
     let { controller } = self;
     self = self.self;
 
-    newStream(scope.locals, 'controller', controller || self);
+    scope.bindLocal('controller', newStream(controller || self));
   }
 
   if (self && self.isView) {
-    newStream(scope.locals, 'view', self, null);
-    newStream(scope.locals, 'controller', scope.locals.view.getKey('controller'));
+    scope.bindLocal('view', newStream(self, 'view'));
+    scope.bindLocal('controller', newStream(self, '').getKey('controller'));
+
+    let selfStream = newStream(self, '');
 
     if (self.isGlimmerComponent) {
-      newStream(scope, 'self', self, null, true);
+      scope.bindSelf(selfStream);
     } else {
-      newStream(scope, 'self', scope.locals.view.getKey('context'), null, true);
+      scope.bindSelf(newStream(selfStream.getKey('context'), ''));
     }
 
     return;
   }
 
-  newStream(scope, 'self', self, null, true);
+  let selfStream = newStream(self, '');
+  scope.bindSelf(selfStream);
 
-  if (!scope.locals.controller) {
-    scope.locals.controller = scope.self;
+  if (!scope.hasLocal('controller')) {
+    scope.bindLocal('controller', selfStream);
   }
+}
+
+function newStream(newValue, key) {
+  return new ProxyStream(newValue, key);
 }

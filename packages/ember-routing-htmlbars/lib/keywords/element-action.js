@@ -32,7 +32,7 @@ export default {
         target = read(hash.target);
       }
     } else {
-      target = read(scope.locals.controller) || read(scope.self);
+      target = read(scope.getLocal('controller')) || read(scope.getSelf());
     }
 
     return { actionName, actionArgs, target };

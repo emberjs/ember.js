@@ -1,3 +1,5 @@
+import ProxyStream from 'ember-metal/streams/proxy-stream';
+
 /*
   Ember's implementation of HTMLBars creates an enriched scope.
 
@@ -46,13 +48,114 @@
   the current view's `controller`.
 */
 
+function Scope(parent) {
+  this._self = null;
+  this._blocks = {};
+  this._component = null;
+  this._view = null;
+  this._attrs = null;
+  this._locals = {};
+  this._localPresent = {};
+  this.overrideController = false;
+  this.parent = parent;
+}
+
+let proto = Scope.prototype;
+
+proto.getSelf = function() {
+  return this._self || this.parent.getSelf();
+};
+
+proto.bindSelf = function(self) {
+  this._self = self;
+};
+
+proto.updateSelf = function(self, key) {
+  let existing = this._self;
+
+  if (existing) {
+    existing.setSource(self);
+  } else {
+    this._self = new ProxyStream(self, key);
+  }
+};
+
+proto.getBlock = function(name) {
+  return this._blocks[name] || this.parent.getBlock(name);
+};
+
+proto.hasBlock = function(name) {
+  return !!(this._blocks[name] || this.parent.hasBlock(name));
+};
+
+proto.bindBlock = function(name, block) {
+  this._blocks[name] = block;
+};
+
+proto.getComponent = function() {
+  return this._component || this.parent.getComponent();
+};
+
+proto.bindComponent = function(component) {
+  this._component = component;
+};
+
+proto.getView = function() {
+  return this._view || this.parent.getView();
+};
+
+proto.bindView = function(view) {
+  this._view = view;
+};
+
+proto.getAttrs = function() {
+  return this._attrs || this.parent.getAttrs();
+};
+
+proto.bindAttrs = function(attrs) {
+  this._attrs = attrs;
+};
+
+proto.hasLocal = function(name) {
+  return this._localPresent[name] || this.parent.hasLocal(name);
+};
+
+proto.hasOwnLocal = function(name) {
+  return this._localPresent[name];
+};
+
+proto.getLocal = function(name) {
+  return this._localPresent[name] ? this._locals[name] : this.parent.getLocal(name);
+};
+
+proto.bindLocal = function(name, value) {
+  this._localPresent[name] = true;
+  this._locals[name] = value;
+};
+
+const EMPTY = {
+  getSelf() { return null; },
+  bindSelf(self) { return null; },
+  updateSelf(self, key) { return null; },
+  getBlock(name) { return null; },
+  bindBlock(name, block) { return null; },
+  hasBlock(name) { return false; },
+  getComponent() { return null; },
+  bindComponent() { return null; },
+  getView() { return null; },
+  bindView(view) { return null; },
+  getAttrs() { return null; },
+  bindAttrs(attrs) { return null; },
+  hasLocal(name) { return false; },
+  hasOwnLocal(name) { return false; },
+  getLocal(name) { return null; },
+  bindLocal(name, value) { return null; }
+};
+
 export default function createFreshScope() {
-  return {
-    self: null,
-    blocks: {},
-    component: null,
-    attrs: null,
-    locals: {},
-    localPresent: {}
-  };
+  return new Scope(EMPTY);
+}
+
+export function createChildScope(parent) {
+  return new Scope(parent);
 }

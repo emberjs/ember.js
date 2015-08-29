@@ -52,8 +52,8 @@ import { info } from 'ember-metal/debug';
 export default function debuggerKeyword(morph, env, scope) {
   /* jshint unused: false, debug: true */
 
-  var view = env.hooks.getValue(scope.locals.view);
-  var context = env.hooks.getValue(scope.self);
+  var view = env.hooks.getValue(scope.getLocal('view'));
+  var context = env.hooks.getValue(scope.getSelf());
 
   function get(path) {
     return env.hooks.getValue(env.hooks.get(env, scope, path));

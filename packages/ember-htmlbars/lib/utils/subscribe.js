@@ -2,7 +2,7 @@ import { isStream, labelFor } from 'ember-metal/streams/utils';
 
 export default function subscribe(node, env, scope, stream) {
   if (!isStream(stream)) { return; }
-  var component = scope.component;
+  var component = scope.getComponent();
   var unsubscribers = node.streamUnsubscribers = node.streamUnsubscribers || [];
 
   unsubscribers.push(stream.subscribe(function() {

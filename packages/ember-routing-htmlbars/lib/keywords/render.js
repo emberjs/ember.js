@@ -185,7 +185,7 @@ export default {
       controllerFullName = 'controller:' + controllerName;
     }
 
-    var parentController = read(scope.locals.controller);
+    var parentController = read(scope.getLocal('controller'));
     var controller;
 
     // choose name

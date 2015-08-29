@@ -77,7 +77,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
       tagName,
       isAngleBracket: true,
       isComponentElement: true,
-      outerAttrs: scope.attrs,
+      outerAttrs: scope.getAttrs(),
       parentScope: scope
     };
 

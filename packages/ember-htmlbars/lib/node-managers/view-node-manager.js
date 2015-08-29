@@ -46,8 +46,11 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
     if (attrs && attrs.viewName) { options.viewName = getValue(attrs.viewName); }
 
-    if (found.component.create && contentScope && contentScope.self) {
-      options._context = getValue(contentScope.self);
+    if (found.component.create && contentScope) {
+      let _self = contentScope.getSelf();
+      if (_self) {
+        options._context = getValue(contentScope.getSelf());
+      }
     }
 
     if (found.self) {

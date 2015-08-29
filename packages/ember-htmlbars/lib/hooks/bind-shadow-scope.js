@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import newStream from 'ember-htmlbars/utils/new-stream';
+import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 export default function bindShadowScope(env, parentScope, shadowScope, options) {
   if (!options) { return; }
@@ -12,31 +12,35 @@ export default function bindShadowScope(env, parentScope, shadowScope, options) 
 
   if (parentScope && parentScope.overrideController) {
     didOverrideController = true;
-    shadowScope.locals.controller = parentScope.locals.controller;
+    shadowScope.bindLocal('controller', parentScope.getLocal('controller'));
   }
 
   var view = options.view;
   if (view && !view.isComponent) {
-    newStream(shadowScope.locals, 'view', view, null);
+    shadowScope.bindLocal('view', newStream(view, 'view'));
 
     if (!didOverrideController) {
-      newStream(shadowScope.locals, 'controller', shadowScope.locals.view.getKey('controller'));
+      shadowScope.bindLocal('controller', newStream(shadowScope.getLocal('view').getKey('controller')));
     }
 
     if (view.isView) {
-      newStream(shadowScope, 'self', shadowScope.locals.view.getKey('context'), null, true);
+      shadowScope.bindSelf(newStream(shadowScope.getLocal('view').getKey('context'), ''));
     }
   }
 
-  shadowScope.view = view;
+  shadowScope.bindView(view);
 
   if (view && options.attrs) {
-    shadowScope.component = view;
+    shadowScope.bindComponent(view);
   }
 
   if ('attrs' in options) {
-    shadowScope.attrs = options.attrs;
+    shadowScope.bindAttrs(options.attrs);
   }
 
   return shadowScope;
+}
+
+function newStream(newValue, key) {
+  return new ProxyStream(newValue, key);
 }

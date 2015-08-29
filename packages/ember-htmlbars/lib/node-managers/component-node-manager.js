@@ -62,8 +62,8 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // If there is a controller on the scope, pluck it off and save it on the
   // component. This allows the component to target actions sent via
   // `sendAction` correctly.
-  if (parentScope.locals.controller) {
-    createOptions._controller = getValue(parentScope.locals.controller);
+  if (parentScope.hasLocal('controller')) {
+    createOptions._controller = getValue(parentScope.getLocal('controller'));
   }
 
   extractPositionalParams(renderNode, component, params, attrs);

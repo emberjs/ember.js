@@ -188,7 +188,7 @@ import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 export default {
   setupState(state, env, scope, params, hash) {
     var read = env.hooks.getValue;
-    var targetObject = read(scope.self);
+    var targetObject = read(scope.getSelf());
     var viewClassOrInstance = state.viewClassOrInstance;
     if (!viewClassOrInstance) {
       viewClassOrInstance = getView(read(params[0]), env.container);
@@ -196,7 +196,7 @@ export default {
 
     // if parentView exists, use its controller (the default
     // behavior), otherwise use `scope.self` as the controller
-    var controller = scope.locals.view ? null : read(scope.self);
+    var controller = scope.hasLocal('view') ? null : read(scope.getSelf());
 
     return {
       manager: state.manager,

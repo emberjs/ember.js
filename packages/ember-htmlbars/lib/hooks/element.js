@@ -13,7 +13,7 @@ export default function emberElement(morph, env, scope, path, params, hash, visi
   }
 
   var result;
-  var helper = findHelper(path, scope.self, env);
+  var helper = findHelper(path, scope.getSelf(), env);
   if (helper) {
     var helperStream = buildHelperStream(helper, params, hash, { element: morph.element }, env, scope, path);
     result = helperStream.value();

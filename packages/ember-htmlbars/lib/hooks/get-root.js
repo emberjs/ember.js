@@ -5,30 +5,35 @@
 
 export default function getRoot(scope, key) {
   if (key === 'this') {
-    return [scope.self];
+    return [scope.getSelf()];
   } else if (key === 'hasBlock') {
-    return [!!scope.blocks.default];
+    return [!!scope.hasBlock('default')];
   } else if (key === 'hasBlockParams') {
-    return [!!(scope.blocks.default && scope.blocks.default.arity)];
-  } else if (key in scope.locals) {
-    return [scope.locals[key]];
+    let block = scope.getBlock('default');
+    return [!!block && block.arity];
+  } else if (scope.hasLocal(key)) {
+    return [scope.getLocal(key)];
   } else {
     return [getKey(scope, key)];
   }
 }
 
 function getKey(scope, key) {
-  if (key === 'attrs' && scope.attrs) {
-    return scope.attrs;
+  if (key === 'attrs') {
+    let attrs = scope.getAttrs();
+    if (attrs) { return attrs; }
   }
 
-  var self = scope.self || scope.locals.view;
+  var self = scope.getSelf() || scope.getLocal('view');
 
   if (self) {
     return self.getKey(key);
-  } else if (scope.attrs && key in scope.attrs) {
+  }
+
+  let attrs = scope.getAttrs();
+  if (key in attrs) {
     // TODO: attrs
     // deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
-    return scope.attrs[key];
+    return attrs[key];
   }
 }
