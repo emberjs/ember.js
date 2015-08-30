@@ -49,7 +49,9 @@ merge(Dependency.prototype, {
         this.unsubscribe();
         this.subscribe();
       }
+      return true;
     }
+    return false;
   },
 
   getValue() {
