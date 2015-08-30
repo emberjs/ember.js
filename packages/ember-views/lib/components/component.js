@@ -1,5 +1,4 @@
-import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import Ember from 'ember-metal/core'; // Ember.assert, Ember.Handlebars
 
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';
@@ -16,11 +15,9 @@ function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {
     actionName = actionName.value;
   }
-  assert(
-    'The default action was triggered on the component ' + component.toString() +
-    ', but the action name (' + actionName + ') was not a string.',
-    isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function'
-  );
+  Ember.assert('The default action was triggered on the component ' + component.toString() +
+               ', but the action name (' + actionName + ') was not a string.',
+               isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function');
   return actionName;
 }
 
@@ -39,16 +36,17 @@ function validateAction(component, actionName) {
 
   The easiest way to create an `Ember.Component` is via
   a template. If you name a template
-  `components/my-foo`, you will be able to use
-  `{{my-foo}}` in other templates, which will make
+  `components/app-profile`, you will be able to use
+  `{{app-profile}}` in other templates, which will make
   an instance of the isolated component.
 
   ```handlebars
+  {{! app/templates/application.hbs }}
   {{app-profile person=currentUser}}
   ```
 
   ```handlebars
-  <!-- app-profile template -->
+  {{! app/templates/components/app-profile.hbs }}
   <h1>{{person.title}}</h1>
   <img src={{person.avatar}}>
   <p class='signature'>{{person.signature}}</p>
@@ -67,7 +65,7 @@ function validateAction(component, actionName) {
   ```
 
   ```handlebars
-  <!-- app-profile template -->
+  {{! app/templates/components/app-profile.hbs }}
   <h1>{{person.title}}</h1>
   {{! Executed in the components context. }}
   {{yield}} {{! block contents }}
@@ -83,7 +81,9 @@ function validateAction(component, actionName) {
   `hello` for the `app-profile` component:
 
   ```javascript
-  App.AppProfileComponent = Ember.Component.extend({
+  // app/components/app-profile.js
+  import Ember from 'ember';
+  export default Ember.Component.extend({
     actions: {
       hello: function(name) {
         console.log("Hello", name);
@@ -95,10 +95,10 @@ function validateAction(component, actionName) {
   And then use it in the component's template:
 
   ```handlebars
-  <!-- app-profile template -->
+  {{! app/templates/components/app-profile.hbs }}
 
   <h1>{{person.title}}</h1>
-  {{yield}} <!-- block contents -->
+  {{yield}} {{!-- block contents }}
 
   <button {{action 'hello' person.name}}>
     Say Hello to {{person.name}}
@@ -221,7 +221,8 @@ var Component = View.extend(TargetActionSupport, {
 
     ```javascript
     // app/controllers/application.js
-    App.ApplicationController = Ember.Controller.extend({
+    import Ember from 'ember';
+    export default Ember.Controller.extend({
       actions: {
         playNextSongInAlbum() {
           ...
@@ -268,11 +269,8 @@ var Component = View.extend(TargetActionSupport, {
     }
 
     if (target = get(this, 'target')) {
-      assert(
-        'The `target` for ' + this + ' (' + target +
-        ') does not have a `send` method',
-        typeof target.send === 'function'
-      );
+      Ember.assert('The `target` for ' + this + ' (' + target +
+                   ') does not have a `send` method', typeof target.send === 'function');
       target.send(...arguments);
     } else {
       if (!hasAction) {
@@ -287,11 +285,11 @@ var Component = View.extend(TargetActionSupport, {
     Example (`hasBlock` will be `false`):
 
     ```hbs
-    {{! templates/application.hbs }}
+    {{! app/templates/application.hbs }}
 
     {{foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! app/templates/components/foo-bar.js }}
     {{#if hasBlock}}
       This will not be printed, because no block was provided
     {{/if}}
@@ -300,13 +298,12 @@ var Component = View.extend(TargetActionSupport, {
     Example (`hasBlock` will be `true`):
 
     ```hbs
-    {{! templates/application.hbs }}
-
+    {{! app/templates/application.hbs }}
     {{#foo-bar}}
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! app/templates/components/foo-bar.js }}
     {{#if hasBlock}}
       This will be printed because a block was provided
       {{yield}}
@@ -325,13 +322,12 @@ var Component = View.extend(TargetActionSupport, {
     Example (`hasBlockParams` will be `false`):
 
     ```hbs
-    {{! templates/application.hbs }}
-
+    {{! app/templates/application.hbs }}
     {{#foo-bar}}
       No block parameter.
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! app/templates/components/foo-bar.js }}
     {{#if hasBlockParams}}
       This will not be printed, because no block was provided
       {{yield this}}
@@ -341,13 +337,12 @@ var Component = View.extend(TargetActionSupport, {
     Example (`hasBlockParams` will be `true`):
 
     ```hbs
-    {{! templates/application.hbs }}
-
+    {{! app/templates/application.hbs }}
     {{#foo-bar as |foo|}}
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! app/templates/components/foo-bar.js }}
     {{#if hasBlockParams}}
       This will be printed because a block was provided
       {{yield this}}
@@ -356,58 +351,6 @@ var Component = View.extend(TargetActionSupport, {
     @public
     @property hasBlockParams
     @returns Boolean
-  */
-
-  /**
-    Enables components to take a list of parameters as arguments
-
-    For example a component that takes two parameters with the names
-    `name` and `age`:
-
-    ```javascript
-    let MyComponent = Ember.Component.extend;
-    MyComponent.reopenClass({
-      positionalParams: ['name', 'age']
-    });
-    ```
-
-    It can then be invoked like this:
-
-    ```hbs
-    {{my-component "John" 38}}
-    ```
-
-    The parameters can be refered to just like named parameters:
-
-    ```hbs
-    Name: {{attrs.name}}, Age: {{attrs.age}}.
-    ```
-
-    Using a string instead of an array allows for an arbitrary number of
-    parameters:
-
-    ```javascript
-    let MyComponent = Ember.Component.extend;
-    MyComponent.reopenClass({
-      positionalParams: 'names'
-    });
-    ```
-
-    It can then be invoked like this:
-
-    ```hbs
-    {{my-component "John" "Michael" "Scott"}}
-    ```
-
-    The parameters can then be refered to by enumerating over the list:
-
-    ```hbs
-    {{#each attrs.names as |name|}}{{name}}{{/each}}
-    ```
-
-    @static
-    @public
-    @property positionalParams
   */
 });
 
