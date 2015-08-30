@@ -763,20 +763,23 @@ export var keywords = {
     // scopes; it should not be provided to user code.
 
     var to = env.hooks.getValue(hash.to) || 'default';
-    if (scope.blocks[to]) {
-      scope.blocks[to].invoke(env, params, hash.self, morph, scope, visitor);
+    var block = env.hooks.getBlock(scope, to);
+
+    if (block) {
+      block.invoke(env, params, hash.self, morph, scope, visitor);
     }
     return true;
   },
 
   hasBlock: function(morph, env, scope, params) {
     var name = env.hooks.getValue(params[0]) || 'default';
-    return !!scope.blocks[name];
+    return !!env.hooks.getBlock(scope, name);
   },
 
   hasBlockParams: function(morph, env, scope, params) {
     var name = env.hooks.getValue(params[0]) || 'default';
-    return !!(scope.blocks[name] && scope.blocks[name].arity);
+    var block = env.hooks.getBlock(scope, name);
+    return !!(block && block.arity);
   }
 
 };
@@ -968,6 +971,10 @@ export function getRoot(scope, key) {
   }
 }
 
+export function getBlock(scope, key) {
+  return scope.blocks[key];
+}
+
 export function getChild(value, key) {
   return value[key];
 }
@@ -1034,6 +1041,7 @@ export default {
   createFreshScope: createFreshScope,
   getChild: getChild,
   getRoot: getRoot,
+  getBlock: getBlock,
   getValue: getValue,
   getCellOrValue: getCellOrValue,
   keywords: keywords,
