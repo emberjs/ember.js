@@ -38,7 +38,7 @@ QUnit.test('Ember.keys is deprecated', function() {
   }, 'Ember.keys is deprecated in favor of Object.keys');
 });
 
-QUnit.test('Ember.keys is deprecated', function() {
+QUnit.test('Ember.create is deprecated', function() {
   expectDeprecation(function() {
     Ember.create(null);
   }, 'Ember.create is deprecated in favor of Object.create');
