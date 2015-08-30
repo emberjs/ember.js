@@ -7,7 +7,7 @@ function printEqual(template) {
   equal(print(ast), template);
 }
 
-QUnit.module('[htmlbars-syntax] Generation - printing');
+QUnit.module('[htmlbars-syntax] Code generation');
 
 test('ElementNode: tag', function() {
   printEqual('<h1></h1>');
@@ -74,7 +74,7 @@ test('BlockStatement: inline', function() {
 });
 
 test('UndefinedLiteral', function() {
-  const ast = b.program([b.mustache(b['undefined']())]);
+  const ast = b.program([b.mustache(b.undefined())]);
   equal(print(ast), '{{undefined}}');
 });
 

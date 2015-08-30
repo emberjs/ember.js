@@ -1,6 +1,6 @@
 import { parse, Walker } from '../htmlbars-syntax';
 
-QUnit.module('[htmlbars-syntax] Compiler plugins: AST');
+QUnit.module('[htmlbars-syntax] Plugins - AST Transforms');
 
 test('AST plugins can be provided to the compiler', function() {
   expect(1);
