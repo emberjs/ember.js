@@ -293,7 +293,9 @@ var Component = View.extend(TargetActionSupport, {
     {{! app/templates/application.hbs }}
 
     {{foo-bar}}
+    ```
 
+    ```handlebars
     {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will not be printed, because no block was provided
@@ -308,7 +310,9 @@ var Component = View.extend(TargetActionSupport, {
     {{#foo-bar}}
       Hi!
     {{/foo-bar}}
+    ```
 
+    ```handlebars
     {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will be printed because a block was provided
@@ -333,6 +337,7 @@ var Component = View.extend(TargetActionSupport, {
       No block parameter.
     {{/foo-bar}}
     ```
+
     ```handlebars
     {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
@@ -349,6 +354,7 @@ var Component = View.extend(TargetActionSupport, {
       Hi!
     {{/foo-bar}}
     ```
+
     ```handlebars
     {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
@@ -356,6 +362,7 @@ var Component = View.extend(TargetActionSupport, {
       {{yield this}}
     {{/if}}
     ```
+
     @public
     @property hasBlockParams
     @returns Boolean
