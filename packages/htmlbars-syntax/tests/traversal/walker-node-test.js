@@ -12,7 +12,7 @@ function compareWalkedNodes(html, expected) {
   deepEqual(nodes, expected);
 }
 
-QUnit.module('[htmlbars-syntax] AST Walker');
+QUnit.module('[htmlbars-syntax] (Legacy) Traversal - Walker');
 
 test('walks elements', function() {
   compareWalkedNodes('<div><li></li></div>', [

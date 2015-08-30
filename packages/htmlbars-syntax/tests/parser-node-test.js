@@ -3,7 +3,7 @@ import { parse } from "../htmlbars-syntax";
 import b from "../htmlbars-syntax/builders";
 import { astEqual } from "./support";
 
-QUnit.module("[htmlbars-syntax] HTML-based compiler (AST)");
+QUnit.module("[htmlbars-syntax] Parser - AST");
 
 test("a simple piece of content", function() {
   var t = 'some content';
