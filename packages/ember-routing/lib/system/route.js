@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // FEATURES, A, deprecate, assert, Logger
-import { assert, deprecate, info } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
@@ -133,7 +132,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       if (isEnabled('ember-routing-route-configured-query-params')) {
         if (controllerDefinedQueryParameterConfiguration.length) {
-          deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`, false, { id: 'ember-routing.controller-configured-query-params', until: '3.0.0' });
+          Ember.deprecate(`Configuring query parameters on a controller is deprecated. Migrate the query parameters configuration from the '${controllerName}' controller to the '${this.routeName}' route: ${combinedQueryParameterConfiguration}`, false, { id: 'ember-routing.controller-configured-query-params', until: '3.0.0' });
         }
       }
     } else if (hasRouterDefinedQueryParams) {
@@ -406,7 +405,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     changes or the route is exiting.
 
     ```javascript
-    App.ArticlesRoute = Ember.Route.extend({
+    // app/routes/articles.js
+    export default Ember.Route.extend({
       // ...
 
       resetController: function (controller, isExiting, transition) {
@@ -473,12 +473,24 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     the following routes will all render using the `App.PostsListView` view:
 
     ```javascript
-    var PostsList = Ember.Route.extend({
+    // app/routes/posts/list.js
+    export default Ember.Route.extend({
       viewName: 'postsList'
     });
-
-    App.PostsIndexRoute = PostsList.extend();
-    App.PostsArchivedRoute = PostsList.extend();
+    ```
+    ```javascript
+    // app/routes/posts/index.js
+    import PostsList from './list';
+    export default PostsList.extend({
+      //...
+    });
+    ```
+    ```javascript
+    // app/routes/posts/archived.js
+    import PostsList from './list';
+    export default PostsList.extend({
+      //...
+    });
     ```
 
     @property viewName
@@ -497,12 +509,24 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     template without a view.
 
     ```javascript
-    var PostsList = Ember.Route.extend({
+    // app/routes/posts/list.js
+    export default Ember.Route.extend({
       templateName: 'posts/list'
     });
-
-    App.PostsIndexRoute = PostsList.extend();
-    App.PostsArchivedRoute = PostsList.extend();
+    ```
+    ```javascript
+    // app/routes/posts/index.js
+    import PostsList from './list';
+    export default PostsList.extend({
+      //...
+    });
+    ```
+    ```javascript
+    // app/routes/posts/archived.js
+    import PostsList from './list';
+    export default PostsList.extend({
+      //...
+    });
     ```
 
     @property templateName
@@ -545,7 +569,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     half-filled out:
 
     ```javascript
-    App.ContactFormRoute = Ember.Route.extend({
+    // app/routes/contact-form.js
+    export default Ember.Route.extend({
       actions: {
         willTransition: function(transition) {
           if (this.controller.get('userHasEnteredData')) {
@@ -580,7 +605,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     state on the controller.
 
     ```javascript
-    App.LoginRoute = Ember.Route.extend({
+    // app/routes/login.js
+    export default Ember.Route.extend({
       actions: {
         didTransition: function() {
           this.controller.get('errors.base').clear();
@@ -602,7 +628,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     triggered the loading event is the second parameter.
 
     ```javascript
-    App.ApplicationRoute = Ember.Route.extend({
+    // app/routes/application.js
+    export default Ember.Route.extend({
       actions: {
         loading: function(transition, route) {
           var view = Ember.View.create({
@@ -639,7 +666,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     as well as any unhandled errors from child routes:
 
     ```javascript
-    App.AdminRoute = Ember.Route.extend({
+    // app/routes/admin.js
+    export default Ember.Route.extend({
       beforeModel: function() {
         return Ember.RSVP.reject('bad things!');
       },
@@ -668,7 +696,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     `error` handler on `ApplicationRoute`:
 
     ```javascript
-    App.ApplicationRoute = Ember.Route.extend({
+    // app/routes/application.js
+    export default Ember.Route.extend({
       actions: {
         error: function(error, transition) {
           this.controllerFor('banner').displayError(error.message);
@@ -687,10 +716,11 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     not executed when the model for the route changes.
 
     ```javascript
-    App.ApplicationRoute = Ember.Route.extend({
-      collectAnalytics: function(){
+    // app/routes/application.js
+    export default Ember.Route.extend({
+      collectAnalytics: Ember.on('activate', function(){
         collectAnalytics();
-      }.on('activate')
+      })
     });
     ```
 
@@ -704,10 +734,11 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     route. It is not executed when the model for the route changes.
 
     ```javascript
-    App.IndexRoute = Ember.Route.extend({
-      trackPageLeaveAnalytics: function(){
+    // app/routes/index.js
+    export default Ember.Route.extend({
+      trackPageLeaveAnalytics: Ember.on('deactivate', function(){
         trackPageLeaveAnalytics();
-      }.on('deactivate')
+      })
     });
     ```
 
@@ -722,7 +753,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```javascript
-    App.FormRoute = Ember.Route.extend({
+    // app/routes/form.js
+    export default Ember.Route.extend({
       actions: {
         willTransition: function(transition) {
           if (this.controller.get('userHasEnteredData') &&
@@ -798,7 +830,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
             value = copyDefaultValue(qp.defaultValue);
           }
         }
-
 
         controller._qpDelegate = get(route, '_qp.states.inactive');
 
@@ -892,12 +923,14 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     route tree.
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('blogPost', { path:':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
-
+    ```
+    ```javascript
     this.transitionTo('blogComment', aPost, aComment);
     this.transitionTo('blogComment', 1, 13);
     ```
@@ -924,18 +957,21 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     this.transitionTo({queryParams: {sort: 'date'}});
     ```
 
-    See also [replaceWith](#method_replaceWith).
+    See also 'replaceWith'.
 
     Simple Transition Example
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('index');
       this.route('secret');
       this.route('fourOhFour', { path: '*:' });
     });
-
-    App.IndexRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/index.js
+    export default Ember.Route.extend({
       actions: {
         moveToSecret: function(context) {
           if (authorized()) {
@@ -951,13 +987,16 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Transition to a nested route
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('articles', { path: '/articles' }, function() {
         this.route('new');
       });
     });
-
-    App.IndexRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/index.js
+    export default Ember.Route.extend({
       actions: {
         transitionToNewArticle: function() {
           this.transitionTo('articles.new');
@@ -969,15 +1008,18 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Multiple Models Example
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('index');
 
       this.route('breakfast', { path: ':breakfastId' }, function() {
         this.route('cereal', { path: ':cerealId', resetNamespace: true });
       });
     });
-
-    App.IndexRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/index.js
+    export default Ember.Route.extend({
       actions: {
         moveToChocolateCereal: function() {
           var cereal = { cerealId: 'ChocolateYumminess' };
@@ -992,13 +1034,16 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Nested Route with Query String Example
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('fruits', function() {
         this.route('apples');
       });
     });
-
-    App.IndexRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/index.js
+    export default Ember.Route.extend({
       actions: {
         transitionToApples: function() {
           this.transitionTo('fruits.apples', {queryParams: {color: 'red'}});
@@ -1037,7 +1082,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
     @since 1.2.0
-    @public
+    @private
    */
   intermediateTransitionTo() {
     var router = this.router;
@@ -1079,12 +1124,15 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('index');
       this.route('secret');
     });
-
-    App.SecretRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/secret.js
+    export default Ember.Route.extend({
       afterModel: function() {
         if (!authorized()){
           this.replaceWith('index');
@@ -1113,19 +1161,24 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('index');
     });
-
-    App.ApplicationRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/application.js
+    export default Ember.Route.extend({
       actions: {
         track: function(arg) {
           console.log(arg, 'was clicked');
         }
       }
     });
-
-    App.IndexRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/index.js
+    export default Ember.Route.extend({
       actions: {
         trackIfDebug: function(arg) {
           if (debug) {
@@ -1256,7 +1309,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     the server that is required to enter a route.
 
     ```javascript
-    App.PostRoute = Ember.Route.extend({
+    // app/routes/post.js
+    export default Ember.Route.extend({
       beforeModel: function(transition) {
         if (!App.Post) {
           return Ember.$.getScript('/models/post.js');
@@ -1277,7 +1331,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     hook):
 
     ```javascript
-    App.PostRoute = Ember.Route.extend({
+    // app/routes/post.js
+    export default Ember.Route.extend({
       beforeModel: function(transition) {
         if (!App.Post) {
           var self = this;
@@ -1318,7 +1373,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     resolved.
 
     ```javascript
-    App.PostsRoute = Ember.Route.extend({
+    // app/routes/posts.js
+    export default Ember.Route.extend({
       afterModel: function(posts, transition) {
         if (posts.get('length') === 1) {
           this.transitionTo('post.show', posts.get('firstObject'));
@@ -1385,7 +1441,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     this route.
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('post', { path: '/posts/:post_id' });
     });
     ```
@@ -1436,7 +1493,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```javascript
-    App.PostRoute = Ember.Route.extend({
+    // app/routes/post.js
+    export default Ember.Route.extend({
       model: function(params) {
         return this.store.find('post', params.post_id);
       }
@@ -1529,12 +1587,12 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       find(name, value) {
         var modelClass = container.lookupFactory(`model:${name}`);
 
-        assert(
+        Ember.assert(
           `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(name)} did not exist and you did not override your route's \`model\` hook.`, !!modelClass);
 
         if (!modelClass) { return; }
 
-        assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
+        Ember.assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       }
@@ -1546,11 +1604,14 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     for the URL.
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('post', { path: '/posts/:post_id' });
     });
-
-    App.PostRoute = Ember.Route.extend({
+    ```
+    ```javascript
+    // app/routes/post.js
+    export default Ember.Route.extend({
       model: function(params) {
         // the server returns `{ id: 12 }`
         return Ember.$.getJSON('/posts/' + params.post_id);
@@ -1613,7 +1674,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     `_super`:
 
     ```javascript
-    App.PhotosRoute = Ember.Route.extend({
+    // app/routes/photos.js
+    export default Ember.Route.extend({
       model: function() {
         return this.store.find('photo');
       },
@@ -1635,7 +1697,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     As an example, consider the router:
 
     ```javascript
-    App.Router.map(function() {
+    // app/router.js
+    Router.map(function() {
       this.route('post', { path: '/posts/:post_id' });
     });
     ```
@@ -1647,7 +1710,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```javascript
-    App.PostRoute = Ember.Route.extend({
+    // app/routes/post.js
+    export default Ember.Route.extend({
       setupController: function(controller, model) {
         controller.set('model', model);
       }
@@ -1672,7 +1736,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     associated route or using `generateController`.
 
     ```javascript
-    App.PostRoute = Ember.Route.extend({
+    // app/routes/post.js
+    export default Ember.Route.extend({
       setupController: function(controller, post) {
         this._super(controller, post);
         this.controllerFor('posts').set('currentPost', post);
@@ -1699,7 +1764,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    assert(`The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`, controller || _skipAssert === true);
+    Ember.assert(`The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`, controller || _skipAssert === true);
 
     return controller;
   },
@@ -1710,7 +1775,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```javascript
-    App.PostRoute = Ember.Route.extend({
+    // app/routes/post.js
+    export default Ember.Route.extend({
       setupController: function(controller, post) {
         this._super(controller, post);
         this.generateController('posts', post);
@@ -1732,28 +1798,30 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   },
 
   /**
-    Returns the resolved model of a parent (or any ancestor) route
+    Returns the model of a parent (or any ancestor) route
     in a route hierarchy.  During a transition, all routes
     must resolve a model object, and if a route
     needs access to a parent route's model in order to
     resolve a model (or just reuse the model from a parent),
     it can call `this.modelFor(theNameOfParentRoute)` to
-    retrieve it. If the ancestor route's model was a promise,
-    its resolved result is returned.
+    retrieve it.
 
     Example
 
     ```javascript
-    App.Router.map(function() {
-        this.route('post', { path: '/post/:post_id' }, function() {
-          this.route('comments', { resetNamespace: true });
-        });
+    // app/router.js
+    Router.map(function() {
+      this.route('post', { path: '/post/:post_id' }, function() {
+        this.route('comments', { resetNamespace: true });
+      });
     });
-
-    App.CommentsRoute = Ember.Route.extend({
-        afterModel: function() {
-          this.set('post', this.modelFor('post'));
-        }
+    ```
+    ```javascript
+    // app/routes/comments.js
+    export default Ember.Route.extend({
+      afterModel: function() {
+        this.set('post', this.modelFor('post'));
+      }
     });
     ```
 
@@ -1789,7 +1857,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     alternative templates.
 
     ```javascript
-    App.PostsRoute = Ember.Route.extend({
+    // app/routes/posts.js
+    export default Ember.Route.extend({
       renderTemplate: function(controller, model) {
         var favController = this.controllerFor('favoritePost');
 
@@ -1822,29 +1891,30 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     For example, given the following minimal router and templates:
 
     ```javascript
+    // app/router.js
     Router.map(function() {
       this.route('photos');
     });
     ```
 
     ```handlebars
-    <!-- application.hbs -->
+    {{! app/templates/application.hbs }}
     <div class='something-in-the-app-hbs'>
       {{outlet "anOutletName"}}
     </div>
     ```
 
     ```handlebars
-    <!-- photos.hbs -->
+    {{! app/templates/photos.hbs }}
     <h1>Photos</h1>
     ```
 
-    You can render `photos.hbs` into the `"anOutletName"` outlet of
-    `application.hbs` by calling `render`:
+    You can render `app/templates/photos.hbs` into the `"anOutletName"` outlet of
+    `app/templates/application.hbs` by calling `render`:
 
     ```javascript
-    // posts route
-    Ember.Route.extend({
+    // app/routes/posts.js
+    export default Ember.Route.extend({
       renderTemplate: function() {
         this.render('photos', {
           into: 'application',
@@ -1859,8 +1929,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
 
     ```javascript
-    // posts route
-    Ember.Route.extend({
+    // app/routes/posts.js
+    export default Ember.Route.extend({
       renderTemplate: function(controller, model){
         this.render('posts', {    // the template to render, referenced by name
           into: 'application',    // the template to render into, referenced by name
@@ -1885,7 +1955,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     For example:
 
     ```javascript
-    // router
+    // app/router.js
     Router.map(function() {
       this.route('index');
       this.route('post', { path: '/posts/:post_id' });
@@ -1893,21 +1963,21 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```javascript
-    // post route
-    PostRoute = App.Route.extend({
+    // app/routes/post.js
+    export default App.Route.extend({
       renderTemplate: function() {
         this.render(); // all defaults apply
       }
     });
     ```
 
-    The name of the `PostRoute`, defined by the router, is `post`.
+    The name of the route, defined by the router, is `post`.
 
     The following equivalent default options will be applied when
     the Route calls `render`:
 
     ```javascript
-    //
+    // ...
     this.render('post', {  // the template name associated with 'post' Route
       into: 'application', // the parent route to 'post' Route
       outlet: 'main',      // {{outlet}} and {{outlet 'main' are synonymous}},
@@ -1933,7 +2003,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   render(_name, options) {
-    assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
+    Ember.assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
     var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
@@ -1963,7 +2033,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     Example:
 
     ```javascript
-    App.ApplicationRoute = App.Route.extend({
+    // app/routes/application.js
+    export default App.Route.extend({
       actions: {
         showModal: function(evt) {
           this.render(evt.modalName, {
@@ -2158,10 +2229,10 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   }
 
   if (!ViewClass && !template && !Component) {
-    assert(`Could not find "${name}" template, view, or component.`, isDefaultRender);
+    Ember.assert(`Could not find "${name}" template, view, or component.`, isDefaultRender);
     if (LOG_VIEW_LOOKUPS) {
       var fullName = `template:${name}`;
-      info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
+      Ember.Logger.info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
     }
   }
 
@@ -2267,7 +2338,7 @@ function addQueryParamsObservers(controller, propNames) {
 }
 
 function deprecateQueryParamDefaultValuesSetOnController(controllerName, routeName, propName) {
-  deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`, false, { id: 'ember-routing.deprecate-query-param-default-values-set-on-controller', until: '3.0.0' });
+  Ember.deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`, false, { id: 'ember-routing.deprecate-query-param-default-values-set-on-controller', until: '3.0.0' });
 }
 
 export default Route;
