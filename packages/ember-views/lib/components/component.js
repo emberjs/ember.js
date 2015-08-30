@@ -39,16 +39,17 @@ function validateAction(component, actionName) {
 
   The easiest way to create an `Ember.Component` is via
   a template. If you name a template
-  `components/my-foo`, you will be able to use
-  `{{my-foo}}` in other templates, which will make
+  `components/app-profile`, you will be able to use
+  `{{app-profile}}` in other templates, which will make
   an instance of the isolated component.
 
   ```handlebars
+  {{! app/templates/application.hbs }}
   {{app-profile person=currentUser}}
   ```
 
   ```handlebars
-  <!-- app-profile template -->
+  {{! app/templates/components/app-profile.hbs }}
   <h1>{{person.title}}</h1>
   <img src={{person.avatar}}>
   <p class='signature'>{{person.signature}}</p>
@@ -60,6 +61,7 @@ function validateAction(component, actionName) {
   context of the surrounding context or outer controller:
 
   ```handlebars
+  {{! app/templates/application.hbs }}
   {{#app-profile person=currentUser}}
     <p>Admin mode</p>
     {{! Executed in the controller's context. }}
@@ -67,7 +69,7 @@ function validateAction(component, actionName) {
   ```
 
   ```handlebars
-  <!-- app-profile template -->
+  {{! app/templates/components/app-profile.hbs }}
   <h1>{{person.title}}</h1>
   {{! Executed in the components context. }}
   {{yield}} {{! block contents }}
@@ -83,7 +85,8 @@ function validateAction(component, actionName) {
   `hello` for the `app-profile` component:
 
   ```javascript
-  App.AppProfileComponent = Ember.Component.extend({
+  // app/components/app-profile.js
+  export default Ember.Component.extend({
     actions: {
       hello: function(name) {
         console.log("Hello", name);
@@ -95,10 +98,10 @@ function validateAction(component, actionName) {
   And then use it in the component's template:
 
   ```handlebars
-  <!-- app-profile template -->
+  {{! app/templates/components/app-profile.hbs }}
 
   <h1>{{person.title}}</h1>
-  {{yield}} <!-- block contents -->
+  {{yield}} {{! block contents }}
 
   <button {{action 'hello' person.name}}>
     Say Hello to {{person.name}}
@@ -221,7 +224,7 @@ var Component = View.extend(TargetActionSupport, {
 
     ```javascript
     // app/controllers/application.js
-    App.ApplicationController = Ember.Controller.extend({
+    export default Ember.Controller.extend({
       actions: {
         playNextSongInAlbum() {
           ...
@@ -286,12 +289,12 @@ var Component = View.extend(TargetActionSupport, {
 
     Example (`hasBlock` will be `false`):
 
-    ```hbs
-    {{! templates/application.hbs }}
+    ```handlebars
+    {{! app/templates/application.hbs }}
 
     {{foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will not be printed, because no block was provided
     {{/if}}
@@ -299,14 +302,14 @@ var Component = View.extend(TargetActionSupport, {
 
     Example (`hasBlock` will be `true`):
 
-    ```hbs
-    {{! templates/application.hbs }}
+    ```handlebars
+    {{! app/templates/application.hbs }}
 
     {{#foo-bar}}
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will be printed because a block was provided
       {{yield}}
@@ -324,14 +327,14 @@ var Component = View.extend(TargetActionSupport, {
 
     Example (`hasBlockParams` will be `false`):
 
-    ```hbs
-    {{! templates/application.hbs }}
-
+    ```handlebars
+    {{! app/templates/application.hbs }}
     {{#foo-bar}}
       No block parameter.
     {{/foo-bar}}
-
-    {{! templates/components/foo-bar.js }}
+    ```
+    ```handlebars
+    {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
       This will not be printed, because no block was provided
       {{yield this}}
@@ -340,14 +343,14 @@ var Component = View.extend(TargetActionSupport, {
 
     Example (`hasBlockParams` will be `true`):
 
-    ```hbs
-    {{! templates/application.hbs }}
-
+    ```handlebars
+    {{! app/templates/application.hbs }}
     {{#foo-bar as |foo|}}
       Hi!
     {{/foo-bar}}
-
-    {{! templates/components/foo-bar.js }}
+    ```
+    ```handlebars
+    {{! app/templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
       This will be printed because a block was provided
       {{yield this}}
@@ -365,21 +368,23 @@ var Component = View.extend(TargetActionSupport, {
     `name` and `age`:
 
     ```javascript
+    // app/components/my-component.js
     let MyComponent = Ember.Component.extend;
     MyComponent.reopenClass({
       positionalParams: ['name', 'age']
     });
+    export default MyComponent;
     ```
 
     It can then be invoked like this:
 
-    ```hbs
+    ```handlebars
     {{my-component "John" 38}}
     ```
 
     The parameters can be refered to just like named parameters:
 
-    ```hbs
+    ```handlebars
     Name: {{attrs.name}}, Age: {{attrs.age}}.
     ```
 
@@ -387,21 +392,23 @@ var Component = View.extend(TargetActionSupport, {
     parameters:
 
     ```javascript
+    // app/components/my-component.js
     let MyComponent = Ember.Component.extend;
     MyComponent.reopenClass({
       positionalParams: 'names'
     });
+    export default MyComponent;
     ```
 
     It can then be invoked like this:
 
-    ```hbs
+    ```handlebars
     {{my-component "John" "Michael" "Scott"}}
     ```
 
     The parameters can then be refered to by enumerating over the list:
 
-    ```hbs
+    ```handlebars
     {{#each attrs.names as |name|}}{{name}}{{/each}}
     ```
 
