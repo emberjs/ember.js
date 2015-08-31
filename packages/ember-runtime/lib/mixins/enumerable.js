@@ -635,7 +635,7 @@ export default Mixin.create({
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
     @return {Boolean} `true` if the passed function returns `true` for any item
-    @private
+    @public
   */
   any(callback, target) {
     var len = get(this, 'length');
@@ -707,7 +707,7 @@ export default Mixin.create({
     @param {Object} initialValue Initial value for the reduce
     @param {String} reducerProperty internal use only.
     @return {Object} The reduced value.
-    @private
+    @public
   */
   reduce(callback, initialValue, reducerProperty) {
     if (typeof callback !== 'function') {
@@ -732,7 +732,7 @@ export default Mixin.create({
     @param {String} methodName the name of the method
     @param {Object...} args optional arguments to pass as well.
     @return {Array} return values from calling invoke.
-    @private
+    @public
   */
   invoke(methodName, ...args) {
     var ret = Ember.A();
@@ -754,7 +754,7 @@ export default Mixin.create({
 
     @method toArray
     @return {Array} the enumerable as an array.
-    @private
+    @public
   */
   toArray() {
     var ret = Ember.A();
@@ -828,7 +828,7 @@ export default Mixin.create({
 
     @method uniq
     @return {Ember.Enumerable}
-    @private
+    @public
   */
   uniq() {
     var ret = Ember.A();
