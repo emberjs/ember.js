@@ -24,8 +24,6 @@ import RouterDSL from 'ember-routing/system/dsl';
 import Router from 'ember-routing/system/router';
 import Route from 'ember-routing/system/route';
 
-import 'ember-routing/initializers/routing-service';
-
 Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;
 Ember.HashLocation = HashLocation;
