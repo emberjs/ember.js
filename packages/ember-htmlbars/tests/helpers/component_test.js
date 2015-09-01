@@ -9,6 +9,7 @@ import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import computed from 'ember-metal/computed';
+import isEnabled from 'ember-metal/features';
 
 var view, registry, container;
 
@@ -282,6 +283,75 @@ QUnit.test('component with quoted param for non-existent component', function() 
     runAppend(view);
   }, /HTMLBars error: Could not find component named "does-not-exist"./);
 });
+
+if (isEnabled('ember-htmlbars-component-else')) {
+  QUnit.test('component helper renders {{else}} block when component lookup fails', function() {
+    view = EmberView.create({
+      container,
+      template: compile('{{#component "does-not-exist"}}{{else}}Nope, I just can\'t{{/component}}')
+    });
+    runAppend(view);
+    equal(view.$().text(), 'Nope, I just can\'t', 'component lookup failed and rendered {{else}} block');
+  });
+
+  QUnit.test('component helper renders {{else}} block with bound context', function() {
+    view = EmberView.create({
+      container,
+      firstName: 'Xavier',
+      template: compile('{{#component "does-not-exist"}}{{else}}Hey {{view.firstName}}!{{/component}}')
+    });
+    runAppend(view);
+    equal(view.$().text(), 'Hey Xavier!', 'component lookup failed and rendered {{else}} block');
+  });
+
+  QUnit.test('component with unquoted param resolving to a component, then non-existent component, renders {{else}} when available', function() {
+    registry.register('component:yep-nope', Component.extend());
+    registry.register('template:components/yep-nope', compile('Wow, such {{attrs.such}}, much {{yield}}!'));
+    view = EmberView.create({
+      container,
+      dynamicComponent: 'yep-nope',
+      such: 'components',
+      template: compile('{{#component view.dynamicComponent such=view.such}}awesome{{else}}no such component{{/component}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'Wow, such components, much awesome!', 'component was looked up and rendered');
+
+    run(function() {
+      set(view, 'dynamicComponent', undefined);
+    });
+
+    equal(view.$().text(), '', 'component correctly deals with falsey values set post-render');
+
+    run(function() {
+      set(view, 'dynamicComponent', 'oops-fail');
+    });
+
+    equal(view.$().text(), 'no such component', 'component correctly renders {{else}} block with failed component lookup set post-render');
+  });
+
+  QUnit.test('component helper can move out of {{else}} when component can be found', function() {
+    registry.register('component:yep-nope', Component.extend());
+    registry.register('template:components/yep-nope', compile('Wow, such {{attrs.such}}, much {{yield}}!'));
+    view = EmberView.create({
+      container,
+      dynamicComponent: 'nope-nope',
+      such: 'components',
+      template: compile('{{#component view.dynamicComponent such=view.such}}awesome{{else}}no such component{{/component}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'no such component', 'component correctly renders {{else}} block with failed component lookup set post-render');
+
+    run(function() {
+      set(view, 'dynamicComponent', 'yep-nope');
+    });
+
+    equal(view.$().text(), 'Wow, such components, much awesome!', 'component was looked up and rendered');
+  });
+}
 
 QUnit.test('component helper properly invalidates hash params inside an {{each}} invocation #11044', function() {
   registry.register('component:foo-bar', Component.extend({
