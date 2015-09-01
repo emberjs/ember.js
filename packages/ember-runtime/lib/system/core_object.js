@@ -47,7 +47,9 @@ import {
   K
 } from 'ember-metal/core';
 import { validatePropertyInjections } from 'ember-runtime/inject';
+import { symbol } from 'ember-metal/utils';
 
+export let POST_INIT = symbol('POST_INIT');
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
@@ -178,6 +180,8 @@ function makeCtor() {
       this.init.apply(this, args);
     }
 
+    this[POST_INIT]();
+
     m.proto = proto;
     finishChains(this);
     sendEvent(this, 'init');
@@ -252,6 +256,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   init() {},
+
+  [POST_INIT]: function() { },
+
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);
     //this[property.name] = property.descriptor.value;

@@ -33,6 +33,7 @@ import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import { deprecateProperty } from 'ember-metal/deprecate_property';
+import { POST_INIT } from 'ember-runtime/system/core_object';
 
 function K() { return this; }
 
@@ -1311,12 +1312,24 @@ var View = CoreView.extend(
       this._viewRegistry = View.views;
     }
 
-    this.renderer.componentInitAttrs(this, this.attrs || {});
-
     Ember.assert(
       'Using a custom `.render` function is no longer supported.',
       !this.render
     );
+  },
+
+  /*
+    This is a special hook implemented in CoreObject, that allows Views/Components
+    to have a way to ensure that `init` fires before `didInitAttrs` / `didReceiveAttrs`
+    (so that `this._super` in init does not trigger `didReceiveAttrs` before the classes
+    own `init` is finished).
+
+    @method __postInitInitialization
+    @private
+   */
+  [POST_INIT]: function() {
+    this._super(...arguments);
+    this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
   __defineNonEnumerable(property) {
