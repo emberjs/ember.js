@@ -4,15 +4,45 @@
 */
 
 import { assert } from 'ember-metal/debug';
-import merge from 'ember-metal/merge';
 import { symbol } from 'ember-metal/utils';
 import ProxyStream from 'ember-metal/streams/proxy-stream';
+import BasicStream from 'ember-metal/streams/stream';
 import { isStream } from 'ember-metal/streams/utils';
-import Stream from 'ember-metal/streams/stream';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { INVOKE, ACTION } from 'ember-routing-htmlbars/keywords/closure-action';
 
 export let MUTABLE_REFERENCE = symbol('MUTABLE_REFERENCE');
+
+let MutStream = ProxyStream.extend({
+  init(stream) {
+    this.label = `(mut ${stream.label})`;
+    this.path = stream.path;
+    this.sourceDep = this.addMutableDependency(stream);
+    this[MUTABLE_REFERENCE] = true;
+  },
+
+  cell() {
+    let source = this;
+    let value = source.value();
+
+    if (value && value[ACTION]) {
+      return value;
+    }
+
+    let val = {
+      value,
+      update(val) {
+        source.setValue(val);
+      }
+    };
+
+    val[MUTABLE_CELL] = true;
+    return val;
+  },
+  [INVOKE](val) {
+    this.setValue(val);
+  }
+});
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
@@ -67,15 +97,27 @@ export function privateMut(morph, env, scope, originalParams, hash, template, in
   return true;
 }
 
+let LiteralStream = BasicStream.extend({
+  init(literal) {
+    this.literal = literal;
+    this.label = `(literal ${literal})`;
+  },
+
+  compute() {
+    return this.literal;
+  },
+
+  setValue(val) {
+    this.literal = val;
+    this.notify();
+  }
+});
+
 function mutParam(read, stream, internal) {
   if (internal) {
     if (!isStream(stream)) {
       let literal = stream;
-      stream = new Stream(function() { return literal; }, `(literal ${literal})`);
-      stream.setValue = function(newValue) {
-        literal = newValue;
-        stream.notify();
-      };
+      stream = new LiteralStream(literal);
     }
   } else {
     assert('You can only pass a path to mut', isStream(stream));
@@ -87,36 +129,3 @@ function mutParam(read, stream, internal) {
 
   return new MutStream(stream);
 }
-
-function MutStream(stream) {
-  this.init(`(mut ${stream.label})`);
-  this.path = stream.path;
-  this.sourceDep = this.addMutableDependency(stream);
-  this[MUTABLE_REFERENCE] = true;
-}
-
-MutStream.prototype = Object.create(ProxyStream.prototype);
-
-merge(MutStream.prototype, {
-  cell() {
-    let source = this;
-    let value = source.value();
-
-    if (value && value[ACTION]) {
-      return value;
-    }
-
-    let val = {
-      value,
-      update(val) {
-        source.setValue(val);
-      }
-    };
-
-    val[MUTABLE_CELL] = true;
-    return val;
-  },
-  [INVOKE](val) {
-    this.setValue(val);
-  }
-});

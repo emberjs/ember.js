@@ -1,23 +1,28 @@
-import Stream from 'ember-metal/streams/stream';
+import BasicStream from 'ember-metal/streams/stream';
 import ProxyStream from 'ember-metal/streams/proxy-stream';
 
-var source, value;
+var source;
 
 QUnit.module('ProxyStream', {
   setup() {
-    value = 'zlurp';
+    let Source = BasicStream.extend({
+      init(val) {
+        this.val = val;
+      },
 
-    source = new Stream(function() {
-      return value;
+      compute() {
+        return this.val;
+      },
+
+      setValue(value) {
+        this.val = value;
+        this.notify();
+      }
     });
 
-    source.setValue = function(_value) {
-      value = _value;
-      this.notify();
-    };
+    source = new Source('zlurp');
   },
   teardown() {
-    value = undefined;
     source = undefined;
   }
 });
@@ -31,7 +36,7 @@ QUnit.test('supports a stream argument', function() {
 });
 
 QUnit.test('supports a non-stream argument', function() {
-  var stream = new ProxyStream(value);
+  var stream = new ProxyStream('zlurp');
   equal(stream.value(), 'zlurp');
 
   stream.setValue('blorg');

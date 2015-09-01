@@ -149,6 +149,10 @@ setDebugFunction('runInDebug', function runInDebug(func) {
   func();
 });
 
+setDebugFunction('debugSeal', function debugSeal(obj) {
+  Object.seal(obj);
+});
+
 setDebugFunction('deprecate', _deprecate);
 setDebugFunction('warn', _warn);
 /**

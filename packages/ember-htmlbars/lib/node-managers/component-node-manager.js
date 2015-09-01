@@ -8,7 +8,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import { readArray } from 'ember-metal/streams/utils';
 import { symbol } from 'ember-metal/utils';
 

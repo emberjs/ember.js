@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Stream from 'ember-metal/streams/stream';
+import { wrap } from 'ember-metal/streams/stream';
 import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 export default function bindLocal(env, scope, key, value) {
@@ -14,7 +14,7 @@ export default function bindLocal(env, scope, key, value) {
       existing.setSource(value);
     }
   } else {
-    let newValue = Stream.wrap(value, ProxyStream, key);
+    let newValue = wrap(value, ProxyStream, key);
     scope.bindLocal(key, newValue);
   }
 }

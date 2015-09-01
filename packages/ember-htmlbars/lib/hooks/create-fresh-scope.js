@@ -1,4 +1,5 @@
 import ProxyStream from 'ember-metal/streams/proxy-stream';
+import EmptyObject from 'ember-metal/empty_object';
 
 /*
   Ember's implementation of HTMLBars creates an enriched scope.
@@ -50,13 +51,13 @@ import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 function Scope(parent) {
   this._self = null;
-  this._blocks = {};
+  this._blocks = null;
   this._component = null;
   this._view = null;
   this._attrs = null;
-  this._locals = {};
-  this._localPresent = {};
-  this.overrideController = false;
+  this._locals = null;
+  this._localPresent = null;
+  this.overrideController = null;
   this.parent = parent;
 }
 
@@ -81,14 +82,17 @@ proto.updateSelf = function(self, key) {
 };
 
 proto.getBlock = function(name) {
+  if (!this._blocks) { return this.parent.getBlock(name); }
   return this._blocks[name] || this.parent.getBlock(name);
 };
 
 proto.hasBlock = function(name) {
+  if (!this._blocks) { return this.parent.hasBlock(name); }
   return !!(this._blocks[name] || this.parent.hasBlock(name));
 };
 
 proto.bindBlock = function(name, block) {
+  if (!this._blocks) { this._blocks = new EmptyObject(); }
   this._blocks[name] = block;
 };
 
@@ -117,18 +121,25 @@ proto.bindAttrs = function(attrs) {
 };
 
 proto.hasLocal = function(name) {
+  if (!this._localPresent) { return this.parent.hasLocal(name); }
   return this._localPresent[name] || this.parent.hasLocal(name);
 };
 
 proto.hasOwnLocal = function(name) {
-  return this._localPresent[name];
+  return this._localPresent && this._localPresent[name];
 };
 
 proto.getLocal = function(name) {
+  if (!this._localPresent) { return this.parent.getLocal(name); }
   return this._localPresent[name] ? this._locals[name] : this.parent.getLocal(name);
 };
 
 proto.bindLocal = function(name, value) {
+  if (!this._localPresent) {
+    this._localPresent = new EmptyObject();
+    this._locals = new EmptyObject();
+  }
+
   this._localPresent[name] = true;
   this._locals[name] = value;
 };

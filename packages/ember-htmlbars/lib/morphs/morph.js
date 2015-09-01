@@ -53,7 +53,7 @@ proto.cleanup = function() {
 };
 
 proto.didRender = function(env, scope) {
-  env.renderedNodes[this.guid] = true;
+  env.renderedNodes.add(this);
 };
 
 export default EmberMorph;

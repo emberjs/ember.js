@@ -627,7 +627,7 @@ export default Mixin.create({
   },
 
   scheduleRevalidate(node, label, manualRerender) {
-    if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
+    if (node && !this._dispatching && this.env.renderedNodes.has(node)) {
       if (manualRerender) {
         deprecate(
           `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,

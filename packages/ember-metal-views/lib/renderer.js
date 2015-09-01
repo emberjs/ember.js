@@ -98,9 +98,31 @@ Renderer.prototype.ensureViewNotRendering =
     }
   };
 
+export function MorphSet() {
+  this.morphs = [];
+}
+
+MorphSet.prototype.add = function(morph) {
+  this.morphs.push(morph);
+  morph.seen = true;
+};
+
+MorphSet.prototype.has = function(morph) {
+  return morph.seen;
+};
+
+MorphSet.prototype.clear = function() {
+  let morphs = this.morphs;
+  for (let i = 0, l = morphs.length; i < l; i++) {
+    morphs[i].seen = false;
+  }
+
+  this.morphs = [];
+};
+
 Renderer.prototype.clearRenderedViews =
   function Renderer_clearRenderedViews(env) {
-    env.renderedNodes = {};
+    env.renderedNodes.clear();
     env.renderedViews.length = 0;
   };
 

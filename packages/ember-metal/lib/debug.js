@@ -5,7 +5,8 @@ export let debugFunctions = {
   debug() {},
   deprecate() {},
   deprecateFunc(...args) { return args[args.length - 1]; },
-  runInDebug() {}
+  runInDebug() {},
+  debugSeal() {}
 };
 
 export function getDebugFunction(name) {
@@ -42,4 +43,8 @@ export function deprecateFunc() {
 
 export function runInDebug() {
   return debugFunctions.runInDebug.apply(undefined, arguments);
+}
+
+export function debugSeal() {
+  return debugFunctions.debugSeal.apply(undefined, arguments);
 }

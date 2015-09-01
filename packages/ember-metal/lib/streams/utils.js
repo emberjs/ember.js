@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import Stream from './stream';
+import BasicStream, { Stream } from './stream';
 
 /*
  Check whether an object is a stream or not
@@ -156,6 +156,26 @@ export function scanHash(hash) {
   return containsStream;
 }
 
+let ConcatStream = BasicStream.extend({
+  init(array, separator) {
+    this.array = array;
+    this.separator = separator;
+
+    // used by angle bracket components to detect an attribute was provided
+    // as a string literal
+    this.isConcat = true;
+  },
+
+  label() {
+    let labels = labelsFor(this.array);
+    return `concat([${labels.join(', ')}]; separator=${inspect(this.separator)})`;
+  },
+
+  compute() {
+    return concat(readArray(this.array), this.separator);
+  }
+});
+
 /*
  Join an array, with any streams replaced by their current values
 
@@ -174,21 +194,12 @@ export function concat(array, separator) {
   // subscribing to streams until the value() is called.
   var hasStream = scanArray(array);
   if (hasStream) {
-    var i, l;
-    var stream = new Stream(function() {
-      return concat(readArray(array), separator);
-    }, function() {
-      var labels = labelsFor(array);
-      return `concat([${labels.join(', ')}]; separator=${inspect(separator)})`;
-    });
+    let stream = new ConcatStream(array, separator);
 
-    for (i = 0, l = array.length; i < l; i++) {
-      stream.addDependency(array[i]);
+    for (let i = 0, l = array.length; i < l; i++) {
+      addDependency(stream, array[i]);
     }
 
-    // used by angle bracket components to detect an attribute was provided
-    // as a string literal
-    stream.isConcat = true;
     return stream;
   } else {
     return array.join(separator);

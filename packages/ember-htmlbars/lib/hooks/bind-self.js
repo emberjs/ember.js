@@ -3,6 +3,7 @@
 @submodule ember-htmlbars
 */
 
+import _Ember from 'ember-metal';
 import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 export default function bindSelf(env, scope, _self) {
@@ -12,12 +13,19 @@ export default function bindSelf(env, scope, _self) {
     let { controller } = self;
     self = self.self;
 
-    scope.bindLocal('controller', newStream(controller || self));
+    if (!!_Ember.ENV._LEGACY_CONTROLLER_SUPPORT) {
+      scope.bindLocal('controller', newStream(controller || self));
+    }
   }
 
   if (self && self.isView) {
-    scope.bindLocal('view', newStream(self, 'view'));
-    scope.bindLocal('controller', newStream(self, '').getKey('controller'));
+    if (!!_Ember.ENV._LEGACY_VIEW_SUPPORT) {
+      scope.bindLocal('view', newStream(self, 'view'));
+    }
+
+    if (!!_Ember.ENV._LEGACY_CONTROLLER_SUPPORT) {
+      scope.bindLocal('controller', newStream(self, '').getKey('controller'));
+    }
 
     let selfStream = newStream(self, '');
 
@@ -33,8 +41,10 @@ export default function bindSelf(env, scope, _self) {
   let selfStream = newStream(self, '');
   scope.bindSelf(selfStream);
 
-  if (!scope.hasLocal('controller')) {
-    scope.bindLocal('controller', selfStream);
+  if (!!_Ember.ENV.LEGACY_CONTROLLER_SUPPORT) {
+    if (!scope.hasLocal('controller')) {
+      scope.bindLocal('controller', selfStream);
+    }
   }
 }
 
