@@ -48,7 +48,7 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  assert('calling set on destroyed object', !obj.isDestroyed);
+  assert('calling set on destroyed object: %@.%@ = %@'.fmt(obj, keyName, value), !obj.isDestroyed);
 
   if (desc) {
     desc.set(obj, keyName, value);
