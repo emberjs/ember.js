@@ -3,8 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import ProxyStream from 'ember-metal/streams/proxy-stream';
-import subscribe from 'ember-htmlbars/utils/subscribe';
+import newStream from 'ember-htmlbars/utils/new-stream';
 
 export default function bindSelf(env, scope, _self) {
   let self = _self;
@@ -34,10 +33,4 @@ export default function bindSelf(env, scope, _self) {
   if (!scope.locals.controller) {
     scope.locals.controller = scope.self;
   }
-}
-
-function newStream(scope, key, newValue, renderNode, isSelf) {
-  var stream = new ProxyStream(newValue, isSelf ? '' : key);
-  if (renderNode) { subscribe(renderNode, scope, stream); }
-  scope[key] = stream;
 }
