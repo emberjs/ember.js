@@ -25,7 +25,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 }
 
 styles.forEach(style => {
-  function invoke(name, hash) {
+  function invoke(name, hash = {}) {
     if (style.name === 'curly') {
       let attrs = Object.keys(hash).map(k => `${k}=${val(hash[k])}`).join(' ');
       return `{{${name} ${attrs}}}`;
@@ -87,6 +87,7 @@ styles.forEach(style => {
           this.label = label;
           components[label] = this;
           this._super.apply(this, arguments);
+          pushHook(label, 'init');
         },
 
         didInitAttrs(options) {
@@ -147,9 +148,9 @@ styles.forEach(style => {
     let bottomAttrs = { website: 'tomdale.net' };
 
     deepEqual(hooks, [
-      hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
-      hook('middle', 'didInitAttrs', { attrs: middleAttrs }), hook('middle', 'didReceiveAttrs', { newAttrs: middleAttrs }), hook('middle', 'willRender'),
-      hook('bottom', 'didInitAttrs', { attrs: bottomAttrs }), hook('bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }), hook('bottom', 'willRender'),
+      hook('top', 'init'), hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
+      hook('middle', 'init'), hook('middle', 'didInitAttrs', { attrs: middleAttrs }), hook('middle', 'didReceiveAttrs', { newAttrs: middleAttrs }), hook('middle', 'willRender'),
+      hook('bottom', 'init'), hook('bottom', 'didInitAttrs', { attrs: bottomAttrs }), hook('bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }), hook('bottom', 'willRender'),
       hook('bottom', 'didInsertElement'), hook('bottom', 'didRender'),
       hook('middle', 'didInsertElement'), hook('middle', 'didRender'),
       hook('top', 'didInsertElement'), hook('top', 'didRender')
@@ -238,6 +239,7 @@ styles.forEach(style => {
           this.label = label;
           components[label] = this;
           this._super.apply(this, arguments);
+          pushHook(label, 'init');
         },
 
         didInitAttrs(options) {
@@ -298,9 +300,9 @@ styles.forEach(style => {
     let bottomAttrs = { twitterMiddle: '@tomdale' };
 
     deepEqual(hooks, [
-      hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
-      hook('middle', 'didInitAttrs', { attrs: middleAttrs }), hook('middle', 'didReceiveAttrs', { newAttrs: middleAttrs }), hook('middle', 'willRender'),
-      hook('bottom', 'didInitAttrs', { attrs: bottomAttrs }), hook('bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }), hook('bottom', 'willRender'),
+      hook('top', 'init'), hook('top', 'didInitAttrs', { attrs: topAttrs }), hook('top', 'didReceiveAttrs', { newAttrs: topAttrs }), hook('top', 'willRender'),
+      hook('middle', 'init'), hook('middle', 'didInitAttrs', { attrs: middleAttrs }), hook('middle', 'didReceiveAttrs', { newAttrs: middleAttrs }), hook('middle', 'willRender'),
+      hook('bottom', 'init'), hook('bottom', 'didInitAttrs', { attrs: bottomAttrs }), hook('bottom', 'didReceiveAttrs', { newAttrs: bottomAttrs }), hook('bottom', 'willRender'),
       hook('bottom', 'didInsertElement'), hook('bottom', 'didRender'),
       hook('middle', 'didInsertElement'), hook('middle', 'didRender'),
       hook('top', 'didInsertElement'), hook('top', 'didRender')
@@ -383,6 +385,30 @@ styles.forEach(style => {
     run(() => {
       component.destroy();
     });
+  });
+
+  QUnit.test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {
+    assert.expect(1);
+
+    registry.register('component:the-thing', style.class.extend({
+      init() {
+        this._super(...arguments);
+        this.propertySetInInit = 'init fired!';
+      },
+
+      didReceiveAttrs() {
+        this._super(...arguments);
+
+        assert.equal(this.propertySetInInit, 'init fired!', 'init has already finished before didReceiveAttrs');
+      }
+    }));
+
+    view = EmberView.extend({
+      template: compile(invoke('the-thing')),
+      container: container
+    }).create();
+
+    runAppend(view);
   });
 });
 
