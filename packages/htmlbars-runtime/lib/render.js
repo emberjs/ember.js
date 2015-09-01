@@ -1,4 +1,3 @@
-import { forEach } from "../htmlbars-util/array-utils";
 import { visitChildren } from "../htmlbars-util/morph-utils";
 import ExpressionVisitor from "./node-visitor";
 import { AlwaysDirtyVisitor } from "./node-visitor";
@@ -28,6 +27,13 @@ export default function render(template, env, scope, options) {
   return renderResult;
 }
 
+export function RenderOptions(renderNode, self, blockArguments, contextualElement) {
+  this.renderNode = renderNode || null;
+  this.self = self;
+  this.blockArguments = blockArguments || null;
+  this.contextualElement = contextualElement || null;
+}
+
 function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent) {
   this.root = rootNode;
   this.fragment = fragment;
@@ -38,8 +44,6 @@ function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment,
   this.env = env;
   this.scope = scope;
   this.shouldSetContent = shouldSetContent;
-
-  this.bindScope();
 
   if (options.self !== undefined) { this.bindSelf(options.self); }
   if (options.blockArguments !== undefined) { this.bindLocals(options.blockArguments); }
@@ -61,7 +65,7 @@ RenderResult.build = function(env, scope, template, options, contextualElement) 
   } else {
     rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
     ownerNode = rootNode;
-    initializeNode(rootNode, ownerNode);
+    rootNode.ownerNode = ownerNode;
     shouldSetContent = false;
   }
 
@@ -182,9 +186,11 @@ export function attachAttributes(attributes) {
 }
 
 RenderResult.prototype.initializeNodes = function(ownerNode) {
-  forEach(this.root.childNodes, function(node) {
-    initializeNode(node, ownerNode);
-  });
+  let childNodes = this.root.childNodes;
+
+  for (let i=0, l=childNodes.length; i<l; i++) {
+    childNodes[i].ownerNode = ownerNode;
+  }
 };
 
 RenderResult.prototype.render = function() {

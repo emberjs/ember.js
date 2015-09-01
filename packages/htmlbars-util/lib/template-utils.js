@@ -1,4 +1,5 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
+import { RenderOptions } from "../htmlbars-runtime/render";
 
 export function RenderState(renderNode, morphList) {
   // The morph list that is no longer needed and can be
@@ -36,25 +37,30 @@ Block.prototype.invoke = function(env, blockArguments, self, renderNode, parentS
   if (renderNode.lastResult) {
     renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
   } else {
-    let options = { renderState: new RenderState(renderNode) };
-    let { render, template, blockOptions: { scope } } = this;
-    let shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
-
-    env.hooks.bindShadowScope(env, parentScope, shadowScope, this.blockOptions.options);
-
-    if (self !== undefined) {
-      env.hooks.bindSelf(env, shadowScope, self);
-    } else if (this.blockOptions.self !== undefined) {
-      env.hooks.bindSelf(env, shadowScope, this.blockOptions.self);
-    }
-
-    bindBlocks(env, shadowScope, this.blockOptions.yieldTo);
-
-    renderAndCleanup(renderNode, env, options, null, function() {
-      options.renderState.morphToClear = null;
-      render(template, env, shadowScope, { renderNode, blockArguments });
-    });
+    this._firstRender(env, blockArguments, self, renderNode, parentScope);
   }
+};
+
+Block.prototype._firstRender = function(env, blockArguments, self, renderNode, parentScope) {
+  let options = { renderState: new RenderState(renderNode) };
+  let { render, template, blockOptions: { scope } } = this;
+  let shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
+
+  env.hooks.bindShadowScope(env, parentScope, shadowScope, this.blockOptions.options);
+
+  if (self !== undefined) {
+    env.hooks.bindSelf(env, shadowScope, self);
+  } else if (this.blockOptions.self !== undefined) {
+    env.hooks.bindSelf(env, shadowScope, this.blockOptions.self);
+  }
+
+  bindBlocks(env, shadowScope, this.blockOptions.yieldTo);
+
+  renderAndCleanup(renderNode, env, options, null, function() {
+    options.renderState.morphToClear = null;
+    let renderOptions = new RenderOptions(renderNode, undefined, blockArguments);
+    render(template, env, shadowScope, renderOptions);
+  });
 };
 
 export function blockFor(render, template, blockOptions) {
