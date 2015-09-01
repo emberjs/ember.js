@@ -181,8 +181,8 @@ export function concat(array, separator) {
       return `concat([${labels.join(', ')}]; separator=${inspect(separator)})`;
     });
 
-    for (i = 0, l=array.length; i < l; i++) {
-      subscribe(array[i], stream.notify, stream);
+    for (i = 0, l = array.length; i < l; i++) {
+      stream.addDependency(array[i]);
     }
 
     // used by angle bracket components to detect an attribute was provided
