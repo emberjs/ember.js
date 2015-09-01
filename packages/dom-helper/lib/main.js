@@ -412,7 +412,7 @@ prototype.cloneNode = function(element, deep){
 prototype.AttrMorphClass = AttrMorph;
 
 prototype.createAttrMorph = function(element, attrName, namespace){
-  return new this.AttrMorphClass(element, attrName, this, namespace);
+  return new this.AttrMorphClass.create(element, attrName, this, namespace);
 };
 
 prototype.ElementMorphClass = ElementMorph;
