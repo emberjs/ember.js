@@ -21,6 +21,7 @@ function HTMLBarsMorph(domHelper, contextualElement) {
   this.childNodes = null;
   this.rendered = false;
   this.guid = "range" + guid++;
+  this.seen = false;
 }
 
 HTMLBarsMorph.empty = function(domHelper, contextualElement) {

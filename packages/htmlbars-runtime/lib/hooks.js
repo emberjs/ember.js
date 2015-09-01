@@ -1,4 +1,4 @@
-import render from "./render";
+import render, { RenderOptions } from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { keyLength, shallowCopy } from "../htmlbars-util/object-utils";
@@ -88,11 +88,10 @@ export function wrap(template) {
     render: function(self, env, options, blockArguments) {
       var scope = env.hooks.createFreshScope();
 
-      options = options || {};
-      options.self = self;
-      options.blockArguments = blockArguments;
+      let contextualElement = options && options.contextualElement;
+      let renderOptions = new RenderOptions(null, self, blockArguments, contextualElement);
 
-      return render(template, env, scope, options);
+      return render(template, env, scope, renderOptions);
     }
   };
 }
@@ -155,7 +154,8 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
-    render(template, env, scope, { renderNode: morph, self: self, blockArguments: blockArguments });
+    let renderOptions = new RenderOptions(morph, self, blockArguments);
+    render(template, env, scope, renderOptions);
   };
 }
 

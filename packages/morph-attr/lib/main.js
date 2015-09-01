@@ -44,10 +44,26 @@ var UNSET = { unset: true };
 
 var guid = 1;
 
-function AttrMorph(element, attrName, domHelper, namespace) {
+AttrMorph.create = function(element, attrName, domHelper, namespace) {
+  let ns = namespace !== undefined ? namespace : getAttrNamespace(attrName);
+
+  if (ns) {
+    return new AttributeNSAttrMorph(element, attrName, domHelper, ns);
+  } else {
+    let { normalized, type } = normalizeProperty(element, attrName);
+
+    if (element.namespaceURI === svgNamespace || attrName === 'style' || type === 'attr') {
+      return new AttributeAttrMorph(element, normalized, domHelper);
+    } else {
+      return new PropertyAttrMorph(element, normalized, domHelper);
+    }
+  }
+};
+
+function AttrMorph(element, attrName, domHelper) {
   this.element = element;
   this.domHelper = domHelper;
-  this.namespace = namespace !== undefined ? namespace : getAttrNamespace(attrName);
+  this.attrName = attrName;
   this.state = {};
   this.isDirty = false;
   this.isSubtreeDirty = false;
@@ -59,31 +75,19 @@ function AttrMorph(element, attrName, domHelper, namespace) {
   this.linkedParams = null;
   this.linkedResult = null;
   this.guid = "attr" + guid++;
+  this.seen = false;
   this.ownerNode = null;
   this.rendered = false;
   this._renderedInitially = false;
-
-
-  if (this.namespace) {
-    this._update = updateAttributeNS;
-    this._get = getAttributeNS;
-    this.attrName = attrName;
-  } else {
-    var { normalized, type } = normalizeProperty(this.element, attrName);
-
-    if (element.namespaceURI === svgNamespace || attrName === 'style' || type === 'attr') {
-      this._update = updateAttribute;
-      this._get = getAttribute;
-      this.attrName = normalized ;
-    } else {
-      this._update = updateProperty;
-      this._get = getProperty;
-      this.attrName = normalized ;
-    }
-  }
+  this.didInit();
 }
 
+AttrMorph.prototype.didInit = function() {};
+AttrMorph.prototype.willSetContent = function() {};
+
 AttrMorph.prototype.setContent = function (value) {
+  this.willSetContent(value);
+
   if (this.lastValue === value) { return; }
   this.lastValue = value;
 
@@ -111,6 +115,31 @@ AttrMorph.prototype.destroy = function() {
   this.element = null;
   this.domHelper = null;
 };
+
+function PropertyAttrMorph(element, attrName, domHelper) {
+  AttrMorph.call(this, element, attrName, domHelper);
+}
+
+PropertyAttrMorph.prototype = Object.create(AttrMorph.prototype);
+PropertyAttrMorph.prototype._update = updateProperty;
+PropertyAttrMorph.prototype._get = getProperty;
+
+function AttributeNSAttrMorph(element, attrName, domHelper, namespace) {
+  AttrMorph.call(this, element, attrName, domHelper);
+  this.namespace = namespace;
+}
+
+AttributeNSAttrMorph.prototype = Object.create(AttrMorph.prototype);
+AttributeNSAttrMorph.prototype._update = updateAttributeNS;
+AttributeNSAttrMorph.prototype._get = getAttributeNS;
+
+function AttributeAttrMorph(element, attrName, domHelper) {
+  AttrMorph.call(this, element, attrName, domHelper);
+}
+
+AttributeAttrMorph.prototype = Object.create(AttrMorph.prototype);
+AttributeAttrMorph.prototype._update = updateAttribute;
+AttributeAttrMorph.prototype._get = getAttribute;
 
 export default AttrMorph;
 
