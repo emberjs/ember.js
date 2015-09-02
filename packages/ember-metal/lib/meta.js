@@ -113,12 +113,12 @@ function inheritedMap(name, Meta) {
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
-        for (let key in map) {
+        Object.keys(map).forEach(key => {
           if (!seen[key]) {
             seen[key] = true;
             fn(key, map[key]);
           }
-        }
+        });
       }
       pointer = pointer.parent;
     }
@@ -211,12 +211,12 @@ Meta.prototype._forEachIn = function(key, subkey, fn) {
     if (map) {
       let innerMap = map[subkey];
       if (innerMap) {
-        for (let innerKey in innerMap) {
-          if (!seen[innerKey]) {
-            seen[innerKey] = true;
-            fn(innerKey, innerMap[innerKey]);
+        Object.keys(innerMap).forEach(key => {
+          if (!seen[key]) {
+            seen[key] = true;
+            fn(key, innerMap[key]);
           }
-        }
+        });
       }
     }
     pointer = pointer.parent;
