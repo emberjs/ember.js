@@ -12,17 +12,23 @@ export function visitChildren(nodes, callback) {
     if (node.childNodes) {
       nodes.push.apply(nodes, node.childNodes);
     } else if (node.firstChildMorph) {
-      var current = node.firstChildMorph;
+      let current = node.firstChildMorph;
 
       while (current) {
         nodes.push(current);
         current = current.nextMorph;
       }
     } else if (node.morphList) {
-      nodes.push(node.morphList);
+      let current = node.morphList.firstChildMorph;
+
+      while (current) {
+        nodes.push(current);
+        current = current.nextMorph;
+      }
     }
   }
 }
+
 
 export function validateChildMorphs(env, morph, visitor) {
   var morphList = morph.morphList;
