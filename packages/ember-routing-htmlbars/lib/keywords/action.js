@@ -182,7 +182,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   supply an `on` option to the helper to specify a different DOM event name:
 
   ```handlebars
-  <div {{action "anActionName" on="double-click"}}>
+  <div {{action "anActionName" on="doubleClick"}}>
     click me
   </div>
   ```
