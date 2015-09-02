@@ -43,6 +43,10 @@ ROOT.__hasSuper = false;
 var REQUIRED;
 var a_slice = [].slice;
 
+function mixinsMeta(obj) {
+  return metaFor(obj, true).writableMixins();
+}
+
 function isMethod(obj) {
   return 'function' === typeof obj &&
          obj.isMethod !== false &&
@@ -61,8 +65,8 @@ function mixinProperties(mixinsMeta, mixin) {
 
   if (mixin instanceof Mixin) {
     guid = guidFor(mixin);
-    if (mixinsMeta.peekMixins(guid)) { return CONTINUE; }
-    mixinsMeta.writeMixins(guid, mixin);
+    if (mixinsMeta[guid]) { return CONTINUE; }
+    mixinsMeta[guid] = mixin;
     return mixin.properties;
   } else {
     return mixin; // apply anonymous mixin properties
@@ -263,7 +267,7 @@ var IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
-    m.writeBindings(key, value);
+    m.writableBindings()[key] = value;
   }
 }
 
@@ -294,24 +298,29 @@ function connectStreamBinding(obj, key, stream) {
 
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
-  m.forEachBindings((key, binding) => {
-    if (binding) {
-      let to = key.slice(0, -7); // strip Binding off end
-      if (isStream(binding)) {
-        connectStreamBinding(obj, to, binding);
-        return;
-      } else if (binding instanceof Binding) {
-        binding = binding.copy(); // copy prototypes' instance
-        binding.to(to);
-      } else { // binding is string path
-        binding = new Binding(to, binding);
+  var bindings = m.readableBindings();
+  var key, binding, to;
+  if (bindings) {
+    for (key in bindings) {
+      binding = bindings[key];
+      if (binding) {
+        to = key.slice(0, -7); // strip Binding off end
+        if (isStream(binding)) {
+          connectStreamBinding(obj, to, binding);
+          continue;
+        } else if (binding instanceof Binding) {
+          binding = binding.copy(); // copy prototypes' instance
+          binding.to(to);
+        } else { // binding is string path
+          binding = new Binding(to, binding);
+        }
+        binding.connect(obj);
+        obj[key] = binding;
       }
-      binding.connect(obj);
-      obj[key] = binding;
     }
-  });
-  // mark as applied
-  m.clearBindings();
+    // mark as applied
+    m.clearBindings();
+  }
 }
 
 function finishPartial(obj, m) {
@@ -377,7 +386,7 @@ function applyMixin(obj, mixins, partial) {
   // * Set up _super wrapping if necessary
   // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
-  mergeMixins(mixins, metaFor(obj), descs, values, obj, keys);
+  mergeMixins(mixins, mixinsMeta(obj), descs, values, obj, keys);
 
   for (var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
@@ -645,13 +654,17 @@ MixinPrototype.keys = function() {
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
   var m = obj['__ember_meta__'];
+  var mixins = m && m.readableMixins();
   var ret = [];
-  if (!m) { return ret; }
 
-  m.forEachMixins((key, currentMixin) => {
+  if (!mixins) { return ret; }
+
+  for (var key in mixins) {
+    var currentMixin = mixins[key];
+
     // skip primitive mixins since these are always anonymous
     if (!currentMixin.properties) { ret.push(currentMixin); }
-  });
+  }
 
   return ret;
 };
