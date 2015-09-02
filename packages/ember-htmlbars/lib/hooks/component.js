@@ -84,10 +84,10 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     let contentOptions = { templates, scope };
 
     let { block } = buildComponentTemplate(templateOptions, attrs, contentOptions);
-    block(env, [], undefined, renderNode, scope, visitor);
+    block.invoke(env, [], undefined, renderNode, scope, visitor);
   } else if (isNormalHTMLElement) {
     let block = buildHTMLTemplate(tagName, attrs, { templates, scope });
-    block(env, [], undefined, renderNode, scope, visitor);
+    block.invoke(env, [], undefined, renderNode, scope, visitor);
   } else {
     // Invoking a component from the outside (either via <foo-bar> angle brackets
     // or {{foo-bar}} legacy curlies).
