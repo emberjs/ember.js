@@ -462,6 +462,34 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
   strictEqual(destroyedRenderNode.lastValue, 'Nothing', "The correct render node is passed in");
 });
 
+test("MorphLists in childNodes are properly cleared", function() {
+  var object = {
+    condition: true,
+    falsy: "Nothing",
+    list: [
+      { key: "1", word: 'Hello' },
+      { key: "2", word: 'World' }
+    ]
+  };
+  var template = compile('<div>{{#if condition}}{{#each list as |item|}}<p>{{item.word}}</p>{{/each}}{{else}}<p>{{falsy}}</p>{{/if}}</div>');
+
+  var result = template.render(object, env);
+
+  equalTokens(result.fragment, "<div><p>Hello</p><p>World</p></div>");
+
+  object.condition = false;
+  result.rerender();
+
+  equalTokens(result.fragment, "<div><p>Nothing</p></div>");
+
+  strictEqual(destroyedRenderNodeCount, 5, "cleanup hook was invoked for each morph");
+
+  object.condition = true;
+  result.rerender();
+
+  strictEqual(destroyedRenderNodeCount, 6, "cleanup hook was invoked again");
+});
+
 test("Pruned render nodes invoke a cleanup hook when cleared", function() {
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
