@@ -21,6 +21,10 @@
       "command": "npm run sauce:launch -- -b safari -v 7 --no-ct -u <url>",
       "protocol": "tap"
     },
+    "SL_MS_Edge": {
+      "command": "npm run sauce:launch -- j-b 'microsoftedge' --no-ct -u <url>",
+      "protocol": "tap"
+    },
     "SL_IE_11": {
       "command": "npm run sauce:launch -- j-b 'internet explorer' -v 11 --no-ct -u <url>",
       "protocol": "tap"
@@ -42,6 +46,7 @@
   "launch_in_ci": [
     "SL_Chrome_Current",
     "SL_Safari_Current",
+    "SL_MS_Edge",
     "SL_IE_11",
     "SL_IE_10",
     "SL_IE_9",
