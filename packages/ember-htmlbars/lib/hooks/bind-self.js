@@ -13,17 +13,17 @@ export default function bindSelf(env, scope, _self) {
     let { controller } = self;
     self = self.self;
 
-    if (!!_Ember.ENV._LEGACY_CONTROLLER_SUPPORT) {
+    if (!!_Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT) {
       scope.bindLocal('controller', newStream(controller || self));
     }
   }
 
   if (self && self.isView) {
-    if (!!_Ember.ENV._LEGACY_VIEW_SUPPORT) {
+    if (!!_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
       scope.bindLocal('view', newStream(self, 'view'));
     }
 
-    if (!!_Ember.ENV._LEGACY_CONTROLLER_SUPPORT) {
+    if (!!_Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT) {
       scope.bindLocal('controller', newStream(self, '').getKey('controller'));
     }
 
@@ -41,7 +41,7 @@ export default function bindSelf(env, scope, _self) {
   let selfStream = newStream(self, '');
   scope.bindSelf(selfStream);
 
-  if (!!_Ember.ENV.LEGACY_CONTROLLER_SUPPORT) {
+  if (!!_Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT) {
     if (!scope.hasLocal('controller')) {
       scope.bindLocal('controller', selfStream);
     }
