@@ -98,7 +98,7 @@ function propertyDidChange(obj, keyName) {
     return;
   }
 
-  if (m && m.readableDeps(keyName)) {
+  if (m && m.hasDeps(keyName)) {
     dependentKeysDidChange(obj, keyName, m);
   }
 
@@ -111,8 +111,7 @@ var WILL_SEEN, DID_SEEN;
 function dependentKeysWillChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
-  var deps;
-  if (meta && (deps = meta.readableDeps(depKey))) {
+  if (meta && meta.hasDeps(depKey)) {
     var seen = WILL_SEEN;
     var top = !seen;
 
@@ -120,7 +119,7 @@ function dependentKeysWillChange(obj, depKey, meta) {
       seen = WILL_SEEN = {};
     }
 
-    iterDeps(propertyWillChange, obj, deps, depKey, seen, meta);
+    iterDeps(propertyWillChange, obj, depKey, seen, meta);
 
     if (top) {
       WILL_SEEN = null;
@@ -132,8 +131,7 @@ function dependentKeysWillChange(obj, depKey, meta) {
 function dependentKeysDidChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
-  var deps;
-  if (meta && (deps = meta.readableDeps(depKey))) {
+  if (meta && meta.hasDeps(depKey)) {
     var seen = DID_SEEN;
     var top = !seen;
 
@@ -141,7 +139,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
       seen = DID_SEEN = {};
     }
 
-    iterDeps(propertyDidChange, obj, deps, depKey, seen, meta);
+    iterDeps(propertyDidChange, obj, depKey, seen, meta);
 
     if (top) {
       DID_SEEN = null;
@@ -149,18 +147,8 @@ function dependentKeysDidChange(obj, depKey, meta) {
   }
 }
 
-function keysOf(obj) {
-  var keys = [];
-
-  for (var key in obj) {
-    keys.push(key);
-  }
-
-  return keys;
-}
-
-function iterDeps(method, obj, deps, depKey, seen, meta) {
-  var keys, key, i, possibleDesc, desc;
+function iterDeps(method, obj, depKey, seen, meta) {
+  var possibleDesc, desc;
   var guid = guidFor(obj);
   var current = seen[guid];
 
@@ -174,23 +162,18 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 
   current[depKey] = true;
 
-  if (deps) {
-    keys = keysOf(deps);
-    for (i = 0; i < keys.length; i++) {
-      key = keys[i];
+  meta.forEachInDeps(depKey, (key, value) => {
+    if (!value) { return; }
 
-      if (!deps[key]) { continue; }
+    possibleDesc = obj[key];
+    desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-      possibleDesc = obj[key];
-      desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-      if (desc && desc._suspended === obj) {
-        continue;
-      }
-
-      method(obj, key);
+    if (desc && desc._suspended === obj) {
+      return;
     }
-  }
+
+    method(obj, key);
+  });
 }
 
 function chainsWillChange(obj, keyName, m) {
