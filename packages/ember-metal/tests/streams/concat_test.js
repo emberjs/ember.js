@@ -1,4 +1,4 @@
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import {
   concat,
   read
