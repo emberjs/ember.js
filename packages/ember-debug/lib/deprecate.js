@@ -24,6 +24,18 @@ function formatMessage(_message, options) {
   return message;
 }
 
+let captureStack;
+if (new Error().stack) {
+  captureStack = function() {
+    return new Error().stack;
+  };
+} else {
+  captureStack = function() {
+    // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
+    try { __fail__.fail(); } catch (e) { return e; }
+  };
+}
+
 registerHandler(function logDeprecationToConsole(message, options) {
   let updatedMessage = formatMessage(message, options);
 
@@ -33,25 +45,17 @@ registerHandler(function logDeprecationToConsole(message, options) {
 registerHandler(function logDeprecationStackTrace(message, options, next) {
   if (Ember.LOG_STACKTRACE_ON_DEPRECATION) {
     let stackStr = '';
-    let error, stack;
+    let stack = captureStack();
 
-    // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
-    try { __fail__.fail(); } catch (e) { error = e; }
+    if (stack) {
+      stack = stack.replace(/^\s+at\s+/gm, '')
+        .replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2')
+        .replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)')
+        .replace(/(?:\n@:0)?\s+$/m, '')
+        .replace(/^\(/gm, '{anonymous}(')
+        .split('\n');
 
-    if (error.stack) {
-      if (error['arguments']) {
-        // Chrome
-        stack = error.stack.replace(/^\s+at\s+/gm, '').
-          replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2').
-          replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)').split('\n');
-        stack.shift();
-      } else {
-        // Firefox
-        stack = error.stack.replace(/(?:\n@:0)?\s+$/m, '').
-          replace(/^\(/gm, '{anonymous}(').split('\n');
-      }
-
-      stackStr = '\n    ' + stack.slice(2).join('\n    ');
+      stackStr = '\n    ' + stack.slice(3).join('\n    ');
     }
 
     let updatedMessage = formatMessage(message, options);
