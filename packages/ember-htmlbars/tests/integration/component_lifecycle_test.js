@@ -384,6 +384,41 @@ styles.forEach(style => {
       component.destroy();
     });
   });
+
+  QUnit.test('changing a component\'s attrs in didInitAttrs() triggers second render with new value', function(assert) {
+    let hooks = [];
+
+    let outer = style.class.extend({
+      layout: compile(invoke('x-inner', { innerThing: 'outerThing' })),
+      outerThing: 1,
+      container
+    }).create();
+
+    registry.register('component:x-inner', style.class.extend({
+      layout: compile('<div id="inner-thing">{{attrs.innerThing}}</div>'),
+      didInitAttrs() {
+        hooks.push(['didInitAttrs', this.attrs.innerThing]);
+        outer.set('outerThing', this.attrs.innerThing + 1);
+      },
+      didRender() {
+        hooks.push(['didRender', this.attrs.innerThing]);
+      }
+    }));
+
+    runAppend(outer);
+
+    assert.strictEqual(outer.$('#inner-thing').text(), '2', 'rendered updated value');
+
+    assert.deepEqual(hooks, [
+      ['didInitAttrs', 1],
+      ['didRender', 1],
+      ['didRender', 2]
+    ], 'triggered didRender with updated value');
+
+    run(() => {
+      outer.destroy();
+    });
+  });
 });
 
 // TODO: Write a test that involves deep mutability: the component plucks something
