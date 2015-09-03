@@ -91,7 +91,7 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
         event.stopPropagation();
       }
 
-      let { target, actionName, actionArgs } = node.state;
+      let { target, actionName, actionArgs } = node.getState();
 
       run(function runRegisteredAction() {
         if (typeof actionName === 'function') {

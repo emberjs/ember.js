@@ -88,7 +88,7 @@ QUnit.test('should by default target the view\'s controller', function() {
   var controller = {};
 
   ActionHelper.registerAction = function({ node }) {
-    registeredTarget = node.state.target;
+    registeredTarget = node.getState().target;
   };
 
   view = EmberView.create({
@@ -136,7 +136,7 @@ QUnit.test('should allow a target to be specified', function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function({ node }) {
-    registeredTarget = node.state.target;
+    registeredTarget = node.getState().target;
   };
 
   var anotherTarget = EmberView.create();

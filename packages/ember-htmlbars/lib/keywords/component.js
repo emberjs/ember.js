@@ -59,14 +59,16 @@ export default {
   },
 
   render(morph, ...rest) {
-    if (morph.state.manager) {
-      morph.state.manager.destroy();
+    let state = morph.getState();
+
+    if (state.manager) {
+      state.manager.destroy();
     }
 
     // Force the component hook to treat this as a first-time render,
     // because normal components (`<foo-bar>`) cannot change at runtime,
     // but the `{{component}}` helper can.
-    morph.state.manager = null;
+    state.manager = null;
 
     render(morph, ...rest);
   },
@@ -75,7 +77,7 @@ export default {
 };
 
 function render(morph, env, scope, params, hash, template, inverse, visitor) {
-  let componentPath = morph.state.componentPath;
+  let componentPath = morph.getState().componentPath;
 
   // If the value passed to the {{component}} helper is undefined or null,
   // don't create a new ComponentNode.

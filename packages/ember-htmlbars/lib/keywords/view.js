@@ -212,7 +212,7 @@ export default {
     // of a mutable param and used it in its layout, because there are
     // no params at all.
     if (Object.keys(hash).length) {
-      return morph.state.manager.rerender(env, hash, visitor, true);
+      return morph.getState().manager.rerender(env, hash, visitor, true);
     }
   },
 
@@ -225,25 +225,25 @@ export default {
       hash.classNameBindings = hash.classNameBindings.split(' ');
     }
 
-    var state = node.state;
+    var state = node.getState();
     var parentView = state.parentView;
 
     var options = {
-      component: node.state.viewClassOrInstance,
+      component: state.viewClassOrInstance,
       layout: null
     };
 
     options.createOptions = {};
-    if (node.state.controller) {
+    if (state.controller) {
       // Use `_controller` to avoid stomping on a CP
       // that exists in the target view/component
-      options.createOptions._controller = node.state.controller;
+      options.createOptions._controller = state.controller;
     }
 
-    if (node.state.targetObject) {
+    if (state.targetObject) {
       // Use `_targetObject` to avoid stomping on a CP
       // that exists in the target view/component
-      options.createOptions._targetObject = node.state.targetObject;
+      options.createOptions._targetObject = state.targetObject;
     }
 
     if (state.manager) {

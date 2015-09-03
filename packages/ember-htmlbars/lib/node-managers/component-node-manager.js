@@ -121,7 +121,7 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
   // if the component is rendered via {{component}} helper, the first
   // element of `params` is the name of the component, so we need to
   // skip that when the positional parameters are constructed
-  const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
+  const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
   const isNamed = typeof positionalParams === 'string';
   let paramsStream;
 

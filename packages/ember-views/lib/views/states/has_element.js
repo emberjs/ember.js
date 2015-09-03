@@ -34,7 +34,7 @@ merge(hasElement, {
 
     renderNode.isDirty = true;
     internal.visitChildren(renderNode.childNodes, function(node) {
-      if (node.state && node.state.manager) {
+      if (node.getState().manager) {
         node.shouldReceiveAttrs = true;
       }
       node.isDirty = true;

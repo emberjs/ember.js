@@ -17,7 +17,7 @@ export default function subscribe(node, env, scope, stream) {
       component._renderNode.isDirty = true;
     }
 
-    if (node.state.manager) {
+    if (node.getState().manager) {
       node.shouldReceiveAttrs = true;
     }
 
