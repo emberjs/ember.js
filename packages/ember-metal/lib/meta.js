@@ -206,6 +206,7 @@ function inheritedMapOfMaps(name, Meta) {
 Meta.prototype._forEachIn = function(key, subkey, fn) {
   let pointer = this;
   let seen = new EmptyObject();
+  let calls = [];
   while (pointer !== undefined) {
     let map = pointer[key];
     if (map) {
@@ -214,12 +215,16 @@ Meta.prototype._forEachIn = function(key, subkey, fn) {
         for (let innerKey in innerMap) {
           if (!seen[innerKey]) {
             seen[innerKey] = true;
-            fn(innerKey, innerMap[innerKey]);
+            calls.push([innerKey, innerMap[innerKey]]);
           }
         }
       }
     }
     pointer = pointer.parent;
+  }
+  for (let i = 0; i < calls.length; i++) {
+    let [innerKey, value] = calls[i];
+    fn(innerKey, value);
   }
 };
 
