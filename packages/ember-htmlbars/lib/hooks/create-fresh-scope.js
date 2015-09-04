@@ -50,14 +50,14 @@ import EmptyObject from 'ember-metal/empty_object';
 */
 
 function Scope(parent) {
-  this._self = null;
-  this._blocks = null;
-  this._component = null;
-  this._view = null;
-  this._attrs = null;
-  this._locals = null;
-  this._localPresent = null;
-  this.overrideController = null;
+  this._self = undefined;
+  this._blocks = undefined;
+  this._component = undefined;
+  this._view = undefined;
+  this._attrs = undefined;
+  this._locals = undefined;
+  this._localPresent = undefined;
+  this.overrideController = undefined;
   this.parent = parent;
 }
 
@@ -145,6 +145,15 @@ proto.bindLocal = function(name, value) {
 };
 
 const EMPTY = {
+  _self: undefined,
+  _blocks: undefined,
+  _component: undefined,
+  _view: undefined,
+  _attrs: undefined,
+  _locals: undefined,
+  _localPresent: undefined,
+  overrideController: undefined,
+
   getSelf() { return null; },
   bindSelf(self) { return null; },
   updateSelf(self, key) { return null; },
