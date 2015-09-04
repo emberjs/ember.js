@@ -50,13 +50,23 @@ export function validateChildMorphs(env, morph, visitor) {
   }
 }
 
+export class InternalParams {
+  constructor(params, hash) {
+    this.params = params || null;
+    this.hash = hash || null;
+    // REFACTOR TODO: Move templates here?
+    // REFACTOR TODO: Move visitor here?
+    // REFACTOR TODO: Custom one-level data?
+  }
+}
+
 export function linkParams(env, scope, morph, path, params, hash) {
   if (morph.linkedParams) {
     return;
   }
 
   if (env.hooks.linkRenderNode(morph, env, scope, path, params, hash)) {
-    morph.linkedParams = { params: params, hash: hash };
+    morph.linkedParams = new InternalParams(params, hash);
   }
 }
 

@@ -2,6 +2,7 @@
 import { preprocess } from "../htmlbars-syntax/parser";
 import TemplateCompiler from "./template-compiler";
 import { wrap } from "../htmlbars-runtime/hooks";
+import Template from "../htmlbars-runtime/template";
 import render from "../htmlbars-runtime/render";
 
 /*
@@ -67,5 +68,6 @@ export function template(templateSpec) {
  * @return {Template} A function for rendering the template
  */
 export function compile(string, options) {
-  return wrap(template(compileSpec(string, options)), render);
+  let templateSpec = template(compileSpec(string, options));
+  return wrap(Template.fromSpec(templateSpec), render);
 }
