@@ -26,7 +26,7 @@ function ViewNodeManager(component, scope, renderNode, block, expectElement) {
 
 export default ViewNodeManager;
 
-ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
+ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
   assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
     if (path) {
       return found.component || found.layout;
@@ -80,10 +80,10 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
   return new ViewNodeManager(component, contentScope, renderNode, results.block, results.createdElement);
 };
 
-ViewNodeManager.prototype.render = function(env, attrs, visitor) {
+ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, visitor) {
   var component = this.component;
 
-  return instrument(component, function() {
+  return instrument(component, function ViewNodeManager_render_instrument() {
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
@@ -112,10 +112,10 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
   }, this);
 };
 
-ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
+ViewNodeManager.prototype.rerender = function ViewNodeManager_rerender(env, attrs, visitor) {
   var component = this.component;
 
-  return instrument(component, function() {
+  return instrument(component, function ViewNodeManager_rerender_instrument() {
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
@@ -146,7 +146,7 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
   }, this);
 };
 
-ViewNodeManager.prototype.destroy = function() {
+ViewNodeManager.prototype.destroy = function ViewNodeManager_destroy() {
   if (this.component) {
     this.component.destroy();
     this.component = null;
