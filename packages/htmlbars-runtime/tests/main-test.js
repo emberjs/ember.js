@@ -51,9 +51,8 @@ test("manualElement function honors void elements", function() {
     class: 'foo-bar'
   };
   var layout = manualElement('input', attributes);
-  var fragment = layout.buildFragment(new DOMHelper());
+  var element = layout.buildRoot({ dom: new DOMHelper() });
 
-  equal(fragment.childNodes.length, 1, 'includes a single element');
-  equal(fragment.childNodes[0].childNodes.length, 0, 'no child nodes were added to `<input>` because it is a void tag');
-  equalTokens(fragment, '<input class="foo-bar">');
+  equal(element.childNodes.length, 0, 'no child nodes were added to `<input>` because it is a void tag');
+  equalTokens(element, '<input class="foo-bar">');
 });

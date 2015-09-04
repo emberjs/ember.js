@@ -3,6 +3,7 @@ import statementVisitor, { alwaysDirtyVisitor, initialVisitor } from "./node-vis
 import Morph from "./morph";
 import { clearMorph } from "../htmlbars-util/template-utils";
 import voidMap from '../htmlbars-util/void-tag-names';
+import Template, { buildStatements } from './template';
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 
@@ -91,33 +92,32 @@ export function manualElement(tagName, attributes, _isEmpty) {
     statements.push(['content', 'yield']);
   }
 
-  var template = {
-    arity: 0,
-    cachedFragment: null,
-    hasRendered: false,
-    buildFragment: function buildFragment(dom) {
-      var el0 = dom.createDocumentFragment();
+  return new Template({
+    statements: buildStatements(statements),
+
+    buildRoot(env) {
+      let dom = env.dom;
+
       if (tagName === 'svg') {
         dom.setNamespace(svgNamespace);
       }
-      var el1 = dom.createElement(tagName);
+
+      var el0 = dom.createElement(tagName);
 
       for (var key in attributes) {
         if (typeof attributes[key] !== 'string') { continue; }
-        dom.setAttribute(el1, key, attributes[key]);
+        dom.setAttribute(el0, key, attributes[key]);
       }
 
       if (!isEmpty) {
-        var el2 = dom.createComment("");
-        dom.appendChild(el1, el2);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
       }
-
-      dom.appendChild(el0, el1);
 
       return el0;
     },
-    buildRenderNodes: function buildRenderNodes(dom, fragment) {
-      var element = dom.childAt(fragment, [0]);
+
+    buildRenderNodes(dom, element) {
       var morphs = [];
 
       for (var key in attributes) {
@@ -130,57 +130,8 @@ export function manualElement(tagName, attributes, _isEmpty) {
       }
 
       return morphs;
-    },
-    statements: statements,
-    locals: [],
-    templates: []
-  };
-
-  return template;
-}
-
-export function attachAttributes(attributes) {
-  var statements = [];
-
-  for (var key in attributes) {
-    if (typeof attributes[key] === 'string') { continue; }
-    statements.push(["attribute", key, attributes[key]]);
-  }
-
-  var template = {
-    arity: 0,
-    cachedFragment: null,
-    hasRendered: false,
-    buildFragment: function buildFragment(dom) {
-      var el0 = this.element;
-      if (el0.namespaceURI === "http://www.w3.org/2000/svg") {
-        dom.setNamespace(svgNamespace);
-      }
-      for (var key in attributes) {
-        if (typeof attributes[key] !== 'string') { continue; }
-        dom.setAttribute(el0, key, attributes[key]);
-      }
-
-      return el0;
-    },
-    buildRenderNodes: function buildRenderNodes(dom) {
-      var element = this.element;
-      var morphs = [];
-
-      for (var key in attributes) {
-        if (typeof attributes[key] === 'string') { continue; }
-        morphs.push(dom.createAttrMorph(element, key));
-      }
-
-      return morphs;
-    },
-    statements: statements,
-    locals: [],
-    templates: [],
-    element: null
-  };
-
-  return template;
+    }
+  });
 }
 
 RenderResult.prototype.initializeNodes = function(ownerNode) {

@@ -15,9 +15,9 @@ function fragmentFor(ast) {
   var opcodes = fragmentOpcodeCompiler.compile(ast);
   var program = fragmentCompiler.compile(opcodes);
 
-  var fn = new Function("dom", 'return ' + program)();
+  var fn = new Function("env", 'return ' + program)();
 
-  return fn(new DOMHelper());
+  return fn({ dom: new DOMHelper() });
 }
 
 QUnit.module('fragment');
