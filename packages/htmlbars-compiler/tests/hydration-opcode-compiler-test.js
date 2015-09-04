@@ -62,7 +62,7 @@ function testCompile(string, templateSource, opcodes, ...statementList) {
   QUnit.module(`Compiling ${string}: ${templateSource}`, {
     setup: function() {
       template = compile(templateSource).raw;
-      childTemplates = template.templates;
+      childTemplates = template.children;
     }
   });
 
@@ -73,11 +73,11 @@ function testCompile(string, templateSource, opcodes, ...statementList) {
   let statements = statementList.shift();
 
   test("statements for the root template", function() {
-    equalStatements(template.statements, statements);
+    equalStatements(template.spec.statements, statements);
   });
 
   test("correct list of child templates", function() {
-    equal(template.templates.length, statementList.length, "list of child templates should match the expected list of statements");
+    equal(template.children.length, statementList.length, "list of child templates should match the expected list of statements");
   });
 
   for (let i=0, l=statementList.length; i<l; i++) {
@@ -86,7 +86,7 @@ function testCompile(string, templateSource, opcodes, ...statementList) {
 
   function statementTest(list, i) {
     test(`statements for template ${i}`, function() {
-      equalStatements(childTemplates[i].statements, list[i]);
+      equalStatements(childTemplates[i].spec.statements, list[i]);
     });
   }
 }

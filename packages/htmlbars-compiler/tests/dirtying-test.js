@@ -217,6 +217,8 @@ test("attribute nodes follow the normal dirtying rules", function() {
 
   object.value = "universe";
   result.rerender();
+
+  equalTokens(result.fragment, "<div class='universe'>hello</div>", "Revalidating after dirtying");
 });
 
 test("attribute nodes w/ concat follow the normal dirtying rules", function() {
