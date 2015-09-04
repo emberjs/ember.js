@@ -1,4 +1,4 @@
-import { warn } from 'ember-metal/debug';
+import { warn, debugSeal } from 'ember-metal/debug';
 import DOMHelper from 'dom-helper';
 
 var HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
@@ -13,6 +13,8 @@ let proto = HTMLBarsAttrMorph.prototype;
 
 proto.didInit = function() {
   this.streamUnsubscribers = null;
+
+  debugSeal(this);
 };
 
 function deprecateEscapedStyle(morph, value) {
