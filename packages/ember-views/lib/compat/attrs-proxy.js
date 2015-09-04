@@ -37,7 +37,7 @@ let AttrsProxyMixin = {
     val.update(value);
   },
 
-  propagateAttrsToThis(attrs) {
+  _propagateAttrsToThis(attrs) {
     this._isDispatchingAttrs = true;
     this.setProperties(attrs);
     this._isDispatchingAttrs = false;

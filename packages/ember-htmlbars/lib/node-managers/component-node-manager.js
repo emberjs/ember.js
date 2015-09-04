@@ -221,8 +221,8 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
     var snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
-      if (component.propagateAttrsToThis) {
-        component.propagateAttrsToThis(takeLegacySnapshot(attrs));
+      if (component._propagateAttrsToThis) {
+        component._propagateAttrsToThis(takeLegacySnapshot(attrs));
       }
 
       env.renderer.componentUpdateAttrs(component, snapshot);

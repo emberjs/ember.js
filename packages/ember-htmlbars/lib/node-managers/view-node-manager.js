@@ -126,8 +126,8 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       env.renderer.willUpdate(component, snapshot);
 
       if (component._renderNode.shouldReceiveAttrs) {
-        if (component.propagateAttrsToThis) {
-          component.propagateAttrsToThis(takeLegacySnapshot(attrs));
+        if (component._propagateAttrsToThis) {
+          component._propagateAttrsToThis(takeLegacySnapshot(attrs));
         }
 
         env.renderer.componentUpdateAttrs(component, snapshot);
@@ -193,8 +193,8 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     env.renderer.componentUpdateAttrs(component, snapshot);
     setProperties(component, props);
 
-    if (component.propagateAttrsToThis) {
-      component.propagateAttrsToThis(takeLegacySnapshot(attrs));
+    if (component._propagateAttrsToThis) {
+      component._propagateAttrsToThis(takeLegacySnapshot(attrs));
     }
   }
 
