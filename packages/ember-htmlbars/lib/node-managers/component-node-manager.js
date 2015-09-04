@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import assign from 'ember-metal/assign';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
@@ -209,9 +208,7 @@ ComponentNodeManager.prototype.destroy = function() {
   component.destroy();
 };
 
-export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}) {
-  let props = assign({}, _props);
-
+export function createComponent(_component, isAngleBracket, props, renderNode, env, attrs = {}) {
   if (!isAngleBracket) {
     let proto = _component.proto();
 
@@ -220,8 +217,10 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
     let snapshot = takeSnapshot(attrs);
     props.attrs = snapshot;
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    snapshotAndUpdateTarget(attrs, props);
   } else {
+    props.attrs = takeSnapshot(attrs);
+
     props._isAngleBracket = true;
   }
 
@@ -274,9 +273,13 @@ function takeSnapshot(attrs) {
   return hash;
 }
 
-function mergeBindings(target, attrs) {
-  for (var prop in attrs) {
-    if (!attrs.hasOwnProperty(prop)) { continue; }
+function snapshotAndUpdateTarget(rawAttrs, target) {
+  let attrs = {};
+
+  for (var prop in rawAttrs) {
+    let value = getCellOrValue(rawAttrs[prop]);
+    attrs[prop] = value;
+
     // when `attrs` is an actual value being set in the
     // attrs hash (`{{foo-bar attrs="blah"}}`) we cannot
     // set `"blah"` to the root of the target because
@@ -285,16 +288,15 @@ function mergeBindings(target, attrs) {
       Ember.warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.component-unsupported-attrs' });
       continue;
     }
-    let value = attrs[prop];
 
     if (value && value[MUTABLE_CELL]) {
-      target[prop] = value.value;
-    } else {
-      target[prop] = value;
+      value = value.value;
     }
+
+    target[prop] = value;
   }
 
-  return target;
+  return target.attrs = attrs;
 }
 
 function buildChildEnv(state, env) {
