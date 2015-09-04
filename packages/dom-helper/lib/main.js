@@ -46,7 +46,7 @@ var canClone = doc && (function(document){
 })(doc);
 
 // This is not the namespace of the element, but of
-// the elements inside that elements.
+// the elements inside that element.
 function interiorNamespace(element){
   if (
     element &&
