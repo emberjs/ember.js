@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import merge from 'ember-metal/merge';
-//import { debugSeal } from 'ember-metal/debug';
-import { assert } from 'ember-metal/debug';
+import { debugSeal, assert } from 'ember-metal/debug';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 import { isStream } from 'ember-metal/streams/utils';
@@ -308,7 +307,8 @@ BasicStream.extend = function(object) {
   let Child = function(...args) {
     this._init();
     this.init(...args);
-    //debugSeal(this);
+
+    debugSeal(this);
   };
 
   Child.prototype = Object.create(this.prototype);
