@@ -7,7 +7,11 @@ import Template, { buildStatements } from './template';
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 
+let EMPTY_RENDER_RESULT;
+
 export default function render(template, env, scope, options) {
+  if (template.isEmpty) { return EMPTY_RENDER_RESULT; }
+
   var dom = env.dom;
   var contextualElement;
 
@@ -27,14 +31,16 @@ export default function render(template, env, scope, options) {
   return renderResult;
 }
 
-export function RenderOptions(renderNode, self, blockArguments, contextualElement) {
+export function RenderOptions({ renderNode, self, blockArguments, contextualElement, isEmpty }) {
   this.renderNode = renderNode || null;
   this.self = self;
   this.blockArguments = blockArguments || null;
   this.contextualElement = contextualElement || null;
+  this.isEmpty = isEmpty || false;
 }
 
 function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent) {
+  this.isEmpty = options.isEmpty;
   this.root = rootNode;
   this.fragment = fragment;
 
@@ -44,8 +50,10 @@ function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment,
   this.scope = scope;
   this.shouldSetContent = shouldSetContent;
 
-  if (options.self !== undefined) { this.bindSelf(options.self); }
-  if (options.blockArguments !== undefined) { this.bindLocals(options.blockArguments); }
+  if (options.isEmpty) { return; }
+
+  if (options.self !== undefined) { this._bindSelf(options.self); }
+  if (options.blockArguments !== undefined) { this._bindLocals(options.blockArguments); }
 
   this.initializeNodes(ownerNode);
 }
@@ -74,8 +82,10 @@ RenderResult.build = function(env, scope, template, options, contextualElement) 
     });
   }
 
+  options.isEmpty = template.isEmpty;
+
   rootNode.childNodes = nodes;
-  return new RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent);
+  return new RenderResult(env, scope, new RenderOptions(options), rootNode, ownerNode, nodes, fragment, template, shouldSetContent);
 };
 
 export function manualElement(tagName, attributes, _isEmpty) {
@@ -143,9 +153,11 @@ RenderResult.prototype.initializeNodes = function(ownerNode) {
 };
 
 RenderResult.prototype.render = function() {
+  if (this.isEmpty) { return; }
+
   this.root.lastResult = this;
   this.root.rendered = true;
-  this.populateNodes(initialVisitor);
+  this._populateNodes(initialVisitor);
 
   if (this.shouldSetContent && this.root.setContent) {
     this.root.setContent(this.fragment);
@@ -165,22 +177,24 @@ RenderResult.prototype.rerender = function(env, self, blockArguments, scope) {
 };
 
 RenderResult.prototype.revalidateWith = function(env, scope, self, blockArguments, visitor) {
+  if (this.template.isEmpty) { return; }
+
   if (env !== undefined) { this.env = env; }
   if (scope !== undefined) { this.scope = scope; }
-  this.updateScope();
 
-  if (self !== undefined) { this.updateSelf(self); }
-  if (blockArguments !== undefined) { this.updateLocals(blockArguments); }
+  if (self !== undefined) { this._updateSelf(self); }
+  if (blockArguments !== undefined) { this._updateLocals(blockArguments); }
 
-  this.populateNodes(visitor);
+  this._populateNodes(visitor);
 };
 
 RenderResult.prototype.destroy = function() {
+  if (this.isEmpty) { return; }
   var rootNode = this.root;
   clearMorph(rootNode, this.env, true);
 };
 
-RenderResult.prototype.populateNodes = function(visitor) {
+RenderResult.prototype._populateNodes = function(visitor) {
   var env = this.env;
   var scope = this.scope;
   var nodes = this.nodes;
@@ -203,23 +217,15 @@ RenderResult.prototype.populateNodes = function(visitor) {
   }
 };
 
-RenderResult.prototype.bindScope = function() {
-  this.env.hooks.bindScope(this.env, this.scope);
-};
-
-RenderResult.prototype.updateScope = function() {
-  this.env.hooks.updateScope(this.env, this.scope);
-};
-
-RenderResult.prototype.bindSelf = function(self) {
+RenderResult.prototype._bindSelf = function(self) {
   this.env.hooks.bindSelf(this.env, this.scope, self);
 };
 
-RenderResult.prototype.updateSelf = function(self) {
+RenderResult.prototype._updateSelf = function(self) {
   this.env.hooks.updateSelf(this.env, this.scope, self);
 };
 
-RenderResult.prototype.bindLocals = function(blockArguments) {
+RenderResult.prototype._bindLocals = function(blockArguments) {
   var localNames = this.template.locals;
 
   for (var i=0, l=localNames.length; i<l; i++) {
@@ -227,13 +233,15 @@ RenderResult.prototype.bindLocals = function(blockArguments) {
   }
 };
 
-RenderResult.prototype.updateLocals = function(blockArguments) {
+RenderResult.prototype._updateLocals = function(blockArguments) {
   var localNames = this.template.locals;
 
   for (var i=0, l=localNames.length; i<l; i++) {
     this.env.hooks.updateLocal(this.env, this.scope, localNames[i], blockArguments[i]);
   }
 };
+
+EMPTY_RENDER_RESULT = new RenderResult(undefined, undefined, new RenderOptions({ isEmpty: true }));
 
 function initializeNode(node, owner) {
   node.ownerNode = owner;

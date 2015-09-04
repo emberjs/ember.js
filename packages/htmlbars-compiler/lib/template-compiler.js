@@ -108,17 +108,33 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     '(function() {\n' +
     this.getChildTemplateVars(indent + '  ') +
     indent+'  return {\n' +
-    this.buildMeta(indent+'    ', program) +
-    indent+'    isEmpty: ' + (program.body.length ? 'false' : 'true') + ',\n' +
-    indent+'    arity: ' + blockParams.length + ',\n' +
-    indent+'    cachedFragment: null,\n' +
-    indent+'    hasRendered: false,\n' +
-    indent+'    buildFragment: ' + fragmentProgram + ',\n' +
-    indent+'    buildRenderNodes: ' + hydrationPrograms.createMorphsProgram + ',\n' +
-    indent+'    statements: [\n' + statements + '\n' +
-    indent+'    ],\n' +
-    indent+'    locals: ' + locals + ',\n' +
-    indent+'    templates: [' + templates + ']\n' +
+    this.buildMeta(indent+'    ', program);
+
+  if (program.body.length === 0) {
+    template += indent + '    isEmpty: true,\n';
+  } else {
+    template +=
+      indent+'    buildFragment: ' + fragmentProgram + ',\n' +
+      indent+'    buildRenderNodes: ' + hydrationPrograms.createMorphsProgram + ',\n';
+  }
+
+  if (blockParams.length > 0) {
+    template += indent + `    arity: ${blockParams.length},\n`;
+  }
+
+  if (hydrationPrograms.statements.length > 0) {
+    template += indent+`    statements: [\n${statements}\n${indent}    ],\n`;
+  }
+
+  if (hydrationPrograms.locals.length > 0) {
+    template += indent+`    locals: ${locals},\n`;
+  }
+
+  if (templates.length > 0) {
+    template += indent+`    templates: [${templates}]\n`;
+  }
+
+  template +=
     indent+'  };\n' +
     indent+'}())';
 

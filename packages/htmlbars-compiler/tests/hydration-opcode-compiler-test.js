@@ -86,7 +86,7 @@ function testCompile(string, templateSource, opcodes, ...statementList) {
 
   function statementTest(list, i) {
     test(`statements for template ${i}`, function() {
-      equalStatements(childTemplates[i].spec.statements, list[i]);
+      equalStatements(childTemplates[i].spec.statements || [], list[i]);
     });
   }
 }
