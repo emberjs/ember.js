@@ -1,4 +1,4 @@
-import render, { RenderOptions } from "./render";
+import { topLevelRender, nestedRender, RenderOptions } from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph } from "./render";
 import { keyLength, shallowCopy } from "../htmlbars-util/object-utils";
@@ -91,7 +91,7 @@ export function wrap(template) {
       let contextualElement = options && options.contextualElement;
       let renderOptions = new RenderOptions({ self, blockArguments, contextualElement });
 
-      return render(template, env, scope, renderOptions);
+      return topLevelRender(template, env, scope, renderOptions);
     }
   };
 }
@@ -151,11 +151,15 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
       scope = env.hooks.createChildScope(parentScope);
     }
 
+    if (morph.lastYielded) {
+      clearMorph(morph, env, false);
+    }
+
     morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
     let renderOptions = new RenderOptions({ renderNode: morph, self, blockArguments });
-    render(template, env, scope, renderOptions);
+    nestedRender(template, env, scope, renderOptions);
   };
 }
 
@@ -1009,7 +1013,7 @@ function componentFallback(morph, env, scope, tagName, attrs, template) {
     element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
 
-  var result = render(template, env, scope, {});
+  var result = topLevelRender(template, env, scope, {});
 
   if (result.fragment) {
     element.appendChild(result.fragment);

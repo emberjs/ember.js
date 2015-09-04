@@ -1,7 +1,6 @@
 import { compile } from "../htmlbars-compiler/compiler";
 import { manualElement } from "../htmlbars-runtime/render";
 import { hostBlock } from "../htmlbars-runtime/hooks";
-import render from "../htmlbars-runtime/render";
 import { blockFor } from "../htmlbars-util/template-utils";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import { merge } from "../htmlbars-util/object-utils";
@@ -596,14 +595,14 @@ test("It is possible to nest multiple templates into a manual element", function
 
       var elementTemplate = manualElement('span', attributes);
 
-      var contentBlock = blockFor(render, template, { scope: scope });
+      var contentBlock = blockFor(template, { scope: scope });
 
-      var layoutBlock = blockFor(render, layout.raw, {
+      var layoutBlock = blockFor(layout.raw, {
         yieldTo: contentBlock,
         self: { attrs: hash },
       });
 
-      var elementBlock = blockFor(render, elementTemplate, {
+      var elementBlock = blockFor(elementTemplate, {
         yieldTo: layoutBlock,
         self: hash
       });

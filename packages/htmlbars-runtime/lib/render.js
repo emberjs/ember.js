@@ -9,38 +9,46 @@ var svgNamespace = "http://www.w3.org/2000/svg";
 
 let EMPTY_RENDER_RESULT;
 
-export default function render(template, env, scope, options) {
+export function topLevelRender(template, env, scope, options) {
   if (template.isEmpty) { return EMPTY_RENDER_RESULT; }
 
-  var dom = env.dom;
-  var contextualElement;
+  primeNamespace(env, options.contextualElement);
 
-  if (options) {
-    if (options.renderNode) {
-      contextualElement = options.renderNode.contextualElement;
-    } else if (options.contextualElement) {
-      contextualElement = options.contextualElement;
-    }
-  }
-
-  dom.detectNamespace(contextualElement);
-
-  var renderResult = RenderResult.build(env, scope, template, options, contextualElement);
+  var renderResult = RenderResult.buildTopLevel(env, scope, template, options, options.contextualElement);
   renderResult.render();
 
   return renderResult;
 }
 
+export default topLevelRender;
+
+export function nestedRender(template, env, scope, options) {
+  if (template.isEmpty) { return EMPTY_RENDER_RESULT; }
+
+  primeNamespace(env, options.renderNode.contextualElement);
+
+  var renderResult = RenderResult.buildNested(env, scope, template, options, options.renderNode.contextualElement);
+  renderResult.render();
+  options.renderNode.setContent(renderResult.fragment);
+
+  return renderResult;
+}
+
+function primeNamespace(env, contextualElement) {
+  var dom = env.dom;
+  dom.detectNamespace(contextualElement);
+}
+
 export function RenderOptions({ renderNode, self, blockArguments, contextualElement, isEmpty }) {
   this.renderNode = renderNode || null;
-  this.self = self;
+  this.self = self; // self is a user value, so `undefined` represents missingness, not null
   this.blockArguments = blockArguments || null;
   this.contextualElement = contextualElement || null;
   this.isEmpty = isEmpty || false;
 }
 
-function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment, template, shouldSetContent) {
-  this.isEmpty = options.isEmpty;
+function RenderResult(env, scope, options, rootNode, nodes, fragment, template) {
+  this.isEmpty = options.isEmpty || template.isEmpty;
   this.root = rootNode;
   this.fragment = fragment;
 
@@ -48,44 +56,37 @@ function RenderResult(env, scope, options, rootNode, ownerNode, nodes, fragment,
   this.template = template;
   this.env = env;
   this.scope = scope;
-  this.shouldSetContent = shouldSetContent;
 
-  if (options.isEmpty) { return; }
+  if (this.isEmpty) { return; }
 
   if (options.self !== undefined) { this._bindSelf(options.self); }
   if (options.blockArguments !== undefined) { this._bindLocals(options.blockArguments); }
-
-  this.initializeNodes(ownerNode);
 }
 
-RenderResult.build = function(env, scope, template, options, contextualElement) {
+RenderResult.buildTopLevel = function(env, scope, template, options, contextualElement) {
   var dom = env.dom;
   var fragment = template.buildRoot(env);
   var nodes = template.buildRenderNodes(dom, fragment, contextualElement);
 
-  var rootNode, ownerNode, shouldSetContent;
+  let rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
+  rootNode.ownerNode = rootNode;
 
-  if (options && options.renderNode) {
-    rootNode = options.renderNode;
-    ownerNode = rootNode.ownerNode;
-    shouldSetContent = true;
-  } else {
-    rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
-    ownerNode = rootNode;
-    rootNode.ownerNode = ownerNode;
-    shouldSetContent = false;
-  }
-
-  if (rootNode.childNodes) {
-    visitChildren(rootNode.childNodes, function(node) {
-      clearMorph(node, env, true);
-    });
-  }
-
-  options.isEmpty = template.isEmpty;
-
+  nodes.forEach(node => node.ownerNode = rootNode);
   rootNode.childNodes = nodes;
-  return new RenderResult(env, scope, new RenderOptions(options), rootNode, ownerNode, nodes, fragment, template, shouldSetContent);
+  return new RenderResult(env, scope, new RenderOptions(options), rootNode, nodes, fragment, template);
+};
+
+RenderResult.buildNested = function(env, scope, template, options, contextualElement) {
+  var dom = env.dom;
+  var fragment = template.buildRoot(env);
+  var nodes = template.buildRenderNodes(dom, fragment, contextualElement);
+
+  let rootNode = options.renderNode;
+  let ownerNode = rootNode.ownerNode;
+
+  nodes.forEach(node => node.ownerNode = ownerNode);
+  rootNode.childNodes = nodes;
+  return new RenderResult(env, scope, new RenderOptions(options), rootNode, nodes, fragment, template);
 };
 
 export function manualElement(tagName, attributes, _isEmpty) {
@@ -144,24 +145,12 @@ export function manualElement(tagName, attributes, _isEmpty) {
   });
 }
 
-RenderResult.prototype.initializeNodes = function(ownerNode) {
-  let childNodes = this.root.childNodes;
-
-  for (let i=0, l=childNodes.length; i<l; i++) {
-    childNodes[i].ownerNode = ownerNode;
-  }
-};
-
 RenderResult.prototype.render = function() {
   if (this.isEmpty) { return; }
 
   this.root.lastResult = this;
   this.root.rendered = true;
   this._populateNodes(initialVisitor);
-
-  if (this.shouldSetContent && this.root.setContent) {
-    this.root.setContent(this.fragment);
-  }
 };
 
 RenderResult.prototype.dirty = function() {

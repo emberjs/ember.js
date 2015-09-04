@@ -1,5 +1,5 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
-import { RenderOptions } from "../htmlbars-runtime/render";
+import { nestedRender, RenderOptions } from "../htmlbars-runtime/render";
 
 export function RenderState(renderNode, morphList) {
   // The morph list that is no longer needed and can be
@@ -26,8 +26,7 @@ export function RenderState(renderNode, morphList) {
   this.shadowOptions = null;
 }
 
-function Block(render, template, blockOptions) {
-  this.render = render;
+function Block(template, blockOptions) {
   this.template = template;
   this.blockOptions = blockOptions;
   this.arity = template.arity;
@@ -43,7 +42,7 @@ Block.prototype.invoke = function(env, blockArguments, self, renderNode, parentS
 
 Block.prototype._firstRender = function(env, blockArguments, self, renderNode, parentScope) {
   let options = { renderState: new RenderState(renderNode) };
-  let { render, template, blockOptions: { scope } } = this;
+  let { template, blockOptions: { scope } } = this;
   let shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
 
   env.hooks.bindShadowScope(env, parentScope, shadowScope, this.blockOptions.options);
@@ -59,12 +58,12 @@ Block.prototype._firstRender = function(env, blockArguments, self, renderNode, p
   renderAndCleanup(renderNode, env, options, null, function() {
     options.renderState.morphToClear = null;
     let renderOptions = new RenderOptions({ renderNode, blockArguments });
-    render(template, env, shadowScope, renderOptions);
+    nestedRender(template, env, shadowScope, renderOptions);
   });
 };
 
-export function blockFor(render, template, blockOptions) {
-  return new Block(render, template, blockOptions);
+export function blockFor(template, blockOptions) {
+  return new Block(template, blockOptions);
 }
 
 function bindBlocks(env, shadowScope, blocks) {
