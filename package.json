@@ -33,7 +33,7 @@
     "finalhandler": "^0.4.0",
     "github": "^0.2.3",
     "glob": "~4.3.2",
-    "htmlbars": "0.14.4",
+    "htmlbars": "0.14.5",
     "qunit-extras": "^1.3.0",
     "qunitjs": "^1.16.0",
     "route-recognizer": "0.1.5",

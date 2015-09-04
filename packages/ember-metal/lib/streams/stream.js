@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import merge from 'ember-metal/merge';
+import { debugSeal, assert } from 'ember-metal/debug';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 import { isStream } from 'ember-metal/streams/utils';
@@ -17,18 +18,17 @@ import Dependency from 'ember-metal/streams/dependency';
   @namespace Ember.stream
   @constructor
 */
-function Stream(fn, label) {
-  this.init(label);
-  this.compute = fn;
+function BasicStream(label) {
+  this._init(label);
 }
 
 var KeyStream;
 var ProxyMixin;
 
-Stream.prototype = {
+BasicStream.prototype = {
   isStream: true,
 
-  init(label) {
+  _init(label) {
     this.label = makeLabel(label);
     this.isActive = false;
     this.isDirty = true;
@@ -298,19 +298,44 @@ Stream.prototype = {
         }
       }
 
-      this.dependencies = null;
       return true;
     }
   }
 };
 
-Stream.wrap = function(value, Kind, param) {
+BasicStream.extend = function(object) {
+  let Child = function(...args) {
+    this._init();
+    this.init(...args);
+
+    debugSeal(this);
+  };
+
+  Child.prototype = Object.create(this.prototype);
+
+  merge(Child.prototype, object);
+  Child.extend = BasicStream.extend;
+  return Child;
+};
+
+var Stream = BasicStream.extend({
+  init(fn, label) {
+    this._compute = fn;
+    this.label = label;
+  },
+
+  compute() {
+    return this._compute();
+  }
+});
+
+export function wrap(value, Kind, param) {
   if (isStream(value)) {
     return value;
   } else {
     return new Kind(value, param);
   }
-};
+}
 
 function makeLabel(label) {
   if (label === undefined) {
@@ -320,5 +345,5 @@ function makeLabel(label) {
   }
 }
 
-
-export default Stream;
+export default BasicStream;
+export { Stream };

@@ -4,7 +4,7 @@ import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/bu
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
-  var state = renderNode.state;
+  var state = renderNode.getState();
 
   // Determine if this is an initial render or a re-render
   if (state.manager) {
@@ -77,7 +77,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
       tagName,
       isAngleBracket: true,
       isComponentElement: true,
-      outerAttrs: scope.attrs,
+      outerAttrs: scope.getAttrs(),
       parentScope: scope
     };
 

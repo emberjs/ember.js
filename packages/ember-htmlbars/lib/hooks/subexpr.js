@@ -19,7 +19,7 @@ export default function subexpr(env, scope, helperName, params, hash) {
   }
 
   var label = labelForSubexpr(params, hash, helperName);
-  var helper = lookupHelper(helperName, scope.self, env);
+  var helper = lookupHelper(helperName, scope.getSelf(), env);
 
   var helperStream = buildHelperStream(helper, params, hash, null, env, scope, label);
 

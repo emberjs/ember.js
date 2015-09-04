@@ -166,7 +166,7 @@ export default {
   },
 
   render(morph, env, scope, params, hash, template, inverse, visitor) {
-    env.hooks.component(morph, env, scope, morph.state.componentName, params, hash, { default: template, inverse }, visitor);
+    env.hooks.component(morph, env, scope, morph.getState().componentName, params, hash, { default: template, inverse }, visitor);
   },
 
   rerender(...args) {

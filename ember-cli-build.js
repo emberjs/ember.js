@@ -35,7 +35,7 @@ function babelConfigFor(environment) {
 
   if (isProduction) {
     plugins.push(filterImports({
-      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn']
+      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
     }));
   }
 

@@ -1,9 +1,10 @@
 import defaultEnv from 'ember-htmlbars/env';
+import { MorphSet } from 'ember-metal-views/renderer';
 
 export default function RenderEnv(options) {
   this.lifecycleHooks = options.lifecycleHooks || [];
   this.renderedViews = options.renderedViews || [];
-  this.renderedNodes = options.renderedNodes || {};
+  this.renderedNodes = options.renderedNodes || new MorphSet();
   this.hasParentOutlet = options.hasParentOutlet || false;
 
   this.view = options.view;

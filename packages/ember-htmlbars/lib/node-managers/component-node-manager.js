@@ -8,7 +8,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import { readArray } from 'ember-metal/streams/utils';
 import { symbol } from 'ember-metal/utils';
 
@@ -62,8 +62,8 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // If there is a controller on the scope, pluck it off and save it on the
   // component. This allows the component to target actions sent via
   // `sendAction` correctly.
-  if (parentScope.locals.controller) {
-    createOptions._controller = getValue(parentScope.locals.controller);
+  if (parentScope.hasLocal('controller')) {
+    createOptions._controller = getValue(parentScope.getLocal('controller'));
   }
 
   extractPositionalParams(renderNode, component, params, attrs);
@@ -121,7 +121,7 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
   // if the component is rendered via {{component}} helper, the first
   // element of `params` is the name of the component, so we need to
   // skip that when the positional parameters are constructed
-  const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
+  const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
   const isNamed = typeof positionalParams === 'string';
   let paramsStream;
 
@@ -221,6 +221,10 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
     var snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
+      if (component._propagateAttrsToThis) {
+        component._propagateAttrsToThis(takeLegacySnapshot(attrs));
+      }
+
       env.renderer.componentUpdateAttrs(component, snapshot);
       component._renderNode.shouldReceiveAttrs = false;
     }
@@ -258,11 +262,9 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   props.attrs = snapshot;
 
   if (!isAngleBracket) {
-    let proto = _component.proto();
-
     assert('controller= is no longer supported', !('controller' in attrs));
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    mergeBindings(props, snapshot);
   } else {
     props._isAngleBracket = true;
   }
@@ -289,28 +291,21 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   return component;
 }
 
-function shadowedAttrs(target, attrs) {
-  let shadowed = {};
-
-  // For backwards compatibility, set the component property
-  // if it has an attr with that name. Undefined attributes
-  // are handled on demand via the `unknownProperty` hook.
-  for (var attr in attrs) {
-    if (attr in target) {
-      // TODO: Should we issue a deprecation here?
-      // deprecate(deprecation(attr));
-      shadowed[attr] = attrs[attr];
-    }
-  }
-
-  return shadowed;
-}
-
 function takeSnapshot(attrs) {
   let hash = {};
 
   for (var prop in attrs) {
     hash[prop] = getCellOrValue(attrs[prop]);
+  }
+
+  return hash;
+}
+
+export function takeLegacySnapshot(attrs) {
+  let hash = {};
+
+  for (var prop in attrs) {
+    hash[prop] = getValue(attrs[prop]);
   }
 
   return hash;

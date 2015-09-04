@@ -8,6 +8,7 @@ import View from 'ember-views/views/view';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
+import { takeLegacySnapshot } from 'ember-htmlbars/node-managers/component-node-manager';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -45,8 +46,11 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
     if (attrs && attrs.viewName) { options.viewName = getValue(attrs.viewName); }
 
-    if (found.component.create && contentScope && contentScope.self) {
-      options._context = getValue(contentScope.self);
+    if (found.component.create && contentScope) {
+      let _self = contentScope.getSelf();
+      if (_self) {
+        options._context = getValue(contentScope.getSelf());
+      }
     }
 
     if (found.self) {
@@ -122,6 +126,10 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       env.renderer.willUpdate(component, snapshot);
 
       if (component._renderNode.shouldReceiveAttrs) {
+        if (component._propagateAttrsToThis) {
+          component._propagateAttrsToThis(takeLegacySnapshot(attrs));
+        }
+
         env.renderer.componentUpdateAttrs(component, snapshot);
         component._renderNode.shouldReceiveAttrs = false;
       }
@@ -171,7 +179,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
       merge(props, createOptions);
     }
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    mergeBindings(props, snapshot);
     props.container = options.parentView ? options.parentView.container : env.container;
     props.renderer = options.parentView ? options.parentView.renderer : props.container && props.container.lookup('renderer:-dom');
     props._viewRegistry = options.parentView ? options.parentView._viewRegistry : props.container && props.container.lookup('-view-registry:main');
@@ -184,6 +192,10 @@ export function createOrUpdateComponent(component, options, createOptions, rende
   } else {
     env.renderer.componentUpdateAttrs(component, snapshot);
     setProperties(component, props);
+
+    if (component._propagateAttrsToThis) {
+      component._propagateAttrsToThis(takeLegacySnapshot(attrs));
+    }
   }
 
   if (options.parentView) {
@@ -198,23 +210,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
   renderNode.emberView = component;
   return component;
-}
-
-function shadowedAttrs(target, attrs) {
-  let shadowed = {};
-
-  // For backwards compatibility, set the component property
-  // if it has an attr with that name. Undefined attributes
-  // are handled on demand via the `unknownProperty` hook.
-  for (var attr in attrs) {
-    if (attr in target) {
-      // TODO: Should we issue a deprecation here?
-      // deprecate(deprecation(attr));
-      shadowed[attr] = attrs[attr];
-    }
-  }
-
-  return shadowed;
 }
 
 function takeSnapshot(attrs) {

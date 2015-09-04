@@ -1,4 +1,4 @@
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import {
   read,
   readArray
@@ -25,7 +25,7 @@ export default function closureAction(morph, env, scope, params, hash, template,
       // on-change={{action setName}}
       // element-space actions look to "controller" then target. Here we only
       // look to "target".
-      target = read(scope.self);
+      target = read(scope.getSelf());
       action = read(rawAction);
       let actionType = typeof action;
 

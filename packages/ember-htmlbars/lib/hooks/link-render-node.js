@@ -14,7 +14,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
 
   var keyword = env.hooks.keywords[path];
   if (keyword && keyword.link) {
-    keyword.link(renderNode.state, params, hash);
+    keyword.link(renderNode.getState(), params, hash);
   } else {
     switch (path) {
       case 'unbound': return true;

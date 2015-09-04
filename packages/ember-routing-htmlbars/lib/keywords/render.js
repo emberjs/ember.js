@@ -117,7 +117,7 @@ export default {
   },
 
   render(node, env, scope, params, hash, template, inverse, visitor) {
-    var state = node.state;
+    var state = node.getState();
     var name = params[0];
     var context = params[1];
 
@@ -185,7 +185,7 @@ export default {
       controllerFullName = 'controller:' + controllerName;
     }
 
-    var parentController = read(scope.locals.controller);
+    var parentController = read(scope.getLocal('controller'));
     var controller;
 
     // choose name
@@ -217,8 +217,6 @@ export default {
 
     hash.viewName = camelize(name);
 
-    // var state = node.state;
-    // var parentView = scope.view;
     if (template && template.raw) {
       template = template.raw;
     }
@@ -244,7 +242,7 @@ export default {
 
   rerender(node, env, scope, params, hash, template, inverse, visitor) {
     var model = read(params[1]);
-    node.state.controller.set('model', model);
+    node.getState().controller.set('model', model);
   }
 };
 

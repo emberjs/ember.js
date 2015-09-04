@@ -103,7 +103,7 @@ export default {
   },
 
   render(renderNode, env, scope, params, hash, template, inverse, visitor) {
-    var state = renderNode.state;
+    var state = renderNode.getState();
     var parentView = env.view;
     var outletState = state.outletState;
     var toRender = outletState.render;
