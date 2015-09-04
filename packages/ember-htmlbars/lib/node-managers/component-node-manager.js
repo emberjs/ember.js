@@ -33,7 +33,7 @@ function ComponentNodeManager(component, isAngleBracket, scope, renderNode, attr
 
 export default ComponentNodeManager;
 
-ComponentNodeManager.create = function(renderNode, env, options) {
+ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, env, options) {
   let { tagName,
         params,
         attrs,
@@ -163,10 +163,10 @@ function configureCreateOptions(attrs, createOptions) {
   if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
 }
 
-ComponentNodeManager.prototype.render = function(_env, visitor) {
+ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_env, visitor) {
   var { component } = this;
 
-  return instrument(component, function() {
+  return instrument(component, function ComponentNodeManager_render_instrument() {
     let env = _env.childWithView(component);
 
     env.renderer.componentWillRender(component);
@@ -212,10 +212,10 @@ function nextElementSibling(node) {
   }
 }
 
-ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
+ComponentNodeManager.prototype.rerender = function ComponentNodeManager_rerender(_env, attrs, visitor) {
   var component = this.component;
 
-  return instrument(component, function() {
+  return instrument(component, function ComponentNodeManager_rerender_instrument() {
     let env = _env.childWithView(component);
 
     var snapshot = takeSnapshot(attrs);
@@ -245,7 +245,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   }, this);
 };
 
-ComponentNodeManager.prototype.destroy = function() {
+ComponentNodeManager.prototype.destroy = function ComponentNodeManager_destroy() {
   let component = this.component;
 
   // Clear component's render node. Normally this gets cleared
