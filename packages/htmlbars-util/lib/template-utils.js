@@ -58,7 +58,7 @@ Block.prototype._firstRender = function(env, blockArguments, self, renderNode, p
 
   renderAndCleanup(renderNode, env, options, null, function() {
     options.renderState.morphToClear = null;
-    let renderOptions = new RenderOptions(renderNode, undefined, blockArguments);
+    let renderOptions = new RenderOptions({ renderNode, blockArguments });
     render(template, env, shadowScope, renderOptions);
   });
 };

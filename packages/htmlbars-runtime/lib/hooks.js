@@ -89,7 +89,7 @@ export function wrap(template) {
       var scope = env.hooks.createFreshScope();
 
       let contextualElement = options && options.contextualElement;
-      let renderOptions = new RenderOptions(null, self, blockArguments, contextualElement);
+      let renderOptions = new RenderOptions({ self, blockArguments, contextualElement });
 
       return render(template, env, scope, renderOptions);
     }
@@ -154,7 +154,7 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
-    let renderOptions = new RenderOptions(morph, self, blockArguments);
+    let renderOptions = new RenderOptions({ renderNode: morph, self, blockArguments });
     render(template, env, scope, renderOptions);
   };
 }
@@ -1008,8 +1008,13 @@ function componentFallback(morph, env, scope, tagName, attrs, template) {
   for (var name in attrs) {
     element.setAttribute(name, env.hooks.getValue(attrs[name]));
   }
-  var fragment = render(template, env, scope, {}).fragment;
-  element.appendChild(fragment);
+
+  var result = render(template, env, scope, {});
+
+  if (result.fragment) {
+    element.appendChild(result.fragment);
+  }
+
   morph.setNode(element);
 }
 
