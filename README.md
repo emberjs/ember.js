@@ -26,6 +26,8 @@ See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTI
 
 # How to Run Unit Tests
 
+Pull requests should pass the Ember.js unit tests. Do the following to run these tests.
+
 1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
 2. To start the development server, run `npm start`.
