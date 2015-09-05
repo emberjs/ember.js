@@ -26,11 +26,13 @@ See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTI
 
 # How to Run Unit Tests
 
+Pull requests should pass the Ember.js unit tests. Do the following to run these tests.
+
 1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
 2. To start the development server, run `npm start`.
 
-3. To run all tests, visit <http://localhost:4200/tests/>.
+3. To run all tests, visit <http://localhost:4200/>.
 
 4. To test a specific package, visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
 `PACKAGE_NAME` with the name of the package you want to test. For
