@@ -135,7 +135,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   equal(Ember.$('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
-QUnit.test('Assigning templateName to a component should setup the template as a layout', function() {
+QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
@@ -151,6 +151,70 @@ QUnit.test('Assigning templateName to a component should setup the template as a
       layoutName: 'foo-bar-baz'
     }));
   });
+
+  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+});
+
+QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
+  expect(1);
+
+  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
+  Ember.TEMPLATES['foo-bar-baz'] = compile('No way!');
+
+  boot(function() {
+    registry.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    registry.register('component:my-component', Ember.Component.extend({
+      text: 'inner',
+      layoutName: 'foo-bar-baz',
+      layout: compile('{{text}}-{{yield}}')
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+});
+
+QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
+  expect(2);
+
+  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
+
+  expectDeprecation(function() {
+    boot(function() {
+      registry.register('controller:application', Ember.Controller.extend({
+        'text': 'outer'
+      }));
+
+      registry.register('component:my-component', Ember.Component.extend({
+        text: 'inner',
+        defaultLayout: compile('{{text}}-{{yield}}')
+      }));
+    });
+  }, /Specifying `defaultLayout` to .+ is deprecated\./);
+
+  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+});
+
+QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
+  expect(2);
+
+  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
+  Ember.TEMPLATES['components/my-component'] = compile('{{text}}-{{yield}}');
+
+  expectDeprecation(function() {
+    boot(function() {
+      registry.register('controller:application', Ember.Controller.extend({
+        'text': 'outer'
+      }));
+
+      registry.register('component:my-component', Ember.Component.extend({
+        text: 'inner',
+        defaultLayout: compile('should not see this!')
+      }));
+    });
+  }, /Specifying `defaultLayout` to .+ is deprecated\./);
 
   equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });

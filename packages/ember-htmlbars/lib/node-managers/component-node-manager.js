@@ -79,7 +79,9 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // If the component specifies its layout via the `layout` property
   // instead of using the template looked up in the container, get it
   // now that we have the component instance.
-  layout = get(component, 'layout') || layout;
+  if (!layout) {
+    layout = get(component, 'layout');
+  }
 
 
   let results = buildComponentTemplate(

@@ -62,6 +62,14 @@ QUnit.test('Specifying both templateName and layoutName to a component is NOT de
   equal(get(component, 'layoutName'), 'hum-drum');
 });
 
+QUnit.test('Specifying a defaultLayout to a component is deprecated', function() {
+  expectDeprecation(function() {
+    Component.extend({
+      defaultLayout: 'hum-drum'
+    }).create();
+  }, /Specifying `defaultLayout` to .+ is deprecated\./);
+});
+
 QUnit.test('Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated', function() {
   expectNoDeprecation();
   var Parent = Component.extend({
