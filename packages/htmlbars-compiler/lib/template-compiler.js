@@ -1,16 +1,175 @@
-import FragmentOpcodeCompiler from './fragment-opcode-compiler';
-import FragmentJavaScriptCompiler from './fragment-javascript-compiler';
-import HydrationOpcodeCompiler from './hydration-opcode-compiler';
-import HydrationJavaScriptCompiler from './hydration-javascript-compiler';
 import TemplateVisitor from "./template-visitor";
 import { assert } from "./utils";
-import { repeat } from "../htmlbars-util/quoting";
-import { map } from "../htmlbars-util/array-utils";
 import { getAttrNamespace } from "../htmlbars-util";
 import { isHelper } from "../htmlbars-syntax/utils";
 import { struct } from "../htmlbars-util/object-utils";
 import * as types from "../htmlbars-util/object-utils";
 
+class NewJavaScriptCompiler {
+  static process(opcodes) {
+    let compiler = new NewJavaScriptCompiler(opcodes);
+    compiler.process();
+    return compiler.templates;
+  }
+
+  constructor(opcodes) {
+    this.opcodes = opcodes;
+    this.output = [];
+    this.expressions = [];
+    this.templates = [];
+  }
+
+  process() {
+    this.opcodes.forEach(([opcode, ...args]) => {
+      if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on NewJavaScriptCompiler`); }
+      this[opcode](...args);
+    });
+  }
+
+  /// Nesting
+
+  startProgram([program]) {
+    this.locals = program.blockParams;
+  }
+
+  endProgram() {
+    let template = {};
+    // REFACTOR TODO: meta
+    if (this.locals.length) {
+      template.locals = this.locals;
+      this.locals = [];
+    }
+
+    template.statements = this.output;
+    this.output = [];
+
+    this.templates.push(template);
+  }
+
+  /// Statements
+
+  text(content) {
+    this.push('text', content);
+  }
+
+  comment(value) {
+    this.push('comment', value);
+  }
+
+  unknown(path, unsafe) {
+    this.push('unknown', path, unsafe || null);
+  }
+
+  inline(path, unsafe) {
+    let params = this.popExpression();
+    let hash = this.popExpression();
+
+    this.push('inline', path, params, hash, unsafe || null);
+  }
+
+  block(path, template, inverse) {
+    let params = this.popExpression();
+    let hash = this.popExpression();
+
+    this.push('block', path, params, hash, template, inverse);
+  }
+
+  component(tag, template) {
+    let attrs = this.popExpression();
+    this.push('component', tag, attrs, template);
+  }
+
+  openElement(tag) {
+    this.push('openElement', tag);
+  }
+
+  closeElement() {
+    this.push('closeElement');
+  }
+
+  staticAttr(name, namespace) {
+    let value = this.popExpression();
+    this.push('staticAttr', name, value, namespace);
+  }
+
+  dynamicAttr(name, namespace) {
+    let value = this.popExpression();
+    this.push('dynamicAttr', name, value, namespace);
+  }
+
+  /// Expressions
+
+  literal(value) {
+    this.pushValue(value);
+  }
+
+  get(path) {
+    this.pushExpression('get', path);
+  }
+
+  concat() {
+    this.pushExpression('concat', this.popExpression());
+  }
+
+  helper(path) {
+    let params = this.popExpression();
+    let hash = this.popExpression();
+
+    this.pushExpression('helper', path, params, hash);
+  }
+
+  /// Stack Management Opcodes
+
+  pushLiteral(literal) {
+    this.pushValue(literal);
+  }
+
+  prepareArray(size) {
+    let values = [];
+
+    for (let i = 0; i < size; i++) {
+      values.push(this.popExpression());
+    }
+
+    this.pushValue(values);
+  }
+
+  prepareObject(size) {
+    assert(this.expressions.length >= size, `Expected ${size} expressions on the stack, found ${this.expressions.length}`);
+
+    let pairs = [];
+
+    for (let i = 0; i < size; i++) {
+      pairs.push(this.popExpression(), this.popExpression());
+    }
+
+    this.pushValue(pairs);
+  }
+
+  /// Utilities
+
+  push(name, ...args) {
+    while (args[args.length - 1] === null) {
+      args.pop();
+    }
+
+    this.output.push([name, ...args]);
+  }
+
+  pushExpression(name, ...args) {
+    this.expressions.push([name, ...args]);
+  }
+
+  pushValue(val) {
+    this.expressions.push(val);
+  }
+
+  popExpression() {
+    assert(this.expressions.length, "No expression found on stack");
+    return this.expressions.pop();
+  }
+
+}
 export class NewTemplateCompiler {
   static compile(options, ast) {
     let templateVisitor = new TemplateVisitor();
@@ -248,351 +407,3 @@ export let Template = struct({
   templates: types.ARRAY
 });
 
-class NewJavaScriptCompiler {
-  static process(opcodes) {
-    let compiler = new NewJavaScriptCompiler(opcodes);
-    compiler.process();
-    return compiler.templates;
-  }
-
-  constructor(opcodes) {
-    this.opcodes = opcodes;
-    this.output = [];
-    this.expressions = [];
-    this.templates = [];
-  }
-
-  process() {
-    this.opcodes.forEach(([opcode, ...args]) => {
-      if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on NewJavaScriptCompiler`); }
-      this[opcode](...args);
-    });
-  }
-
-  /// Nesting
-
-  startProgram([program]) {
-    this.locals = program.blockParams;
-  }
-
-  endProgram() {
-    let template = {};
-    // REFACTOR TODO: meta
-    if (this.locals.length) {
-      template.locals = this.locals;
-      this.locals = [];
-    }
-
-    template.statements = this.output;
-    this.output = [];
-
-    this.templates.push(template);
-  }
-
-  /// Statements
-
-  text(content) {
-    this.push('text', content);
-  }
-
-  comment(value) {
-    this.push('comment', value);
-  }
-
-  unknown(path, unsafe) {
-    this.push('unknown', path, unsafe || null);
-  }
-
-  inline(path, unsafe) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.push('inline', path, params, hash, unsafe || null);
-  }
-
-  block(path, template, inverse) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.push('block', path, params, hash, template, inverse);
-  }
-
-  component(tag, template) {
-    let attrs = this.popExpression();
-    this.push('component', tag, attrs, template);
-  }
-
-  openElement(tag) {
-    this.push('openElement', tag);
-  }
-
-  closeElement() {
-    this.push('closeElement');
-  }
-
-  staticAttr(name, namespace) {
-    let value = this.popExpression();
-    this.push('staticAttr', name, value, namespace);
-  }
-
-  dynamicAttr(name, namespace) {
-    let value = this.popExpression();
-    this.push('dynamicAttr', name, value, namespace);
-  }
-
-  /// Expressions
-
-  literal(value) {
-    this.pushValue(value);
-  }
-
-  get(path) {
-    this.pushExpression('get', path);
-  }
-
-  concat() {
-    this.pushExpression('concat', this.popExpression());
-  }
-
-  helper(path) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.pushExpression('helper', path, params, hash);
-  }
-
-  /// Stack Management Opcodes
-
-  pushLiteral(literal) {
-    this.pushValue(literal);
-  }
-
-  prepareArray(size) {
-    let values = [];
-
-    for (let i = 0; i < size; i++) {
-      values.push(this.popExpression());
-    }
-
-    this.pushValue(values);
-  }
-
-  prepareObject(size) {
-    assert(this.expressions.length >= size, `Expected ${size} expressions on the stack, found ${this.expressions.length}`);
-
-    let pairs = [];
-
-    for (let i = 0; i < size; i++) {
-      pairs.push(this.popExpression(), this.popExpression());
-    }
-
-    this.pushValue(pairs);
-  }
-
-  /// Utilities
-
-  push(name, ...args) {
-    while (args[args.length - 1] === null) {
-      args.pop();
-    }
-
-    this.output.push([name, ...args]);
-  }
-
-  pushExpression(name, ...args) {
-    this.expressions.push([name, ...args]);
-  }
-
-  pushValue(val) {
-    this.expressions.push(val);
-  }
-
-  popExpression() {
-    assert(this.expressions.length, "No expression found on stack");
-    return this.expressions.pop();
-  }
-
-}
-
-function TemplateCompiler(options) {
-  this.options = options || {};
-  this.consumerBuildMeta = this.options.buildMeta || function() {};
-  this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
-  this.fragmentCompiler = new FragmentJavaScriptCompiler();
-  this.hydrationOpcodeCompiler = new HydrationOpcodeCompiler();
-  this.hydrationCompiler = new HydrationJavaScriptCompiler();
-  this.templates = [];
-  this.childTemplates = [];
-}
-
-export default TemplateCompiler;
-
-TemplateCompiler.prototype.compile = function(ast) {
-  var templateVisitor = new TemplateVisitor();
-  templateVisitor.visit(ast);
-
-  let compiler = new NewTemplateCompiler(this.options);
-  let opcodes = compiler.process(templateVisitor.actions);
-  return NewJavaScriptCompiler.process(opcodes);
-};
-
-TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, blankChildTextNodes) {
-  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
-  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
-
-  this.childTemplates.length = 0;
-  while(childTemplateCount--) {
-    this.childTemplates.push(this.templates.pop());
-  }
-};
-
-TemplateCompiler.prototype.insertBoundary = function(first) {
-  this.hydrationOpcodeCompiler.insertBoundary(first);
-};
-
-TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
-  var vars = '';
-  if (this.childTemplates) {
-    for (var i = 0; i < this.childTemplates.length; i++) {
-      vars += indent + 'var child' + i + ' = ' + this.childTemplates[i] + ';\n';
-    }
-  }
-  return vars;
-};
-
-TemplateCompiler.prototype.getHydrationHooks = function(indent, hooks) {
-  var hookVars = [];
-  for (var hook in hooks) {
-    hookVars.push(hook + ' = hooks.' + hook);
-  }
-
-  if (hookVars.length > 0) {
-    return indent + 'var hooks = env.hooks, ' + hookVars.join(', ') + ';\n';
-  } else {
-    return '';
-  }
-};
-
-TemplateCompiler.prototype.endProgram = function(program, programDepth) {
-  this.fragmentOpcodeCompiler.endProgram(program);
-  this.hydrationOpcodeCompiler.endProgram(program);
-
-  var indent = repeat("  ", programDepth);
-  var options = {
-    indent: indent + "    "
-  };
-
-  // function build(dom) { return fragment; }
-  var fragmentProgram = this.fragmentCompiler.compile(
-    this.fragmentOpcodeCompiler.opcodes,
-    options
-  );
-
-  // function hydrate(fragment) { return mustaches; }
-  var hydrationPrograms = this.hydrationCompiler.compile(
-    this.hydrationOpcodeCompiler.opcodes,
-    options
-  );
-
-  var blockParams = program.blockParams || [];
-
-  var templateSignature = 'context, rootNode, env, options';
-  if (blockParams.length > 0) {
-    templateSignature += ', blockArguments';
-  }
-
-  var statements = map(hydrationPrograms.statements, function(s) {
-    return indent+'      '+JSON.stringify(s);
-  }).join(",\n");
-
-  var locals = JSON.stringify(hydrationPrograms.locals);
-
-  var templates = map(this.childTemplates, function(_, index) {
-    return 'child' + index;
-  }).join(', ');
-
-  var template =
-    '(function() {\n' +
-    this.getChildTemplateVars(indent + '  ') +
-    indent+'  return {\n' +
-    this.buildMeta(indent+'    ', program);
-
-  if (program.body.length === 0) {
-    template += indent + '    isEmpty: true,\n';
-  } else {
-    template +=
-      indent+'    buildFragment: ' + fragmentProgram + ',\n' +
-      indent+'    buildRenderNodes: ' + hydrationPrograms.createMorphsProgram + ',\n';
-  }
-
-  if (blockParams.length > 0) {
-    template += indent + `    arity: ${blockParams.length},\n`;
-  }
-
-  if (hydrationPrograms.statements.length > 0) {
-    template += indent+`    statements: [\n${statements}\n${indent}    ],\n`;
-  }
-
-  if (hydrationPrograms.locals.length > 0) {
-    template += indent+`    locals: ${locals},\n`;
-  }
-
-  if (templates.length > 0) {
-    template += indent+`    templates: [${templates}]\n`;
-  }
-
-  template +=
-    indent+'  };\n' +
-    indent+'}())';
-
-  this.templates.push(template);
-};
-
-TemplateCompiler.prototype.buildMeta = function(indent, program) {
-  var meta = this.consumerBuildMeta(program) || {};
-
-  var head = indent+'meta: ';
-  var stringMeta = JSON.stringify(meta, null, 2).replace(/\n/g, '\n' + indent);
-  var tail = ',\n';
-
-  return head + stringMeta + tail;
-};
-
-TemplateCompiler.prototype.openElement = function(element, i, l, r, c, b) {
-  this.fragmentOpcodeCompiler.openElement(element, i, l, r, c, b);
-  this.hydrationOpcodeCompiler.openElement(element, i, l, r, c, b);
-};
-
-TemplateCompiler.prototype.closeElement = function(element, i, l, r) {
-  this.fragmentOpcodeCompiler.closeElement(element, i, l, r);
-  this.hydrationOpcodeCompiler.closeElement(element, i, l, r);
-};
-
-TemplateCompiler.prototype.component = function(component, i, l, s) {
-  this.fragmentOpcodeCompiler.component(component, i, l, s);
-  this.hydrationOpcodeCompiler.component(component, i, l, s);
-};
-
-TemplateCompiler.prototype.block = function(block, i, l, s) {
-  this.fragmentOpcodeCompiler.block(block, i, l, s);
-  this.hydrationOpcodeCompiler.block(block, i, l, s);
-};
-
-TemplateCompiler.prototype.text = function(string, i, l, r) {
-  this.fragmentOpcodeCompiler.text(string, i, l, r);
-  this.hydrationOpcodeCompiler.text(string, i, l, r);
-};
-
-TemplateCompiler.prototype.comment = function(string, i, l, r) {
-  this.fragmentOpcodeCompiler.comment(string, i, l, r);
-  this.hydrationOpcodeCompiler.comment(string, i, l, r);
-};
-
-TemplateCompiler.prototype.mustache = function (mustache, i, l, s) {
-  this.fragmentOpcodeCompiler.mustache(mustache, i, l, s);
-  this.hydrationOpcodeCompiler.mustache(mustache, i, l, s);
-};
-
-TemplateCompiler.prototype.setNamespace = function(namespace) {
-  this.fragmentOpcodeCompiler.setNamespace(namespace);
-};
