@@ -1,29 +1,50 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
-import { RenderOptions } from "../htmlbars-runtime/render";
+import { struct } from "../htmlbars-util/object-utils";
+import * as types from "../htmlbars-util/object-utils";
+
+export const BlockOptions = struct({
+  env: types.OBJECT,
+  blockArguments: types.ARRAY(undefined),
+  self: types.ANY,
+  hostOptions: types.OBJECT,
+  morph: types.OBJECT,
+  parentScope: types.OBJECT,
+  visitor: types.FUNCTION
+});
 
 export class Block {
+  static withHostOptions({ scope, template }, hostOptions) {
+    let block = new Block({ scope, template });
+    block.hostOptions = hostOptions;
+    return block;
+  }
+
   constructor({ scope, template }) {
     this.scope = scope;
     this.template = template;
+
+    // host options are passed to setupScope and updateScope, and their
+    // presence triggers customSetupScope and customUpdateScope
+    this.hostOptions = null;
   }
 
-  invoke(env, blockArguments, self, morph, _parentScope, visitor) {
+  invoke({ env, self, blockArguments, morph, visitor }) {
     if (morph.lastResult) {
-      morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
+      morph.lastResult.revalidateWith(env, self, blockArguments, visitor);
     } else {
       this._firstRender(morph, env, blockArguments, self);
     }
   }
 
   _firstRender(morph, env, blockArguments, self) {
-    let { template, scope } = this;
+    let { template, scope, hostOptions } = this;
 
-    if (self !== undefined || template.arity) {
+    if (self !== undefined || template.arity || hostOptions) {
       scope = env.hooks.createChildScope(scope);
-      env.hooks.setupScope(env, scope, self, template.locals, blockArguments);
+      env.hooks.setupScope(env, scope, self, template.locals, blockArguments, hostOptions);
     }
 
-    template.renderIn(env, scope, new RenderOptions({ renderNode: morph, blockArguments, self }));
+    template.renderIn(morph, env, scope);
   }
 }
 
@@ -81,7 +102,8 @@ export function clearMorph(morph, env, destroySelf) {
   visitChildren(morph.childNodes, destroyNode);
 
   // TODO: Deal with logical children that are not in the DOM tree
-  morph.clear();
+  morph.emptyForRerender();
+
   if (didCleanup) { didCleanup(env, morph, destroySelf); }
 
   morph.lastResult = null;

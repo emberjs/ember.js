@@ -29,26 +29,21 @@ export function alwaysDirtyVisitor(statement, morph, env, scope, visitor) {
   statement.evaluate(morph, env, scope, visitor);
 }
 
-export default function(statement, morph, env, scope, visitor) {
-  dirtyCheck(env, morph, visitor, visitor => {
-    alwaysDirtyVisitor(statement, morph, env, scope, visitor);
-  });
-}
-
-function dirtyCheck(_env, morph, visitor, callback) {
-  var isDirty = morph.isDirty;
-  var isSubtreeDirty = morph.isSubtreeDirty;
-  var env = _env;
+export default function(statement, morph, env, scope, _visitor) {
+  let isDirty = morph.isDirty;
+  let isSubtreeDirty = morph.isSubtreeDirty;
+  let visitor = _visitor;
 
   if (isSubtreeDirty) {
-    callback(alwaysDirtyVisitor);
-  } else if (isDirty) {
-    callback(visitor);
-  } else {
+    visitor = alwaysDirtyVisitor;
+  } else if (!isDirty) {
     if (morph.buildChildEnv) {
       env = morph.buildChildEnv(morph.state, env);
     }
     validateChildMorphs(env, morph, visitor);
+    return;
   }
-}
 
+  morph.isDirty = morph.isSubtreeDirty = false;
+  statement.evaluate(morph, env, scope, visitor);
+}

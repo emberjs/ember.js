@@ -65,7 +65,7 @@ test("Simple elements can be re-rendered", function() {
 
   var oldFirstChild = fragment.firstChild;
 
-  result.revalidate();
+  result.revalidate(env);
 
   strictEqual(fragment.firstChild, oldFirstChild);
   equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
@@ -683,8 +683,7 @@ test("Node helpers can be used for attribute bindings", function() {
   equalTokens(result.fragment, '<a href="linky.html">linky</a>');
   object.url = 'zippy.html';
 
-  result.dirty();
-  result.revalidate();
+  result.rerender(env);
 
   equalTokens(result.fragment, '<a href="zippy.html">linky</a>');
 });
