@@ -1,105 +1,33 @@
 import { visitChildren } from "../htmlbars-util/morph-utils";
-import { nestedRender, RenderOptions } from "../htmlbars-runtime/render";
+import { RenderOptions } from "../htmlbars-runtime/render";
 
-export function RenderState(renderNode, morphList) {
-  // The morph list that is no longer needed and can be
-  // destroyed.
-  this.morphListToClear = morphList;
-
-  // The morph list that needs to be pruned of any items
-  // that were not yielded on a subsequent render.
-  this.morphListToPrune = null;
-
-  // A map of morphs for each item yielded in during this
-  // rendering pass. Any morphs in the DOM but not in this map
-  // will be pruned during cleanup.
-  this.handledMorphs = {};
-  this.collisions = undefined;
-
-  // The morph to clear once rendering is complete. By
-  // default, we set this to the previous morph (to catch
-  // the case where nothing is yielded; in that case, we
-  // should just clear the morph). Otherwise this gets set
-  // to null if anything is rendered.
-  this.morphToClear = renderNode;
-
-  this.shadowOptions = null;
-}
-
-function Block(template, blockOptions) {
-  this.template = template;
-  this.blockOptions = blockOptions;
-  this.arity = template.arity;
-}
-
-Block.prototype.invoke = function(env, blockArguments, self, renderNode, parentScope, visitor) {
-  if (renderNode.lastResult) {
-    renderNode.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
-  } else {
-    this._firstRender(env, blockArguments, self, renderNode, parentScope);
-  }
-};
-
-Block.prototype._firstRender = function(env, blockArguments, self, renderNode, parentScope) {
-  let options = { renderState: new RenderState(renderNode) };
-  let { template, blockOptions: { scope } } = this;
-  let shadowScope = scope ? env.hooks.createChildScope(scope) : env.hooks.createFreshScope();
-
-  env.hooks.bindShadowScope(env, parentScope, shadowScope, this.blockOptions.options);
-
-  if (self !== undefined) {
-    env.hooks.bindSelf(env, shadowScope, self);
-  } else if (this.blockOptions.self !== undefined) {
-    env.hooks.bindSelf(env, shadowScope, this.blockOptions.self);
+export class Block {
+  constructor({ scope, template }) {
+    this.scope = scope;
+    this.template = template;
   }
 
-  bindBlocks(env, shadowScope, this.blockOptions.yieldTo);
-
-  renderAndCleanup(renderNode, env, options, null, function() {
-    options.renderState.morphToClear = null;
-    let renderOptions = new RenderOptions({ renderNode, blockArguments });
-    nestedRender(template, env, shadowScope, renderOptions);
-  });
-};
-
-export function blockFor(template, blockOptions) {
-  return new Block(template, blockOptions);
-}
-
-function bindBlocks(env, shadowScope, blocks) {
-  if (!blocks) {
-    return;
-  }
-  if (blocks instanceof Block) {
-    env.hooks.bindBlock(env, shadowScope, blocks);
-  } else {
-    for (var name in blocks) {
-      if (blocks.hasOwnProperty(name)) {
-        env.hooks.bindBlock(env, shadowScope, blocks[name], name);
-      }
+  invoke(env, blockArguments, self, morph, _parentScope, visitor) {
+    if (morph.lastResult) {
+      morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
+    } else {
+      this._firstRender(morph, env, blockArguments, self);
     }
   }
+
+  _firstRender(morph, env, blockArguments, self) {
+    let { template, scope } = this;
+
+    if (self !== undefined || template.arity) {
+      scope = env.hooks.createChildScope(scope);
+      env.hooks.setupScope(env, scope, self, template.locals, blockArguments);
+    }
+
+    template.renderIn(env, scope, new RenderOptions({ renderNode: morph, blockArguments, self }));
+  }
 }
 
-export function renderAndCleanup(morph, env, options, shadowOptions, callback) {
-  // The RenderState object is used to collect information about what the
-  // helper or hook being invoked has yielded. Once it has finished either
-  // yielding multiple items (via yieldItem) or a single template (via
-  // yieldTemplate), we detect what was rendered and how it differs from
-  // the previous render, cleaning up old state in DOM as appropriate.
-  var renderState = options.renderState;
-  renderState.collisions = undefined;
-  renderState.shadowOptions = shadowOptions;
-
-  // Invoke the callback, instructing it to save information about what it
-  // renders into RenderState.
-  var result = callback(options);
-
-  // The hook can opt-out of cleanup if it handled cleanup itself.
-  if (result && result.handled) {
-    return;
-  }
-
+export function finishRender(morph, env, renderState) {
   var morphMap = morph.morphMap;
 
   // Walk the morph list, clearing any items that were yielded in a previous

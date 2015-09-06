@@ -68,7 +68,10 @@ prototype.nextSibling = function() {
 prototype.appendNode = function(node) {
   assert(!this.rendered, 'Appending nodes is only supported on first render');
   this.lastNode = node;
-  this.firstNode = this.firstNode || node;
+
+  if (!this.firstNode) {
+    this.updateFirstNode(node);
+  }
 
   this.appendToParent.insertBefore(node, this.nextSibling);
 };
@@ -116,6 +119,7 @@ prototype.nodeEvaluated = function() {
   }
   this.nextSibling = null;
   this.appendToParent = null;
+  this.updateLastNode(this.lastNode);
   this._syncLastNode();
 };
 
