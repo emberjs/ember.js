@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 1.13.10 (September 6, 2015)
+
+- [#12104](https://github.com/emberjs/ember.js/pull/12104) [BUGFIX] Ensure `concatenatedProperties` are not stomped.
+- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly. Fixes memory leak with attributes specified within quotes in the template (i.e. `<div data-foo="{{somethign}}"></div>`).
+- [#12272](https://github.com/emberjs/ember.js/pull/12272) [BUGFIX] Update HTMLBars to fix memory leak when an `{{each}}` is inside an `{{if}}`.
+
+
 ### 1.13.9 (August 22, 2015)
 
 - [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require calling `this._super(...arguments)` in views/components when implementing `didRecieveAttrs`.
