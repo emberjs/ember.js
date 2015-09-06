@@ -73,7 +73,9 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
   // If the component specifies its layout via the `layout` property
   // instead of using the template looked up in the container, get it
   // now that we have the component instance.
-  layout = get(component, 'layout') || layout;
+  if (!layout) {
+    layout = get(component, 'layout');
+  }
 
   runInDebug(() => {
     if (isAngleBracket) {

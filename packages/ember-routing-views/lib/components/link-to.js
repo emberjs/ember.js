@@ -344,7 +344,7 @@ linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   @private
 **/
 let LinkComponent = EmberComponent.extend({
-  defaultLayout: linkToTemplate,
+  layout: linkToTemplate,
 
   tagName: 'a',
 
