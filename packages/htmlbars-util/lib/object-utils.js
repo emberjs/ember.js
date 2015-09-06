@@ -1,3 +1,7 @@
+/*globals console*/
+
+import { assert } from "../htmlbars-util";
+
 export function merge(options, defaults) {
   for (var prop in defaults) {
     if (options.hasOwnProperty(prop)) { continue; }
@@ -33,3 +37,77 @@ export function keyLength(obj) {
 
   return count;
 }
+
+function ALWAYS_PASSES() { return true; }
+
+function type(debugName, _typeDef) {
+  let typeDef = merge(_typeDef, {
+    debugName: debugName,
+    default: undefined,
+    check: ALWAYS_PASSES,
+    required: false
+  });
+
+  let check = typeDef.check;
+  if (typeof check === 'string') {
+    typeDef.check = function(val) { return typeof val === check; };
+  }
+
+  let typeFunc = function(overriddenDefault) {
+    return merge({ default: overriddenDefault }, typeDef);
+  };
+
+  merge(typeFunc, typeDef);
+  return typeFunc;
+}
+
+const DEFAULT_FUNCTION = function() {};
+
+export const REQUIRED = type('REQUIRED', {}, (val, presence) => !!presence);
+export const ANY = type('ANY', { default: undefined });
+export const STRING = type('STRING', { default: '', check: 'string' });
+export const BOOLEAN = type('BOOLEAN', { default: false, check: 'boolean' });
+export const OBJECT = type('OBJECT', { default: null, check: 'object' });
+export const NUMBER = type('NUMBER', 0, { default: 'number' });
+export const FUNCTION = type('FUNCTION', { default: DEFAULT_FUNCTION, check: 'function' });
+export const ARRAY = type('ARRAY', { default: null, check: val => Array.isArray(val) });
+
+let alreadyWarned = false;
+export function debugStruct(shape) {
+  if (typeof console !== 'undefined' && !alreadyWarned) {
+    alreadyWarned = true;
+    console.log("Do not leave debugStruct around when not developing HTMLBars");
+  }
+
+  let keys = Object.keys(shape);
+
+  return function(options) {
+    keys.forEach(field => {
+      let type = shape[field];
+
+      if (options[field] !== undefined) {
+        assert(type.check(options[field]), `${field} failed the ${type.debugName} type check; val=${options[field]}`);
+        this[field] = options[field];
+      } else {
+        assert(!type.required, `${field} was required, but not provided`);
+        this[field] = shape[field].default;
+      }
+    });
+    Object.seal(this);
+  };
+}
+
+export function prodStruct(shape) {
+  let keys = Object.keys(shape);
+  let len = keys.length;
+
+  return function(options) {
+    for (let i = 0; i < len; i++) {
+      let key = keys[i];
+      let val = options[key];
+      this[key] = val === undefined ? shape[key].default : val;
+    }
+  };
+}
+
+export { debugStruct as struct };

@@ -256,14 +256,20 @@ test("The compiler can handle top-level unescaped HTML", function() {
   compilesTo('{{{html}}}', '<strong>hello</strong>', { html: '<strong>hello</strong>' });
 });
 
+// REFACTOR TODO: This exists because if we add back boundary nodes (which we
+// likely will for now), I don't want to have to change it in a bunch of places
+// again.
+function firstChild(fragment) {
+  return fragment.firstChild;
+}
+
 test("The compiler can handle top-level unescaped tr", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
   var fragment = template.render(context, env, { contextualElement: document.createElement('table') }).fragment;
 
   equal(
-    fragment.firstChild.nextSibling.tagName, 'TR',
-    "root tr is present" );
+    firstChild(fragment).tagName, 'TR', "root tr is present" );
 });
 
 test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
@@ -272,9 +278,16 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
   var fragment = template.render(context, env, { contextualElement: document.createElement('tr') }).fragment;
 
   equal(
-    fragment.firstChild.nextSibling.tagName, 'TD',
+    firstChild(fragment).tagName, 'TD',
     "root td is returned" );
 });
+
+// REFACTOR TODO: Like firstChild, this exists because if we add back boundary
+// nodes (which we likely will for now), I don't want to have to change it in
+// a bunch of places again.
+function nextMorph(node) {
+  return node;
+}
 
 test("The compiler can handle unescaped tr in top of content", function() {
   registerHelper('test', function() {
@@ -286,7 +299,7 @@ test("The compiler can handle unescaped tr in top of content", function() {
   var fragment = template.render(context, env, { contextualElement: document.createElement('table') }).fragment;
 
   equal(
-    fragment.firstChild.nextSibling.nextSibling.tagName, 'TR',
+    nextMorph(firstChild(fragment)).tagName, 'TR',
     "root tr is present" );
 });
 
@@ -301,7 +314,7 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
   var tableNode = fragment.firstChild;
 
   equal(
-    tableNode.firstChild.nextSibling.tagName, 'TR',
+    tableNode.firstChild.tagName, 'TR',
     "root tr is present" );
 });
 
@@ -787,6 +800,7 @@ test('Block params in HTML syntax - Ignores whitespace', function () {
   registerHelper('x-bar', function() {
     return this.yield(['Xerxes', 'York']);
   });
+
   compilesTo('<x-bar as |x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
   compilesTo('<x-bar as | x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
   compilesTo('<x-bar as | x y |>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
@@ -1079,16 +1093,16 @@ test("Block helper allows interior namespace", function() {
 
   var fragment = template.render({ isTrue: true }, env, { contextualElement: document.body }).fragment;
   equal(
-    fragment.firstChild.nextSibling.namespaceURI, svgNamespace,
+    firstChild(fragment).namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
 
   isTrue = false;
   fragment = template.render({ isTrue: false }, env, { contextualElement: document.body }).fragment;
   equal(
-    fragment.firstChild.nextSibling.namespaceURI, xhtmlNamespace,
+    firstChild(fragment).namespaceURI, xhtmlNamespace,
     "inverse block path has a normal namespace");
   equal(
-    fragment.firstChild.nextSibling.firstChild.namespaceURI, svgNamespace,
+    firstChild(fragment).firstChild.namespaceURI, svgNamespace,
     "svg namespace inside an element inside a block is present" );
 });
 

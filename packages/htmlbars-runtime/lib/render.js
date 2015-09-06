@@ -1,11 +1,13 @@
-import { visitChildren } from "../htmlbars-util/morph-utils";
-import statementVisitor, { alwaysDirtyVisitor, initialVisitor } from "./node-visitor";
-import Morph from "./morph";
-import { clearMorph } from "../htmlbars-util/template-utils";
+import { visitChildren } from '../htmlbars-util/morph-utils';
+import statementVisitor, { alwaysDirtyVisitor, initialVisitor } from './node-visitor';
+import Morph from './morph';
+import { clearMorph } from '../htmlbars-util/template-utils';
+import { debugStruct as struct } from '../htmlbars-util/object-utils';
+import * as types from '../htmlbars-util/object-utils';
 import voidMap from '../htmlbars-util/void-tag-names';
 import Template, { buildStatements } from './template';
 
-var svgNamespace = "http://www.w3.org/2000/svg";
+let svgNamespace = 'http://www.w3.org/2000/svg';
 
 let EMPTY_RENDER_RESULT;
 
@@ -14,10 +16,14 @@ export function topLevelRender(template, env, scope, options) {
 
   primeNamespace(env, options.contextualElement);
 
-  var renderResult = RenderResult.buildTopLevel(env, scope, template, options, options.contextualElement);
-  renderResult.render();
+  let dom = env.dom;
+  let element = dom.createDocumentFragment();
+  let rootNode = dom.morphForChildren(element, options.contextualElement);
+  rootNode.ownerNode = rootNode;
 
-  return renderResult;
+  let result = RenderResult.build(env, scope, template, options, rootNode);
+  result.fragment = element;
+  return result;
 }
 
 export default topLevelRender;
@@ -27,77 +33,62 @@ export function nestedRender(template, env, scope, options) {
 
   primeNamespace(env, options.renderNode.contextualElement);
 
-  var renderResult = RenderResult.buildNested(env, scope, template, options, options.renderNode.contextualElement);
-  renderResult.render();
-  options.renderNode.setContent(renderResult.fragment);
+  let renderResult = RenderResult.build(env, scope, template, options, options.renderNode);
 
   return renderResult;
 }
 
 function primeNamespace(env, contextualElement) {
-  var dom = env.dom;
+  let dom = env.dom;
   dom.detectNamespace(contextualElement);
 }
 
-export function RenderOptions({ renderNode, self, blockArguments, contextualElement, isEmpty }) {
-  this.renderNode = renderNode || null;
-  this.self = self; // self is a user value, so `undefined` represents missingness, not null
-  this.blockArguments = blockArguments || null;
-  this.contextualElement = contextualElement || null;
-  this.isEmpty = isEmpty || false;
-}
+export const RenderOptions = struct({
+  renderNode: types.OBJECT,
+  self: types.ANY,
+  blockArguments: types.OBJECT,
+  contextualElement: types.OBJECT,
+  isEmpty: types.BOOLEAN
+});
 
-function RenderResult(env, scope, options, rootNode, nodes, fragment, template) {
-  this.isEmpty = options.isEmpty || template.isEmpty;
+function RenderResult(env, scope, options, rootNode, evalResult,  template) {
+  this.isEmpty = options.isEmpty || template.isEmpty || evalResult.statements.length === 0;
   this.root = rootNode;
-  this.fragment = fragment;
+  this.fragment = null;
 
-  this.nodes = nodes;
+  this.evalResult = evalResult;
   this.template = template;
   this.env = env;
   this.scope = scope;
 
   if (this.isEmpty) { return; }
-
-  if (options.self !== undefined) { this._bindSelf(options.self); }
-  if (options.blockArguments !== undefined) { this._bindLocals(options.blockArguments); }
 }
 
-RenderResult.buildTopLevel = function(env, scope, template, options, contextualElement) {
-  var dom = env.dom;
-  var fragment = template.buildRoot(env);
-  var nodes = template.buildRenderNodes(dom, fragment, contextualElement);
+RenderResult.build = function(env, scope, template, options, rootNode) {
 
-  let rootNode = dom.createMorph(null, fragment.firstChild, fragment.lastChild, contextualElement);
-  rootNode.ownerNode = rootNode;
+  if (options.self !== undefined) { bindSelf(env, scope, options.self); }
+  if (options.blockArguments !== undefined) { bindLocals(env, scope, template.locals, options.blockArguments); }
 
-  nodes.forEach(node => node.ownerNode = rootNode);
-  rootNode.childNodes = nodes;
-  return new RenderResult(env, scope, new RenderOptions(options), rootNode, nodes, fragment, template);
-};
+  let evalResult = template.evaluate(rootNode, { env, scope, visitor: initialVisitor });
+  let { morphs } = evalResult;
 
-RenderResult.buildNested = function(env, scope, template, options, contextualElement) {
-  var dom = env.dom;
-  var fragment = template.buildRoot(env);
-  var nodes = template.buildRenderNodes(dom, fragment, contextualElement);
+  let result = new RenderResult(env, scope, new RenderOptions(options), rootNode, evalResult,  template);
+  rootNode.lastResult = result;
+  rootNode.rendered = true;
+  rootNode.childNodes = morphs;
 
-  let rootNode = options.renderNode;
-  let ownerNode = rootNode.ownerNode;
-
-  nodes.forEach(node => node.ownerNode = ownerNode);
-  rootNode.childNodes = nodes;
-  return new RenderResult(env, scope, new RenderOptions(options), rootNode, nodes, fragment, template);
+  return result;
 };
 
 export function manualElement(tagName, attributes, _isEmpty) {
-  var statements = [];
+  let statements = [];
 
-  for (var key in attributes) {
+  for (let key in attributes) {
     if (typeof attributes[key] === 'string') { continue; }
-    statements.push(["attribute", key, attributes[key]]);
+    statements.push(['attribute', key, attributes[key]]);
   }
 
-  var isEmpty = _isEmpty || voidMap[tagName];
+  let isEmpty = _isEmpty || voidMap[tagName];
 
   if (!isEmpty) {
     statements.push(['content', 'yield']);
@@ -113,15 +104,15 @@ export function manualElement(tagName, attributes, _isEmpty) {
         dom.setNamespace(svgNamespace);
       }
 
-      var el0 = dom.createElement(tagName);
+      let el0 = dom.createElement(tagName);
 
-      for (var key in attributes) {
+      for (let key in attributes) {
         if (typeof attributes[key] !== 'string') { continue; }
         dom.setAttribute(el0, key, attributes[key]);
       }
 
       if (!isEmpty) {
-        var el1 = dom.createComment("");
+        let el1 = dom.createComment('');
         dom.appendChild(el0, el1);
       }
 
@@ -129,9 +120,9 @@ export function manualElement(tagName, attributes, _isEmpty) {
     },
 
     buildRenderNodes(dom, element) {
-      var morphs = [];
+      let morphs = [];
 
-      for (var key in attributes) {
+      for (let key in attributes) {
         if (typeof attributes[key] === 'string') { continue; }
         morphs.push(dom.createAttrMorph(element, key));
       }
@@ -144,14 +135,6 @@ export function manualElement(tagName, attributes, _isEmpty) {
     }
   });
 }
-
-RenderResult.prototype.render = function() {
-  if (this.isEmpty) { return; }
-
-  this.root.lastResult = this;
-  this.root.rendered = true;
-  this._populateNodes(initialVisitor);
-};
 
 RenderResult.prototype.dirty = function() {
   visitChildren([this.root], function(node) { node.isDirty = true; });
@@ -171,28 +154,31 @@ RenderResult.prototype.revalidateWith = function(env, scope, self, blockArgument
   if (env !== undefined) { this.env = env; }
   if (scope !== undefined) { this.scope = scope; }
 
-  if (self !== undefined) { this._updateSelf(self); }
-  if (blockArguments !== undefined) { this._updateLocals(blockArguments); }
+  if (self !== undefined) { updateSelf(this.env, this.scope, self); }
+  if (blockArguments !== undefined) { updateLocals(this.env, this.scope, this.template.locals, blockArguments); }
 
-  this._populateNodes(visitor);
+  let { statements, morphs } = this.evalResult;
+  statements.forEach((statement, i) => {
+    statement.evaluate(morphs[i], this.env, this.scope, visitor);
+  });
 };
 
 RenderResult.prototype.destroy = function() {
   if (this.isEmpty) { return; }
-  var rootNode = this.root;
+  let rootNode = this.root;
   clearMorph(rootNode, this.env, true);
 };
 
 RenderResult.prototype._populateNodes = function(visitor) {
-  var env = this.env;
-  var scope = this.scope;
-  var nodes = this.nodes;
-  var statements = this.template._statements;
-  var i, l;
+  let env = this.env;
+  let scope = this.scope;
+  let nodes = this.nodes;
+  let statements = this.template._statements;
+  let i, l;
 
   for (i=0, l=statements.length; i<l; i++) {
-    var statement = statements[i];
-    var morph = nodes[i];
+    let statement = statements[i];
+    let morph = nodes[i];
 
     if (env.hooks.willRenderNode) {
       env.hooks.willRenderNode(morph, env, scope);
@@ -206,29 +192,25 @@ RenderResult.prototype._populateNodes = function(visitor) {
   }
 };
 
-RenderResult.prototype._bindSelf = function(self) {
-  this.env.hooks.bindSelf(this.env, this.scope, self);
-};
+function bindSelf(env, scope, self) {
+  env.hooks.bindSelf(env, scope, self);
+}
 
-RenderResult.prototype._updateSelf = function(self) {
-  this.env.hooks.updateSelf(this.env, this.scope, self);
-};
+function updateSelf(env, scope, self) {
+  env.hooks.updateSelf(env, scope, self);
+}
 
-RenderResult.prototype._bindLocals = function(blockArguments) {
-  var localNames = this.template.locals;
-
-  for (var i=0, l=localNames.length; i<l; i++) {
-    this.env.hooks.bindLocal(this.env, this.scope, localNames[i], blockArguments[i]);
+function bindLocals(env, scope, localNames, blockArguments) {
+  for (let i=0, l=localNames.length; i<l; i++) {
+    env.hooks.bindLocal(env, scope, localNames[i], blockArguments[i]);
   }
-};
+}
 
-RenderResult.prototype._updateLocals = function(blockArguments) {
-  var localNames = this.template.locals;
-
-  for (var i=0, l=localNames.length; i<l; i++) {
-    this.env.hooks.updateLocal(this.env, this.scope, localNames[i], blockArguments[i]);
+function updateLocals(env, scope, localNames, blockArguments) {
+  for (let i=0, l=localNames.length; i<l; i++) {
+    env.hooks.updateLocal(env, scope, localNames[i], blockArguments[i]);
   }
-};
+}
 
 EMPTY_RENDER_RESULT = new RenderResult(undefined, undefined, new RenderOptions({ isEmpty: true }));
 
@@ -237,13 +219,13 @@ function initializeNode(node, owner) {
 }
 
 export function createChildMorph(dom, parentMorph, contextualElement) {
-  var morph = Morph.empty(dom, contextualElement || parentMorph.contextualElement);
+  let morph = Morph.empty(dom, contextualElement || parentMorph.contextualElement);
   initializeNode(morph, parentMorph.ownerNode);
   return morph;
 }
 
 export function getCachedFragment(template, env) {
-  var dom = env.dom, fragment;
+  let dom = env.dom, fragment;
   if (env.useFragmentCache && dom.canClone) {
     if (template.cachedFragment === null) {
       fragment = template.buildFragment(dom);
