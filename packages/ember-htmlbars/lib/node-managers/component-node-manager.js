@@ -212,8 +212,6 @@ ComponentNodeManager.prototype.destroy = function() {
 
 export function createComponent(_component, isAngleBracket, props, renderNode, env, attrs = {}) {
   if (!isAngleBracket) {
-    let proto = _component.proto();
-
     Ember.assert('controller= is no longer supported', !('controller' in attrs));
 
     let snapshot = takeSnapshot(attrs);
@@ -246,23 +244,6 @@ export function createComponent(_component, isAngleBracket, props, renderNode, e
   renderNode.emberView = component;
   renderNode.buildChildEnv = buildChildEnv;
   return component;
-}
-
-function shadowedAttrs(target, attrs) {
-  let shadowed = {};
-
-  // For backwards compatibility, set the component property
-  // if it has an attr with that name. Undefined attributes
-  // are handled on demand via the `unknownProperty` hook.
-  for (var attr in attrs) {
-    if (attr in target) {
-      // TODO: Should we issue a deprecation here?
-      //Ember.deprecate(deprecation(attr));
-      shadowed[attr] = attrs[attr];
-    }
-  }
-
-  return shadowed;
 }
 
 function takeSnapshot(attrs) {
