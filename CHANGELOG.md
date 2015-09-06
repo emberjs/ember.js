@@ -1,5 +1,20 @@
 # Ember Changelog
 
+### 2.1.0-beta.3 (September 6, 2015)
+
+- [#12157](https://github.com/emberjs/ember.js/pull/12157) [DEPRECATION] Allow deprecated access to registry from `Application` (argument to initializers) and `ApplicationInstance` (argument to instance initializers) instances.
+- [#12156](https://github.com/emberjs/ember.js/pull/12156) [BUGFIX] Add helpful error message when providing incorrect arguments to `Ember.computed`.
+- [#12253](https://github.com/emberjs/ember.js/pull/12253) [BUGFIX] Remove initializer causing errors during `App.reset`.
+- [#12272](https://github.com/emberjs/ember.js/pull/12272) [BUGFIX] Update HTMLBars to fix memory leak when an `{{each}}` is inside an `{{if}}`.
+- [#12184](https://github.com/emberjs/ember.js/pull/12184) [BUGFIX] Prevent `classNames` from being duplicated.
+- [#12198](https://github.com/emberjs/ember.js/pull/12198) [BUGFIX] Further cleanup of the `link-to` component, allow for extending `{{link-to}}` via `Ember.LinkComponent.extend`.
+- [#12208](https://github.com/emberjs/ember.js/pull/12208) [BUGFIX] Ember.computed.sort was crashing when it hit a null value. Fixes #12207.
+- [#12188](https://github.com/emberjs/ember.js/pull/12188) [BUGFIX] Ensure `_actions` specified to extend works.
+- [#12241](https://github.com/emberjs/ember.js/pull/12241) [BUGFIX] Provide a helpful error for undefined closure actions.
+- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly.
+- [#12262](https://github.com/emberjs/ember.js/pull/12262) [BUGFIX] Breaks circular references in rejected jqXhr promises
+- [#12297](https://github.com/emberjs/ember.js/pull/12297) / [#12299](https://github.com/emberjs/ember.js/pull/12299) [BUGFIX] Remove extra work per component on initial render.
+
 ### 2.1.0-beta.2 (August 22, 2015)
 
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [BUGFIX] Move `View#currentState` to `View#_currentState`.
