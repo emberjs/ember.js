@@ -1,8 +1,6 @@
 import statementVisitor, { alwaysDirtyVisitor, initialVisitor } from './node-visitor';
 import Morph from './morph';
 import { clearMorph } from '../htmlbars-util/template-utils';
-import { debugStruct as struct } from '../htmlbars-util/object-utils';
-import * as types from '../htmlbars-util/object-utils';
 import voidMap from '../htmlbars-util/void-tag-names';
 import { TemplateBuilder } from './template';
 
@@ -13,60 +11,47 @@ export function primeNamespace(env, contextualElement) {
   dom.detectNamespace(contextualElement);
 }
 
-export const RenderOptions = struct({
-  renderNode: types.OBJECT,
-  self: types.ANY,
-  blocks: types.OBJECT(undefined),
-  blockArguments: types.OBJECT(undefined),
-  contextualElement: types.OBJECT,
-  isEmpty: types.BOOLEAN
-});
-
 export class RenderResult {
-  static build(morph, env, scope, template, options) {
+  static build(morph, env, scope, template) {
     let evalResult = template.evaluate(morph, { env, scope, visitor: initialVisitor });
-    options.isEmpty = evalResult.statements.length === 0;
+    let locals = template.locals;
 
-    let result = new RenderResult({ env, scope, options, evalResult, locals: template.locals });
-    morph.lastResult = result;
-    morph.rendered = true;
-    morph.childNodes = evalResult.morphs;
-
+    let result = RenderResult.fromEvalResult(scope, locals, evalResult);
+    morph.applyResult(result);
     return result;
   }
 
-  constructor({ env, scope, options, evalResult, locals }) {
-    this.isEmpty = options.isEmpty;
-    this.evalResult = evalResult;
-    this.locals = locals;
+  static fromEvalResult(scope, locals, { statements, morphs }) {
+    return new RenderResult({ scope, locals, statements, morphs });
+  }
+
+  constructor({ scope, locals, statements, morphs }) {
     this.scope = scope;
+    this.locals = locals;
+    this.statements = statements;
+    this.morphs = morphs;
   }
 
-  revalidate(env, self, blockArguments, scope) {
-    this.revalidateWith(env, scope, self, blockArguments, statementVisitor);
+  revalidate(env, self, blockArguments, hostOptions) {
+    this.revalidateWith(env, self, blockArguments, statementVisitor, hostOptions);
   }
 
-  rerender(env, self, blockArguments, scope) {
-    this.revalidateWith(env, scope, self, blockArguments, alwaysDirtyVisitor);
+  rerender(env, self, blockArguments, hostOptions) {
+    this.revalidateWith(env, self, blockArguments, alwaysDirtyVisitor, hostOptions);
   }
 
-  revalidateWith(env, scope, self, blockArguments, visitor) {
-    if (this.isEmpty) { return; }
+  revalidateWith(env, self, blockArguments, visitor, hostOptions) {
+    if (!this.statements) { return; }
 
-    if (scope !== undefined) { this.scope = scope; }
+    env.hooks.updateScope(env, this.scope, self, this.locals, blockArguments, hostOptions);
 
-    if (self !== undefined) { updateSelf(env, this.scope, self); }
-    if (blockArguments !== undefined) { updateLocals(env, this.scope, this.template.locals, blockArguments); }
-
-    let { statements, morphs } = this.evalResult;
-    statements.forEach((statement, i) => {
-      statement.evaluate(morphs[i], env, this.scope, visitor);
+    this.statements.forEach((statement, i) => {
+      visitor(statement, this.morphs[i], env, this.scope, visitor);
     });
   }
 
   // TODO: Does this need to exist?
   destroy(env) {
-    if (this.isEmpty) { return; }
     let rootNode = this.root;
     clearMorph(rootNode, env, true);
   }
@@ -94,24 +79,11 @@ export function manualElement(tagName, attributes, _isEmpty) {
   return b.template();
 }
 
-
-function updateSelf(env, scope, self) {
-  env.hooks.updateSelf(env, scope, self);
-}
-
-function updateLocals(env, scope, localNames, blockArguments) {
-  for (let i=0, l=localNames.length; i<l; i++) {
-    env.hooks.updateLocal(env, scope, localNames[i], blockArguments[i]);
-  }
-}
-
 export const EMPTY_RENDER_RESULT = new RenderResult({
-  env: undefined,
   scope: undefined,
-  options: new RenderOptions({ isEmpty: true }),
-  morph: undefined,
-  evalResult: undefined,
-  template: undefined
+  locals: undefined,
+  statements: undefined,
+  morphs: undefined
 });
 
 function initializeNode(node, owner) {
@@ -121,7 +93,8 @@ function initializeNode(node, owner) {
 // TODO: morph.createChild or somesuch; this doesn't actually work
 export function createChildMorph(dom, parentMorph, contextualElement) {
   let morph = Morph.empty(dom, contextualElement || parentMorph.contextualElement);
+  morph.ownerNode = parentMorph.ownerNode;
+  morph.parentMorph = morph;
   initializeNode(morph, parentMorph.ownerNode);
   return morph;
 }
-

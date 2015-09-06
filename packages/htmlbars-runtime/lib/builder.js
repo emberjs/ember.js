@@ -7,6 +7,11 @@ export const BuilderResult = struct({
   statements: types.ARRAY
 });
 
+// Builders are created for each template the first time it is rendered.
+// The builder walks through all statements, static and dynamic, and
+// returns a result containing just the static statements with the
+// dynamic morphs created for the statements. Subsequent rerenders
+// can simply walk over the statements and apply them to the morphs.
 export default class Builder {
   constructor(renderNode, { env, scope, visitor }) {
     // REFACTOR TODO: Runtime is { env, scope, visitor }?
@@ -19,13 +24,11 @@ export default class Builder {
     this.contextualElement = this.originalContextualElement = renderNode.contextualElement;
 
     this.elementStack = [];
-    // REFACTOR TODO: Allocate the right size for this?
+    // REFACTOR TODO: Allocate the right size for this? We could track the
+    // number of dynamic things in the Template to avoid some amount of
+    // repeated work.
     this.morphs = [];
     this.statements = [];
-  }
-
-  createChild(morph) {
-    return new Builder(morph, { env: this.env, scope: this.scope, visitor: this.visitor });
   }
 
   evaluateTemplate(template) {
@@ -46,13 +49,16 @@ export default class Builder {
 
   createMorph(statement, unsafe) {
     let morph = new this.dom.MorphClass(this.dom, this.contextualElement);
-    morph.ownerNode = this.renderNode.ownerNode;
-    morph.parentMorph = this.renderNode;
     morph.frontBoundary = statement.frontBoundary;
     morph.backBoundary = statement.backBoundary;
-    morph.appendToParent = this.element || this.renderNode.appendToParent;
-    morph.nextSibling = this.element ? null : this.renderNode.nextSiblingNode();
     morph.parseTextAsHTML = !!unsafe;
+
+    if (this.element) {
+      morph.emptyForAppendingToElement(this.element, this.renderNode);
+    } else {
+      morph.emptyForAppendingToMorph(this.renderNode);
+    }
+
     this.morphs.push(morph);
     return morph;
   }
@@ -60,6 +66,12 @@ export default class Builder {
   createAttrMorph(name, namespace) {
     assert(this.element, "createAttrMorph() requires an element");
     let morph = this.dom.createAttrMorph(this.element, name, namespace);
+    this.morphs.push(morph);
+    return morph;
+  }
+
+  createElementMorph() {
+    let morph = this.dom.createElementMorph(this.element);
     this.morphs.push(morph);
     return morph;
   }
@@ -73,9 +85,14 @@ export default class Builder {
   }
 
   evaluateStatement(statement, morph) {
+    // This code assumes that the morph has been created through
+    // builder.createMorph, which has put it into "appending" mode.
+    // Once the statement is evaluated, the node is notified so it
+    // can leave appending mode and insert an empty comment if
+    // necessary.
     statement.evaluate(morph, this.env, this.scope, this.visitor, this);
     this.statements.push(statement);
-    if (morph.nodeEvaluated) { morph.nodeEvaluated(); }
+    if (morph.evaluated) { morph.evaluated(); }
   }
 
   pushElement(element) {

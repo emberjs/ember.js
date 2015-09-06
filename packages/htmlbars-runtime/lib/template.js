@@ -1,7 +1,7 @@
 import { InternalParams } from '../htmlbars-util/morph-utils';
 import { assert } from '../htmlbars-util';
 import Builder, { BuilderResult } from './builder';
-import { EMPTY_RENDER_RESULT, RenderOptions, RenderResult, primeNamespace } from './render';
+import { EMPTY_RENDER_RESULT, RenderResult, primeNamespace } from './render';
 
 // REFACTOR TODO: Get rid of this via mmun's plan
 import { linkParams } from "../htmlbars-util/morph-utils";
@@ -14,14 +14,15 @@ class TopLevelRenderResult {
     this.fragment = options.fragment;
     this.inner = options.inner;
     this.root = options.root;
+    this.env = options.env;
   }
 
   revalidate(...args) {
-    this.inner.revalidate(...args);
+    this.inner.revalidate(this.env, ...args);
   }
 
   rerender(...args) {
-    this.inner.rerender(...args);
+    this.inner.rerender(this.env, ...args);
   }
 }
 
@@ -82,25 +83,21 @@ export default class Template {
     let scope = env.hooks.createFreshScope();
     env.hooks.setupScope(env, scope, self, this.locals, blockArguments);
     let contextualElement = options && options.contextualElement;
-    let renderOptions = new RenderOptions({ self, blockArguments });
 
     primeNamespace(env, contextualElement);
 
-    let dom = env.dom;
-    let element = dom.createDocumentFragment();
-    let rootNode = dom.morphForChildren(element, contextualElement);
+    let element = env.dom.createDocumentFragment();
+    let rootNode = env.dom.morphForChildren(element, contextualElement);
     rootNode.ownerNode = rootNode;
 
-    let result = RenderResult.build(rootNode, env, scope, this, renderOptions);
-    return new TopLevelRenderResult({ inner: result, fragment: element, root: rootNode });
+    let result = RenderResult.build(rootNode, env, scope, this);
+    return new TopLevelRenderResult({ env, inner: result, fragment: element, root: rootNode });
   }
 
-  renderIn(env, scope, options) {
+  renderIn(morph, env, scope) {
     if (this.isEmpty) { return EMPTY_RENDER_RESULT; }
 
-    primeNamespace(env, options.renderNode.contextualElement);
-
-    return RenderResult.build(options.renderNode, env, scope, this, options);
+    return RenderResult.build(morph, env, scope, this);
   }
 
   _getCachedFragment(env) {
@@ -311,11 +308,11 @@ function isHelper(env, scope, path) {
   return (env.hooks.keywords[path] !== undefined) || env.hooks.hasHelper(env, scope, path);
 }
 
-export class Element extends mixin(Statement, HasInternalParams) {
+export class Modifier extends mixin(Statement, HasInternalParams) {
   static fromSpec(node) {
     let [, path, params, hash] = node;
 
-    return new Element({
+    return new Modifier({
       path,
       params: buildParams(params),
       hash: buildHash(hash)
@@ -323,7 +320,7 @@ export class Element extends mixin(Statement, HasInternalParams) {
   }
 
   static build(path, options) {
-    return new Element({
+    return new Modifier({
       path,
       params: options.params || EMPTY_PARAMS,
       hash: options.hash || EMPTY_HASH
@@ -343,8 +340,9 @@ export class Element extends mixin(Statement, HasInternalParams) {
     env.hooks.element(morph, env, scope, this.path, params, hash, visitor);
   }
 
-  render(/* builder */) {
-    // todo
+  render(builder) {
+    let morph = builder.createElementMorph();
+    builder.evaluateStatement(this, morph);
   }
 }
 
@@ -423,10 +421,10 @@ export class Component extends mixin(Statement, Dynamic, HasInternalParams) {
     this.templates = options.templates;
   }
 
-  evaluate(morph, env, scope, visitor, builder) {
+  evaluate(morph, env, scope, visitor) {
     let { hash } = this.getInternalParams(env, scope, morph);
 
-    env.hooks.component(morph, env, scope, this.path, EMPTY_ARRAY, hash, this.templates, visitor, builder);
+    env.hooks.component(morph, env, scope, this.path, EMPTY_ARRAY, hash, this.templates, visitor);
   }
 
   render(builder) {
@@ -450,8 +448,8 @@ export class Text {
     this.content = options.content;
   }
 
-  render(builder) {
-    builder.appendChild(builder.dom.createTextNode(this.content));
+  render(builder, dom) {
+    builder.appendChild(dom.createTextNode(this.content));
   }
 }
 
@@ -470,8 +468,8 @@ export class Comment {
     this.value = options.value;
   }
 
-  render(builder) {
-    builder.appendChild(builder.dom.createComment(this.value));
+  render(builder, dom) {
+    builder.appendChild(dom.createComment(this.value));
   }
 }
 
@@ -526,12 +524,12 @@ export class StaticAttr {
     this.namespace = options.namespace;
   }
 
-  render(builder) {
+  render(builder, dom) {
     assert(builder.element, "staticAttr() requires an element");
     if (this.namespace) {
-      builder.dom.setAttributeNS(builder.element, this.namespace, this.name, this.value);
+      dom.setAttributeNS(builder.element, this.namespace, this.name, this.value);
     } else {
-      builder.dom.setAttribute(builder.element, this.name, this.value);
+      dom.setAttribute(builder.element, this.name, this.value);
     }
   }
 }
@@ -542,7 +540,7 @@ const StatementNodes = {
   block: Block,
   inline: Inline,
   unknown: Unknown,
-  element: Element,
+  modifier: Modifier,
   dynamicAttr: DynamicAttr,
   component: Component,
 

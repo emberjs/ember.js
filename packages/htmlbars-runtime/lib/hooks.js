@@ -1,9 +1,8 @@
-import { RenderOptions } from "./render";
 import MorphList from "../morph-range/morph-list";
 import { createChildMorph, manualElement } from "./render";
 import { keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
-import { Block, clearMorph, clearMorphList } from "../htmlbars-util/template-utils";
+import { Block, BlockOptions, clearMorph, clearMorphList } from "../htmlbars-util/template-utils";
 import { linkParams } from "../htmlbars-util/morph-utils";
 
 class RenderState {
@@ -36,6 +35,7 @@ class RenderState {
     this.pruneMorphList(env);
     this.clearMorphList(env, morph);
     this.clearMorph(env);
+    morph.evaluated();
   }
 
   pruneMorphList(env) {
@@ -67,7 +67,7 @@ class RenderState {
   }
 
   clearMorph(env) {
-    let toClear = this.morphListToClear;
+    let toClear = this.morphToClear;
     if (toClear) { clearMorph(toClear, env); }
   }
 }
@@ -188,7 +188,7 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     var scope = parentScope;
 
     if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
-      return morph.lastResult.revalidateWith(env, undefined, self, blockArguments, visitor);
+      return morph.lastResult.revalidateWith(env, self, blockArguments, visitor);
     }
 
     // Check to make sure that we actually **need** a new scope, and can't
@@ -200,15 +200,12 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
       env.hooks.setupScope(env, scope, self, template.locals, blockArguments);
     }
 
-    if (morph.lastYielded) {
-      clearMorph(morph, env, false);
-    }
+    morph.prepareForRerender(env);
 
     morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
-    let renderOptions = new RenderOptions({ renderNode: morph });
-    template.renderIn(env, scope, renderOptions);
+    template.renderIn(morph, env, scope);
   };
 }
 
@@ -387,12 +384,29 @@ export function createFreshScope() {
   return { self: null, blocks: {}, locals: {}, localPresent: {} };
 }
 
-export function setupScope(env, scope, self, localNames, blockArguments) {
+export function setupScope(env, scope, self, localNames, blockArguments, hostOptions) {
   if (self !== undefined) { env.hooks.bindSelf(env, scope, self); }
   if (blockArguments !== undefined) {
     for (let i=0, l=localNames.length; i<l; i++) {
       env.hooks.bindLocal(env, scope, localNames[i], blockArguments[i]);
     }
+  }
+
+  if (env.hooks.customSetupScope && hostOptions) {
+    env.hooks.customSetupScope(env, scope, hostOptions);
+  }
+}
+
+export function updateScope(env, scope, self, localNames, blockArguments, hostOptions) {
+  if (self !== undefined) { env.hooks.updateSelf(env, scope, self); }
+  if (blockArguments !== undefined) {
+    for (let i=0, l=localNames.length; i<l; i++) {
+      env.hooks.updateLocal(env, scope, localNames[i], blockArguments[i]);
+    }
+  }
+
+  if (env.hooks.customSetupScope && hostOptions) {
+    env.hooks.customUpdateScope(env, scope, hostOptions);
   }
 }
 
@@ -827,7 +841,14 @@ export var keywords = {
     var block = env.hooks.getBlock(scope, to);
 
     if (block) {
-      block.invoke(env, params, hash.self, morph, scope, visitor);
+      block.invoke(new BlockOptions({
+        env,
+        morph,
+        visitor,
+        parentScope: scope,
+        blockArguments: params,
+        self: hash.self
+      }));
     }
     return true;
   },
@@ -1048,12 +1069,12 @@ export function getCellOrValue(reference) {
   return reference;
 }
 
-export function component(morph, env, scope, tagName, params, attrs, templates, visitor, builder) {
+export function component(morph, env, scope, tagName, params, attrs, templates, visitor) {
   if (env.hooks.hasHelper(env, scope, tagName)) {
     return env.hooks.block(morph, env, scope, tagName, params, attrs, templates.default, templates.inverse, visitor);
   }
 
-  componentFallback(morph, env, scope, tagName, attrs, templates.default, builder);
+  componentFallback(morph, env, scope, tagName, attrs, templates.default);
 }
 
 export function concat(env, params) {
@@ -1064,7 +1085,7 @@ export function concat(env, params) {
   return value;
 }
 
-function componentFallback(morph, env, scope, tagName, attrs, template, builder) {
+function componentFallback(morph, env, scope, tagName, attrs, template, visitor) {
   let block = morph.state.block;
 
   if (!block) {
@@ -1075,7 +1096,7 @@ function componentFallback(morph, env, scope, tagName, attrs, template, builder)
     morph.state.block = block = new Block({ scope: childScope, template: elementTemplate });
   }
 
-  block.invoke(env, undefined, undefined, morph, undefined, builder.visitor);
+  block.invoke(new BlockOptions({ env, morph, visitor }));
 }
 
 export function hasHelper(env, scope, helperName) {
@@ -1125,6 +1146,8 @@ export default {
   hasHelper,
   lookupHelper,
   invokeHelper,
+  customSetupScope: null,
+  customUpdateScope: null,
   cleanupRenderNode: null,
   destroyRenderNode: null,
   willCleanupTree: null,

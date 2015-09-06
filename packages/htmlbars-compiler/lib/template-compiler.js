@@ -60,6 +60,13 @@ class NewJavaScriptCompiler {
     this.push('unknown', path, unsafe || null);
   }
 
+  modifier(path) {
+    let params = this.popExpression();
+    let hash = this.popExpression();
+
+    this.push('modifier', path, params, hash);
+  }
+
   inline(path, unsafe) {
     let params = this.popExpression();
     let hash = this.popExpression();
@@ -220,7 +227,7 @@ export class NewTemplateCompiler {
     this.opcode('openElement', action, action.tag);
 
     action.attributes.forEach(attr => this.attribute([attr]));
-    //action.modifiers.forEach(modifier => this.modifier(modifier));
+    action.modifiers.forEach(modifier => this.modifier([modifier]));
   }
 
   closeElement() {
@@ -239,6 +246,13 @@ export class NewTemplateCompiler {
     } else {
       this.opcode('dynamicAttr', action, name, namespace);
     }
+  }
+
+  modifier([action]) {
+    let { path } = action;
+
+    this.prepareHelper(action);
+    this.opcode('modifier', action, path.original);
   }
 
   mustache([action]) {

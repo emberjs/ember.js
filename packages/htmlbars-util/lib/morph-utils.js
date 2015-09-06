@@ -41,7 +41,7 @@ export function validateChildMorphs(env, morph, visitor) {
       current = next;
     }
   } else if (morph.lastResult) {
-    morph.lastResult.revalidateWith(env, undefined, undefined, undefined, visitor);
+    morph.lastResult.revalidateWith(env, undefined, undefined, visitor);
   } else if (morph.childNodes) {
     // This means that the childNodes were wired up manually
     for (var i=0, l=morph.childNodes.length; i<l; i++) {
