@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 2.0.2 (September 6, 2015)
+
+- [#12103](https://github.com/emberjs/ember.js/pull/12103) [BUGFIX] Fix Ember.isArray export
+- [#12104](https://github.com/emberjs/ember.js/pull/12104) [BUGFIX] Ensure concatenatedProperties are not stomped.
+- [#12188](https://github.com/emberjs/ember.js/pull/12188) [BUGFIX] Ensure `_actions` specified to extend works.
+- [#12208](https://github.com/emberjs/ember.js/pull/12208) [BUGFIX] Fix issue with `Ember.computed.sort` crashing when it hit a null value.
+- [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly. Fixes memory leak with attributes specified within quotes in the template (i.e. `<div data-foo="{{somethign}}"></div>`).
+- [#12272](https://github.com/emberjs/ember.js/pull/12272) [BUGFIX] Update HTMLBars to fix memory leak when using an `{{each}}` inside of an `{{if}}`.
+
 ### 2.0.1 (August 22, 2015)
 
 - [#12093](https://github.com/emberjs/ember.js/pull/12093) [BUGFIX] Fix issue with `Ember.computed.alias`, `Ember.computed.oneWay`, and `Ember.computed.reads` that prevented them from invalidating properly.
