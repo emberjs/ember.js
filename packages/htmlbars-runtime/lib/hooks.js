@@ -731,7 +731,11 @@ export function invokeHelper(morph, env, scope, visitor, _params, _hash, helper,
   return { value: helper.call(context, params, hash, templates) };
 }
 
+const EMPTY_ARRAY = Object.freeze([]);
+
 function normalizeArray(env, array) {
+  if (array === null) { return EMPTY_ARRAY; }
+
   var out = new Array(array.length);
 
   for (var i=0, l=array.length; i<l; i++) {
@@ -741,7 +745,11 @@ function normalizeArray(env, array) {
   return out;
 }
 
+const EMPTY_HASH = Object.freeze({});
+
 function normalizeObject(env, object) {
+  if (object === null) { return EMPTY_HASH; }
+
   var out = {};
 
   for (var prop in object)  {

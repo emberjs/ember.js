@@ -1,41 +1,38 @@
 import { InternalParams } from '../htmlbars-util/morph-utils';
+import { assert } from '../htmlbars-util';
+import Builder from './builder';
 
 // REFACTOR TODO: Get rid of this via mmun's plan
 import { linkParams } from "../htmlbars-util/morph-utils";
 
-function noop() {}
 const EMPTY_ARRAY = Object.freeze([]);
 
 export default class Template {
-  static fromSpec(spec) {
-    let children;
-    if (spec.templates) {
-      children = spec.templates.map(childSpec => Template.fromSpec(childSpec));
-    } else {
-      children = EMPTY_ARRAY;
+  static fromSpec(specs) {
+    let templates = new Array(specs.length);
+
+    for (let i = 0; i < specs.length; i++) {
+      let spec = specs[i];
+
+      templates[i] = new Template({
+        root: templates,
+        meta: spec.meta,
+        locals: spec.locals,
+        isEmpty: spec.statements.length === 0,
+        statements: buildStatements(spec.statements, templates),
+        spec: spec
+      });
     }
 
-    return new Template({
-      children,
-      meta: spec.meta,
-      arity: spec.arity,
-      buildRoot: spec.buildFragment,
-      buildRenderNodes: spec.buildRenderNodes,
-      statements: buildStatements(spec.statements, children),
-      locals: spec.locals,
-      isEmpty: spec.isEmpty,
-      spec: spec
-    });
+    return templates[templates.length - 1];
   }
 
   constructor(options) {
     this.meta = options.meta || {};
-    this.arity = options.arity === undefined ? 0 : options.arity;
+    this.root = options.root;
+    this.arity = options.locals ? options.locals.length : 0;
     this.cachedFragment = null;
     this.hasRendered = false;
-    this._buildFragment = options.buildRoot || noop;
-    this._buildRenderNodes = options.buildRenderNodes || noop;
-    this.children = options.children || EMPTY_ARRAY;
     this._statements = options.statements || EMPTY_ARRAY;
     this.locals = options.locals || EMPTY_ARRAY;
     this.spec = options.spec || null;
@@ -43,8 +40,8 @@ export default class Template {
     Object.seal(this);
   }
 
-  buildRoot(env) {
-    return this._getCachedFragment(env);
+  evaluate(domContext, runtime) {
+    return Builder.evaluateTemplate(this, domContext, runtime);
   }
 
   _getCachedFragment(env) {
@@ -123,34 +120,55 @@ class Block extends mixin(Statement, HasInternalParams) {
     this.hash = buildHash(hash);
     this.template = templateId === null ? null : children[templateId];
     this.inverse = inverseId === null ? null : children[inverseId];
+
+    this.frontBoundary = false;
+    this.backBoundary = false;
   }
 
   evaluate(morph, env, scope, visitor) {
     let { params, hash } = this.getInternalParams(env, scope, morph);
     env.hooks.block(morph, env, scope, this.path, params, hash, this.template, this.inverse, visitor);
   }
+
+  render(builder) {
+    let morph = builder.createMorph(this);
+    builder.evaluateStatement(this, morph);
+  }
 }
 
 class Inline extends mixin(Statement, HasInternalParams) {
   constructor(node) {
     super(node);
-    let [, path, params, hash] = node;
+    let [, path, params, hash, unsafe] = node;
     this.path = path;
     this.params = buildParams(params);
     this.hash = buildHash(hash);
+    this.unsafe = unsafe;
+
+    this.frontBoundary = false;
+    this.backBoundary = false;
   }
 
   evaluate(morph, env, scope, visitor) {
     let { params, hash } = this.getInternalParams(env, scope, morph);
     env.hooks.inline(morph, env, scope, this.path, params, hash, visitor);
   }
+
+  render(builder) {
+    let morph = builder.createMorph(this, this.unsafe);
+    builder.evaluateStatement(this, morph);
+  }
 }
 
-class Content extends Statement {
+class Unknown extends Statement {
   constructor(node) {
     super(node);
-    let [, path] = node;
+    let [, path, unsafe] = node;
     this.path = path;
+    this.unsafe = unsafe;
+
+    this.frontBoundary = false;
+    this.backBoundary = false;
   }
 
   evaluate(morph, env, scope, visitor) {
@@ -177,6 +195,11 @@ class Content extends Statement {
 
     env.hooks.range(morph, env, scope, this.path, params[0], visitor);
   }
+
+  render(builder) {
+    let morph = builder.createMorph(this, this.unsafe);
+    builder.evaluateStatement(this, morph);
+  }
 }
 
 function isHelper(env, scope, path) {
@@ -195,14 +218,19 @@ class Element extends mixin(Statement, HasInternalParams) {
     let { params, hash } = this.getInternalParams(env, scope, morph);
     env.hooks.element(morph, env, scope, this.path, params, hash, visitor);
   }
+
+  render(/* builder */) {
+    // todo
+  }
 }
 
-class Attribute extends Statement {
+class DynamicAttr extends Statement {
   constructor(node) {
     super(node);
-    let [, name, value] = node;
+    let [, name, value, namespace] = node;
     this.name = name;
     this.value = buildExpression(value);
+    this.namespace = namespace;
   }
 
   getInternalParams(env, scope, morph) {
@@ -216,36 +244,124 @@ class Attribute extends Statement {
     let { params } = this.getInternalParams(env, scope, morph);
     env.hooks.attribute(morph, env, scope, this.name, params[0]);
   }
+
+  render(builder) {
+    let { name, namespace } = this;
+    let morph = builder.createAttrMorph(name, namespace);
+    builder.evaluateStatement(this, morph);
+  }
 }
 
 class Component extends mixin(Statement, HasInternalParams) {
   constructor(node, children) {
     super(node);
     let [, path, attrs, templateId, inverseId] = node;
+
     this.path = path;
     this.hash = buildHash(attrs);
     this.templates = {
       default: children[templateId],
       inverse: children[inverseId]
     };
+
+    this.frontBoundary = false;
+    this.backBoundary = false;
   }
 
   evaluate(morph, env, scope, visitor) {
     let { hash } = this.getInternalParams(env, scope, morph);
 
-    morph.isDirty = morph.isSubtreeDirty = false;
     env.hooks.component(morph, env, scope, this.path, EMPTY_ARRAY, hash, this.templates, visitor);
+  }
+
+  render(builder) {
+    let morph = builder.createMorph(this);
+    builder.evaluateStatement(this, morph);
+  }
+}
+
+class Text {
+  constructor(node) {
+    let [, content] = node;
+    this.content = content;
+  }
+
+  render(builder) {
+    builder.appendChild(builder.dom.createTextNode(this.content));
+  }
+}
+
+class Comment {
+  constructor(node) {
+    let [, value] = node;
+    this.value = value;
+  }
+
+  render(builder) {
+    builder.appendChild(builder.dom.createComment(this.value));
+  }
+}
+
+class OpenElement {
+  constructor(node) {
+    let [, tag] = node;
+    this.tag = tag;
+  }
+
+  render(builder) {
+    // demeter violation; abstract better
+    let element = builder.dom.createElement(this.tag, builder.contextualElement);
+    builder.pushElement(element);
+  }
+}
+
+class CloseElement {
+  render(builder) {
+    builder.appendChild(builder.popElement());
+  }
+}
+
+class StaticAttr {
+  constructor(node) {
+    let [, name, value, namespace] = node;
+    this.name = name;
+    this.value = value;
+    this.namespace = namespace;
+  }
+
+  render(builder) {
+    assert(builder.element, "staticAttr() requires an element");
+    if (this.namespace) {
+      builder.dom.setAttributeNS(builder.element, this.namespace, this.name, this.value);
+    } else {
+      builder.dom.setAttribute(builder.element, this.name, this.value);
+    }
   }
 }
 
 // these are all constructors, indexed by statement type
 const StatementNodes = {
+  /// dynamic statements
   block: Block,
   inline: Inline,
-  content: Content,
+  unknown: Unknown,
   element: Element,
-  attribute: Attribute,
-  component: Component
+  dynamicAttr: DynamicAttr,
+  component: Component,
+
+  /// static statements
+  text: Text,
+  comment: Comment,
+  openElement: OpenElement,
+  closeElement: CloseElement,
+  staticAttr: StaticAttr,
+};
+
+const BOUNDARY_CANDIDATES = {
+  block: true,
+  inline: true,
+  unknown: true,
+  component: true
 };
 
 class Params {
@@ -300,7 +416,7 @@ class Get extends Expression {
   }
 }
 
-class Subexpr extends mixin(Expression, HasInternalParams) {
+class Helper extends mixin(Expression, HasInternalParams) {
   constructor(node) {
     super(node);
     let [, path, params, hash] = node;
@@ -310,8 +426,8 @@ class Subexpr extends mixin(Expression, HasInternalParams) {
   }
 
   evaluate(env, scope) {
-    let params = this.params.evaluate(env, scope);
-    let hash = this.hash.evaluate(env, scope);
+    let params = this.params && this.params.evaluate(env, scope);
+    let hash = this.hash && this.hash.evaluate(env, scope);
 
     return env.hooks.subexpr(env, scope, this.path, params, hash);
   }
@@ -332,13 +448,26 @@ class Concat extends Expression {
 
 const ExpressionNodes = {
   get: Get,
-  subexpr: Subexpr,
+  helper: Helper,
   concat: Concat
 };
 
-export function buildStatements(statements, children) {
-  if (!statements) { return EMPTY_ARRAY; }
-  return statements.map(statement => new StatementNodes[statement[0]](statement, children));
+export function buildStatements(statements, list) {
+  if (statements.length === 0) { return EMPTY_ARRAY; }
+  let built = statements.map(statement => {
+    assert(StatementNodes[statement[0]], `Unimplemented ${statement[0]} in Template`);
+    return new StatementNodes[statement[0]](statement, list);
+  });
+
+  if (statements[0][0] in BOUNDARY_CANDIDATES) {
+    built[0].frontBoundary = true;
+  }
+
+  if (statements[statements.length - 1][0] in BOUNDARY_CANDIDATES) {
+    built[built.length - 1].backBoundary = true;
+  }
+
+  return built;
 }
 
 function buildExpression(node) {
@@ -350,11 +479,15 @@ function buildExpression(node) {
 }
 
 function buildParams(rawParams) {
+  if (!rawParams) { return null; }
+
   let params = rawParams.map(rawParam => buildExpression(rawParam));
   return new Params(params);
 }
 
 function buildHash(rawPairs) {
+  if (!rawPairs) { return null; }
+
   let pairs = [];
 
   for (let i = 0, l = rawPairs.length; i < l; i += 2) {

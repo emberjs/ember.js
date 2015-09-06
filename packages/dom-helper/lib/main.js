@@ -13,6 +13,7 @@ import {
   normalizeProperty
 } from "./dom-helper/prop";
 import { isAttrRemovalValue } from "./dom-helper/prop";
+import { assert } from "../htmlbars-util";
 
 var doc = typeof document === 'undefined' ? false : document;
 
@@ -441,6 +442,21 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   morph.firstNode = start;
   morph.lastNode = end;
   return morph;
+};
+
+prototype.morphForChildren = function(parent, contextualElement) {
+  // contextual element is used when the morph is created for the children
+  // of a fragment.
+  let morph = new this.MorphClass(this, contextualElement);
+  morph.appendToParent = parent;
+  morph.firstNode = parent.firstChild;
+  morph.lastNode = parent.lastChild;
+  return morph;
+};
+
+prototype.createBlankMorph = function(parent, nextSibling) {
+  let morph = new this.MorphClass(this, parent);
+  morph._nextSibling = nextSibling;
 };
 
 prototype.createFragmentMorph = function(contextualElement) {
