@@ -82,6 +82,10 @@ export function debugStruct(shape) {
   let keys = Object.keys(shape);
 
   return function(options) {
+    Object.keys(options).forEach(field => {
+      assert(field in shape, `${field} passed for struct, but it was not in the keys: ${keys.join(', ')}`);
+    });
+
     keys.forEach(field => {
       let type = shape[field];
 

@@ -1,9 +1,7 @@
 /*jshint evil:true*/
 import { preprocess } from "../htmlbars-syntax/parser";
 import { NewTemplateCompiler } from "./template-compiler";
-import { wrap } from "../htmlbars-runtime/hooks";
 import Template from "../htmlbars-runtime/template";
-import render from "../htmlbars-runtime/render";
 
 /*
  * Compile a string into a template spec string. The template spec is a string
@@ -68,5 +66,5 @@ export function template(templateSpec) {
  */
 export function compile(string, options) {
   let templateSpec = template(compileSpec(string, options));
-  return wrap(Template.fromSpec(templateSpec), render);
+  return Template.fromSpec(templateSpec);
 }

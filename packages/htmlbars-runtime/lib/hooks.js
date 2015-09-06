@@ -1,10 +1,76 @@
-import { topLevelRender, nestedRender, RenderOptions } from "./render";
+import { RenderOptions } from "./render";
 import MorphList from "../morph-range/morph-list";
-import { createChildMorph } from "./render";
+import { createChildMorph, manualElement } from "./render";
 import { keyLength, shallowCopy } from "../htmlbars-util/object-utils";
 import { validateChildMorphs } from "../htmlbars-util/morph-utils";
-import { RenderState, clearMorph, clearMorphList, renderAndCleanup } from "../htmlbars-util/template-utils";
+import { Block, clearMorph, clearMorphList } from "../htmlbars-util/template-utils";
 import { linkParams } from "../htmlbars-util/morph-utils";
+
+class RenderState {
+  constructor(renderNode, { morphList, shadowOptions }) {
+    // The morph list that is no longer needed and can be
+    // destroyed.
+    this.morphListToClear = morphList || null;
+
+    // The morph list that needs to be pruned of any items
+    // that were not yielded on a subsequent render.
+    this.morphListToPrune = null;
+
+    // A map of morphs for each item yielded in during this
+    // rendering pass. Any morphs in the DOM but not in this map
+    // will be pruned during cleanup.
+    this.handledMorphs = {};
+    this.collisions = undefined;
+
+    // The morph to clear once rendering is complete. By
+    // default, we set this to the previous morph (to catch
+    // the case where nothing is yielded; in that case, we
+    // should just clear the morph). Otherwise this gets set
+    // to null if anything is rendered.
+    this.morphToClear = renderNode;
+
+    this.shadowOptions = shadowOptions || null;
+  }
+
+  finish(morph, env) {
+    this.pruneMorphList(env);
+    this.clearMorphList(env, morph);
+    this.clearMorph(env);
+  }
+
+  pruneMorphList(env) {
+    let morphList = this.morphListToPrune;
+    if (!morphList) { return; }
+
+    let handledMorphs = this.handledMorphs;
+    let item = this.morphList.firstChildMorph;
+
+    while (item) {
+      let next = item.nextMorph;
+
+      // If we don't see the key in handledMorphs, it wasn't
+      // yielded in and we can safely remove it from DOM.
+      if (!(item.key in handledMorphs)) {
+        delete this.morphMap[item.key];
+        clearMorph(item, env, true);
+        item.destroy();
+      }
+
+      item = next;
+    }
+  }
+
+  clearMorphList(env, morph) {
+    let morphList = this.morphListToClear;
+    // is morph here the same as morphList.mountedMorph?
+    if (morphList) { clearMorphList(morphList, morph, env); }
+  }
+
+  clearMorph(env) {
+    let toClear = this.morphListToClear;
+    if (toClear) { clearMorph(toClear, env); }
+  }
+}
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -78,24 +144,6 @@ import { linkParams } from "../htmlbars-util/morph-utils";
   ```
 */
 
-export function wrap(template) {
-  if (template === null) { return null;  }
-
-  return {
-    meta: template.meta,
-    arity: template.arity,
-    raw: template,
-    render: function(self, env, options, blockArguments) {
-      var scope = env.hooks.createFreshScope();
-
-      let contextualElement = options && options.contextualElement;
-      let renderOptions = new RenderOptions({ self, blockArguments, contextualElement });
-
-      return topLevelRender(template, env, scope, renderOptions);
-    }
-  };
-}
-
 export function wrapForHelper(template, env, scope, morph, renderState, visitor) {
   if (!template) { return {}; }
 
@@ -149,6 +197,7 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     // scope in more cases than the ones we can determine statically.
     if (self !== undefined || parentScope === null || template.arity) {
       scope = env.hooks.createChildScope(parentScope);
+      env.hooks.setupScope(env, scope, self, template.locals, blockArguments);
     }
 
     if (morph.lastYielded) {
@@ -158,8 +207,8 @@ function yieldTemplate(template, env, parentScope, morph, renderState, visitor) 
     morph.lastYielded = { self: self, template: template, shadowTemplate: null };
 
     // Render the template that was selected by the helper
-    let renderOptions = new RenderOptions({ renderNode: morph, self, blockArguments });
-    nestedRender(template, env, scope, renderOptions);
+    let renderOptions = new RenderOptions({ renderNode: morph });
+    template.renderIn(env, scope, renderOptions);
   };
 }
 
@@ -281,7 +330,7 @@ function optionsFor(template, inverse, env, scope, morph, visitor) {
   // If there was a template yielded last time, set morphToClear so it will be cleared
   // if no template is yielded on this render.
   var morphToClear = morph.lastResult ? morph : null;
-  var renderState = new RenderState(morphToClear, morph.morphList || null);
+  var renderState = new RenderState(morphToClear, { morphList: morph.morphList });
 
   return {
     templates: {
@@ -296,8 +345,7 @@ function thisFor(options) {
   return {
     arity: options.template.arity,
     yield: options.template.yield,
-    yieldItem: options.template.yieldItem,
-    yieldIn: options.template.yieldIn
+    yieldItem: options.template.yieldItem
   };
 }
 
@@ -337,6 +385,15 @@ export function createFreshScope() {
   // separate dictionary to track whether a local was bound.
   // See `bindLocal` for more information.
   return { self: null, blocks: {}, locals: {}, localPresent: {} };
+}
+
+export function setupScope(env, scope, self, localNames, blockArguments) {
+  if (self !== undefined) { env.hooks.bindSelf(env, scope, self); }
+  if (blockArguments !== undefined) {
+    for (let i=0, l=localNames.length; i<l; i++) {
+      env.hooks.bindLocal(env, scope, localNames[i], blockArguments[i]);
+    }
+  }
 }
 
 /**
@@ -523,19 +580,11 @@ export function block(morph, env, scope, path, params, hash, template, inverse, 
     return;
   }
 
-  continueBlock(morph, env, scope, path, params, hash, template, inverse, visitor);
-}
-
-export function continueBlock(morph, env, scope, path, params, hash, template, inverse, visitor) {
-  hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
-    var helper = env.hooks.lookupHelper(env, scope, path);
-    return env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
-  });
-}
-
-export function hostBlock(morph, env, scope, template, inverse, shadowOptions, visitor, callback) {
-  var options = optionsFor(template, inverse, env, scope, morph, visitor);
-  renderAndCleanup(morph, env, options, shadowOptions, callback);
+  let options = optionsFor(template, inverse, env, scope, morph, visitor);
+  let helper = env.hooks.lookupHelper(env, scope, path);
+  let result = env.hooks.invokeHelper(morph, env, scope, visitor, params, hash, helper, options.templates, thisFor(options.templates));
+  if (result.handled) { return; }
+  options.renderState.finish(morph, env);
 }
 
 export function handleRedirect(morph, env, scope, path, params, hash, template, inverse, visitor) {
@@ -999,12 +1048,12 @@ export function getCellOrValue(reference) {
   return reference;
 }
 
-export function component(morph, env, scope, tagName, params, attrs, templates, visitor) {
+export function component(morph, env, scope, tagName, params, attrs, templates, visitor, builder) {
   if (env.hooks.hasHelper(env, scope, tagName)) {
     return env.hooks.block(morph, env, scope, tagName, params, attrs, templates.default, templates.inverse, visitor);
   }
 
-  componentFallback(morph, env, scope, tagName, attrs, templates.default);
+  componentFallback(morph, env, scope, tagName, attrs, templates.default, builder);
 }
 
 export function concat(env, params) {
@@ -1015,19 +1064,18 @@ export function concat(env, params) {
   return value;
 }
 
-function componentFallback(morph, env, scope, tagName, attrs, template) {
-  var element = env.dom.createElement(tagName);
-  for (var name in attrs) {
-    element.setAttribute(name, env.hooks.getValue(attrs[name]));
+function componentFallback(morph, env, scope, tagName, attrs, template, builder) {
+  let block = morph.state.block;
+
+  if (!block) {
+    let elementTemplate = manualElement(tagName, attrs, template.isEmpty);
+    let childScope = env.hooks.createChildScope(scope);
+    env.hooks.bindBlock(env, childScope, new Block({ scope, template }));
+
+    morph.state.block = block = new Block({ scope: childScope, template: elementTemplate });
   }
 
-  var result = topLevelRender(template, env, scope, {});
-
-  if (result.fragment) {
-    element.appendChild(result.fragment);
-  }
-
-  morph.setNode(element);
+  block.invoke(env, undefined, undefined, morph, undefined, builder.visitor);
 }
 
 export function hasHelper(env, scope, helperName) {
@@ -1067,15 +1115,16 @@ export default {
   subexpr: subexpr,
 
   // fundamental hooks with good default behavior
-  bindBlock: bindBlock,
-  bindShadowScope: bindShadowScope,
-  updateLocal: updateLocal,
-  updateSelf: updateSelf,
-  updateScope: updateScope,
-  createChildScope: createChildScope,
-  hasHelper: hasHelper,
-  lookupHelper: lookupHelper,
-  invokeHelper: invokeHelper,
+  bindBlock,
+  bindShadowScope,
+  updateLocal,
+  updateSelf,
+  updateScope,
+  createChildScope,
+  setupScope,
+  hasHelper,
+  lookupHelper,
+  invokeHelper,
   cleanupRenderNode: null,
   destroyRenderNode: null,
   willCleanupTree: null,
@@ -1084,12 +1133,12 @@ export default {
   didRenderNode: null,
 
   // derived hooks
-  attribute: attribute,
-  block: block,
-  createScope: createScope,
-  element: element,
-  get: get,
-  inline: inline,
-  range: range,
-  keyword: keyword
+  attribute,
+  block,
+  createScope,
+  element,
+  get,
+  inline,
+  range,
+  keyword
 };

@@ -1,11 +1,29 @@
 import { InternalParams } from '../htmlbars-util/morph-utils';
 import { assert } from '../htmlbars-util';
-import Builder from './builder';
+import Builder, { BuilderResult } from './builder';
+import { EMPTY_RENDER_RESULT, RenderOptions, RenderResult, primeNamespace } from './render';
 
 // REFACTOR TODO: Get rid of this via mmun's plan
 import { linkParams } from "../htmlbars-util/morph-utils";
 
 const EMPTY_ARRAY = Object.freeze([]);
+let EMPTY_PARAMS, EMPTY_HASH;
+
+class TopLevelRenderResult {
+  constructor(options) {
+    this.fragment = options.fragment;
+    this.inner = options.inner;
+    this.root = options.root;
+  }
+
+  revalidate(...args) {
+    this.inner.revalidate(...args);
+  }
+
+  rerender(...args) {
+    this.inner.rerender(...args);
+  }
+}
 
 export default class Template {
   static fromSpec(specs) {
@@ -15,16 +33,27 @@ export default class Template {
       let spec = specs[i];
 
       templates[i] = new Template({
+        statements: buildStatements(spec.statements, templates),
         root: templates,
         meta: spec.meta,
         locals: spec.locals,
         isEmpty: spec.statements.length === 0,
-        statements: buildStatements(spec.statements, templates),
         spec: spec
       });
     }
 
     return templates[templates.length - 1];
+  }
+
+  static fromStatements(statements) {
+    return new Template({
+      statements,
+      root: null,
+      meta: null,
+      locals: null,
+      isEmpty: statements.length === 0,
+      spec: null
+    });
   }
 
   constructor(options) {
@@ -33,15 +62,45 @@ export default class Template {
     this.arity = options.locals ? options.locals.length : 0;
     this.cachedFragment = null;
     this.hasRendered = false;
-    this._statements = options.statements || EMPTY_ARRAY;
+    this.statements = options.statements || EMPTY_ARRAY;
     this.locals = options.locals || EMPTY_ARRAY;
     this.spec = options.spec || null;
     this.isEmpty = options.isEmpty || false;
     Object.seal(this);
   }
 
-  evaluate(domContext, runtime) {
-    return Builder.evaluateTemplate(this, domContext, runtime);
+  evaluate(morph, runtime) {
+    // runtime is { env, scope, visitor }
+    let builder = new Builder(morph, runtime);
+    builder.evaluateTemplate(this);
+    return new BuilderResult({ morphs: builder.morphs, statements: builder.statements });
+  }
+
+  render(self, env, options, blockArguments) {
+    if (this.isEmpty) { return EMPTY_RENDER_RESULT; }
+
+    let scope = env.hooks.createFreshScope();
+    env.hooks.setupScope(env, scope, self, this.locals, blockArguments);
+    let contextualElement = options && options.contextualElement;
+    let renderOptions = new RenderOptions({ self, blockArguments });
+
+    primeNamespace(env, contextualElement);
+
+    let dom = env.dom;
+    let element = dom.createDocumentFragment();
+    let rootNode = dom.morphForChildren(element, contextualElement);
+    rootNode.ownerNode = rootNode;
+
+    let result = RenderResult.build(rootNode, env, scope, this, renderOptions);
+    return new TopLevelRenderResult({ inner: result, fragment: element, root: rootNode });
+  }
+
+  renderIn(env, scope, options) {
+    if (this.isEmpty) { return EMPTY_RENDER_RESULT; }
+
+    primeNamespace(env, options.renderNode.contextualElement);
+
+    return RenderResult.build(options.renderNode, env, scope, this, options);
   }
 
   _getCachedFragment(env) {
@@ -72,6 +131,16 @@ export default class Template {
 
 function mixin(parent, ...mixins) {
   return mixins.reduce((proto, mixin) => mixin(proto), parent);
+}
+
+function Dynamic(Super) {
+  return class extends Super {
+    constructor(...args) {
+      super(...args);
+      this.frontBoundary = false;
+      this.backBoundary = false;
+    }
+  };
 }
 
 function HasInternalParams(Super) {
@@ -111,18 +180,30 @@ class Expression {
 class Statement extends Expression {
 }
 
-class Block extends mixin(Statement, HasInternalParams) {
-  constructor(node, children) {
-    super(node);
+export class Block extends mixin(Statement, Dynamic, HasInternalParams) {
+  static fromSpec(node, children) {
     let [, path, params, hash, templateId, inverseId] = node;
-    this.path = path;
-    this.params = buildParams(params);
-    this.hash = buildHash(hash);
-    this.template = templateId === null ? null : children[templateId];
-    this.inverse = inverseId === null ? null : children[inverseId];
+    return new Block({
+      path: path,
+      params: buildParams(params),
+      hash: buildHash(hash),
+      template: templateId === null ? null : children[templateId],
+      inverse: inverseId === null ? null : children[inverseId]
+    });
+  }
 
-    this.frontBoundary = false;
-    this.backBoundary = false;
+  static build(options) {
+    return new Block(options);
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
+    this.params = options.params;
+    this.hash = options.hash;
+    this.template = options.template;
+    this.inverse = options.inverse;
   }
 
   evaluate(morph, env, scope, visitor) {
@@ -136,17 +217,34 @@ class Block extends mixin(Statement, HasInternalParams) {
   }
 }
 
-class Inline extends mixin(Statement, HasInternalParams) {
-  constructor(node) {
-    super(node);
+export class Inline extends mixin(Statement, Dynamic, HasInternalParams) {
+  static fromSpec(node) {
     let [, path, params, hash, unsafe] = node;
-    this.path = path;
-    this.params = buildParams(params);
-    this.hash = buildHash(hash);
-    this.unsafe = unsafe;
 
-    this.frontBoundary = false;
-    this.backBoundary = false;
+    return new Inline({
+      path,
+      unsafe,
+      params: buildParams(params),
+      hash: buildHash(hash)
+    });
+  }
+
+  static build(path, options) {
+    return new Inline({
+      path,
+      unsafe: options && options.unsafe,
+      params: options && options.params || EMPTY_PARAMS,
+      hash: options && options.hash || EMPTY_HASH
+    });
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
+    this.unsafe = options.unsafe;
+    this.params = options.params;
+    this.hash = options.hash;
   }
 
   evaluate(morph, env, scope, visitor) {
@@ -160,15 +258,22 @@ class Inline extends mixin(Statement, HasInternalParams) {
   }
 }
 
-class Unknown extends Statement {
-  constructor(node) {
-    super(node);
+export class Unknown extends mixin(Statement, Dynamic) {
+  static fromSpec(node) {
     let [, path, unsafe] = node;
-    this.path = path;
-    this.unsafe = unsafe;
 
-    this.frontBoundary = false;
-    this.backBoundary = false;
+    return new Unknown({ path, unsafe });
+  }
+
+  static build(path, unsafe) {
+    return new Unknown({ path, unsafe });
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
+    this.unsafe = options.unsafe;
   }
 
   evaluate(morph, env, scope, visitor) {
@@ -205,13 +310,32 @@ class Unknown extends Statement {
 function isHelper(env, scope, path) {
   return (env.hooks.keywords[path] !== undefined) || env.hooks.hasHelper(env, scope, path);
 }
-class Element extends mixin(Statement, HasInternalParams) {
-  constructor(node) {
-    super(node);
+
+export class Element extends mixin(Statement, HasInternalParams) {
+  static fromSpec(node) {
     let [, path, params, hash] = node;
-    this.path = path;
-    this.params = buildParams(params);
-    this.hash = buildHash(hash);
+
+    return new Element({
+      path,
+      params: buildParams(params),
+      hash: buildHash(hash)
+    });
+  }
+
+  static build(path, options) {
+    return new Element({
+      path,
+      params: options.params || EMPTY_PARAMS,
+      hash: options.hash || EMPTY_HASH
+    });
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
+    this.params = options.params;
+    this.hash = options.hash;
   }
 
   evaluate(morph, env, scope, visitor) {
@@ -224,13 +348,27 @@ class Element extends mixin(Statement, HasInternalParams) {
   }
 }
 
-class DynamicAttr extends Statement {
-  constructor(node) {
-    super(node);
+export class DynamicAttr extends Statement {
+  static fromSpec(node) {
     let [, name, value, namespace] = node;
-    this.name = name;
-    this.value = buildExpression(value);
-    this.namespace = namespace;
+
+    return new DynamicAttr({
+      name,
+      namespace,
+      value: buildExpression(value)
+    });
+  }
+
+  static build(name, value, namespace=null) {
+    return new DynamicAttr({ name, value, namespace });
+  }
+
+  constructor(options) {
+    super();
+
+    this.name = options.name;
+    this.value = options.value;
+    this.namespace = options.namespace;
   }
 
   getInternalParams(env, scope, morph) {
@@ -252,26 +390,43 @@ class DynamicAttr extends Statement {
   }
 }
 
-class Component extends mixin(Statement, HasInternalParams) {
-  constructor(node, children) {
-    super(node);
+export class Component extends mixin(Statement, Dynamic, HasInternalParams) {
+  static fromSpec(node, children) {
     let [, path, attrs, templateId, inverseId] = node;
 
-    this.path = path;
-    this.hash = buildHash(attrs);
-    this.templates = {
-      default: children[templateId],
-      inverse: children[inverseId]
-    };
-
-    this.frontBoundary = false;
-    this.backBoundary = false;
+    return new Component({
+      path,
+      hash: buildHash(attrs),
+      templates: {
+        default: children[templateId],
+        inverse: children[inverseId]
+      }
+    });
   }
 
-  evaluate(morph, env, scope, visitor) {
+  static build(path, options) {
+    return new Component({
+      path,
+      hash: options.hash || null,
+      templates: {
+        default: options.default || null,
+        inverse: options.inverse || null
+      }
+    });
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
+    this.hash = options.hash;
+    this.templates = options.templates;
+  }
+
+  evaluate(morph, env, scope, visitor, builder) {
     let { hash } = this.getInternalParams(env, scope, morph);
 
-    env.hooks.component(morph, env, scope, this.path, EMPTY_ARRAY, hash, this.templates, visitor);
+    env.hooks.component(morph, env, scope, this.path, EMPTY_ARRAY, hash, this.templates, visitor, builder);
   }
 
   render(builder) {
@@ -280,10 +435,19 @@ class Component extends mixin(Statement, HasInternalParams) {
   }
 }
 
-class Text {
-  constructor(node) {
+export class Text {
+  static fromSpec(node) {
     let [, content] = node;
-    this.content = content;
+
+    return new Text({ content });
+  }
+
+  static build(content) {
+    return new Text({ content });
+  }
+
+  constructor(options) {
+    this.content = options.content;
   }
 
   render(builder) {
@@ -291,10 +455,19 @@ class Text {
   }
 }
 
-class Comment {
-  constructor(node) {
+export class Comment {
+  static fromSpec(node) {
     let [, value] = node;
-    this.value = value;
+
+    return new Comment({ value });
+  }
+
+  static build(value) {
+    return new Comment({ value });
+  }
+
+  constructor(options) {
+    this.value = options.value;
   }
 
   render(builder) {
@@ -302,31 +475,55 @@ class Comment {
   }
 }
 
-class OpenElement {
-  constructor(node) {
+export class OpenElement {
+  static fromSpec(node) {
     let [, tag] = node;
-    this.tag = tag;
+
+    return new OpenElement({ tag });
+  }
+
+  static build(tag) {
+    return new OpenElement({ tag });
+  }
+
+  constructor(options) {
+    this.tag = options.tag;
   }
 
   render(builder) {
-    // demeter violation; abstract better
-    let element = builder.dom.createElement(this.tag, builder.contextualElement);
-    builder.pushElement(element);
+    builder.openElement(this.tag);
   }
 }
 
-class CloseElement {
+export class CloseElement {
+  static fromSpec() {
+    return new CloseElement();
+  }
+
+  static build() {
+    return new CloseElement();
+  }
+
   render(builder) {
-    builder.appendChild(builder.popElement());
+    builder.closeElement();
   }
 }
 
-class StaticAttr {
-  constructor(node) {
+export class StaticAttr {
+  static fromSpec(node) {
     let [, name, value, namespace] = node;
-    this.name = name;
-    this.value = value;
-    this.namespace = namespace;
+
+    return new StaticAttr({ name, value, namespace });
+  }
+
+  static build(name, value, namespace=null) {
+    return new StaticAttr({ name, value, namespace });
+  }
+
+  constructor(options) {
+    this.name = options.name;
+    this.value = options.value;
+    this.namespace = options.namespace;
   }
 
   render(builder) {
@@ -364,7 +561,12 @@ const BOUNDARY_CANDIDATES = {
   component: true
 };
 
-class Params {
+export class Params {
+  static build(...args) {
+    if (args.length === 0) { return EMPTY_PARAMS; }
+    return new Params(args);
+  }
+
   constructor(params) {
     this.params = params;
   }
@@ -374,7 +576,16 @@ class Params {
   }
 }
 
-class Hash {
+EMPTY_PARAMS = new Params([]);
+
+export class Hash {
+  static build(hash) {
+    if (hash === undefined) { return EMPTY_HASH; }
+    let pairs = [];
+    Object.keys(hash).forEach(key => pairs.push(key, hash[key]));
+    return new Hash(pairs);
+  }
+
   constructor(pairs) {
     this.pairs = pairs;
   }
@@ -393,7 +604,17 @@ class Hash {
   }
 }
 
-class Value extends Expression {
+EMPTY_HASH = new Hash([]);
+
+export class Value extends Expression {
+  static fromSpec(value) {
+    return new Value(value);
+  }
+
+  static build(value) {
+    return new Value(value);
+  }
+
   constructor(value) {
     super();
     this.value = value;
@@ -404,11 +625,21 @@ class Value extends Expression {
   }
 }
 
-class Get extends Expression {
-  constructor(node) {
-    super();
+export class Get extends Expression {
+  static fromSpec(node) {
     let [, path] = node;
-    this.path = path;
+
+    return new Get({ path });
+  }
+
+  static build(path) {
+    return new Get({ path });
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
   }
 
   evaluate(env, scope) {
@@ -416,13 +647,27 @@ class Get extends Expression {
   }
 }
 
-class Helper extends mixin(Expression, HasInternalParams) {
-  constructor(node) {
-    super(node);
+export class Helper extends mixin(Expression, HasInternalParams) {
+  static fromSpec(node) {
     let [, path, params, hash] = node;
-    this.path = path;
-    this.params = buildParams(params);
-    this.hash = buildHash(hash);
+
+    return new Helper({
+      path,
+      params: buildParams(params),
+      hash: buildHash(hash)
+    });
+  }
+
+  static build(path, params=EMPTY_PARAMS, hash=EMPTY_HASH) {
+    return new Helper({ path, params, hash });
+  }
+
+  constructor(options) {
+    super();
+
+    this.path = options.path;
+    this.params = options.params;
+    this.hash = options.hash;
   }
 
   evaluate(env, scope) {
@@ -433,11 +678,21 @@ class Helper extends mixin(Expression, HasInternalParams) {
   }
 }
 
-class Concat extends Expression {
-  constructor(node) {
-    super();
+export class Concat extends Expression {
+  static fromSpec(node) {
     let [, params] = node;
-    this.parts = buildParams(params);
+
+    return new Concat({ parts: buildParams(params) });
+  }
+
+  static build(parts=EMPTY_PARAMS) {
+    return new Concat({ parts });
+  }
+
+  constructor(options) {
+    super();
+
+    this.parts = options.parts;
   }
 
   evaluate(env, scope) {
@@ -454,10 +709,7 @@ const ExpressionNodes = {
 
 export function buildStatements(statements, list) {
   if (statements.length === 0) { return EMPTY_ARRAY; }
-  let built = statements.map(statement => {
-    assert(StatementNodes[statement[0]], `Unimplemented ${statement[0]} in Template`);
-    return new StatementNodes[statement[0]](statement, list);
-  });
+  let built = statements.map(statement => StatementNodes[statement[0]].fromSpec(statement, list));
 
   if (statements[0][0] in BOUNDARY_CANDIDATES) {
     built[0].frontBoundary = true;
@@ -472,21 +724,21 @@ export function buildStatements(statements, list) {
 
 function buildExpression(node) {
   if (typeof node !== 'object' || node === null) {
-    return new Value(node);
+    return Value.fromSpec(node);
   } else {
-    return new ExpressionNodes[node[0]](node);
+    return ExpressionNodes[node[0]].fromSpec(node);
   }
 }
 
 function buildParams(rawParams) {
-  if (!rawParams) { return null; }
+  if (!rawParams) { return EMPTY_PARAMS; }
 
   let params = rawParams.map(rawParam => buildExpression(rawParam));
   return new Params(params);
 }
 
 function buildHash(rawPairs) {
-  if (!rawPairs) { return null; }
+  if (!rawPairs) { return EMPTY_HASH; }
 
   let pairs = [];
 
@@ -500,3 +752,34 @@ function buildHash(rawPairs) {
   return new Hash(pairs);
 }
 
+export let builders = {
+  value: Value.build,
+  params: Params.build,
+  hash: Hash.build
+};
+
+export class TemplateBuilder {
+  constructor() {
+    this.statements = [];
+  }
+
+  template() {
+    return Template.fromStatements(this.statements);
+  }
+
+  specExpr(node) {
+    return buildExpression(node);
+  }
+}
+
+// export all statement nodes as builders via their static `build` method
+Object.keys(StatementNodes).forEach(key => {
+  let builderKey = `${key[0].toLowerCase()}${key.slice(1)}`;
+  builders[builderKey] = StatementNodes[key].build;
+});
+
+Object.keys(builders).forEach(key => {
+  TemplateBuilder.prototype[key] = function(...args) {
+    this.statements.push(builders[key](...args));
+  };
+});

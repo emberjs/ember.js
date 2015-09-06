@@ -2,18 +2,12 @@ import { assert } from "../htmlbars-util";
 import { struct } from "../htmlbars-util/object-utils";
 import * as types from "../htmlbars-util/object-utils";
 
-let BuilderResult = struct({
+export const BuilderResult = struct({
   morphs: types.ARRAY,
   statements: types.ARRAY
 });
 
 export default class Builder {
-  static evaluateTemplate(template, domContext, runtime) {
-    let builder = new Builder(domContext, runtime);
-    template._statements.forEach(statement => statement.render(builder, runtime.dom));
-    return new BuilderResult(builder);
-  }
-
   constructor(renderNode, { env, scope, visitor }) {
     // REFACTOR TODO: Runtime is { env, scope, visitor }?
     this.env = env;
@@ -30,7 +24,25 @@ export default class Builder {
     this.statements = [];
   }
 
+  createChild(morph) {
+    return new Builder(morph, { env: this.env, scope: this.scope, visitor: this.visitor });
+  }
+
+  evaluateTemplate(template) {
+    template.statements.forEach(statement => statement.render(this, this.dom));
+  }
+
   /// Utilities
+
+  openElement(tag) {
+    let element = this.dom.createElement(tag, this.contextualElement);
+    this.pushElement(element);
+    return element;
+  }
+
+  closeElement() {
+    this.appendChild(this.popElement());
+  }
 
   createMorph(statement, unsafe) {
     let morph = new this.dom.MorphClass(this.dom, this.contextualElement);
@@ -61,7 +73,7 @@ export default class Builder {
   }
 
   evaluateStatement(statement, morph) {
-    statement.evaluate(morph, this.env, this.scope, this.visitor);
+    statement.evaluate(morph, this.env, this.scope, this.visitor, this);
     this.statements.push(statement);
     if (morph.nodeEvaluated) { morph.nodeEvaluated(); }
   }
