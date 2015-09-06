@@ -169,29 +169,6 @@ RenderResult.prototype.destroy = function() {
   clearMorph(rootNode, this.env, true);
 };
 
-RenderResult.prototype._populateNodes = function(visitor) {
-  let env = this.env;
-  let scope = this.scope;
-  let nodes = this.nodes;
-  let statements = this.template._statements;
-  let i, l;
-
-  for (i=0, l=statements.length; i<l; i++) {
-    let statement = statements[i];
-    let morph = nodes[i];
-
-    if (env.hooks.willRenderNode) {
-      env.hooks.willRenderNode(morph, env, scope);
-    }
-
-    visitor(statement, morph, env, scope, visitor);
-
-    if (env.hooks.didRenderNode) {
-      env.hooks.didRenderNode(morph, env, scope);
-    }
-  }
-};
-
 function bindSelf(env, scope, self) {
   env.hooks.bindSelf(env, scope, self);
 }
@@ -218,29 +195,10 @@ function initializeNode(node, owner) {
   node.ownerNode = owner;
 }
 
+// TODO: morph.createChild or somesuch; this doesn't actually work
 export function createChildMorph(dom, parentMorph, contextualElement) {
   let morph = Morph.empty(dom, contextualElement || parentMorph.contextualElement);
   initializeNode(morph, parentMorph.ownerNode);
   return morph;
 }
 
-export function getCachedFragment(template, env) {
-  let dom = env.dom, fragment;
-  if (env.useFragmentCache && dom.canClone) {
-    if (template.cachedFragment === null) {
-      fragment = template.buildFragment(dom);
-      if (template.hasRendered) {
-        template.cachedFragment = fragment;
-      } else {
-        template.hasRendered = true;
-      }
-    }
-    if (template.cachedFragment) {
-      fragment = dom.cloneNode(template.cachedFragment, true);
-    }
-  } else if (!fragment) {
-    fragment = template.buildFragment(dom);
-  }
-
-  return fragment;
-}
