@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <title>HTMLBars Benchmark</title>
+    <script src='./benchmark.js'></script>
+    <script src='../assets/loader.js'></script>
+    <script src='../amd/dom-helper.amd.js'></script>
+    <script src='../amd/htmlbars-compiler.amd.js'></script>
+    <script src='../amd/htmlbars-runtime.amd.js'></script>
+  </head>
+
+  <body>
+    <button id='benchmark-run'>Run</button>
+    <pre id='benchmark-log'></pre>
+
+    <script>
+      // UI
+      var runButton = document.getElementById('benchmark-run');
+      runButton.addEventListener('click', runBenchmark);
+
+      var logPre = document.getElementById('benchmark-log');
+      function log(message) { logPre.innerHTML += message; }
+      function logln(message) { log(message + '\n'); }
+
+
+      // Imports
+      var compilerModule = requireModule('htmlbars-compiler');
+      var compileSpec = compilerModule.compileSpec;
+      var template = compilerModule.template;
+
+      var runtimeModule = requireModule('htmlbars-runtime');
+      var hooks = runtimeModule.hooks;
+      var render = runtimeModule.render;
+
+      var DOMHelper = requireModule('dom-helper').default;
+
+      // Init
+      var helpers = {
+        each: function(params, hash) {
+          var list = params[0];
+          var key = hash.key;
+          for (var i=0, l=list.length; i<l; i++) {
+            var item = list[i];
+            this.yieldItem(''+item[key], [item]);
+          }
+        },
+
+        if: function(params, hash, options) {
+          if (!!params[0]) {
+            return options.template.yield();
+          } else if (options.inverse.yield) {
+            return options.inverse.yield();
+          }
+        }
+      };
+
+      var env = {
+        dom: new DOMHelper(),
+        hooks: hooks,
+        helpers: helpers
+      };
+
+      logln('Status: Idle\n');
+
+      function runBenchmark() {
+        logln('Status: Running\n');
+
+        setTimeout(function() {
+          for (var name in benchmarks) {
+            logln('Scenario: ' + name);
+            logln('-----------------------');
+
+            var bench = new Benchmark(benchmarks[name]);
+            bench.run();
+
+            console.log(name, bench);
+
+            logln('Samples: ' + bench.stats.sample.length);
+            logln('Mean:    ' + bench.stats.mean.toFixed(5));
+            logln('Dev.:    ' + bench.stats.deviation.toFixed(5));
+            logln('');
+          }
+
+          logln('Status: Finished\n');
+        }, 100);
+      }
+
+      var benchmarks = {
+        'each-if': {
+          setup: function() {
+            var t = template(compileSpec(
+              '{{#each items key="id" as |item|}}' +
+                '{{item.id}}: ' +
+                '{{#if item.visible}}' +
+                  '{{#each item.subitems key="id" as |subitem|}}' +
+                    '{{subitem.id}}' +
+                  '{{/each}}' +
+                '{{/if}}' +
+              '{{/each}}'
+            ));
+
+            // Context
+            var itemId = 0;
+            var subitemId = 0;
+
+            var items = [];
+
+            for (var i = 0; i < 250; i++) {
+              var subitems = [];
+
+              for (var j = 0; j < 50; j++) {
+                subitems.push({
+                  id: subitemId++
+                });
+              }
+
+              items.push({
+                id: itemId++,
+                visible: i % 2 === 0,
+                subitems: subitems
+              });
+            }
+
+            var context = {
+              items: items
+            };
+
+            var scope = hooks.createFreshScope();
+            hooks.bindSelf(env, scope, context);
+          },
+
+          fn: function() {
+            render(t, env, scope, {});
+          },
+
+          minSamples: 20
+        }
+      };
+    </script>
+
+  </body>
+</html>

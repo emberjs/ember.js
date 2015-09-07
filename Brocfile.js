@@ -14,9 +14,14 @@ var packages = require('./packages');
 var dependableTrees = {};
 
 var bower = 'bower_components';
-var demos = new Funnel('demos', {
-  destDir: '/demos'
-});
+var demos = new Funnel('demos', { destDir: '/demos' });
+
+var benchmarkjs = new Funnel('node_modules/benchmark', { files: ['benchmark.js'] });
+var benchHarness = 'bench';
+var bench = new Funnel(
+  mergeTrees([benchmarkjs, benchHarness]),
+  { destDir: '/bench' }
+);
 
 var ES6Tokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
@@ -108,7 +113,7 @@ var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
 });
 
 // Export trees
-var trees = [demos, test, loader, qunit, cliSauce];
+var trees = [bench, demos, test, loader, qunit, cliSauce];
 
 for (var packageName in packages.dependencies) {
   var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
