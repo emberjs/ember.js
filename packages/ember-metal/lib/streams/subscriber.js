@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 /**
   @module ember-metal
@@ -17,7 +17,7 @@ function Subscriber(callback, context) {
   this.context = context;
 }
 
-merge(Subscriber.prototype, {
+assign(Subscriber.prototype, {
   removeFrom(stream) {
     var next = this.next;
     var prev = this.prev;

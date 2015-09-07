@@ -1,5 +1,5 @@
 import { runInDebug } from 'ember-metal/debug';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import EmberError from 'ember-metal/error';
 import { _addBeforeObserver } from 'ember-metal/observer';
 
@@ -11,7 +11,7 @@ import hasElement from 'ember-views/views/states/has_element';
 
 var inDOM = Object.create(hasElement);
 
-merge(inDOM, {
+assign(inDOM, {
   enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.

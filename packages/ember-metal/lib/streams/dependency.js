@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import {
   read,
   setValue,
@@ -27,7 +27,7 @@ function Dependency(depender, dependee) {
   this.unsubscription = null;
 }
 
-merge(Dependency.prototype, {
+assign(Dependency.prototype, {
   subscribe() {
     assert('Dependency error: Dependency tried to subscribe while already subscribed', !this.unsubscription);
 

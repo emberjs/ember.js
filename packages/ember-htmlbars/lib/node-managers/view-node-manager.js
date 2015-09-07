@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import { get } from 'ember-metal/property_get';
@@ -163,7 +163,7 @@ function getTemplate(componentOrView) {
 
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);
-  let props = merge({}, options);
+  let props = assign({}, options);
   let defaultController = View.proto().controller;
   let hasSuppliedController = 'controller' in attrs || 'controller' in props;
 
@@ -176,7 +176,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     let proto = component.proto();
 
     if (createOptions) {
-      merge(props, createOptions);
+      assign(props, createOptions);
     }
 
     mergeBindings(props, snapshot);

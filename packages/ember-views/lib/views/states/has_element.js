@@ -1,5 +1,5 @@
 import _default from 'ember-views/views/states/default';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import jQuery from 'ember-views/system/jquery';
 import run from 'ember-metal/run_loop';
 
@@ -13,7 +13,7 @@ import { internal } from 'htmlbars-runtime';
 
 var hasElement = Object.create(_default);
 
-merge(hasElement, {
+assign(hasElement, {
   $(view, sel) {
     var elem = view.element;
     return sel ? jQuery(sel, elem) : jQuery(elem);

@@ -7,7 +7,7 @@ import { set } from 'ember-metal/property_set';
 import getProperties from 'ember-metal/get_properties';
 import isNone from 'ember-metal/is_none';
 import { computed } from 'ember-metal/computed';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import {
   typeOf
 } from 'ember-runtime/utils';
@@ -330,8 +330,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     var state = transition ? transition.state : this.router.router.state;
 
     var params = {};
-    merge(params, state.params[name]);
-    merge(params, getQueryParamsFor(route, state));
+    assign(params, state.params[name]);
+    assign(params, getQueryParamsFor(route, state));
 
     return params;
   },
@@ -2172,7 +2172,7 @@ function getFullQueryParams(router, state) {
   if (state.fullQueryParams) { return state.fullQueryParams; }
 
   state.fullQueryParams = {};
-  merge(state.fullQueryParams, state.queryParams);
+  assign(state.fullQueryParams, state.queryParams);
 
   var targetRouteName = state.handlerInfos[state.handlerInfos.length - 1].name;
   router._deserializeQueryParams(targetRouteName, state.fullQueryParams);
@@ -2238,8 +2238,8 @@ function mergeEachQueryParams(controllerQP, routeQP) {
     if (!controllerQP.hasOwnProperty(cqpName)) { continue; }
 
     var newControllerParameterConfiguration = {};
-    merge(newControllerParameterConfiguration, controllerQP[cqpName]);
-    merge(newControllerParameterConfiguration, routeQP[cqpName]);
+    assign(newControllerParameterConfiguration, controllerQP[cqpName]);
+    assign(newControllerParameterConfiguration, routeQP[cqpName]);
 
     qps[cqpName] = newControllerParameterConfiguration;
 
@@ -2253,7 +2253,7 @@ function mergeEachQueryParams(controllerQP, routeQP) {
     if (!routeQP.hasOwnProperty(rqpName) || keysAlreadyMergedOrSkippable[rqpName]) { continue; }
 
     var newRouteParameterConfiguration = {};
-    merge(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
+    assign(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
     qps[rqpName] = newRouteParameterConfiguration;
   }
 
