@@ -54,9 +54,9 @@ export default class Builder {
     morph.parseTextAsHTML = !!unsafe;
 
     if (this.element) {
-      morph.emptyForAppendingToElement(this.element, this.renderNode);
+      morph.initForAppendingToElement(this.element).initParent(this.renderNode);
     } else {
-      morph.emptyForAppendingToMorph(this.renderNode);
+      morph.initForAppendingToMorph(this.renderNode);
     }
 
     this.morphs.push(morph);
@@ -92,7 +92,8 @@ export default class Builder {
     // necessary.
     statement.evaluate(morph, this.env, this.scope, this.visitor, this);
     this.statements.push(statement);
-    if (morph.evaluated) { morph.evaluated(); }
+    if (morph.finishAppend) { morph.finishAppend(); }
+    morph.childMorphs = this.morphs;
   }
 
   pushElement(element) {

@@ -23,12 +23,13 @@ export function equalHTML(node, html) {
   equalInnerHTML(div, html);
 }
 
-function generateTokens(fragmentOrHtml) {
-  var div = document.createElement("div");
-  if (typeof fragmentOrHtml === 'string') {
-    div.innerHTML = fragmentOrHtml;
+function generateTokens(divOrHTML) {
+  var div;
+  if (typeof divOrHTML === 'string') {
+    div = document.createElement("div");
+    div.innerHTML = divOrHTML;
   } else {
-    div.appendChild(fragmentOrHtml.cloneNode(true));
+    div = divOrHTML;
   }
 
   return { tokens: tokenize(div.innerHTML), html: div.innerHTML };

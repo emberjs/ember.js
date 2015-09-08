@@ -11,7 +11,6 @@ let EMPTY_PARAMS, EMPTY_HASH;
 
 class TopLevelRenderResult {
   constructor(options) {
-    this.fragment = options.fragment;
     this.inner = options.inner;
     this.root = options.root;
     this.env = options.env;
@@ -74,6 +73,7 @@ export default class Template {
     // runtime is { env, scope, visitor }
     let builder = new Builder(morph, runtime);
     builder.evaluateTemplate(this);
+    morph.childMorphs = builder.morphs;
     return new BuilderResult({ morphs: builder.morphs, statements: builder.statements });
   }
 
@@ -81,17 +81,14 @@ export default class Template {
     if (this.isEmpty) { return EMPTY_RENDER_RESULT; }
 
     let scope = env.hooks.createFreshScope();
-    env.hooks.setupScope(env, scope, self, this.locals, blockArguments);
-    let contextualElement = options && options.contextualElement;
+    env.hooks.setupScope(env, scope, self, this.locals, blockArguments, options && options.hostOptions);
 
-    primeNamespace(env, contextualElement);
+    primeNamespace(env);
 
-    let element = env.dom.createDocumentFragment();
-    let rootNode = env.dom.morphForChildren(element, contextualElement);
-    rootNode.ownerNode = rootNode;
+    let rootNode = new env.dom.MorphClass(env.dom).initForAppendingToElement(env.appendTo).initRoot();
 
     let result = RenderResult.build(rootNode, env, scope, this);
-    return new TopLevelRenderResult({ env, inner: result, fragment: element, root: rootNode });
+    return new TopLevelRenderResult({ env, inner: result, root: rootNode });
   }
 
   renderIn(morph, env, scope) {

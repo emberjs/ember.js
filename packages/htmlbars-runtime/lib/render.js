@@ -6,9 +6,8 @@ import { TemplateBuilder } from './template';
 
 //let svgNamespace = 'http://www.w3.org/2000/svg';
 
-export function primeNamespace(env, contextualElement) {
-  let dom = env.dom;
-  dom.detectNamespace(contextualElement);
+export function primeNamespace(env) {
+  env.dom.detectNamespace(env.parentNode);
 }
 
 export class RenderResult {
@@ -17,7 +16,6 @@ export class RenderResult {
     let locals = template.locals;
 
     let result = RenderResult.fromEvalResult(scope, locals, evalResult);
-    morph.applyResult(result);
     return result;
   }
 
