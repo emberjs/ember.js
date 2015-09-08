@@ -13,7 +13,6 @@ import {
   normalizeProperty
 } from "./dom-helper/prop";
 import { isAttrRemovalValue } from "./dom-helper/prop";
-import { assert } from "../htmlbars-util";
 
 var doc = typeof document === 'undefined' ? false : document;
 
@@ -155,6 +154,7 @@ function DOMHelper(_document){
   }
   this.canClone = canClone;
   this.namespace = null;
+  this.uselessElement = this.document.createElement('div');
 }
 
 var prototype = DOMHelper.prototype;
@@ -524,6 +524,33 @@ prototype.insertBoundary = function(fragment, index) {
 prototype.setMorphHTML = function(morph, html) {
   morph.setHTML(html);
 };
+
+prototype.appendHTMLBefore = function(parent, nextSibling, html) {
+  // REFACTOR TODO: table stuff in IE9; maybe just catch exceptions?
+
+  let prev = nextSibling && nextSibling.previousSibling;
+  let last;
+
+  if (nextSibling === null) {
+    parent.insertAdjacentHTML('beforeEnd', html);
+    last = parent.lastChild;
+  } else if (nextSibling.nodeType === 3) {
+    nextSibling.insertAdjacentHTML('beforeBegin', html);
+    last = nextSibling.previousSibling;
+  } else {
+    parent.insertBefore(this.uselessElement, nextSibling);
+    this.uselessElement.insertAdjacentHTML('beforeBegin', html);
+    last = this.uselessElement.previousSibling;
+    parent.removeChild(this.uselessElement);
+  }
+
+  let first = prev ? prev.nextSibling : parent.firstChild;
+  return [first, last];
+};
+
+//prototype.replaceHTML = function(first, last, text) {
+
+//};
 
 prototype.parseHTML = function(html, contextualElement) {
   var childNodes;

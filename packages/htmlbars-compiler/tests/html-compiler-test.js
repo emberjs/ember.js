@@ -8,7 +8,7 @@ import { normalizeInnerHTML, getTextContent, equalTokens } from "../htmlbars-tes
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
-var hooks, helpers, partials, env;
+var hooks, helpers, partials, env, dom, root;
 
 function registerHelper(name, callback) {
   helpers[name] = callback;
@@ -20,23 +20,30 @@ function registerPartial(name, html) {
 
 function compilesTo(html, expected, context) {
   var template = compile(html);
-  var fragment = template.render(context, env, { contextualElement: document.body }).fragment;
-  equalTokens(fragment, expected === undefined ? html : expected);
-  return fragment;
+  env.appendTo = root = dom.createElement('div');
+  template.render(context, env, {});
+  equalTokens(root, expected === undefined ? html : expected);
 }
 
+function rootElement() {
+  return dom.createElement('div');
+}
 
 function commonSetup() {
+  dom = new DOMHelper();
+  root = rootElement();
+
   hooks = merge({}, defaultHooks);
   helpers = {};
   partials = {};
 
   env = {
-    dom: new DOMHelper(),
+    appendTo: root,
+    dom: dom,
     hooks: hooks,
     helpers: helpers,
     partials: partials,
-    useFragmentCache: true
+    useFragmentCache: false // REFACTOR TODO: Revisit
   };
 }
 
@@ -44,71 +51,72 @@ QUnit.module("HTML-based compiler (output)", {
   beforeEach: commonSetup
 });
 
-test("Simple content produces a document fragment", function() {
+test("Simple content gets appended properly", function() {
   var template = compile("content");
-  var fragment = template.render({}, env).fragment;
+  template.render({}, env);
 
-  equalTokens(fragment, "content");
+  equalTokens(root, "content");
 });
 
 test("Simple elements are created", function() {
   var template = compile("<h1>hello!</h1><div>content</div>");
-  var fragment = template.render({}, env).fragment;
+  template.render({}, env);
 
-  equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
+  equalTokens(root, "<h1>hello!</h1><div>content</div>");
 });
 
 test("Simple elements can be re-rendered", function() {
   var template = compile("<h1>hello!</h1><div>content</div>");
   var result = template.render({}, env);
-  var fragment = result.fragment;
 
-  var oldFirstChild = fragment.firstChild;
+  var oldFirstChild = root.firstChild;
 
   result.revalidate(env);
 
-  strictEqual(fragment.firstChild, oldFirstChild);
-  equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
+  strictEqual(root.firstChild, oldFirstChild);
+  equalTokens(root, "<h1>hello!</h1><div>content</div>");
 });
 
 test("Simple elements can have attributes", function() {
   var template = compile("<div class='foo' id='bar'>content</div>");
-  var fragment = template.render({}, env).fragment;
+  template.render({}, env);
 
-  equalTokens(fragment, '<div class="foo" id="bar">content</div>');
+  equalTokens(root, '<div class="foo" id="bar">content</div>');
 });
 
 test("Simple elements can have an empty attribute", function() {
   var template = compile("<div class=''>content</div>");
-  var fragment = template.render({}, env).fragment;
+  template.render({}, env);
 
-  equalTokens(fragment, '<div class="">content</div>');
+  equalTokens(root, '<div class="">content</div>');
 });
 
 test("presence of `disabled` attribute without value marks as disabled", function() {
   var template = compile('<input disabled>');
-  var inputNode = template.render({}, env).fragment.firstChild;
+  template.render({}, env);
 
-  ok(inputNode.disabled, 'disabled without value set as property is true');
+  ok(root.firstChild.disabled, 'disabled without value set as property is true');
 });
 
 test("Null quoted attribute value calls toString on the value", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
-  var inputNode = template.render({isDisabled: null}, env).fragment.firstChild;
+  template.render({isDisabled: null}, env);
 
-  ok(inputNode.disabled, 'string of "null" set as property is true');
+  ok(root.firstChild.disabled, 'string of "null" set as property is true');
 });
 
 test("Null unquoted attribute value removes that attribute", function() {
   var template = compile('<input disabled={{isDisabled}}>');
-  var inputNode = template.render({isDisabled: null}, env).fragment.firstChild;
+  template.render({isDisabled: null}, env);
 
-  equalTokens(inputNode, '<input>');
+  equalTokens(root, '<input>');
 });
 
 test("unquoted attribute string is just that", function() {
   var template = compile('<input value=funstuff>');
-  var inputNode = template.render({}, env).fragment.firstChild;
+  template.render({}, env);
+
+  var inputNode = root.firstChild;
 
   equal(inputNode.tagName, 'INPUT', 'input tag');
   equal(inputNode.value, 'funstuff', 'value is set as property');
@@ -116,7 +124,9 @@ test("unquoted attribute string is just that", function() {
 
 test("unquoted attribute expression is string", function() {
   var template = compile('<input value={{funstuff}}>');
-  var inputNode = template.render({funstuff: "oh my"}, env).fragment.firstChild;
+  template.render({funstuff: "oh my"}, env);
+
+  var inputNode = root.firstChild;
 
   equal(inputNode.tagName, 'INPUT', 'input tag');
   equal(inputNode.value, 'oh my', 'string is set to property');
@@ -124,9 +134,9 @@ test("unquoted attribute expression is string", function() {
 
 test("unquoted attribute expression works when followed by another attribute", function() {
   var template = compile('<div foo={{funstuff}} name="Alice"></div>');
-  var divNode = template.render({funstuff: "oh my"}, env).fragment.firstChild;
+  template.render({funstuff: "oh my"}, env);
 
-  equalTokens(divNode, '<div name="Alice" foo="oh my"></div>');
+  equalTokens(root, '<div name="Alice" foo="oh my"></div>');
 });
 
 test("Unquoted attribute value with multiple nodes throws an exception", function () {
@@ -148,31 +158,31 @@ test("Unquoted attribute value with multiple nodes throws an exception", functio
 
 test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo'>content</div>");
-  var divNode = template.render({}, env).fragment.firstChild;
-  equalTokens(divNode, '<div data-some-data="foo">content</div>');
+  template.render({}, env);
+  equalTokens(root, '<div data-some-data="foo">content</div>');
 });
 
 test("checked attribute and checked property are present after clone and hydrate", function() {
   var template = compile("<input checked=\"checked\">");
-  var inputNode = template.render({}, env).fragment.firstChild;
+  template.render({}, env);
+
+  var inputNode = root.firstChild;
+
   equal(inputNode.tagName, 'INPUT', 'input tag');
   equal(inputNode.checked, true, 'input tag is checked');
 });
 
 
 function shouldBeVoid(tagName) {
+  root.innerHTML = "";
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
-  var fragment = template.render({}, env).fragment;
-
-
-  var div = document.createElement("div");
-  div.appendChild(fragment.cloneNode(true));
+  template.render({}, env);
 
   var tag = '<' + tagName + ' data-foo="bar">';
   var closing = '</' + tagName + '>';
   var extra = "<p>hello</p>";
-  html = normalizeInnerHTML(div.innerHTML);
+  html = normalizeInnerHTML(root.innerHTML);
 
   QUnit.push((html === tag + extra) || (html === tag + closing + extra), html, tag + closing + extra, tagName + " should be a void element");
 }
@@ -188,9 +198,9 @@ test("Void elements are self-closing", function() {
 test("The compiler can handle nesting", function() {
   var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div>&nbsp;More content';
   var template = compile(html);
-  var fragment = template.render({}, env).fragment;
+  template.render({}, env);
 
-  equalTokens(fragment, html);
+  equalTokens(root, html);
 });
 
 test("The compiler can handle quotes", function() {
@@ -266,28 +276,20 @@ function firstChild(fragment) {
 test("The compiler can handle top-level unescaped tr", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  var fragment = template.render(context, env, { contextualElement: document.createElement('table') }).fragment;
+  root = env.appendTo = dom.createElement('table');
+  template.render(context, env, {});
 
-  equal(
-    firstChild(fragment).tagName, 'TR', "root tr is present" );
+  equal(root.firstChild.tagName, 'TBODY', "root tbody is present");
 });
 
 test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<td>Yo</td>' };
-  var fragment = template.render(context, env, { contextualElement: document.createElement('tr') }).fragment;
+  root = env.appendTo = dom.createElement('tr');
+  template.render(context, env, {});
 
-  equal(
-    firstChild(fragment).tagName, 'TD',
-    "root td is returned" );
+  equal(root.firstChild.tagName, 'TD', "root td is returned");
 });
-
-// REFACTOR TODO: Like firstChild, this exists because if we add back boundary
-// nodes (which we likely will for now), I don't want to have to change it in
-// a bunch of places again.
-function nextMorph(node) {
-  return node;
-}
 
 test("The compiler can handle unescaped tr in top of content", function() {
   registerHelper('test', function() {
@@ -296,11 +298,10 @@ test("The compiler can handle unescaped tr in top of content", function() {
 
   var template = compile('{{#test}}{{{html}}}{{/test}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  var fragment = template.render(context, env, { contextualElement: document.createElement('table') }).fragment;
+  root = env.appendTo = dom.createElement('table');
+  template.render(context, env, {});
 
-  equal(
-    nextMorph(firstChild(fragment)).tagName, 'TR',
-    "root tr is present" );
+  equal(root.firstChild.tagName, 'TBODY', "root tbody is present" );
 });
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
@@ -310,12 +311,10 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
 
   var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  var fragment = template.render(context, env, { contextualElement: document.createElement('div') }).fragment;
-  var tableNode = fragment.firstChild;
+  template.render(context, env, {});
+  var tableNode = root.firstChild;
 
-  equal(
-    tableNode.firstChild.tagName, 'TR',
-    "root tr is present" );
+  equal( tableNode.firstChild.tagName, 'TBODY', "root tbody is present" );
 });
 
 test("The compiler can handle simple helpers", function() {
@@ -335,12 +334,12 @@ test("Helpers propagate the owner render node", function() {
   var context = { name: "Tom Dale" };
   var result = template.render(context, env);
 
-  equalTokens(result.fragment, '<div><p><span>Tom Dale</span></p></div>');
+  equalTokens(root, '<div><p><span>Tom Dale</span></p></div>');
 
-  var root = result.root;
-  strictEqual(root, root.childNodes[0].ownerNode);
-  strictEqual(root, root.childNodes[0].childNodes[0].ownerNode);
-  strictEqual(root, root.childNodes[0].childNodes[0].childNodes[0].ownerNode);
+  var rootNode = result.root;
+  strictEqual(rootNode, rootNode.childMorphs[0].ownerNode);
+  strictEqual(rootNode, rootNode.childMorphs[0].childMorphs[0].ownerNode);
+  strictEqual(rootNode, rootNode.childMorphs[0].childMorphs[0].childMorphs[0].ownerNode);
 });
 
 test("The compiler can handle sexpr helpers", function() {
@@ -369,11 +368,12 @@ test("The compiler passes along the hash arguments", function() {
 
 test("second render respects whitespace", function () {
   var template = compile('Hello {{ foo }} ');
-  template.render({}, env, { contextualElement: document.createElement('div') });
-  var fragment = template.render({}, env, { contextualElement: document.createElement('div') }).fragment;
-  equal(fragment.childNodes.length, 3, 'fragment contains 3 text nodes');
-  equal(getTextContent(fragment.childNodes[0]), 'Hello ', 'first text node ends with one space character');
-  equal(getTextContent(fragment.childNodes[2]), ' ', 'last text node contains one space character');
+  template.render({}, env, {});
+  root = env.appendTo = dom.createElement('div');
+  template.render({}, env, {});
+  equal(root.childNodes.length, 3, 'fragment contains 3 text nodes');
+  equal(getTextContent(root.childNodes[0]), 'Hello ', 'first text node ends with one space character');
+  equal(getTextContent(root.childNodes[2]), ' ', 'last text node contains one space character');
 });
 
 test("Morphs are escaped correctly", function() {
@@ -680,12 +680,12 @@ test("Node helpers can be used for attribute bindings", function() {
   var template = compile('<a {{testing href=url}}>linky</a>');
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, '<a href="linky.html">linky</a>');
+  equalTokens(root, '<a href="linky.html">linky</a>');
   object.url = 'zippy.html';
 
-  result.rerender(env);
+  result.rerender();
 
-  equalTokens(result.fragment, '<a href="zippy.html">linky</a>');
+  equalTokens(root, '<a href="zippy.html">linky</a>');
 });
 
 
@@ -726,9 +726,9 @@ test('Repaired text nodes are ensured in the right place', function () {
 
 test("Simple elements can have dashed attributes", function() {
   var template = compile("<div aria-label='foo'>content</div>");
-  var fragment = template.render({}, env).fragment;
+  template.render({}, env);
 
-  equalTokens(fragment, '<div aria-label="foo">content</div>');
+  equalTokens(root, '<div aria-label="foo">content</div>');
 });
 
 QUnit.skip("Block params", function() {
