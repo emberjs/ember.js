@@ -1,8 +1,8 @@
-import dictionary from 'ember-metal/dictionary';
+import EmptyObject from 'ember-metal/empty_object';
 export default Cache;
 
 function Cache(limit, func) {
-  this.store  = dictionary(null);
+  this.store  = new EmptyObject();
   this.size   = 0;
   this.misses = 0;
   this.hits   = 0;
@@ -44,7 +44,7 @@ Cache.prototype = {
   },
 
   purge() {
-    this.store  = dictionary(null);
+    this.store  = new EmptyObject();
     this.size   = 0;
     this.hits   = 0;
     this.misses = 0;

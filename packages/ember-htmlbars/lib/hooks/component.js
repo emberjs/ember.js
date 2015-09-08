@@ -2,6 +2,15 @@ import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import Cache from 'ember-metal/cache';
+
+var IS_ANGLE_CACHE = new Cache(1000, function(key) {
+  return key.match(/^(@?)<(.*)>$/);
+});
+
+var CONTAINS_DASH = new Cache(1000, function(key) {
+  return key.indexOf('-') !== -1;
+});
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.getState();
@@ -17,7 +26,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   let isTopLevel = false;
   let isDasherized = false;
 
-  let angles = tagName.match(/^(@?)<(.*)>$/);
+  let angles = IS_ANGLE_CACHE.get(tagName);
 
   if (angles) {
     tagName = angles[2];
@@ -25,7 +34,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     isTopLevel = !!angles[1];
   }
 
-  if (tagName.indexOf('-') !== -1) {
+  if (CONTAINS_DASH.get(tagName)) {
     isDasherized = true;
   }
 
