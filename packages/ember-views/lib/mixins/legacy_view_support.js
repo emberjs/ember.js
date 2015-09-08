@@ -21,8 +21,10 @@ var LegacyViewSupport = Mixin.create({
 
     while (childViews.length) {
       var view = childViews.pop();
-      callback(view);
-      childViews.push(...view.childViews);
+      if (view) {
+        callback(view);
+        childViews.push(...view.childViews);
+      }
     }
   },
 
