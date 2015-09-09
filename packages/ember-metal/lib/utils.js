@@ -181,7 +181,7 @@ export function generateGuid(obj, prefix) {
 
   You can also use this method on DOM Element objects.
 
-  @private
+  @public
   @method guidFor
   @for Ember
   @param {Object} obj any object, string, number, Element, or primitive
