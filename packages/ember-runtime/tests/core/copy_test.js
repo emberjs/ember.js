@@ -22,3 +22,10 @@ QUnit.test('Ember.copy null prototype object', function() {
 
   equal(copy(obj).foo, 'bar', 'bar should still be bar');
 });
+
+QUnit.test('Ember.copy Array', function() {
+  var array = [1, null, new Date(2015, 9, 9), 'four'];
+  var arrayCopy = copy(array);
+
+  deepEqual(array, arrayCopy, 'array content cloned successfully in new array');
+});
