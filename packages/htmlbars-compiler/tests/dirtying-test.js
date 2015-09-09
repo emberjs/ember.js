@@ -7,20 +7,28 @@ import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
 import { equalTokens } from "../htmlbars-test-helpers";
 
-var hooks, helpers, partials, env;
+var hooks, helpers, partials, env, dom, root;
 
 function registerHelper(name, callback) {
   helpers[name] = callback;
 }
 
+function rootElement() {
+  return dom.createElement('div');
+}
+
 function commonSetup() {
+  dom = new DOMHelper();
+  root = rootElement();
+
   hooks = merge({}, defaultHooks);
   hooks.keywords = merge({}, defaultHooks.keywords);
   helpers = {};
   partials = {};
 
   env = {
-    dom: new DOMHelper(),
+    appendTo: root,
+    dom: dom,
     hooks: hooks,
     helpers: helpers,
     partials: partials,
@@ -58,30 +66,30 @@ test("a simple implementation of a dirtying rerender", function() {
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
   var result = template.render(object, env);
-  var valueNode = result.fragment.firstChild.firstChild.firstChild;
+  var valueNode = root.firstChild.firstChild.firstChild;
 
-  equalTokens(result.fragment, '<div><p>hello world</p></div>', "Initial render");
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
   result.rerender();
 
-  equalTokens(result.fragment, '<div><p>hello world</p></div>', "After dirtying but not updating");
-  strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+  equalTokens(root, '<div><p>hello world</p></div>', "After dirtying but not updating");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
   // Even though the #if was stable, a dirty child node is updated
   object.value = 'goodbye world';
   result.rerender();
-  equalTokens(result.fragment, '<div><p>goodbye world</p></div>', "After updating and dirtying");
-  strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+  equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
   // Should not update since render node is not marked as dirty
   object.condition = false;
   result.revalidate();
-  equalTokens(result.fragment, '<div><p>goodbye world</p></div>', "After flipping the condition but not dirtying");
-  strictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+  equalTokens(root, '<div><p>goodbye world</p></div>', "After flipping the condition but not dirtying");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
   result.rerender();
-  equalTokens(result.fragment, '<div><p>Nothing</p></div>', "And then dirtying");
-  QUnit.notStrictEqual(result.fragment.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+  equalTokens(root, '<div><p>Nothing</p></div>', "And then dirtying");
+  QUnit.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 });
 
 test("a simple implementation of a dirtying rerender without inverse", function() {
@@ -89,17 +97,17 @@ test("a simple implementation of a dirtying rerender without inverse", function(
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, '<div><p>hello world</p></div>', "Initial render");
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
   object.condition = false;
 
   result.rerender();
-  equalTokens(result.fragment, '<div><!----></div>', "If the condition is false, the morph becomes empty");
+  equalTokens(root, '<div><!----></div>', "If the condition is false, the morph becomes empty");
 
   object.condition = true;
 
   result.rerender();
-  equalTokens(result.fragment, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
+  equalTokens(root, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
 });
 
 test("block helpers whose template has a morph at the edge", function() {
@@ -109,9 +117,9 @@ test("block helpers whose template has a morph at the edge", function() {
 
   var template = compile("{{#id}}{{value}}{{/id}}");
   var object = { value: "hello world" };
-  var result = template.render(object, env);
+  let result = template.render(object, env);
 
-  equalTokens(result.fragment, 'hello world');
+  equalTokens(root, 'hello world');
   var firstNode = result.root.firstNode;
   equal(firstNode.nodeType, 3, "the first node of the helper should be a text node");
   equal(firstNode.nodeValue, "hello world", "its content should be hello world");
@@ -124,22 +132,19 @@ test("clean content doesn't get blown away", function() {
   var object = { value: "hello" };
   var result = template.render(object, env);
 
-  var textNode = result.fragment.firstChild.firstChild;
+  var textNode = root.firstChild.firstChild;
   equal(textNode.nodeValue, "hello");
 
   object.value = "goodbye";
   result.revalidate(); // without setting the node to dirty
 
-  equalTokens(result.fragment, '<div>hello</div>');
-
-  var textRenderNode = result.root.childNodes[0];
-
-  textRenderNode.setContent = function() {
-    ok(false, "Should not get called");
-  };
+  equalTokens(root, '<div>hello</div>');
 
   object.value = "hello";
   result.rerender();
+
+  textNode = root.firstChild.firstChild;
+  equal(textNode.nodeValue, "hello");
 });
 
 test("helper calls follow the normal dirtying rules", function() {
@@ -151,27 +156,24 @@ test("helper calls follow the normal dirtying rules", function() {
   var object = { value: "hello" };
   var result = template.render(object, env);
 
-  var textNode = result.fragment.firstChild.firstChild;
+  var textNode = root.firstChild.firstChild;
   equal(textNode.nodeValue, "HELLO");
 
   object.value = "goodbye";
   result.revalidate(); // without setting the node to dirty
 
-  equalTokens(result.fragment, '<div>HELLO</div>');
-
-  var textRenderNode = result.root.childNodes[0];
+  equalTokens(root, '<div>HELLO</div>');
 
   result.rerender();
 
-  equalTokens(result.fragment, '<div>GOODBYE</div>');
-
-  textRenderNode.setContent = function() {
-    ok(false, "Should not get called");
-  };
+  equalTokens(root, '<div>GOODBYE</div>');
 
   // Checks normalized value, not raw value
   object.value = "GoOdByE";
   result.rerender();
+
+  textNode = root.firstChild.firstChild;
+  equal(textNode.nodeValue, "GOODBYE");
 });
 
 test("attribute nodes follow the normal dirtying rules", function() {
@@ -180,18 +182,18 @@ test("attribute nodes follow the normal dirtying rules", function() {
 
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div class='world'>hello</div>", "Initial render");
+  equalTokens(root, "<div class='world'>hello</div>", "Initial render");
 
   object.value = "universe";
   result.revalidate(); // without setting the node to dirty
 
-  equalTokens(result.fragment, "<div class='world'>hello</div>", "Revalidating without dirtying");
+  equalTokens(root, "<div class='world'>hello</div>", "Revalidating without dirtying");
 
-  var attrRenderNode = result.root.childNodes[0];
+  var attrRenderNode = result.root.childMorphs[0];
 
   result.rerender();
 
-  equalTokens(result.fragment, "<div class='universe'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div class='universe'>hello</div>", "Revalidating after dirtying");
 
   attrRenderNode.setContent = function() {
     ok(false, "Should not get called");
@@ -200,7 +202,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   object.value = "universe";
   result.rerender();
 
-  equalTokens(result.fragment, "<div class='universe'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div class='universe'>hello</div>", "Revalidating after dirtying");
 });
 
 test("attribute nodes w/ concat follow the normal dirtying rules", function() {
@@ -208,18 +210,18 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   var object = { value: "world" };
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div class='hello world'>hello</div>");
+  equalTokens(root, "<div class='hello world'>hello</div>");
 
   object.value = "universe";
   result.revalidate(); // without setting the node to dirty
 
-  equalTokens(result.fragment, "<div class='hello world'>hello</div>");
+  equalTokens(root, "<div class='hello world'>hello</div>");
 
-  var attrRenderNode = result.root.childNodes[0];
+  var attrRenderNode = result.root.childMorphs[0];
 
   result.rerender();
 
-  equalTokens(result.fragment, "<div class='hello universe'>hello</div>");
+  equalTokens(root, "<div class='hello universe'>hello</div>");
 
   attrRenderNode.setContent = function() {
     ok(false, "Should not get called");
@@ -251,20 +253,20 @@ function testEachHelper(testName, templateSource) {
     var itemNode = getItemNode('tomdale');
     var nameNode = getNameNode('tomdale');
 
-    equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "Initial render");
+    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "Initial render");
 
     rerender();
     assertStableNodes('tomdale', "after no-op rerender");
-    equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
+    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
 
     result.revalidate();
     assertStableNodes('tomdale', "after non-dirty rerender");
-    equalTokens(result.fragment, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
+    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
 
     object = { list: [object.list[1], object.list[0]] };
     rerender(object);
     assertStableNodes('tomdale', "after changing the list order");
-    equalTokens(result.fragment, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>", "After changing the list order");
+    equalTokens(root, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>", "After changing the list order");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -272,7 +274,7 @@ function testEachHelper(testName, templateSource) {
     ]};
     rerender(object);
     assertStableNodes('mmun', "after changing the list entries, but with stable keys");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li></ul>", "After changing the list entries, but with stable keys");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li></ul>", "After changing the list entries, but with stable keys");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -282,7 +284,7 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('mmun', "after adding an additional entry");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -291,7 +293,7 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('mmun', "after removing the middle entry");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "after removing the middle entry");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "after removing the middle entry");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -301,7 +303,7 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('mmun', "after adding two more entries");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding two more entries");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding two more entries");
 
     // New node for stability check
     itemNode = getItemNode('rwjblue');
@@ -313,7 +315,7 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('rwjblue', "after removing two entries");
-    equalTokens(result.fragment, "<ul><li class='rwjblue'>Robert Jackson</li></ul>", "After removing two entries");
+    equalTokens(root, "<ul><li class='rwjblue'>Robert Jackson</li></ul>", "After removing two entries");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -323,7 +325,7 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('rwjblue', "after adding back entries");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding back entries");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding back entries");
 
     // New node for stability check
     itemNode = getItemNode('mmun');
@@ -335,13 +337,13 @@ function testEachHelper(testName, templateSource) {
 
     rerender(object);
     assertStableNodes('mmun', "after removing from the back");
-    equalTokens(result.fragment, "<ul><li class='mmun'>Martin Muñoz</li></ul>", "After removing from the back");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li></ul>", "After removing from the back");
 
     object = { list: [] };
 
     rerender(object);
-    strictEqual(result.fragment.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
-    equalTokens(result.fragment, "<ul><!----></ul>", "After removing the remaining entries");
+    strictEqual(root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
+    equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
 
     function rerender(context) {
       result.rerender(env, context);
@@ -354,7 +356,7 @@ function testEachHelper(testName, templateSource) {
 
     function getItemNode(className) {
       // <li>
-      var itemNode = result.fragment.firstChild.firstChild;
+      var itemNode = root.firstChild.firstChild;
 
       while (itemNode) {
         if (itemNode.getAttribute('class') === className) { break; }
@@ -400,13 +402,13 @@ test("Returning true from `linkRenderNodes` makes the value itself stable across
   var template = compile("<div class='{{hello}} {{world}}'></div>");
   var result = template.render(streams, env);
 
-  equalTokens(result.fragment, "<div class='hello world'></div>");
+  equalTokens(root, "<div class='hello world'></div>");
 
   streams.hello.value = "goodbye";
 
   result.rerender();
 
-  equalTokens(result.fragment, "<div class='goodbye world'></div>");
+  equalTokens(root, "<div class='goodbye world'></div>");
 });
 
 var destroyedRenderNodeCount;
@@ -431,7 +433,7 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
 
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div><p>hello world</p></div>");
+  equalTokens(root, "<div><p>hello world</p></div>");
 
   object.condition = false;
   result.rerender();
@@ -446,7 +448,7 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
   strictEqual(destroyedRenderNode.lastValue, 'Nothing', "The correct render node is passed in");
 });
 
-test("MorphLists in childNodes are properly cleared", function() {
+test("MorphLists in childMorphs are properly cleared", function() {
   var object = {
     condition: true,
     falsy: "Nothing",
@@ -459,12 +461,12 @@ test("MorphLists in childNodes are properly cleared", function() {
 
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div><p>Hello</p><p>World</p></div>");
+  equalTokens(root, "<div><p>Hello</p><p>World</p></div>");
 
   object.condition = false;
   result.rerender();
 
-  equalTokens(result.fragment, "<div><p>Nothing</p></div>");
+  equalTokens(root, "<div><p>Nothing</p></div>");
 
   strictEqual(destroyedRenderNodeCount, 5, "cleanup hook was invoked for each morph");
 
@@ -480,7 +482,7 @@ test("Pruned render nodes invoke a cleanup hook when cleared", function() {
 
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div><p>hello world</p></div>");
+  equalTokens(root, "<div><p>hello world</p></div>");
 
   object.condition = false;
   result.rerender();
@@ -500,7 +502,7 @@ test("Pruned lists invoke a cleanup hook when removing elements", function() {
 
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div><p>hello</p><p>world</p></div>");
+  equalTokens(root, "<div><p>hello</p><p>world</p></div>");
 
   object.list.pop();
   result.rerender();
@@ -521,7 +523,7 @@ test("Pruned lists invoke a cleanup hook on their subtrees when removing element
 
   var result = template.render(object, env);
 
-  equalTokens(result.fragment, "<div><p>hello</p><p>world</p></div>");
+  equalTokens(root, "<div><p>hello</p><p>world</p></div>");
 
   object.list.pop();
   result.rerender();
@@ -562,9 +564,9 @@ QUnit.skip("Setting up a manual element renders and revalidates", function() {
   };
 
   var template = compile("{{#manual-element bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
-  var result = template.render({ world: "world" }, env);
+  template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'>Hello world!</span>");
+  equalTokens(root, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'>Hello world!</span>");
 });
 
 test("It is possible to nest multiple templates into a manual element", function() {
@@ -598,9 +600,9 @@ test("It is possible to nest multiple templates into a manual element", function
 
   var layout = compile("<em>{{attrs.foo}}. {{yield}}</em>");
   var template = compile("{{#manual-element foo='foo' bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
-  var result = template.render({ world: "world" }, env);
+  template.render({ world: "world" }, env);
 
-  equalTokens(result.fragment, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'><em>foo. Hello world!</em></span>");
+  equalTokens(root, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'><em>foo. Hello world!</em></span>");
 });
 
 test("The invoke helper hook can instruct the runtime to link the result", function() {
@@ -618,11 +620,11 @@ test("The invoke helper hook can instruct the runtime to link the result", funct
   let template = compile("{{double 12}}");
   let result = template.render({}, env);
 
-  equalTokens(result.fragment, "24");
+  equalTokens(root, "24");
   equal(invokeCount, 1);
 
   result.rerender();
 
-  equalTokens(result.fragment, "24");
+  equalTokens(root, "24");
   equal(invokeCount, 1);
 });

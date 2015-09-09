@@ -25,7 +25,7 @@ function commonSetup() {
   };
 }
 
-QUnit.module("HTML-based compiler (dirtying)", {
+QUnit.module("hooks", {
   beforeEach: commonSetup
 });
 

@@ -101,7 +101,8 @@ function yieldTemplate(template, env, parentScope, morph, visitor) {
   return function(blockArguments, self) {
     var scope = parentScope;
 
-    if (morph.lastYielded && isStableTemplate(template, morph.lastYielded)) {
+    if (morph.lastYielded && morph.lastYielded === template) {
+      morph.noChange();
       return morph.lastResult.revalidateWith(env, self, blockArguments, visitor);
     }
 
@@ -115,10 +116,10 @@ function yieldTemplate(template, env, parentScope, morph, visitor) {
     }
 
     morph.clearForRender();
-    morph.lastYielded = { self: self, template: template, shadowTemplate: null };
+    morph.lastYielded = template;
 
     // Render the template that was selected by the helper
-    template.renderIn(morph, env, scope);
+    morph.lastResult = template.renderIn(morph, env, scope);
   };
 }
 

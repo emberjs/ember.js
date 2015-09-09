@@ -61,4 +61,9 @@ var prototype = HTMLBarsMorph.prototype = Object.create(MorphBase.prototype);
 prototype.constructor = HTMLBarsMorph;
 prototype.super$constructor = MorphBase;
 
+prototype.willClear = function() {
+  this.lastYielded = null;
+  this.lastResult = null;
+};
+
 export default HTMLBarsMorph;
