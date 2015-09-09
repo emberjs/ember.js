@@ -1,6 +1,7 @@
 import _default from 'ember-views/views/states/default';
 import merge from 'ember-metal/merge';
 import jQuery from 'ember-views/system/jquery';
+import run from 'ember-metal/run_loop';
 
 /**
 @module ember
@@ -61,7 +62,7 @@ merge(hasElement, {
     if (view.has(eventName)) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
-      return view.trigger(eventName, evt);
+      return run.join(view, view.trigger, eventName, evt);
     } else {
       return true; // continue event propagation
     }
