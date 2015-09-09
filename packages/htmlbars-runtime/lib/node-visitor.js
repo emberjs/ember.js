@@ -24,10 +24,14 @@ export function initialVisitor(statement, morph, env, scope, visitor) {
   statement.evaluate(morph, env, scope, visitor);
 }
 
-export function alwaysDirtyVisitor(statement, morph, env, scope, visitor) {
+function morphWasDirty(statement, morph, env, scope, visitor) {
   morph.isDirty = morph.isSubtreeDirty = false;
+  if (morph.begin) { morph.begin(); }
   statement.evaluate(morph, env, scope, visitor);
+  if (morph.commit) { morph.commit(); }
 }
+
+export { morphWasDirty as alwaysDirtyVisitor };
 
 export default function(statement, morph, env, scope, _visitor) {
   let isDirty = morph.isDirty;
@@ -35,7 +39,7 @@ export default function(statement, morph, env, scope, _visitor) {
   let visitor = _visitor;
 
   if (isSubtreeDirty) {
-    visitor = alwaysDirtyVisitor;
+    visitor = morphWasDirty;
   } else if (!isDirty) {
     if (morph.buildChildEnv) {
       env = morph.buildChildEnv(morph.state, env);
@@ -44,6 +48,5 @@ export default function(statement, morph, env, scope, _visitor) {
     return;
   }
 
-  morph.isDirty = morph.isSubtreeDirty = false;
-  statement.evaluate(morph, env, scope, visitor);
+  morphWasDirty(statement, morph, env, scope, visitor);
 }

@@ -92,7 +92,7 @@ export default class Builder {
     // necessary.
     statement.evaluate(morph, this.env, this.scope, this.visitor, this);
     this.statements.push(statement);
-    if (morph.finishAppend) { morph.finishAppend(); }
+    if (morph.commit) { morph.commit(); }
     morph.childMorphs = this.morphs;
   }
 
