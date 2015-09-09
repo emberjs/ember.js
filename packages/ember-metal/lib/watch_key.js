@@ -7,6 +7,8 @@ import {
   DEFAULT_GETTER_FUNCTION
 } from 'ember-metal/properties';
 
+let handleMandatorySetter, lookupDescriptor;
+
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && Array.isArray(obj)) { return; }
@@ -35,8 +37,23 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
-  var handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
-    var descriptor = Object.getOwnPropertyDescriptor && Object.getOwnPropertyDescriptor(obj, keyName);
+  lookupDescriptor = function lookupDescriptor(obj, keyName) {
+    let current = obj;
+    while (current) {
+      let descriptor = Object.getOwnPropertyDescriptor(current, keyName);
+
+      if (descriptor) {
+        return descriptor;
+      }
+
+      current = Object.getPrototypeOf(current);
+    }
+
+    return null;
+  };
+
+  handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
+    let descriptor = lookupDescriptor(obj, keyName);
     var configurable = descriptor ? descriptor.configurable : true;
     var isWritable = descriptor ? descriptor.writable : true;
     var hasValue = descriptor ? 'value' in descriptor : true;
