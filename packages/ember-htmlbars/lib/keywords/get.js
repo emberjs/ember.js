@@ -5,7 +5,6 @@
 
 import { assert } from 'ember-metal/debug';
 import BasicStream from 'ember-metal/streams/stream';
-import KeyStream from 'ember-metal/streams/key-stream';
 import { isStream } from 'ember-metal/streams/utils';
 import subscribe from 'ember-htmlbars/utils/subscribe';
 import { get } from 'ember-metal/property_get';
@@ -23,9 +22,7 @@ function labelFor(source, key) {
 
 let DynamicKeyStream = BasicStream.extend({
   init(source, keySource) {
-    assert('DynamicKeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
-
-    // used to get the original path for debugging and legacy purposes
+    // used to get the original path for debugging purposes
     var label = labelFor(source, keySource);
 
     this.label = label;
@@ -39,7 +36,6 @@ let DynamicKeyStream = BasicStream.extend({
   key() {
     const key = this.keyDep.getValue();
     if (typeof key === 'string') {
-      assert('DynamicKeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
       return key;
     }
   },
@@ -100,7 +96,7 @@ const buildStream = function buildStream(params) {
 
 function buildDynamicKeyStream(source, keySource) {
   if (!isStream(keySource)) {
-    return new KeyStream(source, keySource);
+    return source.get(keySource);
   } else {
     return new DynamicKeyStream(source, keySource);
   }
@@ -148,7 +144,7 @@ function buildDynamicKeyStream(source, keySource) {
   @method get
   @for Ember.Templates.helpers
 */
-var getKeyword = function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
+function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
   if (morph === null) {
     return buildStream(params);
   } else {
@@ -167,6 +163,6 @@ var getKeyword = function getKeyword(morph, env, scope, params, hash, template, 
   }
 
   return true;
-};
+}
 
 export default getKeyword;
