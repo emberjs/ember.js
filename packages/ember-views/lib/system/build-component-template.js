@@ -1,7 +1,6 @@
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import assign from 'ember-metal/assign';
-import { isGlobal } from 'ember-metal/path_cache';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { isStream } from 'ember-metal/streams/utils';
@@ -280,8 +279,7 @@ function normalizeClasses(classes, output, streamBasePath) {
       continue;
     }
 
-    // 2.0TODO: Remove deprecated global path
-    var prop = isGlobal(propName) ? propName : `${streamBasePath}${propName}`;
+    var prop = `${streamBasePath}${propName}`;
 
     output.push(['subexpr', '-normalize-class', [
       // params
