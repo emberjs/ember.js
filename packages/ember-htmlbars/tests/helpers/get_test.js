@@ -55,6 +55,33 @@ QUnit.test('should be able to get an object value with a static key', function()
   equal(view.$().text(), '[red] [red]', 'should return \'red\' for {{get colors \'apple\'}}');
 });
 
+QUnit.test('should be able to get an object value with nested static key', function() {
+  var context = {
+    colors: { apple: { gala: 'red and yellow' }, banana: 'yellow' }
+  };
+
+  view = EmberView.create({
+    context: context,
+    template: compile(`[{{get colors "apple.gala"}}] [{{if true (get colors "apple.gala")}}]`)
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '[red and yellow] [red and yellow]', 'should return \'red and yellow\' for {{get colors "apple.gala"}}');
+
+  run(function() {
+    view.set('context.colors', { apple: { gala: 'yellow and red striped' }, banana: 'purple' });
+  });
+
+  equal(view.$().text(), '[yellow and red striped] [yellow and red striped]', 'should return \'yellow and red striped\' for {{get colors \'apple.gala\'}}');
+
+  run(function() {
+    view.set('context.colors.apple.gala', 'yellow-redish');
+  });
+
+  equal(view.$().text(), '[yellow-redish] [yellow-redish]', 'should return \'yellow-redish\' for {{get colors \'apple.gala\'}}');
+});
+
 QUnit.test('should be able to get an object value with a bound/dynamic key', function() {
   var context = {
     colors: { apple: 'red', banana: 'yellow' },
@@ -93,6 +120,61 @@ QUnit.test('should be able to get an object value with a bound/dynamic key', fun
   });
 
   equal(view.$().text(), '[red] [red]', 'should return \'red\' for {{get colors key}}  (key = \'apple\')');
+});
+
+QUnit.test('should be able to get an object value with nested dynamic key', function() {
+  var context = {
+    colors: { apple: { gala: 'red and yellow', mcintosh: 'red' }, banana: 'yellow' },
+    key: 'apple.gala'
+  };
+
+  view = EmberView.create({
+    context: context,
+    template: compile('[{{get colors key}}] [{{if true (get colors key)}}]')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '[red and yellow] [red and yellow]', 'should return \'red and yellow\' for {{get colors "apple.gala"}}');
+
+  run(function() {
+    view.set('context.key', 'apple.mcintosh');
+  });
+
+  equal(view.$().text(), '[red] [red]', 'should return \'red\' for {{get colors \'apple.mcintosh\'}}');
+
+  run(function() {
+    view.set('context.key', 'banana');
+  });
+
+  equal(view.$().text(), '[yellow] [yellow]', 'should return \'yellow\' for {{get colors \'banana\'}}');
+});
+
+QUnit.test('should be able to get an object value with subexpression returning nested key', function() {
+  var context = {
+    colors: { apple: { gala: 'red and yellow', mcintosh: 'red' }, banana: 'yellow' }
+  };
+
+  view = EmberView.create({
+    context: context,
+    template: compile(`[{{get colors (concat 'apple' '.' 'gala')}}] [{{if true (get colors (concat 'apple' '.' 'gala'))}}]`)
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '[red and yellow] [red and yellow]', 'should return \'red and yellow\' for {{get colors "apple.gala"}}');
+
+  run(function() {
+    view.set('context.colors', { apple: { gala: 'yellow and red striped' }, banana: 'purple' });
+  });
+
+  equal(view.$().text(), '[yellow and red striped] [yellow and red striped]', 'should return \'yellow and red striped\' for {{get colors \'apple.gala\'}}');
+
+  run(function() {
+    view.set('context.colors.apple.gala', 'yellow-redish');
+  });
+
+  equal(view.$().text(), '[yellow-redish] [yellow-redish]', 'should return \'yellow-redish\' for {{get colors \'apple.gala\'}}');
 });
 
 QUnit.test('should be able to get an object value with a GetStream key', function() {
@@ -342,6 +424,41 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - dyn
 
   equal(view.$('#get-input').val(), 'some value');
   equal(view.get('context.source.banana'), 'some value');
+});
+
+QUnit.test('get helper value should be updatable using {{input}} and (mut) - dynamic nested key', function() {
+  var context = {
+    source: Ember.Object.create({
+      apple: {
+        mcintosh: 'mcintosh'
+      }
+    }),
+    key: 'apple.mcintosh'
+  };
+
+  view = EmberView.create({
+    context: context,
+    container: container,
+    template: compile(`{{input type='text' value=(mut (get source key)) id='get-input'}}`)
+  });
+
+  runAppend(view);
+
+  equal(view.$('#get-input').val(), 'mcintosh');
+
+  run(function() {
+    view.set('context.source.apple.mcintosh', 'red');
+  });
+
+  equal(view.$('#get-input').val(), 'red');
+
+  run(function() {
+    view.$('#get-input').val('some value');
+    view.childViews[0]._elementValueDidChange();
+  });
+
+  equal(view.$('#get-input').val(), 'some value');
+  equal(view.get('context.source.apple.mcintosh'), 'some value');
 });
 
 QUnit.test('get helper value should be updatable using {{input}} and (mut) - static key', function() {

@@ -5,7 +5,6 @@
 
 import Ember from 'ember-metal/core';
 import Stream from 'ember-metal/streams/stream';
-import KeyStream from 'ember-metal/streams/key-stream';
 import { isStream } from 'ember-metal/streams/utils';
 import merge from 'ember-metal/merge';
 import subscribe from 'ember-htmlbars/utils/subscribe';
@@ -99,11 +98,8 @@ var getKeyword = function getKeyword(morph, env, scope, params, hash, template, 
 
 var DynamicKeyStream = function DynamicKeyStream(source, keySource) {
   if (!isStream(keySource)) {
-    return new KeyStream(source, keySource);
+    return source.get(keySource);
   }
-  Ember.assert('DynamicKeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
-
-  // used to get the original path for debugging and legacy purposes
   var label = labelFor(source, keySource);
 
   this.init(label);
@@ -114,13 +110,12 @@ var DynamicKeyStream = function DynamicKeyStream(source, keySource) {
   this.observedKey = null;
 };
 
-DynamicKeyStream.prototype = Object.create(KeyStream.prototype);
+DynamicKeyStream.prototype = Object.create(Stream.prototype);
 
 merge(DynamicKeyStream.prototype, {
   key() {
     const key = this.keyDep.getValue();
     if (typeof key === 'string') {
-      Ember.assert('DynamicKeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
       return key;
     }
   },
