@@ -184,24 +184,6 @@ reexport('ember-metal/is_blank', 'isBlank');
 reexport('ember-metal/is_present', 'isPresent');
 reexport('ember-metal/merge', 'merge');
 
-<<<<<<< HEAD
-if (isEnabled('ember-metal-stream')) {
-  reexport('ember-metal/streams/stream', 'stream');
-  reexport('ember-metal/streams/utils', 'stream', [
-    'Stream',
-    'isStream',
-    'subscribe',
-    'unsubscribe',
-    'read',
-    'readHash',
-    'readArray',
-    'scanArray',
-    'scanHash',
-    'concat',
-    'chain'
-  ]);
-}
-
 Ember.FEATURES = FEATURES;
 Ember.FEATURES.isEnabled = isEnabled;
 

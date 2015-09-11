@@ -33,7 +33,6 @@ reexport('ember-runtime/mixins/observable', 'Observable');
 reexport('ember-runtime/mixins/-proxy', '_ProxyMixin');
 reexport('ember-runtime/computed/array_computed', ['arrayComputed', 'ArrayComputedProperty']);
 reexport('ember-runtime/computed/reduce_computed', ['reduceComputed', 'ReduceComputedProperty']);
-reexport('ember-runtime/utils', ['typeOf']);
 
 // ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
 reexport('ember-runtime/computed/reduce_computed_macros', 'computed', [
@@ -72,7 +71,6 @@ reexport('ember-runtime/controllers/object_controller', 'ObjectController');
 reexport('ember-runtime/controllers/controller', 'Controller');
 reexport('ember-runtime/mixins/controller', 'ControllerMixin');
 reexport('ember-runtime/system/service', 'Service');
-reexport('ember-runtime/mixins/-proxy', '_ProxyMixin');
 
 Ember.RSVP = RSVP;
 // END EXPORTS

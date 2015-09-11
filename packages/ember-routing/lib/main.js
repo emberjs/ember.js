@@ -8,7 +8,7 @@ import Ember from 'ember-metal/core';
 // ES6TODO: Cleanup modules with side-effects below
 import 'ember-routing/ext/run_loop';
 import 'ember-routing/ext/controller';
-import 'ember-routing/initializers/routing-service';
+import 'ember-routing/services/routing';
 
 var reexport = Ember.__reexport;
 

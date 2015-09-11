@@ -12,6 +12,7 @@ import { set } from 'ember-metal/property_set';
 import EmptyObject from 'ember-metal/empty_object';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import Namespace from 'ember-runtime/system/namespace';
+import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 
 import environment from 'ember-metal/environment';
 

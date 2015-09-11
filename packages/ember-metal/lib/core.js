@@ -229,8 +229,6 @@ function reexport(moduleName, exportsProperty, properties) {
       importAs = exportAs = property;
     }
 
-    var exportObj = exportsProperty ? Ember[exportsProperty] : Ember;
-
     //Ember.assert(`Do you really think Ember.${exportsProperty} exists? wtf`, typeof exportObj !== 'undefined');
     //Ember.assert(`Import exists ${moduleName}{${importAs}}`, typeof Ember.__loader.require(moduleName)[importAs] !== 'undefined');
 
