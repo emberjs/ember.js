@@ -1100,7 +1100,7 @@ function registerLibraries() {
     librariesRegistered = true;
 
     if (environment.hasDOM) {
-      Ember.libraries.registerCoreLibrary('jQuery'. require('ember-views/system/jquery'));
+      Ember.libraries.registerCoreLibrary('jQuery', require('ember-views/system/jquery'));
     }
   }
 }

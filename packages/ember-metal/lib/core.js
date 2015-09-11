@@ -219,7 +219,7 @@ function reexport(moduleName, exportsProperty, properties) {
     properties = [['default', properties]];
   }
 
-  for (var i =0; i< properties.length; i++) {
+  for (var i = 0; i < properties.length; i++) {
     var property = properties[i];
     var importAs, exportAs;
 

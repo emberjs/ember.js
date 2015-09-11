@@ -4,6 +4,7 @@
 */
 import Ember from 'ember-metal/core'; // Ember.STRINGS
 import inspect from 'ember-metal/inspect';
+import { deprecate } from 'ember-metal/debug';
 
 import Cache from 'ember-metal/cache';
 

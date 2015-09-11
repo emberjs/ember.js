@@ -1,6 +1,7 @@
 /* globals RSVP:true */
 
 import Ember from 'ember-metal/core';
+import { assert } from 'ember-metal/debug';
 import * as RSVP from 'rsvp';
 
 function run() {

@@ -52,7 +52,6 @@ function bootstrap(ctx) {
       compile = jQuery.proxy(Handlebars.compile, Handlebars);
       template = compile(script.html());
     } else {
-
       var htmlbarsCompile = require('ember-template-compiler/system/compile');
       template = htmlbarsCompile(script.html(), {
         moduleName: templateName
