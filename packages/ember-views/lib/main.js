@@ -17,15 +17,14 @@ var reexport = Ember.__reexport;
  @public
 */
 reexport('ember-views/system/jquery', '$');
-
 reexport('ember-views/mixins/view_target_action_support', 'ViewTargetActionSupport');
 reexport('ember-views/compat/render_buffer', 'RenderBuffer');
-
 reexport('ember-views/system/utils', [
   'isSimpleClick',
   'getViewClientRects',
   'getViewBoundingClientRect'
 ]);
+
 Ember.ViewUtils = {};
 
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
@@ -62,7 +61,5 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
     '_Metamorph'
   ]);
 }
-
-reexport('ember-views/views/legacy_each_view', ['LegacyEachView', '_LegacyEachView']);
 
 export default Ember;
