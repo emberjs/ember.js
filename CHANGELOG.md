@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### 2.1.0-beta.4 (September 12, 2015)
+
+- [#12075](https://github.com/emberjs/ember.js/pull/12075) [PERF] Avoid creating a run-loop for events that are unhandled.
+- [#12260](https://github.com/emberjs/ember.js/pull/12260) [BUGFIX] Ensure `init` is completed before `didReceiveAttrs` is fired.
+- [#12323](https://github.com/emberjs/ember.js/pull/12323) [BUGFIX beta] Make `{{get something 'path.goes.here'}}` work.
+- [#12331](https://github.com/emberjs/ember.js/pull/12331) [BUGFIX beta] Update backburner.js to prevent issues when interleaving `run.later` and `run.next`.
+
 ### 2.1.0-beta.3 (September 6, 2015)
 
 - [#12157](https://github.com/emberjs/ember.js/pull/12157) [DEPRECATION] Allow deprecated access to registry from `Application` (argument to initializers) and `ApplicationInstance` (argument to instance initializers) instances.
