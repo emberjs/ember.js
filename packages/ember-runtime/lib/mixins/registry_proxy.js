@@ -11,7 +11,7 @@ import { Mixin } from 'ember-metal/mixin';
   registry functionality.
 
   @class RegistryProxyMixin
-  @public
+  @private
 */
 export default Mixin.create({
   __registry__: null,

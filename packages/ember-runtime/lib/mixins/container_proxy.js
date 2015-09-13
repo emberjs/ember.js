@@ -1,3 +1,7 @@
+/**
+@module ember
+@submodule ember-runtime
+*/
 import run from 'ember-metal/run_loop';
 import { Mixin } from 'ember-metal/mixin';
 
@@ -7,7 +11,7 @@ import { Mixin } from 'ember-metal/mixin';
   container functionality.
 
   @class ContainerProxyMixin
-  @public
+  @private
 */
 export default Mixin.create({
   /**
