@@ -170,4 +170,76 @@ export { K };
 Ember.K = K;
 //TODO: ES6 GLOBAL TODO
 
+// Stub out the methods defined by the ember-debug package in case it's not loaded
+
+if ('undefined' === typeof Ember.assert) { Ember.assert = K; }
+if ('undefined' === typeof Ember.warn) { Ember.warn = K; }
+if ('undefined' === typeof Ember.debug) { Ember.debug = K; }
+if ('undefined' === typeof Ember.runInDebug) { Ember.runInDebug = K; }
+if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = K; }
+if ('undefined' === typeof Ember.deprecateFunc) {
+  Ember.deprecateFunc = function(_, func) { return func; };
+}
+
+function reexport(moduleName, exportsProperty, properties) {
+  if (arguments.length === 2) {
+    properties = exportsProperty;
+    exportsProperty = undefined;
+  }
+
+  let exportObj = exportsProperty ? Ember[exportsProperty] : Ember;
+  const tail = array => array.slice(1);
+  const head = array => array[0];
+  const pathLookUp = (paths, obj) => {
+    if (!Array.isArray(paths)) {
+      paths = paths.split('.');
+    }
+
+    if (paths.length > 1) {
+      let assignment = paths[paths.length - 1];
+      let node = head(paths);
+
+      if (node === assignment) {
+        return obj;
+      }
+
+      Ember.assert('Attempted to assign at ${node}, but it does not exist.', !obj[node]);
+
+      pathLookUp(tail(paths), obj[node]);
+    } else {
+      return obj;
+    }
+  };
+
+  if (exportsProperty === 'string') {
+    exportObj = pathLookUp(exportsProperty, exportObj);
+  }
+
+  if (typeof properties === 'string') {
+    properties = [['default', properties]];
+  }
+
+  for (var i = 0; i < properties.length; i++) {
+    var property = properties[i];
+    var importAs, exportAs;
+
+    if (Array.isArray(property)) {
+      [importAs, exportAs] = property;
+    } else {
+      importAs = exportAs = property;
+    }
+
+    //Ember.assert(`Do you really think Ember.${exportsProperty} exists? wtf`, typeof exportObj !== 'undefined');
+    //Ember.assert(`Import exists ${moduleName}{${importAs}}`, typeof Ember.__loader.require(moduleName)[importAs] !== 'undefined');
+
+    //exportObj[exportAs] = Ember.__loader.require(moduleName)[importAs];
+    Object.defineProperty(exportObj, exportAs, {
+      get() {
+        return (this[moduleName + '_' + importAs] = Ember.__loader.require(moduleName)[importAs]);
+      }
+    });
+  }
+}
+Ember.__reexport = reexport;
+
 export default Ember;

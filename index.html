@@ -1,0 +1,20 @@
+<body>
+<script>
+function writeTime(time) {
+  var div = document.createElement('div');
+  div.textContent = time + 'ms';
+  document.body.appendChild(div);
+}
+var jqueryStart = new Date();
+</script>
+<script src="dist/jquery/jquery.js"></script>
+<script>
+
+writeTime("jquery:" + (new Date() - jqueryStart));
+var emberStart = new Date();
+</script>
+<cript src="ember.min.js"></cript>
+<script src="dist/ember.min.js"></script> <script>
+writeTime("ember:" + (new Date() - emberStart));
+</script>
+</body>

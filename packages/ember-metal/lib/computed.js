@@ -649,6 +649,29 @@ cacheFor.get = function(cache, key) {
 cacheFor.remove = function(cache, key) {
   cache[key] = undefined;
 };
+var reexport = Ember.__reexport;
+reexport('ember-metal/computed_macros', 'computed', [
+  'empty',
+  'notEmpty',
+  'none',
+  'not',
+  'bool',
+  'match',
+  'equal',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'computedOneWay',
+  'readOnly',
+  'defaultTo',
+  'deprecatingAlias',
+  'and',
+  'or',
+  'any',
+  'collect'
+]);
+reexport('ember-metal/alias', 'computed', 'alias');
 
 export {
   ComputedProperty,

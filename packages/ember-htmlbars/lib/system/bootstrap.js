@@ -6,12 +6,11 @@
 */
 
 import Ember from 'ember-metal/core';
-import ComponentLookup from 'ember-views/component_lookup';
-import jQuery from 'ember-views/system/jquery';
-import EmberError from 'ember-metal/error';
 import { onLoad } from 'ember-runtime/system/lazy_load';
-import htmlbarsCompile from 'ember-template-compiler/system/compile';
-import environment from 'ember-metal/environment';
+
+function require(path, name = 'default') {
+  return Ember.__loader.require(path)[name];
+}
 
 /**
 @module ember
@@ -37,6 +36,7 @@ import environment from 'ember-metal/environment';
 function bootstrap(ctx) {
   var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
 
+  var jQuery = require('ember-views/system/jquery')(document);
   jQuery(selectors, ctx)
     .each(function() {
     // Get a reference to the script tag
@@ -52,11 +52,13 @@ function bootstrap(ctx) {
       compile = jQuery.proxy(Handlebars.compile, Handlebars);
       template = compile(script.html());
     } else {
+      var htmlbarsCompile = require('ember-template-compiler/system/compile');
       template = htmlbarsCompile(script.html(), {
         moduleName: templateName
       });
     }
 
+    var EmberError = require('ember-metal/error');
     // Check if template of same name already exists
     if (Ember.TEMPLATES[templateName] !== undefined) {
       throw new EmberError('Template named "' + templateName  + '" already exists.');
@@ -71,11 +73,11 @@ function bootstrap(ctx) {
 }
 
 function _bootstrap() {
-  bootstrap(jQuery(document));
+  bootstrap(require('ember-views/system/jquery')(document));
 }
 
 function registerComponentLookup(app) {
-  app.register('component-lookup:main', ComponentLookup);
+  app.registry.register('component-lookup:main', require('ember-views/component_lookupComponentLookup'));
 }
 
 /*
@@ -90,12 +92,14 @@ function registerComponentLookup(app) {
 */
 
 onLoad('Ember.Application', function(Application) {
-  Application.initializer({
+  var environment = require('ember-metal/environment');
+
+  Ember.Application.initializer({
     name: 'domTemplates',
     initialize: environment.hasDOM ? _bootstrap : function() { }
   });
 
-  Application.instanceInitializer({
+  Ember.Application.instanceInitializer({
     name: 'registerComponentLookup',
     initialize: registerComponentLookup
   });

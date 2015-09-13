@@ -3,7 +3,6 @@
 @submodule ember-application
 */
 import DAG from 'dag-map';
-import Registry from 'container/registry';
 
 import Ember from 'ember-metal'; // Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import { assert, deprecate, debug } from 'ember-metal/debug';
@@ -13,35 +12,13 @@ import { set } from 'ember-metal/property_set';
 import EmptyObject from 'ember-metal/empty_object';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import Namespace from 'ember-runtime/system/namespace';
-import DefaultResolver from 'ember-application/system/resolver';
-import run from 'ember-metal/run_loop';
-import { canInvoke } from 'ember-metal/utils';
-import Controller from 'ember-runtime/controllers/controller';
-import Renderer from 'ember-metal-views/renderer';
-import DOMHelper from 'ember-htmlbars/system/dom-helper';
-import SelectView from 'ember-views/views/select';
-import { OutletView } from 'ember-routing-views/views/outlet';
-import EmberView from 'ember-views/views/view';
-import EventDispatcher from 'ember-views/system/event_dispatcher';
-import jQuery from 'ember-views/system/jquery';
-import Route from 'ember-routing/system/route';
-import Router from 'ember-routing/system/router';
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
-import NoneLocation from 'ember-routing/location/none_location';
-import BucketCache from 'ember-routing/system/cache';
-import ApplicationInstance from 'ember-application/system/application-instance';
-import TextField from 'ember-views/views/text_field';
-import TextArea from 'ember-views/views/text_area';
-import Checkbox from 'ember-views/views/checkbox';
-import LegacyEachView from 'ember-views/views/legacy_each_view';
-import LinkToComponent from 'ember-routing-views/components/link-to';
-import RoutingService from 'ember-routing/services/routing';
-import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
-import { _loaded } from 'ember-runtime/system/lazy_load';
 import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
+
 import environment from 'ember-metal/environment';
+
+function require(path, key = 'default') {
+  return Ember.__loader.require(path)[key];
+}
 
 function props(obj) {
   var properties = [];
@@ -309,8 +286,9 @@ var Application = Namespace.extend(RegistryProxy, {
   init() {
     this._super(...arguments);
 
+    this._run = require('ember-metal/run_loop');
     if (!this.$) {
-      this.$ = jQuery;
+      this.$ = require('ember-views/system/jquery');
     }
 
     this.buildRegistry();
@@ -319,9 +297,10 @@ var Application = Namespace.extend(RegistryProxy, {
     logLibraryVersions();
 
     // Start off the number of deferrals at 1. This will be
-    // decremented by the Application's own `initialize` method.
+    // decremented by the Application's own `unitialize` method.
     this._readinessDeferrals = 1;
 
+    var Router = require('ember-routing/system/router');
     if (isEnabled('ember-application-visit')) {
       if (this.autoboot) {
         // Create subclass of Ember.Router for this Application instance.
@@ -360,6 +339,7 @@ var Application = Namespace.extend(RegistryProxy, {
     @return {Ember.Container} the configured container
   */
   buildInstance() {
+    var ApplicationInstance = require('ember-application/system/application-instance');
     return ApplicationInstance.create({
       application: this
     });
@@ -368,6 +348,7 @@ var Application = Namespace.extend(RegistryProxy, {
   buildDefaultInstance() {
     var instance = this.buildInstance();
 
+    var EmberView = require('ember-views/views/view');
     // For the default instance only, set the view registry to the global
     // Ember.View.views hash for backwards-compatibility.
     EmberView.views = instance.lookup('-view-registry:main');
@@ -399,9 +380,9 @@ var Application = Namespace.extend(RegistryProxy, {
   */
   waitForDOMReady() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'domReady');
+      this._run.schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(run.bind(this, 'domReady'));
+      this.$().ready(this._run.bind(this, 'domReady'));
     }
   },
 
@@ -451,7 +432,7 @@ var Application = Namespace.extend(RegistryProxy, {
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
-      run.once(this, this.didBecomeReady);
+      this._run.once(this, this.didBecomeReady);
     }
   },
 
@@ -577,6 +558,7 @@ var Application = Namespace.extend(RegistryProxy, {
     this._readinessDeferrals = 1;
     this._bootPromise = null;
     this._bootResolver = null;
+    var run = this._run;
 
     function handleReset() {
       run(instance, 'destroy');
@@ -978,6 +960,7 @@ Application.reopenClass({
     @public
   */
   buildRegistry(namespace) {
+    var Registry = require('container/registry');
     var registry = new Registry();
 
     registry.set = set;
@@ -992,51 +975,57 @@ Application.reopenClass({
 
     registry.register('application:main', namespace, { instantiate: false });
 
-    registry.register('controller:basic', Controller, { instantiate: false });
+    registry.register('controller:basic', require('ember-runtime/controllers/controller'), { instantiate: false });
+    registry.register('controller:object', require('ember-runtime/controllers/object_controller'), { instantiate: false });
+    registry.register('controller:array', require('ember-runtime/controllers/array_controller'), { instantiate: false });
 
-    registry.register('renderer:-dom', { create() { return new Renderer(new DOMHelper()); } });
+    registry.register('renderer:-dom', {
+      create() {
+        var Renderer = require('ember-metal-views/renderer');
+        var DOMHelper = require('ember-htmlbars/system/dom-helper');
+
+        return new Renderer(new DOMHelper());
+      }
+    });
 
     registry.injection('view', 'renderer', 'renderer:-dom');
-    if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-      registry.register('view:select', SelectView);
-    }
-    registry.register('view:-outlet', OutletView);
+    registry.register('view:select', require('ember-views/views/select'));
+    registry.register('view:-outlet', require('ember-routing-views/views/outlet', 'OutletView'));
 
     registry.register('-view-registry:main', { create() { return {}; } });
 
     registry.injection('view', '_viewRegistry', '-view-registry:main');
 
-    registry.register('view:toplevel', EmberView.extend());
+    registry.register('view:toplevel', require('ember-views/views/view'));
 
-    registry.register('route:basic', Route, { instantiate: false });
-    registry.register('event_dispatcher:main', EventDispatcher);
+    registry.register('route:basic', require('ember-routing/system/route'), { instantiate: false });
+    registry.register('event_dispatcher:main', require('ember-views/system/event_dispatcher'));
 
     registry.injection('router:main', 'namespace', 'application:main');
     registry.injection('view:-outlet', 'namespace', 'application:main');
 
-    registry.register('location:auto', AutoLocation);
-    registry.register('location:hash', HashLocation);
-    registry.register('location:history', HistoryLocation);
-    registry.register('location:none', NoneLocation);
+    registry.register('location:auto', require('ember-routing/location/auto_location'));
+    registry.register('location:hash', require('ember-routing/location/hash_location'));
+    registry.register('location:history', require('ember-routing/location/history_location'));
+    registry.register('location:none', require('ember-routing/location/none_location'));
 
     registry.injection('controller', 'target', 'router:main');
     registry.injection('controller', 'namespace', 'application:main');
-
-    registry.register('-bucket-cache:main', BucketCache);
+    registry.register('-bucket-cache:main', require('ember-routing/system/cache'));
     registry.injection('router', '_bucketCache', '-bucket-cache:main');
     registry.injection('route', '_bucketCache', '-bucket-cache:main');
     registry.injection('controller', '_bucketCache', '-bucket-cache:main');
 
     registry.injection('route', 'router', 'router:main');
 
-    registry.register('component:-text-field', TextField);
-    registry.register('component:-text-area', TextArea);
-    registry.register('component:-checkbox', Checkbox);
-    registry.register('view:-legacy-each', LegacyEachView);
-    registry.register('component:link-to', LinkToComponent);
+    registry.register('component:-text-field', require('ember-views/views/text_field'));
+    registry.register('component:-text-area', require('ember-views/views/text_area'));
+    registry.register('component:-checkbox', require('ember-views/views/checkbox'));
+    registry.register('view:-legacy-each', require('ember-views/views/legacy_each_view'));
+    registry.register('component:-link-to', require('ember-routing-views/views/link'));
 
     // Register the routing service...
-    registry.register('service:-routing', RoutingService);
+    registry.register('service:-routing', require('ember-routing/services/routing'));
     // Then inject the app router into it
     registry.injection('service:-routing', 'router', 'router:main');
 
@@ -1046,7 +1035,7 @@ Application.reopenClass({
     registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
-    registry.register('container-debug-adapter:main', ContainerDebugAdapter);
+    registry.register('container-debug-adapter:main', require('ember-extension-support/container_debug_adapter'));
 
     return registry;
   }
@@ -1069,7 +1058,9 @@ Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  var ResolverClass = namespace.get('Resolver') || DefaultResolver;
+  Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
+
+  var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || require('ember-application/system/resolver');
   var resolver = ResolverClass.create({
     namespace: namespace
   });
@@ -1110,7 +1101,7 @@ function registerLibraries() {
     librariesRegistered = true;
 
     if (environment.hasDOM) {
-      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+      Ember.libraries.registerCoreLibrary('jQuery', require('ember-views/system/jquery'));
     }
   }
 }
@@ -1148,6 +1139,7 @@ function buildInitializerMethod(bucketName, humanName) {
       attrs[bucketName] = Object.create(this[bucketName]);
       this.reopenClass(attrs);
     }
+    var canInvoke = require('ember-metal/utils', 'canInvoke');
 
     assert('The ' + humanName + ' \'' + initializer.name + '\' has already been registered', !this[bucketName][initializer.name]);
     assert('An ' + humanName + ' cannot be registered without an initialize function', canInvoke(initializer, 'initialize'));
@@ -1158,3 +1150,5 @@ function buildInitializerMethod(bucketName, humanName) {
 }
 
 export default Application;
+
+runLoadHooks('Ember.Application', Application);

@@ -8,33 +8,21 @@ import Ember from 'ember-metal/core';
 // ES6TODO: Cleanup modules with side-effects below
 import 'ember-routing/ext/run_loop';
 import 'ember-routing/ext/controller';
+import 'ember-routing/services/routing';
 
-import EmberLocation from 'ember-routing/location/api';
-import NoneLocation from 'ember-routing/location/none_location';
-import HashLocation from 'ember-routing/location/hash_location';
-import HistoryLocation from 'ember-routing/location/history_location';
-import AutoLocation from 'ember-routing/location/auto_location';
+var reexport = Ember.__reexport;
 
-import generateController from 'ember-routing/system/generate_controller';
-import {
-  generateControllerFactory
-} from 'ember-routing/system/generate_controller';
-import controllerFor from 'ember-routing/system/controller_for';
-import RouterDSL from 'ember-routing/system/dsl';
-import Router from 'ember-routing/system/router';
-import Route from 'ember-routing/system/route';
+reexport('ember-routing/location/api', [['default', 'Location']]);
+reexport('ember-routing/location/auto_location', [['default', 'AutoLocation']]);
+reexport('ember-routing/location/hash_location', [['default', 'HashLocation']]);
+reexport('ember-routing/location/history_location', [['default', 'HistoryLocation']]);
+reexport('ember-routing/location/none_location', [['default', 'NoneLocation']]);
 
-Ember.Location = EmberLocation;
-Ember.AutoLocation = AutoLocation;
-Ember.HashLocation = HashLocation;
-Ember.HistoryLocation = HistoryLocation;
-Ember.NoneLocation = NoneLocation;
-
-Ember.controllerFor = controllerFor;
-Ember.generateControllerFactory = generateControllerFactory;
-Ember.generateController = generateController;
-Ember.RouterDSL = RouterDSL;
-Ember.Router = Router;
-Ember.Route = Route;
+reexport('ember-routing/system/controller_for', 'controllerFor');
+reexport('ember-routing/system/generate_controller', ['generateControllerFactory']);
+reexport('ember-routing/system/generate_controller', 'generateController');
+reexport('ember-routing/system/dsl', 'RouterDSL');
+reexport('ember-routing/system/router', 'Router');
+reexport('ember-routing/system/route', 'Route');
 
 export default Ember;

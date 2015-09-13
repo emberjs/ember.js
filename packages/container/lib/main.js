@@ -18,7 +18,5 @@ if (Ember.ENV && typeof Ember.ENV.MODEL_FACTORY_INJECTIONS !== 'undefined') {
   Ember.MODEL_FACTORY_INJECTIONS = !!Ember.ENV.MODEL_FACTORY_INJECTIONS;
 }
 
-import Registry from 'container/registry';
-import Container from 'container/container';
-
-export { Registry, Container };
+export { default as Registry } from 'container/registry';
+export { default as Container } from 'container/container';
