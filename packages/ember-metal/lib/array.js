@@ -101,7 +101,7 @@ var filter = defineNativeShim(ArrayPrototype.filter, function(fn, context) {
   var length = this.length;
 
   for (i = 0; i < length; i++) {
-    if (this.hasOwnProperty(i)) {
+    if (Object.prototype.hasOwnProperty.call(this, i)) {
       value = this[i];
       if (fn.call(context, value, i, this)) {
         result.push(value);
