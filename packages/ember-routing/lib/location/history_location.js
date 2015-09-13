@@ -1,3 +1,5 @@
+import { computed } from 'ember-metal/computed';
+import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { guidFor } from 'ember-metal/utils';
@@ -27,7 +29,7 @@ export default EmberObject.extend({
 
   init() {
     set(this, 'location', get(this, 'location') || window.location);
-    set(this, 'baseURL', jQuery('base').attr('href') || '');
+    set(this, 'baseURL', jQuery('base').prop('href') || '');
   },
 
   /**
@@ -48,31 +50,60 @@ export default EmberObject.extend({
   },
 
   /**
-    Will be pre-pended to path upon state change
-
-    @property rootURL
-    @default '/'
     @private
+
+    Will be pre-pended to path upon state change.
+
+    @since 2.2.0
+    @property rootPath
+    @default '/'
   */
-  rootURL: '/',
+  rootPath: '/',
 
   /**
-    Returns the current `location.pathname` without `rootURL` or `baseURL`
+    @private
+
+    Will be pre-pended to path upon state change.
+
+    @since 1.5.1
+    @property rootURL
+    @default '/'
+    @deprecated use `rootPath` instead
+  */
+  rootURL: computed('rootPath', {
+    get() {
+      deprecate('Using `location.rootURL` is deprecated. Please use `location.rootPath` instead.',
+                false,
+                { id: 'ember-routing.rootURL', until: '3.0.0' });
+      return get(this, 'rootPath');
+    },
+
+    set(property, newValue) {
+      deprecate('Using `location.rootURL` is deprecated. Please use `location.rootPath` instead.',
+                false,
+                { id: 'ember-routing.rootURL', until: '3.0.0' });
+      set(this, 'rootPath', newValue);
+      return newValue;
+    }
+  }),
+
+  /**
+    Returns the current `location.pathname` without `rootPath` or `baseURL`
 
     @private
     @method getURL
     @return url {String}
   */
   getURL() {
-    var rootURL = get(this, 'rootURL');
+    var rootPath = get(this, 'rootPath');
     var location = get(this, 'location');
     var path = location.pathname;
     var baseURL = get(this, 'baseURL');
 
-    rootURL = rootURL.replace(/\/$/, '');
+    rootPath = rootPath.replace(/\/$/, '');
     baseURL = baseURL.replace(/\/$/, '');
 
-    var url = path.replace(baseURL, '').replace(rootURL, '');
+    var url = path.replace(baseURL, '').replace(rootPath, '');
     var search = location.search || '';
 
     url += search;
@@ -189,7 +220,7 @@ export default EmberObject.extend({
   },
 
   /**
-    Used when using `{{action}}` helper.  The url is always appended to the rootURL.
+    Used when using `{{action}}` helper.  The url is always appended to the rootPath.
 
     @private
     @method formatURL
@@ -197,17 +228,17 @@ export default EmberObject.extend({
     @return formatted url {String}
   */
   formatURL(url) {
-    var rootURL = get(this, 'rootURL');
+    var rootPath = get(this, 'rootPath');
     var baseURL = get(this, 'baseURL');
 
     if (url !== '') {
-      rootURL = rootURL.replace(/\/$/, '');
+      rootPath = rootPath.replace(/\/$/, '');
       baseURL = baseURL.replace(/\/$/, '');
-    } else if (baseURL.match(/^\//) && rootURL.match(/^\//)) {
+    } else if (baseURL.match(/^\//) && rootPath.match(/^\//)) {
       baseURL = baseURL.replace(/\/$/, '');
     }
 
-    return baseURL + rootURL + url;
+    return baseURL + rootPath + url;
   },
 
   /**

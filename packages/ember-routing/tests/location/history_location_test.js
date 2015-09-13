@@ -154,7 +154,7 @@ QUnit.test('replaceURL continues to set even with a null state (iframes may set 
   equal(location._historyState.path, '/three/four');
 });
 
-QUnit.test('HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL', function() {
+QUnit.test('HistoryLocation.getURL() returns the current url, excluding both rootPath and baseURL', function() {
   expect(1);
 
   HistoryTestLocation.reopen({
@@ -162,7 +162,7 @@ QUnit.test('HistoryLocation.getURL() returns the current url, excluding both roo
       this._super.apply(this, arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-      set(this, 'rootURL', '/app/');
+      set(this, 'rootPath', '/app/');
       set(this, 'baseURL', '/base/');
     }
   });

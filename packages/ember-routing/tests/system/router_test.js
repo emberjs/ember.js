@@ -68,13 +68,13 @@ QUnit.test('should destroy its location upon destroying the routers container.',
   ok(location.isDestroyed, 'location should be destroyed');
 });
 
-QUnit.test('should instantiate its location with its `rootURL`', function() {
+QUnit.test('should instantiate its location with its `rootPath`', function() {
   var router = createRouter({
-    rootURL: '/rootdir/'
+    rootPath: '/rootdir/'
   });
   var location = router.get('location');
 
-  equal(location.get('rootURL'), '/rootdir/');
+  equal(location.get('rootPath'), '/rootdir/');
 });
 
 QUnit.test('replacePath should be called with the right path', function() {
@@ -99,7 +99,7 @@ QUnit.test('replacePath should be called with the right path', function() {
 
   createRouter({
     location: 'auto',
-    rootURL: '/rootdir/'
+    rootPath: '/rootdir/'
   });
 });
 
@@ -175,7 +175,7 @@ QUnit.test('AutoLocation should replace the url when it\'s not in the preferred 
 
   createRouter({
     location: 'auto',
-    rootURL: '/rootdir/'
+    rootPath: '/rootdir/'
   });
 });
 
