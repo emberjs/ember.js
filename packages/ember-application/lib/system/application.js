@@ -174,7 +174,7 @@ var librariesRegistered = false;
   });
   ```
 
-  Initializers provide an opportunity to access the container, which
+  Initializers provide an opportunity to access the internal registry, which
   organizes the different components of an Ember application. Additionally
   they provide a chance to access the instantiated application. Beyond
   being used for libraries, initializers are also a great way to organize
@@ -207,6 +207,7 @@ var librariesRegistered = false;
   @class Application
   @namespace Ember
   @extends Ember.Namespace
+  @uses RegistryProxyMixin
   @public
 */
 

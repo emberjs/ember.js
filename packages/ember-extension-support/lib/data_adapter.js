@@ -42,7 +42,7 @@ import Application from 'ember-application/system/application';
   Application.initializer({
     name: "data-adapter",
 
-    initialize: function(container, application) {
+    initialize: function(application) {
       application.register('data-adapter:main', DS.DataAdapter);
     }
   });
