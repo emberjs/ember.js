@@ -1,6 +1,18 @@
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 import { deprecate } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 
+/**
+  RegistryProxyMixin is used to provide public access to specific
+  registry functionality.
+
+  @class RegistryProxyMixin
+  @public
+*/
 export default Mixin.create({
   __registry__: null,
 
@@ -67,7 +79,6 @@ export default Mixin.create({
     App.register('session', App.session, { instantiate: false });
     ```
 
-    @public
     @method register
     @param  fullName {String} type:name (e.g., 'model:user')
     @param  factory {Function} (e.g., App.Person)

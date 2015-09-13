@@ -36,7 +36,7 @@ import EmberObject from 'ember-runtime/system/object';
   Application.initializer({
     name: "containerDebugAdapter",
 
-    initialize: function(container, application) {
+    initialize: function(application) {
       application.register('container-debug-adapter:main', require('app/container-debug-adapter'));
     }
   });
