@@ -1,6 +1,14 @@
 import run from 'ember-metal/run_loop';
 import { Mixin } from 'ember-metal/mixin';
 
+
+/**
+  ContainerProxyMixin is used to provide public access to specific
+  container functionality.
+
+  @class ContainerProxyMixin
+  @public
+*/
 export default Mixin.create({
   /**
    The container stores state.

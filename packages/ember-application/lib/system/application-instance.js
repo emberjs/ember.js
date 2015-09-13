@@ -1,7 +1,6 @@
 /**
 @module ember
 @submodule ember-application
-@private
 */
 
 import { deprecate } from 'ember-metal/debug';
@@ -37,6 +36,10 @@ import assign from 'ember-metal/assign';
   it once the particular test run or FastBoot request has finished.
 
   @public
+  @class Ember.ApplicationInstance
+  @extends Ember.Object
+  @uses RegistryProxyMixin
+  @uses ContainerProxyMixin
 */
 
 let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
