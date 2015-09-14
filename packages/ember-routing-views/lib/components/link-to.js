@@ -745,20 +745,8 @@ let LinkComponent = EmberComponent.extend({
 
     assert('You must provide one or more parameters to the link-to component.', params.length);
 
-    if (attrs.disabledClass) {
-      this.set('disabledClass', attrs.disabledClass);
-    }
-
-    if (attrs.activeClass) {
-      this.set('activeClass', attrs.activeClass);
-    }
-
     if (attrs.disabledWhen) {
       this.set('disabled', attrs.disabledWhen);
-    }
-
-    if (attrs.loadingClass) {
-      this.set('loadingClass', attrs.loadingClass);
     }
 
     // Process the positional arguments, in order.

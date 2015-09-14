@@ -245,6 +245,26 @@ QUnit.test('the {{link-to}} helper supports a custom disabledClass', function ()
   equal(Ember.$('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class');
 });
 
+QUnit.test('the {{link-to}} helper supports a custom disabledClass set via bound param', function () {
+  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=true disabledClass=disabledClass}}About{{/link-to}}');
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  App.IndexController = Ember.Controller.extend({
+    disabledClass: 'do-not-want'
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL('/');
+  });
+
+  equal(Ember.$('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class via bound param');
+});
+
 QUnit.test('the {{link-to}} helper does not respond to clicks when disabled', function () {
   Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}');
 
@@ -265,11 +285,57 @@ QUnit.test('the {{link-to}} helper does not respond to clicks when disabled', fu
   equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
 });
 
+QUnit.test('the {{link-to}} helper does not respond to clicks when disabled via a bound param', function () {
+  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=disabledWhen}}About{{/link-to}}');
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  App.IndexController = Ember.Controller.extend({
+    disabledWhen: true
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL('/');
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
+});
+
 QUnit.test('The {{link-to}} helper supports a custom activeClass', function() {
   Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\'}}About{{/link-to}}{{#link-to \'index\' id=\'self-link\' activeClass=\'zomg-active\'}}Self{{/link-to}}');
 
   Router.map(function() {
     this.route('about');
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL('/');
+  });
+
+  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
+  equal(Ember.$('#self-link.zomg-active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+});
+
+QUnit.test('The {{link-to}} helper supports a custom activeClass from a bound param', function() {
+  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\'}}About{{/link-to}}{{#link-to \'index\' id=\'self-link\' activeClass=activeClass}}Self{{/link-to}}');
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  App.IndexController = Ember.Controller.extend({
+    activeClass: 'zomg-active'
   });
 
   bootApplication();
@@ -385,6 +451,33 @@ QUnit.test('The {{link-to}} helper does not disregard current-when when it is gi
 
   Ember.TEMPLATES.index = compile('<h3>Home</h3>{{outlet}}');
   Ember.TEMPLATES['index/about'] = compile('{{#link-to \'items\' id=\'other-link\' current-when=\'index\'}}ITEM{{/link-to}}');
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL('/about');
+  });
+
+  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a route');
+});
+
+QUnit.test('The {{link-to}} helper does not disregard current-when when it is set via a bound param', function() {
+  Router.map(function(match) {
+    this.route('index', { path: '/' }, function() {
+      this.route('about');
+    });
+
+    this.route('items', function() {
+      this.route('item');
+    });
+  });
+
+  App.IndexAboutController = Ember.Controller.extend({
+    currentWhen: 'index'
+  });
+
+  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{outlet}}');
+  Ember.TEMPLATES['index/about'] = compile('{{#link-to \'items\' id=\'other-link\' current-when=currentWhen}}ITEM{{/link-to}}');
 
   bootApplication();
 
@@ -781,13 +874,14 @@ QUnit.test('link-to with null/undefined dynamic parameters are put in a loading 
   var oldWarn = Ember.Logger.warn;
   var warnCalled = false;
   Ember.Logger.warn = function() { warnCalled = true; };
-  Ember.TEMPLATES.index = compile('{{#link-to destinationRoute routeContext loadingClass=\'i-am-loading\' id=\'context-link\'}}string{{/link-to}}{{#link-to secondRoute loadingClass=\'i-am-loading\' id=\'static-link\'}}string{{/link-to}}');
+  Ember.TEMPLATES.index = compile('{{#link-to destinationRoute routeContext loadingClass=\'i-am-loading\' id=\'context-link\'}}string{{/link-to}}{{#link-to secondRoute loadingClass=loadingClass id=\'static-link\'}}string{{/link-to}}');
 
   var thing = Ember.Object.create({ id: 123 });
 
   App.IndexController = Ember.Controller.extend({
     destinationRoute: null,
-    routeContext: null
+    routeContext: null,
+    loadingClass: 'i-am-loading'
   });
 
   App.AboutRoute = Ember.Route.extend({
