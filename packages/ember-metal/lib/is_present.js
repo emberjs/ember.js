@@ -8,13 +8,17 @@ import isBlank from 'ember-metal/is_blank';
   Ember.isPresent(null);            // false
   Ember.isPresent(undefined);       // false
   Ember.isPresent('');              // false
-  Ember.isPresent([]);              // false
-  Ember.isPresent('\n\t');          // false
   Ember.isPresent('  ');            // false
+  Ember.isPresent('\n\t');          // false
+  Ember.isPresent([]);              // false
+  Ember.isPresent({ length: 0 })    // false
   Ember.isPresent(false);           // true
+  Ember.isPresent(true);            // true
+  Ember.isPresent('string');        // true
+  Ember.isPresent(0);               // true
+  Ember.isPresent(function() {})    // true
   Ember.isPresent({});              // true
   Ember.isPresent('\n\t Hello');    // true
-  Ember.isPresent('Hello world');   // true
   Ember.isPresent([1,2,3]);         // true
   ```
 
