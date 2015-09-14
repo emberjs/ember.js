@@ -2,16 +2,11 @@ import { compile } from "../htmlbars-compiler/compiler";
 import { manualElement } from "../htmlbars-runtime/render";
 import { hostBlock } from "../htmlbars-runtime/hooks";
 import { blockFor } from "../htmlbars-util/template-utils";
-import defaultHooks from "../htmlbars-runtime/hooks";
-import { merge } from "../htmlbars-util/object-utils";
 import DOMHelper from "../dom-helper";
 import { equalTokens } from "../htmlbars-test-helpers";
+import { TestEnvironment, TestBaseReference } from "./support";
 
-var hooks, helpers, partials, env, dom, root;
-
-function registerHelper(name, callback) {
-  helpers[name] = callback;
-}
+var hooks, env, dom, root;
 
 function rootElement() {
   return dom.createElement('div');
@@ -19,23 +14,10 @@ function rootElement() {
 
 function commonSetup() {
   dom = new DOMHelper();
+  env = new TestEnvironment({ dom, BaseReference: TestBaseReference });
   root = rootElement();
 
-  hooks = merge({}, defaultHooks);
-  hooks.keywords = merge({}, defaultHooks.keywords);
-  helpers = {};
-  partials = {};
-
-  env = {
-    appendTo: root,
-    dom: dom,
-    hooks: hooks,
-    helpers: helpers,
-    partials: partials,
-    useFragmentCache: true
-  };
-
-  registerHelper('if', function(params, hash, options) {
+  env.registerHelper('if', function(params, hash, options) {
     if (!!params[0]) {
       return options.template.yield();
     } else if (options.inverse.yield) {
@@ -43,7 +25,7 @@ function commonSetup() {
     }
   });
 
-  registerHelper('each', function(params) {
+  env.registerHelper('each', function(params) {
     var list = params[0];
 
     for (var i=0, l=list.length; i<l; i++) {
@@ -58,6 +40,10 @@ function commonSetup() {
 
 }
 
+function render(template, context={}) {
+  return template.render(context, env, { appendTo: root });
+}
+
 QUnit.module("HTML-based compiler (dirtying)", {
   beforeEach: commonSetup
 });
@@ -65,7 +51,7 @@ QUnit.module("HTML-based compiler (dirtying)", {
 test("a simple implementation of a dirtying rerender", function() {
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>');
-  var result = template.render(object, env);
+  var result = render(template, object);
   var valueNode = root.firstChild.firstChild.firstChild;
 
   equalTokens(root, '<div><p>hello world</p></div>', "Initial render");

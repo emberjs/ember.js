@@ -1,3 +1,5 @@
+/*jshint node:true*/
+
 var fs = require('fs');
 var path = require('path');
 var packageJson = require('../package.json');
@@ -39,7 +41,6 @@ module.exports = {
         "htmlbars-compiler",
         "htmlbars-runtime",
         "simple-html-tokenizer",
-        "morph-range",
         "morph-attr",
         "dom-helper"
       ]
@@ -66,7 +67,6 @@ module.exports = {
       test: [
         "htmlbars-test-helpers",
         "htmlbars-runtime",
-        "morph-range",
         "morph-attr",
         "dom-helper"
       ]
@@ -75,7 +75,6 @@ module.exports = {
     "htmlbars-runtime": {
       lib: [
         "htmlbars-util",
-        "morph-range",
         "morph-attr",
         "dom-helper"
       ]
@@ -104,7 +103,6 @@ module.exports = {
     "dom-helper": {
       node: true,
       lib: [
-        "morph-range",
         "morph-attr"
       ],
       test: [
