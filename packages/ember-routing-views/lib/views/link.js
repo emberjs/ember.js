@@ -6,12 +6,12 @@
 import Ember from "ember-metal/core"; // FEATURES, Logger, assert
 
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import inject from "ember-runtime/inject";
 import ControllerMixin from "ember-runtime/mixins/controller";
+import getValue from 'ember-htmlbars/hooks/get-value';
 
 import linkToTemplate from "ember-htmlbars/templates/link-to";
 linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -408,19 +408,11 @@ var LinkComponent = EmberComponent.extend({
       queryParams = {};
     }
 
-    if (attrs.disabledClass) {
-      this.set('disabledClass', attrs.disabledClass);
-    }
-
-    if (attrs.activeClass) {
-      this.set('activeClass', attrs.activeClass);
-    }
-
     if (attrs.disabledWhen) {
-      this.set('disabled', attrs.disabledWhen);
+      this.set('disabled', getValue(attrs.disabledWhen));
     }
 
-    var currentWhen = attrs['current-when'];
+    var currentWhen = getValue(attrs['current-when']);
 
     if (attrs.currentWhen) {
       Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !attrs.currentWhen);
@@ -434,10 +426,6 @@ var LinkComponent = EmberComponent.extend({
     // TODO: Change to built-in hasBlock once it's available
     if (!attrs.hasBlock) {
       this.set('linkTitle', params.shift());
-    }
-
-    if (attrs.loadingClass) {
-      set(this, 'loadingClass', attrs.loadingClass);
     }
 
     for (let i = 0; i < params.length; i++) {
