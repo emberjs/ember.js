@@ -1,0 +1,144 @@
+<script>
+function RootReference(parent) {
+  this._parent = parent;
+  this._chains = {};
+}
+
+RootReference.prototype = {
+  isDirty: function() { return false; },
+  value: function() { return this._parent; },
+  get: function (prop) {
+    var _chains = this._chains;
+    if (prop in _chains) return _chains[prop];
+    return (_chains[prop] = new DirectReference(this, prop));
+  }
+}
+
+function EMPTY_CACHE() {}
+
+function DirectReference(parent, property) {
+  this._parent = parent;
+  this._property = property;
+  this._cache = EMPTY_CACHE;
+  this._chains = {};
+}
+
+DirectReference.prototype = {
+  isDirty: function() { return this._cache === EMPTY_CACHE; },
+
+  value: function() {
+    var _cache = this._cache;
+    if (_cache !== EMPTY_CACHE) return _cache;
+    var _parent = this._parent, _property = this._property;
+    return (this._cache = _parent.value()[_property]);
+  },
+
+  notify: function() {
+    var _chains = this._chains;
+    this._cache = EMPTY_CACHE;
+    Object.keys(_chains).forEach(function(key) { _chains[key].notify(); });
+  },
+
+  get: function(prop) {
+    var _chains = this._chains;
+    if (prop in _chains) return _chains[prop];
+    return (_chains[prop] = new IndirectReference(this, prop));
+  }
+}
+
+function IndirectReference(parent, property) {
+  DirectReference.call(this, parent, property);
+}
+
+IndirectReference.prototype = Object.create(DirectReference.prototype);
+
+IndirectReference.prototype.value = function() {
+  if (this._cache !== EMPTY_CACHE) return this._cache;
+  var parent = this._parent.value(), _property = this._property;
+
+  addReference(parent, _property, this);
+  return (this._cache = parent[_property]);
+}
+
+function addObserver(obj, path) {
+  var links = path.split('.');
+  var root = obj._root = obj._root || new RootReference(obj);
+  var ref = root.get(links[0]);
+
+  for (var i=1, l=links.length; i<l; i++) {
+    ref = ref.get(links[i]);
+  }
+
+  return path.split('.').reduce(function(ref, part) {
+    return ref.get(part);
+  }, root);
+}
+
+function rootFor(obj) {
+  return (obj._root = obj._root || new RootReference(obj));
+}
+
+function addReference(parent, property, reference) {
+  var refs = parent._references = parent._references || {};
+  var set = refs[property] = refs[property] || new Set();
+  set.add(reference);
+}
+
+function setProperty(parent, property, val) {
+  var rootProp = rootFor(parent)._chains[property];
+  var referencesToTransfer = parent[property]._references;
+  var referencesToNotify = parent._references[property];
+
+  referencesToNotify.forEach(function(ref) { ref.notify(); });
+
+  rootProp.notify();
+
+  val._references = referencesToTransfer;
+  parent[property]._references = null;
+  parent[property] = val;
+
+  Object.keys(referencesToTransfer).forEach(function(key) {
+    referencesToTransfer[key].forEach(function(ref) { ref.notify(); });
+  });
+}
+
+var obj, ref1, ref2, ref3;
+
+function test() {
+  obj = { model: { person: { name: { first: "Yehuda", last: "Katz" } } } };
+
+  ref1 = addObserver(obj, 'model.person.name.first');
+  ref2 = addObserver(obj.model, 'person.name.first');
+  ref3 = addObserver(obj.model.person, 'name.first');
+  ref4 = addObserver(obj.model.person.name, 'first');
+
+  assert(ref1.isDirty() && ref2.isDirty() && ref3.isDirty() && ref4.isDirty(), "refs start out dirty");
+  equal(ref1.value(), "Yehuda");
+  equal(ref2.value(), "Yehuda");
+  equal(ref3.value(), "Yehuda");
+  equal(ref4.value(), "Yehuda");
+  assert(!ref1.isDirty() && !ref2.isDirty() && !ref3.isDirty() && !ref4.isDirty(), "refs become clean once cached");
+
+  setProperty(obj.model, 'person', { name: { first: 'Godfrey', last: 'Chan' } })
+
+  assert(ref1.isDirty() && ref2.isDirty(), "refs become dirty when a parent is set");
+  assert(!ref3.isDirty() && !ref4.isDirty(), "refs rooted below are not dirty");
+  equal(ref1.value(), "Godfrey");
+  equal(ref2.value(), "Godfrey");
+  equal(ref3.value(), "Yehuda");
+  equal(ref4.value(), "Yehuda");
+}
+
+function equal(actual, expected) {
+  if (actual !== expected) {
+    throw new Error("expected " + expected + ", got " + actual);
+  } else {
+    console.log("got " + actual + " as expected");
+  }
+}
+
+function assert(test, msg) {
+  if (!test) { throw new Error(msg); }
+  else console.log("passed: " + msg);
+}
+</script>

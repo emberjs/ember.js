@@ -1,7 +1,4 @@
-import Morph from "./htmlbars-runtime/morph";
-import AttrMorph from "./morph-attr";
 import {
-  buildHTMLDOM,
   svgNamespace,
   svgHTMLIntegrationPoints
 } from "./dom-helper/build-html-dom";
@@ -83,52 +80,6 @@ function interiorNamespace(element){
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-tbody-element
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-colgroup-element
 //
-
-var omittedStartTagChildTest = /<([\w:]+)/;
-function detectOmittedStartTag(string, contextualElement){
-  // Omitted start tags are only inside table tags.
-  if (contextualElement.tagName === 'TABLE') {
-    var omittedStartTagChildMatch = omittedStartTagChildTest.exec(string);
-    if (omittedStartTagChildMatch) {
-      var omittedStartTagChild = omittedStartTagChildMatch[1];
-      // It is already asserted that the contextual element is a table
-      // and not the proper start tag. Just see if a tag was omitted.
-      return omittedStartTagChild === 'tr' ||
-             omittedStartTagChild === 'col';
-    }
-  }
-}
-
-function buildSVGDOM(html, dom){
-  var div = dom.document.createElement('div');
-  div.innerHTML = '<svg>'+html+'</svg>';
-  return div.firstChild.childNodes;
-}
-
-var guid = 1;
-
-function ElementMorph(element, dom, namespace) {
-  this.element = element;
-  this.dom = dom;
-  this.namespace = namespace;
-  this.guid = "element" + guid++;
-
-  this.state = {};
-  this.isDirty = true;
-}
-
-// renderAndCleanup calls `clear` on all items in the morph map
-// just before calling `destroy` on the morph.
-//
-// As a future refactor this could be changed to set the property
-// back to its original/default value.
-ElementMorph.prototype.clear = function() { };
-
-ElementMorph.prototype.destroy = function() {
-  this.element = null;
-  this.dom = null;
-};
-
 
 /*
  * A class wrapping DOM functions to address environment compatibility,
@@ -410,121 +361,6 @@ prototype.cloneNode = function(element, deep){
   return clone;
 };
 
-prototype.AttrMorphClass = AttrMorph;
-
-prototype.createAttrMorph = function(element, attrName, namespace){
-  return new this.AttrMorphClass.create(element, attrName, this, namespace);
-};
-
-prototype.ElementMorphClass = ElementMorph;
-
-prototype.createElementMorph = function(element, namespace){
-  return new this.ElementMorphClass(element, this, namespace);
-};
-
-prototype.createUnsafeAttrMorph = function(element, attrName, namespace){
-  var morph = this.createAttrMorph(element, attrName, namespace);
-  morph.escaped = false;
-  return morph;
-};
-
-prototype.MorphClass = Morph;
-
-prototype.createMorph = function(parent, start, end, contextualElement){
-  if (contextualElement && contextualElement.nodeType === 11) {
-    throw new Error("Cannot pass a fragment as the contextual element to createMorph");
-  }
-
-  if (!contextualElement && parent && parent.nodeType === 1) {
-    contextualElement = parent;
-  }
-  var morph = new this.MorphClass(this, contextualElement);
-  morph.firstNode = start;
-  morph.lastNode = end;
-  return morph;
-};
-
-prototype.morphForChildren = function(parent, contextualElement) {
-  // contextual element is used when the morph is created for the children
-  // of a fragment.
-  let morph = new this.MorphClass(this, contextualElement);
-  morph.appendToParent = parent;
-  morph.firstNode = parent.firstChild;
-  morph.lastNode = parent.lastChild;
-  return morph;
-};
-
-prototype.createBlankMorph = function(parent, nextSibling) {
-  let morph = new this.MorphClass(this, parent);
-  morph._nextSibling = nextSibling;
-};
-
-prototype.createFragmentMorph = function(contextualElement) {
-  if (contextualElement && contextualElement.nodeType === 11) {
-    throw new Error("Cannot pass a fragment as the contextual element to createMorph");
-  }
-
-  var fragment = this.createDocumentFragment();
-  return Morph.create(this, contextualElement, fragment);
-};
-
-prototype.replaceContentWithMorph = function(element)  {
-  var firstChild = element.firstChild;
-
-  if (!firstChild) {
-    var comment = this.createComment('');
-    this.appendChild(element, comment);
-    return Morph.create(this, element, comment);
-  } else {
-    var morph = Morph.attach(this, element, firstChild, element.lastChild);
-    morph.clear();
-    return morph;
-  }
-};
-
-prototype.createUnsafeMorph = function(parent, start, end, contextualElement){
-  var morph = this.createMorph(parent, start, end, contextualElement);
-  morph.parseTextAsHTML = true;
-  return morph;
-};
-
-// This helper is just to keep the templates good looking,
-// passing integers instead of element references.
-prototype.createMorphAt = function(parent, startIndex, endIndex, contextualElement){
-  var single = startIndex === endIndex;
-  var start = this.childAtIndex(parent, startIndex);
-  var end = single ? start : this.childAtIndex(parent, endIndex);
-  return this.createMorph(parent, start, end, contextualElement);
-};
-
-prototype.createUnsafeMorphAt = function(parent, startIndex, endIndex, contextualElement) {
-  var morph = this.createMorphAt(parent, startIndex, endIndex, contextualElement);
-  morph.parseTextAsHTML = true;
-  return morph;
-};
-
-prototype.insertMorphBefore = function(element, referenceChild, contextualElement) {
-  var insertion = this.document.createComment('');
-  element.insertBefore(insertion, referenceChild);
-  return this.createMorph(element, insertion, insertion, contextualElement);
-};
-
-prototype.appendMorph = function(element, contextualElement) {
-  var insertion = this.document.createComment('');
-  element.appendChild(insertion);
-  return this.createMorph(element, insertion, insertion, contextualElement);
-};
-
-prototype.insertBoundary = function(fragment, index) {
-  // this will always be null or firstChild
-  var child = index === null ? null : this.childAtIndex(fragment, index);
-  this.insertBefore(fragment, this.createTextNode(''), child);
-};
-
-prototype.setMorphHTML = function(morph, html) {
-  morph.setHTML(html);
-};
-
 prototype.appendHTMLBefore = function(parent, nextSibling, html) {
   // REFACTOR TODO: table stuff in IE9; maybe just catch exceptions?
 
@@ -545,52 +381,7 @@ prototype.appendHTMLBefore = function(parent, nextSibling, html) {
   }
 
   let first = prev ? prev.nextSibling : parent.firstChild;
-  return [first, last];
-};
-
-//prototype.replaceHTML = function(first, last, text) {
-
-//};
-
-prototype.parseHTML = function(html, contextualElement) {
-  var childNodes;
-
-  if (interiorNamespace(contextualElement) === svgNamespace) {
-    childNodes = buildSVGDOM(html, this);
-  } else {
-    var nodes = buildHTMLDOM(html, contextualElement, this);
-    if (detectOmittedStartTag(html, contextualElement)) {
-      var node = nodes[0];
-      while (node && node.nodeType !== 1) {
-        node = node.nextSibling;
-      }
-      childNodes = node.childNodes;
-    } else {
-      childNodes = nodes;
-    }
-  }
-
-  // Copy node list to a fragment.
-  var fragment = this.document.createDocumentFragment();
-
-  if (childNodes && childNodes.length > 0) {
-    var currentNode = childNodes[0];
-
-    // We prepend an <option> to <select> boxes to absorb any browser bugs
-    // related to auto-select behavior. Skip past it.
-    if (contextualElement.tagName === 'SELECT') {
-      currentNode = currentNode.nextSibling;
-    }
-
-    while (currentNode) {
-      var tempNode = currentNode;
-      currentNode = currentNode.nextSibling;
-
-      fragment.appendChild(tempNode);
-    }
-  }
-
-  return fragment;
+  return { first, last };
 };
 
 var parsingNode;

@@ -252,16 +252,16 @@ export class NewTemplateCompiler {
     let { path } = action;
 
     this.prepareHelper(action);
-    this.opcode('modifier', action, path.original);
+    this.opcode('modifier', action, path.parts);
   }
 
   mustache([action]) {
     let { path, escaped } = action;
     if (isHelper(action)) {
       this.prepareHelper(action);
-      this.opcode('inline', action, path.original, !escaped);
+      this.opcode('inline', action, path.parts, !escaped);
     } else {
-      this.opcode('unknown', action, path.original, !escaped);
+      this.opcode('unknown', action, path.parts, !escaped);
     }
   }
 
@@ -269,7 +269,7 @@ export class NewTemplateCompiler {
     this.prepareHelper(action);
     let templateId = this.templateIds.pop();
     let inverseId = action.inverse === null ? null : this.templateIds.pop();
-    this.opcode('block', action, action.path.original, templateId, inverseId);
+    this.opcode('block', action, action.path.parts, templateId, inverseId);
   }
 
   component([action]) {
@@ -291,9 +291,9 @@ export class NewTemplateCompiler {
     let { path } = action;
     if (isHelper(action)) {
       this.prepareHelper(action);
-      this.opcode('helper', action, path.original);
+      this.opcode('helper', action, path.parts);
     } else {
-      this.opcode('get', action, path.original);
+      this.opcode('get', action, path.parts);
     }
   }
 
@@ -301,11 +301,11 @@ export class NewTemplateCompiler {
 
   SubExpression(expr) {
     this.prepareHelper(expr);
-    this.opcode('helper', expr, expr.path.original);
+    this.opcode('helper', expr, expr.path.parts);
   }
 
   PathExpression(expr) {
-    this.opcode('get', expr, expr.original);
+    this.opcode('get', expr, expr.parts);
   }
 
   StringLiteral(action) {
@@ -345,7 +345,7 @@ export class NewTemplateCompiler {
   }
 
   preparePath(path) {
-    this.opcode('pushLiteral', path, path.original);
+    this.opcode('pushLiteral', path, path.parts);
   }
 
   prepareParams(params) {

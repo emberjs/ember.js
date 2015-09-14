@@ -1,9 +1,11 @@
 /*globals console*/
 
-import SafeString from './htmlbars-util/safe-string';
-import { escapeExpression } from './htmlbars-util/handlebars/utils';
-import { getAttrNamespace } from './htmlbars-util/namespaces';
-import { validateChildMorphs, linkParams, dump } from './htmlbars-util/morph-utils';
+export { default as SafeString } from './htmlbars-util/safe-string';
+export { escapeExpression } from './htmlbars-util/handlebars/utils';
+export { getAttrNamespace } from './htmlbars-util/namespaces';
+export { validateChildMorphs, linkParams, dump } from './htmlbars-util/morph-utils';
+
+export { intern, symbol } from './htmlbars-util/platform-utils';
 
 let alreadyWarned = false;
 export function debugAssert(test, msg) {
@@ -21,11 +23,3 @@ export function prodAssert() {}
 
 export { debugAssert as assert };
 
-export {
-  SafeString,
-  escapeExpression,
-  getAttrNamespace,
-  validateChildMorphs,
-  linkParams,
-  dump
-};
