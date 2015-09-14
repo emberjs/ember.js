@@ -28,3 +28,5 @@ runLoadHooks('Ember');
 /**
 @module ember
 */
+
+export default Ember;

@@ -154,6 +154,9 @@
         // Handle JSHint
         QUnit.config.urlConfig.push('nojshint');
         QUnit.config.urlConfig.push('forceskip');
+
+        var setResolver = window.Ember.__loader.require('ember-test-helpers')['setResolver'];
+        setResolver(Ember.DefaultResolver.create({ namespace: {} }));
       })();
     </script>
 

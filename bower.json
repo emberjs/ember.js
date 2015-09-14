@@ -14,6 +14,8 @@
     "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.20",
     "router.js": "https://github.com/tildeio/router.js.git#ed45bc5c5e055af0ab875ef2c52feda792ee23e4",
     "dag-map": "https://github.com/krisselden/dag-map.git#1.0.2",
-    "ember-dev": "https://github.com/emberjs/ember-dev.git#eace5340485bdb5e4223ab67fecf4aff31c1940c"
+    "ember-dev": "https://github.com/rwjblue/ember-dev.git#OMG_WHAT_HAVE_I_DONE",
+    "ember-qunit": "rwjblue/ember-qunit#5deffbdf1cd8888c3cbe767a27ebdabecccbff51",
+    "ember-test-helpers": "^0.5.10"
   }
 }

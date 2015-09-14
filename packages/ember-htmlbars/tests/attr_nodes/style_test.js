@@ -1,15 +1,16 @@
 /* globals EmberDev */
 
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import EmberView from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
+import Component from 'ember-views/views/view';
 import { SafeString } from 'ember-htmlbars/utils/string';
-import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { styleWarning } from 'ember-htmlbars/morphs/attr-morph';
+import { moduleForComponent, test } from 'ember-qunit';
 
-var view, originalWarn, warnings;
+var originalWarn, warnings;
 
-QUnit.module('ember-htmlbars: style attribute', {
+moduleForComponent('ember-htmlbars: style attribute', {
+  integration: true,
+
   setup() {
     warnings = [];
     originalWarn = getDebugFunction('warn');
@@ -21,53 +22,45 @@ QUnit.module('ember-htmlbars: style attribute', {
   },
 
   teardown() {
-    runDestroy(view);
     setDebugFunction('warn', originalWarn);
   }
 });
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
-    view = EmberView.create({
-      userValue: 'width: 42px',
-      template: compile('<div style={{view.userValue}}></div>')
-    });
+  test('specifying `<div style={{userValue}}></div>` generates a warning', function(assert) {
+    this.set('userValue', 'width: 42px');
 
-    runAppend(view);
+    this.render('<div style={{view.userValue}}></div>');
 
-    deepEqual(warnings, [styleWarning]);
+    assert.deepEqual(warnings, [styleWarning]);
   });
 
-  QUnit.test('specifying `attributeBindings: ["style"]` generates a warning', function() {
-    view = EmberView.create({
-      userValue: 'width: 42px',
-      template: compile('<div style={{view.userValue}}></div>')
-    });
+  test('specifying `attributeBindings: ["style"]` generates a warning', function(assert) {
+    this.set('userValue', 'width: 42px');
 
-    runAppend(view);
+    this.registry.register('component:foo-bar', Component.extend({
+      attributeBindings: ['style'],
+      style: 'width: 42px'
+    }));
 
-    deepEqual(warnings, [styleWarning]);
+    this.render('{{foo-bar}}');
+
+    assert.deepEqual(warnings, [styleWarning]);
   });
 }
 
-QUnit.test('specifying `<div style={{{userValue}}}></div>` works properly without a warning', function() {
-  view = EmberView.create({
-    userValue: 'width: 42px',
-    template: compile('<div style={{{view.userValue}}}></div>')
-  });
+test('specifying `<div style={{{userValue}}}></div>` works properly without a warning', function(assert) {
+  this.set('userValue', 'width: 42px');
 
-  runAppend(view);
+  this.render('<div style={{{userValue}}}></div>');
 
-  deepEqual(warnings, [ ]);
+  assert.deepEqual(warnings, [ ]);
 });
 
-QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a SafeString', function() {
-  view = EmberView.create({
-    userValue: new SafeString('width: 42px'),
-    template: compile('<div style={{view.userValue}}></div>')
-  });
+test('specifying `<div style={{userValue}}></div>` works properly with a SafeString', function(assert) {
+  this.set('userValue', new SafeString('width: 42px'));
 
-  runAppend(view);
+  this.render('<div style={{userValue}}></div>');
 
-  deepEqual(warnings, [ ]);
+  assert.deepEqual(warnings, [ ]);
 });
