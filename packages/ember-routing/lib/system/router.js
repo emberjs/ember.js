@@ -6,7 +6,7 @@ import { set } from 'ember-metal/property_set';
 import { defineProperty } from 'ember-metal/properties';
 import EmptyObject from 'ember-metal/empty_object';
 import { computed } from 'ember-metal/computed';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
@@ -592,7 +592,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     var queryParams = {};
-    merge(queryParams, _queryParams);
+    assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams);
 
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
@@ -637,7 +637,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
       if (!qpMeta) { continue; }
 
-      merge(map, qpMeta.map);
+      assign(map, qpMeta.map);
       qps.push.apply(qps, qpMeta.qps);
     }
 

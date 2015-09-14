@@ -88,3 +88,7 @@ for a detailed explanation.
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
   routable components.
+
+* `ember-metal-ember-assign`
+
+  Add `Ember.assign` that is polyfill for `Object.assign`.

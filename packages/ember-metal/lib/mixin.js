@@ -9,7 +9,7 @@
 
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
 import { assert, deprecate, runInDebug } from 'ember-metal/debug';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
@@ -169,7 +169,7 @@ function applyMergedProperties(obj, key, value, values) {
 
   if (!baseValue) { return value; }
 
-  var newBase = merge({}, baseValue);
+  var newBase = assign({}, baseValue);
   var hasFunction = false;
 
   for (var prop in value) {

@@ -1,5 +1,5 @@
 import _default from 'ember-views/views/states/default';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 /**
 @module ember
@@ -8,7 +8,7 @@ import merge from 'ember-metal/merge';
 
 let preRender = Object.create(_default);
 
-merge(preRender, {
+assign(preRender, {
   legacyPropertyDidChange(view, key) {}
 });
 

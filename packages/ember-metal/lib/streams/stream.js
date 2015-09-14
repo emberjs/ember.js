@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import { debugSeal, assert } from 'ember-metal/debug';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
 import { addObserver, removeObserver } from 'ember-metal/observer';
@@ -313,7 +313,7 @@ BasicStream.extend = function(object) {
 
   Child.prototype = Object.create(this.prototype);
 
-  merge(Child.prototype, object);
+  assign(Child.prototype, object);
   Child.extend = BasicStream.extend;
   return Child;
 };

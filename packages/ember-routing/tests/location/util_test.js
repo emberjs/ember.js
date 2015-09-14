@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import {
   replacePath,
   getPath,
@@ -11,7 +11,7 @@ import {
 } from 'ember-routing/location/util';
 
 function mockBrowserLocation(overrides) {
-  return merge({
+  return assign({
     href: 'http://test.com/',
     pathname: '/',
     hash: '',

@@ -1,12 +1,12 @@
 import Ember from 'ember-metal/core';
 import isEnabled, { FEATURES } from 'ember-metal/features';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 var origFeatures, origEnableAll, origEnableOptional;
 
 QUnit.module('isEnabled', {
   setup() {
-    origFeatures = merge({}, FEATURES);
+    origFeatures = assign({}, FEATURES);
     origEnableAll = Ember.ENV.ENABLE_ALL_FEATURES;
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
@@ -15,7 +15,7 @@ QUnit.module('isEnabled', {
     for (var feature in FEATURES) {
       delete FEATURES[feature];
     }
-    merge(FEATURES, origFeatures);
+    assign(FEATURES, origFeatures);
 
     Ember.ENV.ENABLE_ALL_FEATURES = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;

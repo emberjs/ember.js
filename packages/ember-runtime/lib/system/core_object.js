@@ -12,7 +12,7 @@
 import Ember from 'ember-metal';
 import { assert, runInDebug } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -155,7 +155,7 @@ function makeCtor() {
               mergedProperties.indexOf(keyName) >= 0) {
             var originalValue = this[keyName];
 
-            value = merge(originalValue, value);
+            value = assign(originalValue, value);
           }
 
           if (desc) {

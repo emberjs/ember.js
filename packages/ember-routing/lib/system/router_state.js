@@ -1,7 +1,7 @@
 import isEmpty from 'ember-metal/is_empty';
 import keys from 'ember-metal/keys';
 import EmberObject from 'ember-runtime/system/object';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 var RouterState = EmberObject.extend({
   emberRouter: null,
@@ -16,7 +16,7 @@ var RouterState = EmberObject.extend({
 
     if (queryParamsMustMatch && !emptyQueryParams) {
       var visibleQueryParams = {};
-      merge(visibleQueryParams, queryParams);
+      assign(visibleQueryParams, queryParams);
 
       this.emberRouter._prepareQueryParams(routeName, models, visibleQueryParams);
       return shallowEqual(visibleQueryParams, state.queryParams);

@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import { get } from 'ember-metal/property_get';
 
 export function routeArgs(targetRouteName, models, queryParams) {
@@ -159,7 +159,7 @@ function accumulateQueryParamDescriptors(_desc, accum) {
     }
 
     tmp = accum[key] || { as: null, scope: 'model' };
-    merge(tmp, singleDesc);
+    assign(tmp, singleDesc);
 
     accum[key] = tmp;
   }

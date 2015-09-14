@@ -2,7 +2,7 @@ import _Ember from 'ember-metal';
 import environment from 'ember-metal/environment';
 
 import { hooks } from 'htmlbars-runtime';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 import subexpr from 'ember-htmlbars/hooks/subexpr';
 import concat from 'ember-htmlbars/hooks/concat';
@@ -36,10 +36,10 @@ import keywords, { registerKeyword } from 'ember-htmlbars/keywords';
 
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 
-var emberHooks = merge({}, hooks);
+var emberHooks = assign({}, hooks);
 emberHooks.keywords = keywords;
 
-merge(emberHooks, {
+assign(emberHooks, {
   linkRenderNode,
   createFreshScope,
   createChildScope,

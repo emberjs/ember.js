@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import _default from 'ember-views/views/states/default';
 import EmberError from 'ember-metal/error';
 /**
@@ -8,7 +8,7 @@ import EmberError from 'ember-metal/error';
 
 var destroying = Object.create(_default);
 
-merge(destroying, {
+assign(destroying, {
   appendChild() {
     throw new EmberError('You can\'t call appendChild on a view being destroyed');
   },
