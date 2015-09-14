@@ -11,7 +11,7 @@ import isBlank from 'ember-metal/is_blank';
   Ember.isPresent([]);              // false
   Ember.isPresent('\n\t');          // false
   Ember.isPresent('  ');            // false
-  Ember.isPresent(false);           // true 
+  Ember.isPresent(false);           // true
   Ember.isPresent({});              // true
   Ember.isPresent('\n\t Hello');    // true
   Ember.isPresent('Hello world');   // true
