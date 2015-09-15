@@ -47,6 +47,14 @@ QUnit.test('has weakMap like qualities', function(assert) {
   equal(map.get(b), undefined);
 });
 
+QUnit.test('that error is thrown when using a non object key', function(assert) {
+  var map = new WeakMap();
+
+  throws(function() {
+    map.set('a', 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+});
+
 QUnit.test('that .has and .delete work as expected', function(assert) {
   var map = new WeakMap();
   var a = {};
@@ -60,4 +68,8 @@ QUnit.test('that .has and .delete work as expected', function(assert) {
 
   deepEqual(map.delete(a), map);
   ok(!map.has(a));
+
+  map.set(a, undefined);
+  ok(map.has(a));
 });
+
