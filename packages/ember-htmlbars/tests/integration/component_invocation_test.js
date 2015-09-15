@@ -375,6 +375,29 @@ QUnit.test('dynamic named positional parameters', function() {
   equal(jQuery('#qunit-fixture').text(), 'Edward5');
 });
 
+QUnit.test('if a value is passed as a non-positional parameter, it takes precedence over the named one', function() {
+  var SampleComponent = Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['name']
+  });
+
+  registry.register('template:components/sample-component', compile('{{attrs.name}}'));
+  registry.register('component:sample-component', SampleComponent);
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component notMyName name=myName}}'),
+    container: container,
+    context: {
+      myName: 'Quint',
+      notMyName: 'Sergio'
+    }
+  }).create();
+
+  expectAssertion(function() {
+    runAppend(view);
+  }, `You cannot specify both a positional param (at position 0) and the hash argument \`name\`.`);
+});
+
 QUnit.test('static arbitrary number of positional parameters', function() {
   var SampleComponent = Component.extend();
   SampleComponent.reopenClass({
@@ -394,6 +417,28 @@ QUnit.test('static arbitrary number of positional parameters', function() {
   equal(view.$('#args-3').text(), 'Foo4Bar');
   equal(view.$('#args-5').text(), 'Foo4Bar5Baz');
   equal(view.$('#helper').text(), 'Foo4Bar5Baz');
+});
+
+QUnit.test('arbitrary positional parameter conflict with hash parameter is reported', function() {
+  var SampleComponent = Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: 'names'
+  });
+
+  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('component:sample-component', SampleComponent);
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}'),
+    container: container,
+    context: {
+      numbers: [1, 2, 3]
+    }
+  }).create();
+
+  expectAssertion(function() {
+    runAppend(view);
+  }, `You cannot specify positional parameters and the hash argument \`names\`.`);
 });
 
 QUnit.test('dynamic arbitrary number of positional parameters', function() {

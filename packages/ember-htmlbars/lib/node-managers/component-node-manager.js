@@ -103,28 +103,44 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
   // if the component is rendered via {{component}} helper, the first
   // element of `params` is the name of the component, so we need to
   // skip that when the positional parameters are constructed
-  const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
   const isNamed = typeof positionalParams === 'string';
-  let paramsStream;
 
   if (isNamed) {
-    paramsStream = new Stream(() => {
-      return readArray(params.slice(paramsStartIndex));
-    }, 'params');
-
-    attrs[positionalParams] = paramsStream;
-  }
-
-  if (isNamed) {
-    for (let i = paramsStartIndex; i < params.length; i++) {
-      let param = params[i];
-      paramsStream.addDependency(param);
-    }
+    processRestPositionalParameters(renderNode, positionalParams, params, attrs);
   } else {
-    for (let i = 0; i < positionalParams.length; i++) {
-      let param = params[paramsStartIndex + i];
-      attrs[positionalParams[i]] = param;
-    }
+    processNamedPositionalParameters(renderNode, positionalParams, params, attrs);
+  }
+}
+
+function processNamedPositionalParameters(renderNode, positionalParams, params, attrs) {
+  const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
+
+  for (let i = 0; i < positionalParams.length; i++) {
+    let param = params[paramsStartIndex + i];
+
+    assert(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${positionalParams[i]}\`.`,
+           !(positionalParams[i] in attrs));
+
+    attrs[positionalParams[i]] = param;
+  }
+}
+
+function processRestPositionalParameters(renderNode, positionalParamsName, params, attrs) {
+  // If there is already an attribute for that variable, do nothing
+  assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsName}\`.`,
+         !(positionalParamsName in attrs));
+
+  const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
+
+  let paramsStream = new Stream(() => {
+    return readArray(params.slice(paramsStartIndex));
+  }, 'params');
+
+  attrs[positionalParamsName] = paramsStream;
+
+  for (let i = paramsStartIndex; i < params.length; i++) {
+    let param = params[i];
+    paramsStream.addDependency(param);
   }
 }
 
