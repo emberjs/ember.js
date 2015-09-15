@@ -1,157 +1,343 @@
 <script>
+"use strict";
+
+var GUID = 0;
+
+function Dict() {}
+Dict.prototype = Object.create(null);
+
+function DictSet() {}
+DictSet.prototype = {
+  add(obj) {
+    this[obj._guid] = obj;
+  },
+
+  remove(obj) {
+    delete this[obj._guid];
+  },
+
+  forEach(callback) {
+    Object.keys(this).forEach(key => callback(this[key]));
+  }
+}
+
+function extend(Child, Parent, object) {
+  let proto = Child.prototype = Object.create(Parent.prototype);
+  Object.keys(object).forEach(key => proto[key] = object[key]);
+}
+
+function NotifyNode(parent, child) {
+  this._parent = parent;
+  this._child = child;
+}
+
+NotifyNode.appendTo = function(parent, child) {
+  let oldTail = parent._notifyTail;
+  if (oldTail) {
+    oldTail._nextSibling = this;
+    this._previousSibling = oldTail;
+  } else {
+    parent._notifyHead = this;
+  }
+
+  parent._notifyTail = this;
+  return new Unchain(parent, this);
+}
+
+function Unchain(parent, notify) {
+  this._parent = parent;
+  this._notify = notify;
+}
+
+Unchain.prototype = {
+  destroy() {
+    let _parent = this._parent, _notify = this._notify;
+    let head = _parent._notifyHead;
+    let tail = _parent._notifyTail;
+    let prev = _notify._previousSibling;
+    let next = _notify._nextSibling;
+
+    if (head === _notify) parent._notifyHead = next;
+    if (next) next._previousSibling = prev;
+
+    if (tail === _notify) parent._notifyTail = prev;
+    if (prev) prev._nextSibling = next;
+  }
+}
+
+function PushPullReference() {
+  this._dirty = true;
+  this._notifyHead = null;
+  this._notifyTail = null;
+  this._sources = null;
+}
+
+PushPullReference.prototype = {
+  isDirty() { return this._dirty; },
+
+  chain(child) {
+    NotifyNode.append(this, child);
+  },
+
+  notify() {
+    let notifyNode = this._notifyHead;
+    while (notifyNode) {
+      notifyNode._child.notify();
+      notify = notify._nextSibling;
+    }
+  },
+
+  destroy() {
+    if (!this._sources) return;
+    this._sources.forEach(source => source.destroy());
+  },
+
+  _addSource(source) {
+    this._sources = this._sources || [];
+    this._sources.push(source.chain(this));
+  }
+}
+
+function Meta(object) {
+  this._object = object;
+  this._references = null;
+  this._root = null;
+  this._referenceTypes = null;
+}
+
+Meta.prototype = {
+  addReference(property, reference) {
+    var refs = this._references = this._references || new Dict();
+    var set = refs[property] = refs[property] || new DictSet();
+    set.add(reference);
+  },
+
+  addReferenceTypeFor(property, type) {
+    // do this once per class and then freeze the dict
+    this._referenceTypes = this._referenceTypes || new Dict();
+    this._referenceTypes[property] = type;
+  },
+
+  referenceTypeFor(property) {
+    if (!this._referenceTypes) return PropertyReference;
+    return this._referenceTypes[property] || PropertyReference;
+  },
+
+  removeReference(property, reference) {
+    if (!this._references) return;
+    var set = this._references[property];
+    set.remove(reference);
+  },
+
+  referencesFor(property) {
+    if (!this._references) return;
+    return this._references[property];
+  },
+
+  root() {
+    return this._root = this._root || new RootReference(this._object);
+  }
+}
+
+Meta.for = function(obj) {
+  if (obj._meta) return obj._meta;
+  return (obj._meta = new Meta(obj));
+};
+
 function RootReference(parent) {
+  this._guid = ++GUID;
   this._parent = parent;
   this._chains = {};
 }
 
 RootReference.prototype = {
-  isDirty: function() { return false; },
-  value: function() { return this._parent; },
-  get: function (prop) {
+  isDirty() { return false; },
+  value() { return this._parent; },
+  get(prop) {
     var _chains = this._chains;
     if (prop in _chains) return _chains[prop];
     return (_chains[prop] = new DirectReference(this, prop));
+  },
+  path(parts) {
+    return parts.reduce((ref, part) => ref.get(part), root);
   }
 }
 
 function EMPTY_CACHE() {}
 
 function DirectReference(parent, property) {
+  this.super$constructor();
+  this._guid = ++GUID;
   this._parent = parent;
   this._property = property;
   this._cache = EMPTY_CACHE;
-  this._chains = {};
-  this._notifyChildren = new Set();
+  this._inner = null;
+  this._chains = null;
+  this._notifyChildren = null;
 }
 
-DirectReference.prototype = {
+extend(DirectReference, PushPullReference, {
+  super$constructor: PushPullReference,
+  super$notify: PushPullReference.prototype.notify,
+
   isDirty: function() { return this._cache === EMPTY_CACHE; },
 
   value: function() {
     var _cache = this._cache;
     if (_cache !== EMPTY_CACHE) return _cache;
     var _parent = this._parent, _property = this._property;
-    return (this._cache = _parent.value()[_property]);
+
+    var _inner = this._inner;
+    if (!_inner) {
+      let _parentValue = _parent.value();
+      let ReferenceType = Meta.for(_parentValue).referenceTypeFor(_property);
+      _inner = this._inner = new PropertyReference(_parentValue, _property);
+    }
+
+    return _inner.value();
   },
 
   notify: function() {
     this._notify();
+    this.super$notify();
   },
 
   get: function(prop) {
-    var _chains = this._chains;
+    var _chains = this._getChains();
     if (prop in _chains) return _chains[prop];
     return (_chains[prop] = new IndirectReference(this, prop));
   },
 
   chain: function(child) {
-    this._notifyChildren.add(child);
-    return { _parent: this, destroy: function() { this._parent._notifyChildren.delete(child); } };
+    this._getNotifyChildren().add(child);
+    return { _parent: this, destroy: function() { this._parent._getNotifyChildren.remove(child); } };
   },
 
   _notify: function() {
-    var _chains = this._chains;
     this._cache = EMPTY_CACHE;
-    Object.keys(_chains).forEach(function(key) { _chains[key]._reparent(); });
-    this._notifyChildren.forEach(function(child) { child.notify(); });
-  }
-}
+    var _chains = this._chains, _notifyChildren = this._notifyChildren;
 
-function IndirectReference(parent, property) {
-  DirectReference.call(this, parent, property);
-  this._lastParentValue = null;
-}
+    if (_chains) {
+      Object.keys(_chains).forEach(function(key) { _chains[key]._reparent(); });
+    }
 
-IndirectReference.prototype = Object.create(DirectReference.prototype);
-
-IndirectReference.prototype.value = function() {
-  if (this._cache !== EMPTY_CACHE) return this._cache;
-  var parent = this._parentValue(), _property = this._property;
-
-  if (parent === null || parent === undefined) {
-    return (this._cache = undefined);
-  }
-
-  if (typeof parent === 'object') {
-    addReference(parent, _property, this);
-  }
-
-  return (this._cache = parent[_property]);
-};
-
-IndirectReference.prototype._reparent = function() {
-  var _property = this._property, _lastParentValue = this._lastParentValue;
-
-  if (typeof _lastParentValue === 'object' && _lastParentValue !== null) {
-    removeReference(_lastParentValue, _property, this);
-  }
-
-  this._notify();
-};
-
-IndirectReference.prototype._parentValue = function() {
-  var parent = this._parent.value();
-  this._lastParentValue = parent;
-  return parent;
-};
-
-function addReference(parent, property, reference) {
-  var refs = parent._references = parent._references || {};
-  var set = refs[property] = refs[property] || new Set();
-  set.add(reference);
-}
-
-function removeReference(parent, property, reference) {
-  var set = parent._references[property];
-  set.delete(reference);
-}
-
-/// TEST STARTS HERE
-
-function Computed(callback, dependencies) {
-  this._dependencies = dependencies;
-  this._callback = callback;
-}
-
-Computed.prototype = {
-  references: function(obj) {
-    return this._dependencies.map(function(dep) {
-      return addObserver(obj, dep);
-    });
+    if (_notifyChildren) {
+      _notifyChildren.forEach(function(child) { child.notify(); });
+    }
   },
 
-  compute(obj) {
-    return this._callback.call(obj);
+  _getNotifyChildren() {
+    if (this._notifyChildren) return this._notifyChildren;
+    return (this._notifyChildren = new DictSet());
+  },
+
+  _getChains() {
+    if (this._chains) return this._chains;
+    return (this._chains = new Dict());
   }
+});
+
+function IndirectReference(parent, property) {
+  this.direct$constructor(parent, property);
+  this._lastParentValue = null;
+  this._inner;
 }
 
-function computed(obj, key, computed) {
-  var references;
-  var cache = EMPTY_CACHE;
+extend(IndirectReference, DirectReference, {
+  direct$constructor: DirectReference,
 
-  Object.defineProperty(obj, key, {
-    enumerable: true,
-    configurable: true,
-    get: function() {
-      var meta = this._meta = this._meta || {};
-      var references = meta.references = meta.references || {};
-      var refs = references[key] = references[key] || computed.references(this);
-      var cache = meta._cache = meta._cache || {};
+  value() {
+    if (this._cache !== EMPTY_CACHE) return this._cache;
+    var _lastParentValue = this._lastParentValue, _parentValue = this._parentValue(), _property = this._property;
 
-      var dirty = refs.some(function(ref) { return ref.isDirty(); });
-      if (dirty) {
-        var val = cache[key] = computed.compute(this);
-        return val;
-      } else {
-        return cache[key] === EMPTY_CACHE ? undefined : cache[key];
+    if (_parentValue === null || _parentValue === undefined) {
+      return (this._cache = undefined);
+    }
+
+    var _inner;
+    if (_lastParentValue === _parentValue) {
+      _inner = this._inner;
+    } else {
+      let ReferenceType = Meta.for(_parentValue).referenceTypeFor(_property);
+      _inner = this._inner = new ReferenceType(_parentValue, _property);
+    }
+
+    if (typeof _parentValue === 'object') {
+      Meta.for(_parentValue).addReference(_property, this);
+    }
+
+    return (this._cache = _inner.value());
+  },
+
+  _reparent() {
+    var _property = this._property, _lastParentValue = this._lastParentValue;
+
+    if (typeof _lastParentValue === 'object' && _lastParentValue !== null) {
+      Meta.for(_lastParentValue).removeReference(_property, this);
+    }
+
+    this._notify();
+  },
+
+  _parentValue() {
+    var parent = this._parent.value();
+    this._lastParentValue = parent;
+    return parent;
+  }
+});
+
+function PropertyReference(object, property) {
+  this._object = object;
+  this._property = property;
+}
+
+PropertyReference.prototype = {
+  isDirty() { return true; },
+  value() { return this._object[this._property]; }
+}
+
+function ComputedBlueprint(property, dependencies) {
+  return function ComputedReference(object, property) {
+    this._object = object;
+    this._property = property;
+    this._dependencies = dependencies;
+    this._isDirty = true;
+    this._sources = null;
+  }
+
+  extend(ComputedReference, NotifyingReference, {
+    value() {
+      if (!this._disconnect) {
+        let root = Meta.for(this._parent);
+        this._disconnect = new Array(this._dependencies.length);
+        this._dependencies.forEach((path, i) => this._disconnect[i] = root.path(path).chain(this));
       }
+
+      return this._object[this._property];
+    },
+
+    destroy() {
+      this._disconnect.forEach(chain => chain.destroy());
     }
   });
 }
 
+/// TEST STARTS HERE
+
+function computed(obj, name, getter, depStrings) {
+  Object.defineProperty(obj, name, {
+    enumerable: true,
+    configurable: true,
+    get: getter
+  });
+
+  let deps = depStrings.map(d => d.split('.'));
+  Meta.for(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps));
+}
+
 function addObserver(obj, path) {
   var links = path.split('.');
-  var root = rootFor(obj);
+  var root = Meta.for(obj).root();
 
   return path.split('.').reduce(function(ref, part) {
     return ref.get(part);
@@ -159,20 +345,18 @@ function addObserver(obj, path) {
 }
 
 function rootFor(obj) {
-  return (obj._root = obj._root || new RootReference(obj));
+  return Meta.for(obj).root();
 }
 
 function setProperty(parent, property, val) {
   var rootProp = rootFor(parent)._chains[property];
 
-  if (parent._references) {
-    var referencesToNotify = parent._references[property];
-  }
+  var referencesToNotify = Meta.for(parent).referencesFor(property);
 
   parent[property] = val;
 
   if (referencesToNotify) {
-    [...referencesToNotify].forEach(function(ref) { ref._reparent(); });
+    referencesToNotify.forEach(function(ref) { ref._reparent(); });
   }
 
   if (rootProp) rootProp.notify();
@@ -181,6 +365,7 @@ function setProperty(parent, property, val) {
 var obj1, obj2, obj3, obj4, o1, o2, o3, o4;
 
 function TestReference(root, rootName, path) {
+  this._guid = ++GUID;
   this._root = root;
   this._rootName = rootName;
   this._path = path;
@@ -221,24 +406,31 @@ function testComputed() {
   obj1 = { label: "obj1", model: { person: { name: { first: "Yehuda", last: "Katz" } } } };
   var originalPerson = obj1.model.person;
 
-  computed(obj1, 'fullName', new Computed(function() {
+  computed(obj1, 'fullName', function() {
     if (this.model.person === undefined) return;
     return this.model.person.name.first + ' ' + this.model.person.name.last;
-  }, ['model.person.name.first', 'model.person.name.last']));
+  }, ['model.person.name.first', 'model.person.name.last']);
+
+  let ref = Meta.for(obj1).root().get('fullName');
 
   equal(obj1.fullName, "Yehuda Katz");
+  equal(ref.value(), "Yehuda Katz");
 
   setProperty(obj1.model, 'person', { name: { first: 'Godfrey', last: 'Chan' } });
   equal(obj1.fullName, "Godfrey Chan");
+  equal(ref.value(), "Godfrey Chan");
 
   setProperty(originalPerson.name, 'first', "Godhuda");
   equal(obj1.fullName, "Godfrey Chan");
+  equal(ref.value(), "Godfrey Chan");
 
   setProperty(obj1.model, 'person', undefined);
   equal(obj1.fullName, undefined);
+  equal(ref.value(), undefined);
 
   setProperty(obj1.model, 'person', originalPerson);
   equal(obj1.fullName, "Godhuda Katz");
+  equal(ref.value(), "Godhuda Katz");
 }
 
 function testComputedPrototype() {
