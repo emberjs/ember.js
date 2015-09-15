@@ -21,6 +21,7 @@ function DirectReference(parent, property) {
   this._property = property;
   this._cache = EMPTY_CACHE;
   this._chains = {};
+  this._notifyChildren = new Set();
 }
 
 DirectReference.prototype = {
@@ -34,40 +35,123 @@ DirectReference.prototype = {
   },
 
   notify: function() {
-    var _chains = this._chains;
-    this._cache = EMPTY_CACHE;
-    Object.keys(_chains).forEach(function(key) { _chains[key].notify(); });
+    this._notify();
   },
 
   get: function(prop) {
     var _chains = this._chains;
     if (prop in _chains) return _chains[prop];
     return (_chains[prop] = new IndirectReference(this, prop));
+  },
+
+  chain: function(child) {
+    this._notifyChildren.add(child);
+    return { _parent: this, destroy: function() { this._parent._notifyChildren.delete(child); } };
+  },
+
+  _notify: function() {
+    var _chains = this._chains;
+    this._cache = EMPTY_CACHE;
+    Object.keys(_chains).forEach(function(key) { _chains[key]._reparent(); });
+    this._notifyChildren.forEach(function(child) { child.notify(); });
   }
 }
 
 function IndirectReference(parent, property) {
   DirectReference.call(this, parent, property);
+  this._lastParentValue = null;
 }
 
 IndirectReference.prototype = Object.create(DirectReference.prototype);
 
 IndirectReference.prototype.value = function() {
   if (this._cache !== EMPTY_CACHE) return this._cache;
-  var parent = this._parent.value(), _property = this._property;
+  var parent = this._parentValue(), _property = this._property;
 
-  addReference(parent, _property, this);
+  if (parent === null || parent === undefined) {
+    return (this._cache = undefined);
+  }
+
+  if (typeof parent === 'object') {
+    addReference(parent, _property, this);
+  }
+
   return (this._cache = parent[_property]);
+};
+
+IndirectReference.prototype._reparent = function() {
+  var _property = this._property, _lastParentValue = this._lastParentValue;
+
+  if (typeof _lastParentValue === 'object' && _lastParentValue !== null) {
+    removeReference(_lastParentValue, _property, this);
+  }
+
+  this._notify();
+};
+
+IndirectReference.prototype._parentValue = function() {
+  var parent = this._parent.value();
+  this._lastParentValue = parent;
+  return parent;
+};
+
+function addReference(parent, property, reference) {
+  var refs = parent._references = parent._references || {};
+  var set = refs[property] = refs[property] || new Set();
+  set.add(reference);
+}
+
+function removeReference(parent, property, reference) {
+  var set = parent._references[property];
+  set.delete(reference);
+}
+
+/// TEST STARTS HERE
+
+function Computed(callback, dependencies) {
+  this._dependencies = dependencies;
+  this._callback = callback;
+}
+
+Computed.prototype = {
+  references: function(obj) {
+    return this._dependencies.map(function(dep) {
+      return addObserver(obj, dep);
+    });
+  },
+
+  compute(obj) {
+    return this._callback.call(obj);
+  }
+}
+
+function computed(obj, key, computed) {
+  var references;
+  var cache = EMPTY_CACHE;
+
+  Object.defineProperty(obj, key, {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      var meta = this._meta = this._meta || {};
+      var references = meta.references = meta.references || {};
+      var refs = references[key] = references[key] || computed.references(this);
+      var cache = meta._cache = meta._cache || {};
+
+      var dirty = refs.some(function(ref) { return ref.isDirty(); });
+      if (dirty) {
+        var val = cache[key] = computed.compute(this);
+        return val;
+      } else {
+        return cache[key] === EMPTY_CACHE ? undefined : cache[key];
+      }
+    }
+  });
 }
 
 function addObserver(obj, path) {
   var links = path.split('.');
-  var root = obj._root = obj._root || new RootReference(obj);
-  var ref = root.get(links[0]);
-
-  for (var i=1, l=links.length; i<l; i++) {
-    ref = ref.get(links[i]);
-  }
+  var root = rootFor(obj);
 
   return path.split('.').reduce(function(ref, part) {
     return ref.get(part);
@@ -78,55 +162,331 @@ function rootFor(obj) {
   return (obj._root = obj._root || new RootReference(obj));
 }
 
-function addReference(parent, property, reference) {
-  var refs = parent._references = parent._references || {};
-  var set = refs[property] = refs[property] || new Set();
-  set.add(reference);
-}
-
 function setProperty(parent, property, val) {
   var rootProp = rootFor(parent)._chains[property];
-  var referencesToTransfer = parent[property]._references;
-  var referencesToNotify = parent._references[property];
 
-  referencesToNotify.forEach(function(ref) { ref.notify(); });
+  if (parent._references) {
+    var referencesToNotify = parent._references[property];
+  }
 
-  rootProp.notify();
-
-  val._references = referencesToTransfer;
-  parent[property]._references = null;
   parent[property] = val;
 
-  Object.keys(referencesToTransfer).forEach(function(key) {
-    referencesToTransfer[key].forEach(function(ref) { ref.notify(); });
-  });
+  if (referencesToNotify) {
+    [...referencesToNotify].forEach(function(ref) { ref._reparent(); });
+  }
+
+  if (rootProp) rootProp.notify();
 }
 
-var obj, ref1, ref2, ref3;
+var obj1, obj2, obj3, obj4, o1, o2, o3, o4;
+
+function TestReference(root, rootName, path) {
+  this._root = root;
+  this._rootName = rootName;
+  this._path = path;
+  this._reference = addObserver(root, path);
+  this._chain = this._reference.chain(this);
+
+  this._dirty = true;
+}
+
+TestReference.prototype = {
+  name: function() {
+    return this._rootName + '.get("' + this._path + '")';
+  },
+
+  isDirty: function() {
+    return this._dirty;
+  },
+
+  notify: function() {
+    this._dirty = true;
+  },
+
+  value: function() {
+    this._dirty = false;
+    return this._reference.value();
+  },
+
+  destroy: function() {
+    this._chain.destroy();
+  }
+};
+
+function testReference(root, rootName, path) {
+  return new TestReference(root, rootName, path);
+}
+
+function testComputed() {
+  obj1 = { label: "obj1", model: { person: { name: { first: "Yehuda", last: "Katz" } } } };
+  var originalPerson = obj1.model.person;
+
+  computed(obj1, 'fullName', new Computed(function() {
+    if (this.model.person === undefined) return;
+    return this.model.person.name.first + ' ' + this.model.person.name.last;
+  }, ['model.person.name.first', 'model.person.name.last']));
+
+  equal(obj1.fullName, "Yehuda Katz");
+
+  setProperty(obj1.model, 'person', { name: { first: 'Godfrey', last: 'Chan' } });
+  equal(obj1.fullName, "Godfrey Chan");
+
+  setProperty(originalPerson.name, 'first', "Godhuda");
+  equal(obj1.fullName, "Godfrey Chan");
+
+  setProperty(obj1.model, 'person', undefined);
+  equal(obj1.fullName, undefined);
+
+  setProperty(obj1.model, 'person', originalPerson);
+  equal(obj1.fullName, "Godhuda Katz");
+}
+
+function testComputedPrototype() {
+  function Class(first, last) {
+    this.model = { person: { name: { first: "Yehuda", last: "Katz" } } };
+  }
+
+  computed(Class.prototype, 'fullName', new Computed(function() {
+    if (this.model.person === undefined) return;
+    return this.model.person.name.first + ' ' + this.model.person.name.last;
+  }, ['model.person.name.first', 'model.person.name.last']));
+
+  var person1 = new Class('Yehuda', 'Katz');
+  var person2 = new Class('Godfrey', 'Chan');
+
+  equal(person1.fullName, "Yehuda Katz");
+  equal(person2.fullName, "Godfrey Chan");
+}
 
 function test() {
-  obj = { model: { person: { name: { first: "Yehuda", last: "Katz" } } } };
+  obj1 = { label: "obj1", model: { person: { name: { first: "Yehuda", last: "Katz" } } } };
+  obj2 = { label: "obj2", model: { person: { name: obj1.model.person.name } } };
+  obj3 = { label: "obj3", model: { person: obj1.model.person } };
+  obj4 = { label: "obj4", model: obj1.model };
 
-  ref1 = addObserver(obj, 'model.person.name.first');
-  ref2 = addObserver(obj.model, 'person.name.first');
-  ref3 = addObserver(obj.model.person, 'name.first');
-  ref4 = addObserver(obj.model.person.name, 'first');
+  var originalPerson = obj1.model.person;
 
-  assert(ref1.isDirty() && ref2.isDirty() && ref3.isDirty() && ref4.isDirty(), "refs start out dirty");
-  equal(ref1.value(), "Yehuda");
-  equal(ref2.value(), "Yehuda");
-  equal(ref3.value(), "Yehuda");
-  equal(ref4.value(), "Yehuda");
-  assert(!ref1.isDirty() && !ref2.isDirty() && !ref3.isDirty() && !ref4.isDirty(), "refs become clean once cached");
+  o1 = [
+    testReference(obj1, 'obj1', 'model.person.name.first'),
+    testReference(obj1.model, 'obj1.model', 'person.name.first'),
+    testReference(obj1.model.person, 'obj1.model.person', 'name.first'),
+    testReference(obj1.model.person.name, 'obj1.model.person.name', 'first')
+  ]
 
-  setProperty(obj.model, 'person', { name: { first: 'Godfrey', last: 'Chan' } })
+  o2 = [
+    testReference(obj2, 'obj2', 'model.person.name.first'),
+    testReference(obj2.model, 'obj2.model', 'person.name.first'),
+    testReference(obj2.model.person, 'obj2.model.person', 'name.first'),
+    testReference(obj2.model.person.name, 'obj2.model.person.name', 'first')
+  ]
 
-  assert(ref1.isDirty() && ref2.isDirty(), "refs become dirty when a parent is set");
-  assert(!ref3.isDirty() && !ref4.isDirty(), "refs rooted below are not dirty");
-  equal(ref1.value(), "Godfrey");
-  equal(ref2.value(), "Godfrey");
-  equal(ref3.value(), "Yehuda");
-  equal(ref4.value(), "Yehuda");
+  o3 = [
+    testReference(obj3, 'obj3', 'model.person.name.first'),
+    testReference(obj3.model, 'obj3.model', 'person.name.first'),
+    testReference(obj3.model.person, 'obj3.model.person', 'name.first'),
+    testReference(obj3.model.person.name, 'obj3.model.person.name', 'first')
+  ]
+
+  o4 = [
+    testReference(obj4, 'obj4', 'model.person.name.first'),
+    testReference(obj4.model, 'obj4.model', 'person.name.first'),
+    testReference(obj4.model.person, 'obj4.model.person', 'name.first'),
+    testReference(obj4.model.person.name, 'obj4.model.person.name', 'first')
+  ]
+
+  allDirty(o1, "Yehuda");
+  allDirty(o2, "Yehuda");
+  allDirty(o3, "Yehuda");
+  allDirty(o4, "Yehuda");
+
+  allClean(o1);
+  allClean(o2);
+  allClean(o3);
+  allClean(o4);
+
+  setProperty(obj1.model, 'person', { name: { first: 'Godfrey', last: 'Chan' } })
+
+  isDirty(o1[0], "Godfrey");
+  isDirty(o1[1], "Godfrey");
+  isClean(o1[2]);
+  isClean(o1[3]);
+
+  allClean(o2);
+  allClean(o3);
+
+  isDirty(o4[0], "Godfrey");
+  isDirty(o4[1], "Godfrey");
+  isClean(o4[2]);
+  isClean(o4[3]);
+
+  setProperty(originalPerson.name, 'first', "Godhuda");
+
+  isClean(o1[0]);
+  isClean(o1[1]);
+  isDirty(o1[2], "Godhuda");
+  isDirty(o1[3], "Godhuda");
+
+  allDirty(o2, "Godhuda");
+  allDirty(o3, "Godhuda");
+
+  isClean(o4[0]);
+  isClean(o4[1]);
+  isDirty(o4[2], "Godhuda");
+  isDirty(o4[3], "Godhuda");
+
+  setProperty(obj1.model, 'person', undefined);
+
+  isDirty(o1[0], undefined);
+  isDirty(o1[1], undefined);
+  isClean(o1[2]);
+  isClean(o1[3]);
+
+  allClean(o2);
+  allClean(o3);
+
+  isDirty(o4[0], undefined);
+  isDirty(o4[1], undefined);
+  isClean(o4[2]);
+  isClean(o4[3]);
+
+  setProperty(obj1.model, 'person', originalPerson);
+
+  isDirty(o1[0], "Godhuda");
+  isDirty(o1[1], "Godhuda");
+  isClean(o1[2]);
+  isClean(o1[3]);
+
+  allClean(o2);
+  allClean(o3);
+
+  isDirty(o4[0], "Godhuda");
+  isDirty(o4[1], "Godhuda");
+  isClean(o4[2]);
+  isClean(o4[3]);
+}
+
+function testPrimitive() {
+  obj1 = { label: "obj1", model: { person: { name: { first: "Yehuda", last: "Katz" } } } };
+  obj2 = { label: "obj2", model: { person: { name: obj1.model.person.name } } };
+  obj3 = { label: "obj3", model: { person: obj1.model.person } };
+  obj4 = { label: "obj4", model: obj1.model };
+
+  var originalPerson = obj1.model.person;
+
+  o1 = [
+    testReference(obj1, 'obj1', 'model.person.name.first.length'),
+    testReference(obj1.model, 'obj1.model', 'person.name.first.length'),
+    testReference(obj1.model.person, 'obj1.model.person', 'name.first.length'),
+    testReference(obj1.model.person.name, 'obj1.model.person.name', 'first.length')
+  ]
+
+  o2 = [
+    testReference(obj2, 'obj2', 'model.person.name.first.length'),
+    testReference(obj2.model, 'obj2.model', 'person.name.first.length'),
+    testReference(obj2.model.person, 'obj2.model.person', 'name.first.length'),
+    testReference(obj2.model.person.name, 'obj2.model.person.name', 'first.length')
+  ]
+
+  o3 = [
+    testReference(obj3, 'obj3', 'model.person.name.first.length'),
+    testReference(obj3.model, 'obj3.model', 'person.name.first.length'),
+    testReference(obj3.model.person, 'obj3.model.person', 'name.first.length'),
+    testReference(obj3.model.person.name, 'obj3.model.person.name', 'first.length')
+  ]
+
+  o4 = [
+    testReference(obj4, 'obj4', 'model.person.name.first.length'),
+    testReference(obj4.model, 'obj4.model', 'person.name.first.length'),
+    testReference(obj4.model.person, 'obj4.model.person', 'name.first.length'),
+    testReference(obj4.model.person.name, 'obj4.model.person.name', 'first.length')
+  ]
+
+  allDirty(o1, 6);
+  allDirty(o2, 6);
+  allDirty(o3, 6);
+  allDirty(o4, 6);
+
+  allClean(o1);
+  allClean(o2);
+  allClean(o3);
+  allClean(o4);
+
+  setProperty(obj1.model, 'person', { name: { first: 'Godfrey', last: 'Chan' } })
+
+  isDirty(o1[0], 7);
+  isDirty(o1[1], 7);
+  isClean(o1[2]);
+  isClean(o1[3]);
+
+  allClean(o2);
+  allClean(o3);
+
+  isDirty(o4[0], 7);
+  isDirty(o4[1], 7);
+  isClean(o4[2]);
+  isClean(o4[3]);
+
+  setProperty(originalPerson.name, 'first', "God-huda");
+
+  isClean(o1[0]);
+  isClean(o1[1]);
+  isDirty(o1[2], 8);
+  isDirty(o1[3], 8);
+
+  allDirty(o2, 8);
+  allDirty(o3, 8);
+
+  isClean(o4[0]);
+  isClean(o4[1]);
+  isDirty(o4[2], 8);
+  isDirty(o4[3], 8);
+
+  setProperty(obj1.model, 'person', undefined);
+
+  isDirty(o1[0], undefined);
+  isDirty(o1[1], undefined);
+  isClean(o1[2]);
+  isClean(o1[3]);
+
+  allClean(o2);
+  allClean(o3);
+
+  isDirty(o4[0], undefined);
+  isDirty(o4[1], undefined);
+  isClean(o4[2]);
+  isClean(o4[3]);
+
+  setProperty(obj1.model, 'person', originalPerson);
+
+  isDirty(o1[0], 8);
+  isDirty(o1[1], 8);
+  isClean(o1[2]);
+  isClean(o1[3]);
+
+  allClean(o2);
+  allClean(o3);
+
+  isDirty(o4[0], 8);
+  isDirty(o4[1], 8);
+  isClean(o4[2]);
+  isClean(o4[3]);
+}
+
+function isDirty(ref, newValue) {
+  assert(ref.isDirty(), ref.name() + " is dirty");
+  assert(ref.value() === newValue, ref.name() + " has new value " + newValue);
+}
+
+function isClean(ref) {
+  assert(!ref.isDirty(), ref.name() + " is clean");
+}
+
+function allDirty(refs, newValue) {
+  refs.forEach(function(ref) { isDirty(ref, newValue); });
+}
+
+function allClean(refs) {
+  refs.forEach(function(ref) { isClean(ref); });
 }
 
 function equal(actual, expected) {
@@ -141,4 +501,13 @@ function assert(test, msg) {
   if (!test) { throw new Error(msg); }
   else console.log("passed: " + msg);
 }
+
+function walk(thing) {
+  if (window.seen.has(thing)) { debugger }
+  else {
+    window.seen.add(thing);
+    Object.keys(thing._chains).forEach(function(key) { thing._chains[name].forEach(walk); });
+  }
+}
+
 </script>
