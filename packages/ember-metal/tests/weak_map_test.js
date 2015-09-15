@@ -46,3 +46,45 @@ QUnit.test('has weakMap like qualities', function(assert) {
   equal(map.get(a), 2);
   equal(map.get(b), undefined);
 });
+
+QUnit.test('that error is thrown when using a primitive key', function(assert) {
+  var map = new WeakMap();
+
+  expectAssertion(function() {
+    map.set('a', 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  expectAssertion(function() {
+    map.set(1, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  expectAssertion(function() {
+    map.set(true, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  expectAssertion(function() {
+    map.set(null, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  expectAssertion(function() {
+    map.set(undefined, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+});
+
+QUnit.test('that .has and .delete work as expected', function(assert) {
+  var map = new WeakMap();
+  var a = {};
+  var b = {};
+  var foo = { id: 1, name: 'My file', progress: 0 };
+
+  deepEqual(map.set(a, foo), map);
+  deepEqual(map.get(a), foo);
+  ok(map.has(a));
+  ok(!map.has(b));
+
+  deepEqual(map.delete(a), map);
+  ok(!map.has(a));
+
+  map.set(a, undefined);
+  ok(map.has(a));
+});
