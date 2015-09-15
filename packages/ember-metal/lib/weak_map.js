@@ -37,3 +37,24 @@ WeakMap.prototype.set = function(obj, value) {
   meta(obj).writableWeak()[this._id] = value;
   return this;
 };
+
+/*
+ * @method has
+ * @param key {Object}
+ * @return {Boolean} if the key exists
+ */
+WeakMap.prototype.has = function(obj) {
+  return !!this.get(obj);
+};
+
+/*
+ * @method delete
+ * @param key {Object}
+ */
+WeakMap.prototype.delete = function(obj) {
+  if (this.has(obj)) {
+    delete meta(obj).writableWeak()[this._id];
+  }
+
+  return this;
+};

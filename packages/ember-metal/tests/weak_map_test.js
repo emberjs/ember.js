@@ -46,3 +46,18 @@ QUnit.test('has weakMap like qualities', function(assert) {
   equal(map.get(a), 2);
   equal(map.get(b), undefined);
 });
+
+QUnit.test('that .has and .delete work as expected', function(assert) {
+  var map = new WeakMap();
+  var a = {};
+  var b = {};
+  var foo = { id: 1, name: 'My file', progress: 0 };
+
+  deepEqual(map.set(a, foo), map);
+  deepEqual(map.get(a), foo);
+  ok(map.has(a));
+  ok(!map.has(b));
+
+  deepEqual(map.delete(a), map);
+  ok(!map.has(a));
+});
