@@ -80,6 +80,18 @@ module.exports = {
       ]
     },
 
+    "htmlbars-reference": {
+      node: true
+    },
+
+    "htmlbars-object": {
+      node: true,
+
+      lib: [
+        "htmlbars-reference"
+      ]
+    },
+
     "htmlbars-util": {
       lib: [
         "util-handlebars-inliner"
