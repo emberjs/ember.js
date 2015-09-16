@@ -821,7 +821,7 @@ var View = CoreView.extend(
   // childViews will change.
   _childViewsWillChange: beforeObserver('childViews', function() {
     if (this.isVirtual) {
-      var parentView = get(this, 'parentView');
+      var parentView = this._parentView;
       if (parentView) { propertyWillChange(parentView, 'childViews'); }
     }
   }),
@@ -830,7 +830,7 @@ var View = CoreView.extend(
   // childViews did change.
   _childViewsDidChange: observer('childViews', function() {
     if (this.isVirtual) {
-      var parentView = get(this, 'parentView');
+      var parentView = this._parentView;
       if (parentView) { propertyDidChange(parentView, 'childViews'); }
     }
   }),
