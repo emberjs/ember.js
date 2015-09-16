@@ -265,6 +265,44 @@ QUnit.test("should change if the type changes", function() {
   equal(view.$('input').attr('type'), 'text', "it changes after the type changes");
 });
 
+QUnit.module("{{input type='text'}} - dynamic type in IE8 safe environment", {
+  setup() {
+    commonSetup();
+
+    controller = {
+      someProperty: 'password',
+      ie8Safe: true
+    };
+
+    view = View.extend({
+      container: container,
+      controller: controller,
+      template: compile('{{input type=someProperty ie8SafeInput=true}}')
+    }).create();
+
+    runAppend(view);
+  },
+
+  teardown() {
+    runDestroy(view);
+    runDestroy(container);
+  }
+});
+
+QUnit.test("should insert a text field into DOM", function() {
+  equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type in IE8.");
+});
+
+QUnit.test("should NOT change if the type changes", function() {
+  equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type in IE8.");
+
+  run(function() {
+    set(controller, 'someProperty', 'text');
+  });
+
+  equal(view.$('input').attr('type'), 'password', "it does NOT change after the type changes in IE8");
+});
+
 QUnit.module("{{input}} - default type", {
   setup() {
     commonSetup();
