@@ -60,6 +60,16 @@ QUnit.test("when a virtual view's child views change, the parent's childViews sh
 
     render(buffer) {
       buffer.push("<h1>Hi</h1>");
+      this.appendChild(virtualVirtualView);
+    }
+  });
+
+  var virtualVirtualView = EmberView.create({
+    isVirtual: true,
+    tagName: '',
+
+    render(buffer) {
+      buffer.push("<h2>Virtual</h2>");
       this.appendChild(virtualView);
     }
   });
@@ -69,7 +79,7 @@ QUnit.test("when a virtual view's child views change, the parent's childViews sh
     tagName: '',
 
     render(buffer) {
-      buffer.push("<h2>Virtual</h2>");
+      buffer.push("<h3>Virtual</h3>");
       this.appendChild(childView);
     }
   });
@@ -85,13 +95,13 @@ QUnit.test("when a virtual view's child views change, the parent's childViews sh
     rootView.appendTo("#qunit-fixture");
   });
 
-  equal(virtualView.get('childViews.length'), 1, "has childView - precond");
+  equal(virtualVirtualView.get('childViews.length'), 1, "has childView - precond");
   equal(rootView.get('childViews.length'), 1, "has childView - precond");
 
   run(function() {
     childView.removeFromParent();
   });
 
-  equal(virtualView.get('childViews.length'), 0, "has no childView");
+  equal(virtualVirtualView.get('childViews.length'), 0, "has no childView");
   equal(rootView.get('childViews.length'), 0, "has no childView");
 });
