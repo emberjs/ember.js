@@ -177,6 +177,7 @@ class NewJavaScriptCompiler {
   }
 
 }
+
 export class NewTemplateCompiler {
   static compile(options, ast) {
     let templateVisitor = new TemplateVisitor();
@@ -292,8 +293,10 @@ export class NewTemplateCompiler {
     if (isHelper(action)) {
       this.prepareHelper(action);
       this.opcode('helper', action, path.parts);
-    } else {
+    } else if (path.type === 'PathExpression') {
       this.opcode('get', action, path.parts);
+    } else {
+      this.opcode('literal', action, path.value);
     }
   }
 
