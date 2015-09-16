@@ -26,7 +26,8 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
+      var canChangeType = canChangeTypeAfterRender(attrs);
+      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs, canChangeType);
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
@@ -41,6 +42,30 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   //   * the falsy value "" if set explicitly on the component
   //   * an actual tagName set explicitly on the component
   return { createdElement: !!tagName, block: blockToRender };
+}
+
+function canChangeTypeAfterRender(attrs) {
+  // This permits testing of the unbound type attr behavior outside of IE8.
+  if (attrs.ie8SafeInput) {
+    return false;
+  }
+  var mutableInputTypeTextElement, docFragment;
+  if (!docFragment) {
+    docFragment = document.createDocumentFragment();
+  }
+
+  if (!mutableInputTypeTextElement) {
+    mutableInputTypeTextElement = document.createElement('input');
+    mutableInputTypeTextElement.type = 'text';
+  }
+
+  try {
+    docFragment.appendChild(mutableInputTypeTextElement);
+    mutableInputTypeTextElement.setAttribute('type', 'password');
+  } catch(e) {
+    return false;
+  }
+  return true;
 }
 
 function blockFor(template, options) {
@@ -113,7 +138,7 @@ function tagNameFor(view) {
 
 // Takes a component and builds a normalized set of attribute
 // bindings consumable by HTMLBars' `attribute` hook.
-function normalizeComponentAttributes(component, isAngleBracket, attrs) {
+function normalizeComponentAttributes(component, isAngleBracket, attrs, canChangeType) {
   var normalized = {};
   var attributeBindings = component.attributeBindings;
   var i, l;
@@ -183,6 +208,25 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
       normalized.style = ['subexpr', 'concat', [existingStyle, ' ', hiddenStyle], [ ]];
     } else {
       normalized.style = hiddenStyle;
+    }
+  }
+
+  // IE8 Support: IE8 cannot change the type attr of an input after it has been appended to
+  // any node. Therefore, we detect if the browser cannot change the type of the input after
+  // being appended, and unbind type.
+  if (normalized.type && !canChangeType) {
+    if (normalized.type[0] === 'get') {
+      Ember.warn(`Bound type attr on input. In IE8 this attribute will not be updated after initial render. https://github.com/tildeio/htmlbars/issues/380.`);
+      var type = normalized.type[1];
+      var periodIndex = type.indexOf(".");
+      var property = type.substring(periodIndex + 1);
+
+      normalized.type = component.parentView.get(property);
+    } else if (normalized.type[0] === 'value' && typeof(normalized.type[1] !== 'string')) {
+      Ember.warn(`Bound type attr on input. In IE8 this attribute will not be updated after initial render. https://github.com/tildeio/htmlbars/issues/380.`);
+      normalized.type = component.get('type');
+    } else {
+      normalized.type = normalized.type[1];
     }
   }
 

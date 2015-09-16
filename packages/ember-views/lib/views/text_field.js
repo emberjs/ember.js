@@ -98,7 +98,9 @@ export default Component.extend(TextSupport, {
   value: "",
 
   /**
-    The `type` attribute of the input element.
+    The `type` attribute of the input element. To remain compatible with IE8, this
+    cannot change after the element has been rendered. It is suggested to avoid using
+    a dynamic type attribute if you are supporting IE8 since it will be set once and never change.
 
     @property type
     @type String
