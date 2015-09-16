@@ -4,7 +4,7 @@ import { GUID_KEY } from 'ember-metal/utils';
 import { meta } from 'ember-metal/meta';
 
 var id = 0;
-const UNDEFINED = function() {};
+function UNDEFINED() {}
 
 /*
  * @private
