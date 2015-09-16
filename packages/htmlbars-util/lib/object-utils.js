@@ -68,7 +68,7 @@ export const ANY = type('ANY', { default: undefined });
 export const STRING = type('STRING', { default: '', check: 'string' });
 export const BOOLEAN = type('BOOLEAN', { default: false, check: 'boolean' });
 export const OBJECT = type('OBJECT', { default: null, check: 'object' });
-export const NUMBER = type('NUMBER', 0, { default: 'number' });
+export const NUMBER = type('NUMBER', { default: 0, check: 'number' });
 export const FUNCTION = type('FUNCTION', { default: DEFAULT_FUNCTION, check: 'function' });
 export const ARRAY = type('ARRAY', { default: null, check: val => Array.isArray(val) });
 
