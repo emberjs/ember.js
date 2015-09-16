@@ -268,7 +268,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     run.once(this, this.trigger, 'willTransition', transition);
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to ' ${EmberRouter._routePath(newInfos)}'`);
+      Ember.Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
     }
   },
 
