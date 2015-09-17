@@ -85,7 +85,7 @@ class YieldableTemplate {
 
   render() {
     this._group.rendered = true;
-    this._template.renderIn(this._morph, this._frame);
+    this._morph.renderTemplate(this._template);
   }
 }
 
