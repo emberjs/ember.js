@@ -220,3 +220,47 @@ QUnit.test('list of properties updates when an additional property is added (suc
 
   deepEqual(list.sort(), ['bar', 'foo', 'baz'].sort(), 'expected three computed properties');
 });
+
+QUnit.test('Calling _super in call outside the immediate function of a CP getter works', function() {
+  function macro(callback) {
+    return computed(function() {
+      return callback.call(this);
+    });
+  }
+
+  var MyClass = EmberObject.extend({
+    foo: computed(function() {
+      return 'FOO';
+    })
+  });
+
+  var SubClass = MyClass.extend({
+    foo: macro(function() {
+      return this._super();
+    })
+  });
+
+  ok(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+});
+
+QUnit.test('Calling _super in apply outside the immediate function of a CP getter works', function() {
+  function macro(callback) {
+    return computed(function() {
+      return callback.apply(this);
+    });
+  }
+
+  var MyClass = EmberObject.extend({
+    foo: computed(function() {
+      return 'FOO';
+    })
+  });
+
+  var SubClass = MyClass.extend({
+    foo: macro(function() {
+      return this._super();
+    })
+  });
+
+  ok(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+});
