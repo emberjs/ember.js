@@ -12,16 +12,16 @@ import {
 const SAFE_BRAND = symbol("safe string");
 
 export class ValueMorph extends RegionMorph {
-  init({ ref, trustingMorph }) {
+  init({ ref: syntax, trustingMorph }) {
     super.init();
     this._lastResult = null;
-    this._ref = ref.evaluate(this._frame);
+    this._ref = syntax.evaluate(this._frame);
     this._InsertionType = trustingMorph ? HtmlInsertion : TextInsertion;
   }
 
-  append() {
+  render() {
     let value = this._lastValue = this._ref.value();
-    this._region.append(new this._InsertionType(value));
+    this._region.replace(new this._InsertionType(value));
   }
 }
 
@@ -34,14 +34,9 @@ export class HelperMorph extends RegionMorph {
     this._trustingMorph = trustingMorph;
   }
 
-  append() {
+  render() {
     let { _region, _helper, _trustingMorph } = this;
-    _region.append(insertionForUserContent(_helper.value(), _trustingMorph));
-  }
-
-  update() {
-    let { _region, _helper, _trustingMorph } = this;
-    _region.update(insertionForUserContent(_helper.value(), _trustingMorph));
+    _region.replace(insertionForUserContent(_helper.value(), _trustingMorph));
   }
 }
 
@@ -54,7 +49,9 @@ function insertionForUserContent(content, trustingMorph) {
     case 'object':
       if (content[SAFE_BRAND]) { return new HtmlInsertion(content); }
       if (content.nodeType)    { return new NodeInsertion(content); }
-      throw new Error("Helpers must return strings or safe strings");
+      /* falls through */
+    default:
+      throw new Error(`Helpers must return strings or safe strings, not ${content}`);
   }
 }
 

@@ -205,7 +205,7 @@ export class ConcatReference extends Reference {
 const EMPTY_ARRAY = Object.freeze([]);
 
 export class HelperParamsReference extends Reference {
-  static fromStatements({ params: { params, hash }, frame }) {
+  static fromStatements({ params: { _params, _hash }, frame }) {
     // TODO: do more of this work as we natually have to loop through
     // these arrays in other areas.
     //
@@ -214,29 +214,26 @@ export class HelperParamsReference extends Reference {
     let helperRef = new HelperParamsReference();
     let options = { params: undefined, keys: undefined, values: undefined };
 
-    if (params) {
-      let paramsRef = new Array(params.length);
-
-      for (let i = 0, l = params.length; i < l; i++) {
-        let ref = paramsRef[i] = params[i].evaluate(frame);
-        helperRef.chain(ref);
-      }
+    if (_params) {
+      let paramsRef = _params.map(param => {
+        let ref = param.evaluate(frame);
+        helperRef.chain(ref); // TODO: unchain
+        return ref;
+      });
 
       options.params = paramsRef;
     } else {
       options.params = EMPTY_ARRAY;
     }
 
-    if (hash) {
-      let { keys, values } = hash;
-      let valuesRef = new Array(values.length);
+    if (_hash) {
+      let valuesRef = _hash.map((key, value) => {
+        let ref = value.evaluate(frame);
+        helperRef.chain(ref); // TODO: unchain
+        return ref;
+      });
 
-      for (let i = 0, l = values.length; i < l; i++) {
-        let ref = valuesRef[i] = values[i].evaluate(frame);
-        helperRef.chain(ref);
-      }
-
-      options.keys = keys;
+      options.keys = _hash.keys;
       options.values = valuesRef;
     } else {
       options.keys = options.values = EMPTY_ARRAY;

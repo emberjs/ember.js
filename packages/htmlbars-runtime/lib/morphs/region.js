@@ -26,8 +26,9 @@ export class TextInsertion {
   }
 
   append(dom, parentNode, nextSibling) {
-    let text = dom.createTextNode(this.string);
-    dom.insertBefore(parentNode, dom.createTextNode(this.string), nextSibling);
+    let { _string } = this;
+    let text = dom.createTextNode(_string);
+    dom.insertBefore(parentNode, dom.createTextNode(_string), nextSibling);
     return { first: text, last: text };
   }
 }
@@ -65,7 +66,7 @@ export class AppendingRegion {
   constructor({ dom, parentNode, nextSibling, morph }) {
     this._dom = dom;
     this._parentNode = parentNode;
-    this._nextSibling = nextSibling;
+    this._nextSibling = nextSibling || null;
     this._morph = morph;
 
     this._lastValue = null;
@@ -90,7 +91,7 @@ export class UpdatingRegion {
 
 export class RegionMorph extends Morph {
   init() {
-    this._region = new AppendingRegion({ dom: this._frame.dom(), parentNode: this.parentNode });
+    this._region = new AppendingRegion({ dom: this._frame.dom(), parentNode: this.parentNode, morph: this });
     this.isDynamic = true;
   }
 

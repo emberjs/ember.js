@@ -26,3 +26,5 @@ export {
   render,
   internal
 };
+
+export { default as Template } from './htmlbars-runtime/template';

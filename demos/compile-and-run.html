@@ -33,7 +33,7 @@
 
       <label>
         Options
-        <textarea id="options">{ "disableComponentGeneration": true }</textarea>
+        <textarea id="options">{ "disableComponentGeneration": false }</textarea>
       </label>
     </div>
 
@@ -63,7 +63,8 @@
       var compiler    = requireModule('htmlbars-compiler'),
           DOMHelper   = requireModule('dom-helper').default,
           hooks       = requireModule('htmlbars-runtime').hooks,
-          render      = requireModule('htmlbars-runtime').render;
+          render      = requireModule('htmlbars-runtime').render,
+          Template    = requireModule('htmlbars-runtime').Template;
 
       var templateSource = localStorage.getItem('templateSource');
       var data = localStorage.getItem('templateData');
@@ -99,27 +100,57 @@
           compileOptions = {};
         }
 
-        try {
-          var templateSpec = compiler.compileSpec(source, compileOptions);
-          output.innerHTML = '<pre><code>' + templateSpec + '</code></pre>';
+        var templateSpec = compiler.compileSpec(source, compileOptions);
+        var templates = Template.fromSpec(JSON.parse(templateSpec)).prettyPrint();
 
-          if (shouldRender) {
-            var template = compiler.template(templateSpec);
+        output.innerHTML = '';
 
-            var env = { dom: new DOMHelper(), hooks: hooks, helpers: {} };
+        templates.forEach(function(template, index) {
+          var h3 = document.createElement('h3');
+          h3.innerHTML = 'Template ' + index;
+          output.appendChild(h3);
 
-            var scope = hooks.createFreshScope();
-
-            hooks.bindSelf(env, scope, data);
-
-            var dom = render(template, env, scope, { contextualElement: output }).fragment;
-
-            output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
-            output.appendChild(dom);
+          if (template.length === 0) {
+            var pre = document.createElement('pre');
+            pre.innerText = 'Empty Template';
+            output.appendChild(pre);
+            return;
           }
-        } catch(e) {
-          output.innerHTML += 'Failure to run template: '+e.message;
-          throw(e);
+
+          var ol = document.createElement('ol');
+          ol.setAttribute('start', '0');
+          output.appendChild(ol);
+
+          template.forEach(function(t) {
+            var li = document.createElement('li');
+            ol.appendChild(li);
+            var pre = document.createElement('pre');
+            li.appendChild(pre);
+            pre.innerText = t;
+          });
+        });
+
+        if (shouldRender) {
+          var template = compiler.template(templateSpec);
+
+          var env = { dom: new DOMHelper(), hooks: hooks, helpers: {} };
+
+          var scope = hooks.createFreshScope();
+
+          hooks.bindSelf(env, scope, data);
+
+          var dom = render(template, env, scope, { contextualElement: output }).fragment;
+
+          output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
+          output.appendChild(dom);
+        }
+      }
+
+      window.onerror = function(msg, file, line, column, e) {
+        if (e && e.stack) {
+          output.innerHTML = '<pre><code>' + e.stack + '</code></pre>';
+        } else {
+          output.innerHTML = '<pre><code>' + msg + '</code></pre>';
         }
       }
     </script>
