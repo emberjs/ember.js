@@ -253,6 +253,7 @@ export function guidFor(obj) {
   }
 }
 
+const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 
 const checkHasSuper = (function () {
   let sourceAvailable = (function() {
@@ -261,7 +262,7 @@ const checkHasSuper = (function () {
 
   if (sourceAvailable) {
     return function checkHasSuper(func) {
-      return func.toString().indexOf('_super') > -1;
+      return HAS_SUPER_PATTERN.test(func.toString());
     };
   }
 
