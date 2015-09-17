@@ -9,21 +9,35 @@ export function primeNamespace(env) {
 
 export class RenderResult {
   static build(morph, frame, template) {
-    let dynamicMorphs = template.evaluate(morph, frame);
+    let { morphs, bounds } = template.evaluate(morph, frame);
     let locals = template.locals;
 
-    let result = RenderResult.fromEvalResult(frame, locals, dynamicMorphs);
+    let result = RenderResult.fromEvalResult({ morph, locals, morphs, bounds, template });
     return result;
   }
 
-  static fromEvalResult(frame, locals, morphs) {
-    return new RenderResult({ frame, locals, morphs });
+  static fromEvalResult({ morph, locals, morphs, bounds, template }) {
+    return new RenderResult({ morph, locals, morphs, bounds, template });
   }
 
-  constructor({ frame, locals, morphs }) {
-    this.frame = frame;
+  constructor({ morph, locals, morphs, bounds, template }) {
+    this.morph = morph;
     this.locals = locals;
     this.morphs = morphs;
+    this.bounds = bounds;
+    this.template = template;
+  }
+
+  renderTemplate(template) {
+    if (template === this.template) {
+      this.revalidate();
+      return this;
+    } else {
+      this.morph.nextSibling = this._clear();
+      let result = RenderResult.build(this.morph, this.morph._frame, template);
+      this.morph.nextSibling = null;
+      return result;
+    }
   }
 
   revalidate() {
@@ -32,6 +46,20 @@ export class RenderResult {
 
   rerender() {
     this.morphs.forEach(morph => morph.update());
+  }
+
+  _clear() {
+    let { first, last, parent } = this.bounds;
+    let node = first;
+
+    while (node) {
+      let next = node.nextSibling;
+      parent.removeChild(node);
+      if (node === last) return next;
+      node = next;
+    }
+
+    return null;
   }
 }
 

@@ -14,11 +14,16 @@ export class HtmlInsertion {
   append(dom, parentNode, nextSibling) {
     return dom.appendHTMLBefore(parentNode, nextSibling, this._string);
   }
+
+  replace() {
+
+  }
 }
 
 export class TextInsertion {
   constructor(string) {
     this._string = string;
+    this._node = null;
   }
 
   equal(other) {
@@ -26,16 +31,22 @@ export class TextInsertion {
   }
 
   append(dom, parentNode, nextSibling) {
-    let { _string } = this;
-    let text = dom.createTextNode(_string);
-    dom.insertBefore(parentNode, dom.createTextNode(_string), nextSibling);
+    let text = dom.createTextNode(this._string);
+    dom.insertBefore(parentNode, text, nextSibling);
+    this._node = text;
     return { first: text, last: text };
+  }
+
+  replace(insertion) {
+    let newString = insertion._string;
+    if (this._string === newString) return;
+    this._node.nodeValue = this._string = newString;
   }
 }
 
 export class NodeInsertion {
   constructor(node) {
-    this.node = node;
+    this._node = node;
   }
 
   equal() {
@@ -43,9 +54,9 @@ export class NodeInsertion {
   }
 
   append(dom, parentNode, nextSibling) {
-    let node = this.node;
-    dom.insertBefore(parentNode, node, nextSibling);
-    return { first: node, last: node };
+    let _node = this._node;
+    dom.insertBefore(parentNode, _node, nextSibling);
+    return { first: _node, last: _node };
   }
 }
 
@@ -61,31 +72,82 @@ export class EmptyInsertion {
   }
 }
 
-export class AppendingRegion {
-  // next sibling is for appending after the first time
-  constructor({ dom, parentNode, nextSibling, morph }) {
-    this._dom = dom;
-    this._parentNode = parentNode;
-    this._nextSibling = nextSibling || null;
+export class BlockInsertion {
+  constructor(template, morph) {
+    this._template = template;
     this._morph = morph;
+    this._lastResult = null;
+  }
 
-    this._lastValue = null;
+  append(/*dom, parentNode, nextSibling*/) {
+    let result = this._lastResult = this._template.renderIn(this._morph, this._morph._frame);
+    return { first: result.bounds.first, last: result.bounds.last };
   }
 
   replace(insertion) {
-    let { first, last } = insertion.append(this._dom, this._parentNode, this._nextSibling);
+    this._lastResult = this._lastResult.renderTemplate(insertion._template);
+  }
+}
+
+export class AppendingRegion {
+  constructor({ dom, parentNode, morph }) {
+    this._dom = dom;
+    this._parentNode = parentNode;
+    this._morph = morph;
+  }
+
+  replace(insertion) {
+    let { first, last } = insertion.append(this._dom, this._parentNode, null);
     let { _dom, _parentNode } = this;
-    this._morph._region = new UpdatingRegion({ first, last, lastValue: insertion, dom: _dom, parentNode: _parentNode });
+    this._morph._region = new UpdatingRegion({ first, last, lastInsertion: insertion, dom: _dom, parentNode: _parentNode });
+  }
+
+  renderTemplate(template, morph) {
+    let insertion = new BlockInsertion(template, morph);
+    this.replace(insertion);
   }
 }
 
 export class UpdatingRegion {
-  constructor({ dom, lastValue, parentNode, first, last }) {
+  constructor({ dom, lastInsertion, parentNode, first, last }) {
     this._dom = dom;
     this._parentNode = parentNode;
+    this._lastResult = null;
     this._first = first;
     this._last = last;
-    this._lastValue = lastValue;
+    this._lastInsertion = lastInsertion;
+  }
+
+  replace(insertion) {
+    let { _lastInsertion } = this;
+
+    if (insertion instanceof _lastInsertion.constructor && _lastInsertion.replace) {
+      _lastInsertion.replace(insertion);
+    } else {
+      let { first, last } = insertion.append(this._dom, this._parentNode, this._clear());
+      this._lastInsertion = insertion;
+      this._first = first;
+      this._last = last;
+    }
+  }
+
+  renderTemplate(template, morph) {
+    let insertion = new BlockInsertion(template, morph);
+    this.replace(insertion);
+  }
+
+  _clear() {
+    let { _first, _last, _parentNode } = this;
+    let node = _first;
+
+    while (node) {
+      let next = node.nextSibling;
+      _parentNode.removeChild(node);
+      if (node === _last) return next;
+      node = next;
+    }
+
+    return null;
   }
 }
 
@@ -101,6 +163,10 @@ export class RegionMorph extends Morph {
 
   update() {
     this.render();
+  }
+
+  renderTemplate(template) {
+    this._region.renderTemplate(template, this, this._frame);
   }
 
   render() {

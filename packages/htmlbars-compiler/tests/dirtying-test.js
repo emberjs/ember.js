@@ -20,7 +20,7 @@ function commonSetup() {
   env.registerHelper('if', function(params, hash, options) {
     if (!!params[0]) {
       return options.template.yield();
-    } else if (options.inverse.yield) {
+    } else if (options.inverse) {
       return options.inverse.yield();
     }
   });
@@ -67,12 +67,7 @@ test("a simple implementation of a dirtying rerender", function() {
   equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
   strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 
-  // Should not update since render node is not marked as dirty
   object.condition = false;
-  result.revalidate();
-  equalTokens(root, '<div><p>goodbye world</p></div>', "After flipping the condition but not dirtying");
-  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
-
   result.rerender();
   equalTokens(root, '<div><p>Nothing</p></div>', "And then dirtying");
   QUnit.notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
@@ -81,7 +76,7 @@ test("a simple implementation of a dirtying rerender", function() {
 test("a simple implementation of a dirtying rerender without inverse", function() {
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
 
@@ -93,17 +88,17 @@ test("a simple implementation of a dirtying rerender without inverse", function(
   object.condition = true;
 
   result.rerender();
-  equalTokens(root, '<div><p>hello world</p></div>', "If the condition is false, the morph becomes empty");
+  equalTokens(root, '<div><p>hello world</p></div>', "If the condition is true, the morph repopulates");
 });
 
 test("block helpers whose template has a morph at the edge", function() {
-  registerHelper('id', function(params, hash, options) {
+  env.registerHelper('id', function(params, hash, options) {
     return options.template.yield();
   });
 
   var template = compile("{{#id}}{{value}}{{/id}}");
   var object = { value: "hello world" };
-  let result = template.render(object, env);
+  let result = render(template, object);
 
   equalTokens(root, 'hello world');
   var firstNode = result.root.firstNode;
@@ -116,7 +111,7 @@ test("block helpers whose template has a morph at the edge", function() {
 test("clean content doesn't get blown away", function() {
   var template = compile("<div>{{value}}</div>");
   var object = { value: "hello" };
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   var textNode = root.firstChild.firstChild;
   equal(textNode.nodeValue, "hello");
@@ -134,13 +129,13 @@ test("clean content doesn't get blown away", function() {
 });
 
 test("helper calls follow the normal dirtying rules", function() {
-  registerHelper('capitalize', function(params) {
+  env.registerHelper('capitalize', function(params) {
     return params[0].toUpperCase();
   });
 
   var template = compile("<div>{{capitalize value}}</div>");
   var object = { value: "hello" };
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   var textNode = root.firstChild.firstChild;
   equal(textNode.nodeValue, "HELLO");
@@ -166,7 +161,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   var template = compile("<div class={{value}}>hello</div>");
   var object = { value: "world" };
 
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div class='world'>hello</div>", "Initial render");
 
@@ -194,7 +189,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
 test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   var template = compile("<div class='hello {{value}}'>hello</div>");
   var object = { value: "world" };
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div class='hello world'>hello</div>");
 
@@ -234,7 +229,7 @@ function testEachHelper(testName, templateSource) {
       { key: "1", name: "Tom Dale", "class": "tomdale" },
       { key: "2", name: "Yehuda Katz", "class": "wycats" }
     ]};
-    var result = template.render(object, env);
+    var result = render(template, object);
 
     var itemNode = getItemNode('tomdale');
     var nameNode = getNameNode('tomdale');
@@ -386,7 +381,7 @@ test("Returning true from `linkRenderNodes` makes the value itself stable across
   };
 
   var template = compile("<div class='{{hello}} {{world}}'></div>");
-  var result = template.render(streams, env);
+  var result = render(template, streams);
 
   equalTokens(root, "<div class='hello world'></div>");
 
@@ -417,7 +412,7 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
   var object = { condition: true, value: 'hello world', falsy: "Nothing" };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>{{falsy}}</p>{{/if}}</div>');
 
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div><p>hello world</p></div>");
 
@@ -445,7 +440,7 @@ test("MorphLists in childMorphs are properly cleared", function() {
   };
   var template = compile('<div>{{#if condition}}{{#each list as |item|}}<p>{{item.word}}</p>{{/each}}{{else}}<p>{{falsy}}</p>{{/if}}</div>');
 
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div><p>Hello</p><p>World</p></div>");
 
@@ -466,7 +461,7 @@ test("Pruned render nodes invoke a cleanup hook when cleared", function() {
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
 
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div><p>hello world</p></div>");
 
@@ -486,7 +481,7 @@ test("Pruned lists invoke a cleanup hook when removing elements", function() {
   var object = { list: [{ key: "1", word: "hello" }, { key: "2", word: "world" }] };
   var template = compile('<div>{{#each list as |item|}}<p>{{item.word}}</p>{{/each}}</div>');
 
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div><p>hello</p><p>world</p></div>");
 
@@ -507,7 +502,7 @@ test("Pruned lists invoke a cleanup hook on their subtrees when removing element
   var object = { list: [{ key: "1", word: "hello" }, { key: "2", word: "world" }] };
   var template = compile('<div>{{#each list as |item|}}<p>{{#if item.word}}{{item.word}}{{/if}}</p>{{/each}}</div>');
 
-  var result = template.render(object, env);
+  var result = render(template, object);
 
   equalTokens(root, "<div><p>hello</p><p>world</p></div>");
 
@@ -550,7 +545,7 @@ QUnit.skip("Setting up a manual element renders and revalidates", function() {
   };
 
   var template = compile("{{#manual-element bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
-  template.render({ world: "world" }, env);
+  render(template, { world: "world" });
 
   equalTokens(root, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'>Hello world!</span>");
 });
@@ -586,7 +581,7 @@ test("It is possible to nest multiple templates into a manual element", function
 
   var layout = compile("<em>{{attrs.foo}}. {{yield}}</em>");
   var template = compile("{{#manual-element foo='foo' bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
-  template.render({ world: "world" }, env);
+  render(template, { world: "world" });
 
   equalTokens(root, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'><em>foo. Hello world!</em></span>");
 });
@@ -599,12 +594,12 @@ test("The invoke helper hook can instruct the runtime to link the result", funct
     return { value: helper(params, hash), link: true };
   };
 
-  helpers.double = function([input]) {
+  env.registerHelper('double', function([input]) {
     return input * 2;
-  };
+  });
 
   let template = compile("{{double 12}}");
-  let result = template.render({}, env);
+  let result = render(template, {});
 
   equalTokens(root, "24");
   equal(invokeCount, 1);

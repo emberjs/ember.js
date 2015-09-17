@@ -94,9 +94,9 @@ export default class Template {
 
   evaluate(morph, frame) {
     let builder = new Builder(morph, frame);
-    let childMorphs = builder.evaluateTemplate(this);
-    morph.childMorphs = childMorphs;
-    return childMorphs;
+    let { morphs, bounds } = builder.evaluateTemplate(this);
+    morph.childMorphs = morphs;
+    return { morphs, bounds };
   }
 
   render(self, env, options, blockArguments) {
