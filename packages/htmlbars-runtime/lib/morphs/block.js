@@ -53,19 +53,14 @@ export class BlockHelperMorph extends RegionMorph {
     return _group.rendered;
   }
 
-  append() {
+  render() {
     let rendered = this._invokeHelper();
-    if (!rendered) this._region.append(new EmptyInsertion());
-  }
-
-  update() {
-    let rendered = this._invokeHelper();
-    if (!rendered) this._region.update(new EmptyInsertion());
+    if (!rendered) this._region.replace(new EmptyInsertion());
   }
 }
 
 class YieldableTemplates {
-  constructor({ default: defaultTemplate, inverse: inverseTemplate }, { morph, frame, blockKind }) { // jshint ignore:line
+  constructor({ _default: defaultTemplate, _inverse: inverseTemplate }, { morph, frame, blockKind }) { // jshint ignore:line
     this.default = blockKind({ morph, frame, template: defaultTemplate, group: this });
     this.inverse = blockKind({ morph, frame, template: inverseTemplate, group: this });
     this.rendered = false;
@@ -143,6 +138,7 @@ function updateBlock(template, morph) {
   let block = morph.yieldableBlock;
 
   return {
+    arity: template.arity,
     yield(blockArguments, self) {
       block.update(self, blockArguments);
       block.render();

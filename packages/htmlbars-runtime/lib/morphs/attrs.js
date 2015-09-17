@@ -7,9 +7,9 @@ export class AttrMorph extends Morph {
     return namespace ? SetAttributeNSMorph : SetAttributeMorph;
   }
 
-  init({ name, value }) {
+  init({ name, value: syntax }) {
     this._name = name;
-    this._value = value.evaluate(this._frame);
+    this._value = syntax.evaluate(this._frame);
     this._lastValue = false;
     this.isDynamic = true;
   }

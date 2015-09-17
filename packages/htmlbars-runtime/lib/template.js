@@ -18,7 +18,6 @@ import {
 import { AttrMorph, SetPropertyMorph } from "./morphs/attrs";
 
 const EMPTY_ARRAY = Object.freeze([]);
-let EMPTY_PARAMS, EMPTY_HASH;
 
 class TopLevelRenderResult {
   constructor(options) {
@@ -45,6 +44,7 @@ export default class Template {
       templates[i] = new Template({
         statements: buildStatements(spec.statements, templates),
         root: templates,
+        position: i,
         meta: spec.meta,
         locals: spec.locals,
         isEmpty: spec.statements.length === 0,
@@ -59,6 +59,7 @@ export default class Template {
     return new Template({
       statements,
       root: null,
+      position: null,
       meta: null,
       locals: null,
       isEmpty: statements.length === 0,
@@ -69,6 +70,7 @@ export default class Template {
   constructor(options) {
     this.meta = options.meta || {};
     this.root = options.root;
+    this.position = options.position;
     this.arity = options.locals ? options.locals.length : 0;
     this.cachedFragment = null;
     this.hasRendered = false;
@@ -77,6 +79,17 @@ export default class Template {
     this.spec = options.spec || null;
     this.isEmpty = options.isEmpty || false;
     Object.seal(this);
+  }
+
+  prettyPrint() {
+    function pretty(obj) {
+      if (typeof obj.prettyPrint === 'function') return obj.prettyPrint();
+      else throw new Error(`Cannot pretty print ${obj.constructor.name}`);
+    }
+
+    return this.root.map(template => {
+      return template.statements.map(statement => pretty(statement));
+    });
   }
 
   evaluate(morph, frame) {
@@ -135,8 +148,8 @@ export class Block {
 
     return new Block({
       path,
-      params: { params: paramsFromSpec(params), hash: hashFromSpec(hash) },
-      templates: templatesFromSpec(templateId, inverseId, children)
+      params: ParamsAndHash.fromSpec(params, hash),
+      templates: Templates.fromSpec(templateId, inverseId, children)
     });
   }
 
@@ -148,6 +161,10 @@ export class Block {
     this.path = options.path;
     this.params = options.params;
     this.templates = options.templates;
+  }
+
+  prettyPrint() {
+    return `Block(${this.path}) { params=${this.params.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
   }
 
   evaluate(stack) {
@@ -175,7 +192,7 @@ export class Inline extends DynamicExpression {
     return new Inline({
       path,
       trustingMorph: trust,
-      params: { params: paramsFromSpec(params), hash: hashFromSpec(hash) }
+      params: ParamsAndHash.fromSpec(params, hash),
     });
   }
 
@@ -211,7 +228,11 @@ export class Unknown extends DynamicExpression {
   constructor(options) {
     super();
     this.ref = options.ref;
-    this.trustingMorph = options.unsafe;
+    this.trustingMorph = !!options.unsafe;
+  }
+
+  prettyPrint() {
+    return `Unknown(${this.ref.prettyPrint()}) { trust=${this.trustingMorph} }`;
   }
 
   evaluate(stack, frame) {
@@ -227,16 +248,16 @@ export class Modifier {
 
     return new Modifier({
       path,
-      params: paramsFromSpec(params),
-      hash: hashFromSpec(hash)
+      params: Params.fromSpec(params),
+      hash: Hash.fromSpec(hash)
     });
   }
 
   static build(path, options) {
     return new Modifier({
       path,
-      params: options.params || EMPTY_PARAMS,
-      hash: options.hash || EMPTY_HASH
+      params: options.params,
+      hash: options.hash
     });
   }
 
@@ -271,6 +292,12 @@ export class DynamicProp extends DynamicExpression {
     this.value = options.value;
   }
 
+  prettyPrint() {
+    let { name, value } = this;
+
+    return `DynamicProp { ${name}=${value.prettyPrint()} }`;
+  }
+
   evaluate(stack) {
     let { name, value } = this;
     return stack.createMorph(SetPropertyMorph, { name, value });
@@ -298,6 +325,16 @@ export class DynamicAttr {
     this.namespace = options.namespace;
   }
 
+  prettyPrint() {
+    let { name, value, namespace } = this;
+
+    if (namespace) {
+      return `DynamicAttr { ${name}=${value.prettyPrint()}; namespace=${namespace} }`;
+    } else {
+      return `DynamicAttr { ${name}=${value.prettyPrint()} }`;
+    }
+  }
+
   evaluate(stack) {
     let { name, value, namespace } = this;
     return stack.createMorph(AttrMorph, { name, value, namespace });
@@ -310,11 +347,8 @@ export class Component extends DynamicExpression {
 
     return new Component({
       path,
-      hash: hashFromSpec(attrs),
-      templates: {
-        default: children[templateId],
-        inverse: children[inverseId]
-      }
+      hash: Hash.fromSpec(attrs),
+      templates: Templates.fromSpec(templateId, inverseId, children)
     });
   }
 
@@ -322,10 +356,7 @@ export class Component extends DynamicExpression {
     return new Component({
       path,
       hash: options.hash || null,
-      templates: {
-        default: options.default || null,
-        inverse: options.inverse || null
-      }
+      templates: Templates.build(options.default, options.inverse)
     });
   }
 
@@ -336,13 +367,18 @@ export class Component extends DynamicExpression {
     this.templates = options.templates;
   }
 
+  prettyPrint() {
+    let { path, hash, templates } = this;
+    return `Component <${path} ${hash.prettyPrint()} ${templates.prettyPrint()}>`;
+  }
+
   evaluate(stack, frame) {
     let { path, hash, templates } = this;
 
     if (frame.hasHelper([path])) {
-      return stack.createMorph(BlockHelperMorph, { path: [path], params: { params: EMPTY_ARRAY, hash }, templates });
+      return stack.createMorph(BlockHelperMorph, { path: [path], params: ParamsAndHash.build(Params.empty(), hash), templates });
     } else {
-      return stack.createMorph(FallbackMorph, { path, hash, template: templates.default });
+      return stack.createMorph(FallbackMorph, { path, hash, template: templates._default });
     }
   }
 }
@@ -398,6 +434,10 @@ export class Text extends StaticExpression {
     this.content = options.content;
   }
 
+  prettyPrint() {
+    return `Text(${JSON.stringify(this.content)})`;
+  }
+
   evaluate(stack) {
     stack.appendText(this.content);
   }
@@ -440,6 +480,10 @@ export class OpenElement extends StaticExpression {
     this.tag = options.tag;
   }
 
+  prettyPrint() {
+    return `<${this.tag}>`;
+  }
+
   evaluate(stack) {
     stack.openElement(this.tag);
   }
@@ -452,6 +496,10 @@ export class CloseElement extends StaticExpression {
 
   static build() {
     return new CloseElement();
+  }
+
+  prettyPrint() {
+    return `</>`;
   }
 
   evaluate(stack) {
@@ -475,6 +523,16 @@ export class StaticAttr extends StaticExpression {
     this.name = options.name;
     this.value = options.value;
     this.namespace = options.namespace;
+  }
+
+  prettyPrint() {
+    let { name, value, namespace } = this;
+
+    if (namespace) {
+      return `StaticAttr { ${name}=${JSON.stringify(value)}; namespace=${namespace} }`;
+    } else {
+      return `StaticAttr { ${name}=${JSON.stringify(value)} }`;
+    }
   }
 
   evaluate(stack) {
@@ -514,45 +572,6 @@ const BOUNDARY_CANDIDATES = {
   component: true
 };
 
-export class Hash {
-  static build(hash) {
-    if (hash === undefined) { return EMPTY_HASH; }
-    let keys = [];
-    let values = [];
-
-    Object.keys(hash).forEach(key => {
-      keys.push(key);
-      values.push(hash[key]);
-    });
-
-    return new Hash({ keys, values });
-  }
-
-  constructor({ keys, values }) {
-    this.keys = keys;
-    this.values = values;
-  }
-
-  evaluate(frame) {
-    let { keys, values } = this;
-    let out = new Array(values.length);
-
-    for (let i = 0, l = values.length; i < l; i++) {
-      out[i] = values[i].evaluate(frame);
-    }
-
-    return new EvaluatedHash({ keys, values: out });
-  }
-
-  forEach(callback) {
-    let { keys, values } = this;
-
-    for (let i = 0, l = values.length; i < l; i++) {
-      callback(keys[i], values[i]);
-    }
-  }
-}
-
 class EvaluatedHash {
   constructor({ keys, values }) {
     this._keys = keys;
@@ -568,8 +587,6 @@ class EvaluatedHash {
   }
 }
 
-EMPTY_HASH = new Hash({ keys: [], values: [] });
-
 export class Value extends StaticExpression {
   static fromSpec(value) {
     return new Value(value);
@@ -582,6 +599,10 @@ export class Value extends StaticExpression {
   constructor(value) {
     super();
     this._value = value;
+  }
+
+  prettyPrint() {
+    return JSON.stringify(this._value);
   }
 
   inner() {
@@ -608,6 +629,10 @@ export class Get {
     this.ref = options.ref;
   }
 
+  prettyPrint() {
+    return `Get ${this.ref.prettyPrint()}`;
+  }
+
   evaluate(frame) {
     return this.ref.evaluate(frame);
   }
@@ -627,6 +652,10 @@ class Ref {
 
   constructor(parts) {
     this.parts = parts;
+  }
+
+  prettyPrint() {
+    return this.parts.join('.');
   }
 
   evaluate(frame) {
@@ -655,7 +684,7 @@ export class Helper {
 
     return new Helper({
       path,
-      params: { params: paramsFromSpec(params), hash: hashFromSpec(hash) }
+      params: ParamsAndHash.fromSpec(params, hash)
     });
   }
 
@@ -679,10 +708,10 @@ export class Concat {
   static fromSpec(node) {
     let [, params] = node;
 
-    return new Concat({ parts: paramsFromSpec(params) });
+    return new Concat({ parts: Params.fromSpec(params) });
   }
 
-  static build(parts=EMPTY_PARAMS) {
+  static build(parts) {
     return new Concat({ parts });
   }
 
@@ -724,33 +753,148 @@ function buildExpression(node) {
   }
 }
 
-function paramsFromSpec(rawParams) {
-  if (!rawParams) { return EMPTY_PARAMS; }
-
-  return rawParams.map(buildExpression);
-}
-
-function templatesFromSpec(templateId, inverseId, children) {
-  return {
-    default: templateId === null ? null : children[templateId],
-    inverse: inverseId === null ? null : children[inverseId]
-  };
-}
-
-function hashFromSpec(rawPairs) {
-  if (!rawPairs) { return EMPTY_HASH; }
-
-  let keys = [];
-  let values = [];
-
-  for (let i = 0, l = rawPairs.length; i < l; i += 2) {
-    let key = rawPairs[i];
-    let expr = rawPairs[i+1];
-    keys.push(key);
-    values.push(buildExpression(expr));
+class ParamsAndHash {
+  static fromSpec(params, hash) {
+    return new ParamsAndHash({ params: Params.fromSpec(params), hash: Hash.fromSpec(hash) });
   }
 
-  return new Hash({ keys, values });
+  static build(params, hash) {
+    return new ParamsAndHash({ params, hash });
+  }
+
+  constructor({ params, hash }) {
+    this._params = params;
+    this._hash = hash;
+  }
+
+  prettyPrint() {
+    return `ParamsAndHash { params=${this._params.prettyPrint()}, hash=${this._hash.prettyPrint()} }`;
+  }
+}
+
+class Enumerable {
+  map(callback) {
+    let out = [];
+    this.forEach((...args) => out.push(callback(...args)));
+    return out;
+  }
+}
+
+class Params extends Enumerable {
+  static fromSpec(exprs) {
+    if (!exprs || exprs.length === 0) return Params.empty();
+    return new Params(exprs.map(buildExpression));
+  }
+
+  static build(exprs) {
+    return new Params(exprs);
+  }
+
+  static empty() {
+    return (this._empty = this._empty || new Params([]));
+  }
+
+  constructor(exprs) {
+    super();
+    this.params = exprs;
+  }
+
+  forEach(callback) {
+    this.params.forEach(callback);
+  }
+
+  prettyPrint() {
+    return `Params [ ${this.params.map(p => p.prettyPrint()).join(', ')} ]`;
+  }
+}
+
+export class Hash extends Enumerable {
+  static fromSpec(rawPairs) {
+    if (!rawPairs) { return Hash.empty(); }
+
+    let keys = [];
+    let values = [];
+
+    for (let i = 0, l = rawPairs.length; i < l; i += 2) {
+      let key = rawPairs[i];
+      let expr = rawPairs[i+1];
+      keys.push(key);
+      values.push(buildExpression(expr));
+    }
+
+    return new Hash({ keys, values });
+  }
+
+  static build(hash) {
+    if (hash === undefined) { return Hash.empty(); }
+    let keys = [];
+    let values = [];
+
+    Object.keys(hash).forEach(key => {
+      keys.push(key);
+      values.push(hash[key]);
+    });
+
+    return new Hash({ keys, values });
+  }
+
+  static empty() {
+    return (this._empty = this._empty || new Hash({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY }));
+  }
+
+  constructor({ keys, values }) {
+    super();
+    this.keys = keys;
+    this.values = values;
+  }
+
+  forEach(callback) {
+    let { keys, values } = this;
+    keys.forEach((key, i) => callback(key, values[i]));
+  }
+
+  prettyPrint() {
+    let inside = this.keys.map((k, i) => `${k}=${this.values[i].prettyPrint()}`).join(', ');
+    return `Hash { ${inside} }`;
+  }
+
+  evaluate(frame) {
+    let { keys, values } = this;
+    let out = new Array(values.length);
+
+    for (let i = 0, l = values.length; i < l; i++) {
+      out[i] = values[i].evaluate(frame);
+    }
+
+    return new EvaluatedHash({ keys, values: out });
+  }
+}
+
+class Templates {
+  static fromSpec(templateId, inverseId, children) {
+    return new Templates({
+      template: templateId === null ? null : children[templateId],
+      inverse: inverseId === null ? null : children[inverseId],
+
+      // pretty printing
+      templateId,
+      inverseId
+    });
+  }
+
+  static build(template, inverse) {
+    return new Templates({ template, inverse, templateId: null, inverseId: null });
+  }
+
+  constructor({ template, inverse }) {
+    this._default = template;
+    this._inverse = inverse;
+  }
+
+  prettyPrint() {
+    let { _template, _inverse } = this;
+    return `Templates { default=${_template ? _template.position : 'none'}, inverse=${_inverse ? _inverse.position : 'none'} }`;
+  }
 }
 
 export let builders = {

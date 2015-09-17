@@ -37,7 +37,7 @@ export default class Builder {
       return;
     }
 
-    let syntaxExtension = _frame.syntaxExtension(statement);
+    //let syntaxExtension = _frame.syntaxExtension(statement);
     let content = statement.evaluate(_stack, _frame);
     content.append(_stack);
   }
@@ -68,16 +68,12 @@ class ElementStack {
     this._builder._render(statement);
   }
 
-  _createMorph(Type, attrs) {
+  createMorph(Type, attrs) {
     return this._builder.createMorph(Type, attrs, this._element);
   }
 
-  createMorph(Type, attrs) {
-    return this._createMorph(Type, attrs);
-  }
-
   appendMorph(Type, attrs) {
-    this._createMorph(Type, attrs).append(this);
+    this.createMorph(Type, attrs).append(this);
   }
 
   appendText(text) {
