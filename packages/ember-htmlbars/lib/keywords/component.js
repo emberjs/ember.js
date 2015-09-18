@@ -49,6 +49,29 @@ import isEnabled from 'ember-metal/features';
   {{live-updating-chart}}
   ```
 
+  ## Nested Usage
+
+  The `component` helper can be used to package a component path with initial attrs.
+  The included attrs can then be merged during the final invocation.
+
+  For example, given a `person-form` component with the following template:
+
+  ```handlebars
+  {{yield (hash
+      nameInput=(component "input" value=model.name placeholder="First Name"))}}
+  ```
+
+  The following snippet:
+
+  ```
+  {{#person-form as |form|}}
+    {{component form.nameInput placeholder="Username"}}
+  {{/person-form}}
+  ```
+
+  would output an input whose value is already bound to `model.name` and `placeholder`
+  is "Username".
+
   @method component
   @since 1.11.0
   @for Ember.Templates.helpers
