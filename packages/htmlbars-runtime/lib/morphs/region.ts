@@ -1,4 +1,4 @@
-import { Morph } from './main';
+import { Morph } from '../morph';
 
 /**
 
