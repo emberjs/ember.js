@@ -1,5 +1,5 @@
 import { getAttrNamespace } from "htmlbars-util/namespaces";
-import { Morph } from "htmlbars-runtime/morphs/main";
+import { Morph } from "../morph";
 
 export class AttrMorph extends Morph {
   static specialize({ name, value, namespace }) { // jshint ignore:line
