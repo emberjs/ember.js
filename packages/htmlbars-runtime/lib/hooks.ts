@@ -1,4 +1,4 @@
-import { assert } from "../htmlbars-util";
+import Template from "./template";
 
 /**
   HTMLBars delegates the runtime behavior of a template to
@@ -78,14 +78,60 @@ function dict() {
   return Object.create(EMPTY_OBJECT);
 }
 
+import { Destroyable, Dict } from './utils';
+
+export interface Reference extends Destroyable {
+  value(): any;
+  isDirty(): boolean;
+}
+
+export interface NotifiableReference extends Reference {
+  notify();
+}
+
+export interface ChainableReference extends Reference {
+  chain(child: Reference): Destroyable;
+}
+
+export interface PathReference extends ChainableReference {
+  get(key: string): PathReference;
+}
+
+export interface RootReference extends PathReference {
+  update(value: any);
+}
+
+export interface Meta {
+  root(): RootReference;
+}
+
+export interface MetaLookup {
+  for(obj: any): Meta;
+}
+
+function fork(ref: ChainableReference): Reference {
+  throw new Error("unimplemented");
+}
+
+export interface Block {
+  template: Template,
+  frame: Frame
+}
+
 class Scope {
-  constructor(parent, BaseReference, localNames) {
+  private parent: Scope;
+  private self: RootReference;
+  private locals: Dict<RootReference>;
+  private blocks: Dict<Block>;
+  private localNames: string[];
+  private meta: MetaLookup;
+  
+  constructor(parent: Scope, meta: MetaLookup, localNames: string[]) {
     this.parent = parent;
     this.self = undefined;
     this.locals = null;
     this.blocks = null;
     this.localNames = localNames;
-    this.BaseReference = BaseReference;
   }
 
   initTopLevel(self, localNames, blockArguments, hostOptions) {
@@ -103,25 +149,29 @@ class Scope {
     return this;
   }
 
+  bindHostOptions(hostOptions: Object) {
+    throw new Error(`bindHostOptions not implemented for ${this.constructor.name}`)
+  }
+
   child(localNames) {
-    return new Scope(this, this.BaseReference, localNames);
+    return new Scope(this, this.meta, localNames);
   }
 
-  bindSelf(reference) {
-    this.self = new this.BaseReference(reference);
+  bindSelf(object: any) {
+    this.self = this.meta.for(object).root();
   }
 
-  updateSelf(value) {
+  updateSelf(value: any) {
     this.self.update(value);
   }
 
-  getSelf() {
+  getSelf(): RootReference {
     return this.self || (this.parent && this.parent.getSelf());
   }
 
-  bindLocal(name, reference) {
+  bindLocal(name: string, value: any) {
     let locals = this.locals = this.locals || dict();
-    locals[name] = new this.BaseReference(reference);
+    locals[name] = this.meta.for(value).root();
   }
 
   bindLocals(blockArguments) {
@@ -131,102 +181,113 @@ class Scope {
     }
   }
 
-  updateLocal(name, value) {
+  updateLocal(name: string, value: any) {
     this.locals[name].update(value);
   }
 
-  getLocal(name) {
+  getLocal(name: string): RootReference {
     if (!this.locals) return this.parent.getLocal(name);
     return (name in this.locals) ? this.locals[name] : (this.parent && this.parent.getLocal(name));
   }
 
-  hasLocal(name) {
+  hasLocal(name: string): boolean {
     if (!this.locals) return this.parent.hasLocal(name);
     return (name in this.locals) || (this.parent && this.parent.hasLocal(name));
   }
 
-  bindBlock(name, block) {
+  bindBlock(name: string, block: Block) {
     let blocks = this.blocks = this.blocks || dict();
     blocks[name] = block;
   }
 
-  getBlock(name) {
+  getBlock(name: string): Block {
     if (!this.blocks) return this.parent.getBlock(name);
     return (name in this.blocks) ? this.blocks[name] : (this.parent && this.parent.getBlock(name));
   }
-
-  getBaseReference(name) {
+  
+  getBase(name: string): PathReference {
     if (this.hasLocal(name)) return this.getLocal(name);
     let self = this.self;
     if (self) return self.get(name);
   }
 }
 
-export class Environment {
-  constructor({ dom, BaseReference }) {
-    this.dom = dom;
-    this.BaseReference = BaseReference;
-  }
+import DOMHelper from './dom';
+import { EMPTY_ARRAY } from './utils';
 
-  pushFrame(scope) {
+export class Environment {
+  private dom: DOMHelper;
+  private meta: MetaLookup;
+  
+  constructor(dom: DOMHelper, meta: MetaLookup) {
+    this.dom = dom;
+  }
+  
+  getDOM(): DOMHelper { return this.dom; }
+
+  pushFrame(scope: Scope): Frame {
     return new Frame(this, scope);
   }
 
-  createRootScope() {
-    return new Scope(null, this.BaseReference);
+  createRootScope(): Scope {
+    return new Scope(null, this.meta, EMPTY_ARRAY);
   }
 
-  hasHelper(/* scope, helperName */) {
+  hasHelper(scope: Scope, helperName: string[]): boolean {
     throw new Error("Unimplemented hasHelper");
   }
 
-  lookupHelper(/* scope, helperName */) {
+  lookupHelper(scope: Scope, helperName: string[]): Helper {
     throw new Error("Unimplemented lookupHelper");
   }
 
   helperParamsReference(/* evaluatedParams */) {
     throw new Error("Unimplemented helperParamsReference");
   }
+}
 
-  syntaxExtension(/* statement */) {
-    return null;
-  }
+import { TRUSTED_STRING } from './utils';
+
+interface SafeString {
+  [TRUSTED_STRING]: boolean, // true
+  string: string
+}
+
+type Insertion = string | SafeString | Node; 
+
+type PositionalArguments = any[];
+type KeywordArguments = Dict<any>;
+
+export interface Helper {
+  (positional: PositionalArguments, named: KeywordArguments): Insertion
 }
 
 export class Frame {
-  constructor(env, scope) {
-    this._env = env;
+  private env: Environment;
+  private _scope: Scope;
+
+  constructor(env: Environment, scope: Scope) {
+    this.env = env;
     this._scope = scope;
-    this._childScopeCalled = false; // TODO: This can be removed once things stabilize
   }
 
-  dom() {
-    return this._env.dom;
+  dom(): DOMHelper {
+    return this.env.getDOM();
   }
 
-  childScope(blockArguments) {
-    assert(!this._childScopeCalled, "You can only call childScope once per frame");
-    this._childScopeCalled = true;
+  childScope(blockArguments: any[]) {
     return (this._scope = this._scope.child(blockArguments));
   }
 
-  syntaxExtension(statement) {
-    return this._env.syntaxExtension(statement);
-  }
-
-  scope() {
+  scope(): Scope {
     return this._scope;
   }
 
-  hasHelper(helperName) {
-    return this._env.hasHelper(this._scope, helperName);
+  hasHelper(helperName: string[]): boolean {
+    return this.env.hasHelper(this._scope, helperName);
   }
 
-  lookupHelper(helperName) {
-    return this._env.lookupHelper(this._scope, helperName);
-  }
-
-  helperParamsReference(evaluatedParams) {
-    return this._env.helperParamsReference(evaluatedParams);
+  lookupHelper(helperName: string[]): Helper {
+    return this.env.lookupHelper(this._scope, helperName);
   }
 }

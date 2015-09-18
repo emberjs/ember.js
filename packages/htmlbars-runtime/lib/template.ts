@@ -1,11 +1,10 @@
 import Builder from './builder';
-import { intern } from '../htmlbars-util';
-import { RenderResult, primeNamespace } from './render';
+import { intern } from './utils';
+import { RenderResult } from './render';
 import { HelperInvocationReference, ConcatReference, ConstReference } from './reference';
-import { Frame } from './hooks';
+import { Frame, ChainableReference } from './hooks';
 import { ElementStack } from './builder';
-
-console.log("HI");
+import { Dict } from './utils';
 
 interface Bounds {
   parentNode(): Node;
@@ -28,6 +27,8 @@ import {
 } from "./morphs/block";
 
 import { AttrMorph, SetPropertyMorph } from "./morphs/attrs";
+
+type Spec = any[];
 
 const EMPTY_ARRAY = Object.freeze([]);
 
@@ -101,7 +102,7 @@ export default class Template {
 
     this.statements.forEach(builder.render, builder);
 
-    let morphs = builder.morphs();
+    let morphs = builder.morphList();
     let bounds = builder.bounds();
 
     return new RenderResult({ morph, morphs, bounds, template: this, locals: this.locals });
@@ -113,8 +114,6 @@ export default class Template {
       .initTopLevel(self, this.locals, blockArguments, options.hostOptions);
 
     let frame = env.pushFrame(scope);
-
-    primeNamespace(env);
 
     let rootMorph = new RootMorph(options.appendTo);
 
@@ -135,7 +134,7 @@ interface PrettyPrintable {
 }
 
 interface ExpressionSyntax {
-  evaluate(frame: Frame): Reference;
+  evaluate(frame: Frame): ChainableReference;
 }
 
 interface PrettyPrintableExpressionSyntax extends ExpressionSyntax, PrettyPrintable {}
@@ -150,24 +149,16 @@ interface StatementSyntax extends PrettyPrintable {
   isStatic: boolean;
 }
 
-class ParamExpressions implements ExpressionSyntax {
-  params: Params;
-  hash: Hash;
-  
-  constructor({ params, hash }) {
-    this.params = params;
-    this.hash = hash;
-  }
+type PathSexp = string[];
+type ExpressionSexp = any[];
+type ParamsSexp = ExpressionSexp[];
+type HashSexp = any[];
 
-  evaluate(frame) {
-    let { params, hash } = this;
-    return { params: params.evaluate(frame), hash: hash.evaluate(frame) };
-  }
-}
+type BlockSexp = [string, PathSexp, ParamsSexp, HashSexp, number, number];
 
 export class Block extends DynamicExpression implements StatementSyntax {
-  static fromSpec(node, children) {
-    let [, path, params, hash, templateId, inverseId] = node;
+  static fromSpec(sexp: BlockSexp, children: Template[]) {
+    let [, path, params, hash, templateId, inverseId] = sexp;
 
     return new Block({
       path,
@@ -180,11 +171,11 @@ export class Block extends DynamicExpression implements StatementSyntax {
     return new Block(options);
   }
 
-  path: string;
-  params: Params;
+  path: string[];
+  params: ParamsAndHash;
   templates: Templates;
 
-  constructor(options) {
+  constructor(options: { path: string[], params: ParamsAndHash, templates: Templates }) {
     super();
     this.path = options.path;
     this.params = options.params;
@@ -217,9 +208,11 @@ class DynamicExpression {
   }
 }
 
+type InlineSexp = [string, string[], ParamsSexp, HashSexp, boolean];
+
 export class Inline extends DynamicExpression implements StatementSyntax {
-  static fromSpec(node) {
-    let [, path, params, hash, trust] = node;
+  static fromSpec(sexp: InlineSexp) {
+    let [, path, params, hash, trust] = sexp;
 
     return new Inline({
       path,
@@ -228,7 +221,7 @@ export class Inline extends DynamicExpression implements StatementSyntax {
     });
   }
 
-  static build(_path, params, trust) {
+  static build(_path: string, params: ParamsAndHash, trust: boolean) {
     let path = internPath(_path);
     return new Inline({ path, params, trustingMorph: trust });
   }
@@ -248,20 +241,22 @@ export class Inline extends DynamicExpression implements StatementSyntax {
     return `Inline(${this.path}) { params=${this.params.prettyPrint()} trusted=${this.trustingMorph} }`; 
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack): Morph {
     let { path, params, trustingMorph } = this;
     return stack.createMorph(HelperMorph, { path, params, trustingMorph });
   }
 }
 
+type UnknownSexp = [string, PathSexp, boolean];
+
 export class Unknown extends DynamicExpression implements StatementSyntax {
-  static fromSpec(node) {
-    let [, path, unsafe] = node;
+  static fromSpec(sexp: UnknownSexp): Unknown {
+    let [, path, unsafe] = sexp;
 
     return new Unknown({ ref: new Ref(path), unsafe });
   }
 
-  static build(path, unsafe) {
+  static build(path: string, unsafe: boolean): Unknown {
     return new Unknown({ ref: Ref.build(path), unsafe });
   }
 
@@ -278,7 +273,7 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
     return `Unknown(${this.ref.prettyPrint()}) { trust=${this.trustingMorph} }`;
   }
 
-  evaluate(stack, frame) {
+  evaluate(stack: ElementStack, frame: Frame): Morph {
     let { ref, trustingMorph } = this;
     ref = ref.isHelper(frame) ? frame.lookupHelper(ref.path()) : ref;
     return stack.createMorph(ValueMorph, { ref, trustingMorph });
@@ -322,9 +317,11 @@ interface AttributeSyntax {
   namespace?: string;
 }
 
+type DynamicPropSexp = [string, string, ExpressionSexp, string];
+
 export class DynamicProp extends DynamicExpression implements AttributeSyntax, StatementSyntax {
-  static fromSpec(node) {
-    let [, name, value, namespace] = node;
+  static fromSpec(sexp: DynamicPropSexp): DynamicProp {
+    let [, name, value, namespace] = sexp;
 
     return new DynamicProp({
       name,
@@ -333,14 +330,14 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, S
     });
   }
 
-  static build(name, value, namespace=null) {
+  static build(name: string, value: any, namespace: string=null): DynamicProp {
     return new DynamicProp({ name, value, namespace });
   }
 
-  name: string;
-  value: ExpressionSyntax & PrettyPrintable;
+  private name: string;
+  private value: PrettyPrintableExpressionSyntax;
 
-  constructor(options) {
+  constructor(options: { name: string, value: PrettyPrintableExpressionSyntax }) {
     super();
     this.name = options.name;
     this.value = options.value;
@@ -352,15 +349,17 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, S
     return `DynamicProp { ${name}=${value.prettyPrint()} }`;
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack): Morph {
     let { name, value } = this;
     return stack.createMorph(SetPropertyMorph, { name, value });
   }
 }
 
+type DynamicAttrSexp = [string, string, ExpressionSexp, string];
+
 export class DynamicAttr extends DynamicExpression implements AttributeSyntax, StatementSyntax {
-  static fromSpec(node) {
-    let [, name, value, namespace] = node;
+  static fromSpec(sexp: DynamicAttrSexp): DynamicAttr {
+    let [, name, value, namespace] = sexp;
 
     return new DynamicAttr({
       name,
@@ -369,15 +368,15 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
     });
   }
 
-  static build(name, value, namespace=null) {
+  static build(name: string, value: PrettyPrintableExpressionSyntax, namespace: string=null): DynamicAttr {
     return new DynamicAttr({ name, value, namespace });
   }
 
   name: string;
-  value: ExpressionSyntax & PrettyPrintable;
+  value: PrettyPrintableExpressionSyntax;
   namespace: string;
 
-  constructor(options) {
+  constructor(options: { name: string, value: PrettyPrintableExpressionSyntax, namespace: string }) {
     super();
     this.name = options.name;
     this.value = options.value;
@@ -394,36 +393,38 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
     }
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack): Morph {
     let { name, value, namespace } = this;
     return stack.createMorph(AttrMorph, { name, value, namespace });
   }
 }
 
+type ComponentSexp = [string, PathSexp, HashSexp, number, number];
+
 export class Component extends DynamicExpression implements StatementSyntax {
-  static fromSpec(node, children) {
+  static fromSpec(node: ComponentSexp, children: Template[]) {
     let [, path, attrs, templateId, inverseId] = node;
 
     return new Component({
-      path,
+      path: new Ref(path),
       hash: Hash.fromSpec(attrs),
       templates: Templates.fromSpec(templateId, inverseId, children)
     });
   }
 
-  static build(path, options) {
+  static build(path: string, options: { default: Template, inverse: Template, hash: Hash }): Component {
     return new Component({
-      path,
+      path: Ref.build(path),
       hash: options.hash || null,
       templates: Templates.build(options.default, options.inverse)
     });
   }
 
-  path: string;
+  path: Ref;
   hash: Hash;
   templates: Templates;
 
-  constructor(options) {
+  constructor(options: { path: Ref, hash: Hash, templates: Templates }) {
     super();
     this.path = options.path;
     this.hash = options.hash;
@@ -435,7 +436,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
     return `Component <${path} ${hash.prettyPrint()} ${templates.prettyPrint()}>`;
   }
 
-  evaluate(stack, frame) {
+  evaluate(stack: ElementStack, frame: Frame): Morph {
     let { path, hash, templates } = this;
 
     if (frame.hasHelper([path])) {
@@ -465,7 +466,7 @@ class FallbackMorph extends Morph {
     this.attrs = attrs;
   }
 
-  append(stack) {
+  append(stack: ElementStack) {
     let { tag, attrs, template } = this;
 
     stack.openElement(tag);
@@ -476,7 +477,7 @@ class FallbackMorph extends Morph {
 }
 
 class FallbackContents extends Morph {
-  template: Template;
+  private template: Template;
   
   init({ template }) {
     this.template = template;
@@ -487,20 +488,22 @@ class FallbackContents extends Morph {
   }
 }
 
+type TextSexp = [string, string];
+
 export class Text extends StaticExpression implements StaticStatementSyntax {
-  static fromSpec(node) {
+  static fromSpec(node: TextSexp): Text {
     let [, content] = node;
 
     return new Text({ content });
   }
 
-  static build(content) {
+  static build(content): Text {
     return new Text({ content });
   }
 
-  content: string;
+  private content: string;
 
-  constructor(options) {
+  constructor(options: { content: string }) {
     super();
     this.content = options.content;
   }
@@ -509,23 +512,25 @@ export class Text extends StaticExpression implements StaticStatementSyntax {
     return `Text(${JSON.stringify(this.content)})`;
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack) {
     stack.appendText(this.content);
   }
 }
 
+type CommentSexp = [string, string];
+
 export class Comment extends StaticExpression implements StaticStatementSyntax {
-  static fromSpec(node) {
-    let [, value] = node;
+  static fromSpec(sexp: CommentSexp): Comment {
+    let [, value] = sexp;
 
     return new Comment({ value });
   }
 
-  static build(value) {
+  static build(value): Comment {
     return new Comment({ value });
   }
 
-  value: string;
+  private value: string;
 
   constructor(options) {
     super();
@@ -536,25 +541,27 @@ export class Comment extends StaticExpression implements StaticStatementSyntax {
     return `Comment <!-- ${this.value} -->`;
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack) {
     stack.appendComment(this.value);
   }
 }
 
+type OpenElementSexp = [string, string];
+
 export class OpenElement extends StaticExpression implements StaticStatementSyntax {
-  static fromSpec(node) {
-    let [, tag] = node;
+  static fromSpec(sexp: OpenElementSexp): OpenElement {
+    let [, tag] = sexp;
 
     return new OpenElement({ tag });
   }
 
-  static build(tag) {
+  static build(tag): OpenElement {
     return new OpenElement({ tag });
   }
 
-  tag: string;
+  private tag: string;
 
-  constructor(options) {
+  constructor(options: { tag: string }) {
     super();
     this.tag = options.tag;
   }
@@ -563,7 +570,7 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
     return `<${this.tag}>`;
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack) {
     stack.openElement(this.tag);
   }
 }
@@ -581,19 +588,21 @@ export class CloseElement extends StaticExpression implements StaticStatementSyn
     return `</>`;
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack) {
     stack.closeElement();
   }
 }
 
+type StaticAttrSexp = [string, string, string, string];
+
 export class StaticAttr extends StaticExpression implements AttributeSyntax, StaticStatementSyntax {
-  static fromSpec(node) {
+  static fromSpec(node: StaticAttrSexp): StaticAttr {
     let [, name, value, namespace] = node;
 
     return new StaticAttr({ name, value, namespace });
   }
 
-  static build(name, value, namespace=null) {
+  static build(name, value, namespace=null): StaticAttr {
     return new StaticAttr({ name, value, namespace });
   }
 
@@ -618,7 +627,7 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
     }
   }
 
-  evaluate(stack) {
+  evaluate(stack: ElementStack) {
     let { name, value, namespace } = this;
 
     if (namespace) {
@@ -659,7 +668,7 @@ class EvaluatedParams implements Reference {
   
 }
 
-class EvaluatedHash implements Reference {
+class EvaluatedHash implements ChainableReference {
   _keys: any[];
   _values: any[]; // TODO: Reference
 
@@ -686,38 +695,40 @@ export class Value extends StaticExpression implements ExpressionSyntax {
     return new Value(value);
   }
 
-  _value: boolean | string | number;
+  private value: boolean | string | number;
 
   constructor(value) {
     super();
-    this._value = value;
+    this.value = value;
   }
 
   prettyPrint() {
-    return JSON.stringify(this._value);
+    return JSON.stringify(this.value);
   }
 
   inner() {
-    return this._value;
+    return this.value;
   }
 
-  evaluate() {
-    return new ConstReference(this._value);
+  evaluate(): ChainableReference {
+    return new ConstReference(this.value);
   }
 }
 
+type GetSexp = [string, Path];
+
 export class Get implements ExpressionSyntax {
-  static fromSpec(node) {
-    let [, parts] = node;
+  static fromSpec(sexp: GetSexp): Get {
+    let [, parts] = sexp;
 
     return new Get({ ref: new Ref(parts) });
   }
 
-  static build(path) {
+  static build(path): Get {
     return new Get({ ref: Ref.build(path) });
   }
   
-  ref: Ref;
+  private ref: Ref;
 
   constructor(options) {
     this.ref = options.ref;
@@ -727,26 +738,26 @@ export class Get implements ExpressionSyntax {
     return `Get ${this.ref.prettyPrint()}`;
   }
 
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     return this.ref.evaluate(frame);
   }
 }
 
 // intern paths because they will be used as keys
-function internPath(path) {
-  return path.splice('.').map(intern);
+function internPath(path: string): string[] {
+  return path.split('.').map(intern);
 }
 
 // this is separated out from Get because Unknown also has a ref, but it
 // may turn out to be a helper
 class Ref implements ExpressionSyntax {
-  static build(path) {
+  static build(path: string): Ref {
     return new Ref(internPath(path));
   }
 
-  parts: string[];
+  private parts: string[];
 
-  constructor(parts) {
+  constructor(parts: string[]) {
     this.parts = parts;
   }
 
@@ -754,9 +765,9 @@ class Ref implements ExpressionSyntax {
     return this.parts.join('.');
   }
 
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     let parts = this.parts;
-    let path = frame.scope().getBaseReference(parts[0]);
+    let path = frame.scope().getBase(parts[0]);
 
     for (let i = 1; i < parts.length; i++) {
       path = path.get(parts[i]);
@@ -765,52 +776,56 @@ class Ref implements ExpressionSyntax {
     return path;
   }
 
-  path() {
+  path(): string[] {
     return this.parts;
   }
 
-  isHelper(frame) {
+  isHelper(frame: Frame): boolean {
     return frame.hasHelper(this.parts);
   }
 }
 
+type HelperSexp = [string, PathSexp, ParamsSexp, HashSexp];
+
 export class Helper implements ExpressionSyntax {
-  static fromSpec(node) {
-    let [, path, params, hash] = node;
+  static fromSpec(sexp: HelperSexp): Helper {
+    let [, path, params, hash] = sexp;
 
     return new Helper({
-      path,
+      path: new Ref(path),
       params: ParamsAndHash.fromSpec(params, hash)
     });
   }
 
-  static build(path, params, hash) {
-    return new Helper({ path, params: { params, hash } });
+  static build(path: string, params: Params, hash: Hash): Helper {
+    return new Helper({ path: Ref.build(path), params: new ParamsAndHash({ params, hash }) });
   }
 
-  path: String;
+  path: Ref;
   params: ParamsAndHash;
 
-  constructor(options) {
+  constructor(options: { path: Ref, params: ParamsAndHash }) {
     this.path = options.path;
     this.params = options.params;
   }
 
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     let helper = frame.lookupHelper(this.path);
     let { params } = this;
     return HelperInvocationReference.fromStatements({ helper, params, frame });
   }
 }
 
+type ConcatSexp = [string, ParamsSexp];
+
 export class Concat implements ExpressionSyntax {
-  static fromSpec(node) {
-    let [, params] = node;
+  static fromSpec(sexp: ConcatSexp): Concat {
+    let [, params] = sexp;
 
     return new Concat({ parts: Params.fromSpec(params) });
   }
 
-  static build(parts) {
+  static build(parts): Concat {
     return new Concat({ parts });
   }
 
@@ -820,7 +835,7 @@ export class Concat implements ExpressionSyntax {
     this.parts = options.parts;
   }
 
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     return new ConcatReference(this.parts.map(p => p.evaluate(frame)));
   }
 }
@@ -831,7 +846,7 @@ const ExpressionNodes = {
   concat: Concat
 };
 
-export function buildStatements(statements, list) {
+export function buildStatements(statements: any[], list: Template[]): StatementSyntax[] {
   if (statements.length === 0) { return EMPTY_ARRAY; }
   let built = statements.map(statement => StatementNodes[statement[0]].fromSpec(statement, list));
 
@@ -846,36 +861,36 @@ export function buildStatements(statements, list) {
   return built;
 }
 
-function buildExpression(node) {
-  if (typeof node !== 'object' || node === null) {
-    return Value.fromSpec(node);
+function buildExpression(spec: Spec): PrettyPrintableExpressionSyntax {
+  if (typeof spec !== 'object' || spec === null) {
+    return Value.fromSpec(spec);
   } else {
-    return ExpressionNodes[node[0]].fromSpec(node);
+    return ExpressionNodes[spec[0]].fromSpec(spec);
   }
 }
 
-class ParamsAndHash implements PrettyPrintableExpressionSyntax {
-  static fromSpec(params, hash) {
+export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
+  static fromSpec(params: ParamsSexp, hash: HashSexp): ParamsAndHash {
     return new ParamsAndHash({ params: Params.fromSpec(params), hash: Hash.fromSpec(hash) });
   }
 
-  static build(params, hash) {
+  static build(params: Params, hash: Hash): ParamsAndHash {
     return new ParamsAndHash({ params, hash });
   }
   
-  params: Params;
-  hash: Hash;
+  private params: Params;
+  private hash: Hash;
 
-  constructor({ params, hash }) {
-    this.params = params;
-    this.hash = hash;
+  constructor(options: { params: Params, hash: Hash }) {
+    this.params = options.params;
+    this.hash = options.hash;
   }
 
   prettyPrint() {
-    return `ParamsAndHash { params=${this._params.prettyPrint()}, hash=${this._hash.prettyPrint()} }`;
+    return `ParamsAndHash { params=${this.params.prettyPrint()}, hash=${this.hash.prettyPrint()} }`;
   }
   
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     throw new Error("TODO: unimplemented evaluate for ParamsAndHash");
   }
 }
@@ -897,18 +912,18 @@ class Enumerable<T> {
 }
 
 class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpressionSyntax {
-  static fromSpec(exprs) {
-    if (!exprs || exprs.length === 0) return Params.empty();
-    return new Params(exprs.map(buildExpression));
+  static fromSpec(sexp: ParamsSexp): Params {
+    if (!sexp || sexp.length === 0) return Params.empty();
+    return new Params(sexp.map(buildExpression));
   }
 
-  static build(exprs) {
+  static build(exprs: ExpressionSyntax[]): Params {
     return new Params(exprs);
   }
 
-  static _empty;
+  static _empty: Params;
 
-  static empty() {
+  static empty(): Params {
     return (this._empty = this._empty || new Params([]));
   }
 
@@ -919,7 +934,7 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
     this.params = exprs;
   }
 
-  forEach(callback) {
+  forEach(callback: EnumerableCallback<ExpressionSyntax>) {
     this.params.forEach(callback);
   }
 
@@ -927,13 +942,13 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
     return `Params [ ${this.params.map(p => p.prettyPrint()).join(', ')} ]`;
   }
   
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     throw new Error("TODO: unimplemented evaluate for Params");
   }
 }
 
 export class Hash implements PrettyPrintableExpressionSyntax {
-  static fromSpec(rawPairs) {
+  static fromSpec(rawPairs: HashSexp): Hash {
     if (!rawPairs) { return Hash.empty(); }
 
     let keys = [];
@@ -949,7 +964,7 @@ export class Hash implements PrettyPrintableExpressionSyntax {
     return new Hash({ keys, values });
   }
 
-  static build(hash) {
+  static build(hash: Dict<PrettyPrintableExpressionSyntax>): Hash {
     if (hash === undefined) { return Hash.empty(); }
     let keys = [];
     let values = [];
@@ -964,11 +979,11 @@ export class Hash implements PrettyPrintableExpressionSyntax {
 
   static _empty;
 
-  static empty() {
+  static empty(): Hash {
     return (this._empty = this._empty || new Hash({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY }));
   }
 
-  keys: any[];
+  keys: string[];
   values: PrettyPrintableExpressionSyntax[];
 
   constructor({ keys, values }) {
@@ -990,7 +1005,7 @@ export class Hash implements PrettyPrintableExpressionSyntax {
     return `Hash { ${inside} }`;
   }
 
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     let { keys, values } = this;
     let out = new Array(values.length);
 
@@ -1003,23 +1018,23 @@ export class Hash implements PrettyPrintableExpressionSyntax {
 }
 
 class Templates implements ExpressionSyntax {
-  static fromSpec(templateId, inverseId, children) {
+  static fromSpec(templateId, inverseId, children): Templates {
     return new Templates({
       template: templateId === null ? null : children[templateId],
       inverse: inverseId === null ? null : children[inverseId],
     });
   }
 
-  static build(template, inverse) {
+  static build(template: Template, inverse: Template): Templates {
     return new Templates({ template, inverse });
   }
 
   _default: Template;
   _inverse: Template;
 
-  constructor({ template, inverse }) {
-    this._default = template;
-    this._inverse = inverse;
+  constructor(options: { template: Template, inverse: Template }) {
+    this._default = options.template;
+    this._inverse = options.inverse;
   }
 
   prettyPrint() {
@@ -1027,7 +1042,7 @@ class Templates implements ExpressionSyntax {
     return `Templates { default=${_default ? _default.position : 'none'}, inverse=${_inverse ? _inverse.position : 'none'} }`;
   }
   
-  evaluate(frame) {
+  evaluate(frame: Frame): ChainableReference {
     throw new Error("unimplemented evaluate for ExpressionSyntax");
   }
 }
@@ -1038,7 +1053,7 @@ export let builders = {
 };
 
 export class TemplateBuilder {
-  statements: any[];
+  private statements: any[];
   
   constructor() {
     this.statements = [];
@@ -1048,28 +1063,32 @@ export class TemplateBuilder {
     return Template.fromStatements(this.statements); // jshint ignore:line
   }
 
-  specExpr(node) {
-    return buildExpression(node);
+  specExpr(spec: any[]): PrettyPrintableExpressionSyntax {
+    return buildExpression(spec);
   }
 
-  params(params, hash) {
-    return new ParamExpressions({ params, hash });
+  params(params: Params, hash: Hash): ParamsAndHash {
+    return new ParamsAndHash({ params, hash });
   }
   
-  openElement(tagName: string) {
+  openElement(tagName: string): OpenElement {
     return OpenElement.build(tagName);
   }
   
-  closeElement() {
+  closeElement(): CloseElement {
     return CloseElement.build();
   }
   
-  staticAttr(key: string, value: string) {
+  staticAttr(key: string, value: string): StaticAttr {
     return StaticAttr.build(key, value);
   }
   
-  dynamicAttr(key: string, value: ExpressionSyntax, namespace: string=null) {
+  dynamicAttr(key: string, value: PrettyPrintableExpressionSyntax, namespace: string=null): DynamicAttr {
     return DynamicAttr.build(key, value);
+  }
+  
+  inline(path: string, params: ParamsAndHash=null, trust: boolean=false): Inline {
+    return Inline.build(path, params, trust)
   }
 }
 

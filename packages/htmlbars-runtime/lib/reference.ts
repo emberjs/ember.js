@@ -1,3 +1,6 @@
+import { NotifiableReference, ChainableReference, Reference, Helper } from './hooks';
+import { ParamsAndHash } from './template';
+
 /**
   References have a simple interface:
 
@@ -67,20 +70,25 @@ class NotifyNode {
     parent.notifyTail = this;
   }
 
-  constructor(dependent, parent) {
+  private dependent: NotifiableReference;
+  private parent: ChainableReference;
+  public nextSibling;
+
+  constructor(dependent: NotifiableReference, parent: ChainableReference) {
     this.dependent = dependent;
     this.parent = parent;
   }
 
   notify() {
-    this.dependent.dirtyDependencies = true;
     this.dependent.notify();
   }
 }
 
 export class ConstReference {
-  constructor(inner) {
-    this._inner = inner;
+  protected inner;
+  
+  constructor(inner: Reference) {
+    this.inner = inner;
   }
 
   // TODO: A protocol for telling HTMLBars to stop asking; could also be useful
@@ -88,25 +96,28 @@ export class ConstReference {
   // should itself be const.
 
   isDirty() { return false; }
-  value() { return this._inner; }
+  value() { return this.inner; }
   chain() {}
 }
 
-export class Reference {
+export default class BasicReference {
+  private notifyHead: NotifyNode;
+  private notifyTail: NotifyNode;
+  private sources: ChainableReference[];
+  
   constructor() {
-    this.dirtyDependencies = false;
-    this._notifyHead = null;
-    this._notifyTail = null;
-    this._sources = null;
+    this.notifyHead = null;
+    this.notifyTail = null;
+    this.sources = null;
   }
 
   _notify() {
-    let dependent = this._notifyHead;
+    let dependent = this.notifyHead;
 
     // TODO: Register arbitrarily deep template references directly with
     // the closest primitive reference.
     while (dependent) {
-      dependent._notify();
+      dependent.notify();
       dependent = dependent.nextSibling;
     }
   }
@@ -119,12 +130,12 @@ export class Reference {
   }
 
   isDirty() {
-    return !this.dirtyDependencies;
+    return true;
   }
 
   destroy() {
-    if (!this._sources) return;
-    this._sources.forEach(s => s.destroy());
+    if (!this.sources) return;
+    this.sources.forEach(s => s.destroy());
   }
 }
 
@@ -137,11 +148,15 @@ export class Reference {
 // It is up to the framework to avoid calling `update` if it feels it
 // can trust the interior mutability of `===` object being set on
 // itself.
-export class BaseReference extends Reference {
+export class BaseReference extends BasicReference {
+  private _value;
+  
   constructor(value) {
     super();
     this._value = value;
   }
+  
+  isDirty() { return true; }
 
   update(value) {
     this._value = value;
@@ -151,6 +166,8 @@ export class BaseReference extends Reference {
   value() {
     return this._value;
   }
+  
+  destroy() {}
 }
 
 // When values are `===`, there may still be, generally speaking, interior
@@ -176,8 +193,11 @@ export class BaseReference extends Reference {
 // It's actually shorter and feels like less of a hack, but unsure about the
 // programming model.
 
-class MapReference extends Reference { // jshint ignore:line
-  constructor(parent, callback) {
+class MapReference extends BasicReference { // jshint ignore:line
+  private parent;
+  private callback;
+
+  constructor(parent: ChainableReference, callback) {
     super();
     this.parent = parent;
     this.callback = callback;
@@ -190,8 +210,10 @@ class MapReference extends Reference { // jshint ignore:line
   }
 }
 
-export class ConcatReference extends Reference {
-  constructor(parts) {
+export class ConcatReference extends BasicReference implements ChainableReference {
+  private parts: ChainableReference[];
+
+  constructor(parts: ChainableReference[]) {
     super();
     this.parts = parts;
     chainFromArray(parts, this);
@@ -204,7 +226,7 @@ export class ConcatReference extends Reference {
 
 const EMPTY_ARRAY = Object.freeze([]);
 
-export class HelperParamsReference extends Reference {
+export class HelperParamsReference extends BasicReference {
   static fromStatements({ params: { _params, _hash }, frame }) {
     // TODO: do more of this work as we natually have to loop through
     // these arrays in other areas.
@@ -242,17 +264,20 @@ export class HelperParamsReference extends Reference {
     helperRef._init(options);
     return helperRef;
   }
+  
+  private params;
+  private HashConstructor;
 
   constructor() {
     super();
-    this._params = null;
-    this._hashConstructor = null;
+    this.params = null;
+    this.HashConstructor = null;
   }
 
   _init({ params, keys, values }) {
-    this._params = params;
+    this.params = params;
 
-    this._HashConstructor = function() {
+    this.HashConstructor = function() {
       for (let i = 0, l = values.length; i < l; i++) {
         this[keys[i]] = values[i].value();
       }
@@ -263,15 +288,15 @@ export class HelperParamsReference extends Reference {
   // from in response to a notification, and it should always be pulled from
   // exctly one morph.
   value() {
-    let { _params, _HashConstructor } = this;
+    let { params, HashConstructor } = this;
 
-    let paramValues = new Array(_params.length);
+    let paramValues = new Array(params.length);
 
-    for (let i = 0, l = _params.length; i < l; i++) {
-      paramValues[i] = _params[i].value();
+    for (let i = 0, l = params.length; i < l; i++) {
+      paramValues[i] = params[i].value();
     }
 
-    let hash = new _HashConstructor(); // jshint ignore:line
+    let hash = new HashConstructor(); // jshint ignore:line
 
     return { params: paramValues, hash };
   }
@@ -279,17 +304,19 @@ export class HelperParamsReference extends Reference {
 
 export class SimpleHelperInvocationReference extends ConstReference {
   value() {
-    return this._inner.call(undefined);
+    return this.inner.call(undefined);
   }
 }
 
-export class HelperInvocationReference extends Reference {
+export class HelperInvocationReference extends BasicReference {
   static fromStatements({ helper, params, frame }) {
     let paramsRef = HelperParamsReference.fromStatements({ params, frame });
     return new HelperInvocationReference(helper, paramsRef);
   }
+  
+  private helper: Helper;
 
-  constructor(helper, params) {
+  constructor(helper: Helper, params: ParamsAndHash) {
     super();
     this.helper = helper;
     this.params = params;

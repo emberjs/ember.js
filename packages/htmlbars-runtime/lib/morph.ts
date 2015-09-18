@@ -1,7 +1,13 @@
 import { Frame } from './hooks';
+import { ElementStack } from './builder';
+import { Enumerable } from './utils';
+
+interface MorphClass {
+  new (parentNode: Element, frame: Frame): Morph;
+}
 
 export class Morph {
-  static specialize() { return this; }
+  static specialize(): MorphClass { return this; }
 
   parentNode: Node;
   nextSibling: Node;
@@ -23,7 +29,7 @@ export class Morph {
     This method gets called during the initial render process. A morph should
     append its contents to the stack.
   */
-  append(stack) {
+  append(stack: ElementStack) {
     throw new Error(`Unimplemented append for ${this.constructor.name}`);
   }
 
@@ -55,13 +61,9 @@ export class Morph {
   }
 }
 
-export class MorphList {
-  forEach(callback) {
-    throw new Error(`Unimplemented forEach for ${this.constructor.name}`);
-  }
-}
+export type MorphList = Enumerable<Morph>;
 
-interface Bounds {
+export interface Bounds {
   parentNode(): Node;
   firstNode(): Node;
   lastNode(): Node;
