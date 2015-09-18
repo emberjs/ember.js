@@ -1,15 +1,27 @@
+import { Morph, MorphList } from './morph';
+import { Frame } from './hooks';
+
 // Builders are created for each template the first time it is rendered.
 // The builder walks through all statements, static and dynamic, and
 // returns a result containing just the static statements with the
 // dynamic morphs created for the statements. Subsequent rerenders
 // can simply walk over the statements and apply them to the morphs.
 export default class Builder {
+  _frame: Frame;
+  _parentMorph: Morph;
+  _stack: ElementStack;
+  _morphs: Morph[];
+
   constructor(morph, frame) {
     this._frame = frame;
 
     this._parentMorph = morph;
     this._stack = new ElementStack({ builder: this, frame, morph });
     this._morphs = [];
+  }
+
+  morphs(): MorphList {
+    return this._morphs;
   }
 
   bounds() {
@@ -28,7 +40,7 @@ export default class Builder {
 
   /// Utilities
 
-  _render(statement) {
+  render(statement) {
     let { _stack, _frame } = this;
 
     if (statement.isStatic) {
@@ -42,7 +54,21 @@ export default class Builder {
   }
 }
 
-class ElementStack {
+interface DOMHelper {}
+
+export class ElementStack {
+  _builder: Builder;
+  _frame: Frame;
+  _dom: DOMHelper;
+  _morph: Morph;
+  _operations: Operations;
+  _element: HTMLElement;
+  _nextSibling: Node;
+  _elementStack: HTMLElement[];
+  _nextSiblingStack: Node[];
+  _firstNode: Node;
+  _lastNode: Node;
+
   constructor({ builder, frame, morph }) {
     this._builder = builder;
     this._frame = frame;
@@ -53,12 +79,15 @@ class ElementStack {
     this._nextSibling = morph.nextSibling;
     this._elementStack = [morph.parentNode];
     this._nextSiblingStack = [morph.nextSibling];
+    
+    this._firstNode = null;
+    this._lastNode = null;
   }
 
   bounds() {
     return {
-      first: this._operations._firstNode,
-      last: this._operations._lastNode,
+      first: this._firstNode,
+      last: this._lastNode,
       parent: this._element
     };
   }
@@ -79,7 +108,7 @@ class ElementStack {
   }
 
   appendStatement(statement) {
-    this._builder._render(statement);
+    this._builder.render(statement);
   }
 
   createMorph(Type, attrs) {
@@ -136,39 +165,65 @@ class ElementStack {
     let child = this._popElement();
     this._dom.insertBefore(this._element, child, this._nextSibling);
   }
+  
+  newNode(node) {
+    if (!this._firstNode) this._firstNode = node;
+    this._lastNode = node;
+  }
 }
 
-class TopLevelOperations {
+interface Operations {
+  appendText(text: string): void;
+  appendComment(value: string): void;
+  openElement(tag: string): HTMLElement;
+  closeElement(): void;
+}
+
+class TopLevelOperations implements Operations {
+  _stack: ElementStack;
+  _nested: NestedOperations;
+  
   constructor(stack) {
     this._stack = stack;
-    this._nested = this._firstNode = this._lastNode = null;
+    this._nested = null;
   }
 
   appendText(text) {
     let node = this._stack._appendText(text);
-    this._firstNode = this._firstNode || node;
-    this._lastNode = node;
+    this._newNode(node);
   }
 
   appendComment(value) {
     let node = this._stack._appendComment(value);
-    this._firstNode = this._firstNode || node;
-    this._lastNode = node;
+    this._newNode(node);
   }
 
   openElement(tag) {
     let element = this._stack._openElement(tag);
-    this._firstNode = this._firstNode || element;
-    this._lastNode = element;
+    this._newNode(element);
 
     let nestedOperations = this._nested = this._nested || new NestedOperations(this._stack, this);
     this._stack._operations = nestedOperations;
 
     return element;
   }
+
+  _newNode(node) {
+    let _stack = this._stack;
+    if (!_stack._firstNode) _stack._firstNode = node;
+    _stack._lastNode = node; 
+  }
+
+  closeElement() {
+    throw new Error("BUG: Unbalanced open and close element");
+  }
 }
 
-class NestedOperations {
+class NestedOperations implements Operations {
+  _level: number;
+  _stack: ElementStack;
+  _topLevel: TopLevelOperations;
+  
   constructor(stack, topLevel) {
     this._level = 1;
     this._stack = stack;

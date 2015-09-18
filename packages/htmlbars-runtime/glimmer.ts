@@ -113,7 +113,6 @@ interface RenderOptions {
 }
 
 abstract class Template<BaseReference> {
-	abstract evaluate(morph: Morph, frame: Frame<BaseReference>): EvaluationResult;
-	abstract render(self: any, env: Environment<BaseReference>, options: RenderOptions, blockArguments: any[]): RenderResult;
-	abstract renderIn(morph: Morph, frame: Frame<BaseReference>): RenderResult; 
+	abstract evaluate(morph: Morph, frame: Frame<BaseReference>): RenderResult<BaseReference>;
+	abstract render(self: any, env: Environment<BaseReference>, options: RenderOptions, blockArguments: any[]): RenderResult<BaseReference>;
 }

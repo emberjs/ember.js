@@ -1,24 +1,29 @@
+import { Frame } from './hooks';
+
 export class Morph {
   static specialize() { return this; }
 
+  parentNode: Node;
+  nextSibling: Node;
+  frame: Frame;
+
   constructor(parentNode, frame) {
-    // protected, used by subclasses
-    this._frame = frame;
+    this.frame = frame;
 
     // public, used by Builder
     this.parentNode = parentNode; // public, used by Builder
     this.nextSibling = null;
   }
 
-  init() {
+  init(options: Object) {
     throw new Error(`Unimplemented init for ${this.constructor.name}`);
   }
 
   /**
     This method gets called during the initial render process. A morph should
-    append its contents to `this.parentNode`.
+    append its contents to the stack.
   */
-  append() {
+  append(stack) {
     throw new Error(`Unimplemented append for ${this.constructor.name}`);
   }
 
@@ -51,14 +56,30 @@ export class Morph {
 }
 
 export class MorphList {
-  forEach() {
+  forEach(callback) {
     throw new Error(`Unimplemented forEach for ${this.constructor.name}`);
   }
 }
 
-/*
-  interface Bounds {
-    firstNode(): Node
-    lastNode(): Node
+interface Bounds {
+  parentNode(): Node;
+  firstNode(): Node;
+  lastNode(): Node;
+}
+
+export function clear(bounds: Bounds) {
+  let parent = bounds.parentNode();
+  let first = bounds.firstNode();
+  let last = bounds.lastNode();
+
+  let node = first;
+
+  while (node) {
+    let next = node.nextSibling;
+    parent.removeChild(node);
+    if (node === last) return next;
+    node = next;
   }
-*/
+
+  return null;
+}
