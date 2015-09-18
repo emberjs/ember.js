@@ -1,5 +1,6 @@
 import { Morph, MorphList } from './morph';
 import { Frame } from './hooks';
+import DOMHelper from './dom';
 
 // Builders are created for each template the first time it is rendered.
 // The builder walks through all statements, static and dynamic, and
@@ -7,112 +8,110 @@ import { Frame } from './hooks';
 // dynamic morphs created for the statements. Subsequent rerenders
 // can simply walk over the statements and apply them to the morphs.
 export default class Builder {
-  _frame: Frame;
-  _parentMorph: Morph;
-  _stack: ElementStack;
-  _morphs: Morph[];
+  private frame: Frame;
+  private parentMorph: Morph;
+  private stack: ElementStack;
+  private morphs: Morph[];
 
   constructor(morph, frame) {
-    this._frame = frame;
+    this.frame = frame;
 
-    this._parentMorph = morph;
-    this._stack = new ElementStack({ builder: this, frame, morph });
-    this._morphs = [];
+    this.parentMorph = morph;
+    this.stack = new ElementStack({ builder: this, frame, morph });
+    this.morphs = [];
   }
 
-  morphs(): MorphList {
-    return this._morphs;
+  morphList(): MorphList {
+    return this.morphs;
   }
 
   bounds() {
-    return this._stack.bounds();
+    return this.stack.bounds();
   }
 
   /// Interaction with ElementStack
 
   createMorph(Type, attrs, parentElement) {
     Type = Type.specialize(attrs);
-    let morph = new Type(parentElement, this._frame);
+    let morph = new Type(parentElement, this.frame);
     morph.init(attrs);
-    this._morphs.push(morph);
+    this.morphs.push(morph);
     return morph;
   }
 
   /// Utilities
 
   render(statement) {
-    let { _stack, _frame } = this;
+    let { stack, frame } = this;
 
     if (statement.isStatic) {
-      statement.evaluate(_stack);
+      statement.evaluate(stack);
       return;
     }
 
     //let syntaxExtension = _frame.syntaxExtension(statement);
-    let content = statement.evaluate(_stack, _frame);
-    content.append(_stack);
+    let content = statement.evaluate(stack, frame);
+    content.append(stack);
   }
 }
 
-interface DOMHelper {}
-
 export class ElementStack {
-  _builder: Builder;
-  _frame: Frame;
-  _dom: DOMHelper;
-  _morph: Morph;
-  _operations: Operations;
-  _element: HTMLElement;
-  _nextSibling: Node;
-  _elementStack: HTMLElement[];
-  _nextSiblingStack: Node[];
-  _firstNode: Node;
-  _lastNode: Node;
+  private builder: Builder;
+  private frame: Frame;
+  private dom: DOMHelper;
+  private morph: Morph;
+  private element: Element;
+  private nextSibling: Node;
+  private elementStack: Element[];
+  private nextSiblingStack: Node[];
+  public firstNode: Node;
+  public lastNode: Node;
+  public operations: Operations;
 
   constructor({ builder, frame, morph }) {
-    this._builder = builder;
-    this._frame = frame;
-    this._dom = frame.dom();
-    this._morph = morph;
-    this._operations = new TopLevelOperations(this);
-    this._element = morph.parentNode;
-    this._nextSibling = morph.nextSibling;
-    this._elementStack = [morph.parentNode];
-    this._nextSiblingStack = [morph.nextSibling];
+    this.builder = builder;
+    this.frame = frame;
+    this.dom = frame.dom();
+    this.morph = morph;
+    this.operations = new TopLevelOperations(this);
+    this.element = morph.parentNode;
+    this.nextSibling = morph.nextSibling;
+    this.elementStack = [morph.parentNode];
+    this.nextSiblingStack = [morph.nextSibling];
     
-    this._firstNode = null;
-    this._lastNode = null;
+    this.firstNode = null;
+    this.lastNode = null;
   }
 
   bounds() {
     return {
-      first: this._firstNode,
-      last: this._lastNode,
-      parent: this._element
+      first: this.firstNode,
+      last: this.lastNode,
+      parent: this.element
     };
   }
 
   _pushElement(element) {
-    this._elementStack.push(element);
-    this._nextSiblingStack.push(null);
-    this._element = element;
+    this.elementStack.push(element);
+    this.nextSiblingStack.push(null);
+    this.element = element;
   }
 
   _popElement() {
-    let { _elementStack, _nextSiblingStack }  = this;
-    let topElement = _elementStack.pop();
-    _nextSiblingStack.pop();
-    this._element = _elementStack[_elementStack.length - 1];
-    this._nextSibling = _nextSiblingStack[_nextSiblingStack.length - 1];
+    let { elementStack, nextSiblingStack }  = this;
+    let topElement = elementStack.pop();
+    nextSiblingStack.pop();
+    this.element = elementStack[elementStack.length - 1];
+    this.nextSibling = nextSiblingStack[nextSiblingStack.length - 1];
     return topElement;
   }
 
   appendStatement(statement) {
-    this._builder.render(statement);
+    this.builder.render(statement);
   }
 
   createMorph(Type, attrs) {
-    return this._builder.createMorph(Type, attrs, this._element);
+    return this.builder.createMorph(Type, attrs, this.element);
   }
 
   appendMorph(Type, attrs) {
@@ -120,98 +119,98 @@ export class ElementStack {
   }
 
   setAttribute(name, value) {
-    this._dom.setAttribute(this._element, name, value);
+    this.dom.setAttribute(<HTMLElement>this.element, name, value);
   }
 
   setAttributeNS(name, value, namespace) {
-    this._dom.setAttributeNS(this._element, name, value, namespace);
+    this.dom.setAttributeNS(this.element, name, value, namespace);
   }
 
   appendText(text) {
-    this._operations.appendText(text);
+    this.operations.appendText(text);
   }
 
   _appendText(text) {
-    let node = this._dom.createTextNode(text);
-    this._dom.insertBefore(this._element, node, this._nextSibling);
+    let node = this.dom.createTextNode(text);
+    this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
 
   appendComment(comment) {
-    this._operations.appendComment(comment);
+    this.operations.appendComment(comment);
   }
 
   _appendComment(comment) {
-    let node = this._dom.createComment(comment);
-    this._dom.insertBefore(this._element, node, this._nextSibling);
+    let node = this.dom.createComment(comment);
+    this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
 
   openElement(tag) {
-    this._operations.openElement(tag);
+    this.operations.openElement(tag);
   }
 
-  _openElement(tag) {
-    let element = this._dom.createElement(tag, this.contextualElement);
+  _openElement(tag): Element {
+    let element = this.dom.createElement(tag, this.element);
     this._pushElement(element);
     return element;
   }
 
   closeElement() {
-    this._operations.closeElement();
+    this.operations.closeElement();
   }
 
   _closeElement() {
     let child = this._popElement();
-    this._dom.insertBefore(this._element, child, this._nextSibling);
+    this.dom.insertBefore(this.element, child, this.nextSibling);
   }
   
   newNode(node) {
-    if (!this._firstNode) this._firstNode = node;
-    this._lastNode = node;
+    if (!this.firstNode) this.firstNode = node;
+    this.lastNode = node;
   }
 }
 
 interface Operations {
   appendText(text: string): void;
   appendComment(value: string): void;
-  openElement(tag: string): HTMLElement;
+  openElement(tag: string): Element;
   closeElement(): void;
 }
 
 class TopLevelOperations implements Operations {
-  _stack: ElementStack;
-  _nested: NestedOperations;
+  private stack: ElementStack;
+  private nested: NestedOperations;
   
   constructor(stack) {
-    this._stack = stack;
-    this._nested = null;
+    this.stack = stack;
+    this.nested = null;
   }
 
   appendText(text) {
-    let node = this._stack._appendText(text);
+    let node = this.stack._appendText(text);
     this._newNode(node);
   }
 
   appendComment(value) {
-    let node = this._stack._appendComment(value);
+    let node = this.stack._appendComment(value);
     this._newNode(node);
   }
 
   openElement(tag) {
-    let element = this._stack._openElement(tag);
+    let element = this.stack._openElement(tag);
     this._newNode(element);
 
-    let nestedOperations = this._nested = this._nested || new NestedOperations(this._stack, this);
-    this._stack._operations = nestedOperations;
+    let nestedOperations = this.nested = this.nested || new NestedOperations(this.stack, this);
+    this.stack.operations = nestedOperations;
 
     return element;
   }
 
   _newNode(node) {
-    let _stack = this._stack;
-    if (!_stack._firstNode) _stack._firstNode = node;
-    _stack._lastNode = node; 
+    let stack = this.stack;
+    if (!stack.firstNode) stack.firstNode = node;
+    stack.lastNode = node; 
   }
 
   closeElement() {
@@ -220,36 +219,36 @@ class TopLevelOperations implements Operations {
 }
 
 class NestedOperations implements Operations {
-  _level: number;
-  _stack: ElementStack;
-  _topLevel: TopLevelOperations;
+  private level: number;
+  private stack: ElementStack;
+  private topLevel: TopLevelOperations;
   
   constructor(stack, topLevel) {
-    this._level = 1;
-    this._stack = stack;
-    this._topLevel = topLevel;
+    this.level = 1;
+    this.stack = stack;
+    this.topLevel = topLevel;
   }
 
   appendText(text) {
-    this._stack._appendText(text);
+    this.stack._appendText(text);
   }
 
   appendComment(value) {
-    this._stack._appendComment(value);
+    this.stack._appendComment(value);
   }
 
   openElement(tag) {
-    this._level++;
-    return this._stack._openElement(tag);
+    this.level++;
+    return this.stack._openElement(tag);
   }
 
   closeElement() {
-    this._stack._closeElement();
+    this.stack._closeElement();
 
-    if (this._level === 1) {
-      this._stack._operations = this._topLevel;
+    if (this.level === 1) {
+      this.stack.operations = this.topLevel;
     } else {
-      this._level--;
+      this.level--;
     }
   }
 }

@@ -1,12 +1,7 @@
 import voidMap from '../htmlbars-util/void-tag-names';
 import Template, { TemplateBuilder } from './template';
 import { Morph, MorphList, Bounds, clear } from './morph';
-
-//let svgNamespace = 'http://www.w3.org/2000/svg';
-
-export function primeNamespace(env) {
-  env.dom.detectNamespace(env.parentNode);
-}
+import { Dict } from './utils';
 
 interface RenderResultOptions {
 	morph: Morph,
@@ -43,13 +38,13 @@ export class RenderResult implements Bounds {
     return this.bounds.lastNode();
   }
 
-  renderTemplate(template) {
+  renderTemplate(template: Template): RenderResult {
     if (template === this.template) {
       this.rerender();
       return this;
     } else {
       this.morph.nextSibling = clear(this);
-      let result = template.evaluate(this.morph, this.morph._frame)
+      let result = template.evaluate(this.morph, this.morph.frame)
       this.morph.nextSibling = null;
       return result;
     }
@@ -60,15 +55,17 @@ export class RenderResult implements Bounds {
   }
 }
 
-export function manualElement(tagName, attributes, _isEmpty) {
+type ManualAttribute = string | any[]; 
+
+export function manualElement(tagName: string, attributes: Dict<ManualAttribute>, _isEmpty: boolean) {
   let b = new TemplateBuilder();
   b.openElement(tagName);
 
   for (let key in attributes) {
     if (typeof attributes[key] === 'string') {
-      b.staticAttr(key, attributes[key]);
+      b.staticAttr(key, <string>attributes[key]);
     } else {
-      b.dynamicAttr(key, b.specExpr(attributes[key]));
+      b.dynamicAttr(key, b.specExpr(<any[]>attributes[key]));
     }
   }
 
