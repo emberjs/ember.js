@@ -113,7 +113,7 @@ class BlockMorph extends Morph {
   }
 
   append() {
-    this._lastResult = this._reference.value().renderIn(this, this._frame);
+    this._lastResult = this._reference.value().evaluate(this, this._frame);
   }
 
   update() {
@@ -216,7 +216,7 @@ export class BlockInsertion {
   }
 
   append(/*dom, parentNode, nextSibling*/) {
-    let result = this._lastResult = this._template.renderIn(this._morph, this._morph._frame);
+    let result = this._lastResult = this._template.evaluate(this._morph, this._morph._frame);
     return { first: result.bounds.first, last: result.bounds.last };
   }
 

@@ -44,8 +44,12 @@ function getDependencyTree(depName) {
 function getPackageLibTree(packageName) {
   return new Funnel('packages/' + packageName + '/lib', {
     getDestinationPath: function(relativePath) {
-      if (relativePath === 'main.js') {
+      if (relativePath === 'main.js' || relativePath === 'main.ts') {
         return packageName + '.js';
+      }
+
+      if (relativePath.match(/\.ts$/)) {
+        return packageName + '/' + relativePath.replace(/\.ts$/, '.js');        
       }
 
       return packageName + '/' + relativePath;
@@ -130,6 +134,7 @@ for (var packageName in packages.dependencies) {
   // AMD lib
   var transpiledAmdLib = transpileES6(libTree, 'transpiledAmdLib', {
     modules: 'amdStrict',
+    optional: ['es7.doExpressions']
   });
 
   var concatenatedAmdLib = concatFiles(transpiledAmdLib, {
@@ -142,6 +147,7 @@ for (var packageName in packages.dependencies) {
   // CJS lib
   var transpiledCjsLib = transpileES6(libTree, 'transpiledCjsLib', {
     modules: 'common',
+    optional: ['es7.doExpressions']
   });
   var pickedCjsLib = new Funnel(transpiledCjsLib, {
     destDir: '/cjs/'
@@ -167,6 +173,7 @@ for (var packageName in packages.dependencies) {
   // AMD tests
   var transpiledAmdTests = transpileES6(mergeTrees(testTrees), 'transpiledAmdTests', {
     modules: 'amdStrict',
+    optional: ['es7.doExpressions']
   });
   var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
     inputFiles: ['**/*.js'],

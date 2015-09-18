@@ -7,3 +7,5 @@ npm-debug.log
 sauce-example.log
 
 testem.log
+
+.vscode

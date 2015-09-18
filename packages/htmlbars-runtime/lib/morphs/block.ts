@@ -11,7 +11,7 @@ export class SimpleBlockMorph extends RegionMorph {
   }
 
   append() {
-    this._lastResult = this._template.renderIn(this, this._frame);
+    this._lastResult = this._template.evaluate(this, this._frame);
   }
 
   update(strategy) {
@@ -28,7 +28,7 @@ export class ScopedBlockMorph extends RegionMorph {
   }
 
   append() {
-    this._lastResult = this._template.renderIn(this, this._frame);
+    this._lastResult = this._template.evaluate(this, this._frame);
   }
 }
 
