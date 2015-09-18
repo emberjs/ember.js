@@ -347,6 +347,75 @@ CoreObject.PrototypeMixin = Mixin.create({
   concatenatedProperties: null,
 
   /**
+    Defines the properties that will be merged from the superclass
+    (instead of overridden).
+
+    By default, when you extend an Ember class a property defined in
+    the subclass overrides a property with the same name that is defined
+    in the superclass. However, there are some cases where it is preferable
+    to build up a property's value by merging the superclass property value
+    with the subclass property's value. An example of this in use within Ember
+    is the `queryParams` property of routes.
+
+    Here is some sample code showing the difference between a merged
+    property and a normal one:
+
+    ```javascript
+    App.BarRoute = Ember.Route.extend({
+      someNonMergedProperty: {
+        nonMerged: 'superclass value of nonMerged'
+      },
+      queryParams: {
+        page: {replace: false},
+        limit: {replace: true}
+      }
+    });
+
+    App.FooBarRoute = App.BarRoute.extend({
+      someNonMergedProperty: {
+        completelyNonMerged: 'subclass value of nonMerged'
+      },
+      queryParams: {
+        limit: {replace: false}
+      }
+    });
+
+    var fooBarRoute = App.FooBarRoute.create();
+
+    fooBarRoute.get('someNonMergedProperty');
+    // => { completelyNonMerged: 'subclass value of nonMerged' }
+    //
+    // Note the entire object, including the nonMerged property of
+    // the superclass object, has been replaced
+
+    fooBarRoute.get('queryParams');
+    // => {
+    //   page: {replace: false},
+    //   limit: {replace: false}
+    // }
+    //
+    // Note the page remains from the superclass, and the
+    // `limit` property's value of `false` has been merged from
+    // the subclass.
+    ```
+
+    This behavior is not available during object `create` calls. It is only
+    available at `extend` time.
+
+    This feature is available for you to use throughout the Ember object model,
+    although typical app developers are likely to use it infrequently. Since
+    it changes expectations about behavior of properties, you should properly
+    document its usage in each individual merged property (to not
+    mislead your users to think they can override the property in a subclass).
+
+    @property mergedProperties
+    @type Array
+    @default null
+    @public
+  */
+  mergedProperties: null,
+
+  /**
     Destroyed object property flag.
 
     if this property is `true` the observers and bindings were already
