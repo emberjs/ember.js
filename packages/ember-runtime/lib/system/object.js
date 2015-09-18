@@ -17,9 +17,8 @@ import Observable from 'ember-runtime/mixins/observable';
   @uses Ember.Observable
   @public
 */
-var EmberObject = CoreObject.extend(Observable);
-EmberObject.toString = function() {
-  return 'Ember.Object';
-};
-
-export default EmberObject;
+export default CoreObject.extend(Observable).reopenClass({
+  toString() {
+    return 'Ember.Object';
+  }
+});
