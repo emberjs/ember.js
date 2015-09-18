@@ -42,14 +42,10 @@ function getDependencyTree(depName) {
 }
 
 function getPackageLibTree(packageName) {
-  return new Funnel('packages/' + packageName + '/lib', {
+  return new Funnel(['packages/' + packageName + '/index.js', 'packages/' + packageName + '/lib'], {
     getDestinationPath: function(relativePath) {
-      if (relativePath === 'main.js' || relativePath === 'main.ts') {
+      if (relativePath === 'index.js') {
         return packageName + '.js';
-      }
-
-      if (relativePath.match(/\.ts$/)) {
-        return packageName + '/' + relativePath.replace(/\.ts$/, '.js');        
       }
 
       return packageName + '/' + relativePath;
