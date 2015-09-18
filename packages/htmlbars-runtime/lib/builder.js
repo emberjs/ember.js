@@ -12,9 +12,8 @@ export default class Builder {
     this._morphs = [];
   }
 
-  evaluateTemplate(template) {
-    template.statements.forEach(this._render, this);
-    return { morphs: this._morphs, bounds: this._stack.bounds() };
+  bounds() {
+    return this._stack.bounds();
   }
 
   /// Interaction with ElementStack

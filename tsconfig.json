@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "amd",
+        "sourceMap": true
+    },
+    "exclude": [
+        "node_modules",
+        "tmp",
+        "bower_components",
+        ".vscode"
+    ]
+}

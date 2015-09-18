@@ -94,9 +94,14 @@ export default class Template {
 
   evaluate(morph, frame) {
     let builder = new Builder(morph, frame);
-    let { morphs, bounds } = builder.evaluateTemplate(this);
+
+    this.statements.forEach(builder._render, builder);
+
+    let morphs = builder._morphs;
+
+    builder.evaluateTemplate(this);
     morph.childMorphs = morphs;
-    return { morphs, bounds };
+    return { morphs, bounds: builder.bounds() };
   }
 
   render(self, env, options, blockArguments) {
@@ -206,6 +211,10 @@ export class Inline extends DynamicExpression {
     this.path = options.path;
     this.trustingMorph = options.trustingMorph;
     this.params = options.params;
+  }
+
+  prettyPrint() {
+    return `Inline(${this.path}) { params=${this.params.prettyPrint()} trusted=${this.trustingMorph} }`; 
   }
 
   evaluate(stack) {
@@ -892,8 +901,8 @@ class Templates {
   }
 
   prettyPrint() {
-    let { _template, _inverse } = this;
-    return `Templates { default=${_template ? _template.position : 'none'}, inverse=${_inverse ? _inverse.position : 'none'} }`;
+    let { _default, _inverse } = this;
+    return `Templates { default=${_default ? _default.position : 'none'}, inverse=${_inverse ? _inverse.position : 'none'} }`;
   }
 }
 
