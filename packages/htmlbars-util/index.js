@@ -1,0 +1,14 @@
+/*globals console*/
+let alreadyWarned = false;
+export function debugAssert(test, msg) {
+    if (!alreadyWarned) {
+        alreadyWarned = true;
+        console.log("Don't leave debug assertions on in public builds");
+    }
+    if (!test) {
+        throw new Error(msg || "assertion failure");
+    }
+}
+export function prodAssert() { }
+export { debugAssert as assert };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvaHRtbGJhcnMtdXRpbC9pbmRleC50cyJdLCJuYW1lcyI6WyJkZWJ1Z0Fzc2VydCIsInByb2RBc3NlcnQiXSwibWFwcGluZ3MiOiJBQUFBLG1CQUFtQjtBQVNuQixJQUFJLGFBQWEsR0FBRyxLQUFLLENBQUM7QUFDMUIsNEJBQTRCLElBQUksRUFBRSxHQUFHO0lBQ25DQSxFQUFFQSxDQUFDQSxDQUFDQSxDQUFDQSxhQUFhQSxDQUFDQSxDQUFDQSxDQUFDQTtRQUNuQkEsYUFBYUEsR0FBR0EsSUFBSUEsQ0FBQ0E7UUFDckJBLE9BQU9BLENBQUNBLEdBQUdBLENBQUNBLGtEQUFrREEsQ0FBQ0EsQ0FBQ0E7SUFDbEVBLENBQUNBO0lBRURBLEVBQUVBLENBQUNBLENBQUNBLENBQUNBLElBQUlBLENBQUNBLENBQUNBLENBQUNBO1FBQ1ZBLE1BQU1BLElBQUlBLEtBQUtBLENBQUNBLEdBQUdBLElBQUlBLG1CQUFtQkEsQ0FBQ0EsQ0FBQ0E7SUFDOUNBLENBQUNBO0FBQ0hBLENBQUNBO0FBRUQsK0JBQThCQyxDQUFDQTtBQUUvQixTQUFTLFdBQVcsSUFBSSxNQUFNLEdBQUcifQ==

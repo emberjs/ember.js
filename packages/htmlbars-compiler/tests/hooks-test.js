@@ -1,0 +1,47 @@
+import { compile } from "../htmlbars-compiler/compiler";
+import defaultHooks from "../htmlbars-runtime/hooks";
+import { merge } from "../htmlbars-util/object-utils";
+import DOMHelper from "../dom-helper";
+import { equalTokens } from "../htmlbars-test-helpers";
+var hooks, helpers, partials, env;
+function registerHelper(name, callback) {
+    helpers[name] = callback;
+}
+function commonSetup() {
+    hooks = merge({}, defaultHooks);
+    hooks.keywords = merge({}, defaultHooks.keywords);
+    helpers = {};
+    partials = {};
+    env = {
+        dom: new DOMHelper(),
+        hooks: hooks,
+        helpers: helpers,
+        partials: partials,
+        useFragmentCache: true
+    };
+}
+QUnit.module("hooks", {
+    beforeEach: commonSetup
+});
+test("the invokeHelper hook gets invoked to call helpers", function () {
+    hooks.getRoot = function (scope, key) {
+        return [{ value: scope.self[key] }];
+    };
+    var invoked = false;
+    hooks.invokeHelper = function (morph, env, scope, visitor, params, hash, helper, templates, context) {
+        invoked = true;
+        deepEqual(params, [{ value: "hello world" }]);
+        ok(scope.self, "the scope was passed");
+        ok(morph.state, "the morph was passed");
+        return { value: helper.call(context, [params[0].value], hash, templates) };
+    };
+    registerHelper('print', function (params) {
+        return params.join('');
+    });
+    var object = { val: 'hello world' };
+    var template = compile('<div>{{print val}}</div>');
+    var result = template.render(object, env);
+    equalTokens(result.fragment, '<div>hello world</div>');
+    ok(invoked, "The invokeHelper hook was invoked");
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaG9va3MtdGVzdC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9odG1sYmFycy1jb21waWxlci90ZXN0cy9ob29rcy10ZXN0LnRzIl0sIm5hbWVzIjpbInJlZ2lzdGVySGVscGVyIiwiY29tbW9uU2V0dXAiXSwibWFwcGluZ3MiOiJPQUFPLEVBQUUsT0FBTyxFQUFFLE1BQU0sK0JBQStCO09BQ2hELFlBQVksTUFBTSwyQkFBMkI7T0FDN0MsRUFBRSxLQUFLLEVBQUUsTUFBTSwrQkFBK0I7T0FDOUMsU0FBUyxNQUFNLGVBQWU7T0FDOUIsRUFBRSxXQUFXLEVBQUUsTUFBTSwwQkFBMEI7QUFFdEQsSUFBSSxLQUFLLEVBQUUsT0FBTyxFQUFFLFFBQVEsRUFBRSxHQUFHLENBQUM7QUFFbEMsd0JBQXdCLElBQUksRUFBRSxRQUFRO0lBQ3BDQSxPQUFPQSxDQUFDQSxJQUFJQSxDQUFDQSxHQUFHQSxRQUFRQSxDQUFDQTtBQUMzQkEsQ0FBQ0E7QUFFRDtJQUNFQyxLQUFLQSxHQUFHQSxLQUFLQSxDQUFDQSxFQUFFQSxFQUFFQSxZQUFZQSxDQUFDQSxDQUFDQTtJQUNoQ0EsS0FBS0EsQ0FBQ0EsUUFBUUEsR0FBR0EsS0FBS0EsQ0FBQ0EsRUFBRUEsRUFBRUEsWUFBWUEsQ0FBQ0EsUUFBUUEsQ0FBQ0EsQ0FBQ0E7SUFDbERBLE9BQU9BLEdBQUdBLEVBQUVBLENBQUNBO0lBQ2JBLFFBQVFBLEdBQUdBLEVBQUVBLENBQUNBO0lBRWRBLEdBQUdBLEdBQUdBO1FBQ0pBLEdBQUdBLEVBQUVBLElBQUlBLFNBQVNBLEVBQUVBO1FBQ3BCQSxLQUFLQSxFQUFFQSxLQUFLQTtRQUNaQSxPQUFPQSxFQUFFQSxPQUFPQTtRQUNoQkEsUUFBUUEsRUFBRUEsUUFBUUE7UUFDbEJBLGdCQUFnQkEsRUFBRUEsSUFBSUE7S0FDdkJBLENBQUNBO0FBQ0pBLENBQUNBO0FBRUQsS0FBSyxDQUFDLE1BQU0sQ0FBQyxPQUFPLEVBQUU7SUFDcEIsVUFBVSxFQUFFLFdBQVc7Q0FDeEIsQ0FBQyxDQUFDO0FBRUgsSUFBSSxDQUFDLG9EQUFvRCxFQUFFO0lBQ3pELEtBQUssQ0FBQyxPQUFPLEdBQUcsVUFBUyxLQUFLLEVBQUUsR0FBRztRQUNqQyxNQUFNLENBQUMsQ0FBQyxFQUFFLEtBQUssRUFBRSxLQUFLLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsQ0FBQztJQUN0QyxDQUFDLENBQUM7SUFFRixJQUFJLE9BQU8sR0FBRyxLQUFLLENBQUM7SUFDcEIsS0FBSyxDQUFDLFlBQVksR0FBRyxVQUFTLEtBQUssRUFBRSxHQUFHLEVBQUUsS0FBSyxFQUFFLE9BQU8sRUFBRSxNQUFNLEVBQUUsSUFBSSxFQUFFLE1BQU0sRUFBRSxTQUFTLEVBQUUsT0FBTztRQUNoRyxPQUFPLEdBQUcsSUFBSSxDQUFDO1FBQ2YsU0FBUyxDQUFDLE1BQU0sRUFBRSxDQUFDLEVBQUUsS0FBSyxFQUFFLGFBQWEsRUFBRSxDQUFDLENBQUMsQ0FBQztRQUM5QyxFQUFFLENBQUMsS0FBSyxDQUFDLElBQUksRUFBRSxzQkFBc0IsQ0FBQyxDQUFDO1FBQ3ZDLEVBQUUsQ0FBQyxLQUFLLENBQUMsS0FBSyxFQUFFLHNCQUFzQixDQUFDLENBQUM7UUFFeEMsTUFBTSxDQUFDLEVBQUUsS0FBSyxFQUFFLE1BQU0sQ0FBQyxJQUFJLENBQUMsT0FBTyxFQUFFLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDLEtBQUssQ0FBQyxFQUFFLElBQUksRUFBRSxTQUFTLENBQUMsRUFBRSxDQUFDO0lBQzdFLENBQUMsQ0FBQztJQUVGLGNBQWMsQ0FBQyxPQUFPLEVBQUUsVUFBUyxNQUFNO1FBQ3JDLE1BQU0sQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDO0lBQ3pCLENBQUMsQ0FBQyxDQUFDO0lBRUgsSUFBSSxNQUFNLEdBQUcsRUFBRSxHQUFHLEVBQUUsYUFBYSxFQUFFLENBQUM7SUFDcEMsSUFBSSxRQUFRLEdBQUcsT0FBTyxDQUFDLDBCQUEwQixDQUFDLENBQUM7SUFDbkQsSUFBSSxNQUFNLEdBQUcsUUFBUSxDQUFDLE1BQU0sQ0FBQyxNQUFNLEVBQUUsR0FBRyxDQUFDLENBQUM7SUFFMUMsV0FBVyxDQUFDLE1BQU0sQ0FBQyxRQUFRLEVBQUUsd0JBQXdCLENBQUMsQ0FBQztJQUV2RCxFQUFFLENBQUMsT0FBTyxFQUFFLG1DQUFtQyxDQUFDLENBQUM7QUFDbkQsQ0FBQyxDQUFDLENBQUMifQ==

@@ -1,87 +1,62 @@
 import { hooks as defaultHooks } from "../htmlbars-runtime";
 import { merge } from "../htmlbars-util/object-utils";
-// import { manualElement } from "../htmlbars-runtime/render";
 import { compile } from "../htmlbars-compiler/compiler";
-// import { hostBlock } from "../htmlbars-runtime/hooks";
 import { equalTokens } from "../htmlbars-test-helpers";
 import DOMHelper from "../dom-helper";
-
 var hooks, helpers, partials, env;
-
 function registerHelper(name, callback) {
-  helpers[name] = callback;
+    helpers[name] = callback;
 }
-
 function commonSetup() {
-  hooks = merge({}, defaultHooks);
-  hooks.keywords = merge({}, defaultHooks.keywords);
-  helpers = {};
-  partials = {};
-
-  env = {
-    dom: new DOMHelper(),
-    hooks: hooks,
-    helpers: helpers,
-    partials: partials,
-    useFragmentCache: true
-  };
+    hooks = merge({}, defaultHooks);
+    hooks.keywords = merge({}, defaultHooks.keywords);
+    helpers = {};
+    partials = {};
+    env = {
+        dom: new DOMHelper(),
+        hooks: hooks,
+        helpers: helpers,
+        partials: partials,
+        useFragmentCache: true
+    };
 }
-
 QUnit.module("htmlbars-runtime: hooks", {
-  beforeEach: commonSetup
+    beforeEach: commonSetup
 });
-
-test("inline hook correctly handles false-like values", function() {
-
-  registerHelper('get', function(params) {
-    return params[0];
-  });
-
-  var object = { val: 'hello' };
-  var template = compile('<div>{{get val}}</div>');
-  var result = template.render(object, env);
-
-  equalTokens(result.fragment, '<div>hello</div>');
-
-  object.val = '';
-
-  result.rerender();
-
-  equalTokens(result.fragment, '<div></div>');
-
+test("inline hook correctly handles false-like values", function () {
+    registerHelper('get', function (params) {
+        return params[0];
+    });
+    var object = { val: 'hello' };
+    var template = compile('<div>{{get val}}</div>');
+    var result = template.render(object, env);
+    equalTokens(result.fragment, '<div>hello</div>');
+    object.val = '';
+    result.rerender();
+    equalTokens(result.fragment, '<div></div>');
 });
-
-test("inline hook correctly handles false-like values", function() {
-
-  registerHelper('get', function(params) {
-    return params[0];
-  });
-
-  var object = { val: 'hello' };
-  var template = compile('<div>{{get val}}</div>');
-  var result = template.render(object, env);
-
-  equalTokens(result.fragment, '<div>hello</div>');
-
-  object.val = '';
-
-  result.rerender();
-
-  equalTokens(result.fragment, '<div></div>');
-
+test("inline hook correctly handles false-like values", function () {
+    registerHelper('get', function (params) {
+        return params[0];
+    });
+    var object = { val: 'hello' };
+    var template = compile('<div>{{get val}}</div>');
+    var result = template.render(object, env);
+    equalTokens(result.fragment, '<div>hello</div>');
+    object.val = '';
+    result.rerender();
+    equalTokens(result.fragment, '<div></div>');
 });
-
-test("createChildScope hook creates a new object for `blocks`", function() {
-  let scope = env.hooks.createFreshScope();
-  let child = env.hooks.createChildScope(scope);
-
-  let parentBlock = function() {};
-  env.hooks.bindBlock(env, scope, parentBlock, 'inherited');
-  strictEqual(scope.blocks.inherited, parentBlock);
-  strictEqual(child.blocks.inherited, parentBlock);
-
-  let childBlock = function() {};
-  env.hooks.bindBlock(env, child, childBlock, 'notInherited');
-  strictEqual(scope.blocks.notInherited, undefined);
-  strictEqual(child.blocks.notInherited, childBlock);
+test("createChildScope hook creates a new object for `blocks`", function () {
+    let scope = env.hooks.createFreshScope();
+    let child = env.hooks.createChildScope(scope);
+    let parentBlock = function () { };
+    env.hooks.bindBlock(env, scope, parentBlock, 'inherited');
+    strictEqual(scope.blocks.inherited, parentBlock);
+    strictEqual(child.blocks.inherited, parentBlock);
+    let childBlock = function () { };
+    env.hooks.bindBlock(env, child, childBlock, 'notInherited');
+    strictEqual(scope.blocks.notInherited, undefined);
+    strictEqual(child.blocks.notInherited, childBlock);
 });
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaG9va3MtdGVzdC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9odG1sYmFycy1ydW50aW1lL3Rlc3RzL2hvb2tzLXRlc3QudHMiXSwibmFtZXMiOlsicmVnaXN0ZXJIZWxwZXIiLCJjb21tb25TZXR1cCJdLCJtYXBwaW5ncyI6Ik9BQU8sRUFBRSxLQUFLLElBQUksWUFBWSxFQUFFLE1BQU0scUJBQXFCO09BQ3BELEVBQUUsS0FBSyxFQUFFLE1BQU0sK0JBQStCO09BRTlDLEVBQUUsT0FBTyxFQUFFLE1BQU0sK0JBQStCO09BRWhELEVBQUUsV0FBVyxFQUFFLE1BQU0sMEJBQTBCO09BQy9DLFNBQVMsTUFBTSxlQUFlO0FBRXJDLElBQUksS0FBSyxFQUFFLE9BQU8sRUFBRSxRQUFRLEVBQUUsR0FBRyxDQUFDO0FBRWxDLHdCQUF3QixJQUFJLEVBQUUsUUFBUTtJQUNwQ0EsT0FBT0EsQ0FBQ0EsSUFBSUEsQ0FBQ0EsR0FBR0EsUUFBUUEsQ0FBQ0E7QUFDM0JBLENBQUNBO0FBRUQ7SUFDRUMsS0FBS0EsR0FBR0EsS0FBS0EsQ0FBQ0EsRUFBRUEsRUFBRUEsWUFBWUEsQ0FBQ0EsQ0FBQ0E7SUFDaENBLEtBQUtBLENBQUNBLFFBQVFBLEdBQUdBLEtBQUtBLENBQUNBLEVBQUVBLEVBQUVBLFlBQVlBLENBQUNBLFFBQVFBLENBQUNBLENBQUNBO0lBQ2xEQSxPQUFPQSxHQUFHQSxFQUFFQSxDQUFDQTtJQUNiQSxRQUFRQSxHQUFHQSxFQUFFQSxDQUFDQTtJQUVkQSxHQUFHQSxHQUFHQTtRQUNKQSxHQUFHQSxFQUFFQSxJQUFJQSxTQUFTQSxFQUFFQTtRQUNwQkEsS0FBS0EsRUFBRUEsS0FBS0E7UUFDWkEsT0FBT0EsRUFBRUEsT0FBT0E7UUFDaEJBLFFBQVFBLEVBQUVBLFFBQVFBO1FBQ2xCQSxnQkFBZ0JBLEVBQUVBLElBQUlBO0tBQ3ZCQSxDQUFDQTtBQUNKQSxDQUFDQTtBQUVELEtBQUssQ0FBQyxNQUFNLENBQUMseUJBQXlCLEVBQUU7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

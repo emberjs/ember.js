@@ -1,6 +1,7 @@
 dist
 bower_components
-node_modules
+/node_modules
+packages/node_modules
 tmp
 
 npm-debug.log

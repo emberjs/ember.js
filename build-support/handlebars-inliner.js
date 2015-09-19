@@ -4,7 +4,7 @@ var Funnel = require('broccoli-funnel');
 var root = path.join(__dirname, '..', 'node_modules', 'handlebars', 'lib');
 
 module.exports = {
-  syntax: new Funnel(root, {
+  compiler: new Funnel(root, {
     files: [
       'handlebars/utils.js',
       'handlebars/exception.js',
@@ -15,16 +15,13 @@ module.exports = {
       'handlebars/compiler/parser.js',
       'handlebars/compiler/visitor.js',
       'handlebars/compiler/whitespace-control.js'
-    ],
-    destDir: '/htmlbars-syntax'
+    ]
   }),
 
-  util: new Funnel(root, {
-
+  runtime: new Funnel(root, {
     files: [
       'handlebars/utils.js',
       'handlebars/safe-string.js'
-    ],
-    destDir: '/htmlbars-util'
+    ]
   })
 }

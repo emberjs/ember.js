@@ -5,7 +5,6 @@ var moveFile = require('broccoli-file-mover');
 var replace = require('broccoli-string-replace');
 var removeFile = require('broccoli-file-remover');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
-var jsHint = require('broccoli-jshint');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var getVersion = require('git-repo-version');
 
@@ -23,87 +22,53 @@ var bench = new Funnel(
   { destDir: '/bench' }
 );
 
-var ES6Tokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
-dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
+var HTMLTokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 
-var npm = 'node_modules';
-var MorphRange = new Funnel(npm+'/morph-range/lib/');
-dependableTrees['morph-range'] = MorphRange;
-
-dependableTrees['syntax-handlebars-inliner'] = handlebarsInlinedTrees.syntax;
-dependableTrees['util-handlebars-inliner'] = handlebarsInlinedTrees.util;
-
-function getDependencyTree(depName) {
-  var dep = dependableTrees[depName];
-  if (!dep) {
-    dep = getPackageLibTree(depName);
+var DTSTree = new Funnel('src', {
+  include: ['*/index.d.ts'],
+  
+  getDestinationPath: function(relativePath) {
+    return relativePath.replace(/\/index\.d\.ts$/, '.js');
   }
-  return dep;
-}
+});
 
-function getPackageLibTree(packageName) {
-  return new Funnel(['packages/' + packageName + '/index.js', 'packages/' + packageName + '/lib'], {
-    getDestinationPath: function(relativePath) {
-      if (relativePath === 'index.js') {
-        return packageName + '.js';
-      }
+var libTree = new Funnel('packages', {
+  include: ["*/lib/**/*.js"],
+});
 
-      return packageName + '/' + relativePath;
-    }
-  });
-};
+var packagesTree = mergeTrees([DTSTree, libTree, HTMLTokenizer]);
 
-function getPackageTrees(packageName, dependencies) {
-  var libTrees = [];
-  // main lib file
-  libTrees.push(getPackageLibTree(packageName));
-  // dependencies of lib
-  for (var i=0;i<(dependencies.lib || []).length;i++) {
-    var depName = dependencies.lib[i];
-    libTrees.push(getDependencyTree(depName));
-  }
+var runtimeTree = new Funnel(packagesTree, {
+  include: ['dom-helper/**/*', 'htmlbars-runtime/**/*']
+});
 
-  var testTrees = [];
-  // main test
-  testTrees.push(new Funnel('packages/' + packageName + '/tests', {
-    srcDir: '/',
-    destDir: '/' + packageName + '-tests'
-  }));
-  // dependencies of tests
-  for (var i=0;i<(dependencies.test || []).length;i++) {
-    var depName = dependencies.test[i];
-    testTrees.push(getDependencyTree(depName));
-  }
+runtimeTree = mergeTrees([runtimeTree, handlebarsInlinedTrees.runtime]);
 
-  return [libTrees, testTrees];
-}
+var compilerTree = mergeTrees([packagesTree, handlebarsInlinedTrees.compiler]);
 
+var testTree = new Funnel('packages', {
+  include: ["*/tests/**/*.js"]
+});
 
 // Test Assets
 
-var test = new Funnel('tests', {
+var testHarness = new Funnel('tests', {
   srcDir: '/',
   files: [ 'index.html', 'packages-config.js' ],
   destDir: '/tests'
 });
 
-test = replace(test, {
+testHarness = mergeTrees([testHarness, new Funnel(bower, {
+  srcDir: '/qunit/qunit',
+  destDir: '/tests'
+})]);
+
+testHarness = replace(testHarness, {
   files: [ 'tests/packages-config.js' ],
   pattern: {
     match: /\{\{PACKAGES_CONFIG\}\}/g,
     replacement: JSON.stringify(packages, null, 2)
   }
-});
-
-var loader = new Funnel(bower, {
-  srcDir: '/loader',
-  files: [ 'loader.js' ],
-  destDir: '/assets'
-});
-
-var qunit = new Funnel(bower, {
-  srcDir: '/qunit/qunit',
-  destDir: '/tests'
 });
 
 var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
@@ -112,96 +77,29 @@ var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
   destDir: '/tests'
 });
 
-// Export trees
-var trees = [bench, demos, test, loader, qunit, cliSauce];
+var transpiledCompiler = transpileES6(compilerTree, 'transpiledLibs');
+var transpiledRuntime = transpileES6(runtimeTree, 'transpiledRuntime');
+var transpiledTests = transpileES6(testTree, 'transpiledTests');
 
-for (var packageName in packages.dependencies) {
-  var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
-
-  var libTree = mergeTrees(packageTrees[0]);
-  var testTree = mergeTrees(packageTrees[1]);
-
-  // ES6
-  var pickedEs6Lib = new Funnel(libTree, {
-    destDir: '/es6/'
-  });
-  trees.push(pickedEs6Lib);
-
-  // AMD lib
-  var transpiledAmdLib = transpileES6(libTree, 'transpiledAmdLib', {
-    modules: 'amdStrict',
-    optional: ['es7.doExpressions']
-  });
-
-  var concatenatedAmdLib = concatFiles(transpiledAmdLib, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/amd/' + packageName + '.amd.js'
-  });
-
-  trees.push(concatenatedAmdLib);
-
-  // CJS lib
-  var transpiledCjsLib = transpileES6(libTree, 'transpiledCjsLib', {
-    modules: 'common',
-    optional: ['es7.doExpressions']
-  });
-  var pickedCjsLib = new Funnel(transpiledCjsLib, {
-    destDir: '/cjs/'
-  });
-  trees.push(pickedCjsLib);
-  var pickedCjsMain = new Funnel(transpiledCjsLib, {
-    srcDir: packageName+'.js',
-    destDir: '/cjs/' + packageName+'.js'
-  });
-  trees.push(pickedCjsMain);
-
-  var testTrees = [testTree];
-
-  // jsHint tests
-  var jsHintLibTree = new Funnel(libTree, {
-    include: [new RegExp(packageName), new RegExp(packageName + '.+\.js$')],
-    exclude: [/htmlbars-(syntax|util)\/handlebars/],
-    destDir: packageName+'-tests/'
-  });
-  testTrees.push(jsHint(jsHintLibTree, { destFile: '/' + packageName + '-tests/jshint-lib.js' }));
-  testTrees.push(jsHint(testTree, { destFile: '/' + packageName + '-tests/jshint-tests.js' }));
-
-  // AMD tests
-  var transpiledAmdTests = transpileES6(mergeTrees(testTrees), 'transpiledAmdTests', {
-    modules: 'amdStrict',
-    optional: ['es7.doExpressions']
-  });
-  var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/tests/' + packageName + '-tests.amd.js'
-  });
-  trees.push(concatenatedAmdTests);
-
-  // CJS tests
-  // TODO: renable this, this build file is pretty messy and for some reason
-  // this was leaking into the AMD tests. At some future point in time we can
-  // restore these.
-  //
-  // var transpiledCjsTests = transpileES6(mergeTrees(testTrees), 'transpiledCjsTests', {
-  //   modules: 'amdStrict',
-  // });
-  // var movedCjsTests = new Funnel(transpiledCjsTests, {
-  //   srcDir: packageName+'-tests/',
-  //   destDir: '/cjs/' + packageName + "-tests/"
-  // });
-  // trees.push(movedCjsTests);
-}
-
-trees = replace(mergeTrees(trees, { overwrite: true }), {
-  files: [
-    'es6/htmlbars.js',
-    'es6/htmlbars-compiler/template-compiler.js',
-    'amd/htmlbars.js',
-    'cjs/htmlbars.js'
-  ],
-  patterns: [
-    { match: /VERSION_STRING_PLACEHOLDER/g, replacement: getVersion() }
-  ]
+var concatenatedCompiler = concatFiles(transpiledCompiler, {
+  inputFiles: ['**/*.js'],
+  outputFile: '/amd/glimmer-compiler.amd.js'
 });
 
-module.exports = trees;
+var concatenatedRuntime = concatFiles(transpiledRuntime, {
+  inputFiles: ['**/*.js'],
+  outputFile: '/amd/glimmer-runtime.amd.js'
+});
+
+var concatenatedTests = concatFiles(transpiledTests, {
+  inputFiles: ['**/*.js'],
+  outputFile: '/tests.js'
+})
+
+var loader = new Funnel(bower, {
+  srcDir: '/loader.js',
+  files: [ 'loader.js' ],
+  destDir: '/assets'
+});
+
+module.exports = mergeTrees([demos, concatenatedCompiler, concatenatedRuntime, loader, testHarness, concatenatedTests]);
