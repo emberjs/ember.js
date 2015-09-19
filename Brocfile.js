@@ -4,11 +4,10 @@ var mergeTrees = require('broccoli-merge-trees');
 var moveFile = require('broccoli-file-mover');
 var replace = require('broccoli-string-replace');
 var removeFile = require('broccoli-file-remover');
+var typescript = require('broccoli-typescript-compiler');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var getVersion = require('git-repo-version');
-
-var packages = require('./packages');
 
 var dependableTrees = {};
 
@@ -32,7 +31,17 @@ var DTSTree = new Funnel('src', {
   }
 });
 
-var libTree = new Funnel('packages', {
+var tsTree = new Funnel('src', {
+  include: ["**/*.ts", "**/*.d.ts"]
+});
+
+var jsTree = typescript(tsTree);
+
+jsTree = new Funnel(jsTree, {
+  exclude: ["**/*.d.js"]
+});
+
+var libTree = new Funnel(jsTree, {
   include: ["*/lib/**/*.js"],
 });
 
@@ -46,7 +55,7 @@ runtimeTree = mergeTrees([runtimeTree, handlebarsInlinedTrees.runtime]);
 
 var compilerTree = mergeTrees([packagesTree, handlebarsInlinedTrees.compiler]);
 
-var testTree = new Funnel('packages', {
+var testTree = new Funnel(jsTree, {
   include: ["*/tests/**/*.js"]
 });
 
@@ -62,14 +71,6 @@ testHarness = mergeTrees([testHarness, new Funnel(bower, {
   srcDir: '/qunit/qunit',
   destDir: '/tests'
 })]);
-
-testHarness = replace(testHarness, {
-  files: [ 'tests/packages-config.js' ],
-  pattern: {
-    match: /\{\{PACKAGES_CONFIG\}\}/g,
-    replacement: JSON.stringify(packages, null, 2)
-  }
-});
 
 var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
   srcDir: '/vendor',

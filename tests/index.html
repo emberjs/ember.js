@@ -12,7 +12,6 @@
   <script src="/testem.js"></script>
   <script src="../assets/loader.js"></script>
   <script>loader.noConflict({ define: 'enifed' });</script>
-  <script src="packages-config.js"></script>
   <!--<script src="export-test-results.js"></script>-->
   <script src="/amd/glimmer-compiler.amd.js"></script>
   <script src="/tests.js"></script>
@@ -39,8 +38,6 @@
     function getPackagesToTest() {
       if (QUnit.urlParams.packages) {
         return QUnit.urlParams.packages.split(',');
-      } else {
-        return keys(packagesConfig.dependencies);
       }
     }
 
@@ -51,19 +48,16 @@
   </script>
 
   <script>
-    // Run tests
-    for (var key in requireModule.entries) {
-      var root = key.split('/')[0];
-
-      for (var i = 0; i < packagesToTest.length; i++) {
-        if (root === packagesToTest[i] + '-tests') {
-          if (key.match(/\.jshint$/) && QUnit.urlParams.nojshint) {
-            continue;
-          }
-          requireModule(key);
-        }
-      }
+    var testMatch;
+    if (packagesToTest) {
+      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*-test$");
+    } else {
+      testMatch = /\-test$/;
     }
+    
+    Object.keys(requireModule.entries).forEach(function(entry) {
+      if (entry.match(testMatch)) requireModule(entry);
+    });
   </script>
 </body>
 </html>

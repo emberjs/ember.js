@@ -1,3 +1,3 @@
-export { ComputedBlueprint } from "htmlbars-reference/references/descriptors";
-export { default as Meta, MetaBuilder, metaFor } from "htmlbars-reference/meta";
-export { guid, intern, dict } from "htmlbars-reference/utils";
+export { ComputedBlueprint } from "./lib/references/descriptors";
+export { default as Meta, MetaBuilder, metaFor } from "./lib/meta";
+export { guid, intern, dict } from "./lib/utils";

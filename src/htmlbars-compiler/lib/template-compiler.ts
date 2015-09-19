@@ -4,9 +4,9 @@ import { getAttrNamespace } from "htmlbars-util";
 import { isHelper } from "htmlbars-syntax";
 import { struct, types } from "htmlbars-util";
 
-class NewJavaScriptCompiler {
+class JavaScriptCompiler {
   static process(opcodes) {
-    let compiler = new NewJavaScriptCompiler(opcodes);
+    let compiler = new JavaScriptCompiler(opcodes);
     compiler.process();
     return compiler.templates;
   }
@@ -20,7 +20,7 @@ class NewJavaScriptCompiler {
 
   process() {
     this.opcodes.forEach(([opcode, ...args]) => {
-      if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on NewJavaScriptCompiler`); }
+      if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`); }
       this[opcode](...args);
     });
   }
@@ -177,14 +177,14 @@ class NewJavaScriptCompiler {
 
 }
 
-export class NewTemplateCompiler {
+export default class TemplateCompiler {
   static compile(options, ast) {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
-    let compiler = new NewTemplateCompiler(options);
+    let compiler = new TemplateCompiler(options);
     let opcodes = compiler.process(templateVisitor.actions);
-    return NewJavaScriptCompiler.process(opcodes);
+    return JavaScriptCompiler.process(opcodes);
   }
 
   constructor(options) {
@@ -199,7 +199,7 @@ export class NewTemplateCompiler {
 
   process(actions) {
     actions.forEach(([name, ...args]) => {
-      if (!this[name]) { throw new Error(`Unimplemented ${name} on NewTemplateCompiler`); }
+      if (!this[name]) { throw new Error(`Unimplemented ${name} on TemplateCompiler`); }
       this[name](...args);
     });
     return this.opcodes;
@@ -362,7 +362,7 @@ export class NewTemplateCompiler {
       if (param.type === 'MustacheStatement') {
         this.attributeMustache([param]);
       } else {
-        assert(this[param.type], `Unimplemented ${param.type} on NewTemplateCompiler`);
+        assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
         this[param.type](param);
       }
     }
@@ -382,7 +382,7 @@ export class NewTemplateCompiler {
       var key = pairs[i].key;
       var value = pairs[i].value;
 
-      assert(this[value.type], `Unimplemented ${value.type} on NewTemplateCompiler`);
+      assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       this[value.type](value);
       this.opcode('pushLiteral', null, key);
     }

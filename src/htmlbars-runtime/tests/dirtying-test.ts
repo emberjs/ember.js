@@ -1,9 +1,6 @@
-import { compile } from "../htmlbars-compiler/compiler";
-import { manualElement } from "../htmlbars-runtime/render";
-import { hostBlock } from "../htmlbars-runtime/hooks";
-import { blockFor } from "../htmlbars-util/template-utils";
-import DOMHelper from "../dom-helper";
-import { equalTokens } from "../htmlbars-test-helpers";
+import { compile } from "htmlbars-compiler";
+import { manualElement, DOMHelper } from "htmlbars-runtime";
+import { equalTokens } from "htmlbars-test-helpers";
 import { TestEnvironment, TestBaseReference } from "./support";
 
 var hooks, env, dom, root;

@@ -1,8 +1,7 @@
-import { compile } from "../htmlbars-compiler/compiler";
-import defaultHooks from "../htmlbars-runtime/hooks";
-import { merge } from "../htmlbars-util/object-utils";
-import DOMHelper from "../dom-helper";
-import { equalTokens } from "../htmlbars-test-helpers";
+import { compile } from "htmlbars-compiler";
+import { Environment, DOMHelper } from "htmlbars-runtime";
+import { merge } from "htmlbars-util";
+import { equalTokens } from "htmlbars-test-helpers";
 
 var hooks, helpers, partials, env;
 

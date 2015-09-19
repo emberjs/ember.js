@@ -1,8 +1,8 @@
-import DOMHelper from "../dom-helper";
+import { DOMHelper } from "htmlbars-runtime";
 import {
   equalHTML,
   isCheckedInputHTML
-} from "../htmlbars-test-helpers";
+} from "htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     xlinkNamespace = "http://www.w3.org/1999/xlink",

@@ -9,7 +9,7 @@ export { default as assert } from './lib/assert';
 export { forEach, map, isArray, indexOfArray } from './lib/array-utils';
 export { default as voidMap } from './lib/void-tag-names';
 
-import * as types  from './lib/object-utils';
-import { struct } from './lib/object-utils';
+import * as types from './lib/object-utils';
+export { struct, merge } from './lib/object-utils';
 
-export { types, struct };
+export { types };

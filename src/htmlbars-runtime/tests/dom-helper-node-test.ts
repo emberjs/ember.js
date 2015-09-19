@@ -1,4 +1,4 @@
-import DOMHelper from "../dom-helper";
+import { DOMHelper } from "htmlbars-runtime";
 
 var dom;
 

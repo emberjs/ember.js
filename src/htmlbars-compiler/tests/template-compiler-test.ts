@@ -1,5 +1,5 @@
-import TemplateCompiler from "../htmlbars-compiler/template-compiler";
-import { preprocess } from "../htmlbars-syntax/parser";
+import { TemplateCompiler } from "htmlbars-compiler";
+import { preprocess } from "htmlbars-syntax";
 
 QUnit.module("TemplateCompiler");
 

@@ -1,3 +1,3 @@
-import SafeString from './handlebars/safe-string';
+import SafeString from 'handlebars/safe-string';
 
 export default SafeString;
