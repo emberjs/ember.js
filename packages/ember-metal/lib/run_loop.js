@@ -372,6 +372,8 @@ run.once = function(...args) {
   ```javascript
   function scheduleIt() {
     run.scheduleOnce('actions', myContext, function() {
+      // since this is an anonymous function, this callback will be run as many times
+      ?? as scheduleIt() is called.
       console.log('Closure');
     });
   }
