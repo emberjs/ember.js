@@ -1,0 +1,3 @@
+import { compile, compileSpec, template } from "./lib/compiler";
+export { compile, compileSpec, template };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvaHRtbGJhcnMtY29tcGlsZXIvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ik9BQU8sRUFDTCxPQUFPLEVBQ1AsV0FBVyxFQUNYLFFBQVEsRUFDVCxNQUFNLGdCQUFnQjtBQUV2QixTQUNFLE9BQU8sRUFDUCxXQUFXLEVBQ1gsUUFBUSxHQUNSIn0=
