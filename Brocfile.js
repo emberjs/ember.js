@@ -78,9 +78,9 @@ var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
   destDir: '/tests'
 });
 
-var transpiledCompiler = transpileES6(compilerTree, 'transpiledLibs');
-var transpiledRuntime = transpileES6(runtimeTree, 'transpiledRuntime');
-var transpiledTests = transpileES6(testTree, 'transpiledTests');
+var transpiledCompiler = transpileES6(compilerTree, 'transpiledLibs', { resolveModuleSource: null });
+var transpiledRuntime = transpileES6(runtimeTree, 'transpiledRuntime', { resolveModuleSource: null });
+var transpiledTests = transpileES6(testTree, 'transpiledTests', { resolveModuleSource: null });
 
 var concatenatedCompiler = concatFiles(transpiledCompiler, {
   inputFiles: ['**/*.js'],

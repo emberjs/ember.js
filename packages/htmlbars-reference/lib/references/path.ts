@@ -23,29 +23,23 @@ class UnchainFromPath {
 export class PathReference extends PushPullReference implements IPathReference, HasGuid {
   private parent: IPathReference;
   private property: InternedString;
-  protected cache: any;
-  private inner: Reference;
-  private chains: Dict<PathReference>;
-  private notifyChildren: DictSet<PathReference>;
-  private lastParentValue: any;
-  public _guid;
+  protected cache: any = EMPTY_CACHE;
+  private inner: Reference = null;
+  private chains: Dict<PathReference> = null;
+  private notifyChildren: DictSet<PathReference> = null;
+  private lastParentValue: any = EMPTY_CACHE;
+  public _guid = null;
 
   constructor(parent: IPathReference, property: InternedString) {
     super();
     this.parent = parent;
     this.property = property;
-    this.cache = EMPTY_CACHE;
-    this.inner = null;
-    this.chains = null;
-    this.notifyChildren = null;
-    this.lastParentValue = EMPTY_CACHE;
-    this._guid = null;
   }
 
-  isDirty(): boolean { return this.cache === EMPTY_CACHE; }
+  isDirty(): boolean { return this.cache === EMPTY_CACHE || this.inner.isDirty(); }
 
   value(): any {
-    if (this.cache !== EMPTY_CACHE) return this.cache;
+    if (!this.isDirty()) return this.cache;
     let { lastParentValue, property, inner } = this;
     let parentValue = this._parentValue();
 

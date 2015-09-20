@@ -1,5 +1,5 @@
 import Meta from '../meta';
-import { Reference, InternedString } from 'htmlbars-reference';
+import { Reference, InternedString, ChainableReference } from 'htmlbars-reference';
 import PushPullReference from './push-pull';
 
 export interface InnerReferenceFactory {
@@ -29,14 +29,13 @@ export function ComputedBlueprint(property, dependencies) {
     private object: any;
     private property: InternedString;
     private dependencies: InternedString[][];
-    private installed: boolean;
+    private installed = false;
 
     constructor(object: any, property: InternedString) {
       super();
       this.object = object;
       this.property = property;
       this.dependencies = dependencies;
-      this.installed = false;
     }
     
     value() {
