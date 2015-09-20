@@ -26,7 +26,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "typescript": "latest",
+    "typescript": "~1.6.2",
     "benchmark": "^1.0.0",
     "bower": "~1.3.3",
     "broccoli-concat": "0.0.6",
@@ -38,7 +38,7 @@
     "broccoli-merge-trees": "0.2.1",
     "broccoli-string-replace": "~0.0.2",
     "broccoli-uglify-js": "~0.1.3",
-    "broccoli-typescript-compiler": "*",
+    "broccoli-typescript-compiler": "~0.0.4",
     "chalk": "~0.4.0",
     "ember-cli": "^1.13.0",
     "ember-cli-release": "^0.2.2",
