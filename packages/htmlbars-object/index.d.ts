@@ -1,0 +1,1 @@
+export { default as default, computed } from './lib/object';
