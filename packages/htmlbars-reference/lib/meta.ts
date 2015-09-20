@@ -16,7 +16,6 @@ import {
 
 import { InnerReferenceFactory } from './references/descriptors';
 
-
 class Meta implements IMeta {
   static for(obj: any): IMeta {
     if (obj._meta) return obj._meta;
@@ -26,18 +25,16 @@ class Meta implements IMeta {
   }
 
   private object: any;
-  private references: Dict<DictSet<IPathReference & HasGuid>>;
   private RootReferenceFactory: RootReferenceFactory;
   private DefaultPathReferenceFactory: InnerReferenceFactory;
-  protected referenceTypes: Dict<InnerReferenceFactory>;
   private rootCache: IRootReference;
+  private references: Dict<DictSet<IPathReference & HasGuid>> = null;
+  protected referenceTypes: Dict<InnerReferenceFactory> = null;
 
   constructor(object: any, { RootReferenceFactory, DefaultPathReferenceFactory }: MetaOptions) {
     this.object = object;
-    this.references = null;
     this.RootReferenceFactory = RootReferenceFactory || RootReference;
     this.DefaultPathReferenceFactory = DefaultPathReferenceFactory || PropertyReference;
-    this.referenceTypes = null;
   }
 
   addReference(property: InternedString, reference: IPathReference & HasGuid) {

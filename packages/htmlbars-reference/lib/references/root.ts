@@ -1,17 +1,16 @@
-import { guid, intern, dict } from '../utils';
+import { intern, dict } from '../utils';
 import { PathReference } from './path';
-import { Dict } from 'htmlbars-util';
+import { Dict, HasGuid } from 'htmlbars-util';
 import { RootReference as IRootReference, PathReference as IPathReference, InternedString, NotifiableReference } from 'htmlbars-reference';
 import PushPullReference from './push-pull';
 
 export default class RootReference extends PushPullReference implements IRootReference, IPathReference {
   private object: any;
-  private chains: Dict<IPathReference>;
+  private chains = dict<PathReference>();
 
   constructor(object) {
     super();
     this.object = object;
-    this.chains = dict<IPathReference>();
   }
 
   isDirty() { return false; }
@@ -28,7 +27,7 @@ export default class RootReference extends PushPullReference implements IRootRef
     if (<string>prop in chains) return chains[<string>prop];
     return (chains[<string>prop] = new PathReference(this, prop));
   }
-  
+
   chainFor(prop: InternedString): IPathReference {
     let chains = this.chains;
     if (<string>prop in chains) return chains[<string>prop];

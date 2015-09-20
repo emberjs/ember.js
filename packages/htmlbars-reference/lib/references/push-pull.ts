@@ -1,12 +1,11 @@
-import { guid } from '../utils';
 import { Destroyable, Reference, NotifiableReference, ChainableReference } from 'htmlbars-reference';
-
+import { HasGuid } from 'htmlbars-util';
 
 class NotifyNode {
   public parent: PushPullReference;
   public child: NotifiableReference;
-  public previousSibling: NotifyNode;
-  public nextSibling: NotifyNode;
+  public previousSibling: NotifyNode = null;
+  public nextSibling: NotifyNode = null;
   
   constructor(parent, child) {
     this.parent = parent;
@@ -17,7 +16,7 @@ class NotifyNode {
 class Unchain {
   private reference: PushPullReference;
   private notifyNode: NotifyNode;
-  
+
   constructor(reference: PushPullReference, notifyNode: NotifyNode) {
     this.reference = reference;
     this.notifyNode = notifyNode;
@@ -34,18 +33,11 @@ class Unchain {
   }
 }
 
-abstract class PushPullReference implements Reference, ChainableReference, NotifiableReference {
-  private dirty: boolean;
-  public _notifyTail: NotifyNode;
-  private sources: Destroyable[];
-  public _guid: number;
-  
-  constructor() {
-    this.dirty = true;
-    this._notifyTail = null;
-    this.sources = null;
-    this._guid = guid();
-  }
+abstract class PushPullReference implements Reference, ChainableReference, NotifiableReference, HasGuid {
+  private dirty = true;
+  public _notifyTail: NotifyNode = null;
+  private sources: Destroyable[] = null;
+  public _guid: number = null;
 
   isDirty() { return this.dirty; }
 

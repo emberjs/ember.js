@@ -145,6 +145,20 @@ function root(obj) {
   return metaFor(obj).root();
 }
 
+QUnit.test("Simple computed properties", function() {
+  let name = new Name({ first: "Godfrey", last: "Chan" });
+
+  let ref = fork(metaFor(name).root().get(intern('fullName')));
+
+  equal(name.fullName, "Godfrey Chan");
+  equal(ref.value(), "Godfrey Chan");
+
+  setProperty(name, 'first', "Godhuda");
+
+  equal(name.fullName, "Godhuda Chan");
+  equal(ref.value(), "Godhuda Chan");
+});
+
 QUnit.test("Computed properties", function() {
   let obj1 = new Wrapper({
     model: new Model({

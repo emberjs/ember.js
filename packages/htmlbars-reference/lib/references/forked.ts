@@ -1,15 +1,15 @@
-import { guid } from '../utils';
 import { ChainableReference, NotifiableReference, Destroyable } from 'htmlbars-reference';
+import { HasGuid } from 'htmlbars-util';
 
-export default class ForkedReference implements NotifiableReference {
+export default class ForkedReference implements NotifiableReference, HasGuid {
   private reference: ChainableReference;
-  private guid: number;
-  private dirty: boolean;
   private chain: Destroyable;
+  public _guid: number = null;
+  private dirty: boolean = true;
   
   constructor(reference: ChainableReference) {
     this.reference = reference;
-    this.guid = guid();
+    this._guid = null;
     this.dirty = true;
 
     this.chain = reference.chain(this);

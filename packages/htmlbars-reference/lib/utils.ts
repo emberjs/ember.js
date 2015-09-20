@@ -1,12 +1,6 @@
 import { Dict, Set, HasGuid, installGuid } from 'htmlbars-util';
 import { InternedString } from 'htmlbars-reference';
 
-var GUID = 0;
-
-export function guid(): number {
-  return ++GUID;
-}
-
 export function dict<T>(): Dict<T> {
   let d = Object.create(null);
   d.x = 1;
