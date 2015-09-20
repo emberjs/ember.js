@@ -3,8 +3,6 @@ export const EMPTY_OBJECT = {};
 
 const KEY = intern(`__glimmer${+ new Date()}`);
 
-export const TRUSTED_STRING = symbol("trusted string");
-
 export function symbol(debugName): string {
   let num = Math.floor(Math.random() * (+new Date()));
   return intern(`${debugName} [id=${KEY}${num}]`);
@@ -28,10 +26,6 @@ interface EnumerableCallback<T> {
 
 export interface Enumerable<T> {
   forEach(callback: EnumerableCallback<T>);
-}
-
-export interface Dict<T> {
-  [index: string]: T;
 }
 
 export interface Destroyable {

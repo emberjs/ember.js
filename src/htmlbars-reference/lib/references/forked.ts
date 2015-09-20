@@ -1,29 +1,35 @@
 import { guid } from '../utils';
+import { ChainableReference, NotifiableReference, Destroyable } from 'htmlbars-reference';
 
-export default class ForkedReference {
-  constructor(reference) {
-    this._reference = reference;
-    this._guid = guid();
-    this._dirty = true;
+export default class ForkedReference implements NotifiableReference {
+  private reference: ChainableReference;
+  private guid: number;
+  private dirty: boolean;
+  private chain: Destroyable;
+  
+  constructor(reference: ChainableReference) {
+    this.reference = reference;
+    this.guid = guid();
+    this.dirty = true;
 
-    this._chain = reference.chain(this);
+    this.chain = reference.chain(this);
   }
 
   notify() {
-    this._dirty = true;
+    this.dirty = true;
   }
 
   isDirty() {
-    return this._dirty;
+    return this.dirty;
   }
 
   value() {
-    this._dirty = false;
-    return this._reference.value();
+    this.dirty = false;
+    return this.reference.value();
   }
 
   destroy() {
-    this._chain.destroy();
+    this.chain.destroy();
   }
 
   label() {
@@ -31,3 +37,6 @@ export default class ForkedReference {
   }
 }
 
+export function fork(reference: ChainableReference): ForkedReference {
+  return new ForkedReference(reference);
+}

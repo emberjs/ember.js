@@ -1,94 +1,118 @@
 import { dict, DictSet } from './utils';
 import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
+import { InternedString, MetaOptions, MetaFactory } from './types';
 
-class Meta {
-  static for(obj) {
+import { Dict, HasGuid, Set } from 'htmlbars-util';
+
+import {
+  Reference,
+  RootReferenceFactory,
+  PathReferenceFactory,
+  PathReference as IPathReference,
+  Meta as IMeta,
+  RootReference as IRootReference
+} from 'htmlbars-reference';
+
+import { InnerReferenceFactory } from './references/descriptors';
+
+
+class Meta implements IMeta {
+  static for(obj: any): IMeta {
     if (obj._meta) return obj._meta;
 
-    let MetaToUse = obj.constructor._Meta || Meta;
-    return (obj._meta = new MetaToUse(obj));
+    let MetaToUse: MetaFactory = obj.constructor._Meta || Meta;
+    return (obj._meta = new MetaToUse(obj, {}));
   }
 
-  constructor(object) {
-    this._object = object;
-    this._references = null;
-    this._root = null;
-    this._referenceTypes = null;
+  private object: any;
+  private references: Dict<DictSet<IPathReference & HasGuid>>;
+  private RootReferenceFactory: RootReferenceFactory;
+  private DefaultPathReferenceFactory: InnerReferenceFactory;
+  protected referenceTypes: Dict<InnerReferenceFactory>;
+  private rootCache: IRootReference;
+
+  constructor(object: any, { RootReferenceFactory, DefaultPathReferenceFactory }: MetaOptions) {
+    this.object = object;
+    this.references = null;
+    this.RootReferenceFactory = RootReferenceFactory || RootReference;
+    this.DefaultPathReferenceFactory = DefaultPathReferenceFactory || PropertyReference;
+    this.referenceTypes = null;
   }
 
-  addReference(property, reference) {
-    var refs = this._references = this._references || dict();
-    var set = refs[property] = refs[property] || new DictSet();
+  addReference(property: InternedString, reference: IPathReference & HasGuid) {
+    var refs = this.references = this.references || dict<DictSet<IPathReference & HasGuid>>();
+    var set = refs[<string>property] = refs[<string>property] || new DictSet<IPathReference & HasGuid>();
     set.add(reference);
   }
 
-  addReferenceTypeFor(property, type) {
-    this._referenceTypes = this._referenceTypes || dict();
-    this._referenceTypes[property] = type;
+  addReferenceTypeFor(property: InternedString, type: PathReferenceFactory) {
+    this.referenceTypes = this.referenceTypes || dict<PathReferenceFactory>();
+    this.referenceTypes[<string>property] = type;
   }
 
-  referenceTypeFor(property) {
-    if (!this._referenceTypes) return PropertyReference;
-    return this._referenceTypes[property] || PropertyReference;
+  referenceTypeFor(property: InternedString): InnerReferenceFactory {
+    if (!this.referenceTypes) return PropertyReference;
+    return this.referenceTypes[<string>property] || PropertyReference;
   }
 
-  removeReference(property, reference) {
-    if (!this._references) return;
-    var set = this._references[property];
-    set.remove(reference);
+  removeReference(property: InternedString, reference: IPathReference & HasGuid) {
+    if (!this.references) return;
+    var set = this.references[<string>property];
+    set.delete(reference);
   }
 
-  referencesFor(property) {
-    if (!this._references) return;
-    return this._references[property];
+  referencesFor(property: InternedString): Set<IPathReference> {
+    if (!this.references) return;
+    return this.references[<string>property];
   }
 
-  root() {
-    return (this._root = this._root || new RootReference(this._object));
+  root(): IRootReference {
+    return (this.rootCache = this.rootCache || new this.RootReferenceFactory(this.object));
   }
 }
 
 export default Meta;
 
 class SealedMeta extends Meta {
-  addReferenceTypeFor(...args) { //jshint ignore:line
+  addReferenceTypeFor(...args): InnerReferenceFactory {
     throw new Error("Cannot modify reference types on a sealed meta");
   }
 }
 
 class BlankMeta extends SealedMeta {
-  referenceTypeFor(...args) { //jshint ignore:line
+  referenceTypeFor(...args): InnerReferenceFactory {
     return PropertyReference;
   }
-
 }
 
 export class MetaBuilder {
+  private referenceTypes: Dict<InnerReferenceFactory>;
+  
   constructor() {
-    this._referenceTypes = null;
+    this.referenceTypes = null;
   }
 
-  addReferenceTypeFor(property, type) {
-    this._referenceTypes = this._referenceTypes || dict();
-    this._referenceTypes[property] = type;
+  addReferenceTypeFor(property: InternedString, type: InnerReferenceFactory) {
+    this.referenceTypes = this.referenceTypes || dict<InnerReferenceFactory>();
+    this.referenceTypes[<string>property] = type;
   }
 
-  seal() {
-    if (!this._referenceTypes) return BlankMeta;
-    return buildMeta(turbocharge(this._referenceTypes));
+  seal(): MetaFactory {
+    if (!this.referenceTypes) return BlankMeta;
+    return buildMeta(turbocharge(this.referenceTypes));
   }
 }
 
-function buildMeta(_referenceTypes) {
+function buildMeta(referenceTypes: Dict<InnerReferenceFactory>): MetaFactory {
   return class extends SealedMeta {
-    constructor(object, RootReference, PropertyReference) {
-      super(object, RootReference, PropertyReference);
-      this._referenceTypes = _referenceTypes;
+    constructor(object, { RootReferenceFactory, DefaultPathReferenceFactory }) {
+      super(object, { RootReferenceFactory, DefaultPathReferenceFactory });
+      this.referenceTypes = referenceTypes;
     }
 
     referenceTypeFor(property) {
-      return this._referenceTypes[property] || PropertyReference;
+      return this.referenceTypes[property] || PropertyReference;
     }
   };
 }
@@ -99,6 +123,6 @@ function turbocharge(obj) {
   return obj;
 }
 
-export function metaFor(obj) {
+export function metaFor(obj: any): IMeta {
   return Meta.for(obj);
 }

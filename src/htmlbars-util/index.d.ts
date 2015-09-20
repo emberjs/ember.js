@@ -11,5 +11,7 @@ export { default as voidMap } from './lib/void-tag-names';
 
 import * as types from './lib/object-utils';
 export { struct, merge } from './lib/object-utils';
+export { installGuid, HasGuid } from './lib/guid';
 
 export { types };
+export * from './lib/collections';

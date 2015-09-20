@@ -1,6 +1,5 @@
-/*jshint evil:true*/
 import { preprocess } from "htmlbars-syntax";
-import { NewTemplateCompiler } from "./template-compiler";
+import TemplateCompiler from "./template-compiler";
 import { Template } from "htmlbars-runtime";
 
 /*
@@ -20,7 +19,7 @@ import { Template } from "htmlbars-runtime";
  */
 export function compileSpec(string, options) {
   var ast = preprocess(string, options);
-  var program = NewTemplateCompiler.compile(options, ast);
+  var program = TemplateCompiler.compile(options, ast);
   return JSON.stringify(program);
 }
 

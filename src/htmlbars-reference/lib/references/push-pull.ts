@@ -1,78 +1,87 @@
 import { guid } from '../utils';
+import { Destroyable, Reference, NotifiableReference, ChainableReference } from 'htmlbars-reference';
+
 
 class NotifyNode {
+  public parent: PushPullReference;
+  public child: NotifiableReference;
+  public previousSibling: NotifyNode;
+  public nextSibling: NotifyNode;
+  
   constructor(parent, child) {
-    this._parent = parent;
-    this._child = child;
-  }
-
-  static appendTo(parent, child) {
-    let node = new NotifyNode(parent, child);
-
-    let oldTail = parent._notifyTail;
-    if (oldTail) {
-      oldTail._nextSibling = node;
-      node._previousSibling = oldTail;
-    } else {
-      parent._notifyHead = node;
-    }
-
-    parent._notifyTail = node;
-    return new Unchain(parent, node);
+    this.parent = parent;
+    this.child = child;
   }
 }
 
 class Unchain {
-  constructor(parent, notify) {
-    this._parent = parent;
-    this._notify = notify;
+  private reference: PushPullReference;
+  private notifyNode: NotifyNode;
+  
+  constructor(reference: PushPullReference, notifyNode: NotifyNode) {
+    this.reference = reference;
+    this.notifyNode = notifyNode;
   }
 
   destroy() {
-    let _parent = this._parent, _notify = this._notify;
-    let head = _parent._notifyHead;
-    let tail = _parent._notifyTail;
-    let prev = _notify._previousSibling;
-    let next = _notify._nextSibling;
+    let { reference, notifyNode } = this;
+    let { nextSibling, previousSibling } = notifyNode;
 
-    if (head === _notify) _parent._notifyHead = next;
-    if (next) next._previousSibling = prev;
+    if (nextSibling) nextSibling.previousSibling = previousSibling;
+    if (previousSibling) previousSibling.nextSibling = nextSibling;
 
-    if (tail === _notify) _parent._notifyTail = prev;
-    if (prev) prev._nextSibling = next;
+    if (reference._notifyTail === notifyNode) reference._notifyTail = previousSibling;
   }
 }
 
-export default class PushPullReference {
+abstract class PushPullReference implements Reference, ChainableReference, NotifiableReference {
+  private dirty: boolean;
+  public _notifyTail: NotifyNode;
+  private sources: Destroyable[];
+  public _guid: number;
+  
   constructor() {
-    this._dirty = true;
-    this._notifyHead = null;
+    this.dirty = true;
     this._notifyTail = null;
-    this._sources = null;
+    this.sources = null;
     this._guid = guid();
   }
 
-  isDirty() { return this._dirty; }
+  isDirty() { return this.dirty; }
 
-  chain(child) {
-    NotifyNode.append(this, child);
+  chain(child: NotifiableReference): Destroyable {
+    return this._append(child);
   }
 
+  abstract value(): any;
+
   notify() {
-    let notifyNode = this._notifyHead;
+    let notifyNode = this._notifyTail;
     while (notifyNode) {
-      notifyNode._child.notify();
-      notifyNode = notifyNode._nextSibling;
+      notifyNode.child.notify();
+      notifyNode = notifyNode.previousSibling;
     }
   }
 
   destroy() {
-    if (!this._sources) return;
-    this._sources.forEach(source => source.destroy());
+    if (!this.sources) return;
+    this.sources.forEach(source => source.destroy());
   }
 
-  _addSource(source) {
-    this._sources = this._sources || [];
-    this._sources.push(source.chain(this));
+  protected _addSource(source: ChainableReference) {
+    this.sources = this.sources || [];
+    this.sources.push(source.chain(this));
   }
+  
+  private _append(child): Unchain {
+    let node = new NotifyNode(this, child);
+
+    node.previousSibling = this._notifyTail;
+    this._notifyTail = node;
+
+    return new Unchain(this, node);
+  }
+
 }
+
+export default PushPullReference;

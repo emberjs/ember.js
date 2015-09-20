@@ -1,29 +1,46 @@
-import { guid, intern } from '../utils';
-import { DirectReference } from './property-access';
+import { guid, intern, dict } from '../utils';
+import { PathReference } from './path';
+import { Dict } from 'htmlbars-util';
+import { RootReference as IRootReference, PathReference as IPathReference, InternedString, NotifiableReference } from 'htmlbars-reference';
+import PushPullReference from './push-pull';
 
-export default class RootReference {
-  constructor(parent) {
-    this._guid = guid();
-    this._parent = parent;
-    this._chains = {};
+export default class RootReference extends PushPullReference implements IRootReference, IPathReference {
+  private object: any;
+  private chains: Dict<IPathReference>;
+
+  constructor(object) {
+    super();
+    this.object = object;
+    this.chains = dict<IPathReference>();
   }
 
   isDirty() { return false; }
 
-  value() { return this._parent; }
+  value() { return this.object; }
 
-  get(prop) {
-    var _chains = this._chains;
-    if (prop in _chains) return _chains[prop];
-    return (_chains[prop] = new DirectReference(this, prop));
+  update(object: any) {
+    this.object = object;
+    this.notify();
+  }
+
+  get(prop: InternedString): IPathReference {
+    var chains = this.chains;
+    if (<string>prop in chains) return chains[<string>prop];
+    return (chains[<string>prop] = new PathReference(this, prop));
+  }
+  
+  chainFor(prop: InternedString): IPathReference {
+    let chains = this.chains;
+    if (<string>prop in chains) return chains[<string>prop];
+    return null;
   }
 
   path(string) {
     return string.split('.').reduce((ref, part) => ref.get(intern(part)), this);
   }
 
-  referenceFromInternedParts(parts) {
-    return parts.reduce((ref, part) => ref.get(part), this);
+  referenceFromParts(parts: InternedString[]): IPathReference {
+    return parts.reduce((ref, part) => ref.get(part), <IPathReference>this);
   }
 
   label() {

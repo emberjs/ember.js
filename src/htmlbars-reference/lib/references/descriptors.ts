@@ -1,13 +1,23 @@
-import { metaFor } from '../meta';
+import Meta from '../meta';
+import { Reference, InternedString } from 'htmlbars-reference';
+import PushPullReference from './push-pull';
 
-export class PropertyReference {
-  constructor(object, property) {
-    this._object = object;
-    this._property = property;
+export interface InnerReferenceFactory {
+  new (object: any, property: InternedString): Reference;
+}
+
+export class PropertyReference implements Reference {
+  private object: any;
+  private property: InternedString;
+  
+  constructor(object: any, property: InternedString) {
+    this.object = object;
+    this.property = property;
   }
 
   isDirty() { return true; }
-  value() { return this._object[this._property]; }
+  value() { return this.object[<string>this.property]; }
+  destroy() {}
 
   label() {
     return '[reference Property]';
@@ -15,34 +25,32 @@ export class PropertyReference {
 }
 
 export function ComputedBlueprint(property, dependencies) {
-  return class ComputedReference {
-    constructor(object, property) {
-      this._object = object;
-      this._property = property;
-      this._internedDependencies = dependencies;
-      this._isDirty = true;
-      this._sources = null;
+  return class ComputedReference extends PushPullReference implements Reference {
+    private object: any;
+    private property: InternedString;
+    private dependencies: InternedString[][];
+    private installed: boolean;
+
+    constructor(object: any, property: InternedString) {
+      super();
+      this.object = object;
+      this.property = property;
+      this.dependencies = dependencies;
+      this.installed = false;
     }
-
+    
     value() {
-      if (!this._disconnect) {
-        let root = metaFor(this._object).root();
-        this._disconnect = new Array(this._internedDependencies.length);
-
-        this._internedDependencies.forEach((path, i) => {
-          this._disconnect[i] = root.referenceFromInternedParts(path).chain(this);
-        });
+      if (!this.installed) {
+        let root = Meta.for(this.object).root();
+        this.dependencies.forEach(dep => this._addSource(root.referenceFromParts(dep)));
+        this.installed = true;
       }
 
-      return this._object[this._property];
+      return this.object[<string>this.property];
     }
 
     label() {
       return '[reference Computed]';
-    }
-
-    destroy() {
-      this._disconnect.forEach(chain => chain.destroy());
     }
   };
 }

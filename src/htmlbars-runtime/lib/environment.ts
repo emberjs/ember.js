@@ -80,35 +80,6 @@ function dict() {
 
 import { Destroyable, Dict } from './utils';
 
-export interface Reference extends Destroyable {
-  value(): any;
-  isDirty(): boolean;
-}
-
-export interface NotifiableReference extends Reference {
-  notify();
-}
-
-export interface ChainableReference extends Reference {
-  chain(child: Reference): Destroyable;
-}
-
-export interface PathReference extends ChainableReference {
-  get(key: string): PathReference;
-}
-
-export interface RootReference extends PathReference {
-  update(value: any);
-}
-
-export interface Meta {
-  root(): RootReference;
-}
-
-export interface MetaLookup {
-  for(obj: any): Meta;
-}
-
 function fork(ref: ChainableReference): Reference {
   throw new Error("unimplemented");
 }
@@ -246,10 +217,11 @@ export class Environment {
   }
 }
 
-import { TRUSTED_STRING } from './utils';
+// TS does not allow us to use computed properties for this, so inlining for now
+// import { TRUSTED_STRING } from './symbols';
 
 interface SafeString {
-  [TRUSTED_STRING]: boolean, // true
+  "trusted string [id=7d10c13d-cdf5-45f4-8859-b09ce16517c2]": boolean, // true
   string: string
 }
 

@@ -1,5 +1,5 @@
-import HTMLBarsObject, { computed, setProperty } from 'htmlbars-object';
-import { Meta } from 'htmlbars-reference';
+import HTMLBarsObject, { computed } from 'htmlbars-object';
+import { metaFor, setProperty, intern, fork } from 'htmlbars-reference';
 
 let Wrapper = HTMLBarsObject.extend({
   fullName: computed(function() {
@@ -142,7 +142,7 @@ QUnit.test('the simple object model allows you to derive references', function()
 });
 
 function root(obj) {
-  return Meta.for(obj).root();
+  return metaFor(obj).root();
 }
 
 QUnit.test("Computed properties", function() {
@@ -155,7 +155,7 @@ QUnit.test("Computed properties", function() {
   });
 
   var originalPerson = obj1.model.person;
-  let ref = Meta.for(obj1).root().get('fullName').fork();
+  let ref = fork(metaFor(obj1).root().get(intern('fullName')));
 
   equal(obj1.fullName, "Yehuda Katz");
   equal(ref.value(), "Yehuda Katz");

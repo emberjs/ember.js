@@ -22,11 +22,11 @@ function compilesTo(html, expected, context) {
 }
 
 function rootElement() {
-  return dom.createElement('div');
+  return dom.createElement('div', document.body);
 }
 
 function commonSetup() {
-  dom = new DOMHelper();
+  dom = new DOMHelper(window.document); // TODO: Support SimpleDOM
   env = new TestEnvironment({ dom, BaseReference: TestBaseReference });
   root = rootElement();
 }

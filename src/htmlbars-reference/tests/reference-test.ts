@@ -1,4 +1,4 @@
-import { guid, metaFor } from "htmlbars-reference";
+import { guid, metaFor, setProperty } from "htmlbars-reference";
 
 //function computed(obj, name, getter, depStrings) {
   //Object.defineProperty(obj, name, {
@@ -10,71 +10,13 @@ import { guid, metaFor } from "htmlbars-reference";
   //let deps = depStrings.map(d => d.split('.'));
 
   //[>jshint -W064<]
-  //metaFor(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps)); [>jshint +W064<]
+  //Meta.for(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps)); [>jshint +W064<]
 //}
 
-function addObserver(obj, path) {
-  var root = metaFor(obj).root();
+import { intern, fork } from 'htmlbars-reference';
 
-  return path.split('.').reduce(function(ref, part) {
-    return ref.get(part);
-  }, root);
-}
-
-function rootFor(obj) {
-  return metaFor(obj).root();
-}
-
-function setProperty(parent, property, val) {
-  var rootProp = rootFor(parent)._chains[property];
-
-  var referencesToNotify = metaFor(parent).referencesFor(property);
-
-  parent[property] = val;
-
-  if (referencesToNotify) {
-    referencesToNotify.forEach(function(ref) { ref._reparent(); });
-  }
-
-  if (rootProp) rootProp.notify();
-}
-
-function TestReference(root, rootName, path) {
-  this._guid = guid();
-  this._root = root;
-  this._rootName = rootName;
-  this._path = path;
-  this._reference = addObserver(root, path);
-  this._chain = this._reference.chain(this);
-
-  this._dirty = true;
-}
-
-TestReference.prototype = {
-  name: function() {
-    return this._rootName + '.get("' + this._path + '")';
-  },
-
-  isDirty: function() {
-    return this._dirty;
-  },
-
-  notify: function() {
-    this._dirty = true;
-  },
-
-  value: function() {
-    this._dirty = false;
-    return this._reference.value();
-  },
-
-  destroy: function() {
-    this._chain.destroy();
-  }
-};
-
-function testReference(root, rootName, path) {
-  return new TestReference(root, rootName, path);
+function addObserver(obj: any, name: string, path: string) {
+  return fork(metaFor(obj).root().referenceFromParts(path.split('.').map(intern)));
 }
 
 QUnit.module("references");
@@ -88,31 +30,31 @@ QUnit.test("basic reference data flow", function() {
   let originalPerson = obj1.model.person;
 
   let o1 = [
-    testReference(obj1, 'obj1', 'model.person.name.first'),
-    testReference(obj1.model, 'obj1.model', 'person.name.first'),
-    testReference(obj1.model.person, 'obj1.model.person', 'name.first'),
-    testReference(obj1.model.person.name, 'obj1.model.person.name', 'first')
+    addObserver(obj1, 'obj1', 'model.person.name.first'),
+    addObserver(obj1.model, 'obj1.model', 'person.name.first'),
+    addObserver(obj1.model.person, 'obj1.model.person', 'name.first'),
+    addObserver(obj1.model.person.name, 'obj1.model.person.name', 'first')
   ];
 
   let o2 = [
-    testReference(obj2, 'obj2', 'model.person.name.first'),
-    testReference(obj2.model, 'obj2.model', 'person.name.first'),
-    testReference(obj2.model.person, 'obj2.model.person', 'name.first'),
-    testReference(obj2.model.person.name, 'obj2.model.person.name', 'first')
+    addObserver(obj2, 'obj2', 'model.person.name.first'),
+    addObserver(obj2.model, 'obj2.model', 'person.name.first'),
+    addObserver(obj2.model.person, 'obj2.model.person', 'name.first'),
+    addObserver(obj2.model.person.name, 'obj2.model.person.name', 'first')
   ];
 
   let o3 = [
-    testReference(obj3, 'obj3', 'model.person.name.first'),
-    testReference(obj3.model, 'obj3.model', 'person.name.first'),
-    testReference(obj3.model.person, 'obj3.model.person', 'name.first'),
-    testReference(obj3.model.person.name, 'obj3.model.person.name', 'first')
+    addObserver(obj3, 'obj3', 'model.person.name.first'),
+    addObserver(obj3.model, 'obj3.model', 'person.name.first'),
+    addObserver(obj3.model.person, 'obj3.model.person', 'name.first'),
+    addObserver(obj3.model.person.name, 'obj3.model.person.name', 'first')
   ];
 
   let o4 = [
-    testReference(obj4, 'obj4', 'model.person.name.first'),
-    testReference(obj4.model, 'obj4.model', 'person.name.first'),
-    testReference(obj4.model.person, 'obj4.model.person', 'name.first'),
-    testReference(obj4.model.person.name, 'obj4.model.person.name', 'first')
+    addObserver(obj4, 'obj4', 'model.person.name.first'),
+    addObserver(obj4.model, 'obj4.model', 'person.name.first'),
+    addObserver(obj4.model.person, 'obj4.model.person', 'name.first'),
+    addObserver(obj4.model.person.name, 'obj4.model.person.name', 'first')
   ];
 
   allDirty(o1, "Yehuda");
@@ -195,31 +137,31 @@ QUnit.test("test data flow that goes through primitive wrappers", function() {
   let originalPerson = obj1.model.person;
 
   let o1 = [
-    testReference(obj1, 'obj1', 'model.person.name.first.length'),
-    testReference(obj1.model, 'obj1.model', 'person.name.first.length'),
-    testReference(obj1.model.person, 'obj1.model.person', 'name.first.length'),
-    testReference(obj1.model.person.name, 'obj1.model.person.name', 'first.length')
+    addObserver(obj1, 'obj1', 'model.person.name.first.length'),
+    addObserver(obj1.model, 'obj1.model', 'person.name.first.length'),
+    addObserver(obj1.model.person, 'obj1.model.person', 'name.first.length'),
+    addObserver(obj1.model.person.name, 'obj1.model.person.name', 'first.length')
   ];
 
   let o2 = [
-    testReference(obj2, 'obj2', 'model.person.name.first.length'),
-    testReference(obj2.model, 'obj2.model', 'person.name.first.length'),
-    testReference(obj2.model.person, 'obj2.model.person', 'name.first.length'),
-    testReference(obj2.model.person.name, 'obj2.model.person.name', 'first.length')
+    addObserver(obj2, 'obj2', 'model.person.name.first.length'),
+    addObserver(obj2.model, 'obj2.model', 'person.name.first.length'),
+    addObserver(obj2.model.person, 'obj2.model.person', 'name.first.length'),
+    addObserver(obj2.model.person.name, 'obj2.model.person.name', 'first.length')
   ];
 
   let o3 = [
-    testReference(obj3, 'obj3', 'model.person.name.first.length'),
-    testReference(obj3.model, 'obj3.model', 'person.name.first.length'),
-    testReference(obj3.model.person, 'obj3.model.person', 'name.first.length'),
-    testReference(obj3.model.person.name, 'obj3.model.person.name', 'first.length')
+    addObserver(obj3, 'obj3', 'model.person.name.first.length'),
+    addObserver(obj3.model, 'obj3.model', 'person.name.first.length'),
+    addObserver(obj3.model.person, 'obj3.model.person', 'name.first.length'),
+    addObserver(obj3.model.person.name, 'obj3.model.person.name', 'first.length')
   ];
 
   let o4 = [
-    testReference(obj4, 'obj4', 'model.person.name.first.length'),
-    testReference(obj4.model, 'obj4.model', 'person.name.first.length'),
-    testReference(obj4.model.person, 'obj4.model.person', 'name.first.length'),
-    testReference(obj4.model.person.name, 'obj4.model.person.name', 'first.length')
+    addObserver(obj4, 'obj4', 'model.person.name.first.length'),
+    addObserver(obj4.model, 'obj4.model', 'person.name.first.length'),
+    addObserver(obj4.model.person, 'obj4.model.person', 'name.first.length'),
+    addObserver(obj4.model.person.name, 'obj4.model.person.name', 'first.length')
   ];
 
   allDirty(o1, 6);
@@ -294,12 +236,12 @@ QUnit.test("test data flow that goes through primitive wrappers", function() {
 });
 
 function isDirty(ref, newValue) {
-  ok(ref.isDirty(), ref.name() + " is dirty");
-  ok(ref.value() === newValue, ref.name() + " has new value " + newValue);
+  ok(ref.isDirty(), ref.label() + " is dirty");
+  ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
 }
 
 function isClean(ref) {
-  ok(!ref.isDirty(), ref.name() + " is clean");
+  ok(!ref.isDirty(), ref.label() + " is clean");
 }
 
 function allDirty(refs, newValue) {

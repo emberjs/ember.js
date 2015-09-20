@@ -1,10 +1,15 @@
-import { Meta, MetaBuilder, ComputedBlueprint, intern } from 'htmlbars-reference';
+import { Meta, MetaBuilder, ComputedBlueprint, InternedString, setProperty, intern } from 'htmlbars-reference';
+
+interface HTMLBarsObjectFactory<T> {
+  new<U>(attrs: U): T & U 
+}
 
 export default class HTMLBarsObject {
-  static extend(object) {
+  static extend<T extends Object>(object: T): HTMLBarsObjectFactory<T> {
     let builder = new MetaBuilder();
 
     let Class = class {
+      static _Meta;
       constructor(attrs) {
         Object.assign(this, attrs);
       }
@@ -20,40 +25,32 @@ export default class HTMLBarsObject {
   }
 }
 
+interface ComputedCallback {
+  (): any;
+}
+
 class Computed {
-  constructor(callback, deps) {
-    this._callback = callback;
-    this._deps = deps.map(d => d.split('.').map(intern));
+  private callback: ComputedCallback;
+  private deps: InternedString[][];
+  
+  constructor(callback: ComputedCallback, deps: string[]) {
+    this.callback = callback;
+    this.deps = deps.map(d => d.split('.').map(intern));
   }
 
-  define(prototype, key) {
+  define(prototype: Object, key: InternedString) {
     Object.defineProperty(prototype, key, {
       enumerable: true,
       configurable: true,
-      get: this._callback
+      get: this.callback
     });
   }
 
-  addReferenceType(builder, key) {
-    /*jshint -W064*/
-    builder.addReferenceTypeFor(key, ComputedBlueprint(key, this._deps)); /*jshint +W064*/
+  addReferenceType(builder: MetaBuilder, key: InternedString) {
+    builder.addReferenceTypeFor(key, ComputedBlueprint(key, this.deps));
   }
 }
 
-export function computed(callback, ...deps) {
+export function computed(callback: ComputedCallback, ...deps: string[]) {
   return new Computed(callback, deps);
-}
-
-export function setProperty(parent, property, val) {
-  var rootProp = Meta.for(parent).root()._chains[property];
-
-  var referencesToNotify = Meta.for(parent).referencesFor(property);
-
-  parent[property] = val;
-
-  if (referencesToNotify) {
-    referencesToNotify.forEach(function(ref) { ref._reparent(); });
-  }
-
-  if (rootProp) rootProp.notify();
 }

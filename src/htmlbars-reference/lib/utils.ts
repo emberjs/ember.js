@@ -1,39 +1,45 @@
+import { Dict, Set, HasGuid, installGuid } from 'htmlbars-util';
+import { InternedString } from 'htmlbars-reference';
+
 var GUID = 0;
 
-export function guid() {
+export function guid(): number {
   return ++GUID;
 }
 
-export function dict() {
+export function dict<T>(): Dict<T> {
   let d = Object.create(null);
   d.x = 1;
   delete d.x;
   return d;
 }
 
-export class DictSet {
+export class DictSet<T extends HasGuid> implements Set<T> {
+  private dict: Dict<T>;
+
   constructor() {
-    this._dict = dict();
+    this.dict = dict<T>();
   }
 
-  add(obj) {
-    this._dict[obj._guid] = obj;
+  add(obj: T): Set<T> {
+    this.dict[installGuid(obj)] = obj;
+    return this;
   }
 
-  remove(obj) {
-    delete this._dict[obj._guid];
+  delete(obj: T) {
+    if (obj._guid) delete this.dict[obj._guid];
   }
 
-  forEach(callback) {
-    let { _dict } = this;
-    Object.keys(_dict).forEach(key => callback(_dict[key]));
+  forEach(callback: (T) => void) {
+    let { dict } = this;
+    Object.keys(dict).forEach(key => callback(dict[key]));
   }
 }
 
-export function intern(str) {
+export function intern(str: string): InternedString {
   var obj = {};
   obj[str] = 1;
-  for (var key in obj) return key;
+  for (var key in obj) return <InternedString>key;
 }
 
 export function EMPTY_CACHE() {}

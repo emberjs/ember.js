@@ -1,1 +1,1 @@
-export { default as default, computed, setProperty } from './lib/object';
+export { default as default, computed } from './lib/object';
