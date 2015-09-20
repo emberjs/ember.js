@@ -23,7 +23,7 @@ var bench = new Funnel(
 
 var HTMLTokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 
-var DTSTree = new Funnel('src', {
+var DTSTree = new Funnel('packages', {
   include: ['*/index.d.ts'],
   
   getDestinationPath: function(relativePath) {
@@ -31,7 +31,7 @@ var DTSTree = new Funnel('src', {
   }
 });
 
-var tsTree = new Funnel('src', {
+var tsTree = new Funnel('packages', {
   include: ["**/*.ts", "**/*.d.ts"]
 });
 
