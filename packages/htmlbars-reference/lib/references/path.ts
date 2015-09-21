@@ -1,4 +1,5 @@
-import { EMPTY_CACHE, DictSet, dict } from '../utils';
+import { EMPTY_CACHE } from '../utils';
+import { DictSet, dict } from 'htmlbars-util';
 import Meta from '../meta';
 import ForkedReference from './forked';
 import { PropertyReference } from './descriptors';

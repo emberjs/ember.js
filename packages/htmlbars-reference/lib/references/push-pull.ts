@@ -33,7 +33,7 @@ class Unchain {
   }
 }
 
-abstract class PushPullReference implements Reference, ChainableReference, NotifiableReference, HasGuid {
+export abstract class PushPullReference implements Reference, ChainableReference, NotifiableReference, HasGuid {
   private dirty = true;
   public _notifyTail: NotifyNode = null;
   private sources: Destroyable[] = null;

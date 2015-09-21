@@ -14,4 +14,4 @@ export { struct, merge } from './lib/object-utils';
 export { installGuid, HasGuid } from './lib/guid';
 
 export { types };
-export * from './lib/collections';
+export { Dict, Set, DictSet, dict } from './lib/collections';

@@ -35,7 +35,7 @@ function generateTokens(divOrHTML) {
   return { tokens: tokenize(div.innerHTML), html: div.innerHTML };
 }
 
-export function equalTokens(fragment, html, message) {
+export function equalTokens(fragment, html, message=null) {
   if (fragment.fragment) { fragment = fragment.fragment; }
   if (html.fragment) { html = html.fragment; }
 

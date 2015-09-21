@@ -3,11 +3,11 @@ import {
   parse,
   traverse,
   builders as b
-} from '../../htmlbars-syntax';
+} from 'htmlbars-syntax';
 import {
   cannotRemoveNode,
   cannotReplaceNode,
-} from '../../htmlbars-syntax/traversal/errors';
+} from 'htmlbars-syntax/traversal/errors';
 
 QUnit.module('[htmlbars-syntax] Traversal - manipulating');
 

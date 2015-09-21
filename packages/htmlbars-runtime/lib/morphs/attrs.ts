@@ -1,55 +1,76 @@
 import { getAttrNamespace } from "htmlbars-util";
 import { Morph } from "../morph";
+import { InternedString, Reference } from 'htmlbars-reference';
+import { ExpressionSyntax } from '../template';
+import { Frame } from '../environment';
+
+interface AttrMorphOptions {
+  name: InternedString;
+  value: ExpressionSyntax;
+  namespace?: InternedString;
+}
 
 export class AttrMorph extends Morph {
-  static specialize({ name, value, namespace }) { // jshint ignore:line
+  static specialize({ name, value, namespace }: AttrMorphOptions): typeof AttrMorph {
     namespace = namespace || getAttrNamespace(name);
-    return namespace ? SetAttributeNSMorph : SetAttributeMorph;
+    return <any>(namespace ? SetAttributeNSMorph : SetAttributeMorph);
   }
 
-  init({ name, value: syntax }) {
-    this._name = name;
-    this._value = syntax.evaluate(this._frame);
-    this._lastValue = false;
-    this.isDynamic = true;
+  protected name: InternedString;
+  protected value: Reference;
+  protected lastValue: any = false;
+
+  init({ name, value }: AttrMorphOptions) {
+    this.name = name;
+    this.value = value.evaluate(this.frame);
   }
 
   _setLastValue(value) {
     // we should probably disallow certain kinds of values here if we can
     // get away with it.
     if (value === null || value === undefined || value === false) {
-      this._lastValue = false;
+      this.lastValue = false;
       return false;
     } else {
-      this._lastValue = value;
+      this.lastValue = value;
       return value;
     }
   }
+
+  append() {}
+  update() {}
+  destroy() {}
 }
 
 class SetAttributeMorph extends AttrMorph {
   append() {
-    let contentValue = this._setLastValue(this._value.value());
-    atomicSetAttribute(this._frame, this.parentNode, this._name, contentValue);
+    let contentValue = this._setLastValue(this.value.value());
+    atomicSetAttribute(this.frame, this.parentNode, this.name, contentValue);
   }
 }
 
+interface SetAttributeNSMorphOptions extends AttrMorphOptions {
+  namespace: InternedString;
+}
+
 class SetAttributeNSMorph extends AttrMorph {
-  init(attrs) {
-    super(attrs);
-    this._namespace = attrs.namespace;
+  private namespace: InternedString;
+
+  init(attrs: SetAttributeNSMorphOptions) {
+    super.init(attrs);
+    this.namespace = attrs.namespace;
   }
 
   append() {
-    let contentValue = this._setLastValue(this._value.value());
-    atomicSetAttributeNS(this._frame, this.parentNode, this._name, this._namespace, contentValue);
+    let contentValue = this._setLastValue(this.value.value());
+    atomicSetAttributeNS(this.frame, this.parentNode, this.name, this.namespace, contentValue);
   }
 }
 
 export class SetPropertyMorph extends AttrMorph {
   append() {
-    let contentValue = this._setLastValue(this._value.value());
-    this.parentNode[this._name] = contentValue;
+    let contentValue = this._setLastValue(this.value.value());
+    this.parentNode[<string>this.name] = contentValue;
   }
 }
 
@@ -63,10 +84,10 @@ function atomicSetAttribute(frame, element, name, value) {
   }
 }
 
-function atomicSetAttributeNS({ env: { dom } }, element, name, namespace, value) {
+function atomicSetAttributeNS(frame: Frame, element, name, namespace, value) {
   if (value === false) {
-    dom.removeAttribute(element, name);
+    frame.dom().removeAttribute(element, name);
   } else {
-    dom.setAttributeNS(element, name, namespace, value);
+    frame.dom().setAttributeNS(element, name, namespace, value);
   }
 }

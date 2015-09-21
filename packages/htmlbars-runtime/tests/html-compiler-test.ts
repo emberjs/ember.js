@@ -1,37 +1,35 @@
 import { compile } from "htmlbars-compiler";
 import { forEach } from "htmlbars-util";
-import { DOMHelper } from "htmlbars-runtime";
 import { normalizeInnerHTML, getTextContent, equalTokens } from "htmlbars-test-helpers";
-import { TestEnvironment, TestBaseReference } from "./support";
+import { TestEnvironment } from "./support";
+import { Template } from 'htmlbars-runtime';
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
-
-var env, dom, root;
+    
+let env: TestEnvironment, root: Element;
 
 function registerYieldingHelper(name) {
   env.registerHelper(name, function(params, hash, blocks) { return blocks.template.yield(); });
 }
 
-
-function compilesTo(html, expected, context) {
-  var template = compile(html);
+function compilesTo(html: string, expected: string=html, context: any={}) {
+  var template = compile(html, {});
   root = rootElement();
   render(template, context);
-  equalTokens(root, expected === undefined ? html : expected);
+  equalTokens(root, expected);
 }
 
 function rootElement() {
-  return dom.createElement('div', document.body);
+  return env.getDOM().createElement('div', document.body);
 }
 
 function commonSetup() {
-  dom = new DOMHelper(window.document); // TODO: Support SimpleDOM
-  env = new TestEnvironment({ dom, BaseReference: TestBaseReference });
+  env = new TestEnvironment(window.document); // TODO: Support SimpleDOM
   root = rootElement();
 }
 
-function render(template, self) {
+function render(template: Template, self: any) {
   return template.render(self, env, { appendTo: root });
 }
 
@@ -59,7 +57,7 @@ test("Simple elements can be re-rendered", function() {
 
   var oldFirstChild = root.firstChild;
 
-  result.revalidate(env);
+  result.rerender();
 
   strictEqual(root.firstChild, oldFirstChild);
   equalTokens(root, "<h1>hello!</h1><div>content</div>");

@@ -1,4 +1,4 @@
-export function forEach(array, callback, binding) {
+export function forEach<T>(array: T[], callback: (e?: T, i?: number, c?: T[]) => void, binding: any=undefined) {
   var i, l;
   if (binding === undefined) {
     for (i = 0, l = array.length; i < l; i++) {

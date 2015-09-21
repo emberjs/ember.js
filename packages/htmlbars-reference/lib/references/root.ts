@@ -1,4 +1,5 @@
-import { intern, dict } from '../utils';
+import { intern } from '../utils';
+import { dict } from 'htmlbars-util';
 import { PathReference } from './path';
 import { Dict, HasGuid } from 'htmlbars-util';
 import { RootReference as IRootReference, PathReference as IPathReference, InternedString, NotifiableReference } from 'htmlbars-reference';

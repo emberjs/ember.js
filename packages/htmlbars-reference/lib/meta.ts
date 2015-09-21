@@ -1,9 +1,8 @@
-import { dict, DictSet } from './utils';
 import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { InternedString, MetaOptions, MetaFactory } from './types';
 
-import { Dict, HasGuid, Set } from 'htmlbars-util';
+import { Dict, DictSet, HasGuid, Set, dict } from 'htmlbars-util';
 
 import {
   Reference,

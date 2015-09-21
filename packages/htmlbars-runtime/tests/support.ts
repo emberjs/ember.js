@@ -1,44 +1,22 @@
-import { Environment } from "htmlbars-runtime";
-import { BaseReference, Reference } from "htmlbars-runtime";
-
-export class TestBaseReference extends BaseReference {
-  get(key) {
-    return new TestPropertyReference(this._value, key);
-  }
-}
-
-export class TestPropertyReference extends Reference {
-  constructor(object, key) {
-    super();
-    this._object = object;
-    this._key = key;
-    this._lastValue = null;
-  }
-
-  isDirty() {
-    return this._object[this._key] !== this._lastValue;
-  }
-
-  value() {
-    return this._object[this._key];
-  }
-}
+import { Environment, DOMHelper } from "htmlbars-runtime";
+import { Meta } from "htmlbars-reference";
 
 export class TestEnvironment extends Environment {
-  constructor(options) {
-    super(options);
-    this._helpers = {};
+  private helpers={};
+  
+  constructor(doc: HTMLDocument=document) {
+    super(new DOMHelper(doc), Meta);
   }
 
   registerHelper(name, helper) {
-    this._helpers[name] = helper;
+    this.helpers[name] = helper;
   }
 
   hasHelper(scope, helperName) {
-    return helperName.length === 1 && helperName[0] in this._helpers;
+    return helperName.length === 1 && helperName[0] in this.helpers;
   }
 
   lookupHelper(scope, helperName) {
-    return this._helpers[helperName[0]];
+    return this.helpers[helperName[0]];
   }
 }

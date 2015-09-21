@@ -2,9 +2,11 @@ import Builder from './builder';
 import { intern } from './utils';
 import { RenderResult } from './render';
 import { HelperInvocationReference, ConcatReference, ConstReference } from './reference';
-import { Frame, ChainableReference } from './hooks';
+import { Frame } from './environment';
+import { ChainableReference, InternedString } from 'htmlbars-reference';
 import { ElementStack } from './builder';
-import { Dict } from './utils';
+import { Environment } from './environment';
+import { Dict } from 'htmlbars-util';
 
 interface Bounds {
   parentNode(): Node;
@@ -20,7 +22,7 @@ import {
   // SimpleHelperMorph
 } from './morphs/inline';
 
-import { Morph } from './morph';
+import { Morph, HasParentNode } from './morph';
 
 import {
   BlockHelperMorph
@@ -32,8 +34,23 @@ type Spec = any[];
 
 const EMPTY_ARRAY = Object.freeze([]);
 
+interface TemplateOptions {
+  meta?: Object;
+  root: Template[];
+  position: number;
+  locals?: InternedString[];
+  statements?: StatementSyntax[];
+  spec?: any;
+  isEmpty?: boolean;
+}
+
+interface RenderOptions {
+  hostOptions?: Object,
+  appendTo: Element
+}
+
 export default class Template {
-  static fromSpec(specs) {
+  static fromSpec(specs: any): Template {
     let templates = new Array(specs.length);
 
     for (let i = 0; i < specs.length; i++) {
@@ -53,7 +70,7 @@ export default class Template {
     return templates[templates.length - 1];
   }
 
-  static fromStatements(statements) {
+  static fromStatements(statements: StatementSyntax[]): Template {
     return new Template({
       statements,
       root: null,
@@ -70,19 +87,19 @@ export default class Template {
   position: number;
   arity: number;
   statements: StatementSyntax[];
-  locals: string[];
+  locals: InternedString[];
   spec: any[];
   isEmpty: boolean;
 
-  constructor(options) {
-    this.meta = options.meta || {};
-    this.root = options.root;
-    this.position = options.position;
-    this.arity = options.locals ? options.locals.length : 0;
-    this.statements = options.statements || EMPTY_ARRAY;
-    this.locals = options.locals || EMPTY_ARRAY;
-    this.spec = options.spec || null;
-    this.isEmpty = options.isEmpty || false;
+  constructor({ meta, root, position, locals, statements, spec, isEmpty }: TemplateOptions) {
+    this.meta = meta || {};
+    this.root = root;
+    this.position = position;
+    this.arity = locals ? locals.length : 0;
+    this.statements = statements || EMPTY_ARRAY;
+    this.locals = locals || EMPTY_ARRAY;
+    this.spec = spec || null;
+    this.isEmpty = isEmpty || false;
     Object.seal(this);
   }
 
@@ -97,7 +114,7 @@ export default class Template {
     });
   }
 
-  evaluate(morph, frame): RenderResult {
+  evaluate(morph: HasParentNode, frame: Frame): RenderResult {
     let builder = new Builder(morph, frame);
 
     this.statements.forEach(builder.render, builder);
@@ -108,32 +125,39 @@ export default class Template {
     return new RenderResult({ morph, morphs, bounds, template: this, locals: this.locals });
   }
 
-  render(self, env, options, blockArguments) {
+  render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
     let scope = env
       .createRootScope()
       .initTopLevel(self, this.locals, blockArguments, options.hostOptions);
 
     let frame = env.pushFrame(scope);
 
-    let rootMorph = new RootMorph(options.appendTo);
+    let rootMorph = new RootMorph(options.appendTo, null);
 
     return this.evaluate(rootMorph, frame);
   }
 }
 
-class RootMorph {
-  parentNode: HTMLElement;
-  
-  constructor(element) {
-    this.parentNode = element;
+class RootMorph implements Morph {
+  public parentNode: Element;
+  public nextSibling: Node = null;
+  public frame: Frame = null;
+
+  constructor(parentNode: Element, frame: Frame) {
+    this.parentNode = parentNode;
   }
+  
+  init(ignored: Object) {}
+  append() {}
+  update() {}
+  destroy() {}
 }
 
 interface PrettyPrintable {
   prettyPrint(): string;
 }
 
-interface ExpressionSyntax {
+export interface ExpressionSyntax {
   evaluate(frame: Frame): ChainableReference;
 }
 
@@ -165,12 +189,12 @@ class DynamicExpression {
   }
 }
 
-type PathSexp = string[];
+type PathSexp = InternedString[];
 type ExpressionSexp = any[];
 type ParamsSexp = ExpressionSexp[];
 type HashSexp = any[];
 
-type BlockSexp = [string, PathSexp, ParamsSexp, HashSexp, number, number];
+type BlockSexp = [InternedString, PathSexp, ParamsSexp, HashSexp, number, number];
 
 export class Block extends DynamicExpression implements StatementSyntax {
   static fromSpec(sexp: BlockSexp, children: Template[]): Block {
@@ -187,11 +211,11 @@ export class Block extends DynamicExpression implements StatementSyntax {
     return new Block(options);
   }
 
-  path: string[];
+  path: InternedString[];
   params: ParamsAndHash;
   templates: Templates;
 
-  constructor(options: { path: string[], params: ParamsAndHash, templates: Templates }) {
+  constructor(options: { path: InternedString[], params: ParamsAndHash, templates: Templates }) {
     super();
     this.path = options.path;
     this.params = options.params;
@@ -1017,7 +1041,7 @@ export class Hash implements PrettyPrintableExpressionSyntax {
   }
 }
 
-class Templates implements ExpressionSyntax {
+export class Templates implements ExpressionSyntax {
   static fromSpec(templateId, inverseId, children): Templates {
     return new Templates({
       template: templateId === null ? null : children[templateId],
