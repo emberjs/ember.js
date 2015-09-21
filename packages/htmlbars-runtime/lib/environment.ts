@@ -121,7 +121,7 @@ import { EMPTY_ARRAY } from './utils';
 export abstract class Environment {
   private dom: DOMHelper;
   private meta: MetaLookup;
-  
+
   constructor(dom: DOMHelper, meta: MetaLookup) {
     this.dom = dom;
     this.meta = meta;

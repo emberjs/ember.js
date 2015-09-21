@@ -3,10 +3,10 @@ import { intern } from './utils';
 import { RenderResult } from './render';
 import { HelperInvocationReference, ConcatReference, ConstReference } from './reference';
 import { Frame } from './environment';
-import { ChainableReference, InternedString } from 'htmlbars-reference';
+import { ChainableReference, PushPullReference, InternedString } from 'htmlbars-reference';
 import { ElementStack } from './builder';
 import { Environment } from './environment';
-import { Dict } from 'htmlbars-util';
+import { Dict, dict } from 'htmlbars-util';
 
 interface Bounds {
   parentNode(): Node;
@@ -202,7 +202,7 @@ export class Block extends DynamicExpression implements StatementSyntax {
 
     return new Block({
       path,
-      params: ParamsAndHash.fromSpec(params, hash),
+      args: ParamsAndHash.fromSpec(params, hash),
       templates: Templates.fromSpec(templateId, inverseId, children)
     });
   }
@@ -212,23 +212,23 @@ export class Block extends DynamicExpression implements StatementSyntax {
   }
 
   path: InternedString[];
-  params: ParamsAndHash;
+  args: ParamsAndHash;
   templates: Templates;
 
-  constructor(options: { path: InternedString[], params: ParamsAndHash, templates: Templates }) {
+  constructor(options: { path: InternedString[], args: ParamsAndHash, templates: Templates }) {
     super();
     this.path = options.path;
-    this.params = options.params;
+    this.args = options.args;
     this.templates = options.templates;
   }
 
   prettyPrint() {
-    return `Block(${this.path}) { params=${this.params.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
+    return `Block(${this.path}) { args=${this.args.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
   }
 
   evaluate(stack) {
-    let { path, params, templates } = this;
-    return stack.createMorph(BlockHelperMorph, { path, params, templates });
+    let { path, args, templates } = this;
+    return stack.createMorph(BlockHelperMorph, { path, args, templates });
   }
 }
 
@@ -688,28 +688,6 @@ const BOUNDARY_CANDIDATES = {
   component: true
 };
 
-class EvaluatedParams implements Reference {
-  
-}
-
-class EvaluatedHash implements ChainableReference {
-  _keys: any[];
-  _values: any[]; // TODO: Reference
-
-  constructor({ keys, values }) {
-    this._keys = keys;
-    this._values = values;
-  }
-
-  forEach(callback) {
-    let { _keys, _values } = this;
-
-    for (let i = 0, l = _keys.length; i < l; i++) {
-      callback(_keys[i], _values[i]);
-    }
-  }
-}
-
 export class Value extends StaticExpression implements ExpressionSyntax {
   static fromSpec(value) {
     return new Value(value);
@@ -919,6 +897,21 @@ export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
   }
 }
 
+export class EvaluatedParamsAndHash extends PushPullReference {
+  private paramsRef: ChainableReference;
+  private hashRef: ChainableReference;
+
+  constructor({ params, hash }: ParamsAndHash, frame: Frame) {
+    super();
+    this.paramsRef = this._addSource(params.evaluate(frame));
+    this.hashRef = hash.evaluate(frame);
+  }
+
+  value(): { params: any[], hash: Dict<any> } {
+    return { params: this.paramsRef.value(), hash: this.hashRef.value() };
+  }
+}
+
 interface EnumerableCallback<T> {
   (value: T): void;
 }
@@ -941,7 +934,7 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
     return new Params(sexp.map(buildExpression));
   }
 
-  static build(exprs: ExpressionSyntax[]): Params {
+  static build(exprs: PrettyPrintableExpressionSyntax[]): Params {
     return new Params(exprs);
   }
 
@@ -953,7 +946,7 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
 
   params: PrettyPrintableExpressionSyntax[];
 
-  constructor(exprs) {
+  constructor(exprs: PrettyPrintableExpressionSyntax[]) {
     super();
     this.params = exprs;
   }
@@ -967,7 +960,26 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
   }
   
   evaluate(frame: Frame): ChainableReference {
+    return new EvaluatedParams(this, frame);
     throw new Error("TODO: unimplemented evaluate for Params");
+  }
+}
+
+class EvaluatedParams extends PushPullReference {
+  private references: ChainableReference[];
+
+  constructor(params: Params, frame: Frame) {
+    super();
+
+    this.references = params.map(param => {
+      let result = param.evaluate(frame);
+      this._addSource(result);
+      return result;
+    })
+  }
+
+  value() {
+    return this.references.map(p => p.value());
   }
 }
 
@@ -1007,21 +1019,12 @@ export class Hash implements PrettyPrintableExpressionSyntax {
     return (this._empty = this._empty || new Hash({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY }));
   }
 
-  keys: string[];
-  values: PrettyPrintableExpressionSyntax[];
+  public keys: InternedString[];
+  public values: PrettyPrintableExpressionSyntax[];
 
   constructor({ keys, values }) {
     this.keys = keys;
     this.values = values;
-  }
-
-  entries(): Enumerable<[string, ExpressionSyntax]> {
-    throw new Error("unimplemented entries for Hash");
-  }
-
-  forEach(callback) {
-    let { keys, values } = this;
-    keys.forEach((key, i) => callback(key, values[i]));
   }
 
   prettyPrint() {
@@ -1037,7 +1040,35 @@ export class Hash implements PrettyPrintableExpressionSyntax {
       out[i] = values[i].evaluate(frame);
     }
 
-    return new EvaluatedHash({ keys, values: out });
+    return new EvaluatedHash(this, frame);
+  }
+}
+
+class EvaluatedHash extends PushPullReference {
+  private references: ChainableReference[];
+  private keys: InternedString[];
+  
+  constructor(hash: Hash, frame: Frame) {
+    super();
+    
+    this.references = hash.values.map(value => {
+      let result = value.evaluate(frame);
+      this._addSource(result);
+      return result;
+    });
+    
+    this.keys = hash.keys;
+  }
+  
+  value(): Dict<any> {
+    let hash = dict();
+    let refs = this.references;
+    
+    this.keys.forEach((k, i) => {
+      hash[<string>k] = refs[i].value();  
+    });
+    
+    return hash;
   }
 }
 

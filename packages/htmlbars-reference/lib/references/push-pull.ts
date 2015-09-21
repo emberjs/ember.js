@@ -60,9 +60,10 @@ export abstract class PushPullReference implements Reference, ChainableReference
     this.sources.forEach(source => source.destroy());
   }
 
-  protected _addSource(source: ChainableReference) {
+  protected _addSource<T extends ChainableReference>(source: T): T {
     this.sources = this.sources || [];
     this.sources.push(source.chain(this));
+    return source;
   }
   
   private _append(child): Unchain {
