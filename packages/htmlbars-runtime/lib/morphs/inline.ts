@@ -1,8 +1,8 @@
 import { symbol } from "htmlbars-util";
 import { RegionMorph } from './region';
-import { ExpressionSyntax, ParamsAndHash, Templates } from '../template';
+import { ExpressionSyntax, EvaluatedParamsAndHash, Templates } from '../template';
 import { Reference, InternedString, PushPullReference } from 'htmlbars-reference';
-import { Helper } from '../environment';
+import { Helper, Insertion as PrimitiveInsertion } from '../environment';
 
 const SAFE_BRAND = symbol("safe string");
 
@@ -11,11 +11,21 @@ abstract class Insertion {
 }
 
 class HtmlInsertion extends Insertion {
+  private html: string;
   
+  constructor(content: string) {
+    super();
+    this.html = content;
+  }
 }
 
 class TextInsertion extends Insertion {
+  private text: string;
   
+  constructor(text: string) {
+    super();
+    this.text = text;
+  }
 }
 
 export class ValueMorph extends RegionMorph {
@@ -45,24 +55,36 @@ export class ValueMorph extends RegionMorph {
 }
 
 class HelperInvocationReference extends PushPullReference {
-  constructor(helper: Helper, params: ParamsAndHash) {
+  private helper: Helper;
+  private args: EvaluatedParamsAndHash;
+
+  constructor(helper: Helper, args: EvaluatedParamsAndHash) {
     super();
+    this.helper = helper;
+    this.args = this._addSource(args);
   }
   
-  value(): any {
-    
+  value(): PrimitiveInsertion {
+    let { helper, args }  = this;
+    let { params, hash } = args.value();
+    return helper(params, hash);
   }
 }
 
 export class HelperMorph extends RegionMorph {
   private trustingMorph: boolean;
-  private helper: HelperInvocationReference;
-  
-  init({ path, params, trustingMorph }: { path: InternedString[], params: ParamsAndHash, templates: Templates }) {
+  private invocation: HelperInvocationReference;
+
+  init({ path, args, trustingMorph }: { path: InternedString[], args: EvaluatedParamsAndHash, trustingMorph: boolean }) {
     super.init();
     let helper = this.frame.lookupHelper(path);
-    this._helper = HelperInvocationReference.fromStatements({ helper, params, frame: frame });
+    this.invocation = new HelperInvocationReference(helper, args);
     this.trustingMorph = trustingMorph;
+  }
+
+  append() {
+    let insertion = insertionForUserContent(this.invocation.value(), this.trustingMorph);
+    
   }
 
   render() {
@@ -73,13 +95,13 @@ export class HelperMorph extends RegionMorph {
 
 // helpers
 
-function insertionForUserContent(content, trustingMorph) {
+function insertionForUserContent(content: PrimitiveInsertion, trustingMorph: boolean) {
   switch (typeof content) {
     case 'string':
       return insertionForText(content, trustingMorph);
     case 'object':
       if (content[SAFE_BRAND]) { return new HtmlInsertion(content); }
-      if (content.nodeType)    { return new NodeInsertion(content); }
+      if ((<Node>content).nodeType)    { return new NodeInsertion(content); }
       /* falls through */
     default:
       throw new Error(`Helpers must return strings or safe strings, not ${content}`);
