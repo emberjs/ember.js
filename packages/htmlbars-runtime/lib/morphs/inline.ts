@@ -1,37 +1,68 @@
 import { symbol } from "htmlbars-util";
-import { HelperInvocationReference } from '../reference';
-
-import {
-  HtmlInsertion,
-  TextInsertion,
-  NodeInsertion,
-  EmptyInsertion,
-  RegionMorph,
-} from "./region";
+import { RegionMorph } from './region';
+import { ExpressionSyntax, ParamsAndHash, Templates } from '../template';
+import { Reference, InternedString, PushPullReference } from 'htmlbars-reference';
+import { Helper } from '../environment';
 
 const SAFE_BRAND = symbol("safe string");
 
+abstract class Insertion {
+  
+}
+
+class HtmlInsertion extends Insertion {
+  
+}
+
+class TextInsertion extends Insertion {
+  
+}
+
 export class ValueMorph extends RegionMorph {
-  init({ ref: syntax, trustingMorph }) {
+  private lastResult: Insertion = null;
+  private lastValue: any = null;
+  private reference: Reference;
+  private InsertionType: typeof Insertion;
+  
+  init({ ref, trustingMorph }: { ref: ExpressionSyntax, trustingMorph: boolean }) {
     super.init();
-    this._lastResult = null;
-    this._ref = syntax.evaluate(this._frame);
-    this._InsertionType = trustingMorph ? HtmlInsertion : TextInsertion;
+    this.lastResult = null;
+    this.reference = ref.evaluate(this.frame);
+    this.InsertionType = trustingMorph ? HtmlInsertion : TextInsertion;
+  }
+
+  append() {
+    
+  }
+  
+  update() {
+    
   }
 
   render() {
-    let value = this._lastValue = this._ref.value();
-    this._region.replace(new this._InsertionType(value));
+    let value = this.lastValue = this.reference.value();
+  }
+}
+
+class HelperInvocationReference extends PushPullReference {
+  constructor(helper: Helper, params: ParamsAndHash) {
+    super();
+  }
+  
+  value(): any {
+    
   }
 }
 
 export class HelperMorph extends RegionMorph {
-  init({ path, params, trustingMorph }) {
+  private trustingMorph: boolean;
+  private helper: HelperInvocationReference;
+  
+  init({ path, params, trustingMorph }: { path: InternedString[], params: ParamsAndHash, templates: Templates }) {
     super.init();
-    let { _frame } = this;
-    let helper = this._frame.lookupHelper(path);
-    this._helper = HelperInvocationReference.fromStatements({ helper, params,  frame: _frame });
-    this._trustingMorph = trustingMorph;
+    let helper = this.frame.lookupHelper(path);
+    this._helper = HelperInvocationReference.fromStatements({ helper, params, frame: frame });
+    this.trustingMorph = trustingMorph;
   }
 
   render() {

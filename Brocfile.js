@@ -1,5 +1,5 @@
 var Funnel = require('broccoli-funnel');
-var concatFiles = require('broccoli-concat');
+var concatFiles = require('broccoli-sourcemap-concat');
 var mergeTrees = require('broccoli-merge-trees');
 var moveFile = require('broccoli-file-mover');
 var replace = require('broccoli-string-replace');
@@ -78,23 +78,30 @@ var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
   destDir: '/tests'
 });
 
-var transpiledCompiler = transpileES6(compilerTree, 'transpiledLibs', { resolveModuleSource: null });
-var transpiledRuntime = transpileES6(runtimeTree, 'transpiledRuntime', { resolveModuleSource: null });
-var transpiledTests = transpileES6(testTree, 'transpiledTests', { resolveModuleSource: null });
+module.exports = compilerTree;
+
+var transpiledCompiler = transpile(compilerTree, 'transpiledLibs');
+var transpiledRuntime = transpile(runtimeTree, 'transpiledRuntime');
+var transpiledTests = transpile(testTree, 'transpiledTests');
 
 var concatenatedCompiler = concatFiles(transpiledCompiler, {
   inputFiles: ['**/*.js'],
-  outputFile: '/amd/glimmer-compiler.amd.js'
+  outputFile: '/amd/glimmer-compiler.amd.js',
+  sourceMapConfig: { enabled: true }
 });
+
+module.exports = concatenatedCompiler;
 
 var concatenatedRuntime = concatFiles(transpiledRuntime, {
   inputFiles: ['**/*.js'],
-  outputFile: '/amd/glimmer-runtime.amd.js'
+  outputFile: '/amd/glimmer-runtime.amd.js',
+  sourceMapConfig: { enabled: true }
 });
 
 var concatenatedTests = concatFiles(transpiledTests, {
   inputFiles: ['**/*.js'],
-  outputFile: '/tests.js'
+  outputFile: '/tests.js',
+  sourceMapConfig: { enabled: true }
 })
 
 var loader = new Funnel(bower, {
@@ -104,3 +111,7 @@ var loader = new Funnel(bower, {
 });
 
 module.exports = mergeTrees([demos, concatenatedCompiler, concatenatedRuntime, loader, testHarness, concatenatedTests]);
+
+function transpile(tree, label) {
+  return transpileES6(tree, label, { resolveModuleSource: null, sourceMaps: 'inline' });
+}

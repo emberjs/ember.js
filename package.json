@@ -29,7 +29,7 @@
     "typescript": "next",
     "benchmark": "^1.0.0",
     "bower": "~1.3.3",
-    "broccoli-concat": "0.0.6",
+    "broccoli-sourcemap-concat": "^2.0.0",
     "broccoli-export-tree": "~0.3.0",
     "broccoli-file-mover": "0.3.5",
     "broccoli-file-remover": "~0.2.2",

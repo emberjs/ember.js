@@ -1,5 +1,5 @@
-import { Morph, MorphList } from './morph';
-import { Frame } from './hooks';
+import { Bounds, Morph, MorphList } from './morph';
+import { Frame } from './environment';
 import DOMHelper from './dom';
 
 // Builders are created for each template the first time it is rendered.
@@ -25,7 +25,7 @@ export default class Builder {
     return this.morphs;
   }
 
-  bounds() {
+  bounds(): Bounds {
     return this.stack.bounds();
   }
 
@@ -83,11 +83,11 @@ export class ElementStack {
     this.lastNode = null;
   }
 
-  bounds() {
+  bounds(): Bounds {
     return {
-      first: this.firstNode,
-      last: this.lastNode,
-      parent: this.element
+      firstNode: () => this.firstNode,
+      lastNode: () => this.lastNode,
+      parentNode: () => this.element
     };
   }
 

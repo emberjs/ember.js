@@ -1,4 +1,4 @@
-import { parse, print, builders } from '../../htmlbars-syntax';
+import { parse, print, builders } from 'htmlbars-syntax';
 
 const b = builders;
 

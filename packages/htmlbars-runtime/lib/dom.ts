@@ -16,6 +16,10 @@ export default class DOMHelper {
   setAttributeNS(element: Element, name: string, value: string, namespace: string) {
     element.setAttributeNS(name, namespace, value);
   }
+
+  removeAttribute(element: Element, name: string) {
+    element.removeAttribute(name);
+  }
   
   createTextNode(text: string): Text {
     return this.document.createTextNode(text);
@@ -24,7 +28,7 @@ export default class DOMHelper {
   createComment(data: string): Comment {
     return this.document.createComment(data);
   }
-  
+
   createElement(tag: string, context: Element): Element {
     if (context.namespaceURI === SVG_NAMESPACE || tag === 'svg') {
       // Note: This does not properly handle <font> with color, face, or size attributes, which is also

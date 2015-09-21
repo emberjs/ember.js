@@ -1,18 +1,18 @@
-import { voidMap } from 'htmlbars-util';
+import { Dict, voidMap } from 'htmlbars-util';
 import Template, { TemplateBuilder } from './template';
-import { Morph, MorphList, Bounds, clear } from './morph';
-import { Dict } from './utils';
+import { Morph, MorphList, Bounds, HasParentNode, clear } from './morph';
+import { InternedString } from 'htmlbars-reference';
 
 interface RenderResultOptions {
-	morph: Morph,
-	locals: string[],
+	morph: HasParentNode,
+	locals: InternedString[],
 	morphs: MorphList,
 	bounds: Bounds,
 	template: Template
 }
 
 export class RenderResult implements Bounds {
-  morph: Morph;
+  morph: HasParentNode;
   morphs: MorphList;
   bounds: Bounds;
   template: Template;

@@ -63,7 +63,7 @@ export function template(templateSpec) {
  * @param {Object} options A set of options to provide to the compiler
  * @return {Template} A function for rendering the template
  */
-export function compile(string, options) {
+export function compile(string: string, options: Object={}) {
   let templateSpec = template(compileSpec(string, options));
   return Template.fromSpec(templateSpec);
 }
