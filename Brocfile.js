@@ -32,14 +32,11 @@ var DTSTree = new Funnel('packages', {
 });
 
 var tsTree = new Funnel('packages', {
-  include: ["**/*.ts", "**/*.d.ts"]
+  include: ["**/*.ts"],
+  exclude: ["**/*.d.ts"]
 });
 
 var jsTree = typescript(tsTree);
-
-jsTree = new Funnel(jsTree, {
-  exclude: ["**/*.d.js"]
-});
 
 var libTree = new Funnel(jsTree, {
   include: ["*/lib/**/*.js"],
