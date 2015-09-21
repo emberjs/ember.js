@@ -334,8 +334,30 @@ var Component = View.extend(TargetActionSupport, {
     {{/if}}
     ```
 
+    This helper accepts an argument with the name of the block we want to check the presence of.
+    This is useful for checking for the presence of the optional inverse block in components.
+
+    ```hbs
+    {{! templates/application.hbs }}
+
+    {{#foo-bar}}
+      Hi!
+    {{else}}
+      What's up?
+    {{/foo-bar}}
+
+    {{! templates/components/foo-bar.js }}
+    {{yield}}
+    {{#if (hasBlock "inverse")}}
+      {{yield to="inverse"}}
+    {{else}}
+      How are you?
+    {{/if}}
+    ```
+
     @public
     @property hasBlock
+    @param {String} [blockName="default"] The name of the block to check presence of.
     @returns Boolean
   */
 
