@@ -1,14 +1,14 @@
-import Ember from 'ember-metal/core';
 import Registry from 'container/registry';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import run from 'ember-metal/run_loop';
+import isEnabled from 'ember-metal/features';
 
 let component, registry, container;
 
-if (Ember.FEATURES.isEnabled('ember-contextual-components')) {
+if (isEnabled('ember-contextual-components')) {
   QUnit.module('ember-htmlbars: closure component helper', {
     setup() {
       registry = new Registry();

@@ -3,9 +3,9 @@
   @submodule ember-templates
   @public
 */
-import Ember from 'ember-metal/core';
 import { keyword } from 'htmlbars-runtime/hooks';
 import closureComponent from 'ember-htmlbars/keywords/closure-component';
+import isEnabled from 'ember-metal/features';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -55,7 +55,7 @@ import closureComponent from 'ember-htmlbars/keywords/closure-component';
   @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
-  if (Ember.FEATURES.isEnabled('ember-contextual-components')) {
+  if (isEnabled('ember-contextual-components')) {
     if (morph) {
       keyword('@element_component', morph, env, scope, params, hash, template, inverse, visitor);
       return true;
@@ -66,4 +66,3 @@ export default function(morph, env, scope, params, hash, template, inverse, visi
     return true;
   }
 }
-
