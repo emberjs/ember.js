@@ -149,7 +149,7 @@ registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-html-safe', htmlSafeHelper);
 
-if (Ember.FEATURES.isEnabled('ember-contextual-components')) {
+if (isEnabled('ember-contextual-components')) {
   registerHelper('hash', hashHelper);
 }
 
