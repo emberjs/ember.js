@@ -48,7 +48,7 @@ var libTree = new Funnel(jsTree, {
 var packagesTree = mergeTrees([DTSTree, libTree, HTMLTokenizer]);
 
 var runtimeTree = new Funnel(packagesTree, {
-  include: ['dom-helper/**/*', 'htmlbars-runtime/**/*']
+  include: ['htmlbars-runtime/**/*']
 });
 
 runtimeTree = mergeTrees([runtimeTree, handlebarsInlinedTrees.runtime]);

@@ -60,7 +60,7 @@
           options    = document.getElementById('options');
 
       var compiler    = requireModule('htmlbars-compiler'),
-          DOMHelper   = requireModule('dom-helper').default,
+          DOMHelper   = requireModule('htmlbars-runtime').DOMHelper,
           hooks       = requireModule('htmlbars-runtime').hooks,
           render      = requireModule('htmlbars-runtime').render,
           Template    = requireModule('htmlbars-runtime').Template;

@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "ES6",
         "inlineSourceMap": true,
+        "inlineSources": true,
         "moduleResolution": "node",
         "rootDir": "src",
         "outDir": "packages"
