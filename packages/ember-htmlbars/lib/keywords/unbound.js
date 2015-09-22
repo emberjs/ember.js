@@ -4,6 +4,8 @@
 */
 
 import { assert } from 'ember-metal/debug';
+import BasicStream from 'ember-metal/streams/stream';
+import { read } from 'ember-metal/streams/utils';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,
@@ -33,6 +35,20 @@ import { assert } from 'ember-metal/debug';
   @public
 */
 
+let VolatileStream = BasicStream.extend({
+  init(source) {
+    this.label = `(volatile ${source.label})`;
+    this.source = source;
+    this.addDependency(source);
+  },
+
+  value() {
+    return read(this.source);
+  },
+
+  notify() {}
+});
+
 export default function unbound(morph, env, scope, params, hash, template, inverse, visitor) {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
@@ -58,23 +74,3 @@ export default function unbound(morph, env, scope, params, hash, template, inver
   return true;
 }
 
-import merge from 'ember-metal/merge';
-import Stream from 'ember-metal/streams/stream';
-import { read } from 'ember-metal/streams/utils';
-
-function VolatileStream(source) {
-  this.init(`(volatile ${source.label})`);
-  this.source = source;
-
-  this.addDependency(source);
-}
-
-VolatileStream.prototype = Object.create(Stream.prototype);
-
-merge(VolatileStream.prototype, {
-  value() {
-    return read(this.source);
-  },
-
-  notify() {}
-});

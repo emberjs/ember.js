@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import { get } from 'ember-metal/property_get';
@@ -8,6 +8,7 @@ import View from 'ember-views/views/view';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
+import { takeLegacySnapshot } from 'ember-htmlbars/node-managers/component-node-manager';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -25,7 +26,7 @@ function ViewNodeManager(component, scope, renderNode, block, expectElement) {
 
 export default ViewNodeManager;
 
-ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
+ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
   assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
     if (path) {
       return found.component || found.layout;
@@ -45,8 +46,11 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
     if (attrs && attrs.viewName) { options.viewName = getValue(attrs.viewName); }
 
-    if (found.component.create && contentScope && contentScope.self) {
-      options._context = getValue(contentScope.self);
+    if (found.component.create && contentScope) {
+      let _self = contentScope.getSelf();
+      if (_self) {
+        options._context = getValue(contentScope.getSelf());
+      }
     }
 
     if (found.self) {
@@ -76,10 +80,10 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
   return new ViewNodeManager(component, contentScope, renderNode, results.block, results.createdElement);
 };
 
-ViewNodeManager.prototype.render = function(env, attrs, visitor) {
+ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, visitor) {
   var component = this.component;
 
-  return instrument(component, function() {
+  return instrument(component, function ViewNodeManager_render_instrument() {
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
@@ -91,7 +95,7 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
     }
 
     if (this.block) {
-      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     if (component) {
@@ -108,10 +112,10 @@ ViewNodeManager.prototype.render = function(env, attrs, visitor) {
   }, this);
 };
 
-ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
+ViewNodeManager.prototype.rerender = function ViewNodeManager_rerender(env, attrs, visitor) {
   var component = this.component;
 
-  return instrument(component, function() {
+  return instrument(component, function ViewNodeManager_rerender_instrument() {
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
@@ -122,6 +126,10 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       env.renderer.willUpdate(component, snapshot);
 
       if (component._renderNode.shouldReceiveAttrs) {
+        if (component._propagateAttrsToThis) {
+          component._propagateAttrsToThis(takeLegacySnapshot(attrs));
+        }
+
         env.renderer.componentUpdateAttrs(component, snapshot);
         component._renderNode.shouldReceiveAttrs = false;
       }
@@ -131,14 +139,14 @@ ViewNodeManager.prototype.rerender = function(env, attrs, visitor) {
       env.renderedViews.push(component.elementId);
     }
     if (this.block) {
-      this.block(newEnv, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     return newEnv;
   }, this);
 };
 
-ViewNodeManager.prototype.destroy = function() {
+ViewNodeManager.prototype.destroy = function ViewNodeManager_destroy() {
   if (this.component) {
     this.component.destroy();
     this.component = null;
@@ -155,7 +163,7 @@ function getTemplate(componentOrView) {
 
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);
-  let props = merge({}, options);
+  let props = assign({}, options);
   let defaultController = View.proto().controller;
   let hasSuppliedController = 'controller' in attrs || 'controller' in props;
 
@@ -168,10 +176,10 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     let proto = component.proto();
 
     if (createOptions) {
-      merge(props, createOptions);
+      assign(props, createOptions);
     }
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    mergeBindings(props, snapshot);
     props.container = options.parentView ? options.parentView.container : env.container;
     props.renderer = options.parentView ? options.parentView.renderer : props.container && props.container.lookup('renderer:-dom');
     props._viewRegistry = options.parentView ? options.parentView._viewRegistry : props.container && props.container.lookup('-view-registry:main');
@@ -184,6 +192,10 @@ export function createOrUpdateComponent(component, options, createOptions, rende
   } else {
     env.renderer.componentUpdateAttrs(component, snapshot);
     setProperties(component, props);
+
+    if (component._propagateAttrsToThis) {
+      component._propagateAttrsToThis(takeLegacySnapshot(attrs));
+    }
   }
 
   if (options.parentView) {
@@ -198,23 +210,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
   renderNode.emberView = component;
   return component;
-}
-
-function shadowedAttrs(target, attrs) {
-  let shadowed = {};
-
-  // For backwards compatibility, set the component property
-  // if it has an attr with that name. Undefined attributes
-  // are handled on demand via the `unknownProperty` hook.
-  for (var attr in attrs) {
-    if (attr in target) {
-      // TODO: Should we issue a deprecation here?
-      // deprecate(deprecation(attr));
-      shadowed[attr] = attrs[attr];
-    }
-  }
-
-  return shadowed;
 }
 
 function takeSnapshot(attrs) {

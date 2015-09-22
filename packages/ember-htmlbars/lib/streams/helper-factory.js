@@ -1,28 +1,26 @@
-import Stream from 'ember-metal/streams/stream';
-import merge from 'ember-metal/merge';
+import BasicStream from 'ember-metal/streams/stream';
 import {
   getArrayValues,
   getHashValues
 } from 'ember-htmlbars/streams/utils';
 
-export default function HelperFactoryStream(helperFactory, params, hash, label) {
-  this.init(label);
-  this.helperFactory = helperFactory;
-  this.params = params;
-  this.hash = hash;
-  this.linkable = true;
-  this.helper = null;
-}
+let HelperFactoryStream = BasicStream.extend({
+  init(helperFactory, params, hash, label) {
+    this.helperFactory = helperFactory;
+    this.params = params;
+    this.hash = hash;
+    this.linkable = true;
+    this.helper = null;
+    this.label = label;
+  },
 
-HelperFactoryStream.prototype = Object.create(Stream.prototype);
-
-merge(HelperFactoryStream.prototype, {
   compute() {
     if (!this.helper) {
       this.helper = this.helperFactory.create({ _stream: this });
     }
     return this.helper.compute(getArrayValues(this.params), getHashValues(this.hash));
   },
+
   deactivate() {
     this.super$deactivate();
     if (this.helper) {
@@ -30,5 +28,7 @@ merge(HelperFactoryStream.prototype, {
       this.helper = null;
     }
   },
-  super$deactivate: HelperFactoryStream.prototype.deactivate
+  super$deactivate: BasicStream.prototype.deactivate
 });
+
+export default HelperFactoryStream;

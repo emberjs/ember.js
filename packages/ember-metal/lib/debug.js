@@ -1,10 +1,12 @@
 export let debugFunctions = {
   assert() {},
+  info() {},
   warn() {},
   debug() {},
   deprecate() {},
   deprecateFunc(...args) { return args[args.length - 1]; },
-  runInDebug() {}
+  runInDebug() {},
+  debugSeal() {}
 };
 
 export function getDebugFunction(name) {
@@ -17,6 +19,10 @@ export function setDebugFunction(name, fn) {
 
 export function assert() {
   return debugFunctions.assert.apply(undefined, arguments);
+}
+
+export function info() {
+  return debugFunctions.info.apply(undefined, arguments);
 }
 
 export function warn() {
@@ -37,4 +43,8 @@ export function deprecateFunc() {
 
 export function runInDebug() {
   return debugFunctions.runInDebug.apply(undefined, arguments);
+}
+
+export function debugSeal() {
+  return debugFunctions.debugSeal.apply(undefined, arguments);
 }

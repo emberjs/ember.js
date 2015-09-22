@@ -1,4 +1,3 @@
-import 'ember';
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';

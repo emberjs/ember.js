@@ -20,25 +20,26 @@
   "devDependencies": {
     "aws-sdk": "~2.1.5",
     "babel-plugin-feature-flags": "~0.2.0",
+    "babel-plugin-filter-imports": "~0.2.0",
     "bower": "~1.3.2",
     "chalk": "^0.5.1",
-    "ember-cli": "^0.2.7",
+    "ember-cli": "^1.13.8",
     "ember-cli-dependency-checker": "^1.0.1",
-    "ember-cli-sauce": "^1.3.0",
+    "ember-cli-sauce": "^1.4.2",
     "ember-cli-yuidoc": "0.7.0",
     "ember-publisher": "0.0.7",
-    "emberjs-build": "0.2.6",
+    "emberjs-build": "0.4.5",
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "github": "^0.2.3",
     "glob": "~4.3.2",
-    "htmlbars": "0.14.3",
+    "htmlbars": "0.14.5",
     "qunit-extras": "^1.3.0",
     "qunitjs": "^1.16.0",
     "route-recognizer": "0.1.5",
     "rsvp": "~3.0.6",
     "serve-static": "^1.10.0",
     "simple-dom": "^0.2.7",
-    "testem": "^0.8.0-1"
+    "testem": "^0.9.5"
   }
 }

@@ -1,5 +1,5 @@
 import { isWatching } from 'ember-metal/watching';
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import KeyStream from 'ember-metal/streams/key-stream';
 import { set } from 'ember-metal/property_set';
 

@@ -1,4 +1,4 @@
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import {
   read,
   readArray
@@ -25,9 +25,11 @@ export default function closureAction(morph, env, scope, params, hash, template,
       // on-change={{action setName}}
       // element-space actions look to "controller" then target. Here we only
       // look to "target".
-      target = read(scope.self);
+      target = read(scope.getSelf());
       action = read(rawAction);
-      if (typeof action === 'string') {
+      let actionType = typeof action;
+
+      if (actionType === 'string') {
         let actionName = action;
         action = null;
         // on-change={{action 'setName'}}
@@ -42,6 +44,8 @@ export default function closureAction(morph, env, scope, params, hash, template,
         if (!action) {
           throw new EmberError(`An action named '${actionName}' was not found in ${target}.`);
         }
+      } else if (actionType !== 'function') {
+        throw new EmberError(`An action could not be made for \`${rawAction.label}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${rawAction.label}')\`) or a function available in ${target}.`);
       }
     }
 

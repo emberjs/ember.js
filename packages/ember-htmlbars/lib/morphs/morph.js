@@ -1,4 +1,5 @@
 import DOMHelper from 'dom-helper';
+import { debugSeal } from 'ember-metal/debug';
 
 var HTMLBarsMorph = DOMHelper.prototype.MorphClass;
 let guid = 1;
@@ -19,6 +20,8 @@ function EmberMorph(DOMHelper, contextualElement) {
   // one of its attributes changed, which also triggers the attribute
   // update flag (didUpdateAttrs).
   this.shouldReceiveAttrs = false;
+
+  debugSeal(this);
 }
 
 var proto = EmberMorph.prototype = Object.create(HTMLBarsMorph.prototype);
@@ -53,7 +56,7 @@ proto.cleanup = function() {
 };
 
 proto.didRender = function(env, scope) {
-  env.renderedNodes[this.guid] = true;
+  env.renderedNodes.add(this);
 };
 
 export default EmberMorph;

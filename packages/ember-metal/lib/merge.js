@@ -1,3 +1,6 @@
+import { deprecate } from 'ember-metal/debug';
+import isEnabled from 'ember-metal/features';
+
 /**
   Merge the contents of two objects together into the first object.
 
@@ -16,6 +19,10 @@
   @public
 */
 export default function merge(original, updates) {
+  if (isEnabled('ember-metal-ember-assign')) {
+    deprecate('Usage of `Ember.merge` is deprecated, use `Ember.assign` instead.', false, { id: 'ember-metal.merge', until: '3.0.0' });
+  }
+
   if (!updates || typeof updates !== 'object') {
     return original;
   }

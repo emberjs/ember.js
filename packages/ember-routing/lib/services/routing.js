@@ -8,7 +8,7 @@ import Service from 'ember-runtime/system/service';
 import { get } from 'ember-metal/property_get';
 import { readOnly } from 'ember-metal/computed_macros';
 import { routeArgs } from 'ember-routing/utils';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for
@@ -57,7 +57,7 @@ export default Service.extend({
     if (!router.router) { return; }
 
     var visibleQueryParams = {};
-    merge(visibleQueryParams, queryParams);
+    assign(visibleQueryParams, queryParams);
 
     this.normalizeQueryParams(routeName, models, visibleQueryParams);
 

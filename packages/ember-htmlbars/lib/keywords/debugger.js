@@ -4,7 +4,8 @@
 @module ember
 @submodule ember-htmlbars
 */
-import Logger from 'ember-metal/logger';
+
+import { info } from 'ember-metal/debug';
 
 /**
   Execute the `debugger` statement in the current template's context.
@@ -51,14 +52,14 @@ import Logger from 'ember-metal/logger';
 export default function debuggerKeyword(morph, env, scope) {
   /* jshint unused: false, debug: true */
 
-  var view = env.hooks.getValue(scope.locals.view);
-  var context = env.hooks.getValue(scope.self);
+  var view = env.hooks.getValue(scope.getLocal('view'));
+  var context = env.hooks.getValue(scope.getSelf());
 
   function get(path) {
     return env.hooks.getValue(env.hooks.get(env, scope, path));
   }
 
-  Logger.info('Use `view`, `context`, and `get(<path>)` to debug this template.');
+  info('Use `view`, `context`, and `get(<path>)` to debug this template.');
 
   debugger;
 

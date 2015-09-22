@@ -7,6 +7,7 @@
 import Ember from 'ember-metal/core';
 import { deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
+import assign from 'ember-metal/assign';
 import merge from 'ember-metal/merge';
 import {
   instrument,
@@ -321,7 +322,12 @@ Ember.isEmpty = isEmpty;
 Ember.isBlank = isBlank;
 Ember.isPresent = isPresent;
 
-Ember.merge = merge;
+if (isEnabled('ember-metal-ember-assign')) {
+  Ember.assign = Object.assign || assign;
+  Ember.merge = merge;
+} else {
+  Ember.merge = merge;
+}
 
 Ember.FEATURES = FEATURES;
 Ember.FEATURES.isEnabled = isEnabled;

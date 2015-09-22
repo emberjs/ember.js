@@ -1,7 +1,6 @@
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import assign from 'ember-metal/assign';
-import { isGlobal } from 'ember-metal/path_cache';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { isStream } from 'ember-metal/streams/utils';
@@ -158,6 +157,7 @@ function tagNameFor(view) {
 function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   var normalized = {};
   var attributeBindings = component.attributeBindings;
+  var streamBasePath = component.isComponent ? '' : 'view.';
   var i, l;
 
   if (attrs.id && getValue(attrs.id)) {
@@ -177,7 +177,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
       if (colonIndex !== -1) {
         var attrProperty = attr.substring(0, colonIndex);
         attrName = attr.substring(colonIndex + 1);
-        expression = ['get', 'view.' + attrProperty];
+        expression = ['get', `${streamBasePath}${attrProperty}`];
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
@@ -187,7 +187,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
         expression = ['value', attrs[attr]];
       } else {
         attrName = attr;
-        expression = ['get', 'view.' + attr];
+        expression = ['get', `${streamBasePath}${attr}`];
       }
 
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
@@ -211,7 +211,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
     component.tagName = attrs.tagName;
   }
 
-  var normalizedClass = normalizeClass(component, attrs);
+  var normalizedClass = normalizeClass(component, attrs, streamBasePath);
 
   if (normalizedClass) {
     normalized.class = normalizedClass;
@@ -231,7 +231,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   return normalized;
 }
 
-function normalizeClass(component, attrs) {
+function normalizeClass(component, attrs, streamBasePath) {
   var i, l;
   var normalizedClass = [];
   var classNames = get(component, 'classNames');
@@ -246,7 +246,7 @@ function normalizeClass(component, attrs) {
   }
 
   if (attrs.classBinding) {
-    normalizeClasses(attrs.classBinding.split(' '), normalizedClass);
+    normalizeClasses(attrs.classBinding.split(' '), normalizedClass, streamBasePath);
   }
 
   if (classNames) {
@@ -256,7 +256,7 @@ function normalizeClass(component, attrs) {
   }
 
   if (classNameBindings) {
-    normalizeClasses(classNameBindings, normalizedClass);
+    normalizeClasses(classNameBindings, normalizedClass, streamBasePath);
   }
 
   if (normalizeClass.length) {
@@ -264,7 +264,7 @@ function normalizeClass(component, attrs) {
   }
 }
 
-function normalizeClasses(classes, output) {
+function normalizeClasses(classes, output, streamBasePath) {
   var i, l;
 
   for (i = 0, l = classes.length; i < l; i++) {
@@ -279,8 +279,7 @@ function normalizeClasses(classes, output) {
       continue;
     }
 
-    // 2.0TODO: Remove deprecated global path
-    var prop = isGlobal(propName) ? propName : 'view.' + propName;
+    var prop = `${streamBasePath}${propName}`;
 
     output.push(['subexpr', '-normalize-class', [
       // params

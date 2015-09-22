@@ -167,6 +167,30 @@ QUnit.test('rejections where the errorThrown is a string should wrap the sting i
   }
 });
 
+QUnit.test('rejections can be serialized to JSON', function (assert) {
+  expect(2);
+
+  var wasEmberTesting = Ember.testing;
+  var wasOnError      = Ember.onerror;
+
+  try {
+    Ember.testing = false;
+    Ember.onerror = function(error) {
+      assert.equal(error.message, 'a fail');
+      assert.ok(JSON.stringify(error), 'Error can be serialized');
+    };
+
+    var jqXHR = {
+      errorThrown: new Error('a fail')
+    };
+
+    run(RSVP, 'reject', jqXHR);
+  } finally {
+    Ember.onerror = wasOnError;
+    Ember.testing = wasEmberTesting;
+  }
+});
+
 var wasTesting;
 var reason = 'i failed';
 QUnit.module('Ember.test: rejection assertions', {

@@ -3,10 +3,12 @@ import run from 'ember-metal/run_loop';
 import Namespace from 'ember-runtime/system/namespace';
 import { Registry } from 'ember-runtime/system/container';
 import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/components/component';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import EmberObject from 'ember-runtime/system/object';
 import compile from 'ember-template-compiler/system/compile';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import { set } from 'ember-metal/property_set';
 import { typeOf } from 'ember-runtime/utils';
@@ -14,6 +16,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import ComponentLookup from 'ember-views/component_lookup';
 
 var originalLookup = Ember.lookup;
 
@@ -28,7 +31,10 @@ QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
     registry = new Registry();
     container = registry.container();
     registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('view', { singleton: false });
+    registry.optionsForType('component', { singleton: false });
     registry.register('view:toplevel', EmberView.extend());
+    registry.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
@@ -896,4 +902,42 @@ QUnit.test('`if` helper with inline form: updates when given a falsey second arg
   });
 
   equal(view.$().text(), 'falsy');
+});
+
+QUnit.test('using `if` with an `{{each}}` destroys components when transitioning to and from inverse (GH #12267)', function() {
+  let destroyedChildrenCount = 0;
+
+  registry.register('component:foo-bar', Component.extend({
+    willDestroy() {
+      destroyedChildrenCount++;
+    }
+  }));
+  registry.register('template:components/foo-bar', compile('{{number}}'));
+
+  view = EmberView.create({
+    container,
+    test: true,
+    list: emberA([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+
+    template: compile(`
+      {{~#if view.test~}}
+        {{~#each view.list as |number|~}}
+          {{~foo-bar number=number~}}
+        {{~/each~}}
+      {{~else~}}
+        Nothing Here!
+      {{~/if~}}`)
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '12345678910');
+
+  run(() => {
+    view.set('test', false);
+  });
+
+  equal(view.$().text(), 'Nothing Here!');
+
+  equal(destroyedChildrenCount, 10, 'the children were properly destroyed');
 });

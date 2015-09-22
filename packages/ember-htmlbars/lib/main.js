@@ -124,6 +124,7 @@ import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
 import legacyEachWithControllerHelper from 'ember-htmlbars/helpers/-legacy-each-with-controller';
 import legacyEachWithKeywordHelper from 'ember-htmlbars/helpers/-legacy-each-with-keyword';
 import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
+import hashHelper from 'ember-htmlbars/helpers/hash';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
@@ -147,6 +148,10 @@ registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-html-safe', htmlSafeHelper);
+
+if (isEnabled('ember-contextual-components')) {
+  registerHelper('hash', hashHelper);
+}
 
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);

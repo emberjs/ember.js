@@ -1,7 +1,6 @@
+'no use strict';
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
-//
-'REMOVE_USE_STRICT: true';
 
 /**
 @module ember-metal
@@ -181,7 +180,7 @@ export function generateGuid(obj, prefix) {
 
   You can also use this method on DOM Element objects.
 
-  @private
+  @public
   @method guidFor
   @for Ember
   @param {Object} obj any object, string, number, Element, or primitive
@@ -253,6 +252,7 @@ export function guidFor(obj) {
   }
 }
 
+const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 
 const checkHasSuper = (function () {
   let sourceAvailable = (function() {
@@ -261,7 +261,7 @@ const checkHasSuper = (function () {
 
   if (sourceAvailable) {
     return function checkHasSuper(func) {
-      return func.toString().indexOf('_super') > -1;
+      return HAS_SUPER_PATTERN.test(func.toString());
     };
   }
 

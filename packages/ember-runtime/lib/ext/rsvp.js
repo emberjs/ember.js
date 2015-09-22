@@ -32,18 +32,21 @@ RSVP.configure('async', function(callback, promise) {
   });
 });
 
-export function onerrorDefault(e) {
+export function onerrorDefault(reason) {
   var error;
 
-  if (e && e.errorThrown) {
+  if (reason && reason.errorThrown) {
     // jqXHR provides this
-    error = e.errorThrown;
+    error = reason.errorThrown;
     if (typeof error === 'string') {
       error = new Error(error);
     }
-    error.__reason_with_error_thrown__ = e;
+    Object.defineProperty(error, '__reason_with_error_thrown__', {
+      value: reason,
+      enumerable: false
+    });
   } else {
-    error = e;
+    error = reason;
   }
 
   if (error && error.name === "UnrecognizedURLError") {

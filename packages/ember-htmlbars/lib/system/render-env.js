@@ -1,10 +1,10 @@
 import defaultEnv from 'ember-htmlbars/env';
-import discoverKnownHelpers from 'ember-htmlbars/system/discover-known-helpers';
+import { MorphSet } from 'ember-metal-views/renderer';
 
 export default function RenderEnv(options) {
   this.lifecycleHooks = options.lifecycleHooks || [];
   this.renderedViews = options.renderedViews || [];
-  this.renderedNodes = options.renderedNodes || {};
+  this.renderedNodes = options.renderedNodes || new MorphSet();
   this.hasParentOutlet = options.hasParentOutlet || false;
 
   this.view = options.view;
@@ -12,7 +12,6 @@ export default function RenderEnv(options) {
   this.container = options.container;
   this.renderer = options.renderer;
   this.dom = options.dom;
-  this.knownHelpers = options.knownHelpers || discoverKnownHelpers(options.container);
 
   this.hooks = defaultEnv.hooks;
   this.helpers = defaultEnv.helpers;
@@ -40,8 +39,7 @@ RenderEnv.prototype.childWithView = function(view) {
     lifecycleHooks: this.lifecycleHooks,
     renderedViews: this.renderedViews,
     renderedNodes: this.renderedNodes,
-    hasParentOutlet: this.hasParentOutlet,
-    knownHelpers: this.knownHelpers
+    hasParentOutlet: this.hasParentOutlet
   });
 };
 
@@ -55,7 +53,6 @@ RenderEnv.prototype.childWithOutletState = function(outletState, hasParentOutlet
     lifecycleHooks: this.lifecycleHooks,
     renderedViews: this.renderedViews,
     renderedNodes: this.renderedNodes,
-    hasParentOutlet: hasParentOutlet,
-    knownHelpers: this.knownHelpers
+    hasParentOutlet: hasParentOutlet
   });
 };

@@ -147,15 +147,15 @@ export default {
     // of a mutable param and used it in its layout, because there are
     // no params at all.
     if (Object.keys(hash).length) {
-      return morph.state.manager.rerender(env, hash, visitor, true);
+      return morph.getState().manager.rerender(env, hash, visitor, true);
     }
   },
 
   render(node, env, scope, params, hash, template, inverse, visitor) {
-    var state = node.state;
+    var state = node.getState();
     var parentView = state.parentView;
 
-    var options = { component: node.state.viewClassOrInstance, layout: null };
+    var options = { component: state.viewClassOrInstance, layout: null };
     if (template) {
       options.createOptions = {
         _itemViewTemplate: template && { raw: template },

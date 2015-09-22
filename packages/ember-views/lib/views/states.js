@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import _default from 'ember-views/views/states/default';
 import preRender from 'ember-views/views/states/pre_render';
 import hasElement from 'ember-views/views/states/has_element';
@@ -16,7 +16,7 @@ export function cloneStates(from) {
 
   for (var stateName in from) {
     if (!from.hasOwnProperty(stateName)) { continue; }
-    merge(into[stateName], from[stateName]);
+    assign(into[stateName], from[stateName]);
   }
 
   return into;

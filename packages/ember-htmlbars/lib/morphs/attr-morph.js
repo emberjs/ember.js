@@ -1,4 +1,4 @@
-import { warn } from 'ember-metal/debug';
+import { warn, debugSeal } from 'ember-metal/debug';
 import DOMHelper from 'dom-helper';
 
 var HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
@@ -9,16 +9,15 @@ export var styleWarning = '' +
   'including how to disable this warning, see ' +
   'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
 
-function EmberAttrMorph(element, attrName, domHelper, namespace) {
-  HTMLBarsAttrMorph.call(this, element, attrName, domHelper, namespace);
+let proto = HTMLBarsAttrMorph.prototype;
 
+proto.didInit = function() {
   this.streamUnsubscribers = null;
-}
 
-var proto = EmberAttrMorph.prototype = Object.create(HTMLBarsAttrMorph.prototype);
-proto.HTMLBarsAttrMorph$setContent = HTMLBarsAttrMorph.prototype.setContent;
+  debugSeal(this);
+};
 
-proto._deprecateEscapedStyle = function EmberAttrMorph_deprecateEscapedStyle(value) {
+function deprecateEscapedStyle(morph, value) {
   warn(
     styleWarning,
     (function(name, value, escaped) {
@@ -32,14 +31,13 @@ proto._deprecateEscapedStyle = function EmberAttrMorph_deprecateEscapedStyle(val
       }
 
       return !escaped;
-    }(this.attrName, value, this.escaped)),
+    }(morph.attrName, value, morph.escaped)),
     { id: 'ember-htmlbars.style-xss-warning' }
   );
+}
+
+proto.willSetContent = function (value) {
+  deprecateEscapedStyle(this, value);
 };
 
-proto.setContent = function EmberAttrMorph_setContent(value) {
-  this._deprecateEscapedStyle(value);
-  this.HTMLBarsAttrMorph$setContent(value);
-};
-
-export default EmberAttrMorph;
+export default HTMLBarsAttrMorph;

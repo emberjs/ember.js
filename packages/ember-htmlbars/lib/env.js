@@ -2,19 +2,21 @@ import _Ember from 'ember-metal';
 import environment from 'ember-metal/environment';
 
 import { hooks } from 'htmlbars-runtime';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 import subexpr from 'ember-htmlbars/hooks/subexpr';
 import concat from 'ember-htmlbars/hooks/concat';
 import linkRenderNode from 'ember-htmlbars/hooks/link-render-node';
-import createFreshScope from 'ember-htmlbars/hooks/create-fresh-scope';
+import createFreshScope, { createChildScope } from 'ember-htmlbars/hooks/create-fresh-scope';
 import bindShadowScope from 'ember-htmlbars/hooks/bind-shadow-scope';
 import bindSelf from 'ember-htmlbars/hooks/bind-self';
 import bindScope from 'ember-htmlbars/hooks/bind-scope';
 import bindLocal from 'ember-htmlbars/hooks/bind-local';
+import bindBlock from 'ember-htmlbars/hooks/bind-block';
 import updateSelf from 'ember-htmlbars/hooks/update-self';
 import getRoot from 'ember-htmlbars/hooks/get-root';
 import getChild from 'ember-htmlbars/hooks/get-child';
+import getBlock from 'ember-htmlbars/hooks/get-block';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import cleanupRenderNode from 'ember-htmlbars/hooks/cleanup-render-node';
@@ -34,17 +36,20 @@ import keywords, { registerKeyword } from 'ember-htmlbars/keywords';
 
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 
-var emberHooks = merge({}, hooks);
+var emberHooks = assign({}, hooks);
 emberHooks.keywords = keywords;
 
-merge(emberHooks, {
+assign(emberHooks, {
   linkRenderNode,
   createFreshScope,
+  createChildScope,
   bindShadowScope,
   bindSelf,
   bindScope,
   bindLocal,
+  bindBlock,
   updateSelf,
+  getBlock,
   getRoot,
   getChild,
   getValue,
@@ -70,10 +75,12 @@ import outlet from 'ember-htmlbars/keywords/outlet';
 import unbound from 'ember-htmlbars/keywords/unbound';
 import view from 'ember-htmlbars/keywords/view';
 import componentKeyword from 'ember-htmlbars/keywords/component';
+import elementComponent from 'ember-htmlbars/keywords/element-component';
 import partial from 'ember-htmlbars/keywords/partial';
 import input from 'ember-htmlbars/keywords/input';
 import textarea from 'ember-htmlbars/keywords/textarea';
 import collection from 'ember-htmlbars/keywords/collection';
+import yieldKeyword from 'ember-htmlbars/keywords/yield';
 import legacyYield from 'ember-htmlbars/keywords/legacy-yield';
 import mut, { privateMut } from 'ember-htmlbars/keywords/mut';
 import each from 'ember-htmlbars/keywords/each';
@@ -85,9 +92,11 @@ registerKeyword('with', withKeyword);
 registerKeyword('outlet', outlet);
 registerKeyword('unbound', unbound);
 registerKeyword('component', componentKeyword);
+registerKeyword('@element_component', elementComponent);
 registerKeyword('partial', partial);
 registerKeyword('input', input);
 registerKeyword('textarea', textarea);
+registerKeyword('yield', yieldKeyword);
 registerKeyword('legacy-yield', legacyYield);
 registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);

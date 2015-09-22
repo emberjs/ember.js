@@ -11,6 +11,7 @@ var EmberBuild = require('emberjs-build');
 var packages   = require('./lib/packages');
 
 var applyFeatureFlags = require('babel-plugin-feature-flags');
+var filterImports = require('babel-plugin-filter-imports');
 
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
@@ -20,28 +21,36 @@ var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
 function babelConfigFor(environment) {
   var isDevelopment = (environment === 'development');
+  var isProduction = (environment === 'production');
 
   var features = JSON.parse(featuresJson).features;
-  features["mandatory-setter"] = isDevelopment;
+  features['mandatory-setter'] = isDevelopment;
 
-  return {
-    plugins: [
-      applyFeatureFlags({
-        import: { module: 'ember-metal/features' },
-        features: features
-      })
-    ]
-  };
+  var plugins = [];
+
+  plugins.push(applyFeatureFlags({
+    import: { module: 'ember-metal/features' },
+    features: features
+  }));
+
+  if (isProduction) {
+    plugins.push(filterImports({
+      'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
+    }));
+  }
+
+  return { plugins: plugins };
 }
 
-var emberBuild = new EmberBuild({
-  babel: {
-    development: babelConfigFor('development'),
-    production: babelConfigFor('production')
-  },
-  htmlbars: require('htmlbars'),
-  packages: packages,
-  vendoredPackages: {
+module.exports = function() {
+  var emberBuild = new EmberBuild({
+    babel: {
+      development: babelConfigFor('development'),
+      production: babelConfigFor('production')
+    },
+    htmlbars: require('htmlbars'),
+    packages: packages,
+    vendoredPackages: {
       'loader':                vendoredPackage('loader'),
       'rsvp':                  vendoredES6Package('rsvp'),
       'backburner':            vendoredES6Package('backburner'),
@@ -58,6 +67,7 @@ var emberBuild = new EmberBuild({
       'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
       'htmlbars-util':         htmlbarsPackage('htmlbars-util')
     }
-});
+  });
 
-module.exports = emberBuild.getDistTrees();
+  return emberBuild.getDistTrees();
+};

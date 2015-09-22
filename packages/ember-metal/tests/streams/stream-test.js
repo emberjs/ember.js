@@ -1,4 +1,4 @@
-import Stream from 'ember-metal/streams/stream';
+import { Stream } from 'ember-metal/streams/stream';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { get } from 'ember-metal/property_get';
 

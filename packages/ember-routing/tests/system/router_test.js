@@ -1,4 +1,4 @@
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import Registry from 'container/registry';
 import HashLocation from 'ember-routing/location/hash_location';
 import HistoryLocation from 'ember-routing/location/history_location';
@@ -10,7 +10,7 @@ import { runDestroy } from 'ember-runtime/tests/utils';
 var registry, container;
 
 function createRouter(overrides, disableSetup) {
-  var opts = merge({ container: container }, overrides);
+  var opts = assign({ container: container }, overrides);
   var routerWithContainer = Router.extend();
   var router = routerWithContainer.create(opts);
 

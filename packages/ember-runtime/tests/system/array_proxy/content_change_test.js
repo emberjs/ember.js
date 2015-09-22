@@ -17,6 +17,24 @@ QUnit.test('should update length for null content', function() {
   equal(proxy.get('length'), 0, 'length updates');
 });
 
+QUnit.test('should update length for null content when there is a computed property watching length', function() {
+  var proxy = ArrayProxy.extend({
+    isEmpty: Ember.computed.not('length')
+  }).create({
+    content: Ember.A([1, 2, 3])
+  });
+
+  equal(proxy.get('length'), 3, 'precond - length is 3');
+
+  // Consume computed property that depends on length
+  proxy.get('isEmpty');
+
+  // update content
+  proxy.set('content', null);
+
+  equal(proxy.get('length'), 0, 'length updates');
+});
+
 QUnit.test('The `arrangedContentWillChange` method is invoked before `content` is changed.', function() {
   var callCount = 0;
   var expectedLength;

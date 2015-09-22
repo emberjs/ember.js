@@ -1,7 +1,6 @@
+'no use strict';
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
-//
-'REMOVE_USE_STRICT: true';
 
 /**
   @module ember
@@ -13,7 +12,7 @@
 import Ember from 'ember-metal';
 import { assert, runInDebug } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -47,7 +46,9 @@ import {
   K
 } from 'ember-metal/core';
 import { validatePropertyInjections } from 'ember-runtime/inject';
+import { symbol } from 'ember-metal/utils';
 
+export let POST_INIT = symbol('POST_INIT');
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
@@ -154,7 +155,7 @@ function makeCtor() {
               mergedProperties.indexOf(keyName) >= 0) {
             var originalValue = this[keyName];
 
-            value = merge(originalValue, value);
+            value = assign(originalValue, value);
           }
 
           if (desc) {
@@ -191,6 +192,8 @@ function makeCtor() {
       }
       this.init.apply(this, args);
     }
+
+    this[POST_INIT]();
 
     m.proto = proto;
     finishChains(this);
@@ -266,6 +269,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   init() {},
+
+  [POST_INIT]: function() { },
+
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);
     //this[property.name] = property.descriptor.value;
@@ -339,6 +345,75 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   concatenatedProperties: null,
+
+  /**
+    Defines the properties that will be merged from the superclass
+    (instead of overridden).
+
+    By default, when you extend an Ember class a property defined in
+    the subclass overrides a property with the same name that is defined
+    in the superclass. However, there are some cases where it is preferable
+    to build up a property's value by merging the superclass property value
+    with the subclass property's value. An example of this in use within Ember
+    is the `queryParams` property of routes.
+
+    Here is some sample code showing the difference between a merged
+    property and a normal one:
+
+    ```javascript
+    App.BarRoute = Ember.Route.extend({
+      someNonMergedProperty: {
+        nonMerged: 'superclass value of nonMerged'
+      },
+      queryParams: {
+        page: {replace: false},
+        limit: {replace: true}
+      }
+    });
+
+    App.FooBarRoute = App.BarRoute.extend({
+      someNonMergedProperty: {
+        completelyNonMerged: 'subclass value of nonMerged'
+      },
+      queryParams: {
+        limit: {replace: false}
+      }
+    });
+
+    var fooBarRoute = App.FooBarRoute.create();
+
+    fooBarRoute.get('someNonMergedProperty');
+    // => { completelyNonMerged: 'subclass value of nonMerged' }
+    //
+    // Note the entire object, including the nonMerged property of
+    // the superclass object, has been replaced
+
+    fooBarRoute.get('queryParams');
+    // => {
+    //   page: {replace: false},
+    //   limit: {replace: false}
+    // }
+    //
+    // Note the page remains from the superclass, and the
+    // `limit` property's value of `false` has been merged from
+    // the subclass.
+    ```
+
+    This behavior is not available during object `create` calls. It is only
+    available at `extend` time.
+
+    This feature is available for you to use throughout the Ember object model,
+    although typical app developers are likely to use it infrequently. Since
+    it changes expectations about behavior of properties, you should properly
+    document its usage in each individual merged property (to not
+    mislead your users to think they can override the property in a subclass).
+
+    @property mergedProperties
+    @type Array
+    @default null
+    @public
+  */
+  mergedProperties: null,
 
   /**
     Destroyed object property flag.

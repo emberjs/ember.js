@@ -1,12 +1,12 @@
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import { assert, info } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { defineProperty } from 'ember-metal/properties';
 import EmptyObject from 'ember-metal/empty_object';
 import { computed } from 'ember-metal/computed';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
@@ -268,7 +268,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     run.once(this, this.trigger, 'willTransition', transition);
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to ' ${EmberRouter._routePath(newInfos)}'`);
+      Ember.Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
     }
   },
 
@@ -503,7 +503,7 @@ var EmberRouter = EmberObject.extend(Evented, {
         handler = container.lookup(routeName);
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
-          Ember.Logger.info(`generated -> ${routeName}`, { fullName: routeName });
+          info(`generated -> ${routeName}`, { fullName: routeName });
         }
       }
 
@@ -592,7 +592,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     var queryParams = {};
-    merge(queryParams, _queryParams);
+    assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams);
 
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
@@ -637,7 +637,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
       if (!qpMeta) { continue; }
 
-      merge(map, qpMeta.map);
+      assign(map, qpMeta.map);
       qps.push.apply(qps, qpMeta.qps);
     }
 

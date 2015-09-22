@@ -49,6 +49,22 @@ QUnit.test('action should be called', function(assert) {
   });
 });
 
+QUnit.test('an error is triggered when bound action function is undefined', function(assert) {
+  assert.expect(1);
+
+  innerComponent = EmberComponent.extend({
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile('{{view innerComponent submit=(action somethingThatIsUndefined)}}'),
+    innerComponent
+  }).create();
+
+  throws(function() {
+    runAppend(outerComponent);
+  }, /An action could not be made for `somethingThatIsUndefined` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action 'somethingThatIsUndefined'\)`\) or a function available in .*\./);
+});
+
 QUnit.test('action value is returned', function(assert) {
   assert.expect(1);
 

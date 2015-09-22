@@ -1,5 +1,4 @@
 import { assert, warn, runInDebug } from 'ember-metal/debug';
-import assign from 'ember-metal/assign';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
@@ -8,8 +7,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
-import Stream from 'ember-metal/streams/stream';
-import { readArray } from 'ember-metal/streams/utils';
+import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import { symbol } from 'ember-metal/utils';
 
 // These symbols will be used to limit link-to's public API surface area.
@@ -33,7 +31,7 @@ function ComponentNodeManager(component, isAngleBracket, scope, renderNode, attr
 
 export default ComponentNodeManager;
 
-ComponentNodeManager.create = function(renderNode, env, options) {
+ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, env, options) {
   let { tagName,
         params,
         attrs,
@@ -62,8 +60,8 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // If there is a controller on the scope, pluck it off and save it on the
   // component. This allows the component to target actions sent via
   // `sendAction` correctly.
-  if (parentScope.locals.controller) {
-    createOptions._controller = getValue(parentScope.locals.controller);
+  if (parentScope.hasLocal('controller')) {
+    createOptions._controller = getValue(parentScope.getLocal('controller'));
   }
 
   extractPositionalParams(renderNode, component, params, attrs);
@@ -74,16 +72,15 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   // If the component specifies its layout via the `layout` property
   // instead of using the template looked up in the container, get it
   // now that we have the component instance.
-  layout = get(component, 'layout') || layout;
-
-  // TODO: Remove this hack when defeatureify is removed.
-  let _assert = assert;
+  if (!layout) {
+    layout = get(component, 'layout');
+  }
 
   runInDebug(() => {
     if (isAngleBracket) {
-      _assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
+      assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
     } else {
-      _assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
+      assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
     }
 
     if (!layout) { return; }
@@ -92,14 +89,14 @@ ComponentNodeManager.create = function(renderNode, env, options) {
     if (isAngleBracket && fragmentReason) {
       switch (fragmentReason.name) {
         case 'missing-wrapper':
-          _assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
+          assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
           break;
         case 'modifiers':
           let modifiers = fragmentReason.modifiers.map(m => `{{${m} ...}}`);
-          _assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
         case 'triple-curlies':
-          _assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
+          assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
           break;
       }
     }
@@ -112,42 +109,6 @@ ComponentNodeManager.create = function(renderNode, env, options) {
   return new ComponentNodeManager(component, isAngleBracket, parentScope, renderNode, attrs, results.block, results.createdElement);
 };
 
-function extractPositionalParams(renderNode, component, params, attrs) {
-  let positionalParams = component.positionalParams;
-
-  if (positionalParams) {
-    processPositionalParams(renderNode, positionalParams, params, attrs);
-  }
-}
-
-function processPositionalParams(renderNode, positionalParams, params, attrs) {
-  // if the component is rendered via {{component}} helper, the first
-  // element of `params` is the name of the component, so we need to
-  // skip that when the positional parameters are constructed
-  const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
-  const isNamed = typeof positionalParams === 'string';
-  let paramsStream;
-
-  if (isNamed) {
-    paramsStream = new Stream(() => {
-      return readArray(params.slice(paramsStartIndex));
-    }, 'params');
-
-    attrs[positionalParams] = paramsStream;
-  }
-
-  if (isNamed) {
-    for (let i = paramsStartIndex; i < params.length; i++) {
-      let param = params[i];
-      paramsStream.addDependency(param);
-    }
-  } else {
-    for (let i = 0; i < positionalParams.length; i++) {
-      let param = params[paramsStartIndex + i];
-      attrs[positionalParams[i]] = param;
-    }
-  }
-}
 
 function configureTagName(attrs, tagName, component, isAngleBracket, createOptions) {
   if (isAngleBracket) {
@@ -166,17 +127,17 @@ function configureCreateOptions(attrs, createOptions) {
   if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
 }
 
-ComponentNodeManager.prototype.render = function(_env, visitor) {
+ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_env, visitor) {
   var { component } = this;
 
-  return instrument(component, function() {
+  return instrument(component, function ComponentNodeManager_render_instrument() {
     let env = _env.childWithView(component);
 
     env.renderer.componentWillRender(component);
     env.renderedViews.push(component.elementId);
 
     if (this.block) {
-      this.block(env, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     let element;
@@ -215,15 +176,19 @@ function nextElementSibling(node) {
   }
 }
 
-ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
+ComponentNodeManager.prototype.rerender = function ComponentNodeManager_rerender(_env, attrs, visitor) {
   var component = this.component;
 
-  return instrument(component, function() {
+  return instrument(component, function ComponentNodeManager_rerender_instrument() {
     let env = _env.childWithView(component);
 
     var snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
+      if (component._propagateAttrsToThis) {
+        component._propagateAttrsToThis(takeLegacySnapshot(attrs));
+      }
+
       env.renderer.componentUpdateAttrs(component, snapshot);
       component._renderNode.shouldReceiveAttrs = false;
     }
@@ -235,7 +200,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
     env.renderedViews.push(component.elementId);
 
     if (this.block) {
-      this.block(env, [], undefined, this.renderNode, this.scope, visitor);
+      this.block.invoke(env, [], undefined, this.renderNode, this.scope, visitor);
     }
 
     env.lifecycleHooks.push({ type: 'didUpdate', view: component });
@@ -244,7 +209,7 @@ ComponentNodeManager.prototype.rerender = function(_env, attrs, visitor) {
   }, this);
 };
 
-ComponentNodeManager.prototype.destroy = function() {
+ComponentNodeManager.prototype.destroy = function ComponentNodeManager_destroy() {
   let component = this.component;
 
   // Clear component's render node. Normally this gets cleared
@@ -254,19 +219,14 @@ ComponentNodeManager.prototype.destroy = function() {
   component.destroy();
 };
 
-export function createComponent(_component, isAngleBracket, _props, renderNode, env, attrs = {}) {
-  let props = assign({}, _props);
-
-  let snapshot = takeSnapshot(attrs);
-  props.attrs = snapshot;
-
+export function createComponent(_component, isAngleBracket, props, renderNode, env, attrs = {}) {
   if (!isAngleBracket) {
-    let proto = _component.proto();
-
     assert('controller= is no longer supported', !('controller' in attrs));
 
-    mergeBindings(props, shadowedAttrs(proto, snapshot));
+    snapshotAndUpdateTarget(attrs, props);
   } else {
+    props.attrs = takeSnapshot(attrs);
+
     props._isAngleBracket = true;
   }
 
@@ -292,23 +252,6 @@ export function createComponent(_component, isAngleBracket, _props, renderNode, 
   return component;
 }
 
-function shadowedAttrs(target, attrs) {
-  let shadowed = {};
-
-  // For backwards compatibility, set the component property
-  // if it has an attr with that name. Undefined attributes
-  // are handled on demand via the `unknownProperty` hook.
-  for (var attr in attrs) {
-    if (attr in target) {
-      // TODO: Should we issue a deprecation here?
-      // deprecate(deprecation(attr));
-      shadowed[attr] = attrs[attr];
-    }
-  }
-
-  return shadowed;
-}
-
 function takeSnapshot(attrs) {
   let hash = {};
 
@@ -319,9 +262,23 @@ function takeSnapshot(attrs) {
   return hash;
 }
 
-function mergeBindings(target, attrs) {
+export function takeLegacySnapshot(attrs) {
+  let hash = {};
+
   for (var prop in attrs) {
-    if (!attrs.hasOwnProperty(prop)) { continue; }
+    hash[prop] = getValue(attrs[prop]);
+  }
+
+  return hash;
+}
+
+function snapshotAndUpdateTarget(rawAttrs, target) {
+  let attrs = {};
+
+  for (var prop in rawAttrs) {
+    let value = getCellOrValue(rawAttrs[prop]);
+    attrs[prop] = value;
+
     // when `attrs` is an actual value being set in the
     // attrs hash (`{{foo-bar attrs="blah"}}`) we cannot
     // set `"blah"` to the root of the target because
@@ -330,16 +287,15 @@ function mergeBindings(target, attrs) {
       warn(`Invoking a component with a hash attribute named \`attrs\` is not supported. Please refactor usage of ${target} to avoid passing \`attrs\` as a hash parameter.`, false, { id: 'ember-htmlbars.component-unsupported-attrs' });
       continue;
     }
-    let value = attrs[prop];
 
     if (value && value[MUTABLE_CELL]) {
-      target[prop] = value.value;
-    } else {
-      target[prop] = value;
+      value = value.value;
     }
+
+    target[prop] = value;
   }
 
-  return target;
+  return target.attrs = attrs;
 }
 
 function buildChildEnv(state, env) {

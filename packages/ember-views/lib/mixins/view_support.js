@@ -6,6 +6,7 @@ import { addObserver, removeObserver } from 'ember-metal/observer';
 import { guidFor } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
 import { Mixin } from 'ember-metal/mixin';
+import { POST_INIT } from 'ember-runtime/system/core_object';
 
 import jQuery from 'ember-views/system/jquery';
 
@@ -609,12 +610,25 @@ export default Mixin.create({
     this.scheduledRevalidation = false;
 
     this._super(...arguments);
-    this.renderer.componentInitAttrs(this, this.attrs || {});
 
     assert(
       'Using a custom `.render` function is no longer supported.',
       !this.render
     );
+  },
+
+  /*
+   This is a special hook implemented in CoreObject, that allows Views/Components
+   to have a way to ensure that `init` fires before `didInitAttrs` / `didReceiveAttrs`
+   (so that `this._super` in init does not trigger `didReceiveAttrs` before the classes
+   own `init` is finished).
+
+   @method __postInitInitialization
+   @private
+   */
+  [POST_INIT]: function() {
+    this._super(...arguments);
+    this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
   __defineNonEnumerable(property) {
@@ -627,7 +641,7 @@ export default Mixin.create({
   },
 
   scheduleRevalidate(node, label, manualRerender) {
-    if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
+    if (node && !this._dispatching && this.env.renderedNodes.has(node)) {
       if (manualRerender) {
         deprecate(
           `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,

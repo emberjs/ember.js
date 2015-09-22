@@ -32,7 +32,7 @@ export default {
         target = read(hash.target);
       }
     } else {
-      target = read(scope.locals.controller) || read(scope.self);
+      target = read(scope.getLocal('controller')) || read(scope.getSelf());
     }
 
     return { actionName, actionArgs, target };
@@ -91,7 +91,7 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
         event.stopPropagation();
       }
 
-      let { target, actionName, actionArgs } = node.state;
+      let { target, actionName, actionArgs } = node.getState();
 
       run(function runRegisteredAction() {
         if (typeof actionName === 'function') {

@@ -1,7 +1,6 @@
+'no use strict';
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
-//
-'REMOVE_USE_STRICT: true';
 
 /**
 @module ember
@@ -10,7 +9,7 @@
 
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
 import { assert, deprecate, runInDebug } from 'ember-metal/debug';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
@@ -163,17 +162,14 @@ function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
 
   runInDebug(function() {
-    // TODO: Remove this hack when defeatureify is removed.
-    let _assert = assert;
-
     if (Array.isArray(value)) { // use conditional to avoid stringifying every time
-      _assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
+      assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
     }
   });
 
   if (!baseValue) { return value; }
 
-  var newBase = merge({}, baseValue);
+  var newBase = assign({}, baseValue);
   var hasFunction = false;
 
   for (var prop in value) {
@@ -706,7 +702,7 @@ Alias.prototype = new Descriptor();
   @method aliasMethod
   @for Ember
   @param {String} methodName name of the method to alias
-  @private
+  @public
 */
 export function aliasMethod(methodName) {
   return new Alias(methodName);

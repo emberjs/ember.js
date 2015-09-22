@@ -1,6 +1,6 @@
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
-import merge from 'ember-metal/merge';
+import assign from 'ember-metal/assign';
 import AutoLocation from 'ember-routing/location/auto_location';
 import {
   getHistoryPath,
@@ -13,7 +13,7 @@ import Registry from 'container/registry';
 
 
 function mockBrowserLocation(overrides) {
-  return merge({
+  return assign({
     href: 'http://test.com/',
     pathname: '/',
     hash: '',
@@ -25,7 +25,7 @@ function mockBrowserLocation(overrides) {
 }
 
 function mockBrowserHistory(overrides) {
-  return merge({
+  return assign({
     pushState() {
       ok(false, 'history.pushState should not be called during testing');
     },

@@ -58,10 +58,6 @@ if (isEnabled('mandatory-setter')) {
   };
 }
 
-// This is super annoying, but required until
-// https://github.com/babel/babel/issues/906 is resolved
-; // jshint ignore:line
-
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
   let count = m.peekWatching(keyName);

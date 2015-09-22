@@ -23,7 +23,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
         component = this;
         this._super(...arguments);
       },
-      layout: compile(`<my-component>{{yield}}</my-component>`)
+      layout: compile(`<my-component>...{{yield}}...</my-component>`)
     });
 
     renderComponent('my-component', {
@@ -34,6 +34,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     ok(component instanceof GlimmerComponent, 'the component was instantiated correctly');
     equal(view.childViews[0], component, 'the component was rendered and inserted into child views');
     hasSelector(assert, `my-component.ember-view[id=${component.elementId}]`);
+    equal(view.$().text(), '...Hello world...');
   });
 }
 
