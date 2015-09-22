@@ -1,17 +1,16 @@
 import { compile } from "htmlbars-compiler";
 import { manualElement, DOMHelper } from "htmlbars-runtime";
 import { equalTokens } from "htmlbars-test-helpers";
-import { TestEnvironment, TestBaseReference } from "./support";
+import { TestEnvironment } from "./support";
 
 var hooks, env, dom, root;
 
 function rootElement() {
-  return dom.createElement('div');
+  return env.getDOM().createElement('div', document.body);
 }
 
 function commonSetup() {
-  dom = new DOMHelper();
-  env = new TestEnvironment({ dom, BaseReference: TestBaseReference });
+  env = new TestEnvironment(window.document); // TODO: Support SimpleDOM
   root = rootElement();
 
   env.registerHelper('if', function(params, hash, options) {
@@ -38,7 +37,9 @@ function commonSetup() {
 }
 
 function render(template, context={}) {
-  return template.render(context, env, { appendTo: root });
+  let result = template.render(context, env, { appendTo: root });
+  assertInvariants(result);
+  return result;
 }
 
 QUnit.module("HTML-based compiler (dirtying)", {
@@ -98,25 +99,30 @@ test("block helpers whose template has a morph at the edge", function() {
   let result = render(template, object);
 
   equalTokens(root, 'hello world');
-  var firstNode = result.root.firstNode;
+  var firstNode = result.firstNode();
   equal(firstNode.nodeType, 3, "the first node of the helper should be a text node");
   equal(firstNode.nodeValue, "hello world", "its content should be hello world");
 
   strictEqual(firstNode.nextSibling, null, "there should only be one nodes");
 });
 
+function assertInvariants(result) {
+  strictEqual(result.firstNode(), root.firstChild, "The firstNode of the result is the same as the root's firstChild");
+  strictEqual(result.lastNode(), root.lastChild, "The lastNode of the result is the same as the root's lastChild");
+}
+
 test("clean content doesn't get blown away", function() {
   var template = compile("<div>{{value}}</div>");
   var object = { value: "hello" };
   var result = render(template, object);
 
-  var textNode = root.firstChild.firstChild;
+  var textNode = result.firstNode().firstChild;
   equal(textNode.nodeValue, "hello");
 
   object.value = "goodbye";
-  result.revalidate(); // without setting the node to dirty
+  result.rerender();
 
-  equalTokens(root, '<div>hello</div>');
+  equalTokens(root, '<div>goodbye</div>');
 
   object.value = "hello";
   result.rerender();
@@ -134,13 +140,13 @@ test("helper calls follow the normal dirtying rules", function() {
   var object = { value: "hello" };
   var result = render(template, object);
 
-  var textNode = root.firstChild.firstChild;
+  var textNode = result.firstNode().firstChild;
   equal(textNode.nodeValue, "HELLO");
 
   object.value = "goodbye";
-  result.revalidate(); // without setting the node to dirty
+  result.rerender();
 
-  equalTokens(root, '<div>HELLO</div>');
+  equalTokens(root, '<div>GOODBYE</div>');
 
   result.rerender();
 

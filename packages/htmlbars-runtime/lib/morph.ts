@@ -1,13 +1,23 @@
 import { Frame } from './environment';
 import { ElementStack } from './builder';
 import { Enumerable } from './utils';
+import DOMHelper from './dom';
+import Template from './template';
 
 export interface MorphSpecializer<InitOptions> {
   specialize(options: InitOptions): MorphConstructor<InitOptions>;
 }
 
+export interface ContentMorphSpecializer<InitOptions> {
+  specialize(options: InitOptions): ContentMorphConstructor<InitOptions>;
+}
+
 export interface MorphConstructor<InitOptions> extends MorphSpecializer<InitOptions> {
   new (parentNode: Element, frame: Frame): Morph<InitOptions>;
+}
+
+export interface ContentMorphConstructor<InitOptions> extends ContentMorphSpecializer<InitOptions> {
+  new (parentNode: Element, frame: Frame): ContentMorph<InitOptions>;
 }
 
 // export interface MorphConstructor<T> {
@@ -67,10 +77,23 @@ export abstract class Morph<InitOptions> implements HasParentNode {
   destroy() {}
 }
 
+export abstract class ContentMorph<InitOptions> extends Morph<InitOptions> implements Bounds {
+  static specialize<InitOptions>(...args: any[]): ContentMorphConstructor<InitOptions> {
+    return <ContentMorphConstructor<InitOptions>>this;
+  }
+
+  parentElement() {
+    return this.parentNode;
+  }
+
+  abstract firstNode(): Node;
+  abstract lastNode(): Node;
+}
+
 export type MorphList = Enumerable<Morph<Object>>;
 
 export interface Bounds {
-  parentNode(): Element;
+  parentElement(): Element;
   firstNode(): Node;
   lastNode(): Node;
 }
@@ -80,23 +103,36 @@ export function bounds(parent: Element, first: Node, last: Node): Bounds {
 }
 
 export class ConcreteBounds implements Bounds {
-  private parent: Element;
+  public parentNode: Element;
   private first: Node;
   private last: Node;
 
   constructor(parent: Element, first: Node, last: Node) {
-    this.parent = parent;
+    this.parentNode = parent;
     this.first = first;
     this.last = last;
   }
 
-  parentNode() { return this.parent; }
+  parentElement() { return this.parentNode; }
   firstNode() { return this.first; }
   lastNode() { return this.last; }
 }
 
+export function clearWithComment(bounds: Bounds, dom: DOMHelper) {
+  let nextSibling = clear(bounds);
+  let parent = bounds.parentElement();
+  let comment = dom.createComment('');
+  dom.insertBefore(bounds.parentElement(), comment, nextSibling);
+  return new ConcreteBounds(parent, comment, comment);
+}
+
+export function renderIntoBounds(template: Template, bounds: Bounds, morph: HasParentNode, frame: Frame) {
+  let nextSibling = clear(bounds);
+  return template.evaluate(morph, frame);
+}
+
 export function clear(bounds: Bounds) {
-  let parent = bounds.parentNode();
+  let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
 

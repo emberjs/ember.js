@@ -741,6 +741,7 @@ test('Block params in HTML syntax - Works with a single parameter', function () 
   env.registerHelper('x-bar', function(params, hash, blocks) {
     return blocks.template.yield(['Xerxes']);
   });
+
   compilesTo('<x-bar as |x|>{{x}}</x-bar>', 'Xerxes', {});
 });
 

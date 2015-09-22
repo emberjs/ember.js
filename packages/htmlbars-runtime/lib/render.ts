@@ -1,33 +1,44 @@
 import { Dict, voidMap } from 'htmlbars-util';
 import Template, { TemplateBuilder } from './template';
-import { Morph, MorphList, Bounds, HasParentNode, clear } from './morph';
+import {
+  Morph,
+  MorphList,
+  Bounds,
+  HasParentNode,
+  clear,
+  renderIntoBounds
+} from './morph';
 import { InternedString } from 'htmlbars-util';
+import { Frame } from './environment';
 
 interface RenderResultOptions {
 	morph: HasParentNode,
 	locals: InternedString[],
 	morphs: MorphList,
 	bounds: Bounds,
+  frame: Frame,
 	template: Template
 }
 
 export class RenderResult implements Bounds {
   morph: HasParentNode;
+  frame: Frame;
   morphs: MorphList;
   bounds: Bounds;
   template: Template;
 
   constructor(options: RenderResultOptions) {
-    let { morph, locals, morphs, bounds, template } = options;
+    let { morph, locals, morphs, frame, bounds, template } = options;
 
     this.morph = morph;
     this.morphs = morphs;
     this.bounds = bounds;
     this.template = template;
+    this.frame = frame;
   }
 
-  parentNode(): Node {
-    return this.bounds.parentNode();
+  parentElement(): Element {
+    return this.bounds.parentElement();
   }
 
   firstNode(): Node {
@@ -43,10 +54,7 @@ export class RenderResult implements Bounds {
       this.rerender();
       return this;
     } else {
-      this.morph.nextSibling = clear(this);
-      let result = template.evaluate(this.morph, this.morph.frame)
-      this.morph.nextSibling = null;
-      return result;
+      return renderIntoBounds(template, this, this.morph, this.frame);
     }
   }
 

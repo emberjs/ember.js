@@ -6,9 +6,10 @@ import {
   RootReference,
   PathReference,
   ConstReference,
-  MetaLookup,
-  InternedString
+  MetaLookup
 } from 'htmlbars-reference';
+
+import { InternedString } from 'htmlbars-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
@@ -111,7 +112,7 @@ class Scope {
 
   getBase(name: InternedString): PathReference {
     if (this.hasLocal(name)) return this.getLocal(name);
-    let self = this.self;
+    let self = this.getSelf();
     if (self) return self.get(name);
   }
 }

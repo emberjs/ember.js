@@ -3,16 +3,16 @@ import { RegionMorph } from './region';
 import { ExpressionSyntax, EvaluatedParamsAndHash, Templates } from '../template';
 import { Reference, PushPullReference } from 'htmlbars-reference';
 import { Frame, Helper, Insertion as PrimitiveInsertion } from '../environment';
-import { Morph, MorphConstructor, Bounds, bounds, clear } from '../morph';
+import { Morph, ContentMorph, ContentMorphConstructor, MorphConstructor, Bounds, bounds, clear } from '../morph';
 import { ElementStack } from '../builder';
 
 const SAFE_BRAND = symbol("safe string");
 
 type ContentInitOptions = { content: Reference, trustingMorph: boolean };
 type ContentInsertion = Morph<ContentInitOptions>;
-type ContentInsertionConstructor = MorphConstructor<ContentInitOptions>;
+type ContentInsertionConstructor = ContentMorphConstructor<ContentInitOptions>;
 
-class HtmlInsertion extends Morph<ContentInitOptions> {
+class HtmlInsertion extends ContentMorph<ContentInitOptions> {
   private reference: Reference;
   private lastBounds: Bounds = null;
   private lastValue: string = null;
@@ -24,6 +24,14 @@ class HtmlInsertion extends Morph<ContentInitOptions> {
     if (!(this.parentNode instanceof HTMLElement)) {
       throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.parentNode.tagName}`)
     }
+  }
+
+  firstNode() {
+    return this.lastBounds.firstNode();
+  }
+
+  lastNode() {
+    return this.lastBounds.lastNode();
   }
 
   append(stack: ElementStack) {
@@ -43,25 +51,33 @@ class HtmlInsertion extends Morph<ContentInitOptions> {
   }
 }
 
-class TextInsertion extends Morph<ContentInitOptions> {
+class TextInsertion extends ContentMorph<ContentInitOptions> {
   private reference: Reference;
-  private lastNode: Text = null;
+  private node: Text = null;
   private lastValue: string = null;
 
   init({ content }: ContentInitOptions) {
     this.reference = content;
   }
 
+  firstNode() {
+    return this.node;
+  }
+
+  lastNode() {
+    return this.node;
+  }
+
   append(stack: ElementStack) {
     let text = this.lastValue = <string>this.reference.value();
-    this.lastNode = stack.appendText(text);
+    this.node = stack.appendText(text);
   }
 
   update() {
     let text = <string>this.reference.value();
     if (text !== this.lastValue) {
       this.lastValue = text;
-      this.lastNode.nodeValue = text;
+      this.node.nodeValue = text;
     }
   }
 }
@@ -95,7 +111,7 @@ export class HelperMorph extends Morph<any> {
 
   update() {
 
-  }
+
 }
 
 // export class ValueMorph extends RegionMorph<{ ref: ExpressionSyntax, trustingMorph: boolean }> {

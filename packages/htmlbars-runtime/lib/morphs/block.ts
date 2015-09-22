@@ -1,11 +1,12 @@
 // import { RegionMorph, EmptyInsertion } from "./region";
-import { Morph, HasParentNode } from '../morph';
+import { Morph, ContentMorph, HasParentNode, clear } from '../morph';
 import { HelperParamsReference } from "../reference";
 import { ChainableReference, ConstReference } from 'htmlbars-reference';
 import { assert } from "htmlbars-util";
 import Template, { EvaluatedParamsAndHash, Templates } from '../template';
 import { ElementStack } from '../builder';
 import { Helper, Frame } from '../environment';
+import { RenderResult } from '../render';
 
 // export class SimpleBlockMorph extends RegionMorph {
 //   init({ template }) {
@@ -43,10 +44,11 @@ export interface BlockHelperOptions {
   templates: Templates
 }
 
-export class BlockHelperMorph extends Morph<BlockHelperOptions> {
+export class BlockHelperMorph extends ContentMorph<BlockHelperOptions> {
   private helper: ConstReference<Helper>;
   private args: EvaluatedParamsAndHash;
   private templates: Templates;
+  private group: Group;
 
   init({ helper, args, templates }: BlockHelperOptions) {
     this.helper = helper;
@@ -54,36 +56,87 @@ export class BlockHelperMorph extends Morph<BlockHelperOptions> {
     this.templates = templates;
   }
 
+  firstNode() {
+    return this.group.lastResult.firstNode();
+  }
+
+  lastNode() {
+    return this.group.lastResult.lastNode();
+  }
+
   append(stack: ElementStack) {
     let helper = this.helper.value();
     let { params, hash } = this.args.value();
     let { _default, _inverse } = this.templates;
-    let group = new Group(this, _default, _inverse);
+    let group = this.group = new Group(this, _default, _inverse);
     helper(params, hash, group);
 
-    if (!group._rendered) {
-      stack.appendComment('');
-    }
+    group.commitAppend(stack);
   }
 
   update() {
+    let helper = this.helper.value();
+    let { params, hash } = this.args.value();
+    helper(params, hash, this.group);
 
+    this.group.commitUpdate();
   }
-
-  // render() {
-  //   let rendered = this._invokeHelper();
-  //   if (!rendered) this._region.replace(new EmptyInsertion());
-  // }
 }
 
 class Group {
   public template: YieldableTemplate;
   public inverse: YieldableTemplate;
-  public _rendered: boolean = false;
+  public lastResult: RenderResult = null;
+  private comment: Comment = null;
+  private morph: BlockHelperMorph;
 
-  constructor(morph: Morph<any>, template: Template, inverse: Template) {
+  constructor(morph: BlockHelperMorph, template: Template, inverse: Template) {
     this.template = new YieldableTemplate(template, morph, this);
     this.inverse = new YieldableTemplate(inverse, morph, this);
+    this.morph = morph;
+  }
+
+  commit(): boolean {
+    let templateRendered = this.template.commit();
+    let inverseRendered = this.inverse.commit();
+
+    return templateRendered || inverseRendered;
+  }
+
+  commitAppend(stack: ElementStack) {
+    let rendered = this.commit();
+
+    if (!rendered) {
+      this.comment = stack.appendComment('');
+    }
+  }
+
+  commitUpdate() {
+    let rendered = this.commit();
+
+    if (this.lastResult && this.comment) {
+      this.comment.parentNode.removeChild(this.comment);
+      this.comment = null;
+    } else if (!rendered && !this.comment) {
+      let dom = this.morph.frame.dom();
+
+      let comment = dom.createComment('');
+      // if we didn't render this time, and we don't have
+      // a comment, that means we rendered last time.
+      let nextSibling = clear(this.lastResult);
+      this.lastResult = null;
+
+      dom.insertBefore(this.morph.parentNode, comment, nextSibling)
+      this.comment = comment;
+    }
+  }
+
+  renderTemplate(template: Template) {
+    if (this.lastResult) {
+      this.lastResult.renderTemplate(template);
+    } else {
+      this.lastResult = template.evaluate(this.morph, this.morph.frame);
+    }
   }
 }
 
@@ -91,6 +144,8 @@ class YieldableTemplate  {
   private template: Template;
   private morph: Morph<any>;
   private group: Group;
+  private rendered = false;
+  private updating = false;
 
   constructor(template: Template, morph: Morph<any>, group: Group) {
     this.template = template;
@@ -98,15 +153,41 @@ class YieldableTemplate  {
     this.group = group;
   }
 
-  yield(blockArguments: any[]=null, self: any=undefined) {
-    this.group._rendered = true;
+  get arity() {
+    return this.template.arity;
+  }
 
+  commit(): boolean {
+    this.updating = true;
+    let rendered = this.rendered;
+    this.rendered = false;
+    return rendered;
+  }
+
+  append(blockArguments: any[]=null, self: any=undefined) {
     if (blockArguments || self) {
-      let childScope = this.morph.frame.childScope(blockArguments);
+      let childScope = this.morph.frame.childScope(this.template.locals);
       if (self !== undefined) childScope.bindSelf(self);
+      if (blockArguments) childScope.bindLocals(blockArguments);
     }
 
-    this.template.evaluate(this.morph, this.morph.frame);
+    this.group.lastResult = this.template.evaluate(this.morph, this.morph.frame);
+  }
+
+  update(blockArguments: any[]=null, self: any=undefined) {
+    this.group.renderTemplate(this.template);
+  }
+
+  yield(blockArguments: any[]=null, self: any=undefined) {
+    if (!this.template) return;
+
+    this.rendered = true;
+
+    if (this.updating) {
+      this.update(blockArguments, self);
+    } else {
+      this.append(blockArguments, self);
+    }
   }
 }
 

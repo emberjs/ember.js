@@ -1,4 +1,12 @@
-import { Bounds, ConcreteBounds, Morph, MorphSpecializer, MorphList } from './morph';
+import {
+  Bounds,
+  ConcreteBounds,
+  Morph,
+  ContentMorph,
+  ContentMorphSpecializer,
+  MorphSpecializer,
+  MorphList
+} from './morph';
 import { Frame } from './environment';
 import DOMHelper from './dom';
 
@@ -60,6 +68,39 @@ export default class Builder {
   }
 }
 
+interface FirstNode {
+  firstNode(): Node;
+}
+
+interface LastNode {
+  lastNode(): Node;
+}
+
+class First {
+  private node: Node;
+  
+  constructor(node) {
+    this.node = node;
+  }
+  
+  firstNode(): Node {
+    return this.node;
+  }
+}
+
+class Last {
+  private node: Node;
+  
+  constructor(node) {
+    this.node = node;
+  }
+  
+  lastNode(): Node {
+    return this.node;
+  }
+}
+
+
 export class ElementStack {
   private builder: Builder;
   private frame: Frame;
@@ -69,8 +110,8 @@ export class ElementStack {
   private nextSibling: Node;
   private elementStack: Element[];
   private nextSiblingStack: Node[];
-  public firstNode: Node;
-  public lastNode: Node;
+  public firstNode: FirstNode;
+  public lastNode: Node | Bounds;
   public operations: Operations;
 
   constructor({ builder, frame, morph }) {
@@ -89,10 +130,13 @@ export class ElementStack {
   }
 
   bounds(): Bounds {
+    let lastNode = this.lastNode instanceof Node ?
+      new Last(this.lastNode) : <Bounds>this.lastNode;
+    
     return {
-      firstNode: () => this.firstNode,
-      lastNode: () => this.lastNode,
-      parentNode: () => this.element
+      firstNode: () => this.firstNode.firstNode(),
+      lastNode: () => lastNode.lastNode(),
+      parentElement: () => this.element
     };
   }
 
@@ -117,6 +161,10 @@ export class ElementStack {
 
   createMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions): Morph<InitOptions> {
     return this.builder.createMorph(Type, attrs, this.element);
+  }
+
+  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions> {
+    return this.operations.createContentMorph(Type, attrs);    
   }
 
   initializeMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions): Morph<InitOptions> {
@@ -187,9 +235,16 @@ export class ElementStack {
     return this.dom.insertHTMLBefore(<HTMLElement>this.element, nextSibling, html);
   }
 
-  newNode(node) {
-    if (!this.firstNode) this.firstNode = node;
+  newNode<T extends Node>(node: T): T {
+    if (!this.firstNode) this.firstNode = new First(node);
     this.lastNode = node;
+    return node;
+  }
+  
+  newContentMorph(morph: ContentMorph<any>) {
+    if (!this.firstNode) this.firstNode = morph;
+    this.lastNode = morph;
+    return morph;
   }
 }
 
@@ -198,6 +253,7 @@ interface Operations {
   appendComment(value: string): Comment;
   openElement(tag: string): Element;
   insertHTMLBefore(nextSibling: Node, html: string): { first: Node, last: Node };
+  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions>;
   closeElement();
 }
 
@@ -212,17 +268,17 @@ class TopLevelOperations implements Operations {
 
   appendText(text): Text {
     let node = this.stack._appendText(text);
-    return this._newNode(node);
+    return this.stack.newNode(node);
   }
 
   appendComment(value): Comment {
     let node = this.stack._appendComment(value);
-    return this._newNode(node);
+    return this.stack.newNode(node);
   }
 
   openElement(tag): Element {
     let element = this.stack._openElement(tag);
-    this._newNode(element);
+    this.stack.newNode(element);
 
     let nestedOperations = this.nested = this.nested || new NestedOperations(this.stack, this);
     this.stack.operations = nestedOperations;
@@ -230,19 +286,18 @@ class TopLevelOperations implements Operations {
     return element;
   }
 
+  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions> {
+    let morph = <ContentMorph<any>>this.stack.createMorph(Type, attrs);
+    this.stack.newContentMorph(morph);
+    return morph;
+  }
+
   insertHTMLBefore(nextSibling: Node, html: string) {
     let bounds = this.stack._insertHTMLBefore(nextSibling, html);
     let { stack } = this;
-    if (!stack.firstNode) stack.firstNode = bounds.first;
-    stack.lastNode = bounds.last;
+    stack.newNode(bounds.first);
+    stack.newNode(bounds.last);
     return bounds;
-  }
-
-  _newNode<T extends Node>(node: T): T {
-    let stack = this.stack;
-    if (!stack.firstNode) stack.firstNode = node;
-    stack.lastNode = node;
-    return node;
   }
 
   closeElement() {
@@ -272,6 +327,10 @@ class NestedOperations implements Operations {
   openElement(tag): Element {
     this.level++;
     return this.stack._openElement(tag);
+  }
+
+  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions> {
+    return <ContentMorph<any>>this.stack.createMorph(Type, attrs);
   }
 
   insertHTMLBefore(nextSibling: Node, html: string) {

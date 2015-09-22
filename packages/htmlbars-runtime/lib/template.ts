@@ -26,7 +26,7 @@ import {
   // SimpleHelperMorph
 } from './morphs/inline';
 
-import { Morph, HasParentNode } from './morph';
+import { Morph, ContentMorph, HasParentNode } from './morph';
 
 import {
   BlockHelperMorph
@@ -126,7 +126,7 @@ export default class Template {
     let morphs = builder.morphList();
     let bounds = builder.bounds();
 
-    return new RenderResult({ morph, morphs, bounds, template: this, locals: this.locals });
+    return new RenderResult({ morph, morphs, bounds, frame, template: this, locals: this.locals });
   }
 
   render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
@@ -162,6 +162,7 @@ interface PrettyPrintable {
 }
 
 export interface ExpressionSyntax {
+  isStatic: boolean;
   evaluate(frame: Frame): ChainableReference;
 }
 
@@ -230,12 +231,12 @@ export class Block extends DynamicExpression implements StatementSyntax {
     return `Block(${this.path}) { args=${this.args.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): Morph<any> {
+  evaluate(stack: ElementStack, frame: Frame): ContentMorph<any> {
     let helper = frame.lookupHelper(this.path);
     let args = this.args.evaluate(frame);
     let templates = this.templates;
 
-    return stack.createMorph(BlockHelperMorph, { helper, args, templates });
+    return stack.createContentMorph(BlockHelperMorph, { helper, args, templates });
   }
 }
 
@@ -277,7 +278,7 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
       content = ref.evaluate(frame);
     }
 
-    return stack.createMorph(ValueMorph, { content, trustingMorph });
+    return stack.createContentMorph(ValueMorph, { content, trustingMorph });
   }
 }
 
@@ -459,14 +460,14 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
   }
 }
 
-type ComponentSexp = [string, PathSexp, HashSexp, number, number];
+type ComponentSexp = [InternedString, InternedString, HashSexp, number, number];
 
 export class Component extends DynamicExpression implements StatementSyntax {
   static fromSpec(node: ComponentSexp, children: Template[]) {
     let [, path, attrs, templateId, inverseId] = node;
 
     return new Component({
-      path: new Ref(path),
+      path: new Ref([path]),
       hash: Hash.fromSpec(attrs),
       templates: Templates.fromSpec(templateId, inverseId, children)
     });
@@ -497,30 +498,39 @@ export class Component extends DynamicExpression implements StatementSyntax {
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
-    let { path, hash, templates } = this;
+    let { path: ref, hash, templates } = this;
 
-    if (frame.hasHelper([path])) {
-      return stack.createMorph(BlockHelperMorph, { path: [path], params: ParamsAndHash.build(Params.empty(), hash), templates });
+    let path = ref.path();
+
+    if (frame.hasHelper(path)) {
+      let helper = frame.lookupHelper(path);
+      let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
+      return stack.createMorph(BlockHelperMorph, { helper, args, templates });
     } else {
       return stack.createMorph(FallbackMorph, { path, hash, template: templates._default });
     }
   }
 }
 
-class FallbackMorph extends Morph {
+type FallbackOptions = { path: InternedString[], hash: Hash, template: Template };
+
+class FallbackMorph extends Morph<FallbackOptions> {
   tag: string;
   template: Template;
   attrs: AttributeSyntax[];
 
-  init({ path, hash, template }) {
-    this.tag = path;
+  init({ path, hash, template }: FallbackOptions) {
+    this.tag = path[0];
     this.template = template;
 
     let attrs = [];
 
-    hash.forEach((name, value) => {
-      if (value.isStatic) attrs.push(StaticAttr.build(name, value.inner()));
-      else attrs.push(DynamicAttr.build(name, value));
+    let { keys, values } = hash;
+
+    values.forEach((val, i) => {
+      let key = keys[i];
+      if (val.isStatic) attrs.push(StaticAttr.build(key, val.evaluate(this.frame).value()));
+      else attrs.push(DynamicAttr.build(key, val));
     });
 
     this.attrs = attrs;
@@ -534,9 +544,11 @@ class FallbackMorph extends Morph {
     if (!template.isEmpty) stack.appendMorph(FallbackContents, { template });
     stack.closeElement();
   }
+
+  update() {}
 }
 
-class FallbackContents extends Morph {
+class FallbackContents extends Morph<{ template: Template }> {
   private template: Template;
 
   init({ template }) {
@@ -546,6 +558,8 @@ class FallbackContents extends Morph {
   append() {
     this.template.evaluate(this, this.frame);
   }
+
+  update() {}
 }
 
 type TextSexp = [string, string];
@@ -1091,13 +1105,13 @@ export class Hash implements PrettyPrintableExpressionSyntax {
 }
 
 class EvaluatedHash extends PushPullReference {
-  private references: ChainableReference[];
-  private keys: InternedString[];
+  public values: ChainableReference[];
+  public keys: InternedString[];
 
   constructor(hash: Hash, frame: Frame) {
     super();
 
-    this.references = hash.values.map(value => {
+    this.values = hash.values.map(value => {
       let result = value.evaluate(frame);
       this._addSource(result);
       return result;
@@ -1108,7 +1122,7 @@ class EvaluatedHash extends PushPullReference {
 
   value(): Dict<any> {
     let hash = dict();
-    let refs = this.references;
+    let refs = this.values;
 
     this.keys.forEach((k, i) => {
       hash[<string>k] = refs[i].value();
