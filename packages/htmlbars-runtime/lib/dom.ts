@@ -3,16 +3,18 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export default class DOMHelper {
 	private document: HTMLDocument;
   private namespace: string;
-	
+  private uselessElement: HTMLElement;
+
 	constructor(document) {
 		this.document = document;
-    this.namespace = null;	
+    this.namespace = null;
+    this.uselessElement = this.document.createElement('div');
 	}
-  
+
   setAttribute(element: HTMLElement, name: string, value: string) {
     element.setAttribute(name, value);
   }
-  
+
   setAttributeNS(element: Element, name: string, value: string, namespace: string) {
     element.setAttributeNS(name, namespace, value);
   }
@@ -20,7 +22,7 @@ export default class DOMHelper {
   removeAttribute(element: Element, name: string) {
     element.removeAttribute(name);
   }
-  
+
   createTextNode(text: string): Text {
     return this.document.createTextNode(text);
   }
@@ -41,6 +43,29 @@ export default class DOMHelper {
     } else {
       return this.document.createElement(tag);
     }
+  }
+
+  insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): { first: Node, last: Node } {
+    // REFACTOR TODO: table stuff in IE9; maybe just catch exceptions?
+
+    let prev = nextSibling && nextSibling.previousSibling;
+    let last;
+
+    if (nextSibling === null) {
+      parent.insertAdjacentHTML('beforeEnd', html);
+      last = parent.lastChild;
+    } else if (nextSibling instanceof HTMLElement) {
+      (<HTMLElement>nextSibling).insertAdjacentHTML('beforeBegin', html);
+      last = nextSibling.previousSibling;
+    } else {
+      parent.insertBefore(this.uselessElement, nextSibling);
+      this.uselessElement.insertAdjacentHTML('beforeBegin', html);
+      last = this.uselessElement.previousSibling;
+      parent.removeChild(this.uselessElement);
+    }
+
+    let first = prev ? prev.nextSibling : parent.firstChild;
+    return { first, last };
   }
 
   insertBefore(element: Element, node: Node, reference: Node) {

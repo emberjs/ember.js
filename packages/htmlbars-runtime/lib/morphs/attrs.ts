@@ -1,6 +1,6 @@
-import { getAttrNamespace } from "htmlbars-util";
+import { InternedString, getAttrNamespace } from "htmlbars-util";
 import { Morph } from "../morph";
-import { InternedString, Reference } from 'htmlbars-reference';
+import { Reference } from 'htmlbars-reference';
 import { ExpressionSyntax } from '../template';
 import { Frame } from '../environment';
 

@@ -1,5 +1,6 @@
-import { NotifiableReference, ChainableReference, Reference, Helper } from './hooks';
+import { NotifiableReference, ChainableReference, Reference, ConstReference } from 'htmlbars-reference';
 import { ParamsAndHash } from './template';
+import { Helper as EnvHelper } from './environment';
 
 /**
   References have a simple interface:
@@ -84,27 +85,11 @@ class NotifyNode {
   }
 }
 
-export class ConstReference {
-  protected inner;
-  
-  constructor(inner: Reference) {
-    this.inner = inner;
-  }
-
-  // TODO: A protocol for telling HTMLBars to stop asking; could also be useful
-  // for finalized references. Also, a reference composed only of const references
-  // should itself be const.
-
-  isDirty() { return false; }
-  value() { return this.inner; }
-  chain() {}
-}
-
 export default class BasicReference {
   private notifyHead: NotifyNode;
   private notifyTail: NotifyNode;
   private sources: ChainableReference[];
-  
+
   constructor() {
     this.notifyHead = null;
     this.notifyTail = null;
@@ -150,12 +135,12 @@ export default class BasicReference {
 // itself.
 export class BaseReference extends BasicReference {
   private _value;
-  
+
   constructor(value) {
     super();
     this._value = value;
   }
-  
+
   isDirty() { return true; }
 
   update(value) {
@@ -166,7 +151,7 @@ export class BaseReference extends BasicReference {
   value() {
     return this._value;
   }
-  
+
   destroy() {}
 }
 
@@ -264,7 +249,7 @@ export class HelperParamsReference extends BasicReference {
     helperRef._init(options);
     return helperRef;
   }
-  
+
   private params;
   private HashConstructor;
 
@@ -302,7 +287,7 @@ export class HelperParamsReference extends BasicReference {
   }
 }
 
-export class SimpleHelperInvocationReference extends ConstReference {
+export class SimpleHelperInvocationReference extends ConstReference<EnvHelper> {
   value() {
     return this.inner.call(undefined);
   }
@@ -313,7 +298,7 @@ export class HelperInvocationReference extends BasicReference {
     let paramsRef = HelperParamsReference.fromStatements({ params, frame });
     return new HelperInvocationReference(helper, paramsRef);
   }
-  
+
   private helper: Helper;
 
   constructor(helper: Helper, params: ParamsAndHash) {

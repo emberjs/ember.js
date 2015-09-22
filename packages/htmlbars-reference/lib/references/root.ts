@@ -1,8 +1,7 @@
-import { intern } from '../utils';
-import { dict } from 'htmlbars-util';
+import { InternedString, intern, dict } from 'htmlbars-util';
 import { PathReference } from './path';
 import { Dict, HasGuid } from 'htmlbars-util';
-import { RootReference as IRootReference, PathReference as IPathReference, InternedString, NotifiableReference } from 'htmlbars-reference';
+import { RootReference as IRootReference, PathReference as IPathReference, NotifiableReference } from 'htmlbars-reference';
 import PushPullReference from './push-pull';
 
 export default class RootReference extends PushPullReference implements IRootReference, IPathReference {

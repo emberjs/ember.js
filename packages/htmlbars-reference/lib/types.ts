@@ -1,10 +1,4 @@
-import { Set } from 'htmlbars-util';
-
-interface InternedStringMarker {
-  "d0850007-25c2-47d8-bb63-c4054016d539": boolean;
-}
-
-export type InternedString = InternedStringMarker & string;
+import { Set, InternedString } from 'htmlbars-util';
 
 export interface Destroyable {
   destroy();

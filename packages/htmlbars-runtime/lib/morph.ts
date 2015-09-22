@@ -2,16 +2,26 @@ import { Frame } from './environment';
 import { ElementStack } from './builder';
 import { Enumerable } from './utils';
 
-interface MorphClass {
-  new (parentNode: Element, frame: Frame): Morph;
+export interface MorphSpecializer<InitOptions> {
+  specialize(options: InitOptions): MorphConstructor<InitOptions>;
 }
+
+export interface MorphConstructor<InitOptions> extends MorphSpecializer<InitOptions> {
+  new (parentNode: Element, frame: Frame): Morph<InitOptions>;
+}
+
+// export interface MorphConstructor<T> {
+//   specialize(...args: any[]): MorphConstructor<T>;
+//   new (parentNode: Element, frame: Frame): T;
+// }
 
 export interface HasParentNode {
   parentNode: Element;
 }
 
-export abstract class Morph implements HasParentNode {
-  static specialize(...args: any[]): typeof Morph { return this; }
+export abstract class Morph<InitOptions> implements HasParentNode {
+  // static specialize(...args: any[]): MorphConstructor<Morph> { return <MorphConstructor<Morph>>this; }
+  static specialize<InitOptions>(...args: any[]): MorphConstructor<InitOptions> { return <MorphConstructor<InitOptions>>this; }
 
   public parentNode: Element;
   public nextSibling: Node;
@@ -25,7 +35,7 @@ export abstract class Morph implements HasParentNode {
     this.nextSibling = null;
   }
 
-  init(options?: Object) {}
+  init(options: InitOptions) {}
 
   /**
     This method gets called during the initial render process. A morph should
@@ -57,12 +67,32 @@ export abstract class Morph implements HasParentNode {
   destroy() {}
 }
 
-export type MorphList = Enumerable<Morph>;
+export type MorphList = Enumerable<Morph<Object>>;
 
 export interface Bounds {
-  parentNode(): Node;
+  parentNode(): Element;
   firstNode(): Node;
   lastNode(): Node;
+}
+
+export function bounds(parent: Element, first: Node, last: Node): Bounds {
+  return new ConcreteBounds(parent, first, last);
+}
+
+export class ConcreteBounds implements Bounds {
+  private parent: Element;
+  private first: Node;
+  private last: Node;
+
+  constructor(parent: Element, first: Node, last: Node) {
+    this.parent = parent;
+    this.first = first;
+    this.last = last;
+  }
+
+  parentNode() { return this.parent; }
+  firstNode() { return this.first; }
+  lastNode() { return this.last; }
 }
 
 export function clear(bounds: Bounds) {

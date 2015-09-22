@@ -1,7 +1,7 @@
 import { Morph } from '../morph';
 
-export abstract class RegionMorph extends Morph {
-  
+export abstract class RegionMorph<T> extends Morph<T> {
+
 }
 
 // /**
@@ -42,7 +42,7 @@ export abstract class RegionMorph extends Morph {
 //   insert(insertion) {
 
 //   }
-  
+
 //   destroy() {}
 // }
 

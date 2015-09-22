@@ -1,4 +1,4 @@
-import { Bounds, Morph, MorphList } from './morph';
+import { Bounds, ConcreteBounds, Morph, MorphSpecializer, MorphList } from './morph';
 import { Frame } from './environment';
 import DOMHelper from './dom';
 
@@ -9,9 +9,9 @@ import DOMHelper from './dom';
 // can simply walk over the statements and apply them to the morphs.
 export default class Builder {
   private frame: Frame;
-  private parentMorph: Morph;
+  private parentMorph: Morph<Object>;
   private stack: ElementStack;
-  private morphs: Morph[];
+  private morphs: Morph<Object>[];
 
   constructor(morph, frame) {
     this.frame = frame;
@@ -31,11 +31,16 @@ export default class Builder {
 
   /// Interaction with ElementStack
 
-  createMorph(Type, attrs, parentElement) {
-    Type = Type.specialize(attrs);
-    let morph = new Type(parentElement, this.frame);
-    morph.init(attrs);
+  createMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions, parentElement: Element): Morph<InitOptions> {
+    let morph = this.initializeMorph(Type, attrs, parentElement);
     this.morphs.push(morph);
+    return morph;
+  }
+
+  initializeMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions, parentElement: Element): Morph<InitOptions> {
+    let SpecializedType = Type.specialize(attrs);
+    let morph = new SpecializedType(parentElement, this.frame);
+    morph.init(attrs);
     return morph;
   }
 
@@ -59,7 +64,7 @@ export class ElementStack {
   private builder: Builder;
   private frame: Frame;
   private dom: DOMHelper;
-  private morph: Morph;
+  private morph: Morph<Object>;
   private element: Element;
   private nextSibling: Node;
   private elementStack: Element[];
@@ -78,7 +83,7 @@ export class ElementStack {
     this.nextSibling = morph.nextSibling;
     this.elementStack = [morph.parentNode];
     this.nextSiblingStack = [morph.nextSibling];
-    
+
     this.firstNode = null;
     this.lastNode = null;
   }
@@ -110,8 +115,12 @@ export class ElementStack {
     this.builder.render(statement);
   }
 
-  createMorph(Type, attrs) {
+  createMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions): Morph<InitOptions> {
     return this.builder.createMorph(Type, attrs, this.element);
+  }
+
+  initializeMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions): Morph<InitOptions> {
+    return this.builder.initializeMorph(Type, attrs, this.element);
   }
 
   appendMorph(Type, attrs) {
@@ -126,28 +135,28 @@ export class ElementStack {
     this.dom.setAttributeNS(this.element, name, value, namespace);
   }
 
-  appendText(text) {
-    this.operations.appendText(text);
+  appendText(text): Text {
+    return this.operations.appendText(text);
   }
 
-  _appendText(text) {
+  _appendText(text): Text {
     let node = this.dom.createTextNode(text);
     this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
 
-  appendComment(comment) {
-    this.operations.appendComment(comment);
+  appendComment(comment): Comment {
+    return this.operations.appendComment(comment);
   }
 
-  _appendComment(comment) {
+  _appendComment(comment): Comment {
     let node = this.dom.createComment(comment);
     this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
 
-  openElement(tag) {
-    this.operations.openElement(tag);
+  openElement(tag): Element {
+    return this.operations.openElement(tag);
   }
 
   _openElement(tag): Element {
@@ -164,7 +173,20 @@ export class ElementStack {
     let child = this._popElement();
     this.dom.insertBefore(this.element, child, this.nextSibling);
   }
-  
+
+  insertHTMLBefore(nextSibling: Node, html: string): Bounds {
+    let { first, last } = this.operations.insertHTMLBefore(nextSibling, html);
+    return new ConcreteBounds(this.element, first, last);
+  }
+
+  _insertHTMLBefore(nextSibling: Node, html: string): { first: Node, last: Node } {
+    if (!(this.element instanceof HTMLElement)) {
+      throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.element.tagName}`)
+    }
+
+    return this.dom.insertHTMLBefore(<HTMLElement>this.element, nextSibling, html);
+  }
+
   newNode(node) {
     if (!this.firstNode) this.firstNode = node;
     this.lastNode = node;
@@ -172,32 +194,33 @@ export class ElementStack {
 }
 
 interface Operations {
-  appendText(text: string): void;
-  appendComment(value: string): void;
+  appendText(text: string): Text;
+  appendComment(value: string): Comment;
   openElement(tag: string): Element;
-  closeElement(): void;
+  insertHTMLBefore(nextSibling: Node, html: string): { first: Node, last: Node };
+  closeElement();
 }
 
 class TopLevelOperations implements Operations {
   private stack: ElementStack;
   private nested: NestedOperations;
-  
+
   constructor(stack) {
     this.stack = stack;
     this.nested = null;
   }
 
-  appendText(text) {
+  appendText(text): Text {
     let node = this.stack._appendText(text);
-    this._newNode(node);
+    return this._newNode(node);
   }
 
-  appendComment(value) {
+  appendComment(value): Comment {
     let node = this.stack._appendComment(value);
-    this._newNode(node);
+    return this._newNode(node);
   }
 
-  openElement(tag) {
+  openElement(tag): Element {
     let element = this.stack._openElement(tag);
     this._newNode(element);
 
@@ -207,10 +230,19 @@ class TopLevelOperations implements Operations {
     return element;
   }
 
-  _newNode(node) {
+  insertHTMLBefore(nextSibling: Node, html: string) {
+    let bounds = this.stack._insertHTMLBefore(nextSibling, html);
+    let { stack } = this;
+    if (!stack.firstNode) stack.firstNode = bounds.first;
+    stack.lastNode = bounds.last;
+    return bounds;
+  }
+
+  _newNode<T extends Node>(node: T): T {
     let stack = this.stack;
     if (!stack.firstNode) stack.firstNode = node;
-    stack.lastNode = node; 
+    stack.lastNode = node;
+    return node;
   }
 
   closeElement() {
@@ -222,24 +254,28 @@ class NestedOperations implements Operations {
   private level: number;
   private stack: ElementStack;
   private topLevel: TopLevelOperations;
-  
+
   constructor(stack, topLevel) {
     this.level = 1;
     this.stack = stack;
     this.topLevel = topLevel;
   }
 
-  appendText(text) {
-    this.stack._appendText(text);
+  appendText(text): Text {
+    return this.stack._appendText(text);
   }
 
-  appendComment(value) {
-    this.stack._appendComment(value);
+  appendComment(value): Comment {
+    return this.stack._appendComment(value);
   }
 
-  openElement(tag) {
+  openElement(tag): Element {
     this.level++;
     return this.stack._openElement(tag);
+  }
+
+  insertHTMLBefore(nextSibling: Node, html: string) {
+    return this.stack._insertHTMLBefore(nextSibling, html);
   }
 
   closeElement() {

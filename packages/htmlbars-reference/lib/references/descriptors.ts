@@ -1,5 +1,6 @@
 import Meta from '../meta';
-import { Reference, InternedString, ChainableReference } from 'htmlbars-reference';
+import { Reference, ChainableReference } from 'htmlbars-reference';
+import { InternedString } from 'htmlbars-util';
 import PushPullReference from './push-pull';
 
 export interface InnerReferenceFactory {
@@ -9,7 +10,7 @@ export interface InnerReferenceFactory {
 export class PropertyReference implements Reference {
   private object: any;
   private property: InternedString;
-  
+
   constructor(object: any, property: InternedString) {
     this.object = object;
     this.property = property;
@@ -37,7 +38,7 @@ export function ComputedBlueprint(property, dependencies) {
       this.property = property;
       this.dependencies = dependencies;
     }
-    
+
     value() {
       if (!this.installed) {
         let root = Meta.for(this.object).root();

@@ -1,6 +1,7 @@
 import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
-import { InternedString, MetaOptions, MetaFactory } from './types';
+import { MetaOptions, MetaFactory } from './types';
+import { InternedString } from 'htmlbars-util';
 
 import { Dict, DictSet, HasGuid, Set, dict } from 'htmlbars-util';
 
@@ -84,7 +85,7 @@ class BlankMeta extends SealedMeta {
 
 export class MetaBuilder {
   private referenceTypes: Dict<InnerReferenceFactory>;
-  
+
   constructor() {
     this.referenceTypes = null;
   }

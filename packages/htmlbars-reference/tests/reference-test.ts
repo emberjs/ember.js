@@ -1,4 +1,4 @@
-import { guid, metaFor, setProperty } from "htmlbars-reference";
+import { fork, metaFor, setProperty } from "htmlbars-reference";
 
 //function computed(obj, name, getter, depStrings) {
   //Object.defineProperty(obj, name, {
@@ -13,7 +13,7 @@ import { guid, metaFor, setProperty } from "htmlbars-reference";
   //Meta.for(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps)); [>jshint +W064<]
 //}
 
-import { intern, fork } from 'htmlbars-reference';
+import { intern } from 'htmlbars-util';
 
 function addObserver(obj: any, name: string, path: string) {
   return fork(metaFor(obj).root().referenceFromParts(path.split('.').map(intern)));
