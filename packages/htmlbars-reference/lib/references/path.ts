@@ -1,10 +1,10 @@
 import { EMPTY_CACHE } from '../utils';
-import { DictSet, dict } from 'htmlbars-util';
+import { InternedString, DictSet, dict } from 'htmlbars-util';
 import Meta from '../meta';
 import ForkedReference from './forked';
 import { PropertyReference } from './descriptors';
 import PushPullReference from './push-pull';
-import { PathReference as IPathReference, Reference, InternedString, NotifiableReference, Destroyable } from 'htmlbars-reference';
+import { PathReference as IPathReference, Reference, NotifiableReference, Destroyable } from 'htmlbars-reference';
 import { Dict, HasGuid, installGuid } from 'htmlbars-util';
 
 class UnchainFromPath {
@@ -15,7 +15,7 @@ class UnchainFromPath {
     this.set = set;
     this.child = child;
   }
-  
+
   destroy() {
     this.set.delete(this.child);
   }

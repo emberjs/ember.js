@@ -1,7 +1,7 @@
 import { Dict, voidMap } from 'htmlbars-util';
 import Template, { TemplateBuilder } from './template';
 import { Morph, MorphList, Bounds, HasParentNode, clear } from './morph';
-import { InternedString } from 'htmlbars-reference';
+import { InternedString } from 'htmlbars-util';
 
 interface RenderResultOptions {
 	morph: HasParentNode,
@@ -16,7 +16,7 @@ export class RenderResult implements Bounds {
   morphs: MorphList;
   bounds: Bounds;
   template: Template;
-  
+
   constructor(options: RenderResultOptions) {
     let { morph, locals, morphs, bounds, template } = options;
 
@@ -33,7 +33,7 @@ export class RenderResult implements Bounds {
   firstNode(): Node {
     return this.bounds.firstNode();
   }
-  
+
   lastNode(): Node {
     return this.bounds.lastNode();
   }
@@ -55,7 +55,7 @@ export class RenderResult implements Bounds {
   }
 }
 
-type ManualAttribute = string | any[]; 
+type ManualAttribute = string | any[];
 
 export function manualElement(tagName: string, attributes: Dict<ManualAttribute>, _isEmpty: boolean) {
   let b = new TemplateBuilder();

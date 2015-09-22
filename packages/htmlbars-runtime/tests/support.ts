@@ -1,9 +1,9 @@
 import { Environment, DOMHelper } from "htmlbars-runtime";
-import { Meta } from "htmlbars-reference";
+import { Meta, ConstReference } from "htmlbars-reference";
 
 export class TestEnvironment extends Environment {
   private helpers={};
-  
+
   constructor(doc: HTMLDocument=document) {
     super(new DOMHelper(doc), Meta);
   }
@@ -17,6 +17,6 @@ export class TestEnvironment extends Environment {
   }
 
   lookupHelper(scope, helperName) {
-    return this.helpers[helperName[0]];
+    return new ConstReference(this.helpers[helperName[0]]);
   }
 }

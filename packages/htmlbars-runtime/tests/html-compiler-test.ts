@@ -6,7 +6,7 @@ import { Template } from 'htmlbars-runtime';
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
-    
+
 let env: TestEnvironment, root: Element;
 
 function registerYieldingHelper(name) {
@@ -256,10 +256,14 @@ function firstChild(fragment) {
   return fragment.firstChild;
 }
 
+function createElement(tag) {
+  return env.getDOM().createElement(tag, document.body);
+}
+
 test("The compiler can handle top-level unescaped tr", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  root = dom.createElement('table');
+  root = createElement('table');
   render(template, context);
 
   equal(root.firstChild.tagName, 'TBODY', "root tbody is present");
@@ -268,7 +272,7 @@ test("The compiler can handle top-level unescaped tr", function() {
 test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<td>Yo</td>' };
-  root = dom.createElement('tr');
+  root = createElement('tr');
   render(template, context);
 
   equal(root.firstChild.tagName, 'TD', "root td is returned");
@@ -281,7 +285,7 @@ test("The compiler can handle unescaped tr in top of content", function() {
 
   var template = compile('{{#test}}{{{html}}}{{/test}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  root = dom.createElement('table');
+  root = createElement('table');
   render(template, context);
 
   equal(root.firstChild.tagName, 'TBODY', "root tbody is present" );

@@ -5,3 +5,4 @@ export { intern, LITERAL } from "./lib/utils";
 export { setProperty } from './lib/object';
 export { PushPullReference } from './lib/references/push-pull';
 export * from './lib/types';
+export { ConstReference } from './lib/references/const';

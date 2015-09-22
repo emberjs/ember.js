@@ -1,5 +1,6 @@
 import HTMLBarsObject, { computed } from 'htmlbars-object';
-import { metaFor, setProperty, intern, fork } from 'htmlbars-reference';
+import { metaFor, setProperty, fork } from 'htmlbars-reference';
+import { intern } from 'htmlbars-util';
 
 let Wrapper = HTMLBarsObject.extend({
   fullName: computed(function() {

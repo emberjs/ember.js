@@ -5,6 +5,7 @@ import {
   ChainableReference,
   RootReference,
   PathReference,
+  ConstReference,
   MetaLookup,
   InternedString
 } from 'htmlbars-reference';
@@ -30,7 +31,7 @@ class Scope {
   private blocks: Dict<Block> = null;
   private localNames: InternedString[];
   private meta: MetaLookup;
-  
+
   constructor(parent: Scope, meta: MetaLookup, localNames: InternedString[]) {
     this.parent = parent;
     this.localNames = localNames;
@@ -107,7 +108,7 @@ class Scope {
     if (!this.blocks) return this.parent.getBlock(name);
     return (<string>name in this.blocks) ? this.blocks[<string>name] : (this.parent && this.parent.getBlock(name));
   }
-  
+
   getBase(name: InternedString): PathReference {
     if (this.hasLocal(name)) return this.getLocal(name);
     let self = this.self;
@@ -126,7 +127,7 @@ export abstract class Environment {
     this.dom = dom;
     this.meta = meta;
   }
-  
+
   getDOM(): DOMHelper { return this.dom; }
 
   pushFrame(scope: Scope): Frame {
@@ -138,7 +139,7 @@ export abstract class Environment {
   }
 
   abstract hasHelper(scope: Scope, helperName: string[]): boolean;
-  abstract lookupHelper(scope: Scope, helperName: string[]): Helper;
+  abstract lookupHelper(scope: Scope, helperName: string[]): ConstReference<Helper>;
 }
 
 // TS does not allow us to use computed properties for this, so inlining for now
@@ -155,7 +156,11 @@ type PositionalArguments = any[];
 type KeywordArguments = Dict<any>;
 
 export interface Helper {
-  (positional: PositionalArguments, named: KeywordArguments): Insertion
+  (positional: PositionalArguments, named: KeywordArguments, options: Object): Insertion
+}
+
+export function helper(h: Helper): ConstReference<Helper> {
+  return new ConstReference(h);
 }
 
 export class Frame {
@@ -183,7 +188,7 @@ export class Frame {
     return this.env.hasHelper(this._scope, helperName);
   }
 
-  lookupHelper(helperName: InternedString[]): Helper {
+  lookupHelper(helperName: InternedString[]): ConstReference<Helper> {
     return this.env.lookupHelper(this._scope, helperName);
   }
 }

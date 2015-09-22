@@ -1,12 +1,16 @@
 import Builder from './builder';
-import { intern } from './utils';
 import { RenderResult } from './render';
-import { HelperInvocationReference, ConcatReference, ConstReference } from './reference';
+import { ConcatReference } from './reference';
 import { Frame } from './environment';
-import { ChainableReference, PushPullReference, InternedString } from 'htmlbars-reference';
+import {
+  ChainableReference,
+  PushPullReference,
+  ConstReference,
+  intern
+} from 'htmlbars-reference';
 import { ElementStack } from './builder';
-import { Environment } from './environment';
-import { Dict, dict } from 'htmlbars-util';
+import { Environment, Insertion, Helper as EnvHelper } from './environment';
+import { InternedString, Dict, dict } from 'htmlbars-util';
 
 interface Bounds {
   parentNode(): Node;
@@ -146,7 +150,7 @@ class RootMorph implements Morph {
   constructor(parentNode: Element, frame: Frame) {
     this.parentNode = parentNode;
   }
-  
+
   init(ignored: Object) {}
   append() {}
   update() {}
@@ -175,7 +179,7 @@ interface StatementSyntax extends PrettyPrintable {
 
 class StaticExpression {
   isStatic: boolean;
-  
+
   constructor() {
     this.isStatic = true;
   }
@@ -226,48 +230,12 @@ export class Block extends DynamicExpression implements StatementSyntax {
     return `Block(${this.path}) { args=${this.args.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
   }
 
-  evaluate(stack) {
-    let { path, args, templates } = this;
-    return stack.createMorph(BlockHelperMorph, { path, args, templates });
-  }
-}
+  evaluate(stack: ElementStack, frame: Frame): Morph<any> {
+    let helper = frame.lookupHelper(this.path);
+    let args = this.args.evaluate(frame);
+    let templates = this.templates;
 
-type InlineSexp = [string, string[], ParamsSexp, HashSexp, boolean];
-
-export class Inline extends DynamicExpression implements StatementSyntax {
-  static fromSpec(sexp: InlineSexp) {
-    let [, path, params, hash, trust] = sexp;
-
-    return new Inline({
-      path,
-      trustingMorph: trust,
-      params: ParamsAndHash.fromSpec(params, hash),
-    });
-  }
-
-  static build(_path: string, params: ParamsAndHash, trust: boolean) {
-    let path = internPath(_path);
-    return new Inline({ path, params, trustingMorph: trust });
-  }
-
-  path: string;
-  trustingMorph: boolean;
-  params: Params;
-
-  constructor(options) {
-    super();
-    this.path = options.path;
-    this.trustingMorph = options.trustingMorph;
-    this.params = options.params;
-  }
-
-  prettyPrint() {
-    return `Inline(${this.path}) { params=${this.params.prettyPrint()} trusted=${this.trustingMorph} }`; 
-  }
-
-  evaluate(stack: ElementStack): Morph {
-    let { path, params, trustingMorph } = this;
-    return stack.createMorph(HelperMorph, { path, params, trustingMorph });
+    return stack.createMorph(BlockHelperMorph, { helper, args, templates });
   }
 }
 
@@ -297,10 +265,78 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
     return `Unknown(${this.ref.prettyPrint()}) { trust=${this.trustingMorph} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): Morph {
+  evaluate(stack: ElementStack, frame: Frame): Morph<{ content: Reference, trustingMorph: boolean }> {
     let { ref, trustingMorph } = this;
-    ref = ref.isHelper(frame) ? frame.lookupHelper(ref.path()) : ref;
-    return stack.createMorph(ValueMorph, { ref, trustingMorph });
+
+    let content;
+
+    if (ref.isHelper(frame)) {
+      let path = frame.lookupHelper(ref.path());
+      content = new HelperInvocationReference(path, EvaluatedParamsAndHash.empty());
+    } else {
+      content = ref.evaluate(frame);
+    }
+
+    return stack.createMorph(ValueMorph, { content, trustingMorph });
+  }
+}
+
+type InlineSexp = [string, string[], ParamsSexp, HashSexp, boolean];
+
+export class Inline extends DynamicExpression implements StatementSyntax {
+  static fromSpec(sexp: InlineSexp) {
+    let [, path, params, hash, trust] = sexp;
+
+    return new Inline({
+      path,
+      trustingMorph: trust,
+      args: ParamsAndHash.fromSpec(params, hash),
+    });
+  }
+
+  static build(_path: string, args: ParamsAndHash, trust: boolean) {
+    let path = internPath(_path);
+    return new Inline({ path, args, trustingMorph: trust });
+  }
+
+  path: InternedString[];
+  trustingMorph: boolean;
+  args: ParamsAndHash;
+
+  constructor(options) {
+    super();
+    this.path = options.path;
+    this.trustingMorph = options.trustingMorph;
+    this.args = options.args;
+  }
+
+  prettyPrint() {
+    return `Inline(${this.path}) { params=${this.args.prettyPrint()} trusted=${this.trustingMorph} }`;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): Morph<any> {
+    let helper = frame.lookupHelper(this.path);
+    let content = new HelperInvocationReference(helper, this.args.evaluate(frame));
+    let trustingMorph = this.trustingMorph;
+
+    return stack.createMorph(HelperMorph, { content, trustingMorph });
+  }
+}
+
+class HelperInvocationReference extends PushPullReference {
+  private helper: ConstReference<EnvHelper>;
+  private args: ChainableReference;
+
+  constructor(helper: ConstReference<EnvHelper>, args: EvaluatedParamsAndHash) {
+    super();
+    this.helper = this._addSource(helper);
+    this.args = this._addSource(args);
+  }
+
+  value(): Insertion {
+    let { helper, args }  = this;
+    let { params, hash } = args.value();
+    return this.helper.value()(params, hash);
   }
 }
 
@@ -475,7 +511,7 @@ class FallbackMorph extends Morph {
   tag: string;
   template: Template;
   attrs: AttributeSyntax[];
-  
+
   init({ path, hash, template }) {
     this.tag = path;
     this.template = template;
@@ -502,7 +538,7 @@ class FallbackMorph extends Morph {
 
 class FallbackContents extends Morph {
   private template: Template;
-  
+
   init({ template }) {
     this.template = template;
   }
@@ -560,7 +596,7 @@ export class Comment extends StaticExpression implements StaticStatementSyntax {
     super();
     this.value = options.value;
   }
-  
+
   prettyPrint() {
     return `Comment <!-- ${this.value} -->`;
   }
@@ -729,7 +765,7 @@ export class Get implements ExpressionSyntax {
   static build(path): Get {
     return new Get({ ref: Ref.build(path) });
   }
-  
+
   private ref: Ref;
 
   constructor(options) {
@@ -746,7 +782,7 @@ export class Get implements ExpressionSyntax {
 }
 
 // intern paths because they will be used as keys
-function internPath(path: string): string[] {
+function internPath(path: string): InternedString[] {
   return path.split('.').map(intern);
 }
 
@@ -757,9 +793,9 @@ class Ref implements ExpressionSyntax {
     return new Ref(internPath(path));
   }
 
-  private parts: string[];
+  private parts: InternedString[];
 
-  constructor(parts: string[]) {
+  constructor(parts: InternedString[]) {
     this.parts = parts;
   }
 
@@ -778,7 +814,7 @@ class Ref implements ExpressionSyntax {
     return path;
   }
 
-  path(): string[] {
+  path(): InterenedString[] {
     return this.parts;
   }
 
@@ -794,27 +830,26 @@ export class Helper implements ExpressionSyntax {
     let [, path, params, hash] = sexp;
 
     return new Helper({
-      path: new Ref(path),
-      params: ParamsAndHash.fromSpec(params, hash)
+      ref: new Ref(path),
+      args: ParamsAndHash.fromSpec(params, hash)
     });
   }
 
   static build(path: string, params: Params, hash: Hash): Helper {
-    return new Helper({ path: Ref.build(path), params: new ParamsAndHash({ params, hash }) });
+    return new Helper({ ref: Ref.build(path), args: new ParamsAndHash({ params, hash }) });
   }
 
-  path: Ref;
-  params: ParamsAndHash;
+  ref: Ref;
+  args: ParamsAndHash;
 
-  constructor(options: { path: Ref, params: ParamsAndHash }) {
-    this.path = options.path;
-    this.params = options.params;
+  constructor(options: { ref: Ref, args: ParamsAndHash }) {
+    this.ref = options.ref;
+    this.args = options.args;
   }
 
   evaluate(frame: Frame): ChainableReference {
-    let helper = frame.lookupHelper(this.path);
-    let { params } = this;
-    return HelperInvocationReference.fromStatements({ helper, params, frame });
+    let helper = frame.lookupHelper(this.ref.path());
+    return new HelperInvocationReference(helper, this.args.evaluate(frame));
   }
 }
 
@@ -876,10 +911,16 @@ export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
     return new ParamsAndHash({ params: Params.fromSpec(params), hash: Hash.fromSpec(hash) });
   }
 
+  static _empty: ParamsAndHash;
+
+  static empty(): ParamsAndHash {
+    return (this._empty = this._empty || new ParamsAndHash({ params: Params.empty(), hash: Hash.empty() }));
+  }
+
   static build(params: Params, hash: Hash): ParamsAndHash {
     return new ParamsAndHash({ params, hash });
   }
-  
+
   private params: Params;
   private hash: Hash;
 
@@ -891,13 +932,19 @@ export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
   prettyPrint() {
     return `ParamsAndHash { params=${this.params.prettyPrint()}, hash=${this.hash.prettyPrint()} }`;
   }
-  
-  evaluate(frame: Frame): ChainableReference {
-    throw new Error("TODO: unimplemented evaluate for ParamsAndHash");
+
+  evaluate(frame: Frame): EvaluatedParamsAndHash {
+    return new EvaluatedParamsAndHash(this, frame);
   }
 }
 
 export class EvaluatedParamsAndHash extends PushPullReference {
+  static _empty: EvaluatedParamsAndHash;
+
+  static empty(): EvaluatedParamsAndHash {
+    return (this._empty = this._empty || ParamsAndHash.empty().evaluate(null));
+  }
+
   private paramsRef: ChainableReference;
   private hashRef: ChainableReference;
 
@@ -920,7 +967,7 @@ class Enumerable<T> {
   forEach(callback: EnumerableCallback<T>) {
     throw new Error(`unimplemented forEach for ${this.constructor.name}`);
   }
-  
+
   map(callback) {
     let out = [];
     this.forEach(val => out.push(callback(val)));
@@ -958,10 +1005,9 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
   prettyPrint() {
     return `Params [ ${this.params.map(p => p.prettyPrint()).join(', ')} ]`;
   }
-  
+
   evaluate(frame: Frame): ChainableReference {
     return new EvaluatedParams(this, frame);
-    throw new Error("TODO: unimplemented evaluate for Params");
   }
 }
 
@@ -1047,27 +1093,27 @@ export class Hash implements PrettyPrintableExpressionSyntax {
 class EvaluatedHash extends PushPullReference {
   private references: ChainableReference[];
   private keys: InternedString[];
-  
+
   constructor(hash: Hash, frame: Frame) {
     super();
-    
+
     this.references = hash.values.map(value => {
       let result = value.evaluate(frame);
       this._addSource(result);
       return result;
     });
-    
+
     this.keys = hash.keys;
   }
-  
+
   value(): Dict<any> {
     let hash = dict();
     let refs = this.references;
-    
+
     this.keys.forEach((k, i) => {
-      hash[<string>k] = refs[i].value();  
+      hash[<string>k] = refs[i].value();
     });
-    
+
     return hash;
   }
 }
@@ -1096,7 +1142,7 @@ export class Templates implements ExpressionSyntax {
     let { _default, _inverse } = this;
     return `Templates { default=${_default ? _default.position : 'none'}, inverse=${_inverse ? _inverse.position : 'none'} }`;
   }
-  
+
   evaluate(frame: Frame): ChainableReference {
     throw new Error("unimplemented evaluate for ExpressionSyntax");
   }
@@ -1109,7 +1155,7 @@ export let builders = {
 
 export class TemplateBuilder {
   private statements: any[];
-  
+
   constructor() {
     this.statements = [];
   }
@@ -1125,23 +1171,23 @@ export class TemplateBuilder {
   params(params: Params, hash: Hash): ParamsAndHash {
     return new ParamsAndHash({ params, hash });
   }
-  
+
   openElement(tagName: string): OpenElement {
     return OpenElement.build(tagName);
   }
-  
+
   closeElement(): CloseElement {
     return CloseElement.build();
   }
-  
+
   staticAttr(key: string, value: string): StaticAttr {
     return StaticAttr.build(key, value);
   }
-  
+
   dynamicAttr(key: string, value: PrettyPrintableExpressionSyntax, namespace: string=null): DynamicAttr {
     return DynamicAttr.build(key, value);
   }
-  
+
   inline(path: string, params: ParamsAndHash=null, trust: boolean=false): Inline {
     return Inline.build(path, params, trust)
   }

@@ -1,7 +1,8 @@
-import { Meta, MetaBuilder, ComputedBlueprint, InternedString, setProperty, intern } from 'htmlbars-reference';
+import { Meta, MetaBuilder, ComputedBlueprint, setProperty } from 'htmlbars-reference';
+import { InternedString, intern } from 'htmlbars-util';
 
 interface HTMLBarsObjectFactory<T> {
-  new<U>(attrs: U): T & U 
+  new<U>(attrs: U): T & U
 }
 
 export default class HTMLBarsObject {
@@ -32,7 +33,7 @@ interface ComputedCallback {
 class Computed {
   private callback: ComputedCallback;
   private deps: InternedString[][];
-  
+
   constructor(callback: ComputedCallback, deps: string[]) {
     this.callback = callback;
     this.deps = deps.map(d => d.split('.').map(intern));
