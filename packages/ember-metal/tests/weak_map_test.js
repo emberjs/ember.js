@@ -59,10 +59,6 @@ QUnit.test('that error is thrown when using a primitive key', function(assert) {
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
   expectAssertion(function() {
-    map.set(Symbol(), 1);
-  }, /Uncaught TypeError: Invalid value used as weak map key/);
-
-  expectAssertion(function() {
     map.set(true, 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
