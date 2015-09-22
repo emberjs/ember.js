@@ -1,5 +1,6 @@
 import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
+import { ConstReference } from './references/const';
 import { MetaOptions, MetaFactory } from './types';
 import { InternedString } from 'htmlbars-util';
 
@@ -12,13 +13,84 @@ import {
   PathReference as IPathReference,
   Meta as IMeta,
   RootReference as IRootReference
-} from 'htmlbars-reference';
+} from './types';
 
 import { InnerReferenceFactory } from './references/descriptors';
+
+const NOOP_DESTROY = { destroy() {} };
+
+class ConstPath implements IPathReference {
+  private parent: any;
+  private property: InternedString;
+
+  constructor(parent: any, property: InternedString) {
+    this.parent = parent;
+  }
+
+  chain() { return NOOP_DESTROY; }
+  isDirty() { return false; }
+  destroy() {}
+  notify() {}
+
+  value() {
+    return this.parent[<string>this.property];
+  }
+
+  get(prop: InternedString): IPathReference {
+    return new ConstPath(this.parent[<string>this.property], prop);
+  }
+}
+
+class ConstRoot implements IRootReference {
+  private inner: any;
+
+  constructor(value) {
+    this.inner = value;    
+  }
+  
+  update() {}
+  chain() { return NOOP_DESTROY; }  
+  isDirty() { return false; }
+  destroy() {}
+  notify() {}
+
+  value(): any {
+    return this.inner;
+  }
+
+  referenceFromParts(parts: InternedString[]): IPathReference {
+    throw new Error("Not implemented");
+  }
+
+  chainFor(prop: InternedString): IPathReference {
+    throw new Error("Not implemented");
+  }
+  
+  get(prop: InternedString): IPathReference {
+    return new ConstPath(this.inner, prop);
+  }
+}
+
+class ConstMeta implements IMeta {
+  private object: any;
+
+  constructor(object: any) {
+    this.object = object;
+  }
+
+  root(): IRootReference {
+    return new ConstRoot(this.object);
+  }
+  referencesFor(property: InternedString): Set<PathReference>;
+  referenceTypeFor(property: InternedString): InnerReferenceFactory;
+  addReference(property: InternedString, reference: PathReference);
+  removeReference(property: InternedString, reference: PathReference);
+}
 
 class Meta implements IMeta {
   static for(obj: any): IMeta {
     if (obj._meta) return obj._meta;
+    if (!Object.isExtensible(obj)) return new ConstMeta(obj);
 
     let MetaToUse: MetaFactory = obj.constructor._Meta || Meta;
     return (obj._meta = new MetaToUse(obj, {}));

@@ -1,3 +1,4 @@
+import { ConcreteBounds, Bounds } from './morph';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 export default class DOMHelper {
@@ -45,7 +46,7 @@ export default class DOMHelper {
     }
   }
 
-  insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): { first: Node, last: Node } {
+  insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
     // REFACTOR TODO: table stuff in IE9; maybe just catch exceptions?
 
     let prev = nextSibling && nextSibling.previousSibling;
@@ -65,7 +66,7 @@ export default class DOMHelper {
     }
 
     let first = prev ? prev.nextSibling : parent.firstChild;
-    return { first, last };
+    return new ConcreteBounds(parent, first, last);
   }
 
   insertBefore(element: Element, node: Node, reference: Node) {

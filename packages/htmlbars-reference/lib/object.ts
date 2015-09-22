@@ -1,5 +1,5 @@
 import { metaFor } from './meta';
-import { intern } from './utils';
+import { intern } from 'htmlbars-util';
 
 export function setProperty(parent: any, property: string, val: any) {
   var rootProp = metaFor(parent).root().chainFor(intern(property));
