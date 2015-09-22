@@ -47,30 +47,30 @@ QUnit.test('has weakMap like qualities', function(assert) {
   equal(map.get(b), undefined);
 });
 
-QUnit.test('that error is thrown when using a non object key', function(assert) {
+QUnit.test('that error is thrown when using a primitive key', function(assert) {
   var map = new WeakMap();
 
-  throws(function() {
+  expectAssertion(function() {
     map.set('a', 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
-  throws(function() {
+  expectAssertion(function() {
     map.set(1, 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
-  throws(function() {
+  expectAssertion(function() {
     map.set(Symbol(), 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
-  throws(function() {
+  expectAssertion(function() {
     map.set(true, 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
-  throws(function() {
+  expectAssertion(function() {
     map.set(null, 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 
-  throws(function() {
+  expectAssertion(function() {
     map.set(undefined, 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
 });
