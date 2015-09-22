@@ -5,20 +5,6 @@ import { meta } from 'ember-metal/meta';
 var id = 0;
 function UNDEFINED() {}
 
-function isPrimitiveType(thing) {
-  switch(typeof thing) {
-    case 'string':
-    case 'boolean':
-    case 'number':
-    case 'undefined':
-    case 'null':
-    case 'symbol':
-      return true;
-    default:
-      return false;
-  }
-}
-
 /*
  * @public
  * @class Ember.WeakMap
@@ -54,7 +40,7 @@ WeakMap.prototype.get = function(obj) {
  * @return {Any} stored value
  */
 WeakMap.prototype.set = function(obj, value) {
-  assert('Uncaught TypeError: Invalid value used as weak map key', !isPrimitiveType(obj));
+  assert('Uncaught TypeError: Invalid value used as weak map key', typeof obj === 'object' || typeof obj === 'function');
 
   if (value === undefined) {
     value = UNDEFINED;
