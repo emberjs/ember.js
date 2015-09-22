@@ -53,6 +53,26 @@ QUnit.test('that error is thrown when using a non object key', function(assert) 
   throws(function() {
     map.set('a', 1);
   }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  throws(function() {
+    map.set(1, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  throws(function() {
+    map.set(Symbol(), 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  throws(function() {
+    map.set(true, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  throws(function() {
+    map.set(null, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
+
+  throws(function() {
+    map.set(undefined, 1);
+  }, /Uncaught TypeError: Invalid value used as weak map key/);
 });
 
 QUnit.test('that .has and .delete work as expected', function(assert) {
@@ -72,4 +92,3 @@ QUnit.test('that .has and .delete work as expected', function(assert) {
   map.set(a, undefined);
   ok(map.has(a));
 });
-
