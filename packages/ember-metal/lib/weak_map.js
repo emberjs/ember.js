@@ -1,4 +1,3 @@
-import { typeOf } from 'ember-runtime/utils';
 import { assert } from 'ember-metal/debug';
 import { GUID_KEY } from 'ember-metal/utils';
 import { meta } from 'ember-metal/meta';
@@ -7,7 +6,7 @@ var id = 0;
 function UNDEFINED() {}
 
 /*
- * @private
+ * @public
  * @class Ember.WeakMap
  *
  * Weak relationship from Map -> Key, but not Key to Map.
@@ -41,7 +40,7 @@ WeakMap.prototype.get = function(obj) {
  * @return {Any} stored value
  */
 WeakMap.prototype.set = function(obj, value) {
-  assert('Uncaught TypeError: Invalid value used as weak map key', typeOf(obj) === 'object');
+  assert('Uncaught TypeError: Invalid value used as weak map key', obj && (typeof obj === 'object' || typeof obj === 'function'));
 
   if (value === undefined) {
     value = UNDEFINED;
@@ -59,11 +58,7 @@ WeakMap.prototype.set = function(obj, value) {
 WeakMap.prototype.has = function(obj) {
   var map = meta(obj).readableWeak();
 
-  if (map && map[this._id] !== undefined) {
-    return true;
-  }
-
-  return false;
+  return (map && map[this._id] !== undefined);
 };
 
 /*
