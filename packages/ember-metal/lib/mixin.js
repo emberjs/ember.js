@@ -8,6 +8,7 @@
 */
 
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
+import EmberError from 'ember-metal/error';
 import { assert, deprecate, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
@@ -763,7 +764,7 @@ export function observer(...args) {
   }
 
   if (typeof func !== 'function') {
-    throw new Ember.Error('Ember.observer called without a function');
+    throw new EmberError('Ember.observer called without a function');
   }
 
   func.__ember_observes__ = paths;
