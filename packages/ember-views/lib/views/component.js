@@ -306,7 +306,7 @@ var Component = View.extend(TargetActionSupport, {
 
     {{foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will not be printed, because no block was provided
     {{/if}}
@@ -321,7 +321,7 @@ var Component = View.extend(TargetActionSupport, {
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will be printed because a block was provided
       {{yield}}
@@ -340,7 +340,7 @@ var Component = View.extend(TargetActionSupport, {
       What's up?
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{yield}}
     {{#if (hasBlock "inverse")}}
       {{yield to="inverse"}}
@@ -368,7 +368,7 @@ var Component = View.extend(TargetActionSupport, {
       No block parameter.
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
       This will not be printed, because no block was provided
       {{yield this}}
@@ -384,7 +384,7 @@ var Component = View.extend(TargetActionSupport, {
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
       This will be printed because a block was provided
       {{yield this}}
