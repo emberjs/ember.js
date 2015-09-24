@@ -787,7 +787,7 @@ QUnit.test('`if` helper with inline form: can use truthy param as binding in a s
 
 QUnit.test('`if` helper with inline form: respects isTruthy when object changes', function() {
   view = EmberView.create({
-    conditional: Ember.Object.create({ isTruthy: false }),
+    conditional: EmberObject.create({ isTruthy: false }),
     template: compile('{{if view.conditional "truthy" "falsy"}}')
   });
 
@@ -796,20 +796,20 @@ QUnit.test('`if` helper with inline form: respects isTruthy when object changes'
   equal(view.$().text(), 'falsy');
 
   run(function() {
-    view.set('conditional', Ember.Object.create({ isTruthy: true }));
+    view.set('conditional', EmberObject.create({ isTruthy: true }));
   });
 
   equal(view.$().text(), 'truthy');
 
   run(function() {
-    view.set('conditional', Ember.Object.create({ isTruthy: false }));
+    view.set('conditional', EmberObject.create({ isTruthy: false }));
   });
 
   equal(view.$().text(), 'falsy');
 });
 
 QUnit.test('`if` helper with inline form: respects isTruthy when property changes', function() {
-  var candidate = Ember.Object.create({ isTruthy: false });
+  var candidate = EmberObject.create({ isTruthy: false });
 
   view = EmberView.create({
     conditional: candidate,

@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import { compile } from 'ember-template-compiler';
 
 var App, $fixture;
@@ -9,7 +10,7 @@ function setupExample() {
   Ember.TEMPLATES.index = compile('<h1>People</h1><ul>{{#each model as |person|}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>');
 
 
-  App.Person = Ember.Object.extend({
+  App.Person = EmberObject.extend({
     firstName: null,
     lastName: null,
 

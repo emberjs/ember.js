@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import { HANDLERS } from 'ember-debug/handlers';
 import {
   registerHandler,
@@ -181,7 +182,7 @@ QUnit.test('Ember.assert does not throw if second argument is truthy', function(
 
 QUnit.test('Ember.assert does not throw if second argument is an object', function() {
   expect(1);
-  var Igor = Ember.Object.extend();
+  var Igor = EmberObject.extend();
 
   Ember.assert('is truthy', Igor);
   Ember.assert('is truthy', Igor.create());

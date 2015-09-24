@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import { get } from 'ember-metal/property_get';
 import { mixin, Mixin } from 'ember-metal/mixin';
 
@@ -85,7 +85,7 @@ QUnit.test('mergedProperties should be concatenated', function() {
 });
 
 QUnit.test('mergedProperties should exist even if not explicitly set on create', function() {
-  var AnObj = Ember.Object.extend({
+  var AnObj = EmberObject.extend({
     mergedProperties: ['options'],
     options: {
       a: 'a',

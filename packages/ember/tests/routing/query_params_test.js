@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
@@ -2387,7 +2388,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var indexModelCount = 0;
     App.IndexRoute = Ember.Route.extend({
-      queryParams: Ember.Object.create({
+      queryParams: EmberObject.create({
         unknownProperty(keyName) {
           return { refreshModel: true };
         }
@@ -2581,7 +2582,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     App.ApplicationRoute = Ember.Route.extend({
-      queryParams: Ember.Object.create({
+      queryParams: EmberObject.create({
         unknownProperty(keyName) {
           // We are simulating all qps requiring refresh
           return { replace: true };
