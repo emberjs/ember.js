@@ -27,13 +27,25 @@ var CAMELIZE_CACHE = new Cache(1000, function(key) {
   });
 });
 
-var STRING_CLASSIFY_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
-var STRING_CLASSIFY_REGEXP_2 = (/(^|\/|\.)([a-z])/g);
+var STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
+var STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
+var STRING_CLASSIFY_REGEXP_3 = (/(^|\/|\.)([a-z])/g);
 
 var CLASSIFY_CACHE = new Cache(1000, function(str) {
-  return str.replace(STRING_CLASSIFY_REGEXP_1, function(match, separator, chr) {
-    return chr ? chr.toUpperCase() : '';
-  }).replace(STRING_CLASSIFY_REGEXP_2, function(match, separator, chr) {
+  var replace1 = function(match, separator, chr) {
+    return chr ? ('_' + chr.toUpperCase()) : '';
+  };
+  var replace2 = function(match, initialChar, separator, chr) {
+    return initialChar + (chr ? chr.toUpperCase() : '');
+  };
+  var parts = str.split('/');
+  for (var i = 0, len = parts.length; i < len; i++) {
+    parts[i] = parts[i]
+      .replace(STRING_CLASSIFY_REGEXP_1, replace1)
+      .replace(STRING_CLASSIFY_REGEXP_2, replace2);
+  }
+  return parts.join('/')
+  .replace(STRING_CLASSIFY_REGEXP_3, function(match, separator, chr) {
     return match.toUpperCase();
   });
 });
