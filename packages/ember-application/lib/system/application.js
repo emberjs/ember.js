@@ -553,6 +553,7 @@ var Application = Namespace.extend(RegistryProxy, {
 
     @public
     @method boot
+    @return {Promise<Ember.Application,Error>}
   */
   boot() {
     if (this._bootPromise) { return this._bootPromise; }
@@ -561,10 +562,13 @@ var Application = Namespace.extend(RegistryProxy, {
     this._bootPromise = defer.promise;
     this._bootResolver = defer;
 
-    this.runInitializers();
-    runLoadHooks('application', this);
-
-    this.advanceReadiness();
+    try {
+      this.runInitializers();
+      runLoadHooks('application', this);
+      this.advanceReadiness();
+    } catch(e) {
+      defer.reject(e);
+    }
 
     return this._bootPromise;
   },
@@ -716,39 +720,43 @@ var Application = Namespace.extend(RegistryProxy, {
     @method didBecomeReady
   */
   didBecomeReady() {
-    let instance;
+    try {
+      let instance;
 
-    if (this.autoboot) {
-      if (this.globalsMode) {
-        // If we already have the __deprecatedInstance__ lying around, boot it to
-        // avoid unnecessary work
-        instance = this.__deprecatedInstance__;
-      } else {
-        // Otherwise, build an instance and boot it. This is currently unreachable,
-        // because we forced globalsMode to == autoboot; but having this branch
-        // allows us to locally toggle that flag for weeding out legacy globals mode
-        // dependencies
-        instance = this.buildInstance();
+      if (this.autoboot) {
+        if (this.globalsMode) {
+          // If we already have the __deprecatedInstance__ lying around, boot it to
+          // avoid unnecessary work
+          instance = this.__deprecatedInstance__;
+        } else {
+          // Otherwise, build an instance and boot it. This is currently unreachable,
+          // because we forced globalsMode to == autoboot; but having this branch
+          // allows us to locally toggle that flag for weeding out legacy globals mode
+          // dependencies
+          instance = this.buildInstance();
+        }
+
+        this.bootInstance(instance, environment.hasDOM);
+
+        // TODO: App.ready() is not called when autoboot is disabled, is this correct?
+        this.ready();
       }
 
-      this.bootInstance(instance, environment.hasDOM);
+      // TODO: Is this needed for globalsMode = false?
+      if (!Ember.testing) {
+        // Eagerly name all classes that are already loaded
+        Ember.Namespace.processAll();
+        Ember.BOOTED = true;
+      }
 
-      // TODO: App.ready() is not called when autoboot is disabled, is this correct?
-      this.ready();
+      if (this.autoboot) {
+        instance.startRouting();
+      }
+    } catch(e) {
+      this._bootResolver.reject(e);
     }
 
-    // TODO: Is this needed for globalsMode = false?
-    if (!Ember.testing) {
-      // Eagerly name all classes that are already loaded
-      Ember.Namespace.processAll();
-      Ember.BOOTED = true;
-    }
-
-    if (this.autoboot) {
-      instance.startRouting();
-    }
-
-    this._bootResolver.resolve();
+    this._bootResolver.resolve(this);
   },
 
   /**
