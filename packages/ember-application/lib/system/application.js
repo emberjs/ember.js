@@ -914,20 +914,22 @@ if (isEnabled('ember-application-visit')) {
       @private
     */
     visit(url) {
-      var instance = this.buildInstance();
-      this.bootInstance(instance);
+      return this.boot().then(() => {
+        var instance = this.buildInstance();
+        this.bootInstance(instance);
 
-      var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
-        instance.didCreateRootView = function(view) {
-          instance.view = view;
-          res(instance);
-        };
-      });
+        var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
+          instance.didCreateRootView = function(view) {
+            instance.view = view;
+            res(instance);
+          };
+        });
 
-      instance.overrideRouterLocation({ location: 'none' });
+        instance.overrideRouterLocation({ location: 'none' });
 
-      return instance.handleURL(url).then(function() {
-        return renderPromise;
+        return instance.handleURL(url).then(function() {
+          return renderPromise;
+        });
       });
     }
   });
