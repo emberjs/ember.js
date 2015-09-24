@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -794,7 +795,7 @@ QUnit.test('The Specials Page getting its controller context by deserializing th
 
   App.SpecialRoute = Ember.Route.extend({
     model(params) {
-      return Ember.Object.create({
+      return EmberObject.create({
         menuItemId: params.menu_item_id
       });
     },
@@ -823,7 +824,7 @@ QUnit.test('The Specials Page defaults to looking models up via `find`', functio
     this.route('special', { path: '/specials/:menu_item_id' });
   });
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
   App.MenuItem.reopenClass({
     find(id) {
       return App.MenuItem.create({
@@ -859,7 +860,7 @@ QUnit.test('The Special Page returning a promise puts the app into a loading sta
 
   var menuItem, resolve;
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
   App.MenuItem.reopenClass({
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
@@ -909,7 +910,7 @@ QUnit.test('The loading state doesn\'t get entered for promises that resolve on 
     this.route('special', { path: '/specials/:menu_item_id' });
   });
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
   App.MenuItem.reopenClass({
     find(id) {
       return { id: id };
@@ -989,7 +990,7 @@ QUnit.test('The Special page returning an error invokes SpecialRoute\'s error ha
 
   var menuItem, promise, resolve;
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
   App.MenuItem.reopenClass({
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
@@ -1031,7 +1032,7 @@ function testOverridableErrorHandler(handlersName) {
 
   var menuItem, resolve;
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
   App.MenuItem.reopenClass({
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
@@ -1077,7 +1078,7 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
     this.route('special', { path: '/specials/:menu_item_id' });
   });
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
 
   App.SpecialRoute = Ember.Route.extend({
     setupController(controller, model) {
@@ -1133,7 +1134,7 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
 
   var menuItem;
 
-  App.MenuItem = Ember.Object.extend();
+  App.MenuItem = EmberObject.extend();
   App.MenuItem.reopenClass({
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
@@ -2352,7 +2353,7 @@ QUnit.test('The template is not re-rendered when the route\'s context changes', 
 
   App.PageRoute = Ember.Route.extend({
     model(params) {
-      return Ember.Object.create({ name: params.name });
+      return EmberObject.create({ name: params.name });
     }
   });
 
@@ -2380,7 +2381,7 @@ QUnit.test('The template is not re-rendered when the route\'s context changes', 
   equal(insertionCount, 1, 'view should have inserted only once');
 
   Ember.run(function() {
-    router.transitionTo('page', Ember.Object.create({ name: 'third' }));
+    router.transitionTo('page', EmberObject.create({ name: 'third' }));
   });
 
   equal(Ember.$('p', '#qunit-fixture').text(), 'third');
@@ -3046,7 +3047,7 @@ QUnit.test('currentRouteName is a property installed on ApplicationController th
 
 QUnit.test('Route model hook finds the same model as a manual find', function() {
   var Post;
-  App.Post = Ember.Object.extend();
+  App.Post = EmberObject.extend();
   App.Post.reopenClass({
     find() {
       Post = this;

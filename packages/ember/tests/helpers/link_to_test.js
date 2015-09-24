@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
 
@@ -731,7 +732,7 @@ QUnit.test('The {{link-to}} helper accepts string/numeric arguments', function()
 
   App.FilterController = Ember.Controller.extend({
     filter: 'unpopular',
-    repo: Ember.Object.create({ owner: 'ember', name: 'ember.js' }),
+    repo: EmberObject.create({ owner: 'ember', name: 'ember.js' }),
     post_id: 123
   });
   Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#link-to "filter" "unpopular" id="link"}}Unpopular{{/link-to}}{{#link-to "filter" filter id="path-link"}}Unpopular{{/link-to}}{{#link-to "post" post_id id="post-path-link"}}Post{{/link-to}}{{#link-to "post" 123 id="post-number-link"}}Post{{/link-to}}{{#link-to "repo" repo id="repo-object-link"}}Repo{{/link-to}}');
@@ -876,7 +877,7 @@ QUnit.test('link-to with null/undefined dynamic parameters are put in a loading 
   Ember.Logger.warn = function() { warnCalled = true; };
   Ember.TEMPLATES.index = compile('{{#link-to destinationRoute routeContext loadingClass=\'i-am-loading\' id=\'context-link\'}}string{{/link-to}}{{#link-to secondRoute loadingClass=loadingClass id=\'static-link\'}}string{{/link-to}}');
 
-  var thing = Ember.Object.create({ id: 123 });
+  var thing = EmberObject.create({ id: 123 });
 
   App.IndexController = Ember.Controller.extend({
     destinationRoute: null,
@@ -962,8 +963,8 @@ QUnit.test('The {{link-to}} helper refreshes href element when one of params cha
     this.route('post', { path: '/posts/:post_id' });
   });
 
-  var post = Ember.Object.create({ id: '1' });
-  var secondPost = Ember.Object.create({ id: '2' });
+  var post = EmberObject.create({ id: '1' });
+  var secondPost = EmberObject.create({ id: '2' });
 
   Ember.TEMPLATES.index = compile('{{#link-to "post" post id="post"}}post{{/link-to}}');
 
