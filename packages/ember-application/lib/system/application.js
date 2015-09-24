@@ -721,9 +721,16 @@ var Application = Namespace.extend(RegistryProxy, {
   */
   didBecomeReady() {
     try {
-      let instance;
+      // TODO: Is this needed for globalsMode = false?
+      if (!Ember.testing) {
+        // Eagerly name all classes that are already loaded
+        Ember.Namespace.processAll();
+        Ember.BOOTED = true;
+      }
 
       if (this.autoboot) {
+        let instance;
+
         if (this.globalsMode) {
           // If we already have the __deprecatedInstance__ lying around, boot it to
           // avoid unnecessary work
@@ -740,16 +747,7 @@ var Application = Namespace.extend(RegistryProxy, {
 
         // TODO: App.ready() is not called when autoboot is disabled, is this correct?
         this.ready();
-      }
 
-      // TODO: Is this needed for globalsMode = false?
-      if (!Ember.testing) {
-        // Eagerly name all classes that are already loaded
-        Ember.Namespace.processAll();
-        Ember.BOOTED = true;
-      }
-
-      if (this.autoboot) {
         instance.startRouting();
       }
     } catch(e) {
