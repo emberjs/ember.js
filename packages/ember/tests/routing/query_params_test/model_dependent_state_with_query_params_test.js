@@ -3,6 +3,7 @@ import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
 
 var Router, App, router, registry, container;
 
@@ -60,7 +61,7 @@ var TestLocation = Ember.NoneLocation.extend({
 
 function sharedSetup() {
   run(function() {
-    App = Ember.Application.create({
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });

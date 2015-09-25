@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
 
 var Router, App, router, registry, container;
 
@@ -15,7 +16,7 @@ function bootApplication() {
 var updateCount, replaceCount;
 
 function sharedSetup() {
-  App = Ember.Application.create({
+  App = Application.create({
     name: 'App',
     rootElement: '#qunit-fixture'
   });

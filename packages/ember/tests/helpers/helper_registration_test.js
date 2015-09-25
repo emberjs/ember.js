@@ -3,6 +3,7 @@ import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';
+import Application from 'ember-application/system/application';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -29,7 +30,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
 
 var boot = function(callback) {
   run(function() {
-    App = Ember.Application.create({
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });

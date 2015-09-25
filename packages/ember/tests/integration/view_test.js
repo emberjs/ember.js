@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
+import Application from 'ember-application/system/application';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -28,7 +29,7 @@ QUnit.module('View Integration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     run(function() {
-      App = Ember.Application.create({
+      App = Application.create({
         rootElement: '#qunit-fixture'
       });
       App.deferReadiness();

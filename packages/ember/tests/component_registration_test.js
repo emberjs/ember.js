@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import keys from 'ember-metal/keys';
 import run from 'ember-metal/run_loop';
 
+import Application from 'ember-application/system/application';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
 import { OutletView } from 'ember-routing-views/views/outlet';
@@ -45,7 +46,7 @@ QUnit.module('Application Lifecycle - Component Registration', {
 
 function boot(callback, startURL='/') {
   run(function() {
-    App = Ember.Application.create({
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });

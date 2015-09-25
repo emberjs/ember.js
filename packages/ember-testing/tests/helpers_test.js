@@ -977,7 +977,7 @@ QUnit.module('can override built-in helpers', {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
-      App = Ember.Application.create({
+      App = EmberApplication.create({
         rootElement: '#ember-testing'
       });
 

@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
+import Application from 'ember-application/system/application';
 
 var App1, App2, actions;
 
@@ -8,7 +9,7 @@ function startApp(rootElement) {
   var application;
 
   run(function() {
-    application = Ember.Application.create({
+    application = Application.create({
       rootElement
     });
     application.deferReadiness();

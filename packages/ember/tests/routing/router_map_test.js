@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
+import Application from 'ember-application/system/application';
 
 var Router, router, App, container;
 
@@ -24,7 +25,7 @@ function handleURL(path) {
 QUnit.module('Router.map', {
   setup() {
     run(function() {
-      App = Ember.Application.create({
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });
