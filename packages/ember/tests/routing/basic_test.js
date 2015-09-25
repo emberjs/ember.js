@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberObject from 'ember-runtime/system/object';
@@ -124,7 +125,7 @@ QUnit.test('The Homepage', function() {
 
   var currentPath;
 
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Controller.extend({
     currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
@@ -153,13 +154,13 @@ QUnit.test('The Home page and the Camelot page with multiple Router.map calls', 
 
   var currentPath;
 
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Controller.extend({
     currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
   });
 
-  App.CamelotController = Ember.Controller.extend({
+  App.CamelotController = Controller.extend({
     currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
@@ -205,7 +206,7 @@ QUnit.test('An alternate template will pull in an alternate controller', functio
     }
   });
 
-  App.HomepageController = Ember.Controller.extend({
+  App.HomepageController = Controller.extend({
     model: {
       home: 'Comes from homepage'
     }
@@ -228,13 +229,13 @@ QUnit.test('An alternate template will pull in an alternate controller instead o
     }
   });
 
-  App.FooController = Ember.Controller.extend({
+  App.FooController = Controller.extend({
     model: {
       home: 'Comes from Foo'
     }
   });
 
-  App.HomepageController = Ember.Controller.extend({
+  App.HomepageController = Controller.extend({
     model: {
       home: 'Comes from homepage'
     }
@@ -256,7 +257,7 @@ QUnit.test('The template will pull in an alternate controller via key/value', fu
     }
   });
 
-  App.HomeController = Ember.Controller.extend({
+  App.HomeController = Controller.extend({
     model: {
       home: 'Comes from home.'
     }
@@ -272,7 +273,7 @@ QUnit.test('The Homepage with explicit template name in renderTemplate and contr
     this.route('home', { path: '/' });
   });
 
-  App.HomeController = Ember.Controller.extend({
+  App.HomeController = Controller.extend({
     model: {
       home: 'YES I AM HOME'
     }
@@ -292,7 +293,7 @@ QUnit.test('The Homepage with explicit template name in renderTemplate and contr
 QUnit.test('Model passed via renderTemplate model is set as controller\'s model', function() {
   Ember.TEMPLATES['bio'] = compile('<p>{{model.name}}</p>');
 
-  App.BioController = Ember.Controller.extend();
+  App.BioController = Controller.extend();
 
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -477,7 +478,7 @@ QUnit.test('render does not replace templateName if user provided', function() {
   App.HomeView = EmberView.extend({
     templateName: 'the_real_home_template'
   });
-  App.HomeController = Ember.Controller.extend();
+  App.HomeController = Controller.extend();
   App.HomeRoute = Ember.Route.extend();
 
   bootApplication();
@@ -493,7 +494,7 @@ QUnit.test('render does not replace template if user provided', function () {
   App.HomeView = EmberView.extend({
     template: compile('<p>THIS IS THE REAL HOME</p>')
   });
-  App.HomeController = Ember.Controller.extend();
+  App.HomeController = Controller.extend();
   App.HomeRoute = Ember.Route.extend();
 
   bootApplication();
@@ -514,7 +515,7 @@ QUnit.test('render uses templateName from route', function() {
     '<p>THIS IS THE REAL HOME</p>'
   );
 
-  App.HomeController = Ember.Controller.extend();
+  App.HomeController = Controller.extend();
   App.HomeRoute = Ember.Route.extend({
     templateName: 'the_real_home_template'
   });
@@ -536,7 +537,7 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
     '<p>THIS IS THE REAL HOME</p>{{outlet \'alert\'}}'
   );
 
-  App.HomeController = Ember.Controller.extend();
+  App.HomeController = Controller.extend();
   App.HomeRoute = Ember.Route.extend({
     templateName: 'the_real_home_template',
     actions: {
@@ -565,7 +566,7 @@ QUnit.test('Specifying a name to render should have precedence over everything e
     this.route('home', { path: '/' });
   });
 
-  App.HomeController = Ember.Controller.extend();
+  App.HomeController = Controller.extend();
   App.HomeRoute = Ember.Route.extend({
     templateName: 'home',
     controllerName: 'home',
@@ -580,7 +581,7 @@ QUnit.test('Specifying a name to render should have precedence over everything e
     template: compile('<h3>This should not be rendered</h3><p>{{model.home}}</p>')
   });
 
-  App.HomepageController = Ember.Controller.extend({
+  App.HomepageController = Controller.extend({
     model: {
       home: 'Tinytroll'
     }
@@ -635,7 +636,7 @@ QUnit.test('The route controller is still set when overriding the setupControlle
     }
   });
 
-  registry.register('controller:home', Ember.Controller.extend());
+  registry.register('controller:home', Controller.extend());
 
   bootApplication();
 
@@ -655,7 +656,7 @@ QUnit.test('The route controller can be specified via controllerName', function(
     controllerName: 'myController'
   });
 
-  registry.register('controller:myController', Ember.Controller.extend({
+  registry.register('controller:myController', Controller.extend({
     myValue: 'foo'
   }));
 
@@ -681,7 +682,7 @@ QUnit.test('The route controller specified via controllerName is used in render'
     }
   });
 
-  registry.register('controller:myController', Ember.Controller.extend({
+  registry.register('controller:myController', Controller.extend({
     myValue: 'foo'
   }));
 
@@ -704,11 +705,11 @@ QUnit.test('The route controller specified via controllerName is used in render 
     controllerName: 'myController'
   });
 
-  registry.register('controller:home', Ember.Controller.extend({
+  registry.register('controller:home', Controller.extend({
     myValue: 'home'
   }));
 
-  registry.register('controller:myController', Ember.Controller.extend({
+  registry.register('controller:myController', Controller.extend({
     myValue: 'myController'
   }));
 
@@ -747,7 +748,7 @@ QUnit.test('The Homepage with a computed context that does not get overridden', 
     this.route('home', { path: '/' });
   });
 
-  App.HomeController = Ember.Controller.extend({
+  App.HomeController = Controller.extend({
     model: computed(function() {
       return emberA([
         'Monday through Friday: 9am to 5pm',
@@ -820,7 +821,7 @@ QUnit.test('The Specials Page getting its controller context by deserializing th
 
   bootApplication();
 
-  registry.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Controller.extend());
 
   handleURL('/specials/1');
 
@@ -854,7 +855,7 @@ QUnit.test('The Specials Page defaults to looking models up via `find`', functio
 
   bootApplication();
 
-  registry.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Controller.extend());
 
   handleURL('/specials/1');
 
@@ -900,7 +901,7 @@ QUnit.test('The Special Page returning a promise puts the app into a loading sta
 
   bootApplication();
 
-  registry.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Controller.extend());
 
   handleURL('/specials/1');
 
@@ -948,7 +949,7 @@ QUnit.test('The loading state doesn\'t get entered for promises that resolve on 
 
   bootApplication();
 
-  registry.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Controller.extend());
 
   handleURL('/specials/1');
 
@@ -1105,7 +1106,7 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
 
   bootApplication();
 
-  registry.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Controller.extend());
 
   var transition = handleURL('/');
 
@@ -1135,7 +1136,7 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
 
   var currentPath;
 
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Controller.extend({
     currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
@@ -1204,7 +1205,7 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
 
   bootApplication();
 
-  registry.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Controller.extend());
 
   equal(jQuery('h3', '#qunit-fixture').text(), 'Home', 'The app is now in the initial state');
   equal(rootSetup, 1, 'The root setup was triggered');
@@ -1260,7 +1261,7 @@ QUnit.asyncTest('Events are triggered on the controller if a matching action nam
     '<a {{action \'showStuff\' model}}>{{name}}</a>'
   );
 
-  var controller = Ember.Controller.extend({
+  var controller = Controller.extend({
     actions: {
       showStuff(context) {
         ok(stateIsNotCalled, 'an event on the state is not triggered');
@@ -1416,7 +1417,7 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
     '<a {{action \'showStuff\' model}}>{{name}}</a>'
   );
 
-  var controller = Ember.Controller.extend({
+  var controller = Controller.extend({
     showStuff(context) {
       stateIsNotCalled = false;
       ok(stateIsNotCalled, 'an event on the state is not triggered');
@@ -1455,7 +1456,7 @@ QUnit.asyncTest('actions can be triggered with multiple arguments', function() {
     }
   });
 
-  App.RootIndexController = Ember.Controller.extend({
+  App.RootIndexController = Controller.extend({
     model1: model1,
     model2: model2
   });
@@ -1968,11 +1969,11 @@ QUnit.test('Generated names can be customized when providing routes with dot not
     }
   });
 
-  App.BarController = Ember.Controller.extend({
+  App.BarController = Controller.extend({
     name: 'Bar'
   });
 
-  App.BarBazController = Ember.Controller.extend({
+  App.BarBazController = Controller.extend({
     name: 'BarBaz'
   });
 
@@ -2424,7 +2425,7 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
     viewName: 'fourth'
   });
 
-  App.SharedController = Ember.Controller.extend();
+  App.SharedController = Controller.extend();
 
   var insertionCount = 0;
   App.SharedView = EmberView.extend({
@@ -2481,7 +2482,7 @@ QUnit.test('ApplicationRoute with model does not proxy the currentPath', functio
     model() { return model; }
   });
 
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Controller.extend({
     currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
@@ -3940,7 +3941,7 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
   var otherComponentCounter = 0;
   var indexController;
 
-  App.IndexController = Ember.Controller.extend({
+  App.IndexController = Controller.extend({
     showFirst: true
   });
 

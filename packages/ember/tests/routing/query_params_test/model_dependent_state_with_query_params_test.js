@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
@@ -343,7 +344,7 @@ QUnit.module('Model Dep Query Params', {
 
     var articles = this.articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       articles: this.articles
     });
 
@@ -372,13 +373,13 @@ QUnit.module('Model Dep Query Params', {
         }
       });
     } else {
-      App.ArticleController = Ember.Controller.extend({
+      App.ArticleController = Controller.extend({
         queryParams: ['q', 'z'],
         q: 'wat',
         z: 0
       });
 
-      App.CommentsController = Ember.Controller.extend({
+      App.CommentsController = Controller.extend({
         queryParams: 'page',
         page: 1
       });
@@ -434,7 +435,7 @@ QUnit.module('Model Dep Query Params (nested)', {
 
     var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       articles: this.site_articles
     });
 
@@ -463,13 +464,13 @@ QUnit.module('Model Dep Query Params (nested)', {
         }
       });
     } else {
-      App.SiteArticleController = Ember.Controller.extend({
+      App.SiteArticleController = Controller.extend({
         queryParams: ['q', 'z'],
         q: 'wat',
         z: 0
       });
 
-      App.SiteArticleCommentsController = Ember.Controller.extend({
+      App.SiteArticleCommentsController = Controller.extend({
         queryParams: 'page',
         page: 1
       });
@@ -524,7 +525,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
     var sites = this.sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
     var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       siteArticles: this.site_articles,
       sites: this.sites,
       allSitesAllArticles: computed({
@@ -582,18 +583,18 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
         }
       });
     } else {
-      App.SiteController = Ember.Controller.extend({
+      App.SiteController = Controller.extend({
         queryParams: ['country'],
         country: 'au'
       });
 
-      App.SiteArticleController = Ember.Controller.extend({
+      App.SiteArticleController = Controller.extend({
         queryParams: ['q', 'z'],
         q: 'wat',
         z: 0
       });
 
-      App.SiteArticleCommentsController = Ember.Controller.extend({
+      App.SiteArticleCommentsController = Controller.extend({
         queryParams: ['page'],
         page: 1
       });

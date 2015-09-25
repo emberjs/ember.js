@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
@@ -68,7 +69,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setup() {
       run(function() {
         sharedSetup();
-        App.IndexController = Ember.Controller.extend({
+        App.IndexController = Controller.extend({
           boundThing: 'OMG'
         });
 
@@ -376,7 +377,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       pageNumber: 5
     });
 
@@ -402,7 +403,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       pagesArray: [1, 2],
       biggerArray: [1, 2, 3],
       emptyArray: []
@@ -502,7 +503,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
         sharedSetup();
 
 
-        App.IndexController = Ember.Controller.extend({
+        App.IndexController = Controller.extend({
           queryParams: ['foo', 'bar', 'abool'],
           foo: '123',
           bar: 'abc',
@@ -510,7 +511,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           abool: true
         });
 
-        App.AboutController = Ember.Controller.extend({
+        App.AboutController = Controller.extend({
           queryParams: ['baz', 'bat'],
           baz: 'alex',
           bat: 'borf'
@@ -650,7 +651,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    App.CarsController = Ember.Controller.extend({
+    App.CarsController = Controller.extend({
       queryParams: ['page'],
       page: 1
     });
@@ -716,13 +717,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    App.SearchController = Ember.Controller.extend({
+    App.SearchController = Controller.extend({
       queryParams: ['search', 'archive'],
       search: '',
       archive: false
     });
 
-    App.SearchResultsController = Ember.Controller.extend({
+    App.SearchResultsController = Controller.extend({
       queryParams: ['sort', 'showDetails'],
       sort: 'title',
       showDetails: true
@@ -776,7 +777,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile(
       '{{#link-to (query-params page=pageNumber) id=\'page-link\'}}Index{{/link-to}} ');
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['page'],
       page: 1,
       pageNumber: 5
@@ -796,7 +797,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       '{{#link-to (query-params pages=emptyArray) id=\'empty-link\'}}Index{{/link-to}} '
     );
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['pages'],
       pages: [],
       pagesArray: [1, 2],
@@ -835,7 +836,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       '{{outlet}}'
     );
 
-    App.ParentChildController = Ember.Controller.extend({
+    App.ParentChildController = Controller.extend({
       queryParams: ['foo'],
       foo: 'bar'
     });
@@ -859,7 +860,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.parent = compile(
       '{{#link-to \'parent\' (query-params page=1) current-when=\'parent\' id=\'parent-link\'}}Parent{{/link-to}} {{outlet}}');
 
-    App.ParentController = Ember.Controller.extend({
+    App.ParentController = Controller.extend({
       queryParams: ['page'],
       page: 1
     });

@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
@@ -65,7 +66,7 @@ QUnit.test('invoking `{{view}} from a non-view backed (aka only template) templa
     }
   }));
 
-  registry.register('controller:index', Ember.Controller.extend({
+  registry.register('controller:index', Controller.extend({
     init() {
       this._super(...arguments);
 

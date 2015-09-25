@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
@@ -207,12 +208,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('can remap same-named qp props', function() {
-    App.ParentController = Ember.Controller.extend({
+    App.ParentController = Controller.extend({
       queryParams: { page: 'parentPage' },
       page: 1
     });
 
-    App.ParentChildController = Ember.Controller.extend({
+    App.ParentChildController = Controller.extend({
       queryParams: { page: 'childPage' },
       page: 1
     });
@@ -250,12 +251,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
-    App.ParentController = Ember.Controller.extend({
+    App.ParentController = Controller.extend({
       queryParams: { foo: 'shared' },
       foo: 1
     });
 
-    App.ParentChildController = Ember.Controller.extend({
+    App.ParentChildController = Controller.extend({
       queryParams: { bar: 'shared' },
       bar: 1
     });
@@ -272,11 +273,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       page: 1
     });
 
-    App.ParentController = Ember.Controller.extend(HasPage, {
+    App.ParentController = Controller.extend(HasPage, {
       queryParams: { page: 'yespage' }
     });
 
-    App.ParentChildController = Ember.Controller.extend(HasPage);
+    App.ParentChildController = Controller.extend(HasPage);
 
     this.boot();
 

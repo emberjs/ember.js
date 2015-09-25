@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
@@ -75,7 +76,7 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       foo: 'alex'
     }));
 

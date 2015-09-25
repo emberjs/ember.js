@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 
 import Namespace from 'ember-runtime/system/namespace';
@@ -176,7 +175,7 @@ QUnit.test('should not throw deprecations if {{outlet}} is used with a quoted na
 QUnit.test('{{outlet}} should work with an unquoted name', function() {
   var routerState = {
     render: {
-      controller: Ember.Controller.create({
+      controller: Controller.create({
         outletName: 'magical'
       }),
       template: compile('{{outlet outletName}}')
@@ -195,7 +194,7 @@ QUnit.test('{{outlet}} should work with an unquoted name', function() {
 QUnit.test('{{outlet}} should rerender when bound name changes', function() {
   var routerState = {
     render: {
-      controller: Ember.Controller.create({
+      controller: Controller.create({
         outletName: 'magical'
       }),
       template: compile('{{outlet outletName}}')

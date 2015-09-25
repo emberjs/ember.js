@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import keys from 'ember-metal/keys';
 import run from 'ember-metal/run_loop';
 
@@ -130,7 +131,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'user-name': 'machty'
     }));
   });
@@ -145,7 +146,7 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
   Ember.TEMPLATES['foo-bar-baz'] = compile('{{text}}-{{yield}}');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
@@ -165,7 +166,7 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
   Ember.TEMPLATES['foo-bar-baz'] = compile('No way!');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
@@ -186,7 +187,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   expectDeprecation(function() {
     boot(function() {
-      registry.register('controller:application', Ember.Controller.extend({
+      registry.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
 
@@ -208,7 +209,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   expectDeprecation(function() {
     boot(function() {
-      registry.register('controller:application', Ember.Controller.extend({
+      registry.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
 
@@ -240,7 +241,7 @@ QUnit.test('Components with a block should have the proper content when a templa
   Ember.TEMPLATES['components/my-component'] = compile('{{text}}-{{yield}}');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
@@ -256,7 +257,7 @@ QUnit.test('Components with a block should yield the proper content without a te
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
@@ -273,7 +274,7 @@ QUnit.test('Components without a block should have the proper content when a tem
   Ember.TEMPLATES['components/my-component'] = compile('{{text}}');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
@@ -289,7 +290,7 @@ QUnit.test('Components without a block should have the proper content', function
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
@@ -308,7 +309,7 @@ QUnit.test('properties of a component without a template should not collide with
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
@@ -327,7 +328,7 @@ QUnit.test('attrs property of a component without a template should not collide 
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
@@ -347,7 +348,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
           ok(true, 'action triggered on parent');
@@ -368,7 +369,7 @@ QUnit.test('Components trigger actions in the components context when called fro
   Ember.TEMPLATES['components/my-component'] = compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
           ok(false, 'action triggered on the wrong context');
