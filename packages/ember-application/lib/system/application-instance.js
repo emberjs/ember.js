@@ -251,8 +251,7 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
   /**
     Directs the router to route to a particular URL. This is useful in tests,
-    for example, to tell the app to start at a particular URL. Ensure that you
-    have called `setupRouter()` before calling this method.
+    for example, to tell the app to start at a particular URL.
 
     @param url {String} the URL the router should route to
     @private
@@ -288,6 +287,61 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 });
 
 if (isEnabled('ember-application-visit')) {
+  ApplicationInstance.reopen({
+    /**
+      Returns the current URL of the app instance. This is useful when your
+      app does not update the browsers URL bar (i.e. it uses the `'none'`
+      location adapter).
+
+      @public
+      @return {String} the current URL
+    */
+    getURL() {
+      let router = get(this, 'router');
+      return get(router, 'url');
+    },
+
+    // `instance.visit(url)` should eventually replace `instance.handleURL()`;
+    // the test helpers can probably be switched to use this implementation too
+
+    /**
+      Navigate the instance to a particular URL. This is useful in tests, for
+      example, or to tell the app to start at a particular URL. This method
+      returns a promise that resolves with the app instance when the transition
+      is complete, or rejects if the transion was aborted due to an error.
+
+      @public
+      @param url {String} the destination URL
+      @return {Promise}
+    */
+    visit(url) {
+      this.setupRouter();
+
+      let router = get(this, 'router');
+
+      let handleResolve = () => {
+        return this;
+      };
+
+      let handleReject = (error) => {
+        if (error.error) {
+          throw error.error;
+        } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
+          return router.router.activeTransition.then(handleResolve, handleReject);
+        } else if (error.name === 'TransitionAborted') {
+          throw new Error(error.message);
+        } else {
+          throw error;
+        }
+      };
+
+      // Keeps the location adapter's internal URL in-sync
+      get(router, 'location').setURL(url);
+
+      return router.handleURL(url).then(handleResolve, handleReject);
+    }
+  });
+
   /**
     A list of options one can pass into `boot()` to override certain behavior on
     the instance. It is currently a laundary list of whatever we happen to need to

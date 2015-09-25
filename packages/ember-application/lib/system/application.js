@@ -994,17 +994,19 @@ if (isEnabled('ember-application-visit')) {
     */
     visit(url) {
       return this.boot().then(() => {
-        return new Ember.RSVP.Promise((resolve, reject) => {
-          this.buildInstance().boot({
-            location: 'none',
-            hasDOM: false,
-            didCreateRootView(view) {
-              this.view = view;
-              resolve(this);
-            }
-          }).then((instance) => {
-            instance.handleURL(url);
-          }).catch(reject);
+        let defer = new Ember.RSVP.defer();
+
+        return this.buildInstance().boot({
+          location: 'none',
+          hasDOM: false,
+          didCreateRootView(view) {
+            this.view = view;
+            defer.resolve(this);
+          }
+        }).then((instance) => {
+          return instance.visit(url);
+        }).then(() => {
+          return defer.promise;
         });
       });
     }
