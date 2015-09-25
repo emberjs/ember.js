@@ -11,11 +11,14 @@ import { set } from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
+import ContainerProxy from 'ember-runtime/mixins/container_proxy';
+import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Registry from 'container/registry';
 import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
+import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
+
 
 let BootOptions;
 
@@ -165,6 +168,14 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     if (isEnabled('ember-application-visit')) {
       options = new BootOptions(options);
       set(this, '_bootOptions', options);
+
+      if (options.document) {
+        this.__registry__.register('renderer:-dom', {
+          create() {
+            return new Renderer(new DOMHelper(options.document), options.hasDOM);
+          }
+        });
+      }
 
       if (options.rootElement) {
         set(this, 'rootElement', options.rootElement);
@@ -320,7 +331,12 @@ if (isEnabled('ember-application-visit')) {
       let router = get(this, 'router');
 
       let handleResolve = () => {
-        return this;
+        // Resolve only after rendering is complete
+        return new Ember.RSVP.Promise((resolve) => {
+          // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
+          // Also, aren't proimses supposed to be async anyway?
+          run.next(null, resolve, this);
+        });
       };
 
       let handleReject = (error) => {
@@ -356,12 +372,24 @@ if (isEnabled('ember-application-visit')) {
     options = options || {};
 
     /**
+      If present, render into the given `Document` object instead of `window.document`.
+
+      @property document
+      @type Document
+      @default null
+      @private
+    */
+    if (options.document) {
+      this.document = options.document;
+    }
+
+    /**
       If present, overrides the `rootElement` property on the instance. This is useful
       for testing environment, where you might want to append the root view to a fixture
       area.
 
       @property rootElement
-      @property {String|DOMElement} rootElement
+      @type String|DOMElement
       @default null
       @private
      */

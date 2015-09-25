@@ -6,14 +6,17 @@ import ApplicationInstance from 'ember-application/system/application-instance';
 import Route from 'ember-routing/system/route';
 import Router from 'ember-routing/system/router';
 import View from 'ember-views/views/view';
+import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 
 let App = null;
 let instance = null;
+let instances = [];
 
-function createApplication() {
+function createApplication(integration) {
   App = Application.extend().create({
     autoboot: false,
+    rootElement: '#qunit-fixture',
     LOG_TRANSITIONS: true,
     LOG_TRANSITIONS_INTERNAL: true,
     LOG_ACTIVE_GENERATION: true
@@ -21,16 +24,25 @@ function createApplication() {
 
   App.Router = Router.extend();
 
-  App.instanceInitializer({
-    name: 'auto-cleanup',
-    initialize(_instance) {
-      if (instance) {
-        run(instance, 'destroy');
+  if (integration) {
+    App.instanceInitializer({
+      name: 'auto-cleanup',
+      initialize(_instance) {
+        instances.push(_instance);
       }
+    });
+  } else {
+    App.instanceInitializer({
+      name: 'auto-cleanup',
+      initialize(_instance) {
+        if (instance) {
+          run(instance, 'destroy');
+        }
 
-      instance = _instance;
-    }
-  });
+        instance = _instance;
+      }
+    });
+  }
 
   return App;
 }
@@ -393,8 +405,6 @@ if (isEnabled('ember-application-visit')) {
       App.visit('/').then(function(instance) {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
-
-        run(instance.view, 'appendTo', '#qunit-fixture');
         assert.equal(Ember.$('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
       }, function(error) {
         QUnit.start();
@@ -427,8 +437,6 @@ if (isEnabled('ember-application-visit')) {
       App.visit('/').then(function(instance) {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
-
-        run(instance.view, 'appendTo', '#qunit-fixture');
         assert.equal(Ember.$('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
         assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
 
@@ -447,5 +455,127 @@ if (isEnabled('ember-application-visit')) {
         assert.ok(false, 'The visit() promise was rejected: ' + error);
       });
     });
+  });
+
+  QUnit.module('Ember.Application - visit() Integration Tests', {
+    teardown() {
+      if (instances) {
+        run(instances, 'forEach', (i) => i.destroy());
+        instances = [];
+      }
+
+      if (App) {
+        run(App, 'destroy');
+        App = null;
+      }
+    }
+  });
+
+  QUnit.test('FastBoot-style setup', function(assert) {
+    QUnit.expect(15);
+    QUnit.stop();
+
+    let initCalled = false;
+    let didInsertElementCalled = false;
+
+    run(function() {
+      createApplication(true);
+
+      App.Router.map(function() {
+        this.route('a');
+        this.route('b');
+      });
+
+      App.register('template:application', compile('<h1>Hello world</h1>\n{{outlet}}'));
+
+      App.register('template:a', compile('<h2>Welcome to {{x-foo page="A"}}</h2>'));
+
+      App.register('template:b', compile('<h2>{{x-foo page="B"}}</h2>'));
+
+      App.register('template:components/x-foo', compile('Page {{page}}'));
+
+      App.register('component:x-foo', Component.extend({
+        tagName: 'span',
+        init() {
+          this._super();
+          initCalled = true;
+        },
+        didInsertElement() {
+          didInsertElementCalled = true;
+        }
+      }));
+    });
+
+    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+    function makeFakeDom() {
+      // TODO: use simple-dom
+      return document.implementation.createHTMLDocument();
+    }
+
+    let a = run(function() {
+      let dom = makeFakeDom();
+
+      return App.visit('/a', { document: dom, rootElement: dom.body, server: true }).then(instance => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+        assert.equal(instance.getURL(), '/a');
+
+        let serialized = dom.body.innerHTML;
+        let $parsed = Ember.$(serialized);
+
+        assert.equal($parsed.find('h1').text(), 'Hello world');
+        assert.equal($parsed.find('h2').text(), 'Welcome to Page A');
+
+        assert.ok(initCalled, 'Component#init should be called');
+        assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
+
+        assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        QUnit.stop();
+      });
+    });
+
+    let b = run(function() {
+      let dom = makeFakeDom();
+
+      return App.visit('/b', { document: dom, rootElement: dom.body, server: true }).then(instance => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+        assert.equal(instance.getURL(), '/b');
+
+        let serialized = dom.body.innerHTML;
+        let $parsed = Ember.$(serialized);
+
+        assert.equal($parsed.find('h1').text(), 'Hello world');
+        assert.equal($parsed.find('h2').text(), 'Page B');
+
+        assert.ok(initCalled, 'Component#init should be called');
+        assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
+
+        assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        QUnit.stop();
+      });
+    });
+
+    Ember.RSVP.all([a, b]).finally(() => QUnit.start());
+  });
+
+  QUnit.test('Ember Islands-style setup', function(assert) {
+
+  });
+
+  QUnit.skip('Resource-discovery setup', function(assert) {
+
+
+  });
+
+  QUnit.skip('Test setup', function(assert) {
+
+
+  });
+
+  QUnit.skip('iframe setup', function(assert) {
+
+
   });
 }

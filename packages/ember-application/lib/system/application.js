@@ -992,21 +992,35 @@ if (isEnabled('ember-application-visit')) {
       @method visit
       @private
     */
-    visit(url) {
+    visit(url, options) {
       return this.boot().then(() => {
-        let defer = new Ember.RSVP.defer();
+        options = options || {};
 
-        return this.buildInstance().boot({
-          location: 'none',
-          hasDOM: false,
-          didCreateRootView(view) {
-            this.view = view;
-            defer.resolve(this);
-          }
-        }).then((instance) => {
+        let instance = this.buildInstance();
+
+        var bootOptions = {};
+
+        if (options.location !== null) {
+          bootOptions.location = options.location || 'none';
+        }
+
+        if (options.server) {
+          bootOptions.hasDOM = false;
+          bootOptions.didCreateRootView = function(view) {
+            view.renderer.appendTo(view, options.rootElement);
+          };
+        }
+
+        if (options.document) {
+          bootOptions.document = options.document;
+        }
+
+        if (options.rootElement) {
+          bootOptions.rootElement = options.rootElement;
+        }
+
+        return instance.boot(bootOptions).then(() => {
           return instance.visit(url);
-        }).then(() => {
-          return defer.promise;
         });
       });
     }
