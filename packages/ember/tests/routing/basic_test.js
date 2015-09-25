@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberObject from 'ember-runtime/system/object';
@@ -75,7 +76,7 @@ QUnit.module('Basic Routing', {
 
       Router = App.Router;
 
-      App.LoadingRoute = Ember.Route.extend({
+      App.LoadingRoute = Route.extend({
       });
 
       registry = App.__registry__;
@@ -121,7 +122,7 @@ QUnit.test('The Homepage', function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
   });
 
   var currentPath;
@@ -147,10 +148,10 @@ QUnit.test('The Home page and the Camelot page with multiple Router.map calls', 
     this.route('camelot', { path: '/camelot' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
   });
 
-  App.CamelotRoute = Ember.Route.extend({
+  App.CamelotRoute = Route.extend({
   });
 
   var currentPath;
@@ -185,7 +186,7 @@ QUnit.test('The Homepage with explicit template name in renderTemplate', functio
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render('homepage');
     }
@@ -201,7 +202,7 @@ QUnit.test('An alternate template will pull in an alternate controller', functio
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render('homepage');
     }
@@ -223,7 +224,7 @@ QUnit.test('An alternate template will pull in an alternate controller instead o
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     controllerName: 'foo',
     renderTemplate() {
       this.render('homepage');
@@ -252,7 +253,7 @@ QUnit.test('The template will pull in an alternate controller via key/value', fu
     this.route('homepage', { path: '/' });
   });
 
-  App.HomepageRoute = Ember.Route.extend({
+  App.HomepageRoute = Route.extend({
     renderTemplate() {
       this.render({ controller: 'home' });
     }
@@ -280,7 +281,7 @@ QUnit.test('The Homepage with explicit template name in renderTemplate and contr
     }
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render('homepage');
     }
@@ -300,7 +301,7 @@ QUnit.test('Model passed via renderTemplate model is set as controller\'s model'
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render('bio', {
         model: { name: 'emberjs' }
@@ -322,7 +323,7 @@ if (isEnabled('ember-routing-routable-components')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend();
+    App.HomeRoute = Route.extend();
 
     App.HomeComponent = Component.extend({
       isGlimmerComponent: true,
@@ -342,7 +343,7 @@ if (isEnabled('ember-routing-routable-components')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend();
+    App.HomeRoute = Route.extend();
 
     // Not a GlimmerComponent, shouldn't be rendered
     App.HomeComponent = Component.extend({
@@ -362,7 +363,7 @@ if (isEnabled('ember-routing-routable-components')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend();
+    App.HomeRoute = Route.extend();
 
     App.HomeComponent = Component.extend({
       isGlimmerComponent: true
@@ -381,7 +382,7 @@ if (isEnabled('ember-routing-routable-components')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       renderTemplate() {
         this.render({ component: 'home' });
       }
@@ -405,7 +406,7 @@ if (isEnabled('ember-routing-routable-components')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       model() {
         return {
           name: 'Home'
@@ -430,7 +431,7 @@ QUnit.test('Renders correct view with slash notation', function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render('home/page');
     }
@@ -452,7 +453,7 @@ QUnit.test('Renders the view given in the view option', function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render({ view: 'homePage' });
     }
@@ -480,7 +481,7 @@ QUnit.test('render does not replace templateName if user provided', function() {
     templateName: 'the_real_home_template'
   });
   App.HomeController = Controller.extend();
-  App.HomeRoute = Ember.Route.extend();
+  App.HomeRoute = Route.extend();
 
   bootApplication();
 
@@ -496,7 +497,7 @@ QUnit.test('render does not replace template if user provided', function () {
     template: compile('<p>THIS IS THE REAL HOME</p>')
   });
   App.HomeController = Controller.extend();
-  App.HomeRoute = Ember.Route.extend();
+  App.HomeRoute = Route.extend();
 
   bootApplication();
 
@@ -517,7 +518,7 @@ QUnit.test('render uses templateName from route', function() {
   );
 
   App.HomeController = Controller.extend();
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     templateName: 'the_real_home_template'
   });
 
@@ -539,7 +540,7 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
   );
 
   App.HomeController = Controller.extend();
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     templateName: 'the_real_home_template',
     actions: {
       showAlert() {
@@ -568,7 +569,7 @@ QUnit.test('Specifying a name to render should have precedence over everything e
   });
 
   App.HomeController = Controller.extend();
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     templateName: 'home',
     controllerName: 'home',
     viewName: 'home',
@@ -606,7 +607,7 @@ QUnit.test('The Homepage with a `setupController` hook', function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController(controller) {
       set(controller, 'hours', emberA([
         'Monday through Friday: 9am to 5pm',
@@ -630,7 +631,7 @@ QUnit.test('The route controller is still set when overriding the setupControlle
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController(controller) {
       // no-op
       // importantly, we are not calling  this._super here
@@ -653,7 +654,7 @@ QUnit.test('The route controller can be specified via controllerName', function(
     '<p>{{myValue}}</p>'
   );
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     controllerName: 'myController'
   });
 
@@ -676,7 +677,7 @@ QUnit.test('The route controller specified via controllerName is used in render'
     '<p>alternative home: {{myValue}}</p>'
   );
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     controllerName: 'myController',
     renderTemplate() {
       this.render('alternative_home');
@@ -702,7 +703,7 @@ QUnit.test('The route controller specified via controllerName is used in render 
     '<p>home: {{myValue}}</p>'
   );
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     controllerName: 'myController'
   });
 
@@ -725,7 +726,7 @@ QUnit.test('The Homepage with a `setupController` hook modifying other controlle
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController(controller) {
       set(this.controllerFor('home'), 'hours', emberA([
         'Monday through Friday: 9am to 5pm',
@@ -773,7 +774,7 @@ QUnit.test('The Homepage getting its controller context via model', function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     model() {
       return emberA([
         'Monday through Friday: 9am to 5pm',
@@ -804,7 +805,7 @@ QUnit.test('The Specials Page getting its controller context by deserializing th
     this.route('special', { path: '/specials/:menu_item_id' });
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     model(params) {
       return EmberObject.create({
         menuItemId: params.menu_item_id
@@ -844,7 +845,7 @@ QUnit.test('The Specials Page defaults to looking models up via `find`', functio
     }
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setupController(controller, model) {
       set(controller, 'model', model);
     }
@@ -882,11 +883,11 @@ QUnit.test('The Special Page returning a promise puts the app into a loading sta
     }
   });
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
 
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setupController(controller, model) {
       set(controller, 'model', model);
     }
@@ -928,13 +929,13 @@ QUnit.test('The loading state doesn\'t get entered for promises that resolve on 
     }
   });
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
     enter() {
       ok(false, 'LoadingRoute shouldn\'t have been entered.');
     }
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setupController(controller, model) {
       set(controller, 'model', model);
     }
@@ -975,7 +976,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
     }
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setup: function() {
       throw 'Setup error';
     },
@@ -1013,7 +1014,7 @@ QUnit.test('The Special page returning an error invokes SpecialRoute\'s error ha
     }
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setup() {
       throw 'Setup error';
     },
@@ -1060,9 +1061,9 @@ function testOverridableErrorHandler(handlersName) {
     }
   };
 
-  App.ApplicationRoute = Ember.Route.extend(attrs);
+  App.ApplicationRoute = Route.extend(attrs);
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setup() {
       throw 'Setup error';
     }
@@ -1091,7 +1092,7 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
 
   App.MenuItem = EmberObject.extend();
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setupController(controller, model) {
       set(controller, 'model', model);
     }
@@ -1153,11 +1154,11 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
     }
   });
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
 
   });
 
-  App.RootRoute = Ember.Route.extend({
+  App.RootRoute = Route.extend({
     model() {
       rootModel++;
       return this._super.apply(this, arguments);
@@ -1177,11 +1178,11 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
     }
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
 
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Route.extend({
     setupController(controller, model) {
       set(controller, 'model', model);
     }
@@ -1246,7 +1247,7 @@ QUnit.asyncTest('Events are triggered on the controller if a matching action nam
   var model = { name: 'Tom Dale' };
   var stateIsNotCalled = true;
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     model() {
       return model;
     },
@@ -1289,7 +1290,7 @@ QUnit.asyncTest('Events are triggered on the current state when defined in `acti
 
   var model = { name: 'Tom Dale' };
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     model() {
       return model;
     },
@@ -1325,7 +1326,7 @@ QUnit.asyncTest('Events defined in `actions` object are triggered on the current
 
   var model = { name: 'Tom Dale' };
 
-  App.RootRoute = Ember.Route.extend({
+  App.RootRoute = Route.extend({
     actions: {
       showStuff(obj) {
         ok(this instanceof App.RootRoute, 'the handler is an App.HomeRoute');
@@ -1336,7 +1337,7 @@ QUnit.asyncTest('Events defined in `actions` object are triggered on the current
     }
   });
 
-  App.RootIndexRoute = Ember.Route.extend({
+  App.RootIndexRoute = Route.extend({
     model() {
       return model;
     }
@@ -1357,7 +1358,7 @@ QUnit.asyncTest('Events defined in `actions` object are triggered on the current
 QUnit.test('Events can be handled by inherited event handlers', function() {
   expect(4);
 
-  App.SuperRoute = Ember.Route.extend({
+  App.SuperRoute = Route.extend({
     actions: {
       foo() {
         ok(true, 'foo');
@@ -1400,7 +1401,7 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
   var model = { name: 'Tom Dale' };
   var stateIsNotCalled = true;
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     model() {
       return model;
     },
@@ -1445,7 +1446,7 @@ QUnit.asyncTest('actions can be triggered with multiple arguments', function() {
   var model1 = { name: 'Tilde' };
   var model2 = { name: 'Tom Dale' };
 
-  App.RootRoute = Ember.Route.extend({
+  App.RootRoute = Route.extend({
     actions: {
       showStuff(obj1, obj2) {
         ok(this instanceof App.RootRoute, 'the handler is an App.HomeRoute');
@@ -1621,13 +1622,13 @@ QUnit.test('Route inherits model from parent route', function() {
     3: share3
   };
 
-  App.ThePostRoute = Ember.Route.extend({
+  App.ThePostRoute = Route.extend({
     model(params) {
       return posts[params.post_id];
     }
   });
 
-  App.ThePostCommentsRoute = Ember.Route.extend({
+  App.ThePostCommentsRoute = Route.extend({
     afterModel(post, transition) {
       var parent_model = this.modelFor('thePost');
 
@@ -1635,13 +1636,13 @@ QUnit.test('Route inherits model from parent route', function() {
     }
   });
 
-  App.SharesRoute = Ember.Route.extend({
+  App.SharesRoute = Route.extend({
     model(params) {
       return shares[params.share_id];
     }
   });
 
-  App.SharesShareRoute = Ember.Route.extend({
+  App.SharesShareRoute = Route.extend({
     afterModel(share, transition) {
       var parent_model = this.modelFor('shares');
 
@@ -1685,13 +1686,13 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
     3: post3
   };
 
-  App.ThePostRoute = Ember.Route.extend({
+  App.ThePostRoute = Route.extend({
     model(params) {
       return posts[params.post_id];
     }
   });
 
-  App.CommentsRoute = Ember.Route.extend({
+  App.CommentsRoute = Route.extend({
     afterModel(post, transition) {
       var parent_model = this.modelFor('thePost');
 
@@ -1731,13 +1732,13 @@ QUnit.test('It is possible to get the model from a parent route', function() {
     3: post3
   };
 
-  App.ThePostRoute = Ember.Route.extend({
+  App.ThePostRoute = Route.extend({
     model(params) {
       return posts[params.post_id];
     }
   });
 
-  App.CommentsRoute = Ember.Route.extend({
+  App.CommentsRoute = Route.extend({
     model() {
       // Allow both underscore / camelCase format.
       equal(this.modelFor('thePost'), currentPost);
@@ -1766,7 +1767,7 @@ QUnit.test('A redirection hook is provided', function() {
   var chooseFollowed = 0;
   var destination;
 
-  App.ChooseRoute = Ember.Route.extend({
+  App.ChooseRoute = Route.extend({
     redirect() {
       if (destination) {
         this.transitionTo(destination);
@@ -1799,7 +1800,7 @@ QUnit.test('Redirecting from the middle of a route aborts the remainder of the r
     });
   });
 
-  App.BarRoute = Ember.Route.extend({
+  App.BarRoute = Route.extend({
     redirect() {
       this.transitionTo('home');
     },
@@ -1808,7 +1809,7 @@ QUnit.test('Redirecting from the middle of a route aborts the remainder of the r
     }
   });
 
-  App.BarBazRoute = Ember.Route.extend({
+  App.BarBazRoute = Route.extend({
     enter() {
       ok(false, 'Should abort transition getting to next route');
     }
@@ -1835,7 +1836,7 @@ QUnit.test('Redirecting to the current target in the middle of a route does not 
   });
 
   var successCount = 0;
-  App.BarRoute = Ember.Route.extend({
+  App.BarRoute = Route.extend({
     redirect() {
       this.transitionTo('bar.baz').then(function() {
         successCount++;
@@ -1847,7 +1848,7 @@ QUnit.test('Redirecting to the current target in the middle of a route does not 
     }
   });
 
-  App.BarBazRoute = Ember.Route.extend({
+  App.BarBazRoute = Route.extend({
     setupController() {
       ok(true, 'Should still invoke bar.baz\'s setupController');
     }
@@ -1877,7 +1878,7 @@ QUnit.test('Redirecting to the current target with a different context aborts th
 
   var count = 0;
 
-  App.BarRoute = Ember.Route.extend({
+  App.BarRoute = Route.extend({
     afterModel(context) {
       if (count++ > 10) {
         ok(false, 'infinite loop');
@@ -1891,7 +1892,7 @@ QUnit.test('Redirecting to the current target with a different context aborts th
     }
   });
 
-  App.BarBazRoute = Ember.Route.extend({
+  App.BarBazRoute = Route.extend({
     setupController() {
       ok(true, 'Should still invoke setupController');
     }
@@ -1915,7 +1916,7 @@ QUnit.test('Transitioning from a parent event does not prevent currentPath from 
     });
   });
 
-  App.FooRoute = Ember.Route.extend({
+  App.FooRoute = Route.extend({
     actions: {
       goToQux() {
         this.transitionTo('foo.qux');
@@ -1956,14 +1957,14 @@ QUnit.test('Generated names can be customized when providing routes with dot not
     });
   });
 
-  App.FooRoute = Ember.Route.extend({
+  App.FooRoute = Route.extend({
     renderTemplate() {
       ok(true, 'FooBarRoute was called');
       return this._super.apply(this, arguments);
     }
   });
 
-  App.BarBazRoute = Ember.Route.extend({
+  App.BarBazRoute = Route.extend({
     renderTemplate() {
       ok(true, 'BarBazRoute was called');
       return this._super.apply(this, arguments);
@@ -2022,7 +2023,7 @@ QUnit.test('Child routes render into specified template', function() {
     });
   });
 
-  App.MiddleBottomRoute = Ember.Route.extend({
+  App.MiddleBottomRoute = Route.extend({
     renderTemplate() {
       this.render('middle/bottom', { into: 'top' });
     }
@@ -2044,7 +2045,7 @@ QUnit.test('Rendering into specified template with slash notation', function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render('person/profile');
       this.render('person/details', { into: 'person/profile' });
@@ -2074,7 +2075,7 @@ QUnit.test('Parent route context change', function() {
     });
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     actions: {
       showPost(context) {
         this.transitionTo('post', context);
@@ -2082,7 +2083,7 @@ QUnit.test('Parent route context change', function() {
     }
   });
 
-  App.PostRoute = Ember.Route.extend({
+  App.PostRoute = Route.extend({
     model(params) {
       return { id: params.postId };
     },
@@ -2094,7 +2095,7 @@ QUnit.test('Parent route context change', function() {
     }
   });
 
-  App.PostEditRoute = Ember.Route.extend({
+  App.PostEditRoute = Route.extend({
     model(params) {
       var postId = this.modelFor('post').id;
       editedPostIds.push(postId);
@@ -2169,7 +2170,7 @@ QUnit.test('Router accounts for rootURL on page load when using history location
     this.route('posts', { path: '/posts' });
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     model() {},
     renderTemplate() {
       postsTemplateRendered = true;
@@ -2228,7 +2229,7 @@ QUnit.test('Only use route rendered into main outlet for default into property o
     classNames: ['posts-index']
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     renderTemplate() {
       this.render();
       this.render('postsMenu', {
@@ -2256,7 +2257,7 @@ QUnit.test('Generating a URL should not affect currentModel', function() {
     2: { id: 2 }
   };
 
-  App.PostRoute = Ember.Route.extend({
+  App.PostRoute = Route.extend({
     model(params) {
       return posts[params.post_id];
     }
@@ -2283,7 +2284,7 @@ QUnit.test('Generated route should be an instance of App.Route if provided', fun
     this.route('posts');
   });
 
-  App.Route = Ember.Route.extend();
+  App.Route = Route.extend();
 
   bootApplication();
 
@@ -2301,7 +2302,7 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
     });
   });
 
-  App.Route = Ember.Route.extend({
+  App.Route = Route.extend({
     serialize(model) {
       return { category: model.category };
     }
@@ -2323,7 +2324,7 @@ QUnit.test('Application template does not duplicate when re-rendered', function(
     this.route('posts');
   });
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() {
       return emberA();
     }
@@ -2346,7 +2347,7 @@ QUnit.test('Child routes should render inside the application template if the ap
     this.route('photos');
   });
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     afterModel() {
       this.transitionTo('posts');
     }
@@ -2362,7 +2363,7 @@ QUnit.test('The template is not re-rendered when the route\'s context changes', 
     this.route('page', { path: '/page/:name' });
   });
 
-  App.PageRoute = Ember.Route.extend({
+  App.PageRoute = Route.extend({
     model(params) {
       return EmberObject.create({ name: params.name });
     }
@@ -2408,7 +2409,7 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
     this.route('fourth');
   });
 
-  App.SharedRoute = Ember.Route.extend({
+  App.SharedRoute = Route.extend({
     viewName: 'shared',
     setupController(controller) {
       this.controllerFor('shared').set('message', 'This is the ' + this.routeName + ' message');
@@ -2479,7 +2480,7 @@ QUnit.test('ApplicationRoute with model does not proxy the currentPath', functio
   var model = {};
   var currentPath;
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() { return model; }
   });
 
@@ -2500,7 +2501,7 @@ QUnit.test('Promises encountered on app load put app into loading state until re
 
   var deferred = RSVP.defer();
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     model() {
       return deferred.promise;
     }
@@ -2546,7 +2547,7 @@ QUnit.test('Route should tear down multiple outlets', function() {
     classNames: ['posts-footer']
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     renderTemplate() {
       this.render('postsMenu', {
         into: 'application',
@@ -2583,7 +2584,7 @@ QUnit.test('Route will assert if you try to explicitly render {into: ...} a miss
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       this.render({ into: 'nonexistent' });
     }
@@ -2621,7 +2622,7 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
     classNames: ['posts-extra']
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     actions: {
       showModal() {
         this.render('postsModal', {
@@ -2635,7 +2636,7 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
     }
   });
 
-  App.PostsIndexRoute = Ember.Route.extend({
+  App.PostsIndexRoute = Route.extend({
     actions: {
       showExtra() {
         this.render('postsExtra', {
@@ -2698,7 +2699,7 @@ QUnit.test('Route supports clearing outlet using string parameter', function() {
     classNames: ['posts-modal']
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     actions: {
       showModal() {
         this.render('postsModal', {
@@ -2743,7 +2744,7 @@ QUnit.test('Route silently fails when cleaning an outlet from an inactive view',
     this.route('posts');
   });
 
-  App.PostsRoute = Ember.Route.extend({
+  App.PostsRoute = Route.extend({
     actions: {
       hideSelf() {
         this.disconnectOutlet({ outlet: 'main', parentView: 'application' });
@@ -2787,19 +2788,19 @@ QUnit.test('Router `willTransition` hook passes in cancellable transition', func
     }
   });
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
     activate() {
       ok(false, 'LoadingRoute was not entered');
     }
   });
 
-  App.NorkRoute = Ember.Route.extend({
+  App.NorkRoute = Route.extend({
     activate() {
       ok(false, 'NorkRoute was not entered');
     }
   });
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     activate() {
       ok(false, 'AboutRoute was not entered');
     }
@@ -2822,7 +2823,7 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
 
   var redirect = false;
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     actions: {
       willTransition(transition) {
         ok(true, 'willTransition was called');
@@ -2838,7 +2839,7 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
 
   var deferred = null;
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
     activate() {
       ok(deferred, 'LoadingRoute should be entered at this time');
     },
@@ -2847,13 +2848,13 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
     }
   });
 
-  App.NorkRoute = Ember.Route.extend({
+  App.NorkRoute = Route.extend({
     activate() {
       ok(true, 'NorkRoute was entered');
     }
   });
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     activate() {
       ok(true, 'AboutRoute was entered');
     },
@@ -2929,7 +2930,7 @@ QUnit.test('`activate` event fires on the route', function() {
     this.route('nork');
   });
 
-  App.NorkRoute = Ember.Route.extend({
+  App.NorkRoute = Route.extend({
     init() {
       this._super.apply(this, arguments);
 
@@ -2958,7 +2959,7 @@ QUnit.test('`deactivate` event fires on the route', function() {
     this.route('dork');
   });
 
-  App.NorkRoute = Ember.Route.extend({
+  App.NorkRoute = Route.extend({
     init() {
       this._super.apply(this, arguments);
 
@@ -2981,7 +2982,7 @@ QUnit.test('`deactivate` event fires on the route', function() {
 QUnit.test('Actions can be handled by inherited action handlers', function() {
   expect(4);
 
-  App.SuperRoute = Ember.Route.extend({
+  App.SuperRoute = Route.extend({
     actions: {
       foo() {
         ok(true, 'foo');
@@ -3085,14 +3086,14 @@ QUnit.test('Routes can refresh themselves causing their model hooks to be re-run
   });
 
   var appcount = 0;
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() {
       ++appcount;
     }
   });
 
   var parentcount = 0;
-  App.ParentRoute = Ember.Route.extend({
+  App.ParentRoute = Route.extend({
     model(params) {
       equal(params.parent_id, '123');
       ++parentcount;
@@ -3105,7 +3106,7 @@ QUnit.test('Routes can refresh themselves causing their model hooks to be re-run
   });
 
   var childcount = 0;
-  App.ParentChildRoute = Ember.Route.extend({
+  App.ParentChildRoute = Route.extend({
     model() {
       ++childcount;
     }
@@ -3137,7 +3138,7 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     renderTemplate() {
       try {
         this.render('homepage', { controller: 'stefanpenneristhemanforme' });
@@ -3156,13 +3157,13 @@ QUnit.test('Redirecting with null model doesn\'t error out', function() {
     this.route('about', { path: '/about/:hurhurhur' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     beforeModel() {
       this.transitionTo('about', null);
     }
   });
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     serialize(model) {
       if (model === null) {
         return { hurhurhur: 'TreeklesMcGeekles' };
@@ -3191,7 +3192,7 @@ QUnit.test('rejecting the model hooks promise with a non-error prints the `messa
     equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
   };
 
-  App.YippieRoute = Ember.Route.extend({
+  App.YippieRoute = Route.extend({
     model() {
       return RSVP.reject({ message: rejectedMessage, stack: rejectedStack });
     }
@@ -3220,7 +3221,7 @@ QUnit.test('rejecting the model hooks promise with an error with `errorThrown` p
     equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
   };
 
-  App.YippieRoute = Ember.Route.extend({
+  App.YippieRoute = Route.extend({
     model() {
       return RSVP.reject({
         errorThrown: { message: rejectedMessage, stack: rejectedStack }
@@ -3245,7 +3246,7 @@ QUnit.test('rejecting the model hooks promise with no reason still logs error', 
     equal(initialMessage, 'Error while processing route: wowzers', 'a message with the current route name is printed');
   };
 
-  App.WowzersRoute = Ember.Route.extend({
+  App.WowzersRoute = Route.extend({
     model() {
       return RSVP.reject();
     }
@@ -3268,7 +3269,7 @@ QUnit.test('rejecting the model hooks promise with a string shows a good error',
     equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
   };
 
-  App.YondoRoute = Ember.Route.extend({
+  App.YondoRoute = Route.extend({
     model() {
       return RSVP.reject(rejectedMessage);
     }
@@ -3292,7 +3293,7 @@ QUnit.test('willLeave, willChangeContext, willChangeModel actions don\'t fire un
     ok(false, 'this action shouldn\'t have been received');
   }
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     actions: {
       willChangeModel: shouldNotFire,
       willChangeContext: shouldNotFire,
@@ -3300,7 +3301,7 @@ QUnit.test('willLeave, willChangeContext, willChangeModel actions don\'t fire un
     }
   });
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     setupController() {
       ok(true, 'about route was entered');
     }
@@ -3319,7 +3320,7 @@ QUnit.test('Errors in transitionTo within redirect hook are logged', function() 
     this.route('stink-bomb');
   });
 
-  App.YondoRoute = Ember.Route.extend({
+  App.YondoRoute = Route.extend({
     redirect() {
       this.transitionTo('stink-bomb', { something: 'goes boom' });
     }
@@ -3347,7 +3348,7 @@ QUnit.test('Errors in transition show error template if available', function() {
     this.route('stink-bomb');
   });
 
-  App.YondoRoute = Ember.Route.extend({
+  App.YondoRoute = Route.extend({
     redirect() {
       this.transitionTo('stink-bomb', { something: 'goes boom' });
     }
@@ -3373,7 +3374,7 @@ QUnit.test('Route#resetController gets fired when changing models and exiting ro
 
   var calls = [];
 
-  var SpyRoute = Ember.Route.extend({
+  var SpyRoute = Route.extend({
     setupController(controller, model, transition) {
       calls.push(['setup', this.routeName]);
     },
@@ -3407,7 +3408,7 @@ QUnit.test('Exception during initialization of non-initial route is not swallowe
   Router.map(function() {
     this.route('boom');
   });
-  App.BoomRoute = Ember.Route.extend({
+  App.BoomRoute = Route.extend({
     init() {
       throw new Error('boom!');
     }
@@ -3430,7 +3431,7 @@ QUnit.test('Exception during load of non-initial route is not swallowed', functi
     }
     return lookup.apply(this, arguments);
   };
-  App.BoomRoute = Ember.Route.extend({
+  App.BoomRoute = Route.extend({
     init() {
       throw new Error('boom!');
     }
@@ -3445,7 +3446,7 @@ QUnit.test('Exception during initialization of initial route is not swallowed', 
   Router.map(function() {
     this.route('boom', { path: '/' });
   });
-  App.BoomRoute = Ember.Route.extend({
+  App.BoomRoute = Route.extend({
     init() {
       throw new Error('boom!');
     }
@@ -3466,7 +3467,7 @@ QUnit.test('Exception during load of initial route is not swallowed', function()
     }
     return lookup.apply(this, arguments);
   };
-  App.BoomRoute = Ember.Route.extend({
+  App.BoomRoute = Route.extend({
     init() {
       throw new Error('boom!');
     }
@@ -3532,7 +3533,7 @@ QUnit.test('Can render into a named outlet at the top level', function() {
   Ember.TEMPLATES.modal = compile('Hello world');
   Ember.TEMPLATES.index = compile('The index');
 
-  registry.register('route:application', Ember.Route.extend({
+  registry.register('route:application', Route.extend({
     renderTemplate() {
       this.render();
       this.render('modal', {
@@ -3552,7 +3553,7 @@ QUnit.test('Can disconnect a named outlet at the top level', function() {
   Ember.TEMPLATES.modal = compile('Hello world');
   Ember.TEMPLATES.index = compile('The index');
 
-  registry.register('route:application', Ember.Route.extend({
+  registry.register('route:application', Route.extend({
     renderTemplate() {
       this.render();
       this.render('modal', {
@@ -3587,7 +3588,7 @@ QUnit.test('Can render into a named outlet at the top level, with empty main out
     this.route('hasNoTemplate', { path: '/' });
   });
 
-  registry.register('route:application', Ember.Route.extend({
+  registry.register('route:application', Route.extend({
     renderTemplate() {
       this.render();
       this.render('modal', {
@@ -3608,7 +3609,7 @@ QUnit.test('Can render into a named outlet at the top level, later', function() 
   Ember.TEMPLATES.modal = compile('Hello world');
   Ember.TEMPLATES.index = compile('The index');
 
-  registry.register('route:application', Ember.Route.extend({
+  registry.register('route:application', Route.extend({
     actions: {
       launch() {
         this.render('modal', {
@@ -3640,7 +3641,7 @@ QUnit.test('Can render routes with no \'main\' outlet and their children', funct
     });
   });
 
-  App.AppRoute = Ember.Route.extend({
+  App.AppRoute = Route.extend({
     renderTemplate : function() {
       this.render('app', {
         outlet: 'app',
@@ -3653,7 +3654,7 @@ QUnit.test('Can render routes with no \'main\' outlet and their children', funct
     }
   });
 
-  App.SubRoute = Ember.Route.extend({
+  App.SubRoute = Route.extend({
     renderTemplate : function() {
       this.render('sub', {
         outlet: 'sub',
@@ -3674,7 +3675,7 @@ QUnit.test('Tolerates stacked renders', function() {
   Ember.TEMPLATES.application = compile('{{outlet}}{{outlet "modal"}}');
   Ember.TEMPLATES.index = compile('hi');
   Ember.TEMPLATES.layer = compile('layer');
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     actions: {
       openLayer: function() {
         this.render('layer', {
@@ -3710,13 +3711,13 @@ QUnit.test('Renders child into parent with non-default template name', function(
     });
   });
 
-  App.RootRoute = Ember.Route.extend({
+  App.RootRoute = Route.extend({
     renderTemplate() {
       this.render('exports/root');
     }
   });
 
-  App.RootIndexRoute = Ember.Route.extend({
+  App.RootIndexRoute = Route.extend({
     renderTemplate() {
       this.render('exports/index');
     }
@@ -3731,7 +3732,7 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
   Ember.TEMPLATES.application = compile('{{outlet}}{{outlet "modal"}}');
   Ember.TEMPLATES.index = compile('hi');
   Ember.TEMPLATES.layer = compile('layer');
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     actions: {
       openLayer: function() {
         this.render('layer', {
@@ -3741,7 +3742,7 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
       }
     }
   });
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     actions: {
       close: function() {
         this.disconnectOutlet({
@@ -3765,7 +3766,7 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
   Ember.TEMPLATES.index = compile('other');
   Ember.TEMPLATES.bar = compile('bar');
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     renderTemplate() {
       this.render({ into: 'foo' });
     },
@@ -3791,7 +3792,7 @@ QUnit.test('Can disconnect from the render helper', function() {
   Ember.TEMPLATES.foo = compile('<div class="foo">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('other');
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     renderTemplate() {
       this.render({ into: 'foo' });
     },
@@ -3819,7 +3820,7 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
   Ember.TEMPLATES.other = compile('other');
   Ember.TEMPLATES.bar = compile('bar');
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     renderTemplate() {
       this.render({ into: 'foo' });
       this.render('other', { into: 'index' });
@@ -3847,7 +3848,7 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
   Ember.TEMPLATES.index = compile('<div class="index">{{outlet}}</div>');
   Ember.TEMPLATES.other = compile('other');
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     renderTemplate() {
       this.render({ into: 'foo' });
       this.render('other', { into: 'index' });
@@ -3875,7 +3876,7 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
   Ember.TEMPLATES.index = compile('other');
   Ember.TEMPLATES.baz = compile('baz');
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     renderTemplate: function() {
       this.render({ into: 'bar' });
     },
@@ -3902,7 +3903,7 @@ QUnit.test('Can disconnect from nested render helpers', function() {
   Ember.TEMPLATES.bar = compile('<div class="bar">{{outlet}}</div>');
   Ember.TEMPLATES.index = compile('other');
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     renderTemplate: function() {
       this.render({ into: 'bar' });
     },
@@ -3946,7 +3947,7 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
     showFirst: true
   });
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     setupController(controller) {
       indexController = controller;
     }
@@ -3988,7 +3989,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
     });
   });
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     actions: {
       willTransition() {
         throw new Error('boom');
@@ -4006,7 +4007,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
 });
 
 QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     actions: {
       showModal: function() {
         this.render({

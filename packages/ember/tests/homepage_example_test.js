@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
@@ -24,7 +25,7 @@ function setupExample() {
     })
   });
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     model() {
       var people = emberA([
         App.Person.create({
@@ -54,7 +55,7 @@ QUnit.module('Homepage Example', {
         location: 'none'
       });
 
-      App.LoadingRoute = Ember.Route.extend();
+      App.LoadingRoute = Route.extend();
     });
 
     $fixture = jQuery('#qunit-fixture');

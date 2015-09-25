@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import Application from 'ember-application/system/application';
+import Route from 'ember-routing/system/route';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
@@ -56,7 +57,7 @@ QUnit.test('Resetting the application allows controller properties to be set whe
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
@@ -64,7 +65,7 @@ QUnit.test('Resetting the application allows controller properties to be set whe
       this.controllerFor('home').set('selectedMenuItem', null);
     }
   });
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     setupController() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },
@@ -93,7 +94,7 @@ QUnit.test('Destroying the application resets the router before the container is
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
@@ -101,7 +102,7 @@ QUnit.test('Destroying the application resets the router before the container is
       this.controllerFor('home').set('selectedMenuItem', null);
     }
   });
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     setupController() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },

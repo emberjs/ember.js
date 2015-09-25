@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
@@ -85,7 +86,7 @@ function sharedSetup() {
 
     Router = App.Router;
 
-    App.LoadingRoute = Ember.Route.extend({
+    App.LoadingRoute = Route.extend({
     });
 
     Ember.TEMPLATES.application = compile('{{outlet}}');
@@ -349,7 +350,7 @@ QUnit.module('Model Dep Query Params', {
     });
 
     var self = this;
-    App.ArticleRoute = Ember.Route.extend({
+    App.ArticleRoute = Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
           deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -367,7 +368,7 @@ QUnit.module('Model Dep Query Params', {
         }
       });
 
-      App.CommentsRoute = Ember.Route.extend({
+      App.CommentsRoute = Route.extend({
         queryParams: {
           page: { defaultValue: 1 }
         }
@@ -440,7 +441,7 @@ QUnit.module('Model Dep Query Params (nested)', {
     });
 
     var self = this;
-    App.SiteArticleRoute = Ember.Route.extend({
+    App.SiteArticleRoute = Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
           deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -458,7 +459,7 @@ QUnit.module('Model Dep Query Params (nested)', {
         }
       });
 
-      App.SiteArticleCommentsRoute = Ember.Route.extend({
+      App.SiteArticleCommentsRoute = Route.extend({
         queryParams: {
           page: { defaultValue: 1 }
         }
@@ -544,7 +545,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
     });
 
     var self = this;
-    App.SiteRoute = Ember.Route.extend({
+    App.SiteRoute = Route.extend({
       model(params) {
         if (self.expectedSiteModelHookParams) {
           deepEqual(params, self.expectedSiteModelHookParams, 'the SiteRoute model hook received the expected merged dynamic segment + query params hash');
@@ -553,7 +554,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
         return sites.findBy('id', params.site_id);
       }
     });
-    App.SiteArticleRoute = Ember.Route.extend({
+    App.SiteArticleRoute = Route.extend({
       model(params) {
         if (self.expectedArticleModelHookParams) {
           deepEqual(params, self.expectedArticleModelHookParams, 'the SiteArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -577,7 +578,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
         }
       });
 
-      App.SiteArticleCommentsRoute = Ember.Route.extend({
+      App.SiteArticleCommentsRoute = Route.extend({
         queryParams: {
           page: { defaultValue: 1 }
         }

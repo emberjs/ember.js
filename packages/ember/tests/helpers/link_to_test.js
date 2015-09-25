@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import Controller from 'ember-runtime/controllers/controller';
 import { set } from 'ember-metal/property_set';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
@@ -546,7 +547,7 @@ QUnit.test('The {{link-to}} helper defaults to bubbling', function() {
 
   var hidden = 0;
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     actions: {
       hide() {
         hidden++;
@@ -581,7 +582,7 @@ QUnit.test('The {{link-to}} helper supports bubbles=false', function() {
 
   var hidden = 0;
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     actions: {
       hide() {
         hidden++;
@@ -612,7 +613,7 @@ QUnit.test('The {{link-to}} helper moves into the named route with context', fun
 
   Ember.TEMPLATES.about = compile('<h3>List</h3><ul>{{#each model as |person|}}<li>{{#link-to \'item\' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to \'index\' id=\'home-link\'}}Home{{/link-to}}');
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     model() {
       return emberA([
         { id: 'yehuda', name: 'Yehuda Katz' },
@@ -622,7 +623,7 @@ QUnit.test('The {{link-to}} helper moves into the named route with context', fun
     }
   });
 
-  App.ItemRoute = Ember.Route.extend({
+  App.ItemRoute = Route.extend({
     serialize(object) {
       return { id: object.id };
     }
@@ -769,7 +770,7 @@ QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about
     });
   });
 
-  App.LobbyIndexRoute = Ember.Route.extend({
+  App.LobbyIndexRoute = Route.extend({
     model(params) {
       equal(params.lobby_id, 'foobar');
       return params.lobby_id;
@@ -794,7 +795,7 @@ QUnit.test('The {{link-to}} helper unwraps controllers', function() {
 
   var indexObject = { filter: 'popular' };
 
-  App.FilterRoute = Ember.Route.extend({
+  App.FilterRoute = Route.extend({
     model(params) {
       return indexObject;
     },
@@ -805,7 +806,7 @@ QUnit.test('The {{link-to}} helper unwraps controllers', function() {
     }
   });
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     model() {
       return indexObject;
     }
@@ -895,7 +896,7 @@ QUnit.test('link-to with null/undefined dynamic parameters are put in a loading 
     loadingClass: 'i-am-loading'
   });
 
-  App.AboutRoute = Ember.Route.extend({
+  App.AboutRoute = Route.extend({
     activate() {
       ok(true, 'About was entered');
     }
@@ -1139,7 +1140,7 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
     this.route('item', { path: '/item/:id' });
   });
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     model() {
       return emberA([
         { id: 'yehuda', name: 'Yehuda Katz' },
@@ -1149,7 +1150,7 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
     }
   });
 
-  App.ItemRoute = Ember.Route.extend({
+  App.ItemRoute = Route.extend({
     serialize(object) {
       return { id: object.id };
     }
@@ -1323,7 +1324,7 @@ QUnit.test('{{link-to}} active property respects changing parent route context',
 
 QUnit.test('{{link-to}} populates href with default query param values even without query-params object', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1344,7 +1345,7 @@ QUnit.test('{{link-to}} populates href with default query param values even with
 
 QUnit.test('{{link-to}} populates href with default query param values with empty query-params object', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1365,7 +1366,7 @@ QUnit.test('{{link-to}} populates href with default query param values with empt
 
 QUnit.test('{{link-to}} populates href with supplied query param values', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1386,7 +1387,7 @@ QUnit.test('{{link-to}} populates href with supplied query param values', functi
 
 QUnit.test('{{link-to}} populates href with partially supplied query param values', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1411,7 +1412,7 @@ QUnit.test('{{link-to}} populates href with partially supplied query param value
 
 QUnit.test('{{link-to}} populates href with partially supplied query param values, but omits if value is default value', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1432,7 +1433,7 @@ QUnit.test('{{link-to}} populates href with partially supplied query param value
 
 QUnit.test('{{link-to}} populates href with fully supplied query param values', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1461,7 +1462,7 @@ QUnit.test('{{link-to}} with only query-params and a block updates when route ch
   });
 
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1495,7 +1496,7 @@ QUnit.test('Block-less {{link-to}} with only query-params updates when route cha
   });
 
   if (isEnabled('ember-routing-route-configured-query-params')) {
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'

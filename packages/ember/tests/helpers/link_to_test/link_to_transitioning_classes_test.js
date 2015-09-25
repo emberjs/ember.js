@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import RSVP from 'ember-runtime/ext/rsvp';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { compile } from 'ember-template-compiler';
@@ -64,14 +65,14 @@ QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS c
         this.route('other');
       });
 
-      App.AboutRoute = Ember.Route.extend({
+      App.AboutRoute = Route.extend({
         model() {
           aboutDefer = RSVP.defer();
           return aboutDefer.promise;
         }
       });
 
-      App.OtherRoute = Ember.Route.extend({
+      App.OtherRoute = Route.extend({
         model() {
           otherDefer = RSVP.defer();
           return otherDefer.promise;
@@ -130,14 +131,14 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
     });
   });
 
-  App.ParentRouteAboutRoute = Ember.Route.extend({
+  App.ParentRouteAboutRoute = Route.extend({
     model() {
       aboutDefer = RSVP.defer();
       return aboutDefer.promise;
     }
   });
 
-  App.ParentRouteOtherRoute = Ember.Route.extend({
+  App.ParentRouteOtherRoute = Route.extend({
     model() {
       otherDefer = RSVP.defer();
       return otherDefer.promise;
