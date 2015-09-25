@@ -3,6 +3,7 @@
 @submodule ember-application
 */
 
+import Ember from 'ember-metal';
 import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
@@ -14,6 +15,9 @@ import Registry from 'container/registry';
 import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import assign from 'ember-metal/assign';
+import environment from 'ember-metal/environment';
+
+let BootOptions;
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -79,7 +83,9 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
     var application = get(this, 'application');
 
-    set(this, 'rootElement', get(application, 'rootElement'));
+    if (!isEnabled('ember-application-visit')) {
+      set(this, 'rootElement', get(application, 'rootElement'));
+    }
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
@@ -108,25 +114,94 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     }
   },
 
+  _bootOptions: null,
+  _bootPromise: null,
+  _booted: false,
+
+  /**
+    Initialize the `Ember.ApplicationInstance` and return a promise that resolves
+    with the instance itself when the boot process is complete.
+
+    The primary task here is to run any registered instance initializers.
+
+    See the documentation on `BootOptions` for the options it takes.
+
+    @private
+    @method boot
+    @param options
+    @return {Promise<Ember.ApplicationInstance,Error>}
+  */
+  boot(options) {
+    if (this._bootPromise) { return this._bootPromise; }
+
+    let defer = new Ember.RSVP.defer();
+    let promise = this._bootPromise = defer.promise;
+
+    try {
+      defer.resolve(this._bootSync(options));
+    } catch(e) {
+      defer.reject(e);
+    }
+
+    return promise;
+  },
+
+  /**
+    Unfortunately, a lot of existing code assumes booting an instance is
+    synchronous – specifically, a lot of tests assumes the last call to
+    `app.advanceReadiness()` or `app.reset()` will result in a new instance
+    being fully-booted when the current runloop completes.
+
+    We would like new code (like the `visit` API) to stop making this assumption,
+    so we created the asynchronous version above that returns a promise. But until
+    we have migrated all the code, we would have to expose this method for use
+    *internall* in places where we need to boot an instance synchronously.
+
+    @private
+  */
+  _bootSync(options) {
+    if (this._booted) { return this; }
+
+    if (isEnabled('ember-application-visit')) {
+      options = new BootOptions(options);
+      set(this, '_bootOptions', options);
+
+      if (options.rootElement) {
+        set(this, 'rootElement', options.rootElement);
+      } else {
+        set(this, 'rootElement', get(this.application, 'rootElement'));
+      }
+
+      if (options.location) {
+        let router = get(this, 'router');
+        set(router, 'location', options.location);
+      }
+
+      if (typeof options.didCreateRootView === 'function') {
+        this.didCreateRootView = options.didCreateRootView;
+      }
+
+      this.application.runInstanceInitializers(this);
+
+      if (options.hasDOM) {
+        this.setupEventDispatcher();
+      }
+    } else {
+      this.application.runInstanceInitializers(this);
+
+      if (environment.hasDOM) {
+        this.setupEventDispatcher();
+      }
+    }
+
+    this._booted = true;
+
+    return this;
+  },
+
   router: computed(function() {
     return this.lookup('router:main');
   }).readOnly(),
-
-  /**
-    Instantiates and sets up the router, specifically overriding the default
-    location. This is useful for manually starting the app in FastBoot or
-    testing environments, where trying to modify the URL would be
-    inappropriate.
-
-    @param options
-    @private
-  */
-  overrideRouterLocation(options) {
-    var location = options && options.location;
-    var router = get(this, 'router');
-
-    if (location) { set(router, 'location', location); }
-  },
 
   /**
     This hook is called by the root-most Route (a.k.a. the ApplicationRoute)
@@ -211,6 +286,76 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     run(this.__container__, 'destroy');
   }
 });
+
+if (isEnabled('ember-application-visit')) {
+  /**
+    A list of options one can pass into `boot()` to override certain behavior on
+    the instance. It is currently a laundary list of whatever we happen to need to
+    override in FastBoot (and tests?), but we should eventually clean this up and
+    formalize it. All options are optional.
+
+    @class BootOptions
+    @namespace @Ember.ApplicationInstance
+    @private
+  */
+  BootOptions = function BootOptions(options) {
+    options = options || {};
+
+    /**
+      If present, overrides the `rootElement` property on the instance. This is useful
+      for testing environment, where you might want to append the root view to a fixture
+      area.
+
+      @property rootElement
+      @property {String|DOMElement} rootElement
+      @default null
+      @private
+     */
+    if (options.rootElement) {
+      this.rootElement = options.rootElement;
+    }
+
+    /**
+      If present, overrides the router's `location` property with this value. This
+      is useful for FastBoot or testing environments, where trying to modify the URL
+      would be inappropriate.
+
+      @property location
+      @type string
+      @default null
+      @private
+    */
+    this.location = options.location;
+
+    /**
+      If present, overrides the `didCreateRootView` method on the instance. See the
+      documentation on `didCreateRootView` for details.
+
+      @property didCreateRootView
+      @type Function
+      @default null
+      @private
+    */
+    this.didCreateRootView = options.didCreateRootView;
+
+    /**
+      Whether this instance will be used in a browser environment; this controls
+      whether we need to setup the event dispatcher.
+
+      Delegates to `environment.hasDOM` if not specified.
+
+      @property hasDOM
+      @type boolean
+      @default environment.hasDOM
+      @private
+    */
+    if (options.hasDOM === undefined) {
+      this.hasDOM = environment.hasDOM;
+    } else {
+      this.hasDOM = !!options.hasDOM;
+    }
+  };
+}
 
 function isResolverModuleBased(applicationInstance) {
   return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;

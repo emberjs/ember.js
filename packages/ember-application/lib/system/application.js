@@ -341,16 +341,16 @@ var Application = Namespace.extend(RegistryProxy, {
     the autoboot code paths, so that these legacy features can be reviewed
     for removal separately.
 
-    Forcing the (autoboot=true, globalsMode=false) here and running the tests
+    Forcing the (autoboot=true, _globalsMode=false) here and running the tests
     would reveal all the places where we are still relying on these legacy
     behavior internally (mostly just tests).
 
-    @property globalsMode
+    @property _globalsMode
     @type Boolean
     @default true
     @private
   */
-  globalsMode: true,
+  _globalsMode: true,
 
   init() {
     this._super(...arguments);
@@ -369,20 +369,20 @@ var Application = Namespace.extend(RegistryProxy, {
     this._readinessDeferrals = 1;
 
     if (isEnabled('ember-application-visit')) {
-      this.autoboot = this.globalsMode = !!this.autoboot;
+      this.autoboot = this._globalsMode = !!this.autoboot;
     } else {
       // Force-assign these flags to their default values when the feature is
       // disabled, this ensures we can rely on their values in other paths.
       this.autoboot = true;
-      this.globalsMode = true;
+      this._globalsMode = true;
     }
 
-    if (this.globalsMode) {
-      this.prepareForGlobalsMode();
+    if (this._globalsMode) {
+      this._prepareForGlobalsMode();
     }
 
     if (this.autoboot) {
-      this.scheduleAutoBoot();
+      this._scheduleAutoBoot();
     }
   },
 
@@ -415,22 +415,22 @@ var Application = Namespace.extend(RegistryProxy, {
 
   /**
     Enable the legacy globals mode by allowing this application to act
-    as a global namespace. See the docs on the `globalsMode` property
+    as a global namespace. See the docs on the `_globalsMode` property
     for details.
 
     Most of these features are already deprecated in 1.x, so we can
     stop using them internally and try to remove them.
 
     @private
-    @method prepareForGlobalsMode
+    @method _prepareForGlobalsMode
   */
-  prepareForGlobalsMode() {
+  _prepareForGlobalsMode() {
     // Create subclass of Ember.Router for this Application instance.
     // This is to ensure that someone reopening `App.Router` does not
     // tamper with the default `Ember.Router`.
     this.Router = (this.Router || Router).extend();
 
-    this.buildDeprecatedInstance();
+    this._buildDeprecatedInstance();
   },
 
   /*
@@ -445,9 +445,9 @@ var Application = Namespace.extend(RegistryProxy, {
     instance at boot time), but they are otherwise unrelated.
 
     @private
-    @method buildDeprecatedInstance
+    @method _buildDeprecatedInstance
   */
-  buildDeprecatedInstance() {
+  _buildDeprecatedInstance() {
     // Build a default instance
     let instance = this.buildInstance();
 
@@ -473,20 +473,57 @@ var Application = Namespace.extend(RegistryProxy, {
     has finished loading.
 
     @private
-    @method scheduleAutoBoot
+    @method _scheduleAutoBoot
   */
-  scheduleAutoBoot() {
+  _scheduleAutoBoot() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'guardedBoot');
+      run.schedule('actions', this, '_autoBoot');
     } else {
-      this.$().ready(run.bind(this, 'guardedBoot'));
+      this.$().ready(run.bind(this, '_autoBoot'));
     }
   },
 
-  guardedBoot() {
-    if (!this.isDestroyed) {
-      return this.boot();
+  /**
+    This is the autoboot flow:
+
+    1. Boot the app by calling `this.boot()`
+    2. Create an instance (or use the `__deprecatedInstance__` in globals mode)
+    3. Boot the instance by calling `instance.boot()`
+    4. Invoke the `App.ready()` callback
+    5. Kick-off routing on the instance
+
+    Ideally, this is all we would need to do:
+
+    ```javascript
+    _autoBoot() {
+      this.boot().then(() => {
+        let instance = (this._globalsMode) ? this.__deprecatedInstance__ : this.buildInstance();
+        return instance.boot();
+      }).then((instance) => {
+        App.ready();
+        instance.startRouting();
+      });
     }
+    ```
+
+    Unfortunately, because we need to participate in the "synchronous" boot
+    process. While the code above would work fine on the initial boot (i.e.
+    DOM ready), when `App.reset()` is called, we need to boot a new instance
+    synchronously (see the documentation on `_bootSync()` for details).
+
+    Because of this restriction, the actual logic of this method is located
+    inside `didBecomeReady()`.
+
+    @private
+  */
+  _autoBoot() {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    this._bootSync();
+
+    // Continues to `didBecomeReady`
   },
 
   /**
@@ -558,19 +595,56 @@ var Application = Namespace.extend(RegistryProxy, {
   boot() {
     if (this._bootPromise) { return this._bootPromise; }
 
-    var defer = new Ember.RSVP.defer();
+    try {
+      this._bootSync();
+    } catch(_) {
+      // Ignore th error: in the asynchronous boot path, the error is already reflected
+      // in the promise rejection
+    }
+
+    return this._bootPromise;
+  },
+
+  /**
+    @private
+  */
+  _booted: false,
+
+  /**
+    Unfortunately, a lot of existing code assumes the booting process is
+    "synchronous". Specifically, a lot of tests assumes the last call to
+    `app.advanceReadiness()` or `app.reset()` will result in the app being
+    fully-booted when the current runloop completes.
+
+    We would like new code (like the `visit` API) to stop making this assumption,
+    so we created the asynchronous version above that returns a promise. But until
+    we have migrated all the code, we would have to expose this method for use
+    *internall* in places where we need to boot an app "synchronously".
+
+    @private
+  */
+  _bootSync() {
+    if (this._booted) { return; }
+
+    // Even though this returns synchronously, we still need to make sure the
+    // boot promise exists for book-keeping purposes: if anything went wrong in
+    // the boot process, we need to store the error as a rejection on the boot
+    // promise so that a future caller of `boot()` can tell what failed.
+    let defer = this._bootResolver = new Ember.RSVP.defer();
     this._bootPromise = defer.promise;
-    this._bootResolver = defer;
 
     try {
       this.runInitializers();
       runLoadHooks('application', this);
       this.advanceReadiness();
-    } catch(e) {
-      defer.reject(e);
-    }
+      // Continues to `didBecomeReady`
+    } catch(error) {
+      // For the asynchronous boot path
+      defer.reject(error);
 
-    return this._bootPromise;
+      // For the synchronous boot path
+      throw error;
+    }
   },
 
   /**
@@ -641,23 +715,24 @@ var Application = Namespace.extend(RegistryProxy, {
 
     @method reset
     @public
-  **/
+  */
   reset() {
     assert(`Calling reset() on instances of \`Ember.Application\` is not
             supported when globals mode is disabled; call \`visit()\` to
-            create new \`Ember.ApplicationInstance\`s then destroy them
-            with \`destroy()\` instead.`, this.globalsMode);
+            create new \`Ember.ApplicationInstance\`s and dispose them
+            via their \`destroy()\` method instead.`, this._globalsMode && this.autoboot);
 
     var instance = this.__deprecatedInstance__;
 
     this._readinessDeferrals = 1;
     this._bootPromise = null;
     this._bootResolver = null;
+    this._booted = false;
 
     function handleReset() {
       run(instance, 'destroy');
-      this.buildDeprecatedInstance();
-      run.schedule('actions', this, 'boot');
+      this._buildDeprecatedInstance();
+      run.schedule('actions', this, '_bootSync');
     }
 
     run.join(this, handleReset);
@@ -721,51 +796,56 @@ var Application = Namespace.extend(RegistryProxy, {
   */
   didBecomeReady() {
     try {
-      // TODO: Is this needed for globalsMode = false?
+      // TODO: Is this still needed for _globalsMode = false?
       if (!Ember.testing) {
         // Eagerly name all classes that are already loaded
         Ember.Namespace.processAll();
         Ember.BOOTED = true;
       }
 
-      if (this.autoboot) {
-        let instance;
+      if (isEnabled('ember-application-visit')) {
+        // See documentation on `_autoboot()` for details
+        if (this.autoboot) {
+          let instance;
 
-        if (this.globalsMode) {
-          // If we already have the __deprecatedInstance__ lying around, boot it to
-          // avoid unnecessary work
-          instance = this.__deprecatedInstance__;
-        } else {
-          // Otherwise, build an instance and boot it. This is currently unreachable,
-          // because we forced globalsMode to == autoboot; but having this branch
-          // allows us to locally toggle that flag for weeding out legacy globals mode
-          // dependencies
-          instance = this.buildInstance();
+          if (this._globalsMode) {
+            // If we already have the __deprecatedInstance__ lying around, boot it to
+            // avoid unnecessary work
+            instance = this.__deprecatedInstance__;
+          } else {
+            // Otherwise, build an instance and boot it. This is currently unreachable,
+            // because we forced _globalsMode to === autoboot; but having this branch
+            // allows us to locally toggle that flag for weeding out legacy globals mode
+            // dependencies independently
+            instance = this.buildInstance();
+          }
+
+          instance._bootSync();
+
+          // TODO: App.ready() is not called when autoboot is disabled, is this correct?
+          this.ready();
+
+          instance.startRouting();
         }
+      } else {
+        let instance = this.__deprecatedInstance__;
 
-        this.bootInstance(instance, environment.hasDOM);
-
-        // TODO: App.ready() is not called when autoboot is disabled, is this correct?
+        instance._bootSync();
         this.ready();
-
         instance.startRouting();
       }
-    } catch(e) {
-      this._bootResolver.reject(e);
-    }
 
-    this._bootResolver.resolve(this);
-  },
+      // For the asynchronous boot path
+      this._bootResolver.resolve(this);
 
-  /**
-    @private
-    @method bootInstance
-  */
-  bootInstance(instance, hasDOM) {
-    this.runInstanceInitializers(instance);
+      // For the synchronous boot path
+      this._booted = true;
+    } catch(error) {
+      // For the asynchronous boot path
+      this._bootResolver.reject(error);
 
-    if (hasDOM) {
-      instance.setupEventDispatcher();
+      // For the synchronous boot path
+      throw error;
     }
   },
 
@@ -800,6 +880,7 @@ var Application = Namespace.extend(RegistryProxy, {
   willDestroy() {
     this._super(...arguments);
     Ember.BOOTED = false;
+    this._booted = false;
     this._bootPromise = null;
     this._bootResolver = null;
 
@@ -807,7 +888,7 @@ var Application = Namespace.extend(RegistryProxy, {
       _loaded.application = undefined;
     }
 
-    if (this.globalsMode && this.__deprecatedInstance__) {
+    if (this._globalsMode && this.__deprecatedInstance__) {
       this.__deprecatedInstance__.destroy();
     }
   },
@@ -913,20 +994,17 @@ if (isEnabled('ember-application-visit')) {
     */
     visit(url) {
       return this.boot().then(() => {
-        var instance = this.buildInstance();
-        this.bootInstance(instance);
-
-        var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
-          instance.didCreateRootView = function(view) {
-            instance.view = view;
-            res(instance);
-          };
-        });
-
-        instance.overrideRouterLocation({ location: 'none' });
-
-        return instance.handleURL(url).then(function() {
-          return renderPromise;
+        return new Ember.RSVP.Promise((resolve, reject) => {
+          this.buildInstance().boot({
+            location: 'none',
+            hasDOM: false,
+            didCreateRootView(view) {
+              this.view = view;
+              resolve(this);
+            }
+          }).then((instance) => {
+            instance.handleURL(url);
+          }).catch(reject);
         });
       });
     }

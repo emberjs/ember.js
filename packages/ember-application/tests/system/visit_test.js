@@ -7,8 +7,11 @@ import Router from 'ember-routing/system/router';
 import View from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 
+let App = null;
+let instance = null;
+
 function createApplication() {
-  var App = Application.extend().create({
+  App = Application.extend().create({
     autoboot: false,
     LOG_TRANSITIONS: true,
     LOG_TRANSITIONS_INTERNAL: true,
@@ -17,11 +20,34 @@ function createApplication() {
 
   App.Router = Router.extend();
 
+  App.instanceInitializer({
+    name: 'auto-cleanup',
+    initialize(_instance) {
+      if (instance) {
+        run(instance, 'destroy');
+      }
+
+      instance = _instance;
+    }
+  });
+
   return App;
 }
 
 if (isEnabled('ember-application-visit')) {
-  QUnit.module('Ember.Application - visit()');
+  QUnit.module('Ember.Application - visit()', {
+    teardown() {
+      if (instance) {
+        run(instance, 'destroy');
+        instance = null;
+      }
+
+      if (App) {
+        run(App, 'destroy');
+        App = null;
+      }
+    }
+  });
 
   // This tests whether the application is "autobooted" by registering an
   // instance initializer and asserting it never gets run. Since this is
@@ -33,15 +59,14 @@ if (isEnabled('ember-application-visit')) {
     QUnit.expect(4);
     QUnit.stop();
 
-    let app;
     let appBooted = 0;
     let instanceBooted = 0;
 
     run(function() {
-      app = createApplication();
+      createApplication();
 
       // Create an application initializer that should *not* get run.
-      app.initializer({
+      App.initializer({
         name: 'assert-no-autoboot',
         initialize() {
           appBooted++;
@@ -49,7 +74,7 @@ if (isEnabled('ember-application-visit')) {
       });
 
       // Create an instance initializer that should *not* get run.
-      app.instanceInitializer({
+      App.instanceInitializer({
         name: 'assert-no-autoboot',
         initialize() {
           instanceBooted++;
@@ -66,7 +91,7 @@ if (isEnabled('ember-application-visit')) {
       QUnit.stop();
 
       run(function() {
-        app.boot().then(
+        App.boot().then(
           () => {
             QUnit.start();
             ok(appBooted === 1, 'app should boot when manually calling `app.boot()`');
@@ -85,15 +110,14 @@ if (isEnabled('ember-application-visit')) {
     QUnit.expect(2);
     QUnit.stop();
 
-    let app;
     let appBooted = 0;
     let instanceBooted = 0;
 
     run(function() {
-      app = createApplication();
+      createApplication();
 
       // Create an application initializer that should *not* get run.
-      app.initializer({
+      App.initializer({
         name: 'assert-no-autoboot',
         initialize() {
           appBooted++;
@@ -101,14 +125,14 @@ if (isEnabled('ember-application-visit')) {
       });
 
       // Create an instance initializer that should *not* get run.
-      app.instanceInitializer({
+      App.instanceInitializer({
         name: 'assert-no-autoboot',
         initialize() {
           instanceBooted++;
         }
       });
 
-      app.visit('/').then(
+      App.visit('/').then(
         () => {
           QUnit.start();
           ok(appBooted === 1, 'the app should be booted`');
@@ -126,15 +150,14 @@ if (isEnabled('ember-application-visit')) {
     QUnit.expect(6);
     QUnit.stop();
 
-    let app;
     let appBooted = 0;
     let instanceBooted = 0;
 
     run(function() {
-      app = createApplication();
+      createApplication();
 
       // Create an application initializer that should *not* get run.
-      app.initializer({
+      App.initializer({
         name: 'assert-no-autoboot',
         initialize() {
           appBooted++;
@@ -142,27 +165,27 @@ if (isEnabled('ember-application-visit')) {
       });
 
       // Create an instance initializer that should *not* get run.
-      app.instanceInitializer({
+      App.instanceInitializer({
         name: 'assert-no-autoboot',
         initialize() {
           instanceBooted++;
         }
       });
 
-      app.boot().then(() => {
+      App.boot().then(() => {
         QUnit.start();
         ok(appBooted === 1, 'the app should be booted');
         ok(instanceBooted === 0, 'no instances should be booted');
         QUnit.stop();
 
-        return app.visit('/');
+        return App.visit('/');
       }).then(() => {
         QUnit.start();
         ok(appBooted === 1, 'the app should not be booted again');
         ok(instanceBooted === 1, 'an instance should be booted');
         QUnit.stop();
 
-        return app.visit('/');
+        return App.visit('/');
       }).then(() => {
         QUnit.start();
         ok(appBooted === 1, 'the app should not be booted again');
@@ -178,28 +201,24 @@ if (isEnabled('ember-application-visit')) {
     QUnit.expect(3);
     QUnit.stop();
 
-    var app;
-
     run(function() {
-      app = createApplication();
+      createApplication();
 
-      app.instanceInitializer({
+      App.instanceInitializer({
         name: 'register-application-template',
-        initialize(app) {
-          app.register('template:application', compile('<h1>Hello world</h1>'));
+        initialize(instance) {
+          instance.register('template:application', compile('<h1>Hello world</h1>'));
         }
       });
 
       assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
-      app.visit('/').then(function(instance) {
+      App.visit('/').then(function(instance) {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
         run(instance.view, 'appendTo', '#qunit-fixture');
         assert.equal(Ember.$('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
-
-        instance.destroy();
       }, function(error) {
         QUnit.start();
         assert.ok(false, 'The visit() promise was rejected: ' + error);
@@ -211,18 +230,17 @@ if (isEnabled('ember-application-visit')) {
     QUnit.expect(6);
     QUnit.stop();
 
-    var app;
-
     run(function() {
-      app = createApplication();
-      app.instanceInitializer({
+      createApplication();
+
+      App.instanceInitializer({
         name: 'register-application-template',
-        initialize(app) {
-          app.register('template:application', compile('<h1>Hello world</h1> {{component "x-child"}}'));
-          app.register('view:application', View.extend({
+        initialize(instance) {
+          instance.register('template:application', compile('<h1>Hello world</h1> {{component "x-child"}}'));
+          instance.register('view:application', View.extend({
             elementId: 'my-cool-app'
           }));
-          app.register('component:x-child', View.extend({
+          instance.register('component:x-child', View.extend({
             elementId: 'child-view'
           }));
         }
@@ -232,7 +250,7 @@ if (isEnabled('ember-application-visit')) {
     assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     run(function() {
-      app.visit('/').then(function(instance) {
+      App.visit('/').then(function(instance) {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
@@ -250,8 +268,6 @@ if (isEnabled('ember-application-visit')) {
 
         ok(lookup('-view-registry:main')['my-cool-app'] instanceof View, 'view was registered on the instance\'s view registry');
         ok(lookup('-view-registry:main')['child-view'] instanceof View, 'child view was registered on the instance\'s view registry');
-
-        instance.destroy();
       }, function(error) {
         QUnit.start();
         assert.ok(false, 'The visit() promise was rejected: ' + error);
