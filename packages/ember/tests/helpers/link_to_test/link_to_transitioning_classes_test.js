@@ -4,6 +4,7 @@ import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, App, router, registry, container;
 
@@ -101,9 +102,9 @@ QUnit.test('while a transition is underway', function() {
     }
   }
 
-  var $index = Ember.$('#index-link');
-  var $about = Ember.$('#about-link');
-  var $other = Ember.$('#other-link');
+  var $index = jQuery('#index-link');
+  var $about = jQuery('#about-link');
+  var $other = jQuery('#other-link');
 
   run($about, 'click');
 
@@ -167,9 +168,9 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
     }
   }
 
-  var $index = Ember.$('#index-link');
-  var $about = Ember.$('#about-link');
-  var $other = Ember.$('#other-link');
+  var $index = jQuery('#index-link');
+  var $about = jQuery('#about-link');
+  var $other = jQuery('#other-link');
 
   run($about, 'click');
 

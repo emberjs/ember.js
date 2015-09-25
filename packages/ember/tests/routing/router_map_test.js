@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, router, App, container;
 
@@ -80,9 +81,9 @@ QUnit.test('Router.map can be called multiple times', function () {
 
   handleURL('/hello');
 
-  equal(Ember.$('#qunit-fixture').text(), 'Hello!', 'The hello template was rendered');
+  equal(jQuery('#qunit-fixture').text(), 'Hello!', 'The hello template was rendered');
 
   handleURL('/goodbye');
 
-  equal(Ember.$('#qunit-fixture').text(), 'Goodbye!', 'The goodbye template was rendered');
+  equal(jQuery('#qunit-fixture').text(), 'Goodbye!', 'The goodbye template was rendered');
 });

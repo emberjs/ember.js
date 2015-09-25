@@ -17,6 +17,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import ComponentLookup from 'ember-views/component_lookup';
+import jQuery from 'ember-views/system/jquery';
 
 var originalLookup = Ember.lookup;
 
@@ -607,13 +608,13 @@ QUnit.test('edge case: rerender appearance of inner virtual view', function() {
   });
 
   runAppend(view);
-  equal(Ember.$('#qunit-fixture').text(), '');
+  equal(jQuery('#qunit-fixture').text(), '');
 
   run(function() {
     view.set('cond2', true);
   });
 
-  equal(Ember.$('#qunit-fixture').text(), 'test');
+  equal(jQuery('#qunit-fixture').text(), 'test');
 });
 
 QUnit.test('`if` helper with inline form: renders the second argument when conditional is truthy', function() {

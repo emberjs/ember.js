@@ -5,6 +5,7 @@ import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, App, router, container;
 var get = Ember.get;
@@ -502,7 +503,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     container.lookup('controller:parent');
 
-    run(Ember.$('#parent-link'), 'click');
+    run(jQuery('#parent-link'), 'click');
 
     equal(parentModelCount, 2);
   });
@@ -552,12 +553,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
     equal(router.get('location.path'), '');
-    equal(Ember.$('#one').attr('href'), '/abcdef?foo=123');
-    equal(Ember.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+    equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
+    equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-    run(Ember.$('#one'), 'click');
+    run(jQuery('#one'), 'click');
     equal(router.get('location.path'), '/abcdef?foo=123');
-    run(Ember.$('#two'), 'click');
+    run(jQuery('#two'), 'click');
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
@@ -855,19 +856,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
-    run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar';
-    run(Ember.$('#bar-no-qp-link'), 'click');
+    run(jQuery('#bar-no-qp-link'), 'click');
 
     expectedReplaceURL = '/bar?raytiley=woot';
     setAndFlush(controller, 'raytiley', 'woot');
 
     expectedPushURL = '/foo';
-    run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar?raytiley=isthebest';
-    run(Ember.$('#bar-link'), 'click');
+    run(jQuery('#bar-link'), 'click');
   });
 
   QUnit.test('Undefined isn\'t deserialized into a string when configuration occurs on the route', function() {
@@ -892,7 +893,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = Ember.$('#the-link');
+    var $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
     run($link, 'click');
 
@@ -1080,7 +1081,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:home');
     setAndFlush(controller, 'foo', '456');
     equal(router.get('location.path'), '/?foo=456', 'url is correct');
-    equal(Ember.$('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
+    equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
 
     run(router, 'transitionTo', 'about');
     equal(router.get('location.path'), '/about', 'url is correct');
@@ -1088,8 +1089,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(router, 'transitionTo', 'cats');
 
     equal(router.get('location.path'), '/cats', 'url is correct');
-    equal(Ember.$('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
-    run(Ember.$('#cats-link'), 'click');
+    equal(jQuery('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
+    run(jQuery('#cats-link'), 'click');
     equal(router.get('location.path'), '/cats?name=domino', 'url is correct');
   });
 
@@ -1409,7 +1410,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     container.lookup('controller:parent');
 
-    run(Ember.$('#parent-link'), 'click');
+    run(jQuery('#parent-link'), 'click');
 
     equal(parentModelCount, 2);
   });
@@ -1523,12 +1524,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
     equal(router.get('location.path'), '');
-    equal(Ember.$('#one').attr('href'), '/abcdef?foo=123');
-    equal(Ember.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+    equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
+    equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-    run(Ember.$('#one'), 'click');
+    run(jQuery('#one'), 'click');
     equal(router.get('location.path'), '/abcdef?foo=123');
-    run(Ember.$('#two'), 'click');
+    run(jQuery('#two'), 'click');
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
@@ -1868,19 +1869,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
-    run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar';
-    run(Ember.$('#bar-no-qp-link'), 'click');
+    run(jQuery('#bar-no-qp-link'), 'click');
 
     expectedReplaceURL = '/bar?raytiley=woot';
     setAndFlush(controller, 'raytiley', 'woot');
 
     expectedPushURL = '/foo';
-    run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar?raytiley=isthebest';
-    run(Ember.$('#bar-link'), 'click');
+    run(jQuery('#bar-link'), 'click');
   });
 
   QUnit.test('Undefined isn\'t deserialized into a string when configured on the route', function() {
@@ -1903,7 +1904,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = Ember.$('#the-link');
+    var $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
     run($link, 'click');
 
@@ -1933,8 +1934,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:example');
 
-    var $link1 = Ember.$('#the-link1');
-    var $link2 = Ember.$('#the-link2');
+    var $link1 = jQuery('#the-link1');
+    var $link2 = jQuery('#the-link2');
     equal($link1.attr('href'), '/example?bar=abc&foo=def');
     equal($link2.attr('href'), '/example?bar=123&foo=456');
 
@@ -2171,7 +2172,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:home');
     setAndFlush(controller, 'foo', '456');
     equal(router.get('location.path'), '/?foo=456', 'url is correct');
-    equal(Ember.$('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
+    equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
 
     run(router, 'transitionTo', 'about');
     equal(router.get('location.path'), '/about', 'url is correct');
@@ -2179,8 +2180,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(router, 'transitionTo', 'cats');
 
     equal(router.get('location.path'), '/cats', 'url is correct');
-    equal(Ember.$('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
-    run(Ember.$('#cats-link'), 'click');
+    equal(jQuery('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
+    run(jQuery('#cats-link'), 'click');
     equal(router.get('location.path'), '/cats?name=domino', 'url is correct');
   });
 
@@ -2571,7 +2572,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     container.lookup('controller:parent');
 
-    run(Ember.$('#parent-link'), 'click');
+    run(jQuery('#parent-link'), 'click');
 
     equal(parentModelCount, 2);
   });
@@ -2701,12 +2702,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
     equal(router.get('location.path'), '');
-    equal(Ember.$('#one').attr('href'), '/abcdef?foo=123');
-    equal(Ember.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+    equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
+    equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-    run(Ember.$('#one'), 'click');
+    run(jQuery('#one'), 'click');
     equal(router.get('location.path'), '/abcdef?foo=123');
-    run(Ember.$('#two'), 'click');
+    run(jQuery('#two'), 'click');
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
@@ -3020,19 +3021,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
-    run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar';
-    run(Ember.$('#bar-no-qp-link'), 'click');
+    run(jQuery('#bar-no-qp-link'), 'click');
 
     expectedReplaceURL = '/bar?raytiley=woot';
     setAndFlush(controller, 'raytiley', 'woot');
 
     expectedPushURL = '/foo';
-    run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar?raytiley=isthebest';
-    run(Ember.$('#bar-link'), 'click');
+    run(jQuery('#bar-link'), 'click');
   });
 
   QUnit.test('Undefined isn\'t deserialized into a string', function() {
@@ -3056,7 +3057,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = Ember.$('#the-link');
+    var $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
     run($link, 'click');
 

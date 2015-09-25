@@ -6,6 +6,7 @@ import Application from 'ember-application/system/application';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
 import { OutletView } from 'ember-routing-views/views/outlet';
+import jQuery from 'ember-views/system/jquery';
 
 var App, registry, container;
 var originalHelpers;
@@ -73,7 +74,7 @@ function boot(callback, startURL='/') {
 
 QUnit.test('The helper becomes the body of the component', function() {
   boot();
-  equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
+  equal(jQuery('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
 QUnit.test('If a component is registered, it is used', function() {
@@ -83,7 +84,7 @@ QUnit.test('If a component is registered, it is used', function() {
     }));
   });
 
-  equal(Ember.$('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
+  equal(jQuery('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
 
@@ -97,7 +98,7 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
   ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
@@ -109,7 +110,7 @@ QUnit.test('Late-registered components can be rendered with template registered 
     registry.register('component:sally-rutherford', Ember.Component);
   });
 
-  equal(Ember.$('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
   ok(!helpers['sally-rutherford'], 'Component wasn\'t saved to global helpers hash');
 });
 
@@ -120,7 +121,7 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
     registry.register('template:components/borf-snorlax', compile('goodfreakingTIMES{{yield}}'));
   });
 
-  equal(Ember.$('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
   ok(!helpers['borf-snorlax'], 'Component wasn\'t saved to global helpers hash');
 });
 
@@ -133,7 +134,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
@@ -153,7 +154,7 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
@@ -174,7 +175,7 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
@@ -195,7 +196,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
     });
   }, /Specifying `defaultLayout` to .+ is deprecated\./);
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
@@ -217,7 +218,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
     });
   }, /Specifying `defaultLayout` to .+ is deprecated\./);
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Using name of component that does not exist', function () {
@@ -247,7 +248,7 @@ QUnit.test('Components with a block should have the proper content when a templa
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Components with a block should yield the proper content without a template provided', function() {
@@ -263,7 +264,7 @@ QUnit.test('Components with a block should yield the proper content without a te
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'outer', 'The component is composed correctly');
 });
 
 QUnit.test('Components without a block should have the proper content when a template is provided', function() {
@@ -280,7 +281,7 @@ QUnit.test('Components without a block should have the proper content when a tem
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner', 'The component is composed correctly');
 });
 
 QUnit.test('Components without a block should have the proper content', function() {
@@ -298,7 +299,7 @@ QUnit.test('Components without a block should have the proper content', function
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
 // The test following this one is the non-deprecated version
@@ -318,7 +319,7 @@ QUnit.test('properties of a component without a template should not collide with
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
 QUnit.test('attrs property of a component without a template should not collide with internal structures', function() {
@@ -338,7 +339,7 @@ QUnit.test('attrs property of a component without a template should not collide 
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
 QUnit.test('Components trigger actions in the parents context when called from within a block', function() {
@@ -357,7 +358,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
   });
 
   run(function() {
-    Ember.$('#fizzbuzz', '#wrapper').click();
+    jQuery('#fizzbuzz', '#wrapper').click();
   });
 });
 
@@ -383,7 +384,7 @@ QUnit.test('Components trigger actions in the components context when called fro
     }));
   });
 
-  Ember.$('#fizzbuzz', '#wrapper').click();
+  jQuery('#fizzbuzz', '#wrapper').click();
 });
 
 QUnit.test('Components receive the top-level view as their ownerView', function(assert) {

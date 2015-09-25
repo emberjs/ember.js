@@ -4,6 +4,7 @@ import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var App, Router, container, router, registry;
 var expectedReplaceURL, expectedPushURL;
@@ -107,7 +108,7 @@ var testParamlessLinks = function(routeName) {
     startingURL = '/?foo=YEAH';
     bootApplication();
 
-    equal(Ember.$('#index-link').attr('href'), '/?foo=YEAH');
+    equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
   });
 };
 
@@ -128,7 +129,7 @@ var testParamlessLinksWithRouteConfig = function(routeName) {
     startingURL = '/?foo=YEAH';
     bootApplication();
 
-    equal(Ember.$('#index-link').attr('href'), '/?foo=YEAH');
+    equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
   });
 };
 

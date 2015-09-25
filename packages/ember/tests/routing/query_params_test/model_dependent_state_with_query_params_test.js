@@ -4,6 +4,7 @@ import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, App, router, registry, container;
 
@@ -322,8 +323,8 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
 
     run(router, 'transitionTo', 'about');
 
-    equal(Ember.$('#one').attr('href'), `${urlPrefix}/a-1/comments?q=imdone`);
-    equal(Ember.$('#two').attr('href'), `${urlPrefix}/a-2/comments`);
+    equal(jQuery('#one').attr('href'), `${urlPrefix}/a-1/comments?q=imdone`);
+    equal(jQuery('#two').attr('href'), `${urlPrefix}/a-2/comments`);
   };
 }
 
@@ -386,9 +387,9 @@ QUnit.module('Model Dep Query Params', {
     this.boot = function() {
       bootApplication();
 
-      self.$link1 = Ember.$('#a-1');
-      self.$link2 = Ember.$('#a-2');
-      self.$link3 = Ember.$('#a-3');
+      self.$link1 = jQuery('#a-1');
+      self.$link2 = jQuery('#a-2');
+      self.$link3 = jQuery('#a-3');
 
       equal(self.$link1.attr('href'), '/a/a-1');
       equal(self.$link2.attr('href'), '/a/a-2');
@@ -476,9 +477,9 @@ QUnit.module('Model Dep Query Params (nested)', {
     this.boot = function() {
       bootApplication();
 
-      self.$link1 = Ember.$('#a-1');
-      self.$link2 = Ember.$('#a-2');
-      self.$link3 = Ember.$('#a-3');
+      self.$link1 = jQuery('#a-1');
+      self.$link2 = jQuery('#a-2');
+      self.$link3 = jQuery('#a-3');
 
       equal(self.$link1.attr('href'), '/site/a/a-1');
       equal(self.$link2.attr('href'), '/site/a/a-2');
@@ -601,15 +602,15 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
     this.boot = function() {
       bootApplication();
       self.links = {};
-      self.links['s-1-a-1'] = Ember.$('#s-1-a-1');
-      self.links['s-1-a-2'] = Ember.$('#s-1-a-2');
-      self.links['s-1-a-3'] = Ember.$('#s-1-a-3');
-      self.links['s-2-a-1'] = Ember.$('#s-2-a-1');
-      self.links['s-2-a-2'] = Ember.$('#s-2-a-2');
-      self.links['s-2-a-3'] = Ember.$('#s-2-a-3');
-      self.links['s-3-a-1'] = Ember.$('#s-3-a-1');
-      self.links['s-3-a-2'] = Ember.$('#s-3-a-2');
-      self.links['s-3-a-3'] = Ember.$('#s-3-a-3');
+      self.links['s-1-a-1'] = jQuery('#s-1-a-1');
+      self.links['s-1-a-2'] = jQuery('#s-1-a-2');
+      self.links['s-1-a-3'] = jQuery('#s-1-a-3');
+      self.links['s-2-a-1'] = jQuery('#s-2-a-1');
+      self.links['s-2-a-2'] = jQuery('#s-2-a-2');
+      self.links['s-2-a-3'] = jQuery('#s-2-a-3');
+      self.links['s-3-a-1'] = jQuery('#s-3-a-1');
+      self.links['s-3-a-2'] = jQuery('#s-3-a-2');
+      self.links['s-3-a-3'] = jQuery('#s-3-a-3');
 
       equal(self.links['s-1-a-1'].attr('href'), '/site/s-1/a/a-1');
       equal(self.links['s-1-a-2'].attr('href'), '/site/s-1/a/a-2');

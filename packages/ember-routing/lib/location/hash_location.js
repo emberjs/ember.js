@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
@@ -6,6 +5,7 @@ import { guidFor } from 'ember-metal/utils';
 
 import EmberObject from 'ember-runtime/system/object';
 import EmberLocation from 'ember-routing/location/api';
+import jQuery from 'ember-views/system/jquery';
 
 /**
 @module ember
@@ -108,7 +108,7 @@ export default EmberObject.extend({
   onUpdateURL(callback) {
     var guid = guidFor(this);
 
-    Ember.$(window).on(`hashchange.ember-location-${guid}`, () => {
+    jQuery(window).on(`hashchange.ember-location-${guid}`, () => {
       run(() => {
         var path = this.getURL();
         if (get(this, 'lastSetURL') === path) { return; }
@@ -144,6 +144,6 @@ export default EmberObject.extend({
   willDestroy() {
     var guid = guidFor(this);
 
-    Ember.$(window).off(`hashchange.ember-location-${guid}`);
+    jQuery(window).off(`hashchange.ember-location-${guid}`);
   }
 });

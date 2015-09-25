@@ -4,6 +4,7 @@ import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -65,7 +66,7 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
     registry.register('helper:x-borf', myHelper);
   });
 
-  equal(Ember.$('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
+  equal(jQuery('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
   ok(!helpers['x-borf'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
@@ -82,7 +83,7 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
+  equal(jQuery('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
   ok(!helpers['x-reverse'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
@@ -99,7 +100,7 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
+  equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
 });
 
 QUnit.test('Helpers can receive injections', function() {
