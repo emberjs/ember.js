@@ -4,6 +4,7 @@ import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
@@ -740,7 +741,7 @@ QUnit.test('The Homepage with a computed context that does not get overridden', 
   });
 
   App.HomeController = Ember.Controller.extend({
-    model: Ember.computed(function() {
+    model: computed(function() {
       return Ember.A([
         'Monday through Friday: 9am to 5pm',
         'Saturday: Noon to Midnight',

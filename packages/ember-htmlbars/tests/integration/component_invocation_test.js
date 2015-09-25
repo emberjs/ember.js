@@ -10,6 +10,7 @@ import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import alias from 'ember-metal/alias';
 import run from 'ember-metal/run_loop';
 
 var registry, container, view;
@@ -1287,7 +1288,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     registry.register('template:components/computed-alias', compile('<computed-alias>{{otherProp}}</computed-alias>'));
 
     registry.register('component:computed-alias', GlimmerComponent.extend({
-      otherProp: Ember.computed.alias('attrs.someProp')
+      otherProp: alias('attrs.someProp')
     }));
 
     view = appendViewFor('<computed-alias someProp="value"></computed-alias>');

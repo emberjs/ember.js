@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
-import {set} from 'ember-metal/property_set';
+import { set } from 'ember-metal/property_set';
+import { not } from 'ember-metal/computed_macros';
 import run from 'ember-metal/run_loop';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 
@@ -19,7 +20,7 @@ QUnit.test('should update length for null content', function() {
 
 QUnit.test('should update length for null content when there is a computed property watching length', function() {
   var proxy = ArrayProxy.extend({
-    isEmpty: Ember.computed.not('length')
+    isEmpty: not('length')
   }).create({
     content: Ember.A([1, 2, 3])
   });

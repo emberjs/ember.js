@@ -1,10 +1,10 @@
 import Ember from 'ember-metal/core';
+import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
 
 var Router, App, router, registry, container;
-var set = Ember.set;
 
 function bootApplication() {
   router = container.lookup('router:main');

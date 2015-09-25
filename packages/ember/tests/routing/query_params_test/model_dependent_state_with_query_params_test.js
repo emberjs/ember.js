@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
+import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 
 var Router, App, router, registry, container;
@@ -522,7 +523,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
     App.ApplicationController = Ember.Controller.extend({
       siteArticles: this.site_articles,
       sites: this.sites,
-      allSitesAllArticles: Ember.computed({
+      allSitesAllArticles: computed({
         get: function() {
           var ret = [];
           var siteArticles = this.siteArticles;
