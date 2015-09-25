@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import setProperties from 'ember-metal/set_properties';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
@@ -44,7 +45,7 @@ QUnit.module('map', {
   },
 
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -177,7 +178,7 @@ QUnit.module('mapBy', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -220,7 +221,7 @@ QUnit.module('filter', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -351,7 +352,7 @@ QUnit.module('filterBy', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -443,7 +444,7 @@ QUnit.test('properties values can be replaced', function() {
       });
     },
     teardown() {
-      Ember.run(obj, 'destroy');
+      run(obj, 'destroy');
     }
   });
 
@@ -502,7 +503,7 @@ QUnit.module('computed.intersect', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -549,7 +550,7 @@ QUnit.module('setDiff', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -790,7 +791,7 @@ QUnit.module('sort - sortProperties', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1027,7 +1028,7 @@ QUnit.test('array observers do not leak', function() {
   });
 
   jaime.get('sortedPeople');
-  Ember.run(jaime, 'destroy');
+  run(jaime, 'destroy');
 
   try {
     sortProps.pushObject({
@@ -1136,7 +1137,7 @@ QUnit.module('sort - sort function', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1210,7 +1211,7 @@ QUnit.module('sort - stability', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1240,7 +1241,7 @@ QUnit.module('sort - concurrency', {
   },
 
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1274,7 +1275,7 @@ QUnit.module('max', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1319,7 +1320,7 @@ QUnit.module('min', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1375,7 +1376,7 @@ QUnit.module('Ember.arrayComputed - mixed sugar', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1438,7 +1439,7 @@ QUnit.module('Ember.arrayComputed - chains', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1472,7 +1473,7 @@ QUnit.module('Chaining array and reduced CPs', {
     });
   },
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 
@@ -1500,7 +1501,7 @@ QUnit.module('sum', {
   },
 
   teardown() {
-    Ember.run(obj, 'destroy');
+    run(obj, 'destroy');
   }
 });
 

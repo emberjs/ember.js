@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 
@@ -22,14 +23,14 @@ function bootApplication(startingURL) {
 
   startingURL = startingURL || '';
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 QUnit.module('Loading/Error Substates', {
   setup() {
     counter = 1;
 
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create({
         name: 'App',
         rootElement: '#qunit-fixture',
@@ -58,7 +59,7 @@ QUnit.module('Loading/Error Substates', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
       App = null;
 
@@ -96,7 +97,7 @@ QUnit.test('Slow promise from a child route of application enters nested loading
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
 
-  Ember.run(broDeferred, 'resolve', broModel);
+  run(broDeferred, 'resolve', broModel);
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'BRO', 'bro template has loaded and replaced loading template');
 });
@@ -148,10 +149,10 @@ QUnit.test('Slow promises waterfall on startup', function() {
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
 
-  Ember.run(grandmaDeferred, 'resolve', {});
+  run(grandmaDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM MOMLOADING', 'Mom\'s child loading route is displayed due to sally\'s slow promise');
 
-  Ember.run(sallyDeferred, 'resolve', {});
+  run(sallyDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM SALLY', 'Sally template displayed');
 });
 
@@ -183,7 +184,7 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
   var appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.loading', 'currentPath reflects loading state');
 
-  Ember.run(momDeferred, 'resolve', {});
+  run(momDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM');
   equal(appController.get('currentPath'), 'grandma.mom', 'currentPath reflects final state');
 });
@@ -209,7 +210,7 @@ QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter Load
 
   equal(Ember.$('#app', '#qunit-fixture').text(), '', 'nothing has been rendered yet');
 
-  Ember.run(appDeferred, 'resolve', {});
+  run(appDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
@@ -233,7 +234,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
   var appController = container.lookup('controller:application');
   ok(appController.get('currentPath') !== 'loading', 'loading state not entered');
 
-  Ember.run(indexDeferred, 'resolve', {});
+  run(indexDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
@@ -262,7 +263,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
   var appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'loading', 'loading state entered');
 
-  Ember.run(indexDeferred, 'resolve', {});
+  run(indexDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
@@ -301,10 +302,10 @@ QUnit.test('Enter child loading state of pivot route', function() {
   var appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.mom.sally', 'Initial route fully loaded');
 
-  Ember.run(router, 'transitionTo', 'grandma.smells');
+  run(router, 'transitionTo', 'grandma.smells');
   equal(appController.get('currentPath'), 'grandma.loading', 'in pivot route\'s child loading state');
 
-  Ember.run(deferred, 'resolve', {});
+  run(deferred, 'resolve', {});
 
   equal(appController.get('currentPath'), 'grandma.smells', 'Finished transition');
 });
@@ -352,14 +353,14 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 
   var appController = container.lookup('controller:application');
   ok(!appController.get('currentPath'), 'Initial route fully loaded');
-  Ember.run(sallyDeferred, 'resolve', {});
+  run(sallyDeferred, 'resolve', {});
 
   equal(appController.get('currentPath'), 'grandma.mom.sally', 'transition completed');
 
-  Ember.run(router, 'transitionTo', 'grandma.smells');
+  run(router, 'transitionTo', 'grandma.smells');
   equal(appController.get('currentPath'), 'grandma.mom.sally', 'still in initial state because the only loading state is above the pivot route');
 
-  Ember.run(smellsDeferred, 'resolve', {});
+  run(smellsDeferred, 'resolve', {});
 
   equal(appController.get('currentPath'), 'grandma.smells', 'Finished transition');
 });
@@ -444,14 +445,14 @@ QUnit.test('Setting a query param during a slow transition should work', functio
 
   equal(appController.get('currentPath'), 'grandma.loading', 'Initial route should be loading');
 
-  Ember.run(function() {
+  run(function() {
     grandmaController.set('test', 3);
   });
 
   equal(appController.get('currentPath'), 'grandma.loading', 'Route should still be loading');
   equal(grandmaController.get('test'), 3, 'Controller query param value should have changed');
 
-  Ember.run(deferred, 'resolve', {});
+  run(deferred, 'resolve', {});
 
   equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
 });
@@ -478,7 +479,7 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter Application
 
   ok(loadingRouteEntered, 'ApplicationLoadingRoute was entered');
 
-  Ember.run(appDeferred, 'resolve', {});
+  run(appDeferred, 'resolve', {});
   equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
@@ -509,7 +510,7 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter application
 
   equal(Ember.$('#qunit-fixture > #toplevel-loading').text(), 'TOPLEVEL LOADING');
 
-  Ember.run(appDeferred, 'resolve', {});
+  run(appDeferred, 'resolve', {});
 
   equal(Ember.$('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
   equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
@@ -586,7 +587,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
 
-  Ember.run(deferred, 'resolve');
+  run(deferred, 'resolve');
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
 });
@@ -616,7 +617,7 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
 
-  Ember.run(deferred, 'resolve');
+  run(deferred, 'resolve');
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
 });
@@ -681,7 +682,7 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO LOADING', 'foo.index_loading was entered');
 
-  Ember.run(deferred, 'resolve');
+  run(deferred, 'resolve');
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
 });
@@ -744,7 +745,7 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
   equal(Ember.$('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
 
   reject = false;
-  Ember.run(router, 'transitionTo', 'index');
+  run(router, 'transitionTo', 'index');
 
   equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
 });

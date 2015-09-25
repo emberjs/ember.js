@@ -215,21 +215,21 @@ function ajax(something) {
 
 QUnit.test('unambigiously unhandled rejection', function() {
   QUnit.throws(function() {
-    Ember.run(function() {
+    run(function() {
       RSVP.Promise.reject(reason);
     }); // something is funky, we should likely assert
   }, reason);
 });
 
 QUnit.test('sync handled', function() {
-  Ember.run(function() {
+  run(function() {
     RSVP.Promise.reject(reason).catch(function() { });
   }); // handled, we shouldn't need to assert.
   ok(true, 'reached end of test');
 });
 
 QUnit.test('handled within the same micro-task (via Ember.RVP.Promise)', function() {
-  Ember.run(function() {
+  run(function() {
     var rejection = RSVP.Promise.reject(reason);
     RSVP.Promise.resolve(1).then(() => rejection.catch(function() { }));
   }); // handled, we shouldn't need to assert.
@@ -237,23 +237,23 @@ QUnit.test('handled within the same micro-task (via Ember.RVP.Promise)', functio
 });
 
 QUnit.test('handled within the same micro-task (via direct run-loop)', function() {
-  Ember.run(function() {
+  run(function() {
     var rejection = RSVP.Promise.reject(reason);
 
-    Ember.run.schedule('afterRender', () => rejection.catch(function() { }));
+    run.schedule('afterRender', () => rejection.catch(function() { }));
   }); // handled, we shouldn't need to assert.
   ok(true, 'reached end of test');
 });
 
-QUnit.test('handled in the next microTask queue flush (Ember.run.next)', function() {
+QUnit.test('handled in the next microTask queue flush (run.next)', function() {
   expect(2);
 
   QUnit.throws(function() {
-    Ember.run(function() {
+    run(function() {
       var rejection = RSVP.Promise.reject(reason);
 
       QUnit.stop();
-      Ember.run.next(() => {
+      run.next(() => {
         QUnit.start();
         rejection.catch(function() { });
         ok(true, 'reached end of test');
@@ -274,7 +274,7 @@ QUnit.test('handled in the same microTask Queue flush do to data locality', func
     }
   };
 
-  Ember.run(function() {
+  run(function() {
     var rejection = RSVP.Promise.reject(reason);
 
     store.find('user', 1).then(() => rejection.catch(function() { }));
@@ -293,7 +293,7 @@ QUnit.test('handled in a different microTask Queue flush do to data locality', f
   };
 
   QUnit.throws(function() {
-    Ember.run(function() {
+    run(function() {
       var rejection = RSVP.Promise.reject(reason);
 
       store.find('user', 1).then(() => {
@@ -306,7 +306,7 @@ QUnit.test('handled in a different microTask Queue flush do to data locality', f
 
 QUnit.test('handled in the next microTask queue flush (ajax example)', function() {
   QUnit.throws(function() {
-    Ember.run(function() {
+    run(function() {
       var rejection = RSVP.Promise.reject(reason);
       ajax('/something/').then(() => {
         rejection.catch(function() { });

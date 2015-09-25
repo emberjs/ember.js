@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
 import { compile } from 'ember-template-compiler';
 
@@ -37,11 +38,11 @@ var TestLocation = Ember.NoneLocation.extend({
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 function sharedSetup() {
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -71,7 +72,7 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() {
+  run(function() {
     App.destroy();
     App = null;
 

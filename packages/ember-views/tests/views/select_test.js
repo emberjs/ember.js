@@ -269,7 +269,7 @@ QUnit.test('selection from a Promise don\'t overwrite newer selection once resol
     select.set('content', Ember.A([yehuda, tom, seb]));
     select.set('multiple', false);
     select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(function() {
+      run.later(function() {
         run(function() {
           resolve(tom);
         });
@@ -278,7 +278,7 @@ QUnit.test('selection from a Promise don\'t overwrite newer selection once resol
       }, 40);
     }));
     select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(function() {
+      run.later(function() {
         run(function() {
           resolve(seb);
         });

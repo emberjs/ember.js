@@ -76,7 +76,7 @@ export function onerrorDefault(reason) {
 }
 
 export function after (cb) {
-  Ember.run.schedule(Ember.run.queues[Ember.run.queues.length - 1], cb);
+  run.schedule(run.queues[run.queues.length - 1], cb);
 }
 
 RSVP.on('error', onerrorDefault);

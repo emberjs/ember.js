@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 
@@ -9,12 +10,12 @@ function bootApplication() {
     Ember.TEMPLATES[name] = compile(templates[name]);
   }
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 QUnit.module('Top Level DOM Structure', {
   setup() {
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -37,7 +38,7 @@ QUnit.module('Top Level DOM Structure', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
       App = null;
 

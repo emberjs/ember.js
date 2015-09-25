@@ -317,7 +317,7 @@ QUnit.test('dashed helper used in subexpression can recompute', function() {
     'Who overcomes by force hath overcome but half his foe');
 
   phrase = 'believes his';
-  Ember.run(function() {
+  run(function() {
     helper.recompute();
   });
 
@@ -364,7 +364,7 @@ QUnit.test('dashed helper used in subexpression can recompute component', functi
     'Who overcomes by force hath overcome but half his foe');
 
   phrase = 'believes his';
-  Ember.run(function() {
+  run(function() {
     helper.recompute();
   });
 

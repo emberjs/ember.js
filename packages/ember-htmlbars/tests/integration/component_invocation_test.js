@@ -190,7 +190,7 @@ QUnit.test('rerendering component with attrs from parent', function() {
   equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
   equal(willUpdate, 1, 'The willUpdate hook fired once');
 
-  Ember.run(view, 'rerender');
+  run(view, 'rerender');
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
   equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
@@ -1226,7 +1226,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
     equal(willUpdate, 1, 'The willUpdate hook fired once');
 
-    Ember.run(view, 'rerender');
+    run(view, 'rerender');
 
     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
     equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');

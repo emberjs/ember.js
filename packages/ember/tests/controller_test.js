@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 
@@ -22,7 +23,7 @@ QUnit.module('Template scoping examples', {
     originalAstPlugins = plugins['ast'].slice(0);
     registerPlugin('ast', TransformEachIntoCollection);
 
-    Ember.run(function() {
+    run(function() {
       templates = Ember.TEMPLATES;
       App = Ember.Application.create({
         name: 'App',
@@ -41,7 +42,7 @@ QUnit.module('Template scoping examples', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
     });
 
@@ -124,5 +125,5 @@ QUnit.test('{{#each}} inside outlet can have an itemController', function(assert
 });
 
 function bootApp() {
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }

@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 
 var Router, App, router, registry, container;
@@ -8,7 +9,7 @@ var aboutDefer, otherDefer;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 var updateCount, replaceCount;
@@ -42,13 +43,13 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() { App.destroy(); });
+  run(function() { App.destroy(); });
   Ember.TEMPLATES = {};
 }
 
 QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
   setup() {
-    Ember.run(function() {
+    run(function() {
       sharedSetup();
 
       registry.unregister('router:main');
@@ -102,13 +103,13 @@ QUnit.test('while a transition is underway', function() {
   var $about = Ember.$('#about-link');
   var $other = Ember.$('#other-link');
 
-  Ember.run($about, 'click');
+  run($about, 'click');
 
   assertHasClass('active', $index, true, $about, false, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
 
-  Ember.run(aboutDefer, 'resolve');
+  run(aboutDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
@@ -168,37 +169,37 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
   var $about = Ember.$('#about-link');
   var $other = Ember.$('#other-link');
 
-  Ember.run($about, 'click');
+  run($about, 'click');
 
   assertHasClass('active', $index, true, $about, false, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
 
-  Ember.run(aboutDefer, 'resolve');
+  run(aboutDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 
-  Ember.run($other, 'click');
+  run($other, 'click');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, true);
   assertHasClass('ember-transitioning-out', $index, false, $about, true, $other, false);
 
-  Ember.run(otherDefer, 'resolve');
+  run(otherDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, false, $other, true);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 
-  Ember.run($about, 'click');
+  run($about, 'click');
 
   assertHasClass('active', $index, false, $about, false, $other, true);
   assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, true);
 
-  Ember.run(aboutDefer, 'resolve');
+  run(aboutDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);

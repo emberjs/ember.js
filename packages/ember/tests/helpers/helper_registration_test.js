@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';
@@ -13,7 +14,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
-    Ember.run(function() {
+    run(function() {
       if (App) {
         App.destroy();
       }
@@ -27,7 +28,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
 });
 
 var boot = function(callback) {
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -47,8 +48,8 @@ var boot = function(callback) {
 
   var router = container.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
-  Ember.run(function() {
+  run(App, 'advanceReadiness');
+  run(function() {
     router.handleURL('/');
   });
 };
