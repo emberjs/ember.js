@@ -1,14 +1,15 @@
 import Ember from 'ember-metal/core';
+import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
+import alias from 'ember-metal/alias';
 
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 
 var Router, App, AppView, router, registry, container;
-var set = Ember.set;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -1264,7 +1265,7 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
 
   App.ApplicationController = Ember.Controller.extend({
     postController: Ember.inject.controller('post'),
-    currentPost: Ember.computed.alias('postController.model')
+    currentPost: alias('postController.model')
   });
 
   App.PostController = Ember.Controller.extend({

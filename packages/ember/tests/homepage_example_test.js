@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
+import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 
 var App, $fixture;
@@ -15,7 +16,7 @@ function setupExample() {
     firstName: null,
     lastName: null,
 
-    fullName: Ember.computed('firstName', 'lastName', function() {
+    fullName: computed('firstName', 'lastName', function() {
       return this.get('firstName') + ' ' + this.get('lastName');
     })
   });
