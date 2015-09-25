@@ -1,5 +1,7 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
+import inject from 'ember-runtime/inject';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
@@ -561,7 +563,139 @@ if (isEnabled('ember-application-visit')) {
   });
 
   QUnit.test('Ember Islands-style setup', function(assert) {
+    QUnit.expect(14);
+    QUnit.stop();
 
+    let xFooInitCalled = false;
+    let xFooDidInsertElementCalled = false;
+
+    let xBarInitCalled = false;
+    let xBarDidInsertElementCalled = false;
+
+    run(function() {
+      createApplication(true);
+
+      App.Router.map(function() {
+        this.route('show', { path: '/:component_name' });
+      });
+
+      App.register('route:show', Route.extend({
+        queryParams: {
+          data: { refreshModel: true }
+        },
+
+        model(params) {
+          return {
+            componentName: params.component_name,
+            componentData: params.data ? JSON.parse(params.data) : undefined
+          };
+        }
+      }));
+
+      let Counter = EmberObject.extend({
+        value: 0,
+
+        increment() {
+          this.incrementProperty('value');
+        }
+      });
+
+      App.register('service:isolated-counter', Counter);
+      App.register('service:shared-counter', Counter.create(), { instantiate: false });
+
+      App.register('template:show', compile('{{component model.componentName model=model.componentData}}'));
+
+      App.register('template:components/x-foo', compile(`
+        <h1>X-Foo</h1>
+        <p>Hello {{model.name}}, I have been clicked {{isolatedCounter.value}} times ({{sharedCounter.value}} times combined)!</p>
+      `));
+
+      App.register('component:x-foo', Component.extend({
+        tagName: 'x-foo',
+
+        isolatedCounter: inject.service(),
+        sharedCounter: inject.service(),
+
+        init() {
+          this._super();
+          xFooInitCalled = true;
+        },
+
+        didInsertElement() {
+          xFooDidInsertElementCalled = true;
+        },
+
+        click() {
+          this.get('isolatedCounter').increment();
+          this.get('sharedCounter').increment();
+        }
+      }));
+
+      App.register('template:components/x-bar', compile(`
+        <h1>X-Bar</h1>
+        <button {{action "incrementCounter"}}>Join {{counter.value}} others in clicking me!</button>
+      `));
+
+      App.register('component:x-bar', Component.extend({
+        counter: inject.service('shared-counter'),
+
+        actions: {
+          incrementCounter() {
+            this.get('counter').increment();
+          }
+        },
+
+        init() {
+          this._super();
+          xBarInitCalled = true;
+        },
+
+        didInsertElement() {
+          xBarDidInsertElementCalled = true;
+        },
+      }));
+    });
+
+    let $foo = Ember.$('<div />').appendTo('#qunit-fixture');
+    let $bar = Ember.$('<div />').appendTo('#qunit-fixture');
+
+    run(function() {
+      Ember.RSVP.all([
+        App.visit(`/x-foo?data=${ encodeURIComponent(JSON.stringify({name: 'Godfrey'})) }`, { rootElement: $foo[0] }),
+        App.visit('/x-bar', { rootElement: $bar[0] })
+      ]).then(() => {
+        QUnit.start();
+
+        assert.ok(xFooInitCalled);
+        assert.ok(xFooDidInsertElementCalled);
+
+        assert.ok(xBarInitCalled);
+        assert.ok(xBarDidInsertElementCalled);
+
+        assert.equal($foo.find('h1').text(), 'X-Foo');
+        assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 0 times (0 times combined)!');
+        assert.ok($foo.text().indexOf('X-Bar') === -1);
+
+        assert.equal($bar.find('h1').text(), 'X-Bar');
+        assert.equal($bar.find('button').text(), 'Join 0 others in clicking me!');
+        assert.ok($bar.text().indexOf('X-Foo') === -1);
+
+        run(function() {
+          $foo.find('x-foo').click();
+        });
+
+        assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 1 times (1 times combined)!');
+        assert.equal($bar.find('button').text(), 'Join 1 others in clicking me!');
+
+        run(function() {
+          $bar.find('button').click();
+          $bar.find('button').click();
+        });
+
+        assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 1 times (3 times combined)!');
+        assert.equal($bar.find('button').text(), 'Join 3 others in clicking me!');
+      });
+    });
   });
 
   QUnit.skip('Resource-discovery setup', function(assert) {
