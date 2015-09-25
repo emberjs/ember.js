@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import keys from 'ember-metal/keys';
+import run from 'ember-metal/run_loop';
 
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
@@ -16,7 +17,7 @@ function prepare() {
 }
 
 function cleanup() {
-  Ember.run(function() {
+  run(function() {
     if (App) {
       App.destroy();
     }
@@ -43,7 +44,7 @@ QUnit.module('Application Lifecycle - Component Registration', {
 });
 
 function boot(callback, startURL='/') {
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -63,8 +64,8 @@ function boot(callback, startURL='/') {
 
   var router = container.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
-  Ember.run(function() {
+  run(App, 'advanceReadiness');
+  run(function() {
     router.handleURL(startURL);
   });
 }
@@ -354,7 +355,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
     registry.register('component:my-component', Ember.Component.extend());
   });
 
-  Ember.run(function() {
+  run(function() {
     Ember.$('#fizzbuzz', '#wrapper').click();
   });
 });

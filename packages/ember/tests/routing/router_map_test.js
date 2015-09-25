@@ -1,15 +1,16 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 
 var Router, router, App, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 function handleURL(path) {
-  return Ember.run(function() {
+  return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -22,7 +23,7 @@ function handleURL(path) {
 
 QUnit.module('Router.map', {
   setup() {
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -41,7 +42,7 @@ QUnit.module('Router.map', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
       App = null;
 

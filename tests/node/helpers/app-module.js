@@ -109,7 +109,7 @@ module.exports = function(moduleName) {
     },
 
     afterEach: function() {
-      this.Ember.run(this.app, 'destroy');
+      this.run(this.app, 'destroy');
 
       delete global.Ember;
 

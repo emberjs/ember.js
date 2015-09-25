@@ -1,12 +1,13 @@
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
 
 var compile = Ember.HTMLBars.compile;
 
 var App, container, router;
 
 function setupApp(klass) {
-  Ember.run(function() {
+  run(function() {
     App = klass.create({
       rootElement: '#qunit-fixture'
     });
@@ -28,14 +29,14 @@ QUnit.module('Application Lifecycle', {
 
   teardown() {
     router = null;
-    Ember.run(App, 'destroy');
+    run(App, 'destroy');
     Ember.TEMPLATES = {};
   }
 });
 
 function handleURL(path) {
   router = container.lookup('router:main');
-  return Ember.run(function() {
+  return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -71,7 +72,7 @@ QUnit.test('Resetting the application allows controller properties to be set whe
 
   container.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   handleURL('/');
 
@@ -108,14 +109,14 @@ QUnit.test('Destroying the application resets the router before the container is
 
   container.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   handleURL('/');
 
   equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), 'home');
   equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), 'home');
 
-  Ember.run(App, 'destroy');
+  run(App, 'destroy');
 
   equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
   equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
@@ -124,7 +125,7 @@ QUnit.test('Destroying the application resets the router before the container is
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
   assert.expect(1);
 
-  Ember.run(App, 'destroy');
+  run(App, 'destroy');
 
   var ApplicationSubclass = Ember.Application.extend();
 
@@ -159,9 +160,9 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
   Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
   Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='wowza-thingy'></div>`);
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
-  Ember.run(function() {
+  run(function() {
     Ember.$('#wowza-thingy').trigger('wowza');
   });
 });
@@ -169,7 +170,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
   assert.expect(1);
 
-  Ember.run(App, 'destroy');
+  run(App, 'destroy');
 
   var ApplicationSubclass = Ember.Application.extend();
 
@@ -193,9 +194,9 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
   Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
   Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='herky-thingy'></div>`);
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
-  Ember.run(function() {
+  run(function() {
     Ember.$('#herky-thingy').trigger('herky');
   });
 });

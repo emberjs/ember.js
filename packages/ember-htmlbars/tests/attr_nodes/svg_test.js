@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
@@ -28,7 +27,7 @@ QUnit.test('unquoted viewBox property is output', function() {
 
   equalInnerHTML(view.element, `<svg viewBox="${viewBoxString}"></svg>`, 'attribute is output');
 
-  Ember.run(view, view.set, 'context.viewBoxString', null);
+  run(view, view.set, 'context.viewBoxString', null);
   equal(view.element.getAttribute('svg'), null, 'attribute is removed');
 });
 
@@ -54,7 +53,7 @@ QUnit.test('quoted viewBox property is concat', function() {
   equalInnerHTML(view.element, `<svg viewBox="0 0 ${viewBoxString}"></svg>`, 'attribute is output');
 
   var newViewBoxString = '200 200';
-  Ember.run(view, view.set, 'context.viewBoxString', newViewBoxString);
+  run(view, view.set, 'context.viewBoxString', newViewBoxString);
 
   equalInnerHTML(view.element, `<svg viewBox="0 0 ${newViewBoxString}"></svg>`, 'attribute is output');
 });
@@ -68,7 +67,7 @@ QUnit.test('class is output', function() {
 
   equalInnerHTML(view.element, '<svg class="blue tall"></svg>', 'attribute is output');
 
-  Ember.run(view, view.set, 'context.color', 'red');
+  run(view, view.set, 'context.color', 'red');
 
   equalInnerHTML(view.element, '<svg class="red tall"></svg>', 'attribute is output');
 });

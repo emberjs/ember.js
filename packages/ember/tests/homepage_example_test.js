@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import { compile } from 'ember-template-compiler';
 
@@ -38,7 +39,7 @@ function setupExample() {
 
 QUnit.module('Homepage Example', {
   setup() {
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -57,7 +58,7 @@ QUnit.module('Homepage Example', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
     });
 
@@ -69,7 +70,7 @@ QUnit.module('Homepage Example', {
 
 
 QUnit.test('The example renders correctly', function() {
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   equal($fixture.find('h1:contains(People)').length, 1);
   equal($fixture.find('li').length, 2);

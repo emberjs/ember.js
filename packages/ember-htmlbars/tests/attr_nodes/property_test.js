@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
@@ -33,7 +32,7 @@ QUnit.test('maxlength sets the property and attribute', function() {
   appendView(view);
   equal(view.element.firstChild.maxLength, 5);
 
-  Ember.run(view, view.set, 'context.length', 1);
+  run(view, view.set, 'context.length', 1);
   equal(view.element.firstChild.maxLength, 1);
 });
 
@@ -47,10 +46,10 @@ QUnit.test('quoted maxlength sets the attribute and is reflected as a property',
   equal(view.element.firstChild.maxLength, '5');
 
   if (canSetFalsyMaxLength()) {
-    Ember.run(view, view.set, 'context.length', null);
+    run(view, view.set, 'context.length', null);
     equal(view.element.firstChild.maxLength, document.createElement('input').maxLength);
   } else {
-    Ember.run(view, view.set, 'context.length', 1);
+    run(view, view.set, 'context.length', 1);
     equal(view.element.firstChild.maxLength, 1);
   }
 });
@@ -63,6 +62,6 @@ QUnit.test('array value can be set as property', function() {
 
   appendView(view);
 
-  Ember.run(view, view.set, 'context.items', [4, 5]);
+  run(view, view.set, 'context.items', [4, 5]);
   ok(true, 'no legacy assertion prohibited setting an array');
 });

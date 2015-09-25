@@ -1105,7 +1105,7 @@ function appendOrphan(liveRoutes, into, myState) {
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
-  Ember.run.schedule('afterRender', function() {
+  run.schedule('afterRender', function() {
     // `wasUsed` gets set by the render helper. See the function
     // `impersonateAnOutlet`.
     assert('You attempted to render into \'' + into + '\' but it was not found',
