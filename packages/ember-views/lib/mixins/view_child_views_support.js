@@ -2,12 +2,12 @@
 @module ember
 @submodule ember-views
 */
-import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var EMPTY_ARRAY = [];
 
@@ -28,7 +28,7 @@ export default Mixin.create({
 
     // setup child views. be sure to clone the child views array first
     // 2.0TODO: Remove Ember.A() here
-    this.childViews = Ember.A(this.childViews.slice());
+    this.childViews = emberA(this.childViews.slice());
     this.ownerView = this.ownerView || this;
   },
 

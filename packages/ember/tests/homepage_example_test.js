@@ -5,6 +5,7 @@ import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var App, $fixture;
 
@@ -25,7 +26,7 @@ function setupExample() {
 
   App.IndexRoute = Ember.Route.extend({
     model() {
-      var people = Ember.A([
+      var people = emberA([
         App.Person.create({
           firstName: 'Tom',
           lastName: 'Dale'

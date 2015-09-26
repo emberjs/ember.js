@@ -1,6 +1,6 @@
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -16,7 +16,7 @@ suite.test('should return receiver', function() {
 suite.test('[A,B,C].removeObject(B) => [A,C] + notify', function() {
   var obj, before, after, observer;
 
-  before = Ember.A(this.newFixture(3));
+  before = emberA(this.newFixture(3));
   after  = [before[0], before[2]];
   obj = before;
   observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
@@ -39,7 +39,7 @@ suite.test('[A,B,C].removeObject(B) => [A,C] + notify', function() {
 suite.test('[A,B,C].removeObject(D) => [A,B,C]', function() {
   var obj, before, after, observer, item;
 
-  before = Ember.A(this.newFixture(3));
+  before = emberA(this.newFixture(3));
   after  = before;
   item   = this.newFixture(1)[0];
   obj = before;

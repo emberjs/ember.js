@@ -1,8 +1,8 @@
-import Ember from 'ember-metal/core';
 import emberRun from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 import setupForTesting from 'ember-testing/setup_for_testing';
 import EmberApplication from 'ember-application/system/application';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 /**
   @module ember
@@ -250,7 +250,7 @@ var Test = {
       context = null;
     }
     if (!this.waiters) {
-      this.waiters = Ember.A();
+      this.waiters = emberA();
     }
     this.waiters.push([context, callback]);
   },
@@ -270,7 +270,7 @@ var Test = {
       callback = context;
       context = null;
     }
-    this.waiters = Ember.A(this.waiters.filter(function(elt) {
+    this.waiters = emberA(this.waiters.filter(function(elt) {
       return !(elt[0] === context && elt[1] === callback);
     }));
   }

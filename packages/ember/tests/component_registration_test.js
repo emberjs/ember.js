@@ -7,6 +7,7 @@ import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
 import { OutletView } from 'ember-routing-views/views/outlet';
 import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var App, registry, container;
 var originalHelpers;
@@ -15,7 +16,7 @@ function prepare() {
   Ember.TEMPLATES['components/expand-it'] = compile('<p>hello {{yield}}</p>');
   Ember.TEMPLATES.application = compile('Hello world {{#expand-it}}world{{/expand-it}}');
 
-  originalHelpers = Ember.A(keys(helpers));
+  originalHelpers = emberA(keys(helpers));
 }
 
 function cleanup() {
@@ -31,7 +32,7 @@ function cleanup() {
 }
 
 function cleanupHelpers() {
-  var currentHelpers = Ember.A(keys(helpers));
+  var currentHelpers = emberA(keys(helpers));
 
   currentHelpers.forEach(function(name) {
     if (!originalHelpers.contains(name)) {

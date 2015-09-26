@@ -9,6 +9,7 @@ import alias from 'ember-metal/alias';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -610,7 +611,7 @@ QUnit.test('The {{link-to}} helper moves into the named route with context', fun
 
   App.AboutRoute = Ember.Route.extend({
     model() {
-      return Ember.A([
+      return emberA([
         { id: 'yehuda', name: 'Yehuda Katz' },
         { id: 'tom', name: 'Tom Dale' },
         { id: 'erik', name: 'Erik Brynroflsson' }
@@ -1027,7 +1028,7 @@ QUnit.test('The {{link-to}} helper works in an #each\'d array of string route na
   });
 
   App.IndexController = Ember.Controller.extend({
-    routeNames: Ember.A(['foo', 'bar', 'rar']),
+    routeNames: emberA(['foo', 'bar', 'rar']),
     route1: 'bar',
     route2: 'foo'
   });
@@ -1137,7 +1138,7 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
 
   App.IndexRoute = Ember.Route.extend({
     model() {
-      return Ember.A([
+      return emberA([
         { id: 'yehuda', name: 'Yehuda Katz' },
         { id: 'tom', name: 'Tom Dale' },
         { id: 'erik', name: 'Erik Brynroflsson' }

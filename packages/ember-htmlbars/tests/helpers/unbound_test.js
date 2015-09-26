@@ -1,9 +1,8 @@
-/*jshint newcap:false*/
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/components/component';
 import EmberObject from 'ember-runtime/system/object';
 
-import { A } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -83,7 +82,7 @@ QUnit.test('should property escape unsafe hrefs', function() {
 
   view = EmberView.create({
     template: compile('<ul>{{#each view.people as |person|}}<a href="{{unbound person.url}}">{{person.name}}</a>{{/each}}</ul>'),
-    people: A([{
+    people: emberA([{
       name: 'Bob',
       url: 'javascript:bob-is-cool'
     }, {
@@ -413,7 +412,7 @@ QUnit.test('should be able to render an unbound helper invocation in #each helpe
        '{{-capitalize person.firstName}} {{unbound (-capitalize person.firstName)}}',
        '{{/each}}'].join('')),
     context: {
-      people: Ember.A([
+      people: emberA([
         {
           firstName: 'shooby',
           lastName:  'taylor'
@@ -542,7 +541,7 @@ QUnit.test('should be able to output a property without binding', function() {
 
 QUnit.test('should be able to use unbound helper in #each helper', function() {
   view = EmberView.create({
-    items: A(['a', 'b', 'c', 1, 2, 3]),
+    items: emberA(['a', 'b', 'c', 1, 2, 3]),
     template: compile('<ul>{{#each view.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>')
   });
 
@@ -554,7 +553,7 @@ QUnit.test('should be able to use unbound helper in #each helper', function() {
 
 QUnit.test('should be able to use unbound helper in #each helper (with objects)', function() {
   view = EmberView.create({
-    items: A([{ wham: 'bam' }, { wham: 1 }]),
+    items: emberA([{ wham: 'bam' }, { wham: 1 }]),
     template: compile('<ul>{{#each view.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>')
   });
 
@@ -569,7 +568,7 @@ QUnit.test('should work properly with attributes', function() {
 
   view = EmberView.create({
     template: compile('<ul>{{#each view.people as |person|}}<li class="{{unbound person.cool}}">{{person.name}}</li>{{/each}}</ul>'),
-    people: A([{
+    people: emberA([{
       name: 'Bob',
       cool: 'not-cool'
     }, {

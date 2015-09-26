@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import setProperties from 'ember-metal/set_properties';
@@ -22,6 +21,7 @@ import {
   intersect
 } from 'ember-runtime/computed/reduce_computed_macros';
 import { isArray } from 'ember-runtime/utils';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var obj;
 QUnit.module('map', {
@@ -30,12 +30,12 @@ QUnit.module('map', {
       mapped: map('array.@each.v', (item) => item.v),
       mappedObjects: map('arrayObjects.@each.v',  (item) => ({ name: item.v.name }))
     }).create({
-      arrayObjects: Ember.A([
+      arrayObjects: emberA([
         { v: { name: 'Robert' } },
         { v: { name: 'Leanna' } }
       ]),
 
-      array: Ember.A([
+      array: emberA([
         { v: 1 },
         { v: 3 },
         { v: 2 },
@@ -68,7 +68,7 @@ QUnit.test('it maps simple properties', function() {
 });
 
 QUnit.test('it maps simple unshifted properties', function() {
-  var array = Ember.A();
+  var array = emberA();
 
   obj = EmberObject.extend({
     mapped: map('array', (item) => item.toUpperCase())
@@ -145,7 +145,7 @@ QUnit.test('it maps objects', function() {
 });
 
 QUnit.test('it maps unshifted objects with property observers', function() {
-  var array = Ember.A();
+  var array = emberA();
   var cObj = { v: 'c' };
 
   obj = EmberObject.extend({
@@ -169,7 +169,7 @@ QUnit.module('mapBy', {
     obj = EmberObject.extend({
       mapped: mapBy('array', 'v')
     }).create({
-      array: Ember.A([
+      array: emberA([
         { v: 1 },
         { v: 3 },
         { v: 2 },
@@ -217,7 +217,7 @@ QUnit.module('filter', {
     obj = EmberObject.extend({
       filtered: filter('array', (item) => item % 2 === 0)
     }).create({
-      array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8])
+      array: emberA([1, 2, 3, 4, 5, 6, 7, 8])
     });
   },
   teardown() {
@@ -265,7 +265,7 @@ QUnit.test('it passes the array to the callback', function() {
   obj = EmberObject.extend({
     filtered: filter('array',  (item, index, array) => index === get(array, 'length') - 2)
   }).create({
-    array: Ember.A(['a', 'b', 'c'])
+    array: emberA(['a', 'b', 'c'])
   });
 
   deepEqual(obj.get('filtered'), ['b'], 'array is passed to callback correctly');
@@ -343,7 +343,7 @@ QUnit.module('filterBy', {
       as: filterBy('array', 'a'),
       bs: filterBy('array', 'b')
     }).create({
-      array: Ember.A([
+      array: emberA([
         { name: 'one', a: 1, b: false },
         { name: 'two', a: 2, b: false },
         { name: 'three', a: 1, b: true },
@@ -438,9 +438,9 @@ QUnit.test('properties values can be replaced', function() {
       obj = EmberObject.extend({
         union: macro('array', 'array2', 'array3')
       }).create({
-        array: Ember.A([1, 2, 3, 4, 5, 6]),
-        array2: Ember.A([4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9]),
-        array3: Ember.A([1, 8, 10])
+        array: emberA([1, 2, 3, 4, 5, 6]),
+        array2: emberA([4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9]),
+        array3: emberA([1, 8, 10])
       });
     },
     teardown() {
@@ -497,9 +497,9 @@ QUnit.module('computed.intersect', {
     obj = EmberObject.extend({
       intersection: intersect('array', 'array2', 'array3')
     }).create({
-      array: Ember.A([1, 2, 3, 4, 5, 6]),
-      array2: Ember.A([3, 3, 3, 4, 5]),
-      array3: Ember.A([3, 5, 6, 7, 8])
+      array: emberA([1, 2, 3, 4, 5, 6]),
+      array2: emberA([3, 3, 3, 4, 5]),
+      array3: emberA([3, 5, 6, 7, 8])
     });
   },
   teardown() {
@@ -545,8 +545,8 @@ QUnit.module('setDiff', {
     obj = EmberObject.extend({
       diff: setDiff('array', 'array2')
     }).create({
-      array: Ember.A([1, 2, 3, 4, 5, 6, 7]),
-      array2: Ember.A([3, 4, 5, 10])
+      array: emberA([1, 2, 3, 4, 5, 6, 7]),
+      array2: emberA([3, 4, 5, 10])
     });
   },
   teardown() {
@@ -565,8 +565,8 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
     EmberObject.extend({
       diff: setDiff('array')
     }).create({
-      array: Ember.A([1, 2, 3, 4, 5, 6, 7]),
-      array2: Ember.A([3, 4, 5])
+      array: emberA([1, 2, 3, 4, 5, 6, 7]),
+      array2: emberA([3, 4, 5])
     });
   }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
@@ -574,9 +574,9 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
     EmberObject.extend({
       diff: setDiff('array', 'array2', 'array3')
     }).create({
-      array: Ember.A([1, 2, 3, 4, 5, 6, 7]),
-      array2: Ember.A([3, 4, 5]),
-      array3: Ember.A([7])
+      array: emberA([1, 2, 3, 4, 5, 6, 7]),
+      array2: emberA([3, 4, 5]),
+      array3: emberA([7])
     });
   }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 });
@@ -781,8 +781,8 @@ QUnit.module('sort - sortProperties', {
     obj = EmberObject.extend({
       sortedItems: sort('items', 'itemSorting')
     }).create({
-      itemSorting: Ember.A(['lname', 'fname']),
-      items: Ember.A([
+      itemSorting: emberA(['lname', 'fname']),
+      items: emberA([
         { fname: 'Jaime', lname: 'Lannister', age: 34 },
         { fname: 'Cersei', lname: 'Lannister', age: 34 },
         { fname: 'Robb', lname: 'Stark', age: 16 },
@@ -813,7 +813,7 @@ QUnit.test('updating sort properties detaches observers for old sort properties'
     'Robb'
   ], 'precond - array is initially sorted');
 
-  obj.set('itemSorting', Ember.A(['fname:desc']));
+  obj.set('itemSorting', emberA(['fname:desc']));
 
   deepEqual(obj.get('sortedItems').mapBy('fname'), [
     'Robb',
@@ -847,7 +847,7 @@ QUnit.test('updating sort properties updates the sorted array', function() {
     'Robb'
   ], 'precond - array is initially sorted');
 
-  obj.set('itemSorting', Ember.A(['fname:desc']));
+  obj.set('itemSorting', emberA(['fname:desc']));
 
   deepEqual(obj.get('sortedItems').mapBy('fname'), [
     'Robb',
@@ -886,7 +886,7 @@ QUnit.test('updating new sort properties invalidates the sorted array', function
     'Robb'
   ], 'precond - array is initially sorted');
 
-  obj.set('itemSorting', Ember.A(['age:desc', 'fname:asc']));
+  obj.set('itemSorting', emberA(['age:desc', 'fname:asc']));
 
   deepEqual(obj.get('sortedItems').mapBy('fname'), [
     'Cersei',
@@ -922,7 +922,7 @@ QUnit.test('sort direction defaults to ascending (with sort property change)', f
     'Robb'
   ], 'precond - array is initially sorted');
 
-  obj.set('itemSorting', Ember.A(['fname']));
+  obj.set('itemSorting', emberA(['fname']));
 
   deepEqual(obj.get('sortedItems').mapBy('fname'), [
     'Bran',
@@ -1019,7 +1019,7 @@ QUnit.test('array observers do not leak', function() {
 
   var sisters = [jane, daria];
 
-  var sortProps = Ember.A(['name']);
+  var sortProps = emberA(['name']);
   var jaime = EmberObject.extend({
     sortedPeople: sort('sisters', 'sortProps'),
     sortProps
@@ -1128,7 +1128,7 @@ QUnit.module('sort - sort function', {
     obj = EmberObject.extend({
       sortedItems: sort('items.@each.fname', sortByLnameFname)
     }).create({
-      items: Ember.A([
+      items: emberA([
         { fname: 'Jaime', lname: 'Lannister', age: 34 },
         { fname: 'Cersei', lname: 'Lannister', age: 34 },
         { fname: 'Robb', lname: 'Stark', age: 16 },
@@ -1151,7 +1151,7 @@ QUnit.test('sort has correct `this`', function() {
       return sortByFnameAsc(a, b);
     }
   }).create({
-    items: Ember.A([
+    items: emberA([
       { fname: 'Jaime', lname: 'Lannister', age: 34 },
       { fname: 'Cersei', lname: 'Lannister', age: 34 },
       { fname: 'Robb', lname: 'Stark', age: 16 },
@@ -1231,7 +1231,7 @@ QUnit.module('sort - concurrency', {
       sortedItems: sort('items', 'sortProps'),
       customSortedItems: sort('items.@each.count', (a, b) => a.count - b.count)
     }).create({
-      items: Ember.A([
+      items: emberA([
         { name: 'A', count: 1 },
         { name: 'B', count: 2 },
         { name: 'C', count: 3 },
@@ -1271,7 +1271,7 @@ QUnit.module('max', {
     obj = EmberObject.extend({
       max: max('items')
     }).create({
-      items: Ember.A([1, 2, 3])
+      items: emberA([1, 2, 3])
     });
   },
   teardown() {
@@ -1316,7 +1316,7 @@ QUnit.module('min', {
     obj = EmberObject.extend({
       min: min('items')
     }).create({
-      items: Ember.A([1, 2, 3])
+      items: emberA([1, 2, 3])
     });
   },
   teardown() {
@@ -1360,14 +1360,14 @@ QUnit.module('Ember.arrayComputed - mixed sugar', {
   setup() {
     obj = EmberObject.extend({
       lannisters: filterBy('items', 'lname', 'Lannister'),
-      lannisterSorting: Ember.A(['fname']),
+      lannisterSorting: emberA(['fname']),
       sortedLannisters: sort('lannisters', 'lannisterSorting'),
 
       starks: filterBy('items', 'lname', 'Stark'),
       starkAges: mapBy('starks', 'age'),
       oldestStarkAge: max('starkAges')
     }).create({
-      items: Ember.A([
+      items: emberA([
         { fname: 'Jaime', lname: 'Lannister', age: 34 },
         { fname: 'Cersei', lname: 'Lannister', age: 34 },
         { fname: 'Robb', lname: 'Stark', age: 16 },
@@ -1429,7 +1429,7 @@ QUnit.module('Ember.arrayComputed - chains', {
       sorted: sort('todos.@each.priority', priorityComparator),
       filtered: filter('sorted.@each.priority', evenPriorities)
     }).create({
-      todos: Ember.A([
+      todos: emberA([
         todo('E', 4),
         todo('D', 3),
         todo('C', 2),
@@ -1464,7 +1464,7 @@ QUnit.module('Chaining array and reduced CPs', {
       max: max('mapped'),
       maxDidChange: observer('max', () => userFnCalls++)
     }).create({
-      array: Ember.A([
+      array: emberA([
         { v: 1 },
         { v: 3 },
         { v: 2 },
@@ -1496,7 +1496,7 @@ QUnit.module('sum', {
     obj = EmberObject.extend({
       total: sum('array')
     }).create({
-      array: Ember.A([1, 2, 3])
+      array: emberA([1, 2, 3])
     });
   },
 

@@ -12,6 +12,7 @@ import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var trim = jQuery.trim;
 
@@ -603,7 +604,7 @@ QUnit.test('The Homepage with a `setupController` hook', function() {
 
   App.HomeRoute = Ember.Route.extend({
     setupController(controller) {
-      set(controller, 'hours', Ember.A([
+      set(controller, 'hours', emberA([
         'Monday through Friday: 9am to 5pm',
         'Saturday: Noon to Midnight',
         'Sunday: Noon to 6pm'
@@ -722,7 +723,7 @@ QUnit.test('The Homepage with a `setupController` hook modifying other controlle
 
   App.HomeRoute = Ember.Route.extend({
     setupController(controller) {
-      set(this.controllerFor('home'), 'hours', Ember.A([
+      set(this.controllerFor('home'), 'hours', emberA([
         'Monday through Friday: 9am to 5pm',
         'Saturday: Noon to Midnight',
         'Sunday: Noon to 6pm'
@@ -746,7 +747,7 @@ QUnit.test('The Homepage with a computed context that does not get overridden', 
 
   App.HomeController = Ember.Controller.extend({
     model: computed(function() {
-      return Ember.A([
+      return emberA([
         'Monday through Friday: 9am to 5pm',
         'Saturday: Noon to Midnight',
         'Sunday: Noon to 6pm'
@@ -770,7 +771,7 @@ QUnit.test('The Homepage getting its controller context via model', function() {
 
   App.HomeRoute = Ember.Route.extend({
     model() {
-      return Ember.A([
+      return emberA([
         'Monday through Friday: 9am to 5pm',
         'Saturday: Noon to Midnight',
         'Sunday: Noon to 6pm'
@@ -2053,7 +2054,7 @@ QUnit.test('Rendering into specified template with slash notation', function() {
 
 QUnit.test('Parent route context change', function() {
   var editCount = 0;
-  var editedPostIds = Ember.A();
+  var editedPostIds = emberA();
 
   Ember.TEMPLATES.application = compile('{{outlet}}');
   Ember.TEMPLATES.posts = compile('{{outlet}}');
@@ -2320,7 +2321,7 @@ QUnit.test('Application template does not duplicate when re-rendered', function(
 
   App.ApplicationRoute = Ember.Route.extend({
     model() {
-      return Ember.A();
+      return emberA();
     }
   });
 

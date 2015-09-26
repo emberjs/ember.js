@@ -4,6 +4,7 @@ import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
@@ -116,7 +117,7 @@ QUnit.test('{{#each}} inside outlet can have an itemController', function(assert
   }, `Using 'itemController' with '{{each}}' (L2:C20) is deprecated.  Please refactor to a component.`);
 
   App.IndexController = Ember.Controller.extend({
-    model: Ember.A([1, 2, 3])
+    model: emberA([1, 2, 3])
   });
 
   App.ThingController = Ember.Controller.extend();

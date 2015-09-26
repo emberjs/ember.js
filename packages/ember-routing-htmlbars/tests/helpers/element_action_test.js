@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // A, FEATURES, assert
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -6,6 +5,7 @@ import ActionManager from 'ember-views/system/action_manager';
 
 import EmberObject from 'ember-runtime/system/object';
 import EmberController from 'ember-runtime/controllers/controller';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';
@@ -351,7 +351,7 @@ QUnit.test('should work properly in an #each block', function() {
 
   view = EmberView.create({
     controller: controller,
-    items: Ember.A([1, 2, 3, 4]),
+    items: emberA([1, 2, 3, 4]),
     template: compile('{{#each view.items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
@@ -411,7 +411,7 @@ QUnit.test('should unregister event handlers on rerender', function() {
 });
 
 QUnit.test('should unregister event handlers on inside virtual views', function() {
-  var things = Ember.A([
+  var things = emberA([
     {
       name: 'Thingy'
     }
@@ -788,7 +788,7 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{ title: 'Biggity Boom', name: 'biggityBoom' },
+    allactions: emberA([{ title: 'Biggity Boom', name: 'biggityBoom' },
                          { title: 'Whomp Whomp', name: 'whompWhomp' },
                          { title: 'Sloopy Dookie', name: 'sloopyDookie' }]),
     actions: {
@@ -837,7 +837,7 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{ title: 'Biggity Boom', name: 'biggityBoom' },
+    allactions: emberA([{ title: 'Biggity Boom', name: 'biggityBoom' },
                          { title: 'Whomp Whomp', name: 'whompWhomp' },
                          { title: 'Sloopy Dookie', name: 'sloopyDookie' }]),
     actions: {

@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
@@ -7,6 +6,7 @@ import EventDispatcher from 'ember-views/system/event_dispatcher';
 import { computed } from 'ember-metal/computed';
 import Namespace from 'ember-runtime/system/namespace';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import SelectView from 'ember-views/views/select';
 import compile from 'ember-template-compiler/system/compile';
 import Controller from 'ember-runtime/controllers/controller';
@@ -48,7 +48,7 @@ QUnit.test('works from a template with bindings [DEPRECATED]', function() {
   var application = Namespace.create();
 
   application.peopleController = Controller.create({
-    content: Ember.A([
+    content: emberA([
       Person.create({ id: 1, firstName: 'Yehuda', lastName: 'Katz' }),
       Person.create({ id: 2, firstName: 'Tom', lastName: 'Dale' }),
       Person.create({ id: 3, firstName: 'Peter', lastName: 'Wagenet' }),
@@ -110,7 +110,7 @@ QUnit.test('works from a template', function() {
   var application = Namespace.create();
 
   application.peopleController = Controller.create({
-    content: Ember.A([
+    content: emberA([
       Person.create({ id: 1, firstName: 'Yehuda', lastName: 'Katz' }),
       Person.create({ id: 2, firstName: 'Tom', lastName: 'Dale' }),
       Person.create({ id: 3, firstName: 'Peter', lastName: 'Wagenet' }),
@@ -160,8 +160,8 @@ if (!environment.isFirefox) {
   // firefox has bugs...
   // TODO: figure out a solution
   QUnit.test('upon content change, the DOM should reflect the selection (#481)', function() {
-    var userOne = { name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a' };
-    var userTwo = { name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd' };
+    var userOne = { name: 'Mike', options: emberA(['a', 'b']), selectedOption: 'a' };
+    var userTwo = { name: 'John', options: emberA(['c', 'd']), selectedOption: 'd' };
 
     view = EmberView.create({
       user: userOne,
@@ -195,7 +195,7 @@ QUnit.test('upon content change with Array-like content, the DOM should reflect 
   var sylvain = { id: 5, name: 'Sylvain' };
 
   var proxy = ArrayProxy.create({
-    content: Ember.A(),
+    content: emberA(),
     selectedOption: sylvain
   });
 
@@ -217,7 +217,7 @@ QUnit.test('upon content change with Array-like content, the DOM should reflect 
   equal(selectEl.selectedIndex, -1, 'Precond: The DOM reflects the lack of selection');
 
   run(function() {
-    proxy.set('content', Ember.A([tom, sylvain]));
+    proxy.set('content', emberA([tom, sylvain]));
   });
 
   equal(select.get('selection'), sylvain, 'Selection was properly set after content change');
@@ -226,7 +226,7 @@ QUnit.test('upon content change with Array-like content, the DOM should reflect 
 
 function testValueBinding(templateString) {
   view = EmberView.create({
-    collection: Ember.A([{ name: 'Wes', value: 'w' }, { name: 'Gordon', value: 'g' }]),
+    collection: emberA([{ name: 'Wes', value: 'w' }, { name: 'Gordon', value: 'g' }]),
     val: 'g',
     selectView: SelectView,
     template: compile(templateString)
@@ -276,7 +276,7 @@ QUnit.test('select element should correctly initialize and update selectedIndex 
 
 function testSelectionBinding(templateString) {
   view = EmberView.create({
-    collection: Ember.A([{ name: 'Wes', value: 'w' }, { name: 'Gordon', value: 'g' }]),
+    collection: emberA([{ name: 'Wes', value: 'w' }, { name: 'Gordon', value: 'g' }]),
     selection: { name: 'Gordon', value: 'g' },
     selectView: SelectView,
     template: compile(templateString)
@@ -335,7 +335,7 @@ QUnit.test('select element should correctly initialize and update selectedIndex 
     '    selection=view.selection}}';
 
   view = EmberView.create({
-    collection: Ember.A([{ name: 'Wes', val: 'w' }, { name: 'Gordon', val: 'g' }]),
+    collection: emberA([{ name: 'Wes', val: 'w' }, { name: 'Gordon', val: 'g' }]),
     selection: { name: 'Gordon', val: 'g' },
     selectView: SelectView,
     template: compile(templateString)

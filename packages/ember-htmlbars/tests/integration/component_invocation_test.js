@@ -12,6 +12,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import alias from 'ember-metal/alias';
 import run from 'ember-metal/run_loop';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var registry, container, view;
 
@@ -812,7 +813,7 @@ QUnit.test('non-block with each rendering child components', function() {
   registry.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
   registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
 
-  var items = Ember.A(['Tom', 'Dick', 'Harry']);
+  var items = emberA(['Tom', 'Dick', 'Harry']);
 
   view = EmberView.extend({
     template: compile('{{non-block items=view.items}}'),
