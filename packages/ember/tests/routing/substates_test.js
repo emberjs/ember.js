@@ -3,6 +3,7 @@ import RSVP from 'ember-runtime/ext/rsvp';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
+import Application from 'ember-application/system/application';
 
 var Router, App, templates, router, container, counter;
 
@@ -32,7 +33,7 @@ QUnit.module('Loading/Error Substates', {
     counter = 1;
 
     run(function() {
-      App = Ember.Application.create({
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture',
         // fake a modules resolver

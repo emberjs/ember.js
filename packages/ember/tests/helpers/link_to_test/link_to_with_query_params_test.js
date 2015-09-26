@@ -3,6 +3,7 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
 
 var Router, App, router, registry, container;
 
@@ -28,7 +29,7 @@ function checkActive(selector, active) {
 var updateCount, replaceCount;
 
 function sharedSetup() {
-  App = Ember.Application.create({
+  App = Application.create({
     name: 'App',
     rootElement: '#qunit-fixture'
   });

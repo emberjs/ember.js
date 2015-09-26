@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
+import Application from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
@@ -41,7 +42,7 @@ function setupExample() {
 QUnit.module('Homepage Example', {
   setup() {
     run(function() {
-      App = Ember.Application.create({
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });

@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
+import Application from 'ember-application/system/application';
 
 import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
@@ -25,7 +26,7 @@ QUnit.module('Template scoping examples', {
 
     run(function() {
       templates = Ember.TEMPLATES;
-      App = Ember.Application.create({
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });

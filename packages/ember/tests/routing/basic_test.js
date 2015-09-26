@@ -9,6 +9,7 @@ import { computed } from 'ember-metal/computed';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
 
 var trim = Ember.$.trim;
 
@@ -54,7 +55,7 @@ function handleURLRejectsWith(path, expectedReason) {
 QUnit.module('Basic Routing', {
   setup() {
     run(function() {
-      App = Ember.Application.create({
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });

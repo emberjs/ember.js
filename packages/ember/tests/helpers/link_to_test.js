@@ -5,6 +5,7 @@ import EmberObject from 'ember-runtime/system/object';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
+import Application from 'ember-application/system/application';
 
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -37,7 +38,7 @@ function checkActive(selector, active) {
 var updateCount, replaceCount;
 
 function sharedSetup() {
-  App = Ember.Application.create({
+  App = Application.create({
     name: 'App',
     rootElement: '#qunit-fixture'
   });

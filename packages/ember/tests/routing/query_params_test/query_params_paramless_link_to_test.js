@@ -3,6 +3,7 @@ import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
 
 var App, Router, container, router, registry;
 var expectedReplaceURL, expectedPushURL;
@@ -43,7 +44,7 @@ function bootApplication() {
 
 function sharedSetup() {
   run(function() {
-    App = Ember.Application.create({
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });

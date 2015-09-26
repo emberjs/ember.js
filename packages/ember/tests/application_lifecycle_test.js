@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Application from 'ember-application/system/application';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 
@@ -24,7 +25,7 @@ function setupApp(klass) {
 
 QUnit.module('Application Lifecycle', {
   setup() {
-    setupApp(Ember.Application.extend());
+    setupApp(Application.extend());
   },
 
   teardown() {
@@ -127,7 +128,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   run(App, 'destroy');
 
-  var ApplicationSubclass = Ember.Application.extend();
+  var ApplicationSubclass = Application.extend();
 
   if (isEnabled('ember-registry-container-reform')) {
     ApplicationSubclass.initializer({
@@ -172,7 +173,7 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
 
   run(App, 'destroy');
 
-  var ApplicationSubclass = Ember.Application.extend();
+  var ApplicationSubclass = Application.extend();
 
   ApplicationSubclass.instanceInitializer({
     name: 'customize-things',
