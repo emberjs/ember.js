@@ -7,6 +7,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -32,7 +33,7 @@ function shouldBeActive(selector) {
 }
 
 function checkActive(selector, active) {
-  var classList = Ember.$(selector, '#qunit-fixture')[0].className;
+  var classList = jQuery(selector, '#qunit-fixture')[0].className;
   equal(classList.indexOf('active') > -1, active, selector + ' active should be ' + active.toString());
 }
 
@@ -145,17 +146,17 @@ QUnit.test('The {{link-to}} helper moves into the named route', function() {
     router.handleURL('/');
   });
 
-  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
-  equal(Ember.$('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
-  equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+  equal(jQuery('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
+  equal(jQuery('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(jQuery('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 
   run(function() {
-    Ember.$('#about-link', '#qunit-fixture').click();
+    jQuery('#about-link', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 1, 'The about template was rendered');
-  equal(Ember.$('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
-  equal(Ember.$('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+  equal(jQuery('h3:contains(About)', '#qunit-fixture').length, 1, 'The about template was rendered');
+  equal(jQuery('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
 QUnit.test('The {{link-to}} helper supports URL replacement', function() {
@@ -175,7 +176,7 @@ QUnit.test('The {{link-to}} helper supports URL replacement', function() {
   equal(replaceCount, 0, 'precond: replaceURL has not been called');
 
   run(function() {
-    Ember.$('#about-link', '#qunit-fixture').click();
+    jQuery('#about-link', '#qunit-fixture').click();
   });
 
   equal(updateCount, 0, 'setURL should not be called');
@@ -195,7 +196,7 @@ QUnit.test('the {{link-to}} helper doesn\'t add an href when the tagName isn\'t 
     router.handleURL('/');
   });
 
-  equal(Ember.$('#about-link').attr('href'), undefined, 'there is no href attribute');
+  equal(jQuery('#about-link').attr('href'), undefined, 'there is no href attribute');
 });
 
 
@@ -215,7 +216,7 @@ QUnit.test('the {{link-to}} applies a \'disabled\' class when disabled', functio
     router.handleURL('/');
   });
 
-  equal(Ember.$('#about-link.disabled', '#qunit-fixture').length, 1, 'The link is disabled when its disabledWhen is true');
+  equal(jQuery('#about-link.disabled', '#qunit-fixture').length, 1, 'The link is disabled when its disabledWhen is true');
 });
 
 QUnit.test('the {{link-to}} doesn\'t apply a \'disabled\' class if disabledWhen is not provided', function () {
@@ -231,7 +232,7 @@ QUnit.test('the {{link-to}} doesn\'t apply a \'disabled\' class if disabledWhen 
     router.handleURL('/');
   });
 
-  ok(!Ember.$('#about-link', '#qunit-fixture').hasClass('disabled'), 'The link is not disabled if disabledWhen not provided');
+  ok(!jQuery('#about-link', '#qunit-fixture').hasClass('disabled'), 'The link is not disabled if disabledWhen not provided');
 });
 
 QUnit.test('the {{link-to}} helper supports a custom disabledClass', function () {
@@ -247,7 +248,7 @@ QUnit.test('the {{link-to}} helper supports a custom disabledClass', function ()
     router.handleURL('/');
   });
 
-  equal(Ember.$('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class');
+  equal(jQuery('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class');
 });
 
 QUnit.test('the {{link-to}} helper supports a custom disabledClass set via bound param', function () {
@@ -267,7 +268,7 @@ QUnit.test('the {{link-to}} helper supports a custom disabledClass set via bound
     router.handleURL('/');
   });
 
-  equal(Ember.$('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class via bound param');
+  equal(jQuery('#about-link.do-not-want', '#qunit-fixture').length, 1, 'The link can apply a custom disabled class via bound param');
 });
 
 QUnit.test('the {{link-to}} helper does not respond to clicks when disabled', function () {
@@ -284,10 +285,10 @@ QUnit.test('the {{link-to}} helper does not respond to clicks when disabled', fu
   });
 
   run(function() {
-    Ember.$('#about-link', '#qunit-fixture').click();
+    jQuery('#about-link', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
+  equal(jQuery('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
 });
 
 QUnit.test('the {{link-to}} helper does not respond to clicks when disabled via a bound param', function () {
@@ -308,10 +309,10 @@ QUnit.test('the {{link-to}} helper does not respond to clicks when disabled via 
   });
 
   run(function() {
-    Ember.$('#about-link', '#qunit-fixture').click();
+    jQuery('#about-link', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
+  equal(jQuery('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
 });
 
 QUnit.test('The {{link-to}} helper supports a custom activeClass', function() {
@@ -327,9 +328,9 @@ QUnit.test('The {{link-to}} helper supports a custom activeClass', function() {
     router.handleURL('/');
   });
 
-  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
-  equal(Ember.$('#self-link.zomg-active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
-  equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+  equal(jQuery('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
+  equal(jQuery('#self-link.zomg-active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(jQuery('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
 QUnit.test('The {{link-to}} helper supports a custom activeClass from a bound param', function() {
@@ -349,9 +350,9 @@ QUnit.test('The {{link-to}} helper supports a custom activeClass from a bound pa
     router.handleURL('/');
   });
 
-  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
-  equal(Ember.$('#self-link.zomg-active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
-  equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+  equal(jQuery('h3:contains(Home)', '#qunit-fixture').length, 1, 'The home template was rendered');
+  equal(jQuery('#self-link.zomg-active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(jQuery('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
 QUnit.test('The {{link-to}} helper supports \'classNameBindings\' with custom values [GH #11699]', function() {
@@ -371,14 +372,14 @@ QUnit.test('The {{link-to}} helper supports \'classNameBindings\' with custom va
     router.handleURL('/');
   });
 
-  equal(Ember.$('#about-link.foo-is-false', '#qunit-fixture').length, 1, 'The about-link was rendered with the falsy class');
+  equal(jQuery('#about-link.foo-is-false', '#qunit-fixture').length, 1, 'The about-link was rendered with the falsy class');
 
   var controller = container.lookup('controller:index');
   run(function() {
     controller.set('foo', true);
   });
 
-  equal(Ember.$('#about-link.foo-is-true', '#qunit-fixture').length, 1, 'The about-link was rendered with the truthy class after toggling the property');
+  equal(jQuery('#about-link.foo-is-true', '#qunit-fixture').length, 1, 'The about-link was rendered with the truthy class after toggling the property');
 });
 
 QUnit.test('The {{link-to}} helper supports leaving off .index for nested routes', function() {
@@ -396,7 +397,7 @@ QUnit.test('The {{link-to}} helper supports leaving off .index for nested routes
 
   run(router, 'handleURL', '/about/item');
 
-  equal(normalizeUrl(Ember.$('#item a', '#qunit-fixture').attr('href')), '/about');
+  equal(normalizeUrl(jQuery('#item a', '#qunit-fixture').attr('href')), '/about');
 });
 
 QUnit.test('The {{link-to}} helper supports currentWhen (DEPRECATED)', function() {
@@ -419,7 +420,7 @@ QUnit.test('The {{link-to}} helper supports currentWhen (DEPRECATED)', function(
     router.handleURL('/about');
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
+  equal(jQuery('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
 });
 
 QUnit.test('The {{link-to}} helper supports custom, nested, current-when', function() {
@@ -440,7 +441,7 @@ QUnit.test('The {{link-to}} helper supports custom, nested, current-when', funct
     router.handleURL('/about');
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
+  equal(jQuery('#other-link.active', '#qunit-fixture').length, 1, 'The link is active since current-when is a parent route');
 });
 
 QUnit.test('The {{link-to}} helper does not disregard current-when when it is given explicitly for a route', function() {
@@ -463,7 +464,7 @@ QUnit.test('The {{link-to}} helper does not disregard current-when when it is gi
     router.handleURL('/about');
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a route');
+  equal(jQuery('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a route');
 });
 
 QUnit.test('The {{link-to}} helper does not disregard current-when when it is set via a bound param', function() {
@@ -490,7 +491,7 @@ QUnit.test('The {{link-to}} helper does not disregard current-when when it is se
     router.handleURL('/about');
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a route');
+  equal(jQuery('#other-link.active', '#qunit-fixture').length, 1, 'The link is active when current-when is given for explicitly for a route');
 });
 
 QUnit.test('The {{link-to}} helper supports multiple current-when routes', function() {
@@ -513,19 +514,19 @@ QUnit.test('The {{link-to}} helper supports multiple current-when routes', funct
     router.handleURL('/about');
   });
 
-  equal(Ember.$('#link1.active', '#qunit-fixture').length, 1, 'The link is active since current-when contains the parent route');
+  equal(jQuery('#link1.active', '#qunit-fixture').length, 1, 'The link is active since current-when contains the parent route');
 
   run(function() {
     router.handleURL('/item');
   });
 
-  equal(Ember.$('#link2.active', '#qunit-fixture').length, 1, 'The link is active since you are on the active route');
+  equal(jQuery('#link2.active', '#qunit-fixture').length, 1, 'The link is active since you are on the active route');
 
   run(function() {
     router.handleURL('/foo');
   });
 
-  equal(Ember.$('#link3.active', '#qunit-fixture').length, 0, 'The link is not active since current-when does not contain the active route');
+  equal(jQuery('#link3.active', '#qunit-fixture').length, 0, 'The link is not active since current-when does not contain the active route');
 });
 
 QUnit.test('The {{link-to}} helper defaults to bubbling', function() {
@@ -555,10 +556,10 @@ QUnit.test('The {{link-to}} helper defaults to bubbling', function() {
   });
 
   run(function() {
-    Ember.$('#about-contact', '#qunit-fixture').click();
+    jQuery('#about-contact', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('#contact', '#qunit-fixture').text(), 'Contact', 'precond - the link worked');
+  equal(jQuery('#contact', '#qunit-fixture').text(), 'Contact', 'precond - the link worked');
 
   equal(hidden, 1, 'The link bubbles');
 });
@@ -590,10 +591,10 @@ QUnit.test('The {{link-to}} helper supports bubbles=false', function() {
   });
 
   run(function() {
-    Ember.$('#about-contact', '#qunit-fixture').click();
+    jQuery('#about-contact', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('#contact', '#qunit-fixture').text(), 'Contact', 'precond - the link worked');
+  equal(jQuery('#contact', '#qunit-fixture').text(), 'Contact', 'precond - the link worked');
 
   equal(hidden, 0, 'The link didn\'t bubble');
 });
@@ -628,29 +629,29 @@ QUnit.test('The {{link-to}} helper moves into the named route with context', fun
     router.handleURL('/about');
   });
 
-  equal(Ember.$('h3:contains(List)', '#qunit-fixture').length, 1, 'The home template was rendered');
-  equal(normalizeUrl(Ember.$('#home-link').attr('href')), '/', 'The home link points back at /');
+  equal(jQuery('h3:contains(List)', '#qunit-fixture').length, 1, 'The home template was rendered');
+  equal(normalizeUrl(jQuery('#home-link').attr('href')), '/', 'The home link points back at /');
 
   run(function() {
-    Ember.$('li a:contains(Yehuda)', '#qunit-fixture').click();
+    jQuery('li a:contains(Yehuda)', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(Item)', '#qunit-fixture').length, 1, 'The item template was rendered');
-  equal(Ember.$('p', '#qunit-fixture').text(), 'Yehuda Katz', 'The name is correct');
+  equal(jQuery('h3:contains(Item)', '#qunit-fixture').length, 1, 'The item template was rendered');
+  equal(jQuery('p', '#qunit-fixture').text(), 'Yehuda Katz', 'The name is correct');
 
-  run(function() { Ember.$('#home-link').click(); });
-  run(function() { Ember.$('#about-link').click(); });
+  run(function() { jQuery('#home-link').click(); });
+  run(function() { jQuery('#about-link').click(); });
 
-  equal(normalizeUrl(Ember.$('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
-  equal(normalizeUrl(Ember.$('li a:contains(Tom)').attr('href')), '/item/tom');
-  equal(normalizeUrl(Ember.$('li a:contains(Erik)').attr('href')), '/item/erik');
+  equal(normalizeUrl(jQuery('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
+  equal(normalizeUrl(jQuery('li a:contains(Tom)').attr('href')), '/item/tom');
+  equal(normalizeUrl(jQuery('li a:contains(Erik)').attr('href')), '/item/erik');
 
   run(function() {
-    Ember.$('li a:contains(Erik)', '#qunit-fixture').click();
+    jQuery('li a:contains(Erik)', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(Item)', '#qunit-fixture').length, 1, 'The item template was rendered');
-  equal(Ember.$('p', '#qunit-fixture').text(), 'Erik Brynroflsson', 'The name is correct');
+  equal(jQuery('h3:contains(Item)', '#qunit-fixture').length, 1, 'The item template was rendered');
+  equal(jQuery('p', '#qunit-fixture').text(), 'Erik Brynroflsson', 'The name is correct');
 });
 
 QUnit.test('The {{link-to}} helper binds some anchor html tag common attributes', function() {
@@ -661,7 +662,7 @@ QUnit.test('The {{link-to}} helper binds some anchor html tag common attributes'
     router.handleURL('/');
   });
 
-  var link = Ember.$('#self-link', '#qunit-fixture');
+  var link = jQuery('#self-link', '#qunit-fixture');
   equal(link.attr('title'), 'title-attr', 'The self-link contains title attribute');
   equal(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
   equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
@@ -675,7 +676,7 @@ QUnit.test('The {{link-to}} helper supports `target` attribute', function() {
     router.handleURL('/');
   });
 
-  var link = Ember.$('#self-link', '#qunit-fixture');
+  var link = jQuery('#self-link', '#qunit-fixture');
   equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
 });
 
@@ -687,8 +688,8 @@ QUnit.test('The {{link-to}} helper does not call preventDefault if `target` attr
     router.handleURL('/');
   });
 
-  var event = Ember.$.Event('click');
-  Ember.$('#self-link', '#qunit-fixture').trigger(event);
+  var event = jQuery.Event('click');
+  jQuery('#self-link', '#qunit-fixture').trigger(event);
 
   equal(event.isDefaultPrevented(), false, 'should not preventDefault when target attribute is specified');
 });
@@ -701,8 +702,8 @@ QUnit.test('The {{link-to}} helper should preventDefault when `target = _self`',
     router.handleURL('/');
   });
 
-  var event = Ember.$.Event('click');
-  Ember.$('#self-link', '#qunit-fixture').trigger(event);
+  var event = jQuery.Event('click');
+  jQuery('#self-link', '#qunit-fixture').trigger(event);
 
   equal(event.isDefaultPrevented(), true, 'should preventDefault when target attribute is `_self`');
 });
@@ -721,7 +722,7 @@ QUnit.test('The {{link-to}} helper should not transition if target is not equal 
   });
 
   run(function() {
-    Ember.$('#about-link', '#qunit-fixture').click();
+    jQuery('#about-link', '#qunit-fixture').click();
   });
 
   notEqual(container.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
@@ -747,11 +748,11 @@ QUnit.test('The {{link-to}} helper accepts string/numeric arguments', function()
 
   run(function() { router.handleURL('/filters/popular'); });
 
-  equal(normalizeUrl(Ember.$('#link', '#qunit-fixture').attr('href')), '/filters/unpopular');
-  equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), '/filters/unpopular');
-  equal(normalizeUrl(Ember.$('#post-path-link', '#qunit-fixture').attr('href')), '/post/123');
-  equal(normalizeUrl(Ember.$('#post-number-link', '#qunit-fixture').attr('href')), '/post/123');
-  equal(normalizeUrl(Ember.$('#repo-object-link', '#qunit-fixture').attr('href')), '/repo/ember/ember.js');
+  equal(normalizeUrl(jQuery('#link', '#qunit-fixture').attr('href')), '/filters/unpopular');
+  equal(normalizeUrl(jQuery('#path-link', '#qunit-fixture').attr('href')), '/filters/unpopular');
+  equal(normalizeUrl(jQuery('#post-path-link', '#qunit-fixture').attr('href')), '/post/123');
+  equal(normalizeUrl(jQuery('#post-number-link', '#qunit-fixture').attr('href')), '/post/123');
+  equal(normalizeUrl(jQuery('#repo-object-link', '#qunit-fixture').attr('href')), '/repo/ember/ember.js');
 });
 
 QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about context arguments', function() {
@@ -775,7 +776,7 @@ QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about
   Ember.TEMPLATES['lobby/list'] = compile('{{#link-to \'lobby\' \'foobar\' id=\'lobby-link\'}}Lobby{{/link-to}}');
   bootApplication();
   run(router, 'handleURL', '/lobby/list');
-  run(Ember.$('#lobby-link'), 'click');
+  run(jQuery('#lobby-link'), 'click');
   shouldBeActive('#lobby-link');
 });
 
@@ -814,7 +815,7 @@ QUnit.test('The {{link-to}} helper unwraps controllers', function() {
 
   run(function() { router.handleURL('/'); });
 
-  Ember.$('#link', '#qunit-fixture').trigger('click');
+  jQuery('#link', '#qunit-fixture').trigger('click');
 });
 
 QUnit.test('The {{link-to}} helper doesn\'t change view context', function() {
@@ -832,16 +833,16 @@ QUnit.test('The {{link-to}} helper doesn\'t change view context', function() {
     router.handleURL('/');
   });
 
-  equal(Ember.$('#index', '#qunit-fixture').text(), 'test-Link: test-test', 'accesses correct view');
+  equal(jQuery('#index', '#qunit-fixture').text(), 'test-Link: test-test', 'accesses correct view');
 });
 
 QUnit.test('Quoteless route param performs property lookup', function() {
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' id=\'string-link\'}}string{{/link-to}}{{#link-to foo id=\'path-link\'}}path{{/link-to}}{{#link-to view.foo id=\'view-link\'}}{{view.foo}}{{/link-to}}');
 
   function assertEquality(href) {
-    equal(normalizeUrl(Ember.$('#string-link', '#qunit-fixture').attr('href')), '/');
-    equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), href);
-    equal(normalizeUrl(Ember.$('#view-link', '#qunit-fixture').attr('href')), href);
+    equal(normalizeUrl(jQuery('#string-link', '#qunit-fixture').attr('href')), '/');
+    equal(normalizeUrl(jQuery('#path-link', '#qunit-fixture').attr('href')), href);
+    equal(normalizeUrl(jQuery('#view-link', '#qunit-fixture').attr('href')), href);
   }
 
   App.IndexView = EmberView.extend({
@@ -914,8 +915,8 @@ QUnit.test('link-to with null/undefined dynamic parameters are put in a loading 
     }
   }
 
-  var $contextLink = Ember.$('#context-link', '#qunit-fixture');
-  var $staticLink = Ember.$('#static-link', '#qunit-fixture');
+  var $contextLink = jQuery('#context-link', '#qunit-fixture');
+  var $staticLink = jQuery('#static-link', '#qunit-fixture');
   var controller = container.lookup('controller:index');
 
   assertLinkStatus($contextLink);
@@ -981,15 +982,15 @@ QUnit.test('The {{link-to}} helper refreshes href element when one of params cha
 
   run(function() { router.handleURL('/'); });
 
-  equal(normalizeUrl(Ember.$('#post', '#qunit-fixture').attr('href')), '/posts/1', 'precond - Link has rendered href attr properly');
+  equal(normalizeUrl(jQuery('#post', '#qunit-fixture').attr('href')), '/posts/1', 'precond - Link has rendered href attr properly');
 
   run(function() { indexController.set('post', secondPost); });
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
+  equal(jQuery('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
 
   run(function() { indexController.set('post', null); });
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
+  equal(jQuery('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
 });
 
 
@@ -1008,13 +1009,13 @@ QUnit.test('The {{link-to}} helper is active when a route is active', function()
 
   run(router, 'handleURL', '/about');
 
-  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
-  equal(Ember.$('#item-link.active', '#qunit-fixture').length, 0, 'The item route link is inactive');
+  equal(jQuery('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
+  equal(jQuery('#item-link.active', '#qunit-fixture').length, 0, 'The item route link is inactive');
 
   run(router, 'handleURL', '/about/item');
 
-  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
-  equal(Ember.$('#item-link.active', '#qunit-fixture').length, 1, 'The item route link is active');
+  equal(jQuery('#about-link.active', '#qunit-fixture').length, 1, 'The about route link is active');
+  equal(jQuery('#item-link.active', '#qunit-fixture').length, 1, 'The item route link is active');
 });
 
 QUnit.test('The {{link-to}} helper works in an #each\'d array of string route names', function() {
@@ -1041,22 +1042,22 @@ QUnit.test('The {{link-to}} helper works in an #each\'d array of string route na
 
     var idx;
     for (idx = 0; idx < $links.length; idx++) {
-      var href = Ember.$($links[idx]).attr('href');
+      var href = jQuery($links[idx]).attr('href');
       // Old IE includes the whole hostname as well
       equal(href.slice(-expected[idx].length), expected[idx], 'Expected link to be \'' + expected[idx] + '\', but was \'' + href + '\'');
     }
   }
 
-  linksEqual(Ember.$('a', '#qunit-fixture'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
+  linksEqual(jQuery('a', '#qunit-fixture'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
   var indexController = container.lookup('controller:index');
   run(indexController, 'set', 'route1', 'rar');
 
-  linksEqual(Ember.$('a', '#qunit-fixture'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
+  linksEqual(jQuery('a', '#qunit-fixture'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
   run(indexController.routeNames, 'shiftObject');
 
-  linksEqual(Ember.$('a', '#qunit-fixture'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
+  linksEqual(jQuery('a', '#qunit-fixture'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
 });
 
 QUnit.test('The non-block form {{link-to}} helper moves into the named route', function() {
@@ -1071,12 +1072,12 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route', f
   bootApplication();
 
   run(function() {
-    Ember.$('#contact-link', '#qunit-fixture').click();
+    jQuery('#contact-link', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(Contact)', '#qunit-fixture').length, 1, 'The contact template was rendered');
-  equal(Ember.$('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
-  equal(Ember.$('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+  equal(jQuery('h3:contains(Contact)', '#qunit-fixture').length, 1, 'The contact template was rendered');
+  equal(jQuery('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
 QUnit.test('The non-block form {{link-to}} helper updates the link text when it is a binding', function() {
@@ -1099,32 +1100,32 @@ QUnit.test('The non-block form {{link-to}} helper updates the link text when it 
   });
   var controller = container.lookup('controller:index');
 
-  equal(Ember.$('#contact-link:contains(Jane)', '#qunit-fixture').length, 1, 'The link title is correctly resolved');
+  equal(jQuery('#contact-link:contains(Jane)', '#qunit-fixture').length, 1, 'The link title is correctly resolved');
 
   run(function() {
     controller.set('contactName', 'Joe');
   });
-  equal(Ember.$('#contact-link:contains(Joe)', '#qunit-fixture').length, 1, 'The link title is correctly updated when the bound property changes');
+  equal(jQuery('#contact-link:contains(Joe)', '#qunit-fixture').length, 1, 'The link title is correctly updated when the bound property changes');
 
   run(function() {
     controller.set('contactName', 'Robert');
   });
-  equal(Ember.$('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, 'The link title is correctly updated when the bound property changes a second time');
+  equal(jQuery('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, 'The link title is correctly updated when the bound property changes a second time');
 
   run(function() {
-    Ember.$('#contact-link', '#qunit-fixture').click();
+    jQuery('#contact-link', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(Contact)', '#qunit-fixture').length, 1, 'The contact template was rendered');
-  equal(Ember.$('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
-  equal(Ember.$('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
+  equal(jQuery('h3:contains(Contact)', '#qunit-fixture').length, 1, 'The contact template was rendered');
+  equal(jQuery('#self-link.active', '#qunit-fixture').length, 1, 'The self-link was rendered with active class');
+  equal(jQuery('#home-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 
   run(function() {
-    Ember.$('#home-link', '#qunit-fixture').click();
+    jQuery('#home-link', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, 'The index template was rendered');
-  equal(Ember.$('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, 'The link title is correctly updated when the route changes');
+  equal(jQuery('h3:contains(Home)', '#qunit-fixture').length, 1, 'The index template was rendered');
+  equal(jQuery('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, 'The link title is correctly updated when the route changes');
 });
 
 QUnit.test('The non-block form {{link-to}} helper moves into the named route with context', function() {
@@ -1155,26 +1156,26 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
   bootApplication();
 
   run(function() {
-    Ember.$('li a:contains(Yehuda)', '#qunit-fixture').click();
+    jQuery('li a:contains(Yehuda)', '#qunit-fixture').click();
   });
 
-  equal(Ember.$('h3:contains(Item)', '#qunit-fixture').length, 1, 'The item template was rendered');
-  equal(Ember.$('p', '#qunit-fixture').text(), 'Yehuda Katz', 'The name is correct');
+  equal(jQuery('h3:contains(Item)', '#qunit-fixture').length, 1, 'The item template was rendered');
+  equal(jQuery('p', '#qunit-fixture').text(), 'Yehuda Katz', 'The name is correct');
 
-  run(function() { Ember.$('#home-link').click(); });
+  run(function() { jQuery('#home-link').click(); });
 
-  equal(normalizeUrl(Ember.$('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
-  equal(normalizeUrl(Ember.$('li a:contains(Tom)').attr('href')), '/item/tom');
-  equal(normalizeUrl(Ember.$('li a:contains(Erik)').attr('href')), '/item/erik');
+  equal(normalizeUrl(jQuery('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
+  equal(normalizeUrl(jQuery('li a:contains(Tom)').attr('href')), '/item/tom');
+  equal(normalizeUrl(jQuery('li a:contains(Erik)').attr('href')), '/item/erik');
 });
 
 QUnit.test('The non-block form {{link-to}} performs property lookup', function() {
   Ember.TEMPLATES.index = compile('{{link-to \'string\' \'index\' id=\'string-link\'}}{{link-to path foo id=\'path-link\'}}{{link-to view.foo view.foo id=\'view-link\'}}');
 
   function assertEquality(href) {
-    equal(normalizeUrl(Ember.$('#string-link', '#qunit-fixture').attr('href')), '/');
-    equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), href);
-    equal(normalizeUrl(Ember.$('#view-link', '#qunit-fixture').attr('href')), href);
+    equal(normalizeUrl(jQuery('#string-link', '#qunit-fixture').attr('href')), '/');
+    equal(normalizeUrl(jQuery('#path-link', '#qunit-fixture').attr('href')), href);
+    equal(normalizeUrl(jQuery('#view-link', '#qunit-fixture').attr('href')), href);
   }
 
   App.IndexView = EmberView.extend({
@@ -1219,13 +1220,13 @@ QUnit.test('The non-block form {{link-to}} protects against XSS', function() {
 
   var controller = container.lookup('controller:application');
 
-  equal(Ember.$('#link', '#qunit-fixture').text(), 'blahzorz');
+  equal(jQuery('#link', '#qunit-fixture').text(), 'blahzorz');
   run(function() {
     controller.set('display', '<b>BLAMMO</b>');
   });
 
-  equal(Ember.$('#link', '#qunit-fixture').text(), '<b>BLAMMO</b>');
-  equal(Ember.$('b', '#qunit-fixture').length, 0);
+  equal(jQuery('#link', '#qunit-fixture').text(), '<b>BLAMMO</b>');
+  equal(jQuery('b', '#qunit-fixture').length, 0);
 });
 
 QUnit.test('the {{link-to}} helper calls preventDefault', function() {
@@ -1237,8 +1238,8 @@ QUnit.test('the {{link-to}} helper calls preventDefault', function() {
 
   run(router, 'handleURL', '/');
 
-  var event = Ember.$.Event('click');
-  Ember.$('#about-link', '#qunit-fixture').trigger(event);
+  var event = jQuery.Event('click');
+  jQuery('#about-link', '#qunit-fixture').trigger(event);
 
   equal(event.isDefaultPrevented(), true, 'should preventDefault');
 });
@@ -1254,8 +1255,8 @@ QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefau
 
   run(router, 'handleURL', '/');
 
-  var event = Ember.$.Event('click');
-  Ember.$('#about-link', '#qunit-fixture').trigger(event);
+  var event = jQuery.Event('click');
+  jQuery('#about-link', '#qunit-fixture').trigger(event);
 
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
 });
@@ -1283,11 +1284,11 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
   run(router, 'handleURL', '/');
 
   run(function() {
-    Ember.$('#default-post-link', '#qunit-fixture').click();
+    jQuery('#default-post-link', '#qunit-fixture').click();
   });
 
   run(function() {
-    Ember.$('#home-link', '#qunit-fixture').click();
+    jQuery('#home-link', '#qunit-fixture').click();
   });
 });
 
@@ -1333,7 +1334,7 @@ QUnit.test('{{link-to}} populates href with default query param values even with
 
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
 });
 
 QUnit.test('{{link-to}} populates href with default query param values with empty query-params object', function() {
@@ -1354,7 +1355,7 @@ QUnit.test('{{link-to}} populates href with default query param values with empt
 
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params) id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
 });
 
 QUnit.test('{{link-to}} populates href with supplied query param values', function() {
@@ -1375,7 +1376,7 @@ QUnit.test('{{link-to}} populates href with supplied query param values', functi
 
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/?foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/?foo=456', 'link has right href');
 });
 
 QUnit.test('{{link-to}} populates href with partially supplied query param values', function() {
@@ -1400,7 +1401,7 @@ QUnit.test('{{link-to}} populates href with partially supplied query param value
 
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/?foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/?foo=456', 'link has right href');
 });
 
 QUnit.test('{{link-to}} populates href with partially supplied query param values, but omits if value is default value', function() {
@@ -1421,7 +1422,7 @@ QUnit.test('{{link-to}} populates href with partially supplied query param value
 
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'123\') id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
 });
 
 QUnit.test('{{link-to}} populates href with fully supplied query param values', function() {
@@ -1446,7 +1447,7 @@ QUnit.test('{{link-to}} populates href with fully supplied query param values', 
 
   Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 });
 
 QUnit.test('{{link-to}} with only query-params and a block updates when route changes', function() {
@@ -1475,12 +1476,12 @@ QUnit.test('{{link-to}} with only query-params and a block updates when route ch
 
   Ember.TEMPLATES.application = compile('{{#link-to (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}Index{{/link-to}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 
   run(function() {
     router.handleURL('/about');
   });
-  equal(Ember.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
 });
 
 QUnit.test('Block-less {{link-to}} with only query-params updates when route changes', function() {
@@ -1509,10 +1510,10 @@ QUnit.test('Block-less {{link-to}} with only query-params updates when route cha
 
   Ember.TEMPLATES.application = compile('{{link-to "Index" (query-params foo=\'456\' bar=\'NAW\') id=\'the-link\'}}');
   bootApplication();
-  equal(Ember.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 
   run(function() {
     router.handleURL('/about');
   });
-  equal(Ember.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+  equal(jQuery('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
 });

@@ -4,6 +4,7 @@ import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, App, router, registry, container;
 
@@ -22,7 +23,7 @@ function shouldBeActive(selector) {
 }
 
 function checkActive(selector, active) {
-  var classList = Ember.$(selector, '#qunit-fixture')[0].className;
+  var classList = jQuery(selector, '#qunit-fixture')[0].className;
   equal(classList.indexOf('active') > -1, active, selector + ' active should be ' + active.toString());
 }
 
@@ -107,7 +108,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'index\' id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
@@ -116,7 +117,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params) id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
@@ -132,7 +133,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to (query-params) id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
@@ -141,7 +142,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
@@ -150,7 +151,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
@@ -163,8 +164,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'about\' (query-params baz=\'lol\') id=\'the-link\'}}About{{/link-to}}');
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/about?baz=lol');
-    run(Ember.$('#the-link'), 'click');
+    equal(jQuery('#the-link').attr('href'), '/about?baz=lol');
+    run(jQuery('#the-link'), 'click');
     var aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, 'about controller QP properties updated');
 
@@ -178,9 +179,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var indexController = container.lookup('controller:index');
 
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG');
+    equal(jQuery('#the-link').attr('href'), '/?foo=OMG');
     run(indexController, 'set', 'boundThing', 'ASL');
-    equal(Ember.$('#the-link').attr('href'), '/?foo=ASL');
+    equal(jQuery('#the-link').attr('href'), '/?foo=ASL');
   });
 
   QUnit.test('supplied QP properties can be bound (booleans)', function() {
@@ -189,11 +190,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?abool=OMG');
+    equal(jQuery('#the-link').attr('href'), '/?abool=OMG');
     run(indexController, 'set', 'boundThing', false);
-    equal(Ember.$('#the-link').attr('href'), '/?abool=false');
+    equal(jQuery('#the-link').attr('href'), '/?abool=false');
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
 
     deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
   });
@@ -205,11 +206,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var indexController = container.lookup('controller:index');
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=lol');
+    equal(jQuery('#the-link').attr('href'), '/?foo=lol');
     run(indexController, 'set', 'bar', 'BORF');
-    equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
+    equal(jQuery('#the-link').attr('href'), '/?bar=BORF&foo=lol');
     run(indexController, 'set', 'foo', 'YEAH');
-    equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
+    equal(jQuery('#the-link').attr('href'), '/?bar=BORF&foo=lol');
   });
 
   QUnit.test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
@@ -245,14 +246,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     run(function() {
       equal(router.currentRouteName, 'cars.create');
-      Ember.$('#close-link').click();
+      jQuery('#close-link').click();
     });
 
     run(function() {
       equal(router.currentRouteName, 'cars.index');
       equal(router.get('url'), '/cars');
       equal(container.lookup('controller:cars').get('page'), 1, 'The page query-param is 1');
-      Ember.$('#page2-link').click();
+      jQuery('#page2-link').click();
     });
 
     run(function() {
@@ -474,13 +475,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    equal(Ember.$('#app-link').attr('href'), '/parent');
+    equal(jQuery('#app-link').attr('href'), '/parent');
     shouldNotBeActive('#app-link');
 
     run(router, 'handleURL', '/parent?page=2');
-    equal(Ember.$('#app-link').attr('href'), '/parent');
+    equal(jQuery('#app-link').attr('href'), '/parent');
     shouldBeActive('#app-link');
-    equal(Ember.$('#parent-link').attr('href'), '/parent');
+    equal(jQuery('#parent-link').attr('href'), '/parent');
     shouldBeActive('#parent-link');
 
     var parentController = container.lookup('controller:parent');
@@ -490,7 +491,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldBeActive('#app-link');
     shouldBeActive('#parent-link');
 
-    Ember.$('#app-link').click();
+    jQuery('#app-link').click();
     equal(router.get('location.path'), '/parent');
   });
 } else {
@@ -526,7 +527,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'index\' id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
@@ -535,7 +536,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params) id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
@@ -551,7 +552,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to (query-params) id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
@@ -560,7 +561,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
@@ -569,7 +570,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
     bootApplication();
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
     var indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
@@ -582,8 +583,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile('{{#link-to \'about\' (query-params baz=\'lol\') id=\'the-link\'}}About{{/link-to}}');
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/about?baz=lol');
-    run(Ember.$('#the-link'), 'click');
+    equal(jQuery('#the-link').attr('href'), '/about?baz=lol');
+    run(jQuery('#the-link'), 'click');
     var aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, 'about controller QP properties updated');
 
@@ -596,9 +597,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG');
+    equal(jQuery('#the-link').attr('href'), '/?foo=OMG');
     run(indexController, 'set', 'boundThing', 'ASL');
-    equal(Ember.$('#the-link').attr('href'), '/?foo=ASL');
+    equal(jQuery('#the-link').attr('href'), '/?foo=ASL');
   });
 
   QUnit.test('supplied QP properties can be bound (booleans)', function() {
@@ -607,11 +608,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?abool=OMG');
+    equal(jQuery('#the-link').attr('href'), '/?abool=OMG');
     run(indexController, 'set', 'boundThing', false);
-    equal(Ember.$('#the-link').attr('href'), '/?abool=false');
+    equal(jQuery('#the-link').attr('href'), '/?abool=false');
 
-    run(Ember.$('#the-link'), 'click');
+    run(jQuery('#the-link'), 'click');
 
     deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
   });
@@ -622,11 +623,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     var indexController = container.lookup('controller:index');
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=lol');
+    equal(jQuery('#the-link').attr('href'), '/?foo=lol');
     run(indexController, 'set', 'bar', 'BORF');
-    equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
+    equal(jQuery('#the-link').attr('href'), '/?bar=BORF&foo=lol');
     run(indexController, 'set', 'foo', 'YEAH');
-    equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
+    equal(jQuery('#the-link').attr('href'), '/?bar=BORF&foo=lol');
   });
 
   QUnit.test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
@@ -663,14 +664,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     run(function() {
       equal(router.currentRouteName, 'cars.create');
-      Ember.$('#close-link').click();
+      jQuery('#close-link').click();
     });
 
     run(function() {
       equal(router.currentRouteName, 'cars.index');
       equal(router.get('url'), '/cars');
       equal(carsController.get('page'), 1, 'The page query-param is 1');
-      Ember.$('#page2-link').click();
+      jQuery('#page2-link').click();
     });
 
     run(function() {
@@ -863,13 +864,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    equal(Ember.$('#app-link').attr('href'), '/parent');
+    equal(jQuery('#app-link').attr('href'), '/parent');
     shouldNotBeActive('#app-link');
 
     run(router, 'handleURL', '/parent?page=2');
-    equal(Ember.$('#app-link').attr('href'), '/parent');
+    equal(jQuery('#app-link').attr('href'), '/parent');
     shouldBeActive('#app-link');
-    equal(Ember.$('#parent-link').attr('href'), '/parent');
+    equal(jQuery('#parent-link').attr('href'), '/parent');
     shouldBeActive('#parent-link');
 
     var parentController = container.lookup('controller:parent');
@@ -879,7 +880,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldBeActive('#app-link');
     shouldBeActive('#parent-link');
 
-    Ember.$('#app-link').click();
+    jQuery('#app-link').click();
     equal(router.get('location.path'), '/parent');
   });
 }

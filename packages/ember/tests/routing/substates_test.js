@@ -4,6 +4,7 @@ import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, App, templates, router, container, counter;
 
@@ -97,11 +98,11 @@ QUnit.test('Slow promise from a child route of application enters nested loading
 
   bootApplication('/bro');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
 
   run(broDeferred, 'resolve', broModel);
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'BRO', 'bro template has loaded and replaced loading template');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'BRO', 'bro template has loaded and replaced loading template');
 });
 
 QUnit.test('Slow promises waterfall on startup', function() {
@@ -149,13 +150,13 @@ QUnit.test('Slow promises waterfall on startup', function() {
 
   bootApplication('/grandma/mom/sally');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'LOADING', 'The Loading template is nested in application template\'s outlet');
 
   run(grandmaDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM MOMLOADING', 'Mom\'s child loading route is displayed due to sally\'s slow promise');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM MOMLOADING', 'Mom\'s child loading route is displayed due to sally\'s slow promise');
 
   run(sallyDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM SALLY', 'Sally template displayed');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM SALLY', 'Sally template displayed');
 });
 
 QUnit.test('ApplicationRoute#currentPath reflects loading state path', function() {
@@ -181,13 +182,13 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
 
   bootApplication('/grandma/mom');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA GRANDMALOADING');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA GRANDMALOADING');
 
   var appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.loading', 'currentPath reflects loading state');
 
   run(momDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM');
   equal(appController.get('currentPath'), 'grandma.mom', 'currentPath reflects final state');
 });
 
@@ -210,10 +211,10 @@ QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter Load
 
   bootApplication();
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), '', 'nothing has been rendered yet');
+  equal(jQuery('#app', '#qunit-fixture').text(), '', 'nothing has been rendered yet');
 
   run(appDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
 QUnit.test('Don\'t enter loading route unless either route or template defined', function() {
@@ -237,7 +238,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
   ok(appController.get('currentPath') !== 'loading', 'loading state not entered');
 
   run(indexDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
 QUnit.test('Enter loading route if only LoadingRoute defined', function() {
@@ -266,7 +267,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
   equal(appController.get('currentPath'), 'loading', 'loading state entered');
 
   run(indexDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
 QUnit.test('Enter child loading state of pivot route', function() {
@@ -405,7 +406,7 @@ QUnit.test('Default error event moves into nested route', function() {
 
   step(3, 'App finished booting');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
 
   var appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.error', 'Initial route fully loaded');
@@ -482,7 +483,7 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter Application
   ok(loadingRouteEntered, 'ApplicationLoadingRoute was entered');
 
   run(appDeferred, 'resolve', {});
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
 QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
@@ -510,12 +511,12 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter application
 
   bootApplication();
 
-  equal(Ember.$('#qunit-fixture > #toplevel-loading').text(), 'TOPLEVEL LOADING');
+  equal(jQuery('#qunit-fixture > #toplevel-loading').text(), 'TOPLEVEL LOADING');
 
   run(appDeferred, 'resolve', {});
 
-  equal(Ember.$('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  equal(jQuery('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
 QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
@@ -557,7 +558,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
 
   step(3, 'App finished booting');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'GRANDMA MOM ERROR: did it broke?', 'the more specifically-named mom error substate was entered over the other error route');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM ERROR: did it broke?', 'the more specifically-named mom error substate was entered over the other error route');
 
   var appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.mom_error', 'Initial route fully loaded');
@@ -587,11 +588,11 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
 
   bootApplication('/foo/bar');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
 
   run(deferred, 'resolve');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
 });
 
 QUnit.test('Prioritized loading substate entry works with preserved-namespace nested routes', function() {
@@ -617,11 +618,11 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
 
   bootApplication('/foo/bar');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR LOADING', 'foo.bar_loading was entered (as opposed to something like foo/foo/bar_loading)');
 
   run(deferred, 'resolve');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
 });
 
 QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
@@ -650,7 +651,7 @@ QUnit.test('Prioritized error substate entry works with preserved-namespace nest
     bootApplication('/foo/bar');
   }, function(err) { return err.msg === 'did it broke?'; });
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
 });
 
 QUnit.test('Prioritized loading substate entry works with auto-generated index routes', function() {
@@ -682,11 +683,11 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
 
   bootApplication('/foo');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO LOADING', 'foo.index_loading was entered');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'FOO LOADING', 'foo.index_loading was entered');
 
   run(deferred, 'resolve');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'YAY');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'YAY');
 });
 
 QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
@@ -721,7 +722,7 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
     bootApplication('/foo');
   }, function(err) { return err.msg === 'did it broke?'; });
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
 });
 
 QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
@@ -744,10 +745,10 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
     bootApplication();
   }, function(err) { return err.msg === 'BAD NEWS BEARS'; });
 
-  equal(Ember.$('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
+  equal(jQuery('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
 
   reject = false;
   run(router, 'transitionTo', 'index');
 
-  equal(Ember.$('#app', '#qunit-fixture').text(), 'INDEX');
+  equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });

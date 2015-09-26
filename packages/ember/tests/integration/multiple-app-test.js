@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var App1, App2, actions;
 
@@ -43,7 +44,7 @@ function handleURL(application, path) {
 QUnit.module('View Integration', {
   setup() {
     actions = [];
-    Ember.$('#qunit-fixture').html('<div id="app-1"></div><div id="app-2"></div>');
+    jQuery('#qunit-fixture').html('<div id="app-1"></div><div id="app-2"></div>');
     App1 = startApp('#app-1');
     App2 = startApp('#app-2');
   },
@@ -62,8 +63,8 @@ QUnit.test('booting multiple applications can properly handle events', function(
   handleURL(App1, '/');
   handleURL(App2, '/');
 
-  Ember.$('#app-2 .do-stuff').click();
-  Ember.$('#app-1 .do-stuff').click();
+  jQuery('#app-2 .do-stuff').click();
+  jQuery('#app-1 .do-stuff').click();
 
   assert.deepEqual(actions, ['#app-2', '#app-1']);
 });

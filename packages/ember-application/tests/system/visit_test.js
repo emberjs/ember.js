@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
@@ -6,6 +5,7 @@ import ApplicationInstance from 'ember-application/system/application-instance';
 import Router from 'ember-routing/system/router';
 import View from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
+import jQuery from 'ember-views/system/jquery';
 
 function createApplication() {
   var App = Application.extend().create({
@@ -70,14 +70,14 @@ if (isEnabled('ember-application-visit')) {
       });
     });
 
-    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.equal(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     app.visit('/').then(function(instance) {
       QUnit.start();
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
       run(instance.view, 'appendTo', '#qunit-fixture');
-      assert.equal(Ember.$('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
+      assert.equal(jQuery('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
 
       instance.destroy();
     }, function(error) {
@@ -108,14 +108,14 @@ if (isEnabled('ember-application-visit')) {
       });
     });
 
-    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.equal(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     app.visit('/').then(function(instance) {
       QUnit.start();
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
       run(instance.view, 'appendTo', '#qunit-fixture');
-      assert.equal(Ember.$('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
+      assert.equal(jQuery('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
       assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
 
       function lookup(fullName) {

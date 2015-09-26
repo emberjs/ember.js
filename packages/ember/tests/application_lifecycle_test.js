@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import Application from 'ember-application/system/application';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
+import jQuery from 'ember-views/system/jquery';
 
 var compile = Ember.HTMLBars.compile;
 
@@ -164,7 +165,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
   run(App, 'advanceReadiness');
 
   run(function() {
-    Ember.$('#wowza-thingy').trigger('wowza');
+    jQuery('#wowza-thingy').trigger('wowza');
   });
 });
 
@@ -198,6 +199,6 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
   run(App, 'advanceReadiness');
 
   run(function() {
-    Ember.$('#herky-thingy').trigger('herky');
+    jQuery('#herky-thingy').trigger('herky');
   });
 });

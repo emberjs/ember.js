@@ -3,6 +3,7 @@ import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
@@ -39,7 +40,7 @@ QUnit.module('Template scoping examples', {
       App.LoadingRoute = Ember.Route.extend();
     });
 
-    $fixture = Ember.$('#qunit-fixture');
+    $fixture = jQuery('#qunit-fixture');
   },
 
   teardown() {

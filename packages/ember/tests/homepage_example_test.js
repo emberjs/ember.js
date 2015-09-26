@@ -4,6 +4,7 @@ import Application from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
+import jQuery from 'ember-views/system/jquery';
 
 var App, $fixture;
 
@@ -55,7 +56,7 @@ QUnit.module('Homepage Example', {
       App.LoadingRoute = Ember.Route.extend();
     });
 
-    $fixture = Ember.$('#qunit-fixture');
+    $fixture = jQuery('#qunit-fixture');
     setupExample();
   },
 
