@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
@@ -77,7 +78,7 @@ QUnit.module('Basic Routing', {
       Ember.TEMPLATES.homepage = compile('<h3>Megatroll</h3><p>{{model.home}}</p>');
       Ember.TEMPLATES.camelot = compile('<section><h3>Is a silly place</h3></section>');
 
-      originalLoggerError = Ember.Logger.error;
+      originalLoggerError = Logger.error;
     });
   },
 
@@ -87,7 +88,7 @@ QUnit.module('Basic Routing', {
       App = null;
 
       Ember.TEMPLATES = {};
-      Ember.Logger.error = originalLoggerError;
+      Logger.error = originalLoggerError;
     });
   }
 });
@@ -3176,7 +3177,7 @@ QUnit.test('rejecting the model hooks promise with a non-error prints the `messa
     this.route('yippie', { path: '/' });
   });
 
-  Ember.Logger.error = function(initialMessage, errorMessage, errorStack) {
+  Logger.error = function(initialMessage, errorMessage, errorStack) {
     equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
     equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
     equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
@@ -3205,7 +3206,7 @@ QUnit.test('rejecting the model hooks promise with an error with `errorThrown` p
     this.route('yippie', { path: '/' });
   });
 
-  Ember.Logger.error = function(initialMessage, errorMessage, errorStack) {
+  Logger.error = function(initialMessage, errorMessage, errorStack) {
     equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
     equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
     equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
@@ -3232,7 +3233,7 @@ QUnit.test('rejecting the model hooks promise with no reason still logs error', 
     this.route('wowzers', { path: '/' });
   });
 
-  Ember.Logger.error = function(initialMessage) {
+  Logger.error = function(initialMessage) {
     equal(initialMessage, 'Error while processing route: wowzers', 'a message with the current route name is printed');
   };
 
@@ -3247,14 +3248,14 @@ QUnit.test('rejecting the model hooks promise with no reason still logs error', 
 
 QUnit.test('rejecting the model hooks promise with a string shows a good error', function() {
   expect(3);
-  var originalLoggerError = Ember.Logger.error;
+  var originalLoggerError = Logger.error;
   var rejectedMessage = 'Supercalifragilisticexpialidocious';
 
   Router.map(function() {
     this.route('yondo', { path: '/' });
   });
 
-  Ember.Logger.error = function(initialMessage, errorMessage) {
+  Logger.error = function(initialMessage, errorMessage) {
     equal(initialMessage, 'Error while processing route: yondo', 'a message with the current route name is printed');
     equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
   };
@@ -3269,7 +3270,7 @@ QUnit.test('rejecting the model hooks promise with a string shows a good error',
     bootApplication();
   }, rejectedMessage, 'expected an exception');
 
-  Ember.Logger.error = originalLoggerError;
+  Logger.error = originalLoggerError;
 });
 
 QUnit.test('willLeave, willChangeContext, willChangeModel actions don\'t fire unless feature flag enabled', function() {
@@ -3316,7 +3317,7 @@ QUnit.test('Errors in transitionTo within redirect hook are logged', function() 
     }
   });
 
-  Ember.Logger.error = function() {
+  Logger.error = function() {
     // push the arguments onto an array so we can detect if the error gets logged twice
     actual.push(arguments);
   };

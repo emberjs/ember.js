@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core'; // Ember.Logger, Ember.LOG_BINDINGS
+import Ember from 'ember-metal/core'; // Ember.LOG_BINDINGS
+import Logger from 'ember-metal/logger';
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { trySet } from 'ember-metal/property_set';
@@ -261,7 +262,7 @@ Binding.prototype = {
     if (direction === 'fwd') {
       var fromValue = getWithGlobals(obj, this._from);
       if (log) {
-        Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
+        Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
       if (this._oneWay) {
         trySet(obj, toPath, fromValue);
@@ -274,7 +275,7 @@ Binding.prototype = {
     } else if (direction === 'back') {
       var toValue = get(obj, this._to);
       if (log) {
-        Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
+        Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
       _suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
         trySet(isGlobalPath(fromPath) ? Ember.lookup : obj, fromPath, toValue);

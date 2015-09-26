@@ -1,6 +1,6 @@
 /*globals EmberDev */
 
-import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import View from 'ember-views/views/view';
@@ -17,9 +17,9 @@ QUnit.module('Ember.Application – logging of generated classes', {
   setup() {
     logs = {};
 
-    originalLogger = Ember.Logger.info;
+    originalLogger = Logger.info;
 
-    Ember.Logger.info = function() {
+    Logger.info = function() {
       var fullName = arguments[1].fullName;
 
       logs[fullName] = logs[fullName] || 0;
@@ -44,7 +44,7 @@ QUnit.module('Ember.Application – logging of generated classes', {
   },
 
   teardown() {
-    Ember.Logger.info = originalLogger;
+    Logger.info = originalLogger;
 
     run(App, 'destroy');
 
@@ -142,9 +142,9 @@ QUnit.module('Ember.Application – logging of view lookups', {
   setup() {
     logs = {};
 
-    originalLogger = Ember.Logger.info;
+    originalLogger = Logger.info;
 
-    Ember.Logger.info = function() {
+    Logger.info = function() {
       var fullName = arguments[1].fullName;
 
       logs[fullName] = logs[fullName] || 0;
@@ -169,7 +169,7 @@ QUnit.module('Ember.Application – logging of view lookups', {
   },
 
   teardown() {
-    Ember.Logger.info = originalLogger;
+    Logger.info = originalLogger;
 
     run(App, 'destroy');
 

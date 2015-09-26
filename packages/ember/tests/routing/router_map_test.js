@@ -47,7 +47,6 @@ QUnit.module('Router.map', {
       App = null;
 
       Ember.TEMPLATES = {};
-      //Ember.Logger.error = originalLoggerError;
     });
   }
 });
