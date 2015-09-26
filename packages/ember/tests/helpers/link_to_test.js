@@ -8,6 +8,7 @@ import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import inject from 'ember-runtime/inject';
 
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -1267,7 +1268,7 @@ QUnit.test('the {{link-to}} helper does not throw an error if its route has exit
   Ember.TEMPLATES.application = compile('{{#link-to \'index\' id=\'home-link\'}}Home{{/link-to}}{{#link-to \'post\' defaultPost id=\'default-post-link\'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to \'post\' id=\'post-link\'}}Post{{/link-to}}{{/if}}');
 
   App.ApplicationController = Ember.Controller.extend({
-    postController: Ember.inject.controller('post'),
+    postController: inject.controller('post'),
     currentPost: alias('postController.model')
   });
 
