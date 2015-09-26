@@ -312,7 +312,7 @@
 @submodule ember-routing-views
 */
 
-import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
@@ -635,7 +635,7 @@ let LinkComponent = EmberComponent.extend({
     if (get(this, '_isDisabled')) { return false; }
 
     if (get(this, 'loading')) {
-      Ember.Logger.warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.');
+      Logger.warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.');
       return false;
     }
 

@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
@@ -875,9 +876,9 @@ QUnit.test('Quoteless route param performs property lookup', function() {
 QUnit.test('link-to with null/undefined dynamic parameters are put in a loading state', function() {
   expect(19);
 
-  var oldWarn = Ember.Logger.warn;
+  var oldWarn = Logger.warn;
   var warnCalled = false;
-  Ember.Logger.warn = function() { warnCalled = true; };
+  Logger.warn = function() { warnCalled = true; };
   Ember.TEMPLATES.index = compile('{{#link-to destinationRoute routeContext loadingClass=\'i-am-loading\' id=\'context-link\'}}string{{/link-to}}{{#link-to secondRoute loadingClass=loadingClass id=\'static-link\'}}string{{/link-to}}');
 
   var thing = EmberObject.create({ id: 123 });
@@ -958,7 +959,7 @@ QUnit.test('link-to with null/undefined dynamic parameters are put in a loading 
   // Click the now-active link
   run($staticLink, 'click');
 
-  Ember.Logger.warn = oldWarn;
+  Logger.warn = oldWarn;
 });
 
 QUnit.test('The {{link-to}} helper refreshes href element when one of params changes', function() {
