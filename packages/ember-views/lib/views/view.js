@@ -34,6 +34,9 @@ import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import { deprecateProperty } from 'ember-metal/deprecate_property';
 import { POST_INIT } from 'ember-runtime/system/core_object';
+import { symbol } from 'ember-metal/utils';
+
+const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
 function K() { return this; }
 
@@ -1307,6 +1310,7 @@ var View = CoreView.extend(
     this.scheduledRevalidation = false;
 
     this._super(...arguments);
+    this[INIT_WAS_CALLED] = true;
 
     if (!this._viewRegistry) {
       this._viewRegistry = View.views;
@@ -1329,6 +1333,12 @@ var View = CoreView.extend(
    */
   [POST_INIT]: function() {
     this._super(...arguments);
+
+    Ember.assert(
+      `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
+      this[INIT_WAS_CALLED]
+    );
+
     this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 

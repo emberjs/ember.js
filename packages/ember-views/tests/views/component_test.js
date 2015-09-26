@@ -27,6 +27,16 @@ QUnit.module('Ember.Component', {
   }
 });
 
+QUnit.test('throws an error if `this._super` is not called from `init`', function() {
+  let TestComponent = Component.extend({
+    init() { }
+  });
+
+  expectAssertion(function() {
+    TestComponent.create();
+  }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
+});
+
 QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
   expect(2);
 
