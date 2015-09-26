@@ -5,6 +5,7 @@ import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, templates, router, container, counter;
 
@@ -19,7 +20,7 @@ function bootApplication(startingURL) {
   }
 
   if (startingURL) {
-    Ember.NoneLocation.reopen({
+    NoneLocation.reopen({
       path: startingURL
     });
   }
@@ -69,7 +70,7 @@ QUnit.module('Loading/Error Substates', {
       Ember.TEMPLATES = {};
     });
 
-    Ember.NoneLocation.reopen({
+    NoneLocation.reopen({
       path: ''
     });
   }

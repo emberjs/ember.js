@@ -13,6 +13,8 @@ import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import NoneLocation from 'ember-routing/location/none_location';
+import HistoryLocation from 'ember-routing/location/history_location';
 
 var trim = jQuery.trim;
 
@@ -1524,7 +1526,7 @@ QUnit.test('using replaceWith calls location.replaceURL if available', function(
   var replaceCount = 0;
 
   Router.reopen({
-    location: Ember.NoneLocation.create({
+    location: NoneLocation.create({
       setURL(path) {
         setCount++;
         set(this, 'path', path);
@@ -1560,7 +1562,7 @@ QUnit.test('using replaceWith calls setURL if location.replaceURL is not defined
   var setCount = 0;
 
   Router.reopen({
-    location: Ember.NoneLocation.create({
+    location: NoneLocation.create({
       setURL(path) {
         setCount++;
         set(this, 'path', path);
@@ -2133,7 +2135,7 @@ QUnit.test('Router accounts for rootURL on page load when using history location
 
   // Create new implementation that extends HistoryLocation
   // and set current location to rootURL + '/posts'
-  HistoryTestLocation = Ember.HistoryLocation.extend({
+  HistoryTestLocation = HistoryLocation.extend({
     initState() {
       var path = rootURL + '/posts';
 
@@ -2182,7 +2184,7 @@ QUnit.test('The rootURL is passed properly to the location implementation', func
   var rootURL = '/blahzorz';
   var HistoryTestLocation;
 
-  HistoryTestLocation = Ember.HistoryLocation.extend({
+  HistoryTestLocation = HistoryLocation.extend({
     rootURL: 'this is not the URL you are looking for',
     initState() {
       equal(this.get('rootURL'), rootURL);

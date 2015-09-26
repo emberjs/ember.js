@@ -4,6 +4,7 @@ import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, templates, router, container;
 
@@ -47,7 +48,7 @@ QUnit.module('Top Level DOM Structure', {
       Ember.TEMPLATES = {};
     });
 
-    Ember.NoneLocation.reopen({
+    NoneLocation.reopen({
       path: ''
     });
   }
