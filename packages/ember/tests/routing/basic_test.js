@@ -2118,8 +2118,8 @@ QUnit.test('Parent route context change', function() {
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
 
-QUnit.test('Router accounts for rootURL on page load when using history location', function() {
-  var rootURL = window.location.pathname + '/app';
+QUnit.test('Router accounts for rootPath on page load when using history location', function() {
+  var rootPath = window.location.pathname + '/app';
   var postsTemplateRendered = false;
   var setHistory, HistoryTestLocation;
 
@@ -2128,10 +2128,10 @@ QUnit.test('Router accounts for rootURL on page load when using history location
   };
 
   // Create new implementation that extends HistoryLocation
-  // and set current location to rootURL + '/posts'
+  // and set current location to rootPath + '/posts'
   HistoryTestLocation = Ember.HistoryLocation.extend({
     initState() {
-      var path = rootURL + '/posts';
+      var path = rootPath + '/posts';
 
       setHistory(this, path);
       this.set('location', {
@@ -2154,7 +2154,7 @@ QUnit.test('Router accounts for rootURL on page load when using history location
 
   Router.reopen({
     location: 'historyTest',
-    rootURL: rootURL
+    rootPath: rootPath
   });
 
   Router.map(function() {
@@ -2170,18 +2170,18 @@ QUnit.test('Router accounts for rootURL on page load when using history location
 
   bootApplication();
 
-  ok(postsTemplateRendered, 'Posts route successfully stripped from rootURL');
+  ok(postsTemplateRendered, 'Posts route successfully stripped from rootPath');
 });
 
-QUnit.test('The rootURL is passed properly to the location implementation', function() {
+QUnit.test('The rootPath is passed properly to the location implementation', function() {
   expect(1);
-  var rootURL = '/blahzorz';
+  var rootPath = '/blahzorz';
   var HistoryTestLocation;
 
   HistoryTestLocation = Ember.HistoryLocation.extend({
-    rootURL: 'this is not the URL you are looking for',
+    rootPath: 'this is not the URL you are looking for',
     initState() {
-      equal(this.get('rootURL'), rootURL);
+      equal(this.get('rootPath'), rootPath);
     }
   });
 
@@ -2189,7 +2189,7 @@ QUnit.test('The rootURL is passed properly to the location implementation', func
 
   Router.reopen({
     location: 'history-test',
-    rootURL: rootURL,
+    rootPath: rootPath,
     // if we transition in this test we will receive failures
     // if the tests are run from a static file
     _doURLTransition() { }

@@ -1,4 +1,5 @@
-import { assert } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
+import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { tryInvoke } from 'ember-metal/utils';
@@ -100,11 +101,38 @@ export default EmberObject.extend({
 
     Will be pre-pended to path upon state change.
 
+    @since 2.2.0
+    @property rootPath
+    @default '/'
+  */
+  rootPath: '/',
+
+  /**
+    @private
+
+    Will be pre-pended to path upon state change.
+
     @since 1.5.1
     @property rootURL
     @default '/'
+    @deprecated use `rootPath` instead
   */
-  rootURL: '/',
+  rootURL: computed('rootPath', {
+    get() {
+      deprecate('Using `location.rootURL` is deprecated. Please use `location.rootPath` instead.',
+                false,
+                { id: 'ember-routing.rootURL', until: '3.0.0' });
+      return get(this, 'rootPath');
+    },
+
+    set(property, newValue) {
+      deprecate('Using `location.rootURL` is deprecated. Please use `location.rootPath` instead.',
+                false,
+                { id: 'ember-routing.rootURL', until: '3.0.0' });
+      set(this, 'rootPath', newValue);
+      return newValue;
+    }
+  }),
 
   /**
    Called by the router to instruct the location to do any feature detection
@@ -114,16 +142,16 @@ export default EmberObject.extend({
    @private
   */
   detect() {
-    var rootURL = this.rootURL;
+    var rootPath = this.rootPath;
 
-    assert('rootURL must end with a trailing forward slash e.g. "/app/"',
-                 rootURL.charAt(rootURL.length - 1) === '/');
+    assert('rootPath must end with a trailing forward slash e.g. "/app/"',
+                 rootPath.charAt(rootPath.length - 1) === '/');
 
     var implementation = detectImplementation({
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL: rootURL,
+      rootPath: rootPath,
       documentMode: this.documentMode,
       global: this.global
     });
@@ -134,7 +162,7 @@ export default EmberObject.extend({
     }
 
     var concrete = this.container.lookup(`location:${implementation}`);
-    set(concrete, 'rootURL', rootURL);
+    set(concrete, 'rootPath', rootPath);
 
     assert(`Could not find location '${implementation}'.`, !!concrete);
 
@@ -185,14 +213,14 @@ function detectImplementation(options) {
   var history = options.history;
   var documentMode = options.documentMode;
   var global = options.global;
-  var rootURL = options.rootURL;
+  var rootPath = options.rootPath;
 
   var implementation = 'none';
   var cancelRouterSetup = false;
   var currentPath = getFullPath(location);
 
   if (supportsHistory(userAgent, history)) {
-    var historyPath = getHistoryPath(rootURL, location);
+    var historyPath = getHistoryPath(rootPath, location);
 
     // If the browser supports history and we have a history path, we can use
     // the history location with no redirects.
@@ -208,7 +236,7 @@ function detectImplementation(options) {
       }
     }
   } else if (supportsHashChange(documentMode, global)) {
-    var hashPath = getHashPath(rootURL, location);
+    var hashPath = getHashPath(rootPath, location);
 
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
@@ -237,14 +265,14 @@ function detectImplementation(options) {
   browsers. This may very well differ from the real current path (e.g. if it
   starts off as a hashed URL)
 */
-export function getHistoryPath(rootURL, location) {
+export function getHistoryPath(rootPath, location) {
   var path = getPath(location);
   var hash = getHash(location);
   var query = getQuery(location);
-  var rootURLIndex = path.indexOf(rootURL);
+  var rootPathIndex = path.indexOf(rootPath);
   var routeHash, hashParts;
 
-  assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
+  assert(`Path ${path} does not start with the provided rootPath ${rootPath}`, rootPathIndex === 0);
 
   // By convention, Ember.js routes using HashLocation are required to start
   // with `#/`. Anything else should NOT be considered a route and should
@@ -282,10 +310,10 @@ export function getHistoryPath(rootURL, location) {
 
   @method _getHashPath
 */
-export function getHashPath(rootURL, location) {
-  var path = rootURL;
-  var historyPath = getHistoryPath(rootURL, location);
-  var routePath = historyPath.substr(rootURL.length);
+export function getHashPath(rootPath, location) {
+  var path = rootPath;
+  var historyPath = getHistoryPath(rootPath, location);
+  var routePath = historyPath.substr(rootPath.length);
 
   if (routePath !== '') {
     if (routePath.charAt(0) !== '/') {

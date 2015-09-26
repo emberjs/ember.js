@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { assert, info } from 'ember-metal/debug';
+import { assert, deprecate, info } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -64,14 +64,41 @@ var EmberRouter = EmberObject.extend(Evented, {
   location: 'hash',
 
   /**
-   Represents the URL of the root of the application, often '/'. This prefix is
-   assumed on all routes defined on this router.
+    Represents the URL of the root of the application, often '/'. This prefix is
+    assumed on all routes defined on this router.
 
-   @property rootURL
-   @default '/'
-   @public
+    @property rootURL
+    @default '/'
+    @public
+    @deprecated use `rootPath` instead
   */
-  rootURL: '/',
+  rootURL: computed('rootPath', {
+    get() {
+      deprecate('Using `router.rootURL` is deprecated. Please use `router.rootPath` instead.',
+                false,
+                { id: 'ember-routing.rootURL', until: '3.0.0' });
+      return get(this, 'rootPath');
+    },
+
+    set(property, newValue) {
+      deprecate('Using `router.rootURL` is deprecated. Please use `router.rootPath` instead.',
+                false,
+                { id: 'ember-routing.rootURL', until: '3.0.0' });
+
+      set(this, 'rootPath', newValue);
+      return newValue;
+    }
+  }),
+
+  /**
+    Represents the URL of the root of the application, often '/'. This prefix is
+    assumed on all routes defined on this router.
+
+    @property rootPath
+    @default '/'
+    @public
+  */
+  rootPath: '/',
 
   _initRouterJs(moduleBasedResolver) {
     var router = this.router = new Router();
@@ -446,7 +473,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _setupLocation() {
     var location = get(this, 'location');
-    var rootURL = get(this, 'rootURL');
+    var rootPath = get(this, 'rootPath');
 
     if ('string' === typeof location && this.container) {
       var resolvedLocation = this.container.lookup(`location:${location}`);
@@ -464,8 +491,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
 
     if (location !== null && typeof location === 'object') {
-      if (rootURL) {
-        set(location, 'rootURL', rootURL);
+      if (rootPath) {
+        set(location, 'rootPath', rootPath);
       }
 
       // Allow the location to do any feature detection, such as AutoLocation
@@ -475,7 +502,7 @@ var EmberRouter = EmberObject.extend(Evented, {
         location.detect();
       }
 
-      // ensure that initState is called AFTER the rootURL is set on
+      // ensure that initState is called AFTER the rootPath is set on
       // the location instance
       if (typeof location.initState === 'function') {
         location.initState();

@@ -191,31 +191,31 @@ QUnit.test('AutoLocation should replace the URL for pushState-supported browsers
   ok(get(location, 'concreteImplementation'), HistoryLocation);
 });
 
-QUnit.test('AutoLocation requires any rootURL given to end in a trailing forward slash', function() {
+QUnit.test('AutoLocation requires any rootPath given to end in a trailing forward slash', function() {
   expect(3);
   var browserLocation = mockBrowserLocation();
-  var expectedMsg = /rootURL must end with a trailing forward slash e.g. "\/app\/"/;
+  var expectedMsg = /rootPath must end with a trailing forward slash e.g. "\/app\/"/;
 
   location = createLocation(browserLocation);
-  location.rootURL = 'app';
+  location.rootPath = 'app';
 
   expectAssertion(function() {
     location.detect();
   }, expectedMsg);
 
-  location.rootURL = '/app';
+  location.rootPath = '/app';
   expectAssertion(function() {
     location.detect();
   }, expectedMsg);
 
   // Note the trailing whitespace
-  location.rootURL = '/app/ ';
+  location.rootPath = '/app/ ';
   expectAssertion(function() {
     location.detect();
   }, expectedMsg);
 });
 
-QUnit.test('AutoLocation provides its rootURL to the concreteImplementation', function() {
+QUnit.test('AutoLocation provides its rootPath to the concreteImplementation', function() {
   expect(1);
   var browserLocation = mockBrowserLocation({
     pathname: '/some/subdir/derp'
@@ -223,12 +223,12 @@ QUnit.test('AutoLocation provides its rootURL to the concreteImplementation', fu
   var browserHistory = mockBrowserHistory();
 
   location = createLocation(browserLocation, browserHistory);
-  location.rootURL = '/some/subdir/';
+  location.rootPath = '/some/subdir/';
 
   location.detect();
 
   var concreteLocation = get(location, 'concreteImplementation');
-  equal(location.rootURL, concreteLocation.rootURL);
+  equal(location.rootPath, concreteLocation.rootPath);
 });
 
 QUnit.test('getHistoryPath() should return a normalized, HistoryLocation-supported path', function() {
