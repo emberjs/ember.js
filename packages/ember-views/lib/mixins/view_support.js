@@ -7,6 +7,9 @@ import { guidFor } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
 import { Mixin } from 'ember-metal/mixin';
 import { POST_INIT } from 'ember-runtime/system/core_object';
+import { symbol } from 'ember-metal/utils';
+
+const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
 import jQuery from 'ember-views/system/jquery';
 
@@ -610,6 +613,7 @@ export default Mixin.create({
     this.scheduledRevalidation = false;
 
     this._super(...arguments);
+    this[INIT_WAS_CALLED] = true;
 
     assert(
       'Using a custom `.render` function is no longer supported.',
@@ -628,6 +632,12 @@ export default Mixin.create({
    */
   [POST_INIT]: function() {
     this._super(...arguments);
+
+    assert(
+      `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
+      this[INIT_WAS_CALLED]
+    );
+
     this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
