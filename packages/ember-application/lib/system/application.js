@@ -42,6 +42,7 @@ import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapt
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import environment from 'ember-metal/environment';
+import RSVP from 'ember-runtime/ext/rsvp';
 
 function props(obj) {
   var properties = [];
@@ -490,7 +491,7 @@ var Application = Namespace.extend(RegistryProxy, {
   boot() {
     if (this._bootPromise) { return this._bootPromise; }
 
-    var defer = new Ember.RSVP.defer();
+    var defer = new RSVP.defer();
     this._bootPromise = defer.promise;
     this._bootResolver = defer;
 
@@ -811,7 +812,7 @@ if (isEnabled('ember-application-visit')) {
       var instance = this.buildInstance();
       this.runInstanceInitializers(instance);
 
-      var renderPromise = new Ember.RSVP.Promise(function(res, rej) {
+      var renderPromise = new RSVP.Promise(function(res, rej) {
         instance.didCreateRootView = function(view) {
           instance.view = view;
           res(instance);

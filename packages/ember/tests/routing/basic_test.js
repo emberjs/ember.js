@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
+import RSVP from 'ember-runtime/ext/rsvp';
 import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
@@ -867,7 +868,7 @@ QUnit.test('The Special Page returning a promise puts the app into a loading sta
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
 
-      return new Ember.RSVP.Promise(function(res) {
+      return new RSVP.Promise(function(res) {
         resolve = res;
       });
     }
@@ -996,7 +997,7 @@ QUnit.test('The Special page returning an error invokes SpecialRoute\'s error ha
   App.MenuItem.reopenClass({
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
-      promise = new Ember.RSVP.Promise(function(res) {
+      promise = new RSVP.Promise(function(res) {
         resolve = res;
       });
 
@@ -1038,7 +1039,7 @@ function testOverridableErrorHandler(handlersName) {
   App.MenuItem.reopenClass({
     find(id) {
       menuItem = App.MenuItem.create({ id: id });
-      return new Ember.RSVP.Promise(function(res) {
+      return new RSVP.Promise(function(res) {
         resolve = res;
       });
     }
@@ -1108,7 +1109,7 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
 
       var promiseContext = App.MenuItem.create({ id: 1 });
       run.later(function() {
-        Ember.RSVP.resolve(promiseContext);
+        RSVP.resolve(promiseContext);
       }, 1);
 
       return router.transitionTo('special', promiseContext);
@@ -1210,7 +1211,7 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
   run(function() {
     var menuItem = App.MenuItem.create({ id: 1 });
     run.later(function() {
-      Ember.RSVP.resolve(menuItem);
+      RSVP.resolve(menuItem);
     }, 1);
 
     router.transitionTo('special', menuItem).then(function(result) {
@@ -2489,7 +2490,7 @@ QUnit.test('ApplicationRoute with model does not proxy the currentPath', functio
 QUnit.test('Promises encountered on app load put app into loading state until resolved', function() {
   expect(2);
 
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
 
   App.IndexRoute = Ember.Route.extend({
     model() {
@@ -2867,7 +2868,7 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
   // Redirected transitions out of index to a route with a
   // promise model should pause the transition and
   // activate LoadingRoute
-  deferred = Ember.RSVP.defer();
+  deferred = RSVP.defer();
   run(router, 'transitionTo', 'nork');
   run(deferred.resolve);
 });
@@ -3184,7 +3185,7 @@ QUnit.test('rejecting the model hooks promise with a non-error prints the `messa
 
   App.YippieRoute = Ember.Route.extend({
     model() {
-      return Ember.RSVP.reject({ message: rejectedMessage, stack: rejectedStack });
+      return RSVP.reject({ message: rejectedMessage, stack: rejectedStack });
     }
   });
 
@@ -3213,7 +3214,7 @@ QUnit.test('rejecting the model hooks promise with an error with `errorThrown` p
 
   App.YippieRoute = Ember.Route.extend({
     model() {
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         errorThrown: { message: rejectedMessage, stack: rejectedStack }
       });
     }
@@ -3238,7 +3239,7 @@ QUnit.test('rejecting the model hooks promise with no reason still logs error', 
 
   App.WowzersRoute = Ember.Route.extend({
     model() {
-      return Ember.RSVP.reject();
+      return RSVP.reject();
     }
   });
 
@@ -3261,7 +3262,7 @@ QUnit.test('rejecting the model hooks promise with a string shows a good error',
 
   App.YondoRoute = Ember.Route.extend({
     model() {
-      return Ember.RSVP.reject(rejectedMessage);
+      return RSVP.reject(rejectedMessage);
     }
   });
 
