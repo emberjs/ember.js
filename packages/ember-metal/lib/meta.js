@@ -32,6 +32,7 @@ import EmptyObject from 'ember-metal/empty_object';
 */
 let members = {
   cache: ownMap,
+  weak: ownMap,
   watching: inheritedMap,
   mixins: inheritedMap,
   bindings: inheritedMap,
@@ -52,6 +53,7 @@ function Meta(obj, parentMeta) {
   this._deps = undefined;
   this._chainWatchers = undefined;
   this._chains = undefined;
+  this._weak = undefined;
   // used only internally
   this.source = obj;
 
@@ -145,6 +147,18 @@ Meta.prototype._getInherited = function(key) {
     }
     pointer = pointer.parent;
   }
+};
+
+Meta.prototype.getWeak = function(symbol) {
+  var weak = this.readableWeak();
+  if (weak) {
+    return weak[symbol];
+  }
+};
+
+Meta.prototype.setWeak = function(symbol, value) {
+  var weak = this.writableWeak();
+  return weak[symbol] = value;
 };
 
 Meta.prototype._findInherited = function(key, subkey) {
