@@ -3,7 +3,6 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import EmberError from 'ember-metal/error';
@@ -11,6 +10,7 @@ import { ComputedProperty, computed } from 'ember-metal/computed';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 import compare from 'ember-runtime/compare';
 import { isArray } from 'ember-runtime/utils';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
@@ -37,9 +37,9 @@ function arrayMacro(dependentKey, callback) {
   return computed(dependentKey, function() {
     var value = get(this, propertyName);
     if (isArray(value)) {
-      return Ember.A(callback.call(this, value));
+      return emberA(callback.call(this, value));
     } else {
-      return Ember.A();
+      return emberA();
     }
   }).readOnly();
 }
@@ -48,7 +48,7 @@ function multiArrayMacro(dependentKeys, callback) {
   var args = dependentKeys.map(key => `${key}.[]`);
 
   args.push(function() {
-    return Ember.A(callback.call(this, dependentKeys));
+    return emberA(callback.call(this, dependentKeys));
   });
 
   return computed.apply(this, args).readOnly();
@@ -343,7 +343,7 @@ export function filterBy(dependentKey, propertyKey, value) {
 */
 export function uniq(...args) {
   return multiArrayMacro(args, function(dependentKeys) {
-    var uniq = Ember.A();
+    var uniq = emberA();
 
     dependentKeys.forEach(dependentKey => {
       var value = get(this, dependentKey);
@@ -422,7 +422,7 @@ export function intersect(...args) {
     });
 
 
-    return Ember.A(results);
+    return emberA(results);
   });
 }
 
@@ -468,8 +468,8 @@ export function setDiff(setAProperty, setBProperty) {
     var setA = this.get(setAProperty);
     var setB = this.get(setBProperty);
 
-    if (!isArray(setA)) { return Ember.A(); }
-    if (!isArray(setB)) { return Ember.A(setA); }
+    if (!isArray(setA)) { return emberA(); }
+    if (!isArray(setB)) { return emberA(setA); }
 
     return setA.filter(x => setB.indexOf(x) === -1);
   }).readOnly();
@@ -571,7 +571,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
     var items = itemsKey === '@this' ? this : get(this, itemsKey);
     var sortProperties = get(this, sortPropertiesKey);
 
-    if (items === null || typeof items !== 'object') { return Ember.A(); }
+    if (items === null || typeof items !== 'object') { return emberA(); }
 
     // TODO: Ideally we'd only do this if things have changed
     if (cp._sortPropObservers) {
@@ -598,7 +598,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
       addObserver.apply(null, args);
     });
 
-    return Ember.A(items.slice().sort((itemA, itemB) => {
+    return emberA(items.slice().sort((itemA, itemB) => {
       for (var i = 0; i < normalizedSort.length; ++i) {
         var [prop, direction] = normalizedSort[i];
         var result = compare(get(itemA, prop), get(itemB, prop));

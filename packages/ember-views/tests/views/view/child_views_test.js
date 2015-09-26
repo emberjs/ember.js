@@ -1,8 +1,8 @@
 import run from 'ember-metal/run_loop';
-import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import { compile } from 'ember-template-compiler';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -147,7 +147,7 @@ QUnit.test('should remove childViews inside {{each}} on destroy', function() {
 
   equal(outerView.get('childViews.length'), 0);
 
-  run(outerView, 'set', 'data', Ember.A([
+  run(outerView, 'set', 'data', emberA([
     { id: 1, value: new Date() },
     { id: 2, value: new Date() }
   ]));

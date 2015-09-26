@@ -6,6 +6,7 @@ import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var Router, App, router, container;
 var get = Ember.get;
@@ -735,7 +736,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     App.HomeController = Ember.Controller.extend({
-      foo: Ember.A([])
+      foo: emberA()
     });
 
     App.HomeRoute = Ember.Route.extend({
@@ -794,14 +795,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     App.HomeController = Ember.Controller.extend({
-      foo: Ember.A([1])
+      foo: emberA([1])
     });
 
     bootApplication();
 
     equal(modelCount, 1);
     var controller = container.lookup('controller:home');
-    setAndFlush(controller, 'model', Ember.A([1]));
+    setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
   });
@@ -1724,7 +1725,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.HomeRoute = Ember.Route.extend({
       queryParams: {
         foo: {
-          defaultValue: Ember.A([])
+          defaultValue: emberA()
         }
       }
     });
@@ -1772,7 +1773,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.HomeRoute = Ember.Route.extend({
       queryParams: {
         foo: {
-          defaultValue: Ember.A([1])
+          defaultValue: emberA([1])
         }
       },
       model() {
@@ -1784,7 +1785,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(modelCount, 1);
     var controller = container.lookup('controller:home');
-    setAndFlush(controller, 'model', Ember.A([1]));
+    setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
   });
@@ -2878,7 +2879,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.HomeController = Ember.Controller.extend({
       queryParams: ['foo'],
-      foo: Ember.A([])
+      foo: emberA()
     });
 
     bootApplication();
@@ -2929,14 +2930,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.HomeController = Ember.Controller.extend({
       queryParams: ['foo'],
-      foo: Ember.A([1])
+      foo: emberA([1])
     });
 
     bootApplication();
 
     equal(modelCount, 1);
     var controller = container.lookup('controller:home');
-    setAndFlush(controller, 'model', Ember.A([1]));
+    setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
   });

@@ -147,16 +147,16 @@ function testIfArray(array) {
 }
 
 QUnit.test('The `if` helper updates if an array is empty or not', function() {
-  testIfArray(Ember.A());
+  testIfArray(emberA());
 });
 
 QUnit.test('The `if` helper updates if an array-like object is empty or not', function() {
-  testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
+  testIfArray(ArrayProxy.create({ content: emberA() }));
 });
 
 QUnit.test('The `unless` helper updates if an array-like object is empty or not', function() {
   view = EmberView.create({
-    array: ArrayProxy.create({ content: Ember.A([]) }),
+    array: ArrayProxy.create({ content: emberA() }),
 
     template: compile('{{#unless view.array}}Yep{{/unless}}')
   });
@@ -835,7 +835,7 @@ QUnit.test('`if` helper with inline form: respects isTruthy when property change
 });
 
 QUnit.test('`if` helper with inline form: respects length test when list content changes', function() {
-  var list = Ember.A();
+  var list = emberA();
 
   view = EmberView.create({
     conditional: list,

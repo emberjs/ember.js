@@ -1,7 +1,7 @@
 /*globals CustomEvent */
 
 import Ember from 'ember-metal/core'; // Ember.ENV.EMBER_LOAD_HOOKS
-import 'ember-runtime/system/native_array'; // make sure Ember.A is setup.
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 /**
   @module ember
@@ -34,7 +34,7 @@ export var _loaded = loaded;
 export function onLoad(name, callback) {
   var object = loaded[name];
 
-  loadHooks[name] = loadHooks[name] || Ember.A();
+  loadHooks[name] = loadHooks[name] || emberA();
   loadHooks[name].pushObject(callback);
 
   if (object) {

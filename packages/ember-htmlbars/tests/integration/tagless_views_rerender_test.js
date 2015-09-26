@@ -1,8 +1,8 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var view;
 
@@ -15,7 +15,7 @@ QUnit.module('ember-htmlbars: tagless views should be able to add/remove child v
 QUnit.test('can insert new child views after initial tagless view rendering', function() {
   view = EmberView.create({
     shouldShow: false,
-    array: Ember.A([1]),
+    array: emberA([1]),
 
     template: compile('{{#if view.shouldShow}}{{#each view.array as |item|}}{{item}}{{/each}}{{/if}}')
   });
@@ -41,7 +41,7 @@ QUnit.test('can insert new child views after initial tagless view rendering', fu
 QUnit.test('can remove child views after initial tagless view rendering', function() {
   view = EmberView.create({
     shouldShow: false,
-    array: Ember.A([]),
+    array: emberA(),
 
     template: compile('{{#if view.shouldShow}}{{#each view.array as |item|}}{{item}}{{/each}}{{/if}}')
   });

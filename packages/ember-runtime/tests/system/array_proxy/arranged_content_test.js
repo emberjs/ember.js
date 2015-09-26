@@ -1,7 +1,7 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
-import {computed} from 'ember-metal/computed';
+import { computed } from 'ember-metal/computed';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var array;
 
@@ -11,14 +11,14 @@ QUnit.module('ArrayProxy - arrangedContent', {
       array = ArrayProxy.extend({
         arrangedContent: computed('content.[]', function() {
           var content = this.get('content');
-          return content && Ember.A(content.slice().sort(function(a, b) {
+          return content && emberA(content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;
           }));
         })
       }).create({
-        content: Ember.A([1, 2, 4, 5])
+        content: emberA([1, 2, 4, 5])
       });
     });
   },
@@ -45,7 +45,7 @@ QUnit.test('addObjects - adds to end of \'content\' if not present', function() 
 });
 
 QUnit.test('compact - returns arrangedContent without nulls and undefined', function() {
-  run(function() { array.set('content', Ember.A([1, 3, null, 2, undefined])); });
+  run(function() { array.set('content', emberA([1, 3, null, 2, undefined])); });
   deepEqual(array.compact(), [3, 2, 1]);
 });
 
@@ -177,7 +177,7 @@ QUnit.module('ArrayProxy - arrangedContent matching content', {
   setup() {
     run(function() {
       array = ArrayProxy.create({
-        content: Ember.A([1, 2, 4, 5])
+        content: emberA([1, 2, 4, 5])
       });
     });
   },
@@ -209,7 +209,7 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
       array = ArrayProxy.extend({
         arrangedContent: computed(function() {
           var content = this.get('content');
-          return content && Ember.A(content.slice().sort(function(a, b) {
+          return content && emberA(content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;
@@ -221,7 +221,7 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
           return obj && obj.toString();
         }
       }).create({
-        content: Ember.A([1, 2, 4, 5])
+        content: emberA([1, 2, 4, 5])
       });
     });
   },

@@ -5,6 +5,7 @@ import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var Router, App, router, registry, container;
 
@@ -339,7 +340,7 @@ QUnit.module('Model Dep Query Params', {
       this.route('about');
     });
 
-    var articles = this.articles = Ember.A([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    var articles = this.articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
     App.ApplicationController = Ember.Controller.extend({
       articles: this.articles
@@ -430,7 +431,7 @@ QUnit.module('Model Dep Query Params (nested)', {
       this.route('about');
     });
 
-    var site_articles = this.site_articles = Ember.A([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
     App.ApplicationController = Ember.Controller.extend({
       articles: this.site_articles
@@ -519,8 +520,8 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       });
     });
 
-    var sites = this.sites = Ember.A([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
-    var site_articles = this.site_articles = Ember.A([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    var sites = this.sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
+    var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
     App.ApplicationController = Ember.Controller.extend({
       siteArticles: this.site_articles,

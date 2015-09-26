@@ -17,6 +17,7 @@ import {
   classify
 } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import generateController from 'ember-routing/system/generate_controller';
@@ -184,7 +185,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       var defaultValue = get(controllerProto, propName);
 
       if (Array.isArray(defaultValue)) {
-        defaultValue = Ember.A(defaultValue.slice());
+        defaultValue = emberA(defaultValue.slice());
       }
 
       var type = desc.type || typeOf(defaultValue);
@@ -387,7 +388,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     } else if (defaultValueType === 'number') {
       return (Number(value)).valueOf();
     } else if (defaultValueType === 'array') {
-      return Ember.A(JSON.parse(value));
+      return emberA(JSON.parse(value));
     }
     return value;
   },
@@ -2207,7 +2208,7 @@ function getQueryParamsFor(route, state) {
 
 function copyDefaultValue(value) {
   if (Array.isArray(value)) {
-    return Ember.A(value.slice());
+    return emberA(value.slice());
   }
   return value;
 }

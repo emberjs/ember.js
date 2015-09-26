@@ -1,4 +1,3 @@
-/*jshint newcap:false*/
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';

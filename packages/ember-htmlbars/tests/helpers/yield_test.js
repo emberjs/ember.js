@@ -1,11 +1,9 @@
-/*jshint newcap:false*/
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import { computed } from 'ember-metal/computed';
 import { Registry } from 'ember-runtime/system/container';
-//import { set } from "ember-metal/property_set";
-import { A } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import Component from 'ember-views/components/component';
 import helpers from 'ember-htmlbars/helpers';
 import ComponentLookup from 'ember-views/component_lookup';
@@ -85,7 +83,7 @@ QUnit.test('templates should yield to block, when the yield is embedded in a hie
     n: null,
     index: computed(function() {
       var n = this.attrs.n;
-      var indexArray = A();
+      var indexArray = emberA();
       for (var i = 0; i < n; i++) {
         indexArray[i] = i;
       }
