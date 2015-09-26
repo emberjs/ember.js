@@ -5,6 +5,7 @@ import EmberSelect from 'ember-views/views/select';
 import jQuery from 'ember-views/system/jquery';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import SafeString from 'htmlbars-util/safe-string';
+import RSVP from 'ember-runtime/ext/rsvp';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -248,7 +249,7 @@ QUnit.test('selection can be set from a Promise when multiple=false', function()
   run(function() {
     select.set('content', Ember.A([yehuda, tom]));
     select.set('multiple', false);
-    select.set('selection', Ember.RSVP.Promise.resolve(tom));
+    select.set('selection', RSVP.Promise.resolve(tom));
   });
 
   append();
@@ -268,7 +269,7 @@ QUnit.test('selection from a Promise don\'t overwrite newer selection once resol
   run(function() {
     select.set('content', Ember.A([yehuda, tom, seb]));
     select.set('multiple', false);
-    select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
+    select.set('selection', new RSVP.Promise(function(resolve, reject) {
       run.later(function() {
         run(function() {
           resolve(tom);
@@ -277,7 +278,7 @@ QUnit.test('selection from a Promise don\'t overwrite newer selection once resol
         equal(select.$()[0].selectedIndex, 2, 'Should not select from Promise if newer selection');
       }, 40);
     }));
-    select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
+    select.set('selection', new RSVP.Promise(function(resolve, reject) {
       run.later(function() {
         run(function() {
           resolve(seb);
@@ -298,7 +299,7 @@ QUnit.test('selection from a Promise resolving to null should not select when mu
   run(function() {
     select.set('content', Ember.A([yehuda, tom]));
     select.set('multiple', false);
-    select.set('selection', Ember.RSVP.Promise.resolve(null));
+    select.set('selection', RSVP.Promise.resolve(null));
   });
 
   append();

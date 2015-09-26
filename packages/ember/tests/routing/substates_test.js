@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import RSVP from 'ember-runtime/ext/rsvp';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -74,7 +75,7 @@ QUnit.module('Loading/Error Substates', {
 
 QUnit.test('Slow promise from a child route of application enters nested loading state', function() {
   var broModel = {};
-  var broDeferred = Ember.RSVP.defer();
+  var broDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('bro');
@@ -105,8 +106,8 @@ QUnit.test('Slow promise from a child route of application enters nested loading
 QUnit.test('Slow promises waterfall on startup', function() {
   expect(7);
 
-  var grandmaDeferred = Ember.RSVP.defer();
-  var sallyDeferred = Ember.RSVP.defer();
+  var grandmaDeferred = RSVP.defer();
+  var sallyDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -159,7 +160,7 @@ QUnit.test('Slow promises waterfall on startup', function() {
 QUnit.test('ApplicationRoute#currentPath reflects loading state path', function() {
   expect(4);
 
-  var momDeferred = Ember.RSVP.defer();
+  var momDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -192,7 +193,7 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
 QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter LoadingRoute', function() {
   expect(2);
 
-  var appDeferred = Ember.RSVP.defer();
+  var appDeferred = RSVP.defer();
 
   App.ApplicationRoute = Ember.Route.extend({
     model() {
@@ -219,7 +220,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
 
   expect(2);
 
-  var indexDeferred = Ember.RSVP.defer();
+  var indexDeferred = RSVP.defer();
 
   App.ApplicationController = Ember.Controller.extend();
 
@@ -243,7 +244,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 
   expect(4);
 
-  var indexDeferred = Ember.RSVP.defer();
+  var indexDeferred = RSVP.defer();
 
   App.IndexRoute = Ember.Route.extend({
     model() {
@@ -270,7 +271,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 QUnit.test('Enter child loading state of pivot route', function() {
   expect(4);
 
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -315,8 +316,8 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 
   delete templates.loading;
 
-  var sallyDeferred = Ember.RSVP.defer();
-  var smellsDeferred = Ember.RSVP.defer();
+  var sallyDeferred = RSVP.defer();
+  var smellsDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -385,7 +386,7 @@ QUnit.test('Default error event moves into nested route', function() {
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -410,7 +411,7 @@ QUnit.test('Default error event moves into nested route', function() {
 });
 
 QUnit.test('Setting a query param during a slow transition should work', function() {
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', { path: '/grandma/:seg' },  function() { });
@@ -460,7 +461,7 @@ QUnit.test('Setting a query param during a slow transition should work', functio
 QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
   expect(2);
 
-  var appDeferred = Ember.RSVP.defer();
+  var appDeferred = RSVP.defer();
 
   App.ApplicationRoute = Ember.Route.extend({
     model() {
@@ -488,7 +489,7 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter application
 
   templates['application_loading'] = 'TOPLEVEL LOADING';
 
-  var appDeferred = Ember.RSVP.defer();
+  var appDeferred = RSVP.defer();
   App.ApplicationRoute = Ember.Route.extend({
     model() {
       return appDeferred.promise;
@@ -537,7 +538,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -576,7 +577,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
 
   App.ApplicationController = Ember.Controller.extend();
 
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
   App.FooBarRoute = Ember.Route.extend({
     model() {
       return deferred.promise;
@@ -606,7 +607,7 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
 
   App.ApplicationController = Ember.Controller.extend();
 
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
   App.FooBarRoute = Ember.Route.extend({
     model() {
       return deferred.promise;
@@ -638,7 +639,7 @@ QUnit.test('Prioritized error substate entry works with preserved-namespace nest
 
   App.FooBarRoute = Ember.Route.extend({
     model() {
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     }
@@ -666,7 +667,7 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
 
   App.ApplicationController = Ember.Controller.extend();
 
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
   App.FooIndexRoute = Ember.Route.extend({
     model() {
       return deferred.promise;
@@ -704,7 +705,7 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
 
   App.FooIndexRoute = Ember.Route.extend({
     model() {
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     }
@@ -731,7 +732,7 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
   App.ApplicationRoute = Ember.Route.extend({
     model() {
       if (reject) {
-        return Ember.RSVP.reject({ msg: 'BAD NEWS BEARS' });
+        return RSVP.reject({ msg: 'BAD NEWS BEARS' });
       } else {
         return {};
       }
