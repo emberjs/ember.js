@@ -5,6 +5,7 @@ import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import inject from 'ember-runtime/inject';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -114,7 +115,7 @@ QUnit.test('Helpers can receive injections', function() {
       }
     }));
     registry.register('helper:full-name', Helper.extend({
-      nameBuilder: Ember.inject.service('name-builder'),
+      nameBuilder: inject.service('name-builder'),
       compute() {
         this.get('nameBuilder').build();
       }
