@@ -24,7 +24,9 @@ function createApplication(integration) {
     LOG_ACTIVE_GENERATION: true
   });
 
-  App.Router = Router.extend();
+  App.Router = Router.extend({
+    location: 'none'
+  });
 
   if (integration) {
     App.instanceInitializer({
@@ -433,7 +435,7 @@ if (isEnabled('ember-application-visit')) {
       }));
     });
 
-    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     run(function() {
       App.visit('/').then(function(instance) {
@@ -508,7 +510,7 @@ if (isEnabled('ember-application-visit')) {
       }));
     });
 
-    assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     function makeFakeDom() {
       // TODO: use simple-dom
@@ -518,7 +520,7 @@ if (isEnabled('ember-application-visit')) {
     let a = run(function() {
       let dom = makeFakeDom();
 
-      return App.visit('/a', { document: dom, rootElement: dom.body, server: true }).then(instance => {
+      return App.visit('/a', { browser: false, document: dom, rootElement: dom.body }).then(instance => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
         assert.equal(instance.getURL(), '/a');
@@ -532,7 +534,7 @@ if (isEnabled('ember-application-visit')) {
         assert.ok(initCalled, 'Component#init should be called');
         assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
 
-        assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
         QUnit.stop();
       });
     });
@@ -540,7 +542,7 @@ if (isEnabled('ember-application-visit')) {
     let b = run(function() {
       let dom = makeFakeDom();
 
-      return App.visit('/b', { document: dom, rootElement: dom.body, server: true }).then(instance => {
+      return App.visit('/b', { browser: false, document: dom, rootElement: dom.body }).then(instance => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
         assert.equal(instance.getURL(), '/b');
@@ -554,7 +556,7 @@ if (isEnabled('ember-application-visit')) {
         assert.ok(initCalled, 'Component#init should be called');
         assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
 
-        assert.equal(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
         QUnit.stop();
       });
     });
@@ -652,16 +654,17 @@ if (isEnabled('ember-application-visit')) {
 
         didInsertElement() {
           xBarDidInsertElementCalled = true;
-        },
+        }
       }));
     });
 
     let $foo = Ember.$('<div />').appendTo('#qunit-fixture');
     let $bar = Ember.$('<div />').appendTo('#qunit-fixture');
 
+    let data = encodeURIComponent(JSON.stringify({ name: 'Godfrey' }));
     run(function() {
       Ember.RSVP.all([
-        App.visit(`/x-foo?data=${ encodeURIComponent(JSON.stringify({name: 'Godfrey'})) }`, { rootElement: $foo[0] }),
+        App.visit(`/x-foo?data=${data}`, { rootElement: $foo[0] }),
         App.visit('/x-bar', { rootElement: $bar[0] })
       ]).then(() => {
         QUnit.start();
@@ -698,18 +701,176 @@ if (isEnabled('ember-application-visit')) {
     });
   });
 
-  QUnit.skip('Resource-discovery setup', function(assert) {
+  QUnit.test('Resource-discovery setup', function(assert) {
+    QUnit.expect(26);
+    QUnit.stop();
 
+    let xFooInstances = 0;
 
+    run(function() {
+      createApplication(true);
+
+      App.Router.map(function() {
+        this.route('a');
+        this.route('b');
+        this.route('c');
+        this.route('d');
+        this.route('e');
+      });
+
+      let NetworkService = Ember.Object.extend({
+        init() {
+          this.set('requests', []);
+        },
+
+        fetch(url) {
+          this.get('requests').push(url);
+          return Ember.RSVP.resolve();
+        }
+      });
+
+      App.register('service:network', NetworkService);
+
+      App.inject('route', 'network', 'service:network');
+
+      App.register('route:a', Route.extend({
+        model() { return this.network.fetch('/a'); },
+        afterModel() { this.replaceWith('b'); }
+      }));
+
+      App.register('route:b', Route.extend({
+        model() { return this.network.fetch('/b'); },
+        afterModel() { this.replaceWith('c'); }
+      }));
+
+      App.register('route:c', Route.extend({
+        model() { return this.network.fetch('/c'); }
+      }));
+
+      App.register('route:d', Route.extend({
+        model() { return this.network.fetch('/d'); },
+        afterModel() { this.replaceWith('e'); }
+      }));
+
+      App.register('route:e', Route.extend({
+        model() { return this.network.fetch('/e'); }
+      }));
+
+      App.register('template:a', compile('{{x-foo}}'));
+      App.register('template:b', compile('{{x-foo}}'));
+      App.register('template:c', compile('{{x-foo}}'));
+      App.register('template:d', compile('{{x-foo}}'));
+      App.register('template:e', compile('{{x-foo}}'));
+
+      App.register('component:x-foo', Component.extend({
+        init() {
+          this._super();
+          xFooInstances++;
+        }
+      }));
+    });
+
+    assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+
+    function lookup(instance, fullName) {
+      if (isEnabled('ember-registry-container-reform')) {
+        return instance.lookup(fullName);
+      } else {
+        return instance.container.lookup(fullName);
+      }
+    }
+
+    let a = run(function() {
+      return App.visit('/a', { browser: false, render: false }).then((instance) => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
+
+        let viewRegistry = lookup(instance, '-view-registry:main');
+        assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
+
+        let networkService = lookup(instance, 'service:network');
+        assert.deepEqual(networkService.get('requests'), ['/a', '/b', '/c']);
+        QUnit.stop();
+      });
+    });
+
+    let b = run(function() {
+      return App.visit('/b', { browser: false, render: false }).then((instance) => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
+
+        let viewRegistry = lookup(instance, '-view-registry:main');
+        assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
+
+        let networkService = lookup(instance, 'service:network');
+        assert.deepEqual(networkService.get('requests'), ['/b', '/c']);
+        QUnit.stop();
+      });
+    });
+
+    let c = run(function() {
+      return App.visit('/c', { browser: false, render: false }).then((instance) => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
+
+        let viewRegistry = lookup(instance, '-view-registry:main');
+        assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
+
+        let networkService = lookup(instance, 'service:network');
+        assert.deepEqual(networkService.get('requests'), ['/c']);
+        QUnit.stop();
+      });
+    });
+
+    let d = run(function() {
+      return App.visit('/d', { browser: false, render: false }).then((instance) => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
+
+        let viewRegistry = lookup(instance, '-view-registry:main');
+        assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
+
+        let networkService = lookup(instance, 'service:network');
+        assert.deepEqual(networkService.get('requests'), ['/d', '/e']);
+        QUnit.stop();
+      });
+    });
+
+    let e = run(function() {
+      return App.visit('/e', { browser: false, render: false }).then((instance) => {
+        QUnit.start();
+        assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
+
+        assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+        assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
+
+        let viewRegistry = lookup(instance, '-view-registry:main');
+        assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
+
+        let networkService = lookup(instance, 'service:network');
+        assert.deepEqual(networkService.get('requests'), ['/e']);
+        QUnit.stop();
+      });
+    });
+
+    Ember.RSVP.all([a, b, c, d, e]).finally(() => QUnit.start());
   });
 
   QUnit.skip('Test setup', function(assert) {
-
-
   });
 
   QUnit.skip('iframe setup', function(assert) {
-
-
   });
 }

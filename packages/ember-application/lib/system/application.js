@@ -978,48 +978,196 @@ Application.reopenClass({
 if (isEnabled('ember-application-visit')) {
   Application.reopen({
     /**
-      Creates a new instance of the application and instructs it to route to the
-      specified initial URL. This method returns a promise that will be resolved
-      once rendering is complete. That promise is resolved with the instance.
+      Boot a new instance of `Ember.ApplicationInstance` for the current
+      application and navigate it to the given `url`. Returns a `Promise` that
+      resolves with the instance when the initial routing and rendering is
+      complete, or rejects with any error that occured during the boot process.
 
-      ```js
-      App.visit('/users').then(function(instance) {
-        var view = instance.view;
-        view.appendTo('#qunit-test-fixtures');
+      When `autoboot` is disabled, calling `visit` would first cause boot the
+      application. See the documentation on the `boot` method for details.
+
+      This method also takes a hash of boot-time configuration options for
+      customizing the instance's behavior. See the documentation on
+      `Ember.ApplicationInstance.BootOptions` for details.
+
+      `Ember.ApplicationInstance.BootOptions` is an interface class that exists
+      purely to document the available options; you do not need to construct it
+      manually. Simply pass a regular JavaScript object containing of the
+      desired options:
+
+      ```javascript
+      MyApp.visit("/", { location: "none", rootElement: "#container" });
+      ```
+
+      All options are optional.
+
+      ### Supported Scenarios
+
+      While the `BootOptions` class exposes a large number of knobs, not all
+      combinations of them are valid; certain incompatible combinations might
+      result in unexpected behavior.
+
+      For example, booting the instance in the full browser environment
+      while specifying a foriegn `document` object (e.g.
+      `{ browser: true, document: iframe.contentDocument }`) does not work
+      correctly today, largely due to Ember's jQuery dependency.
+
+      Currently, there are three officially supported scenarios/configurations.
+      Usages outside of these scenarios are not guarenteed to work, but please
+      feel free to file bug reports documenting your experience and any issues
+      you encountered to help expand support.
+
+      #### Browser Applications (Manual Boot)
+
+      The setup is largely similar to how Ember works out-of-the-box. Normally,
+      Ember will boot a default instance for your Application on "DOM ready".
+      However, you can customize this behavior by disabling `autoboot`.
+
+      For example, this allows you to render a miniture demo of your application
+      into a specific area on your marketing website:
+
+      ```javascript
+      import MyApp from 'my-app';
+
+      $(function() {
+        let App = MyApp.create({ autoboot: false });
+
+        let options = {
+          // Override the router's location adapter to prevent it from updating
+          // the URL in the address bar
+          location: 'none',
+
+          // Override the default `rootElement` on the app to render into a
+          // specific `div` on the page
+          rootElement: '#demo'
+        };
+
+        // Start the app at the special demo URL
+        App.visit('/demo', options);
       });
-     ```
+      ````
+
+      Or perhaps you might want to boot two instances of your app on the same
+      page for a split-screen multiplayer experience:
+
+      ```javascript
+      import MyApp from 'my-app';
+
+      $(function() {
+        let App = MyApp.create({ autoboot: false });
+
+        let sessionId = MyApp.generateSessionID();
+
+        let player1 = App.visit(`/matches/join?name=Player+1&session=${sessionId}`, { rootElement: '#left', location: 'none' });
+        let player2 = App.visit(`/matches/join?name=Player+2&session=${sessionId}`, { rootElement: '#left', location: 'none' });
+
+        Promise.all([player1, player2]).then(() => {
+          // Both apps have completed the initial render
+          $('#loading').fadeOut();
+        });
+      });
+      ```
+
+      Do note that each app instance maintains their own registry/container, so
+      they will run in complete isolation by default.
+
+      #### Server-Side Rendering (also known as FastBoot)
+
+      This setup allows you to run your Ember app in a server environment using
+      Node.js and render its content into static HTML for SEO purposes.
+
+      ```javascript
+      const HTMLSerializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+
+      function renderURL(url) {
+        let dom = new SimpleDOM.Document();
+        let rootElement = dom.body;
+        let options = { browser: false, document: dom, rootElement: rootElement };
+
+        return MyApp.visit(options).then(instance => {
+          try {
+            return HTMLSerializer.serialize(rootElement.firstChild);
+          } finally {
+            instance.destroy();
+          }
+        });
+      }
+      ```
+
+      In this scenario, because Ember does not have access to a global `document`
+      object in the Node.js environment, you must provide one explicitly. In practice,
+      in the non-browser environment, the stand-in `document` object only need to
+      implement a limited subset of the full DOM API. The `SimpleDOM` library is known
+      to work.
+
+      Since there is no access to jQuery in the non-browser environment, you must also
+      specify a DOM `Element` object in the same `document` for the `rootElement` option
+      (as opposed to a selector string like `"body"`).
+
+      See the documentation on the `browser`, `document` and `rootElement` properties
+      on `Ember.ApplicationInstance.BootOptions` for details.
+
+      #### Server-Side Resource Discovery
+
+      This setup allows you to run the routing layer of your Ember app in a server
+      environment using Node.js and completely disable rendering. This allows you
+      to simulate and discover the resources (i.e. AJAX requests) needed to fufill
+      a given request and eagerly "push" these resources to the client.
+
+      ```app/initializers/network-service.js
+      import BrowserNetworkService from 'app/services/network/browser';
+      import NodeNetworkService from 'app/services/network/node';
+
+      export function initialize(application) {
+        if (window) { // browser
+          application.register('service:network', BrowserNetworkService);
+        } else { // node
+          application.register('service:network', NodeNetworkService);
+        }
+
+        application.inject('route', 'network', 'service:network');
+      };
+
+      export default {
+        name: 'network-service',
+        initialize: initialize
+      };
+      ```
+
+      ```app/routes/post.js
+      export default Ember.Route.extend({
+        model(params) {
+          return this.network.fetch(`/api/posts/${params.post_id}.json`);
+        },
+
+        afterModel(post) {
+          if (post.isExternalContent) {
+            return this.network.fetch(`/api/external/?url=${post.externalURL}`);
+          } else {
+            return post;
+          }
+        }
+      });
+      ```
+
+      ```javascript
+      function discoverResourcesFor(url) {
+        return MyApp.visit(options).then(instance => {
+          let networkService = instance.lookup('service:network');
+          return networkService.requests; // => { "/api/posts/123.json": "..." }
+        });
+      }
+      ```
 
       @method visit
+      @param url {String} The initial URL to navigate to
+      @param options {Ember.ApplicationInstance.BootOptions}
+      @return {Promise<Ember.ApplicationInstance, Error>}
       @private
     */
     visit(url, options) {
       return this.boot().then(() => {
-        options = options || {};
-
-        let instance = this.buildInstance();
-
-        var bootOptions = {};
-
-        if (options.location !== null) {
-          bootOptions.location = options.location || 'none';
-        }
-
-        if (options.server) {
-          bootOptions.hasDOM = false;
-          bootOptions.didCreateRootView = function(view) {
-            view.renderer.appendTo(view, options.rootElement);
-          };
-        }
-
-        if (options.document) {
-          bootOptions.document = options.document;
-        }
-
-        if (options.rootElement) {
-          bootOptions.rootElement = options.rootElement;
-        }
-
-        return instance.boot(bootOptions).then(() => {
+        return this.buildInstance().boot(options).then((instance) => {
           return instance.visit(url);
         });
       });
@@ -1189,6 +1337,12 @@ Application.reopenClass({
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
+
+    if (isEnabled('ember-application-visit')) {
+      registry.register('-environment:main', environment, { instantiate: false });
+      registry.injection('view', '_environment', '-environment:main');
+      registry.injection('route', '_environment', '-environment:main');
+    }
 
     registry.register('application:main', namespace, { instantiate: false });
 

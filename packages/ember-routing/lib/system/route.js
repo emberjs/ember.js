@@ -1213,7 +1213,13 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     this.setupController(controller, context, transition);
 
-    this.renderTemplate(controller, context);
+    if (isEnabled('ember-application-visit')) {
+      if (!this._environment || this._environment.options.render) {
+        this.renderTemplate(controller, context);
+      }
+    } else {
+      this.renderTemplate(controller, context);
+    }
   },
 
   /*

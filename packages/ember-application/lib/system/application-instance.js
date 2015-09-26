@@ -18,6 +18,7 @@ import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/
 import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
+import jQuery from 'ember-views/system/jquery';
 
 
 let BootOptions;
@@ -167,15 +168,19 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
     if (isEnabled('ember-application-visit')) {
       options = new BootOptions(options);
-      set(this, '_bootOptions', options);
 
-      if (options.document) {
-        this.__registry__.register('renderer:-dom', {
-          create() {
-            return new Renderer(new DOMHelper(options.document), options.hasDOM);
-          }
-        });
-      }
+      let registry = this.__registry__;
+      let environment = options.toEnvironment();
+
+      set(this, '_environment', environment);
+
+      registry.register('-environment:main', environment, { instantiate: false });
+
+      registry.register('renderer:-dom', {
+        create() {
+          return new Renderer(new DOMHelper(options.document), options.interactive);
+        }
+      });
 
       if (options.rootElement) {
         set(this, 'rootElement', options.rootElement);
@@ -188,13 +193,9 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
         set(router, 'location', options.location);
       }
 
-      if (typeof options.didCreateRootView === 'function') {
-        this.didCreateRootView = options.didCreateRootView;
-      }
-
       this.application.runInstanceInitializers(this);
 
-      if (options.hasDOM) {
+      if (options.interactive) {
         this.setupEventDispatcher();
       }
     } else {
@@ -359,83 +360,190 @@ if (isEnabled('ember-application-visit')) {
   });
 
   /**
-    A list of options one can pass into `boot()` to override certain behavior on
-    the instance. It is currently a laundary list of whatever we happen to need to
-    override in FastBoot (and tests?), but we should eventually clean this up and
-    formalize it. All options are optional.
+    A list of boot-time configuration options for customizing the behavior of
+    an `Ember.ApplicationInstance`.
+
+    This is an interface class that exists purely to document the available
+    options; you do not need to construct it manually. Simply pass a regular
+    JavaScript object containing the desired options into methods that require
+    one of these options object:
+
+    ```javascript
+    MyApp.visit("/", { location: "none", rootElement: "#container" });
+    ```
+
+    Not all combinations of the supported options are valid. See the documentation
+    on `Ember.Application#visit` for the supported configurations.
+
+    Internal, experimental or otherwise unstable flags are marked as private.
 
     @class BootOptions
     @namespace @Ember.ApplicationInstance
-    @private
+    @public
   */
   BootOptions = function BootOptions(options) {
     options = options || {};
 
     /**
-      If present, render into the given `Document` object instead of `window.document`.
+      Provide a specific instance of jQuery. This is useful in conjunction with
+      the `document` option, as it allows you to use a copy of `jQuery` that is
+      appropiately bound to the foriegn `document` (e.g. a jsdom).
 
-      @property document
-      @type Document
-      @default null
+      This is highly experimental and support very incomplete at the moment.
+
+      @property jQuery
+      @type Object
+      @default auto-detected
       @private
     */
-    if (options.document) {
-      this.document = options.document;
+    this.jQuery = jQuery;
+
+    /**
+      Interactive mode: whether we need to set up event delegation and invoke
+      lifecycle callbacks on Components.
+
+      @property interactive
+      @type boolean
+      @default auto-detected
+      @private
+    */
+    this.interactive = environment.hasDOM;
+
+    /**
+      Run in a full browser environment.
+
+      When this flag is set to `false`, it will disable most browser-specific
+      and interactive features. Specifically:
+
+      * It does not use `jQuery` to append the root view; the `rootElement`
+        (either specified as a subsequent option or on the applicatio itself)
+        must already be an `Element` in the given `document` (as opposed to a
+        string selector).
+
+      * It does not set up an `EventDispatcher`.
+
+      * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
+
+      * It sets the `location` option to `"none"`. (If you would like to use
+        the location adapter specified in the app's router instead, you can also
+        specify `{ location: null }` to specifically opt-out.)
+
+      @property browser
+      @type boolean
+      @default auto-detected
+      @public
+    */
+    if (options.browser !== undefined) {
+      this.browser = !!options.browser;
+    } else {
+      this.browser = environment.hasDOM;
+    }
+
+    if (!this.browser) {
+      this.jQuery = null;
+      this.interactive = false;
+      this.location = 'none';
     }
 
     /**
-      If present, overrides the `rootElement` property on the instance. This is useful
-      for testing environment, where you might want to append the root view to a fixture
-      area.
+      Disable rendering completely.
+
+      When this flag is set to `true`, it will disable the entire rendering
+      pipeline. Essentially, this puts the app into "routing-only" mode. No
+      templates will be rendered, and no Components will be created.
+
+      @property render
+      @type boolean
+      @default true
+      @public
+    */
+    if (options.render !== undefined) {
+      this.render = !!options.render;
+    } else {
+      this.render = true;
+    }
+
+    if (!this.render) {
+      this.jQuery = null;
+      this.interactive = false;
+    }
+
+    /**
+      If present, render into the given `Document` object instead of the
+      global `window.document` object.
+
+      In practice, this is only useful in non-browser environment or in
+      non-interactive mode, because Ember's `jQuery` dependency is
+      implicitly bound to the current document, causing event delegation
+      to not work properly when the app is rendered into a foreign
+      document object (such as an iframe's `contentDocument`).
+
+      In non-browser mode, this could be a "`Document`-like" object as
+      Ember only interact with a small subset of the DOM API in non-
+      interactive mode. While the exact requirements have not yet been
+      formalized, the `SimpleDOM` library's implementation is known to
+      work.
+
+      @property document
+      @type Document
+      @default the global `document` object
+      @public
+    */
+    if (options.document) {
+      this.document = options.document;
+    } else {
+      this.document = document;
+    }
+
+    /**
+      If present, overrides the application's `rootElement` property on
+      the instance. This is useful for testing environment, where you
+      might want to append the root view to a fixture area.
+
+      In non-browser mode, because Ember does not have access to jQuery,
+      this options must be specified as a DOM `Element` object instead of
+      a selector string.
+
+      See the documentation on `Ember.Applications`'s `rootElement` for
+      details.
 
       @property rootElement
-      @type String|DOMElement
+      @type String|Element
       @default null
-      @private
+      @public
      */
     if (options.rootElement) {
       this.rootElement = options.rootElement;
     }
 
     /**
-      If present, overrides the router's `location` property with this value. This
-      is useful for FastBoot or testing environments, where trying to modify the URL
-      would be inappropriate.
+      If present, overrides the router's `location` property with this
+      value. This is useful for environments where trying to modify the
+      URL would be inappropriate.
 
       @property location
       @type string
       @default null
-      @private
+      @public
     */
-    this.location = options.location;
-
-    /**
-      If present, overrides the `didCreateRootView` method on the instance. See the
-      documentation on `didCreateRootView` for details.
-
-      @property didCreateRootView
-      @type Function
-      @default null
-      @private
-    */
-    this.didCreateRootView = options.didCreateRootView;
-
-    /**
-      Whether this instance will be used in a browser environment; this controls
-      whether we need to setup the event dispatcher.
-
-      Delegates to `environment.hasDOM` if not specified.
-
-      @property hasDOM
-      @type boolean
-      @default environment.hasDOM
-      @private
-    */
-    if (options.hasDOM === undefined) {
-      this.hasDOM = environment.hasDOM;
-    } else {
-      this.hasDOM = !!options.hasDOM;
+    if (options.location !== undefined) {
+      this.location = options.location;
     }
+
+    if (options.jQuery !== undefined) {
+      this.jQuery = options.jQuery;
+    }
+
+    if (options.interactive !== undefined) {
+      this.interactive = !!options.interactive;
+    }
+  };
+
+  BootOptions.prototype.toEnvironment = function() {
+    let env = assign({}, environment);
+    env.hasDOM = this.browser;
+    env.options = this;
+    return env;
   };
 }
 
