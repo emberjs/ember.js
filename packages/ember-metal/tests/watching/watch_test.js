@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
+import get from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { defineProperty } from 'ember-metal/properties';
 import { testBoth } from 'ember-metal/tests/props_helper';
@@ -116,7 +117,7 @@ QUnit.test('watching an object THEN defining it should work also', function() {
   defineProperty(obj, 'foo');
   set(obj, 'foo', 'bar');
 
-  equal(Ember.get(obj, 'foo'), 'bar', 'should have set');
+  equal(get(obj, 'foo'), 'bar', 'should have set');
   equal(willCount, 1, 'should have invoked willChange once');
   equal(didCount, 1, 'should have invoked didChange once');
 });
@@ -162,7 +163,7 @@ testBoth('watching an object value then unwatching should restore old value', fu
 
   watch(obj, 'foo.bar.baz.biff');
 
-  var foo = Ember.get(obj, 'foo');
+  var foo = get(obj, 'foo');
   equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 
   unwatch(obj, 'foo.bar.baz.biff');

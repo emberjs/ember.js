@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
+import get from 'ember-metal/property_get';
 import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
@@ -8,7 +9,6 @@ import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 
 var Router, App, router, container;
-var get = Ember.get;
 
 function bootApplication() {
   router = container.lookup('router:main');
