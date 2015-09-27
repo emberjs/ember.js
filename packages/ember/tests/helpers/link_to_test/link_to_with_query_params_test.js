@@ -5,6 +5,7 @@ import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, registry, container;
 
@@ -39,7 +40,7 @@ function sharedSetup() {
 
   updateCount = replaceCount = 0;
   App.Router.reopen({
-    location: Ember.NoneLocation.create({
+    location: NoneLocation.create({
       setURL(path) {
         updateCount++;
         set(this, 'path', path);

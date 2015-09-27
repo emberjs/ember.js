@@ -5,12 +5,13 @@ import { capitalize } from 'ember-runtime/system/string';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var App, Router, container, router, registry;
 var expectedReplaceURL, expectedPushURL;
 
 
-var TestLocation = Ember.NoneLocation.extend({
+var TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },

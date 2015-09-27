@@ -3,6 +3,7 @@ import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, registry, container;
 
@@ -18,7 +19,7 @@ function setAndFlush(obj, prop, value) {
   run(obj, 'set', prop, value);
 }
 
-var TestLocation = Ember.NoneLocation.extend({
+var TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
