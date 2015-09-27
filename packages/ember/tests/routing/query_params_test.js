@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
+import get from 'ember-metal/property_get';
 import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
@@ -10,7 +11,6 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, container;
-var get = Ember.get;
 
 function bootApplication() {
   router = container.lookup('router:main');

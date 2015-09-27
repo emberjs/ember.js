@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import get from 'ember-metal/property_get';
 import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
 var suite = SuiteModuleBuilder.create();
@@ -17,7 +17,7 @@ suite.test('[].clear() => [] + notify', function () {
   equal(obj.clear(), obj, 'return self');
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.validate('[]'), false, 'should NOT have notified [] once');
   equal(observer.validate('@each'), false, 'should NOT have notified @each once');
@@ -38,7 +38,7 @@ suite.test('[X].clear() => [] + notify', function () {
   equal(obj.clear(), obj, 'return self');
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
