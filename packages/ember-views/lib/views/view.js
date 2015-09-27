@@ -1303,13 +1303,14 @@ var View = CoreView.extend(
     @private
   */
   init() {
+    this._super(...arguments);
+
     if (!this.elementId) {
       this.elementId = guidFor(this);
     }
 
     this.scheduledRevalidation = false;
 
-    this._super(...arguments);
     this[INIT_WAS_CALLED] = true;
 
     if (!this._viewRegistry) {
