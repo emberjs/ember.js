@@ -2,7 +2,7 @@ import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { ConstReference } from './references/const';
 import { MetaOptions, MetaFactory } from './types';
-import { InternedString } from 'htmlbars-util';
+import { InternedString, installGuid, intern, numberKey } from 'htmlbars-util';
 
 import { Dict, DictSet, HasGuid, Set, dict } from 'htmlbars-util';
 
@@ -45,11 +45,11 @@ class ConstRoot implements IRootReference {
   private inner: any;
 
   constructor(value) {
-    this.inner = value;    
+    this.inner = value;
   }
-  
+
   update() {}
-  chain() { return NOOP_DESTROY; }  
+  chain() { return NOOP_DESTROY; }
   isDirty() { return false; }
   destroy() {}
   notify() {}
@@ -65,7 +65,7 @@ class ConstRoot implements IRootReference {
   chainFor(prop: InternedString): IPathReference {
     throw new Error("Not implemented");
   }
-  
+
   get(prop: InternedString): IPathReference {
     return new ConstPath(this.inner, prop);
   }
@@ -87,7 +87,7 @@ class ConstMeta implements IMeta {
   removeReference(property: InternedString, reference: PathReference);
 }
 
-class Meta implements IMeta {
+class Meta implements IMeta, HasGuid {
   static for(obj: any): IMeta {
     if (obj._meta) return obj._meta;
     if (!Object.isExtensible(obj)) return new ConstMeta(obj);
@@ -96,11 +96,17 @@ class Meta implements IMeta {
     return (obj._meta = new MetaToUse(obj, {}));
   }
 
+  static identity(obj: any): InternedString {
+    if (typeof obj === 'string') return intern(obj);
+    else if (typeof obj === 'object') return this.for(obj).identity();
+  }
+
   private object: any;
   private RootReferenceFactory: RootReferenceFactory;
   private DefaultPathReferenceFactory: InnerReferenceFactory;
   private rootCache: IRootReference;
   private references: Dict<DictSet<IPathReference & HasGuid>> = null;
+  public _guid;
   protected referenceTypes: Dict<InnerReferenceFactory> = null;
 
   constructor(object: any, { RootReferenceFactory, DefaultPathReferenceFactory }: MetaOptions) {
@@ -138,6 +144,10 @@ class Meta implements IMeta {
 
   root(): IRootReference {
     return (this.rootCache = this.rootCache || new this.RootReferenceFactory(this.object));
+  }
+
+  identity(): InternedString {
+    return numberKey(installGuid(this));
   }
 }
 

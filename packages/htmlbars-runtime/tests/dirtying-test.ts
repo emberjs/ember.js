@@ -1,5 +1,5 @@
 import { compile } from "htmlbars-compiler";
-import { manualElement, DOMHelper } from "htmlbars-runtime";
+import { DOMHelper, Template, manualElement } from "htmlbars-runtime";
 import { equalTokens } from "htmlbars-test-helpers";
 import { TestEnvironment } from "./support";
 
@@ -20,23 +20,9 @@ function commonSetup() {
       return options.inverse.yield();
     }
   });
-
-  env.registerHelper('each', function(params) {
-    var list = params[0];
-
-    for (var i=0, l=list.length; i<l; i++) {
-      var item = list[i];
-      if (this.arity > 0) {
-        this.yieldItem(item.key, [item]);
-      } else {
-        this.yieldItem(item.key, undefined, item);
-      }
-    }
-  });
-
 }
 
-function render(template, context={}) {
+function render(template: Template, context={}) {
   let result = template.render(context, env, { appendTo: root });
   assertInvariants(result);
   return result;
@@ -169,19 +155,13 @@ test("attribute nodes follow the normal dirtying rules", function() {
   equalTokens(root, "<div class='world'>hello</div>", "Initial render");
 
   object.value = "universe";
-  result.revalidate(); // without setting the node to dirty
+  result.rerender(); // without setting the node to dirty
 
-  equalTokens(root, "<div class='world'>hello</div>", "Revalidating without dirtying");
-
-  var attrRenderNode = result.root.childMorphs[0];
+  equalTokens(root, "<div class='universe'>hello</div>", "Revalidating without dirtying");
 
   result.rerender();
 
   equalTokens(root, "<div class='universe'>hello</div>", "Revalidating after dirtying");
-
-  attrRenderNode.setContent = function() {
-    ok(false, "Should not get called");
-  };
 
   object.value = "universe";
   result.rerender();
@@ -197,19 +177,13 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   equalTokens(root, "<div class='hello world'>hello</div>");
 
   object.value = "universe";
-  result.revalidate(); // without setting the node to dirty
+  result.rerender(); // without setting the node to dirty
 
-  equalTokens(root, "<div class='hello world'>hello</div>");
-
-  var attrRenderNode = result.root.childMorphs[0];
+  equalTokens(root, "<div class='hello universe'>hello</div>");
 
   result.rerender();
 
   equalTokens(root, "<div class='hello universe'>hello</div>");
-
-  attrRenderNode.setContent = function() {
-    ok(false, "Should not get called");
-  };
 
   object.value = "universe";
   result.rerender();
@@ -217,7 +191,7 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
 
 testEachHelper(
   "An implementation of #each using block params",
-  "<ul>{{#each list as |item|}}<li class={{item.class}}>{{item.name}}</li>{{/each}}</ul>"
+  "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>"
 );
 
 testEachHelper(
@@ -227,11 +201,11 @@ testEachHelper(
 
 function testEachHelper(testName, templateSource) {
   test(testName, function() {
-    var template = compile(templateSource);
-    var object = { list: [
-      { key: "1", name: "Tom Dale", "class": "tomdale" },
-      { key: "2", name: "Yehuda Katz", "class": "wycats" }
-    ]};
+    let template = compile(templateSource);
+    let tom = { key: "1", name: "Tom Dale", "class": "tomdale" };
+    var yehuda = { key: "2", name: "Yehuda Katz", "class": "wycats" };
+    var object = { list: [ tom, yehuda ] };
+
     var result = render(template, object);
 
     var itemNode = getItemNode('tomdale');
@@ -243,11 +217,11 @@ function testEachHelper(testName, templateSource) {
     assertStableNodes('tomdale', "after no-op rerender");
     equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
 
-    result.revalidate();
+    rerender();
     assertStableNodes('tomdale', "after non-dirty rerender");
     equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
 
-    object = { list: [object.list[1], object.list[0]] };
+    object = { list: [yehuda, tom] };
     rerender(object);
     assertStableNodes('tomdale', "after changing the list order");
     equalTokens(root, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>", "After changing the list order");
@@ -265,7 +239,6 @@ function testEachHelper(testName, templateSource) {
       { key: "2", name: "Kristoph Selden", "class": "krisselden" },
       { key: "3", name: "Matthew Beale", "class": "mixonic" }
     ]};
-
     rerender(object);
     assertStableNodes('mmun', "after adding an additional entry");
     equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
@@ -329,8 +302,9 @@ function testEachHelper(testName, templateSource) {
     strictEqual(root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
     equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
 
-    function rerender(context) {
-      result.rerender(env, context);
+    function rerender(context?) {
+      if (context !== undefined) result.frame.scope().updateSelf(context);
+      result.rerender();
     }
 
     function assertStableNodes(className, message) {

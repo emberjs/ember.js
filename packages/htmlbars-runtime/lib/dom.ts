@@ -40,7 +40,7 @@ export default class DOMHelper {
         throw new Error(`Cannot create a ${tag} inside of a <${context.tagName}>, because it's inside an SVG context`);
       }
 
-      return this.document.createElementNS(SVG_NAMESPACE, 'svg');
+      return this.document.createElementNS(SVG_NAMESPACE, tag);
     } else {
       return this.document.createElement(tag);
     }
@@ -52,7 +52,9 @@ export default class DOMHelper {
     let prev = nextSibling && nextSibling.previousSibling;
     let last;
 
-    if (nextSibling === null) {
+    if (html === null || html === '') {
+      return new ConcreteBounds(parent, null, null);
+    } if (nextSibling === null) {
       parent.insertAdjacentHTML('beforeEnd', html);
       last = parent.lastChild;
     } else if (nextSibling instanceof HTMLElement) {

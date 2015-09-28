@@ -5,12 +5,11 @@ import { Frame } from './environment';
 import {
   ChainableReference,
   PushPullReference,
-  ConstReference,
-  intern
+  ConstReference
 } from 'htmlbars-reference';
 import { ElementStack } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
-import { InternedString, Dict, dict } from 'htmlbars-util';
+import { InternedString, Dict, dict, intern } from 'htmlbars-util';
 
 interface Bounds {
   parentNode(): Node;
@@ -118,15 +117,15 @@ export default class Template {
     });
   }
 
-  evaluate(morph: HasParentNode, frame: Frame): RenderResult {
-    let builder = new Builder(morph, frame);
+  evaluate(morph: ContentMorph, nextSibling: Node=null): RenderResult {
+    let builder = new Builder(morph, nextSibling);
 
-    this.statements.forEach(builder.render, builder);
+    this.statements.forEach(statement => builder.render(statement));
 
     let morphs = builder.morphList();
     let bounds = builder.bounds();
 
-    return new RenderResult({ morph, morphs, bounds, frame, template: this, locals: this.locals });
+    return new RenderResult({ morph, morphs, bounds, template: this, locals: this.locals });
   }
 
   render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
@@ -136,20 +135,16 @@ export default class Template {
 
     let frame = env.pushFrame(scope);
 
-    let rootMorph = new RootMorph(options.appendTo, null);
+    let rootMorph = new RootMorph(options.appendTo, frame);
 
-    return this.evaluate(rootMorph, frame);
+    return this.evaluate(rootMorph);
   }
 }
 
-class RootMorph implements Morph {
-  public parentNode: Element;
-  public nextSibling: Node = null;
-  public frame: Frame = null;
-
-  constructor(parentNode: Element, frame: Frame) {
-    this.parentNode = parentNode;
-  }
+class RootMorph extends ContentMorph {
+  // TODO: Yick
+  firstNode() { return null; }
+  lastNode() { return null; }
 
   init(ignored: Object) {}
   append() {}
@@ -173,25 +168,18 @@ interface StaticStatementSyntax extends PrettyPrintable {
   isStatic: boolean;
 }
 
-interface StatementSyntax extends PrettyPrintable {
+export interface StatementSyntax extends PrettyPrintable {
   evaluate(stack: ElementStack, frame: Frame): Morph;
   isStatic: boolean;
+  type: string;
 }
 
-class StaticExpression {
-  isStatic: boolean;
-
-  constructor() {
-    this.isStatic = true;
-  }
+abstract class StaticExpression {
+  isStatic: boolean = true;
 }
 
-class DynamicExpression {
-  isStatic: boolean;
-
-  constructor() {
-    this.isStatic = false;
-  }
+abstract class DynamicExpression {
+  isStatic: boolean = false;
 }
 
 type PathSexp = InternedString[];
@@ -201,7 +189,13 @@ type HashSexp = any[];
 
 type BlockSexp = [InternedString, PathSexp, ParamsSexp, HashSexp, number, number];
 
+export interface BlockOptions {
+
+}
+
 export class Block extends DynamicExpression implements StatementSyntax {
+  public type = "block";
+
   static fromSpec(sexp: BlockSexp, children: Template[]): Block {
     let [, path, params, hash, templateId, inverseId] = sexp;
 
@@ -231,7 +225,7 @@ export class Block extends DynamicExpression implements StatementSyntax {
     return `Block(${this.path}) { args=${this.args.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): ContentMorph<any> {
+  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
     let helper = frame.lookupHelper(this.path);
     let args = this.args.evaluate(frame);
     let templates = this.templates;
@@ -243,6 +237,8 @@ export class Block extends DynamicExpression implements StatementSyntax {
 type UnknownSexp = [string, PathSexp, boolean];
 
 export class Unknown extends DynamicExpression implements StatementSyntax {
+  public type = "unknown";
+
   static fromSpec(sexp: UnknownSexp): Unknown {
     let [, path, unsafe] = sexp;
 
@@ -266,7 +262,7 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
     return `Unknown(${this.ref.prettyPrint()}) { trust=${this.trustingMorph} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): Morph<{ content: Reference, trustingMorph: boolean }> {
+  evaluate(stack: ElementStack, frame: Frame): Morph {
     let { ref, trustingMorph } = this;
 
     let content;
@@ -285,6 +281,8 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
 type InlineSexp = [string, string[], ParamsSexp, HashSexp, boolean];
 
 export class Inline extends DynamicExpression implements StatementSyntax {
+  public type = "inline";
+
   static fromSpec(sexp: InlineSexp) {
     let [, path, params, hash, trust] = sexp;
 
@@ -315,7 +313,7 @@ export class Inline extends DynamicExpression implements StatementSyntax {
     return `Inline(${this.path}) { params=${this.args.prettyPrint()} trusted=${this.trustingMorph} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): Morph<any> {
+  evaluate(stack: ElementStack, frame: Frame): Morph {
     let helper = frame.lookupHelper(this.path);
     let content = new HelperInvocationReference(helper, this.args.evaluate(frame));
     let trustingMorph = this.trustingMorph;
@@ -337,7 +335,7 @@ class HelperInvocationReference extends PushPullReference {
   value(): Insertion {
     let { helper, args }  = this;
     let { params, hash } = args.value();
-    return this.helper.value()(params, hash);
+    return this.helper.value()(params, hash, null);
   }
 }
 
@@ -381,21 +379,22 @@ interface AttributeSyntax {
 type DynamicPropSexp = [string, string, ExpressionSexp, string];
 
 export class DynamicProp extends DynamicExpression implements AttributeSyntax, StatementSyntax {
+  type = "dynamic-prop";
+
   static fromSpec(sexp: DynamicPropSexp): DynamicProp {
     let [, name, value, namespace] = sexp;
 
     return new DynamicProp({
       name,
-      namespace,
       value: buildExpression(value)
     });
   }
 
-  static build(name: string, value: any, namespace: string=null): DynamicProp {
-    return new DynamicProp({ name, value, namespace });
+  static build(name: string, value: any): DynamicProp {
+    return new DynamicProp({ name, value });
   }
 
-  private name: string;
+  public name: string;
   private value: PrettyPrintableExpressionSyntax;
 
   constructor(options: { name: string, value: PrettyPrintableExpressionSyntax }) {
@@ -419,6 +418,8 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, S
 type DynamicAttrSexp = [string, string, ExpressionSexp, string];
 
 export class DynamicAttr extends DynamicExpression implements AttributeSyntax, StatementSyntax {
+  type = "dynamic-attr";
+
   static fromSpec(sexp: DynamicAttrSexp): DynamicAttr {
     let [, name, value, namespace] = sexp;
 
@@ -463,6 +464,8 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
 type ComponentSexp = [InternedString, InternedString, HashSexp, number, number];
 
 export class Component extends DynamicExpression implements StatementSyntax {
+  type = "component";
+
   static fromSpec(node: ComponentSexp, children: Template[]) {
     let [, path, attrs, templateId, inverseId] = node;
 
@@ -548,7 +551,7 @@ class FallbackMorph extends Morph<FallbackOptions> {
   update() {}
 }
 
-class FallbackContents extends Morph<{ template: Template }> {
+class FallbackContents extends Morph {
   private template: Template;
 
   init({ template }) {
@@ -556,7 +559,7 @@ class FallbackContents extends Morph<{ template: Template }> {
   }
 
   append() {
-    this.template.evaluate(this, this.frame);
+    this.template.evaluate(this);
   }
 
   update() {}
@@ -565,6 +568,8 @@ class FallbackContents extends Morph<{ template: Template }> {
 type TextSexp = [string, string];
 
 export class Text extends StaticExpression implements StaticStatementSyntax {
+  type = "text";
+
   static fromSpec(node: TextSexp): Text {
     let [, content] = node;
 
@@ -594,6 +599,8 @@ export class Text extends StaticExpression implements StaticStatementSyntax {
 type CommentSexp = [string, string];
 
 export class Comment extends StaticExpression implements StaticStatementSyntax {
+  type = "comment";
+
   static fromSpec(sexp: CommentSexp): Comment {
     let [, value] = sexp;
 
@@ -623,6 +630,8 @@ export class Comment extends StaticExpression implements StaticStatementSyntax {
 type OpenElementSexp = [string, string];
 
 export class OpenElement extends StaticExpression implements StaticStatementSyntax {
+  type = "open-element";
+
   static fromSpec(sexp: OpenElementSexp): OpenElement {
     let [, tag] = sexp;
 
@@ -650,6 +659,8 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
 }
 
 export class CloseElement extends StaticExpression implements StaticStatementSyntax {
+  type = "close-element";
+
   static fromSpec() {
     return new CloseElement();
   }
@@ -670,6 +681,8 @@ export class CloseElement extends StaticExpression implements StaticStatementSyn
 type StaticAttrSexp = [string, string, string, string];
 
 export class StaticAttr extends StaticExpression implements AttributeSyntax, StaticStatementSyntax {
+  type = "static-attr";
+
   static fromSpec(node: StaticAttrSexp): StaticAttr {
     let [, name, value, namespace] = node;
 
@@ -739,6 +752,8 @@ const BOUNDARY_CANDIDATES = {
 };
 
 export class Value extends StaticExpression implements ExpressionSyntax {
+  type = "value";
+
   static fromSpec(value) {
     return new Value(value);
   }
@@ -769,7 +784,9 @@ export class Value extends StaticExpression implements ExpressionSyntax {
 
 type GetSexp = [string, Path];
 
-export class Get implements ExpressionSyntax {
+export class Get extends DynamicExpression implements ExpressionSyntax {
+  type = "get";
+
   static fromSpec(sexp: GetSexp): Get {
     let [, parts] = sexp;
 
@@ -783,6 +800,7 @@ export class Get implements ExpressionSyntax {
   private ref: Ref;
 
   constructor(options) {
+    super();
     this.ref = options.ref;
   }
 
@@ -802,7 +820,9 @@ function internPath(path: string): InternedString[] {
 
 // this is separated out from Get because Unknown also has a ref, but it
 // may turn out to be a helper
-class Ref implements ExpressionSyntax {
+class Ref extends DynamicExpression implements ExpressionSyntax {
+  type = "ref";
+
   static build(path: string): Ref {
     return new Ref(internPath(path));
   }
@@ -810,6 +830,7 @@ class Ref implements ExpressionSyntax {
   private parts: InternedString[];
 
   constructor(parts: InternedString[]) {
+    super();
     this.parts = parts;
   }
 
@@ -840,6 +861,8 @@ class Ref implements ExpressionSyntax {
 type HelperSexp = [string, PathSexp, ParamsSexp, HashSexp];
 
 export class Helper implements ExpressionSyntax {
+  type = "helper";
+
   static fromSpec(sexp: HelperSexp): Helper {
     let [, path, params, hash] = sexp;
 
@@ -870,6 +893,8 @@ export class Helper implements ExpressionSyntax {
 type ConcatSexp = [string, ParamsSexp];
 
 export class Concat implements ExpressionSyntax {
+  type = "concat";
+
   static fromSpec(sexp: ConcatSexp): Concat {
     let [, params] = sexp;
 
@@ -935,8 +960,9 @@ export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
     return new ParamsAndHash({ params, hash });
   }
 
-  private params: Params;
-  private hash: Hash;
+  public params: Params;
+  public hash: Hash;
+  public isStatic = false;
 
   constructor(options: { params: Params, hash: Hash }) {
     this.params = options.params;
@@ -1006,6 +1032,7 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
   }
 
   params: PrettyPrintableExpressionSyntax[];
+  isStatic = false;
 
   constructor(exprs: PrettyPrintableExpressionSyntax[]) {
     super();
@@ -1020,7 +1047,7 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
     return `Params [ ${this.params.map(p => p.prettyPrint()).join(', ')} ]`;
   }
 
-  evaluate(frame: Frame): ChainableReference {
+  evaluate(frame: Frame): EvaluatedParams {
     return new EvaluatedParams(this, frame);
   }
 }
@@ -1036,6 +1063,18 @@ class EvaluatedParams extends PushPullReference {
       this._addSource(result);
       return result;
     })
+  }
+
+  nth(n: number) {
+    return this.references[n];
+  }
+
+  first() {
+    return this.nth(0);
+  }
+
+  last() {
+    return this.nth(this.references.length - 1);
   }
 
   value() {
@@ -1081,6 +1120,7 @@ export class Hash implements PrettyPrintableExpressionSyntax {
 
   public keys: InternedString[];
   public values: PrettyPrintableExpressionSyntax[];
+  public isStatic = false;
 
   constructor({ keys, values }) {
     this.keys = keys;
@@ -1092,7 +1132,7 @@ export class Hash implements PrettyPrintableExpressionSyntax {
     return `Hash { ${inside} }`;
   }
 
-  evaluate(frame: Frame): ChainableReference {
+  evaluate(frame: Frame): EvaluatedHash {
     let { keys, values } = this;
     let out = new Array(values.length);
 
@@ -1120,6 +1160,14 @@ class EvaluatedHash extends PushPullReference {
     this.keys = hash.keys;
   }
 
+  at(key: InternedString): ChainableReference {
+    let ret: ChainableReference = null;
+    this.keys.some((k, i) => {
+      if (k === key) { ret = this.values[i]; return true; }
+    });
+    return ret;
+  }
+
   value(): Dict<any> {
     let hash = dict();
     let refs = this.values;
@@ -1144,8 +1192,9 @@ export class Templates implements ExpressionSyntax {
     return new Templates({ template, inverse });
   }
 
-  _default: Template;
-  _inverse: Template;
+  public isStatic = false;
+  public _default: Template;
+  public _inverse: Template;
 
   constructor(options: { template: Template, inverse: Template }) {
     this._default = options.template;
@@ -1175,7 +1224,7 @@ export class TemplateBuilder {
   }
 
   template() {
-    return Template.fromStatements(this.statements); // jshint ignore:line
+    return Template.fromStatements(this.statements);
   }
 
   specExpr(spec: any[]): PrettyPrintableExpressionSyntax {

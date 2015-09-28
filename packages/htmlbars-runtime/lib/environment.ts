@@ -1,4 +1,4 @@
-import Template from "./template";
+import Template, { StatementSyntax } from "./template";
 
 import {
   Reference,
@@ -131,12 +131,20 @@ export abstract class Environment {
 
   getDOM(): DOMHelper { return this.dom; }
 
+  getIdentity(object: any): InternedString {
+    return this.meta.identity(object);
+  }
+
   pushFrame(scope: Scope): Frame {
     return new Frame(this, scope);
   }
 
   createRootScope(): Scope {
     return new Scope(null, this.meta, EMPTY_ARRAY);
+  }
+
+  statement(statement: StatementSyntax): StatementSyntax {
+    return statement;
   }
 
   abstract hasHelper(scope: Scope, helperName: string[]): boolean;
@@ -173,8 +181,16 @@ export class Frame {
     this._scope = scope;
   }
 
+  child(): Frame {
+    return new Frame(this.env, this._scope);
+  }
+
   dom(): DOMHelper {
     return this.env.getDOM();
+  }
+
+  syntax(statement: StatementSyntax): StatementSyntax {
+    return this.env.statement(statement);
   }
 
   childScope(blockArguments: any[]) {
@@ -183,6 +199,10 @@ export class Frame {
 
   scope(): Scope {
     return this._scope;
+  }
+
+  identity(object: any): InternedString {
+    return this.env.getIdentity(object);
   }
 
   hasHelper(helperName: InternedString[]): boolean {

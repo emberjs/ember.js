@@ -37,7 +37,7 @@ export class PathReference extends PushPullReference implements IPathReference, 
     this.property = property;
   }
 
-  isDirty(): boolean { return this.cache === EMPTY_CACHE || this.inner.isDirty(); }
+  isDirty(): boolean { return this.cache === EMPTY_CACHE || (this.inner && this.inner.isDirty()); }
 
   value(): any {
     if (!this.isDirty()) return this.cache;

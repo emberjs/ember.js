@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node"
+  },
+  "exclude": [
+    "../node_modules/htmlbars-object"
+  ]
+}

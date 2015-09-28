@@ -3,20 +3,31 @@ import { RegionMorph } from './region';
 import { ExpressionSyntax, EvaluatedParamsAndHash, Templates } from '../template';
 import { Reference, PushPullReference } from 'htmlbars-reference';
 import { Frame, Helper, Insertion as PrimitiveInsertion } from '../environment';
-import { Morph, ContentMorph, ContentMorphConstructor, MorphConstructor, Bounds, bounds, clear } from '../morph';
 import { ElementStack } from '../builder';
+
+import {
+  Morph,
+  ContentMorph,
+  EmptyableMorph,
+  SingleNodeBounds,
+  ContentMorphConstructor,
+  MorphConstructor,
+  MorphClass,
+  Bounds,
+  bounds,
+  clear
+} from '../morph';
 
 const SAFE_BRAND = symbol("safe string");
 
 type ContentInitOptions = { content: Reference, trustingMorph: boolean };
-type ContentInsertion = Morph<ContentInitOptions>;
+type ContentInsertion = Morph;
 type ContentInsertionConstructor = ContentMorphConstructor<ContentInitOptions>;
 
-class HtmlInsertion extends ContentMorph<ContentInitOptions> {
+class HtmlInsertion extends EmptyableMorph {
   private reference: Reference;
-  private lastBounds: Bounds = null;
   private lastValue: string = null;
-  public parentNode: HTMLElement;
+  public parentNode: HTMLElement & Element;
 
   init({ content }: ContentInitOptions) {
     this.reference = content;
@@ -26,32 +37,22 @@ class HtmlInsertion extends ContentMorph<ContentInitOptions> {
     }
   }
 
-  firstNode() {
-    return this.lastBounds.firstNode();
-  }
-
-  lastNode() {
-    return this.lastBounds.lastNode();
-  }
-
   append(stack: ElementStack) {
     let html = this.lastValue = <string>this.reference.value();
-    this.lastBounds = stack.insertHTMLBefore(null, html);
+    this.initializeBounds(stack.insertHTMLBefore(null, html));
   }
 
   update() {
     let html = <string>this.reference.value();
 
     if (this.lastValue !== html) {
-      let nextSibling = clear(this.lastBounds);
-      let { first, last } = this.frame.dom().insertHTMLBefore(this.parentNode, nextSibling, html);
-      this.lastBounds = bounds(this.parentNode, first, last);
+      this.replaceWithBounds(this.frame.dom().insertHTMLBefore(this.parentNode, this.nextSibling(), html))
       this.lastValue = html;
     }
   }
 }
 
-class TextInsertion extends ContentMorph<ContentInitOptions> {
+class TextInsertion extends EmptyableMorph {
   private reference: Reference;
   private node: Text = null;
   private lastValue: string = null;
@@ -60,22 +61,18 @@ class TextInsertion extends ContentMorph<ContentInitOptions> {
     this.reference = content;
   }
 
-  firstNode() {
-    return this.node;
-  }
-
-  lastNode() {
-    return this.node;
-  }
-
   append(stack: ElementStack) {
     let text = this.lastValue = <string>this.reference.value();
-    this.node = stack.appendText(text);
+    let node = this.node = stack.appendText(text);
+    this.initializeBounds(new SingleNodeBounds(this.parentNode, node));
   }
 
   update() {
     let text = <string>this.reference.value();
-    if (text !== this.lastValue) {
+
+    if (text === '' || text === null || text === undefined) {
+      this.empty();
+    } else if (text !== this.lastValue) {
       this.lastValue = text;
       this.node.nodeValue = text;
     }
@@ -83,13 +80,13 @@ class TextInsertion extends ContentMorph<ContentInitOptions> {
 }
 
 export const ValueMorph = {
-  specialize(options: ContentInitOptions): ContentInsertionConstructor {
+  specialize(options): MorphClass<HtmlInsertion | TextInsertion> {
     if (options.trustingMorph) return HtmlInsertion;
     else return TextInsertion;
   }
 }
 
-export class HelperMorph extends Morph<any> {
+export class HelperMorph extends EmptyableMorph {
   private reference: Reference;
   private inner: ContentInsertion = null;
   private trustingMorph: boolean;
@@ -104,14 +101,14 @@ export class HelperMorph extends Morph<any> {
     let trustingMorph = this.trustingMorph;
 
     let insertion = insertionForUserContent(content, trustingMorph);
-    let inner = stack.initializeMorph<ContentInitOptions>(insertion, { content: this.reference, trustingMorph });
+    let inner = this.inner = stack.initializeMorph<ContentInitOptions>(insertion, { content: this.reference, trustingMorph });
 
     inner.append(stack);
   }
 
   update() {
-
-
+    this.inner.update();
+  }
 }
 
 // export class ValueMorph extends RegionMorph<{ ref: ExpressionSyntax, trustingMorph: boolean }> {

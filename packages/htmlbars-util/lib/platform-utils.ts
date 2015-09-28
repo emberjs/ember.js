@@ -10,6 +10,10 @@ export function intern(str: string): InternedString {
   for (var key in obj) return <InternedString>key;
 }
 
+export function numberKey(num: number): InternedString {
+  return <InternedString>String(num);
+}
+
 export function LITERAL(str: string): InternedString {
   return <InternedString>str;
 }

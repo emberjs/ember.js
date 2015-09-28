@@ -4,8 +4,7 @@
         "inlineSourceMap": true,
         "inlineSources": true,
         "moduleResolution": "node",
-        "rootDir": "src",
-        "outDir": "packages"
+        "rootDir": "packages"
     },
     "exclude": [
         "node_modules",

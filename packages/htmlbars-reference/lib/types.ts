@@ -48,6 +48,7 @@ export interface MetaFactory {
 
 export interface Meta {
   root(): RootReference;
+  identity(): InternedString;
   referencesFor(property: InternedString): Set<PathReference>;
   referenceTypeFor(property: InternedString): InnerReferenceFactory;
   addReference(property: InternedString, reference: PathReference);
@@ -56,4 +57,5 @@ export interface Meta {
 
 export interface MetaLookup {
   for(obj: any): Meta;
+  identity(obj: any): InternedString;
 }
