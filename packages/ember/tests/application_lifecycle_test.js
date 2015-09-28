@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import Application from 'ember-application/system/application';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
+import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 
 var compile = Ember.HTMLBars.compile;
@@ -153,7 +154,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   setupApp(ApplicationSubclass);
 
-  App.FooBarComponent = Ember.Component.extend({
+  App.FooBarComponent = Component.extend({
     wowza() {
       assert.ok(true, 'fired the event!');
     }
@@ -187,7 +188,7 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
 
   setupApp(ApplicationSubclass);
 
-  App.FooBarComponent = Ember.Component.extend({
+  App.FooBarComponent = Component.extend({
     jerky() {
       assert.ok(true, 'fired the event!');
     }

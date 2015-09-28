@@ -1,7 +1,7 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
+import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 
 var App1, App2, actions;
@@ -21,7 +21,7 @@ function startApp(rootElement) {
 
     var registry = application.__registry__;
 
-    registry.register('component:special-button', Ember.Component.extend({
+    registry.register('component:special-button', Component.extend({
       actions: {
         doStuff: function() {
           actions.push(rootElement);

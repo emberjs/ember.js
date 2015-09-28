@@ -1,8 +1,9 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
-import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
+import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
@@ -70,7 +71,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
     }
   });
 
-  App.ComponentWithActionComponent = Ember.Component.extend({
+  App.ComponentWithActionComponent = Component.extend({
     classNames: ['component-with-action'],
     click() {
       this.sendAction();

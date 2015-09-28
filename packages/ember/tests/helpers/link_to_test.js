@@ -2,12 +2,13 @@ import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
-import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
 import Application from 'ember-application/system/application';
+import Component from 'ember-views/components/component';
+import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
+import EmberObject from 'ember-runtime/system/object';
 import inject from 'ember-runtime/inject';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
@@ -108,7 +109,7 @@ QUnit.test('Using {{link-to}} does not cause an exception if it is rendered befo
 
   registry.register('component-lookup:main', ComponentLookup);
 
-  let component = Ember.Component.extend({
+  let component = Component.extend({
     layout: compile('{{#link-to "about"}}Go to About{{/link-to}}'),
     container: container
   }).create();
@@ -126,7 +127,7 @@ QUnit.test('Using {{link-to}} does not cause an exception if it is rendered befo
 QUnit.test('Using {{link-to}} does not cause an exception if it is rendered without a router.js instance', function(assert) {
   registry.register('component-lookup:main', ComponentLookup);
 
-  let component = Ember.Component.extend({
+  let component = Component.extend({
     layout: compile('{{#link-to "nonexistent"}}Does not work.{{/link-to}}'),
     container: container
   }).create();

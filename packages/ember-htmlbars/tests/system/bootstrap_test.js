@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
-import jQuery from 'ember-views/system/jquery';
 import run from 'ember-metal/run_loop';
+import Component from 'ember-views/components/component';
+import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-htmlbars/system/bootstrap';
@@ -154,7 +155,7 @@ if (Ember.component) {
       // currently Component code must be loaded before initializers
       // this is mostly due to how they are bootstrapped. We will hopefully
       // sort this out soon.
-      App.XAppleComponent = Ember.Component.extend({
+      App.XAppleComponent = Component.extend({
         isCorrect: true
       });
     });
