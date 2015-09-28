@@ -5,10 +5,11 @@ import {
   ContentMorph,
   ContentMorphSpecializer,
   MorphSpecializer,
-  MorphList
+  MorphClass
 } from './morph';
 import { Frame } from './environment';
 import DOMHelper from './dom';
+import { StatementSyntax } from './template'
 
 // Builders are created for each template the first time it is rendered.
 // The builder walks through all statements, static and dynamic, and
@@ -17,19 +18,19 @@ import DOMHelper from './dom';
 // can simply walk over the statements and apply them to the morphs.
 export default class Builder {
   private frame: Frame;
-  private parentMorph: Morph<Object>;
+  private parentMorph: ContentMorph;
   private stack: ElementStack;
-  private morphs: Morph<Object>[];
+  private morphs: Morph[];
 
-  constructor(morph, frame) {
-    this.frame = frame;
+  constructor(morph: ContentMorph, nextSibling: Node) {
+    let frame = this.frame = morph.frame;
 
     this.parentMorph = morph;
-    this.stack = new ElementStack({ builder: this, frame, morph });
+    this.stack = new ElementStack({ builder: this, frame, morph, nextSibling });
     this.morphs = [];
   }
 
-  morphList(): MorphList {
+  morphList(): Morph[] {
     return this.morphs;
   }
 
@@ -39,13 +40,13 @@ export default class Builder {
 
   /// Interaction with ElementStack
 
-  createMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions, parentElement: Element): Morph<InitOptions> {
+  createMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions, parentElement: Element): M {
     let morph = this.initializeMorph(Type, attrs, parentElement);
     this.morphs.push(morph);
     return morph;
   }
 
-  initializeMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions, parentElement: Element): Morph<InitOptions> {
+  initializeMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions, parentElement: Element): M {
     let SpecializedType = Type.specialize(attrs);
     let morph = new SpecializedType(parentElement, this.frame);
     morph.init(attrs);
@@ -54,16 +55,16 @@ export default class Builder {
 
   /// Utilities
 
-  render(statement) {
+  render(statement: StatementSyntax) {
     let { stack, frame } = this;
+    let refinedStatement = this.frame.syntax(statement);
 
-    if (statement.isStatic) {
-      statement.evaluate(stack);
+    if (refinedStatement.isStatic) {
+      refinedStatement.evaluate(stack, frame);
       return;
     }
 
-    //let syntaxExtension = _frame.syntaxExtension(statement);
-    let content = statement.evaluate(stack, frame);
+    let content = refinedStatement.evaluate(stack, frame);
     content.append(stack);
   }
 }
@@ -78,11 +79,11 @@ interface LastNode {
 
 class First {
   private node: Node;
-  
+
   constructor(node) {
     this.node = node;
   }
-  
+
   firstNode(): Node {
     return this.node;
   }
@@ -90,22 +91,21 @@ class First {
 
 class Last {
   private node: Node;
-  
+
   constructor(node) {
     this.node = node;
   }
-  
+
   lastNode(): Node {
     return this.node;
   }
 }
 
-
 export class ElementStack {
   private builder: Builder;
   private frame: Frame;
   private dom: DOMHelper;
-  private morph: Morph<Object>;
+  private morph: ContentMorph;
   private element: Element;
   private nextSibling: Node;
   private elementStack: Element[];
@@ -114,16 +114,16 @@ export class ElementStack {
   public lastNode: Node | Bounds;
   public operations: Operations;
 
-  constructor({ builder, frame, morph }) {
+  constructor({ builder, frame, morph, nextSibling }: { builder: Builder, frame: Frame, morph: ContentMorph, nextSibling: Node }) {
     this.builder = builder;
     this.frame = frame;
     this.dom = frame.dom();
     this.morph = morph;
     this.operations = new TopLevelOperations(this);
     this.element = morph.parentNode;
-    this.nextSibling = morph.nextSibling;
+    this.nextSibling = nextSibling;
     this.elementStack = [morph.parentNode];
-    this.nextSiblingStack = [morph.nextSibling];
+    this.nextSiblingStack = [nextSibling];
 
     this.firstNode = null;
     this.lastNode = null;
@@ -132,7 +132,7 @@ export class ElementStack {
   bounds(): Bounds {
     let lastNode = this.lastNode instanceof Node ?
       new Last(this.lastNode) : <Bounds>this.lastNode;
-    
+
     return {
       firstNode: () => this.firstNode.firstNode(),
       lastNode: () => lastNode.lastNode(),
@@ -144,6 +144,7 @@ export class ElementStack {
     this.elementStack.push(element);
     this.nextSiblingStack.push(null);
     this.element = element;
+    this.nextSibling = null;
   }
 
   _popElement() {
@@ -159,15 +160,15 @@ export class ElementStack {
     this.builder.render(statement);
   }
 
-  createMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions): Morph<InitOptions> {
+  createMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions): M {
     return this.builder.createMorph(Type, attrs, this.element);
   }
 
-  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions> {
-    return this.operations.createContentMorph(Type, attrs);    
+  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions): M {
+    return this.operations.createContentMorph(Type, attrs);
   }
 
-  initializeMorph<InitOptions>(Type: MorphSpecializer<InitOptions>, attrs: InitOptions): Morph<InitOptions> {
+  initializeMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions): M {
     return this.builder.initializeMorph(Type, attrs, this.element);
   }
 
@@ -176,7 +177,7 @@ export class ElementStack {
   }
 
   setAttribute(name, value) {
-    this.dom.setAttribute(<HTMLElement>this.element, name, value);
+    this.dom.setAttribute(<HTMLElement & Element>this.element, name, value);
   }
 
   setAttributeNS(name, value, namespace) {
@@ -223,16 +224,15 @@ export class ElementStack {
   }
 
   insertHTMLBefore(nextSibling: Node, html: string): Bounds {
-    let { first, last } = this.operations.insertHTMLBefore(nextSibling, html);
-    return new ConcreteBounds(this.element, first, last);
+    return this.operations.insertHTMLBefore(nextSibling, html);
   }
 
-  _insertHTMLBefore(nextSibling: Node, html: string): { first: Node, last: Node } {
+  _insertHTMLBefore(nextSibling: Node, html: string): Bounds {
     if (!(this.element instanceof HTMLElement)) {
       throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.element.tagName}`)
     }
 
-    return this.dom.insertHTMLBefore(<HTMLElement>this.element, nextSibling, html);
+    return this.dom.insertHTMLBefore(<HTMLElement& Element>this.element, nextSibling, html);
   }
 
   newNode<T extends Node>(node: T): T {
@@ -240,8 +240,8 @@ export class ElementStack {
     this.lastNode = node;
     return node;
   }
-  
-  newContentMorph(morph: ContentMorph<any>) {
+
+  newContentMorph(morph: ContentMorph) {
     if (!this.firstNode) this.firstNode = morph;
     this.lastNode = morph;
     return morph;
@@ -252,8 +252,8 @@ interface Operations {
   appendText(text: string): Text;
   appendComment(value: string): Comment;
   openElement(tag: string): Element;
-  insertHTMLBefore(nextSibling: Node, html: string): { first: Node, last: Node };
-  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions>;
+  insertHTMLBefore(nextSibling: Node, html: string): Bounds;
+  createContentMorph<M extends ContentMorph>(Type: MorphClass<M>, attrs: Object): M;
   closeElement();
 }
 
@@ -266,17 +266,17 @@ class TopLevelOperations implements Operations {
     this.nested = null;
   }
 
-  appendText(text): Text {
+  appendText(text: string): Text {
     let node = this.stack._appendText(text);
     return this.stack.newNode(node);
   }
 
-  appendComment(value): Comment {
+  appendComment(value: string): Comment {
     let node = this.stack._appendComment(value);
     return this.stack.newNode(node);
   }
 
-  openElement(tag): Element {
+  openElement(tag: string): Element {
     let element = this.stack._openElement(tag);
     this.stack.newNode(element);
 
@@ -286,8 +286,8 @@ class TopLevelOperations implements Operations {
     return element;
   }
 
-  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions> {
-    let morph = <ContentMorph<any>>this.stack.createMorph(Type, attrs);
+  createContentMorph(Type: MorphClass<ContentMorph>, attrs: Object): ContentMorph {
+    let morph = this.stack.createMorph(Type, attrs);
     this.stack.newContentMorph(morph);
     return morph;
   }
@@ -295,8 +295,8 @@ class TopLevelOperations implements Operations {
   insertHTMLBefore(nextSibling: Node, html: string) {
     let bounds = this.stack._insertHTMLBefore(nextSibling, html);
     let { stack } = this;
-    stack.newNode(bounds.first);
-    stack.newNode(bounds.last);
+    stack.newNode(bounds.firstNode());
+    stack.newNode(bounds.lastNode());
     return bounds;
   }
 
@@ -329,8 +329,8 @@ class NestedOperations implements Operations {
     return this.stack._openElement(tag);
   }
 
-  createContentMorph<InitOptions>(Type: ContentMorphSpecializer<InitOptions>, attrs: InitOptions): ContentMorph<InitOptions> {
-    return <ContentMorph<any>>this.stack.createMorph(Type, attrs);
+  createContentMorph(Type: MorphClass<ContentMorph>, attrs: Object): ContentMorph {
+    return this.stack.createMorph(Type, attrs);
   }
 
   insertHTMLBefore(nextSibling: Node, html: string) {

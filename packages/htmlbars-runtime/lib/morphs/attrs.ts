@@ -10,8 +10,8 @@ interface AttrMorphOptions {
   namespace?: InternedString;
 }
 
-export class AttrMorph extends Morph {
-  static specialize({ name, value, namespace }: AttrMorphOptions): typeof AttrMorph {
+export abstract class AttrMorph extends Morph {
+  static specialize({ name, value, namespace }: AttrMorphOptions): Morph & typeof AttrMorph {
     namespace = namespace || getAttrNamespace(name);
     return <any>(namespace ? SetAttributeNSMorph : SetAttributeMorph);
   }
@@ -47,6 +47,15 @@ class SetAttributeMorph extends AttrMorph {
     let contentValue = this._setLastValue(this.value.value());
     atomicSetAttribute(this.frame, this.parentNode, this.name, contentValue);
   }
+
+  update() {
+    let lastValue = this.lastValue;
+    let contentValue = this._setLastValue(this.value.value());
+
+    if (contentValue !== lastValue) {
+      atomicSetAttribute(this.frame, this.parentNode, this.name, contentValue);
+    }
+  }
 }
 
 interface SetAttributeNSMorphOptions extends AttrMorphOptions {
@@ -65,12 +74,39 @@ class SetAttributeNSMorph extends AttrMorph {
     let contentValue = this._setLastValue(this.value.value());
     atomicSetAttributeNS(this.frame, this.parentNode, this.name, this.namespace, contentValue);
   }
+
+  update() {
+    let lastValue = this.lastValue;
+    let contentValue = this._setLastValue(this.value.value());
+
+    if (contentValue !== lastValue) {
+      atomicSetAttributeNS(this.frame, this.parentNode, this.name, this.namespace, contentValue);
+    }
+  }
 }
 
-export class SetPropertyMorph extends AttrMorph {
+export class SetPropertyMorph extends Morph {
+  private name: InternedString;
+  private value: Reference;
+  private lastValue: any = false;
+
+  init({ name, value }: AttrMorphOptions) {
+    this.name = name;
+    this.value = value.evaluate(this.frame);
+  }
+
   append() {
-    let contentValue = this._setLastValue(this.value.value());
+    let contentValue = this.lastValue = this.value.value();
     this.parentNode[<string>this.name] = contentValue;
+  }
+
+  update() {
+    let lastValue = this.lastValue;
+    let contentValue = this.lastValue = this.value.value();
+
+    if (contentValue !== lastValue) {
+      this.parentNode[<string>this.name] = contentValue;
+    }
   }
 }
 

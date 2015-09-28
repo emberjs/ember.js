@@ -55,11 +55,19 @@ export function equalTokens(fragment, html, message=null) {
   forEach(fragTokens.tokens, normalizeTokens);
   forEach(htmlTokens.tokens, normalizeTokens);
 
-  var msg = "Expected: " + htmlTokens.html + "; Actual: " + fragTokens.html;
+  // var msg = "Expected: " + htmlTokens.html + "; Actual: " + fragTokens.html;
 
-  if (message) { msg += " (" + message + ")"; }
+  // if (message) { msg += " (" + message + ")"; }
 
-  deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
+  let equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
+
+  if (equiv && fragTokens.html !== htmlTokens.html) {
+    deepEqual(fragTokens.tokens, htmlTokens.tokens, message);
+  } else {
+    QUnit.push(QUnit.equiv(fragTokens.tokens, htmlTokens.tokens), fragTokens.html, htmlTokens.html, message);
+  }
+
+  // deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
 // detect side-effects of cloning svg elements in IE9-11
