@@ -7,11 +7,12 @@ import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
+import Component from 'ember-views/components/component';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
+import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
-import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
@@ -322,7 +323,7 @@ if (isEnabled('ember-routing-routable-components')) {
 
     App.HomeRoute = Ember.Route.extend();
 
-    App.HomeComponent = Ember.Component.extend({
+    App.HomeComponent = Component.extend({
       isGlimmerComponent: true,
       name: 'Home'
     });
@@ -343,7 +344,7 @@ if (isEnabled('ember-routing-routable-components')) {
     App.HomeRoute = Ember.Route.extend();
 
     // Not a GlimmerComponent, shouldn't be rendered
-    App.HomeComponent = Ember.Component.extend({
+    App.HomeComponent = Component.extend({
       name: 'Home'
     });
 
@@ -362,7 +363,7 @@ if (isEnabled('ember-routing-routable-components')) {
 
     App.HomeRoute = Ember.Route.extend();
 
-    App.HomeComponent = Ember.Component.extend({
+    App.HomeComponent = Component.extend({
       isGlimmerComponent: true
     });
 
@@ -385,7 +386,7 @@ if (isEnabled('ember-routing-routable-components')) {
       }
     });
 
-    App.HomeComponent = Ember.Component.extend({
+    App.HomeComponent = Component.extend({
       isGlimmerComponent: true,
       name: 'Home'
     });
@@ -411,7 +412,7 @@ if (isEnabled('ember-routing-routable-components')) {
       }
     });
 
-    App.HomeComponent = Ember.Component.extend({
+    App.HomeComponent = Component.extend({
       isGlimmerComponent: true
     });
 
@@ -3950,13 +3951,13 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
     }
   });
 
-  App.MyComponentComponent = Ember.Component.extend({
+  App.MyComponentComponent = Component.extend({
     didInsertElement() {
       myComponentCounter++;
     }
   });
 
-  App.OtherComponentComponent = Ember.Component.extend({
+  App.OtherComponentComponent = Component.extend({
     didInsertElement() {
       otherComponentCounter++;
     }
