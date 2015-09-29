@@ -101,51 +101,122 @@ export abstract class ContentMorph extends Morph implements Bounds {
 export abstract class EmptyableMorph extends ContentMorph implements Bounds {
   private comment: boolean = false;
   private bounds: Bounds = null;
+  public currentOperations: EmptyableMorphOperations = new Appending(this, this.frame.dom());
 
   firstNode() {
-    return this.bounds.firstNode();
+    return this.currentOperations.firstNode();
   }
 
   lastNode() {
-    return this.bounds.lastNode();
+    return this.currentOperations.lastNode();
   }
 
   nextSibling() {
     return this.lastNode().nextSibling;
   }
 
-  private _appendEmpty(nextSibling: Node) {
-    this.comment = true;
-    let dom = this.frame.dom();
-    let comment = dom.createComment('');
-    this.bounds = new SingleNodeBounds(this.parentNode, comment);
-    dom.insertBefore(this.parentNode, comment, nextSibling);
+  protected didBecomeEmpty() {
+    this.currentOperations.didBecomeEmpty();
   }
 
-  appendEmpty(stack: ElementStack) {
-    let comment = stack.appendComment('');
-    this.bounds = new SingleNodeBounds(this.parentNode, comment);
+  protected nextSiblingForContent(): Node {
+    return this.currentOperations.nextSiblingForContent();
   }
 
-  protected isEmpty(): boolean {
-    return !!this.comment;
+  protected didInsertContent(bounds: Bounds) {
+    this.currentOperations.didInsertContent(bounds);
+  }
+}
+
+abstract class EmptyableMorphOperations {
+  protected parent: EmptyableMorph;
+  protected dom: DOMHelper;
+
+  constructor(parent: EmptyableMorph, dom: DOMHelper) {
+    this.parent = parent;
+    this.dom = dom;
   }
 
-  empty() {
-    if (this.comment) return;
+  abstract firstNode(): Node;
+  abstract lastNode(): Node;
+  abstract didBecomeEmpty();
+  abstract nextSiblingForContent(): Node;
+  abstract didInsertContent(bounds: Bounds);
+}
 
-    let nextSibling = clear(this);
-    this._appendEmpty(nextSibling)
+class Appending extends EmptyableMorphOperations {
+  firstNode() { return null; }
+  lastNode() { return null; }
+
+  didBecomeEmpty() {
+    this.parent.currentOperations = new Empty(this.parent, this.dom, null);
   }
 
-  initializeBounds(bounds: Bounds) {
+  nextSiblingForContent() { return null; }
+
+  didInsertContent(bounds: Bounds) {
+    this.parent.currentOperations = new HasContent(this.parent, this.dom, bounds);
+  }
+}
+
+class Empty extends EmptyableMorphOperations {
+  private comment: Comment;
+
+  constructor(parent: EmptyableMorph, dom: DOMHelper, nextSibling: Node=null) {
+    super(parent, dom);
+    let comment = this.comment = dom.createComment('');
+    dom.insertBefore(parent.parentNode, comment, nextSibling);
+  }
+
+  firstNode(): Node {
+    return this.comment;
+  }
+
+  lastNode(): Node {
+    return this.comment;
+  }
+
+  didBecomeEmpty() {}
+
+  nextSiblingForContent(): Node {
+    return this.comment;
+  }
+
+  didInsertContent(bounds: Bounds) {
+    let { comment } = this;
+    comment.parentNode.removeChild(comment);
+    this.parent.currentOperations = new HasContent(this.parent, this.dom, bounds);
+  }
+}
+
+class HasContent extends EmptyableMorphOperations {
+  private bounds: Bounds;
+
+  constructor(parent: EmptyableMorph, dom: DOMHelper, bounds: Bounds) {
+    super(parent, dom);
     this.bounds = bounds;
   }
 
-  replaceWithBounds(bounds: Bounds) {
+  firstNode(): Node {
+    return this.bounds.firstNode();
+  }
+
+  lastNode(): Node {
+    return this.bounds.lastNode();
+  }
+
+  didBecomeEmpty() {
     let nextSibling = clear(this.bounds);
+    this.parent.currentOperations = new Empty(this.parent, this.dom, nextSibling);
+  }
+
+  nextSiblingForContent(): Node {
+    return this.bounds.firstNode();
+  }
+
+  didInsertContent(bounds: Bounds) {
+    clear(this.bounds);
     this.bounds = bounds;
-    this.comment = false;
   }
 }
 
@@ -164,30 +235,28 @@ export abstract class TemplateMorph extends EmptyableMorph {
 
   appendTemplate(template: Template, nextSibling: Node=null) {
     let result = this.lastResult = template.evaluate(this, nextSibling);
-    this.initializeBounds(result);
+    this.didInsertContent(result);
   }
 
   updateTemplate(template: Template) {
     let { lastResult } = this;
 
     if (!lastResult) {
-      let nextSibling = clear(this);
+      let nextSibling = this.nextSiblingForContent();
       this.appendTemplate(template, nextSibling);
       return;
     }
 
     if (template === lastResult.template) {
       lastResult.rerender();
-      return lastResult;
     } else {
-      let newResult = renderIntoBounds(template, lastResult, this);
-      this.initializeBounds(newResult);
-      return newResult;
+      let nextSibling = this.nextSiblingForContent();
+      this.appendTemplate(template, nextSibling);
     }
   }
 
-  empty() {
-    super.empty();
+  didBecomeEmpty() {
+    super.didBecomeEmpty();
     this.lastResult = null;
   }
 }
