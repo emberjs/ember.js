@@ -532,7 +532,8 @@ if (isEnabled('ember-application-visit')) {
 
   BootOptions.prototype.toEnvironment = function() {
     let env = assign({}, environment);
-    env.hasDOM = this.browser;
+    // For compatibility with existing code
+    env.hasDOM = this.isBrowser;
     env.options = this;
     return env;
   };
