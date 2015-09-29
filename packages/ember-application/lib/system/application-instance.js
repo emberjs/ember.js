@@ -372,9 +372,7 @@ if (isEnabled('ember-application-visit')) {
     @namespace @Ember.ApplicationInstance
     @public
   */
-  BootOptions = function BootOptions(options) {
-    options = options || {};
-
+  BootOptions = function BootOptions(options = {}) {
     /**
       Provide a specific instance of jQuery. This is useful in conjunction with
       the `document` option, as it allows you to use a copy of `jQuery` that is

@@ -406,10 +406,8 @@ var Application = Namespace.extend(RegistryProxy, {
     @method buildInstance
     @return {Ember.ApplicationInstance} the application instance
   */
-  buildInstance(options) {
-    options = options || {};
+  buildInstance(options = {}) {
     options.application = this;
-
     return ApplicationInstance.create(options);
   },
 
