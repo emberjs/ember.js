@@ -257,37 +257,36 @@ QUnit.test('selection can be set from a Promise when multiple=false', function()
   equal(select.$()[0].selectedIndex, 1, 'Should select from Promise content');
 });
 
-QUnit.test('selection from a Promise don\'t overwrite newer selection once resolved, when multiple=false', function() {
-  expect(1);
+QUnit.test('selection from a Promise don\'t overwrite newer selection once resolved, when multiple=false', function(assert) {
+  assert.expect(1);
 
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var seb = { id: 3, firstName: 'Seb' };
 
-  QUnit.stop();
+  let firstPromise = new RSVP.Promise(function(resolve) {
+    run.next(function() {
+      resolve(seb);
+    });
+  });
+
+  let secondPromise = firstPromise.then(function() {
+    return tom;
+  });
 
   run(function() {
     select.set('content', emberA([yehuda, tom, seb]));
     select.set('multiple', false);
-    select.set('selection', new RSVP.Promise(function(resolve, reject) {
-      run.later(function() {
-        run(function() {
-          resolve(tom);
-        });
-        QUnit.start();
-        equal(select.$()[0].selectedIndex, 2, 'Should not select from Promise if newer selection');
-      }, 40);
-    }));
-    select.set('selection', new RSVP.Promise(function(resolve, reject) {
-      run.later(function() {
-        run(function() {
-          resolve(seb);
-        });
-      }, 30);
-    }));
+    select.set('selection', secondPromise);
+    select.set('selection', firstPromise);
   });
 
   append();
+
+  return RSVP.all([firstPromise, secondPromise])
+    .then(() => {
+      assert.equal(select.$()[0].selectedIndex, 2, 'Should not select from Promise if newer selection');
+    });
 });
 
 QUnit.test('selection from a Promise resolving to null should not select when multiple=false', function() {
