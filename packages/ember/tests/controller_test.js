@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
@@ -63,7 +64,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
 
   templates.index = compile('{{component-with-action action=\'componentAction\'}}');
 
-  App.IndexController = Ember.Controller.extend({
+  App.IndexController = Controller.extend({
     actions: {
       componentAction() {
         ok(true, 'received the click');
@@ -86,7 +87,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
 QUnit.test('the controller property is provided to route driven views', function() {
   var applicationController, applicationViewController;
 
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Controller.extend({
     init: function() {
       this._super(...arguments);
       applicationController = this;
@@ -117,11 +118,11 @@ QUnit.test('{{#each}} inside outlet can have an itemController', function(assert
     `);
   }, `Using 'itemController' with '{{each}}' (L2:C20) is deprecated.  Please refactor to a component.`);
 
-  App.IndexController = Ember.Controller.extend({
+  App.IndexController = Controller.extend({
     model: emberA([1, 2, 3])
   });
 
-  App.ThingController = Ember.Controller.extend();
+  App.ThingController = Controller.extend();
 
   bootApp();
 

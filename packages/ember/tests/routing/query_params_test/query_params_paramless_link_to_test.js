@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
@@ -101,7 +102,7 @@ var testParamlessLinks = function(routeName) {
 
     Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
 
-    App[capitalize(routeName) + 'Controller'] = Ember.Controller.extend({
+    App[capitalize(routeName) + 'Controller'] = Controller.extend({
       queryParams: ['foo'],
       foo: 'wat'
     });

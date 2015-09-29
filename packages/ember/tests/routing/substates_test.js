@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import RSVP from 'ember-runtime/ext/rsvp';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -225,7 +226,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
 
   var indexDeferred = RSVP.defer();
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.IndexRoute = Ember.Route.extend({
     model() {
@@ -287,7 +288,7 @@ QUnit.test('Enter child loading state of pivot route', function() {
 
   templates['grandma/loading'] = 'GMONEYLOADING';
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.MomSallyRoute = Ember.Route.extend({
     setupController() {
@@ -331,7 +332,7 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.ApplicationRoute = Ember.Route.extend({
     actions: {
@@ -383,7 +384,7 @@ QUnit.test('Default error event moves into nested route', function() {
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.MomSallyRoute = Ember.Route.extend({
     model() {
@@ -422,7 +423,7 @@ QUnit.test('Setting a query param during a slow transition should work', functio
 
   templates['grandma/loading'] = 'GMONEYLOADING';
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.IndexRoute = Ember.Route.extend({
     beforeModel: function() {
@@ -535,7 +536,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.MomSallyRoute = Ember.Route.extend({
     model() {
@@ -578,7 +579,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   var deferred = RSVP.defer();
   App.FooBarRoute = Ember.Route.extend({
@@ -608,7 +609,7 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   var deferred = RSVP.defer();
   App.FooBarRoute = Ember.Route.extend({
@@ -638,7 +639,7 @@ QUnit.test('Prioritized error substate entry works with preserved-namespace nest
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.FooBarRoute = Ember.Route.extend({
     model() {
@@ -668,7 +669,7 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   var deferred = RSVP.defer();
   App.FooIndexRoute = Ember.Route.extend({
@@ -704,7 +705,7 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
   App.FooIndexRoute = Ember.Route.extend({
     model() {

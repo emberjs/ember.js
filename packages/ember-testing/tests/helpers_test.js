@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
@@ -603,7 +604,7 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
 
   var fillIn, visit, andThen;
   var events = [];
-  App.IndexController = Ember.Controller.extend({
+  App.IndexController = Controller.extend({
     actions: {
       oninputHandler(e) {
         events.push(e.type);
