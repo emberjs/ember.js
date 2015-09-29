@@ -617,7 +617,7 @@ var Application = Namespace.extend(RegistryProxy, {
     We would like new code (like the `visit` API) to stop making this assumption,
     so we created the asynchronous version above that returns a promise. But until
     we have migrated all the code, we would have to expose this method for use
-    *internall* in places where we need to boot an app "synchronously".
+    *internally* in places where we need to boot an app "synchronously".
 
     @private
   */
