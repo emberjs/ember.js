@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // MODEL_FACTORY_INJECTIONS
 
 /*
 Public api for the container is still in flux.

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import EmberObject from 'ember-runtime/system/object';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 

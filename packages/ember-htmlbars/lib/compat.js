@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Handlebars
 import {
   SafeString,
   escapeExpression

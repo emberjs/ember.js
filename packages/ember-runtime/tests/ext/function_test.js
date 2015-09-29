@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // EXTEND_PROTOTYPES
 import EmberObject from 'ember-runtime/system/object';
 import { testBoth } from 'ember-metal/tests/props_helper';
 

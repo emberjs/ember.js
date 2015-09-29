@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import Logger from 'ember-metal/logger';
 import Controller from 'ember-runtime/controllers/controller';
 import { set } from 'ember-metal/property_set';

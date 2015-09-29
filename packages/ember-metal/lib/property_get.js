@@ -2,7 +2,7 @@
 @module ember-metal
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';

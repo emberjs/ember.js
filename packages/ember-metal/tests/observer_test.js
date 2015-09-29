@@ -1,4 +1,4 @@
-import Ember, { K } from 'ember-metal/core';
+import Ember, { K } from 'ember-metal/core'; // EXTEND_PROTOTYPES, lookup
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   addObserver,

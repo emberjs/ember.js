@@ -1,5 +1,5 @@
 /*globals EmberDev */
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/components/component';

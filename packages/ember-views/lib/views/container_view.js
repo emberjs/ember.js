@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import { assert, deprecate } from 'ember-metal/debug';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import { A as emberA } from 'ember-runtime/system/native_array';

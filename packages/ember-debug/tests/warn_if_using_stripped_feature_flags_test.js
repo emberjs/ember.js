@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { _warnIfUsingStrippedFeatureFlags } from 'ember-debug';
 

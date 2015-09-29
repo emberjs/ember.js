@@ -7,7 +7,7 @@
 @submodule ember-metal
 */
 
-import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
+import Ember from 'ember-metal/core'; // anyUnprocessedMixins
 import EmberError from 'ember-metal/error';
 import { assert, deprecate, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';

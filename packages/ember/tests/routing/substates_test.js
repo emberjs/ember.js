@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import RSVP from 'ember-runtime/ext/rsvp';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';

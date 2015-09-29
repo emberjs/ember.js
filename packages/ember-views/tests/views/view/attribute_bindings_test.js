@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import run from 'ember-metal/run_loop';
 import { observersFor } from 'ember-metal/observer';
 import { changeProperties } from 'ember-metal/property_events';

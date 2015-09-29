@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // USES_ACCESSORS
 import {get as getFromEmberMetal, getWithDefault as getWithDefaultFromEmberMetal} from 'ember-metal/property_get';
 import {set as setFromEmberMetal} from 'ember-metal/property_set';
 

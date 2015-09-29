@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import Logger from 'ember-metal/logger';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';

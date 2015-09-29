@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // EXTEND_PROTOTYPES
 import {classify} from 'ember-runtime/system/string';
 
 QUnit.module('EmberStringUtils.classify');

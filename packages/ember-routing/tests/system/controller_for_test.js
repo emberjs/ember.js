@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // A
+import Ember from 'ember-metal/core'; // generateController, generateControllerFactory
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import Namespace from 'ember-runtime/system/namespace';

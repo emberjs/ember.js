@@ -1,5 +1,5 @@
 /* global Promise:true */
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Test, testing, onerror
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 

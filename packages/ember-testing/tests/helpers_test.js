@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import Route from 'ember-routing/system/route';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import EmberObject from 'ember-runtime/system/object';
 import { HANDLERS, generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
 import {

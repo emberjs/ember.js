@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import { set } from 'ember-metal/property_set';
 import get from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // STRINGS, EXTEND_PROTOTYPES
 import {loc} from 'ember-runtime/system/string';
 
 var oldString;

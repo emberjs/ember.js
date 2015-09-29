@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import isEnabled from 'ember-metal/features';
 import {computed} from 'ember-metal/computed';
 import {Mixin, observer} from 'ember-metal/mixin';

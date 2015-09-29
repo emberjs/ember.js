@@ -1,6 +1,6 @@
 /*globals EmberDev */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup, BOOTED, TEMPLATES, LOG_VERSION, libraries
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';

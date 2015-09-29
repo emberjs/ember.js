@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // EXTEND_PROTOTYPES
 import EmberStringUtils from 'ember-runtime/system/string';
 import { SafeString, escapeExpression } from 'htmlbars-util';
 

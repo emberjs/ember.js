@@ -1,6 +1,6 @@
 /*global __fail__*/
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // LOG_STACKTRACE_ON_DEPRECATION, ENV
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
 
