@@ -116,11 +116,9 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
       this.container = this.__container__;
       this.registry = this.__registry__;
     }
-  },
 
-  _bootOptions: null,
-  _bootPromise: null,
-  _booted: false,
+    this._booted = false;
+  },
 
   /**
     Initialize the `Ember.ApplicationInstance` and return a promise that resolves
@@ -135,19 +133,12 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     @param options
     @return {Promise<Ember.ApplicationInstance,Error>}
   */
-  boot(options) {
+  boot(options = {}) {
     if (this._bootPromise) { return this._bootPromise; }
 
-    let defer = new Ember.RSVP.defer();
-    let promise = this._bootPromise = defer.promise;
+    this._bootPromise = new Ember.RSVP.Promise(resolve => resolve(this._bootSync(options)));
 
-    try {
-      defer.resolve(this._bootSync(options));
-    } catch(e) {
-      defer.reject(e);
-    }
-
-    return promise;
+    return this._bootPromise;
   },
 
   /**
