@@ -42,6 +42,7 @@ import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapt
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import environment from 'ember-metal/environment';
+import RSVP from 'ember-runtime/ext/rsvp';
 
 function props(obj) {
   var properties = [];
@@ -628,7 +629,7 @@ var Application = Namespace.extend(RegistryProxy, {
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
     // promise so that a future caller of `boot()` can tell what failed.
-    let defer = this._bootResolver = new Ember.RSVP.defer();
+    let defer = this._bootResolver = new RSVP.defer();
     this._bootPromise = defer.promise;
 
     try {

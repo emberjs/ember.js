@@ -1,15 +1,18 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
 
 var Router, router, App, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 function handleURL(path) {
-  return Ember.run(function() {
+  return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -22,8 +25,8 @@ function handleURL(path) {
 
 QUnit.module('Router.map', {
   setup() {
-    Ember.run(function() {
-      App = Ember.Application.create({
+    run(function() {
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });
@@ -41,12 +44,11 @@ QUnit.module('Router.map', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
       App = null;
 
       Ember.TEMPLATES = {};
-      //Ember.Logger.error = originalLoggerError;
     });
   }
 });
@@ -79,9 +81,9 @@ QUnit.test('Router.map can be called multiple times', function () {
 
   handleURL('/hello');
 
-  equal(Ember.$('#qunit-fixture').text(), 'Hello!', 'The hello template was rendered');
+  equal(jQuery('#qunit-fixture').text(), 'Hello!', 'The hello template was rendered');
 
   handleURL('/goodbye');
 
-  equal(Ember.$('#qunit-fixture').text(), 'Goodbye!', 'The goodbye template was rendered');
+  equal(jQuery('#qunit-fixture').text(), 'Goodbye!', 'The goodbye template was rendered');
 });

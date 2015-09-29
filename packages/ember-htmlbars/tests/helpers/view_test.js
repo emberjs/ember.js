@@ -356,7 +356,7 @@ QUnit.test('allows you to pass attributes that will be assigned to the class ins
 
 QUnit.test('Should apply class without condition always', function() {
   view = EmberView.create({
-    controller: Ember.Object.create(),
+    controller: EmberObject.create(),
     template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
   });
 

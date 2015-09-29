@@ -1,9 +1,15 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import keys from 'ember-metal/keys';
+import run from 'ember-metal/run_loop';
 
+import Application from 'ember-application/system/application';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
 import { OutletView } from 'ember-routing-views/views/outlet';
+import Component from 'ember-views/components/component';
+import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var App, registry, container;
 var originalHelpers;
@@ -12,11 +18,11 @@ function prepare() {
   Ember.TEMPLATES['components/expand-it'] = compile('<p>hello {{yield}}</p>');
   Ember.TEMPLATES.application = compile('Hello world {{#expand-it}}world{{/expand-it}}');
 
-  originalHelpers = Ember.A(keys(helpers));
+  originalHelpers = emberA(keys(helpers));
 }
 
 function cleanup() {
-  Ember.run(function() {
+  run(function() {
     if (App) {
       App.destroy();
     }
@@ -28,7 +34,7 @@ function cleanup() {
 }
 
 function cleanupHelpers() {
-  var currentHelpers = Ember.A(keys(helpers));
+  var currentHelpers = emberA(keys(helpers));
 
   currentHelpers.forEach(function(name) {
     if (!originalHelpers.contains(name)) {
@@ -43,8 +49,8 @@ QUnit.module('Application Lifecycle - Component Registration', {
 });
 
 function boot(callback, startURL='/') {
-  Ember.run(function() {
-    App = Ember.Application.create({
+  run(function() {
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });
@@ -63,25 +69,25 @@ function boot(callback, startURL='/') {
 
   var router = container.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
-  Ember.run(function() {
+  run(App, 'advanceReadiness');
+  run(function() {
     router.handleURL(startURL);
   });
 }
 
 QUnit.test('The helper becomes the body of the component', function() {
   boot();
-  equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
+  equal(jQuery('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
 QUnit.test('If a component is registered, it is used', function() {
   boot(function() {
-    registry.register('component:expand-it', Ember.Component.extend({
+    registry.register('component:expand-it', Component.extend({
       classNames: 'testing123'
     }));
   });
 
-  equal(Ember.$('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
+  equal(jQuery('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
 
@@ -89,13 +95,13 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
 
   boot(function() {
-    registry.register('component:my-hero', Ember.Component.extend({
+    registry.register('component:my-hero', Component.extend({
       classNames: 'testing123',
       layout: compile('watch him as he GOES')
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
   ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
@@ -104,10 +110,10 @@ QUnit.test('Late-registered components can be rendered with template registered 
 
   boot(function() {
     registry.register('template:components/sally-rutherford', compile('funkytowny{{yield}}'));
-    registry.register('component:sally-rutherford', Ember.Component);
+    registry.register('component:sally-rutherford', Component);
   });
 
-  equal(Ember.$('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
   ok(!helpers['sally-rutherford'], 'Component wasn\'t saved to global helpers hash');
 });
 
@@ -118,7 +124,7 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
     registry.register('template:components/borf-snorlax', compile('goodfreakingTIMES{{yield}}'));
   });
 
-  equal(Ember.$('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
   ok(!helpers['borf-snorlax'], 'Component wasn\'t saved to global helpers hash');
 });
 
@@ -126,12 +132,12 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'user-name': 'machty'
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
@@ -141,17 +147,17 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
   Ember.TEMPLATES['foo-bar-baz'] = compile('{{text}}-{{yield}}');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       text: 'inner',
       layoutName: 'foo-bar-baz'
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
@@ -161,18 +167,18 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
   Ember.TEMPLATES['foo-bar-baz'] = compile('No way!');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       text: 'inner',
       layoutName: 'foo-bar-baz',
       layout: compile('{{text}}-{{yield}}')
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
@@ -182,18 +188,18 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   expectDeprecation(function() {
     boot(function() {
-      registry.register('controller:application', Ember.Controller.extend({
+      registry.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
 
-      registry.register('component:my-component', Ember.Component.extend({
+      registry.register('component:my-component', Component.extend({
         text: 'inner',
         defaultLayout: compile('{{text}}-{{yield}}')
       }));
     });
   }, /Specifying `defaultLayout` to .+ is deprecated\./);
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
@@ -204,18 +210,18 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   expectDeprecation(function() {
     boot(function() {
-      registry.register('controller:application', Ember.Controller.extend({
+      registry.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
 
-      registry.register('component:my-component', Ember.Component.extend({
+      registry.register('component:my-component', Component.extend({
         text: 'inner',
         defaultLayout: compile('should not see this!')
       }));
     });
   }, /Specifying `defaultLayout` to .+ is deprecated\./);
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Using name of component that does not exist', function () {
@@ -236,32 +242,32 @@ QUnit.test('Components with a block should have the proper content when a templa
   Ember.TEMPLATES['components/my-component'] = compile('{{text}}-{{yield}}');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       text: 'inner'
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
 QUnit.test('Components with a block should yield the proper content without a template provided', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       text: 'inner'
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'outer', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'outer', 'The component is composed correctly');
 });
 
 QUnit.test('Components without a block should have the proper content when a template is provided', function() {
@@ -269,34 +275,34 @@ QUnit.test('Components without a block should have the proper content when a tem
   Ember.TEMPLATES['components/my-component'] = compile('{{text}}');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       text: 'inner'
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'inner', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'inner', 'The component is composed correctly');
 });
 
 QUnit.test('Components without a block should have the proper content', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       didInsertElement() {
         this.$().html('Some text inserted by jQuery');
       }
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
 // The test following this one is the non-deprecated version
@@ -304,31 +310,31 @@ QUnit.test('properties of a component without a template should not collide with
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       didInsertElement() {
         this.$().html(this.get('data'));
       }
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
 QUnit.test('attrs property of a component without a template should not collide with internal structures', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       didInsertElement() {
         // FIXME: I'm unsure if this is even the right way to access attrs
         this.$().html(this.get('attrs.attrs.value'));
@@ -336,14 +342,14 @@ QUnit.test('attrs property of a component without a template should not collide 
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
+  equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
 QUnit.test('Components trigger actions in the parents context when called from within a block', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
           ok(true, 'action triggered on parent');
@@ -351,11 +357,11 @@ QUnit.test('Components trigger actions in the parents context when called from w
       }
     }));
 
-    registry.register('component:my-component', Ember.Component.extend());
+    registry.register('component:my-component', Component.extend());
   });
 
-  Ember.run(function() {
-    Ember.$('#fizzbuzz', '#wrapper').click();
+  run(function() {
+    jQuery('#fizzbuzz', '#wrapper').click();
   });
 });
 
@@ -364,7 +370,7 @@ QUnit.test('Components trigger actions in the components context when called fro
   Ember.TEMPLATES['components/my-component'] = compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
           ok(false, 'action triggered on the wrong context');
@@ -372,7 +378,7 @@ QUnit.test('Components trigger actions in the components context when called fro
       }
     }));
 
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       actions: {
         fizzbuzz() {
           ok(true, 'action triggered on component');
@@ -381,7 +387,7 @@ QUnit.test('Components trigger actions in the components context when called fro
     }));
   });
 
-  Ember.$('#fizzbuzz', '#wrapper').click();
+  jQuery('#fizzbuzz', '#wrapper').click();
 });
 
 QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
@@ -392,7 +398,7 @@ QUnit.test('Components receive the top-level view as their ownerView', function(
   let component;
 
   boot(function() {
-    registry.register('component:my-component', Ember.Component.extend({
+    registry.register('component:my-component', Component.extend({
       init() {
         this._super();
         component = this;

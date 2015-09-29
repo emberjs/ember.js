@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
@@ -36,7 +35,7 @@ function currentURL(app) {
 
 function pauseTest() {
   Test.adapter.asyncStart();
-  return new Ember.RSVP.Promise(function() { }, 'TestAdapter paused promise');
+  return new RSVP.Promise(function() { }, 'TestAdapter paused promise');
 }
 
 function focus(el) {

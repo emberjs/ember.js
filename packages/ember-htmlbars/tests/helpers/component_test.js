@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
@@ -161,7 +161,7 @@ QUnit.test('component helper with actions', function() {
   }));
 
   var actionTriggered = 0;
-  var controller = Ember.Controller.extend({
+  var controller = Controller.extend({
     dynamicComponent: 'foo-bar',
     actions: {
       mappedAction() {

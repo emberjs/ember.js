@@ -1,9 +1,11 @@
 import Ember from 'ember-metal/core';
-import jQuery from 'ember-views/system/jquery';
 import run from 'ember-metal/run_loop';
+import Component from 'ember-views/components/component';
+import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-htmlbars/system/bootstrap';
+import Application from 'ember-application/system/application';
 
 var trim = jQuery.trim;
 
@@ -130,7 +132,7 @@ if (Ember.component) {
   QUnit.test('registerComponents initializer', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
-    App = run(Ember.Application, 'create');
+    App = run(Application, 'create');
 
     ok(Ember.Handlebars.helpers['x-apple'], 'x-apple helper is present');
     ok(App.__container__.has('component:x-apple'), 'the container is aware of x-apple');
@@ -139,7 +141,7 @@ if (Ember.component) {
   QUnit.test('registerComponents and generated components', function() {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
-    App = run(Ember.Application, 'create');
+    App = run(Application, 'create');
     view = App.__container__.lookup('component:x-apple');
     equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
   });
@@ -148,12 +150,12 @@ if (Ember.component) {
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
     run(function() {
-      App = Ember.Application.create();
+      App = Application.create();
 
       // currently Component code must be loaded before initializers
       // this is mostly due to how they are bootstrapped. We will hopefully
       // sort this out soon.
-      App.XAppleComponent = Ember.Component.extend({
+      App.XAppleComponent = Component.extend({
         isCorrect: true
       });
     });

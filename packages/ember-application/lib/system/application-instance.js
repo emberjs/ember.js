@@ -3,7 +3,6 @@
 @submodule ember-application
 */
 
-import Ember from 'ember-metal';
 import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
@@ -18,6 +17,7 @@ import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/
 import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
+import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
 
 
@@ -136,7 +136,7 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   boot(options = {}) {
     if (this._bootPromise) { return this._bootPromise; }
 
-    this._bootPromise = new Ember.RSVP.Promise(resolve => resolve(this._bootSync(options)));
+    this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
 
     return this._bootPromise;
   },
@@ -322,7 +322,7 @@ if (isEnabled('ember-application-visit')) {
 
       let handleResolve = () => {
         // Resolve only after rendering is complete
-        return new Ember.RSVP.Promise((resolve) => {
+        return new RSVP.Promise((resolve) => {
           // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
           // Also, aren't proimses supposed to be async anyway?
           run.next(null, resolve, this);

@@ -1,6 +1,10 @@
 import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, templates, router, container;
 
@@ -9,13 +13,13 @@ function bootApplication() {
     Ember.TEMPLATES[name] = compile(templates[name]);
   }
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 QUnit.module('Top Level DOM Structure', {
   setup() {
-    Ember.run(function() {
-      App = Ember.Application.create({
+    run(function() {
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });
@@ -37,14 +41,14 @@ QUnit.module('Top Level DOM Structure', {
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
       App = null;
 
       Ember.TEMPLATES = {};
     });
 
-    Ember.NoneLocation.reopen({
+    NoneLocation.reopen({
       path: ''
     });
   }
@@ -52,7 +56,7 @@ QUnit.module('Top Level DOM Structure', {
 
 QUnit.test('Topmost template always get an element', function() {
   bootApplication();
-  equal(Ember.$('#qunit-fixture > .ember-view').text(), 'hello world');
+  equal(jQuery('#qunit-fixture > .ember-view').text(), 'hello world');
 });
 
 QUnit.test('If topmost view has its own element, it doesn\'t get wrapped in a higher element', function() {
@@ -60,5 +64,5 @@ QUnit.test('If topmost view has its own element, it doesn\'t get wrapped in a hi
     classNames: ['im-special']
   }));
   bootApplication();
-  equal(Ember.$('#qunit-fixture > .im-special').text(), 'hello world');
+  equal(jQuery('#qunit-fixture > .im-special').text(), 'hello world');
 });

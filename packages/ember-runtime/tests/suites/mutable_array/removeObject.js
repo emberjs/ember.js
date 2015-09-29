@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import get from 'ember-metal/property_get';
 import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
 var suite = SuiteModuleBuilder.create();
@@ -24,7 +24,7 @@ suite.test('[A,B,C].removeObject(B) => [A,C] + notify', function() {
   obj.removeObject(before[1]);
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
@@ -49,7 +49,7 @@ suite.test('[A,B,C].removeObject(D) => [A,B,C]', function() {
   obj.removeObject(item); // note: item not in set
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equal(observer.validate('[]'), false, 'should NOT have notified []');

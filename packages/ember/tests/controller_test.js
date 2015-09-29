@@ -1,6 +1,12 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
+import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
 import EmberView from 'ember-views/views/view';
+import Component from 'ember-views/components/component';
+import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
@@ -22,9 +28,9 @@ QUnit.module('Template scoping examples', {
     originalAstPlugins = plugins['ast'].slice(0);
     registerPlugin('ast', TransformEachIntoCollection);
 
-    Ember.run(function() {
+    run(function() {
       templates = Ember.TEMPLATES;
-      App = Ember.Application.create({
+      App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });
@@ -37,11 +43,11 @@ QUnit.module('Template scoping examples', {
       App.LoadingRoute = Ember.Route.extend();
     });
 
-    $fixture = Ember.$('#qunit-fixture');
+    $fixture = jQuery('#qunit-fixture');
   },
 
   teardown() {
-    Ember.run(function() {
+    run(function() {
       App.destroy();
     });
 
@@ -58,7 +64,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
 
   templates.index = compile('{{component-with-action action=\'componentAction\'}}');
 
-  App.IndexController = Ember.Controller.extend({
+  App.IndexController = Controller.extend({
     actions: {
       componentAction() {
         ok(true, 'received the click');
@@ -66,7 +72,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
     }
   });
 
-  App.ComponentWithActionComponent = Ember.Component.extend({
+  App.ComponentWithActionComponent = Component.extend({
     classNames: ['component-with-action'],
     click() {
       this.sendAction();
@@ -81,7 +87,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
 QUnit.test('the controller property is provided to route driven views', function() {
   var applicationController, applicationViewController;
 
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Controller.extend({
     init: function() {
       this._super(...arguments);
       applicationController = this;
@@ -112,11 +118,11 @@ QUnit.test('{{#each}} inside outlet can have an itemController', function(assert
     `);
   }, `Using 'itemController' with '{{each}}' (L2:C20) is deprecated.  Please refactor to a component.`);
 
-  App.IndexController = Ember.Controller.extend({
-    model: Ember.A([1, 2, 3])
+  App.IndexController = Controller.extend({
+    model: emberA([1, 2, 3])
   });
 
-  App.ThingController = Ember.Controller.extend();
+  App.ThingController = Controller.extend();
 
   bootApp();
 
@@ -124,5 +130,5 @@ QUnit.test('{{#each}} inside outlet can have an itemController', function(assert
 });
 
 function bootApp() {
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }

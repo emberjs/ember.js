@@ -143,8 +143,8 @@
         });
         setupQUnit(testHelpers);
 
-        // Tests should time out after 5 seconds
-        QUnit.config.testTimeout = 7500;
+        // Tests should time out after 15 seconds
+        QUnit.config.testTimeout = 15000;
         // Handle testing feature flags
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes

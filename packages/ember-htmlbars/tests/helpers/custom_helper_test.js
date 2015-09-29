@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import Component from 'ember-views/components/component';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import compile from 'ember-template-compiler/system/compile';
@@ -317,7 +316,7 @@ QUnit.test('dashed helper used in subexpression can recompute', function() {
     'Who overcomes by force hath overcome but half his foe');
 
   phrase = 'believes his';
-  Ember.run(function() {
+  run(function() {
     helper.recompute();
   });
 
@@ -343,7 +342,7 @@ QUnit.test('dashed helper used in subexpression can recompute component', functi
     }
   });
   registry.register('component-lookup:main', ComponentLookup);
-  registry.register('component:some-component', Ember.Component.extend({
+  registry.register('component:some-component', Component.extend({
     layout: compile('{{first}} {{second}} {{third}} {{fourth}} {{fifth}}')
   }));
   registry.register('helper:dynamic-segment', DynamicSegment);
@@ -364,7 +363,7 @@ QUnit.test('dashed helper used in subexpression can recompute component', functi
     'Who overcomes by force hath overcome but half his foe');
 
   phrase = 'believes his';
-  Ember.run(function() {
+  run(function() {
     helper.recompute();
   });
 

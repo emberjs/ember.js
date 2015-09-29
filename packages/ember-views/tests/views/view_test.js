@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
@@ -138,7 +137,7 @@ QUnit.test('propagates dependent-key invalidated bindings upstream', function() 
     template: compile('{{view view.childView childProp=view.parentProp}}'),
     childView: EmberView.extend({
       template: compile('child template'),
-      childProp: Ember.computed('dependencyProp', {
+      childProp: computed('dependencyProp', {
         get(key) {
           return this.get('dependencyProp');
         },

@@ -1,7 +1,9 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
+import Application from 'ember-application/system/application';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -28,7 +30,7 @@ QUnit.module('View Integration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     run(function() {
-      App = Ember.Application.create({
+      App = Application.create({
         rootElement: '#qunit-fixture'
       });
       App.deferReadiness();
@@ -64,7 +66,7 @@ QUnit.test('invoking `{{view}} from a non-view backed (aka only template) templa
     }
   }));
 
-  registry.register('controller:index', Ember.Controller.extend({
+  registry.register('controller:index', Controller.extend({
     init() {
       this._super(...arguments);
 

@@ -1,4 +1,3 @@
-/*jshint newcap:false*/
 import { deprecate } from 'ember-metal/debug';
 import View from 'ember-views/views/view';
 import { Mixin } from 'ember-metal/mixin';

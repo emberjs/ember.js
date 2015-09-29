@@ -8,6 +8,7 @@ import View from 'ember-views/views/view';
 import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -38,7 +39,7 @@ QUnit.module('CollectionView', {
 
 QUnit.test('should render a view for each item in its content array', function() {
   view = CollectionView.create({
-    content: Ember.A([1, 2, 3, 4])
+    content: emberA([1, 2, 3, 4])
   });
 
   run(function() {
@@ -49,7 +50,7 @@ QUnit.test('should render a view for each item in its content array', function()
 
 QUnit.test('should render the emptyView if content array is empty (view class)', function() {
   view = CollectionView.create({
-    content: Ember.A(),
+    content: emberA(),
 
     emptyView: View.extend({
       template: compile('OY SORRY GUVNAH NO NEWS TODAY EH')
@@ -66,7 +67,7 @@ QUnit.test('should render the emptyView if content array is empty (view class)',
 QUnit.test('should render the emptyView if content array is empty (view class with custom tagName)', function() {
   view = CollectionView.create({
     tagName: 'del',
-    content: Ember.A(),
+    content: emberA(),
 
     emptyView: View.extend({
       tagName: 'kbd',
@@ -84,7 +85,7 @@ QUnit.test('should render the emptyView if content array is empty (view class wi
 QUnit.test('should render the emptyView if content array is empty (view instance)', function() {
   view = CollectionView.create({
     tagName: 'del',
-    content: Ember.A(),
+    content: emberA(),
 
     emptyView: View.create({
       tagName: 'kbd',
@@ -102,7 +103,7 @@ QUnit.test('should render the emptyView if content array is empty (view instance
 QUnit.test('should be able to override the tag name of itemViewClass even if tag is in default mapping', function() {
   view = CollectionView.create({
     tagName: 'del',
-    content: Ember.A(['NEWS GUVNAH']),
+    content: emberA(['NEWS GUVNAH']),
 
     itemViewClass: View.extend({
       tagName: 'kbd',
@@ -118,7 +119,7 @@ QUnit.test('should be able to override the tag name of itemViewClass even if tag
 });
 
 QUnit.test('should allow custom item views by setting itemViewClass', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
 
@@ -135,7 +136,7 @@ QUnit.test('should allow custom item views by setting itemViewClass', function()
 });
 
 QUnit.test('should insert a new item in DOM when an item is added to the content array', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
 
   view = CollectionView.create({
     content: content,
@@ -161,7 +162,7 @@ QUnit.test('should insert a new item in DOM when an item is added to the content
 });
 
 QUnit.test('should remove an item from DOM when an item is removed from the content array', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
 
   view = CollectionView.create({
     content: content,
@@ -185,7 +186,7 @@ QUnit.test('should remove an item from DOM when an item is removed from the cont
 });
 
 QUnit.test('it updates the view if an item is replaced', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
 
@@ -213,7 +214,7 @@ QUnit.test('it updates the view if an item is replaced', function() {
 });
 
 QUnit.test('can add and replace in the same runloop', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
 
@@ -240,7 +241,7 @@ QUnit.test('can add and replace in the same runloop', function() {
 });
 
 QUnit.test('can add and replace the object before the add in the same runloop', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
 
@@ -267,7 +268,7 @@ QUnit.test('can add and replace the object before the add in the same runloop', 
 });
 
 QUnit.test('can add and replace complicatedly', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
 
@@ -296,7 +297,7 @@ QUnit.test('can add and replace complicatedly', function() {
 });
 
 QUnit.test('can add and replace complicatedly harder', function() {
-  var content = Ember.A(['foo', 'bar', 'baz']);
+  var content = emberA(['foo', 'bar', 'baz']);
   view = CollectionView.create({
     content: content,
 
@@ -334,9 +335,9 @@ QUnit.test('should allow changes to content object before layer is created', fun
 
 
   run(function() {
-    set(view, 'content', Ember.A());
-    set(view, 'content', Ember.A([1, 2, 3]));
-    set(view, 'content', Ember.A([1, 2]));
+    set(view, 'content', emberA());
+    set(view, 'content', emberA([1, 2, 3]));
+    set(view, 'content', emberA([1, 2]));
     view.append();
   });
 
@@ -349,7 +350,7 @@ QUnit.test('should fire life cycle events when elements are added and removed', 
   var willDestroyElement = 0;
   var willDestroy = 0;
   var destroy = 0;
-  var content = Ember.A([1, 2, 3]);
+  var content = emberA([1, 2, 3]);
   run(function () {
     view = CollectionView.create({
       content: content,
@@ -406,7 +407,7 @@ QUnit.test('should fire life cycle events when elements are added and removed', 
   equal(trim(view.$().text()), '123');
 
   run(function () {
-    view.set('content', Ember.A([7, 8, 9]));
+    view.set('content', emberA([7, 8, 9]));
   });
 
   equal(didInsertElement, 8);
@@ -428,7 +429,7 @@ QUnit.test('should fire life cycle events when elements are added and removed', 
 
 QUnit.test('should allow changing content property to be null', function() {
   view = CollectionView.create({
-    content: Ember.A([1, 2, 3]),
+    content: emberA([1, 2, 3]),
 
     emptyView: View.extend({
       template: compile('(empty)')
@@ -450,7 +451,7 @@ QUnit.test('should allow changing content property to be null', function() {
 
 QUnit.test('should allow items to access to the CollectionView\'s current index in the content array', function() {
   view = CollectionView.create({
-    content: Ember.A(['zero', 'one', 'two']),
+    content: emberA(['zero', 'one', 'two']),
     itemViewClass: View.extend({
       template: compile('{{view.contentIndex}}')
     })
@@ -470,7 +471,7 @@ QUnit.test('should allow declaration of itemViewClass as a string', function() {
 
   view = CollectionView.create({
     container: registry.container(),
-    content: Ember.A([1, 2, 3]),
+    content: emberA([1, 2, 3]),
     itemViewClass: 'simple-view'
   });
 
@@ -484,7 +485,7 @@ QUnit.test('should allow declaration of itemViewClass as a string', function() {
 QUnit.test('should not render the emptyView if content is emptied and refilled in the same run loop', function() {
   view = CollectionView.create({
     tagName: 'div',
-    content: Ember.A(['NEWS GUVNAH']),
+    content: emberA(['NEWS GUVNAH']),
 
     emptyView: View.extend({
       tagName: 'kbd',
@@ -525,7 +526,7 @@ QUnit.test('when a collection view is emptied, deeply nested views elements are 
   });
 
   var view = CollectionView.create({
-    content: Ember.A([1]),
+    content: emberA([1]),
     itemViewClass: ChildView
   });
 
@@ -555,7 +556,7 @@ QUnit.test('should render the emptyView if content array is empty and emptyView 
 
   view = CollectionView.create({
     tagName: 'del',
-    content: Ember.A(),
+    content: emberA(),
     container: registry.container(),
 
     emptyView: 'custom-empty'
@@ -577,7 +578,7 @@ QUnit.test('should lookup against the container if itemViewClass is given as a s
 
   view = CollectionView.create({
     container: registry.container(),
-    content: Ember.A([1, 2, 3, 4]),
+    content: emberA([1, 2, 3, 4]),
     itemViewClass: 'item'
   });
 
@@ -597,7 +598,7 @@ QUnit.test('should lookup only global path against the container if itemViewClas
 
   view = CollectionView.create({
     container: registry.container(),
-    content: Ember.A(['hi']),
+    content: emberA(['hi']),
     itemViewClass: 'top'
   });
 
@@ -619,7 +620,7 @@ QUnit.test('should lookup against the container and render the emptyView if empt
   view = CollectionView.create({
     container: registry.container(),
     tagName: 'del',
-    content: Ember.A(),
+    content: emberA(),
     emptyView: 'empty'
   });
 
@@ -639,7 +640,7 @@ QUnit.test('should lookup from only global path against the container if emptyVi
 
   view = CollectionView.create({
     container: registry.container(),
-    content: Ember.A(),
+    content: emberA(),
     emptyView: 'top'
   });
 
@@ -654,7 +655,7 @@ QUnit.test('Collection with style attribute supports changing content', function
   view = CollectionView.create({
     attributeBindings: ['style'],
     style: 'width: 100px;',
-    content: Ember.A(['foo', 'bar'])
+    content: emberA(['foo', 'bar'])
   });
 
   run(function() {

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 import { assert, info } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
@@ -96,7 +96,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     generateDSL.call(dsl);
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      router.log = Ember.Logger.debug;
+      router.log = Logger.debug;
     }
 
     router.map(dsl.generate());
@@ -215,7 +215,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     run.once(this, this.trigger, 'didTransition');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
+      Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
     }
   },
 
@@ -268,7 +268,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     run.once(this, this.trigger, 'willTransition', transition);
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
+      Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
     }
   },
 
@@ -309,7 +309,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     var infos = this.router.currentHandlerInfos;
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
+      Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
     }
   },
 
@@ -818,7 +818,7 @@ function logError(_error, initialMessage) {
     if (typeof error === 'string') { errorArgs.push(error); }
   }
 
-  Ember.Logger.error.apply(this, errorArgs);
+  Logger.error.apply(this, errorArgs);
 }
 
 function findChildRouteName(parentRoute, originatingChildRoute, name) {
@@ -1105,7 +1105,7 @@ function appendOrphan(liveRoutes, into, myState) {
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
-  Ember.run.schedule('afterRender', function() {
+  run.schedule('afterRender', function() {
     // `wasUsed` gets set by the render helper. See the function
     // `impersonateAnOutlet`.
     assert('You attempted to render into \'' + into + '\' but it was not found',

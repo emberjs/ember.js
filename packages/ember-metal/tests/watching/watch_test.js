@@ -1,4 +1,8 @@
 import Ember from 'ember-metal/core';
+import { set } from 'ember-metal/property_set';
+import get from 'ember-metal/property_get';
+import { computed } from 'ember-metal/computed';
+import { defineProperty } from 'ember-metal/properties';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { addListener } from 'ember-metal/events';
 import {
@@ -39,7 +43,7 @@ function addListeners(obj, keyPath) {
 
 testBoth('watching a computed property', function(get, set) {
   var obj = {};
-  Ember.defineProperty(obj, 'foo', Ember.computed({
+  defineProperty(obj, 'foo', computed({
     get: function() {
       return this.__foo;
     },
@@ -110,10 +114,10 @@ QUnit.test('watching an object THEN defining it should work also', function() {
 
   watch(obj, 'foo');
 
-  Ember.defineProperty(obj, 'foo');
-  Ember.set(obj, 'foo', 'bar');
+  defineProperty(obj, 'foo');
+  set(obj, 'foo', 'bar');
 
-  equal(Ember.get(obj, 'foo'), 'bar', 'should have set');
+  equal(get(obj, 'foo'), 'bar', 'should have set');
   equal(willCount, 1, 'should have invoked willChange once');
   equal(didCount, 1, 'should have invoked didChange once');
 });
@@ -126,8 +130,8 @@ QUnit.test('watching a chain then defining the property', function () {
 
   watch(obj, 'foo.bar');
 
-  Ember.defineProperty(obj, 'foo', undefined, foo);
-  Ember.set(foo, 'bar', 'baz');
+  defineProperty(obj, 'foo', undefined, foo);
+  set(foo, 'bar', 'baz');
 
   deepEqual(willKeys, ['foo.bar', 'bar'], 'should have invoked willChange with bar, foo.bar');
   deepEqual(didKeys, ['foo.bar', 'bar'], 'should have invoked didChange with bar, foo.bar');
@@ -144,8 +148,8 @@ QUnit.test('watching a chain then defining the nested property', function () {
 
   watch(obj, 'foo.bar.baz');
 
-  Ember.defineProperty(bar, 'bar', undefined, baz);
-  Ember.set(baz, 'baz', 'BOO');
+  defineProperty(bar, 'bar', undefined, baz);
+  set(baz, 'baz', 'BOO');
 
   deepEqual(willKeys, ['foo.bar.baz', 'baz'], 'should have invoked willChange with bar, foo.bar');
   deepEqual(didKeys, ['foo.bar.baz', 'baz'], 'should have invoked didChange with bar, foo.bar');
@@ -159,7 +163,7 @@ testBoth('watching an object value then unwatching should restore old value', fu
 
   watch(obj, 'foo.bar.baz.biff');
 
-  var foo = Ember.get(obj, 'foo');
+  var foo = get(obj, 'foo');
   equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 
   unwatch(obj, 'foo.bar.baz.biff');

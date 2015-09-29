@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
@@ -603,7 +604,7 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
 
   var fillIn, visit, andThen;
   var events = [];
-  App.IndexController = Ember.Controller.extend({
+  App.IndexController = Controller.extend({
     actions: {
       oninputHandler(e) {
         events.push(e.type);
@@ -977,7 +978,7 @@ QUnit.module('can override built-in helpers', {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
-      App = Ember.Application.create({
+      App = EmberApplication.create({
         rootElement: '#ember-testing'
       });
 

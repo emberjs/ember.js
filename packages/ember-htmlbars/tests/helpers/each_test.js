@@ -1,10 +1,9 @@
-/*jshint newcap:false*/
 import Ember from 'ember-metal/core'; // Ember.lookup;
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import LegacyEachView from 'ember-views/views/legacy_each_view';
-import { A } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import EmberController from 'ember-runtime/controllers/controller';
 import { Registry } from 'ember-runtime/system/container';
 
@@ -35,7 +34,7 @@ QUnit.module('the #each helper', {
     registerAstPlugin(TransformEachIntoCollection);
 
     template = compile('{{#each view.people as |person|}}{{person.name}}{{/each}}');
-    people = A([{ name: 'Steve Holt' }, { name: 'Annabelle' }]);
+    people = emberA([{ name: 'Steve Holt' }, { name: 'Annabelle' }]);
 
     registry = new Registry();
     container = registry.container();
@@ -193,8 +192,8 @@ QUnit.test('View should not use keyword incorrectly - Issue #1315', function() {
     container: container,
     template: compile('{{#each view.content as |value|}}{{value}}-{{#each view.options as |option|}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'),
 
-    content: A(['X', 'Y']),
-    options: A([
+    content: emberA(['X', 'Y']),
+    options: emberA([
       { label: 'One', value: 1 },
       { label: 'Two', value: 2 }
     ])
@@ -352,7 +351,7 @@ QUnit.test('it supports {{itemViewClass=}} with {{else}} block (DEPRECATED)', fu
         {{~else~}}
           No records!
         {{~/each}}`),
-      people: A(),
+      people: emberA(),
       container: container
     });
   }, /Using 'itemViewClass' with '{{each}}'/);
@@ -371,7 +370,7 @@ QUnit.test('it supports {{emptyView=}}', function() {
   expectDeprecation(() => {
     view = EmberView.create({
       template: compile('{{each view.people emptyView="anEmptyView"}}'),
-      people: A(),
+      people: emberA(),
       container: container
     });
   }, /Using 'emptyView' with '{{each}}'/);
@@ -392,7 +391,7 @@ QUnit.test('it defers all normalization of emptyView names to the resolver', fun
   expectDeprecation(() => {
     view = EmberView.create({
       template: compile('{{each view.people emptyView="an-empty-view"}}'),
-      people: A(),
+      people: emberA(),
       container: container
     });
   }, /Using 'emptyView' with '{{each}}'/);
@@ -410,7 +409,7 @@ QUnit.test('it supports {{emptyViewClass=}} via container', function() {
     view = EmberView.create({
       container: container,
       template: compile('{{each view.people emptyViewClass="my-empty-view"}}'),
-      people: A()
+      people: emberA()
     });
   }, /Using 'emptyViewClass' with '{{each}}'/);
 
@@ -424,7 +423,7 @@ QUnit.test('it supports {{emptyViewClass=}} with tagName (DEPRECATED)', function
   expectDeprecation(() => {
     view = EmberView.create({
       template: compile('{{each view.people emptyViewClass="my-empty-view" tagName="b"}}'),
-      people: A(),
+      people: emberA(),
       container: container
     });
   }, /Using 'emptyViewClass' with '{{each}}'/);
@@ -441,7 +440,7 @@ QUnit.test('it supports {{emptyViewClass=}} with in format', function() {
     view = EmberView.create({
       container: container,
       template: compile('{{each person in view.people emptyViewClass="my-empty-view"}}'),
-      people: A()
+      people: emberA()
     });
   }, /Using 'emptyViewClass' with '{{each}}'/);
 
@@ -454,7 +453,7 @@ QUnit.test('it uses {{else}} when replacing model with an empty array', function
   runDestroy(view);
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{item}}{{else}}Nothing{{/each}}'),
-    items: A(['one', 'two'])
+    items: emberA(['one', 'two'])
   });
 
   runAppend(view);
@@ -462,7 +461,7 @@ QUnit.test('it uses {{else}} when replacing model with an empty array', function
   assertHTML(view, 'onetwo');
 
   run(function() {
-    view.set('items', A());
+    view.set('items', emberA());
   });
 
   assertHTML(view, 'Nothing');
@@ -470,7 +469,7 @@ QUnit.test('it uses {{else}} when replacing model with an empty array', function
 
 QUnit.test('it uses {{else}} when removing all items in an array', function() {
   runDestroy(view);
-  var items = A(['one', 'two']);
+  var items = emberA(['one', 'two']);
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{item}}{{else}}Nothing{{/each}}'),
     items
@@ -490,7 +489,7 @@ QUnit.test('it uses {{else}} when removing all items in an array', function() {
 
 QUnit.test('it can move to and from {{else}} properly when the backing array gains and looses items (#11140)', function() {
   runDestroy(view);
-  var items = A(['one', 'two']);
+  var items = emberA(['one', 'two']);
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{item}}{{else}}Nothing{{/each}}'),
     items
@@ -541,7 +540,7 @@ QUnit.test('#each accepts a name binding', function() {
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{view.title}} {{item}}{{/each}}'),
     title: 'My Cool Each Test',
-    items: A([1, 2])
+    items: emberA([1, 2])
   });
 
   runAppend(view);
@@ -560,7 +559,7 @@ QUnit.test('#each accepts a name binding and does not change the context', funct
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{name}}{{/each}}'),
     title: 'My Cool Each Test',
-    items: A([obj]),
+    items: emberA([obj]),
     controller: controller
   });
 
@@ -573,7 +572,7 @@ QUnit.test('#each accepts a name binding and can display child properties', func
   view = EmberView.create({
     template: compile('{{#each view.items as |item|}}{{view.title}} {{item.name}}{{/each}}'),
     title: 'My Cool Each Test',
-    items: A([{ name: 1 }, { name: 2 }])
+    items: emberA([{ name: 1 }, { name: 2 }])
   });
 
   runAppend(view);
@@ -585,7 +584,7 @@ QUnit.test('#each accepts \'this\' as the right hand side', function() {
   view = EmberView.create({
     template: compile('{{#each this as |item|}}{{view.title}} {{item.name}}{{/each}}'),
     title: 'My Cool Each Test',
-    controller: A([{ name: 1 }, { name: 2 }])
+    controller: emberA([{ name: 1 }, { name: 2 }])
   });
 
   runAppend(view);
@@ -595,7 +594,7 @@ QUnit.test('#each accepts \'this\' as the right hand side', function() {
 
 QUnit.test('it doesn\'t assert when the morph tags have the same parent', function() {
   view = EmberView.create({
-    controller: A(['Cyril', 'David']),
+    controller: emberA(['Cyril', 'David']),
     template: compile('<table><tbody>{{#each this as |name|}}<tr><td>{{name}}</td></tr>{{/each}}</tbody></table>')
   });
 
@@ -636,7 +635,7 @@ QUnit.test('the index is passed as the second parameter to #each blocks', functi
 
   var adam = { name: 'Adam' };
   view = EmberView.create({
-    controller: A([adam, { name: 'Steve' }]),
+    controller: emberA([adam, { name: 'Steve' }]),
     template: compile('{{#each this as |person index|}}{{index}}. {{person.name}}{{/each}}')
   });
   runAppend(view);
@@ -752,7 +751,7 @@ QUnit.test('duplicate keys work properly with primitive items', function() {
 QUnit.test('pushing a new duplicate key will render properly with primitive items', function() {
   runDestroy(view);
   view = EmberView.create({
-    items: A(['a', 'b', 'c']),
+    items: emberA(['a', 'b', 'c']),
     template: compile('{{#each view.items as |item|}}{{item}}{{/each}}')
   });
 
@@ -768,7 +767,7 @@ QUnit.test('pushing a new duplicate key will render properly with primitive item
 QUnit.test('pushing primitive item twice will render properly', function() {
   runDestroy(view);
   view = EmberView.create({
-    items: A(),
+    items: emberA(),
     template: compile('{{#each view.items as |item|}}{{item}}{{/each}}')
   });
 
@@ -811,7 +810,7 @@ QUnit.test('pushing a new duplicate key will render properly with objects', func
 
   let duplicateItem = { display: 'foo' };
   view = EmberView.create({
-    items: A([
+    items: emberA([
       duplicateItem,
       { display: 'bar' },
       { display: 'qux' }

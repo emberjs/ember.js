@@ -10,7 +10,9 @@ import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import alias from 'ember-metal/alias';
 import run from 'ember-metal/run_loop';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var registry, container, view;
 
@@ -190,7 +192,7 @@ QUnit.test('rerendering component with attrs from parent', function() {
   equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
   equal(willUpdate, 1, 'The willUpdate hook fired once');
 
-  Ember.run(view, 'rerender');
+  run(view, 'rerender');
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
   equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
@@ -811,7 +813,7 @@ QUnit.test('non-block with each rendering child components', function() {
   registry.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
   registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
 
-  var items = Ember.A(['Tom', 'Dick', 'Harry']);
+  var items = emberA(['Tom', 'Dick', 'Harry']);
 
   view = EmberView.extend({
     template: compile('{{non-block items=view.items}}'),
@@ -1226,7 +1228,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
     equal(willUpdate, 1, 'The willUpdate hook fired once');
 
-    Ember.run(view, 'rerender');
+    run(view, 'rerender');
 
     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
     equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
@@ -1287,7 +1289,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     registry.register('template:components/computed-alias', compile('<computed-alias>{{otherProp}}</computed-alias>'));
 
     registry.register('component:computed-alias', GlimmerComponent.extend({
-      otherProp: Ember.computed.alias('attrs.someProp')
+      otherProp: alias('attrs.someProp')
     }));
 
     view = appendViewFor('<computed-alias someProp="value"></computed-alias>');

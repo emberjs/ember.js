@@ -1,8 +1,8 @@
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { guidFor } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import HashLocation from 'ember-routing/location/hash_location';
+import jQuery from 'ember-views/system/jquery';
 
 var HashTestLocation, location;
 
@@ -124,10 +124,11 @@ QUnit.test('HashLocation.replaceURL() correctly replaces to the path with a page
 QUnit.test('HashLocation.onUpdateURL() registers a hashchange callback', function() {
   expect(3);
 
-  var oldJquery = Ember.$;
+  var oldInit = jQuery.fn.init;
 
-  Ember.$ = function (element) {
+  jQuery.fn.init = function(element) {
     equal(element, window);
+
     return {
       on(eventName, callback) {
         equal(eventName, 'hashchange.ember-location-' + guid);
@@ -146,7 +147,7 @@ QUnit.test('HashLocation.onUpdateURL() registers a hashchange callback', functio
   location.onUpdateURL(function () {});
 
   // clean up
-  Ember.$ = oldJquery;
+  jQuery.fn.init = oldInit;
 });
 
 QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() {
@@ -162,7 +163,7 @@ QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() 
 
   location.onUpdateURL(callback);
 
-  Ember.$(window).trigger('hashchange');
+  jQuery(window).trigger('hashchange');
 });
 
 QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL === path', function() {
@@ -181,7 +182,7 @@ QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL ===
 
   location.onUpdateURL(callback);
 
-  Ember.$(window).trigger('hashchange');
+  jQuery(window).trigger('hashchange');
 });
 
 QUnit.test('HashLocation.formatURL() prepends a # to the provided string', function() {
@@ -195,9 +196,9 @@ QUnit.test('HashLocation.formatURL() prepends a # to the provided string', funct
 QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', function() {
   expect(2);
 
-  var oldJquery = Ember.$;
+  var oldInit = jQuery.fn.init;
 
-  Ember.$ = function (element) {
+  jQuery.fn.init = function(element) {
     equal(element, window);
 
     return {
@@ -217,5 +218,5 @@ QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', fun
   location.willDestroy = function() {};
 
   // clean up
-  Ember.$ = oldJquery;
+  jQuery.fn.init = oldInit;
 });

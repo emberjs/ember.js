@@ -1,10 +1,11 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import EmberSelect from 'ember-views/views/select';
 import jQuery from 'ember-views/system/jquery';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import SafeString from 'htmlbars-util/safe-string';
+import RSVP from 'ember-runtime/ext/rsvp';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -91,7 +92,7 @@ QUnit.test('should become disabled if the disabled attribute is changed', functi
 });
 
 QUnit.test('can have options', function() {
-  select.set('content', Ember.A([1, 2, 3]));
+  select.set('content', emberA([1, 2, 3]));
 
   append();
 
@@ -124,7 +125,7 @@ QUnit.test('select name is updated when setting name property of view', function
 });
 
 QUnit.test('can specify the property path for an option\'s label and value', function() {
-  select.set('content', Ember.A([
+  select.set('content', emberA([
     { id: 1, firstName: 'Yehuda' },
     { id: 2, firstName: 'Tom' }
   ]));
@@ -141,7 +142,7 @@ QUnit.test('can specify the property path for an option\'s label and value', fun
 });
 
 QUnit.test('XSS: does not escape label value when it is a SafeString', function() {
-  select.set('content', Ember.A([
+  select.set('content', emberA([
     { id: 1, firstName: new SafeString('<p>Yehuda</p>') },
     { id: 2, firstName: new SafeString('<p>Tom</p>') }
   ]));
@@ -160,7 +161,7 @@ QUnit.test('XSS: does not escape label value when it is a SafeString', function(
 });
 
 QUnit.test('XSS: escapes label value content', function() {
-  select.set('content', Ember.A([
+  select.set('content', emberA([
     { id: 1, firstName: '<p>Yehuda</p>' },
     { id: 2, firstName: '<p>Tom</p>' }
   ]));
@@ -182,7 +183,7 @@ QUnit.test('can retrieve the current selected option when multiple=false', funct
   var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
 
-  select.set('content', Ember.A([yehuda, tom]));
+  select.set('content', emberA([yehuda, tom]));
 
   append();
 
@@ -200,7 +201,7 @@ QUnit.test('can retrieve the current selected options when multiple=true', funct
   var david = { id: 3, firstName: 'David' };
   var brennain = { id: 4, firstName: 'Brennain' };
 
-  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('content', emberA([yehuda, tom, david, brennain]));
   select.set('multiple', true);
   select.set('optionLabelPath', 'content.firstName');
   select.set('optionValuePath', 'content.firstName');
@@ -225,7 +226,7 @@ QUnit.test('selection can be set when multiple=false', function() {
   var tom = { id: 2, firstName: 'Tom' };
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom]));
+    select.set('content', emberA([yehuda, tom]));
     select.set('multiple', false);
     select.set('selection', tom);
   });
@@ -246,9 +247,9 @@ QUnit.test('selection can be set from a Promise when multiple=false', function()
   var tom = { id: 2, firstName: 'Tom' };
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom]));
+    select.set('content', emberA([yehuda, tom]));
     select.set('multiple', false);
-    select.set('selection', Ember.RSVP.Promise.resolve(tom));
+    select.set('selection', RSVP.Promise.resolve(tom));
   });
 
   append();
@@ -266,10 +267,10 @@ QUnit.test('selection from a Promise don\'t overwrite newer selection once resol
   QUnit.stop();
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom, seb]));
+    select.set('content', emberA([yehuda, tom, seb]));
     select.set('multiple', false);
-    select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(function() {
+    select.set('selection', new RSVP.Promise(function(resolve, reject) {
+      run.later(function() {
         run(function() {
           resolve(tom);
         });
@@ -277,8 +278,8 @@ QUnit.test('selection from a Promise don\'t overwrite newer selection once resol
         equal(select.$()[0].selectedIndex, 2, 'Should not select from Promise if newer selection');
       }, 40);
     }));
-    select.set('selection', new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(function() {
+    select.set('selection', new RSVP.Promise(function(resolve, reject) {
+      run.later(function() {
         run(function() {
           resolve(seb);
         });
@@ -296,9 +297,9 @@ QUnit.test('selection from a Promise resolving to null should not select when mu
   var tom = { id: 2, firstName: 'Tom' };
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom]));
+    select.set('content', emberA([yehuda, tom]));
     select.set('multiple', false);
-    select.set('selection', Ember.RSVP.Promise.resolve(null));
+    select.set('selection', RSVP.Promise.resolve(null));
   });
 
   append();
@@ -313,7 +314,7 @@ QUnit.test('selection can be set when multiple=true', function() {
   var brennain = { id: 4, firstName: 'Brennain' };
 
   run(() => {
-    select.set('content', Ember.A([
+    select.set('content', emberA([
       yehuda,
       tom,
       david,
@@ -339,7 +340,7 @@ QUnit.test('selection can be set when multiple=true and prompt', function() {
   var brennain = { id: 4, firstName: 'Brennain' };
 
   run(() => {
-    select.set('content', Ember.A([
+    select.set('content', emberA([
       yehuda,
       tom,
       david,
@@ -368,7 +369,7 @@ QUnit.test('multiple selections can be set when multiple=true', function() {
   var brennain = { id: 4, firstName: 'Brennain' };
 
   run(() => {
-    select.set('content', Ember.A([
+    select.set('content', emberA([
       yehuda,
       tom,
       david,
@@ -377,14 +378,14 @@ QUnit.test('multiple selections can be set when multiple=true', function() {
     select.set('optionLabelPath', 'content.firstName');
     select.set('multiple', true);
 
-    select.set('selection', Ember.A([yehuda, david]));
+    select.set('selection', emberA([yehuda, david]));
   });
 
   append();
 
   deepEqual(select.get('selection'), [yehuda, david], 'Initial selection should be correct');
 
-  run(() => select.set('selection', Ember.A([
+  run(() => select.set('selection', emberA([
     tom,
     brennain
   ])));
@@ -400,10 +401,10 @@ QUnit.test('multiple selections can be set by changing in place the selection ar
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
   var brennain = { id: 4, firstName: 'Brennain' };
-  var selection = Ember.A([yehuda, tom]);
+  var selection = emberA([yehuda, tom]);
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom, david, brennain]));
+    select.set('content', emberA([yehuda, tom, david, brennain]));
     select.set('optionLabelPath', 'content.firstName');
     select.set('multiple', true);
     select.set('selection', selection);
@@ -414,7 +415,7 @@ QUnit.test('multiple selections can be set by changing in place the selection ar
   deepEqual(select.get('selection'), [yehuda, tom], 'Initial selection should be correct');
 
   run(function() {
-    selection.replace(0, selection.get('length'), Ember.A([david, brennain]));
+    selection.replace(0, selection.get('length'), emberA([david, brennain]));
   });
 
   deepEqual(
@@ -445,8 +446,8 @@ QUnit.test('multiple selections can be set indirectly via bindings and in-place 
       }).create();
 
       indirectContent.set('controller', EmberObject.create({
-        content: Ember.A([tom, david, brennain]),
-        selection: Ember.A([david])
+        content: emberA([tom, david, brennain]),
+        selection: emberA([david])
       }));
     });
 
@@ -457,8 +458,8 @@ QUnit.test('multiple selections can be set indirectly via bindings and in-place 
   deepEqual(select.get('selection'), [david], 'Initial selection should be correct');
 
   run(function() {
-    indirectContent.set('controller.content', Ember.A([david, cyril]));
-    indirectContent.set('controller.selection', Ember.A([cyril]));
+    indirectContent.set('controller.content', emberA([david, cyril]));
+    indirectContent.set('controller.selection', emberA([cyril]));
   });
 
   deepEqual(select.get('content'), [david, cyril], 'After updating bound content, content should be correct');
@@ -466,7 +467,7 @@ QUnit.test('multiple selections can be set indirectly via bindings and in-place 
 });
 
 QUnit.test('select with group can group options', function() {
-  var content = Ember.A([
+  var content = emberA([
     { firstName: 'Yehuda', organization: 'Tilde' },
     { firstName: 'Tom', organization: 'Tilde' },
     { firstName: 'Keith', organization: 'Envato' }
@@ -493,7 +494,7 @@ QUnit.test('select with group can group options', function() {
 });
 
 QUnit.test('select with group doesn\'t break options', function() {
-  var content = Ember.A([
+  var content = emberA([
     { id: 1, firstName: 'Yehuda', organization: 'Tilde' },
     { id: 2, firstName: 'Tom', organization: 'Tilde' },
     { id: 3, firstName: 'Keith', organization: 'Envato' }
@@ -522,7 +523,7 @@ QUnit.test('select with group doesn\'t break options', function() {
 });
 
 QUnit.test('select with group works for initial value', function() {
-  var content = Ember.A([
+  var content = emberA([
     { id: 1, firstName: 'Yehuda', organization: 'Tilde' },
     { id: 2, firstName: 'Tom', organization: 'Tilde' },
     { id: 3, firstName: 'Keith', organization: 'Envato' }
@@ -542,7 +543,7 @@ QUnit.test('select with group works for initial value', function() {
 
 QUnit.test('select with group observes its content', function() {
   var wycats = { firstName: 'Yehuda', organization: 'Tilde' };
-  var content = Ember.A([
+  var content = emberA([
     wycats
   ]);
 
@@ -589,10 +590,10 @@ QUnit.test('selection uses the same array when multiple=true', function() {
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
   var brennain = { id: 4, firstName: 'Brennain' };
-  var selection = Ember.A([yehuda, david]);
+  var selection = emberA([yehuda, david]);
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom, david, brennain]));
+    select.set('content', emberA([yehuda, tom, david, brennain]));
     select.set('multiple', true);
     select.set('optionLabelPath', 'content.firstName');
     select.set('selection', selection);
@@ -618,7 +619,7 @@ QUnit.test('Ember.SelectedOption knows when it is selected when multiple=false',
   var brennain = { id: 4, firstName: 'Brennain' };
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom, david, brennain]));
+    select.set('content', emberA([yehuda, tom, david, brennain]));
     select.set('multiple', false);
 
     select.set('selection', david);
@@ -640,7 +641,7 @@ QUnit.test('Ember.SelectedOption knows when it is selected when multiple=true', 
   var brennain = { id: 4, firstName: 'Brennain' };
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom, david, brennain]));
+    select.set('content', emberA([yehuda, tom, david, brennain]));
     select.set('multiple', true);
 
     select.set('selection', [yehuda, david]);
@@ -659,7 +660,7 @@ QUnit.test('Ember.SelectedOption knows when it is selected when multiple=true', 
 
 QUnit.test('Ember.SelectedOption knows when it is selected when multiple=true and options are primitives', function() {
   run(function() {
-    select.set('content', Ember.A([1, 2, 3, 4]));
+    select.set('content', emberA([1, 2, 3, 4]));
     select.set('multiple', true);
     select.set('selection', [1, 3]);
   });
@@ -678,7 +679,7 @@ QUnit.test('a prompt can be specified', function() {
   var tom = { id: 2, firstName: 'Tom' };
 
   run(function() {
-    select.set('content', Ember.A([yehuda, tom]));
+    select.set('content', emberA([yehuda, tom]));
     select.set('prompt', 'Pick a person');
     select.set('optionLabelPath', 'content.firstName');
     select.set('optionValuePath', 'content.id');
@@ -735,7 +736,7 @@ QUnit.test('valueBinding handles 0 as initiated value (issue #2763)', function()
     select.destroy(); // Destroy the existing select
 
     select = EmberSelect.extend({
-      content: Ember.A([1, 0]),
+      content: emberA([1, 0]),
       indirectData: indirectData,
       valueBinding: 'indirectData.value'
     }).create();
@@ -751,7 +752,7 @@ QUnit.test('valueBinding handles 0 as initiated value (issue #2763)', function()
 
 QUnit.test('should be able to select an option and then reselect the prompt', function() {
   run(function() {
-    select.set('content', Ember.A(['one', 'two', 'three']));
+    select.set('content', emberA(['one', 'two', 'three']));
     select.set('prompt', 'Select something');
   });
 
@@ -769,7 +770,7 @@ QUnit.test('should be able to select an option and then reselect the prompt', fu
 
 QUnit.test('should be able to get the current selection\'s value', function() {
   run(function() {
-    select.set('content', Ember.A([
+    select.set('content', emberA([
       { label: 'Yehuda Katz', value: 'wycats' },
       { label: 'Tom Dale', value: 'tomdale' },
       { label: 'Peter Wagenet', value: 'wagenet' },
@@ -788,7 +789,7 @@ QUnit.test('should be able to set the current selection by value', function() {
   var ebryn = { label: 'Erik Bryn', value: 'ebryn' };
 
   run(function() {
-    select.set('content', Ember.A([
+    select.set('content', emberA([
       { label: 'Yehuda Katz', value: 'wycats' },
       { label: 'Tom Dale', value: 'tomdale' },
       { label: 'Peter Wagenet', value: 'wagenet' },

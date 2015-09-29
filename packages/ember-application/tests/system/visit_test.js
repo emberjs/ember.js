@@ -3,7 +3,7 @@ import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import inject from 'ember-runtime/inject';
 import run from 'ember-metal/run_loop';
-import { onerrorDefault } from 'ember-runtime/ext/rsvp';
+import RSVP, { onerrorDefault } from 'ember-runtime/ext/rsvp';
 import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import Route from 'ember-routing/system/route';
@@ -11,6 +11,7 @@ import Router from 'ember-routing/system/router';
 import View from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
+import jQuery from 'ember-views/system/jquery';
 
 let App = null;
 let instance = null;
@@ -53,13 +54,13 @@ function createApplication(integration) {
 }
 
 function expectAsyncError() {
-  Ember.RSVP.off('error');
+  RSVP.off('error');
 }
 
 if (isEnabled('ember-application-visit')) {
   QUnit.module('Ember.Application - visit()', {
     teardown() {
-      Ember.RSVP.on('error', onerrorDefault);
+      RSVP.on('error', onerrorDefault);
 
       if (instance) {
         run(instance, 'destroy');
@@ -81,7 +82,7 @@ if (isEnabled('ember-application-visit')) {
   // does not fire.
   QUnit.test('Applications with autoboot set to false do not autoboot', function(assert) {
     function delay(time) {
-      return new Ember.RSVP.Promise(resolve => Ember.run.later(resolve, time));
+      return new RSVP.Promise(resolve => Ember.run.later(resolve, time));
     }
 
     let appBooted = 0;
@@ -334,11 +335,11 @@ if (isEnabled('ember-application-visit')) {
       App.register('template:application', compile('<h1>Hello world</h1>'));
     });
 
-    assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     return run(App, 'visit', '/').then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
-      assert.equal(Ember.$('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
+      assert.equal(jQuery('#qunit-fixture > .ember-view h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
     });
   });
 
@@ -357,11 +358,11 @@ if (isEnabled('ember-application-visit')) {
       }));
     });
 
-    assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     return run(App, 'visit', '/').then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
-      assert.equal(Ember.$('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
+      assert.equal(jQuery('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
       assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
 
       function lookup(fullName) {
@@ -424,7 +425,7 @@ if (isEnabled('ember-application-visit')) {
         }));
       });
 
-      assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+      assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
       function makeForiegnDocument() {
         // TODO: use simple-dom
@@ -440,7 +441,7 @@ if (isEnabled('ember-application-visit')) {
           assert.equal(instance.getURL(), '/a');
 
           let serialized = dom.body.innerHTML;
-          let $parsed = Ember.$(serialized);
+          let $parsed = jQuery(serialized);
 
           assert.equal($parsed.find('h1').text(), 'Hello world');
           assert.equal($parsed.find('h2').text(), 'Welcome to Page A');
@@ -448,7 +449,7 @@ if (isEnabled('ember-application-visit')) {
           assert.ok(initCalled, 'Component#init should be called');
           assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
 
-          assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+          assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
           QUnit.stop();
         });
       });
@@ -462,7 +463,7 @@ if (isEnabled('ember-application-visit')) {
           assert.equal(instance.getURL(), '/b');
 
           let serialized = dom.body.innerHTML;
-          let $parsed = Ember.$(serialized);
+          let $parsed = jQuery(serialized);
 
           assert.equal($parsed.find('h1').text(), 'Hello world');
           assert.equal($parsed.find('h2').text(), 'Page B');
@@ -470,12 +471,12 @@ if (isEnabled('ember-application-visit')) {
           assert.ok(initCalled, 'Component#init should be called');
           assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
 
-          assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+          assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
           QUnit.stop();
         });
       });
 
-      return Ember.RSVP.all([a, b]);
+      return RSVP.all([a, b]);
     });
   }
 
@@ -570,12 +571,12 @@ if (isEnabled('ember-application-visit')) {
       }));
     });
 
-    let $foo = Ember.$('<div />').appendTo('#qunit-fixture');
-    let $bar = Ember.$('<div />').appendTo('#qunit-fixture');
+    let $foo = jQuery('<div />').appendTo('#qunit-fixture');
+    let $bar = jQuery('<div />').appendTo('#qunit-fixture');
 
     let data = encodeURIComponent(JSON.stringify({ name: 'Godfrey' }));
 
-    return Ember.RSVP.all([
+    return RSVP.all([
       run(App, 'visit', `/x-foo?data=${data}`, { rootElement: $foo[0] }),
       run(App, 'visit', '/x-bar', { rootElement: $bar[0] })
     ]).then(() => {
@@ -631,7 +632,7 @@ if (isEnabled('ember-application-visit')) {
 
         fetch(url) {
           this.get('requests').push(url);
-          return Ember.RSVP.resolve();
+          return RSVP.resolve();
         }
       });
 
@@ -676,7 +677,7 @@ if (isEnabled('ember-application-visit')) {
       }));
     });
 
-    assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+    assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     function lookup(instance, fullName) {
       if (isEnabled('ember-registry-container-reform')) {
@@ -689,7 +690,7 @@ if (isEnabled('ember-application-visit')) {
     let a = run(App, 'visit', '/a', { isBrowser: false, shouldRender: false }).then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
-      assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+      assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
       assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
 
       let viewRegistry = lookup(instance, '-view-registry:main');
@@ -702,7 +703,7 @@ if (isEnabled('ember-application-visit')) {
     let b = run(App, 'visit', '/b', { isBrowser: false, shouldRender: false }).then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
-      assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+      assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
       assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
 
       let viewRegistry = lookup(instance, '-view-registry:main');
@@ -715,7 +716,7 @@ if (isEnabled('ember-application-visit')) {
     let c = run(App, 'visit', '/c', { isBrowser: false, shouldRender: false }).then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
-      assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+      assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
       assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
 
       let viewRegistry = lookup(instance, '-view-registry:main');
@@ -728,7 +729,7 @@ if (isEnabled('ember-application-visit')) {
     let d = run(App, 'visit', '/d', { isBrowser: false, shouldRender: false }).then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
-      assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+      assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
       assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
 
       let viewRegistry = lookup(instance, '-view-registry:main');
@@ -741,7 +742,7 @@ if (isEnabled('ember-application-visit')) {
     let e = run(App, 'visit', '/e', { isBrowser: false, shouldRender: false }).then(instance => {
       assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
-      assert.strictEqual(Ember.$('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
+      assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
       assert.strictEqual(xFooInstances, 0, 'did not create any x-foo components');
 
       let viewRegistry = lookup(instance, '-view-registry:main');
@@ -751,7 +752,7 @@ if (isEnabled('ember-application-visit')) {
       assert.deepEqual(networkService.get('requests'), ['/e']);
     });
 
-    return Ember.RSVP.all([a, b, c, d, e]);
+    return RSVP.all([a, b, c, d, e]);
   });
 
   QUnit.skip('Test setup', function(assert) {

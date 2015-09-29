@@ -6,6 +6,7 @@ import { observer } from 'ember-metal/mixin';
 import { w } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Observable from 'ember-runtime/mixins/observable';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -639,7 +640,7 @@ QUnit.module('Observable objects & object properties ', {
       toggleVal: true,
       observedProperty: 'beingWatched',
       testRemove: 'observerToBeRemoved',
-      normalArray: Ember.A([1, 2, 3, 4, 5])
+      normalArray: emberA([1, 2, 3, 4, 5])
     });
   }
 });

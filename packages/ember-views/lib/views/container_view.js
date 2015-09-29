@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import View from 'ember-views/views/view';
 
 import { get } from 'ember-metal/property_get';
@@ -190,7 +191,7 @@ var ContainerView = View.extend(MutableArray, {
     // redefine view's childViews property that was obliterated
     // 2.0TODO: Don't Ember.A() this so users disabling prototype extensions
     // don't pay a penalty.
-    var childViews = this.childViews = Ember.A([]);
+    var childViews = this.childViews = emberA();
 
     userChildViews.forEach((viewName, idx) => {
       var view;
@@ -208,7 +209,7 @@ var ContainerView = View.extend(MutableArray, {
 
     var currentView = get(this, 'currentView');
     if (currentView) {
-      if (!childViews.length) { childViews = this.childViews = Ember.A(this.childViews.slice()); }
+      if (!childViews.length) { childViews = this.childViews = emberA(this.childViews.slice()); }
       childViews.push(this.createChildView(currentView));
     }
 

@@ -1,13 +1,18 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
 import isEnabled from 'ember-metal/features';
+import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var App, Router, container, router, registry;
 var expectedReplaceURL, expectedPushURL;
 
 
-var TestLocation = Ember.NoneLocation.extend({
+var TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -37,12 +42,12 @@ var TestLocation = Ember.NoneLocation.extend({
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 function sharedSetup() {
-  Ember.run(function() {
-    App = Ember.Application.create({
+  run(function() {
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });
@@ -71,7 +76,7 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() {
+  run(function() {
     App.destroy();
     App = null;
 
@@ -97,7 +102,7 @@ var testParamlessLinks = function(routeName) {
 
     Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
 
-    App[capitalize(routeName) + 'Controller'] = Ember.Controller.extend({
+    App[capitalize(routeName) + 'Controller'] = Controller.extend({
       queryParams: ['foo'],
       foo: 'wat'
     });
@@ -105,7 +110,7 @@ var testParamlessLinks = function(routeName) {
     startingURL = '/?foo=YEAH';
     bootApplication();
 
-    equal(Ember.$('#index-link').attr('href'), '/?foo=YEAH');
+    equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
   });
 };
 
@@ -126,7 +131,7 @@ var testParamlessLinksWithRouteConfig = function(routeName) {
     startingURL = '/?foo=YEAH';
     bootApplication();
 
-    equal(Ember.$('#index-link').attr('href'), '/?foo=YEAH');
+    equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
   });
 };
 

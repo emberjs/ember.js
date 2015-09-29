@@ -17,6 +17,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import ComponentLookup from 'ember-views/component_lookup';
+import jQuery from 'ember-views/system/jquery';
 
 var originalLookup = Ember.lookup;
 
@@ -146,16 +147,16 @@ function testIfArray(array) {
 }
 
 QUnit.test('The `if` helper updates if an array is empty or not', function() {
-  testIfArray(Ember.A());
+  testIfArray(emberA());
 });
 
 QUnit.test('The `if` helper updates if an array-like object is empty or not', function() {
-  testIfArray(ArrayProxy.create({ content: Ember.A([]) }));
+  testIfArray(ArrayProxy.create({ content: emberA() }));
 });
 
 QUnit.test('The `unless` helper updates if an array-like object is empty or not', function() {
   view = EmberView.create({
-    array: ArrayProxy.create({ content: Ember.A([]) }),
+    array: ArrayProxy.create({ content: emberA() }),
 
     template: compile('{{#unless view.array}}Yep{{/unless}}')
   });
@@ -607,13 +608,13 @@ QUnit.test('edge case: rerender appearance of inner virtual view', function() {
   });
 
   runAppend(view);
-  equal(Ember.$('#qunit-fixture').text(), '');
+  equal(jQuery('#qunit-fixture').text(), '');
 
   run(function() {
     view.set('cond2', true);
   });
 
-  equal(Ember.$('#qunit-fixture').text(), 'test');
+  equal(jQuery('#qunit-fixture').text(), 'test');
 });
 
 QUnit.test('`if` helper with inline form: renders the second argument when conditional is truthy', function() {
@@ -787,7 +788,7 @@ QUnit.test('`if` helper with inline form: can use truthy param as binding in a s
 
 QUnit.test('`if` helper with inline form: respects isTruthy when object changes', function() {
   view = EmberView.create({
-    conditional: Ember.Object.create({ isTruthy: false }),
+    conditional: EmberObject.create({ isTruthy: false }),
     template: compile('{{if view.conditional "truthy" "falsy"}}')
   });
 
@@ -796,20 +797,20 @@ QUnit.test('`if` helper with inline form: respects isTruthy when object changes'
   equal(view.$().text(), 'falsy');
 
   run(function() {
-    view.set('conditional', Ember.Object.create({ isTruthy: true }));
+    view.set('conditional', EmberObject.create({ isTruthy: true }));
   });
 
   equal(view.$().text(), 'truthy');
 
   run(function() {
-    view.set('conditional', Ember.Object.create({ isTruthy: false }));
+    view.set('conditional', EmberObject.create({ isTruthy: false }));
   });
 
   equal(view.$().text(), 'falsy');
 });
 
 QUnit.test('`if` helper with inline form: respects isTruthy when property changes', function() {
-  var candidate = Ember.Object.create({ isTruthy: false });
+  var candidate = EmberObject.create({ isTruthy: false });
 
   view = EmberView.create({
     conditional: candidate,
@@ -834,7 +835,7 @@ QUnit.test('`if` helper with inline form: respects isTruthy when property change
 });
 
 QUnit.test('`if` helper with inline form: respects length test when list content changes', function() {
-  var list = Ember.A();
+  var list = emberA();
 
   view = EmberView.create({
     conditional: list,

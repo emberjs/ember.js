@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
@@ -395,7 +396,7 @@ QUnit.test('should handle object values and keys as nulls', function() {
 
 QUnit.test('get helper value should be updatable using {{input}} and (mut) - dynamic key', function() {
   var context = {
-    source: Ember.Object.create({
+    source: EmberObject.create({
       banana: 'banana'
     }),
     key: 'banana'
@@ -428,7 +429,7 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - dyn
 
 QUnit.test('get helper value should be updatable using {{input}} and (mut) - dynamic nested key', function() {
   var context = {
-    source: Ember.Object.create({
+    source: EmberObject.create({
       apple: {
         mcintosh: 'mcintosh'
       }
@@ -463,7 +464,7 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - dyn
 
 QUnit.test('get helper value should be updatable using {{input}} and (mut) - static key', function() {
   var context = {
-    source: Ember.Object.create({
+    source: EmberObject.create({
       banana: 'banana'
     }),
     key: 'banana'
