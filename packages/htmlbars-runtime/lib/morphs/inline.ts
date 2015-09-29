@@ -39,14 +39,15 @@ class HtmlInsertion extends EmptyableMorph {
 
   append(stack: ElementStack) {
     let html = this.lastValue = <string>this.reference.value();
-    this.initializeBounds(stack.insertHTMLBefore(null, html));
+    this.didInsertContent(stack.insertHTMLBefore(null, html));
   }
 
   update() {
     let html = <string>this.reference.value();
 
     if (this.lastValue !== html) {
-      this.replaceWithBounds(this.frame.dom().insertHTMLBefore(this.parentNode, this.nextSibling(), html))
+      let nextSibling = this.nextSiblingForContent();
+      this.didInsertContent(this.frame.dom().insertHTMLBefore(this.parentNode, nextSibling, html))
       this.lastValue = html;
     }
   }
@@ -64,17 +65,17 @@ class TextInsertion extends EmptyableMorph {
   append(stack: ElementStack) {
     let text = this.lastValue = <string>this.reference.value();
     let node = this.node = stack.appendText(text);
-    this.initializeBounds(new SingleNodeBounds(this.parentNode, node));
+    this.didInsertContent(new SingleNodeBounds(this.parentNode, node));
   }
 
   update() {
     let text = <string>this.reference.value();
 
     if (text === '' || text === null || text === undefined) {
-      this.empty();
+      this.didBecomeEmpty();
     } else if (text !== this.lastValue) {
       this.lastValue = text;
-      this.node.nodeValue = text;
+      (<Node>this.node).nodeValue = text;
     }
   }
 }
@@ -101,7 +102,7 @@ export class HelperMorph extends EmptyableMorph {
     let trustingMorph = this.trustingMorph;
 
     let insertion = insertionForUserContent(content, trustingMorph);
-    let inner = this.inner = stack.initializeMorph<ContentInitOptions>(insertion, { content: this.reference, trustingMorph });
+    let inner = this.inner = stack.initializeMorph(insertion, { content: this.reference, trustingMorph });
 
     inner.append(stack);
   }

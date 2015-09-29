@@ -24,12 +24,12 @@ export class MorphList extends EmptyableMorph {
     this.reference = reference;
     this.key = key;
     this.templates = templates;
+
     this.presentBounds = {
       parentElement: () => this.parentNode,
       firstNode: () => this.list.head().firstNode(),
       lastNode: () => this.list.tail().lastNode()
     };
-    this.initializeBounds(this.presentBounds);
   }
 
   insertMorphBeforeInDOM(morph: InnerBlockMorph, reference: InnerBlockMorph) {
@@ -48,10 +48,10 @@ export class MorphList extends EmptyableMorph {
     let array: any[] = this.reference.value();
 
     if (array.length === 0) {
-      return;
+      return this.didBecomeEmpty();
     }
 
-    this.initializeBounds(this.presentBounds);
+    let nextSibling = this.nextSiblingForContent();
 
     let template = this.templates._default;
     let builder = new Builder(stack, this);
@@ -60,6 +60,7 @@ export class MorphList extends EmptyableMorph {
       builder.append({ template, val, frame: this.frame, key: this.keyFor(val) });
     });
 
+    this.didInsertContent(this.presentBounds);
     this.map = builder.map;
   }
 
@@ -68,25 +69,26 @@ export class MorphList extends EmptyableMorph {
 
     let array: any[] = this.reference.value();
 
-    if (array.length === 0) return this.empty();
-    if (this.isEmpty()) this.initializeBounds(this.presentBounds);
+    if (array.length === 0) return this.didBecomeEmpty();
+
+    let nextSibling = this.nextSiblingForContent();
 
     let template = this.templates._default;
 
     array.forEach(val => {
-      replay.append({ template, val, frame: this.frame, key: this.keyFor(val) });
+      replay.append({ template, val, nextSibling, frame: this.frame, key: this.keyFor(val) });
     });
 
     replay.commit();
+    this.didInsertContent(this.presentBounds);
   }
 
-  empty() {
-    super.empty();
+  didBecomeEmpty() {
+    super.didBecomeEmpty();
+
     this.map = dict<InnerBlockMorph>();
 
-    this.list.forEachNode(node => {
-      node.destroy();
-    });
+    this.list.forEachNode(node => node.destroy());
 
     this.list.clear();
   }
@@ -202,7 +204,7 @@ class Replay {
     this.list = parent.list;
   }
 
-  append({ template, key, val, frame }: { template: Template, key: InternedString, val: any, frame: Frame }) {
+  append({ template, key, val, nextSibling, frame }: { template: Template, key: InternedString, val: any, frame: Frame, nextSibling: Node }) {
     let { current, map, list, parentNode } = this;
 
     if (current && current.key === key) {
@@ -231,7 +233,7 @@ class Replay {
       child.handled = true;
       map[<string>key] = child;
       list.insertBefore(child, current);
-      child.appendTemplate(template, current && current.firstNode());
+      child.appendTemplate(template, nextSibling);
     }
   }
 

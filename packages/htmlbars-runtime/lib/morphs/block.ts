@@ -66,12 +66,12 @@ class Group {
 
   commitAppend(stack: ElementStack) {
     let rendered = this.commit();
-    if (!rendered) this.morph.appendEmpty(stack);
+    if (!rendered) this.morph.didBecomeEmpty();
   }
 
   commitUpdate() {
     let rendered = this.commit();
-    if (!rendered) this.morph.empty();
+    if (!rendered) this.morph.didBecomeEmpty();
   }
 
   appendTemplate(template: Template) {
