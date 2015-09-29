@@ -196,11 +196,12 @@ testEachHelper(
 
 testEachHelper(
   "An implementation of #each using a self binding",
-  "<ul>{{#each list}}<li class={{class}}>{{name}}</li>{{/each}}</ul>"
+  "<ul>{{#each list}}<li class={{class}}>{{name}}</li>{{/each}}</ul>",
+  QUnit.skip
 );
 
-function testEachHelper(testName, templateSource) {
-  test(testName, function() {
+function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
+  testMethod(testName, function() {
     let template = compile(templateSource);
     let tom = { key: "1", name: "Tom Dale", "class": "tomdale" };
     var yehuda = { key: "2", name: "Yehuda Katz", "class": "wycats" };
@@ -337,37 +338,6 @@ function testEachHelper(testName, templateSource) {
     }
   });
 }
-
-test("Returning true from `linkRenderNodes` makes the value itself stable across renders", function() {
-  var streams = { hello: { value: "hello" }, world: { value: "world" } };
-
-  hooks.linkRenderNode = function() {
-    return true;
-  };
-
-  hooks.getValue = function(stream) {
-    return stream();
-  };
-
-  var concatCalled = 0;
-  hooks.concat = function(env, params) {
-    ok(++concatCalled === 1, "The concat hook is only invoked one time (invoked " + concatCalled + " times)");
-    return function() {
-      return params[0].value + params[1] + params[2].value;
-    };
-  };
-
-  var template = compile("<div class='{{hello}} {{world}}'></div>");
-  var result = render(template, streams);
-
-  equalTokens(root, "<div class='hello world'></div>");
-
-  streams.hello.value = "goodbye";
-
-  result.rerender();
-
-  equalTokens(root, "<div class='goodbye world'></div>");
-});
 
 var destroyedRenderNodeCount;
 var destroyedRenderNode;

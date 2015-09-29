@@ -1,6 +1,6 @@
 import { EmptyableMorph, TemplateMorph, Morph, Bounds, MorphConstructor, initializeMorph, insertBoundsBefore, clear } from '../morph';
 import { ChainableReference, Reference } from 'htmlbars-reference';
-import { InternedString, Dict, dict, intern } from 'htmlbars-util';
+import { InternedString, Dict, LinkedList, dict, intern } from 'htmlbars-util';
 import { ElementStack } from '../builder';
 import Template, { Templates } from '../template';
 import { RenderResult } from '../render';
@@ -17,8 +17,7 @@ export class MorphList extends EmptyableMorph {
   private key: Reference;
   private templates: Templates;
   private presentBounds: Bounds;
-  public head: InnerBlockMorph = null;
-  public tail: InnerBlockMorph = null;
+  public list: LinkedList<InnerBlockMorph> = new LinkedList<InnerBlockMorph>();
   public map: Dict<InnerBlockMorph> = null;
 
   init({ reference, key, templates }: MorphListOptions) {
@@ -27,52 +26,22 @@ export class MorphList extends EmptyableMorph {
     this.templates = templates;
     this.presentBounds = {
       parentElement: () => this.parentNode,
-      firstNode: () => this.head.firstNode(),
-      lastNode: () => this.tail.lastNode()
+      firstNode: () => this.list.head().firstNode(),
+      lastNode: () => this.list.tail().lastNode()
     };
     this.initializeBounds(this.presentBounds);
   }
 
+  insertMorphBeforeInDOM(morph: InnerBlockMorph, reference: InnerBlockMorph) {
+    insertBoundsBefore(this.parentNode, morph, reference, this.frame.dom());
+  }
+
   firstNode(): Node {
-    return this.head.firstNode();
+    return this.list.head().firstNode();
   }
 
   lastNode(): Node {
-    return this.tail.lastNode();
-  }
-
-  insertMorphBefore(morph: InnerBlockMorph, reference: InnerBlockMorph) {
-    insertBoundsBefore(this.parentNode, morph, reference, this.frame.dom());
-
-    let prev = reference ? reference.previousMorph : this.tail;
-
-    if (reference === null) this.tail = morph;
-
-    if (prev) prev.nextMorph = morph;
-    morph.previousMorph = prev;
-
-    if (reference === this.head) this.head = morph;
-    if (reference) reference.previousMorph = morph;
-    morph.nextMorph = reference;
-
-    cycleCheck(this);
-  }
-
-  remove(morph: InnerBlockMorph) {
-    let prev = morph.previousMorph;
-    let next = morph.nextMorph;
-
-    if (prev) {
-      prev.nextMorph = next;
-    } else {
-      this.head = next;
-    }
-
-    if (next) {
-      next.previousMorph = prev;
-    } else {
-      this.tail = prev;
-    }
+    return this.list.tail().lastNode();
   }
 
   append(stack: ElementStack) {
@@ -91,14 +60,11 @@ export class MorphList extends EmptyableMorph {
       builder.append({ template, val, frame: this.frame, key: this.keyFor(val) });
     });
 
-    this.head = builder.head;
-    this.tail = builder.tail;
     this.map = builder.map;
-    cycleCheck(this);
   }
 
   update() {
-    let replay = new Replay(this.head, this.tail, this.map, this);
+    let replay = new Replay(this, this.map);
 
     let array: any[] = this.reference.value();
 
@@ -111,26 +77,18 @@ export class MorphList extends EmptyableMorph {
       replay.append({ template, val, frame: this.frame, key: this.keyFor(val) });
     });
 
-    cycleCheck(this);
-
     replay.commit();
   }
 
   empty() {
     super.empty();
     this.map = dict<InnerBlockMorph>();
-    let item = this.head;
 
-    let set = new Set();
+    this.list.forEachNode(node => {
+      node.destroy();
+    });
 
-    while (item) {
-      set.add(item);
-      let next = item.nextMorph;
-      item.destroy();
-      item = next;
-    }
-
-    this.head = this.tail = null;
+    this.list.clear();
   }
 
   private keyFor(obj: any): InternedString {
@@ -149,23 +107,6 @@ export class MorphList extends EmptyableMorph {
   }
 }
 
-function cycleCheck(list: MorphList) {
-  let set = new Set();
-  let item = list.head;
-  let path = [];
-
-  while (item) {
-    if (set.has(item)) {
-      console.log(item, path);
-      throw new Error(`BUG: Already saw ${item} traversing ${path.join(', ')}`);
-    }
-
-    path.push(item);
-    set.add(item);
-    item = item.nextMorph;
-  }
-}
-
 interface InnerBlockOptions {
   template: Template;
   prev: InnerBlockMorph;
@@ -175,8 +116,8 @@ interface InnerBlockOptions {
 
 class InnerBlockMorph extends TemplateMorph {
   public template: Template;
-  public nextMorph: InnerBlockMorph;
-  public previousMorph: InnerBlockMorph;
+  public next: InnerBlockMorph;
+  public prev: InnerBlockMorph;
   public nextSiblingNode: Node;
   public key: InternedString;
   public handled: boolean = false;
@@ -191,13 +132,12 @@ class InnerBlockMorph extends TemplateMorph {
     return lastResult && lastResult.lastNode();
   }
 
-  init({ template, prev, key, nextSibling }: InnerBlockOptions) {
+  init({ template, key, nextSibling }: InnerBlockOptions) {
     this.template = template;
     this.key = key;
-    this.previousMorph = prev;
-    this.nextMorph = null;
+    this.prev = null;
+    this.next = null;
     this.nextSiblingNode = nextSibling || null;
-    if (prev) prev.nextMorph = this;
   }
 
   append(stack: ElementStack) {
@@ -216,23 +156,20 @@ class InnerBlockMorph extends TemplateMorph {
 }
 
 class Builder {
-  public head: InnerBlockMorph = null;
-  public tail: InnerBlockMorph = null;
   public map: Dict<InnerBlockMorph> = dict<InnerBlockMorph>();
   private stack: ElementStack;
   private frame: Frame;
-  private parent: Element;
-  private list: MorphList;
+  private parentElement: Element;
+  private parent: MorphList;
 
-  constructor(stack: ElementStack, list: MorphList) {
+  constructor(stack: ElementStack, parent: MorphList) {
     this.stack = stack;
-    this.frame = list.frame;
-    this.parent = list.parentNode;
-    this.list = list;
+    this.frame = parent.frame;
+    this.parentElement = parent.parentNode;
+    this.parent = parent;
   }
 
   append({ template, key, frame, val }: { template: Template, key: InternedString, frame: Frame, val: any }) {
-    let prev = this.tail;
     let childFrame = frame.child();
 
     if (template.arity) {
@@ -240,50 +177,44 @@ class Builder {
       scope.bindLocal(template.locals[0], val);
     }
 
-    let morph = initializeMorph(InnerBlockMorph, { template, prev, key }, this.parent, childFrame);
+    let morph = initializeMorph(InnerBlockMorph, { template, key }, this.parentElement, childFrame);
     morph.append(this.stack);
+    this.map[<string>key] = morph;
 
-    if (!this.head) this.head = morph;
-    this.tail = this.map[<string>key] = morph;
-
+    this.parent.list.append(morph);
     return morph;
-  }
-
-  replay(): Replay {
-    return new Replay(this.head, this.tail, this.map, this.list);
   }
 }
 
 class Replay {
-  private head: InnerBlockMorph;
-  private tail: InnerBlockMorph;
-  private list: MorphList;
+  private parentNode: Element;
+  private list: LinkedList<InnerBlockMorph>;
+  private parent: MorphList;
   private current: InnerBlockMorph;
-  private prev: InnerBlockMorph = null;
   private map: Dict<InnerBlockMorph>;
   private candidates: Dict<InnerBlockMorph> = dict<InnerBlockMorph>();
 
-  constructor(head: InnerBlockMorph, tail: InnerBlockMorph, map: Dict<InnerBlockMorph>, list: MorphList) {
-    this.head = head;
-    this.tail = tail;
-    this.current = head;
+  constructor(parent: MorphList, map: Dict<InnerBlockMorph>) {
+    this.current = parent.list.head();
     this.map = map;
-    this.list = list;
+    this.parent = parent;
+    this.parentNode = parent.parentNode;
+    this.list = parent.list;
   }
 
   append({ template, key, val, frame }: { template: Template, key: InternedString, val: any, frame: Frame }) {
-    let { current, prev, map, list } = this;
+    let { current, map, list, parentNode } = this;
 
     if (current && current.key === key) {
       current.updateItem(val);
-      this.prev = current;
-      this.current = current.nextMorph;
+      this.current = this.list.nextNode(current);
     } else if (map[<string>key] !== undefined) {
       let found = map[<string>key];
 
       if (<string>key in this.candidates) {
-        this.list.remove(found);
-        this.list.insertMorphBefore(found, current);
+        list.remove(found);
+        list.insertBefore(found, current);
+        this.parent.insertMorphBeforeInDOM(found, current);
       } else {
         this.advanceToKey(key);
       }
@@ -296,10 +227,10 @@ class Replay {
         childFrame.scope().bindLocal(template.locals[0], val);
       }
 
-      let child = initializeMorph(InnerBlockMorph, { template, prev: null, key }, list.parentNode, childFrame);
+      let child = initializeMorph(InnerBlockMorph, { template, prev: null, key }, parentNode, childFrame);
       child.handled = true;
       map[<string>key] = child;
-      list.insertMorphBefore(child, current);
+      list.insertBefore(child, current);
       child.appendTemplate(template, current && current.firstNode());
     }
   }
@@ -309,43 +240,25 @@ class Replay {
 
     while (seek && seek.key !== key) {
       this.candidates[<string>seek.key] = seek;
-      seek = seek.nextMorph;
+      seek = this.list.nextNode(seek);
     }
 
-    this.prev = seek;
-    this.current = seek && seek.nextMorph;
+    this.current = seek && this.list.nextNode(seek);
     return seek;
   }
 
   commit() {
-    let item = this.list.head;
-    let lastHandled: InnerBlockMorph;
-    let firstHandled: InnerBlockMorph;
+    let list = this.list;
 
-    while (item) {
-      let next = item.nextMorph;
-
-      if (item.handled) {
-        item.handled = false;
-
-        item.previousMorph = lastHandled || null;
-        if (lastHandled) lastHandled.nextMorph = item;
-
-        firstHandled = firstHandled || item;
-        lastHandled = item;
+    list.forEachNode(node => {
+      if (node.handled) {
+        node.handled = false;
       } else {
-        delete this.map[<string>item.key];
-        clear(item);
-        this.list.remove(item);
-        item.destroy();
+        list.remove(node);
+        delete this.map[<string>node.key];
+        clear(node);
+        node.destroy();
       }
-
-      item = next;
-    }
-
-    if (!firstHandled || !lastHandled) throw new Error("BUG: No morphs handled");
-    this.list.head = firstHandled;
-    this.list.tail = lastHandled;
-    cycleCheck(this.list);
+    });
   }
 }

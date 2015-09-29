@@ -1,63 +1,98 @@
-export class ListNode<T> {
-  private value: T;
-  public next: ListNode<T> = null;
-  public prev: ListNode<T> = null;
-
-  constructor(value: T) {
-    this.value = value;
-  }
+export interface Destroyable {
+  destroy();
 }
 
-export abstract class LinkedList<T> {
-  private head: ListNode<T>;
-  private tail: ListNode<T>;
+export interface LinkedListNode {
+  next: LinkedListNode;
+  prev: LinkedListNode;
+}
 
-  append(val: T): ListNode<T> {
-    let node = new ListNode(val);
-    let { head, tail } = this;
+// we are unable to express the constraint that T's .prev and .next are
+// themselves T. However, it will always be true, so trust us.
+type trust = any;
 
-    if (head) {
-      head.next = node;
-      node.prev = head;
-    } else {
-      this.head = node;
-    }
+export class LinkedList<T extends LinkedListNode> {
+  private _head: T;
+  private _tail: T;
 
-    if (tail) {
-      node.prev = tail;
-      tail.next = node;
-    } else {
-      this.tail = node;
-    }
-
-    return node;
+  constructor() {
+    this.clear();
   }
 
-  remove(node: ListNode<T>) {
-    let prev = node.prev;
+  head(): T {
+    let front = this._head.next;
+    if (front === this._tail) return null;
+    return <trust>front;
+  }
+
+  tail(): T {
+    let back = this._tail.prev;
+    if (back === this._head) return null;
+    return <trust>back;
+  }
+
+  clear() {
+    let head = this._head = <T>new SentinelNode();
+    let tail = this._tail = <T>new SentinelNode();
+    head.next = tail;
+    tail.prev = head;
+  }
+
+  nextNode(node: T): T {
     let next = node.next;
-
-    if (this.head === node) this.head = next;
-    if (this.tail === node) this.tail = prev;
-
-    if (next) next.prev = prev;
-    if (prev) prev.next = next;
-
-    this.destroyNode(node);
+    if (next === this._tail) return null;
+    return <trust>next;
   }
 
-  forEach(callback: (T) => void) {
-    let node = this.head;
+  prevNode(node: T): T {
+    let prev = node.prev;
+    if (prev === this._head) return null;
+    return <trust>prev;
+  }
 
-    while (node) {
-      callback(node);
+  forEachNode(callback: (node: T) => void) {
+    let node = this._head.next;
+
+    while (node !== this._tail) {
+      callback(<trust>node);
       node = node.next;
     }
   }
 
-  destroy() {
+  insertBefore(node: T, reference: T = null) {
+    if (reference === null) reference = this._tail;
 
+    reference.prev.next = node;
+    node.prev = reference.prev;
+    node.next = reference;
+    reference.prev = node;
   }
 
-  destroyNode(node: ListNode<T>) {};
+  append(node: T) {
+    this.insertBefore(node, this._tail);
+  }
+
+  remove(node: T) {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+  }
+}
+
+class LinkedListRemover implements Destroyable {
+  private node: LinkedListNode;
+
+  constructor(node: LinkedListNode) {
+    this.node = node;
+  }
+
+  destroy() {
+    let { prev, next } = this.node;
+    prev.next = next;
+    next.prev = prev;
+  }
+}
+
+class SentinelNode implements LinkedListNode {
+  next: LinkedListNode = null;
+  prev: LinkedListNode = null;
 }
