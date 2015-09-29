@@ -1,8 +1,9 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import jQuery from 'ember-views/system/jquery';
+
+function K() { return this; }
 
 var app;
 
@@ -28,7 +29,7 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
 
   expectAssertion(function() {
     run(function() {
-      MyApplication.instanceInitializer({ initialize: Ember.K });
+      MyApplication.instanceInitializer({ initialize: K });
     });
   });
 });

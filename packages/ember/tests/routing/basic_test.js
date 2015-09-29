@@ -6,6 +6,7 @@ import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
+import { observer } from 'ember-metal/mixin';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -129,7 +130,7 @@ QUnit.test('The Homepage', function() {
   var currentPath;
 
   App.ApplicationController = Controller.extend({
-    currentPathDidChange: Ember.observer('currentPath', function() {
+    currentPathDidChange: observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
   });
@@ -158,13 +159,13 @@ QUnit.test('The Home page and the Camelot page with multiple Router.map calls', 
   var currentPath;
 
   App.ApplicationController = Controller.extend({
-    currentPathDidChange: Ember.observer('currentPath', function() {
+    currentPathDidChange: observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
   });
 
   App.CamelotController = Controller.extend({
-    currentPathDidChange: Ember.observer('currentPath', function() {
+    currentPathDidChange: observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
   });
@@ -1140,7 +1141,7 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
   var currentPath;
 
   App.ApplicationController = Controller.extend({
-    currentPathDidChange: Ember.observer('currentPath', function() {
+    currentPathDidChange: observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
   });
@@ -2486,7 +2487,7 @@ QUnit.test('ApplicationRoute with model does not proxy the currentPath', functio
   });
 
   App.ApplicationController = Controller.extend({
-    currentPathDidChange: Ember.observer('currentPath', function() {
+    currentPathDidChange: observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     })
   });

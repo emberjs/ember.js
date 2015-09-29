@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
+import EmberRouter from 'ember-routing/system/router';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
@@ -60,7 +61,7 @@ QUnit.test('Router.map returns an Ember Router class', function () {
     this.route('hello');
   });
 
-  ok(Ember.Router.detect(ret));
+  ok(EmberRouter.detect(ret));
 });
 
 QUnit.test('Router.map can be called multiple times', function () {

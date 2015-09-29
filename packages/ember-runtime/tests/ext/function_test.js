@@ -1,5 +1,7 @@
 import Ember from 'ember-metal/core'; // EXTEND_PROTOTYPES
 import EmberObject from 'ember-runtime/system/object';
+import Evented from 'ember-runtime/mixins/evented';
+import { Mixin, mixin } from 'ember-metal/mixin';
 import { testBoth } from 'ember-metal/tests/props_helper';
 
 QUnit.module('Function.prototype.observes() helper');
@@ -10,7 +12,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
     return;
   }
 
-  var MyMixin = Ember.Mixin.create({
+  var MyMixin = Mixin.create({
 
     count: 0,
 
@@ -20,7 +22,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 
   });
 
-  var obj = Ember.mixin({}, MyMixin);
+  var obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
@@ -36,7 +38,7 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
     return;
   }
 
-  var MyMixin = Ember.Mixin.create({
+  var MyMixin = Mixin.create({
 
     count: 0,
 
@@ -46,7 +48,7 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
 
   });
 
-  var obj = Ember.mixin({}, Ember.Evented, MyMixin);
+  var obj = mixin({}, Evented, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
 
   obj.trigger('bar');
@@ -60,7 +62,7 @@ testBoth('can be chained with observes', function(get, set) {
     return;
   }
 
-  var MyMixin = Ember.Mixin.create({
+  var MyMixin = Mixin.create({
 
     count: 0,
     bay: 'bay',
@@ -69,7 +71,7 @@ testBoth('can be chained with observes', function(get, set) {
     }.observes('bay').on('bar')
   });
 
-  var obj = Ember.mixin({}, Ember.Evented, MyMixin);
+  var obj = mixin({}, Evented, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
 
   set(obj, 'bay', 'BAY');

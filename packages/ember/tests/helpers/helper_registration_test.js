@@ -1,4 +1,6 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
+import Router from 'ember-routing/system/router';
+import Service from 'ember-runtime/system/service';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
@@ -40,7 +42,7 @@ var boot = function(callback) {
 
     App.deferReadiness();
 
-    App.Router = Ember.Router.extend({
+    App.Router = Router.extend({
       location: 'none'
     });
 
@@ -109,7 +111,7 @@ QUnit.test('Helpers can receive injections', function() {
 
   var serviceCalled = false;
   boot(function() {
-    appInstance.register('service:name-builder', Ember.Service.extend({
+    appInstance.register('service:name-builder', Service.extend({
       build() {
         serviceCalled = true;
       }

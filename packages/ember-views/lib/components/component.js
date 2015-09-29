@@ -1,11 +1,10 @@
-import Ember from 'ember-metal/core';
-import { assert, deprecate } from 'ember-metal/debug';
-
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';
 
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import { inspect } from 'ember-metal/utils';
 import isNone from 'ember-metal/is_none';
 
 import { computed } from 'ember-metal/computed';
@@ -320,7 +319,7 @@ var Component = View.extend(TargetActionSupport, {
       target.send(...arguments);
     } else {
       if (!hasAction) {
-        throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);
+        throw new Error(inspect(this) + ' had no action handler for: ' + actionName);
       }
     }
   }

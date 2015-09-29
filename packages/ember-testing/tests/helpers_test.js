@@ -6,6 +6,7 @@ import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
+import Checkbox from 'ember-views/views/checkbox';
 
 import Test from 'ember-testing/test';
 import 'ember-testing/helpers';  // ensure that the helpers are loaded
@@ -108,12 +109,12 @@ QUnit.test('Ember.Application#injectTestHelpers/#removeTestHelpers', function() 
 
   App.injectTestHelpers();
   assertHelpers(App);
-  ok(Ember.Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
+  ok(Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
 
   App.removeTestHelpers();
   assertNoHelpers(App);
 
-  equal(Ember.Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
+  equal(Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
 });
 
 
@@ -348,7 +349,7 @@ QUnit.test('`click` triggers appropriate events in order', function() {
       });
     },
 
-    Checkbox: Ember.Checkbox.extend({
+    Checkbox: Checkbox.extend({
       click() {
         events.push('click:' + this.get('checked'));
       },
@@ -773,27 +774,27 @@ QUnit.test('pendingAjaxRequests is maintained for ajaxSend and ajaxComplete even
   equal(Test.pendingAjaxRequests, 0);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(Test.pendingAjaxRequests, 1, 'Test.pendingAjaxRequests was incremented');
   jQuery(document).trigger('ajaxComplete', xhr);
-  equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
+  equal(Test.pendingAjaxRequests, 0, 'Test.pendingAjaxRequests was decremented');
 });
 
 QUnit.test('pendingAjaxRequests is ignores ajaxComplete events from past setupForTesting calls', function() {
   equal(Test.pendingAjaxRequests, 0);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(Test.pendingAjaxRequests, 1, 'Test.pendingAjaxRequests was incremented');
 
   run(function() {
     setupForTesting();
   });
-  equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was reset');
+  equal(Test.pendingAjaxRequests, 0, 'Test.pendingAjaxRequests was reset');
 
   var altXhr = { some: 'more xhr' };
   jQuery(document).trigger('ajaxSend', altXhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(Test.pendingAjaxRequests, 1, 'Test.pendingAjaxRequests was incremented');
   jQuery(document).trigger('ajaxComplete', xhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests is not impressed with your unexpected complete');
+  equal(Test.pendingAjaxRequests, 1, 'Test.pendingAjaxRequests is not impressed with your unexpected complete');
 });
 
 QUnit.test('pendingAjaxRequests is reset by setupForTesting', function() {

@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
@@ -11,6 +10,8 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import alias from 'ember-metal/alias';
 import run from 'ember-metal/run_loop';
+import { observer } from 'ember-metal/mixin';
+import { on } from 'ember-metal/events';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
@@ -813,21 +814,21 @@ QUnit.test('comopnent should rerender when a property is changed during children
 
   owner.register('component:x-outer', Component.extend({
     value: 1,
-    grabReference: Ember.on('init', function() {
+    grabReference: on('init', function() {
       outer = this;
     })
   }));
 
   owner.register('component:x-middle', Component.extend({
     value: null,
-    grabReference: Ember.on('init', function() {
+    grabReference: on('init', function() {
       middle = this;
     })
   }));
 
   owner.register('component:x-inner', Component.extend({
     value: null,
-    pushDataUp: Ember.observer('value', function() {
+    pushDataUp: observer('value', function() {
       middle.set('value', this.get('value'));
     })
   }));

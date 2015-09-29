@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import EmberComponent from 'ember-views/components/component';
 import { assert } from 'ember-metal/debug';
 import EmberObject from 'ember-runtime/system/object';
 import { CONTAINS_DASH_CACHE } from 'ember-htmlbars/system/lookup-helper';
@@ -29,7 +29,7 @@ export default EmberObject.extend({
     // or a template has been registered.
     if (templateRegistered || Component) {
       if (!Component) {
-        owner.register(fullName, Ember.Component);
+        owner.register(fullName, EmberComponent);
         Component = owner._lookupFactory(fullName);
       }
       return Component;
