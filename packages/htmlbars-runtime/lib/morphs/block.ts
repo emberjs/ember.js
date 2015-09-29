@@ -27,6 +27,7 @@ export class BlockHelperMorph extends TemplateMorph {
   }
 
   append(stack: ElementStack) {
+    super.append(stack);
     let helper = this.helper.value();
     let { params, hash } = this.args.value();
     let { _default, _inverse } = this.templates;

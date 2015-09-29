@@ -38,6 +38,7 @@ class HtmlInsertion extends EmptyableMorph {
   }
 
   append(stack: ElementStack) {
+    super.append(stack);
     let html = this.lastValue = <string>this.reference.value();
     this.didInsertContent(stack.insertHTMLBefore(null, html));
   }
@@ -63,6 +64,7 @@ class TextInsertion extends EmptyableMorph {
   }
 
   append(stack: ElementStack) {
+    super.append(stack);
     let text = this.lastValue = <string>this.reference.value();
     let node = this.node = stack.appendText(text);
     this.didInsertContent(new SingleNodeBounds(this.parentNode, node));
@@ -98,6 +100,7 @@ export class HelperMorph extends EmptyableMorph {
   }
 
   append(stack: ElementStack) {
+    super.append(stack);
     let content = <any>this.reference.value();
     let trustingMorph = this.trustingMorph;
 
@@ -111,62 +114,6 @@ export class HelperMorph extends EmptyableMorph {
     this.inner.update();
   }
 }
-
-// export class ValueMorph extends RegionMorph<{ ref: ExpressionSyntax, trustingMorph: boolean }> {
-//   private lastResult: ContentInsertion = null;
-//   private lastValue: any = null;
-//   private lastNode: Text = null;
-//   private reference: Reference;
-//   private InsertionType: ContentInsertionConstructor;
-
-//   init({ ref, trustingMorph }: { ref: ExpressionSyntax, trustingMorph: boolean }) {
-//     this.lastResult = null;
-//     this.reference = ref.evaluate(this.frame);
-//     this.InsertionType = trustingMorph ? HtmlInsertion : TextInsertion;
-//   }
-
-//   append(stack: ElementStack) {
-//     let value = this.reference.value();
-//     let insertion = this.lastResult = stack.initializeMorph(this.InsertionType, { content: this.reference.value() });
-//     insertion.append(stack);
-//   }
-
-//   update() {
-//     let value = this.reference.value();
-//     if (value !== this.lastValue) {
-//       this.lastResult.update();
-//     }
-//   }
-
-//   render() {
-//     let value = this.lastValue = this.reference.value();
-//   }
-// }
-
-
-// export class HelperMorph extends RegionMorph {
-//   private trustingMorph: boolean;
-//   private invocation: HelperInvocationReference;
-
-//   init({ path, args, trustingMorph }: { path: InternedString[], args: EvaluatedParamsAndHash, trustingMorph: boolean }) {
-//     super.init();
-//     let helper = this.frame.lookupHelper(path);
-//     this.invocation = new HelperInvocationReference(helper, args);
-//     this.trustingMorph = trustingMorph;
-//   }
-
-//   append() {
-//     let insertion = insertionForUserContent(this.invocation.value(), this.trustingMorph);
-
-//   }
-
-//   render() {
-//     let { _region, _helper, _trustingMorph } = this;
-//     _region.replace(insertionForUserContent(_helper.value(), _trustingMorph));
-//   }
-// }
-
-// helpers
 
 function insertionForUserContent(content: any, trustingMorph: boolean): ContentInsertionConstructor {
   switch (typeof content) {

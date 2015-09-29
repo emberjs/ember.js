@@ -7,7 +7,7 @@ import {
   PushPullReference,
   ConstReference
 } from 'htmlbars-reference';
-import { ElementStack } from './builder';
+import { ElementStack, ElementBuffer } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
 import { InternedString, Dict, dict, intern } from 'htmlbars-util';
 
@@ -169,7 +169,7 @@ interface StaticStatementSyntax extends PrettyPrintable {
 }
 
 export interface StatementSyntax extends PrettyPrintable {
-  evaluate(stack: ElementStack, frame: Frame): Morph;
+  evaluate(stack: ElementBuffer, frame: Frame): Morph;
   isStatic: boolean;
   type: string;
 }
@@ -517,7 +517,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
 
 type FallbackOptions = { path: InternedString[], hash: Hash, template: Template };
 
-class FallbackMorph extends Morph<FallbackOptions> {
+class FallbackMorph extends Morph {
   tag: string;
   template: Template;
   attrs: AttributeSyntax[];

@@ -5,6 +5,7 @@ import { ElementStack } from '../builder';
 import Template, { Templates } from '../template';
 import { RenderResult } from '../render';
 import { Frame } from '../environment';
+import { ElementBuffer } from '../builder';
 
 export interface MorphListOptions {
   reference: ChainableReference;
@@ -45,6 +46,7 @@ export class MorphList extends EmptyableMorph {
   }
 
   append(stack: ElementStack) {
+    super.append(stack);
     let array: any[] = this.reference.value();
 
     if (array.length === 0) {
@@ -71,12 +73,12 @@ export class MorphList extends EmptyableMorph {
 
     if (array.length === 0) return this.didBecomeEmpty();
 
-    let nextSibling = this.nextSiblingForContent();
+    this.nextSiblingForContent();
 
     let template = this.templates._default;
 
     array.forEach(val => {
-      replay.append({ template, val, nextSibling, frame: this.frame, key: this.keyFor(val) });
+      replay.append({ template, val, frame: this.frame, key: this.keyFor(val) });
     });
 
     replay.commit();
@@ -142,8 +144,9 @@ class InnerBlockMorph extends TemplateMorph {
     this.nextSiblingNode = nextSibling || null;
   }
 
-  append(stack: ElementStack) {
-    this.appendTemplate(this.template);
+  append(stack: ElementBuffer) {
+    super.append(stack);
+    this.appendTemplate(this.template, this.nextSiblingNode);
   }
 
   updateItem(value) {
@@ -204,7 +207,7 @@ class Replay {
     this.list = parent.list;
   }
 
-  append({ template, key, val, nextSibling, frame }: { template: Template, key: InternedString, val: any, frame: Frame, nextSibling: Node }) {
+  append({ template, key, val, frame }: { template: Template, key: InternedString, val: any, frame: Frame }) {
     let { current, map, list, parentNode } = this;
 
     if (current && current.key === key) {
@@ -229,11 +232,13 @@ class Replay {
         childFrame.scope().bindLocal(template.locals[0], val);
       }
 
-      let child = initializeMorph(InnerBlockMorph, { template, prev: null, key }, parentNode, childFrame);
+      let nextSibling = current && current.firstNode();
+      let child = initializeMorph(InnerBlockMorph, { template, prev: null, key, nextSibling }, parentNode, childFrame);
       child.handled = true;
       map[<string>key] = child;
       list.insertBefore(child, current);
-      child.appendTemplate(template, nextSibling);
+      let stack = new ElementBuffer({ morph: child, nextSibling });
+      child.append(stack);
     }
   }
 
