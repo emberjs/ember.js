@@ -163,8 +163,6 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
       let registry = this.__registry__;
       let environment = options.toEnvironment();
 
-      set(this, '_environment', environment);
-
       registry.register('-environment:main', environment, { instantiate: false });
 
       registry.register('renderer:-dom', {
@@ -174,9 +172,9 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
       });
 
       if (options.rootElement) {
-        set(this, 'rootElement', options.rootElement);
+        this.rootElement = options.rootElement;
       } else {
-        set(this, 'rootElement', get(this.application, 'rootElement'));
+        this.rootElement = this.application.rootElement;
       }
 
       if (options.location) {
