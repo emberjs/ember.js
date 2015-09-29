@@ -10,6 +10,7 @@ import {
 import { Frame } from './environment';
 import DOMHelper from './dom';
 import { StatementSyntax } from './template'
+import { InternedString } from 'htmlbars-util';
 
 // Builders are created for each template the first time it is rendered.
 // The builder walks through all statements, static and dynamic, and
@@ -101,13 +102,73 @@ class Last {
   }
 }
 
-export class ElementStack {
+export class ElementBuffer {
+  protected morph: ContentMorph;
+  protected nextSibling: Node;
+  protected dom: DOMHelper;
+  protected element: Element;
+
+  constructor({ morph, nextSibling }: { morph: ContentMorph, nextSibling: Node }) {
+    this.dom = morph.frame.dom();
+    this.element = morph.parentNode;
+    this.morph = morph;
+    this.nextSibling = nextSibling;
+  }
+
+  _appendText(string: string): Text {
+    let { dom } = this;
+    let text = dom.createTextNode(string);
+    dom.insertBefore(this.element, text, this.nextSibling);
+    return text;
+  }
+
+  appendText(string: string): Text {
+    return this._appendText(string);
+  }
+
+  _appendComment(string: string): Comment {
+    let { dom } = this;
+    let comment = dom.createComment(string);
+    dom.insertBefore(this.element, comment, this.nextSibling);
+    return comment;
+  }
+
+  appendComment(string: string): Comment {
+    return this._appendComment(string);
+  }
+
+  _insertHTMLBefore(nextSibling: Node, html: string): Bounds {
+    if (!(this.element instanceof HTMLElement)) {
+      throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.element.tagName}`)
+    }
+
+    return this.dom.insertHTMLBefore(<HTMLElement & Element>this.element, nextSibling, html);
+  }
+
+  insertHTMLBefore(nextSibling: Node, html: string): Bounds {
+    return this._insertHTMLBefore(nextSibling, html);
+  }
+
+  _setAttribute(name: InternedString, value: any) {
+    this.dom.setAttribute(<HTMLElement & Element>this.element, name, value);
+  }
+
+  setAttribute(name: InternedString, value: any) {
+    this._setAttribute(name, value);
+  }
+
+  _setAttributeNS(name: InternedString, value: any, namespace: InternedString) {
+    this.dom.setAttributeNS(this.element, name, value, namespace);
+  }
+
+  setAttributeNS(name: InternedString, value: any, namespace: InternedString) {
+    this._setAttributeNS(name, value, namespace);
+  }
+}
+
+export class ElementStack extends ElementBuffer {
   private builder: Builder;
   private frame: Frame;
-  private dom: DOMHelper;
-  private morph: ContentMorph;
-  private element: Element;
-  private nextSibling: Node;
   private elementStack: Element[];
   private nextSiblingStack: Node[];
   public firstNode: FirstNode;
@@ -115,6 +176,7 @@ export class ElementStack {
   public operations: Operations;
 
   constructor({ builder, frame, morph, nextSibling }: { builder: Builder, frame: Frame, morph: ContentMorph, nextSibling: Node }) {
+    super({ morph, nextSibling });
     this.builder = builder;
     this.frame = frame;
     this.dom = frame.dom();
@@ -188,20 +250,8 @@ export class ElementStack {
     return this.operations.appendText(text);
   }
 
-  _appendText(text): Text {
-    let node = this.dom.createTextNode(text);
-    this.dom.insertBefore(this.element, node, this.nextSibling);
-    return node;
-  }
-
   appendComment(comment): Comment {
     return this.operations.appendComment(comment);
-  }
-
-  _appendComment(comment): Comment {
-    let node = this.dom.createComment(comment);
-    this.dom.insertBefore(this.element, node, this.nextSibling);
-    return node;
   }
 
   openElement(tag): Element {
@@ -225,14 +275,6 @@ export class ElementStack {
 
   insertHTMLBefore(nextSibling: Node, html: string): Bounds {
     return this.operations.insertHTMLBefore(nextSibling, html);
-  }
-
-  _insertHTMLBefore(nextSibling: Node, html: string): Bounds {
-    if (!(this.element instanceof HTMLElement)) {
-      throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.element.tagName}`)
-    }
-
-    return this.dom.insertHTMLBefore(<HTMLElement& Element>this.element, nextSibling, html);
   }
 
   newNode<T extends Node>(node: T): T {

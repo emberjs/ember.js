@@ -1,5 +1,5 @@
 import { Frame } from './environment';
-import { ElementStack } from './builder';
+import { ElementStack, ElementBuffer } from './builder';
 import { Enumerable } from './utils';
 import DOMHelper from './dom';
 import Template from './template';
@@ -101,7 +101,11 @@ export abstract class ContentMorph extends Morph implements Bounds {
 export abstract class EmptyableMorph extends ContentMorph implements Bounds {
   private comment: boolean = false;
   private bounds: Bounds = null;
-  public currentOperations: EmptyableMorphOperations = new Appending(this, this.frame.dom());
+  public currentOperations: EmptyableMorphOperations = null;
+
+  append(stack: ElementBuffer) {
+    this.currentOperations = new Appending(this, this.frame.dom(), stack);
+  }
 
   firstNode() {
     return this.currentOperations.firstNode();
@@ -145,11 +149,19 @@ abstract class EmptyableMorphOperations {
 }
 
 class Appending extends EmptyableMorphOperations {
+  private stack: ElementBuffer;
+
   firstNode() { return null; }
   lastNode() { return null; }
 
+  constructor(parent: EmptyableMorph, dom: DOMHelper, stack: ElementBuffer) {
+    super(parent, dom);
+    this.stack = stack;
+  }
+
   didBecomeEmpty() {
-    this.parent.currentOperations = new Empty(this.parent, this.dom, null);
+    let comment = this.stack.appendComment('');
+    this.parent.currentOperations = new Empty(this.parent, this.dom, comment);
   }
 
   nextSiblingForContent() { return null; }
@@ -162,10 +174,9 @@ class Appending extends EmptyableMorphOperations {
 class Empty extends EmptyableMorphOperations {
   private comment: Comment;
 
-  constructor(parent: EmptyableMorph, dom: DOMHelper, nextSibling: Node=null) {
+  constructor(parent: EmptyableMorph, dom: DOMHelper, comment: Comment) {
     super(parent, dom);
-    let comment = this.comment = dom.createComment('');
-    dom.insertBefore(parent.parentNode, comment, nextSibling);
+    this.comment = comment;
   }
 
   firstNode(): Node {
@@ -206,8 +217,13 @@ class HasContent extends EmptyableMorphOperations {
   }
 
   didBecomeEmpty() {
+    let dom = this.dom;
     let nextSibling = clear(this.bounds);
-    this.parent.currentOperations = new Empty(this.parent, this.dom, nextSibling);
+
+    let comment = dom.createComment('');
+    dom.insertBefore(this.parent.parentNode, comment, nextSibling);
+
+    this.parent.currentOperations = new Empty(this.parent, this.dom, comment);
   }
 
   nextSiblingForContent(): Node {
@@ -215,7 +231,7 @@ class HasContent extends EmptyableMorphOperations {
   }
 
   didInsertContent(bounds: Bounds) {
-    clear(this.bounds);
+    if (this.bounds !== bounds) clear(this.bounds);
     this.bounds = bounds;
   }
 }
