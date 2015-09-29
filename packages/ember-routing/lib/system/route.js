@@ -1214,7 +1214,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     this.setupController(controller, context, transition);
 
     if (isEnabled('ember-application-visit')) {
-      if (!this._environment || this._environment.options.render) {
+      if (!this._environment || this._environment.options.shouldRender) {
         this.renderTemplate(controller, context);
       }
     } else {

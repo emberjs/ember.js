@@ -520,7 +520,7 @@ if (isEnabled('ember-application-visit')) {
     let a = run(function() {
       let dom = makeFakeDom();
 
-      return App.visit('/a', { browser: false, document: dom, rootElement: dom.body }).then(instance => {
+      return App.visit('/a', { isBrowser: false, document: dom, rootElement: dom.body }).then(instance => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
         assert.equal(instance.getURL(), '/a');
@@ -542,7 +542,7 @@ if (isEnabled('ember-application-visit')) {
     let b = run(function() {
       let dom = makeFakeDom();
 
-      return App.visit('/b', { browser: false, document: dom, rootElement: dom.body }).then(instance => {
+      return App.visit('/b', { isBrowser: false, document: dom, rootElement: dom.body }).then(instance => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
         assert.equal(instance.getURL(), '/b');
@@ -781,7 +781,7 @@ if (isEnabled('ember-application-visit')) {
     }
 
     let a = run(function() {
-      return App.visit('/a', { browser: false, render: false }).then((instance) => {
+      return App.visit('/a', { isBrowser: false, shouldRender: false }).then((instance) => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
@@ -798,7 +798,7 @@ if (isEnabled('ember-application-visit')) {
     });
 
     let b = run(function() {
-      return App.visit('/b', { browser: false, render: false }).then((instance) => {
+      return App.visit('/b', { isBrowser: false, shouldRender: false }).then((instance) => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
@@ -815,7 +815,7 @@ if (isEnabled('ember-application-visit')) {
     });
 
     let c = run(function() {
-      return App.visit('/c', { browser: false, render: false }).then((instance) => {
+      return App.visit('/c', { isBrowser: false, shouldRender: false }).then((instance) => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
@@ -832,7 +832,7 @@ if (isEnabled('ember-application-visit')) {
     });
 
     let d = run(function() {
-      return App.visit('/d', { browser: false, render: false }).then((instance) => {
+      return App.visit('/d', { isBrowser: false, shouldRender: false }).then((instance) => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 
@@ -849,7 +849,7 @@ if (isEnabled('ember-application-visit')) {
     });
 
     let e = run(function() {
-      return App.visit('/e', { browser: false, render: false }).then((instance) => {
+      return App.visit('/e', { isBrowser: false, shouldRender: false }).then((instance) => {
         QUnit.start();
         assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
 

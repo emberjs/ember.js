@@ -373,8 +373,7 @@ var Application = Namespace.extend(RegistryProxy, {
     } else {
       // Force-assign these flags to their default values when the feature is
       // disabled, this ensures we can rely on their values in other paths.
-      this.autoboot = true;
-      this._globalsMode = true;
+      this.autoboot = this._globalsMode = true;
     }
 
     if (this._globalsMode) {
@@ -999,8 +998,6 @@ if (isEnabled('ember-application-visit')) {
       MyApp.visit("/", { location: "none", rootElement: "#container" });
       ```
 
-      All options are optional.
-
       ### Supported Scenarios
 
       While the `BootOptions` class exposes a large number of knobs, not all
@@ -1008,9 +1005,9 @@ if (isEnabled('ember-application-visit')) {
       result in unexpected behavior.
 
       For example, booting the instance in the full browser environment
-      while specifying a foriegn `document` object (e.g.
-      `{ browser: true, document: iframe.contentDocument }`) does not work
-      correctly today, largely due to Ember's jQuery dependency.
+      while specifying a foriegn `document` object (e.g. `{ isBrowser: true,
+      document: iframe.contentDocument }`) does not work correctly today,
+      largely due to Ember's jQuery dependency.
 
       Currently, there are three officially supported scenarios/configurations.
       Usages outside of these scenarios are not guaranteed to work, but please
@@ -1059,7 +1056,7 @@ if (isEnabled('ember-application-visit')) {
         let sessionId = MyApp.generateSessionID();
 
         let player1 = App.visit(`/matches/join?name=Player+1&session=${sessionId}`, { rootElement: '#left', location: 'none' });
-        let player2 = App.visit(`/matches/join?name=Player+2&session=${sessionId}`, { rootElement: '#left', location: 'none' });
+        let player2 = App.visit(`/matches/join?name=Player+2&session=${sessionId}`, { rootElement: '#right', location: 'none' });
 
         Promise.all([player1, player2]).then(() => {
           // Both apps have completed the initial render
@@ -1082,7 +1079,7 @@ if (isEnabled('ember-application-visit')) {
       function renderURL(url) {
         let dom = new SimpleDOM.Document();
         let rootElement = dom.body;
-        let options = { browser: false, document: dom, rootElement: rootElement };
+        let options = { isBrowser: false, document: dom, rootElement: rootElement };
 
         return MyApp.visit(options).then(instance => {
           try {
@@ -1104,7 +1101,7 @@ if (isEnabled('ember-application-visit')) {
       specify a DOM `Element` object in the same `document` for the `rootElement` option
       (as opposed to a selector string like `"body"`).
 
-      See the documentation on the `browser`, `document` and `rootElement` properties
+      See the documentation on the `isBrowser`, `document` and `rootElement` properties
       on `Ember.ApplicationInstance.BootOptions` for details.
 
       #### Server-Side Resource Discovery
@@ -1117,6 +1114,11 @@ if (isEnabled('ember-application-visit')) {
       ```app/initializers/network-service.js
       import BrowserNetworkService from 'app/services/network/browser';
       import NodeNetworkService from 'app/services/network/node';
+
+      // Inject a (hypothetical) service for abstracting all AJAX calls and use
+      // the appropiate implementaion on the client/server. This also allows the
+      // server to log all the AJAX calls made during a particular request and use
+      // that for resource-discovery purpose.
 
       export function initialize(application) {
         if (window) { // browser
@@ -1135,6 +1137,10 @@ if (isEnabled('ember-application-visit')) {
       ```
 
       ```app/routes/post.js
+      import Ember from 'ember';
+
+      // An example of how the (hypothetical) service is used in routes.
+
       export default Ember.Route.extend({
         model(params) {
           return this.network.fetch(`/api/posts/${params.post_id}.json`);
@@ -1151,8 +1157,10 @@ if (isEnabled('ember-application-visit')) {
       ```
 
       ```javascript
+      // Finally, put all the pieces together
+
       function discoverResourcesFor(url) {
-        return MyApp.visit(options).then(instance => {
+        return MyApp.visit(url, { isBrowser: false, shouldRender: false }).then(instance => {
           let networkService = instance.lookup('service:network');
           return networkService.requests; // => { "/api/posts/123.json": "..." }
         });

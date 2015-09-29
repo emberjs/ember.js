@@ -167,7 +167,7 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
       registry.register('renderer:-dom', {
         create() {
-          return new Renderer(new DOMHelper(options.document), options.interactive);
+          return new Renderer(new DOMHelper(options.document), options.isInteractive);
         }
       });
 
@@ -184,7 +184,7 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
       this.application.runInstanceInitializers(this);
 
-      if (options.interactive) {
+      if (options.isInteractive) {
         this.setupEventDispatcher();
       }
     } else {
@@ -383,18 +383,18 @@ if (isEnabled('ember-application-visit')) {
       @default auto-detected
       @private
     */
-    this.jQuery = jQuery;
+    this.jQuery = jQuery; // This default is overridable below
 
     /**
       Interactive mode: whether we need to set up event delegation and invoke
       lifecycle callbacks on Components.
 
-      @property interactive
+      @property isInteractive
       @type boolean
       @default auto-detected
       @private
     */
-    this.interactive = environment.hasDOM;
+    this.isInteractive = environment.hasDOM; // This default is overridable below
 
     /**
       Run in a full browser environment.
@@ -415,20 +415,20 @@ if (isEnabled('ember-application-visit')) {
         the location adapter specified in the app's router instead, you can also
         specify `{ location: null }` to specifically opt-out.)
 
-      @property browser
+      @property isBrowser
       @type boolean
       @default auto-detected
       @public
     */
-    if (options.browser !== undefined) {
-      this.browser = !!options.browser;
+    if (options.isBrowser !== undefined) {
+      this.isBrowser = !!options.isBrowser;
     } else {
-      this.browser = environment.hasDOM;
+      this.isBrowser = environment.hasDOM;
     }
 
-    if (!this.browser) {
+    if (!this.isBrowser) {
       this.jQuery = null;
-      this.interactive = false;
+      this.isInteractive = false;
       this.location = 'none';
     }
 
@@ -439,20 +439,20 @@ if (isEnabled('ember-application-visit')) {
       pipeline. Essentially, this puts the app into "routing-only" mode. No
       templates will be rendered, and no Components will be created.
 
-      @property render
+      @property shouldRender
       @type boolean
       @default true
       @public
     */
-    if (options.render !== undefined) {
-      this.render = !!options.render;
+    if (options.shouldRender !== undefined) {
+      this.shouldRender = !!options.shouldRender;
     } else {
-      this.render = true;
+      this.shouldRender = true;
     }
 
-    if (!this.render) {
+    if (!this.shouldRender) {
       this.jQuery = null;
-      this.interactive = false;
+      this.isInteractive = false;
     }
 
     /**
@@ -503,6 +503,10 @@ if (isEnabled('ember-application-visit')) {
       this.rootElement = options.rootElement;
     }
 
+    // Set these options last to give the user a chance to override the
+    // defaults from the "combo" options like `isBrowser` (although in
+    // practice, the resulting combination is probably invalid)
+
     /**
       If present, overrides the router's `location` property with this
       value. This is useful for environments where trying to modify the
@@ -521,8 +525,8 @@ if (isEnabled('ember-application-visit')) {
       this.jQuery = options.jQuery;
     }
 
-    if (options.interactive !== undefined) {
-      this.interactive = !!options.interactive;
+    if (options.isInteractive !== undefined) {
+      this.isInteractive = !!options.isInteractive;
     }
   };
 
