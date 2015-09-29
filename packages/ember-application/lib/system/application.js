@@ -308,7 +308,7 @@ var Application = Namespace.extend(RegistryProxy, {
 
   /**
     Whether the application should be configured for the legacy "globals mode".
-    Under this mode, the Application object serves as a gobal namespace for all
+    Under this mode, the Application object serves as a global namespace for all
     classes.
 
     ```javascript
@@ -329,15 +329,15 @@ var Application = Namespace.extend(RegistryProxy, {
     });
     ```
 
-    This flag also exposes other internal APIs that assumes the existance of
+    This flag also exposes other internal APIs that assumes the existence of
     a special "default instance", like `App.__container__.lookup(...)`.
 
     This option is currently not configurable, its value is derived from
     the `autoboot` flag – disabling `autoboot` also implies opting-out of
-    globals mode support, although they are ultimately orthgonal concerns.
+    globals mode support, although they are ultimately orthogonal concerns.
 
     Most of the global modes features are already deprecated in 1.x. The
-    existance of this flag is to untangle the globals mode code paths from
+    existence of this flag is to untangle the globals mode code paths from
     the autoboot code paths, so that these legacy features can be reviewed
     for removal separately.
 
@@ -435,7 +435,7 @@ var Application = Namespace.extend(RegistryProxy, {
     Build the deprecated instance for legacy globals mode support.
     Called when creating and resetting the application.
 
-    This is orthgonal to autoboot: the deprecated instance needs to
+    This is orthogonal to autoboot: the deprecated instance needs to
     be created at Application construction (not boot) time to expose
     App.__container__ and the global Ember.View.views registry. If
     autoboot sees that this instance exists, it will continue booting
@@ -504,10 +504,11 @@ var Application = Namespace.extend(RegistryProxy, {
     }
     ```
 
-    Unfortunately, because we need to participate in the "synchronous" boot
-    process. While the code above would work fine on the initial boot (i.e.
-    DOM ready), when `App.reset()` is called, we need to boot a new instance
-    synchronously (see the documentation on `_bootSync()` for details).
+    Unfortunately, we cannot actually write this because we need to participate
+    in the "synchronous" boot process. While the code above would work fine on
+    the initial boot (i.e. DOM ready), when `App.reset()` is called, we need to
+    boot a new instance synchronously (see the documentation on `_bootSync()`
+    for details).
 
     Because of this restriction, the actual logic of this method is located
     inside `didBecomeReady()`.
@@ -981,8 +982,9 @@ if (isEnabled('ember-application-visit')) {
       resolves with the instance when the initial routing and rendering is
       complete, or rejects with any error that occured during the boot process.
 
-      When `autoboot` is disabled, calling `visit` would first cause boot the
-      application. See the documentation on the `boot` method for details.
+      When `autoboot` is disabled, calling `visit` would first cause the
+      application to boot. See the documentation on the `boot` method for
+      details.
 
       This method also takes a hash of boot-time configuration options for
       customizing the instance's behavior. See the documentation on
@@ -1011,7 +1013,7 @@ if (isEnabled('ember-application-visit')) {
       correctly today, largely due to Ember's jQuery dependency.
 
       Currently, there are three officially supported scenarios/configurations.
-      Usages outside of these scenarios are not guarenteed to work, but please
+      Usages outside of these scenarios are not guaranteed to work, but please
       feel free to file bug reports documenting your experience and any issues
       you encountered to help expand support.
 

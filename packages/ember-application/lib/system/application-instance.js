@@ -150,7 +150,7 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     We would like new code (like the `visit` API) to stop making this assumption,
     so we created the asynchronous version above that returns a promise. But until
     we have migrated all the code, we would have to expose this method for use
-    *internall* in places where we need to boot an instance synchronously.
+    *internally* in places where we need to boot an instance synchronously.
 
     @private
   */
@@ -374,7 +374,7 @@ if (isEnabled('ember-application-visit')) {
     /**
       Provide a specific instance of jQuery. This is useful in conjunction with
       the `document` option, as it allows you to use a copy of `jQuery` that is
-      appropiately bound to the foriegn `document` (e.g. a jsdom).
+      appropriately bound to the foreign `document` (e.g. a jsdom).
 
       This is highly experimental and support very incomplete at the moment.
 
@@ -403,7 +403,7 @@ if (isEnabled('ember-application-visit')) {
       and interactive features. Specifically:
 
       * It does not use `jQuery` to append the root view; the `rootElement`
-        (either specified as a subsequent option or on the applicatio itself)
+        (either specified as a subsequent option or on the application itself)
         must already be an `Element` in the given `document` (as opposed to a
         string selector).
 
