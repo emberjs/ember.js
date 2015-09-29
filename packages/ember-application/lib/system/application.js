@@ -368,21 +368,25 @@ var Application = Namespace.extend(RegistryProxy, {
     // Start off the number of deferrals at 1. This will be decremented by
     // the Application's own `boot` method.
     this._readinessDeferrals = 1;
+    this._booted = false;
 
     if (isEnabled('ember-application-visit')) {
       this.autoboot = this._globalsMode = !!this.autoboot;
+
+      if (this._globalsMode) {
+        this._prepareForGlobalsMode();
+      }
+
+      if (this.autoboot) {
+        this.waitForDOMReady();
+      }
     } else {
       // Force-assign these flags to their default values when the feature is
       // disabled, this ensures we can rely on their values in other paths.
       this.autoboot = this._globalsMode = true;
-    }
 
-    if (this._globalsMode) {
       this._prepareForGlobalsMode();
-    }
-
-    if (this.autoboot) {
-      this._scheduleAutoBoot();
+      this.waitForDOMReady();
     }
   },
 
@@ -471,13 +475,13 @@ var Application = Namespace.extend(RegistryProxy, {
     has finished loading.
 
     @private
-    @method _scheduleAutoBoot
+    @method waitForDOMReady
   */
-  _scheduleAutoBoot() {
+  waitForDOMReady() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, '_autoBoot');
+      run.schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(run.bind(this, '_autoBoot'));
+      this.$().ready(run.bind(this, 'domReady'));
     }
   },
 
@@ -514,8 +518,9 @@ var Application = Namespace.extend(RegistryProxy, {
     inside `didBecomeReady()`.
 
     @private
+    @method domReady
   */
-  _autoBoot() {
+  domReady() {
     if (this.isDestroyed) {
       return;
     }
@@ -584,10 +589,10 @@ var Application = Namespace.extend(RegistryProxy, {
     readiness until the auth token has been retrieved.
 
     By default, this method is called automatically on "DOM ready"; however, if autoboot
-    is disabled, you would need to call this method yourself. Calling this method before
-    "DOM ready" is not recommended.
+    is disabled, this is automatically called when the first application instance is
+    created via `visit`.
 
-    @public
+    @private
     @method boot
     @return {Promise<Ember.Application,Error>}
   */
@@ -603,11 +608,6 @@ var Application = Namespace.extend(RegistryProxy, {
 
     return this._bootPromise;
   },
-
-  /**
-    @private
-  */
-  _booted: false,
 
   /**
     Unfortunately, a lot of existing code assumes the booting process is
@@ -983,8 +983,7 @@ if (isEnabled('ember-application-visit')) {
       complete, or rejects with any error that occured during the boot process.
 
       When `autoboot` is disabled, calling `visit` would first cause the
-      application to boot. See the documentation on the `boot` method for
-      details.
+      application to boot, which runs the application initializers.
 
       This method also takes a hash of boot-time configuration options for
       customizing the instance's behavior. See the documentation on
