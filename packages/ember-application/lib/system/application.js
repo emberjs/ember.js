@@ -336,10 +336,10 @@ var Application = Namespace.extend(RegistryProxy, {
     the `autoboot` flag – disabling `autoboot` also implies opting-out of
     globals mode support, although they are ultimately orthogonal concerns.
 
-    Most of the global modes features are already deprecated in 1.x. The
+    Some of the global modes features are already deprecated in 1.x. The
     existence of this flag is to untangle the globals mode code paths from
     the autoboot code paths, so that these legacy features can be reviewed
-    for removal separately.
+    for deprecation/removal separately.
 
     Forcing the (autoboot=true, _globalsMode=false) here and running the tests
     would reveal all the places where we are still relying on these legacy
