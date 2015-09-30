@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Route from 'ember-routing/system/route';
 import Controller from 'ember-runtime/controllers/controller';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
@@ -581,7 +582,7 @@ QUnit.test('`fillIn` focuses on the element', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     actions: {
       wasFocused() {
         ok(true, 'focusIn event was triggered');

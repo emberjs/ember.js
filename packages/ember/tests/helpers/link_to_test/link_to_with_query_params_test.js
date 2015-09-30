@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
 import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
@@ -73,7 +74,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           boundThing: 'OMG'
         });
 
-        App.IndexRoute = Ember.Route.extend({
+        App.IndexRoute = Route.extend({
           queryParams: {
             foo: {
               defaultValue: '123'
@@ -87,7 +88,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           }
         });
 
-        App.AboutRoute = Ember.Route.extend({
+        App.AboutRoute = Route.extend({
           queryParams: {
             baz: {
               defaultValue: 'alex'
@@ -234,7 +235,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    App.CarsRoute = Ember.Route.extend({
+    App.CarsRoute = Route.extend({
       queryParams: {
         page: { defaultValue: 1 }
       }
@@ -299,7 +300,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    App.SearchRoute = Ember.Route.extend({
+    App.SearchRoute = Route.extend({
       queryParams: {
         search: {
           defaultValue: ''
@@ -310,7 +311,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.SearchResultsRoute = Ember.Route.extend({
+    App.SearchResultsRoute = Route.extend({
       queryParams: {
         sort: {
           defaultValue: 'title'
@@ -369,7 +370,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.index = compile(
       '{{#link-to (query-params page=pageNumber) id=\'page-link\'}}Index{{/link-to}} ');
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         page: {
           defaultValue: 1
@@ -395,7 +396,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       '{{#link-to (query-params pages=emptyArray) id=\'empty-link\'}}Index{{/link-to}} '
     );
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         pages: {
           defaultValue: []
@@ -441,7 +442,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       '{{outlet}}'
     );
 
-    App.ParentChildRoute = Ember.Route.extend({
+    App.ParentChildRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'bar'
@@ -468,7 +469,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     Ember.TEMPLATES.parent = compile(
       '{{#link-to \'parent\' (query-params page=1) current-when=\'parent\' id=\'parent-link\'}}Parent{{/link-to}} {{outlet}}');
 
-    App.ParentRoute = Ember.Route.extend({
+    App.ParentRoute = Route.extend({
       queryParams: {
         page: {
           defaultValue: 1

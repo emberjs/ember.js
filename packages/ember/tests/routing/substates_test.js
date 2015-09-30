@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
@@ -85,13 +86,13 @@ QUnit.test('Slow promise from a child route of application enters nested loading
     this.route('bro');
   });
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     setupController() {
       step(2, 'ApplicationRoute#setup');
     }
   });
 
-  App.BroRoute = Ember.Route.extend({
+  App.BroRoute = Route.extend({
     model() {
       step(1, 'BroRoute#model');
       return broDeferred.promise;
@@ -126,21 +127,21 @@ QUnit.test('Slow promises waterfall on startup', function() {
   templates['mom/loading'] = 'MOMLOADING';
   templates['mom/sally'] = 'SALLY';
 
-  App.GrandmaRoute = Ember.Route.extend({
+  App.GrandmaRoute = Route.extend({
     model() {
       step(1, 'GrandmaRoute#model');
       return grandmaDeferred.promise;
     }
   });
 
-  App.MomRoute = Ember.Route.extend({
+  App.MomRoute = Route.extend({
     model() {
       step(2, 'Mom#model');
       return {};
     }
   });
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(3, 'SallyRoute#model');
       return sallyDeferred.promise;
@@ -176,7 +177,7 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
   templates['grandma/loading'] = 'GRANDMALOADING';
   templates['grandma/mom'] = 'MOM';
 
-  App.GrandmaMomRoute = Ember.Route.extend({
+  App.GrandmaMomRoute = Route.extend({
     model() {
       return momDeferred.promise;
     }
@@ -199,13 +200,13 @@ QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter Load
 
   var appDeferred = RSVP.defer();
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() {
       return appDeferred.promise;
     }
   });
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
     setupController() {
       ok(false, 'shouldn\'t get here');
     }
@@ -228,7 +229,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
 
   App.ApplicationController = Controller.extend();
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     model() {
       return indexDeferred.promise;
     }
@@ -250,14 +251,14 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 
   var indexDeferred = RSVP.defer();
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     model() {
       step(1, 'IndexRoute#model');
       return indexDeferred.promise;
     }
   });
 
-  App.LoadingRoute = Ember.Route.extend({
+  App.LoadingRoute = Route.extend({
     setupController() {
       step(2, 'LoadingRoute#setupController');
     }
@@ -290,13 +291,13 @@ QUnit.test('Enter child loading state of pivot route', function() {
 
   App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     setupController() {
       step(1, 'SallyRoute#setupController');
     }
   });
 
-  App.GrandmaSmellsRoute = Ember.Route.extend({
+  App.GrandmaSmellsRoute = Route.extend({
     model() {
       return deferred.promise;
     }
@@ -334,7 +335,7 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 
   App.ApplicationController = Controller.extend();
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     actions: {
       loading(transition, route) {
         ok(true, 'loading action received on ApplicationRoute');
@@ -342,13 +343,13 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
     }
   });
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       return sallyDeferred.promise;
     }
   });
 
-  App.GrandmaSmellsRoute = Ember.Route.extend({
+  App.GrandmaSmellsRoute = Route.extend({
     model() {
       return smellsDeferred.promise;
     }
@@ -386,7 +387,7 @@ QUnit.test('Default error event moves into nested route', function() {
 
   App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
@@ -425,19 +426,19 @@ QUnit.test('Setting a query param during a slow transition should work', functio
 
   App.ApplicationController = Controller.extend();
 
-  App.IndexRoute = Ember.Route.extend({
+  App.IndexRoute = Route.extend({
     beforeModel: function() {
       this.transitionTo('grandma', 1);
     }
   });
 
-  App.GrandmaRoute = Ember.Route.extend({
+  App.GrandmaRoute = Route.extend({
     queryParams: {
       test: { defaultValue: 1 }
     }
   });
 
-  App.GrandmaIndexRoute = Ember.Route.extend({
+  App.GrandmaIndexRoute = Route.extend({
     model() {
       return deferred.promise;
     }
@@ -467,14 +468,14 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter Application
 
   var appDeferred = RSVP.defer();
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() {
       return appDeferred.promise;
     }
   });
 
   var loadingRouteEntered = false;
-  App.ApplicationLoadingRoute = Ember.Route.extend({
+  App.ApplicationLoadingRoute = Route.extend({
     setupController() {
       loadingRouteEntered = true;
     }
@@ -494,14 +495,14 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter application
   templates['application_loading'] = 'TOPLEVEL LOADING';
 
   var appDeferred = RSVP.defer();
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() {
       return appDeferred.promise;
     }
   });
 
   var loadingRouteEntered = false;
-  App.ApplicationLoadingRoute = Ember.Route.extend({
+  App.ApplicationLoadingRoute = Route.extend({
     setupController() {
       loadingRouteEntered = true;
     }
@@ -538,7 +539,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
 
   App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
@@ -582,7 +583,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
   App.ApplicationController = Controller.extend();
 
   var deferred = RSVP.defer();
-  App.FooBarRoute = Ember.Route.extend({
+  App.FooBarRoute = Route.extend({
     model() {
       return deferred.promise;
     }
@@ -612,7 +613,7 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
   App.ApplicationController = Controller.extend();
 
   var deferred = RSVP.defer();
-  App.FooBarRoute = Ember.Route.extend({
+  App.FooBarRoute = Route.extend({
     model() {
       return deferred.promise;
     }
@@ -641,7 +642,7 @@ QUnit.test('Prioritized error substate entry works with preserved-namespace nest
 
   App.ApplicationController = Controller.extend();
 
-  App.FooBarRoute = Ember.Route.extend({
+  App.FooBarRoute = Route.extend({
     model() {
       return RSVP.reject({
         msg: 'did it broke?'
@@ -672,12 +673,12 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
   App.ApplicationController = Controller.extend();
 
   var deferred = RSVP.defer();
-  App.FooIndexRoute = Ember.Route.extend({
+  App.FooIndexRoute = Route.extend({
     model() {
       return deferred.promise;
     }
   });
-  App.FooRoute = Ember.Route.extend({
+  App.FooRoute = Route.extend({
     model() {
       return true;
     }
@@ -707,14 +708,14 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
 
   App.ApplicationController = Controller.extend();
 
-  App.FooIndexRoute = Ember.Route.extend({
+  App.FooIndexRoute = Route.extend({
     model() {
       return RSVP.reject({
         msg: 'did it broke?'
       });
     }
   });
-  App.FooRoute = Ember.Route.extend({
+  App.FooRoute = Route.extend({
     model() {
       return true;
     }
@@ -733,7 +734,7 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
   templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
 
   var reject = true;
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     model() {
       if (reject) {
         return RSVP.reject({ msg: 'BAD NEWS BEARS' });

@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
@@ -67,7 +68,7 @@ function sharedSetup() {
 
     Router = App.Router;
 
-    App.LoadingRoute = Ember.Route.extend({
+    App.LoadingRoute = Route.extend({
     });
 
     Ember.TEMPLATES.application = compile('{{outlet}}');
@@ -120,7 +121,7 @@ var testParamlessLinksWithRouteConfig = function(routeName) {
 
     Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
 
-    App[capitalize(routeName) + 'Route'] = Ember.Route.extend({
+    App[capitalize(routeName) + 'Route'] = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'wat'
