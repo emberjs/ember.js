@@ -48,3 +48,45 @@ QUnit.test('controller property should be inherited from nearest ancestor with c
     grandchild.destroy();
   });
 });
+
+QUnit.test('controller changes are passed to descendants', function() {
+  var grandparent = ContainerView.create();
+  var parent = ContainerView.create();
+  var child = ContainerView.create();
+  var grandchild = ContainerView.create();
+
+  run(function() {
+    grandparent.set('controller', {});
+
+    grandparent.pushObject(parent);
+    parent.pushObject(child);
+    child.pushObject(grandchild);
+  });
+
+  var parentCount = 0;
+  var childCount = 0;
+  var grandchildCount = 0;
+
+  parent.addObserver('controller', parent, function() { parentCount++; });
+  child.addObserver('controller', child, function() { childCount++; });
+  grandchild.addObserver('controller', grandchild, function() { grandchildCount++; });
+
+  run(function() { grandparent.set('controller', {}); });
+
+  equal(parentCount, 1);
+  equal(childCount, 1);
+  equal(grandchildCount, 1);
+
+  run(function() { grandparent.set('controller', {}); });
+
+  equal(parentCount, 2);
+  equal(childCount, 2);
+  equal(grandchildCount, 2);
+
+  run(function() {
+    grandparent.destroy();
+    parent.destroy();
+    child.destroy();
+    grandchild.destroy();
+  });
+});
