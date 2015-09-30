@@ -87,11 +87,10 @@ module.exports = function(moduleName) {
   QUnit.module(moduleName, {
     beforeEach: function() {
       var Ember = this.Ember = require(emberPath);
-      var DOMHelper = Ember.HTMLBars.DOMHelper;
+
       Ember.testing = true;
 
       this.compile = require(templateCompilerPath).compile;
-      this.domHelper = createDOMHelper(DOMHelper);
       this.run = Ember.run;
       this.all = Ember.RSVP.all;
 
@@ -104,8 +103,22 @@ module.exports = function(moduleName) {
       this.view = registerView;
       this.routes = registerRoutes;
       this.registry = {};
-      this.renderToElement = renderToElement;
       this.renderToHTML = renderToHTML;
+
+      // TODO: REMOVE ME
+
+      // Patch DOMHelper
+      Ember.HTMLBars.DOMHelper.prototype.zomg = "ZOMG";
+
+      Ember.HTMLBars.DOMHelper.prototype.protocolForURL = function(url) {
+        var protocol = URL.parse(url).protocol;
+        return (protocol == null) ? ':' : protocol;
+      };
+
+      Ember.HTMLBars.DOMHelper.prototype.setMorphHTML = function(morph, html) {
+        var section = this.document.createRawHTMLSection(html);
+        morph.setNode(section);
+      };
     },
 
     afterEach: function() {
@@ -123,6 +136,8 @@ module.exports = function(moduleName) {
 module.exports.canRunTests = canRunTests;
 
 function createApplication() {
+  if (this.app) return this.app;
+
   var app = this.Ember.Application.extend().create({
     autoboot: false
   });
@@ -135,12 +150,11 @@ function createApplication() {
     app.Router.map(this.routesCallback);
   }
 
-  registerDOMHelper(this.Ember, app, this.domHelper);
   registerApplicationClasses(app, this.registry);
 
-  this.run(function() {
-    app.boot();
-  });
+  // Run application initializers
+  this.run(app, 'boot');
+
   this.app = app;
 
   return app;
@@ -151,44 +165,32 @@ function register(containerKey, klass) {
 }
 
 function visit(url) {
-  if (!this.app) { this.createApplication(); }
+  var app = this.createApplication();
+  var dom = new SimpleDOM.Document();
 
-  var promise;
-  this.run(this, function() {
-    promise = this.app.visit(url);
-  });
-
-  return promise;
-}
-
-function registerDOMHelper(Ember, app, domHelper) {
-  app.initializer({
-    name: 'register-dom-helper',
-    initialize: function(app) {
-      app.register('renderer:-dom', {
-        create: function() {
-          return new Ember._Renderer(domHelper, false);
-        }
-      });
-    }
+  return this.run(app, 'visit', url, {
+    isBrowser: false,
+    document: dom,
+    rootElement: dom.body
   });
 }
 
-function createDOMHelper(DOMHelper) {
-  var document = new SimpleDOM.Document();
-  var domHelper = new DOMHelper(document);
+function renderToHTML(url) {
+  var app = this.createApplication();
+  var dom = new SimpleDOM.Document();
+  var root = dom.body;
 
-  domHelper.protocolForURL = function(url) {
-    var protocol = URL.parse(url).protocol;
-    return (protocol == null) ? ':' : protocol;
-  };
+  return this.run(app, 'visit', url, {
+    isBrowser: false,
+    document: dom,
+    rootElement: root
+  }).then(function() {
+    var element = root;
+    var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+    var serialized = serializer.serialize(root);
 
-  domHelper.setMorphHTML = function(morph, html) {
-    var section = this.document.createRawHTMLSection(html);
-    morph.setNode(section);
-  };
-
-  return domHelper;
+    return serialized;
+  });
 }
 
 function registerApplicationClasses(app, registry) {
@@ -223,24 +225,4 @@ function registerView(name, viewProps) {
 
 function registerRoutes(cb) {
   this.routesCallback = cb;
-}
-
-function renderToElement(instance) {
-  var element;
-  this.run(function() {
-    element = instance.view.renderToElement();
-  });
-
-  return element;
-}
-
-function renderToHTML(route) {
-  var self = this;
-  return this.visit(route).then(function(instance) {
-    var element = self.renderToElement(instance);
-    var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    var serialized = serializer.serialize(element);
-
-    return serialized;
-  });
 }

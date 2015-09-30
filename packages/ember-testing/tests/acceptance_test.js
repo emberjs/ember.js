@@ -363,6 +363,16 @@ QUnit.test('test must not finish while asyncHelpers are pending', function () {
   }
 });
 
+QUnit.test('visiting a URL that causes another transition should yield the correct URL', function () {
+  expect(1);
+
+  visit('/redirect');
+
+  andThen(function () {
+    equal(currentURL(), '/comments', 'Redirected to Comments URL');
+  });
+});
+
 QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
   expect(2);
 

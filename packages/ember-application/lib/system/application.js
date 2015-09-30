@@ -307,6 +307,52 @@ var Application = Namespace.extend(RegistryProxy, {
   */
   autoboot: true,
 
+  /**
+    Whether the application should be configured for the legacy "globals mode".
+    Under this mode, the Application object serves as a global namespace for all
+    classes.
+
+    ```javascript
+    var App = Ember.Application.create({
+      ...
+    });
+
+    App.Router.reopen({
+      location: 'none'
+    });
+
+    App.Router.map({
+      ...
+    });
+
+    App.MyComponent = Ember.Component.extend({
+      ...
+    });
+    ```
+
+    This flag also exposes other internal APIs that assumes the existence of
+    a special "default instance", like `App.__container__.lookup(...)`.
+
+    This option is currently not configurable, its value is derived from
+    the `autoboot` flag – disabling `autoboot` also implies opting-out of
+    globals mode support, although they are ultimately orthogonal concerns.
+
+    Some of the global modes features are already deprecated in 1.x. The
+    existence of this flag is to untangle the globals mode code paths from
+    the autoboot code paths, so that these legacy features can be reviewed
+    for deprecation/removal separately.
+
+    Forcing the (autoboot=true, _globalsMode=false) here and running the tests
+    would reveal all the places where we are still relying on these legacy
+    behavior internally (mostly just tests).
+
+    @property _globalsMode
+    @type Boolean
+    @default true
+    @private
+  */
+  _globalsMode: true,
+
   init() {
     this._super(...arguments);
 
@@ -319,23 +365,27 @@ var Application = Namespace.extend(RegistryProxy, {
     registerLibraries();
     logLibraryVersions();
 
-    // Start off the number of deferrals at 1. This will be
-    // decremented by the Application's own `initialize` method.
+    // Start off the number of deferrals at 1. This will be decremented by
+    // the Application's own `boot` method.
     this._readinessDeferrals = 1;
+    this._booted = false;
 
     if (isEnabled('ember-application-visit')) {
+      this.autoboot = this._globalsMode = !!this.autoboot;
+
+      if (this._globalsMode) {
+        this._prepareForGlobalsMode();
+      }
+
       if (this.autoboot) {
-        // Create subclass of Ember.Router for this Application instance.
-        // This is to ensure that someone reopening `App.Router` does not
-        // tamper with the default `Ember.Router`.
-        // 2.0TODO: Can we move this into a globals-mode-only library?
-        this.Router = (this.Router || Router).extend();
-        this.buildDefaultInstance();
         this.waitForDOMReady();
       }
     } else {
-      this.Router = (this.Router || Router).extend();
-      this.buildDefaultInstance();
+      // Force-assign these flags to their default values when the feature is
+      // disabled, this ensures we can rely on their values in other paths.
+      this.autoboot = this._globalsMode = true;
+
+      this._prepareForGlobalsMode();
       this.waitForDOMReady();
     }
   },
@@ -354,46 +404,75 @@ var Application = Namespace.extend(RegistryProxy, {
   },
 
   /**
-    Create a container for the current application's registry.
+    Create an ApplicationInstance for this application.
 
     @private
     @method buildInstance
-    @return {Ember.Container} the configured container
+    @return {Ember.ApplicationInstance} the application instance
   */
-  buildInstance() {
-    return ApplicationInstance.create({
-      application: this
-    });
+  buildInstance(options = {}) {
+    options.application = this;
+    return ApplicationInstance.create(options);
   },
 
-  buildDefaultInstance() {
-    var instance = this.buildInstance();
+  /**
+    Enable the legacy globals mode by allowing this application to act
+    as a global namespace. See the docs on the `_globalsMode` property
+    for details.
+
+    Most of these features are already deprecated in 1.x, so we can
+    stop using them internally and try to remove them.
+
+    @private
+    @method _prepareForGlobalsMode
+  */
+  _prepareForGlobalsMode() {
+    // Create subclass of Ember.Router for this Application instance.
+    // This is to ensure that someone reopening `App.Router` does not
+    // tamper with the default `Ember.Router`.
+    this.Router = (this.Router || Router).extend();
+
+    this._buildDeprecatedInstance();
+  },
+
+  /*
+    Build the deprecated instance for legacy globals mode support.
+    Called when creating and resetting the application.
+
+    This is orthogonal to autoboot: the deprecated instance needs to
+    be created at Application construction (not boot) time to expose
+    App.__container__ and the global Ember.View.views registry. If
+    autoboot sees that this instance exists, it will continue booting
+    it to avoid doing unncessary work (as opposed to building a new
+    instance at boot time), but they are otherwise unrelated.
+
+    @private
+    @method _buildDeprecatedInstance
+  */
+  _buildDeprecatedInstance() {
+    // Build a default instance
+    let instance = this.buildInstance();
+
+    // Legacy support for App.__container__ and other global methods
+    // on App that rely on a single, default instance.
+    this.__deprecatedInstance__ = instance;
+    this.__container__ = instance.__container__;
 
     // For the default instance only, set the view registry to the global
     // Ember.View.views hash for backwards-compatibility.
     EmberView.views = instance.lookup('-view-registry:main');
-
-    // TODO2.0: Legacy support for App.__container__
-    // and global methods on App that rely on a single,
-    // default instance.
-    this.__deprecatedInstance__ = instance;
-    this.__container__ = instance.__container__;
-
-    return instance;
   },
 
   /**
-    Automatically initialize the application once the DOM has
-    become ready.
+    Automatically kick-off the boot process for the application once the
+    DOM has become ready.
 
-    The initialization itself is scheduled on the actions queue
-    which ensures that application loading finishes before
-    booting.
+    The initialization itself is scheduled on the actions queue which
+    ensures that code-loading finishes before booting.
 
-    If you are asynchronously loading code, you should call
-    `deferReadiness()` to defer booting, and then call
-    `advanceReadiness()` once all of your code has finished
-    loading.
+    If you are asynchronously loading code, you should call `deferReadiness()`
+    to defer booting, and then call `advanceReadiness()` once all of your code
+    has finished loading.
 
     @private
     @method waitForDOMReady
@@ -404,6 +483,51 @@ var Application = Namespace.extend(RegistryProxy, {
     } else {
       this.$().ready(run.bind(this, 'domReady'));
     }
+  },
+
+  /**
+    This is the autoboot flow:
+
+    1. Boot the app by calling `this.boot()`
+    2. Create an instance (or use the `__deprecatedInstance__` in globals mode)
+    3. Boot the instance by calling `instance.boot()`
+    4. Invoke the `App.ready()` callback
+    5. Kick-off routing on the instance
+
+    Ideally, this is all we would need to do:
+
+    ```javascript
+    _autoBoot() {
+      this.boot().then(() => {
+        let instance = (this._globalsMode) ? this.__deprecatedInstance__ : this.buildInstance();
+        return instance.boot();
+      }).then((instance) => {
+        App.ready();
+        instance.startRouting();
+      });
+    }
+    ```
+
+    Unfortunately, we cannot actually write this because we need to participate
+    in the "synchronous" boot process. While the code above would work fine on
+    the initial boot (i.e. DOM ready), when `App.reset()` is called, we need to
+    boot a new instance synchronously (see the documentation on `_bootSync()`
+    for details).
+
+    Because of this restriction, the actual logic of this method is located
+    inside `didBecomeReady()`.
+
+    @private
+    @method domReady
+  */
+  domReady() {
+    if (this.isDestroyed) {
+      return;
+    }
+
+    this._bootSync();
+
+    // Continues to `didBecomeReady`
   },
 
   /**
@@ -457,50 +581,69 @@ var Application = Namespace.extend(RegistryProxy, {
   },
 
   /**
-    Calling initialize manually is not supported.
+    Initialize the application and return a promise that resolves with the `Ember.Application`
+    object when the boot process is complete.
 
-    Please see Ember.Application#advanceReadiness and
-    Ember.Application#deferReadiness.
+    Run any application initializers and run the application load hook. These hooks may
+    choose to defer readiness. For example, an authentication hook might want to defer
+    readiness until the auth token has been retrieved.
 
-    @private
-    @deprecated
-    @method initialize
-   **/
-  initialize() {
-    deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
-  },
-
-  /**
-    Initialize the application. This happens automatically.
-
-    Run any initializers and run the application load hook. These hooks may
-    choose to defer readiness. For example, an authentication hook might want
-    to defer readiness until the auth token has been retrieved.
+    By default, this method is called automatically on "DOM ready"; however, if autoboot
+    is disabled, this is automatically called when the first application instance is
+    created via `visit`.
 
     @private
-    @method domReady
+    @method boot
+    @return {Promise<Ember.Application,Error>}
   */
-  domReady() {
-    if (this.isDestroyed) { return; }
-
-    this.boot();
-
-    return this;
-  },
-
   boot() {
     if (this._bootPromise) { return this._bootPromise; }
 
-    var defer = new RSVP.defer();
-    this._bootPromise = defer.promise;
-    this._bootResolver = defer;
-
-    this.runInitializers();
-    runLoadHooks('application', this);
-
-    this.advanceReadiness();
+    try {
+      this._bootSync();
+    } catch(_) {
+      // Ignore th error: in the asynchronous boot path, the error is already reflected
+      // in the promise rejection
+    }
 
     return this._bootPromise;
+  },
+
+  /**
+    Unfortunately, a lot of existing code assumes the booting process is
+    "synchronous". Specifically, a lot of tests assumes the last call to
+    `app.advanceReadiness()` or `app.reset()` will result in the app being
+    fully-booted when the current runloop completes.
+
+    We would like new code (like the `visit` API) to stop making this assumption,
+    so we created the asynchronous version above that returns a promise. But until
+    we have migrated all the code, we would have to expose this method for use
+    *internally* in places where we need to boot an app "synchronously".
+
+    @private
+  */
+  _bootSync() {
+    if (this._booted) { return; }
+
+    // Even though this returns synchronously, we still need to make sure the
+    // boot promise exists for book-keeping purposes: if anything went wrong in
+    // the boot process, we need to store the error as a rejection on the boot
+    // promise so that a future caller of `boot()` can tell what failed.
+    let defer = this._bootResolver = new RSVP.defer();
+    this._bootPromise = defer.promise;
+
+    try {
+      this.runInitializers();
+      runLoadHooks('application', this);
+      this.advanceReadiness();
+      // Continues to `didBecomeReady`
+    } catch(error) {
+      // For the asynchronous boot path
+      defer.reject(error);
+
+      // For the synchronous boot path
+      throw error;
+    }
   },
 
   /**
@@ -571,23 +714,28 @@ var Application = Namespace.extend(RegistryProxy, {
 
     @method reset
     @public
-  **/
+  */
   reset() {
+    assert(`Calling reset() on instances of \`Ember.Application\` is not
+            supported when globals mode is disabled; call \`visit()\` to
+            create new \`Ember.ApplicationInstance\`s and dispose them
+            via their \`destroy()\` method instead.`, this._globalsMode && this.autoboot);
+
     var instance = this.__deprecatedInstance__;
 
     this._readinessDeferrals = 1;
     this._bootPromise = null;
     this._bootResolver = null;
+    this._booted = false;
 
     function handleReset() {
       run(instance, 'destroy');
-
-      run.schedule('actions', this, 'domReady', this.buildDefaultInstance());
+      this._buildDeprecatedInstance();
+      run.schedule('actions', this, '_bootSync');
     }
 
     run.join(this, handleReset);
   },
-
 
   /**
     @private
@@ -646,24 +794,58 @@ var Application = Namespace.extend(RegistryProxy, {
     @method didBecomeReady
   */
   didBecomeReady() {
-    if (this.autoboot) {
-      this.runInstanceInitializers(this.__deprecatedInstance__);
-
-      if (environment.hasDOM) {
-        this.__deprecatedInstance__.setupEventDispatcher();
-      }
-
-      this.ready(); // user hook
-      this.__deprecatedInstance__.startRouting();
-
+    try {
+      // TODO: Is this still needed for _globalsMode = false?
       if (!Ember.testing) {
         // Eagerly name all classes that are already loaded
         Ember.Namespace.processAll();
         Ember.BOOTED = true;
       }
-    }
 
-    this._bootResolver.resolve();
+      if (isEnabled('ember-application-visit')) {
+        // See documentation on `_autoboot()` for details
+        if (this.autoboot) {
+          let instance;
+
+          if (this._globalsMode) {
+            // If we already have the __deprecatedInstance__ lying around, boot it to
+            // avoid unnecessary work
+            instance = this.__deprecatedInstance__;
+          } else {
+            // Otherwise, build an instance and boot it. This is currently unreachable,
+            // because we forced _globalsMode to === autoboot; but having this branch
+            // allows us to locally toggle that flag for weeding out legacy globals mode
+            // dependencies independently
+            instance = this.buildInstance();
+          }
+
+          instance._bootSync();
+
+          // TODO: App.ready() is not called when autoboot is disabled, is this correct?
+          this.ready();
+
+          instance.startRouting();
+        }
+      } else {
+        let instance = this.__deprecatedInstance__;
+
+        instance._bootSync();
+        this.ready();
+        instance.startRouting();
+      }
+
+      // For the asynchronous boot path
+      this._bootResolver.resolve(this);
+
+      // For the synchronous boot path
+      this._booted = true;
+    } catch(error) {
+      // For the asynchronous boot path
+      this._bootResolver.reject(error);
+
+      // For the synchronous boot path
+      throw error;
+    }
   },
 
   /**
@@ -697,6 +879,7 @@ var Application = Namespace.extend(RegistryProxy, {
   willDestroy() {
     this._super(...arguments);
     Ember.BOOTED = false;
+    this._booted = false;
     this._bootPromise = null;
     this._bootResolver = null;
 
@@ -704,7 +887,7 @@ var Application = Namespace.extend(RegistryProxy, {
       _loaded.application = undefined;
     }
 
-    if (this.__deprecatedInstance__) {
+    if (this._globalsMode && this.__deprecatedInstance__) {
       this.__deprecatedInstance__.destroy();
     }
   },
@@ -794,35 +977,207 @@ Application.reopenClass({
 if (isEnabled('ember-application-visit')) {
   Application.reopen({
     /**
-      Creates a new instance of the application and instructs it to route to the
-      specified initial URL. This method returns a promise that will be resolved
-      once rendering is complete. That promise is resolved with the instance.
+      Boot a new instance of `Ember.ApplicationInstance` for the current
+      application and navigate it to the given `url`. Returns a `Promise` that
+      resolves with the instance when the initial routing and rendering is
+      complete, or rejects with any error that occured during the boot process.
 
-      ```js
-      App.visit('/users').then(function(instance) {
-        var view = instance.view;
-        view.appendTo('#qunit-test-fixtures');
+      When `autoboot` is disabled, calling `visit` would first cause the
+      application to boot, which runs the application initializers.
+
+      This method also takes a hash of boot-time configuration options for
+      customizing the instance's behavior. See the documentation on
+      `Ember.ApplicationInstance.BootOptions` for details.
+
+      `Ember.ApplicationInstance.BootOptions` is an interface class that exists
+      purely to document the available options; you do not need to construct it
+      manually. Simply pass a regular JavaScript object containing of the
+      desired options:
+
+      ```javascript
+      MyApp.visit("/", { location: "none", rootElement: "#container" });
+      ```
+
+      ### Supported Scenarios
+
+      While the `BootOptions` class exposes a large number of knobs, not all
+      combinations of them are valid; certain incompatible combinations might
+      result in unexpected behavior.
+
+      For example, booting the instance in the full browser environment
+      while specifying a foriegn `document` object (e.g. `{ isBrowser: true,
+      document: iframe.contentDocument }`) does not work correctly today,
+      largely due to Ember's jQuery dependency.
+
+      Currently, there are three officially supported scenarios/configurations.
+      Usages outside of these scenarios are not guaranteed to work, but please
+      feel free to file bug reports documenting your experience and any issues
+      you encountered to help expand support.
+
+      #### Browser Applications (Manual Boot)
+
+      The setup is largely similar to how Ember works out-of-the-box. Normally,
+      Ember will boot a default instance for your Application on "DOM ready".
+      However, you can customize this behavior by disabling `autoboot`.
+
+      For example, this allows you to render a miniture demo of your application
+      into a specific area on your marketing website:
+
+      ```javascript
+      import MyApp from 'my-app';
+
+      $(function() {
+        let App = MyApp.create({ autoboot: false });
+
+        let options = {
+          // Override the router's location adapter to prevent it from updating
+          // the URL in the address bar
+          location: 'none',
+
+          // Override the default `rootElement` on the app to render into a
+          // specific `div` on the page
+          rootElement: '#demo'
+        };
+
+        // Start the app at the special demo URL
+        App.visit('/demo', options);
       });
-     ```
+      ````
+
+      Or perhaps you might want to boot two instances of your app on the same
+      page for a split-screen multiplayer experience:
+
+      ```javascript
+      import MyApp from 'my-app';
+
+      $(function() {
+        let App = MyApp.create({ autoboot: false });
+
+        let sessionId = MyApp.generateSessionID();
+
+        let player1 = App.visit(`/matches/join?name=Player+1&session=${sessionId}`, { rootElement: '#left', location: 'none' });
+        let player2 = App.visit(`/matches/join?name=Player+2&session=${sessionId}`, { rootElement: '#right', location: 'none' });
+
+        Promise.all([player1, player2]).then(() => {
+          // Both apps have completed the initial render
+          $('#loading').fadeOut();
+        });
+      });
+      ```
+
+      Do note that each app instance maintains their own registry/container, so
+      they will run in complete isolation by default.
+
+      #### Server-Side Rendering (also known as FastBoot)
+
+      This setup allows you to run your Ember app in a server environment using
+      Node.js and render its content into static HTML for SEO purposes.
+
+      ```javascript
+      const HTMLSerializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+
+      function renderURL(url) {
+        let dom = new SimpleDOM.Document();
+        let rootElement = dom.body;
+        let options = { isBrowser: false, document: dom, rootElement: rootElement };
+
+        return MyApp.visit(options).then(instance => {
+          try {
+            return HTMLSerializer.serialize(rootElement.firstChild);
+          } finally {
+            instance.destroy();
+          }
+        });
+      }
+      ```
+
+      In this scenario, because Ember does not have access to a global `document`
+      object in the Node.js environment, you must provide one explicitly. In practice,
+      in the non-browser environment, the stand-in `document` object only need to
+      implement a limited subset of the full DOM API. The `SimpleDOM` library is known
+      to work.
+
+      Since there is no access to jQuery in the non-browser environment, you must also
+      specify a DOM `Element` object in the same `document` for the `rootElement` option
+      (as opposed to a selector string like `"body"`).
+
+      See the documentation on the `isBrowser`, `document` and `rootElement` properties
+      on `Ember.ApplicationInstance.BootOptions` for details.
+
+      #### Server-Side Resource Discovery
+
+      This setup allows you to run the routing layer of your Ember app in a server
+      environment using Node.js and completely disable rendering. This allows you
+      to simulate and discover the resources (i.e. AJAX requests) needed to fufill
+      a given request and eagerly "push" these resources to the client.
+
+      ```app/initializers/network-service.js
+      import BrowserNetworkService from 'app/services/network/browser';
+      import NodeNetworkService from 'app/services/network/node';
+
+      // Inject a (hypothetical) service for abstracting all AJAX calls and use
+      // the appropiate implementaion on the client/server. This also allows the
+      // server to log all the AJAX calls made during a particular request and use
+      // that for resource-discovery purpose.
+
+      export function initialize(application) {
+        if (window) { // browser
+          application.register('service:network', BrowserNetworkService);
+        } else { // node
+          application.register('service:network', NodeNetworkService);
+        }
+
+        application.inject('route', 'network', 'service:network');
+      };
+
+      export default {
+        name: 'network-service',
+        initialize: initialize
+      };
+      ```
+
+      ```app/routes/post.js
+      import Ember from 'ember';
+
+      // An example of how the (hypothetical) service is used in routes.
+
+      export default Ember.Route.extend({
+        model(params) {
+          return this.network.fetch(`/api/posts/${params.post_id}.json`);
+        },
+
+        afterModel(post) {
+          if (post.isExternalContent) {
+            return this.network.fetch(`/api/external/?url=${post.externalURL}`);
+          } else {
+            return post;
+          }
+        }
+      });
+      ```
+
+      ```javascript
+      // Finally, put all the pieces together
+
+      function discoverResourcesFor(url) {
+        return MyApp.visit(url, { isBrowser: false, shouldRender: false }).then(instance => {
+          let networkService = instance.lookup('service:network');
+          return networkService.requests; // => { "/api/posts/123.json": "..." }
+        });
+      }
+      ```
 
       @method visit
+      @param url {String} The initial URL to navigate to
+      @param options {Ember.ApplicationInstance.BootOptions}
+      @return {Promise<Ember.ApplicationInstance, Error>}
       @private
     */
-    visit(url) {
-      var instance = this.buildInstance();
-      this.runInstanceInitializers(instance);
-
-      var renderPromise = new RSVP.Promise(function(res, rej) {
-        instance.didCreateRootView = function(view) {
-          instance.view = view;
-          res(instance);
-        };
-      });
-
-      instance.overrideRouterLocation({ location: 'none' });
-
-      return instance.handleURL(url).then(function() {
-        return renderPromise;
+    visit(url, options) {
+      return this.boot().then(() => {
+        return this.buildInstance().boot(options).then((instance) => {
+          return instance.visit(url);
+        });
       });
     }
   });
@@ -990,6 +1345,12 @@ Application.reopenClass({
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
+
+    if (isEnabled('ember-application-visit')) {
+      registry.register('-environment:main', environment, { instantiate: false });
+      registry.injection('view', '_environment', '-environment:main');
+      registry.injection('route', '_environment', '-environment:main');
+    }
 
     registry.register('application:main', namespace, { instantiate: false });
 

@@ -34,6 +34,42 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
   });
 });
 
+if (isEnabled('ember-application-visit')) {
+  QUnit.test('initializers that thorws causes the boot promise to reject with the error', function() {
+    QUnit.expect(2);
+    QUnit.stop();
+
+    var MyApplication = Application.extend();
+
+    MyApplication.initializer({
+      name: 'initializer',
+      initialize() { throw new Error('boot failure'); }
+    });
+
+    var app = MyApplication.create({
+      autoboot: false
+    });
+
+    try {
+      app.boot().then(
+        (app) => {
+          QUnit.start();
+          ok(false, 'The boot promise should not resolve when there is a boot error');
+        },
+        (err) => {
+          QUnit.start();
+          ok(err instanceof Error, 'The boot promise should reject with an error');
+          equal(err.message, 'boot failure');
+        }
+      );
+    } catch(e) {
+      QUnit.start();
+      ok(false, 'The boot method should not throw');
+      throw e;
+    }
+  });
+}
+
 if (isEnabled('ember-registry-container-reform')) {
   QUnit.test('initializers are passed an App', function() {
     var MyApplication = Application.extend();
