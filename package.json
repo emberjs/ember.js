@@ -2,6 +2,9 @@
   "name": "ember",
   "license": "MIT",
   "version": "2.4.0-canary",
+  "keywords": [
+    "ember-addon"
+  ],
   "scripts": {
     "build": "ember build --environment production",
     "postinstall": "bower install",
@@ -41,5 +44,15 @@
     "serve-static": "^1.10.0",
     "simple-dom": "^0.2.7",
     "testem": "^0.9.5"
+  },
+  "dependencies": {
+    "ember-cli-get-dependency-depth": "^1.0.0",
+    "ember-cli-normalize-entity-name": "^1.0.0",
+    "ember-cli-path-utils": "^1.0.0",
+    "ember-cli-string-utils": "^1.0.0",
+    "ember-cli-test-info": "^1.0.0",
+    "ember-router-generator": "^1.0.0",
+    "inflection": "^1.7.1",
+    "silent-error": "^1.0.0"
   }
 }
