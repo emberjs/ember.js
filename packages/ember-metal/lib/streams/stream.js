@@ -7,6 +7,7 @@ import { isStream } from 'ember-metal/streams/utils';
 import EmptyObject from 'ember-metal/empty_object';
 import Subscriber from 'ember-metal/streams/subscriber';
 import Dependency from 'ember-metal/streams/dependency';
+import { GUID_KEY } from 'ember-metal/utils';
 
 /**
   @module ember-metal
@@ -40,6 +41,8 @@ BasicStream.prototype = {
     this.dependencyHead = null;
     this.dependencyTail = null;
     this.observedProxy = null;
+    this.__ember_meta__ = null;
+    this[GUID_KEY] = null;
   },
 
   _makeChildStream(key) {

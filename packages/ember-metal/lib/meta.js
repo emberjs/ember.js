@@ -333,10 +333,14 @@ export function meta(obj, writable) {
     ret = new Meta(obj, ret);
   }
 
-  if (obj.__defineNonEnumerable) {
-    obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-  } else {
-    Object.defineProperty(obj, '__ember_meta__', META_DESC);
+  // if `null` already, just set it to the new value
+  // otherwise define property first
+  if (obj.__ember_meta__ !== null) {
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      Object.defineProperty(obj, '__ember_meta__', META_DESC);
+    }
   }
   obj.__ember_meta__ = ret;
 
