@@ -1,3 +1,4 @@
+import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -16,13 +17,15 @@ import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import Registry from 'container/registry';
+import ComponentLookup from 'ember-views/component_lookup';
 
 import {
   runAppend,
   runDestroy
 } from 'ember-runtime/tests/utils';
 
-var dispatcher, view, originalViewKeyword;
+var dispatcher, view, originalViewKeyword, registry, container;
 var originalRegisterAction = ActionHelper.registerAction;
 
 QUnit.module('ember-routing-htmlbars: action helper', {
@@ -996,4 +999,75 @@ QUnit.test('should respect preventDefault=false option if provided', function() 
   view.$('a').trigger(event);
 
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+});
+
+QUnit.module('ember-routing-htmlbars: action helper - action target without `controller`', {
+  setup() {
+    registry = new Registry();
+    registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('component', { singleton: false });
+    registry.register('component-lookup:main', ComponentLookup);
+    registry.register('event_dispatcher:main', EventDispatcher);
+
+    container = registry.container();
+
+    dispatcher = container.lookup('event_dispatcher:main');
+    dispatcher.setup();
+
+    this.originalLegacyControllerSupport = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
+    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
+
+    this.originalLegacyViewSupport = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+  },
+
+  teardown() {
+    runDestroy(view);
+    runDestroy(dispatcher);
+    runDestroy(container);
+
+    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = this.originalLegacyControllerSupport;
+    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = this.originalLegacyViewSupport;
+  }
+});
+
+QUnit.test('should target the proper component when `action` is in yielded block [GH #12409]', function(assert) {
+  assert.expect(2);
+
+  registry.register('template:components/x-outer', compile(`
+    {{#x-middle}}
+      {{x-inner action="hey" }}
+    {{/x-middle}}
+  `));
+
+  registry.register('template:components/x-middle', compile('{{yield}}'));
+  registry.register('template:components/x-inner', compile(`
+    <button>Click Me</button>
+    {{yield}}
+  `));
+
+  registry.register('component:x-inner', EmberComponent.extend({
+    click() {
+      assert.ok(true, 'click was triggered');
+      this.sendAction();
+    }
+  }));
+
+  registry.register('component:x-outer', EmberComponent.extend({
+    actions: {
+      hey: function() {
+        assert.ok(true, 'action fired on proper target');
+      }
+    }
+  }));
+
+  view = EmberComponent.create({
+    container,
+    layout: compile('{{x-outer}}')
+  });
+
+  runAppend(view);
+
+  var event = jQuery.Event('click');
+  view.$('button').trigger(event);
 });

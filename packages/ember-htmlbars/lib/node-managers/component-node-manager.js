@@ -62,6 +62,8 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
   // `sendAction` correctly.
   if (parentScope.hasLocal('controller')) {
     createOptions._controller = getValue(parentScope.getLocal('controller'));
+  } else {
+    createOptions._targetObject = getValue(parentScope.getSelf());
   }
 
   extractPositionalParams(renderNode, component, params, attrs);
