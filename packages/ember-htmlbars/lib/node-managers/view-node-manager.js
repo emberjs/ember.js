@@ -27,13 +27,13 @@ function ViewNodeManager(component, scope, renderNode, block, expectElement) {
 export default ViewNodeManager;
 
 ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
-  assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
+  assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', !!(function() {
     if (path) {
       return found.component || found.layout;
     } else {
       return found.component || found.layout || contentTemplate;
     }
-  });
+  }()));
 
   var component;
   var componentInfo = { layout: found.layout };

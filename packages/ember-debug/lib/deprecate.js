@@ -85,9 +85,8 @@ export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you 
 
   @method deprecate
   @param {String} message A description of the deprecation.
-  @param {Boolean|Function} test A boolean. If falsy, the deprecation
-    will be displayed. If this is a function, it will be executed and its return
-    value will be used as condition.
+  @param {Boolean} test A boolean. If falsy, the deprecation
+    will be displayed.
   @param {Object} options An object that can be used to pass
     in a `url` to the transition guide on the emberjs.com website, and a unique
     `id` for this deprecation. The `id` can be used by Ember debugging tools

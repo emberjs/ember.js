@@ -53,8 +53,7 @@ function assertPaths(moduleName, node, paths) {
 
 function assertPath(moduleName, node, path) {
   assert(
-    `Using \`{{${path && path.type === 'PathExpression' && path.parts[0]}}}\` or any path based on it ${calculateLocationDisplay(moduleName, node.loc)}has been removed in Ember 2.0`,
-    function assertPath_test() {
+    `Using \`{{${path && path.type === 'PathExpression' && path.parts[0]}}}\` or any path based on it ${calculateLocationDisplay(moduleName, node.loc)}has been removed in Ember 2.0`, () => {
       let noAssertion = true;
 
       const viewKeyword = path && path.type === 'PathExpression' && path.parts && path.parts[0];
@@ -65,7 +64,7 @@ function assertPath(moduleName, node, path) {
       }
 
       return noAssertion;
-    }, {
+    }(), {
       id: (path.parts && path.parts[0] === 'view' ? 'view.keyword.view' : 'view.keyword.controller'),
       until: '2.0.0'
     }
