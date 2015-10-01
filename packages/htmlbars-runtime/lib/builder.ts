@@ -3,9 +3,8 @@ import {
   ConcreteBounds,
   Morph,
   ContentMorph,
-  ContentMorphSpecializer,
   MorphSpecializer,
-  MorphClass
+  createMorph
 } from './morph';
 import { Frame } from './environment';
 import DOMHelper from './dom';
@@ -41,16 +40,9 @@ export default class Builder {
 
   /// Interaction with ElementStack
 
-  createMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions, parentElement: Element): M {
-    let morph = this.initializeMorph(Type, attrs, parentElement);
+  createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, parentElement: Element): M {
+    let morph = createMorph(Type, parentElement, this.frame, attrs);
     this.morphs.push(morph);
-    return morph;
-  }
-
-  initializeMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions, parentElement: Element): M {
-    let SpecializedType = Type.specialize(attrs);
-    let morph = new SpecializedType(parentElement, this.frame);
-    morph.init(attrs);
     return morph;
   }
 
@@ -222,19 +214,15 @@ export class ElementStack extends ElementBuffer {
     this.builder.render(statement);
   }
 
-  createMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions): M {
+  createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
     return this.builder.createMorph(Type, attrs, this.element);
   }
 
-  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions): M {
+  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
     return this.operations.createContentMorph(Type, attrs);
   }
 
-  initializeMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions): M {
-    return this.builder.initializeMorph(Type, attrs, this.element);
-  }
-
-  appendMorph(Type, attrs) {
+  appendMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions) {
     this.createMorph(Type, attrs).append(this);
   }
 
@@ -295,7 +283,7 @@ interface Operations {
   appendComment(value: string): Comment;
   openElement(tag: string): Element;
   insertHTMLBefore(nextSibling: Node, html: string): Bounds;
-  createContentMorph<M extends ContentMorph>(Type: MorphClass<M>, attrs: Object): M;
+  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M;
   closeElement();
 }
 
@@ -328,18 +316,18 @@ class TopLevelOperations implements Operations {
     return element;
   }
 
-  createContentMorph(Type: MorphClass<ContentMorph>, attrs: Object): ContentMorph {
-    let morph = this.stack.createMorph(Type, attrs);
-    this.stack.newContentMorph(morph);
-    return morph;
-  }
-
   insertHTMLBefore(nextSibling: Node, html: string) {
     let bounds = this.stack._insertHTMLBefore(nextSibling, html);
     let { stack } = this;
     stack.newNode(bounds.firstNode());
     stack.newNode(bounds.lastNode());
     return bounds;
+  }
+
+  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
+    let morph = this.stack.createMorph(Type, attrs);
+    this.stack.newContentMorph(morph);
+    return morph;
   }
 
   closeElement() {
@@ -371,12 +359,12 @@ class NestedOperations implements Operations {
     return this.stack._openElement(tag);
   }
 
-  createContentMorph(Type: MorphClass<ContentMorph>, attrs: Object): ContentMorph {
-    return this.stack.createMorph(Type, attrs);
-  }
-
   insertHTMLBefore(nextSibling: Node, html: string) {
     return this.stack._insertHTMLBefore(nextSibling, html);
+  }
+
+  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
+    return this.stack.createMorph(Type, attrs);
   }
 
   closeElement() {

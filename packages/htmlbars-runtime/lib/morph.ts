@@ -5,38 +5,49 @@ import DOMHelper from './dom';
 import Template from './template';
 import { RenderResult } from './render';
 
-export interface MorphSpecializer<InitOptions> {
-  specialize(options: InitOptions): MorphConstructor<InitOptions>;
+// abstract class MorphConstructor<T extends Morph> {
+//   abstract static specialize(options: Object): MorphConstructor<T>;
+//   abstract new (parentNode: Element, frame: Frame): T;
+//   abstract init(options: Object);
+// }
+
+
+export interface MorphSpecializer<T extends Morph, InitOptions> {
+  specialize(options: InitOptions): MorphConstructor<T, InitOptions>;
 }
 
-export interface ContentMorphSpecializer<InitOptions> {
-  specialize(options: InitOptions): ContentMorphConstructor<InitOptions>;
+export interface MorphConstructor<T extends Morph, InitOptions> {
+  new (parentNode: Element, frame: Frame): T & InitableMorph<InitOptions>;
 }
 
-export interface MorphConstructor<InitOptions> extends MorphSpecializer<InitOptions> {
-  new (parentNode: Element, frame: Frame): Morph;
+interface InitableMorph<InitOptions> {
+  init(options: InitOptions);
 }
+
+// export interface MorphConstructor<T extends Morph> {
+//   specialize(options: Object): MorphConstructor<T>;
+//   new (parentNode: Element, frame: Frame): T;
+// }
 
 export interface MorphClass<M extends Morph> {
   new (parentNode: Element, frame: Frame): M;
   specialize<N extends M>(options: any): MorphClass<N>;
 }
 
-export interface ContentMorphConstructor<InitOptions> extends ContentMorphSpecializer<InitOptions> {
-  new (parentNode: Element, frame: Frame): ContentMorph;
-}
-
 export interface HasParentNode {
   parentNode: Element;
 }
 
-export interface InitableMorph<InitOptions> extends Morph {
-  init(options: InitOptions);
+export function createMorph<T extends Morph, InitOptions>(klass: MorphSpecializer<T, InitOptions>, parentElement: Element, frame: Frame, options: InitOptions): T {
+  let Specialized = klass.specialize(options);
+  let morph = new Specialized(parentElement, frame);
+  morph.init(options);
+  return morph;
 }
 
 export abstract class Morph implements HasParentNode {
-  static specialize<InitOptions>(options: InitOptions): MorphConstructor<InitOptions> {
-    return <MorphConstructor<InitOptions>>this;
+  static specialize<T extends Morph, U>(options: U): MorphConstructor<T, U> {
+    return <any>this;
   }
 
   public parentNode: Element;
@@ -86,10 +97,6 @@ export abstract class Morph implements HasParentNode {
 }
 
 export abstract class ContentMorph extends Morph implements Bounds {
-  static specialize<InitOptions>(options: InitOptions): ContentMorphConstructor<InitOptions> {
-    return <ContentMorphConstructor<InitOptions>>this;
-  }
-
   parentElement() {
     return this.parentNode;
   }
@@ -320,13 +327,6 @@ export class SingleNodeBounds implements Bounds {
   parentElement() { return this.parentNode; }
   firstNode() { return this.node; }
   lastNode() { return this.node; }
-}
-
-export function initializeMorph<M extends Morph, InitOptions>(Type: MorphClass<M>, attrs: InitOptions, parentElement: Element, frame: Frame): M {
-  let SpecializedType = Type.specialize(attrs);
-  let morph = new SpecializedType(parentElement, frame);
-  morph.init(attrs);
-  return <M>morph;
 }
 
 export function clearWithComment(bounds: Bounds, dom: DOMHelper) {

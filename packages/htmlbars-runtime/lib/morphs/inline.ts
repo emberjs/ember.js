@@ -1,5 +1,4 @@
 import { InternedString, symbol } from "htmlbars-util";
-import { RegionMorph } from './region';
 import { ExpressionSyntax, EvaluatedParamsAndHash, Templates } from '../template';
 import { Reference, PushPullReference } from 'htmlbars-reference';
 import { Frame, Helper, Insertion as PrimitiveInsertion } from '../environment';
@@ -10,21 +9,26 @@ import {
   ContentMorph,
   EmptyableMorph,
   SingleNodeBounds,
-  ContentMorphConstructor,
   MorphConstructor,
   MorphClass,
   Bounds,
   bounds,
+  createMorph,
   clear
 } from '../morph';
 
 const SAFE_BRAND = symbol("safe string");
 
 type ContentInitOptions = { content: Reference, trustingMorph: boolean };
-type ContentInsertion = Morph;
-type ContentInsertionConstructor = ContentMorphConstructor<ContentInitOptions>;
 
-class HtmlInsertion extends EmptyableMorph {
+export abstract class InsertionMorph extends EmptyableMorph {
+  static specialize(options): MorphConstructor<HtmlInsertion | TextInsertion, ContentInitOptions> {
+    if (options.trustingMorph) return HtmlInsertion;
+    else return TextInsertion;
+  }
+}
+
+class HtmlInsertion extends InsertionMorph {
   private reference: Reference;
   private lastValue: string = null;
   public parentNode: HTMLElement & Element;
@@ -54,7 +58,7 @@ class HtmlInsertion extends EmptyableMorph {
   }
 }
 
-class TextInsertion extends EmptyableMorph {
+class TextInsertion extends InsertionMorph {
   private reference: Reference;
   private node: Text = null;
   private lastValue: string = null;
@@ -82,16 +86,9 @@ class TextInsertion extends EmptyableMorph {
   }
 }
 
-export const ValueMorph = {
-  specialize(options): MorphClass<HtmlInsertion | TextInsertion> {
-    if (options.trustingMorph) return HtmlInsertion;
-    else return TextInsertion;
-  }
-}
-
 export class HelperMorph extends EmptyableMorph {
   private reference: Reference;
-  private inner: ContentInsertion = null;
+  private inner: InsertionMorph = null;
   private trustingMorph: boolean;
 
   init({ content, trustingMorph }: ContentInitOptions) {
@@ -105,7 +102,7 @@ export class HelperMorph extends EmptyableMorph {
     let trustingMorph = this.trustingMorph;
 
     let insertion = insertionForUserContent(content, trustingMorph);
-    let inner = this.inner = stack.initializeMorph(insertion, { content: this.reference, trustingMorph });
+    let inner = this.inner = createMorph(insertion, this.parentNode, this.frame, { content: this.reference, trustingMorph });
 
     inner.append(stack);
   }
@@ -115,7 +112,7 @@ export class HelperMorph extends EmptyableMorph {
   }
 }
 
-function insertionForUserContent(content: any, trustingMorph: boolean): ContentInsertionConstructor {
+function insertionForUserContent(content: any, trustingMorph: boolean): typeof InsertionMorph {
   switch (typeof content) {
     case 'string':
       return insertionForText(content, trustingMorph);
@@ -128,7 +125,7 @@ function insertionForUserContent(content: any, trustingMorph: boolean): ContentI
   }
 }
 
-function insertionForText(text: string, trustingMorph: boolean): ContentInsertionConstructor {
+function insertionForText(text: string, trustingMorph: boolean): typeof HtmlInsertion | typeof TextInsertion {
   // if (text === '') { return new EmptyInsertion(); }
   return trustingMorph ? HtmlInsertion : TextInsertion;
 }

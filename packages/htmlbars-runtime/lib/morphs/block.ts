@@ -1,6 +1,5 @@
 // import { RegionMorph, EmptyInsertion } from "./region";
 import { Morph, TemplateMorph, HasParentNode, clear } from '../morph';
-import { HelperParamsReference } from "../reference";
 import { ChainableReference, ConstReference } from 'htmlbars-reference';
 import { assert } from "htmlbars-util";
 import Template, { EvaluatedParamsAndHash, Templates } from '../template';

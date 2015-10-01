@@ -1,5 +1,5 @@
 import { InternedString, getAttrNamespace } from "htmlbars-util";
-import { Morph } from "../morph";
+import { Morph, MorphConstructor, MorphSpecializer } from "../morph";
 import { Reference } from 'htmlbars-reference';
 import { ExpressionSyntax } from '../template';
 import { Frame } from '../environment';
@@ -10,10 +10,28 @@ interface AttrMorphOptions {
   namespace?: InternedString;
 }
 
-export abstract class AttrMorph extends Morph {
-  static specialize({ name, value, namespace }: AttrMorphOptions): Morph & typeof AttrMorph {
+class Foo extends Morph implements MorphSpecializer<Foo, AttrMorphOptions> {
+  specialize({ name, value, namespace }: AttrMorphOptions): MorphConstructor<Foo, AttrMorphOptions> {
     namespace = namespace || getAttrNamespace(name);
-    return <any>(namespace ? SetAttributeNSMorph : SetAttributeMorph);
+    return Bar;
+  }
+
+  append() {
+
+  }
+
+  update() {
+
+  }
+
+}
+
+class Bar extends Foo {}
+
+export abstract class AttrMorph extends Morph {
+  static specialize({ name, value, namespace }: AttrMorphOptions): MorphConstructor<AttrMorph, AttrMorphOptions> {
+    namespace = namespace || getAttrNamespace(name);
+    return namespace ? SetAttributeNSMorph : SetAttributeMorph;
   }
 
   protected name: InternedString;
@@ -58,14 +76,10 @@ class SetAttributeMorph extends AttrMorph {
   }
 }
 
-interface SetAttributeNSMorphOptions extends AttrMorphOptions {
-  namespace: InternedString;
-}
-
 class SetAttributeNSMorph extends AttrMorph {
   private namespace: InternedString;
 
-  init(attrs: SetAttributeNSMorphOptions) {
+  init(attrs: AttrMorphOptions) {
     super.init(attrs);
     this.namespace = attrs.namespace;
   }
