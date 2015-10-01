@@ -1340,3 +1340,16 @@ QUnit.test('should have the correct action target', function() {
     EmberView.views['x-inner'].sendAction('dismiss');
   });
 });
+
+QUnit.test('Throw an `Unsupported Content` error when attempting to bind to a function', () => {
+  view = EmberView.extend({
+    someFunction() {},
+    template: compile('{{view.someFunction}}')
+  }).create();
+
+  try {
+    runAppend(view);
+  } catch(error) {
+    equal(error.message, 'Unsupported Content: Cannot bind to function');
+  }
+});
