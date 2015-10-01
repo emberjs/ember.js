@@ -3,6 +3,8 @@
 @submodule ember-templates
 */
 
+import { assert } from 'ember-metal/debug';
+import isNone from 'ember-metal/is_none';
 import { symbol } from 'ember-metal/utils';
 import BasicStream from 'ember-metal/streams/stream';
 import { read } from 'ember-metal/streams/utils';
@@ -27,7 +29,7 @@ let ClosureComponentStream = BasicStream.extend({
     this[COMPONENT_REFERENCE] = true;
   },
   compute() {
-    return createClosureComponentCell(this._env, this._path, this._params, this._hash);
+    return createClosureComponentCell(this._env, this._path, this._params, this._hash, this.label);
   }
 });
 
@@ -46,14 +48,25 @@ export default function closureComponent(env, [path, ...params], hash) {
   return s;
 }
 
-function createClosureComponentCell(env, originalComponentPath, params, hash) {
+function createClosureComponentCell(env, originalComponentPath, params, hash, label) {
   let componentPath = read(originalComponentPath);
+
+  assert(`Component path cannot be null in ${label}`,
+         !isNone(componentPath));
 
   if (isComponentCell(componentPath)) {
     return createNestedClosureComponentCell(componentPath, params, hash);
   } else {
+    assert(`The component helper cannot be used without a valid component name. You used "${componentPath}" via ${label}`,
+          isValidComponentPath(env, componentPath));
     return createNewClosureComponentCell(env, componentPath, params, hash);
   }
+}
+
+function isValidComponentPath(env, path) {
+  const result = lookupComponent(env.container, path);
+
+  return !!(result.component || result.layout);
 }
 
 export function isComponentCell(component) {
