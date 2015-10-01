@@ -378,7 +378,7 @@ function applyMixin(obj, mixins, partial) {
   // * Set up _super wrapping if necessary
   // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
-  mergeMixins(mixins, metaFor(obj), descs, values, obj, keys);
+  mergeMixins(mixins, m, descs, values, obj, keys);
 
   for (var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
