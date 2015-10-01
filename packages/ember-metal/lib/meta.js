@@ -296,9 +296,6 @@ var EMBER_META_PROPERTY = {
   descriptor: META_DESC
 };
 
-// Placeholder for non-writable metas.
-export var EMPTY_META = new Meta(null);
-
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
@@ -317,12 +314,8 @@ export var EMPTY_META = new Meta(null);
     the meta hash, allowing the method to avoid making an unnecessary copy.
   @return {Object} the meta hash for an object
 */
-export function meta(obj, writable) {
+export function meta(obj) {
   var ret = obj.__ember_meta__;
-  if (writable === false) {
-    return ret || EMPTY_META;
-  }
-
   if (ret && ret.source === obj) {
     return ret;
   }

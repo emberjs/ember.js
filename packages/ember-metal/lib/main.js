@@ -30,7 +30,6 @@ import {
   wrap
 } from 'ember-metal/utils';
 import {
-  EMPTY_META,
   META_DESC,
   meta
 } from 'ember-metal/meta';
@@ -210,9 +209,9 @@ Ember.platform        = {
 Ember.Error           = EmberError;
 Ember.guidFor         = guidFor;
 Ember.META_DESC       = META_DESC;
-Ember.EMPTY_META      = EMPTY_META;
 Ember.meta            = meta;
 Ember.inspect         = inspect;
+
 Ember.tryCatchFinally = deprecatedTryCatchFinally;
 Ember.makeArray       = makeArray;
 Ember.canInvoke       = canInvoke;
