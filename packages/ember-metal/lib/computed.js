@@ -1,7 +1,7 @@
 import { assert } from 'ember-metal/debug';
 import { set } from 'ember-metal/property_set';
 import { inspect } from 'ember-metal/utils';
-import { meta as metaFor } from 'ember-metal/meta';
+import { meta as metaFor, readMeta } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import EmberError from 'ember-metal/error';
 import {
@@ -313,7 +313,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   }
 
   // don't create objects just to invalidate
-  let meta = obj.__ember_meta__;
+  let meta = readMeta(obj);
   if (!meta || meta.source !== obj) {
     return;
   }
@@ -620,7 +620,7 @@ export default function computed(func) {
   @public
 */
 function cacheFor(obj, key) {
-  var meta = obj.__ember_meta__;
+  var meta = readMeta(obj);
   var cache = meta && meta.source === obj && meta.readableCache();
   var ret = cache && cache[key];
 

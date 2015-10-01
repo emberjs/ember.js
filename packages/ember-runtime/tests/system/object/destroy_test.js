@@ -9,6 +9,7 @@ import {
 } from 'ember-metal/property_events';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
+import { readMeta } from 'ember-metal/meta';
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 
@@ -18,13 +19,13 @@ testBoth('should schedule objects to be destroyed at the end of the run loop', f
 
   run(function() {
     obj.destroy();
-    meta = obj['__ember_meta__'];
+    meta = readMeta(obj);
     ok(meta, 'meta is not destroyed immediately');
     ok(get(obj, 'isDestroying'), 'object is marked as destroying immediately');
     ok(!get(obj, 'isDestroyed'), 'object is not destroyed immediately');
   });
 
-  meta = obj['__ember_meta__'];
+  meta = readMeta(obj);
   ok(!meta, 'meta is destroyed after run loop finishes');
   ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
 });

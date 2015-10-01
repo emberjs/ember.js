@@ -7,6 +7,7 @@ import {
 } from 'ember-metal/events';
 import ObserverSet from 'ember-metal/observer_set';
 import { symbol } from 'ember-metal/utils';
+import { readMeta } from 'ember-metal/meta';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
@@ -35,7 +36,7 @@ var deferred = 0;
   @private
 */
 function propertyWillChange(obj, keyName) {
-  var m = obj['__ember_meta__'];
+  var m = readMeta(obj);
   var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
   var possibleDesc = obj[keyName];
@@ -75,7 +76,7 @@ function propertyWillChange(obj, keyName) {
   @private
 */
 function propertyDidChange(obj, keyName) {
-  var m = obj['__ember_meta__'];
+  var m = readMeta(obj);
   var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
   var possibleDesc = obj[keyName];

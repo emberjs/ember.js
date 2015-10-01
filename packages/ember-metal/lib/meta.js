@@ -298,7 +298,7 @@ var EMBER_META_PROPERTY = {
 
 // Placeholder for non-writable metas.
 export var EMPTY_META = new Meta(null);
-
+var weakMeta = self.WeakMap && new self.WeakMap();
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
@@ -318,7 +318,8 @@ export var EMPTY_META = new Meta(null);
   @return {Object} the meta hash for an object
 */
 export function meta(obj, writable) {
-  var ret = obj.__ember_meta__;
+  var ret = readMeta(obj);
+
   if (writable === false) {
     return ret || EMPTY_META;
   }
@@ -335,14 +336,33 @@ export function meta(obj, writable) {
 
   // if `null` already, just set it to the new value
   // otherwise define property first
-  if (obj.__ember_meta__ !== null) {
+  if (obj.__ember_meta__ === null) {
+    obj.__ember_meta__ = ret;
+  } else if (weakMeta) {
+    weakMeta.set(obj, ret);
+  } else {
     if (obj.__defineNonEnumerable) {
       obj.__defineNonEnumerable(EMBER_META_PROPERTY);
     } else {
       Object.defineProperty(obj, '__ember_meta__', META_DESC);
     }
+    obj.__ember_meta__ = ret;
   }
-  obj.__ember_meta__ = ret;
+
 
   return ret;
+}
+
+export function readMeta(obj) {
+  if (obj.__ember_meta__) {
+    return obj.__ember_meta__;
+  } else if (weakMeta) {
+    return weakMeta.get(obj);
+  }
+}
+
+
+export function deleteMeta(obj) {
+  if (obj.__ember_meta__) { obj.__ember_meta__ = null; }
+  else if (weakMeta)      { weakMeta.delete(obj); }
 }

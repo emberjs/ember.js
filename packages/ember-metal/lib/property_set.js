@@ -12,6 +12,7 @@ import {
   isPath,
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
+import { readMeta } from 'ember-metal/meta';
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -38,7 +39,7 @@ export function set(obj, keyName, value, tolerant) {
 
   var meta, possibleDesc, desc;
   if (obj) {
-    meta = obj['__ember_meta__'];
+    meta = readMeta(obj);
     possibleDesc = obj[keyName];
     desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
   }

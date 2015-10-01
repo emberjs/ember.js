@@ -17,6 +17,7 @@ import {
 import {
   isPath
 } from 'ember-metal/path_cache';
+import { readMeta, deleteMeta } from 'ember-metal/meta';
 
 /**
   Starts watching a property on an object. Whenever the property changes,
@@ -45,7 +46,7 @@ function watch(obj, _keyPath, m) {
 export { watch };
 
 export function isWatching(obj, key) {
-  var meta = obj['__ember_meta__'];
+  var meta = readMeta(obj);
   return (meta && meta.peekWatching(key)) > 0;
 }
 
@@ -75,11 +76,11 @@ var NODE_STACK = [];
   @private
 */
 export function destroy(obj) {
-  var meta = obj['__ember_meta__'];
+  var meta = readMeta(obj);
   var node, nodes, key, nodeObject;
 
   if (meta) {
-    obj['__ember_meta__'] = null;
+    deleteMeta(obj);
     // remove chainWatchers to remove circular references that would prevent GC
     node = meta.readableChains();
     if (node) {
