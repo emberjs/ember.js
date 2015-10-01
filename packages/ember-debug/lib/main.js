@@ -16,6 +16,7 @@ import _warn, {
   registerHandler as registerWarnHandler
 } from 'ember-debug/warn';
 import isPlainFunction from 'ember-debug/is-plain-function';
+import { generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
 
 /**
 @module ember
@@ -44,15 +45,20 @@ import isPlainFunction from 'ember-debug/is-plain-function';
   @method assert
   @param {String} desc A description of the assertion. This will become
     the text of the Error thrown if the assertion fails.
-  @param {Boolean|Function} test Must be truthy for the assertion to pass. If
-    falsy, an exception will be thrown. If this is a function, it will be executed and
-    its return value will be used as condition.
+  @param {Boolean} test Must be truthy for the assertion to pass. If
+    falsy, an exception will be thrown.
   @public
 */
 setDebugFunction('assert', function assert(desc, test) {
-  var throwAssertion;
+  let throwAssertion;
 
   if (isPlainFunction(test)) {
+    deprecate(
+      generateTestAsFunctionDeprecation('Ember.assert'),
+      false,
+      { id: 'ember-debug.deprecate-test-as-function', until: '2.5.0' }
+    );
+
     throwAssertion = !test();
   } else {
     throwAssertion = !test;
