@@ -22,7 +22,7 @@ import EmptyObject from 'ember-metal/empty_object';
 function EachProxy(content) {
   this._content = content;
   this._keys = undefined;
-  this.__ember_meta__ = undefined;
+  this.__ember_meta__ = null;
 }
 
 EachProxy.prototype = {
