@@ -18,8 +18,7 @@ import assign from 'ember-metal/assign';
 // We only define this separately so that `Ember.Set` can depend on it.
 import { get } from 'ember-metal/property_get';
 import {
-  guidFor,
-  apply
+  guidFor
 } from 'ember-metal/utils';
 import {
   generateGuid,
@@ -61,7 +60,7 @@ function makeCtor() {
   // possible.
 
   var wasApplied = false;
-  var initMixins, initProperties;
+  var initProperties;
 
   var Class = function() {
     if (!wasApplied) {
@@ -76,12 +75,6 @@ function makeCtor() {
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;
-    if (initMixins) {
-      // capture locally so we can clear the closed over variable
-      var mixins = initMixins;
-      initMixins = null;
-      apply(this, this.reopen, mixins);
-    }
     if (initProperties) {
       // capture locally so we can clear the closed over variable
       var props = initProperties;
@@ -208,7 +201,7 @@ function makeCtor() {
 
     wasApplied = false;
   };
-  Class._initMixins = function(args) { initMixins = args; };
+
   Class._initProperties = function(args) { initProperties = args; };
 
   Class.proto = function() {
