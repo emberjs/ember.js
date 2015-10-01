@@ -110,10 +110,6 @@ export abstract class EmptyableMorph extends ContentMorph implements Bounds {
   private bounds: Bounds = null;
   public currentOperations: EmptyableMorphOperations = null;
 
-  append(stack: ElementBuffer) {
-    this.currentOperations = new Appending(this, this.frame.dom(), stack);
-  }
-
   firstNode() {
     return this.currentOperations.firstNode();
   }
@@ -124,6 +120,10 @@ export abstract class EmptyableMorph extends ContentMorph implements Bounds {
 
   nextSibling() {
     return this.lastNode().nextSibling;
+  }
+
+  protected willAppend(stack: ElementBuffer) {
+    this.currentOperations = new Appending(this, this.frame.dom(), stack);
   }
 
   protected didBecomeEmpty() {
@@ -244,7 +244,8 @@ class HasContent extends EmptyableMorphOperations {
 }
 
 export abstract class TemplateMorph extends EmptyableMorph {
-  protected lastResult: RenderResult;
+  protected lastResult: RenderResult = null;
+  protected template: Template = null;
 
   firstNode(): Node {
     if (this.lastResult) return this.lastResult.firstNode();
@@ -257,8 +258,17 @@ export abstract class TemplateMorph extends EmptyableMorph {
   }
 
   appendTemplate(template: Template, nextSibling: Node=null) {
-    let result = this.lastResult = template.evaluate(this, nextSibling);
-    this.didInsertContent(result);
+    if (template.isEmpty) {
+      this.didBecomeEmpty();
+    } else {
+      let result = this.lastResult = template.evaluate(this, nextSibling);
+      this.didInsertContent(result);
+    }
+  }
+
+  append(stack: ElementStack) {
+    this.willAppend(stack);
+    this.appendTemplate(this.template);
   }
 
   updateTemplate(template: Template) {
@@ -276,6 +286,10 @@ export abstract class TemplateMorph extends EmptyableMorph {
       let nextSibling = this.nextSiblingForContent();
       this.appendTemplate(template, nextSibling);
     }
+  }
+
+  update() {
+    this.updateTemplate(this.template);
   }
 
   didBecomeEmpty() {

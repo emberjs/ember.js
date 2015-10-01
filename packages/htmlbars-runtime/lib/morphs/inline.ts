@@ -42,7 +42,7 @@ class HtmlInsertion extends InsertionMorph {
   }
 
   append(stack: ElementStack) {
-    super.append(stack);
+    this.willAppend(stack);
     let html = this.lastValue = <string>this.reference.value();
     this.didInsertContent(stack.insertHTMLBefore(null, html));
   }
@@ -68,7 +68,7 @@ class TextInsertion extends InsertionMorph {
   }
 
   append(stack: ElementStack) {
-    super.append(stack);
+    this.willAppend(stack);
     let text = this.lastValue = <string>this.reference.value();
     let node = this.node = stack.appendText(text);
     this.didInsertContent(new SingleNodeBounds(this.parentNode, node));
@@ -97,7 +97,7 @@ export class HelperMorph extends EmptyableMorph {
   }
 
   append(stack: ElementStack) {
-    super.append(stack);
+    this.willAppend(stack);
     let content = <any>this.reference.value();
     let trustingMorph = this.trustingMorph;
 
