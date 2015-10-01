@@ -1,6 +1,5 @@
 import Builder from './builder';
 import { RenderResult } from './render';
-import { ConcatReference } from './reference';
 import { Frame } from './environment';
 import {
   ChainableReference,
@@ -21,11 +20,11 @@ interface Reference {}
 
 import {
   HelperMorph,
-  ValueMorph,
+  InsertionMorph,
   // SimpleHelperMorph
 } from './morphs/inline';
 
-import { Morph, ContentMorph, HasParentNode } from './morph';
+import { Morph, ContentMorph, TemplateMorph, HasParentNode } from './morph';
 
 import {
   BlockHelperMorph
@@ -225,7 +224,7 @@ export class Block extends DynamicExpression implements StatementSyntax {
     return `Block(${this.path}) { args=${this.args.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
+  evaluate(stack: ElementStack, frame: Frame): BlockHelperMorph {
     let helper = frame.lookupHelper(this.path);
     let args = this.args.evaluate(frame);
     let templates = this.templates;
@@ -262,7 +261,7 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
     return `Unknown(${this.ref.prettyPrint()}) { trust=${this.trustingMorph} }`;
   }
 
-  evaluate(stack: ElementStack, frame: Frame): Morph {
+  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
     let { ref, trustingMorph } = this;
 
     let content;
@@ -274,7 +273,7 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
       content = ref.evaluate(frame);
     }
 
-    return stack.createContentMorph(ValueMorph, { content, trustingMorph });
+    return stack.createContentMorph(InsertionMorph, { content, trustingMorph });
   }
 }
 
@@ -318,7 +317,7 @@ export class Inline extends DynamicExpression implements StatementSyntax {
     let content = new HelperInvocationReference(helper, this.args.evaluate(frame));
     let trustingMorph = this.trustingMorph;
 
-    return stack.createMorph(HelperMorph, { content, trustingMorph });
+    return stack.createContentMorph(HelperMorph, { content, trustingMorph });
   }
 }
 
@@ -415,7 +414,7 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, S
   }
 }
 
-type DynamicAttrSexp = [string, string, ExpressionSexp, string];
+type DynamicAttrSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
 
 export class DynamicAttr extends DynamicExpression implements AttributeSyntax, StatementSyntax {
   type = "dynamic-attr";
@@ -430,15 +429,17 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
     });
   }
 
-  static build(name: string, value: PrettyPrintableExpressionSyntax, namespace: string=null): DynamicAttr {
+  static build(_name: string, value: PrettyPrintableExpressionSyntax, _namespace: string=null): DynamicAttr {
+    let name = intern(_name);
+    let namespace = namespace ? intern(_namespace) : null;
     return new DynamicAttr({ name, value, namespace });
   }
 
-  name: string;
+  name: InternedString;
   value: PrettyPrintableExpressionSyntax;
-  namespace: string;
+  namespace: InternedString;
 
-  constructor(options: { name: string, value: PrettyPrintableExpressionSyntax, namespace: string }) {
+  constructor(options: { name: InternedString, value: PrettyPrintableExpressionSyntax, namespace: InternedString }) {
     super();
     this.name = options.name;
     this.value = options.value;
@@ -455,7 +456,7 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
     }
   }
 
-  evaluate(stack: ElementStack): Morph {
+  evaluate(stack: ElementStack): AttrMorph {
     let { name, value, namespace } = this;
     return stack.createMorph(AttrMorph, { name, value, namespace });
   }
@@ -508,18 +509,19 @@ export class Component extends DynamicExpression implements StatementSyntax {
     if (frame.hasHelper(path)) {
       let helper = frame.lookupHelper(path);
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
-      return stack.createMorph(BlockHelperMorph, { helper, args, templates });
+      return stack.createContentMorph(BlockHelperMorph, { helper, args, templates });
     } else {
-      return stack.createMorph(FallbackMorph, { path, hash, template: templates._default });
+      return stack.createContentMorph(FallbackMorph, { path, hash, template: templates._default });
     }
   }
 }
 
 type FallbackOptions = { path: InternedString[], hash: Hash, template: Template };
 
-class FallbackMorph extends Morph {
+class FallbackMorph extends ContentMorph {
   tag: string;
   template: Template;
+  element: Element;
   attrs: AttributeSyntax[];
 
   init({ path, hash, template }: FallbackOptions) {
@@ -539,10 +541,18 @@ class FallbackMorph extends Morph {
     this.attrs = attrs;
   }
 
+  firstNode() {
+    return this.element;
+  }
+
+  lastNode() {
+    return this.element;
+  }
+
   append(stack: ElementStack) {
     let { tag, attrs, template } = this;
 
-    stack.openElement(tag);
+    this.element = stack.openElement(tag);
     attrs.forEach(attr => stack.appendStatement(attr));
     if (!template.isEmpty) stack.appendMorph(FallbackContents, { template });
     stack.closeElement();
@@ -551,15 +561,16 @@ class FallbackMorph extends Morph {
   update() {}
 }
 
-class FallbackContents extends Morph {
+class FallbackContents extends TemplateMorph {
   private template: Template;
 
   init({ template }) {
     this.template = template;
   }
 
-  append() {
-    this.template.evaluate(this);
+  append(stack: ElementStack) {
+    super.append(stack);
+    this.appendTemplate(this.template);
   }
 
   update() {}
@@ -782,7 +793,8 @@ export class Value extends StaticExpression implements ExpressionSyntax {
   }
 }
 
-type GetSexp = [string, Path];
+type Path = InternedString[];
+type GetSexp = [InternedString, Path];
 
 export class Get extends DynamicExpression implements ExpressionSyntax {
   type = "get";
@@ -849,7 +861,7 @@ class Ref extends DynamicExpression implements ExpressionSyntax {
     return path;
   }
 
-  path(): InterenedString[] {
+  path(): InternedString[] {
     return this.parts;
   }
 
@@ -876,6 +888,7 @@ export class Helper implements ExpressionSyntax {
     return new Helper({ ref: Ref.build(path), args: new ParamsAndHash({ params, hash }) });
   }
 
+  isStatic = false;
   ref: Ref;
   args: ParamsAndHash;
 
@@ -905,6 +918,7 @@ export class Concat implements ExpressionSyntax {
     return new Concat({ parts });
   }
 
+  isStatic = false;
   parts: Params;
 
   constructor(options) {
@@ -913,6 +927,22 @@ export class Concat implements ExpressionSyntax {
 
   evaluate(frame: Frame): ChainableReference {
     return new ConcatReference(this.parts.map(p => p.evaluate(frame)));
+  }
+}
+
+class ConcatReference extends PushPullReference {
+  private parts: ChainableReference[];
+
+  constructor(parts: ChainableReference[]) {
+    super();
+    this.parts = parts;
+    parts.forEach(part => {
+      part.chain(this);
+    })
+  }
+
+  value() {
+    return this.parts.map(p => p.value()).join('');
   }
 }
 

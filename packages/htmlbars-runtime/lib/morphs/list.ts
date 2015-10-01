@@ -1,4 +1,4 @@
-import { EmptyableMorph, TemplateMorph, Morph, Bounds, MorphConstructor, initializeMorph, insertBoundsBefore, clear } from '../morph';
+import { EmptyableMorph, TemplateMorph, Morph, Bounds, MorphConstructor, createMorph, insertBoundsBefore, clear } from '../morph';
 import { ChainableReference, Reference } from 'htmlbars-reference';
 import { InternedString, Dict, LinkedList, dict, intern } from 'htmlbars-util';
 import { ElementStack } from '../builder';
@@ -182,7 +182,7 @@ class Builder {
       scope.bindLocal(template.locals[0], val);
     }
 
-    let morph = initializeMorph(InnerBlockMorph, { template, key }, this.parentElement, childFrame);
+    let morph = createMorph(InnerBlockMorph, this.parentElement, childFrame, { template, key });
     morph.append(this.stack);
     this.map[<string>key] = morph;
 
@@ -233,7 +233,7 @@ class Replay {
       }
 
       let nextSibling = current && current.firstNode();
-      let child = initializeMorph(InnerBlockMorph, { template, prev: null, key, nextSibling }, parentNode, childFrame);
+      let child = createMorph(InnerBlockMorph, parentNode, childFrame, { template, prev: null, key, nextSibling });
       child.handled = true;
       map[<string>key] = child;
       list.insertBefore(child, current);
