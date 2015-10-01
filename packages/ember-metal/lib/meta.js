@@ -42,6 +42,7 @@ let members = {
 };
 
 let memberNames = Object.keys(members);
+const META_FIELD = '__ember_meta__';
 
 function Meta(obj, parentMeta) {
   this._cache = undefined;
@@ -292,8 +293,27 @@ export var META_DESC = {
 };
 
 var EMBER_META_PROPERTY = {
-  name: '__ember_meta__',
+  name: META_FIELD,
   descriptor: META_DESC
+};
+
+// choose the one appropriate for given platform
+let setMeta = function(obj, meta) {
+  // if `null` already, just set it to the new value
+  // otherwise define property first
+  if (obj[META_FIELD] !== null) {
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      Object.defineProperty(obj, META_FIELD, META_DESC);
+    }
+  }
+
+  obj[META_FIELD] = meta;
+};
+
+export let peekMeta = function(obj) {
+  return obj[META_FIELD];
 };
 
 /**
@@ -315,27 +335,22 @@ var EMBER_META_PROPERTY = {
   @return {Object} the meta hash for an object
 */
 export function meta(obj) {
-  var ret = obj.__ember_meta__;
-  if (ret && ret.source === obj) {
-    return ret;
-  }
+  let maybeMeta = peekMeta(obj);
+  let parent;
 
-  if (!ret) {
-    ret = new Meta(obj);
-  } else {
-    ret = new Meta(obj, ret);
-  }
-
-  // if `null` already, just set it to the new value
-  // otherwise define property first
-  if (obj.__ember_meta__ !== null) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      Object.defineProperty(obj, '__ember_meta__', META_DESC);
+  // remove this code, in-favor of explicit parent
+  if (maybeMeta) {
+    if (maybeMeta.source === obj) {
+      return maybeMeta;
     }
+    parent = maybeMeta;
   }
-  obj.__ember_meta__ = ret;
 
-  return ret;
+  let newMeta = new Meta(obj, parent);
+  setMeta(obj, newMeta);
+  return newMeta;
+}
+
+export function peekMeta(obj) {
+  return obj[META_FIELD];
 }
