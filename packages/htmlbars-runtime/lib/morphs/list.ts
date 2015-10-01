@@ -46,12 +46,10 @@ export class MorphList extends EmptyableMorph {
   }
 
   append(stack: ElementStack) {
-    super.append(stack);
+    this.willAppend(stack);
     let array: any[] = this.reference.value();
 
-    if (array.length === 0) {
-      return this.didBecomeEmpty();
-    }
+    if (array.length === 0) return this.didBecomeEmpty();
 
     let nextSibling = this.nextSiblingForContent();
 
@@ -145,7 +143,7 @@ class InnerBlockMorph extends TemplateMorph {
   }
 
   append(stack: ElementBuffer) {
-    super.append(stack);
+    this.willAppend(stack);
     this.appendTemplate(this.template, this.nextSiblingNode);
   }
 
@@ -155,7 +153,7 @@ class InnerBlockMorph extends TemplateMorph {
   }
 
   update() {
-    this.updateTemplate(this.template);
+    super.update();
     this.handled = true;
   }
 }

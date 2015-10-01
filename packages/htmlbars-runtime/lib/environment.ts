@@ -120,6 +120,14 @@ class Scope {
 import DOMHelper from './dom';
 import { EMPTY_ARRAY } from './utils';
 
+export interface ComponentClass {
+  new (attrs: Object): Component;
+}
+
+export interface Component {
+
+}
+
 export abstract class Environment {
   private dom: DOMHelper;
   private meta: MetaLookup;
@@ -149,6 +157,7 @@ export abstract class Environment {
 
   abstract hasHelper(scope: Scope, helperName: string[]): boolean;
   abstract lookupHelper(scope: Scope, helperName: string[]): ConstReference<Helper>;
+  abstract getComponentDefinition(scope: Scope, tagName: string[]): ComponentDefinition;
 }
 
 // TS does not allow us to use computed properties for this, so inlining for now
@@ -170,6 +179,11 @@ export interface Helper {
 
 export function helper(h: Helper): ConstReference<Helper> {
   return new ConstReference(h);
+}
+
+export interface ComponentDefinition {
+  class: ComponentClass;
+  layout: Template;
 }
 
 export class Frame {
@@ -211,5 +225,9 @@ export class Frame {
 
   lookupHelper(helperName: InternedString[]): ConstReference<Helper> {
     return this.env.lookupHelper(this._scope, helperName);
+  }
+
+  getComponentDefinition(tagName: string[]): ComponentDefinition {
+    return this.env.getComponentDefinition(this._scope, tagName);
   }
 }

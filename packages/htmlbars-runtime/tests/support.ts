@@ -6,21 +6,28 @@ import {
   ElementStack,
   Morph,
   ContentMorph,
-  ContentMorphSpecializer,
-  ContentMorphConstructor,
   MorphList,
   MorphListOptions,
+  Template,
   Templates,
   Block,
-  Frame
+  Frame,
+  ComponentClass,
+  Component
 } from "htmlbars-runtime";
 
-import { LITERAL } from 'htmlbars-util';
+import { LITERAL, dict } from 'htmlbars-util';
 
 import { Meta, ConstReference } from "htmlbars-reference";
 
+interface ComponentDefinition {
+  class: ComponentClass;
+  layout: Template
+}
+
 export class TestEnvironment extends Environment {
-  private helpers={};
+  private helpers = {};
+  private components = dict<ComponentDefinition>();
 
   constructor(doc: HTMLDocument=document) {
     super(new DOMHelper(doc), Meta);
@@ -28,6 +35,10 @@ export class TestEnvironment extends Environment {
 
   registerHelper(name, helper) {
     this.helpers[name] = helper;
+  }
+
+  registerComponent(name: string, klass: ComponentClass, layout: Template) {
+    this.components[name] = { class: klass, layout };
   }
 
   statement<Options>(statement: StatementSyntax): StatementSyntax {
@@ -47,6 +58,10 @@ export class TestEnvironment extends Environment {
 
   lookupHelper(scope, helperName) {
     return new ConstReference(this.helpers[helperName[0]]);
+  }
+
+  getComponentDefinition(scope, name: string[]): ComponentDefinition {
+    return this.components[name[0]];
   }
 }
 

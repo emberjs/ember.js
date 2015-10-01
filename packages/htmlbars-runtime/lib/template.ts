@@ -30,6 +30,8 @@ import {
   BlockHelperMorph
 } from "./morphs/block";
 
+import ComponentMorph from './morphs/component';
+
 import { AttrMorph, SetPropertyMorph } from "./morphs/attrs";
 
 type Spec = any[];
@@ -431,7 +433,7 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
 
   static build(_name: string, value: PrettyPrintableExpressionSyntax, _namespace: string=null): DynamicAttr {
     let name = intern(_name);
-    let namespace = namespace ? intern(_namespace) : null;
+    let namespace = _namespace ? intern(_namespace) : null;
     return new DynamicAttr({ name, value, namespace });
   }
 
@@ -506,7 +508,12 @@ export class Component extends DynamicExpression implements StatementSyntax {
 
     let path = ref.path();
 
-    if (frame.hasHelper(path)) {
+    let definition = frame.getComponentDefinition(path);
+
+    if (definition) {
+      let attrs = this.hash.evaluate(frame);
+      return stack.createContentMorph(ComponentMorph, { definition, attrs });
+    } else if (frame.hasHelper(path)) {
       let helper = frame.lookupHelper(path);
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
       return stack.createContentMorph(BlockHelperMorph, { helper, args, templates });
@@ -562,15 +569,8 @@ class FallbackMorph extends ContentMorph {
 }
 
 class FallbackContents extends TemplateMorph {
-  private template: Template;
-
   init({ template }) {
     this.template = template;
-  }
-
-  append(stack: ElementStack) {
-    super.append(stack);
-    this.appendTemplate(this.template);
   }
 
   update() {}
@@ -1174,7 +1174,7 @@ export class Hash implements PrettyPrintableExpressionSyntax {
   }
 }
 
-class EvaluatedHash extends PushPullReference {
+export class EvaluatedHash extends PushPullReference {
   public values: ChainableReference[];
   public keys: InternedString[];
 
