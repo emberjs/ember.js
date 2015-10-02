@@ -312,10 +312,6 @@ let setMeta = function(obj, meta) {
   obj[META_FIELD] = meta;
 };
 
-export let peekMeta = function(obj) {
-  return obj[META_FIELD];
-};
-
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
@@ -353,4 +349,11 @@ export function meta(obj) {
 
 export function peekMeta(obj) {
   return obj[META_FIELD];
+}
+
+export function deleteMeta(obj) {
+  if (typeof obj[META_FIELD] !== 'object') {
+    return;
+  }
+  obj[META_FIELD] = null;
 }
