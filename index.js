@@ -14,8 +14,7 @@ module.exports = {
   treeFor: function(type) {
     // TODO: with the linker/packager work, this will eventually be auto-resolved
     if (type === 'vendor') {
-      return new Funnel(new UnwatchedTree(__dirname), {
-        srcDir: 'dist',
+      return new Funnel(new UnwatchedTree(__dirname + '/dist'), {
         destDir: 'ember',
         files: [
           'ember-runtime.js',
