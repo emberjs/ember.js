@@ -69,7 +69,7 @@ for a detailed explanation.
 
 * `ember-debug-handlers`
 
-  Implemencts RFC https://github.com/emberjs/rfcs/pull/65, adding support for
+  Implements RFC https://github.com/emberjs/rfcs/pull/65, adding support for
   custom deprecation and warning handlers.
 
 * `ember-registry-container-reform`
