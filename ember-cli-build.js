@@ -16,6 +16,8 @@ var filterImports = require('babel-plugin-filter-imports');
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
+var merge = require('broccoli-merge-trees');
+var find = require('broccoli-stew').find;
 
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
@@ -69,5 +71,8 @@ module.exports = function() {
     }
   });
 
-  return emberBuild.getDistTrees();
+  return merge([
+    emberBuild.getDistTrees(),
+    find('shims/{shims.js}')
+  ]);
 };

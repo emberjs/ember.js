@@ -29,7 +29,8 @@ module.exports = {
           'ember.debug.js',
           'ember.js',
           'ember.min.js',
-          'ember.prod.js'
+          'ember.prod.js',
+          'shims/shims.js'
         ]
       });
     }
