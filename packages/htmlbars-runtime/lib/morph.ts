@@ -1,4 +1,4 @@
-import { Frame } from './environment';
+import { Frame, Block } from './environment';
 import { ElementStack, ElementBuffer } from './builder';
 import { Enumerable } from './utils';
 import DOMHelper from './dom';
@@ -295,6 +295,13 @@ export abstract class TemplateMorph extends EmptyableMorph {
   didBecomeEmpty() {
     super.didBecomeEmpty();
     this.lastResult = null;
+  }
+}
+
+export class BlockInvocationMorph extends TemplateMorph {
+  init({ block }: { block: Block }) {
+    this.frame = block.frame;
+    this.template = block.template;
   }
 }
 

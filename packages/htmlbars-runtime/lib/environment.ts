@@ -1,4 +1,5 @@
-import Template, { StatementSyntax } from "./template";
+import Template, { StatementSyntax, Unknown } from "./template";
+import { ElementBuffer, ElementStack } from './builder';
 
 import {
   Reference,
@@ -9,20 +10,26 @@ import {
   MetaLookup
 } from 'htmlbars-reference';
 
-import { InternedString } from 'htmlbars-util';
+import { InternedString, LITERAL } from 'htmlbars-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
 import { Dict, dict } from 'htmlbars-util';
 import { Destroyable } from './utils';
+import { BlockInvocationMorph } from './morph';
 
 function fork(ref: ChainableReference): Reference {
   throw new Error("unimplemented");
 }
 
-export interface Block {
-  template: Template,
-  frame: Frame
+export class Block {
+  template: Template;
+  frame: Frame;
+
+  constructor(template: Template, frame: Frame) {
+    this.template = template;
+    this.frame = frame;
+  }
 }
 
 class Scope {
@@ -152,12 +159,30 @@ export abstract class Environment {
   }
 
   statement(statement: StatementSyntax): StatementSyntax {
+    if (statement.type === 'unknown' && (<Unknown>statement).ref.path()[0] === 'yield') {
+      return new YieldSyntax();
+    }
+
     return statement;
   }
 
   abstract hasHelper(scope: Scope, helperName: string[]): boolean;
   abstract lookupHelper(scope: Scope, helperName: string[]): ConstReference<Helper>;
   abstract getComponentDefinition(scope: Scope, tagName: string[]): ComponentDefinition;
+}
+
+class YieldSyntax implements StatementSyntax {
+  type = "yield";
+  isStatic = false;
+
+  prettyPrint() {
+    return `{{yield}}`;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): BlockInvocationMorph {
+    let block = frame.scope().getBlock(LITERAL('default'));
+    return stack.createBlockMorph(block);
+  }
 }
 
 // TS does not allow us to use computed properties for this, so inlining for now
@@ -209,6 +234,10 @@ export class Frame {
 
   childScope(blockArguments: any[]) {
     return (this._scope = this._scope.child(blockArguments));
+  }
+
+  resetScope(): Scope {
+    return (this._scope = this.env.createRootScope());
   }
 
   scope(): Scope {
