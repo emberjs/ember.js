@@ -1,8 +1,8 @@
 /*jshint node:true*/
 
 var stringUtil         = require('ember-cli-string-utils');
-var validComponentName = require('../../lib/utilities/valid-component-name');
-var getPathOption      = require('../../lib/utilities/get-component-path-option');
+var validComponentName = require('ember-cli-valid-component-name');
+var getPathOption      = require('ember-cli-get-component-path-option');
 var path               = require('path');
 var normalizeEntityName = require('ember-cli-normalize-entity-name');
 

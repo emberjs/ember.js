@@ -3,7 +3,7 @@
 var path          = require('path');
 var testInfo      = require('ember-cli-test-info');
 var stringUtil    = require('ember-cli-string-utils');
-var getPathOption = require('../../lib/utilities/get-component-path-option');
+var getPathOption = require('ember-cli-get-component-path-option');
 
 module.exports = {
   description: 'Generates a component integration or unit test.',

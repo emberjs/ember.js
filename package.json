@@ -46,11 +46,13 @@
     "testem": "^0.9.5"
   },
   "dependencies": {
+    "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-get-dependency-depth": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
     "ember-cli-string-utils": "^1.0.0",
     "ember-cli-test-info": "^1.0.0",
+    "ember-cli-valid-component-name": "^1.0.0",
     "ember-router-generator": "^1.0.0",
     "inflection": "^1.7.1",
     "silent-error": "^1.0.0"
