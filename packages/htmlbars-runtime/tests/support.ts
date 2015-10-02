@@ -49,7 +49,7 @@ export class TestEnvironment extends Environment {
       }
     }
 
-    return statement;
+    return super.statement(statement);
   }
 
   hasHelper(scope, helperName) {

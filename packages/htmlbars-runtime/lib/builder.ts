@@ -4,10 +4,11 @@ import {
   Morph,
   ContentMorph,
   MorphSpecializer,
+  BlockInvocationMorph,
   createMorph
 } from './morph';
-import { Frame } from './environment';
-import DOMHelper from './dom';
+import { Frame, Block } from './environment';
+import DOMHelper, { isWhitespace } from './dom';
 import { StatementSyntax } from './template'
 import { InternedString } from 'htmlbars-util';
 
@@ -20,14 +21,21 @@ export default class Builder {
   private frame: Frame;
   private parentMorph: ContentMorph;
   private stack: ElementStack;
+  private operations: TopLevelOperations;
   private morphs: Morph[];
 
   constructor(morph: ContentMorph, nextSibling: Node) {
     let frame = this.frame = morph.frame;
 
     this.parentMorph = morph;
-    this.stack = new ElementStack({ builder: this, frame, morph, nextSibling });
+    let stack = this.stack = new ElementStack({ builder: this, frame, morph, nextSibling });
+    let operations = this.operations = new TopLevelOperations(null, stack);
+    stack.operations = operations;
     this.morphs = [];
+  }
+
+  chainTopLevelOperations() {
+    let operations = new TopLevelOperations(this.stack.operations, this.stack);
   }
 
   morphList(): Morph[] {
@@ -35,7 +43,11 @@ export default class Builder {
   }
 
   bounds(): Bounds {
-    return this.stack.bounds();
+    return {
+      parentElement: () => this.parentMorph.parentElement(),
+      firstNode: () => this.operations.firstNode(),
+      lastNode: () => this.operations.lastNode()
+    };
   }
 
   /// Interaction with ElementStack
@@ -158,40 +170,41 @@ export class ElementBuffer {
   }
 }
 
+interface ElementStackOptions {
+  builder: Builder;
+  frame: Frame;
+  morph: ContentMorph;
+  nextSibling: Node;
+}
+
+interface ElementStackClass<T extends ElementStack> {
+  new (options: ElementStackOptions): T;
+}
+
 export class ElementStack extends ElementBuffer {
   private builder: Builder;
   private frame: Frame;
   private elementStack: Element[];
   private nextSiblingStack: Node[];
-  public firstNode: FirstNode;
-  public lastNode: Node | Bounds;
-  public operations: Operations;
+  public operations: Operations = null;
 
-  constructor({ builder, frame, morph, nextSibling }: { builder: Builder, frame: Frame, morph: ContentMorph, nextSibling: Node }) {
+  constructor({ builder, frame, morph, nextSibling }: ElementStackOptions) {
     super({ morph, nextSibling });
     this.builder = builder;
     this.frame = frame;
     this.dom = frame.dom();
     this.morph = morph;
-    this.operations = new TopLevelOperations(this);
     this.element = morph.parentNode;
     this.nextSibling = nextSibling;
     this.elementStack = [morph.parentNode];
     this.nextSiblingStack = [nextSibling];
-
-    this.firstNode = null;
-    this.lastNode = null;
   }
 
-  bounds(): Bounds {
-    let lastNode = this.lastNode instanceof Node ?
-      new Last(this.lastNode) : <Bounds>this.lastNode;
-
-    return {
-      firstNode: () => this.firstNode.firstNode(),
-      lastNode: () => lastNode.lastNode(),
-      parentElement: () => this.element
-    };
+  refine<T extends Operations>(operations: T, callback: () => void) {
+    let oldOperations = this.operations;
+    this.operations = operations;
+    callback();
+    this.operations = oldOperations;
   }
 
   _pushElement(element) {
@@ -219,7 +232,14 @@ export class ElementStack extends ElementBuffer {
   }
 
   createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
-    return this.operations.createContentMorph(Type, attrs);
+    this.operations.willCreateContentMorph(Type, attrs);
+    let morph = this.createMorph(Type, attrs);
+    this.operations.didCreateContentMorph(morph);
+    return morph;
+  }
+
+  createBlockMorph(block: Block) {
+    return this.createContentMorph(BlockInvocationMorph, { block });
   }
 
   appendMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions) {
@@ -234,144 +254,247 @@ export class ElementStack extends ElementBuffer {
     this.dom.setAttributeNS(this.element, name, value, namespace);
   }
 
-  appendText(text): Text {
-    return this.operations.appendText(text);
+  appendText(text: string): Text {
+    this.operations.willAppendText(text);
+    let textNode = this.dom.createTextNode(text);
+    this.dom.insertBefore(this.element, textNode, this.nextSibling);
+    this.operations.didAppendText(textNode);
+    return textNode;
   }
 
-  appendComment(comment): Comment {
-    return this.operations.appendComment(comment);
+  appendComment(comment: string): Comment {
+    this.operations.willAppendComment(comment);
+    let commentNode = this.dom.createComment(comment);
+    this.dom.insertBefore(this.element, commentNode, this.nextSibling);
+    this.operations.didAppendComment(commentNode);
+    return commentNode;
   }
 
-  openElement(tag): Element {
-    return this.operations.openElement(tag);
-  }
-
-  _openElement(tag): Element {
+  openElement(tag: string): Element {
+    this.operations.willOpenElement(tag);
     let element = this.dom.createElement(tag, this.element);
     this._pushElement(element);
+    this.operations.didOpenElement(element);
     return element;
   }
 
   closeElement() {
-    this.operations.closeElement();
-  }
-
-  _closeElement() {
+    this.operations.willCloseElement();
     let child = this._popElement();
     this.dom.insertBefore(this.element, child, this.nextSibling);
+    this.operations.didCloseElement();
   }
 
-  insertHTMLBefore(nextSibling: Node, html: string): Bounds {
-    return this.operations.insertHTMLBefore(nextSibling, html);
-  }
-
-  newNode<T extends Node>(node: T): T {
-    if (!this.firstNode) this.firstNode = new First(node);
-    this.lastNode = node;
-    return node;
-  }
-
-  newContentMorph(morph: ContentMorph) {
-    if (!this.firstNode) this.firstNode = morph;
-    this.lastNode = morph;
-    return morph;
+  appendHTML(html: string): Bounds {
+    this.operations.willAppendHTML(html);
+    let bounds = this.dom.insertHTMLBefore(<HTMLElement>this.element, this.nextSibling, html);
+    this.operations.didAppendHTML(bounds);
+    return bounds;
   }
 }
 
 interface Operations {
-  appendText(text: string): Text;
-  appendComment(value: string): Comment;
-  openElement(tag: string): Element;
-  insertHTMLBefore(nextSibling: Node, html: string): Bounds;
-  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M;
-  closeElement();
+  willAppendText(text: string);
+  didAppendText(text: Text);
+  willAppendComment(value: string);
+  didAppendComment(value: Comment);
+  willOpenElement(tag: string);
+  didOpenElement(element: Element);
+  willAppendHTML(html: string);
+  didAppendHTML(bounds: Bounds);
+  willCreateContentMorph<M extends ContentMorph>(Type: MorphSpecializer<M, Object>, attrs: Object);
+  didCreateContentMorph<M extends ContentMorph>(morph: M);
+  willCloseElement();
+  didCloseElement();
 }
 
-class TopLevelOperations implements Operations {
-  private stack: ElementStack;
-  private nested: NestedOperations;
+class DefaultOperations implements Operations {
+  protected stack: ElementStack;
 
-  constructor(stack) {
+  constructor(stack: ElementStack) {
+    this.stack = stack;
+  }
+
+  willAppendText(text: string) {}
+  didAppendText(text: Text) {}
+  willAppendComment(value: string) {}
+  didAppendComment(value: Comment) {}
+  willOpenElement(tag: string) {}
+  didOpenElement(element: Element) {}
+  willAppendHTML(html: string) {}
+  didAppendHTML(bounds: Bounds) {}
+  willCreateContentMorph<M extends ContentMorph>(Type: MorphSpecializer<M, Object>, attrs: Object) {}
+  didCreateContentMorph<M extends ContentMorph>(morph: M) {}
+  willCloseElement() {}
+  didCloseElement() {}
+}
+
+const NULL_OPERATIONS = new DefaultOperations(null);
+
+abstract class DelegatingOperations implements Operations {
+  protected target: Operations;
+
+  constructor(target: Operations) {
+    this.target = target;
+  }
+
+  willAppendText(text: string) {
+    this.target.willAppendText(text);
+  }
+
+  didAppendText(text: Text) {
+    this.target.didAppendText(text);
+  }
+
+  willAppendComment(value: string) {
+    this.target.willAppendComment(value);
+  }
+
+  didAppendComment(value: Comment) {
+    this.target.didAppendComment(value);
+  }
+
+  willOpenElement(tag: string) {
+    this.target.willOpenElement(tag);
+  }
+
+  didOpenElement(element: Element) {
+    this.target.didOpenElement(element);
+  }
+
+  willAppendHTML(html: string) {
+    this.target.willAppendHTML(html);
+  }
+
+  didAppendHTML(bounds: Bounds) {
+    this.target.didAppendHTML(bounds);
+  }
+
+  willCreateContentMorph<M extends ContentMorph>(Type: MorphSpecializer<M, Object>, attrs: Object) {
+    this.target.willCreateContentMorph(Type, attrs);
+  }
+
+  didCreateContentMorph<M extends ContentMorph>(morph: M) {
+    this.target.didCreateContentMorph(morph);
+  }
+
+  willCloseElement() {
+    this.target.willCloseElement();
+  }
+
+  didCloseElement() {
+    this.target.didCloseElement();
+  }
+}
+
+class TopLevelOperations extends DelegatingOperations {
+  private nested: NestedOperations;
+  private stack: ElementStack;
+  public trackedFirstNode: FirstNode;
+  public trackedLastNode: Node | Bounds;
+
+  constructor(target: Operations, stack: ElementStack) {
+    super(target || NULL_OPERATIONS);
     this.stack = stack;
     this.nested = null;
   }
 
-  appendText(text: string): Text {
-    let node = this.stack._appendText(text);
-    return this.stack.newNode(node);
+  firstNode(): Node {
+    return this.trackedFirstNode.firstNode();
   }
 
-  appendComment(value: string): Comment {
-    let node = this.stack._appendComment(value);
-    return this.stack.newNode(node);
+  lastNode(): Node {
+    if (this.trackedLastNode instanceof Node) return <Node>this.trackedLastNode;
+    return (<Bounds>this.trackedLastNode).lastNode();
   }
 
-  openElement(tag: string): Element {
-    let element = this.stack._openElement(tag);
-    this.stack.newNode(element);
-
-    let nestedOperations = this.nested = this.nested || new NestedOperations(this.stack, this);
-    this.stack.operations = nestedOperations;
-
-    return element;
+  newNode<T extends Node>(node: T) {
+    if (!this.trackedFirstNode) this.trackedFirstNode = new First(node);
+    this.trackedLastNode = node;
+    return node;
   }
 
-  insertHTMLBefore(nextSibling: Node, html: string) {
-    let bounds = this.stack._insertHTMLBefore(nextSibling, html);
-    let { stack } = this;
-    stack.newNode(bounds.firstNode());
-    stack.newNode(bounds.lastNode());
-    return bounds;
-  }
-
-  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
-    let morph = this.stack.createMorph(Type, attrs);
-    this.stack.newContentMorph(morph);
+  newContentMorph(morph: ContentMorph) {
+    if (!this.trackedFirstNode) this.trackedFirstNode = morph;
+    this.trackedLastNode = morph;
     return morph;
   }
 
-  closeElement() {
+  didAppendText(text: Text) {
+    super.didAppendText(text);
+    return this.newNode(text);
+  }
+
+  didAppendComment(comment: Comment) {
+    super.didAppendComment(comment);
+    return this.newNode(comment);
+  }
+
+  didOpenElement(element: Element) {
+    super.didOpenElement(element);
+    this.newNode(element);
+
+    let nestedOperations = this.nested = this.nested || new NestedOperations(this.stack);
+    this.stack.operations = nestedOperations;
+  }
+
+  didAppendHTML(bounds: Bounds) {
+    super.didAppendHTML(bounds);
+    this.newNode(bounds.firstNode());
+    this.newNode(bounds.lastNode());
+  }
+
+  didCreateContentMorph<M extends ContentMorph, InitOptions>(morph: ContentMorph) {
+    super.didCreateContentMorph(morph);
+    this.newContentMorph(morph);
+  }
+
+  didCloseElement() {
     throw new Error("BUG: Unbalanced open and close element");
   }
 }
 
-class NestedOperations implements Operations {
+export class ComponentOperations extends DelegatingOperations {
+  public rootElement: Element = null;
+
+  willOpenElement(tag: string) {
+    if (this.rootElement) throw new Error("You cannot create multiple root elements in a component's layout");
+    super.willOpenElement(tag);
+  }
+
+  didOpenElement(element: Element) {
+    this.rootElement = element;
+    super.didOpenElement(element);
+  }
+
+  willAppendText(text: string) {
+    if (!isWhitespace(text)) throw new Error("You cannot have non-whitespace text at the root of a component's layout");
+    super.willAppendText(text);
+  }
+
+  willCreateContentMorph<M extends ContentMorph>(Type: MorphSpecializer<M, Object>, attrs: Object) {
+    throw new Error("You cannot have curlies (`{{}}`) at the root of a component's layout")
+    super.willCreateContentMorph(Type, attrs);
+  }
+}
+
+class NestedOperations extends DefaultOperations {
   private level: number;
-  private stack: ElementStack;
-  private topLevel: TopLevelOperations;
+  private parent: Operations;
 
-  constructor(stack, topLevel) {
+  constructor(stack) {
+    super(stack);
     this.level = 1;
-    this.stack = stack;
-    this.topLevel = topLevel;
+    this.parent = stack.operations;
   }
 
-  appendText(text): Text {
-    return this.stack._appendText(text);
-  }
-
-  appendComment(value): Comment {
-    return this.stack._appendComment(value);
-  }
-
-  openElement(tag): Element {
+  willOpenElement() {
     this.level++;
-    return this.stack._openElement(tag);
   }
 
-  insertHTMLBefore(nextSibling: Node, html: string) {
-    return this.stack._insertHTMLBefore(nextSibling, html);
-  }
-
-  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions): M {
-    return this.stack.createMorph(Type, attrs);
-  }
-
-  closeElement() {
-    this.stack._closeElement();
-
+  didCloseElement() {
     if (this.level === 1) {
-      this.stack.operations = this.topLevel;
+      this.stack.operations = this.parent;
     } else {
       this.level--;
     }

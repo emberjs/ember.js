@@ -118,7 +118,7 @@ export default class Template {
     });
   }
 
-  evaluate(morph: ContentMorph, nextSibling: Node=null): RenderResult {
+  evaluate(morph: ContentMorph, builder: Builder, nextSibling: Node=null): RenderResult {
     let builder = new Builder(morph, nextSibling);
 
     this.statements.forEach(statement => builder.render(statement));
@@ -512,7 +512,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
 
     if (definition) {
       let attrs = this.hash.evaluate(frame);
-      return stack.createContentMorph(ComponentMorph, { definition, attrs });
+      return stack.createContentMorph(ComponentMorph, { definition, attrs, template: templates._default });
     } else if (frame.hasHelper(path)) {
       let helper = frame.lookupHelper(path);
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
@@ -572,8 +572,6 @@ class FallbackContents extends TemplateMorph {
   init({ template }) {
     this.template = template;
   }
-
-  update() {}
 }
 
 type TextSexp = [string, string];
