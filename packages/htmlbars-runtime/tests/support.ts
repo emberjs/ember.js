@@ -86,6 +86,6 @@ class EachSyntax implements StatementSyntax {
   evaluate(stack: ElementStack, frame: Frame): ContentMorph {
     let list = this.args.params.evaluate(frame).nth(0);
     let key = this.args.hash.evaluate(frame).at(LITERAL('key'));
-    return stack.createContentMorph(MorphList, { key, reference: list, templates: this.templates })
+    return stack.createContentMorph(MorphList, { key, reference: list, templates: this.templates }, frame);
   }
 }

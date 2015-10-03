@@ -5,7 +5,6 @@ import { ElementStack } from '../builder';
 import Template, { Templates } from '../template';
 import { RenderResult } from '../render';
 import { Frame } from '../environment';
-import { ElementBuffer } from '../builder';
 
 export interface MorphListOptions {
   reference: ChainableReference;
@@ -142,9 +141,9 @@ class InnerBlockMorph extends TemplateMorph {
     this.nextSiblingNode = nextSibling || null;
   }
 
-  append(stack: ElementBuffer) {
+  append(stack: ElementStack) {
     this.willAppend(stack);
-    this.appendTemplate(this.template, this.nextSiblingNode);
+    this.appendTemplate(this.template, stack);
   }
 
   updateItem(value) {
@@ -235,7 +234,7 @@ class Replay {
       child.handled = true;
       map[<string>key] = child;
       list.insertBefore(child, current);
-      let stack = new ElementBuffer({ morph: child, nextSibling });
+      let stack = new ElementStack({ parentNode, nextSibling, dom: this.parent.frame.dom() });
       child.append(stack);
     }
   }

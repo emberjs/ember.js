@@ -30,7 +30,7 @@ export class BlockHelperMorph extends TemplateMorph {
     let helper = this.helper.value();
     let { params, hash } = this.args.value();
     let { _default, _inverse } = this.templates;
-    let group = this.group = new Group(this, _default, _inverse);
+    let group = this.group = new Group(this, stack, _default, _inverse);
     helper(params, hash, group);
 
     group.commitAppend(stack);
@@ -48,12 +48,14 @@ export class BlockHelperMorph extends TemplateMorph {
 class Group {
   public template: YieldableTemplate;
   public inverse: YieldableTemplate;
+  private stack: ElementStack;
   private comment: Comment = null;
   private morph: BlockHelperMorph;
 
-  constructor(morph: BlockHelperMorph, template: Template, inverse: Template) {
+  constructor(morph: BlockHelperMorph, stack: ElementStack, template: Template, inverse: Template) {
     this.template = new YieldableTemplate(template, morph, this);
     this.inverse = new YieldableTemplate(inverse, morph, this);
+    this.stack = stack;
     this.morph = morph;
   }
 
@@ -75,7 +77,7 @@ class Group {
   }
 
   appendTemplate(template: Template) {
-    this.morph.appendTemplate(template);
+    this.morph.appendTemplate(template, this.stack);
   }
 
   updateTemplate(template: Template) {
