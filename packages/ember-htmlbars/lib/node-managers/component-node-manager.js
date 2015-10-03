@@ -118,7 +118,7 @@ function processNamedPositionalParameters(renderNode, positionalParams, params, 
   for (let i = 0; i < positionalParams.length; i++) {
     let param = params[paramsStartIndex + i];
 
-    assert(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${positionalParams[i]}\`.`,
+    Ember.assert(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${positionalParams[i]}\`.`,
            !(positionalParams[i] in attrs));
 
     attrs[positionalParams[i]] = param;
@@ -127,7 +127,7 @@ function processNamedPositionalParameters(renderNode, positionalParams, params, 
 
 function processRestPositionalParameters(renderNode, positionalParamsName, params, attrs) {
   // If there is already an attribute for that variable, do nothing
-  assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsName}\`.`,
+  Ember.assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsName}\`.`,
          !(positionalParamsName in attrs));
 
   const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
