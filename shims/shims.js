@@ -222,5 +222,9 @@
     defineModule(moduleName, shims[moduleName]);
   }
 
+  if (Ember.Test) {
+    defineModule('ember-test', { 'default': Ember.Test });
+  }
+
   generateModule('jquery', { 'default': self.jQuery });
 })();
