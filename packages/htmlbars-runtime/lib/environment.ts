@@ -1,5 +1,5 @@
 import Template, { StatementSyntax, Unknown } from "./template";
-import { ElementBuffer, ElementStack } from './builder';
+import { ElementStack } from './builder';
 
 import {
   Reference,
@@ -32,7 +32,7 @@ export class Block {
   }
 }
 
-class Scope {
+export class Scope {
   private parent: Scope;
   private self: RootReference = undefined;
   private locals: Dict<RootReference> = null;
@@ -181,7 +181,7 @@ class YieldSyntax implements StatementSyntax {
 
   evaluate(stack: ElementStack, frame: Frame): BlockInvocationMorph {
     let block = frame.scope().getBlock(LITERAL('default'));
-    return stack.createBlockMorph(block);
+    return stack.createBlockMorph(block, frame);
   }
 }
 

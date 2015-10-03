@@ -1,4 +1,4 @@
-import Builder from './builder';
+import { Operations, TopLevelOperations, renderStatement, wrap } from './builder';
 import { RenderResult } from './render';
 import { Frame } from './environment';
 import {
@@ -6,7 +6,7 @@ import {
   PushPullReference,
   ConstReference
 } from 'htmlbars-reference';
-import { ElementStack, ElementBuffer } from './builder';
+import { ElementStack } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
 import { InternedString, Dict, dict, intern } from 'htmlbars-util';
 
@@ -24,7 +24,7 @@ import {
   // SimpleHelperMorph
 } from './morphs/inline';
 
-import { Morph, ContentMorph, TemplateMorph, HasParentNode } from './morph';
+import { Morph, ContentMorph, TemplateMorph, SimpleTemplateMorph, HasParentNode } from './morph';
 
 import {
   BlockHelperMorph
@@ -51,6 +51,11 @@ interface TemplateOptions {
 interface RenderOptions {
   hostOptions?: Object,
   appendTo: Element
+}
+
+interface EvaluateOptions {
+  nextSibling?: Node,
+  operations?: Operations
 }
 
 export default class Template {
@@ -118,15 +123,22 @@ export default class Template {
     });
   }
 
-  evaluate(morph: ContentMorph, builder: Builder, nextSibling: Node=null): RenderResult {
-    let builder = new Builder(morph, nextSibling);
+  evaluate(morph: ContentMorph, nextSibling=null): RenderResult {
+    let stack = new ElementStack({ parentNode: morph.parentNode, nextSibling, dom: morph.frame.dom() });
+    return this.evaluateWithStack(morph, stack);
+  }
 
-    this.statements.forEach(statement => builder.render(statement));
+  evaluateWithStack(morph: ContentMorph, stack: ElementStack): RenderResult {
+    let operations = wrap(stack, TopLevelOperations, (topLevel: TopLevelOperations) => {
+      topLevel.init({ stack });
+      this.statements.forEach(statement => stack.appendStatement(statement, morph.frame));
+    });
 
-    let morphs = builder.morphList();
-    let bounds = builder.bounds();
+    let morphs = operations.morphList();
+    let bounds = operations.bounds();
+    let scope = morph.frame.scope();
 
-    return new RenderResult({ morph, morphs, bounds, template: this, locals: this.locals });
+    return new RenderResult({ morphs, scope, bounds, template: this });
   }
 
   render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
@@ -164,15 +176,18 @@ export interface ExpressionSyntax {
 
 interface PrettyPrintableExpressionSyntax extends ExpressionSyntax, PrettyPrintable {}
 
-interface StaticStatementSyntax extends PrettyPrintable {
-  evaluate(stack: ElementStack): void;
+export interface StatementSyntax extends PrettyPrintable {
+  evaluate(stack: ElementStack, frame?): any;
+  type: string;
   isStatic: boolean;
 }
 
-export interface StatementSyntax extends PrettyPrintable {
-  evaluate(stack: ElementBuffer, frame: Frame): Morph;
-  isStatic: boolean;
-  type: string;
+export interface StaticStatementSyntax extends StatementSyntax {
+  evaluate(stack: ElementStack): void;
+}
+
+export interface DynamicStatementSyntax extends StatementSyntax {
+  evaluate(stack: ElementStack, frame: Frame): Morph;
 }
 
 abstract class StaticExpression {
@@ -194,7 +209,7 @@ export interface BlockOptions {
 
 }
 
-export class Block extends DynamicExpression implements StatementSyntax {
+export class Block extends DynamicExpression implements DynamicStatementSyntax {
   public type = "block";
 
   static fromSpec(sexp: BlockSexp, children: Template[]): Block {
@@ -231,13 +246,13 @@ export class Block extends DynamicExpression implements StatementSyntax {
     let args = this.args.evaluate(frame);
     let templates = this.templates;
 
-    return stack.createContentMorph(BlockHelperMorph, { helper, args, templates });
+    return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame);
   }
 }
 
 type UnknownSexp = [string, PathSexp, boolean];
 
-export class Unknown extends DynamicExpression implements StatementSyntax {
+export class Unknown extends DynamicExpression implements DynamicStatementSyntax {
   public type = "unknown";
 
   static fromSpec(sexp: UnknownSexp): Unknown {
@@ -275,13 +290,13 @@ export class Unknown extends DynamicExpression implements StatementSyntax {
       content = ref.evaluate(frame);
     }
 
-    return stack.createContentMorph(InsertionMorph, { content, trustingMorph });
+    return stack.createContentMorph(InsertionMorph, { content, trustingMorph }, frame);
   }
 }
 
 type InlineSexp = [string, string[], ParamsSexp, HashSexp, boolean];
 
-export class Inline extends DynamicExpression implements StatementSyntax {
+export class Inline extends DynamicExpression implements DynamicStatementSyntax {
   public type = "inline";
 
   static fromSpec(sexp: InlineSexp) {
@@ -319,7 +334,7 @@ export class Inline extends DynamicExpression implements StatementSyntax {
     let content = new HelperInvocationReference(helper, this.args.evaluate(frame));
     let trustingMorph = this.trustingMorph;
 
-    return stack.createContentMorph(HelperMorph, { content, trustingMorph });
+    return stack.createContentMorph(HelperMorph, { content, trustingMorph }, frame);
   }
 }
 
@@ -372,14 +387,14 @@ export class Modifier implements StatementSyntax {
 }
 */
 
-interface AttributeSyntax {
+export interface AttributeSyntax extends StatementSyntax {
   name: string;
   namespace?: string;
 }
 
 type DynamicPropSexp = [string, string, ExpressionSexp, string];
 
-export class DynamicProp extends DynamicExpression implements AttributeSyntax, StatementSyntax {
+export class DynamicProp extends DynamicExpression implements AttributeSyntax, DynamicStatementSyntax {
   type = "dynamic-prop";
 
   static fromSpec(sexp: DynamicPropSexp): DynamicProp {
@@ -410,15 +425,15 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, S
     return `DynamicProp { ${name}=${value.prettyPrint()} }`;
   }
 
-  evaluate(stack: ElementStack): Morph {
+  evaluate(stack: ElementStack, frame: Frame): Morph {
     let { name, value } = this;
-    return stack.createMorph(SetPropertyMorph, { name, value });
+    return stack.createMorph(SetPropertyMorph, { name, value }, frame);
   }
 }
 
 type DynamicAttrSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
 
-export class DynamicAttr extends DynamicExpression implements AttributeSyntax, StatementSyntax {
+export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
   type = "dynamic-attr";
 
   static fromSpec(sexp: DynamicAttrSexp): DynamicAttr {
@@ -458,9 +473,9 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax, S
     }
   }
 
-  evaluate(stack: ElementStack): AttrMorph {
+  evaluate(stack: ElementStack, frame: Frame): AttrMorph {
     let { name, value, namespace } = this;
-    return stack.createMorph(AttrMorph, { name, value, namespace });
+    return stack.createMorph(AttrMorph, { name, value, namespace }, frame);
   }
 }
 
@@ -512,13 +527,13 @@ export class Component extends DynamicExpression implements StatementSyntax {
 
     if (definition) {
       let attrs = this.hash.evaluate(frame);
-      return stack.createContentMorph(ComponentMorph, { definition, attrs, template: templates._default });
+      return stack.createContentMorph(ComponentMorph, { definition, attrs, template: templates._default }, frame);
     } else if (frame.hasHelper(path)) {
       let helper = frame.lookupHelper(path);
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
-      return stack.createContentMorph(BlockHelperMorph, { helper, args, templates });
+      return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame);
     } else {
-      return stack.createContentMorph(FallbackMorph, { path, hash, template: templates._default });
+      return stack.createContentMorph(FallbackMorph, { path, hash, template: templates._default }, frame);
     }
   }
 }
@@ -560,18 +575,12 @@ class FallbackMorph extends ContentMorph {
     let { tag, attrs, template } = this;
 
     this.element = stack.openElement(tag);
-    attrs.forEach(attr => stack.appendStatement(attr));
-    if (!template.isEmpty) stack.appendMorph(FallbackContents, { template });
+    attrs.forEach(attr => stack.appendStatement(attr, this.frame));
+    if (!template.isEmpty) stack.createContentMorph(SimpleTemplateMorph, { template }, this.frame).append(stack);
     stack.closeElement();
   }
 
   update() {}
-}
-
-class FallbackContents extends TemplateMorph {
-  init({ template }) {
-    this.template = template;
-  }
 }
 
 type TextSexp = [string, string];
@@ -687,7 +696,7 @@ export class CloseElement extends StaticExpression implements StaticStatementSyn
   }
 }
 
-type StaticAttrSexp = [string, string, string, string];
+type StaticAttrSexp = [InternedString, InternedString, InternedString, InternedString];
 
 export class StaticAttr extends StaticExpression implements AttributeSyntax, StaticStatementSyntax {
   type = "static-attr";
@@ -699,12 +708,12 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
   }
 
   static build(name, value, namespace=null): StaticAttr {
-    return new StaticAttr({ name, value, namespace });
+    return new StaticAttr({ name: intern(name), value: intern(value), namespace: namespace && intern(namespace) });
   }
 
-  name: string;
-  value: string;
-  namespace: string;
+  name: InternedString;
+  value: InternedString;
+  namespace: InternedString;
 
   constructor(options) {
     super();

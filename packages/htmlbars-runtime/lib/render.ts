@@ -10,31 +10,29 @@ import {
   renderIntoBounds
 } from './morph';
 import { InternedString } from 'htmlbars-util';
-import { Frame } from './environment';
+import { Scope } from './environment';
+import { Operations } from './builder';
 
 interface RenderResultOptions {
-	morph: ContentMorph,
-	locals: InternedString[],
-	morphs: Morph[],
-	bounds: Bounds,
-	template: Template
+	template: Template;
+  scope: Scope;
+	morphs: Morph[];
+  bounds: Bounds;
 }
 
 export class RenderResult implements Bounds {
-  morph: ContentMorph;
-  frame: Frame;
-  morphs: Morph[];
-  bounds: Bounds;
-  template: Template;
+  public template: Template;
+  public scope: Scope;
+  private morphs: Morph[];
+  private bounds: Bounds;
 
   constructor(options: RenderResultOptions) {
-    let { morph, locals, morphs, bounds, template } = options;
+    let { template, scope, morphs, bounds } = options;
 
-    this.morph = morph;
+    this.template = template;
+    this.scope = scope;
     this.morphs = morphs;
     this.bounds = bounds;
-    this.template = template;
-    this.frame = morph.frame;
   }
 
   parentElement(): Element {
