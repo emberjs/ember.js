@@ -113,7 +113,7 @@ function processPositionalParams(renderNode, positionalParams, params, attrs) {
 }
 
 function processNamedPositionalParameters(renderNode, positionalParams, params, attrs) {
-  const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
+  const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
 
   for (let i = 0; i < positionalParams.length; i++) {
     let param = params[paramsStartIndex + i];
@@ -130,7 +130,7 @@ function processRestPositionalParameters(renderNode, positionalParamsName, param
   Ember.assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsName}\`.`,
          !(positionalParamsName in attrs));
 
-  const paramsStartIndex = renderNode.getState().isComponentHelper ? 1 : 0;
+  const paramsStartIndex = renderNode.state.isComponentHelper ? 1 : 0;
 
   let paramsStream = new Stream(() => {
     return readArray(params.slice(paramsStartIndex));
