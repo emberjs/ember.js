@@ -1,9 +1,9 @@
 ;(function() {
   /* globals define, Ember, self */
+  'use strict';
 
   function defineModule(name, values) {
     define(name, [], function() {
-      'use strict';
 
       return values;
     });
