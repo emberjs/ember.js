@@ -85,6 +85,7 @@ class ConstMeta implements IMeta {
 
 class Meta implements IMeta, HasGuid {
   static for(obj: any): IMeta {
+    if (obj === null || obj === undefined) return new Meta(obj, {});
     if (obj._meta) return obj._meta;
     if (!Object.isExtensible(obj)) return new ConstMeta(obj);
 

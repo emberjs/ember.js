@@ -30,14 +30,14 @@ var demoConcat = concatFiles(demoES5, {
   sourceMapConfig: { enabled: true }
 });
 
-var demos = mergeTrees([ demoHTML, demoConcat ]);
-
 var benchmarkjs = new Funnel('node_modules/benchmark', { files: ['benchmark.js'] });
 var benchHarness = 'bench';
 var bench = new Funnel(
   mergeTrees([benchmarkjs, benchHarness]),
-  { destDir: '/bench' }
+  { destDir: '/demos' }
 );
+
+var demos = mergeTrees([ demoHTML, demoConcat, bench ]);
 
 var HTMLTokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 

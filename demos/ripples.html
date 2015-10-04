@@ -26,30 +26,35 @@
 
     <script src="../assets/loader.js"></script>
     <script>loader.noConflict({ define: 'enifed' });</script>
-    <script src="../amd/dom-helper.amd.js"></script>
-    <script src="../amd/htmlbars-compiler.amd.js"></script>
-    <script src="../amd/htmlbars-runtime.amd.js"></script>
+    <script src="../amd/glimmer-compiler.amd.js"></script>
+    <script src="./demos.amd.js"></script>
 
     <script>
       function RingBuffer(capacity) {
         this.capacity = capacity;
         this.head     = 0;
         this.items    = new Array(capacity);
+        this.length = 0;
       }
 
       RingBuffer.prototype.push = function(item) {
         this.items[this.head] = item;
 
+        this.length++;
         this.head++;
         this.head %= this.capacity;
       };
 
       RingBuffer.prototype.remove = function(i) {
+        this.length--;
         this.items[i] = undefined;
       };
 
       RingBuffer.prototype.forEach = function(callback, thisArg) {
-        this.items.forEach(callback, thisArg);
+        for (var i=0, l=this.items.length; i<l; i++) {
+          if (this.items[i] === undefined) continue;
+          callback.call(thisArg, this.items[i], i);
+        }
       };
 
       function Point(timestamp, x, y) {
@@ -69,37 +74,27 @@
         this.opacity = Math.exp(-delta/250);
       };
 
-      var compiler  = requireModule("htmlbars-compiler"),
-          DOMHelper = requireModule("dom-helper").default,
-          hooks     = requireModule("htmlbars-runtime").hooks,
-          render    = requireModule("htmlbars-runtime").render,
+      var compileTemplate = requireModule('htmlbars-demos/index').compile,
+          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment;
+
       TEMPLATES = {};
 
       Array.prototype.slice.call(document.querySelectorAll("[data-template-name]")).forEach(function(node) {
         var name   = node.getAttribute("data-template-name"),
-            source = node.textContent,
-            spec   = compiler.compileSpec(source);
+            source = node.textContent;
 
-        TEMPLATES[name] = compiler.template(spec);
+        TEMPLATES[name] = compileTemplate(source);
       });
 
-      function ifHelper(args) {
-        if (args[0]) {
-          this.yield();
+      var env = new DemoEnvironment();
+
+      env.registerHelper('if', function(params, hash, blocks) {
+        if (!!params[0]) {
+          blocks.template.yield();
+        } else {
+          blocks.inverse.yield();
         }
-      }
-
-      function eachHelper(args) {
-        if (args[0]) {
-          args[0].forEach(function(item, i) {
-            item && this.yieldItem(item.key, [item]);
-          }, this);
-        }
-      }
-
-      var env = { dom: new DOMHelper(), hooks: hooks, helpers: { if: ifHelper, each: eachHelper } };
-
-      var scope = hooks.createFreshScope();
+      });
 
       var data = {
         width:  window.innerWidth,
@@ -109,11 +104,8 @@
         fps:    0
       };
 
-      hooks.bindSelf(env, scope, data);
-
-      var result = render(TEMPLATES["application"], env, scope, {});
-
-      document.getElementById("output").appendChild(result.fragment);
+      var output = document.getElementById('output');
+      var result = TEMPLATES['application'].render(data, env, { appendTo: output });
 
       window.addEventListener("resize", function() {
         data.width  = window.innerWidth;
@@ -151,6 +143,7 @@
           }
         });
 
+        result.scope.updateSelf(data);
         result.rerender();
 
         window.requestAnimationFrame(tick);

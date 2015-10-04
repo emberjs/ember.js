@@ -1,0 +1,154 @@
+<html>
+  <head>
+    <title>HTMLBars Benchmark</title>
+    <script src='./benchmark.js'></script>
+    <script src="../assets/loader.js"></script>
+    <script>loader.noConflict({ define: 'enifed' });</script>
+    <script src="../amd/glimmer-compiler.amd.js"></script>
+    <script src="./demos.amd.js"></script>
+  </head>
+
+  <body>
+    <button id='benchmark-run'>Run</button>
+    <pre id='cycle'></pre>
+    <pre id='benchmark-log'></pre>
+
+    <script>
+      // UI
+      var runButton = document.getElementById('benchmark-run');
+      runButton.addEventListener('click', runBenchmark);
+
+      var logPre = document.getElementById('benchmark-log');
+      function log(message) { logPre.innerHTML += message; }
+      function logln(message) {
+        var pre = document.createElement('pre');
+        pre.innerHTML = message;
+        logPre.appendChild(pre);
+        if (logPre.parentNode === null) alert("WAT");
+      }
+
+      // Imports
+      var compileTemplate = requireModule('htmlbars-demos/index').compile,
+          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment;
+
+      var Stats = requireModule('htmlbars-demos/stats').default;
+
+      // Init
+      var env = new DemoEnvironment();
+      var context;
+      var t;
+
+      env.registerHelper('if', function(params, hash, blocks) {
+        if (!!params[0]) {
+          blocks.template.yield();
+        } else {
+          blocks.inverse.yield();
+        }
+      });
+
+      logln('Status: Idle\n');
+
+      function runBenchmark() {
+        logln('Status: Running\n');
+
+        var name = Object.keys(benchmarks)[0];
+
+        logln('Scenario: ' + name);
+        logln('-----------------------');
+
+        var bench = new Benchmark(benchmarks[name]);
+        var count = 0;
+
+        bench.on('cycle', function(a) {
+          count++;
+          cycle.innerHTML = count + ' of at least 100';
+        });
+
+        bench.on('complete', function() {
+          logln("Finished");
+          var stats = new Stats({ bucket_precision: bench.stats.moe });
+          stats.push(bench.stats.sample);
+
+          logln('Samples: ' + bench.stats.sample.length);
+          logln('Median:  ' + stats.median().toPrecision(4));
+          logln('95%:     ' + stats.percentile(95).toPrecision(4));
+          logln('99%:     ' + stats.percentile(99).toPrecision(4));
+          logln('');
+          logln('Distribution:');
+          stats.distribution().forEach(function(d) {
+            var start = d.range[0].toPrecision(3);
+            var end = d.range[1].toPrecision(3);
+
+            logln(start + ' - ' + end + ' ' + lineOf(d.count, "="));
+          });
+
+          logln('');
+        });
+
+        bench.run({ async: true });
+      }
+
+      var benchmarks = {
+        'each-if': {
+          setup: function() {
+            t = compileTemplate(
+              '{{#each items key="id" as |item|}}' +
+                '{{item.id}}: ' +
+                '{{#if item.visible}}' +
+                  '{{#each item.subitems key="id" as |subitem|}}' +
+                    '{{subitem.id}}' +
+                  '{{/each}}' +
+                '{{/if}}' +
+              '{{/each}}'
+            );
+
+            // Context
+            var itemId = 0;
+            var subitemId = 0;
+
+            var items = [];
+
+            for (var i = 0; i < 250; i++) {
+              var subitems = [];
+
+              for (var j = 0; j < 50; j++) {
+                subitems.push({
+                  id: subitemId++
+                });
+              }
+
+              items.push({
+                id: itemId++,
+                visible: i % 2 === 0,
+                subitems: subitems
+              });
+            }
+
+            context = {
+              items: items
+            };
+          },
+
+          fn: function() {
+            var frag = document.createDocumentFragment();
+
+            t.render(context, env, { appendTo: frag });
+          },
+
+          minSamples: 100
+        }
+      };
+
+      function lineOf(size, char) {
+        var out = char;
+
+        for (var i=1; i<size; i++) {
+          out += char;
+        }
+
+        return out;
+      }
+    </script>
+
+  </body>
+</html>

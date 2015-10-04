@@ -257,6 +257,7 @@ class Replay {
       if (node.handled) {
         node.handled = false;
       } else {
+        let next = list.nextNode(node);
         list.remove(node);
         delete this.map[<string>node.key];
         clear(node);
