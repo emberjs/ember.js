@@ -36,6 +36,7 @@ QUnit.module("Components", {
 
 class MyComponent {
   private attrs: Object;
+  public testing = "123";
 
   constructor(attrs: Object) {
     this.attrs = attrs;
@@ -48,3 +49,34 @@ QUnit.test('creating a new component', assert => {
 
   equalTokens(root, "<div color='red'>hello!</div>");
 });
+
+QUnit.test('the component class is its context', assert => {
+  env.registerComponent('my-component', MyComponent, compile('<div><p>{{testing}}</p>{{yield}}</div>'))
+  let template = compile("<my-component color='{{color}}'>hello!</my-component>");
+  render(template, { color: 'red' });
+
+  equalTokens(root, "<div color='red'><p>123</p>hello!</div>");
+});
+
+QUnit.test('attrs are available in the layout', assert => {
+  env.registerComponent('my-component', MyComponent, compile('<div><p>{{attrs.color}}</p>{{yield}}</div>'))
+  let template = compile("<my-component color='{{color}}'>hello!</my-component>");
+  render(template, { color: 'red' });
+
+  equalTokens(root, "<div color='red'><p>red</p>hello!</div>");
+});
+
+function testError(layout: string, expected: RegExp) {
+  QUnit.test(`'${layout}' produces an error like ${expected}`, assert => {
+    env.registerComponent('my-component', MyComponent, compile(layout));
+    let template = compile("<my-component>hello!</my-component>");
+    assert.throws(() => render(template), expected);
+  });
+}
+
+testError("<div>{{yield}}</div>nope", /non-whitespace text/);
+testError("<div>{{yield}}</div><div></div>", /multiple root elements/);
+testError("<div>{{yield}}</div>{{color}}", /cannot have curlies/);
+testError("{{color}}", /cannot have curlies/);
+testError("nope", /non-whitespace text/);
+testError("", /single root element/);

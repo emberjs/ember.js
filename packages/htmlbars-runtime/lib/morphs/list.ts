@@ -141,11 +141,6 @@ class InnerBlockMorph extends TemplateMorph {
     this.nextSiblingNode = nextSibling || null;
   }
 
-  append(stack: ElementStack) {
-    this.willAppend(stack);
-    this.appendTemplate(this.template, stack);
-  }
-
   updateItem(value) {
     this.frame.scope().updateLocal(this.template.locals[0], value);
     this.update();

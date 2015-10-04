@@ -1,32 +1,14 @@
 import { InternedString, getAttrNamespace } from "htmlbars-util";
 import { Morph, MorphConstructor, MorphSpecializer } from "../morph";
-import { Reference } from 'htmlbars-reference';
+import { Reference, ChainableReference } from 'htmlbars-reference';
 import { ExpressionSyntax } from '../template';
 import { Frame } from '../environment';
 
 interface AttrMorphOptions {
   name: InternedString;
-  value: ExpressionSyntax;
+  value: Reference;
   namespace?: InternedString;
 }
-
-class Foo extends Morph implements MorphSpecializer<Foo, AttrMorphOptions> {
-  specialize({ name, value, namespace }: AttrMorphOptions): MorphConstructor<Foo, AttrMorphOptions> {
-    namespace = namespace || getAttrNamespace(name);
-    return Bar;
-  }
-
-  append() {
-
-  }
-
-  update() {
-
-  }
-
-}
-
-class Bar extends Foo {}
 
 export abstract class AttrMorph extends Morph {
   static specialize({ name, value, namespace }: AttrMorphOptions): MorphConstructor<AttrMorph, AttrMorphOptions> {
@@ -40,7 +22,7 @@ export abstract class AttrMorph extends Morph {
 
   init({ name, value }: AttrMorphOptions) {
     this.name = name;
-    this.value = value.evaluate(this.frame);
+    this.value = value;
   }
 
   _setLastValue(value) {
@@ -106,7 +88,7 @@ export class SetPropertyMorph extends Morph {
 
   init({ name, value }: AttrMorphOptions) {
     this.name = name;
-    this.value = value.evaluate(this.frame);
+    this.value = value;
   }
 
   append() {

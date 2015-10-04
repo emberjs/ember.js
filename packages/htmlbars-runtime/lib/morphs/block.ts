@@ -77,7 +77,7 @@ class Group {
   }
 
   appendTemplate(template: Template) {
-    this.morph.appendTemplate(template, this.stack);
+    this.morph.appendTemplate(template, this.stack.nextSibling);
   }
 
   updateTemplate(template: Template) {
