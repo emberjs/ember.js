@@ -281,6 +281,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
       { key: "5", name: "Robert Jackson", "class": "rwjblue" }
     ]};
 
+    console.log("adding back");
     rerender(object);
     assertStableNodes('rwjblue', "after adding back entries");
     equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding back entries");
