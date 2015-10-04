@@ -1503,7 +1503,8 @@ var View = CoreView.extend(
 
 deprecateProperty(View.prototype, 'currentState', '_currentState', {
   id: 'ember-view.current-state',
-  until: '2.3.0'
+  until: '2.3.0',
+  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-currentstate'
 });
 
 /*
