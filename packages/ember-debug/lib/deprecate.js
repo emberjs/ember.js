@@ -99,7 +99,11 @@ export default function deprecate(message, test, options) {
     deprecate(
       missingOptionsDeprecation,
       false,
-      { id: 'ember-debug.deprecate-options-missing', until: '3.0.0' }
+      {
+        id: 'ember-debug.deprecate-options-missing',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+      }
     );
   }
 
@@ -107,7 +111,11 @@ export default function deprecate(message, test, options) {
     deprecate(
       missingOptionsIdDeprecation,
       false,
-      { id: 'ember-debug.deprecate-id-missing', until: '3.0.0' }
+      {
+        id: 'ember-debug.deprecate-id-missing',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+      }
     );
   }
 
@@ -115,7 +123,11 @@ export default function deprecate(message, test, options) {
     deprecate(
       missingOptionsUntilDeprecation,
       options && options.until,
-      { id: 'ember-debug.deprecate-until-missing', until: '3.0.0' }
+      {
+        id: 'ember-debug.deprecate-until-missing',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+      }
     );
   }
 
