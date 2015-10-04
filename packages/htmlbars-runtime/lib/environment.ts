@@ -137,7 +137,7 @@ export interface ComponentClass {
 }
 
 export interface Component {
-
+  attrs: Object;
 }
 
 export abstract class Environment {

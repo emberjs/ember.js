@@ -1,6 +1,6 @@
 import { TemplateMorph, ContentMorph } from '../morph';
 import { ElementStack, DelegatingOperations, NestedOperations, NullHandler } from '../builder';
-import { ComponentDefinition, ComponentClass, Block, Frame } from '../environment';
+import { ComponentDefinition, ComponentClass, Component, Block, Scope, Frame } from '../environment';
 import Template, { Hash, EvaluatedHash, StaticAttr, DynamicAttr, AttributeSyntax } from '../template';
 import { LITERAL } from 'htmlbars-util';
 import { isWhitespace } from '../dom';
@@ -22,7 +22,9 @@ export default class ComponentMorph extends TemplateMorph {
   private attrs: EvaluatedHash;
   private attrSyntax: AttributeSyntax[];
   private klass: ComponentClass;
+  private component: Component;
   private innerTemplate: Template;
+  private layoutScope: Scope;
 
   init({ definition, attrs: hash, template }: ComponentOptions) {
     this.template = definition.layout;
@@ -50,19 +52,27 @@ export default class ComponentMorph extends TemplateMorph {
 
     let invokeFrame = this.frame;
     let layoutFrame = this.frame = this.frame.child();
-    let layoutScope = layoutFrame.resetScope();
-    let self = new this.klass(this.attrs.value());
+    let layoutScope = this.layoutScope = layoutFrame.resetScope();
+    let self = this.component = new this.klass(this.attrs.value());
 
     layoutScope.bindSelf(self);
     layoutScope.bindBlock(LITERAL('default'), new Block(innerTemplate, invokeFrame));
 
     let handler = new ComponentHandler(invokeFrame, this.attrSyntax);
+
     this.willAppend(stack);
     super.appendTemplate(template, { handler, nextSibling: stack.nextSibling });
 
     if (!handler.rootElement) {
       throw new Error("A component must have a single root element at the top level");
     }
+  }
+
+  update() {
+    this.component.attrs = this.attrs.value();
+    this.layoutScope.updateSelf(this.component);
+
+    super.update();
   }
 }
 

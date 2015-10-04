@@ -1,9 +1,9 @@
 import { compile as defaultCompile } from "htmlbars-compiler";
-import { DOMHelper, Template, manualElement } from "htmlbars-runtime";
+import { DOMHelper, Template, RenderResult, manualElement } from "htmlbars-runtime";
 import { equalTokens } from "htmlbars-test-helpers";
 import { TestEnvironment } from "./support";
 
-let env: TestEnvironment, root: Element;
+let env: TestEnvironment, root: Element, result: RenderResult;
 
 function rootElement() {
   return env.getDOM().createElement('div', document.body);
@@ -20,9 +20,14 @@ function commonSetup() {
 }
 
 function render(template: Template, context={}) {
-  let result = template.render(context, env, { appendTo: root });
+  result = template.render(context, env, { appendTo: root });
   assertInvariants(result);
   return result;
+}
+
+function rerender(context: Object={}) {
+  result.scope.updateSelf(context);
+  result.rerender();
 }
 
 function assertInvariants(result) {
@@ -35,11 +40,18 @@ QUnit.module("Components", {
 });
 
 class MyComponent {
-  private attrs: Object;
-  public testing = "123";
+  public attrs: { color: string };
 
-  constructor(attrs: Object) {
+  constructor(attrs: { color: string }) {
     this.attrs = attrs;
+  }
+
+  get testing() {
+    if (this.attrs.color === 'red') {
+      return '123';
+    } else {
+      return '456';
+    }
   }
 }
 
@@ -48,6 +60,8 @@ QUnit.test('creating a new component', assert => {
   render(template, { color: 'red' });
 
   equalTokens(root, "<div color='red'>hello!</div>");
+  rerender({ color: 'green' });
+  equalTokens(root, "<div color='green'>hello!</div>");
 });
 
 QUnit.test('the component class is its context', assert => {
@@ -56,14 +70,18 @@ QUnit.test('the component class is its context', assert => {
   render(template, { color: 'red' });
 
   equalTokens(root, "<div color='red'><p>123</p>hello!</div>");
+  rerender({ color: 'green' });
+  equalTokens(root, "<div color='green'><p>456</p>hello!</div>");
 });
 
 QUnit.test('attrs are available in the layout', assert => {
   env.registerComponent('my-component', MyComponent, compile('<div><p>{{attrs.color}}</p>{{yield}}</div>'))
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
-  render(template, { color: 'red' });
+  let result = render(template, { color: 'red' });
 
   equalTokens(root, "<div color='red'><p>red</p>hello!</div>");
+  rerender({ color: 'green' });
+  equalTokens(root, "<div color='green'><p>green</p>hello!</div>");
 });
 
 function testError(layout: string, expected: RegExp) {
