@@ -553,7 +553,11 @@ if (isEnabled('ember-registry-container-reform')) {
         lookup() {
           deprecate(
             'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-            false, { id: 'ember-application.app-instance-container', until: '3.0.0' }
+            false, {
+              id: 'ember-application.app-instance-container',
+              until: '3.0.0',
+              url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
+            }
           );
           return instance.lookup(...arguments);
         }
