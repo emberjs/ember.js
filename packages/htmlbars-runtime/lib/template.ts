@@ -168,8 +168,26 @@ class RootMorph extends ContentMorph {
   destroy() {}
 }
 
+type PrettyPrintValue = PrettyPrint | string;
+
+class PrettyPrint {
+  type: string;
+  operation: string;
+  params: PrettyPrintValue[];
+  hash: Dict<PrettyPrintValue>;
+  templates: Dict<number>;
+
+  constructor(type: string, operation: string, params: PrettyPrintValue[]=null, hash: Dict<PrettyPrintValue>=null, templates: Dict<number>=null) {
+    this.type = type;
+    this.operation = operation;
+    this.params = params;
+    this.hash = hash;
+    this.templates = templates;
+  }
+}
+
 interface PrettyPrintable {
-  prettyPrint(): string;
+  prettyPrint(): PrettyPrint;
 }
 
 export interface ExpressionSyntax {
@@ -179,13 +197,13 @@ export interface ExpressionSyntax {
 
 interface PrettyPrintableExpressionSyntax extends ExpressionSyntax, PrettyPrintable {}
 
-export interface StatementSyntax extends PrettyPrintable {
+export interface StatementSyntax {
   evaluate(stack: ElementStack, frame?): any;
   type: string;
   isStatic: boolean;
 }
 
-export interface StaticStatementSyntax extends StatementSyntax {
+export interface StaticStatementSyntax extends StatementSyntax, PrettyPrintable {
   evaluate(stack: ElementStack): void;
 }
 
@@ -212,7 +230,7 @@ export interface BlockOptions {
 
 }
 
-export class Block extends DynamicExpression implements DynamicStatementSyntax {
+export class Block extends DynamicExpression implements DynamicStatementSyntax, PrettyPrintable {
   public type = "block";
 
   static fromSpec(sexp: BlockSexp, children: Template[]): Block {
@@ -241,7 +259,8 @@ export class Block extends DynamicExpression implements DynamicStatementSyntax {
   }
 
   prettyPrint() {
-    return `Block(${this.path}) { args=${this.args.prettyPrint()} templates=${this.templates.prettyPrint()} }`;
+    let [params, hash] = this.args.prettyPrint();
+    return new PrettyPrint('block', 'block', params, hash, this.templates.prettyPrint());
   }
 
   evaluate(stack: ElementStack, frame: Frame): BlockHelperMorph {
@@ -278,7 +297,9 @@ export class Unknown extends DynamicExpression implements DynamicStatementSyntax
   }
 
   prettyPrint() {
-    return `Unknown(${this.ref.prettyPrint()}) { trust=${this.trustingMorph} }`;
+    let operation = this.trustingMorph ? 'append-html' : 'append-text';
+    let get = new PrettyPrint('expr', 'get', [this.ref.prettyPrint()], null);
+    return new PrettyPrint('append', operation, [get]);
   }
 
   evaluate(stack: ElementStack, frame: Frame): ContentMorph {
@@ -329,7 +350,10 @@ export class Inline extends DynamicExpression implements DynamicStatementSyntax 
   }
 
   prettyPrint() {
-    return `Inline(${this.path}) { params=${this.args.prettyPrint()} trusted=${this.trustingMorph} }`;
+    let operation = this.trustingMorph ? 'append-html' : 'append-text';
+    let get = Get.build(this.path.join('.')).prettyPrint();
+
+    return new PrettyPrint('append', operation, [get]);
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
@@ -425,7 +449,7 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
   prettyPrint() {
     let { name, value } = this;
 
-    return `DynamicProp { ${name}=${value.prettyPrint()} }`;
+    return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
@@ -470,9 +494,9 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
     let { name, value, namespace } = this;
 
     if (namespace) {
-      return `DynamicAttr { ${name}=${value.prettyPrint()}; namespace=${namespace} }`;
+      return new PrettyPrint('attr', 'attr', [name, value.prettyPrint()], { namespace });
     } else {
-      return `DynamicAttr { ${name}=${value.prettyPrint()} }`;
+      return new PrettyPrint('attr', 'attr', [name, value.prettyPrint()]);
     }
   }
 
@@ -519,7 +543,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
 
   prettyPrint() {
     let { path, hash, templates } = this;
-    return `Component <${path} ${hash.prettyPrint()} ${templates.prettyPrint()}>`;
+    return new PrettyPrint('block', 'component', [path.prettyPrint()], hash.prettyPrint(), templates.prettyPrint());
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
@@ -609,7 +633,7 @@ export class Text extends StaticExpression implements StaticStatementSyntax {
   }
 
   prettyPrint() {
-    return `Text(${JSON.stringify(this.content)})`;
+    return new PrettyPrint('append', 'append-text', [this.content]);
   }
 
   evaluate(stack: ElementStack) {
@@ -640,7 +664,7 @@ export class Comment extends StaticExpression implements StaticStatementSyntax {
   }
 
   prettyPrint() {
-    return `Comment <!-- ${this.value} -->`;
+    return new PrettyPrint('append', 'append-comment', [this.value]);
   }
 
   evaluate(stack: ElementStack) {
@@ -671,7 +695,7 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
   }
 
   prettyPrint() {
-    return `<${this.tag}>`;
+    return new PrettyPrint('element', 'open-element', [this.tag]);
   }
 
   evaluate(stack: ElementStack) {
@@ -691,7 +715,7 @@ export class CloseElement extends StaticExpression implements StaticStatementSyn
   }
 
   prettyPrint() {
-    return `</>`;
+    return new PrettyPrint('element', 'close-element');
   }
 
   evaluate(stack: ElementStack) {
@@ -729,9 +753,9 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
     let { name, value, namespace } = this;
 
     if (namespace) {
-      return `StaticAttr { ${name}=${JSON.stringify(value)}; namespace=${namespace} }`;
+      return new PrettyPrint('attr', 'attr', [name, value], { namespace });
     } else {
-      return `StaticAttr { ${name}=${JSON.stringify(value)} }`;
+      return new PrettyPrint('attr', 'attr', [name, value]);
     }
   }
 
@@ -775,7 +799,7 @@ const BOUNDARY_CANDIDATES = {
 export class Value extends StaticExpression implements ExpressionSyntax {
   type = "value";
 
-  static fromSpec(value) {
+  static fromSpec(value): Value {
     return new Value(value);
   }
 
@@ -791,7 +815,7 @@ export class Value extends StaticExpression implements ExpressionSyntax {
   }
 
   prettyPrint() {
-    return JSON.stringify(this.value);
+    return this.value;
   }
 
   inner() {
@@ -806,7 +830,7 @@ export class Value extends StaticExpression implements ExpressionSyntax {
 type Path = InternedString[];
 type GetSexp = [InternedString, Path];
 
-export class Get extends DynamicExpression implements ExpressionSyntax {
+export class Get extends DynamicExpression implements PrettyPrintableExpressionSyntax {
   type = "get";
 
   static fromSpec(sexp: GetSexp): Get {
@@ -815,7 +839,7 @@ export class Get extends DynamicExpression implements ExpressionSyntax {
     return new Get({ ref: new Ref(parts) });
   }
 
-  static build(path): Get {
+  static build(path: string): Get {
     return new Get({ ref: Ref.build(path) });
   }
 
@@ -827,7 +851,7 @@ export class Get extends DynamicExpression implements ExpressionSyntax {
   }
 
   prettyPrint() {
-    return `Get ${this.ref.prettyPrint()}`;
+    return new PrettyPrint('expr', 'get', [this.ref.prettyPrint()], null);
   }
 
   evaluate(frame: Frame): ChainableReference {
@@ -907,6 +931,11 @@ export class Helper implements ExpressionSyntax {
     this.args = options.args;
   }
 
+  prettyPrint() {
+    let [params, hash] = this.args.prettyPrint();
+    return new PrettyPrint('expr', this.ref.prettyPrint(), params, hash);
+  }
+
   evaluate(frame: Frame): ChainableReference {
     let helper = frame.lookupHelper(this.ref.path());
     return new HelperInvocationReference(helper, this.args.evaluate(frame));
@@ -933,6 +962,10 @@ export class Concat implements ExpressionSyntax {
 
   constructor(options) {
     this.parts = options.parts;
+  }
+
+  prettyPrint() {
+    return new PrettyPrint('expr', 'concat', this.parts.map(p => p.prettyPrint()));
   }
 
   evaluate(frame: Frame): ChainableReference {
@@ -977,7 +1010,7 @@ export function buildStatements(statements: any[], list: Template[]): StatementS
   return built;
 }
 
-function buildExpression(spec: Spec): PrettyPrintableExpressionSyntax {
+function buildExpression(spec: Spec): ExpressionSyntax {
   if (typeof spec !== 'object' || spec === null) {
     return Value.fromSpec(spec);
   } else {
@@ -985,7 +1018,7 @@ function buildExpression(spec: Spec): PrettyPrintableExpressionSyntax {
   }
 }
 
-export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
+export class ParamsAndHash implements ExpressionSyntax {
   static fromSpec(params: ParamsSexp, hash: HashSexp): ParamsAndHash {
     return new ParamsAndHash({ params: Params.fromSpec(params), hash: Hash.fromSpec(hash) });
   }
@@ -1009,8 +1042,8 @@ export class ParamsAndHash implements PrettyPrintableExpressionSyntax {
     this.hash = options.hash;
   }
 
-  prettyPrint() {
-    return `ParamsAndHash { params=${this.params.prettyPrint()}, hash=${this.hash.prettyPrint()} }`;
+  prettyPrint(): [PrettyPrintValue[], Dict<PrettyPrintValue>] {
+    return [this.params.prettyPrint(), this.hash.prettyPrint()];
   }
 
   evaluate(frame: Frame): EvaluatedParamsAndHash {
@@ -1048,14 +1081,14 @@ class Enumerable<T> {
     throw new Error(`unimplemented forEach for ${this.constructor.name}`);
   }
 
-  map(callback) {
+  map<U>(callback: (T) => U): U[] {
     let out = [];
     this.forEach(val => out.push(callback(val)));
     return out;
   }
 }
 
-class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpressionSyntax {
+class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
   static fromSpec(sexp: ParamsSexp): Params {
     if (!sexp || sexp.length === 0) return Params.empty();
     return new Params(sexp.map(buildExpression));
@@ -1083,8 +1116,8 @@ class Params extends Enumerable<ExpressionSyntax> implements PrettyPrintableExpr
     this.params.forEach(callback);
   }
 
-  prettyPrint() {
-    return `Params [ ${this.params.map(p => p.prettyPrint()).join(', ')} ]`;
+  prettyPrint(): PrettyPrintValue[] {
+    return this.params.map(p => p.prettyPrint());
   }
 
   evaluate(frame: Frame): EvaluatedParams {
@@ -1122,7 +1155,7 @@ class EvaluatedParams extends PushPullReference {
   }
 }
 
-export class Hash implements PrettyPrintableExpressionSyntax {
+export class Hash implements ExpressionSyntax {
   static fromSpec(rawPairs: HashSexp): Hash {
     if (!rawPairs) { return Hash.empty(); }
 
@@ -1167,9 +1200,12 @@ export class Hash implements PrettyPrintableExpressionSyntax {
     this.values = values;
   }
 
-  prettyPrint() {
-    let inside = this.keys.map((k, i) => `${k}=${this.values[i].prettyPrint()}`).join(', ');
-    return `Hash { ${inside} }`;
+  prettyPrint(): Dict<PrettyPrintValue> {
+    let out = dict<PrettyPrintValue>();
+    this.keys.forEach((key, i) => {
+      out[<string>key] = this.values[i].prettyPrint();
+    })
+    return out;
   }
 
   evaluate(frame: Frame): EvaluatedHash {
@@ -1241,9 +1277,13 @@ export class Templates implements ExpressionSyntax {
     this._inverse = options.inverse;
   }
 
-  prettyPrint() {
+  prettyPrint(): Dict<number> {
     let { _default, _inverse } = this;
-    return `Templates { default=${_default ? _default.position : 'none'}, inverse=${_inverse ? _inverse.position : 'none'} }`;
+
+    return {
+      default: _default && _default.position,
+      inverse: _inverse && _inverse.position
+    }
   }
 
   evaluate(frame: Frame): ChainableReference {
@@ -1267,7 +1307,7 @@ export class TemplateBuilder {
     return Template.fromStatements(this.statements);
   }
 
-  specExpr(spec: any[]): PrettyPrintableExpressionSyntax {
+  specExpr(spec: any[]): ExpressionSyntax {
     return buildExpression(spec);
   }
 
