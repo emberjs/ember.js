@@ -81,10 +81,6 @@ class ConstMeta implements IMeta {
   root(): IRootReference {
     return new ConstRoot(this.object);
   }
-  referencesFor(property: InternedString): Set<PathReference>;
-  referenceTypeFor(property: InternedString): InnerReferenceFactory;
-  addReference(property: InternedString, reference: PathReference);
-  removeReference(property: InternedString, reference: PathReference);
 }
 
 class Meta implements IMeta, HasGuid {
@@ -92,7 +88,9 @@ class Meta implements IMeta, HasGuid {
     if (obj._meta) return obj._meta;
     if (!Object.isExtensible(obj)) return new ConstMeta(obj);
 
-    let MetaToUse: MetaFactory = obj.constructor._Meta || Meta;
+    let MetaToUse: MetaFactory = Meta;
+    if (obj.constructor) MetaToUse = obj.constructor._Meta || Meta;
+
     return (obj._meta = new MetaToUse(obj, {}));
   }
 

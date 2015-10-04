@@ -63,7 +63,7 @@ interface ElementBufferOptions {
 }
 
 export class ElementBuffer {
-  protected nextSibling: Node;
+  public nextSibling: Node;
   protected dom: DOMHelper;
   public element: Element;
 
@@ -71,6 +71,7 @@ export class ElementBuffer {
     this.dom = dom;
     this.element = parentNode;
     this.nextSibling = nextSibling;
+    if (nextSibling && !(nextSibling instanceof Node)) throw new Error("NOPE");
   }
 
   createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {
@@ -116,10 +117,13 @@ export class ElementStack extends ElementBuffer {
   private elementStack: Element[];
   private nextSiblingStack: Node[];
   private morphs: Morph[];
-  public operations: Operations = null;
+  public operations: DelegatingOperations;
+  public topLevelHandlers: Handler[] = [];
+  public handlers: Handler[] = [];
 
   constructor(options: ElementBufferOptions) {
     super(options);
+    this.operations = new TopLevelOperations(this, this.topLevelHandlers);
     this.elementStack = [this.element];
     this.nextSiblingStack = [this.nextSibling];
   }
@@ -138,6 +142,25 @@ export class ElementStack extends ElementBuffer {
     this.element = elementStack[elementStack.length - 1];
     this.nextSibling = nextSiblingStack[nextSiblingStack.length - 1];
     return topElement;
+  }
+
+  bounds() {
+    return (<TopLevelOperations>this.operations).bounds();
+  }
+
+  morphList() {
+    return (<TopLevelOperations>this.operations).morphList();
+  }
+
+  addTopLevelHandler(handler: Handler) {
+    handler.stack = this;
+    this.topLevelHandlers.push(handler);
+  }
+
+  addTemplateHandler(handler: Handler) {
+    handler.stack = this;
+    this.topLevelHandlers.push(handler);
+    this.handlers.push(handler);
   }
 
   appendStatement(statement: StatementSyntax, frame: Frame) {
@@ -207,7 +230,9 @@ export class ElementStack extends ElementBuffer {
   }
 }
 
-export interface Operations {
+export interface Handler {
+  stack: ElementStack;
+
   willAppendText(text: string);
   didAppendText(text: Text);
   willAppendComment(value: string);
@@ -224,12 +249,8 @@ export interface Operations {
   didCloseElement();
 }
 
-export class NullOperations implements Operations {
-  protected stack: ElementStack;
-
-  constructor(stack: ElementStack) {
-    this.stack = stack;
-  }
+export class NullHandler implements Handler {
+  public stack: ElementStack = null;
 
   willAppendText(text: string) {}
   didAppendText(text: Text) {}
@@ -244,101 +265,92 @@ export class NullOperations implements Operations {
   willCreateContentMorph(Type: typeof ContentMorph, attrs: Object) {}
   didCreateContentMorph(morph: ContentMorph) {}
   willCloseElement() {}
-  didCloseElement() {}
+
+  didCloseElement() {
+    throw new Error("BUG: Unbalanced open and close element");
+  }
 }
 
-const NULL_OPERATIONS = new NullOperations(null);
-
-
-interface DelegatingOperationsClass<T extends DelegatingOperations> {
-  new (target: Operations): T
+function eachHandler(handlers: Handler[], callback: (handler: Handler) => void) {
+  for (let i=0, l=handlers.length; i<l; i++) {
+    callback(handlers[i]);
+  }
 }
 
-export function wrap<T extends DelegatingOperations>(stack: ElementStack, Operations: DelegatingOperationsClass<T>, callback: (T) => void): T {
-  let oldOperations = stack.operations;
-  let operations = stack.operations = new Operations(oldOperations || NULL_OPERATIONS);
+export class DelegatingOperations {
+  private handlers: Handler[];
+  protected stack: ElementStack;
 
-  callback(operations);
-  stack.operations = oldOperations;
-  return operations;
-}
-
-export abstract class DelegatingOperations implements Operations {
-  protected target: Operations;
-
-  constructor(target: Operations) {
-    this.target = target;
+  constructor(stack: ElementStack, handlers: Handler[]) {
+    this.stack = stack;
+    this.handlers = handlers;
   }
 
-  init(options: Object) {}
-
   willAppendText(text: string) {
-    this.target.willAppendText(text);
+    eachHandler(this.handlers, handler => handler.willAppendText(text));
   }
 
   didAppendText(text: Text) {
-    this.target.didAppendText(text);
+    eachHandler(this.handlers, handler => handler.didAppendText(text));
   }
 
   willAppendComment(value: string) {
-    this.target.willAppendComment(value);
+    eachHandler(this.handlers, handler => handler.willAppendComment(value));
   }
 
   didAppendComment(value: Comment) {
-    this.target.didAppendComment(value);
+    eachHandler(this.handlers, handler => handler.didAppendComment(value));
   }
 
   willOpenElement(tag: string) {
-    this.target.willOpenElement(tag);
+    eachHandler(this.handlers, handler => handler.willOpenElement(tag));
   }
 
   didOpenElement(element: Element) {
-    this.target.didOpenElement(element);
+    eachHandler(this.handlers, handler => handler.didOpenElement(element));
   }
 
   willAppendHTML(html: string) {
-    this.target.willAppendHTML(html);
+    eachHandler(this.handlers, handler => handler.willAppendHTML(html));
   }
 
   didAppendHTML(bounds: Bounds) {
-    this.target.didAppendHTML(bounds);
+    eachHandler(this.handlers, handler => handler.didAppendHTML(bounds));
   }
 
   willCreateMorph(Type: typeof Morph, attrs: Object) {
-    this.target.willCreateMorph(Type, attrs);
+    eachHandler(this.handlers, handler => handler.willCreateMorph(Type, attrs));
   }
 
   didCreateMorph(morph: Morph) {
-    this.target.didCreateMorph(morph);
+    eachHandler(this.handlers, handler => handler.didCreateMorph(morph));
   }
 
   willCreateContentMorph(Type: typeof ContentMorph, attrs: Object) {
-    this.target.willCreateContentMorph(Type, attrs);
+    eachHandler(this.handlers, handler => handler.willCreateContentMorph(Type, attrs));
   }
 
-  didCreateContentMorph<M extends ContentMorph>(morph: M) {
-    this.target.didCreateContentMorph(morph);
+  didCreateContentMorph(morph: ContentMorph) {
+    eachHandler(this.handlers, handler => handler.didCreateContentMorph(morph));
   }
 
   willCloseElement() {
-    this.target.willCloseElement();
+    eachHandler(this.handlers, handler => handler.willCloseElement());
   }
 
   didCloseElement() {
-    this.target.didCloseElement();
+    eachHandler(this.handlers, handler => handler.didCloseElement());
   }
 }
 
 export class TopLevelOperations extends DelegatingOperations {
-  private stack: ElementStack;
   private element: Element;
   public trackedFirstNode: FirstNode;
   public trackedLastNode: Node | Bounds;
-  private nested: NestedOperations = null;
   private morphs: Morph[] = [];
 
-  init({ stack }: { stack: ElementStack }) {
-    this.stack = stack;
+  constructor(stack: ElementStack, handlers: Handler[]) {
+    super(stack, handlers);
     this.element = stack.element;
   }
 
@@ -389,9 +401,7 @@ export class TopLevelOperations extends DelegatingOperations {
   didOpenElement(element: Element) {
     super.didOpenElement(element);
     this.newNode(element);
-
-    let nestedOperations = this.nested = this.nested || new NestedOperations(this.stack);
-    this.stack.operations = nestedOperations;
+    this.stack.operations = new NestedOperations(this.stack, this.stack.handlers);
   }
 
   didAppendHTML(bounds: Bounds) {
@@ -416,14 +426,14 @@ export class TopLevelOperations extends DelegatingOperations {
   }
 }
 
-class NestedOperations extends NullOperations {
+export class NestedOperations extends DelegatingOperations {
   private level: number;
-  private parent: Operations;
+  private parent: DelegatingOperations;
 
-  constructor(stack) {
-    super(stack);
-    this.level = 1;
+  constructor(stack: ElementStack, handlers: Handler[]) {
+    super(stack, handlers);
     this.parent = stack.operations;
+    this.level = 1;
   }
 
   willOpenElement() {

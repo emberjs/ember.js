@@ -1,4 +1,4 @@
-import { Operations, TopLevelOperations, renderStatement, wrap } from './builder';
+import { TopLevelOperations, Handler, renderStatement } from './builder';
 import { RenderResult } from './render';
 import { Frame } from './environment';
 import {
@@ -54,8 +54,7 @@ interface RenderOptions {
 }
 
 interface EvaluateOptions {
-  nextSibling?: Node,
-  operations?: Operations
+  nextSibling?: Node
 }
 
 export default class Template {
@@ -123,22 +122,26 @@ export default class Template {
     });
   }
 
-  evaluate(morph: ContentMorph, nextSibling=null): RenderResult {
-    let stack = new ElementStack({ parentNode: morph.parentNode, nextSibling, dom: morph.frame.dom() });
-    return this.evaluateWithStack(morph, stack);
-  }
+  private evaluateWithStack(stack: ElementStack, frame: Frame) {
+    this.statements.forEach(statement => stack.appendStatement(statement, frame));
 
-  evaluateWithStack(morph: ContentMorph, stack: ElementStack): RenderResult {
-    let operations = wrap(stack, TopLevelOperations, (topLevel: TopLevelOperations) => {
-      topLevel.init({ stack });
-      this.statements.forEach(statement => stack.appendStatement(statement, morph.frame));
-    });
-
-    let morphs = operations.morphList();
-    let bounds = operations.bounds();
-    let scope = morph.frame.scope();
+    let morphs = stack.morphList();
+    let bounds = stack.bounds();
+    let scope = frame.scope();
 
     return new RenderResult({ morphs, scope, bounds, template: this });
+  }
+
+  evaluate(morph: ContentMorph, options: { nextSibling?: Node, handler?: Handler }=null): RenderResult {
+    let nextSibling = options && options.nextSibling;
+    let handler = options && options.handler;
+
+    let frame = morph.frame;
+
+    let stack = new ElementStack({ parentNode: morph.parentNode, nextSibling, dom: frame.dom() });
+    if (handler) stack.addTopLevelHandler(handler);
+
+    return this.evaluateWithStack(stack, morph.frame);
   }
 
   render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
@@ -150,7 +153,7 @@ export default class Template {
 
     let rootMorph = new RootMorph(options.appendTo, frame);
 
-    return this.evaluate(rootMorph);
+    return this.evaluate(rootMorph, null);
   }
 }
 
@@ -474,7 +477,8 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
   }
 
   evaluate(stack: ElementStack, frame: Frame): AttrMorph {
-    let { name, value, namespace } = this;
+    let { name, value: _value, namespace } = this;
+    let value = _value.evaluate(frame);
     return stack.createMorph(AttrMorph, { name, value, namespace }, frame);
   }
 }
@@ -526,8 +530,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
     let definition = frame.getComponentDefinition(path);
 
     if (definition) {
-      let attrs = this.hash.evaluate(frame);
-      return stack.createContentMorph(ComponentMorph, { definition, attrs, template: templates._default }, frame);
+      return stack.createContentMorph(ComponentMorph, { definition, attrs: this.hash, template: templates._default }, frame);
     } else if (frame.hasHelper(path)) {
       let helper = frame.lookupHelper(path);
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);

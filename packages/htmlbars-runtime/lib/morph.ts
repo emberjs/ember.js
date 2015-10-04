@@ -1,5 +1,5 @@
 import { Frame, Block } from './environment';
-import { ElementStack } from './builder';
+import { ElementStack, Handler } from './builder';
 import { Enumerable } from './utils';
 import DOMHelper from './dom';
 import Template from './template';
@@ -245,28 +245,18 @@ export abstract class TemplateMorph extends EmptyableMorph {
     return super.lastNode();
   }
 
-  appendTemplate(template: Template, stack: ElementStack) {
+  appendTemplate(template: Template, options: { nextSibling?: Node, handler?: Handler }) {
     if (template.isEmpty) {
       this.didBecomeEmpty();
     } else {
-      let result = this.lastResult = template.evaluateWithStack(this, stack);
+      let result = this.lastResult = template.evaluate(this, options);
       this.didInsertContent(result);
     }
   }
 
   append(stack: ElementStack) {
     this.willAppend(stack);
-    this.appendTemplate(this.template, stack);
-  }
-
-
-  _updateTemplate(template: Template, nextSibling: Node) {
-    if (template.isEmpty) {
-      this.didBecomeEmpty();
-    } else {
-      let result = this.lastResult = template.evaluate(this, nextSibling);
-      this.didInsertContent(result);
-    }
+    this.appendTemplate(this.template, { nextSibling: stack.nextSibling });
   }
 
   updateTemplate(template: Template) {
@@ -274,7 +264,7 @@ export abstract class TemplateMorph extends EmptyableMorph {
 
     if (!lastResult) {
       let nextSibling = this.nextSiblingForContent();
-      this._updateTemplate(template, nextSibling);
+      this.appendTemplate(template, nextSibling);
       return;
     }
 
@@ -282,7 +272,7 @@ export abstract class TemplateMorph extends EmptyableMorph {
       lastResult.rerender();
     } else {
       let nextSibling = this.nextSiblingForContent();
-      this._updateTemplate(template, nextSibling);
+      this.appendTemplate(template, nextSibling);
     }
   }
 
@@ -378,7 +368,7 @@ export function insertBoundsBefore(parent: Element, bounds: Bounds, reference: B
 
 export function renderIntoBounds(template: Template, bounds: Bounds, morph: ContentMorph) {
   let nextSibling = clear(bounds);
-  return template.evaluate(morph, nextSibling);
+  return template.evaluate(morph, { nextSibling });
 }
 
 export function clear(bounds: Bounds) {

@@ -86,6 +86,11 @@ export class Scope {
     locals[<string>name] = this.meta.for(value).root();
   }
 
+  bindLocalReference(name: InternedString, value: RootReference) {
+    let locals = this.locals = this.locals || dict<RootReference>();
+    locals[<string>name] = value;
+  }
+
   bindLocals(blockArguments: any[]) {
     let { localNames } = this;
     for (let i = 0, l = localNames.length; i < l; i++) {
@@ -98,12 +103,12 @@ export class Scope {
   }
 
   getLocal(name: InternedString): RootReference {
-    if (!this.locals) return this.parent.getLocal(name);
+    if (!this.locals) return this.parent && this.parent.getLocal(name);
     return (<string>name in this.locals) ? this.locals[<string>name] : (this.parent && this.parent.getLocal(name));
   }
 
   hasLocal(name: InternedString): boolean {
-    if (!this.locals) return this.parent.hasLocal(name);
+    if (!this.locals) return this.parent && this.parent.hasLocal(name);
     return (<string>name in this.locals) || (this.parent && this.parent.hasLocal(name));
   }
 
@@ -113,7 +118,7 @@ export class Scope {
   }
 
   getBlock(name: InternedString): Block {
-    if (!this.blocks) return this.parent.getBlock(name);
+    if (!this.blocks) return this.parent && this.parent.getBlock(name);
     return (<string>name in this.blocks) ? this.blocks[<string>name] : (this.parent && this.parent.getBlock(name));
   }
 
