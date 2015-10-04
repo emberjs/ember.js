@@ -33,7 +33,11 @@ export default function warn(message, test, options) {
     deprecate(
       missingOptionsDeprecation,
       false,
-      { id: 'ember-debug.warn-options-missing', until: '3.0.0' }
+      {
+        id: 'ember-debug.warn-options-missing',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+      }
     );
   }
 
@@ -41,7 +45,11 @@ export default function warn(message, test, options) {
     deprecate(
       missingOptionsIdDeprecation,
       false,
-      { id: 'ember-debug.warn-id-missing', until: '3.0.0' }
+      {
+        id: 'ember-debug.warn-id-missing',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+      }
     );
   }
 
