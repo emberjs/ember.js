@@ -283,9 +283,16 @@ export function buildFakeRegistryWithDeprecations(instance, typeForMessage) {
 
 function buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, nonDeprecatedProperty) {
   return function() {
-    Ember.deprecate(`Using \`${typeForMessage}.registry.${deprecatedProperty}\` is deprecated. Please use \`${typeForMessage}.${nonDeprecatedProperty}\` instead.`,
-                    false,
-                    { id: 'ember-application.app-instance-registry', until: '3.0.0' });
+    Ember.deprecate(
+      `Using \`${typeForMessage}.registry.${deprecatedProperty}\` is deprecated. Please use \`${typeForMessage}.${nonDeprecatedProperty}\` instead.`,
+      false,
+      {
+        id: 'ember-application.app-instance-registry',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-application-registry-ember-applicationinstance-registry'
+      }
+    );
+
     return instance[nonDeprecatedProperty](...arguments);
   };
 }
