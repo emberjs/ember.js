@@ -216,11 +216,75 @@ if (!Ember.testing) {
     }, false);
   }
 }
-
+/**
+  @public
+  @class Ember.Debug
+*/
 Ember.Debug = { };
 
 if (isEnabled('ember-debug-handlers')) {
+  /**
+    Allows for runtime registration of handler functions that override the default deprecation behavior.
+    Deprecations are invoked by calls to [Ember.deprecate](http://emberjs.com/api/classes/Ember.html#method_deprecate).
+    The following example demonstrates its usage by registering a handler that throws an error if the
+    message contains the word "should", otherwise defers to the default handler.
+
+    ```javascript
+    Ember.Debug.registerDeprecationHandler((message, options, next) => {
+      if (message.indexOf('should') !== -1) {
+        throw new Error(`Deprecation message with should: ${message}`);
+      } else {
+        // defer to whatever handler was registered before this one
+        next(message, options);
+      }
+    }
+    ```
+
+    The handler function takes the following arguments:
+
+    <ul>
+      <li> <code>message</code> - The message received from the deprecation call. </li>
+      <li> <code>options</code> - An object passed in with the deprecation call containing additional information including:</li>
+        <ul>
+          <li> <code>id</code> - an id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
+          <li> <code>until</code> - is the version number Ember the feature and deprecation will be removed in.</li>
+        </ul>
+      <li> <code>next</code> - a function that calls into the previously registered handler.</li>
+    </ul>
+
+    @public
+    @static
+    @method registerDeprecationHandler
+    @param handler {Function} a function to handle deprecation calls
+  */
   Ember.Debug.registerDeprecationHandler = registerDeprecationHandler;
+  /**
+    Allows for runtime registration of handler functions that override the default warning behavior.
+    Warnings are invoked by calls made to [Ember.warn](http://emberjs.com/api/classes/Ember.html#method_warn).
+    The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
+    default warning behavior.
+
+    ```javascript
+    // next is not called, so no warnings get the default behavior
+    Ember.Debug.registerWarnHandler(() => {});
+    ```
+
+    The handler function takes the following arguments:
+
+    <ul>
+      <li> <code>message</code> - The message received from the warn call. </li>
+      <li> <code>options</code> - An object passed in with the warn call containing additional information including:</li>
+        <ul>
+          <li> <code>id</code> - an id of the warning in the form of <code>package-name.specific-warning</code>.</li>
+        </ul>
+      <li> <code>next</code> - a function that calls into the previously registered handler.</li>
+    </ul>
+
+    @public
+    @static
+    @method registerWarnHandler
+    @param handler {Function} a function to handle warnings
+  */
   Ember.Debug.registerWarnHandler = registerWarnHandler;
 }
 /*
