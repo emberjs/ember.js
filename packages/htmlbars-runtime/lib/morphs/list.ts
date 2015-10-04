@@ -55,8 +55,8 @@ export class MorphList extends EmptyableMorph {
     let template = this.templates._default;
     let builder = new Builder(stack, this);
 
-    array.forEach(val => {
-      builder.append({ template, val, frame: this.frame, key: this.keyFor(val) });
+    array.forEach((val, index) => {
+      builder.append({ template, val, index, frame: this.frame, key: this.keyFor(val) });
     });
 
     this.didInsertContent(this.presentBounds);
@@ -74,8 +74,8 @@ export class MorphList extends EmptyableMorph {
 
     let template = this.templates._default;
 
-    array.forEach(val => {
-      replay.append({ template, val, frame: this.frame, key: this.keyFor(val) });
+    array.forEach((val, index) => {
+      replay.append({ template, val, index, frame: this.frame, key: this.keyFor(val) });
     });
 
     replay.commit();
@@ -93,7 +93,7 @@ export class MorphList extends EmptyableMorph {
   }
 
   private keyFor(obj: any): InternedString {
-    let keyPath = this.key.value();
+    let keyPath = this.key ? this.key.value() : '@identity';
 
     if (keyPath === '@identity') return this.identityKey(obj);
     else return this.pathKey(obj, keyPath);
@@ -141,8 +141,10 @@ class InnerBlockMorph extends TemplateMorph {
     this.nextSiblingNode = nextSibling || null;
   }
 
-  updateItem(value) {
-    this.frame.scope().updateLocal(this.template.locals[0], value);
+  updateItem(value: any, index: number) {
+    let scope = this.frame.scope();
+    scope.updateLocal(this.template.locals[0], value);
+    if (this.template.arity > 1) scope.updateLocal(this.template.locals[1], index);
     this.update();
   }
 
@@ -166,12 +168,13 @@ class Builder {
     this.parent = parent;
   }
 
-  append({ template, key, frame, val }: { template: Template, key: InternedString, frame: Frame, val: any }) {
+  append({ template, key, index, frame, val }: { template: Template, key: InternedString, index: number, frame: Frame, val: any }) {
     let childFrame = frame.child();
 
     if (template.arity) {
       let scope = childFrame.childScope(template.locals);
       scope.bindLocal(template.locals[0], val);
+      if (template.arity > 1) scope.bindLocal(template.locals[1], index);
     }
 
     let morph = createMorph(InnerBlockMorph, this.parentElement, childFrame, { template, key });
@@ -199,11 +202,11 @@ class Replay {
     this.list = parent.list;
   }
 
-  append({ template, key, val, frame }: { template: Template, key: InternedString, val: any, frame: Frame }) {
+  append({ template, key, val, index, frame }: { template: Template, key: InternedString, val: any, index: number, frame: Frame }) {
     let { current, map, list, parentNode } = this;
 
     if (current && current.key === key) {
-      current.updateItem(val);
+      current.updateItem(val, index);
       this.current = this.list.nextNode(current);
     } else if (map[<string>key] !== undefined) {
       let found = map[<string>key];
@@ -216,12 +219,13 @@ class Replay {
         this.advanceToKey(key);
       }
 
-      found.updateItem(val);
+      found.updateItem(val, index);
     } else {
       let childFrame = frame.child();
       if (template.arity) {
-        childFrame.childScope(template.locals);
-        childFrame.scope().bindLocal(template.locals[0], val);
+        let scope = childFrame.childScope(template.locals);
+        scope.bindLocal(template.locals[0], val);
+        if (template.arity > 1) scope.bindLocal(template.locals[1], index);
       }
 
       let nextSibling = current && current.firstNode();

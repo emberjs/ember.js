@@ -2,37 +2,174 @@
   <head>
     <title>HTMLBars example</title>
     <style type="text/css">
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: sans-serif;
+      }
+
       #inputs {
         overflow: hidden;
+        width: 100%;
       }
 
       #inputs label {
         float: left;
+        width: 33%;
+      }
+
+      #inputs p {
+        margin: 5px 0;
+        text-align: center;
       }
 
       #inputs textarea {
         display: block;
-        width: 300px;
+        width: 100%;
         height: 150px;
-        margin: 5px 10px 5px 0px;
         font-family: monospace;
+      }
+
+      #inputs label + label {
+        padding-left: 20px;
+      }
+
+      #actions {
+        margin-top: 10px;
+        margin-bottom: 20px;
+      }
+
+      #template, #output-wrapper {
+        width: 50%;
+        float: left;
+      }
+
+      hr {
+        border: 1px solid #966;
+      }
+
+      li {
+        line-height: 0.5em;
+        font-family: sans-serif;
+        font-size: 0.8em;
+        color: #666;
+      }
+
+      li pre {
+        font-family: consolas, monospace;
+        font-size: 0.8rem;
+      }
+
+      h3 {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      div + h3 {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #666;
+      }
+
+      h4 {
+        color: #333;
+      }
+
+      .statement .string {
+        color: #66c;
+      }
+
+      .statement .type-attr {
+        color: #999;
+      }
+
+      .statement .type-attr::before {
+        content: '@';
+      }
+
+      .statement .type-expr {
+        color: #393;
+        font-weight: bold;
+      }
+
+      .statement .type-append {
+        color: #f66;
+      }
+
+      .statement .type-element {
+        color: #900;
+        font-weight: bold;
+      }
+
+      .statement .type-append::before {
+        content: '>> ';
+      }
+
+      .statement .type-block {
+        color: #900;
+      }
+
+      .statement .type-block::before {
+        content: '#';
+      }
+
+      .statement .template {
+        color: #999;
+      }
+
+      .statement .template-num {
+        background-color: #c66;
+        color: #fff;
+        margin-left: 1px;
+        padding: 1px 3px 1px 2px;
+        font-family: sans-serif;
+        font-weight: bold;
+      }
+
+      h4 {
+        color: #c66;
+      }
+
+      h4 .template-num {
+        color: #fff;
+        background-color: #c66;
+        padding: 2px 3px;
       }
     </style>
   </head>
   <body>
+    <script type="template" id="pretty-print">
+      {{#each templates as |template|}}
+        <h4>Template <span class='template-num'>{{template.index}}</span></h4>
+
+        {{#if (is-empty template.statements)}}
+          <pre>Empty Template</pre>
+        {{else}}
+          <ol start="0">
+            {{#each template.statements as |statement|}}
+              <li><pre class='statement'>{{{format-statement statement}}}</pre></li>
+            {{/each}}
+          </ol>
+        {{/if}}
+      {{/each}}
+    </script>
+
     <div id="inputs">
       <label>
-        Data
+        <p>Data</p>
         <textarea id="data">{"name": "Bob"}</textarea>
       </label>
 
       <label>
-        Template
+        <p>Template</p>
         <textarea id="template">Howdy {{name}}</textarea>
       </label>
 
       <label>
-        Options
+        <p>Options</p>
         <textarea id="options">{ "disableComponentGeneration": false }</textarea>
       </label>
     </div>
@@ -42,28 +179,99 @@
       <button id="run-template">Compile and Render</button>
     </div>
 
-    <hr>
+    <div id="template">
+      <h3>Printed Template</h3>
+      <div id="printed-template"></div>
+    </div>
 
-    <div id="output"></div>
+    <div id="output-wrapper">
+      <h3>Output</h3>
+      <div id="output"></div>
+      <h3>Output HTML</h3>
+      <div id="output-html"></div>
+    </div>
 
     <script src="../assets/loader.js"></script>
     <script>loader.noConflict({ define: 'enifed' });</script>
     <script src="../amd/glimmer-compiler.amd.js"></script>
+    <script src="./demos.amd.js"></script>
 
     <script>
-      var compileBtn = document.getElementById('compile-template'),
-          runBtn     = document.getElementById('run-template'),
-          dataarea   = document.getElementById('data'),
-          textarea   = document.getElementById('template'),
-          output     = document.getElementById('output'),
-          skipRender = document.getElementById('skip-render'),
-          options    = document.getElementById('options');
+      var compileBtn      = document.getElementById('compile-template'),
+          runBtn          = document.getElementById('run-template'),
+          dataarea        = document.getElementById('data'),
+          textarea        = document.getElementById('template'),
+          output          = document.getElementById('output'),
+          outputHTML      = document.getElementById('output-html'),
+          printed         = document.getElementById('printed-template'),
+          printTemplate   = document.getElementById('pretty-print').innerHTML,
+          skipRender      = document.getElementById('skip-render'),
+          options         = document.getElementById('options');
 
-      var compiler    = requireModule('htmlbars-compiler'),
-          DOMHelper   = requireModule('htmlbars-runtime').DOMHelper,
-          hooks       = requireModule('htmlbars-runtime').hooks,
-          render      = requireModule('htmlbars-runtime').render,
-          Template    = requireModule('htmlbars-runtime').Template;
+      var escape          = requireModule('handlebars/utils').escapeExpression;
+
+      var compileTemplate = requireModule('htmlbars-demos/index').compile,
+          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment,
+          MyComponent     = requireModule('htmlbars-demos/index').MyComponent;
+
+      var env = new DemoEnvironment();
+
+      env.registerHelper('if', function(params, hash, blocks) {
+        if (!!params[0]) {
+          blocks.template.yield();
+        } else {
+          blocks.inverse.yield();
+        }
+      });
+
+      env.registerHelper('is-empty', function(params) {
+        return params[0].length === 0;
+      });
+
+      env.registerHelper('format-statement', function(params) {
+        return formatExpression(params[0]);
+      });
+
+      function formatExpression(expr) {
+        if (typeof expr !== 'object') {
+          return "<span class='" + (typeof expr) + "'>" + JSON.stringify(expr) + "</span>";
+        }
+
+        var out = '(<span class="type-' + expr.type + ' ' + expr.operation + '">' + expr.operation + '</span>';
+
+        if (expr.params && expr.params.length) {
+          var params = expr.params.map(function(e) { return formatExpression(e); });
+          out += ' ' + params.join(' ');
+        }
+
+        if (expr.hash && Object.keys(expr.hash).length) {
+          var hash = Object.keys(expr.hash).map(function(key) {
+            return key + '=' + formatExpression(expr.hash[key]);
+          });
+          out += ' ' + hash.join(' ');
+        }
+
+        if (expr.templates) {
+          var templates = expr.templates;
+          var defaultTemplate = templates.default === null ? 'none' : templates.default;
+
+          out += ' <span class="template">&default=</span><span class="template-num">' + defaultTemplate + '</span>';
+
+          if (template.inverse) {
+            out += ' <span class="template">&inverse=</span><span class="template-num">' + template.inverse + '</span>';
+          }
+        }
+
+        return out + ')';
+      }
+
+      function noMeta(key, value) {
+        if (key === '_meta') return undefined;
+        return value;
+      }
+
+      var layout = compileTemplate('<div color="{{attrs.color}}">{{yield}}</div>');
+      env.registerComponent('my-component', MyComponent, layout);
 
       var templateSource = localStorage.getItem('templateSource');
       var data = localStorage.getItem('templateData');
@@ -99,49 +307,22 @@
           compileOptions = {};
         }
 
-        var templateSpec = compiler.compileSpec(source, compileOptions);
-        var templates = Template.fromSpec(JSON.parse(templateSpec)).prettyPrint();
+        var template = compileTemplate(source, compileOptions);
+        var templates = template.prettyPrint();
 
-        output.innerHTML = '';
+        printed.innerHTML = '';
+        var compiledPrintTemplate = compileTemplate(printTemplate);
 
-        templates.forEach(function(template, index) {
-          var h3 = document.createElement('h3');
-          h3.innerHTML = 'Template ' + index;
-          output.appendChild(h3);
+        templates = templates.map(function(t, i) {
+          return { statements: t, index: i };
+        }).reverse();
 
-          if (template.length === 0) {
-            var pre = document.createElement('pre');
-            pre.innerText = 'Empty Template';
-            output.appendChild(pre);
-            return;
-          }
-
-          var ol = document.createElement('ol');
-          ol.setAttribute('start', '0');
-          output.appendChild(ol);
-
-          template.forEach(function(t) {
-            var li = document.createElement('li');
-            ol.appendChild(li);
-            var pre = document.createElement('pre');
-            li.appendChild(pre);
-            pre.innerText = t;
-          });
-        });
+        compiledPrintTemplate.render({ templates: templates }, env, { appendTo: printed });
 
         if (shouldRender) {
-          var template = compiler.template(templateSpec);
-
-          var env = { dom: new DOMHelper(), hooks: hooks, helpers: {} };
-
-          var scope = hooks.createFreshScope();
-
-          hooks.bindSelf(env, scope, data);
-
-          var dom = render(template, env, scope, { contextualElement: output }).fragment;
-
-          output.innerHTML += '<hr><pre><code>' + JSON.stringify(data) + '</code></pre><hr>';
-          output.appendChild(dom);
+          output.innerHTML = outputHTML.innerHTML = '';
+          template.render(data, env, { appendTo: output });
+          outputHTML.innerHTML += '<pre><code>' + escape(output.innerHTML) + '</code></pre>';
         }
       }
 

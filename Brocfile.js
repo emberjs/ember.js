@@ -12,7 +12,25 @@ var getVersion = require('git-repo-version');
 var dependableTrees = {};
 
 var bower = 'bower_components';
-var demos = new Funnel('demos', { destDir: '/demos' });
+var demoHTML = new Funnel('demos', {
+  include: ['*.html'],
+  destDir: '/demos'
+});
+
+var demoTS = new Funnel('demos', {
+  include: ['**/*.ts']
+});
+
+var demoES6 = typescript(demoTS);
+var demoES5 = transpile(demoES6);
+
+var demoConcat = concatFiles(demoES5, {
+  inputFiles: ['**/*.js'],
+  outputFile: '/demos/demos.amd.js',
+  sourceMapConfig: { enabled: true }
+});
+
+var demos = mergeTrees([ demoHTML, demoConcat ]);
 
 var benchmarkjs = new Funnel('node_modules/benchmark', { files: ['benchmark.js'] });
 var benchHarness = 'bench';
@@ -25,7 +43,7 @@ var HTMLTokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 
 var DTSTree = new Funnel('packages', {
   include: ['*/index.d.ts'],
-  
+
   getDestinationPath: function(relativePath) {
     return relativePath.replace(/\/index\.d\.ts$/, '.js');
   }
