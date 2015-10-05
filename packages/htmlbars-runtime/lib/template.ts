@@ -193,9 +193,8 @@ interface PrettyPrintable {
 export interface ExpressionSyntax {
   isStatic: boolean;
   evaluate(frame: Frame): ChainableReference;
+  prettyPrint(): any;
 }
-
-interface PrettyPrintableExpressionSyntax extends ExpressionSyntax, PrettyPrintable {}
 
 export interface StatementSyntax {
   evaluate(stack: ElementStack, frame?): any;
@@ -260,7 +259,8 @@ export class Block extends DynamicExpression implements DynamicStatementSyntax, 
 
   prettyPrint() {
     let [params, hash] = this.args.prettyPrint();
-    return new PrettyPrint('block', 'block', params, hash, this.templates.prettyPrint());
+    let block = new PrettyPrint('expr', this.path.join('.'), params, hash);
+    return new PrettyPrint('block', 'block', [block], null, this.templates.prettyPrint());
   }
 
   evaluate(stack: ElementStack, frame: Frame): BlockHelperMorph {
@@ -298,7 +298,7 @@ export class Unknown extends DynamicExpression implements DynamicStatementSyntax
 
   prettyPrint() {
     let operation = this.trustingMorph ? 'append-html' : 'append-text';
-    let get = new PrettyPrint('expr', 'get', [this.ref.prettyPrint()], null);
+    let get = new PrettyPrint('expr', 'unknown', [this.ref.prettyPrint()], null);
     return new PrettyPrint('append', operation, [get]);
   }
 
@@ -351,9 +351,10 @@ export class Inline extends DynamicExpression implements DynamicStatementSyntax 
 
   prettyPrint() {
     let operation = this.trustingMorph ? 'append-html' : 'append-text';
-    let get = Get.build(this.path.join('.')).prettyPrint();
+    let [params, hash] = this.args.prettyPrint();
+    let helper = new PrettyPrint('expr', this.path.join('.'), params, hash);
 
-    return new PrettyPrint('append', operation, [get]);
+    return new PrettyPrint('append', operation, [helper]);
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
@@ -438,9 +439,9 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
   }
 
   public name: string;
-  private value: PrettyPrintableExpressionSyntax;
+  private value: ExpressionSyntax;
 
-  constructor(options: { name: string, value: PrettyPrintableExpressionSyntax }) {
+  constructor(options: { name: string, value: ExpressionSyntax }) {
     super();
     this.name = options.name;
     this.value = options.value;
@@ -473,17 +474,17 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
     });
   }
 
-  static build(_name: string, value: PrettyPrintableExpressionSyntax, _namespace: string=null): DynamicAttr {
+  static build(_name: string, value: ExpressionSyntax & PrettyPrintable, _namespace: string=null): DynamicAttr {
     let name = intern(_name);
     let namespace = _namespace ? intern(_namespace) : null;
     return new DynamicAttr({ name, value, namespace });
   }
 
   name: InternedString;
-  value: PrettyPrintableExpressionSyntax;
+  value: ExpressionSyntax & PrettyPrintable;
   namespace: InternedString;
 
-  constructor(options: { name: InternedString, value: PrettyPrintableExpressionSyntax, namespace: InternedString }) {
+  constructor(options: { name: InternedString, value: ExpressionSyntax & PrettyPrintable, namespace: InternedString }) {
     super();
     this.name = options.name;
     this.value = options.value;
@@ -830,7 +831,7 @@ export class Value extends StaticExpression implements ExpressionSyntax {
 type Path = InternedString[];
 type GetSexp = [InternedString, Path];
 
-export class Get extends DynamicExpression implements PrettyPrintableExpressionSyntax {
+export class Get extends DynamicExpression implements ExpressionSyntax, PrettyPrintable {
   type = "get";
 
   static fromSpec(sexp: GetSexp): Get {
@@ -1094,7 +1095,7 @@ class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
     return new Params(sexp.map(buildExpression));
   }
 
-  static build(exprs: PrettyPrintableExpressionSyntax[]): Params {
+  static build(exprs: ExpressionSyntax[]): Params {
     return new Params(exprs);
   }
 
@@ -1104,10 +1105,10 @@ class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
     return (this._empty = this._empty || new Params([]));
   }
 
-  params: PrettyPrintableExpressionSyntax[];
+  params: ExpressionSyntax[];
   isStatic = false;
 
-  constructor(exprs: PrettyPrintableExpressionSyntax[]) {
+  constructor(exprs: ExpressionSyntax[]) {
     super();
     this.params = exprs;
   }
@@ -1172,7 +1173,7 @@ export class Hash implements ExpressionSyntax {
     return new Hash({ keys, values });
   }
 
-  static build(hash: Dict<PrettyPrintableExpressionSyntax>): Hash {
+  static build(hash: Dict<ExpressionSyntax>): Hash {
     if (hash === undefined) { return Hash.empty(); }
     let keys = [];
     let values = [];
@@ -1192,7 +1193,7 @@ export class Hash implements ExpressionSyntax {
   }
 
   public keys: InternedString[];
-  public values: PrettyPrintableExpressionSyntax[];
+  public values: ExpressionSyntax[];
   public isStatic = false;
 
   constructor({ keys, values }) {
@@ -1327,7 +1328,7 @@ export class TemplateBuilder {
     return StaticAttr.build(key, value);
   }
 
-  dynamicAttr(key: string, value: PrettyPrintableExpressionSyntax, namespace: string=null): DynamicAttr {
+  dynamicAttr(key: string, value: ExpressionSyntax, namespace: string=null): DynamicAttr {
     return DynamicAttr.build(key, value);
   }
 
