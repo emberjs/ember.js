@@ -112,11 +112,6 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     // in tests, or rendered to a string in the case of FastBoot.
     this.register('-application-instance:main', this, { instantiate: false });
 
-    if (!isEnabled('ember-registry-container-reform')) {
-      this.container = this.__container__;
-      this.registry = this.__registry__;
-    }
-
     this._booted = false;
   },
 
@@ -543,35 +538,33 @@ function isResolverModuleBased(applicationInstance) {
   return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
 }
 
-if (isEnabled('ember-registry-container-reform')) {
-  Object.defineProperty(ApplicationInstance.prototype, 'container', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      var instance = this;
-      return {
-        lookup() {
-          deprecate(
-            'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-            false, {
-              id: 'ember-application.app-instance-container',
-              until: '3.0.0',
-              url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
-            }
-          );
-          return instance.lookup(...arguments);
-        }
-      };
-    }
-  });
+Object.defineProperty(ApplicationInstance.prototype, 'container', {
+  configurable: true,
+  enumerable: false,
+  get() {
+    var instance = this;
+    return {
+      lookup() {
+        deprecate(
+          'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
+          false, {
+            id: 'ember-application.app-instance-container',
+            until: '3.0.0',
+            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
+          }
+        );
+        return instance.lookup(...arguments);
+      }
+    };
+  }
+});
 
-  Object.defineProperty(ApplicationInstance.prototype, 'registry', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      return buildFakeRegistryWithDeprecations(this, 'ApplicationInstance');
-    }
-  });
-}
+Object.defineProperty(ApplicationInstance.prototype, 'registry', {
+  configurable: true,
+  enumerable: false,
+  get() {
+    return buildFakeRegistryWithDeprecations(this, 'ApplicationInstance');
+  }
+});
 
 export default ApplicationInstance;

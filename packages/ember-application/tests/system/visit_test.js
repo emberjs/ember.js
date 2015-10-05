@@ -366,11 +366,7 @@ if (isEnabled('ember-application-visit')) {
       assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
 
       function lookup(fullName) {
-        if (isEnabled('ember-registry-container-reform')) {
-          return instance.lookup(fullName);
-        } else {
-          return instance.container.lookup(fullName);
-        }
+        return instance.lookup(fullName);
       }
 
       assert.ok(lookup('-view-registry:main')['my-cool-app'] instanceof View, 'view was registered on the instance\'s view registry');
@@ -680,11 +676,7 @@ if (isEnabled('ember-application-visit')) {
     assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
 
     function lookup(instance, fullName) {
-      if (isEnabled('ember-registry-container-reform')) {
-        return instance.lookup(fullName);
-      } else {
-        return instance.container.lookup(fullName);
-      }
+      return instance.lookup(fullName);
     }
 
     let a = run(App, 'visit', '/a', { isBrowser: false, shouldRender: false }).then(instance => {

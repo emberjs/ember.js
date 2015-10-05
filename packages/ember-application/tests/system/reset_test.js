@@ -8,7 +8,6 @@ import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import jQuery from 'ember-views/system/jquery';
 import Registry from 'container/registry';
-import isEnabled from 'ember-metal/features';
 
 var application, Application;
 
@@ -241,27 +240,15 @@ QUnit.test('With ember-data like initializer and constant', function() {
     })
   };
 
-  if (isEnabled('ember-registry-container-reform')) {
-    Application.initializer({
-      name: 'store',
-      initialize(application) {
-        application.unregister('store:main');
-        application.register('store:main', application.Store);
+  Application.initializer({
+    name: 'store',
+    initialize(application) {
+      application.unregister('store:main');
+      application.register('store:main', application.Store);
 
-        application.__container__.lookup('store:main');
-      }
-    });
-  } else {
-    Application.initializer({
-      name: 'store',
-      initialize(registry, application) {
-        registry.unregister('store:main');
-        registry.register('store:main', application.Store);
-
-        application.__container__.lookup('store:main');
-      }
-    });
-  }
+      application.__container__.lookup('store:main');
+    }
+  });
 
   run(function() {
     application = Application.create();

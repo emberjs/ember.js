@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
-import Registry from 'container/registry';
 import isEnabled from 'ember-metal/features';
 
 var app;
@@ -70,44 +69,23 @@ if (isEnabled('ember-application-visit')) {
   });
 }
 
-if (isEnabled('ember-registry-container-reform')) {
-  QUnit.test('initializers are passed an App', function() {
-    var MyApplication = Application.extend();
+QUnit.test('initializers are passed an App', function() {
+  var MyApplication = Application.extend();
 
-    MyApplication.initializer({
-      name: 'initializer',
-      initialize(App) {
-        ok(App instanceof Application, 'initialize is passed an Application');
-      }
-    });
+  MyApplication.initializer({
+    name: 'initializer',
+    initialize(App) {
+      ok(App instanceof Application, 'initialize is passed an Application');
+    }
+  });
 
-    run(function() {
-      app = MyApplication.create({
-        router: false,
-        rootElement: '#qunit-fixture'
-      });
+  run(function() {
+    app = MyApplication.create({
+      router: false,
+      rootElement: '#qunit-fixture'
     });
   });
-} else {
-  QUnit.test('initializers are passed a registry and App', function() {
-    var MyApplication = Application.extend();
-
-    MyApplication.initializer({
-      name: 'initializer',
-      initialize(registry, App) {
-        ok(registry instanceof Registry, 'initialize is passed a registry');
-        ok(App instanceof Application, 'initialize is passed an Application');
-      }
-    });
-
-    run(function() {
-      app = MyApplication.create({
-        router: false,
-        rootElement: '#qunit-fixture'
-      });
-    });
-  });
-}
+});
 
 QUnit.test('initializers can be registered in a specified order', function() {
   var order = [];
@@ -409,25 +387,23 @@ QUnit.test('initializers should be executed in their own context', function() {
   });
 });
 
-if (isEnabled('ember-registry-container-reform')) {
-  QUnit.test('initializers should throw a deprecation warning when receiving a second argument', function() {
-    expect(1);
+QUnit.test('initializers should throw a deprecation warning when receiving a second argument', function() {
+  expect(1);
 
-    var MyApplication = Application.extend();
+  var MyApplication = Application.extend();
 
-    MyApplication.initializer({
-      name: 'deprecated',
-      initialize(registry, application) {
-      }
-    });
-
-    expectDeprecation(function() {
-      run(function() {
-        app = MyApplication.create({
-          router: false,
-          rootElement: '#qunit-fixture'
-        });
-      });
-    }, /The `initialize` method for Application initializer 'deprecated' should take only one argument - `App`, an instance of an `Application`./);
+  MyApplication.initializer({
+    name: 'deprecated',
+    initialize(registry, application) {
+    }
   });
-}
+
+  expectDeprecation(function() {
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  }, /The `initialize` method for Application initializer 'deprecated' should take only one argument - `App`, an instance of an `Application`./);
+});

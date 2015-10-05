@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import Application from 'ember-application/system/application';
 import Route from 'ember-routing/system/route';
-import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
@@ -133,25 +132,14 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   var ApplicationSubclass = Application.extend();
 
-  if (isEnabled('ember-registry-container-reform')) {
-    ApplicationSubclass.initializer({
-      name: 'customize-things',
-      initialize(application) {
-        application.customEvents = {
-          wowza: 'wowza'
-        };
-      }
-    });
-  } else {
-    ApplicationSubclass.initializer({
-      name: 'customize-things',
-      initialize(registry, application) {
-        application.customEvents = {
-          wowza: 'wowza'
-        };
-      }
-    });
-  }
+  ApplicationSubclass.initializer({
+    name: 'customize-things',
+    initialize(application) {
+      application.customEvents = {
+        wowza: 'wowza'
+      };
+    }
+  });
 
   setupApp(ApplicationSubclass);
 
