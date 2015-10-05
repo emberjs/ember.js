@@ -101,13 +101,14 @@ if (isEnabled('ember-contextual-components')) {
     );
 
     let template = compile('{{component (component lookupComponent)}}');
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      container,
+      template,
+      lookupComponent: '-mandarin'
+    }).create();
 
     runAppend(component);
-    equal(component.$().text(), ``, 'undefined lookupComponent does not render');
-    run(() => {
-      component.set('lookupComponent', '-mandarin');
-    });
+
     equal(component.$().text(), `ni hao`,
           'mandarin lookupComponent renders greeting');
     run(() => {
@@ -308,5 +309,34 @@ if (isEnabled('ember-contextual-components')) {
 
     runAppend(component);
     equal(component.$().text(), 'Hodi Sergio', 'component is rendered');
+  });
+
+  QUnit.test('raises an assertion when component path is null', function() {
+    let template = compile(`{{component (component lookupComponent)}}`);
+    component = Component.extend({ container, template }).create();
+
+    expectAssertion(() => {
+      runAppend(component);
+    });
+  });
+
+  QUnit.test('raises an assertion when component path is not a component name', function() {
+    let template = compile(`{{component (component "not-a-component")}}`);
+    component = Component.extend({ container, template }).create();
+
+    expectAssertion(() => {
+      runAppend(component);
+    }, `The component helper cannot be used without a valid component name. You used "not-a-component" via (component "not-a-component")`);
+
+    template = compile(`{{component (component compName)}}`);
+    component = Component.extend({
+      container,
+      template,
+      compName: 'not-a-component'
+    }).create();
+
+    expectAssertion(() => {
+      runAppend(component);
+    }, `The component helper cannot be used without a valid component name. You used "not-a-component" via (component compName)`);
   });
 }
