@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
-import isEnabled from 'ember-metal/features';
 
 /**
  A container used to instantiate and cache objects.
@@ -349,18 +348,6 @@ function resetMember(container, fullName) {
       member.destroy();
     }
   }
-}
-
-// Once registry / container reform is enabled, we no longer need to expose
-// Container#_registry, since Container itself will be fully private.
-if (!isEnabled('ember-registry-container-reform')) {
-  Object.defineProperty(Container.prototype, '_registry', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      return this.registry;
-    }
-  });
 }
 
 export default Container;

@@ -72,18 +72,6 @@ for a detailed explanation.
   Implements RFC https://github.com/emberjs/rfcs/pull/65, adding support for
   custom deprecation and warning handlers.
 
-* `ember-registry-container-reform`
-
-  Implements RFC https://github.com/emberjs/rfcs/pull/46, fully encapsulating
-  and privatizing the `Container` and `Registry` classes by exposing a select
-  subset of public methods on `Application` and `ApplicationInstance`.
-
-  `Application` initializers now receive a single argument to `initialize`:
-  `application`.
-
-  Likewise, `ApplicationInstance` initializers still receive a single argument
-  to initialize: `applicationInstance`.
-
 * `ember-routing-routable-components`
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for

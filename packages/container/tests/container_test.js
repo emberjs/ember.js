@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import Registry from 'container/registry';
 import { factory } from 'container/tests/container_helper';
-import isEnabled from 'ember-metal/features';
 
 var originalModelInjections;
 
@@ -536,13 +535,3 @@ QUnit.test('Lazy injection validations are cached', function() {
   container.lookup('apple:main');
   container.lookup('apple:main');
 });
-
-if (!isEnabled('ember-registry-container-reform')) {
-  QUnit.test('Container#_registry provides an alias to Container#registry while Container is pseudo-public', function() {
-    var registry = new Registry();
-    var container = registry.container();
-
-    strictEqual(container.registry, registry, '#registry points to the parent registry');
-    strictEqual(container._registry, registry, '#_registry is an alias to #registry');
-  });
-}
