@@ -6,17 +6,32 @@
     <script>loader.noConflict({ define: 'enifed' });</script>
     <script src="../amd/glimmer-compiler.amd.js"></script>
     <script src="./demos.amd.js"></script>
+
+    <style>
+      #cycle {
+        border: 1px solid #999;
+        padding: 5px;
+      }
+
+      #cycle:empty::content {
+        content: "Waiting to benchmark";
+      }
+    </style>
   </head>
 
   <body>
-    <button id='benchmark-run'>Run</button>
-    <pre id='cycle'></pre>
+    <button id='run-with-components'>With Components</button>
+    <button id='run-bare'>Bare Template</button>
+    <pre id='cycle'>Idle</pre>
     <pre id='benchmark-log'></pre>
 
     <script>
       // UI
-      var runButton = document.getElementById('benchmark-run');
-      runButton.addEventListener('click', runBenchmark);
+      var runWithComponents = document.getElementById('run-with-components');
+      runWithComponents.addEventListener('click', function() { runBenchmark('with-components') });
+
+      var runBare = document.getElementById('run-bare');
+      runBare.addEventListener('click', function() { runBenchmark('bare') });
 
       var logPre = document.getElementById('benchmark-log');
       function log(message) { logPre.innerHTML += message; }
@@ -35,7 +50,9 @@
 
       // Init
       var env = new DemoEnvironment();
+      var templates = {};
       var context;
+      var frag;
       var t;
 
       env.registerHelper('if', function(params, hash, blocks) {
@@ -46,34 +63,42 @@
         }
       });
 
-      logln('Status: Idle\n');
+      var count = 0;
+      var template;
 
-      function runBenchmark() {
-        logln('Status: Running\n');
+      function runBenchmark(name) {
+        var b = new Benchmark(name, benchmarks[name]);
 
-        var name = Object.keys(benchmarks)[0];
+        b.on('start', function() {
+          count = 0;
 
-        logln('Scenario: ' + name);
-        logln('-----------------------');
-
-        var bench = new Benchmark(benchmarks[name]);
-        var count = 0;
-
-        bench.on('cycle', function(a) {
-          count++;
-          cycle.innerHTML = count + ' of at least 100';
+          logln('Scenario: ' + this.name);
+          logln('-----------------------');
         });
 
-        bench.on('complete', function() {
-          logln("Finished");
-          var stats = new Stats({ bucket_precision: bench.stats.moe });
-          stats.push(bench.stats.sample);
+        b.on('error', function(e) {
+          logln('Error');
+          logln(e.message.stack);
+        });
 
-          logln('Samples: ' + bench.stats.sample.length);
-          logln('Median:  ' + stats.median().toPrecision(4));
-          logln('95%:     ' + stats.percentile(95).toPrecision(4));
-          logln('99%:     ' + stats.percentile(99).toPrecision(4));
-          logln('');
+        b.on('cycle', function(event) {
+          count++;
+          var moe = (event.target.stats.moe * 100).toPrecision(2);
+          var elapsed = ((new Date() - event.target.times.timeStamp) / 1000).toPrecision(2);
+          cycle.innerHTML = count + ' with moe of ' + moe + '% and ' + elapsed + 's elapsed';
+        });
+
+        b.on('complete', function(e) {
+          var stats = new Stats({ bucket_precision: this.stats.moe });
+          stats.push(this.stats.sample);
+          cycle.innerHTML = "Idle";
+
+          logln('Samples:    ' + this.stats.sample.length);
+          logln('Median:     ' + stats.median().toPrecision(4));
+          logln('95%:        ' + stats.percentile(95).toPrecision(4));
+          logln('99%:        ' + stats.percentile(99).toPrecision(4));
+          logln('Confidence: ' + stats.moe().toFixed(4));
+          logln('\n');
           logln('Distribution:');
           stats.distribution().forEach(function(d) {
             var start = d.range[0].toPrecision(3);
@@ -82,25 +107,42 @@
             logln(start + ' - ' + end + ' ' + lineOf(d.count, "="));
           });
 
-          logln('');
+          logln('\n');
         });
 
-        bench.run({ async: true });
+        b.run({ async: true });
       }
 
-      var benchmarks = {
-        'each-if': {
+      var MyItem = function(attrs) {
+        this.attrs = attrs;
+      }
+
+      var itemLayout = compileTemplate(
+        '<div>{{attrs.item.id}}: ' +
+        '{{#if attrs.item.visible}}' +
+          '{{#each attrs.item.subitems key="id" as |subitem|}}' +
+            '<sub-item id={{subitem.id}} />' +
+          '{{/each}}' +
+        '{{/if}}</div>'
+      );
+
+      env.registerComponent('my-item', MyItem, itemLayout);
+
+      var SubItem = function(attrs) {
+        this.attrs = attrs;
+      }
+
+      var subItemLayout = compileTemplate(
+        '<p>{{attrs.id}}</p>'
+      );
+
+      env.registerComponent('sub-item', SubItem, subItemLayout);
+
+      function benchmark(name, template) {
+        templates[name] = compileTemplate(template);
+        return {
           setup: function() {
-            t = compileTemplate(
-              '{{#each items key="id" as |item|}}' +
-                '{{item.id}}: ' +
-                '{{#if item.visible}}' +
-                  '{{#each item.subitems key="id" as |subitem|}}' +
-                    '{{subitem.id}}' +
-                  '{{/each}}' +
-                '{{/if}}' +
-              '{{/each}}'
-            );
+            template = templates[this.name];
 
             // Context
             var itemId = 0;
@@ -130,13 +172,31 @@
           },
 
           fn: function() {
-            var frag = document.createDocumentFragment();
-
-            t.render(context, env, { appendTo: frag });
+            frag = document.createDocumentFragment();
+            template.render(context, env, { appendTo: frag });
           },
 
-          minSamples: 100
+          minSamples: 30
         }
+      }
+
+      var benchmarks = {
+        'with-components': benchmark('with-components',
+          '{{#each items key="id" as |item|}}' +
+            '<my-item item={{item}} />' +
+          '{{/each}}'
+        ),
+
+        'bare': benchmark('bare',
+          '{{#each items key="id" as |item|}}' +
+            '<div>{{item.id}}: ' +
+            '{{#if item.visible}}' +
+              '{{#each item.subitems key="id" as |subitem|}}' +
+                '<p>{{subitem.id}}</p>' +
+              '{{/each}}' +
+            '{{/if}}</div>' +
+          '{{/each}}'
+        )
       };
 
       function lineOf(size, char) {
