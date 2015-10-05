@@ -1,4 +1,5 @@
 /*jshint multistr:true*/
+var QUnit = require('qunitjs');
 var appModule = require('./helpers/app-module');
 
 function assertHTMLMatches(assert, actualHTML, expectedHTML) {
@@ -87,40 +88,40 @@ if (appModule.canRunTests) {
   });
 
   QUnit.test("lifecycle hooks disabled", function(assert) {
-    expect(2);
+    assert.expect(2);
 
     this.template('application', "{{my-component}}{{outlet}}");
 
     this.component('my-component', {
       willRender: function() {
-        ok(true, "should trigger component willRender hook");
+        assert.ok(true, "should trigger component willRender hook");
       },
       didRender: function() {
-        ok(false, "should not trigger didRender hook");
+        assert.ok(false, "should not trigger didRender hook");
       },
       willInsertElement: function() {
-        ok(false, "should not trigger willInsertElement hook");
+        assert.ok(false, "should not trigger willInsertElement hook");
       },
       didInsertElement: function() {
-        ok(false, "should not trigger didInsertElement hook");
+        assert.ok(false, "should not trigger didInsertElement hook");
       }
     });
 
     this.view('index', {
       _willRender: function() {
-        ok(true, "should trigger view _willRender hook");
+        assert.ok(true, "should trigger view _willRender hook");
       },
       didRender: function() {
-        ok(false, "should not trigger didRender hook");
+        assert.ok(false, "should not trigger didRender hook");
       },
       willInsertElement: function() {
-        ok(false, "should not trigger willInsertElement hook");
+        assert.ok(false, "should not trigger willInsertElement hook");
       },
       didCreateElement: function() {
-        ok(false, "should not trigger didCreateElement hook");
+        assert.ok(false, "should not trigger didCreateElement hook");
       },
       didInsertElement: function() {
-        ok(false, "should not trigger didInsertElement hook");
+        assert.ok(false, "should not trigger didInsertElement hook");
       }
     });
 

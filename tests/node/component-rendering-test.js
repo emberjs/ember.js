@@ -1,5 +1,6 @@
 /*globals global,__dirname*/
 
+var QUnit = require('qunitjs');
 var SimpleDOM = require('simple-dom');
 var path = require('path');
 
