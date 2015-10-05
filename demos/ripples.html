@@ -126,7 +126,7 @@
 
         timestamp = _timestamp;
 
-        data.fps   = ("" + 1000 / delta).substr(0, 5);
+        data.fps   = (1000 / delta).toPrecision(4);
         data.count = 0;
 
         var walltime = baseOffset + timestamp;
@@ -135,7 +135,7 @@
           if (point) {
             point.update(walltime);
 
-            if (point.opacity > 0.01) {
+            if (point.opacity > 0.001) {
               data.count++;
             } else {
               data.points.remove(i);

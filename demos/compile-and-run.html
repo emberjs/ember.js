@@ -69,12 +69,17 @@
         font-family: sans-serif;
         margin: 0;
         padding: 0;
+        margin-bottom: 1rem;
       }
 
       div + h3 {
-        margin-top: 10px;
-        padding-top: 10px;
+        margin-top: 1rem;
+        padding-top: 1rem;
         border-top: 1px solid #666;
+      }
+
+      h3 + pre {
+        margin-top: 0;
       }
 
       h4 {
@@ -222,7 +227,7 @@
       env.registerHelper('if', function(params, hash, blocks) {
         if (!!params[0]) {
           blocks.template.yield();
-        } else {
+        } else if (blocks && blocks.inverse) {
           blocks.inverse.yield();
         }
       });
