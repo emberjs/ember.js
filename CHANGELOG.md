@@ -1,14 +1,16 @@
 # Ember Changelog
 
-### 2.1.0-beta.4 (September 12, 2015)
+### 2.1.0 (October 4, 2015)
 
+- [#12396](https://github.com/emberjs/ember.js/pull/12396) [BUGFIX] Ensure that `this._super` is called when extending from `Ember.Component`.
+- [#12383](https://github.com/emberjs/ember.js/pull/12383) [BUGFIX] Fix `Ember.String.classify` to underscore items with a leading dash/underscore.
+- [#12350](https://github.com/emberjs/ember.js/pull/12350) [BUGFIX] Provide a helpful assertion when using positional parameters with a param of the same name.
+- [#12345](https://github.com/emberjs/ember.js/pull/12345) [BUGFIX] Ensure `{{link-to}}` properly handles bound values for `activeClass`, `disabledClass`, and `loadingClass`.
+- [#12359](https://github.com/emberjs/ember.js/pull/12359) [BUGFIX] Ensure that functions are properly super wrapped if they include `.call` or `.apply` (this is in addition to `._super`).
 - [#12075](https://github.com/emberjs/ember.js/pull/12075) [PERF] Avoid creating a run-loop for events that are unhandled.
 - [#12260](https://github.com/emberjs/ember.js/pull/12260) [BUGFIX] Ensure `init` is completed before `didReceiveAttrs` is fired.
 - [#12323](https://github.com/emberjs/ember.js/pull/12323) [BUGFIX beta] Make `{{get something 'path.goes.here'}}` work.
 - [#12331](https://github.com/emberjs/ember.js/pull/12331) [BUGFIX beta] Update backburner.js to prevent issues when interleaving `run.later` and `run.next`.
-
-### 2.1.0-beta.3 (September 6, 2015)
-
 - [#12157](https://github.com/emberjs/ember.js/pull/12157) [DEPRECATION] Allow deprecated access to registry from `Application` (argument to initializers) and `ApplicationInstance` (argument to instance initializers) instances.
 - [#12156](https://github.com/emberjs/ember.js/pull/12156) [BUGFIX] Add helpful error message when providing incorrect arguments to `Ember.computed`.
 - [#12253](https://github.com/emberjs/ember.js/pull/12253) [BUGFIX] Remove initializer causing errors during `App.reset`.
@@ -21,18 +23,12 @@
 - [#12256](https://github.com/emberjs/ember.js/pull/12256) [BUGFIX] Ensure concat streams unsubscribe properly.
 - [#12262](https://github.com/emberjs/ember.js/pull/12262) [BUGFIX] Breaks circular references in rejected jqXhr promises
 - [#12297](https://github.com/emberjs/ember.js/pull/12297) / [#12299](https://github.com/emberjs/ember.js/pull/12299) [BUGFIX] Remove extra work per component on initial render.
-
-### 2.1.0-beta.2 (August 22, 2015)
-
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [BUGFIX] Move `View#currentState` to `View#_currentState`.
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [DEPRECATION] Deprecate using the private `currentState` property on views/components.
 - [#12132](https://github.com/emberjs/ember.js/pull/12132) [BUGFIX] Fix stack overflow issue in `_super` wrapper updates.
 - [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require `this._super(...arguments)` when components implement `didRecieveAttrs`.
 - [#12170](https://github.com/emberjs/ember.js/pull/12170) [BUGFIX release] Ensure `Ember.computed.sum` returns `0` if the array to be operated on is `null` or `undefined`.
 - [#12176](https://github.com/emberjs/ember.js/pull/12176) [BUGFIX] Enable extending `Ember.LinkComponent` for customizations.
-
-### 2.1.0-beta.1 (August 16, 2015)
-
 - [#10173](https://github.com/emberjs/ember.js/pull/10173) [BUGFIX] Ensure non-singleton injections are not cached incorrectly.
 - [#11966](https://github.com/emberjs/ember.js/pull/11966) [PERF] Refactor Meta.
 - [#12057](https://github.com/emberjs/ember.js/pull/12057) Allow `instanceInitializers` to set `customEvents`.
