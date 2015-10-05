@@ -149,7 +149,11 @@ var Component = View.extend(TargetActionSupport, {
       deprecate(
         `Specifying \`defaultLayout\` to ${this} is deprecated. Please use \`layout\` instead.`,
         false,
-        { id: 'ember-views.component.defaultLayout', until: '3.0.0' }
+        {
+          id: 'ember-views.component.defaultLayout',
+          until: '3.0.0',
+          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
+        }
       );
 
       this.layout = this.defaultLayout;
