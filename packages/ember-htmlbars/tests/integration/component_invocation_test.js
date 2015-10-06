@@ -441,6 +441,57 @@ QUnit.test('arbitrary positional parameter conflict with hash parameter is repor
   }, `You cannot specify positional parameters and the hash argument \`names\`.`);
 });
 
+QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12444]', function() {
+  var SampleComponent = Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: 'names'
+  });
+
+  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  registry.register('component:sample-component', SampleComponent);
+
+  view = EmberView.extend({
+    layout: compile('{{sample-component names=things id="args-3"}}'),
+    container: container,
+    context: {
+      things: ['Foo', 4, 'Bar']
+    }
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#args-3').text(), 'Foo4Bar');
+});
+
+QUnit.test('can use hash parameter instead of positional param', function() {
+  var SampleComponent = Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['first', 'second']
+  });
+
+  registry.register('template:components/sample-component', compile('{{attrs.first}} - {{attrs.second}}'));
+  registry.register('component:sample-component', SampleComponent);
+
+  view = EmberView.extend({
+    layout: compile(`
+      {{sample-component "one" "two" id="two-positional"}}
+      {{sample-component "one" second="two" id="one-positional"}}
+      {{sample-component first="one" second="two" id="no-positional"}}
+
+    `),
+    container: container,
+    context: {
+      things: ['Foo', 4, 'Bar']
+    }
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$('#two-positional').text(), 'one - two');
+  equal(view.$('#one-positional').text(), 'one - two');
+  equal(view.$('#no-positional').text(), 'one - two');
+});
+
 QUnit.test('dynamic arbitrary number of positional parameters', function() {
   var SampleComponent = Component.extend();
   SampleComponent.reopenClass({
