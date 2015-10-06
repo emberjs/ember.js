@@ -93,8 +93,6 @@ var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
   destDir: '/tests'
 });
 
-module.exports = compilerTree;
-
 var transpiledCompiler = transpile(compilerTree, 'transpiledLibs');
 var transpiledRuntime = transpile(runtimeTree, 'transpiledRuntime');
 var transpiledTests = transpile(testTree, 'transpiledTests');
@@ -104,8 +102,6 @@ var concatenatedCompiler = concatFiles(transpiledCompiler, {
   outputFile: '/amd/glimmer-compiler.amd.js',
   sourceMapConfig: { enabled: true }
 });
-
-module.exports = concatenatedCompiler;
 
 var concatenatedRuntime = concatFiles(transpiledRuntime, {
   inputFiles: ['**/*.js'],
