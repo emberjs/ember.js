@@ -24,10 +24,18 @@ let KeyStream = BasicStream.extend({
   },
 
   compute() {
-    var object = this.sourceDep.getValue();
-    if (object) {
+    let object = this.sourceDep.getValue();
+    let type = typeof object;
+
+    if (!object || type === 'boolean') {
+      return;
+    }
+
+    if (type === 'object') {
       return get(object, this.key);
     }
+
+    return object[this.key];
   },
 
   setValue(value) {
