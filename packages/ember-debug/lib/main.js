@@ -160,7 +160,9 @@ setDebugFunction('debugSeal', function debugSeal(obj) {
 });
 
 setDebugFunction('deprecate', _deprecate);
+
 setDebugFunction('warn', _warn);
+
 /**
   Will call `Ember.warn()` if ENABLE_ALL_FEATURES, ENABLE_OPTIONAL_FEATURES, or
   any specific FEATURES flag is truthy.
