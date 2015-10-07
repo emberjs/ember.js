@@ -656,7 +656,7 @@ let LinkComponent = EmberComponent.extend({
   queryParams: null,
 
   qualifiedRouteName: computed('targetRouteName', '_routing.currentState', function computeLinkToComponentQualifiedRouteName() {
-    let params = this.attrs.params.slice();
+    let params = get(this, 'params').slice();
     let lastParam = params[params.length - 1];
     if (lastParam && lastParam.isQueryParams) {
       params.pop();
@@ -741,7 +741,7 @@ let LinkComponent = EmberComponent.extend({
     let attrs = this.attrs;
 
     // Do not mutate params in place
-    var params = attrs.params.slice();
+    let params = get(this, 'params').slice();
 
     Ember.assert('You must provide one or more parameters to the link-to component.', params.length);
 
