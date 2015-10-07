@@ -189,6 +189,62 @@ QUnit.test('The {{link-to}} helper supports URL replacement', function() {
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 
+QUnit.test('The {{link-to}} helper supports URL replacement via replace=boundTruthyThing', function() {
+  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\' replace=boundTruthyThing}}About{{/link-to}}');
+
+  App.IndexController = Controller.extend({
+    boundTruthyThing: true
+  });
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  bootApplication();
+
+  run(function() {
+    router.handleURL('/');
+  });
+
+  equal(updateCount, 0, 'precond: setURL has not been called');
+  equal(replaceCount, 0, 'precond: replaceURL has not been called');
+
+  run(function() {
+    jQuery('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(updateCount, 0, 'setURL should not be called');
+  equal(replaceCount, 1, 'replaceURL should be called once');
+});
+
+QUnit.test('The {{link-to}} helper supports setting replace=boundFalseyThing', function() {
+  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'about\' id=\'about-link\' replace=boundFalseyThing}}About{{/link-to}}');
+
+  App.IndexController = Controller.extend({
+    boundFalseyThing: false
+  });
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  bootApplication();
+
+  run(function() {
+    router.handleURL('/');
+  });
+
+  equal(updateCount, 0, 'precond: setURL has not been called');
+  equal(replaceCount, 0, 'precond: replaceURL has not been called');
+
+  run(function() {
+    jQuery('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(updateCount, 1, 'setURL should be called');
+  equal(replaceCount, 0, 'replaceURL should not be called');
+});
+
 QUnit.test('the {{link-to}} helper doesn\'t add an href when the tagName isn\'t \'a\'', function() {
   Ember.TEMPLATES.index = compile('{{#link-to \'about\' id=\'about-link\' tagName=\'div\'}}About{{/link-to}}');
 
@@ -207,9 +263,14 @@ QUnit.test('the {{link-to}} helper doesn\'t add an href when the tagName isn\'t 
 
 
 QUnit.test('the {{link-to}} applies a \'disabled\' class when disabled', function () {
-  Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen="shouldDisable"}}About{{/link-to}}');
+  Ember.TEMPLATES.index = compile(`
+    {{#link-to "about" id="about-link-static" disabledWhen="shouldDisable"}}About{{/link-to}}
+    {{#link-to "about" id="about-link-dynamic" disabledWhen=dynamicDisabledWhen}}About{{/link-to}}
+  `);
+
   App.IndexController = Controller.extend({
-    shouldDisable: true
+    shouldDisable: true,
+    dynamicDisabledWhen: 'shouldDisable'
   });
 
   Router.map(function() {
@@ -222,7 +283,8 @@ QUnit.test('the {{link-to}} applies a \'disabled\' class when disabled', functio
     router.handleURL('/');
   });
 
-  equal(jQuery('#about-link.disabled', '#qunit-fixture').length, 1, 'The link is disabled when its disabledWhen is true');
+  equal(jQuery('#about-link-static.disabled', '#qunit-fixture').length, 1, 'The static link is disabled when its disabledWhen is true');
+  equal(jQuery('#about-link-dynamic.disabled', '#qunit-fixture').length, 1, 'The dynamic link is disabled when its disabledWhen is true');
 });
 
 QUnit.test('the {{link-to}} doesn\'t apply a \'disabled\' class if disabledWhen is not provided', function () {
@@ -605,6 +667,45 @@ QUnit.test('The {{link-to}} helper supports bubbles=false', function() {
   equal(hidden, 0, 'The link didn\'t bubble');
 });
 
+QUnit.test('The {{link-to}} helper supports bubbles=boundFalseyThing', function() {
+  Ember.TEMPLATES.about = compile('<div {{action \'hide\'}}>{{#link-to \'about.contact\' id=\'about-contact\' bubbles=boundFalseyThing}}About{{/link-to}}</div>{{outlet}}');
+  Ember.TEMPLATES['about/contact'] = compile('<h1 id=\'contact\'>Contact</h1>');
+
+  App.AboutController = Controller.extend({
+    boundFalseyThing: false
+  });
+
+  Router.map(function() {
+    this.route('about', function() {
+      this.route('contact');
+    });
+  });
+
+  var hidden = 0;
+
+  App.AboutRoute = Route.extend({
+    actions: {
+      hide() {
+        hidden++;
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    router.handleURL('/about');
+  });
+
+  run(function() {
+    jQuery('#about-contact', '#qunit-fixture').click();
+  });
+
+  equal(jQuery('#contact', '#qunit-fixture').text(), 'Contact', 'precond - the link worked');
+
+  equal(hidden, 0, 'The link didn\'t bubble');
+});
+
 QUnit.test('The {{link-to}} helper moves into the named route with context', function() {
   Router.map(function(match) {
     this.route('about');
@@ -676,6 +777,23 @@ QUnit.test('The {{link-to}} helper binds some anchor html tag common attributes'
 
 QUnit.test('The {{link-to}} helper supports `target` attribute', function() {
   Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'index\' id=\'self-link\' target=\'_blank\'}}Self{{/link-to}}');
+  bootApplication();
+
+  run(function() {
+    router.handleURL('/');
+  });
+
+  var link = jQuery('#self-link', '#qunit-fixture');
+  equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+});
+
+QUnit.test('The {{link-to}} helper supports `target` attribute specified as a bound param', function() {
+  Ember.TEMPLATES.index = compile('<h3>Home</h3>{{#link-to \'index\' id=\'self-link\' target=boundLinkTarget}}Self{{/link-to}}');
+
+  App.IndexController = Controller.extend({
+    boundLinkTarget: '_blank'
+  });
+
   bootApplication();
 
   run(function() {
@@ -1252,6 +1370,27 @@ QUnit.test('the {{link-to}} helper calls preventDefault', function() {
 
 QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefault=false` is passed as an option', function() {
   Ember.TEMPLATES.index = compile('{{#link-to \'about\' id=\'about-link\' preventDefault=false}}About{{/link-to}}');
+
+  Router.map(function() {
+    this.route('about');
+  });
+
+  bootApplication();
+
+  run(router, 'handleURL', '/');
+
+  var event = jQuery.Event('click');
+  jQuery('#about-link', '#qunit-fixture').trigger(event);
+
+  equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+});
+
+QUnit.test('the {{link-to}} helper does not call preventDefault if `preventDefault=boundFalseyThing` is passed as an option', function() {
+  Ember.TEMPLATES.index = compile('{{#link-to \'about\' id=\'about-link\' preventDefault=boundFalseyThing}}About{{/link-to}}');
+
+  App.IndexController = Controller.extend({
+    boundFalseyThing: false
+  });
 
   Router.map(function() {
     this.route('about');
