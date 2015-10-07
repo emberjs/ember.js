@@ -9,6 +9,83 @@ QUnit.test('simple properties are set', function() {
   equal(o.get('ohai'), 'there');
 });
 
+QUnit.test('reopening a parent flushes the child', assert => {
+  var MyClass = EmberObject.extend();
+
+  var SubClass = MyClass.extend();
+
+  MyClass.reopen({
+    hello() {
+      return "hello";
+    }
+  });
+
+  let sub: any = SubClass.create();
+
+  assert.equal(sub.hello(), "hello");
+});
+
+QUnit.test('reopening a parent flushes the child', assert => {
+  var MyClass = EmberObject.extend({
+    hello() {
+      return "original hello";
+    }
+  });
+
+  var SubClass = MyClass.extend({
+    hello() {
+      return this._super();
+    }
+  });
+
+  var GrandChild = SubClass.extend({
+    hello() {
+      return this._super();
+    }
+  });
+
+  MyClass.reopen({
+    hello() {
+      return this._super() + " new hello";
+    }
+  });
+
+  let sub: any = GrandChild.create();
+
+  assert.equal(sub.hello(), "original hello new hello");
+});
+
+
+QUnit.test('reopening a parent with a computed property flushes the child', assert => {
+  var MyClass = EmberObject.extend({
+    hello: computed(function() {
+      return "original hello";
+    })
+  });
+
+  var SubClass = MyClass.extend({
+    hello: computed(function() {
+      return this._super()
+    })
+  });
+
+  var GrandChild = SubClass.extend({
+    hello: computed(function() {
+      return this._super()
+    })
+  });
+
+  MyClass.reopen({
+    hello: computed(function() {
+      return this._super() + " new hello";
+    })
+  });
+
+  let sub: any = GrandChild.create();
+
+  assert.equal(sub.hello, "original hello new hello");
+});
+
 QUnit.skip('calls computed property setters', function() {
   var MyClass = EmberObject.extend({
     foo: computed({

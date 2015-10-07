@@ -1,2 +1,3 @@
-export { default as default, computed, observer, alias } from './lib/object';
+export { default as default } from './lib/object';
+export { computed, observer, alias } from './lib/computed';
 export { Batcher } from './lib/batcher';
