@@ -1,5 +1,5 @@
 import {
-  guidFor,
+  guidFor
 } from 'ember-metal/utils';
 import {
   peekMeta
