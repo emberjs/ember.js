@@ -1,4 +1,5 @@
-/*globals global,__dirname*/
+/*jshint multistr:true*/
+var QUnit = require('qunitjs');
 
 var path = require('path');
 var distPath = path.join(__dirname, '../../dist');

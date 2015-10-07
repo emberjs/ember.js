@@ -1,22 +1,19 @@
 /*globals __dirname*/
 
 var path = require('path');
-
-var module = QUnit.module;
-var ok = QUnit.ok;
-var equal = QUnit.equal;
+var QUnit = require('qunitjs');
 
 var distPath = path.join(__dirname, '../../dist');
 
-module('ember-runtime.js');
+QUnit.module('ember-runtime.js');
 
-test('can be required', function() {
+QUnit.test('can be required', function(assert) {
   var Ember = require(path.join(distPath, 'ember-runtime'));
 
-  ok(Ember.Object, 'Ember.Object is present');
+  assert.ok(Ember.Object, 'Ember.Object is present');
 });
 
-test('basic object system functions properly', function() {
+QUnit.test('basic object system functions properly', function(assert) {
   var Ember = require(path.join(distPath, 'ember-runtime'));
 
   var Person = Ember.Object.extend({
@@ -30,9 +27,9 @@ test('basic object system functions properly', function() {
     lastName: 'Jackson'
   });
 
-  equal(person.get('name'), 'Max Jackson');
+  assert.equal(person.get('name'), 'Max Jackson');
 
   person.set('firstName', 'James');
 
-  equal(person.get('name'), 'James Jackson');
+  assert.equal(person.get('name'), 'James Jackson');
 });
