@@ -19,7 +19,7 @@ import {
   wrap,
   makeArray
 } from 'ember-metal/utils';
-import { meta as metaFor } from 'ember-metal/meta';
+import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import {
   Descriptor,
@@ -604,7 +604,7 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = obj.__ember_meta__;
+  var m = peekMeta(obj);
   if (!m) { return false; }
   return !!m.peekMixins(guidFor(this));
 };
@@ -645,7 +645,7 @@ MixinPrototype.keys = function() {
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var m = obj['__ember_meta__'];
+  var m = peekMeta(obj);
   var ret = [];
   if (!m) { return ret; }
 
