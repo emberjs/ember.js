@@ -1,0 +1,274 @@
+import HTMLBarsObject, { computed, observer, alias } from 'htmlbars-object';
+
+interface Get {
+  (obj: any, key: string): any;
+}
+
+interface Set {
+  (obj: any, key: string, value: any);
+}
+
+let emberGet = function aget(x, y) { return x[y]; };
+let emberSet = function aset(x, y, z) { return (x[y] = z); };
+
+function testWithDefault(name: string, callback: (Get, Set) => void) {
+  QUnit.test(name, assert => {
+    callback(emberGet, emberSet)
+  });
+}
+
+let EmberObject = HTMLBarsObject;
+
+function K() { return this; }
+
+QUnit.module('EmberObject computed property');
+
+testWithDefault('computed property on instance', function(get, set) {
+  var MyClass = EmberObject.extend({
+    foo: computed(function() { return 'FOO'; })
+  });
+
+  equal(get(new MyClass(), 'foo'), 'FOO');
+});
+
+
+testWithDefault('computed property on subclass', function(get, set) {
+  var MyClass = EmberObject.extend({
+    foo: computed(function() { return 'FOO'; })
+  });
+
+  var Subclass = MyClass.extend({
+    foo: computed(function() { return 'BAR'; })
+  });
+
+  equal(get(new Subclass(), 'foo'), 'BAR');
+});
+
+
+testWithDefault('replacing computed property with regular val', function(get, set) {
+  var MyClass = EmberObject.extend({
+    foo: computed(function() { return 'FOO'; })
+  });
+
+  var Subclass = MyClass.extend({
+    foo: 'BAR'
+  });
+
+  equal(get(new Subclass(), 'foo'), 'BAR');
+});
+
+testWithDefault('complex depndent keys', function(get, set) {
+  var MyClass = EmberObject.extend({
+
+    init() {
+      this._super.apply(this, arguments);
+      set(this, 'bar', { baz: 'BIFF' });
+    },
+
+    // count: 0,
+
+    foo: computed(function() {
+      //set(this, 'count', get(this, 'count') + 1);
+      return get(get(this, 'bar'), 'baz'); // + ' ' + get(this, 'count');
+    }).property('bar.baz')
+
+  });
+
+  var Subclass = MyClass.extend({
+    // count: 20
+  });
+
+  var obj1 = new MyClass();
+  var obj2 = new Subclass();
+
+  equal(get(obj1, 'foo'), 'BIFF');
+  equal(get(obj2, 'foo'), 'BIFF');
+
+  set(get(obj1, 'bar'), 'baz', 'BLARG');
+
+  equal(get(obj1, 'foo'), 'BLARG');
+  equal(get(obj2, 'foo'), 'BIFF');
+
+  set(get(obj2, 'bar'), 'baz', 'BOOM');
+
+  equal(get(obj1, 'foo'), 'BLARG');
+  equal(get(obj2, 'foo'), 'BOOM');
+});
+
+testWithDefault('complex dependent keys changing complex dependent keys', function(get, set) {
+  var MyClass = EmberObject.extend({
+    init() {
+      this._super.apply(this, arguments);
+      set(this, 'bar', { baz: 'BIFF' });
+    },
+
+    foo: computed(function() {
+      return get(get(this, 'bar'), 'baz');
+    }).property('bar.baz')
+  });
+
+  var Subclass = MyClass.extend({
+    init() {
+      this._super.apply(this, arguments);
+      set(this, 'bar2', { baz: 'BIFF2' });
+    },
+
+    foo: computed(function() {
+      return get(get(this, 'bar2'), 'baz');
+    }).property('bar2.baz')
+  });
+
+  var obj2 = new Subclass();
+
+  equal(get(obj2, 'foo'), 'BIFF2');
+
+  set(get(obj2, 'bar'), 'baz', 'BLARG');
+  equal(get(obj2, 'foo'), 'BIFF2', 'should not invalidate property');
+
+  set(get(obj2, 'bar2'), 'baz', 'BLARG');
+  equal(get(obj2, 'foo'), 'BLARG', 'should invalidate property');
+});
+
+QUnit.test('can retrieve metadata for a computed property', assert => {
+  var MyClass = EmberObject.extend({
+    computedProperty: computed(function() {
+    }).meta({ key: 'keyValue' })
+  });
+
+  equal(emberGet(MyClass.metaForProperty('computedProperty'), 'key'), 'keyValue', 'metadata saved on the computed property can be retrieved');
+
+  var ClassWithNoMetadata = EmberObject.extend({
+    computedProperty: computed(function() {
+    }).volatile(),
+
+    staticProperty: 12
+  });
+
+  equal(typeof ClassWithNoMetadata.metaForProperty('computedProperty'), 'object', 'returns empty hash if no metadata has been saved');
+
+  assert.throws(function() {
+    ClassWithNoMetadata.metaForProperty('nonexistentProperty');
+  }, 'metaForProperty() could not find a computed property with key \'nonexistentProperty\'.');
+
+  assert.throws(function() {
+    ClassWithNoMetadata.metaForProperty('staticProperty');
+  }, 'metaForProperty() could not find a computed property with key \'staticProperty\'.');
+});
+
+QUnit.test('can iterate over a list of computed properties for a class', function() {
+  var MyClass = EmberObject.extend({
+    foo: computed(function() {}),
+
+    fooDidChange: observer('foo', function() {}),
+
+    bar: computed(function() {}),
+
+    qux: alias('foo')
+  });
+
+  var SubClass = MyClass.extend({
+    baz: computed(function() {})
+  });
+
+  SubClass.reopen({
+    bat: computed(function() {}).meta({ iAmBat: true })
+  });
+
+  var list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  deepEqual(list.sort(), ['bar', 'foo', 'qux'], 'watched and unwatched computed properties are iterated');
+
+  list = [];
+
+  SubClass.eachComputedProperty(function(name, meta) {
+    list.push(name);
+
+    if (name === 'bat') {
+      deepEqual(meta, { iAmBat: true });
+    } else {
+      deepEqual(meta, {});
+    }
+  });
+
+  deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo', 'qux'], 'all inherited properties are included');
+});
+
+QUnit.test('list of properties updates when an additional property is added (such cache busting)', function() {
+  var MyClass = EmberObject.extend({
+    foo: computed(K),
+
+    fooDidChange: observer('foo', function() {}),
+
+    bar: computed(K)
+  });
+
+  var list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
+
+  MyClass.reopen({
+    baz: computed(K)
+  });
+
+  MyClass.create(); // force apply mixins
+
+  list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  deepEqual(list.sort(), ['bar', 'foo', 'baz'].sort(), 'expected three computed properties');
+});
+
+QUnit.test('Calling _super in call outside the immediate function of a CP getter works', function() {
+  function macro(callback) {
+    return computed(function() {
+      return callback.call(this);
+    });
+  }
+
+  var MyClass = EmberObject.extend({
+    foo: computed(function() {
+      return 'FOO';
+    })
+  });
+
+  var SubClass = MyClass.extend({
+    foo: macro(function() {
+      return this._super();
+    })
+  });
+
+  ok(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+});
+
+QUnit.test('Calling _super in apply outside the immediate function of a CP getter works', function() {
+  function macro(callback) {
+    return computed(function() {
+      return callback.apply(this);
+    });
+  }
+
+  var MyClass = EmberObject.extend({
+    foo: computed(function() {
+      return 'FOO';
+    })
+  });
+
+  var SubClass = MyClass.extend({
+    foo: macro(function() {
+      return this._super();
+    })
+  });
+
+  ok(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+});

@@ -1,4 +1,4 @@
-import { Set, InternedString } from 'htmlbars-util';
+import { Dict, Set, InternedString } from 'htmlbars-util';
 
 export interface Destroyable {
   destroy();
@@ -42,15 +42,12 @@ export interface MetaOptions {
   DefaultPathReferenceFactory?: InnerReferenceFactory
 }
 
-export interface MetaFactory {
-  new (object: any, options: MetaOptions): Meta;
-}
-
 export interface Meta {
   root(): RootReference;
   identity(): InternedString;
   referencesFor(property: InternedString): Set<PathReference>;
   referenceTypeFor(property: InternedString): InnerReferenceFactory;
+  getReferenceTypes(): Dict<InnerReferenceFactory>;
   addReference(property: InternedString, reference: PathReference);
   removeReference(property: InternedString, reference: PathReference);
 }
