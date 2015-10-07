@@ -1523,3 +1523,52 @@ QUnit.test('Block-less {{link-to}} with only query-params updates when route cha
   });
   equal(jQuery('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
 });
+
+QUnit.test('The {{link-to}} helper can use dynamic params', function() {
+  Router.map(function(match) {
+    this.route('foo', { path: 'foo/:some/:thing' });
+    this.route('bar', { path: 'bar/:some/:thing/:else' });
+  });
+
+  let controller;
+  App.IndexController = Controller.extend({
+    init() {
+      this._super(...arguments);
+
+      controller = this;
+
+      this.dynamicLinkParams = [
+        'foo',
+        'one',
+        'two'
+      ];
+    }
+  });
+
+  Ember.TEMPLATES.index = compile(`
+    <h3>Home</h3>
+
+    {{#link-to params=dynamicLinkParams id="dynamic-link"}}Dynamic{{/link-to}}
+  `);
+
+  bootApplication();
+
+  run(function() {
+    router.handleURL('/');
+  });
+
+  let link = jQuery('#dynamic-link', '#qunit-fixture');
+
+  equal(link.attr('href'), '/foo/one/two');
+
+  run(function() {
+    controller.set('dynamicLinkParams', [
+      'bar',
+      'one',
+      'two',
+      'three'
+    ]);
+  });
+
+  equal(link.attr('href'), '/bar/one/two/three');
+});
