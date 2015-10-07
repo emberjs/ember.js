@@ -5,25 +5,25 @@ import { intern } from 'htmlbars-util';
 let Wrapper = HTMLBarsObject.extend({
   fullName: computed(function() {
     return this.model && this.model.fullName;
-  }, 'model')
+  }).property('model')
 });
 
 let Model = HTMLBarsObject.extend({
   fullName: computed(function() {
     return this.person && this.person.fullName;
-  }, 'person')
+  }).property('person')
 });
 
 let Person = HTMLBarsObject.extend({
   fullName: computed(function() {
     return this.name && this.name.fullName;
-  }, 'name')
+  }).property('name')
 });
 
 let Name = HTMLBarsObject.extend({
   fullName: computed(function() {
     return `${this.first} ${this.last}`;
-  }, 'first', 'last')
+  }).property('first', 'last')
 });
 
 QUnit.module('the object model');

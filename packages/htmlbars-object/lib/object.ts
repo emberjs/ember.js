@@ -4,7 +4,7 @@ import { InternedString, Dict, intern, assign } from 'htmlbars-util';
 interface HTMLBarsObjectFactory<T> {
   new<U>(attrs?: U): T & U;
   extend<U>(extensions: U): HTMLBarsObjectFactory<T & U>;
-  create<U>(attrs?: U): T & U;
+  create<U>(attrs?: U): HTMLBarsObject & T & U;
   reopen<U>(extensions: U);
   metaForProperty(property: string): Object;
   eachComputedProperty(callback: (InternedString, Object) => void);
@@ -67,12 +67,22 @@ function wrapMethod(home: Object, methodName: InternedString, original: (...args
   }
 }
 
-function wrapAccessor(home: Object, accessorName: InternedString, original: () => any): PropertyDescriptor {
+function wrapAccessor(home: Object, accessorName: InternedString, _original: ComputedGetCallback | LegacyComputedGetCallback): PropertyDescriptor {
   let superDesc = getPropertyDescriptor(home, accessorName);
   let desc: PropertyDescriptor = {
     enumerable: true,
     configurable: true
   };
+
+  let original: ComputedGetCallback;
+
+  if (_original.length > 0) {
+    original = function() {
+      return _original.call(this, accessorName);
+    }
+  }
+
+  original = <ComputedGetCallback>_original;
 
   if (!(superDesc && 'get' in superDesc)) {
     desc.get = original;
@@ -128,7 +138,6 @@ export default class HTMLBarsObject {
     }
   }
 
-
   _super = null;
 
   init() {}
@@ -137,11 +146,38 @@ export default class HTMLBarsObject {
     if (attrs) assign(this, attrs);
     this.init();
   }
+
+  get(key: string): any {
+    return this[key];
+  }
+
+  set(key: string, value: any) {
+    this[key] = value;
+  }
 }
 
-interface ComputedCallback {
+interface ComputedGetCallback {
   (): any;
 }
+
+interface LegacyComputedGetCallback {
+  (key: string): any;
+}
+
+interface ComputedSetCallback {
+  (val: any);
+}
+
+interface LegacyComputedSetCallback {
+  (key: string, val: any);
+}
+
+interface ComputedDescriptor {
+  get?: ComputedGetCallback | LegacyComputedGetCallback;
+  set?: ComputedSetCallback | LegacyComputedSetCallback;
+}
+
+type ComputedArgument = ComputedGetCallback | ComputedDescriptor;
 
 interface Descriptor {
   "5d90f84f-908e-4a42-9749-3d0f523c262c": boolean;
@@ -150,18 +186,18 @@ interface Descriptor {
 }
 
 class Computed implements Descriptor {
-  private callback: ComputedCallback;
+  private accessor: ComputedDescriptor;
   private deps: InternedString[][];
   private metadata: Object = {};
   "5d90f84f-908e-4a42-9749-3d0f523c262c" = true;
 
-  constructor(callback: ComputedCallback, deps: string[]) {
-    this.callback = callback;
+  constructor(accessor: ComputedDescriptor, deps: string[]) {
+    this.accessor = accessor;
     this.property(...deps);
   }
 
   define(prototype: Object, key: InternedString, home: Object) {
-    Object.defineProperty(prototype, key, wrapAccessor(home, key, this.callback));
+    Object.defineProperty(prototype, key, wrapAccessor(home, key, this.accessor.get));
   }
 
   buildMeta(builder: MetaBuilder, key: InternedString) {
@@ -184,8 +220,22 @@ class Computed implements Descriptor {
   }
 }
 
-export function computed(callback: ComputedCallback, ...deps: string[]) {
-  return new Computed(callback, deps);
+export function computed(desc: ComputedDescriptor): Computed;
+export function computed(getter: ComputedGetCallback | LegacyComputedGetCallback): Computed;
+
+export function computed(...args) {
+  let last: ComputedArgument = args.pop();
+  let deps = args;
+
+  if (typeof last === 'function') {
+    return new Computed({
+      get: <ComputedGetCallback | LegacyComputedGetCallback>last
+    }, deps);
+  } else if (typeof last === 'object') {
+    return new Computed(<ComputedDescriptor>last, deps);
+  } else {
+    throw new TypeError("computed expects a function or an object as last argument")
+  }
 }
 
 export function observer(...args) {
