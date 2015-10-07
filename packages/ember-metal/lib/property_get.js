@@ -11,6 +11,9 @@ import {
   isPath,
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
+import {
+  readMeta
+} from 'ember-metal/meta';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -57,7 +60,7 @@ export function get(obj, keyName) {
     return obj;
   }
 
-  var meta = obj['__ember_meta__'];
+  var meta = readMeta(obj);
   var possibleDesc = obj[keyName];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
   var ret;

@@ -1,6 +1,6 @@
 import { warn } from 'ember-metal/debug';
 import { get, normalizeTuple } from 'ember-metal/property_get';
-import { meta as metaFor } from 'ember-metal/meta';
+import { meta as metaFor, readMeta } from 'ember-metal/meta';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
 import EmptyObject from 'ember-metal/empty_object';
 
@@ -147,7 +147,7 @@ function removeChainWatcher(obj, keyName, node) {
     return;
   }
 
-  let m = obj.__ember_meta__;
+  let m = readMeta(obj);
 
   if (!m || !m.readableChainWatchers()) {
     return;
@@ -195,7 +195,7 @@ function lazyGet(obj, key) {
     return;
   }
 
-  var meta = obj['__ember_meta__'];
+  var meta = readMeta(obj);
 
   // check if object meant only to be a prototype
   if (meta && meta.proto === obj) {
@@ -401,7 +401,7 @@ ChainNode.prototype = {
 
 export function finishChains(obj) {
   // We only create meta if we really have to
-  let m = obj.__ember_meta__;
+  let m = readMeta(obj);
   if (m) {
     m = metaFor(obj);
 
