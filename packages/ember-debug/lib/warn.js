@@ -19,6 +19,11 @@ export let missingOptionsDeprecation = 'When calling `Ember.warn` you ' +
 export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must provide `id` in options.';
 
 /**
+@module ember
+@submodule ember-debug
+*/
+
+/**
   Display a warning with the provided message. Ember build tools will
   remove any calls to `Ember.warn()` when doing a production build.
 
@@ -26,6 +31,11 @@ export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must pro
   @param {String} message A warning to display.
   @param {Boolean} test An optional boolean. If falsy, the warning
     will be displayed.
+  @param {Object} options An ojbect that can be used to pass a unique
+    `id` for this warning.  The `id` can be used by Ember debugging tools
+    to change the behavior (raise, log, or silence) for that specific warning.
+    The `id` should be namespaced by dots, e.g. "ember-debug.feature-flag-with-features-stripped"
+  @for Ember
   @public
 */
 export default function warn(message, test, options) {
