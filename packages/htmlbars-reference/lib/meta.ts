@@ -71,12 +71,6 @@ class ConstRoot implements IRootReference {
   }
 }
 
-export interface MetaFactory {
-  new (object: any, options: MetaOptions): Meta;
-  metadataForProperty(property: InternedString): any;
-  reopen(callback: (builder: MetaBuilder) => void): MetaFactory;
-}
-
 class ConstMeta implements IMeta {
   private object: any;
 
@@ -96,7 +90,11 @@ class Meta implements IMeta, HasGuid {
     if (!Object.isExtensible(obj)) return new ConstMeta(obj);
 
     let MetaToUse: typeof Meta = Meta;
-    if (obj.constructor) MetaToUse = obj.constructor._Meta || Meta;
+
+    if (obj.constructor && obj.constructor._Meta) {
+      let classMeta: ClassMeta = obj.constructor._Meta;
+      MetaToUse = classMeta.InstanceMetaConstructor;
+    }
 
     return (obj._meta = new MetaToUse(obj, {}));
   }
@@ -167,112 +165,8 @@ class Meta implements IMeta, HasGuid {
 
 export default Meta;
 
-export abstract class SealedMeta extends Meta {
-  addReferenceTypeFor(...args): InnerReferenceFactory {
-    throw new Error("Cannot modify reference types on a sealed meta");
-  }
-
-  static getReferenceTypes(): Dict<InnerReferenceFactory> {
-    throw new Error("Must implement static getReferenceTypes() on subclasses of SealedMeta");
-  }
-
-  static getPropertyMetadata(): Dict<Object> {
-    throw new Error("Must implement static getReferenceTypes() on subclasses of SealedMeta");
-  }
-
-  static reopen(callback: (builder: MetaBuilder) => void): typeof SealedMeta {
-    throw new Error("Must implement static reopen() on subclasses of SealedMeta");
-  }
-}
-
-export class BlankMeta extends SealedMeta {
-  static reopen(callback: (builder: MetaBuilder) => void): typeof SealedMeta {
-    let builder = new MetaBuilder(BlankMeta);
-    callback(builder);
-    return builder.seal();
-  }
-
-  static getReferenceTypes() {
-    return null;
-  }
-
-  static getPropertyMetadata() {
-    return null;
-  }
-
-  referenceTypeFor(...args): InnerReferenceFactory {
-    return PropertyReference;
-  }
-}
-
-export class MetaBuilder {
-  public referenceTypes: Dict<InnerReferenceFactory> = null;
-  public propertyMetadata: Dict<any> = null;
-  private parent: typeof SealedMeta;
-
-  constructor(parent: typeof SealedMeta) {
-    this.parent = parent;
-  }
-
-  addPropertyMetadata(property: InternedString, value: any) {
-    this.propertyMetadata = this.propertyMetadata || dict<any>();
-    this.propertyMetadata[<string>property] = value;
-  }
-
-  addReferenceTypeFor(property: InternedString, type: InnerReferenceFactory) {
-    this.referenceTypes = this.referenceTypes || dict<InnerReferenceFactory>();
-    this.referenceTypes[<string>property] = type;
-  }
-
-  clone(): MetaBuilder {
-    let builder = new MetaBuilder(this.parent);
-    builder.referenceTypes = this.referenceTypes && assign(dict(), this.referenceTypes);
-    builder.propertyMetadata = this.propertyMetadata && assign(dict(), this.propertyMetadata);
-    return builder;
-  }
-
-  seal(): typeof SealedMeta {
-    if (!this.propertyMetadata && this.parent instanceof BlankMeta) return BlankMeta;
-    return buildMeta(this, this.parent);
-  }
-}
-
-const EMPTY_OBJECT = {};
-
-function buildMeta(metaBuilder: MetaBuilder, parent: typeof SealedMeta): typeof SealedMeta {
-  let propertyMetadata = assign(dict(), parent.getPropertyMetadata() || EMPTY_OBJECT);
-  turbocharge(assign(propertyMetadata, metaBuilder.propertyMetadata || EMPTY_OBJECT));
-
-  let builderReferenceTypes = assign(dict<InnerReferenceFactory>(), parent.getReferenceTypes() || EMPTY_OBJECT);
-  turbocharge(assign(dict(), metaBuilder.referenceTypes || EMPTY_OBJECT));
-
-  return class extends SealedMeta {
-    static metadataForProperty(property: InternedString) {
-      if (<string>property in propertyMetadata) {
-        return propertyMetadata[<string>property];
-      } else {
-        throw new Error(`metaForProperty() could not find a computed property with key '${property}'.`);
-      }
-    }
-
-    static reopen(callback: (builder: MetaBuilder) => void): typeof SealedMeta {
-      let newBuilder = metaBuilder.clone()
-      callback(newBuilder);
-      return buildMeta(newBuilder, parent);
-    }
-
-    static getReferenceTypes(): Dict<InnerReferenceFactory> {
-      return builderReferenceTypes;
-    }
-
-    static getPropertyMetadata(): Dict<Object> {
-      return propertyMetadata;
-    }
-
-    referenceTypeFor(property: InternedString): InnerReferenceFactory {
-      return builderReferenceTypes[<string>property] || PropertyReference;
-    }
-  };
+interface ClassMeta {
+  InstanceMetaConstructor: typeof Meta;
 }
 
 function turbocharge(obj) {
