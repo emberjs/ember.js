@@ -623,14 +623,16 @@ let LinkComponent = EmberComponent.extend({
   _invoke(event) {
     if (!isSimpleClick(event)) { return true; }
 
-    if (this.attrs.preventDefault !== false) {
-      let targetAttribute = this.attrs.target;
+    let preventDefault = get(this, 'preventDefault');
+    let targetAttribute = get(this, 'target');
+
+    if (preventDefault !== false) {
       if (!targetAttribute || targetAttribute === '_self') {
         event.preventDefault();
       }
     }
 
-    if (this.attrs.bubbles === false) { event.stopPropagation(); }
+    if (get(this, 'bubbles') === false) { event.stopPropagation(); }
 
     if (get(this, '_isDisabled')) { return false; }
 
@@ -639,8 +641,7 @@ let LinkComponent = EmberComponent.extend({
       return false;
     }
 
-    let targetAttribute2 = this.attrs.target;
-    if (targetAttribute2 && targetAttribute2 !== '_self') {
+    if (targetAttribute && targetAttribute !== '_self') {
       return false;
     }
 
@@ -648,7 +649,7 @@ let LinkComponent = EmberComponent.extend({
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
     let models = get(this, 'models');
     let queryParamValues = get(this, 'queryParams.values');
-    let shouldReplace = get(this, 'attrs.replace');
+    let shouldReplace = get(this, 'replace');
 
     routing.transitionTo(qualifiedRouteName, models, queryParamValues, shouldReplace);
   },
@@ -656,7 +657,7 @@ let LinkComponent = EmberComponent.extend({
   queryParams: null,
 
   qualifiedRouteName: computed('targetRouteName', '_routing.currentState', function computeLinkToComponentQualifiedRouteName() {
-    let params = this.attrs.params.slice();
+    let params = get(this, 'params').slice();
     let lastParam = params[params.length - 1];
     if (lastParam && lastParam.isQueryParams) {
       params.pop();
@@ -738,15 +739,14 @@ let LinkComponent = EmberComponent.extend({
   willRender() {
     let queryParams;
 
-    let attrs = this.attrs;
-
     // Do not mutate params in place
-    let params = attrs.params.slice();
+    let params = get(this, 'params').slice();
 
     assert('You must provide one or more parameters to the link-to component.', params.length);
 
-    if (attrs.disabledWhen) {
-      this.set('disabled', attrs.disabledWhen);
+    let disabledWhen = get(this, 'disabledWhen');
+    if (disabledWhen) {
+      this.set('disabled', disabledWhen);
     }
 
     // Process the positional arguments, in order.
