@@ -2,7 +2,9 @@ import 'ember';
 import Ember from 'ember-metal/core';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
-
+import jQuery from 'ember-views/system/jquery';
+import run from 'ember-metal/run_loop';
+import Controller from 'ember-runtime/controllers/controller';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 
