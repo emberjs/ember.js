@@ -254,10 +254,10 @@ export function guidFor(obj) {
 
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 
-const checkHasSuper = (function () {
+export const checkHasSuper = (function () {
   let sourceAvailable = (function() {
     return this;
-  }).toString().indexOf('return this;') > -1;
+  }).toString().indexOf('return this') > -1;
 
   if (sourceAvailable) {
     return function checkHasSuper(func) {
