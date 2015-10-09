@@ -27,7 +27,7 @@ let KeyStream = BasicStream.extend({
     let object = this.sourceDep.getValue();
     let type = typeof object;
 
-    if (!object || type === 'boolean') {
+    if (!object && object !== '' || type === 'boolean') {
       return;
     }
 
