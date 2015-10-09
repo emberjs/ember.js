@@ -8,7 +8,7 @@ to every web app; Ember.js does those things for you, so you can focus
 on building killer features and UI.
 
 - [Website](http://emberjs.com)
-- [Guides](http://emberjs.com/guides)
+- [Guides](http://guides.emberjs.com)
 - [API](http://emberjs.com/api)
 - [Community](http://emberjs.com/community)
 - [Blog](http://emberjs.com/blog)
