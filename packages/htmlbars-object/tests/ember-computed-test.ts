@@ -248,7 +248,7 @@ QUnit.test('Calling _super in call outside the immediate function of a CP getter
     })
   });
 
-  ok(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+  equal(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
 });
 
 QUnit.test('Calling _super in apply outside the immediate function of a CP getter works', function() {
@@ -270,5 +270,5 @@ QUnit.test('Calling _super in apply outside the immediate function of a CP gette
     })
   });
 
-  ok(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+  equal(emberGet(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
 });
