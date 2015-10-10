@@ -99,6 +99,10 @@ class Meta implements IMeta, HasGuid {
     return (obj._meta = new MetaToUse(obj, {}));
   }
 
+  static exists(obj: any): boolean {
+    return typeof obj === 'object' && obj._meta;
+  }
+
   static identity(obj: any): InternedString {
     if (typeof obj === 'string') return intern(obj);
     else if (typeof obj === 'object') return this.for(obj).identity();
@@ -152,6 +156,10 @@ class Meta implements IMeta, HasGuid {
   referencesFor(property: InternedString): Set<IPathReference> {
     if (!this.references) return;
     return this.references[<string>property];
+  }
+
+  getSlots() {
+    return {};
   }
 
   root(): IRootReference {

@@ -57,7 +57,7 @@ testWithDefault('replacing computed property with regular val', function(get, se
   equal(get(new Subclass(), 'foo'), 'BAR');
 });
 
-testWithDefault('complex depndent keys', function(get, set) {
+testWithDefault('complex dependent keys', function(get, set) {
   var MyClass = EmberObject.extend({
 
     init() {
@@ -65,23 +65,21 @@ testWithDefault('complex depndent keys', function(get, set) {
       set(this, 'bar', { baz: 'BIFF' });
     },
 
-    // count: 0,
-
     foo: computed(function() {
-      //set(this, 'count', get(this, 'count') + 1);
-      return get(get(this, 'bar'), 'baz'); // + ' ' + get(this, 'count');
+      debugger;
+      return get(get(this, 'bar'), 'baz');
     }).property('bar.baz')
 
   });
 
   var Subclass = MyClass.extend({
-    // count: 20
   });
 
   var obj1 = new MyClass();
   var obj2 = new Subclass();
 
   equal(get(obj1, 'foo'), 'BIFF');
+  debugger;
   equal(get(obj2, 'foo'), 'BIFF');
 
   set(get(obj1, 'bar'), 'baz', 'BLARG');

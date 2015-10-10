@@ -50,6 +50,7 @@ export interface Meta {
   getReferenceTypes(): Dict<InnerReferenceFactory>;
   addReference(property: InternedString, reference: PathReference);
   removeReference(property: InternedString, reference: PathReference);
+  getSlots(): Dict<any>;
 }
 
 export interface MetaLookup {
