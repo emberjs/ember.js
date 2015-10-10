@@ -66,7 +66,6 @@ testWithDefault('complex dependent keys', function(get, set) {
     },
 
     foo: computed(function() {
-      debugger;
       return get(get(this, 'bar'), 'baz');
     }).property('bar.baz')
 
@@ -79,7 +78,6 @@ testWithDefault('complex dependent keys', function(get, set) {
   var obj2 = new Subclass();
 
   equal(get(obj1, 'foo'), 'BIFF');
-  debugger;
   equal(get(obj2, 'foo'), 'BIFF');
 
   set(get(obj1, 'bar'), 'baz', 'BLARG');
