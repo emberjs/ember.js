@@ -1,7 +1,13 @@
 import { Meta, ComputedBlueprint, setProperty } from 'htmlbars-reference';
 import { InternedString, Dict, intern, assign } from 'htmlbars-util';
-import HTMLBarsObject, { HTMLBarsObjectFactory, ClassMeta } from './object';
-import { ComputedGetCallback, LegacyComputedGetCallback } from './computed';
+import HTMLBarsObject, { HTMLBarsObjectFactory, ClassMeta, InstanceMeta, EMPTY_CACHE } from './object';
+import {
+  ComputedDescriptor,
+  ComputedGetCallback,
+  LegacyComputedGetCallback,
+  ComputedSetCallback,
+  LegacyComputedSetCallback
+} from './computed';
 
 export const DESCRIPTOR = "5d90f84f-908e-4a42-9749-3d0f523c262c";
 
@@ -30,22 +36,31 @@ export class Mixin {
     Target.prototype = prototype;
     Target._Meta.addMixin(this);
   }
+
+  applyStatic(Target: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+    mergeProperties(Parent, Target, this.extensions, Target._Meta._Meta);
+    Target._Meta.addStaticMixin(this);
+  }
 }
 
 type Extension = Mixin | Object;
 
-export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T>, ...extensions: Extension[]): HTMLBarsObjectFactory<T> {
+export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T>, ...extensions: Extension[]): typeof HTMLBarsObject {
   let Super = <typeof HTMLBarsObject>Parent;
 
   let Class = class extends Super {};
 
-  Class._Meta = new ClassMeta(Parent._Meta);
+  Class._Meta = new InstanceMeta(Parent._Meta);
 
   let mixins = extensions.map(toMixin);
 
   Parent._Meta.addSubclass(Class);
 
-  return applyMixins(Parent, Class, mixins);
+  applyStaticMixins(Class, Parent, Class._Meta.getStaticMixins());
+  applyMixins(Class, mixins);
+  Class._Meta.seal();
+
+  return Class;
 }
 
 export function toMixin(extension: Extension): Mixin {
@@ -56,21 +71,30 @@ export function toMixin(extension: Extension): Mixin {
 export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
   Parent._Meta.getSubclasses().forEach((Subclass: HTMLBarsObjectFactory<any>) => {
     Subclass._Meta.reset(Parent._Meta);
+    Subclass._Meta._Meta.reset(Parent._Meta._Meta);
     Subclass.prototype = Object.create(Parent.prototype);
-    applyMixins(Parent, Subclass, Subclass._Meta.getMixins());
+    applyStaticMixins(Subclass, Parent, Subclass._Meta.getStaticMixins());
+    applyMixins(Subclass, Subclass._Meta.getMixins());
+    Subclass._Meta.seal();
     relinkSubclasses(Subclass);
   });
 }
 
-export function applyMixins(Parent: HTMLBarsObjectFactory<any>, Class: HTMLBarsObjectFactory<any>, mixins: Mixin[]): HTMLBarsObjectFactory<any> {
+export function applyStaticMixins(Class: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>, mixins: Mixin[]) {
+  mixins.forEach(mixin => mixin.applyStatic(Class, Parent));
+}
+
+export function applyMixins(Class: HTMLBarsObjectFactory<any>, mixins: Mixin[]) {
   mixins.forEach(mixin => mixin.apply(Class));
-
-  Class._Meta.seal();
-
-  return Class;
 }
 
 export function mergeProperties(superProto: Object, proto: Object, extensions: Dict<any>, classMeta: ClassMeta) {
+  if ('concatenatedProperties' in extensions) {
+    (<any>extensions).concatenatedProperties.forEach(prop => {
+      classMeta.addConcatenatedProperty(prop, []);
+    })
+  }
+
   Object.keys(extensions).forEach(key => {
     let value = extensions[key];
 
@@ -78,9 +102,16 @@ export function mergeProperties(superProto: Object, proto: Object, extensions: D
       let extension: Descriptor = extensions[key];
       extension.define(proto, <InternedString>key, superProto);
       extension.buildMeta(classMeta, <InternedString>key);
+    } else if (key === 'concatenatedProperties') {
+      return;
     } else {
       if (typeof value === 'function') {
         value = wrapMethod(superProto, <InternedString>key, value);
+      }
+
+      if (classMeta.hasConcatenatedProperty(<InternedString>key)) {
+        classMeta.addConcatenatedProperty(<InternedString>key, value);
+        value = classMeta.getConcatenatedProperty(<InternedString>key);
       }
 
       Object.defineProperty(proto, key, {
@@ -109,25 +140,57 @@ export function wrapMethod(home: Object, methodName: InternedString, original: (
   }
 }
 
-export function wrapAccessor(home: Object, accessorName: InternedString, _original: ComputedGetCallback | LegacyComputedGetCallback): PropertyDescriptor {
+export function wrapAccessor(home: Object, accessorName: InternedString, _desc: ComputedDescriptor): PropertyDescriptor {
   let superDesc = getPropertyDescriptor(home, accessorName);
+
+  let originalGet: ComputedGetCallback;
+  let originalSet: ComputedSetCallback;
+
   let desc: PropertyDescriptor = {
     enumerable: true,
-    configurable: true
+    configurable: true,
   };
 
-  let original: ComputedGetCallback;
+  if (_desc.get && _desc.get.length > 0) {
+    originalGet = function() {
+      return _desc.get.call(this, accessorName);
+    }
+  } else {
+    originalGet = <ComputedGetCallback>_desc.get;
+  }
 
-  if (_original.length > 0) {
-    original = function() {
-      return _original.call(this, accessorName);
+  if (_desc.set && _desc.set.length > 1) {
+    originalSet = function(value) {
+      return _desc.set.call(this, accessorName, value);
+    }
+  } else {
+    originalSet = <ComputedGetCallback>_desc.set;
+  }
+
+  let cacheGet = function() {
+    if (Meta.exists(this)) {
+      let slot = Meta.for(this).getSlots()[<string>accessorName];
+      if (slot !== EMPTY_CACHE) return slot;
+    }
+
+    return originalGet.call(this);
+  }
+
+  let cacheSet = function(value) {
+    let meta = Meta.for(this);
+    let slots = meta.getSlots();
+
+    let ret = originalSet.call(this, value);
+
+    if (ret !== undefined) {
+      slots[<string>accessorName] = ret;
     }
   }
 
-  original = <ComputedGetCallback>_original;
+  desc.set = cacheSet;
 
   if (!(superDesc && 'get' in superDesc)) {
-    desc.get = original;
+    desc.get = cacheGet;
     return desc;
   }
 
@@ -139,7 +202,7 @@ export function wrapAccessor(home: Object, accessorName: InternedString, _origin
     }
 
     try {
-      return original.apply(this);
+      return cacheGet.apply(this);
     } finally {
       this._super = lastSuper;
     }

@@ -1,5 +1,5 @@
 import { InternedString, intern } from 'htmlbars-util';
-import { ComputedBlueprint } from 'htmlbars-reference';
+import { ComputedBlueprint, Meta } from 'htmlbars-reference';
 import { ClassMeta } from './object';
 import { Descriptor, wrapAccessor } from './mixin';
 
@@ -26,7 +26,6 @@ export interface ComputedDescriptor {
 
 type ComputedArgument = ComputedGetCallback | ComputedDescriptor;
 
-
 class Computed implements Descriptor {
   private accessor: ComputedDescriptor;
   private deps: InternedString[][];
@@ -39,12 +38,13 @@ class Computed implements Descriptor {
   }
 
   define(prototype: Object, key: InternedString, home: Object) {
-    Object.defineProperty(prototype, key, wrapAccessor(home, key, this.accessor.get));
+    Object.defineProperty(prototype, key, wrapAccessor(home, key, this.accessor));
   }
 
   buildMeta(classMeta: ClassMeta, key: InternedString) {
     classMeta.addReferenceTypeFor(key, ComputedBlueprint(key, this.deps));
     classMeta.addPropertyMetadata(key, this.metadata);
+    classMeta.addSlotFor(key);
   }
 
   property(...paths: string[]) {

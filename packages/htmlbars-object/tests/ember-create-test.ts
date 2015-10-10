@@ -86,7 +86,7 @@ QUnit.test('reopening a parent with a computed property flushes the child', asse
   assert.equal(sub.hello, "original hello new hello");
 });
 
-QUnit.skip('calls computed property setters', function() {
+QUnit.test('calls computed property setters', assert => {
   var MyClass = EmberObject.extend({
     foo: computed({
       get: function() {
@@ -99,7 +99,7 @@ QUnit.skip('calls computed property setters', function() {
   });
 
   var o = MyClass.create({ foo: 'bar' });
-  equal(o.get('foo'), 'bar');
+  assert.equal(o.get('foo'), 'bar');
 });
 
 QUnit.skip('allows bindings to be defined', function() {
