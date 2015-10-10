@@ -50,15 +50,13 @@ export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T
 
   let Class = class extends Super {};
 
-  Class._Meta = new InstanceMeta(Parent._Meta);
+  Class._Meta = InstanceMeta.fromParent(Parent._Meta);
 
   let mixins = extensions.map(toMixin);
 
   Parent._Meta.addSubclass(Class);
 
-  applyStaticMixins(Class, Parent, Class._Meta.getStaticMixins());
-  applyMixins(Class, mixins);
-  Class._Meta.seal();
+  applyAllMixins(Class, Parent);
 
   return Class;
 }
@@ -71,13 +69,16 @@ export function toMixin(extension: Extension): Mixin {
 export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
   Parent._Meta.getSubclasses().forEach((Subclass: HTMLBarsObjectFactory<any>) => {
     Subclass._Meta.reset(Parent._Meta);
-    Subclass._Meta._Meta.reset(Parent._Meta._Meta);
     Subclass.prototype = Object.create(Parent.prototype);
-    applyStaticMixins(Subclass, Parent, Subclass._Meta.getStaticMixins());
-    applyMixins(Subclass, Subclass._Meta.getMixins());
-    Subclass._Meta.seal();
+    applyAllMixins(Subclass, Parent);
     relinkSubclasses(Subclass);
   });
+}
+
+export function applyAllMixins(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+  applyStaticMixins(Subclass, Parent, Subclass._Meta.getStaticMixins());
+  applyMixins(Subclass, Subclass._Meta.getMixins());
+  Subclass._Meta.seal();
 }
 
 export function applyStaticMixins(Class: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>, mixins: Mixin[]) {
