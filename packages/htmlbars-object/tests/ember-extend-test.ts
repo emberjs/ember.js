@@ -1,18 +1,18 @@
 import EmberObject from 'htmlbars-object';
 
-QUnit.module('EmberObject.extend');
+QUnit.module('HTMLBarsObject.reopen');
 
 QUnit.test('Basic extend', function() {
   var SomeClass = EmberObject.extend({ foo: 'BAR' });
   ok(SomeClass.isClass, 'A class has isClass of true');
-  var obj = new SomeClass();
+  var obj: any = new SomeClass();
   equal(obj.foo, 'BAR');
 });
 
 QUnit.test('Sub-subclass', function() {
   var SomeClass = EmberObject.extend({ foo: 'BAR' });
   var AnotherClass = SomeClass.extend({ bar: 'FOO' });
-  var obj = new AnotherClass();
+  var obj: any = new AnotherClass();
   equal(obj.foo, 'BAR');
   equal(obj.bar, 'FOO');
 });
@@ -42,7 +42,7 @@ QUnit.test('Overriding a method several layers deep', function() {
     }
   });
 
-  var obj = new FinalClass();
+  var obj: any = new FinalClass();
   obj.foo();
   obj.bar();
   equal(obj.fooCnt, 2, 'should invoke both');

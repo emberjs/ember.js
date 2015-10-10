@@ -54,8 +54,10 @@ export class ClassMeta {
   private slots: InternedString[] = [];
   private InstanceMetaConstructor: typeof Meta = null;
 
-  constructor(parent: ClassMeta) {
-    this.reset(parent);
+  static fromParent(parent: ClassMeta) {
+    let meta = new this();
+    meta.reset(parent);
+    return meta;
   }
 
   init(object: HTMLBarsObject, attrs: Object) {
@@ -181,16 +183,20 @@ export class ClassMeta {
 }
 
 export class InstanceMeta extends ClassMeta {
-  public _Meta: ClassMeta = new ClassMeta(null);
+  public _Meta: ClassMeta = ClassMeta.fromParent(null);
 
-  constructor(parent: InstanceMeta) {
-    super(parent);
+  static fromParent(parent: InstanceMeta): InstanceMeta {
+    return <InstanceMeta>super.fromParent(parent);
+  }
+
+  reset(parent: InstanceMeta) {
+    super.reset(parent);
     if (parent) this._Meta.reset(parent._Meta);
   }
 }
 
 export default class HTMLBarsObject {
-  static _Meta: InstanceMeta = new InstanceMeta(null);
+  static _Meta: InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 
   static extend(): typeof HTMLBarsObject;
@@ -201,7 +207,7 @@ export default class HTMLBarsObject {
     return extendClass(this, ...extensions);
   }
 
-  static create(attrs: Object): HTMLBarsObject {
+  static create(attrs?: Object): HTMLBarsObject {
     return new this(attrs);
   }
 
@@ -236,7 +242,7 @@ export default class HTMLBarsObject {
 
   init() {}
 
-  constructor(attrs: Object) {
+  constructor(attrs?: Object) {
     if (attrs) assign(this, attrs);
     (<typeof HTMLBarsObject>this.constructor)._Meta.init(this, attrs);
     this.init();
