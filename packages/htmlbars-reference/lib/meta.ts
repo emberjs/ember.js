@@ -94,6 +94,8 @@ class Meta implements IMeta, HasGuid {
     if (obj.constructor && obj.constructor._Meta) {
       let classMeta: ClassMeta = obj.constructor._Meta;
       MetaToUse = classMeta.InstanceMetaConstructor;
+    } else if (obj._Meta) {
+      MetaToUse = obj._Meta.InstanceMetaConstructor;
     }
 
     return (obj._meta = new MetaToUse(obj, {}));

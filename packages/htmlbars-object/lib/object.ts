@@ -1,17 +1,14 @@
 import {
   Meta,
-  ComputedBlueprint,
   setProperty,
   InnerReferenceFactory,
   PropertyReference
 } from 'htmlbars-reference';
-import { InternedString, Dict, dict, intern, assign } from 'htmlbars-util';
+import { InternedString, Dict, dict, isArray, intern, assign } from 'htmlbars-util';
 import {
   Mixin,
   Descriptor,
   extend as extendClass,
-  mergeProperties,
-  wrapAccessor,
   toMixin,
   relinkSubclasses
 } from './mixin';
@@ -44,15 +41,15 @@ abstract class SealedMeta extends Meta {
 }
 
 export class ClassMeta {
-  private referenceTypes: Dict<InnerReferenceFactory>;
-  private propertyMetadata: Dict<any>;
-  private concatenatedProperties: Dict<any[]>;
+  private referenceTypes = dict<InnerReferenceFactory>();
+  private propertyMetadata = dict<any>();
+  private concatenatedProperties = dict<any[]>();
   private hasConcatenatedProperties = false;
   private mixins: Mixin[] = [];
   private staticMixins: Mixin[] = [];
   private subclasses: HTMLBarsObjectFactory<any>[] = [];
   private slots: InternedString[] = [];
-  private InstanceMetaConstructor: typeof Meta = null;
+  public InstanceMetaConstructor: typeof Meta = null;
 
   static fromParent(parent: ClassMeta) {
     let meta = new this();
@@ -122,6 +119,10 @@ export class ClassMeta {
 
   getConcatenatedProperty(property: InternedString) {
     return this.concatenatedProperties[<string>property];
+  }
+
+  getConcatenatedProperties() {
+    return Object.keys(this.concatenatedProperties);
   }
 
   addConcatenatedProperty(property: InternedString, value: any) {
