@@ -53,6 +53,15 @@ export class Mixin {
     }
   }
 
+  static mixins(obj: any): Mixin[] {
+    if (typeof obj !== 'object' || obj === null) return [];
+
+    let meta = ClassMeta.for(obj);
+    if (!meta) return [];
+
+    return meta.getAppliedMixins();
+  }
+
   constructor(extensions: Extensions, mixins: Mixin[]) {
     this.reopen(extensions);
     this.dependencies = mixins;
