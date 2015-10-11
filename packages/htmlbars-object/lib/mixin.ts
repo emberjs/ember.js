@@ -1,5 +1,5 @@
 import { Meta, ComputedReferenceBlueprint, setProperty } from 'htmlbars-reference';
-import { InternedString, Dict, dict, intern, assign } from 'htmlbars-util';
+import { InternedString, Dict, dict, isArray, intern, assign } from 'htmlbars-util';
 import HTMLBarsObject, {
   EMPTY_CACHE,
   HTMLBarsObjectFactory,
@@ -29,22 +29,38 @@ export abstract class Blueprint {
   abstract descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor;
 }
 
+interface Extensions {
+  concatenatedProperties?: string[] | string;
+}
+
 export class Mixin {
   private extensions = dict<Blueprint>();
   private concatenatedProperties: InternedString[] = [];
   private wasApplied = false;
 
-  constructor(extensions: Object) {
+  static create(extensions: Object) {
+    return new this(extensions);
+  }
+
+  constructor(extensions: Extensions) {
     this.reopen(extensions);
   }
 
-  reopen(extensions: Object) {
-    if ('concatenatedProperties' in extensions) {
-      (<any>extensions).concatenatedProperties.forEach(prop => {
-        this.concatenatedProperties = (<any>extensions).concatenatedProperties.slice();
-      });
+  reopen(extensions: Extensions) {
+    if (typeof extensions === 'object' && 'concatenatedProperties' in extensions) {
+      let concat: InternedString[];
+      let rawConcat = extensions.concatenatedProperties;
 
-      delete (<any>extensions).concatenatedProperties;
+      if (isArray(rawConcat)) {
+        concat = (<string[]>rawConcat).slice().map(intern);
+      } else if (rawConcat === null || rawConcat === undefined) {
+        concat = [];
+      } else {
+        concat = [intern(<string>rawConcat)];
+      }
+
+      delete extensions.concatenatedProperties;
+      this.concatenatedProperties = concat;
     }
 
     let normalized: Dict<Blueprint> = Object.keys(extensions).reduce((obj, key) => {
@@ -55,7 +71,10 @@ export class Mixin {
           obj[key] = new MethodBlueprint({ value });
           break;
         case 'object':
-          if (BLUEPRINT in value) obj[key] = value; break;
+          if (value && BLUEPRINT in value) {
+            obj[key] = value;
+            break;
+          }
           /* falls through */
         default:
           obj[key] = new DataBlueprint({ value });
@@ -85,6 +104,8 @@ export class Mixin {
   mergeProperties(target: Object, parent: Object, meta: ClassMeta) {
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
+    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <InternedString>'concatenatedProperties', null);
+
     Object.keys(this.extensions).forEach(key => {
       let extension: Blueprint = this.extensions[key];
       let desc = extension.descriptor(target, <InternedString>key, meta);
@@ -93,7 +114,7 @@ export class Mixin {
   }
 }
 
-type Extension = Mixin | Object;
+type Extension = Mixin | Extensions;
 
 export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T>, ...extensions: Extension[]): typeof HTMLBarsObject {
   let Super = <typeof HTMLBarsObject>Parent;
@@ -124,7 +145,7 @@ export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
 
 export function toMixin(extension: Extension): Mixin {
   if (extension instanceof Mixin) return extension;
-  else return new Mixin(extension);
+  else return new Mixin(<Object>extension);
 }
 
 class ValueDescriptor extends Descriptor {
@@ -133,7 +154,7 @@ class ValueDescriptor extends Descriptor {
   public writable: boolean;
   public value: any;
 
-  constructor({ enumerable, configurable, writable, value }: PropertyDescriptor) {
+  constructor({ enumerable=true, configurable=true, writable=true, value }: PropertyDescriptor) {
     super();
     this.enumerable = enumerable;
     this.configurable = configurable;
@@ -165,7 +186,7 @@ class AccessorDescriptor extends Descriptor {
     this.set = set;
   }
 
-  define(target: Object, key: InternedString, home: Object) {
+  define(target: Object, key: InternedString) {
     Object.defineProperty(target, key, {
       enumerable: this.enumerable,
       configurable: this.configurable,
