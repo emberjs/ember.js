@@ -107,6 +107,10 @@ export class ClassMeta {
     return this.appliedMixins.indexOf(mixin) !== -1;
   }
 
+  getAppliedMixins(): Mixin[] {
+    return this.appliedMixins;
+  }
+
   hasStaticMixin(mixin: Mixin): boolean {
     return this.staticMixins.indexOf(mixin) !== -1;
   }
