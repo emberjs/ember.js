@@ -31,7 +31,6 @@ testWithDefault('computed property on instance', function(get, set) {
   equal(get(new MyClass(), 'foo'), 'FOO');
 });
 
-
 testWithDefault('computed property on subclass', function(get, set) {
   var MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })

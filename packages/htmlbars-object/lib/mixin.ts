@@ -43,7 +43,9 @@ export class Mixin {
   static create(...args: (Mixin | Extensions)[]) {
     let extensions = args[args.length - 1];
 
-    if (extensions instanceof Mixin) {
+    if (args.length === 0) {
+      return new this({}, []);
+    } else if (extensions instanceof Mixin) {
       return new this({}, <Mixin[]>args);
     } else {
       let deps = args.slice(0, -1).map(toMixin);
@@ -54,6 +56,17 @@ export class Mixin {
   constructor(extensions: Extensions, mixins: Mixin[]) {
     this.reopen(extensions);
     this.dependencies = mixins;
+  }
+
+  detect(obj: any): boolean {
+    if (typeof obj !== 'object' || obj === null) return false;
+
+    if (obj instanceof Mixin) {
+      return obj.dependencies.indexOf(this) !== -1;
+    }
+
+    let meta = ClassMeta.for(obj);
+    return !!meta && meta.hasAppliedMixin(this);
   }
 
   reopen(extensions: Extensions) {
