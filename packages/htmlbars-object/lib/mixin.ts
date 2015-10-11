@@ -1,6 +1,13 @@
-import { Meta, ComputedBlueprint, setProperty } from 'htmlbars-reference';
-import { InternedString, Dict, intern, assign } from 'htmlbars-util';
-import HTMLBarsObject, { HTMLBarsObjectFactory, ClassMeta, InstanceMeta, EMPTY_CACHE } from './object';
+import { Meta, ComputedReferenceBlueprint, setProperty } from 'htmlbars-reference';
+import { InternedString, Dict, dict, intern, assign } from 'htmlbars-util';
+import HTMLBarsObject, {
+  EMPTY_CACHE,
+  HTMLBarsObjectFactory,
+  ClassMeta,
+  InstanceMeta,
+  turbocharge
+} from './object';
+
 import {
   ComputedDescriptor,
   ComputedGetCallback,
@@ -10,36 +17,79 @@ import {
 } from './computed';
 
 export const DESCRIPTOR = "5d90f84f-908e-4a42-9749-3d0f523c262c";
+export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";
 
-export interface Descriptor {
-  "5d90f84f-908e-4a42-9749-3d0f523c262c": boolean;
-  define(prototype: Object, key: InternedString, home: Object);
-  buildMeta(classMeta: ClassMeta, key: InternedString);
+export abstract class Descriptor {
+  "5d90f84f-908e-4a42-9749-3d0f523c262c" = true;
+  abstract define(prototype: Object, key: InternedString, home: Object);
+}
+
+export abstract class Blueprint {
+  "8d97cf5f-db9e-48d8-a6b2-7a75b7170805" = true;
+  abstract descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor;
 }
 
 export class Mixin {
-  private extensions: Object;
+  private extensions = dict<Blueprint>();
+  private concatenatedProperties: InternedString[] = [];
   private wasApplied = false;
 
   constructor(extensions: Object) {
-    this.extensions = extensions;
+    this.reopen(extensions);
   }
 
   reopen(extensions: Object) {
-    assign(this.extensions, extensions);
+    if ('concatenatedProperties' in extensions) {
+      (<any>extensions).concatenatedProperties.forEach(prop => {
+        this.concatenatedProperties = (<any>extensions).concatenatedProperties.slice();
+      });
+
+      delete (<any>extensions).concatenatedProperties;
+    }
+
+    let normalized: Dict<Blueprint> = Object.keys(extensions).reduce((obj, key) => {
+      let value = extensions[key];
+
+      switch (typeof value) {
+        case 'function':
+          obj[key] = new MethodBlueprint({ value });
+          break;
+        case 'object':
+          if (BLUEPRINT in value) obj[key] = value; break;
+          /* falls through */
+        default:
+          obj[key] = new DataBlueprint({ value });
+      }
+
+      return obj;
+    }, dict<Blueprint>());
+
+    assign(this.extensions, turbocharge(normalized));
   }
 
-  apply(Target: HTMLBarsObjectFactory<any>) {
-    let prototype = Object.create(Target.prototype);
-    mergeProperties(Target.prototype, prototype, this.extensions, Target._Meta);
-    prototype.constructor = Target;
-    Target.prototype = prototype;
-    Target._Meta.addMixin(this);
+  extendPrototype(Original: HTMLBarsObjectFactory<any>) {
+    Original.prototype = Object.create(Original.prototype);
+    this.extendPrototypeOnto(Original, Original)
   }
 
-  applyStatic(Target: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
-    mergeProperties(Parent, Target, this.extensions, Target._Meta._Meta);
+  extendPrototypeOnto(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+    this.mergeProperties(Subclass.prototype, Parent.prototype, Subclass._Meta);
+    Subclass._Meta.addMixin(this);
+  }
+
+  extendStatic(Target: HTMLBarsObjectFactory<any>) {
+    this.mergeProperties(Target, Object.getPrototypeOf(Target), Target._Meta._Meta);
     Target._Meta.addStaticMixin(this);
+  }
+
+  mergeProperties(target: Object, parent: Object, meta: ClassMeta) {
+    this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
+
+    Object.keys(this.extensions).forEach(key => {
+      let extension: Blueprint = this.extensions[key];
+      let desc = extension.descriptor(target, <InternedString>key, meta);
+      desc.define(target, <InternedString>key, parent);
+    });
   }
 }
 
@@ -48,17 +98,28 @@ type Extension = Mixin | Object;
 export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T>, ...extensions: Extension[]): typeof HTMLBarsObject {
   let Super = <typeof HTMLBarsObject>Parent;
 
-  let Class = class extends Super {};
-
-  Class._Meta = InstanceMeta.fromParent(Parent._Meta);
+  let Subclass = class extends Super {};
+  Subclass._Meta = InstanceMeta.fromParent(Parent._Meta);
 
   let mixins = extensions.map(toMixin);
+  Parent._Meta.addSubclass(Subclass);
+  mixins.forEach(m => Subclass._Meta.addMixin(m));
 
-  Parent._Meta.addSubclass(Class);
+  ClassMeta.applyAllMixins(Subclass, Parent);
 
-  applyAllMixins(Class, Parent);
+  return Subclass;
+}
 
-  return Class;
+export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
+  Parent._Meta.getSubclasses().forEach((Subclass: HTMLBarsObjectFactory<any>) => {
+    Subclass._Meta.reset(Parent._Meta);
+    Subclass.prototype = Object.create(Parent.prototype);
+
+    ClassMeta.applyAllMixins(Subclass, Parent);
+
+    // recurse into sub-subclasses
+    relinkSubclasses(Subclass);
+  });
 }
 
 export function toMixin(extension: Extension): Mixin {
@@ -66,64 +127,113 @@ export function toMixin(extension: Extension): Mixin {
   else return new Mixin(extension);
 }
 
-export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
-  Parent._Meta.getSubclasses().forEach((Subclass: HTMLBarsObjectFactory<any>) => {
-    Subclass._Meta.reset(Parent._Meta);
-    Subclass.prototype = Object.create(Parent.prototype);
-    applyAllMixins(Subclass, Parent);
-    relinkSubclasses(Subclass);
-  });
-}
+class ValueDescriptor extends Descriptor {
+  public enumerable: boolean;
+  public configurable: boolean;
+  public writable: boolean;
+  public value: any;
 
-export function applyAllMixins(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
-  applyStaticMixins(Subclass, Parent, Subclass._Meta.getStaticMixins());
-  applyMixins(Subclass, Subclass._Meta.getMixins());
-  Subclass._Meta.seal();
-}
-
-export function applyStaticMixins(Class: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>, mixins: Mixin[]) {
-  mixins.forEach(mixin => mixin.applyStatic(Class, Parent));
-}
-
-export function applyMixins(Class: HTMLBarsObjectFactory<any>, mixins: Mixin[]) {
-  mixins.forEach(mixin => mixin.apply(Class));
-}
-
-export function mergeProperties(superProto: Object, proto: Object, extensions: Dict<any>, classMeta: ClassMeta) {
-  if ('concatenatedProperties' in extensions) {
-    (<any>extensions).concatenatedProperties.forEach(prop => {
-      classMeta.addConcatenatedProperty(prop, []);
-    })
+  constructor({ enumerable, configurable, writable, value }: PropertyDescriptor) {
+    super();
+    this.enumerable = enumerable;
+    this.configurable = configurable;
+    this.writable = writable;
+    this.value = value;
   }
 
-  Object.keys(extensions).forEach(key => {
-    let value = extensions[key];
+  define(target: Object, key: InternedString, home: Object) {
+    Object.defineProperty(target, key, {
+      enumerable: this.enumerable,
+      configurable: this.configurable,
+      writable: this.writable,
+      value: this.value
+    });
+  }
+}
 
-    if (typeof value === "object" && DESCRIPTOR in value) {
-      let extension: Descriptor = extensions[key];
-      extension.define(proto, <InternedString>key, superProto);
-      extension.buildMeta(classMeta, <InternedString>key);
-    } else if (key === 'concatenatedProperties') {
-      return;
-    } else {
-      if (typeof value === 'function') {
-        value = wrapMethod(superProto, <InternedString>key, value);
-      }
+class AccessorDescriptor extends Descriptor {
+  public enumerable: boolean;
+  public configurable: boolean;
+  public get: () => any;
+  public set: (value: any) => void;
 
-      if (classMeta.hasConcatenatedProperty(<InternedString>key)) {
-        classMeta.addConcatenatedProperty(<InternedString>key, value);
-        value = classMeta.getConcatenatedProperty(<InternedString>key);
-      }
+  constructor({ enumerable, configurable, get, set }: PropertyDescriptor) {
+    super();
+    this.enumerable = enumerable;
+    this.configurable = configurable;
+    this.get = get;
+    this.set = set;
+  }
 
-      Object.defineProperty(proto, key, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value
-      });
+  define(target: Object, key: InternedString, home: Object) {
+    Object.defineProperty(target, key, {
+      enumerable: this.enumerable,
+      configurable: this.configurable,
+      get: this.get,
+      set: this.set
+    });
+  }
+}
+
+export class DataBlueprint extends Blueprint {
+  public enumerable: boolean;
+  public configurable: boolean;
+  public value: any;
+  public writable: boolean;
+
+  constructor({ enumerable=true, configurable=true, writable=true, value }: PropertyDescriptor) {
+    super();
+    this.enumerable = enumerable;
+    this.configurable = configurable;
+    this.value = value;
+    this.writable = writable;
+  }
+
+  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): ValueDescriptor {
+    let { enumerable, configurable, writable, value } = this;
+
+    if (classMeta.hasConcatenatedProperty(<InternedString>key)) {
+      classMeta.addConcatenatedProperty(<InternedString>key, value);
+      value = classMeta.getConcatenatedProperty(<InternedString>key);
     }
-  });
 
+    return new ValueDescriptor({ enumerable, configurable, writable, value });
+  }
+}
+
+export abstract class AccessorBlueprint extends Blueprint {
+  public enumerable: boolean;
+  public configurable: boolean;
+  get: () => any;
+  set: (value: any) => void;
+
+  constructor({ enumerable=true, configurable=true, get, set }: PropertyDescriptor) {
+    super();
+    this.enumerable = enumerable;
+    this.configurable = configurable;
+    this.get = get;
+    this.set = set;
+  }
+
+  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor {
+    return new ValueDescriptor({
+      enumerable: this.enumerable,
+      configurable: this.configurable,
+      get: this.get,
+      set: this.set
+    })
+  }
+}
+
+class MethodBlueprint extends DataBlueprint {
+  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): ValueDescriptor {
+    let home = Object.getPrototypeOf(target);
+    let value = wrapMethod(home, <InternedString>key, this.value);
+
+    let desc = super.descriptor(target, key, classMeta);
+    desc.value = value;
+    return desc;
+  }
 }
 
 export function wrapMethod(home: Object, methodName: InternedString, original: (...args) => any) {
@@ -139,85 +249,4 @@ export function wrapMethod(home: Object, methodName: InternedString, original: (
       this._super = lastSuper;
     }
   }
-}
-
-export function wrapAccessor(home: Object, accessorName: InternedString, _desc: ComputedDescriptor): PropertyDescriptor {
-  let superDesc = getPropertyDescriptor(home, accessorName);
-
-  let originalGet: ComputedGetCallback;
-  let originalSet: ComputedSetCallback;
-
-  let desc: PropertyDescriptor = {
-    enumerable: true,
-    configurable: true,
-  };
-
-  if (_desc.get && _desc.get.length > 0) {
-    originalGet = function() {
-      return _desc.get.call(this, accessorName);
-    }
-  } else {
-    originalGet = <ComputedGetCallback>_desc.get;
-  }
-
-  if (_desc.set && _desc.set.length > 1) {
-    originalSet = function(value) {
-      return _desc.set.call(this, accessorName, value);
-    }
-  } else {
-    originalSet = <ComputedGetCallback>_desc.set;
-  }
-
-  let cacheGet = function() {
-    if (Meta.exists(this)) {
-      let slot = Meta.for(this).getSlots()[<string>accessorName];
-      if (slot !== EMPTY_CACHE) return slot;
-    }
-
-    return originalGet.call(this);
-  }
-
-  let cacheSet = function(value) {
-    let meta = Meta.for(this);
-    let slots = meta.getSlots();
-
-    let ret = originalSet.call(this, value);
-
-    if (ret !== undefined) {
-      slots[<string>accessorName] = ret;
-    }
-  }
-
-  desc.set = cacheSet;
-
-  if (!(superDesc && 'get' in superDesc)) {
-    desc.get = cacheGet;
-    return desc;
-  }
-
-  desc.get = function() {
-    let lastSuper = this._super;
-    this._super = function() {
-      let getter = getPropertyDescriptor(home, accessorName);
-      return getter.get.call(this);
-    }
-
-    try {
-      return cacheGet.apply(this);
-    } finally {
-      this._super = lastSuper;
-    }
-  }
-
-  return desc;
-}
-
-function getPropertyDescriptor(subject, name) {
-  var pd = Object.getOwnPropertyDescriptor(subject, name);
-  var proto = Object.getPrototypeOf(subject);
-  while (typeof pd === 'undefined' && proto !== null) {
-    pd = Object.getOwnPropertyDescriptor(proto, name);
-    proto = Object.getPrototypeOf(proto);
-  }
-  return pd;
 }

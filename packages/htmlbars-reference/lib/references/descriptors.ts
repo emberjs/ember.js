@@ -25,7 +25,7 @@ export class PropertyReference implements Reference {
   }
 }
 
-export function ComputedBlueprint(property, dependencies) {
+export function ComputedReferenceBlueprint(property, dependencies) {
   return class ComputedReference extends PushPullReference implements Reference {
     private object: any;
     private property: InternedString;

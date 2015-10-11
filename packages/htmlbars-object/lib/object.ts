@@ -31,7 +31,7 @@ export interface HTMLBarsObjectFactory<T> {
   _Meta: InstanceMeta;
 }
 
-function turbocharge(obj) {
+export function turbocharge(obj) {
   function Dummy() {}
   Dummy.prototype = obj;
   return obj;
@@ -83,6 +83,12 @@ export class ClassMeta {
 
   getMixins(): Mixin[] {
     return this.mixins;
+  }
+
+  static applyAllMixins(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+    Subclass._Meta.getMixins().forEach(m => m.extendPrototypeOnto(Subclass, Parent));
+    Subclass._Meta.getStaticMixins().forEach(m => m.extendStatic(Subclass));
+    Subclass._Meta.seal();
   }
 
   addSubclass(constructor: HTMLBarsObjectFactory<any>) {
@@ -193,6 +199,11 @@ export class InstanceMeta extends ClassMeta {
     super.reset(parent);
     if (parent) this._Meta.reset(parent._Meta);
   }
+
+  seal() {
+    super.seal();
+    this._Meta.seal();
+  }
 }
 
 export default class HTMLBarsObject {
@@ -212,14 +223,15 @@ export default class HTMLBarsObject {
   }
 
   static reopen<U>(extensions: U) {
-    toMixin(extensions).apply(this);
+    toMixin(extensions).extendPrototype(this);
     this._Meta.seal();
 
     relinkSubclasses(this);
   }
 
   static reopenClass(extensions: Object) {
-    toMixin(extensions).applyStatic(this, Object.getPrototypeOf(this));
+    toMixin(extensions).extendStatic(this);
+    this._Meta.seal();
   }
 
   static metaForProperty(property: string): Object {
