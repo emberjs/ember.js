@@ -15,6 +15,15 @@ import {
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
+export interface ObjectWithMixins {
+  _Meta: ClassMeta,
+  _meta: Meta
+}
+
+export interface InstanceWithMixins {
+  constructor: ObjectWithMixins
+}
+
 export interface HTMLBarsObjectFactory<T> {
   new<U>(attrs?: U): T & U;
   extend(): HTMLBarsObjectFactory<Object>;
@@ -57,6 +66,12 @@ export class ClassMeta {
     let meta = new this();
     meta.reset(parent);
     return meta;
+  }
+
+  static for(object: ObjectWithMixins | InstanceWithMixins): ClassMeta {
+    if ('_Meta' in object) return (<ObjectWithMixins>object)._Meta;
+    else if (object.constructor) return (<InstanceWithMixins>object).constructor._Meta || null;
+    else return null;
   }
 
   init(object: HTMLBarsObject, attrs: Object) {
