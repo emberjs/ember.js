@@ -1,6 +1,6 @@
 import EmberObject from 'htmlbars-object';
 
-QUnit.module('HTMLBarsObject.reopen');
+QUnit.module('HTMLBarsObject.extend');
 
 QUnit.test('Basic extend', function() {
   var SomeClass = EmberObject.extend({ foo: 'BAR' });
