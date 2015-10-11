@@ -21,7 +21,7 @@ let EmberObject = HTMLBarsObject;
 
 function K() { return this; }
 
-QUnit.module('EmberObject computed property');
+QUnit.module('HTMLBarsObject.extend - Computed Properties');
 
 testWithDefault('computed property on instance', function(get, set) {
   var MyClass = EmberObject.extend({

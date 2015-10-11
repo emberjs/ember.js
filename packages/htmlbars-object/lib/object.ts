@@ -46,7 +46,9 @@ export class ClassMeta {
   private concatenatedProperties = dict<any[]>();
   private hasConcatenatedProperties = false;
   private mixins: Mixin[] = [];
+  private appliedMixins: Mixin[] = [];
   private staticMixins: Mixin[] = [];
+  private appliedStaticMixins: Mixin[] = [];
   private subclasses: HTMLBarsObjectFactory<any>[] = [];
   private slots: InternedString[] = [];
   public InstanceMetaConstructor: typeof Meta = null;
@@ -80,6 +82,18 @@ export class ClassMeta {
 
   getMixins(): Mixin[] {
     return this.mixins;
+  }
+
+  addAppliedMixin(mixin: Mixin) {
+    this.appliedMixins.push(mixin);
+  }
+
+  hasAppliedMixin(mixin: Mixin): boolean {
+    return this.appliedMixins.indexOf(mixin) !== -1;
+  }
+
+  hasStaticMixin(mixin: Mixin): boolean {
+    return this.staticMixins.indexOf(mixin) !== -1;
   }
 
   static applyAllMixins(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
