@@ -1,4 +1,4 @@
-import { get, mixin } from './support';
+import { Mixin, get, mixin } from './support';
 import {
   Mixin as ParentMixin,
   aliasMethod
@@ -9,12 +9,6 @@ QUnit.module('Mixin.aliasMethod');
 function validateAliasMethod(obj) {
   equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
   equal(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
-}
-
-class Mixin extends ParentMixin {
-  apply(obj: Object) {
-    return mixin(obj, this);
-  }
 }
 
 QUnit.test('methods of another name are aliased when the mixin is applied', function() {
