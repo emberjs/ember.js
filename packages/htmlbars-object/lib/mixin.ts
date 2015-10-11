@@ -31,19 +31,29 @@ export abstract class Blueprint {
 
 interface Extensions {
   concatenatedProperties?: string[] | string;
+  [index: string]: any;
 }
 
 export class Mixin {
   private extensions = dict<Blueprint>();
   private concatenatedProperties: InternedString[] = [];
+  private dependencies: Mixin[] = [];
   private wasApplied = false;
 
-  static create(extensions: Object) {
-    return new this(extensions);
+  static create(...args: (Mixin | Extensions)[]) {
+    let extensions = args[args.length - 1];
+
+    if (extensions instanceof Mixin) {
+      return new this({}, <Mixin[]>args);
+    } else {
+      let deps = args.slice(0, -1).map(toMixin);
+      return new this(<Extensions>extensions, deps);
+    }
   }
 
-  constructor(extensions: Extensions) {
+  constructor(extensions: Extensions, mixins: Mixin[]) {
     this.reopen(extensions);
+    this.dependencies = mixins;
   }
 
   reopen(extensions: Extensions) {
@@ -86,22 +96,37 @@ export class Mixin {
     assign(this.extensions, turbocharge(normalized));
   }
 
+  apply(target: any) {
+    let meta: ClassMeta = target._Meta = target._Meta || new ClassMeta();
+    this.dependencies.forEach(m => m.apply(target));
+    this.mergeProperties(target, target, meta);
+    meta.addMixin(this);
+    meta.seal();
+    return target;
+  }
+
   extendPrototype(Original: HTMLBarsObjectFactory<any>) {
     Original.prototype = Object.create(Original.prototype);
+    this.dependencies.forEach(m => m.extendPrototype(Original));
     this.extendPrototypeOnto(Original, Original)
   }
 
   extendPrototypeOnto(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+    this.dependencies.forEach(m => m.extendPrototypeOnto(Subclass, Parent));
     this.mergeProperties(Subclass.prototype, Parent.prototype, Subclass._Meta);
     Subclass._Meta.addMixin(this);
   }
 
   extendStatic(Target: HTMLBarsObjectFactory<any>) {
+    this.dependencies.forEach(m => m.extendStatic(Target));
     this.mergeProperties(Target, Object.getPrototypeOf(Target), Target._Meta._Meta);
     Target._Meta.addStaticMixin(this);
   }
 
   mergeProperties(target: Object, parent: Object, meta: ClassMeta) {
+    if (meta.hasAppliedMixin(this)) return;
+    meta.addAppliedMixin(this);
+
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
     new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <InternedString>'concatenatedProperties', null);
@@ -145,7 +170,7 @@ export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
 
 export function toMixin(extension: Extension): Mixin {
   if (extension instanceof Mixin) return extension;
-  else return new Mixin(<Object>extension);
+  else return new Mixin(<Object>extension, []);
 }
 
 class ValueDescriptor extends Descriptor {

@@ -111,21 +111,30 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
     return originalGet.call(this);
   }
 
-  let cacheSet = function(value) {
-    let meta = Meta.for(this);
-    let slots = meta.getSlots();
+  let cacheSet;
 
-    let ret = originalSet.call(this, value);
+  if (originalSet) {
+    cacheSet = function(value) {
+      let meta = Meta.for(this);
+      let slots = meta.getSlots();
 
-    if (ret !== undefined) {
-      slots[<string>accessorName] = ret;
+      let ret = originalSet.call(this, value);
+
+      if (ret !== undefined) {
+        slots[<string>accessorName] = ret;
+      }
+    }
+  } else {
+    cacheSet = function(value) {
+      let meta = Meta.for(this);
+      let slots = meta.getSlots();
+      if (value !== undefined) slots[<string>accessorName] = value;
     }
   }
 
-  desc.set = cacheSet;
-
-  if (!(superDesc && 'get' in superDesc)) {
+  if (!superDesc || 'value' in superDesc) {
     desc.get = cacheGet;
+    desc.set = cacheSet;
     return desc;
   }
 
@@ -136,7 +145,20 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
     }
 
     try {
-      return cacheGet.apply(this);
+      return cacheGet.call(this);
+    } finally {
+      this._super = lastSuper;
+    }
+  }
+
+  desc.set = function(val) {
+    let lastSuper = this._super;
+    this._super = function() {
+      return superDesc.set.call(this, val);
+    }
+
+    try {
+      return cacheSet.call(this, val);
     } finally {
       this._super = lastSuper;
     }
