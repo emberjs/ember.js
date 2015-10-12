@@ -39,7 +39,7 @@ interface Extensions {
 }
 
 export class Mixin {
-  private extensions = dict<Blueprint>();
+  private extensions = null;
   private concatenatedProperties: InternedString[] = [];
   private mergedProperties: InternedString[] = [];
   private dependencies: Mixin[] = [];
@@ -69,7 +69,7 @@ export class Mixin {
 
   constructor(extensions: Extensions, mixins: Mixin[]) {
     this.reopen(extensions);
-    this.dependencies = mixins;
+    this.dependencies.push(...mixins);
   }
 
   detect(obj: any): boolean {
@@ -84,6 +84,10 @@ export class Mixin {
   }
 
   reopen(extensions: Extensions) {
+    if (this.extensions) {
+      this.dependencies.push(toMixin(this.extensions));
+    }
+
     if (typeof extensions === 'object' && 'concatenatedProperties' in extensions) {
       let concat: InternedString[];
       let rawConcat = extensions.concatenatedProperties;
@@ -136,6 +140,7 @@ export class Mixin {
       return obj;
     }, dict<Blueprint>());
 
+    this.extensions = dict<any>();
     assign(this.extensions, turbocharge(normalized));
   }
 
@@ -336,15 +341,36 @@ class MethodBlueprint extends DataBlueprint {
 }
 
 export function wrapMethod(home: Object, methodName: InternedString, original: (...args) => any) {
-  if (!(<string>methodName in home)) return original;
+  if (!(<string>methodName in home)) return maybeWrap(original);
 
   let superMethod = home[<string>methodName];
+
+  let func = function(...args) {
+    if (!this) return original.apply(this, args);
+
+    let lastSuper = this._super;
+    this._super = superMethod;
+
+    try {
+      return original.apply(this, args);
+    } finally {
+      this._super = lastSuper;
+    }
+  };
+
+  (<any>func).__wrapped = true;
+
+  return func;
+}
+
+function maybeWrap(original: Function) {
+  if ('__wrapped' in original) return original;
 
   return function(...args) {
     if (!this) return original.apply(this, args);
 
     let lastSuper = this._super;
-    this._super = superMethod;
+    this._super = ROOT;
 
     try {
       return original.apply(this, args);
