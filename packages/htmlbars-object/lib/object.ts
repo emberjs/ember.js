@@ -14,6 +14,8 @@ import {
   wrapMethod
 } from './mixin';
 
+import { ROOT } from './utils';
+
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
 export interface ObjectWithMixins {
@@ -356,7 +358,7 @@ export default class HTMLBarsObject {
     }
   }
 
-  _super = null;
+  _super = ROOT;
   _meta = null;
 
   init() {}
@@ -364,6 +366,7 @@ export default class HTMLBarsObject {
   constructor(attrs?: Object) {
     if (attrs) assign(this, attrs);
     (<typeof HTMLBarsObject>this.constructor)._Meta.init(this, attrs);
+    this._super = ROOT;
     this.init();
   }
 
