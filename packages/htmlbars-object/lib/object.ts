@@ -10,7 +10,8 @@ import {
   Descriptor,
   extend as extendClass,
   toMixin,
-  relinkSubclasses
+  relinkSubclasses,
+  wrapMethod
 } from './mixin';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
@@ -54,6 +55,8 @@ export class ClassMeta {
   private propertyMetadata = dict<any>();
   private concatenatedProperties = dict<any[]>();
   private hasConcatenatedProperties = false;
+  private mergedProperties = dict<Object>();
+  private hasMergedProperties = false;
   private mixins: Mixin[] = [];
   private appliedMixins: Mixin[] = [];
   private staticMixins: Mixin[] = [];
@@ -75,10 +78,25 @@ export class ClassMeta {
   }
 
   init(object: HTMLBarsObject, attrs: Object) {
+    if (typeof attrs !== 'object' || attrs === null) return;
+
     if (this.hasConcatenatedProperties) {
-      let props = this.concatenatedProperties;
-      for (let prop in props) {
-        object[prop] = props[prop];
+      let concatProps = this.concatenatedProperties;
+      for (let prop in concatProps) {
+        if (prop in attrs) {
+          let concat = concatProps[prop].slice();
+          object[prop] = concat.concat(attrs[prop]);
+        }
+      }
+    }
+
+    if (this.hasMergedProperties) {
+      let mergedProps = this.mergedProperties;
+      for (let prop in mergedProps) {
+        if (prop in attrs) {
+          let merged = assign({}, mergedProps[prop]);
+          object[prop] = assign(merged, attrs[prop]);
+        }
       }
     }
   }
@@ -145,17 +163,17 @@ export class ClassMeta {
     this.slots.push(property);
   }
 
-  hasConcatenatedProperty(property: InternedString) {
+  hasConcatenatedProperty(property: InternedString): boolean {
     if (!this.hasConcatenatedProperties) return false;
     return <string>property in this.concatenatedProperties;
   }
 
-  getConcatenatedProperty(property: InternedString) {
+  getConcatenatedProperty(property: InternedString): any[] {
     return this.concatenatedProperties[<string>property];
   }
 
-  getConcatenatedProperties() {
-    return Object.keys(this.concatenatedProperties);
+  getConcatenatedProperties(): InternedString[] {
+    return <InternedString[]>Object.keys(this.concatenatedProperties);
   }
 
   addConcatenatedProperty(property: InternedString, value: any) {
@@ -166,6 +184,34 @@ export class ClassMeta {
       this.concatenatedProperties[<string>property] = val;
     } else {
       this.concatenatedProperties[<string>property] = value;
+    }
+  }
+
+  hasMergedProperty(property: InternedString): boolean {
+    if (!this.hasMergedProperties) return false;
+    return <string>property in this.mergedProperties;
+  }
+
+  getMergedProperty(property: InternedString): Object {
+    return this.mergedProperties[<string>property];
+  }
+
+  getMergedProperties(): InternedString[] {
+    return <InternedString[]>Object.keys(this.mergedProperties);
+  }
+
+  addMergedProperty(property: InternedString, value: Object) {
+    this.hasMergedProperties = true;
+
+    if (isArray(value)) {
+      throw new Error(`You passed in \`${JSON.stringify(value)}\` as the value for \`foo\` but \`foo\` cannot be an Array`);
+    }
+
+    if (<string>property in this.mergedProperties && this.mergedProperties[<string>property] && value) {
+      this.mergedProperties[<string>property] = mergeMergedProperties(value, this.mergedProperties[<string>property]);
+    } else {
+      value = value === null ? value : value || {};
+      this.mergedProperties[<string>property] = value;
     }
   }
 
@@ -181,6 +227,7 @@ export class ClassMeta {
     this.referenceTypes = dict<InnerReferenceFactory>();
     this.propertyMetadata = dict();
     this.concatenatedProperties = dict<any[]>();
+    this.mergedProperties = dict<Object>();
 
     if (parent) {
       this.hasConcatenatedProperties = parent.hasConcatenatedProperties;
@@ -188,8 +235,12 @@ export class ClassMeta {
         this.concatenatedProperties[prop] = parent.concatenatedProperties[prop].slice();
       }
 
+      this.hasMergedProperties = parent.hasMergedProperties;
+      for (let prop in parent.mergedProperties) {
+        this.mergedProperties[prop] = assign({}, parent.mergedProperties[prop]);
+      }
+
       assign(this.referenceTypes, parent.referenceTypes);
-      assign(this.concatenatedProperties, parent.concatenatedProperties);
       assign(this.propertyMetadata, parent.propertyMetadata);
     }
   }
@@ -197,6 +248,11 @@ export class ClassMeta {
   seal() {
     let referenceTypes: Dict<InnerReferenceFactory> = turbocharge(assign({}, this.referenceTypes));
     turbocharge(this.concatenatedProperties);
+    turbocharge(this.mergedProperties);
+
+    if (!this.hasMergedProperties && !this.hasConcatenatedProperties) {
+      this.init = function() {};
+    }
 
     let slots = this.slots;
 
@@ -219,7 +275,24 @@ export class ClassMeta {
         return this.slots;
       }
     }
+
+    turbocharge(this);
   }
+}
+
+function mergeMergedProperties(attrs: Object, parent: Object) {
+  let merged = assign({}, parent);
+
+  for (let prop in attrs) {
+    if (prop in parent && typeof parent[prop] === 'function' && typeof attrs[prop] === 'function') {
+      let wrapped = wrapMethod(parent, prop, attrs[prop]);
+      merged[prop] = wrapped;
+    } else {
+      merged[prop] = attrs[prop];
+    }
+  }
+
+  return merged;
 }
 
 export class InstanceMeta extends ClassMeta {

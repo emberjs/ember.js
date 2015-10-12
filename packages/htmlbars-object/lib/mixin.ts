@@ -31,12 +31,14 @@ export abstract class Blueprint {
 
 interface Extensions {
   concatenatedProperties?: string[] | string;
+  mergedProperties?: string[] | string;
   [index: string]: any;
 }
 
 export class Mixin {
   private extensions = dict<Blueprint>();
   private concatenatedProperties: InternedString[] = [];
+  private mergedProperties: InternedString[] = [];
   private dependencies: Mixin[] = [];
   private wasApplied = false;
 
@@ -95,6 +97,22 @@ export class Mixin {
       this.concatenatedProperties = concat;
     }
 
+    if (typeof extensions === 'object' && 'mergedProperties' in extensions) {
+      let merged: InternedString[];
+      let rawMerged = extensions.mergedProperties;
+
+      if (isArray(rawMerged)) {
+        merged = (<string[]>rawMerged).slice().map(intern);
+      } else if (rawMerged === null || rawMerged === undefined) {
+        merged = [];
+      } else {
+        merged = [intern(<string>rawMerged)];
+      }
+
+      delete extensions.mergedProperties;
+      this.mergedProperties = merged;
+    }
+
     let normalized: Dict<Blueprint> = Object.keys(extensions).reduce((obj, key) => {
       let value = extensions[key];
 
@@ -149,9 +167,11 @@ export class Mixin {
     if (meta.hasAppliedMixin(this)) return;
     meta.addAppliedMixin(this);
 
+    this.mergedProperties.forEach(k => meta.addMergedProperty(k, parent[<string>k]));
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
     new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, <InternedString>'concatenatedProperties', null);
+    new ValueDescriptor({ value: meta.getMergedProperties() }).define(target, <InternedString>'mergedProperties', null);
 
     Object.keys(this.extensions).forEach(key => {
       let extension: Blueprint = this.extensions[key];
@@ -263,6 +283,9 @@ export class DataBlueprint extends Blueprint {
     if (classMeta.hasConcatenatedProperty(<InternedString>key)) {
       classMeta.addConcatenatedProperty(<InternedString>key, value);
       value = classMeta.getConcatenatedProperty(<InternedString>key);
+    } else if (classMeta.hasMergedProperty(<InternedString>key)) {
+      classMeta.addMergedProperty(<InternedString>key, value);
+      value = classMeta.getMergedProperty(<InternedString>key);
     }
 
     return new ValueDescriptor({ enumerable, configurable, writable, value });
