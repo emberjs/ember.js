@@ -16,6 +16,8 @@ import {
   LegacyComputedSetCallback
 } from './computed';
 
+import { ROOT, hasSuper } from './utils';
+
 export const DESCRIPTOR = "5d90f84f-908e-4a42-9749-3d0f523c262c";
 export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";
 
@@ -32,6 +34,7 @@ export abstract class Blueprint {
 interface Extensions {
   concatenatedProperties?: string[] | string;
   mergedProperties?: string[] | string;
+  _super?: Function;
   [index: string]: any;
 }
 
@@ -178,6 +181,8 @@ export class Mixin {
       let desc = extension.descriptor(target, <InternedString>key, meta);
       desc.define(target, <InternedString>key, parent);
     });
+
+    new ValueDescriptor({ value: ROOT }).define(target, <InternedString>'_super', null);
   }
 }
 
@@ -316,23 +321,30 @@ export abstract class AccessorBlueprint extends Blueprint {
   }
 }
 
-class MethodBlueprint extends DataBlueprint {
-  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): ValueDescriptor {
-    let home = Object.getPrototypeOf(target);
-    let value = wrapMethod(home, <InternedString>key, this.value);
+class MethodDescriptor extends ValueDescriptor {
+  define(target: Object, key: InternedString, home: Object) {
+    this.value = wrapMethod(home, key, this.value);
+    super.define(target, key, home);
+  }
+}
 
+class MethodBlueprint extends DataBlueprint {
+  descriptor(target: Object, key: InternedString, classMeta: ClassMeta): MethodDescriptor {
     let desc = super.descriptor(target, key, classMeta);
-    desc.value = value;
-    return desc;
+    return new MethodDescriptor(desc);
   }
 }
 
 export function wrapMethod(home: Object, methodName: InternedString, original: (...args) => any) {
   if (!(<string>methodName in home)) return original;
 
+  let superMethod = home[<string>methodName];
+
   return function(...args) {
+    if (!this) return original.apply(this, args);
+
     let lastSuper = this._super;
-    this._super = home[<string>methodName];
+    this._super = superMethod;
 
     try {
       return original.apply(this, args);
