@@ -143,6 +143,7 @@ function buildDynamicKeyStream(source, keySource) {
   @public
   @method get
   @for Ember.Templates.helpers
+  @since 2.1.0
 */
 function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
   if (morph === null) {

@@ -363,6 +363,7 @@ var Component = View.extend(TargetActionSupport, {
     @property hasBlock
     @param {String} [blockName="default"] The name of the block to check presence of.
     @returns Boolean
+    @since 1.13.0
   */
 
   /**
@@ -403,6 +404,7 @@ var Component = View.extend(TargetActionSupport, {
     @public
     @property hasBlockParams
     @returns Boolean
+    @since 1.13.0
   */
 
   /**
@@ -455,6 +457,7 @@ var Component = View.extend(TargetActionSupport, {
     @static
     @public
     @property positionalParams
+    @since 1.13.0
   */
 });
 
