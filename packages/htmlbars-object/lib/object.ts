@@ -247,6 +247,16 @@ export class ClassMeta {
     }
   }
 
+  reseal(obj: Object) {
+    let meta = Meta.for(obj);
+    let fresh = new this.InstanceMetaConstructor(obj, {});
+    let referenceTypes = meta.getReferenceTypes();
+    let slots = meta.getSlots();
+
+    turbocharge(assign(referenceTypes, this.referenceTypes));
+    turbocharge(assign(slots, fresh.getSlots()));
+  }
+
   seal() {
     let referenceTypes: Dict<InnerReferenceFactory> = turbocharge(assign({}, this.referenceTypes));
     turbocharge(this.concatenatedProperties);
@@ -268,9 +278,14 @@ export class ClassMeta {
 
     this.InstanceMetaConstructor = class extends SealedMeta {
       private slots: Slots = new Slots();
+      private referenceTypes: Dict<InnerReferenceFactory> = referenceTypes;
+
+      getReferenceTypes() {
+        return this.referenceTypes;
+      }
 
       referenceTypeFor(property: InternedString): InnerReferenceFactory {
-        return referenceTypes[<string>property] || PropertyReference;
+        return this.referenceTypes[<string>property] || PropertyReference;
       }
 
       getSlots() {
