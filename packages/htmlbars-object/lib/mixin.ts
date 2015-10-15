@@ -150,6 +150,8 @@ export class Mixin {
     this.mergeProperties(target, target, meta);
     meta.addMixin(this);
     meta.seal();
+    meta.reseal(target);
+
     return target;
   }
 

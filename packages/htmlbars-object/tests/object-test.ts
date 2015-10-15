@@ -5,19 +5,19 @@ import { intern } from 'htmlbars-util';
 let Wrapper = HTMLBarsObject.extend({
   fullName: computed(function() {
     return this.model && this.model.fullName;
-  }).property('model')
+  }).property('model.fullName')
 });
 
 let Model = HTMLBarsObject.extend({
   fullName: computed(function() {
     return this.person && this.person.fullName;
-  }).property('person')
+  }).property('person.fullName')
 });
 
 let Person = HTMLBarsObject.extend({
   fullName: computed(function() {
     return this.name && this.name.fullName;
-  }).property('name')
+  }).property('name.fullName')
 });
 
 let Name = HTMLBarsObject.extend({
@@ -153,11 +153,14 @@ QUnit.test("Simple computed properties", function() {
 
   equal(name.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
+  equal(ref.isDirty(), false);
 
   setProperty(name, 'first', "Godhuda");
+  equal(ref.isDirty(), true);
 
   equal(name.fullName, "Godhuda Chan");
   equal(ref.value(), "Godhuda Chan");
+  equal(ref.isDirty(), false);
 });
 
 QUnit.test("Computed properties", function() {
@@ -174,23 +177,31 @@ QUnit.test("Computed properties", function() {
 
   equal(obj1.fullName, "Yehuda Katz");
   equal(ref.value(), "Yehuda Katz");
+  equal(ref.isDirty(), false);
 
   setProperty(obj1.model, 'person', new Person({ name: new Name({ first: 'Godfrey', last: 'Chan' }) }));
+  equal(ref.isDirty(), true);
   equal(obj1.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
+  equal(ref.isDirty(), false);
 
   setProperty(originalPerson.name, 'first', "Godhuda");
+  equal(ref.isDirty(), true);
   equal(obj1.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
+  equal(ref.isDirty(), false);
 
   setProperty(obj1.model, 'person', undefined);
+  equal(ref.isDirty(), true);
   equal(obj1.fullName, undefined);
   equal(ref.value(), undefined);
+  equal(ref.isDirty(), false);
 
   setProperty(obj1.model, 'person', originalPerson);
+  equal(ref.isDirty(), true);
   equal(obj1.fullName, "Godhuda Katz");
   equal(ref.value(), "Godhuda Katz");
-
+  equal(ref.isDirty(), false);
 });
 
 function isDirty(ref, newValue) {

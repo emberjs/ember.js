@@ -14,3 +14,15 @@ export function setProperty(parent: any, property: string, val: any) {
 
   if (rootProp) rootProp.notify();
 }
+
+export function notifyProperty(parent: any, property: string) {
+  var rootProp = metaFor(parent).root().chainFor(intern(property));
+
+  var referencesToNotify = metaFor(parent).referencesFor(intern(property));
+
+  if (referencesToNotify) {
+    referencesToNotify.forEach(function(ref) { ref.notify(); });
+  }
+
+  if (rootProp) rootProp.notify();
+}

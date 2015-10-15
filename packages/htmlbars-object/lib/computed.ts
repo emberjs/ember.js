@@ -26,15 +26,15 @@ export interface ComputedDescriptor {
 
 type ComputedArgument = ComputedGetCallback | ComputedDescriptor;
 
-class ComputedBlueprint extends Blueprint {
+export class ComputedBlueprint extends Blueprint {
   private accessor: ComputedDescriptor;
   private deps: InternedString[][];
   private metadata: Object = {};
 
-  constructor(accessor: ComputedDescriptor, deps: string[]) {
+  constructor(accessor: ComputedDescriptor, deps: InternedString[][] = []) {
     super();
     this.accessor = accessor;
-    this.property(...deps);
+    this.deps = deps;
   }
 
   descriptor(target: Object, key: InternedString, classMeta: ClassMeta): Descriptor {
@@ -187,9 +187,9 @@ export function computed(...args) {
   if (typeof last === 'function') {
     return new ComputedBlueprint({
       get: <ComputedGetCallback | LegacyComputedGetCallback>last
-    }, deps);
+    }).property(...deps);
   } else if (typeof last === 'object') {
-    return new ComputedBlueprint(<ComputedDescriptor>last, deps);
+    return new ComputedBlueprint(<ComputedDescriptor>last).property(...deps);
   } else {
     throw new TypeError("computed expects a function or an object as last argument")
   }
@@ -197,8 +197,4 @@ export function computed(...args) {
 
 export function observer(...args) {
 
-}
-
-export function alias(...args) {
-  return computed(() => {});
 }

@@ -83,10 +83,12 @@ class ConstMeta implements IMeta {
   }
 }
 
+const hasOwnProperty = Object.hasOwnProperty;
+
 class Meta implements IMeta, HasGuid {
   static for(obj: any): IMeta {
     if (obj === null || obj === undefined) return new Meta(obj, {});
-    if (obj._meta) return obj._meta;
+    if (hasOwnProperty.call(obj, '_meta') && obj._meta) return obj._meta;
     if (!Object.isExtensible(obj)) return new ConstMeta(obj);
 
     let MetaToUse: typeof Meta = Meta;
@@ -119,6 +121,7 @@ class Meta implements IMeta, HasGuid {
   private DefaultPathReferenceFactory: InnerReferenceFactory;
   private rootCache: IRootReference;
   private references: Dict<DictSet<IPathReference & HasGuid>> = null;
+  private slots: Dict<any> = null;
   public _guid;
   protected referenceTypes: Dict<InnerReferenceFactory> = null;
   protected propertyMetadata: Dict<any> = null;
@@ -152,6 +155,7 @@ class Meta implements IMeta, HasGuid {
   }
 
   getReferenceTypes(): Dict<InnerReferenceFactory> {
+    this.referenceTypes = this.referenceTypes || dict<PathReferenceFactory>();
     return this.referenceTypes;
   }
 
@@ -161,7 +165,7 @@ class Meta implements IMeta, HasGuid {
   }
 
   getSlots() {
-    return {};
+    return (this.slots = this.slots || dict());
   }
 
   root(): IRootReference {

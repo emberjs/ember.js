@@ -52,7 +52,7 @@ export class PathReference extends PushPullReference implements IPathReference, 
       inner = this.inner;
     } else {
       let ReferenceType = typeof parentValue === 'object' ? Meta.for(parentValue).referenceTypeFor(property) : PropertyReference;
-      inner = this.inner = new ReferenceType(parentValue, property);
+      inner = this.inner = new ReferenceType(parentValue, property, this);
     }
 
     if (typeof parentValue === 'object') {

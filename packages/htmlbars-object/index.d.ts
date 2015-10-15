@@ -1,5 +1,5 @@
 export { default as default, ClassMeta, InstanceMeta } from './lib/object';
-export { computed, observer, alias } from './lib/computed';
+export { computed, observer } from './lib/computed';
 export { Batcher } from './lib/batcher';
-export { Mixin, toMixin } from './lib/mixin';
-export { aliasMethod } from './lib/descriptors';
+export { Mixin, Blueprint, toMixin } from './lib/mixin';
+export { aliasMethod, alias } from './lib/descriptors';
