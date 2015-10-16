@@ -1,7 +1,7 @@
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { watch } from 'ember-metal/watching';
+import { watch, unwatch } from 'ember-metal/watching';
 import { meta as metaFor } from 'ember-metal/meta';
 
 QUnit.module('mandatory-setters');
@@ -48,6 +48,27 @@ if (isEnabled('mandatory-setter')) {
     ok(!hasMandatorySetter(obj, 'd'), 'mandatory-setter should not be installed');
     ok(!hasMandatorySetter(obj, 'e'), 'mandatory-setter should not be installed');
     ok(!hasMandatorySetter(obj, 'f'), 'mandatory-setter should not be installed');
+  });
+
+  QUnit.test('should not teardown non mandatory-setter descriptor', function() {
+    expect(1);
+
+    var obj = { get a() { return 'hi'; } };
+
+    watch(obj, 'a');
+    unwatch(obj, 'a');
+
+    equal(obj.a, 'hi');
+  });
+
+  QUnit.test('should not confuse non descriptor watched gets', function() {
+    expect(2);
+
+    var obj = { get a() { return 'hi'; } };
+
+    watch(obj, 'a');
+    equal(get(obj, 'a'), 'hi');
+    equal(obj.a, 'hi');
   });
 
   QUnit.test('should not setup mandatory-setter if setter is already setup on property', function() {

@@ -107,21 +107,24 @@ export function unwatchKey(obj, keyName, meta) {
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
       if (!desc && keyName in obj) {
-        Object.defineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-          set(val) {
-            // redefine to set as enumerable
-            Object.defineProperty(obj, keyName, {
-              configurable: true,
-              writable: true,
-              enumerable: true,
-              value: val
-            });
-            m.deleteFromValues(keyName);
-          },
-          get: DEFAULT_GETTER_FUNCTION(keyName)
-        });
+        var maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
+        if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
+          Object.defineProperty(obj, keyName, {
+            configurable: true,
+            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
+            set(val) {
+              // redefine to set as enumerable
+              Object.defineProperty(obj, keyName, {
+                configurable: true,
+                writable: true,
+                enumerable: true,
+                value: val
+              });
+              m.deleteFromValues(keyName);
+            },
+            get: DEFAULT_GETTER_FUNCTION(keyName)
+          });
+        }
       }
     }
   } else if (count > 1) {

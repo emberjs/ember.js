@@ -26,9 +26,12 @@ export function Descriptor() {
 //
 
 export function MANDATORY_SETTER_FUNCTION(name) {
-  return function SETTER_FUNCTION(value) {
+  function SETTER_FUNCTION(value) {
     assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
-  };
+  }
+
+  SETTER_FUNCTION.isMandatorySetter = true;
+  return SETTER_FUNCTION;
 }
 
 export function DEFAULT_GETTER_FUNCTION(name) {

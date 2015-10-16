@@ -107,3 +107,14 @@ testBoth('unwatching "length" property on an object', function(get, set) {
   equal(willCount, 0, 'should NOT have invoked willCount');
   equal(didCount, 0, 'should NOT have invoked didCount');
 });
+
+testBoth('unwatching should not destroy non MANDATORY_SETTER descriptor', function(get, set) {
+  var obj = { get foo() { return 'RUN'; } };
+
+  equal(obj.foo, 'RUN', 'obj.foo');
+  watch(obj, 'foo');
+  equal(obj.foo, 'RUN', 'obj.foo after watch');
+  unwatch(obj, 'foo');
+  equal(obj.foo, 'RUN', 'obj.foo after unwatch');
+});
+
