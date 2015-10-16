@@ -271,3 +271,36 @@ testBoth('watching "length" property on an array', function(get, set) {
   equal(get(arr, 'length'), 10, 'should get new value');
   equal(arr.length, 10, 'property should be accessible on arr');
 });
+
+testBoth('watch + ES5 getter', function(get) {
+  var parent = { b: 1 };
+  var child = {
+    get b() {
+      return parent.b;
+    }
+  };
+
+  equal(parent.b,  1, 'parent.b should be 1');
+  equal(child.b, 1, 'child.b should be 1');
+  equal(get(child, 'b'), 1, 'Ember.get(child, "b") should be 1');
+
+  watch(child, 'b');
+
+  equal(parent.b,  1, 'parent.b should be 1 (after watch)');
+  equal(child.b, 1, 'child.b should be 1  (after watch)');
+
+  equal(get(child, 'b'), 1, 'Ember.get(child, "b") should be 1 (after watch)');
+});
+
+testBoth('watch + Ember.set + no-descriptor', function(get, set) {
+  var child = { };
+
+  equal(child.b, undefined, 'child.b ');
+  equal(get(child, 'b'), undefined, 'Ember.get(child, "b")');
+
+  watch(child, 'b');
+  set(child, 'b', 1);
+
+  equal(child.b, 1, 'child.b (after watch)');
+  equal(get(child, 'b'), 1, 'Ember.get(child, "b") (after watch)');
+});
