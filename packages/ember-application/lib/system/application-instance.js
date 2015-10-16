@@ -474,7 +474,7 @@ if (isEnabled('ember-application-visit')) {
     if (options.document) {
       this.document = options.document;
     } else {
-      this.document = document;
+      this.document = (typeof document !== 'undefined') ? document : null;
     }
 
     /**
