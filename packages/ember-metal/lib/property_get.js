@@ -4,16 +4,12 @@
 
 import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import {
   isGlobal as detectIsGlobal,
   isPath,
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
-import {
-  peekMeta
-} from 'ember-metal/meta';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -60,7 +56,6 @@ export function get(obj, keyName) {
     return obj;
   }
 
-  var meta = peekMeta(obj);
   var value = obj[keyName];
   var desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
   var ret;
@@ -72,15 +67,7 @@ export function get(obj, keyName) {
   if (desc) {
     return desc.get(obj, keyName);
   } else {
-    if (isEnabled('mandatory-setter')) {
-      if (meta && meta.peekWatching(keyName) > 0) {
-        ret = meta.peekValues(keyName);
-      } else {
-        ret = value;
-      }
-    } else {
-      ret = value;
-    }
+    ret = value;
 
     if (ret === undefined &&
         'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
