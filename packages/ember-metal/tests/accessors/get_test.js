@@ -28,6 +28,17 @@ QUnit.test('should get arbitrary properties on an object', function() {
   }
 });
 
+QUnit.test('should not access a property more than once', function() {
+  var count = 0;
+  var obj = {
+    get id() { return ++count; }
+  };
+
+  get(obj, 'id');
+
+  equal(count, 1);
+});
+
 testBoth('should call unknownProperty on watched values if the value is undefined', function(get, set) {
   var obj = {
     count: 0,

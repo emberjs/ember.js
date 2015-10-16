@@ -61,8 +61,8 @@ export function get(obj, keyName) {
   }
 
   var meta = peekMeta(obj);
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  var value = obj[keyName];
+  var desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
   var ret;
 
   if (desc === undefined && isPath(keyName)) {
@@ -76,10 +76,10 @@ export function get(obj, keyName) {
       if (meta && meta.peekWatching(keyName) > 0) {
         ret = meta.peekValues(keyName);
       } else {
-        ret = obj[keyName];
+        ret = value;
       }
     } else {
-      ret = obj[keyName];
+      ret = value;
     }
 
     if (ret === undefined &&
