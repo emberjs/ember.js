@@ -20,5 +20,6 @@ if (Ember.ENV && typeof Ember.ENV.MODEL_FACTORY_INJECTIONS !== 'undefined') {
 
 import Registry from 'container/registry';
 import Container from 'container/container';
+import { getOwner, setOwner } from 'container/owner';
 
-export { Registry, Container };
+export { Registry, Container, getOwner, setOwner };

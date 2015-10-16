@@ -12,7 +12,7 @@ import inject from 'ember-runtime/inject';
 
 import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
-import { Container, Registry } from 'ember-runtime/system/container';
+import { Container, Registry, getOwner, setOwner } from 'ember-runtime/system/container';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';
@@ -67,6 +67,8 @@ import 'ember-runtime/ext/string';   // just for side effect of extending String
 import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
 
 import { isArray, typeOf } from 'ember-runtime/utils';
+
+import isEnabled from 'ember-metal/features';
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -117,6 +119,12 @@ Ember.String = EmberStringUtils;
 Ember.Object = EmberObject;
 Ember.Container = Container;
 Ember.Registry = Registry;
+
+if (isEnabled('ember-container-inject-owner')) {
+  Ember.getOwner = getOwner;
+  Ember.setOwner = setOwner;
+}
+
 Ember.Namespace = Namespace;
 Ember.Enumerable = Enumerable;
 Ember.ArrayProxy = ArrayProxy;
