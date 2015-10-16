@@ -9,8 +9,8 @@ import {
 import HistoryLocation from 'ember-routing/location/history_location';
 import HashLocation from 'ember-routing/location/hash_location';
 import NoneLocation from 'ember-routing/location/none_location';
-import Registry from 'container/registry';
-
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 function mockBrowserLocation(overrides) {
   return assign({
@@ -36,18 +36,20 @@ function mockBrowserHistory(overrides) {
 }
 
 function createLocation(location, history) {
-  var registry = new Registry();
+  const owner = buildOwner();
 
-  registry.register('location:history', HistoryLocation);
-  registry.register('location:hash', HashLocation);
-  registry.register('location:none', NoneLocation);
+  owner.register('location:history', HistoryLocation);
+  owner.register('location:hash', HashLocation);
+  owner.register('location:none', NoneLocation);
 
-  return AutoLocation.create({
-    container: registry.container(),
+  const autolocation = AutoLocation.create({
+    [OWNER]: owner,
     location: location,
     history: history,
     global: {}
   });
+
+  return autolocation;
 }
 
 var location;

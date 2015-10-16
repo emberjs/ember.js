@@ -14,14 +14,15 @@ import EmberObject from 'ember-runtime/system/object';
 import inject from 'ember-runtime/inject';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
+import { OWNER } from 'container/owner';
 
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 
-var Router, App, AppView, router, registry, container;
+var Router, App, AppView, router, appInstance;
 
 function bootApplication() {
-  router = container.lookup('router:main');
+  router = appInstance.lookup('router:main');
   run(App, 'advanceReadiness');
 }
 
@@ -69,8 +70,7 @@ function sharedSetup() {
   });
 
   Router = App.Router;
-  registry = App.__registry__;
-  container = App.__container__;
+  appInstance = App.__deprecatedInstance__;
 }
 
 function sharedTeardown() {
@@ -92,10 +92,10 @@ QUnit.module('The {{link-to}} helper', {
         templateName: 'app'
       });
 
-      registry.register('view:app', AppView);
+      appInstance.register('view:app', AppView);
 
-      registry.unregister('router:main');
-      registry.register('router:main', Router);
+      appInstance.unregister('router:main');
+      appInstance.register('router:main', Router);
     });
   },
 
@@ -109,14 +109,14 @@ QUnit.test('Using {{link-to}} does not cause an exception if it is rendered befo
     this.route('about');
   });
 
-  registry.register('component-lookup:main', ComponentLookup);
+  appInstance.register('component-lookup:main', ComponentLookup);
 
   let component = Component.extend({
-    layout: compile('{{#link-to "about"}}Go to About{{/link-to}}'),
-    container: container
+    [OWNER]: appInstance,
+    layout: compile('{{#link-to "about"}}Go to About{{/link-to}}')
   }).create();
 
-  let router = container.lookup('router:main');
+  let router = appInstance.lookup('router:main');
   router.setupRouter();
 
   run(function() {
@@ -127,11 +127,11 @@ QUnit.test('Using {{link-to}} does not cause an exception if it is rendered befo
 });
 
 QUnit.test('Using {{link-to}} does not cause an exception if it is rendered without a router.js instance', function(assert) {
-  registry.register('component-lookup:main', ComponentLookup);
+  appInstance.register('component-lookup:main', ComponentLookup);
 
   let component = Component.extend({
-    layout: compile('{{#link-to "nonexistent"}}Does not work.{{/link-to}}'),
-    container: container
+    [OWNER]: appInstance,
+    layout: compile('{{#link-to "nonexistent"}}Does not work.{{/link-to}}')
   }).create();
 
   run(function() {
@@ -442,7 +442,7 @@ QUnit.test('The {{link-to}} helper supports \'classNameBindings\' with custom va
 
   equal(jQuery('#about-link.foo-is-false', '#qunit-fixture').length, 1, 'The about-link was rendered with the falsy class');
 
-  var controller = container.lookup('controller:index');
+  var controller = appInstance.lookup('controller:index');
   run(function() {
     controller.set('foo', true);
   });
@@ -849,7 +849,7 @@ QUnit.test('The {{link-to}} helper should not transition if target is not equal 
     jQuery('#about-link', '#qunit-fixture').click();
   });
 
-  notEqual(container.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
+  notEqual(appInstance.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
 });
 
 QUnit.test('The {{link-to}} helper accepts string/numeric arguments', function() {
@@ -988,7 +988,7 @@ QUnit.test('Quoteless route param performs property lookup', function() {
 
   assertEquality('/');
 
-  var controller = container.lookup('controller:index');
+  var controller = appInstance.lookup('controller:index');
   var view = EmberView.views['index-view'];
   run(function() {
     controller.set('foo', 'about');
@@ -1041,7 +1041,7 @@ QUnit.test('link-to with null/undefined dynamic parameters are put in a loading 
 
   var $contextLink = jQuery('#context-link', '#qunit-fixture');
   var $staticLink = jQuery('#static-link', '#qunit-fixture');
-  var controller = container.lookup('controller:index');
+  var controller = appInstance.lookup('controller:index');
 
   assertLinkStatus($contextLink);
   assertLinkStatus($staticLink);
@@ -1098,7 +1098,7 @@ QUnit.test('The {{link-to}} helper refreshes href element when one of params cha
   Ember.TEMPLATES.index = compile('{{#link-to "post" post id="post"}}post{{/link-to}}');
 
   App.IndexController = Controller.extend();
-  var indexController = container.lookup('controller:index');
+  var indexController = appInstance.lookup('controller:index');
 
   run(function() { indexController.set('post', post); });
 
@@ -1174,7 +1174,7 @@ QUnit.test('The {{link-to}} helper works in an #each\'d array of string route na
 
   linksEqual(jQuery('a', '#qunit-fixture'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
-  var indexController = container.lookup('controller:index');
+  var indexController = appInstance.lookup('controller:index');
   run(indexController, 'set', 'route1', 'rar');
 
   linksEqual(jQuery('a', '#qunit-fixture'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
@@ -1222,7 +1222,7 @@ QUnit.test('The non-block form {{link-to}} helper updates the link text when it 
   run(function() {
     router.handleURL('/');
   });
-  var controller = container.lookup('controller:index');
+  var controller = appInstance.lookup('controller:index');
 
   equal(jQuery('#contact-link:contains(Jane)', '#qunit-fixture').length, 1, 'The link title is correctly resolved');
 
@@ -1321,7 +1321,7 @@ QUnit.test('The non-block form {{link-to}} performs property lookup', function()
 
   assertEquality('/');
 
-  var controller = container.lookup('controller:index');
+  var controller = appInstance.lookup('controller:index');
   var view = EmberView.views['index-view'];
   run(function() {
     controller.set('foo', 'about');
@@ -1342,7 +1342,7 @@ QUnit.test('The non-block form {{link-to}} protects against XSS', function() {
 
   run(router, 'handleURL', '/');
 
-  var controller = container.lookup('controller:application');
+  var controller = appInstance.lookup('controller:application');
 
   equal(jQuery('#link', '#qunit-fixture').text(), 'blahzorz');
   run(function() {

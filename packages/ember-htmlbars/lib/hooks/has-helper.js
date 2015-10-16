@@ -5,10 +5,10 @@ export default function hasHelperHook(env, scope, helperName) {
     return true;
   }
 
-  var container = env.container;
-  if (validateLazyHelperName(helperName, container, env.hooks.keywords)) {
-    var containerName = 'helper:' + helperName;
-    if (container.registry.has(containerName)) {
+  const owner = env.owner;
+  if (validateLazyHelperName(helperName, owner, env.hooks.keywords)) {
+    var registrationName = 'helper:' + helperName;
+    if (owner.hasRegistration(registrationName)) {
       return true;
     }
   }

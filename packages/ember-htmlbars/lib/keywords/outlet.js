@@ -107,13 +107,13 @@ export default {
     var parentView = env.view;
     var outletState = state.outletState;
     var toRender = outletState.render;
-    var namespace = env.container.lookup('application:main');
+    var namespace = env.owner.lookup('application:main');
     var LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
 
     var ViewClass = outletState.render.ViewClass;
 
     if (!state.hasParentOutlet && !ViewClass) {
-      ViewClass = env.container.lookupFactory('view:toplevel');
+      ViewClass = env.owner._lookupFactory('view:toplevel');
     }
 
     var Component;

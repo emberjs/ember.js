@@ -9,6 +9,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import { takeLegacySnapshot } from 'ember-htmlbars/node-managers/component-node-manager';
+import { getOwner, setOwner } from 'container/owner';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -180,9 +181,12 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     }
 
     mergeBindings(props, snapshot);
-    props.container = options.parentView ? options.parentView.container : env.container;
-    props.renderer = options.parentView ? options.parentView.renderer : props.container && props.container.lookup('renderer:-dom');
-    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : props.container && props.container.lookup('-view-registry:main');
+
+    const owner = options.parentView ? getOwner(options.parentView) : env.owner;
+
+    setOwner(props, owner);
+    props.renderer = options.parentView ? options.parentView.renderer : owner && owner.lookup('renderer:-dom');
+    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : owner && owner.lookup('-view-registry:main');
 
     if (proto.controller !== defaultController || hasSuppliedController) {
       delete props._context;

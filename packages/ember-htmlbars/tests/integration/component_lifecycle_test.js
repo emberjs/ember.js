@@ -1,4 +1,3 @@
-import Registry from 'container/registry';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
@@ -8,8 +7,10 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import isEnabled from 'ember-metal/features';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var registry, container, view;
+var owner, view;
 var hooks;
 
 let styles = [{
@@ -53,20 +54,19 @@ styles.forEach(style => {
 
   QUnit.module(`component - lifecycle hooks (${style.name})`, {
     setup() {
-      registry = new Registry();
-      container = registry.container();
-      registry.optionsForType('component', { singleton: false });
-      registry.optionsForType('view', { singleton: false });
-      registry.optionsForType('template', { instantiate: false });
-      registry.register('component-lookup:main', ComponentLookup);
+      owner = buildOwner();
+      owner.registerOptionsForType('component', { singleton: false });
+      owner.registerOptionsForType('view', { singleton: false });
+      owner.registerOptionsForType('template', { instantiate: false });
+      owner.register('component-lookup:main', ComponentLookup);
 
       hooks = [];
     },
 
     teardown() {
-      runDestroy(container);
+      runDestroy(owner);
       runDestroy(view);
-      registry = container = view = null;
+      owner = view = null;
     }
   });
 
@@ -124,18 +124,18 @@ styles.forEach(style => {
       });
     }
 
-    registry.register('component:the-top', component('top'));
-    registry.register('component:the-middle', component('middle'));
-    registry.register('component:the-bottom', component('bottom'));
+    owner.register('component:the-top', component('top'));
+    owner.register('component:the-middle', component('middle'));
+    owner.register('component:the-bottom', component('bottom'));
 
-    registry.register('template:components/the-top', compile(`<div>Twitter: {{attrs.twitter}} ${invoke('the-middle', { name: string('Tom Dale') })}</div>`));
-    registry.register('template:components/the-middle', compile(`<div>Name: {{attrs.name}} ${invoke('the-bottom', { website: string('tomdale.net') })}</div>`));
-    registry.register('template:components/the-bottom', compile('<div>Website: {{attrs.website}}</div>'));
+    owner.register('template:components/the-top', compile(`<div>Twitter: {{attrs.twitter}} ${invoke('the-middle', { name: string('Tom Dale') })}</div>`));
+    owner.register('template:components/the-middle', compile(`<div>Name: {{attrs.name}} ${invoke('the-bottom', { website: string('tomdale.net') })}</div>`));
+    owner.register('template:components/the-bottom', compile('<div>Website: {{attrs.website}}</div>'));
 
     view = EmberView.extend({
+      [OWNER]: owner,
       template: compile(invoke('the-top', { twitter: 'view.twitter' })),
-      twitter: '@tomdale',
-      container: container
+      twitter: '@tomdale'
     }).create();
 
     runAppend(view);
@@ -276,18 +276,18 @@ styles.forEach(style => {
       });
     }
 
-    registry.register('component:the-top', component('top'));
-    registry.register('component:the-middle', component('middle'));
-    registry.register('component:the-bottom', component('bottom'));
+    owner.register('component:the-top', component('top'));
+    owner.register('component:the-middle', component('middle'));
+    owner.register('component:the-bottom', component('bottom'));
 
-    registry.register('template:components/the-top', compile(`<div>Top: ${invoke('the-middle', { twitterTop: 'attrs.twitter' })}</div>`));
-    registry.register('template:components/the-middle', compile(`<div>Middle: ${invoke('the-bottom', { twitterMiddle: 'attrs.twitterTop' })}</div>`));
-    registry.register('template:components/the-bottom', compile('<div>Bottom: {{attrs.twitterMiddle}}</div>'));
+    owner.register('template:components/the-top', compile(`<div>Top: ${invoke('the-middle', { twitterTop: 'attrs.twitter' })}</div>`));
+    owner.register('template:components/the-middle', compile(`<div>Middle: ${invoke('the-bottom', { twitterMiddle: 'attrs.twitterTop' })}</div>`));
+    owner.register('template:components/the-bottom', compile('<div>Bottom: {{attrs.twitterMiddle}}</div>'));
 
     view = EmberView.extend({
+      [OWNER]: owner,
       template: compile(invoke('the-top', { twitter: 'view.twitter' })),
-      twitter: '@tomdale',
-      container: container
+      twitter: '@tomdale'
     }).create();
 
     runAppend(view);
@@ -367,9 +367,9 @@ styles.forEach(style => {
 
   QUnit.test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
     let component = style.class.extend({
+      [OWNER]: owner,
       layout: compile('<div>{{handle}}</div>'),
       handle: '@wycats',
-      container: container,
 
       didInsertElement() {
         this.set('handle', '@tomdale');
@@ -390,7 +390,7 @@ styles.forEach(style => {
   QUnit.test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {
     assert.expect(1);
 
-    registry.register('component:the-thing', style.class.extend({
+    owner.register('component:the-thing', style.class.extend({
       init() {
         this._super(...arguments);
         this.propertySetInInit = 'init fired!';
@@ -404,8 +404,8 @@ styles.forEach(style => {
     }));
 
     view = EmberView.extend({
-      template: compile(invoke('the-thing')),
-      container: container
+      [OWNER]: owner,
+      template: compile(invoke('the-thing'))
     }).create();
 
     runAppend(view);

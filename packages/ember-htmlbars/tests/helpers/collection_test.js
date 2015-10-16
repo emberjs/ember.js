@@ -6,13 +6,15 @@ import { computed } from 'ember-metal/computed';
 import EmberObject from 'ember-runtime/system/object';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import Namespace from 'ember-runtime/system/namespace';
-import { Registry } from 'ember-runtime/system/container';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import CollectionView from 'ember-views/views/collection_view';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
+
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -22,7 +24,7 @@ var trim = jQuery.trim;
 var view;
 
 var originalLookup = Ember.lookup;
-var TemplateTests, registry, container, lookup, originalViewKeyword;
+var TemplateTests, owner, lookup, originalViewKeyword;
 
 
 function nthChild(view, nth) {
@@ -41,17 +43,16 @@ QUnit.module('collection helper [LEGACY]', {
 
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
-    registry = new Registry();
-    container = registry.container();
+    owner = buildOwner();
 
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('view:toplevel', EmberView.extend());
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('view:toplevel', EmberView.extend());
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(view);
-    registry = container = view = null;
+    owner = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
@@ -101,12 +102,12 @@ QUnit.test('itemViewClass works in the #collection helper with a property', func
 });
 
 QUnit.test('itemViewClass works in the #collection via container', function() {
-  registry.register('view:example-item', EmberView.extend({
+  owner.register('view:example-item', EmberView.extend({
     isAlsoCustom: true
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     exampleCollectionView: CollectionView.extend(),
     exampleController: ArrayProxy.create({
       content: emberA(['alpha'])
@@ -137,18 +138,15 @@ QUnit.test('passing a block to the collection helper sets it as the template for
 });
 
 QUnit.test('collection helper should try to use container to resolve view', function() {
-  var registry = new Registry();
-  var container = registry.container();
-
   var ACollectionView = CollectionView.extend({
     tagName: 'ul',
     content: emberA(['foo', 'bar', 'baz'])
   });
 
-  registry.register('view:collectionTest', ACollectionView);
+  owner.register('view:collectionTest', ACollectionView);
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{#collection "collectionTest"}} <label></label> {{/collection}}')
   });
 
@@ -204,7 +202,6 @@ QUnit.test('empty views should be removed when content is added to the collectio
 });
 
 QUnit.test('should be able to specify which class should be used for the empty view', function() {
-  var registry = new Registry();
   var App;
 
   run(function() {
@@ -215,10 +212,10 @@ QUnit.test('should be able to specify which class should be used for the empty v
     template: compile('This is an empty view')
   });
 
-  registry.register('view:empty-view', EmptyView);
+  owner.register('view:empty-view', EmptyView);
 
   view = EmberView.create({
-    container: registry.container(),
+    [OWNER]: owner,
     template: compile('{{collection emptyViewClass="empty-view"}}')
   });
 
@@ -361,20 +358,18 @@ QUnit.test('should give its item views the class specified by itemClass binding'
 });
 
 QUnit.test('should give its item views the property specified by itemProperty', function() {
-  var registry = new Registry();
-
   var ItemPropertyBindingTestItemView = EmberView.extend({
     tagName: 'li'
   });
 
-  registry.register('view:item-property-binding-test-item-view', ItemPropertyBindingTestItemView);
+  owner.register('view:item-property-binding-test-item-view', ItemPropertyBindingTestItemView);
 
   // Use preserveContext=false so the itemView handlebars context is the view context
   // Set itemView bindings using item*
   view = EmberView.create({
+    [OWNER]: owner,
     baz: 'baz',
     content: emberA([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
-    container: registry.container(),
     template: compile('{{#collection content=view.content tagName="ul" itemViewClass="item-property-binding-test-item-view" itemProperty=view.baz preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
@@ -511,20 +506,18 @@ QUnit.test('itemClassNames adds classes to items', function() {
 });
 
 QUnit.test('should render nested collections', function() {
-  var registry = new Registry();
-  var container = registry.container();
-  registry.register('view:inner-list', CollectionView.extend({
+  owner.register('view:inner-list', CollectionView.extend({
     tagName: 'ul',
     content: emberA(['one', 'two', 'three'])
   }));
 
-  registry.register('view:outer-list', CollectionView.extend({
+  owner.register('view:outer-list', CollectionView.extend({
     tagName: 'ul',
     content: emberA(['foo'])
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{#collection "outer-list" class="outer"}}{{content}}{{#collection "inner-list" class="inner"}}{{content}}{{/collection}}{{/collection}}')
   });
 
@@ -628,21 +621,18 @@ QUnit.test('should allow view objects to be swapped out without throwing an erro
 QUnit.test('context should be content', function() {
   var view;
 
-  registry = new Registry();
-  container = registry.container();
-
   var items = emberA([
     EmberObject.create({ name: 'Dave' }),
     EmberObject.create({ name: 'Mary' }),
     EmberObject.create({ name: 'Sara' })
   ]);
 
-  registry.register('view:an-item', EmberView.extend({
+  owner.register('view:an-item', EmberView.extend({
     template: compile('Greetings {{name}}')
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     controller: {
       items: items
     },

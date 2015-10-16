@@ -1,5 +1,6 @@
 import defaultEnv from 'ember-htmlbars/env';
 import { MorphSet } from 'ember-metal-views/renderer';
+import { getOwner } from 'container/owner';
 
 export default function RenderEnv(options) {
   this.lifecycleHooks = options.lifecycleHooks || [];
@@ -9,7 +10,7 @@ export default function RenderEnv(options) {
 
   this.view = options.view;
   this.outletState = options.outletState;
-  this.container = options.container;
+  this.owner = options.owner;
   this.renderer = options.renderer;
   this.dom = options.dom;
 
@@ -23,7 +24,7 @@ RenderEnv.build = function(view) {
   return new RenderEnv({
     view: view,
     outletState: view.outletState,
-    container: view.container,
+    owner: getOwner(view),
     renderer: view.renderer,
     dom: view.renderer._dom
   });
@@ -33,7 +34,7 @@ RenderEnv.prototype.childWithView = function(view) {
   return new RenderEnv({
     view: view,
     outletState: this.outletState,
-    container: this.container,
+    owner: this.owner,
     renderer: this.renderer,
     dom: this.dom,
     lifecycleHooks: this.lifecycleHooks,
@@ -47,7 +48,7 @@ RenderEnv.prototype.childWithOutletState = function(outletState, hasParentOutlet
   return new RenderEnv({
     view: this.view,
     outletState: outletState,
-    container: this.container,
+    owner: this.owner,
     renderer: this.renderer,
     dom: this.dom,
     lifecycleHooks: this.lifecycleHooks,

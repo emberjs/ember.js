@@ -18,6 +18,7 @@ import Application from 'ember-application/system/application';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
+import { getOwner } from 'container/owner';
 
 var trim = jQuery.trim;
 
@@ -1785,7 +1786,7 @@ QUnit.test('A redirection hook is provided', function() {
 
   equal(chooseFollowed, 0, 'The choose route wasn\'t entered since a transition occurred');
   equal(jQuery('h3:contains(Hours)', '#qunit-fixture').length, 1, 'The home template was rendered');
-  equal(router.container.lookup('controller:application').get('currentPath'), 'home');
+  equal(getOwner(router).lookup('controller:application').get('currentPath'), 'home');
 });
 
 QUnit.test('Redirecting from the middle of a route aborts the remainder of the routes', function() {
@@ -1819,7 +1820,7 @@ QUnit.test('Redirecting from the middle of a route aborts the remainder of the r
 
   handleURLAborts('/foo/bar/baz');
 
-  equal(router.container.lookup('controller:application').get('currentPath'), 'home');
+  equal(getOwner(router).lookup('controller:application').get('currentPath'), 'home');
   equal(router.get('location').getURL(), '/home');
 });
 
@@ -1858,7 +1859,7 @@ QUnit.test('Redirecting to the current target in the middle of a route does not 
 
   handleURL('/foo/bar/baz');
 
-  equal(router.container.lookup('controller:application').get('currentPath'), 'foo.bar.baz');
+  equal(getOwner(router).lookup('controller:application').get('currentPath'), 'foo.bar.baz');
   equal(successCount, 1, 'transitionTo success handler was called once');
 });
 
@@ -1902,7 +1903,7 @@ QUnit.test('Redirecting to the current target with a different context aborts th
 
   handleURLAborts('/foo/bar/1/baz');
 
-  equal(router.container.lookup('controller:application').get('currentPath'), 'foo.bar.baz');
+  equal(getOwner(router).lookup('controller:application').get('currentPath'), 'foo.bar.baz');
   equal(router.get('location').getURL(), '/foo/bar/2/baz');
 });
 
@@ -1926,7 +1927,7 @@ QUnit.test('Transitioning from a parent event does not prevent currentPath from 
 
   bootApplication();
 
-  var applicationController = router.container.lookup('controller:application');
+  var applicationController = getOwner(router).lookup('controller:application');
 
   handleURL('/foo/bar/baz');
 
@@ -3034,7 +3035,7 @@ QUnit.test('currentRouteName is a property installed on ApplicationController th
 
   bootApplication();
 
-  var appController = router.container.lookup('controller:application');
+  var appController = getOwner(router).lookup('controller:application');
 
   function transitionAndCheck(path, expectedPath, expectedRouteName) {
     if (path) { run(router, 'transitionTo', path); }

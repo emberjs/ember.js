@@ -2,52 +2,52 @@ import Controller from 'ember-runtime/controllers/controller';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
-import Registry from 'container/registry';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import computed from 'ember-metal/computed';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var view, registry, container;
+var view, owner;
 
 QUnit.module('ember-htmlbars: {{#component}} helper', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
+    owner = buildOwner();
 
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('component-lookup:main', ComponentLookup);
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
-    registry = container = view = null;
+    runDestroy(owner);
+    owner = view = null;
   }
 });
 
 QUnit.test('component helper with bound properties are updating correctly in init of component', function() {
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     init: function() {
       this._super(...arguments);
 
       equal(get(this, 'location'), 'Caracas', 'location is bound on init');
     }
   }));
-  registry.register('component:baz-qux', Component.extend({
+  owner.register('component:baz-qux', Component.extend({
     init: function() {
       this._super(...arguments);
 
       equal(get(this, 'location'), 'Loisaida', 'location is bound on init');
     }
   }));
-  registry.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
-  registry.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
+  owner.register('template:components/foo-bar', compile('yippie! {{location}} {{yield}}'));
+  owner.register('template:components/baz-qux', compile('yummy {{location}} {{yield}}'));
 
   view = EmberView.extend({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent: computed('location', function() {
       var location = get(this, 'location');
 
@@ -76,11 +76,11 @@ QUnit.test('component helper with bound properties are updating correctly in ini
 });
 
 QUnit.test('component helper with unquoted string is bound', function() {
-  registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
-  registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
+  owner.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+  owner.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent: 'foo-bar',
     location: 'Caracas',
     template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
@@ -99,7 +99,7 @@ QUnit.test('component helper with unquoted string is bound', function() {
 QUnit.test('component helper destroys underlying component when it is swapped out', function() {
   var currentComponent;
   var destroyCalls = 0;
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     init() {
       this._super(...arguments);
       currentComponent = 'foo-bar';
@@ -108,7 +108,7 @@ QUnit.test('component helper destroys underlying component when it is swapped ou
       destroyCalls++;
     }
   }));
-  registry.register('component:baz-qux', Component.extend({
+  owner.register('component:baz-qux', Component.extend({
     init() {
       this._super(...arguments);
       currentComponent = 'baz-qux';
@@ -119,7 +119,7 @@ QUnit.test('component helper destroys underlying component when it is swapped ou
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent: 'foo-bar',
     template: compile('{{component view.dynamicComponent}}')
   });
@@ -145,8 +145,8 @@ QUnit.test('component helper destroys underlying component when it is swapped ou
 });
 
 QUnit.test('component helper with actions', function() {
-  registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('template:components/foo-bar', compile('yippie! {{yield}}'));
+  owner.register('component:foo-bar', Component.extend({
     classNames: 'foo-bar',
     didInsertElement() {
       // trigger action on click in absence of app's EventDispatcher
@@ -170,7 +170,7 @@ QUnit.test('component helper with actions', function() {
     }
   }).create();
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     controller: controller,
     template: compile('{{#component dynamicComponent fooBarred="mappedAction"}}arepas!{{/component}}')
   });
@@ -183,16 +183,16 @@ QUnit.test('component helper with actions', function() {
 });
 
 QUnit.test('component helper maintains expected logical parentView', function() {
-  registry.register('template:components/foo-bar', compile('yippie! {{yield}}'));
+  owner.register('template:components/foo-bar', compile('yippie! {{yield}}'));
   var componentInstance;
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     didInsertElement() {
       componentInstance = this;
     }
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent: 'foo-bar',
     template: compile('{{#component view.dynamicComponent}}arepas!{{/component}}')
   });
@@ -202,12 +202,12 @@ QUnit.test('component helper maintains expected logical parentView', function() 
 });
 
 QUnit.test('nested component helpers', function() {
-  registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
-  registry.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
-  registry.register('template:components/corge-grault', compile('delicious {{attrs.location}} {{yield}}'));
+  owner.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+  owner.register('template:components/baz-qux', compile('yummy {{attrs.location}} {{yield}}'));
+  owner.register('template:components/corge-grault', compile('delicious {{attrs.location}} {{yield}}'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent1: 'foo-bar',
     dynamicComponent2: 'baz-qux',
     location: 'Caracas',
@@ -225,10 +225,10 @@ QUnit.test('nested component helpers', function() {
 });
 
 QUnit.test('component helper can be used with a quoted string (though you probably would not do this)', function() {
-  registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+  owner.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     location: 'Caracas',
     template: compile('{{#component "foo-bar" location=view.location}}arepas!{{/component}}')
   });
@@ -240,7 +240,7 @@ QUnit.test('component helper can be used with a quoted string (though you probab
 
 QUnit.test('component with unquoted param resolving to non-existent component', function() {
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent: 'does-not-exist',
     location: 'Caracas',
     template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
@@ -252,9 +252,9 @@ QUnit.test('component with unquoted param resolving to non-existent component', 
 });
 
 QUnit.test('component with unquoted param resolving to a component, then non-existent component', function() {
-  registry.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
+  owner.register('template:components/foo-bar', compile('yippie! {{attrs.location}} {{yield}}'));
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     dynamicComponent: 'foo-bar',
     location: 'Caracas',
     template: compile('{{#component view.dynamicComponent location=view.location}}arepas!{{/component}}')
@@ -273,7 +273,7 @@ QUnit.test('component with unquoted param resolving to a component, then non-exi
 
 QUnit.test('component with quoted param for non-existent component', function() {
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     location: 'Caracas',
     template: compile('{{#component "does-not-exist" location=view.location}}arepas!{{/component}}')
   });
@@ -284,17 +284,17 @@ QUnit.test('component with quoted param for non-existent component', function() 
 });
 
 QUnit.test('component helper properly invalidates hash params inside an {{each}} invocation #11044', function() {
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     willRender() {
       // store internally available name to ensure that the name available in `this.attrs.name`
       // matches the template lookup name
       set(this, 'internalName', this.attrs.name);
     }
   }));
-  registry.register('template:components/foo-bar', compile('{{internalName}} - {{attrs.name}}|'));
+  owner.register('template:components/foo-bar', compile('{{internalName}} - {{attrs.name}}|'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     items: [
       { name: 'Robert' },
       { name: 'Jacquie' }
@@ -317,11 +317,11 @@ QUnit.test('component helper properly invalidates hash params inside an {{each}}
 QUnit.test('dashless components should not be found', function() {
   expect(1);
 
-  registry.register('template:components/dashless', compile('Do not render me!'));
+  owner.register('template:components/dashless', compile('Do not render me!'));
 
   view = EmberView.extend({
-    template: compile('{{component "dashless"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{component "dashless"}}')
   }).create();
 
   expectAssertion(function() {

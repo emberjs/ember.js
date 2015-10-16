@@ -1,34 +1,34 @@
 import EmberView from 'ember-views/views/view';
-import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
 import RenderEnv from 'ember-htmlbars/system/render-env';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var registry, container, view, components;
+var owner, view, components;
 
 function commonSetup() {
-  registry = new Registry();
-  container = registry.container();
-  registry.optionsForType('component', { singleton: false });
-  registry.optionsForType('view', { singleton: false });
-  registry.optionsForType('template', { instantiate: false });
-  registry.optionsForType('helper', { instantiate: false });
-  registry.register('component-lookup:main', ComponentLookup);
+  owner = buildOwner();
+  owner.registerOptionsForType('component', { singleton: false });
+  owner.registerOptionsForType('view', { singleton: false });
+  owner.registerOptionsForType('template', { instantiate: false });
+  owner.registerOptionsForType('helper', { instantiate: false });
+  owner.register('component-lookup:main', ComponentLookup);
 }
 
 function commonTeardown() {
-  runDestroy(container);
+  runDestroy(owner);
   runDestroy(view);
-  registry = container = view = null;
+  owner = view = null;
 }
 
 function appendViewFor(template, hash={}) {
   let view = EmberView.extend({
-    template: compile(template),
-    container: container
+    [OWNER]: owner,
+    template: compile(template)
   }).create(hash);
 
   runAppend(view);
@@ -63,8 +63,8 @@ QUnit.module('ember-htmlbars: RenderEnv', {
 QUnit.test('non-block component test', function() {
   components = {};
 
-  registry.register('component:non-block', constructComponent('nonblock'));
-  registry.register('template:components/non-block', compile('In layout'));
+  owner.register('component:non-block', constructComponent('nonblock'));
+  owner.register('template:components/non-block', compile('In layout'));
 
   view = appendViewFor('{{non-block}}');
 
@@ -80,8 +80,8 @@ QUnit.test('non-block component test', function() {
 QUnit.test('block component test', function() {
   components = {};
 
-  registry.register('component:block-component', constructComponent('block'));
-  registry.register('template:components/block-component', compile('In layout {{yield}}'));
+  owner.register('component:block-component', constructComponent('block'));
+  owner.register('template:components/block-component', compile('In layout {{yield}}'));
 
   view = appendViewFor('{{#block-component}}content{{/block-component}}');
 
@@ -97,11 +97,11 @@ QUnit.test('block component test', function() {
 QUnit.test('block component with child component test', function() {
   components = {};
 
-  registry.register('component:block-component', constructComponent('block'));
-  registry.register('component:child-component', constructComponent('child'));
+  owner.register('component:block-component', constructComponent('block'));
+  owner.register('component:child-component', constructComponent('child'));
 
-  registry.register('template:components/block-component', compile('In layout {{yield}}'));
-  registry.register('template:components/child-component', compile('Child Component'));
+  owner.register('template:components/block-component', compile('In layout {{yield}}'));
+  owner.register('template:components/child-component', compile('Child Component'));
 
   view = appendViewFor('{{#block-component}}{{child-component}}{{/block-component}}');
 

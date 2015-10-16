@@ -24,11 +24,11 @@ function templateFor(env, underscored, name) {
   if (!name) { return; }
   assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
-  if (!env.container) {
+  if (!env.owner) {
     throw new EmberError('Container was not found when looking up a views template. ' +
                'This is most likely due to manually instantiating an Ember.View. ' +
                'See: http://git.io/EKPpnA');
   }
 
-  return env.container.lookup('template:' + underscored) || env.container.lookup('template:' + name);
+  return env.owner.lookup('template:' + underscored) || env.owner.lookup('template:' + name);
 }

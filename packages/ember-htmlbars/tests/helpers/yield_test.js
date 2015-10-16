@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import { computed } from 'ember-metal/computed';
-import { Registry } from 'ember-runtime/system/container';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Component from 'ember-views/components/component';
 import helpers from 'ember-htmlbars/helpers';
@@ -14,23 +13,25 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var view, registry, container, originalViewKeyword;
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-function setupContainer() {
-  registry = new Registry();
-  container = registry.container();
-  registry.optionsForType('template', { instantiate: false });
-  registry.register('component-lookup:main', ComponentLookup);
+var view, owner, originalViewKeyword;
+
+function commonSetup() {
+  owner = buildOwner();
+  owner.registerOptionsForType('template', { instantiate: false });
+  owner.register('component-lookup:main', ComponentLookup);
 }
 
-function teardownContainer() {
-  runDestroy(container);
-  registry = container = view = null;
+function commonTeardown() {
+  runDestroy(owner);
+  owner = view = null;
 }
 
 QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
   setup() {
-    setupContainer();
+    commonSetup();
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
@@ -38,7 +39,7 @@ QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
       Ember.TEMPLATES = {};
     });
     runDestroy(view);
-    teardownContainer();
+    commonTeardown();
     resetKeyword('view', originalViewKeyword);
   }
 });
@@ -59,16 +60,15 @@ QUnit.test('a view with a layout set renders its template where the {{yield}} he
 });
 
 QUnit.test('block should work properly even when templates are not hard-coded', function() {
-  registry.register('template:nester', compile('<div class="wrapper"><h1>{{attrs.title}}</h1>{{yield}}</div>'));
-  registry.register('template:nested', compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
+  owner.register('template:nester', compile('<div class="wrapper"><h1>{{attrs.title}}</h1>{{yield}}</div>'));
+  owner.register('template:nested', compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
-  registry.register('view:with-layout', EmberView.extend({
-    container: container,
+  owner.register('view:with-layout', EmberView.extend({
     layoutName: 'nester'
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'nested'
   });
 
@@ -268,7 +268,7 @@ QUnit.test('nested simple bindings inside of a yielded template should work prop
 
 QUnit.module('ember-htmlbars: Component {{yield}}', {
   setup() {
-    setupContainer();
+    commonSetup();
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
@@ -284,17 +284,16 @@ QUnit.test('yield with nested components (#3220)', function() {
     layout: compile('{{yield}}')
   });
 
-  registry.register('component:inner-component', InnerComponent);
+  owner.register('component:inner-component', InnerComponent);
 
   var OuterComponent = Component.extend({
     layout: compile('{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}')
   });
 
-  registry.register('component:outer-component', OuterComponent);
+  owner.register('component:outer-component', OuterComponent);
 
   view = EmberView.extend({
-    container,
-
+    [OWNER]: owner,
     template: compile(
       '{{#outer-component}}Hello world{{/outer-component}}'
     )

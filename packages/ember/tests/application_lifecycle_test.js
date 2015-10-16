@@ -7,7 +7,7 @@ import jQuery from 'ember-views/system/jquery';
 
 var compile = Ember.HTMLBars.compile;
 
-var App, container, router;
+var App, appInstance, router;
 
 function setupApp(klass) {
   run(function() {
@@ -21,7 +21,7 @@ function setupApp(klass) {
 
     App.deferReadiness();
 
-    container = App.__container__;
+    appInstance = App.__deprecatedInstance__;
   });
 }
 
@@ -38,7 +38,7 @@ QUnit.module('Application Lifecycle', {
 });
 
 function handleURL(path) {
-  router = container.lookup('router:main');
+  router = appInstance.lookup('router:main');
   return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
@@ -49,7 +49,6 @@ function handleURL(path) {
     });
   });
 }
-
 
 QUnit.test('Resetting the application allows controller properties to be set when a route deactivates', function() {
   App.Router.map(function() {
@@ -73,22 +72,22 @@ QUnit.test('Resetting the application allows controller properties to be set whe
     }
   });
 
-  container.lookup('router:main');
+  appInstance.lookup('router:main');
 
   run(App, 'advanceReadiness');
 
   handleURL('/');
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   App.reset();
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
-QUnit.test('Destroying the application resets the router before the container is destroyed', function() {
+QUnit.test('Destroying the application resets the router before the appInstance is destroyed', function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -110,19 +109,19 @@ QUnit.test('Destroying the application resets the router before the container is
     }
   });
 
-  container.lookup('router:main');
+  appInstance.lookup('router:main');
 
   run(App, 'advanceReadiness');
 
   handleURL('/');
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   run(App, 'destroy');
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {

@@ -1,24 +1,24 @@
 import lookupHelper, { findHelper } from 'ember-htmlbars/system/lookup-helper';
 import ComponentLookup from 'ember-views/component_lookup';
-import Registry from 'container/registry';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
-function generateEnv(helpers, container) {
+function generateEnv(helpers, owner) {
   return {
-    container: container,
+    owner: owner,
     helpers: (helpers ? helpers : {}),
     hooks: { keywords: {} },
     knownHelpers: {}
   };
 }
 
-function generateContainer() {
-  var registry = new Registry();
-  var container = registry.container();
+function generateOwner() {
+  const owner = buildOwner();
 
-  registry.register('component-lookup:main', ComponentLookup);
+  owner.register('component-lookup:main', ComponentLookup);
 
-  return container;
+  return owner;
 }
 
 QUnit.module('ember-htmlbars: lookupHelper hook');
@@ -58,14 +58,14 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
 });
 
 QUnit.test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
-  var container = generateContainer();
-  var env = generateEnv(null, container);
+  const owner = generateOwner();
+  var env = generateEnv(null, owner);
   var view = {
-    container: container
+    [OWNER]: owner
   };
 
   var someName = Helper.extend();
-  view.container.registry.register('helper:some-name', someName);
+  owner.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -73,15 +73,15 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
 });
 
 QUnit.test('does a lookup in the container if the name is found in knownHelpers', function() {
-  var container = generateContainer();
-  var env = generateEnv(null, container);
+  const owner = generateOwner();
+  var env = generateEnv(null, owner);
   var view = {
-    container: container
+    [OWNER]: owner
   };
 
   env.knownHelpers['t'] = true;
   var t = Helper.extend();
-  view.container.registry.register('helper:t', t);
+  owner.register('helper:t', t);
 
   var actual = lookupHelper('t', view, env);
 
@@ -90,17 +90,17 @@ QUnit.test('does a lookup in the container if the name is found in knownHelpers'
 
 QUnit.test('looks up a shorthand helper in the container', function() {
   expect(2);
-  var container = generateContainer();
-  var env = generateEnv(null, container);
+  const owner = generateOwner();
+  var env = generateEnv(null, owner);
   var view = {
-    container: container
+    [OWNER]: owner
   };
   var called;
 
   function someName() {
     called = true;
   }
-  view.container.registry.register('helper:some-name', makeHelper(someName));
+  owner.register('helper:some-name', makeHelper(someName));
 
   var actual = lookupHelper('some-name', view, env);
 
@@ -113,14 +113,14 @@ QUnit.test('looks up a shorthand helper in the container', function() {
 
 QUnit.test('fails with a useful error when resolving a function', function() {
   expect(1);
-  var container = generateContainer();
-  var env = generateEnv(null, container);
+  const owner = generateOwner();
+  var env = generateEnv(null, owner);
   var view = {
-    container: container
+    [OWNER]: owner
   };
 
   function someName() {}
-  view.container.registry.register('helper:some-name', someName);
+  owner.register('helper:some-name', someName);
 
   var actual;
   expectAssertion(function() {

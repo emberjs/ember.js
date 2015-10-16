@@ -10,7 +10,7 @@ import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
-var App, registry, container;
+var App, appInstance;
 var originalHelpers;
 
 const keys = Object.keys;
@@ -27,7 +27,7 @@ function cleanup() {
     if (App) {
       App.destroy();
     }
-    App = null;
+    App = appInstance = null;
     Ember.TEMPLATES = {};
 
     cleanupHelpers();
@@ -62,13 +62,12 @@ function boot(callback, startURL='/') {
       location: 'none'
     });
 
-    registry = App.__registry__;
-    container = App.__container__;
+    appInstance = App.__deprecatedInstance__;
 
     if (callback) { callback(); }
   });
 
-  var router = container.lookup('router:main');
+  var router = appInstance.lookup('router:main');
 
   run(App, 'advanceReadiness');
   run(function() {
@@ -83,7 +82,7 @@ QUnit.test('The helper becomes the body of the component', function() {
 
 QUnit.test('If a component is registered, it is used', function() {
   boot(function() {
-    registry.register('component:expand-it', Component.extend({
+    appInstance.register('component:expand-it', Component.extend({
       classNames: 'testing123'
     }));
   });
@@ -96,7 +95,7 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
 
   boot(function() {
-    registry.register('component:my-hero', Component.extend({
+    appInstance.register('component:my-hero', Component.extend({
       classNames: 'testing123',
       layout: compile('watch him as he GOES')
     }));
@@ -110,8 +109,8 @@ QUnit.test('Late-registered components can be rendered with template registered 
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>');
 
   boot(function() {
-    registry.register('template:components/sally-rutherford', compile('funkytowny{{yield}}'));
-    registry.register('component:sally-rutherford', Component);
+    appInstance.register('template:components/sally-rutherford', compile('funkytowny{{yield}}'));
+    appInstance.register('component:sally-rutherford', Component);
   });
 
   equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
@@ -122,7 +121,7 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>');
 
   boot(function() {
-    registry.register('template:components/borf-snorlax', compile('goodfreakingTIMES{{yield}}'));
+    appInstance.register('template:components/borf-snorlax', compile('goodfreakingTIMES{{yield}}'));
   });
 
   equal(jQuery('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
@@ -133,7 +132,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'user-name': 'machty'
     }));
   });
@@ -148,11 +147,11 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
   Ember.TEMPLATES['foo-bar-baz'] = compile('{{text}}-{{yield}}');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       text: 'inner',
       layoutName: 'foo-bar-baz'
     }));
@@ -168,11 +167,11 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
   Ember.TEMPLATES['foo-bar-baz'] = compile('No way!');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       text: 'inner',
       layoutName: 'foo-bar-baz',
       layout: compile('{{text}}-{{yield}}')
@@ -189,11 +188,11 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   expectDeprecation(function() {
     boot(function() {
-      registry.register('controller:application', Controller.extend({
+      appInstance.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
 
-      registry.register('component:my-component', Component.extend({
+      appInstance.register('component:my-component', Component.extend({
         text: 'inner',
         defaultLayout: compile('{{text}}-{{yield}}')
       }));
@@ -211,11 +210,11 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   expectDeprecation(function() {
     boot(function() {
-      registry.register('controller:application', Controller.extend({
+      appInstance.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
 
-      registry.register('component:my-component', Component.extend({
+      appInstance.register('component:my-component', Component.extend({
         text: 'inner',
         defaultLayout: compile('should not see this!')
       }));
@@ -243,11 +242,11 @@ QUnit.test('Components with a block should have the proper content when a templa
   Ember.TEMPLATES['components/my-component'] = compile('{{text}}-{{yield}}');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       text: 'inner'
     }));
   });
@@ -259,11 +258,11 @@ QUnit.test('Components with a block should yield the proper content without a te
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       text: 'inner'
     }));
   });
@@ -276,11 +275,11 @@ QUnit.test('Components without a block should have the proper content when a tem
   Ember.TEMPLATES['components/my-component'] = compile('{{text}}');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       text: 'inner'
     }));
   });
@@ -292,11 +291,11 @@ QUnit.test('Components without a block should have the proper content', function
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       didInsertElement() {
         this.$().html('Some text inserted by jQuery');
       }
@@ -311,12 +310,12 @@ QUnit.test('properties of a component without a template should not collide with
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       didInsertElement() {
         this.$().html(this.get('data'));
       }
@@ -330,12 +329,12 @@ QUnit.test('attrs property of a component without a template should not collide 
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       didInsertElement() {
         // FIXME: I'm unsure if this is even the right way to access attrs
         this.$().html(this.get('attrs.attrs.value'));
@@ -350,7 +349,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
           ok(true, 'action triggered on parent');
@@ -358,7 +357,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
       }
     }));
 
-    registry.register('component:my-component', Component.extend());
+    appInstance.register('component:my-component', Component.extend());
   });
 
   run(function() {
@@ -371,7 +370,7 @@ QUnit.test('Components trigger actions in the components context when called fro
   Ember.TEMPLATES['components/my-component'] = compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
           ok(false, 'action triggered on the wrong context');
@@ -379,7 +378,7 @@ QUnit.test('Components trigger actions in the components context when called fro
       }
     }));
 
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       actions: {
         fizzbuzz() {
           ok(true, 'action triggered on component');
@@ -399,7 +398,7 @@ QUnit.test('Components receive the top-level view as their ownerView', function(
   let component;
 
   boot(function() {
-    registry.register('component:my-component', Component.extend({
+    appInstance.register('component:my-component', Component.extend({
       init() {
         this._super();
         component = this;

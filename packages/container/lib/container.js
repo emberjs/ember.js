@@ -1,6 +1,8 @@
 import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
+import isEnabled from 'ember-metal/features';
+import { setOwner } from './owner';
 
 /**
  A container used to instantiate and cache objects.
@@ -17,12 +19,20 @@ import dictionary from 'ember-metal/dictionary';
  */
 function Container(registry, options) {
   this.registry        = registry;
+  this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
 }
 
 Container.prototype = {
+  /**
+   @private
+   @property owner
+   @type Object
+   */
+  owner: null,
+
   /**
    @private
    @property registry
@@ -232,6 +242,11 @@ function factoryFor(container, fullName) {
     factoryInjections._toString = registry.makeToString(factory, fullName);
 
     var injectedFactory = factory.extend(injections);
+
+    if (isEnabled('ember-container-inject-owner')) {
+      injectDeprecatedContainer(injectedFactory.prototype, container);
+    }
+
     injectedFactory.reopenClass(factoryInjections);
 
     if (factory && typeof factory._onLookup === 'function') {
@@ -255,7 +270,14 @@ function injectionsFor(container, fullName) {
                                    registry.getTypeInjections(type),
                                    registry.getInjections(fullName));
   injections._debugContainerKey = fullName;
-  injections.container = container;
+
+  setOwner(injections, container.owner);
+
+  // TODO - Inject a `FakeContainer` instead here. The `FakeContainer` will
+  // proxy all properties of the container with deprecations.
+  if (!isEnabled('ember-container-inject-owner')) {
+    injections.container = container;
+  }
 
   return injections;
 }
@@ -299,16 +321,38 @@ function instantiate(container, fullName) {
 
     validationCache[fullName] = true;
 
+    let obj;
+
     if (typeof factory.extend === 'function') {
       // assume the factory was extendable and is already injected
-      return factory.create();
+      obj = factory.create();
     } else {
       // assume the factory was extendable
       // to create time injections
       // TODO: support new'ing for instantiation and merge injections for pure JS Functions
-      return factory.create(injectionsFor(container, fullName));
+      obj = factory.create(injectionsFor(container, fullName));
+
+      if (isEnabled('ember-container-inject-owner')) {
+        injectDeprecatedContainer(obj, container);
+      }
     }
+
+    return obj;
   }
+}
+
+// TODO - remove when Ember reaches v3.0.0
+function injectDeprecatedContainer(object, container) {
+  Object.defineProperty(object, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      Ember.deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
+                      false,
+                      { id: 'ember-application.injected-container', until: '3.0.0' });
+      return container;
+    }
+  });
 }
 
 function eachDestroyable(container, callback) {

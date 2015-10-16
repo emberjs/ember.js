@@ -1,20 +1,25 @@
-import assign from 'ember-metal/assign';
-import Registry from 'container/registry';
 import HashLocation from 'ember-routing/location/hash_location';
 import HistoryLocation from 'ember-routing/location/history_location';
 import AutoLocation from 'ember-routing/location/auto_location';
 import NoneLocation from 'ember-routing/location/none_location';
 import Router from 'ember-routing/system/router';
 import { runDestroy } from 'ember-runtime/tests/utils';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { setOwner } from 'container/owner';
 
-var registry, container;
+var owner;
 
-function createRouter(overrides, disableSetup) {
-  var opts = assign({ container: container }, overrides);
-  var routerWithContainer = Router.extend();
-  var router = routerWithContainer.create(opts);
+function createRouter(settings, options) {
+  options = options || {};
 
-  if (!disableSetup) {
+  var CustomRouter = Router.extend();
+  var router = CustomRouter.create(settings);
+
+  if (!options.skipOwner) {
+    setOwner(router, owner);
+  }
+
+  if (!options.disableSetup) {
     router.setupRouter();
   }
 
@@ -23,35 +28,34 @@ function createRouter(overrides, disableSetup) {
 
 QUnit.module('Ember Router', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
+    owner = buildOwner();
 
     //register the HashLocation (the default)
-    registry.register('location:hash', HashLocation);
-    registry.register('location:history', HistoryLocation);
-    registry.register('location:auto', AutoLocation);
-    registry.register('location:none', NoneLocation);
+    owner.register('location:hash', HashLocation);
+    owner.register('location:history', HistoryLocation);
+    owner.register('location:auto', AutoLocation);
+    owner.register('location:none', NoneLocation);
   },
   teardown() {
-    runDestroy(container);
-    registry = container = null;
+    runDestroy(owner);
+    owner = null;
   }
 });
 
-QUnit.test('can create a router without a container', function() {
-  createRouter({ container: null }, true);
+QUnit.test('can create a router without an owner', function() {
+  createRouter(null, { disableSetup: true, skipOwner: true });
 
   ok(true, 'no errors were thrown when creating without a container');
 });
 
 QUnit.test('should not create a router.js instance upon init', function() {
-  var router = createRouter(null, true);
+  var router = createRouter(null, { disableSetup: true });
 
   ok(!router.router);
 });
 
 QUnit.test('should not reify location until setupRouter is called', function() {
-  var router = createRouter(null, true);
+  var router = createRouter(null, { disableSetup: true });
   equal(typeof router.location, 'string', 'location is specified as a string');
 
   router.setupRouter();
@@ -59,11 +63,11 @@ QUnit.test('should not reify location until setupRouter is called', function() {
   equal(typeof router.location, 'object', 'location is reified into an object');
 });
 
-QUnit.test('should destroy its location upon destroying the routers container.', function() {
+QUnit.test('should destroy its location upon destroying the routers owner.', function() {
   var router = createRouter();
   var location = router.get('location');
 
-  runDestroy(container);
+  runDestroy(owner);
 
   ok(location.isDestroyed, 'location should be destroyed');
 });
@@ -80,7 +84,7 @@ QUnit.test('should instantiate its location with its `rootURL`', function() {
 QUnit.test('replacePath should be called with the right path', function() {
   expect(1);
 
-  var location = container.lookup('location:auto');
+  var location = owner.lookup('location:auto');
 
   var browserLocation = {
     href: 'http://test.com/rootdir/welcome',
@@ -139,10 +143,9 @@ QUnit.test('Router should cancel routing setup when the Location class says so v
     create() { return this; }
   };
 
-  registry.register('location:fake', FakeLocation);
+  owner.register('location:fake', FakeLocation);
 
   router = createRouter({
-    container: container,
     location: 'fake',
 
     _setupRouter() {
@@ -156,7 +159,7 @@ QUnit.test('Router should cancel routing setup when the Location class says so v
 QUnit.test('AutoLocation should replace the url when it\'s not in the preferred format', function() {
   expect(1);
 
-  var location = container.lookup('location:auto');
+  var location = owner.lookup('location:auto');
 
   location.location = {
     href: 'http://test.com/rootdir/welcome',
@@ -183,8 +186,6 @@ QUnit.test('Router#handleURL should remove any #hashes before doing URL transiti
   expect(2);
 
   var router = createRouter({
-    container: container,
-
     _doURLTransition(routerJsMethod, url) {
       equal(routerJsMethod, 'handleURL');
       equal(url, '/foo/bar?time=morphin');

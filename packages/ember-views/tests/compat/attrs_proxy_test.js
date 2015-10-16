@@ -1,40 +1,40 @@
 import View from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
-import Registry from 'container/registry';
 import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
-
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var view, registry, container, originalViewKeyword;
+var view, owner, originalViewKeyword;
 
 QUnit.module('ember-views: attrs-proxy', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    registry = new Registry();
-    container = registry.container();
+    owner = buildOwner();
   },
 
   teardown() {
     runDestroy(view);
+    runDestroy(owner);
     resetKeyword('view', originalViewKeyword);
   }
 });
 
 QUnit.test('works with properties setup in root of view', function() {
-  registry.register('view:foo', View.extend({
+  owner.register('view:foo', View.extend({
     bar: 'qux',
 
     template: compile('{{view.bar}}')
   }));
 
   view = View.extend({
-    container: registry.container(),
+    [OWNER]: owner,
     template: compile('{{view "foo" bar="baz"}}')
   }).create();
 
@@ -48,7 +48,7 @@ QUnit.test('works with undefined attributes', function() {
   // expectDeprecation();
 
   var childView;
-  registry.register('view:foo', View.extend({
+  owner.register('view:foo', View.extend({
     init: function() {
       this._super(...arguments);
 
@@ -59,8 +59,7 @@ QUnit.test('works with undefined attributes', function() {
   }));
 
   view = View.extend({
-    container: registry.container(),
-
+    [OWNER]: owner,
     template: compile('{{view "foo" bar=undefined}}')
   }).create();
 
@@ -78,7 +77,7 @@ QUnit.test('works with undefined attributes', function() {
 QUnit.test('an observer on an attribute in the root of the component is fired when attrs are set', function() {
   expect(2);
 
-  registry.register('view:foo', View.extend({
+  owner.register('view:foo', View.extend({
     observerFiredCount: 0,
 
     barObserver: on('init', observer('bar', function() {
@@ -90,7 +89,7 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
   }));
 
   view = View.extend({
-    container: registry.container(),
+    [OWNER]: owner,
     baz: 'baz',
     template: compile('{{view "foo" bar=view.baz}}')
   }).create();

@@ -19,6 +19,7 @@ import {
   calculateCacheKey
 } from 'ember-routing/utils';
 import RouterState from './router_state';
+import { getOwner } from 'container/owner';
 
 /**
 @module ember
@@ -246,9 +247,10 @@ var EmberRouter = EmberObject.extend(Evented, {
       defaultParentState = ownState;
     }
     if (!this._toplevelView) {
-      var OutletView = this.container.lookupFactory('view:-outlet');
+      const owner = getOwner(this);
+      var OutletView = owner._lookupFactory('view:-outlet');
       this._toplevelView = OutletView.create();
-      var instance = this.container.lookup('-application-instance:main');
+      var instance = owner.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
     }
     this._toplevelView.setOutletState(liveRoutes);
@@ -447,9 +449,10 @@ var EmberRouter = EmberObject.extend(Evented, {
   _setupLocation() {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
+    const owner = getOwner(this);
 
-    if ('string' === typeof location && this.container) {
-      var resolvedLocation = this.container.lookup(`location:${location}`);
+    if ('string' === typeof location && owner) {
+      var resolvedLocation = owner.lookup(`location:${location}`);
 
       if ('undefined' !== typeof resolvedLocation) {
         location = set(this, 'location', resolvedLocation);
@@ -485,12 +488,12 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _getHandlerFunction() {
     var seen = new EmptyObject();
-    var container = this.container;
-    var DefaultRoute = container.lookupFactory('route:basic');
+    const owner = getOwner(this);
+    var DefaultRoute = owner._lookupFactory('route:basic');
 
     return (name) => {
       var routeName = 'route:' + name;
-      var handler = container.lookup(routeName);
+      var handler = owner.lookup(routeName);
 
       if (seen[name]) {
         return handler;
@@ -499,8 +502,8 @@ var EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        container.registry.register(routeName, DefaultRoute.extend());
-        handler = container.lookup(routeName);
+        owner.register(routeName, DefaultRoute.extend());
+        handler = owner.lookup(routeName);
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
           info(`generated -> ${routeName}`, { fullName: routeName });
@@ -841,9 +844,9 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
 }
 
 function routeHasBeenDefined(router, name) {
-  var container = router.container;
+  const owner = getOwner(router);
   return router.hasRoute(name) &&
-         (container.registry.has(`template:${name}`) || container.registry.has(`route:${name}`));
+         (owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`));
 }
 
 function triggerEvent(handlerInfos, ignoreFailure, args) {
@@ -904,7 +907,7 @@ function updatePaths(router) {
   set(router, 'currentPath', path);
   set(router, 'currentRouteName', currentRouteName);
 
-  let appController = router.container.lookup('controller:application');
+  let appController = getOwner(router).lookup('controller:application');
 
   if (!appController) {
     // appController might not exist when top-level loading/error

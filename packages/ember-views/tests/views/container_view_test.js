@@ -6,20 +6,20 @@ import Controller from 'ember-runtime/controllers/controller';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
 import ContainerView, { DeprecatedContainerView } from 'ember-views/views/container_view';
-import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { getOwner, OWNER } from 'container/owner';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var trim = jQuery.trim;
-var container, registry, view, otherContainer, originalViewKeyword;
+var container, view, otherContainer, originalViewKeyword;
 
 QUnit.module('Ember.ContainerView', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    registry = new Registry();
   },
   teardown() {
     run(function() {
@@ -32,10 +32,12 @@ QUnit.module('Ember.ContainerView', {
 });
 
 QUnit.test('should be able to insert views after the DOM representation is created', function() {
+  const owner = buildOwner();
+
   container = ContainerView.create({
+    [OWNER]: owner,
     classNameBindings: ['name'],
-    name: 'foo',
-    container: registry.container()
+    name: 'foo'
   });
 
   run(function() {
@@ -50,7 +52,7 @@ QUnit.test('should be able to insert views after the DOM representation is creat
     container.pushObject(view);
   });
 
-  equal(view.container, container.container, 'view gains its containerViews container');
+  equal(getOwner(view), owner, 'view gains its containerView\'s owner');
   equal(view.parentView, container, 'view\'s parentView is the container');
   equal(trim(container.$().text()), 'This is my moment');
 
@@ -84,15 +86,15 @@ QUnit.test('should be able to observe properties that contain child views', func
   equal(container.get('displayIsDisplayed'), false, 'can bind to child view');
 });
 
-QUnit.test('childViews inherit their parents iocContainer, and retain the original container even when moved', function() {
-  var iocContainer = registry.container();
+QUnit.test('childViews inherit their parents owner, and retain the original container even when moved', function() {
+  const owner = buildOwner();
 
   container = ContainerView.create({
-    container: iocContainer
+    [OWNER]: owner
   });
 
   otherContainer = ContainerView.create({
-    container: iocContainer
+    [OWNER]: owner
   });
 
   view = View.create();
@@ -100,16 +102,16 @@ QUnit.test('childViews inherit their parents iocContainer, and retain the origin
   container.pushObject(view);
 
   strictEqual(view.get('parentView'), container, 'sets the parent view after the childView is appended');
-  strictEqual(get(view, 'container'), container.container, 'inherits its parentViews iocContainer');
+  strictEqual(getOwner(view), owner, 'inherits its parentViews owner');
 
   container.removeObject(view);
 
-  strictEqual(get(view, 'container'), container.container, 'leaves existing iocContainer alone');
+  strictEqual(getOwner(view), owner, 'leaves existing owner alone');
 
   otherContainer.pushObject(view);
 
   strictEqual(view.get('parentView'), otherContainer, 'sets the new parent view after the childView is appended');
-  strictEqual(get(view, 'container'), container.container, 'still inherits its original parentViews iocContainer');
+  strictEqual(getOwner(view), owner, 'still inherits its original parentViews owner');
 });
 
 QUnit.test('should set the parentView property on views that are added to the child views array', function() {
@@ -460,7 +462,6 @@ var child, count;
 QUnit.module('Ember.ContainerView - modify childViews', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    registry = new Registry();
     container = ContainerView.create({
       _viewRegistry: { }
     });
@@ -620,7 +621,6 @@ QUnit.test('should be able to modify childViews then rerender again the Containe
 QUnit.module('Ember.ContainerView', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    registry = new Registry();
   },
   teardown() {
     run(function() {

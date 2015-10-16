@@ -4,10 +4,11 @@ import compile from 'ember-template-compiler/system/compile';
 import { set as o_set } from 'ember-metal/property_set';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import TextArea from 'ember-views/views/text_area';
-import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var textArea, controller;
+var textArea, controller, owner;
 
 function set(object, key, value) {
   run(function() { o_set(object, key, value); });
@@ -19,12 +20,12 @@ QUnit.module('{{textarea}}', {
       val: 'Lorem ipsum dolor'
     };
 
-    var registry = new Registry();
-    registry.register('component:-text-area', TextArea);
-    registry.register('component-lookup:main', ComponentLookup);
+    owner = buildOwner();
+    owner.register('component:-text-area', TextArea);
+    owner.register('component-lookup:main', ComponentLookup);
 
     textArea = View.extend({
-      container: registry.container(),
+      [OWNER]: owner,
       controller: controller,
       template: compile('{{textarea disabled=disabled value=val}}')
     }).create();

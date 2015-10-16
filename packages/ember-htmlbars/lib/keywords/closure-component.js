@@ -64,7 +64,7 @@ function createClosureComponentCell(env, originalComponentPath, params, hash, la
 }
 
 function isValidComponentPath(env, path) {
-  const result = lookupComponent(env.container, path);
+  const result = lookupComponent(env.owner, path);
 
   return !!(result.component || result.layout);
 }
@@ -88,7 +88,7 @@ function createNestedClosureComponentCell(componentCell, params, hash) {
 }
 
 function createNewClosureComponentCell(env, componentPath, params, hash) {
-  let positionalParams = getPositionalParams(env.container, componentPath);
+  let positionalParams = getPositionalParams(env.owner, componentPath);
 
   // This needs to be done in each nesting level to avoid raising assertions
   processPositionalParams(null, positionalParams, params, hash);

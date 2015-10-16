@@ -2,6 +2,7 @@ import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { tryInvoke } from 'ember-metal/utils';
+import { getOwner } from 'container/owner';
 
 import EmberObject from 'ember-runtime/system/object';
 import environment from 'ember-metal/environment';
@@ -133,7 +134,7 @@ export default EmberObject.extend({
       implementation = 'none';
     }
 
-    var concrete = this.container.lookup(`location:${implementation}`);
+    var concrete = getOwner(this).lookup(`location:${implementation}`);
     set(concrete, 'rootURL', rootURL);
 
     assert(`Could not find location '${implementation}'.`, !!concrete);

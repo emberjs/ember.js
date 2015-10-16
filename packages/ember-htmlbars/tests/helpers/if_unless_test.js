@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Namespace from 'ember-runtime/system/namespace';
-import { Registry } from 'ember-runtime/system/container';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
@@ -19,9 +18,12 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
+
 var originalLookup = Ember.lookup;
 
-var view, lookup, registry, container, TemplateTests, originalViewKeyword;
+var view, lookup, owner, TemplateTests, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
   setup() {
@@ -29,19 +31,18 @@ QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
 
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('view', { singleton: false });
-    registry.optionsForType('component', { singleton: false });
-    registry.register('view:toplevel', EmberView.extend());
-    registry.register('component-lookup:main', ComponentLookup);
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.registerOptionsForType('view', { singleton: false });
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.register('view:toplevel', EmberView.extend());
+    owner.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(view);
-    registry = container = view = null;
+    owner = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
@@ -263,12 +264,11 @@ QUnit.test('should not rerender if truthiness does not change', function() {
 });
 
 QUnit.test('should update the block when object passed to #unless helper changes', function() {
-  registry.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
+  owner.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'advice',
-
     onDrugs: true,
     doWellInSchool: 'Eat your vegetables'
   });
@@ -317,12 +317,11 @@ QUnit.test('properties within an if statement should not fail on re-render', fun
 });
 
 QUnit.test('should update the block when object passed to #if helper changes', function() {
-  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
+  owner.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'menu',
-
     INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
     inception: 'OOOOoooooOOOOOOooooooo'
   });
@@ -349,12 +348,11 @@ QUnit.test('should update the block when object passed to #if helper changes', f
 });
 
 QUnit.test('should update the block when object passed to #if helper changes and an inverse is supplied', function() {
-  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
+  owner.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'menu',
-
     INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
     inception: false,
     SAD: 'BOONG?'
@@ -428,12 +426,11 @@ QUnit.test('the {{this}} helper should not fail on removal', function() {
 });
 
 QUnit.test('should update the block when object passed to #unless helper changes', function() {
-  registry.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
+  owner.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'advice',
-
     onDrugs: true,
     doWellInSchool: 'Eat your vegetables'
   });
@@ -483,12 +480,11 @@ QUnit.test('properties within an if statement should not fail on re-render', fun
 });
 
 QUnit.test('should update the block when object passed to #if helper changes', function() {
-  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
+  owner.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'menu',
-
     INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
     inception: 'OOOOoooooOOOOOOooooooo'
   });
@@ -515,12 +511,11 @@ QUnit.test('should update the block when object passed to #if helper changes', f
 });
 
 QUnit.test('should update the block when object passed to #if helper changes and an inverse is supplied', function() {
-  registry.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
+  owner.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'menu',
-
     INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
     inception: false,
     SAD: 'BOONG?'
@@ -908,18 +903,17 @@ QUnit.test('`if` helper with inline form: updates when given a falsey second arg
 QUnit.test('using `if` with an `{{each}}` destroys components when transitioning to and from inverse (GH #12267)', function() {
   let destroyedChildrenCount = 0;
 
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     willDestroy() {
       destroyedChildrenCount++;
     }
   }));
-  registry.register('template:components/foo-bar', compile('{{number}}'));
+  owner.register('template:components/foo-bar', compile('{{number}}'));
 
   view = EmberView.create({
-    container,
+    [OWNER]: owner,
     test: true,
     list: emberA([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-
     template: compile(`
       {{~#if view.test~}}
         {{~#each view.list as |number|~}}

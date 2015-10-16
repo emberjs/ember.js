@@ -12,6 +12,8 @@ import { computed } from 'ember-metal/computed';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
+import { getOwner } from 'container/owner';
+
 function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {
     actionName = actionName.value;
@@ -136,7 +138,7 @@ var Component = View.extend(TargetActionSupport, {
     set(this, 'controller', this);
     set(this, 'context', this);
 
-    if (!this.layout && this.layoutName && this.container) {
+    if (!this.layout && this.layoutName && getOwner(this)) {
       let layoutName = get(this, 'layoutName');
 
       this.layout = this.templateForName(layoutName);

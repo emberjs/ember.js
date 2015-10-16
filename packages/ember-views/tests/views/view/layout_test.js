@@ -1,32 +1,34 @@
-import Registry from 'container/registry';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 import { registerHelper } from 'ember-htmlbars/helpers';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var registry, container, view;
+var owner, view;
 
 QUnit.module('EmberView - Layout Functionality', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
   },
 
   teardown() {
     run(function() {
       view.destroy();
-      container.destroy();
+      owner.destroy();
     });
-    registry = container = view = null;
+    owner = view = null;
   }
 });
 
 QUnit.test('Layout views return throw if their layout cannot be found', function() {
   view = EmberView.create({
-    layoutName: 'cantBeFound',
-    container: { lookup() { } }
+    [OWNER]: {
+      lookup() { }
+    },
+    layoutName: 'cantBeFound'
   });
 
   expectAssertion(function() {
@@ -46,11 +48,11 @@ QUnit.test('should use the template of the associated layout', function() {
     layoutCalled++;
   });
 
-  registry.register('template:template', compile('{{call-template}}'));
-  registry.register('template:layout', compile('{{call-layout}}'));
+  owner.register('template:template', compile('{{call-template}}'));
+  owner.register('template:layout', compile('{{call-layout}}'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     layoutName: 'layout',
     templateName: 'template'
   });
@@ -64,14 +66,13 @@ QUnit.test('should use the template of the associated layout', function() {
 });
 
 QUnit.test('should use the associated template with itself as the context', function() {
-  registry.register('template:testTemplate', compile(
+  owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called for {{personName}}</h1>'
   ));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     layoutName: 'testTemplate',
-
     context: {
       personName: 'Tom DAAAALE'
     }
