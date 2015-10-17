@@ -7,6 +7,14 @@ import { meta as metaFor } from 'ember-metal/meta';
 QUnit.module('mandatory-setters');
 
 function hasMandatorySetter(object, property) {
+  try {
+    return Object.getOwnPropertyDescriptor(object, property).set.isMandatorySetter === true;
+  } catch(e) {
+    return false;
+  }
+}
+
+function hasMetaValue(object, property) {
   return metaFor(object).hasInValues(property);
 }
 
@@ -233,6 +241,109 @@ if (isEnabled('mandatory-setter')) {
 
     watch(obj, 'someProp');
     ok(!(hasMandatorySetter(obj, 'someProp')), 'blastix');
+  });
+
+  QUnit.test('ensure after watch the property is restored (and the value is no-longer stored in meta) [non-enumerable]', function() {
+    var obj = {
+      someProp: null,
+      toString() {
+        return 'custom-object';
+      }
+    };
+
+    Object.defineProperty(obj, 'someProp', {
+      configurable: true,
+      enumerable: false,
+      value: 'blastix'
+    });
+
+    watch(obj, 'someProp');
+    equal(hasMandatorySetter(obj, 'someProp'), true, 'should have a mandatory setter');
+
+    let descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
+
+    equal(descriptor.enumerable, false, 'property should remain non-enumerable');
+    equal(descriptor.configurable, true, 'property should remain configurable');
+    equal(obj.someProp, 'blastix', 'expected value to be the getter');
+
+    equal(descriptor.value, undefined, 'expected existing value to NOT remain');
+
+    ok(hasMetaValue(obj, 'someProp'), 'someProp is stored in meta.values');
+
+    unwatch(obj, 'someProp');
+
+    ok(!hasMetaValue(obj, 'someProp'), 'someProp is no longer stored in meta.values');
+
+    descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
+
+    equal(hasMandatorySetter(obj, 'someProp'), false, 'should no longer have a mandatory setter');
+
+    equal(descriptor.enumerable, false, 'property should remain non-enumerable');
+    equal(descriptor.configurable, true, 'property should remain configurable');
+    equal(obj.someProp, 'blastix', 'expected value to be the getter');
+    equal(descriptor.value, 'blastix', 'expected existing value to remain');
+
+    obj.someProp = 'new value';
+
+    // make sure the descriptor remains correct (nothing funky, like a redefined, happened in the setter);
+    descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
+
+    equal(descriptor.enumerable, false, 'property should remain non-enumerable');
+    equal(descriptor.configurable, true, 'property should remain configurable');
+    equal(descriptor.value, 'new value', 'expected existing value to NOT remain');
+    equal(obj.someProp, 'new value', 'expected value to be the getter');
+    equal(obj.someProp, 'new value');
+  });
+
+  QUnit.test('ensure after watch the property is restored (and the value is no-longer stored in meta) [enumerable]', function() {
+    var obj = {
+      someProp: null,
+      toString() {
+        return 'custom-object';
+      }
+    };
+
+    Object.defineProperty(obj, 'someProp', {
+      configurable: true,
+      enumerable: true,
+      value: 'blastix'
+    });
+
+    watch(obj, 'someProp');
+    equal(hasMandatorySetter(obj, 'someProp'), true, 'should have a mandatory setter');
+
+    let descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
+
+    equal(descriptor.enumerable, true, 'property should remain enumerable');
+    equal(descriptor.configurable, true, 'property should remain configurable');
+    equal(obj.someProp, 'blastix', 'expected value to be the getter');
+
+    equal(descriptor.value, undefined, 'expected existing value to NOT remain');
+
+    ok(hasMetaValue(obj, 'someProp'), 'someProp is stored in meta.values');
+
+    unwatch(obj, 'someProp');
+
+    ok(!hasMetaValue(obj, 'someProp'), 'someProp is no longer stored in meta.values');
+
+    descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
+
+    equal(hasMandatorySetter(obj, 'someProp'), false, 'should no longer have a mandatory setter');
+
+    equal(descriptor.enumerable, true, 'property should remain enumerable');
+    equal(descriptor.configurable, true, 'property should remain configurable');
+    equal(obj.someProp, 'blastix', 'expected value to be the getter');
+    equal(descriptor.value, 'blastix', 'expected existing value to remain');
+
+    obj.someProp = 'new value';
+
+    // make sure the descriptor remains correct (nothing funky, like a redefined, happened in the setter);
+    descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
+
+    equal(descriptor.enumerable, true, 'property should remain enumerable');
+    equal(descriptor.configurable, true, 'property should remain configurable');
+    equal(descriptor.value, 'new value', 'expected existing value to NOT remain');
+    equal(obj.someProp, 'new value');
   });
 
   QUnit.test('sets up mandatory-setter if property comes from prototype', function() {
