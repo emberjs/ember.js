@@ -73,11 +73,7 @@ export function set(obj, keyName, value, tolerant) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.peekWatching(keyName) > 0) {
       if (meta.proto !== obj) {
-        if (isEnabled('mandatory-setter')) {
-          currentValue = meta.peekValues(keyName);
-        } else {
-          currentValue = obj[keyName];
-        }
+        currentValue = obj[keyName];
       }
       // only trigger a change if the value has changed
       if (value !== currentValue) {
