@@ -7,6 +7,7 @@ import { defineProperty } from 'ember-metal/properties';
 import { addListener } from 'ember-metal/events';
 import { computed } from 'ember-metal/computed';
 import { set } from 'ember-metal/property_set';
+import { peekMeta } from 'ember-metal/meta';
 
 var willCount, didCount;
 
@@ -106,4 +107,11 @@ testBoth('unwatching "length" property on an object', function(get, set) {
   set(obj, 'length', '5k');
   equal(willCount, 0, 'should NOT have invoked willCount');
   equal(didCount, 0, 'should NOT have invoked didCount');
+});
+
+testBoth('unwatch should not install a meta if non-existed', function() {
+  var obj = {};
+  equal(peekMeta(obj), undefined, 'peekMeta(obj)');
+  unwatch(obj, 'somekey');
+  equal(peekMeta(obj), undefined, 'peekMeta(obj)');
 });
