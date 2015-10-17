@@ -38,6 +38,9 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
+  // Future traveler, although this code looks scary. It merely exists in
+  // development to aid in development asertions. Production builds of
+  // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
     var configurable = descriptor ? descriptor.configurable : true;
@@ -68,7 +71,10 @@ export function unwatchKey(obj, keyName, meta) {
     m.writeWatching(keyName, 0);
 
     var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    var desc = (possibleDesc !== null &&
+                typeof possibleDesc === 'object' &&
+                possibleDesc.isDescriptor) ? possibleDesc : undefined;
+
     if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
@@ -85,23 +91,17 @@ export function unwatchKey(obj, keyName, meta) {
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
       if (!desc && keyName in obj) {
-        var maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
+        let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
+
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
+          let isEnumerable = Object.prototype.propertyIsEnumerable.call(obj, keyName);
           Object.defineProperty(obj, keyName, {
             configurable: true,
-            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-            set(val) {
-              // redefine to set as enumerable
-              Object.defineProperty(obj, keyName, {
-                configurable: true,
-                writable: true,
-                enumerable: true,
-                value: val
-              });
-              m.deleteFromValues(keyName);
-            },
-            get: DEFAULT_GETTER_FUNCTION(keyName)
+            enumerable: isEnumerable,
+            writable: true,
+            value: m.peekValues(keyName)
           });
+          m.deleteFromValues(keyName);
         }
       }
     }
