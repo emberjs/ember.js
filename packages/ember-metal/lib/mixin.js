@@ -732,7 +732,7 @@ export function aliasMethod(methodName) {
   @param {String} propertyNames*
   @param {Function} func
   @return func
-  @private
+  @public
 */
 export function observer(...args) {
   var func  = args.slice(-1)[0];
