@@ -6,8 +6,9 @@ import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION
 } from 'ember-metal/properties';
+import { lookupDescriptor } from 'ember-metal/utils';
 
-let handleMandatorySetter, lookupDescriptor;
+let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
@@ -37,29 +38,6 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
-  // It is true, the following code looks quite WAT. But have no fear, It
-  // exists purely to improve development ergonomics and is removed from
-  // ember.min.js and ember.prod.js builds.
-  //
-  // Some further context: Once a property is watched by ember, bypassing `set`
-  // for mutation, will bypass observation. This code exists to assert when
-  // that occurs, and attempt to provide more helpful feedback. The alternative
-  // is tricky to debug partially observable properties.
-  lookupDescriptor = function lookupDescriptor(obj, keyName) {
-    let current = obj;
-    while (current) {
-      let descriptor = Object.getOwnPropertyDescriptor(current, keyName);
-
-      if (descriptor) {
-        return descriptor;
-      }
-
-      current = Object.getPrototypeOf(current);
-    }
-
-    return null;
-  };
-
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
     var configurable = descriptor ? descriptor.configurable : true;
