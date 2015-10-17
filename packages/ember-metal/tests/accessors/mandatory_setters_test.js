@@ -92,6 +92,21 @@ if (isEnabled('mandatory-setter')) {
     obj.someProp = 'foo-bar';
   });
 
+  QUnit.test('watched ES5 setter should not be smashed by mandatory setter', function() {
+    let value;
+    let obj = {
+      get foo() { },
+      set foo(_value) {
+        value = _value;
+      }
+    };
+
+    watch(obj, 'foo');
+
+    set(obj, 'foo', 2);
+    equal(value, 2);
+  });
+
   QUnit.test('should not setup mandatory-setter if setter is already setup on property in parent prototype', function() {
     expect(2);
 
