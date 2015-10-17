@@ -1,7 +1,8 @@
 import isEmpty from 'ember-metal/is_empty';
-import keys from 'ember-metal/keys';
 import EmberObject from 'ember-runtime/system/object';
 import assign from 'ember-metal/assign';
+
+const keys = Object.keys;
 
 var RouterState = EmberObject.extend({
   emberRouter: null,
