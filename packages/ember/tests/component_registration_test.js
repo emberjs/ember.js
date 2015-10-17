@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
-import keys from 'ember-metal/keys';
 import run from 'ember-metal/run_loop';
 
 import Application from 'ember-application/system/application';
@@ -13,6 +12,8 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 
 var App, registry, container;
 var originalHelpers;
+
+const keys = Object.keys;
 
 function prepare() {
   Ember.TEMPLATES['components/expand-it'] = compile('<p>hello {{yield}}</p>');
