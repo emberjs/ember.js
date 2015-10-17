@@ -14,6 +14,8 @@ QUnit.test('Ember.isEmpty', function() {
   equal(true, isEmpty(null), 'for null');
   equal(true, isEmpty(undefined), 'for undefined');
   equal(true, isEmpty(''), 'for an empty String');
+  equal(false, isEmpty('  '), 'for a whitespace String');
+  equal(false, isEmpty('\n\t'), 'for another whitespace String');
   equal(false, isEmpty(true), 'for true');
   equal(false, isEmpty(false), 'for false');
   equal(false, isEmpty(string), 'for a String');
