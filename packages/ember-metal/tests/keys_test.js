@@ -162,6 +162,7 @@ QUnit.test('observer switched on and off and then setter', function () {
   addObserver(beer, 'type', K);
   removeObserver(beer, 'type', K);
 
+  deepEqual(Object.keys(beer), [], 'addObserver -> removeObserver');
   set(beer, 'type', 'ale');
 
   deepEqual(Object.keys(beer), ['type'], 'addObserver -> removeObserver -> set');

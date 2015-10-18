@@ -4,7 +4,8 @@ import {
 } from 'ember-metal/meta';
 import {
   MANDATORY_SETTER_FUNCTION,
-  DEFAULT_GETTER_FUNCTION
+  DEFAULT_GETTER_FUNCTION,
+  INHERITING_GETTER_FUNCTION
 } from 'ember-metal/properties';
 import { lookupDescriptor } from 'ember-metal/utils';
 
@@ -21,7 +22,9 @@ export function watchKey(obj, keyName, meta) {
     m.writeWatching(keyName, 1);
 
     var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    var desc = (possibleDesc !== null &&
+                typeof possibleDesc === 'object' &&
+                possibleDesc.isDescriptor) ? possibleDesc : undefined;
     if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
@@ -29,6 +32,7 @@ export function watchKey(obj, keyName, meta) {
     }
 
     if (isEnabled('mandatory-setter')) {
+      // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(m, obj, keyName);
     }
   } else {
@@ -47,19 +51,29 @@ if (isEnabled('mandatory-setter')) {
     var isWritable = descriptor ? descriptor.writable : true;
     var hasValue = descriptor ? 'value' in descriptor : true;
     var possibleDesc = descriptor && descriptor.value;
-    var isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    var isDescriptor = possibleDesc !== null &&
+                       typeof possibleDesc === 'object' &&
+                       possibleDesc.isDescriptor;
 
     if (isDescriptor) { return; }
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
-      m.writeValues(keyName, obj[keyName]);
-      Object.defineProperty(obj, keyName, {
+      let desc = {
         configurable: true,
         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
         set: MANDATORY_SETTER_FUNCTION(keyName),
-        get: DEFAULT_GETTER_FUNCTION(keyName)
-      });
+        get: undefined
+      };
+
+      if (Object.prototype.hasOwnProperty.call(obj, keyName)) {
+        m.writeValues(keyName, obj[keyName]);
+        desc.get = DEFAULT_GETTER_FUNCTION(keyName);
+      } else {
+        desc.get = INHERITING_GETTER_FUNCTION(keyName);
+      }
+
+      Object.defineProperty(obj, keyName, desc);
     }
   };
 }
@@ -94,14 +108,17 @@ export function unwatchKey(obj, keyName, meta) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
-          let isEnumerable = Object.prototype.propertyIsEnumerable.call(obj, keyName);
-          Object.defineProperty(obj, keyName, {
-            configurable: true,
-            enumerable: isEnumerable,
-            writable: true,
-            value: m.peekValues(keyName)
-          });
-          m.deleteFromValues(keyName);
+          if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
+            delete obj[keyName];
+          } else {
+            Object.defineProperty(obj, keyName, {
+              configurable: true,
+              enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
+              writable: true,
+              value: m.peekValues(keyName)
+            });
+            m.deleteFromValues(keyName);
+          }
         }
       }
     }

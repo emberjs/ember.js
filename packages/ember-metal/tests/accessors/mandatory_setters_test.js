@@ -355,6 +355,7 @@ if (isEnabled('mandatory-setter')) {
         return 'custom-object';
       }
     };
+
     var obj2 = Object.create(obj);
 
     watch(obj2, 'someProp');
@@ -364,5 +365,70 @@ if (isEnabled('mandatory-setter')) {
     expectAssertion(function() {
       obj2.someProp = 'foo-bar';
     }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
+  });
+
+  QUnit.test('inheritance remains live', function() {
+    function Parent() {}
+    Parent.prototype.food  = 'chips';
+
+    var child = new Parent();
+
+    equal(child.food , 'chips');
+
+    watch(child, 'food');
+
+    equal(child.food , 'chips');
+
+    Parent.prototype.food  = 'icecreame';
+
+    equal(child.food , 'icecreame');
+
+    unwatch(child, 'food');
+
+    equal(child.food, 'icecreame');
+
+    Parent.prototype.food  = 'chips';
+
+    equal(child.food, 'chips');
+  });
+
+
+  QUnit.test('inheritance remains live and preserves this', function() {
+    function Parent(food) {
+      this._food = food;
+    }
+
+    Object.defineProperty(Parent.prototype, 'food', {
+      get() {
+        return this._food;
+      }
+    });
+
+    let child = new Parent('chips');
+
+    equal(child.food , 'chips');
+
+    watch(child, 'food');
+
+    equal(child.food , 'chips');
+
+    child._food  = 'icecreame';
+
+    equal(child.food , 'icecreame');
+
+    unwatch(child, 'food');
+
+    equal(child.food, 'icecreame');
+
+    let foodDesc = Object.getOwnPropertyDescriptor(Parent.prototype, 'food');
+    ok(!foodDesc.configurable, 'Parent.prototype.food desc should be non configable');
+    ok(!foodDesc.enumerable, 'Parent.prototype.food desc should be non enumerable');
+
+    equal(foodDesc.get.call({
+      _food: 'hi'
+    }), 'hi');
+    equal(foodDesc.set, undefined);
+
+    equal(child.food, 'icecreame');
   });
 }

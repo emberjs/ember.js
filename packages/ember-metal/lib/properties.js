@@ -21,6 +21,22 @@ export function Descriptor() {
   this.isDescriptor = true;
 }
 
+const REDEFINE_SUPPORTED = (function () {
+  // https://github.com/spalger/kibana/commit/b7e35e6737df585585332857a4c397dc206e7ff9
+  var a = Object.create(Object.prototype, {
+    prop: {
+      configurable: true,
+      value: 1
+    }
+  });
+
+  Object.defineProperty(a, 'prop', {
+    configurable: true,
+    value: 2
+  });
+
+  return a.prop === 2;
+}());
 // ..........................................................
 // DEFINING PROPERTIES API
 //
@@ -39,6 +55,16 @@ export function DEFAULT_GETTER_FUNCTION(name) {
     var meta = this['__ember_meta__'];
     return meta && meta.peekValues(name);
   };
+}
+
+export function INHERITING_GETTER_FUNCTION(name) {
+  function IGETTER_FUNCTION() {
+    var proto = Object.getPrototypeOf(this);
+    return proto && proto[name];
+  }
+
+  IGETTER_FUNCTION.isInheritingGetter = true;
+  return IGETTER_FUNCTION;
 }
 
 /**
@@ -126,12 +152,19 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       if (isEnabled('mandatory-setter')) {
         if (watching) {
           meta.writeValues(keyName, data);
-          Object.defineProperty(obj, keyName, {
+
+          let defaultDescriptor = {
             configurable: true,
             enumerable: true,
             set: MANDATORY_SETTER_FUNCTION(keyName),
             get: DEFAULT_GETTER_FUNCTION(keyName)
-          });
+          };
+
+          if (REDEFINE_SUPPORTED) {
+            Object.defineProperty(obj, keyName, defaultDescriptor);
+          } else {
+            handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
+          }
         } else {
           obj[keyName] = data;
         }
@@ -155,4 +188,10 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (obj.didDefineProperty) { obj.didDefineProperty(obj, keyName, value); }
 
   return this;
+}
+
+function handleBrokenPhantomDefineProperty(obj, keyName, desc) {
+  // https://github.com/ariya/phantomjs/issues/11856
+  Object.defineProperty(obj, keyName, { configurable: true, writable: true, value: 'iCry' });
+  Object.defineProperty(obj, keyName, desc);
 }
