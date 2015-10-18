@@ -456,6 +456,174 @@ var Component = View.extend(TargetActionSupport, {
     @public
     @property positionalParams
   */
+
+  /**
+    `didInitAttrs` runs when the component is initialized
+    and passed attrs are guaranteed to be present.
+
+    `didInitAttrs` can be used to ensures expected properties are set
+    correctly when a component is initialized. `didInitAttrs` is
+    called from the components constructor so any properties set here
+    properly shape the object.
+
+    ```app/components/my-collection.js
+    export default Ember.Component.extend({
+      content: null,
+
+      didInitAttrs: function() {
+        var content = this.get('content');
+        if (!content) {
+          this.set('content', []);
+        }
+      }
+    });
+    ```
+
+    @public
+    @method didInitAttrs
+    @since 1.13.0
+  */
+
+  /**
+    `didReceiveAttrs` runs whenever the bound attributes change, it is
+    also called when a component is first created which makes it
+    useful for logic that is the same on all renders.
+
+    `didReceiveAttrs` is called from the components constructor so any
+    properties set here properly shape the object.
+
+    ```app/components/feedback-form.js
+    export default Ember.Component.extend({
+     didReceiveAttrs: function() {
+        this.set('title', 'Please provide us with your feedback');
+      }
+    });
+    ```
+
+    @public
+    @method didReceiveAttrs
+    @since 1.13.0
+  */
+
+
+  /**
+    `willRender` runs before the template is rendered. It can be used
+    to update the state of the component in preperation for a render.
+
+    ```app/components/todo-footer.js
+    export default Ember.Component.extend({
+      morethanOne: false,
+
+      willRender: function() {
+        if (this.get('items.length') > 1) {
+          this.set('morethanOne', true);
+        }
+      }
+    });
+    ```
+
+    @public
+    @method willRender
+    @since 1.13.0
+  */
+
+  /**
+    Called when the element of the component has been inserted into the DOM
+    or after the view was re-rendered. Override this function to do any set up
+    that requires an element in the document body.
+
+    ```app/components/edit-todo.js
+    export default Ember.Component.extend({
+      didInsertElement: function() {
+        this.$().focus();
+      }
+    });
+    ```
+
+    @public
+    @method didInsertElement
+  */
+
+  /**
+    `didRender` is always run after each time the component's template
+    is re-rendered, unlike `didInsertElement` which only runs the
+    first time the element is rendered. This method can be used to
+    perform any DOM manipulation that may need to run after the
+    template is updated.
+
+    ```app/components/my-dropdown.js
+    import Ember from 'ember';
+    export default Ember.Component.extend({
+      didRender: function() {
+        Ember.$(document).updatePolyfill();
+      }
+    });
+    ```
+
+    @public
+    @method didRender
+    @since 1.13.0
+  */
+
+
+  /**
+   `didUpdateAttrs` runs when the attributes passed into a component
+   have changed (but not when the component is re-rendered, via
+   component.rerender, component.set, or changes in models or services
+   used by the template). It does not run on the first render.
+
+    ```app/components/book-table.js
+    export default Ember.Component.extend({
+      didUpdateAttrs: function() {
+        this.set(`selectedBooks`, []);
+      }
+    });
+    ```
+
+    @public
+    @method didUpdateAttrs
+    @since 1.13.0
+  */
+
+  /**
+   `willUpdate` runs before the componetnt is re-rendered for
+   any reason, including `component.rerender()`,
+   `component.set()` or changes in models or services used by the template.
+
+
+   ```app/components/book-table.js
+   export default Ember.Component.extend({
+     willUpdate: function() {
+       this.get('logger').logComponentUpdate(this.get('state'));
+     }
+   });
+   ```
+
+    @public
+    @method willUpdate
+    @since 1.13.0
+  */
+
+  /**
+   `didUpdate` runs after the template has re-rendered and the DOM is
+   now up to date.
+
+   ```app/components/dropdown-container.js
+   export default Ember.Component.extend({
+     didUpdate: function() {
+       if (get(this, 'isExpanded')) {
+         Ember.run.next(() => {
+           $(window).one('click.dropdown-container', () => this.hide());
+         });
+       }
+     }
+   });
+   ```
+
+    @public
+    @method didUpdate
+    @since 1.13.0
+  */
 });
 
 Component.reopenClass({
