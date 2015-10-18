@@ -13,6 +13,7 @@ export {
   EvaluatedRef,
   Get as GetSyntax,
   AttributeSyntax,
+  ElementSyntax,
   Component as ComponentSyntax,
   Helper as HelperSyntax,
   builders

@@ -581,34 +581,55 @@ export class Component extends DynamicExpression implements StatementSyntax {
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
       return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame);
     } else {
-      return stack.createContentMorph(FallbackMorph, { path, hash, template: templates.default }, frame);
+      return new ElementSyntax(path[0], hash, templates.default).evaluate(stack, frame);
     }
   }
 }
 
-type FallbackOptions = { path: InternedString[], hash: Hash, template: Template };
+export class ElementSyntax implements StatementSyntax {
+  private path: InternedString;
+  private attrs: Hash;
+  private contents: Template;
+  public type = "element";
+  public isStatic = false;
+
+  constructor(path: InternedString, attrs: Hash, contents: Template) {
+    this.path = path;
+    this.attrs = attrs;
+    this.contents = contents;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
+    let { path, attrs, contents } = this;
+    return stack.createContentMorph(FallbackMorph, { path, attrs, contents }, frame)
+  }
+}
+
+type FallbackOptions = { path: InternedString, attrs: Hash, contents: Template };
 
 class FallbackMorph extends ContentMorph {
+  static hasStaticElement = true;
+
   tag: string;
-  template: Template;
+  contents: Template;
   element: Element;
   attrs: AttributeSyntax[];
 
-  init({ path, hash, template }: FallbackOptions) {
-    this.tag = path[0];
-    this.template = template;
+  init({ path, attrs, contents }: FallbackOptions) {
+    this.tag = path;
+    this.contents = contents;
 
-    let attrs = [];
+    let attrList = [];
 
-    let { keys, values } = hash;
+    let { keys, values } = attrs;
 
     values.forEach((val, i) => {
       let key = keys[i];
-      if (val.isStatic) attrs.push(StaticAttr.build(key, val.evaluate(this.frame).value()));
-      else attrs.push(DynamicAttr.build(key, val));
+      if (val.isStatic) attrList.push(StaticAttr.build(key, val.evaluate(this.frame).value()));
+      else attrList.push(DynamicAttr.build(key, val));
     });
 
-    this.attrs = attrs;
+    this.attrs = attrList;
   }
 
   firstNode() {
@@ -620,11 +641,11 @@ class FallbackMorph extends ContentMorph {
   }
 
   append(stack: ElementStack) {
-    let { tag, attrs, template } = this;
+    let { tag, attrs, contents } = this;
 
     this.element = stack.openElement(tag);
     attrs.forEach(attr => stack.appendStatement(attr, this.frame));
-    if (!template.isEmpty) stack.createContentMorph(SimpleTemplateMorph, { template }, this.frame).append(stack);
+    if (!contents.isEmpty) stack.createContentMorph(SimpleTemplateMorph, { template: contents }, this.frame).append(stack);
     stack.closeElement();
   }
 
