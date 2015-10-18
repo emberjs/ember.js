@@ -52,3 +52,7 @@ for a detailed explanation.
   ```
 
   Implements RFC [#64](https://github.com/emberjs/rfcs/blob/master/text/0064-contextual-component-lookup.md)
+
+* `ember-views-tagless-jquery`
+
+  Add the possibility to call `this.$()` in tagless components.

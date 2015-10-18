@@ -207,6 +207,10 @@ export default Mixin.create({
     string, this method will return a jQuery object, using the current element
     as its buffer.
 
+    If it is called within a tagless view, this method will return a jQuery
+    object containing all the elements it encloses. You can also
+    pass in a selector string, just like you would do in a normal view.
+
     For example, calling `view.$('li')` will return a jQuery object containing
     all of the `li` elements inside the DOM element of this view.
 
@@ -216,7 +220,9 @@ export default Mixin.create({
     @public
   */
   $(sel) {
-    assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    if (!isEnabled('ember-views-tagless-jquery')) {
+      assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    }
     return this._currentState.$(this, sel);
   },
 
