@@ -14,6 +14,7 @@ export {
   Get as GetSyntax,
   AttributeSyntax,
   Component as ComponentSyntax,
+  Helper as HelperSyntax,
   builders
 } from './lib/template';
 

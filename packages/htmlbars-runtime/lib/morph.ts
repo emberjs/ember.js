@@ -265,7 +265,7 @@ export abstract class TemplateMorph extends EmptyableMorph {
 
     if (!lastResult) {
       let nextSibling = this.nextSiblingForContent();
-      this.appendTemplate(template, nextSibling);
+      this.appendTemplate(template, { nextSibling });
       return;
     }
 
@@ -273,7 +273,7 @@ export abstract class TemplateMorph extends EmptyableMorph {
       lastResult.rerender();
     } else {
       let nextSibling = this.nextSiblingForContent();
-      this.appendTemplate(template, nextSibling);
+      this.appendTemplate(template, { nextSibling });
     }
   }
 
@@ -294,7 +294,7 @@ export class SimpleTemplateMorph extends TemplateMorph {
 }
 
 export class BlockInvocationMorph extends TemplateMorph {
-  specialize(options: Object): typeof BlockInvocationMorph {
+  static specialize(options: Object): typeof BlockInvocationMorph {
     if (options['blockArguments']) return BlockWithParamsMorph;
     else return BlockInvocationMorph;
   }
@@ -313,9 +313,10 @@ export class BlockWithParamsMorph extends BlockInvocationMorph {
     this.blockArguments = blockArguments;
   }
 
-  append() {
+  append(stack: ElementStack) {
     this.frame.childScope(this.template.locals);
     this.frame.scope().bindLocalReferences(<RootReference[]>this.blockArguments.references);
+    super.append(stack);
   }
 }
 

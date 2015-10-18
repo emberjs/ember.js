@@ -29,8 +29,8 @@ export class BlockHelperMorph extends TemplateMorph {
     this.willAppend(stack);
     let helper = this.helper.value();
     let { params, hash } = this.args.value();
-    let { _default, _inverse } = this.templates;
-    let group = this.group = new Group(this, stack, _default, _inverse);
+    let { default: _default, inverse } = this.templates;
+    let group = this.group = new Group(this, stack, _default, inverse);
     helper(params, hash, group);
 
     group.commitAppend(stack);

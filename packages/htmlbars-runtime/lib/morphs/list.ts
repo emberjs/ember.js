@@ -52,7 +52,7 @@ export class MorphList extends EmptyableMorph {
 
     let nextSibling = this.nextSiblingForContent();
 
-    let template = this.templates._default;
+    let template = this.templates.default;
     let builder = new Builder(stack, this);
 
     array.forEach((val, index) => {
@@ -72,7 +72,7 @@ export class MorphList extends EmptyableMorph {
 
     this.nextSiblingForContent();
 
-    let template = this.templates._default;
+    let template = this.templates.default;
 
     array.forEach((val, index) => {
       replay.append({ template, val, index, frame: this.frame, key: this.keyFor(val) });

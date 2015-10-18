@@ -15,7 +15,11 @@ import {
   Unknown,
   Hash,
   Frame,
+  HelperSyntax,
   AttributeSyntax,
+  DynamicAttr,
+  EvaluatedRef,
+  GetSyntax,
   ComponentMorph,
   ComponentSyntax,
   ComponentClass,
@@ -26,7 +30,7 @@ import {
   builders
 } from "htmlbars-runtime";
 import { compile } from "htmlbars-compiler";
-import { LITERAL, Dict, dict, assign } from 'htmlbars-util';
+import { LITERAL, Dict, InternedString, dict, assign } from 'htmlbars-util';
 
 import { Meta, ConstReference, ChainableReference, setProperty as set } from "htmlbars-reference";
 
@@ -52,6 +56,21 @@ export class TestEnvironment extends Environment {
     return definition;
   }
 
+  registerEmberishComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
+    let def = this.registerCurlyComponent(name, Component, layout);
+
+    def.rootElementAttrs = function(component: Component, attrs: AttributeSyntax[], layoutFrame: Frame): AttributeSyntax[] {
+      let rawBindings = component['attributeBindings'];
+
+      return rawBindings.map(b => {
+        let [value, key] = b.split(':');
+        return DynamicAttr.build(key || value, new EvaluatedRef(GetSyntax.build(value).evaluate(layoutFrame)));
+      });
+    }
+
+    return def;
+  }
+
   registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
     let definition = glimmerComponentDefinition(Component, compile(layout));
     this.registerComponent(name, definition);
@@ -63,6 +82,7 @@ export class TestEnvironment extends Environment {
     let block = type === 'block' ? <Block>statement : null;
     let inline = type === 'inline' ? <Inline>statement : null;
     let unknown = type === 'unknown' ? <Unknown>statement : null;
+
     let hash: Hash, args: ParamsAndHash;
 
     if (block || inline) {
@@ -91,8 +111,9 @@ export class TestEnvironment extends Environment {
       let definition = this.components[key];
 
       if (definition) {
-        let template = block ? block.templates._default : null;
-        return (<CurlyComponent>CurlyComponent.build(key, { default: template, inverse: null, hash })).withArgs(args);
+        let template = block ? block.templates.default : null;
+        let inverse = block ? block.templates.inverse : null;
+        return (<CurlyComponent>CurlyComponent.build(key, { default: template, inverse, hash })).withArgs(args);
       }
     }
 
@@ -103,14 +124,25 @@ export class TestEnvironment extends Environment {
     return helperName.length === 1 && helperName[0] in this.helpers;
   }
 
-  lookupHelper(scope, helperName) {
-    let helper = this.helpers[helperName[0]];
-    if (!helper) throw new Error(`Helper for ${helperName.join('.')} not found.`);
-    return new ConstReference(this.helpers[helperName[0]]);
+  lookupHelper(scope: Scope, helperParts: string[]) {
+    let helperName = helperParts[0];
+
+    if (helperName === 'hasBlock') return new ConstReference(hasBlock(scope));
+
+    let helper = this.helpers[helperName];
+
+    if (!helper) throw new Error(`Helper for ${helperParts.join('.')} not found.`);
+    return new ConstReference(this.helpers[helperName]);
   }
 
   getComponentDefinition(scope, name: string[], syntax: ComponentSyntax): ComponentDefinition {
     return this.components[name[0]];
+  }
+}
+
+function hasBlock(scope: Scope) {
+  return function([name]: [InternedString]) {
+    return !!scope.getBlock(name || LITERAL('default'));
   }
 }
 
@@ -281,9 +313,15 @@ export function glimmerComponentDefinition(Component: ComponentClass, layout: Te
 
 class CurlyComponent extends ComponentSyntax {
   private args: ParamsAndHash;
+  private inverse: Template;
 
   withArgs(args: ParamsAndHash): CurlyComponent {
     this.args = args;
+    return this;
+  }
+
+  withInverse(inverse: Template): CurlyComponent {
+    this.inverse = inverse;
     return this;
   }
 
@@ -298,10 +336,7 @@ class CurlyComponent extends ComponentSyntax {
     definition = assign({}, definition);
     definition.layout = layout;
 
-    let template = templates._default;
-    let attrs = this.hash;
-
-    return stack.createContentMorph(ComponentMorph, { definition, attrs, template }, frame);
+    return stack.createContentMorph(ComponentMorph, { definition, attrs: hash, templates }, frame);
   }
 }
 
