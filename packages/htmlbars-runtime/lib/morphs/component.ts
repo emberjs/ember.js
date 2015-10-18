@@ -1,7 +1,7 @@
 import { TemplateMorph, ContentMorph } from '../morph';
 import { ElementStack, DelegatingOperations, NestedOperations, NullHandler } from '../builder';
 import { ComponentDefinition, ComponentClass, Component, Block, Scope, Frame } from '../environment';
-import Template, { Hash, EvaluatedHash, StaticAttr, DynamicAttr, AttributeSyntax } from '../template';
+import Template, { Hash, EvaluatedHash, StaticAttr, DynamicAttr, Value, AttributeSyntax } from '../template';
 import { LITERAL } from 'htmlbars-util';
 import { isWhitespace } from '../dom';
 import { RootReference } from 'htmlbars-reference';
@@ -25,19 +25,22 @@ export default class ComponentMorph extends TemplateMorph {
   private component: Component;
   private innerTemplate: Template;
   private layoutScope: Scope;
+  private definition: ComponentDefinition;
 
   init({ definition, attrs: hash, template }: ComponentOptions) {
     this.template = definition.layout;
-    this.klass = definition['class']; // vscode syntax highlighting bug
+    this.klass = definition['class'];
     this.innerTemplate = template;
+    this.definition = definition;
 
     let attrs = [];
 
     let { keys, values } = hash;
 
-    values.forEach((val, i) => {
+    values.forEach((expr, i) => {
       let key = keys[i];
-      if (val.isStatic) attrs.push(StaticAttr.build(key, val));
+      let val = <Value>expr;
+      if (val.isStatic) attrs.push(StaticAttr.build(key, val.inner()));
       else attrs.push(DynamicAttr.build(key, val));
     });
 
@@ -48,31 +51,46 @@ export default class ComponentMorph extends TemplateMorph {
   append(stack: ElementStack) {
     this.willAppend(stack);
 
-    let { frame, innerTemplate, template } = this;
+    let { frame, innerTemplate, template, definition, attrs } = this;
 
-    let invokeFrame = this.frame;
-    let layoutFrame = this.frame = this.frame.child();
+    let invokeFrame = frame;
+    let layoutFrame = this.frame = frame.child();
     let layoutScope = this.layoutScope = layoutFrame.resetScope();
-    let self = this.component = new this.klass(this.attrs.value());
+    let attrsValue = attrs.value();
+    let create: any = definition.creationObjectForAttrs(this.klass, attrsValue);
+    let component = this.component = new this.klass(create);
 
-    layoutScope.bindSelf(self);
+    layoutScope.bindSelf(component);
     layoutScope.bindBlock(LITERAL('default'), new Block(innerTemplate, invokeFrame));
+    definition.setupLayoutScope(layoutScope, template, innerTemplate);
 
-    let handler = new ComponentHandler(invokeFrame, this.attrSyntax);
+    let attrSyntax = definition.rootElementAttrs(component, this.attrSyntax, layoutFrame, invokeFrame);
+    let handler = new ComponentHandler(layoutFrame, attrSyntax);
 
     this.willAppend(stack);
+    definition.hooks.didReceiveAttrs(component);
+    definition.hooks.willRender(component);
     super.appendTemplate(template, { handler, nextSibling: stack.nextSibling });
 
     if (!handler.rootElement) {
       throw new Error("A component must have a single root element at the top level");
     }
+
+    this.frame.didCreate(this.component, definition);
   }
 
   update() {
-    this.component.attrs = this.attrs.value();
-    this.layoutScope.updateSelf(this.component);
+    let { frame, definition, component, attrs, layoutScope } = this;
+
+    definition.updateObjectFromAttrs(component, attrs.value());
+    layoutScope.updateSelf(component);
+    definition.hooks.didReceiveAttrs(component);
+    definition.hooks.willUpdate(component);
+    definition.hooks.willRender(component);
 
     super.update();
+
+    frame.didUpdate(component, definition);
   }
 }
 
@@ -94,11 +112,12 @@ export class ComponentHandler extends NullHandler {
   }
 
   didOpenElement(element: Element) {
-    this.attrs.forEach(attr => this.stack.appendStatement(attr, this.frame))
+    if (this.attrs) this.attrs.forEach(attr => this.stack.appendStatement(attr, this.frame))
     this.rootElement = element;
   }
 
   willAppendText(text: string) {
+    if (isWhitespace(text)) return;
     throw new Error("You cannot have non-whitespace text at the root of a component's layout");
   }
 

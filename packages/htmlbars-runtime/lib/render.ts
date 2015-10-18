@@ -11,7 +11,6 @@ import {
 } from './morph';
 import { InternedString } from 'htmlbars-util';
 import { Scope } from './environment';
-import { Operations } from './builder';
 
 interface RenderResultOptions {
 	template: Template;
