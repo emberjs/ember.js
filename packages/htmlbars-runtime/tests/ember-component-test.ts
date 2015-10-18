@@ -92,6 +92,7 @@ function assertFired(hooks: HookIntrospection, name: string, count=1) {
 
 function rerender() {
   env.begin();
+  debugger;
   view.rerender();
   env.commit();
 }
@@ -281,15 +282,7 @@ QUnit.test('block with properties on attrs', function() {
 // });
 
 QUnit.test('with ariaRole specified', function() {
-  let def = env.registerCurlyComponent('aria-test', EmberishComponent, 'Here!');
-  def.rootElementAttrs = function(component: EmberishComponent, attrs: AttributeSyntax[], layoutFrame: Frame): AttributeSyntax[] {
-    let rawBindings = component.attributeBindings;
-
-    return rawBindings.map(b => {
-      let [value, key] = b.split(':');
-      return DynamicAttr.build(key || value, new EvaluatedRef(GetSyntax.build(value).evaluate(layoutFrame)));
-    });
-  }
+  let def = env.registerEmberishComponent('aria-test', EmberishComponent, 'Here!');
 
   appendViewFor('{{aria-test id="aria-test" ariaRole="main"}}');
 
@@ -297,15 +290,7 @@ QUnit.test('with ariaRole specified', function() {
 });
 
 QUnit.test('with ariaRole specified as an outer binding', function() {
-  let def = env.registerCurlyComponent('aria-test', EmberishComponent, 'Here!');
-  def.rootElementAttrs = function(component: EmberishComponent, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
-    let rawBindings = component.attributeBindings;
-
-    return rawBindings.map(b => {
-      let [value, key] = b.split(':');
-      return DynamicAttr.build(key || value, new EvaluatedRef(GetSyntax.build(value).evaluate(layoutFrame)));
-    });
-  }
+  let def = env.registerEmberishComponent('aria-test', EmberishComponent, 'Here!');
 
   appendViewFor('{{aria-test id="aria-test" ariaRole=myRole}}', { myRole: 'main' });
 
@@ -665,51 +650,34 @@ QUnit.test('hasBlockParams is false when no block param supplied', function() {
 //   equal(jQuery('#qunit-fixture').text(), 'Edward5');
 // });
 
-// QUnit.test('yield to inverse', function() {
-//   registry.register('template:components/my-if', compile('{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}'));
+QUnit.test('yield to inverse', function() {
+  env.registerCurlyComponent('my-if', Component, '{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}')
 
-//   view = EmberView.extend({
-//     layout: compile('{{#my-if predicate=activated someValue=42 as |result|}}Hello{{result}}{{else}}Goodbye{{/my-if}}'),
-//     container: container,
-//     context: {
-//       activated: true
-//     }
-//   }).create();
+  appendViewFor('{{#my-if predicate=activated someValue=42 as |result|}}Hello{{result}}{{else}}Goodbye{{/my-if}}', { activated: true });
 
-//   runAppend(view);
-//   equal(jQuery('#qunit-fixture').text(), 'Yes:Hello42');
-//   run(function() {
-//     set(view.context, 'activated', false);
-//   });
+  assertAppended('<div>Yes:Hello42</div>');
 
-//   equal(jQuery('#qunit-fixture').text(), 'No:Goodbye');
-// });
+  set(view, 'activated', false);
+  rerender();
 
-// QUnit.test('parameterized hasBlock inverse', function() {
-//   registry.register('template:components/check-inverse', compile('{{#if (hasBlock "inverse")}}Yes{{else}}No{{/if}}'));
+  assertAppended('<div>No:Goodbye</div>');
+});
 
-//   view = EmberView.extend({
-//     layout: compile('{{#check-inverse id="expect-no"}}{{/check-inverse}}  {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}'),
-//     container: container
-//   }).create();
+QUnit.test('parameterized hasBlock inverse', function() {
+  env.registerEmberishComponent('check-inverse', EmberishComponent, '{{#if (hasBlock "inverse")}}Yes{{else}}No{{/if}}');
 
-//   runAppend(view);
-//   equal(jQuery('#qunit-fixture #expect-no').text(), 'No');
-//   equal(jQuery('#qunit-fixture #expect-yes').text(), 'Yes');
-// });
+  appendViewFor('{{#check-inverse id="expect-no"}}{{/check-inverse}}  {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}');
 
-// QUnit.test('parameterized hasBlock default', function() {
-//   registry.register('template:components/check-block', compile('{{#if (hasBlock)}}Yes{{else}}No{{/if}}'));
+  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+});
 
-//   view = EmberView.extend({
-//     layout: compile('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}'),
-//     container: container
-//   }).create();
+QUnit.test('parameterized hasBlock default', function() {
+  env.registerEmberishComponent('check-block', EmberishComponent, '{{#if (hasBlock)}}Yes{{else}}No{{/if}}');
 
-//   runAppend(view);
-//   equal(jQuery('#qunit-fixture #expect-no').text(), 'No');
-//   equal(jQuery('#qunit-fixture #expect-yes').text(), 'Yes');
-// });
+  appendViewFor('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}');
+
+  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+});
 
 // QUnit.test('non-expression hasBlock ', function() {
 //   registry.register('template:components/check-block', compile('{{#if hasBlock}}Yes{{else}}No{{/if}}'));

@@ -1,15 +1,15 @@
 import { TemplateMorph, ContentMorph } from '../morph';
 import { ElementStack, DelegatingOperations, NestedOperations, NullHandler } from '../builder';
 import { ComponentDefinition, ComponentClass, Component, Block, Scope, Frame } from '../environment';
-import Template, { Hash, EvaluatedHash, StaticAttr, DynamicAttr, Value, AttributeSyntax } from '../template';
-import { LITERAL } from 'htmlbars-util';
+import Template, { Templates, Hash, EvaluatedHash, StaticAttr, DynamicAttr, Value, AttributeSyntax } from '../template';
+import { LITERAL, InternedString } from 'htmlbars-util';
 import { isWhitespace } from '../dom';
 import { RootReference } from 'htmlbars-reference';
 
 interface ComponentOptions {
   definition: ComponentDefinition,
   attrs: Hash,
-  template: Template
+  templates: Templates
 }
 
 class YieldedContents extends TemplateMorph {
@@ -23,14 +23,14 @@ export default class ComponentMorph extends TemplateMorph {
   private attrSyntax: AttributeSyntax[];
   private klass: ComponentClass;
   private component: Component;
-  private innerTemplate: Template;
+  private innerTemplates: Templates;
   private layoutScope: Scope;
   private definition: ComponentDefinition;
 
-  init({ definition, attrs: hash, template }: ComponentOptions) {
+  init({ definition, attrs: hash, templates }: ComponentOptions) {
     this.template = definition.layout;
     this.klass = definition['class'];
-    this.innerTemplate = template;
+    this.innerTemplates = templates;
     this.definition = definition;
 
     let attrs = [];
@@ -51,7 +51,7 @@ export default class ComponentMorph extends TemplateMorph {
   append(stack: ElementStack) {
     this.willAppend(stack);
 
-    let { frame, innerTemplate, template, definition, attrs } = this;
+    let { frame, innerTemplates, template, definition, attrs } = this;
 
     let invokeFrame = frame;
     let layoutFrame = this.frame = frame.child();
@@ -61,8 +61,13 @@ export default class ComponentMorph extends TemplateMorph {
     let component = this.component = new this.klass(create);
 
     layoutScope.bindSelf(component);
-    layoutScope.bindBlock(LITERAL('default'), new Block(innerTemplate, invokeFrame));
-    definition.setupLayoutScope(layoutScope, template, innerTemplate);
+
+    for (let key in innerTemplates) {
+      if (!innerTemplates[key]) continue;
+      layoutScope.bindBlock(<InternedString>key, new Block(innerTemplates[key], invokeFrame));
+    }
+
+    definition.setupLayoutScope(layoutScope, template, innerTemplates.default);
 
     let attrSyntax = definition.rootElementAttrs(component, this.attrSyntax, layoutFrame, invokeFrame);
     let handler = new ComponentHandler(layoutFrame, attrSyntax);

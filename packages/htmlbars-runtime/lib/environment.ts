@@ -4,7 +4,8 @@ import Template, {
   Component as ComponentSyntax,
   Unknown,
   Inline,
-  ParamsAndHash
+  ParamsAndHash,
+  EvaluatedParams
 } from "./template";
 
 import { ElementStack } from './builder';
@@ -35,6 +36,7 @@ export class Block {
   frame: Frame;
 
   constructor(template: Template, frame: Frame) {
+    if (!template) debugger;
     this.template = template;
     this.frame = frame;
   }
@@ -186,8 +188,9 @@ export abstract class Environment {
     let type = statement.type;
 
     if (type === 'unknown' && (<Unknown>statement).ref.path()[0] === 'yield') {
-      return new YieldSyntax(null);
+      return new YieldSyntax(null, LITERAL('default'));
     } else if (type === 'inline' && (<Inline>statement).path[0] === 'yield') {
+      let args = (<Inline>statement).args;
       return new YieldSyntax((<Inline>statement).args);
     }
 
@@ -235,7 +238,7 @@ class YieldSyntax implements StatementSyntax {
   isStatic = false;
   private args: ParamsAndHash;
 
-  constructor(args: ParamsAndHash) {
+  constructor(args: ParamsAndHash, to: InternedString) {
     this.args = args;
   }
 
@@ -244,8 +247,16 @@ class YieldSyntax implements StatementSyntax {
   }
 
   evaluate(stack: ElementStack, frame: Frame): BlockInvocationMorph {
-    let block = frame.scope().getBlock(LITERAL('default'));
-    let params = this.args ? this.args.params.evaluate(frame) : null;
+    let yieldTo: InternedString = null, params: EvaluatedParams = null;
+
+    if (this.args) {
+      params = this.args.params.evaluate(frame);
+      let hash = this.args.hash.evaluate(frame);
+      let toRef = hash.at(LITERAL('to'));
+      yieldTo = toRef && toRef.value();
+    }
+
+    let block = frame.scope().getBlock(yieldTo || LITERAL('default'));
     return stack.createBlockMorph(block, frame, params);
   }
 }

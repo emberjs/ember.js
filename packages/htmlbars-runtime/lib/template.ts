@@ -575,13 +575,13 @@ export class Component extends DynamicExpression implements StatementSyntax {
     let definition = frame.getComponentDefinition(path, this);
 
     if (definition) {
-      return stack.createContentMorph(ComponentMorph, { definition, attrs: this.hash, template: templates._default }, frame);
+      return stack.createContentMorph(ComponentMorph, { definition, attrs: this.hash, templates }, frame);
     } else if (frame.hasHelper(path)) {
       let helper = frame.lookupHelper(path);
       let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
       return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame);
     } else {
-      return stack.createContentMorph(FallbackMorph, { path, hash, template: templates._default }, frame);
+      return stack.createContentMorph(FallbackMorph, { path, hash, template: templates.default }, frame);
     }
   }
 }
@@ -1311,20 +1311,20 @@ export class Templates implements ExpressionSyntax {
   }
 
   public isStatic = false;
-  public _default: Template;
-  public _inverse: Template;
+  public default: Template;
+  public inverse: Template;
 
   constructor(options: { template: Template, inverse: Template }) {
-    this._default = options.template;
-    this._inverse = options.inverse;
+    this.default = options.template;
+    this.inverse = options.inverse;
   }
 
   prettyPrint(): Dict<number> {
-    let { _default, _inverse } = this;
+    let { default: _default, inverse } = this;
 
     return {
       default: _default && _default.position,
-      inverse: _inverse && _inverse.position
+      inverse: inverse && inverse.position
     }
   }
 
