@@ -9,8 +9,9 @@ import {
 } from './morph';
 import { Frame, Block } from './environment';
 import DOMHelper from './dom';
-import { DynamicStatementSyntax, StaticStatementSyntax, StatementSyntax } from './template'
+import { DynamicStatementSyntax, StaticStatementSyntax, StatementSyntax, EvaluatedParams } from './template'
 import { InternedString } from 'htmlbars-util';
+import { RootReference } from 'htmlbars-reference';
 
 export function renderStatement(statement: StatementSyntax, stack: ElementStack, frame: Frame) {
   let refinedStatement = frame.syntax(statement);
@@ -189,8 +190,8 @@ export class ElementStack extends ElementBuffer {
     return morph;
   }
 
-  createBlockMorph(block: Block, frame: Frame) {
-    return this.createContentMorph(BlockInvocationMorph, { block }, frame);
+  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams) {
+    return this.createContentMorph(BlockInvocationMorph, { block, blockArguments }, frame);
   }
 
   appendText(text: string): Text {

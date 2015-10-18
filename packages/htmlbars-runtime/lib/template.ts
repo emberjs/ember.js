@@ -111,6 +111,12 @@ export default class Template {
     Object.seal(this);
   }
 
+  clone(): Template {
+    let { meta, root, position, arity, statements, locals, spec, isEmpty } = this;
+    statements = statements.slice();
+    return new Template({ meta, root, position, statements, locals, spec, isEmpty });
+  }
+
   prettyPrint() {
     function pretty(obj) {
       if (typeof obj.prettyPrint === 'function') return obj.prettyPrint();
@@ -243,7 +249,7 @@ export class Block extends DynamicExpression implements DynamicStatementSyntax, 
   }
 
   static build(options): Block {
-    return new Block(options);
+    return new this(options);
   }
 
   path: InternedString[];
@@ -284,7 +290,7 @@ export class Unknown extends DynamicExpression implements DynamicStatementSyntax
   }
 
   static build(path: string, unsafe: boolean): Unknown {
-    return new Unknown({ ref: Ref.build(path), unsafe });
+    return new this({ ref: Ref.build(path), unsafe });
   }
 
   ref: Ref;
@@ -335,7 +341,7 @@ export class Inline extends DynamicExpression implements DynamicStatementSyntax 
 
   static build(_path: string, args: ParamsAndHash, trust: boolean) {
     let path = internPath(_path);
-    return new Inline({ path, args, trustingMorph: trust });
+    return new this({ path, args, trustingMorph: trust });
   }
 
   path: InternedString[];
@@ -418,6 +424,8 @@ export class Modifier implements StatementSyntax {
 export interface AttributeSyntax extends StatementSyntax {
   name: string;
   namespace?: string;
+
+  asEvaluated(frame: Frame): AttributeSyntax;
 }
 
 type DynamicPropSexp = [string, string, ExpressionSexp, string];
@@ -435,7 +443,7 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
   }
 
   static build(name: string, value: any): DynamicProp {
-    return new DynamicProp({ name, value });
+    return new this({ name, value });
   }
 
   public name: string;
@@ -451,6 +459,12 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
     let { name, value } = this;
 
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
+  }
+
+  asEvaluated(frame: Frame): AttributeSyntax {
+    let { name, value: _value } = this;
+    let value = new EvaluatedRef(_value.evaluate(frame));
+    return new DynamicProp({ name, value });
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
@@ -474,17 +488,17 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
     });
   }
 
-  static build(_name: string, value: ExpressionSyntax & PrettyPrintable, _namespace: string=null): DynamicAttr {
+  static build(_name: string, value: ExpressionSyntax, _namespace: string=null): DynamicAttr {
     let name = intern(_name);
     let namespace = _namespace ? intern(_namespace) : null;
-    return new DynamicAttr({ name, value, namespace });
+    return new this({ name, value, namespace });
   }
 
   name: InternedString;
   value: ExpressionSyntax & PrettyPrintable;
   namespace: InternedString;
 
-  constructor(options: { name: InternedString, value: ExpressionSyntax & PrettyPrintable, namespace: InternedString }) {
+  constructor(options: { name: InternedString, value: ExpressionSyntax, namespace: InternedString }) {
     super();
     this.name = options.name;
     this.value = options.value;
@@ -499,6 +513,12 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
     } else {
       return new PrettyPrint('attr', 'attr', [name, value.prettyPrint()]);
     }
+  }
+
+  asEvaluated(frame: Frame): DynamicAttr {
+    let { name, value: _value, namespace } = this;
+    let value = new EvaluatedRef(_value.evaluate(frame));
+    return new DynamicAttr({ name, value, namespace });
   }
 
   evaluate(stack: ElementStack, frame: Frame): AttrMorph {
@@ -523,8 +543,8 @@ export class Component extends DynamicExpression implements StatementSyntax {
     });
   }
 
-  static build(path: string, options: { default: Template, inverse: Template, hash: Hash }): Component {
-    return new Component({
+  static build(path: string, options: { default: Template, inverse: Template, hash: Hash }) {
+    return new this({
       path: Ref.build(path),
       hash: options.hash || null,
       templates: Templates.build(options.default, options.inverse)
@@ -552,7 +572,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
 
     let path = ref.path();
 
-    let definition = frame.getComponentDefinition(path);
+    let definition = frame.getComponentDefinition(path, this);
 
     if (definition) {
       return stack.createContentMorph(ComponentMorph, { definition, attrs: this.hash, template: templates._default }, frame);
@@ -623,7 +643,7 @@ export class Text extends StaticExpression implements StaticStatementSyntax {
   }
 
   static build(content): Text {
-    return new Text({ content });
+    return new this({ content });
   }
 
   private content: string;
@@ -654,7 +674,7 @@ export class Comment extends StaticExpression implements StaticStatementSyntax {
   }
 
   static build(value): Comment {
-    return new Comment({ value });
+    return new this({ value });
   }
 
   private value: string;
@@ -685,7 +705,7 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
   }
 
   static build(tag): OpenElement {
-    return new OpenElement({ tag });
+    return new this({ tag });
   }
 
   private tag: string;
@@ -712,7 +732,7 @@ export class CloseElement extends StaticExpression implements StaticStatementSyn
   }
 
   static build() {
-    return new CloseElement();
+    return new this();
   }
 
   prettyPrint() {
@@ -736,7 +756,7 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
   }
 
   static build(name, value, namespace=null): StaticAttr {
-    return new StaticAttr({ name: intern(name), value: intern(value), namespace: namespace && intern(namespace) });
+    return new this({ name: intern(name), value: intern(value), namespace: namespace && intern(namespace) });
   }
 
   name: InternedString;
@@ -758,6 +778,10 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
     } else {
       return new PrettyPrint('attr', 'attr', [name, value]);
     }
+  }
+
+  asEvaluated(): AttributeSyntax {
+    return this;
   }
 
   evaluate(stack: ElementStack) {
@@ -805,7 +829,7 @@ export class Value extends StaticExpression implements ExpressionSyntax {
   }
 
   static build(value) {
-    return new Value(value);
+    return new this(value);
   }
 
   private value: boolean | string | number;
@@ -841,7 +865,7 @@ export class Get extends DynamicExpression implements ExpressionSyntax, PrettyPr
   }
 
   static build(path: string): Get {
-    return new Get({ ref: Ref.build(path) });
+    return new this({ ref: Ref.build(path) });
   }
 
   private ref: Ref;
@@ -871,7 +895,7 @@ class Ref extends DynamicExpression implements ExpressionSyntax {
   type = "ref";
 
   static build(path: string): Ref {
-    return new Ref(internPath(path));
+    return new this(internPath(path));
   }
 
   private parts: InternedString[];
@@ -905,6 +929,23 @@ class Ref extends DynamicExpression implements ExpressionSyntax {
   }
 }
 
+export class EvaluatedRef implements ExpressionSyntax {
+  private ref: ChainableReference;
+  public isStatic = false;
+
+  constructor(ref: ChainableReference) {
+    this.ref = ref;
+  }
+
+  prettyPrint(): any {
+    return this.ref.value();
+  }
+
+  evaluate(): ChainableReference {
+    return this.ref;
+  }
+}
+
 type HelperSexp = [string, PathSexp, ParamsSexp, HashSexp];
 
 export class Helper implements ExpressionSyntax {
@@ -920,7 +961,7 @@ export class Helper implements ExpressionSyntax {
   }
 
   static build(path: string, params: Params, hash: Hash): Helper {
-    return new Helper({ ref: Ref.build(path), args: new ParamsAndHash({ params, hash }) });
+    return new this({ ref: Ref.build(path), args: new ParamsAndHash({ params, hash }) });
   }
 
   isStatic = false;
@@ -955,7 +996,7 @@ export class Concat implements ExpressionSyntax {
   }
 
   static build(parts): Concat {
-    return new Concat({ parts });
+    return new this({ parts });
   }
 
   isStatic = false;
@@ -1031,7 +1072,7 @@ export class ParamsAndHash implements ExpressionSyntax {
   }
 
   static build(params: Params, hash: Hash): ParamsAndHash {
-    return new ParamsAndHash({ params, hash });
+    return new this({ params, hash });
   }
 
   public params: Params;
@@ -1089,14 +1130,14 @@ class Enumerable<T> {
   }
 }
 
-class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
+export class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
   static fromSpec(sexp: ParamsSexp): Params {
     if (!sexp || sexp.length === 0) return Params.empty();
     return new Params(sexp.map(buildExpression));
   }
 
   static build(exprs: ExpressionSyntax[]): Params {
-    return new Params(exprs);
+    return new this(exprs);
   }
 
   static _empty: Params;
@@ -1126,8 +1167,8 @@ class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
   }
 }
 
-class EvaluatedParams extends PushPullReference {
-  private references: ChainableReference[];
+export class EvaluatedParams extends PushPullReference {
+  public references: ChainableReference[];
 
   constructor(params: Params, frame: Frame) {
     super();
@@ -1183,7 +1224,7 @@ export class Hash implements ExpressionSyntax {
       values.push(hash[key]);
     });
 
-    return new Hash({ keys, values });
+    return new this({ keys, values });
   }
 
   static _empty;
@@ -1266,7 +1307,7 @@ export class Templates implements ExpressionSyntax {
   }
 
   static build(template: Template, inverse: Template): Templates {
-    return new Templates({ template, inverse });
+    return new this({ template, inverse });
   }
 
   public isStatic = false;
@@ -1293,8 +1334,10 @@ export class Templates implements ExpressionSyntax {
 }
 
 export let builders = {
-  value: Value.build,
-  hash: Hash.build
+  value: Value.build.bind(Value),
+  hash: Hash.build.bind(Hash),
+  openElement: OpenElement.build.bind(OpenElement),
+  closeElement: CloseElement.build.bind(CloseElement)
 };
 
 export class TemplateBuilder {
@@ -1340,7 +1383,7 @@ export class TemplateBuilder {
 // export all statement nodes as builders via their static `build` method
 Object.keys(StatementNodes).forEach(key => {
   let builderKey = `${key[0].toLowerCase()}${key.slice(1)}`;
-  builders[builderKey] = StatementNodes[key].build;
+  builders[builderKey] = StatementNodes[key].build.bind(StatementNodes[key]);
 });
 
 Object.keys(builders).forEach(key => {

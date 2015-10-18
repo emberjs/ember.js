@@ -1,4 +1,12 @@
-import Template, { StatementSyntax, Unknown } from "./template";
+import Template, {
+  StatementSyntax,
+  AttributeSyntax,
+  Component as ComponentSyntax,
+  Unknown,
+  Inline,
+  ParamsAndHash
+} from "./template";
+
 import { ElementStack } from './builder';
 
 import {
@@ -98,6 +106,13 @@ export class Scope {
     }
   }
 
+  bindLocalReferences(blockArguments: RootReference[]) {
+    let { localNames } = this;
+    for (let i = 0, l = localNames.length; i < l; i++) {
+      this.bindLocalReference(localNames[i], blockArguments[i]);
+    }
+  }
+
   updateLocal(name: InternedString, value: any) {
     this.locals[<string>name].update(value);
   }
@@ -143,6 +158,10 @@ export interface Component {
 export abstract class Environment {
   private dom: DOMHelper;
   private meta: MetaLookup;
+  private createdComponents: Component[] = [];
+  private createdDefinitions: ComponentDefinition[] = [];
+  private updatedComponents: Component[] = [];
+  private updatedDefinitions: ComponentDefinition[] = [];
 
   constructor(dom: DOMHelper, meta: MetaLookup) {
     this.dom = dom;
@@ -164,21 +183,61 @@ export abstract class Environment {
   }
 
   statement(statement: StatementSyntax): StatementSyntax {
-    if (statement.type === 'unknown' && (<Unknown>statement).ref.path()[0] === 'yield') {
-      return new YieldSyntax();
+    let type = statement.type;
+
+    if (type === 'unknown' && (<Unknown>statement).ref.path()[0] === 'yield') {
+      return new YieldSyntax(null);
+    } else if (type === 'inline' && (<Inline>statement).path[0] === 'yield') {
+      return new YieldSyntax((<Inline>statement).args);
     }
 
     return statement;
   }
 
+  begin() {
+    this.createdComponents = [];
+    this.createdDefinitions = [];
+    this.updatedComponents = [];
+    this.updatedDefinitions = [];
+  }
+
+  didCreate(component: Component, definition: ComponentDefinition) {
+    this.createdComponents.push(component);
+    this.createdDefinitions.push(definition);
+  }
+
+  didUpdate(component: Component, definition: ComponentDefinition) {
+    this.updatedComponents.push(component);
+    this.updatedDefinitions.push(definition);
+  }
+
+  commit() {
+    this.createdComponents.forEach((component, i) => {
+      let definition = this.createdDefinitions[i];
+      definition.hooks.didInsertElement(component);
+      definition.hooks.didRender(component);
+    });
+
+    this.updatedComponents.forEach((component, i) => {
+      let definition = this.updatedDefinitions[i];
+      definition.hooks.didUpdate(component);
+      definition.hooks.didRender(component);
+    });
+  }
+
   abstract hasHelper(scope: Scope, helperName: string[]): boolean;
   abstract lookupHelper(scope: Scope, helperName: string[]): ConstReference<Helper>;
-  abstract getComponentDefinition(scope: Scope, tagName: string[]): ComponentDefinition;
+  abstract getComponentDefinition(scope: Scope, tagName: string[], syntax: ComponentSyntax): ComponentDefinition;
 }
 
 class YieldSyntax implements StatementSyntax {
   type = "yield";
   isStatic = false;
+  private args: ParamsAndHash;
+
+  constructor(args: ParamsAndHash) {
+    this.args = args;
+  }
 
   prettyPrint() {
     return `{{yield}}`;
@@ -186,7 +245,8 @@ class YieldSyntax implements StatementSyntax {
 
   evaluate(stack: ElementStack, frame: Frame): BlockInvocationMorph {
     let block = frame.scope().getBlock(LITERAL('default'));
-    return stack.createBlockMorph(block, frame);
+    let params = this.args ? this.args.params.evaluate(frame) : null;
+    return stack.createBlockMorph(block, frame, params);
   }
 }
 
@@ -211,9 +271,30 @@ export function helper(h: Helper): ConstReference<Helper> {
   return new ConstReference(h);
 }
 
+export interface ComponentHooks {
+  begin(Component);
+  commit(Component);
+
+  didReceiveAttrs(Component);
+  didUpdateAttrs(Component);
+
+  didInsertElement(Component);
+
+  willRender(Component);
+  willUpdate(Component);
+  didRender(Component);
+  didUpdate(Component);
+}
+
 export interface ComponentDefinition {
   class: ComponentClass;
   layout: Template;
+  rootElementAttrs: (component: any, attrs: AttributeSyntax[], layoutFrame: Frame, contentFrame: Frame) => AttributeSyntax[];
+  creationObjectForAttrs: (Component: ComponentClass, attrs: Object) => Object;
+  updateObjectFromAttrs: (component: any, attrs: Object) => void;
+  setupLayoutScope: (component: any, layout: Template, yielded: Template) => void;
+  allowedForSyntax: (component: any, syntax: StatementSyntax) => boolean;
+  hooks: ComponentHooks;
 }
 
 export class Frame {
@@ -261,7 +342,23 @@ export class Frame {
     return this.env.lookupHelper(this._scope, helperName);
   }
 
-  getComponentDefinition(tagName: string[]): ComponentDefinition {
-    return this.env.getComponentDefinition(this._scope, tagName);
+  getComponentDefinition(tagName: string[], syntax: ComponentSyntax): ComponentDefinition {
+    return this.env.getComponentDefinition(this._scope, tagName, syntax);
+  }
+
+  begin() {
+    this.env.begin();
+  }
+
+  didCreate(component: Component, definition: ComponentDefinition) {
+    this.env.didCreate(component, definition);
+  }
+
+  didUpdate(component: Component, definition: ComponentDefinition) {
+    this.env.didUpdate(component, definition);
+  }
+
+  commit() {
+    this.env.commit();
   }
 }

@@ -2,8 +2,9 @@ import { Frame, Block } from './environment';
 import { ElementStack, Handler } from './builder';
 import { Enumerable } from './utils';
 import DOMHelper from './dom';
-import Template from './template';
+import Template, { EvaluatedParams } from './template';
 import { RenderResult } from './render';
+import { RootReference } from 'htmlbars-reference';
 
 export interface MorphSpecializer<T extends Morph, InitOptions> {
   specialize(options: InitOptions): MorphConstructor<T, InitOptions>;
@@ -293,9 +294,28 @@ export class SimpleTemplateMorph extends TemplateMorph {
 }
 
 export class BlockInvocationMorph extends TemplateMorph {
+  specialize(options: Object): typeof BlockInvocationMorph {
+    if (options['blockArguments']) return BlockWithParamsMorph;
+    else return BlockInvocationMorph;
+  }
+
   init({ block }: { block: Block }) {
     this.frame = block.frame;
     this.template = block.template;
+  }
+}
+
+export class BlockWithParamsMorph extends BlockInvocationMorph {
+  private blockArguments: EvaluatedParams;
+
+  init({ block, blockArguments }: { block: Block, blockArguments: EvaluatedParams }) {
+    super.init({ block });
+    this.blockArguments = blockArguments;
+  }
+
+  append() {
+    this.frame.childScope(this.template.locals);
+    this.frame.scope().bindLocalReferences(<RootReference[]>this.blockArguments.references);
   }
 }
 
