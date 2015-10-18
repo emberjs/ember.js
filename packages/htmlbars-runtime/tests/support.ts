@@ -18,8 +18,10 @@ import {
   HelperSyntax,
   AttributeSyntax,
   DynamicAttr,
+  StaticAttr,
   EvaluatedRef,
   GetSyntax,
+  ElementSyntax,
   ComponentMorph,
   ComponentSyntax,
   ComponentClass,
@@ -57,22 +59,19 @@ export class TestEnvironment extends Environment {
   }
 
   registerEmberishComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
-    let def = this.registerCurlyComponent(name, Component, layout);
-
-    def.rootElementAttrs = function(component: Component, attrs: AttributeSyntax[], layoutFrame: Frame): AttributeSyntax[] {
-      let rawBindings = component['attributeBindings'];
-
-      return rawBindings.map(b => {
-        let [value, key] = b.split(':');
-        return DynamicAttr.build(key || value, new EvaluatedRef(GetSyntax.build(value).evaluate(layoutFrame)));
-      });
-    }
-
-    return def;
+    let definition = new EmberishComponentDefinition(Component, hooks, compile(layout));
+    this.registerComponent(name, definition);
+    return definition;
   }
 
   registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
     let definition = glimmerComponentDefinition(Component, compile(layout));
+    this.registerComponent(name, definition);
+    return definition;
+  }
+
+  registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
+    let definition = EmberishGlimmerComponentDefinition.build(name, Component, hooks, compile(layout));
     this.registerComponent(name, definition);
     return definition;
   }
@@ -128,6 +127,7 @@ export class TestEnvironment extends Environment {
     let helperName = helperParts[0];
 
     if (helperName === 'hasBlock') return new ConstReference(hasBlock(scope));
+    if (helperName === 'hasBlockParams') return new ConstReference(hasBlockParams(scope));
 
     let helper = this.helpers[helperName];
 
@@ -143,6 +143,14 @@ export class TestEnvironment extends Environment {
 function hasBlock(scope: Scope) {
   return function([name]: [InternedString]) {
     return !!scope.getBlock(name || LITERAL('default'));
+  }
+}
+
+function hasBlockParams(scope: Scope) {
+  return function([name]: [InternedString]) {
+    let block = scope.getBlock(name || LITERAL('default'));
+    if (!block) return false;
+    return !!block.template.arity;
   }
 }
 
@@ -178,7 +186,6 @@ const hooks: ComponentHooks = {
     if (typeof component.didUpdateAttrs === 'function') component.didUpdateAttrs();
   }
 };
-
 
 export class HookIntrospection implements ComponentHooks {
   private inner: ComponentHooks;
@@ -237,78 +244,143 @@ export class HookIntrospection implements ComponentHooks {
   }
 }
 
-interface TestComponentDefinition extends ComponentDefinition {
-  hooks: HookIntrospection
+abstract class TestComponentDefinition implements ComponentDefinition {
+  public hooks: HookIntrospection;
+  public class: ComponentClass;
+  public layout: Template;
+
+  constructor(klass: ComponentClass, hooks: ComponentHooks, layout: Template) {
+    this['class'] = klass;
+    this.hooks = new HookIntrospection(hooks);
+    this.layout = layout;
+  }
+
+  rootElement(component: any, element: Element) {
+    component.element = element;
+  }
+
+  abstract rootElementAttrs(component: any, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[];
+  abstract creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object;
+  abstract setupLayoutScope(scope: Scope, layout: Template, yielded: Template);
+  abstract updateObjectFromAttrs(component: any, attrs: Object);
+
+  allowedForSyntax(component: Component, syntax: StatementSyntax): boolean {
+    return !(syntax instanceof ComponentSyntax);
+  }
+}
+
+class CurlyComponentDefinition extends TestComponentDefinition {
+  rootElementAttrs(component: any, attrs: AttributeSyntax[], ...args): AttributeSyntax[] {
+    return [];
+  }
+
+  creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object {
+    return attrs;
+  }
+
+  updateObjectFromAttrs(component: any, attrs: Object) {
+    for (let prop in attrs) {
+      set(component, prop, attrs[prop]);
+    }
+  }
+
+  setupLayoutScope(scope: Scope, layout: Template, yielded: Template) {
+    if (yielded) {
+      scope.bindLocal(LITERAL('hasBlock'), true);
+      if (yielded.arity) {
+        scope.bindLocal(LITERAL('hasBlockParams'), true);
+      }
+    }
+  }
+
+}
+
+class GlimmerComponentDefinition extends TestComponentDefinition {
+  rootElementAttrs(component: any, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
+    return attrs.map(attr => attr.asEvaluated(invokeFrame));
+  }
+
+  creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object {
+    return { attrs };
+  }
+
+  updateObjectFromAttrs(component: any, attrs: Object) {
+    set(component, 'attrs', attrs);
+  }
+
+  setupLayoutScope(scope: Scope, layout: Template, yielded: Template) {
+    if (!yielded.isEmpty) {
+      scope.bindLocal(LITERAL('hasBlock'), true);
+      if (yielded.arity) {
+        scope.bindLocal(LITERAL('hasBlockParams'), true);
+      }
+    }
+  }
+}
+
+let uuid = 1;
+
+class EmberishGlimmerComponentDefinition extends GlimmerComponentDefinition {
+  static build(name: InternedString, Component: ComponentClass, hooks: ComponentHooks, layout: Template) {
+    let foundIndex;
+    let syntax = <ComponentSyntax>layout.statements.find((syntax, i) => {
+      if (syntax.type !== 'component') return false;
+      let component = <ComponentSyntax>syntax;
+      let path = component.path.path();
+      foundIndex = i;
+      return path.length === 1 && path[0] === name;
+    });
+
+    if (syntax) {
+      layout = layout.clone();
+      layout.statements.splice(foundIndex, 1, new ElementSyntax(name, syntax.hash, syntax.templates.default))
+    }
+
+    return new this(Component, hooks, layout);
+  }
+
+  rootElementAttrs(component: any, rawAttrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
+    let sawAttrs = dict();
+    let attrs = rawAttrs.map(attr => {
+      sawAttrs[attr.name] = true;
+      return attr.asEvaluated(invokeFrame);
+    });
+
+    attrs.push(StaticAttr.build('class', 'ember-view'));
+
+    if (!sawAttrs['id']) {
+      attrs.push(StaticAttr.build('id', `ember${uuid++}`));
+    }
+
+    return attrs;
+  }
+
+  creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object {
+    return { attrs };
+  }
+
+  updateObjectFromAttrs(component: any, attrs: Object) {
+    set(component, 'attrs', attrs);
+  }
+}
+
+class EmberishComponentDefinition extends CurlyComponentDefinition {
+  rootElementAttrs(component: Component, attrs: AttributeSyntax[], layoutFrame: Frame): AttributeSyntax[] {
+    let rawBindings = component['attributeBindings'];
+
+    return rawBindings.map(b => {
+      let [value, key] = b.split(':');
+      return DynamicAttr.build(key || value, new EvaluatedRef(GetSyntax.build(value).evaluate(layoutFrame)));
+    });
+  }
 }
 
 export function curlyComponentDefinition(Component: ComponentClass, layout: Template): TestComponentDefinition {
-  return {
-    class: Component,
-
-    rootElementAttrs(component: any, attrs: AttributeSyntax[]): AttributeSyntax[] {
-      return [];
-    },
-
-    creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object {
-      return attrs;
-    },
-
-    setupLayoutScope(scope: Scope, layout: Template, yielded: Template) {
-      if (yielded) {
-        scope.bindLocal(LITERAL('hasBlock'), true);
-        if (yielded.arity) {
-          scope.bindLocal(LITERAL('hasBlockParams'), true);
-        }
-      }
-    },
-
-    updateObjectFromAttrs(component: any, attrs: Object) {
-      for (let prop in attrs) {
-        set(component, prop, attrs[prop]);
-      }
-    },
-
-    allowedForSyntax(component: Component, syntax: StatementSyntax): boolean {
-      return !(syntax instanceof ComponentSyntax);
-    },
-
-    hooks: new HookIntrospection(hooks),
-    layout
-  };
+  return new CurlyComponentDefinition(Component, hooks, layout);
 }
 
 export function glimmerComponentDefinition(Component: ComponentClass, layout: Template): TestComponentDefinition {
-  return {
-    class: Component,
-
-    rootElementAttrs(component: any, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
-      return attrs.map(attr => attr.asEvaluated(invokeFrame));
-    },
-
-    creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object {
-      return { attrs };
-    },
-
-    setupLayoutScope(scope: Scope, layout: Template, yielded: Template) {
-      if (!yielded.isEmpty) {
-        scope.bindLocal(LITERAL('hasBlock'), true);
-        if (yielded.arity) {
-          scope.bindLocal(LITERAL('hasBlockParams'), true);
-        }
-      }
-    },
-
-    updateObjectFromAttrs(component: any, attrs: Object) {
-      set(component, 'attrs', attrs);
-    },
-
-    allowedForSyntax(component: Component, syntax: StatementSyntax): boolean {
-      return syntax instanceof ComponentSyntax;
-    },
-
-    hooks: new HookIntrospection(hooks),
-    layout
-  };
+  return new GlimmerComponentDefinition(Component, hooks, layout);
 }
 
 class CurlyComponent extends ComponentSyntax {
@@ -333,8 +405,7 @@ class CurlyComponent extends ComponentSyntax {
     layout.statements.unshift(builders.openElement('div'));
     layout.statements.push(builders.closeElement());
 
-    definition = assign({}, definition);
-    definition.layout = layout;
+    definition = new (<typeof CurlyComponentDefinition>definition.constructor)(definition['class'], definition.hooks, layout);
 
     return stack.createContentMorph(ComponentMorph, { definition, attrs: hash, templates }, frame);
   }
@@ -363,4 +434,72 @@ class EachSyntax implements StatementSyntax {
     let key = this.args.hash.evaluate(frame).at(LITERAL('key'));
     return stack.createContentMorph(MorphList, { key, reference: list, templates: this.templates }, frame);
   }
+}
+
+export function equalsElement(element, tagName, attributes, content) {
+  QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
+
+  let expectedAttrs: Dict<Matcher> = dict<Matcher>();
+
+  let expectedCount = 0;
+  for (let prop in attributes) {
+    expectedCount++;
+    let expected = attributes[prop];
+
+    let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equals(expected);
+    expectedAttrs[prop] = expected;
+
+    QUnit.push(attributes[prop].match(element.getAttribute(prop)), matcher.fail(element.getAttribute(prop)), matcher.fail(element.getAttribute(prop)), `Expected element's ${prop} attribute ${matcher.expected()}`);
+  }
+
+  let actualAttributes = {};
+  for (let i = 0, l = element.attributes.length; i < l; i++) {
+    actualAttributes[element.attributes[i].name] = element.attributes[i].value;
+  }
+
+  QUnit.push(element.attributes.length === expectedCount, element.attributes.length, expectedCount, `Expected ${expectedCount} attributes; got ${element.outerHTML}`);
+
+  QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+}
+
+interface Matcher {
+  "3d4ef194-13be-4ccf-8dc7-862eea02c93e": boolean;
+  match(actual): boolean;
+  fail(actual): string;
+  expected(): string;
+}
+
+export const MATCHER = "3d4ef194-13be-4ccf-8dc7-862eea02c93e";
+
+export function equals(expected) {
+  return {
+    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    match(actual) {
+      return expected === actual;
+    },
+
+    expected() {
+      return `to equal ${expected}`;
+    },
+
+    fail(actual) {
+      return `${actual} did not equal ${expected}`;
+    }
+  };
+
+}
+
+export function regex(r) {
+  return {
+    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    match(v) {
+      return r.test(v);
+    },
+    expected() {
+      return `to match ${r}`;
+    },
+    fail(actual) {
+      return `${actual} did not match ${r}`;
+    }
+  };
 }

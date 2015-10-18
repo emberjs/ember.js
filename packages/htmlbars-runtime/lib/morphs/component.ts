@@ -81,7 +81,8 @@ export default class ComponentMorph extends TemplateMorph {
       throw new Error("A component must have a single root element at the top level");
     }
 
-    this.frame.didCreate(this.component, definition);
+    definition.rootElement(component, handler.rootElement);
+    this.frame.didCreate(component, definition);
   }
 
   update() {
@@ -127,6 +128,7 @@ export class ComponentHandler extends NullHandler {
   }
 
   willCreateContentMorph(Type: typeof ContentMorph, attrs: Object) {
+    if (Type.hasStaticElement) return;
     throw new Error("You cannot have curlies (`{{}}`) at the root of a component's layout")
   }
 }

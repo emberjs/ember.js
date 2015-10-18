@@ -86,6 +86,8 @@ export abstract class Morph implements HasParentNode {
 }
 
 export abstract class ContentMorph extends Morph implements Bounds {
+  static hasStaticElement = false;
+
   parentElement() {
     return this.parentNode;
   }

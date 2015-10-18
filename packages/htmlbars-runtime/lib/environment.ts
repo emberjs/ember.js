@@ -300,6 +300,7 @@ export interface ComponentHooks {
 export interface ComponentDefinition {
   class: ComponentClass;
   layout: Template;
+  rootElement: (component: any, element: Element) => void;
   rootElementAttrs: (component: any, attrs: AttributeSyntax[], layoutFrame: Frame, contentFrame: Frame) => AttributeSyntax[];
   creationObjectForAttrs: (Component: ComponentClass, attrs: Object) => Object;
   updateObjectFromAttrs: (component: any, attrs: Object) => void;
