@@ -154,6 +154,23 @@ var Component = View.extend(TargetActionSupport, {
 
       this.layout = this.defaultLayout;
     }
+
+    // If in a tagless component, assert that no event handlers are defined
+    assert(
+      `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
+      this.tagName !== '' || !(() => {
+        let eventDispatcher = this.container.lookup('event_dispatcher:main');
+        let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+
+        for (let key in events) {
+          let methodName = events[key];
+
+          if (typeof this[methodName]  === 'function') {
+            return true; // indicate that the assertion should be triggered
+          }
+        }
+      }
+    )());
   },
 
   template: null,
