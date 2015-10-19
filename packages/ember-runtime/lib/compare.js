@@ -45,7 +45,7 @@ function spaceship(a, b) {
  @param {Object} v First value to compare
  @param {Object} w Second value to compare
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
- @private
+ @public
 */
 export default function compare(v, w) {
   if (v === w) {
