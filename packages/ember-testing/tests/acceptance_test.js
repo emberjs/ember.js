@@ -10,7 +10,6 @@ import compile from 'ember-template-compiler/system/compile';
 import RSVP from 'ember-runtime/ext/rsvp';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
-import 'ember-routing'; //ES6TODO: fixme?
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
