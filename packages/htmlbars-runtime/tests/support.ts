@@ -14,14 +14,18 @@ import {
   Inline,
   Unknown,
   Hash,
+  EvaluatedHash,
   Frame,
   HelperSyntax,
   AttributeSyntax,
   DynamicAttr,
   StaticAttr,
+  AddClass,
   EvaluatedRef,
   GetSyntax,
   ElementSyntax,
+  ValueSyntax,
+  RefSyntax,
   ComponentMorph,
   ComponentSyntax,
   ComponentClass,
@@ -259,7 +263,7 @@ abstract class TestComponentDefinition implements ComponentDefinition {
     component.element = element;
   }
 
-  abstract rootElementAttrs(component: any, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[];
+  abstract rootElementAttrs(component: any, outer: EvaluatedHash, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[];
   abstract creationObjectForAttrs(Component: ComponentClass, attrs: Object): Object;
   abstract setupLayoutScope(scope: Scope, layout: Template, yielded: Template);
   abstract updateObjectFromAttrs(component: any, attrs: Object);
@@ -270,7 +274,7 @@ abstract class TestComponentDefinition implements ComponentDefinition {
 }
 
 class CurlyComponentDefinition extends TestComponentDefinition {
-  rootElementAttrs(component: any, attrs: AttributeSyntax[], ...args): AttributeSyntax[] {
+  rootElementAttrs(component: any, outer: EvaluatedHash, attrs: AttributeSyntax[], ...args): AttributeSyntax[] {
     return [];
   }
 
@@ -296,7 +300,7 @@ class CurlyComponentDefinition extends TestComponentDefinition {
 }
 
 class GlimmerComponentDefinition extends TestComponentDefinition {
-  rootElementAttrs(component: any, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
+  rootElementAttrs(component: any, outer: EvaluatedHash, attrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
     return attrs.map(attr => attr.asEvaluated(invokeFrame));
   }
 
@@ -339,14 +343,20 @@ class EmberishGlimmerComponentDefinition extends GlimmerComponentDefinition {
     return new this(Component, hooks, layout);
   }
 
-  rootElementAttrs(component: any, rawAttrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
+  rootElementAttrs(component: any, outerAttrs: EvaluatedHash, rawAttrs: AttributeSyntax[], layoutFrame: Frame, invokeFrame: Frame): AttributeSyntax[] {
+    debugger;
     let sawAttrs = dict();
     let attrs = rawAttrs.map(attr => {
       sawAttrs[attr.name] = true;
       return attr.asEvaluated(invokeFrame);
     });
 
-    attrs.push(StaticAttr.build('class', 'ember-view'));
+    let outerClass = outerAttrs.at(LITERAL('class'));
+    if (outerClass) {
+      attrs.push(AddClass.build(new EvaluatedRef(outerClass)));
+    }
+
+    attrs.push(AddClass.build(ValueSyntax.build('ember-view')));
 
     if (!sawAttrs['id']) {
       attrs.push(StaticAttr.build('id', `ember${uuid++}`));
@@ -365,7 +375,7 @@ class EmberishGlimmerComponentDefinition extends GlimmerComponentDefinition {
 }
 
 class EmberishComponentDefinition extends CurlyComponentDefinition {
-  rootElementAttrs(component: Component, attrs: AttributeSyntax[], layoutFrame: Frame): AttributeSyntax[] {
+  rootElementAttrs(component: Component, outer: EvaluatedHash, attrs: AttributeSyntax[], layoutFrame: Frame): AttributeSyntax[] {
     let rawBindings = component['attributeBindings'];
 
     return rawBindings.map(b => {
@@ -502,4 +512,19 @@ export function regex(r) {
       return `${actual} did not match ${r}`;
     }
   };
+}
+
+export function classes(expected) {
+  return {
+    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    match(actual) {
+      return expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' ');
+    },
+    expected() {
+      return `to include '${expected}'`;
+    },
+    fail(actual) {
+      return `'${actual}'' did not match '${expected}'`;
+    }
+  }
 }

@@ -10,8 +10,8 @@ import {
 import { Frame, Block } from './environment';
 import DOMHelper from './dom';
 import { DynamicStatementSyntax, StaticStatementSyntax, StatementSyntax, EvaluatedParams } from './template'
-import { InternedString } from 'htmlbars-util';
-import { RootReference } from 'htmlbars-reference';
+import { InternedString, intern } from 'htmlbars-util';
+import { RootReference, ChainableReference, NotifiableReference, PushPullReference, Destroyable } from 'htmlbars-reference';
 
 export function renderStatement(statement: StatementSyntax, stack: ElementStack, frame: Frame) {
   let refinedStatement = frame.syntax(statement);
@@ -61,6 +61,20 @@ interface ElementBufferOptions {
   parentNode: Element;
   nextSibling: Node;
   dom: DOMHelper;
+}
+
+export class ClassList extends PushPullReference {
+  private list: ChainableReference[] = [];
+
+  append(reference: ChainableReference) {
+    this.list.push(reference);
+    this._addSource(reference);
+  }
+
+  value(): string {
+    if (this.list.length === 0) return null;
+    return this.list.map(i => i.value()).join(' ');
+  }
 }
 
 export class ElementBuffer {
@@ -121,6 +135,8 @@ export class ElementStack extends ElementBuffer {
   public operations: DelegatingOperations;
   public topLevelHandlers: Handler[] = [];
   public handlers: Handler[] = [];
+  private classListStack: ClassList[] = [];
+  private classList: ClassList = null;
 
   constructor(options: ElementBufferOptions) {
     super(options);
@@ -131,17 +147,24 @@ export class ElementStack extends ElementBuffer {
 
   _pushElement(element) {
     this.elementStack.push(element);
+    this.classListStack.push(null);
     this.nextSiblingStack.push(null);
     this.element = element;
+    this.classList = null;
     this.nextSibling = null;
   }
 
   _popElement() {
-    let { elementStack, nextSiblingStack }  = this;
+    let { elementStack, nextSiblingStack, classListStack }  = this;
     let topElement = elementStack.pop();
+
     nextSiblingStack.pop();
+    classListStack.pop();
+
     this.element = elementStack[elementStack.length - 1];
     this.nextSibling = nextSiblingStack[nextSiblingStack.length - 1];
+    this.classList = classListStack[classListStack.length - 1];
+
     return topElement;
   }
 
@@ -190,7 +213,7 @@ export class ElementStack extends ElementBuffer {
     return morph;
   }
 
-  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams) {
+  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams): BlockInvocationMorph {
     return this.createContentMorph(BlockInvocationMorph, { block, blockArguments }, frame);
   }
 
@@ -216,11 +239,23 @@ export class ElementStack extends ElementBuffer {
     return element;
   }
 
-  closeElement() {
+  addClass(ref: ChainableReference) {
+    let classList = this.classList;
+    if (!classList) {
+      classList = this.classList = new ClassList();
+      this.classListStack[this.classListStack.length - 1] = classList;
+    }
+
+    classList.append(ref);
+  }
+
+  closeElement(): { element: Element, classList: ClassList } {
+    let { element, classList } = this;
     this.operations.willCloseElement();
     let child = this._popElement();
     this.dom.insertBefore(this.element, child, this.nextSibling);
     this.operations.didCloseElement();
+    return { element, classList };
   }
 
   appendHTML(html: string): Bounds {

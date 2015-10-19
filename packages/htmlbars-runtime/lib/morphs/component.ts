@@ -69,7 +69,7 @@ export default class ComponentMorph extends TemplateMorph {
 
     definition.setupLayoutScope(layoutScope, template, innerTemplates.default);
 
-    let attrSyntax = definition.rootElementAttrs(component, this.attrSyntax, layoutFrame, invokeFrame);
+    let attrSyntax = definition.rootElementAttrs(component, attrs, this.attrSyntax, layoutFrame, invokeFrame);
     let handler = new ComponentHandler(layoutFrame, attrSyntax);
 
     this.willAppend(stack);
