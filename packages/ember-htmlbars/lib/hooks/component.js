@@ -3,13 +3,19 @@ import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-ma
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
 import Cache from 'ember-metal/cache';
+import {
+  CONTAINS_DASH_CACHE,
+  CONTAINS_DOT_CACHE
+} from 'ember-htmlbars/system/lookup-helper';
+import {
+  COMPONENT_PATH,
+  COMPONENT_HASH,
+  isComponentCell,
+  mergeHash,
+} from 'ember-htmlbars/keywords/closure-component';
 
 var IS_ANGLE_CACHE = new Cache(1000, function(key) {
   return key.match(/^(@?)<(.*)>$/);
-});
-
-var CONTAINS_DASH = new Cache(1000, function(key) {
-  return key.indexOf('-') !== -1;
 });
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
@@ -22,6 +28,15 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   }
 
   let tagName = _tagName;
+  if (CONTAINS_DOT_CACHE.get(tagName)) {
+    let stream = env.hooks.get(env, scope, tagName);
+    let componentCell = stream.value();
+    if (isComponentCell(componentCell)) {
+      tagName = componentCell[COMPONENT_PATH];
+      attrs = mergeHash(componentCell[COMPONENT_HASH], attrs);
+    }
+  }
+
   let isAngleBracket = false;
   let isTopLevel = false;
   let isDasherized = false;
@@ -34,7 +49,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     isTopLevel = !!angles[1];
   }
 
-  if (CONTAINS_DASH.get(tagName)) {
+  if (CONTAINS_DASH_CACHE.get(tagName)) {
     isDasherized = true;
   }
 

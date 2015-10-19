@@ -10,6 +10,10 @@ export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') !== -1;
 });
 
+export var CONTAINS_DOT_CACHE = new Cache(1000, function(key) {
+  return key.indexOf('.') !== -1;
+});
+
 export function validateLazyHelperName(helperName, container, keywords) {
   return container && !(helperName in keywords);
 }
