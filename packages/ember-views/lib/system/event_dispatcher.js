@@ -149,7 +149,7 @@ export default EmberObject.extend({
   */
   setup(addedEvents, rootElement) {
     var event;
-    var events = assign({}, get(this, 'events'), addedEvents);
+    var events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
