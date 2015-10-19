@@ -769,6 +769,11 @@ var Application = Namespace.extend(RegistryProxy, {
     });
   },
 
+  /**
+    @private
+    @since 1.12.0
+    @method runInstanceInitializers
+  */
   runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', function(name, initializer) {
       assert('No instance initializer named \'' + name + '\'', !!initializer);

@@ -258,6 +258,7 @@ if (isEnabled('ember-debug-handlers')) {
     @static
     @method registerDeprecationHandler
     @param handler {Function} a function to handle deprecation calls
+    @since 2.1.0
   */
   Ember.Debug.registerDeprecationHandler = registerDeprecationHandler;
   /**
@@ -286,6 +287,7 @@ if (isEnabled('ember-debug-handlers')) {
     @static
     @method registerWarnHandler
     @param handler {Function} a function to handle warnings
+    @since 2.1.0
   */
   Ember.Debug.registerWarnHandler = registerWarnHandler;
 }

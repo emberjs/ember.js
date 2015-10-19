@@ -35,6 +35,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
   @method each-in
   @for Ember.Templates.helpers
   @public
+  @since 2.1.0
 */
 var eachInHelper = function([ object ], hash, blocks) {
   var objKeys, prop, i;

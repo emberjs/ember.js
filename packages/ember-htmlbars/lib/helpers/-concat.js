@@ -17,6 +17,7 @@
   @public
   @method concat
   @for Ember.Templates.helpers
+  @since 1.13.0
 */
 export default function concat(params) {
   return params.join('');
