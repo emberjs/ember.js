@@ -62,7 +62,6 @@ class AliasBlueprint extends ComputedBlueprint {
   }
 
   descriptor(target: Object, key: InternedString, meta: ClassMeta): Descriptor {
-    debugger;
     if (this.name[0] === key) throw new Error(`Setting alias '${key}' on self`);
     return super.descriptor(target, key, meta);
   }

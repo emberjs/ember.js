@@ -4,12 +4,27 @@ import { getAttrNamespace } from "htmlbars-util";
 import { isHelper } from "htmlbars-syntax";
 import { struct, types } from "htmlbars-util";
 
+type Statement = any;
+
+class Template {
+  statements: Statement[] = null;
+  locals: string[] = null;
+  meta: Object = null;
+  arity: number = null;
+}
+
 class JavaScriptCompiler {
-  static process(opcodes) {
+  static process(opcodes): Template[] {
     let compiler = new JavaScriptCompiler(opcodes);
     compiler.process();
     return compiler.templates;
   }
+
+  private opcodes: any[];
+  private output: any[];
+  private expressions: any[];
+  private templates: any[];
+  private locals: string[] = null;
 
   constructor(opcodes) {
     this.opcodes = opcodes;
@@ -32,7 +47,7 @@ class JavaScriptCompiler {
   }
 
   endProgram() {
-    let template = {};
+    let template = new Template();
     // REFACTOR TODO: meta
     if (this.locals.length) {
       template.locals = this.locals;
@@ -47,45 +62,45 @@ class JavaScriptCompiler {
 
   /// Statements
 
-  text(content) {
+  text(content: string) {
     this.push('text', content);
   }
 
-  comment(value) {
+  comment(value: string) {
     this.push('comment', value);
   }
 
-  unknown(path, unsafe) {
-    this.push('unknown', path, unsafe || null);
+  unknown(path: string, unsafe: boolean = null) {
+    this.push('unknown', path, unsafe);
   }
 
-  modifier(path) {
+  modifier(path: string) {
     let params = this.popExpression();
     let hash = this.popExpression();
 
     this.push('modifier', path, params, hash);
   }
 
-  inline(path, unsafe) {
+  inline(path: string, unsafe: boolean = null) {
     let params = this.popExpression();
     let hash = this.popExpression();
 
-    this.push('inline', path, params, hash, unsafe || null);
+    this.push('inline', path, params, hash, unsafe);
   }
 
-  block(path, template, inverse) {
+  block(path: string, template: number, inverse: number) {
     let params = this.popExpression();
     let hash = this.popExpression();
 
     this.push('block', path, params, hash, template, inverse);
   }
 
-  component(tag, template) {
+  component(tag: string, template: number) {
     let attrs = this.popExpression();
     this.push('component', tag, attrs, template);
   }
 
-  openElement(tag) {
+  openElement(tag: string) {
     this.push('openElement', tag);
   }
 
@@ -93,23 +108,28 @@ class JavaScriptCompiler {
     this.push('closeElement');
   }
 
-  staticAttr(name, namespace) {
+  addClass(name: string) {
+    let value = this.popExpression();
+    this.push('addClass', value);
+  }
+
+  staticAttr(name: string, namespace: string) {
     let value = this.popExpression();
     this.push('staticAttr', name, value, namespace);
   }
 
-  dynamicAttr(name, namespace) {
+  dynamicAttr(name: string, namespace: string) {
     let value = this.popExpression();
     this.push('dynamicAttr', name, value, namespace);
   }
 
   /// Expressions
 
-  literal(value) {
+  literal(value: any) {
     this.pushValue(value);
   }
 
-  get(path) {
+  get(path: string) {
     this.pushExpression('get', path);
   }
 
@@ -117,7 +137,7 @@ class JavaScriptCompiler {
     this.pushExpression('concat', this.popExpression());
   }
 
-  helper(path) {
+  helper(path: string) {
     let params = this.popExpression();
     let hash = this.popExpression();
 
@@ -126,11 +146,11 @@ class JavaScriptCompiler {
 
   /// Stack Management Opcodes
 
-  pushLiteral(literal) {
+  pushLiteral(literal: any) {
     this.pushValue(literal);
   }
 
-  prepareArray(size) {
+  prepareArray(size: number) {
     let values = [];
 
     for (let i = 0; i < size; i++) {
@@ -140,7 +160,7 @@ class JavaScriptCompiler {
     this.pushValue(values);
   }
 
-  prepareObject(size) {
+  prepareObject(size: number) {
     assert(this.expressions.length >= size, `Expected ${size} expressions on the stack, found ${this.expressions.length}`);
 
     let pairs = [];
@@ -154,7 +174,7 @@ class JavaScriptCompiler {
 
   /// Utilities
 
-  push(name, ...args) {
+  push(name: string, ...args: any[]) {
     while (args[args.length - 1] === null) {
       args.pop();
     }
@@ -162,11 +182,11 @@ class JavaScriptCompiler {
     this.output.push([name, ...args]);
   }
 
-  pushExpression(name, ...args) {
+  pushExpression(name: string, ...args: any[]) {
     this.expressions.push([name, ...args]);
   }
 
-  pushValue(val) {
+  pushValue(val: any) {
     this.expressions.push(val);
   }
 
@@ -187,17 +207,19 @@ export default class TemplateCompiler {
     return JavaScriptCompiler.process(opcodes);
   }
 
-  constructor(options) {
-    this.options = options || {};
-    this.templateId = 0;
-    this.templateIds = [];
-    this.templates = [];
-    this.childTemplates = [];
-    this.opcodes = [];
-    this.includeMeta = false;
+  private options: Object;
+  private templateId = 0;
+  private templateIds: number[] = [];
+  private templates: any[] = [];
+  private childTemplates: any[] = [];
+  private opcodes: any[] = [];
+  private includeMeta = false;
+
+  constructor(options: Object = {}) {
+    this.options = options;
   }
 
-  process(actions) {
+  process(actions): any[] {
     actions.forEach(([name, ...args]) => {
       if (!this[name]) { throw new Error(`Unimplemented ${name} on TemplateCompiler`); }
       this[name](...args);
@@ -236,12 +258,15 @@ export default class TemplateCompiler {
 
   attribute([action]) {
     let { name, value } = action;
+
     let namespace = getAttrNamespace(name);
 
     let isStatic = this.prepareAttributeValue(value);
 
     // REFACTOR TODO: escaped?
-    if (isStatic) {
+    if (name === 'class') {
+      this.opcode('addClass', action);
+    } else if (isStatic) {
       this.opcode('staticAttr', action, name, namespace);
     } else {
       this.opcode('dynamicAttr', action, name, namespace);
@@ -415,11 +440,3 @@ export default class TemplateCompiler {
     return [ 'loc', [source || null, [start.line, start.column], [end.line, end.column]] ];
   }
 }
-
-export let Template = struct({
-  meta: types.OBJECT,
-  arity: types.NUMBER,
-  locals: types.ARRAY,
-  templates: types.ARRAY
-});
-

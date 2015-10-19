@@ -295,13 +295,18 @@ export class SimpleTemplateMorph extends TemplateMorph {
   }
 }
 
+interface BlockOptions {
+  block: Block;
+  blockArguments?: EvaluatedParams;
+}
+
 export class BlockInvocationMorph extends TemplateMorph {
-  static specialize(options: Object): typeof BlockInvocationMorph {
-    if (options['blockArguments']) return BlockWithParamsMorph;
+  static specialize(options: BlockOptions): typeof BlockInvocationMorph {
+    if (options.blockArguments) return BlockWithParamsMorph;
     else return BlockInvocationMorph;
   }
 
-  init({ block }: { block: Block }) {
+  init({ block }: BlockOptions) {
     this.frame = block.frame;
     this.template = block.template;
   }
@@ -310,7 +315,7 @@ export class BlockInvocationMorph extends TemplateMorph {
 export class BlockWithParamsMorph extends BlockInvocationMorph {
   private blockArguments: EvaluatedParams;
 
-  init({ block, blockArguments }: { block: Block, blockArguments: EvaluatedParams }) {
+  init({ block, blockArguments }: BlockOptions) {
     super.init({ block });
     this.blockArguments = blockArguments;
   }

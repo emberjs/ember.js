@@ -6,9 +6,9 @@ import {
   PushPullReference,
   ConstReference
 } from 'htmlbars-reference';
-import { ElementStack } from './builder';
+import { ElementStack, ClassList } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
-import { InternedString, Dict, dict, intern } from 'htmlbars-util';
+import { LITERAL, InternedString, Dict, dict, intern } from 'htmlbars-util';
 
 interface Bounds {
   parentNode(): Node;
@@ -528,6 +528,43 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
   }
 }
 
+type AddClassSexpr = [InternedString, ExpressionSexp];
+
+export class AddClass extends StaticExpression implements AttributeSyntax, PrettyPrintable {
+  type = "add-class";
+
+  static fromSpec(node: AddClassSexpr): AddClass {
+    let [, value] = node;
+
+    return new AddClass({ value: buildExpression(value) });
+  }
+
+  static build(value: ExpressionSyntax): AddClass {
+    return new this({ value });
+  }
+
+  public name = "class";
+  public value: ExpressionSyntax;
+
+  constructor({ value }: { value: ExpressionSyntax }) {
+    super();
+    this.value = value;
+  }
+
+  prettyPrint(): PrettyPrint {
+    return new PrettyPrint('attr', 'attr', ['class', this.value.prettyPrint()]);
+  }
+
+  asEvaluated(frame: Frame): AddClass {
+    let value = new EvaluatedRef(this.value.evaluate(frame));
+    return new AddClass({ value });
+  }
+
+  evaluate(stack: ElementStack, frame: Frame) {
+    stack.addClass(this.value.evaluate(frame));
+  }
+}
+
 type ComponentSexp = [InternedString, InternedString, HashSexp, number, number];
 
 export class Component extends DynamicExpression implements StatementSyntax {
@@ -605,6 +642,27 @@ export class ElementSyntax implements StatementSyntax {
   }
 }
 
+export class CloseElement extends DynamicExpression implements DynamicStatementSyntax {
+  type = "close-element";
+
+  static fromSpec() {
+    return new CloseElement();
+  }
+
+  static build() {
+    return new this();
+  }
+
+  prettyPrint() {
+    return new PrettyPrint('element', 'close-element');
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): Morph {
+    let { element, classList } = stack.closeElement();
+    return stack.createMorph(CloseElementMorph, { element, classList }, frame)
+  }
+}
+
 type FallbackOptions = { path: InternedString, attrs: Hash, contents: Template };
 
 class FallbackMorph extends ContentMorph {
@@ -625,6 +683,7 @@ class FallbackMorph extends ContentMorph {
 
     values.forEach((val, i) => {
       let key = keys[i];
+      if (key === 'class') attrList.push(AddClass.build(val));
       if (val.isStatic) attrList.push(StaticAttr.build(key, val.evaluate(this.frame).value()));
       else attrList.push(DynamicAttr.build(key, val));
     });
@@ -646,7 +705,8 @@ class FallbackMorph extends ContentMorph {
     this.element = stack.openElement(tag);
     attrs.forEach(attr => stack.appendStatement(attr, this.frame));
     if (!contents.isEmpty) stack.createContentMorph(SimpleTemplateMorph, { template: contents }, this.frame).append(stack);
-    stack.closeElement();
+    let { element, classList } = stack.closeElement();
+    stack.createMorph(CloseElementMorph, { element, classList }, this.frame).append(stack);
   }
 
   update() {}
@@ -745,24 +805,48 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
   }
 }
 
-export class CloseElement extends StaticExpression implements StaticStatementSyntax {
-  type = "close-element";
+interface CloseElementOptions {
+  element: Element;
+  classList: ClassList;
+}
 
-  static fromSpec() {
-    return new CloseElement();
+export class CloseElementMorph extends Morph {
+  private element: Element;
+  private classList: ClassList;
+  private lastValue: string = null;
+
+  static specialize({ element, classList }: CloseElementOptions): typeof CloseElementMorph {
+    if (!classList) return NoopMorph;
+    else return CloseElementMorph;
   }
 
-  static build() {
-    return new this();
+  init({ element, classList }: { element: Element, classList: ClassList }) {
+    this.element = element;
+    this.classList = classList;
   }
 
-  prettyPrint() {
-    return new PrettyPrint('element', 'close-element');
+  append(stack: ElementStack) {
+    let val = this.lastValue = this.classList.value();
+
+    if (val !== null) {
+      this.frame.dom().setAttribute(<HTMLElement>this.element, 'class', val);
+    }
   }
 
-  evaluate(stack: ElementStack) {
-    stack.closeElement();
+  update() {
+    let lastVal = this.lastValue;
+    let val = this.lastValue = this.classList.value();
+
+    if (lastVal !== val && val !== null) {
+      this.frame.dom().setAttribute(<HTMLElement>this.element, 'class', this.classList.value());
+    }
   }
+}
+
+class NoopMorph extends CloseElementMorph {
+  init() {}
+  append() {}
+  update() {}
 }
 
 type StaticAttrSexp = [InternedString, InternedString, InternedString, InternedString];
@@ -825,6 +909,7 @@ const StatementNodes = {
   //modifier: Modifier,
   dynamicAttr: DynamicAttr,
   dynamicProp: DynamicProp,
+  addClass: AddClass,
   component: Component,
 
   /// static statements

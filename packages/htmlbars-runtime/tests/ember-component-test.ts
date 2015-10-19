@@ -21,7 +21,8 @@ import {
   curlyComponentDefinition,
   glimmerComponentDefinition,
   equalsElement,
-  regex
+  regex,
+  classes
  } from "./support";
 
 import { Dict, dict } from "htmlbars-util";
@@ -104,7 +105,6 @@ function assertFired(hooks: HookIntrospection, name: string, count=1) {
 
 function rerender() {
   env.begin();
-  debugger;
   view.rerender();
   env.commit();
 }
@@ -1049,35 +1049,33 @@ styles.forEach(style => {
     equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
   });
 
-  // QUnit.skip(`non-block replaced with ${style.name} (regression with single element in the root element)`, function() {
-  //   registry.register('template:components/non-block', compile(`  <${style.tagName} such="{{attrs.stability}}"><p>In layout</p></${style.tagName}>  `));
+  QUnit.test(`non-block replaced with ${style.name} (regression with single element in the root element)`, function() {
+    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `  <${style.tagName} such="{{attrs.stability}}"><p>In layout</p></${style.tagName}>  `);
 
-  //   view = appendViewFor('<non-block stability={{view.stability}} />', {
-  //     stability: 'stability'
-  //   });
+    appendViewFor('<non-block stability={{view.stability}} />', { stability: 'stability' });
 
-  //   let node = view.element.firstElementChild;
-  //   equalsElement(node, style.tagName, { such: 'stability', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
+    let node = view.element;
+    equalsElement(node, style.tagName, { such: 'stability', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
 
-  //   run(() => view.set('stability', 'changed!!!'));
+    set(view, 'stability', 'changed!!!');
+    rerender();
 
-  //   strictEqual(node, view.element.firstElementChild, 'The inner element has not changed');
-  //   equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
-  // });
+    strictEqual(node.firstElementChild, view.element.firstElementChild, 'The inner element has not changed');
+    equalsElement(node, style.tagName, { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) }, '<p>In layout</p>');
+  });
 
-  // QUnit.skip(`non-block with class replaced with ${style.name} merges classes`, function() {
-  //   registry.register('template:components/non-block', compile(`<${style.tagName} class="inner-class" />`));
+  QUnit.test(`non-block with class replaced with ${style.name} merges classes`, function() {
+    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `<${style.tagName} class="inner-class" />`);
 
-  //   view = appendViewFor('<non-block class="{{view.outer}}" />', {
-  //     outer: 'outer'
-  //   });
+    appendViewFor('<non-block class="{{outer}}" />', { outer: 'outer' });
 
-  //   equal(view.$(style.tagName).attr('class'), 'inner-class outer ember-view', 'the classes are merged');
+    equalsElement(view.element, style.tagName, { class: classes('inner-class outer ember-view'), id: regex(/^ember\d*$/) }, '');
 
-  //   run(() => view.set('outer', 'new-outer'));
+    set(view, 'outer', 'new-outer');
+    rerender();
 
-  //   equal(view.$(style.tagName).attr('class'), 'inner-class new-outer ember-view', 'the classes are merged');
-  // });
+    equalsElement(view.element, style.tagName, { class: classes('inner-class new-outer ember-view'), id: regex(/^ember\d*$/) }, '');
+  });
 
   // QUnit.skip(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
   //   registry.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));

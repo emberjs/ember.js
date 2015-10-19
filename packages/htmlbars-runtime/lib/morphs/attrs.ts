@@ -3,6 +3,7 @@ import { Morph, MorphConstructor, MorphSpecializer } from "../morph";
 import { Reference, ChainableReference } from 'htmlbars-reference';
 import { ExpressionSyntax } from '../template';
 import { Frame } from '../environment';
+import { ElementStack } from '../builder';
 
 interface AttrMorphOptions {
   name: InternedString;

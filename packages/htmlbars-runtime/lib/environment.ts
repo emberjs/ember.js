@@ -4,6 +4,7 @@ import Template, {
   Component as ComponentSyntax,
   Unknown,
   Inline,
+  EvaluatedHash,
   ParamsAndHash,
   EvaluatedParams
 } from "./template";
@@ -36,7 +37,6 @@ export class Block {
   frame: Frame;
 
   constructor(template: Template, frame: Frame) {
-    if (!template) debugger;
     this.template = template;
     this.frame = frame;
   }
@@ -301,7 +301,7 @@ export interface ComponentDefinition {
   class: ComponentClass;
   layout: Template;
   rootElement: (component: any, element: Element) => void;
-  rootElementAttrs: (component: any, attrs: AttributeSyntax[], layoutFrame: Frame, contentFrame: Frame) => AttributeSyntax[];
+  rootElementAttrs: (component: any, outer: EvaluatedHash, attrs: AttributeSyntax[], layoutFrame: Frame, contentFrame: Frame) => AttributeSyntax[];
   creationObjectForAttrs: (Component: ComponentClass, attrs: Object) => Object;
   updateObjectFromAttrs: (component: any, attrs: Object) => void;
   setupLayoutScope: (component: any, layout: Template, yielded: Template) => void;
