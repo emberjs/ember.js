@@ -20,6 +20,22 @@ on building killer features and UI.
 2. Run `npm install` to ensure the required dependencies are installed.
 3. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
 
+## npm install troubleshooting
+
+If you encounter a problem with downloading dependencies like:
+
+```
+npm ERR! registry error parsing json
+```
+
+consider upgrading `npm` with:
+
+```
+npm install -g npm@latest
+```
+
+You can find more information in [Upgrading on *nix (OSX, Linux, etc.)](https://github.com/npm/npm/wiki/Troubleshooting#upgrading-on-nix-osx-linux-etc) npm wiki page.
+
 # Contribution
 
 See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
