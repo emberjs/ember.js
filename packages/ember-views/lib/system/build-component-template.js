@@ -44,28 +44,29 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   return { createdElement: !!tagName, block: blockToRender };
 }
 
+// Static flag used to see if we can mutate the type attribute on elements. IE8
+// does not support changing the type attribute after an element is inserted in
+// a tree.
+var isTypeAttributeMutable = (function() {
+  var docFragment = document.createDocumentFragment();
+  var mutableInputTypeTextElement = document.createElement('input');
+  mutableInputTypeTextElement.type = 'text';
+  try {
+    docFragment.appendChild(mutableInputTypeTextElement);
+    mutableInputTypeTextElement.setAttribute('type', 'password');
+  } catch (e) {
+    return false;
+  }
+  return true;
+})();
+
 function canChangeTypeAfterRender(attrs) {
   // This permits testing of the unbound type attr behavior outside of IE8.
   if (attrs.ie8SafeInput) {
     return false;
   }
-  var mutableInputTypeTextElement, docFragment;
-  if (!docFragment) {
-    docFragment = document.createDocumentFragment();
-  }
 
-  if (!mutableInputTypeTextElement) {
-    mutableInputTypeTextElement = document.createElement('input');
-    mutableInputTypeTextElement.type = 'text';
-  }
-
-  try {
-    docFragment.appendChild(mutableInputTypeTextElement);
-    mutableInputTypeTextElement.setAttribute('type', 'password');
-  } catch(e) {
-    return false;
-  }
-  return true;
+  return isTypeAttributeMutable;
 }
 
 function blockFor(template, options) {
