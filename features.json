@@ -9,6 +9,6 @@
     "ember-debug-handlers": true,
     "ember-routing-routable-components": null,
     "ember-metal-ember-assign": null,
-    "ember-contextual-components": null
+    "ember-contextual-components": true
   }
 }
