@@ -7,23 +7,22 @@ import {
   BlockInvocationMorph,
   createMorph
 } from './morph';
-import { Frame, Block } from './environment';
+
+import { Frame, Block, ComponentDefinition, ComponentDefinitionOptions, AppendingComponent } from './environment';
 import DOMHelper from './dom';
-import { DynamicStatementSyntax, StaticStatementSyntax, StatementSyntax, EvaluatedParams } from './template'
-import { InternedString, intern } from 'htmlbars-util';
+import {
+  DynamicStatementSyntax,
+  StaticStatementSyntax,
+  StatementSyntax,
+  EvaluatedParams,
+  AttributeSyntax,
+  TemplateEvaluation,
+  Templates,
+  Hash,
+  ATTRIBUTE_SYNTAX
+} from './template'
+import { InternedString, Dict, intern, dict } from 'htmlbars-util';
 import { RootReference, ChainableReference, NotifiableReference, PushPullReference, Destroyable } from 'htmlbars-reference';
-
-export function renderStatement(statement: StatementSyntax, stack: ElementStack, frame: Frame) {
-  let refinedStatement = frame.syntax(statement);
-
-  if (refinedStatement.isStatic) {
-    (<StaticStatementSyntax>refinedStatement).evaluate(stack);
-    return;
-  }
-
-  let content = (<DynamicStatementSyntax>refinedStatement).evaluate(stack, frame);
-  content.append(stack);
-}
 
 interface FirstNode {
   firstNode(): Node;
@@ -79,7 +78,7 @@ export class ClassList extends PushPullReference {
 
 export class ElementBuffer {
   public nextSibling: Node;
-  protected dom: DOMHelper;
+  public dom: DOMHelper;
   public element: Element;
 
   constructor({ parentNode, nextSibling, dom }: ElementBufferOptions) {
@@ -132,7 +131,7 @@ export class ElementStack extends ElementBuffer {
   private elementStack: Element[];
   private nextSiblingStack: Node[];
   private morphs: Morph[];
-  public operations: DelegatingOperations;
+  public operations: Operations;
   public topLevelHandlers: Handler[] = [];
   public handlers: Handler[] = [];
   private classListStack: ClassList[] = [];
@@ -187,16 +186,8 @@ export class ElementStack extends ElementBuffer {
     this.handlers.push(handler);
   }
 
-  appendStatement(statement: StatementSyntax, frame: Frame) {
-    let refinedStatement = frame.syntax(statement);
-
-    if (refinedStatement.isStatic) {
-      refinedStatement.evaluate(this, frame);
-      return;
-    }
-
-    let content = refinedStatement.evaluate(this, frame);
-    content.append(this);
+  appendStatement(statement: StatementSyntax, frame: Frame, evaluation: TemplateEvaluation) {
+    this.operations.appendStatement(statement, frame, evaluation);
   }
 
   createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {
@@ -213,7 +204,7 @@ export class ElementStack extends ElementBuffer {
     return morph;
   }
 
-  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams): BlockInvocationMorph {
+  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams) {
     return this.createContentMorph(BlockInvocationMorph, { block, blockArguments }, frame);
   }
 
@@ -239,6 +230,17 @@ export class ElementStack extends ElementBuffer {
     return element;
   }
 
+  openComponent(tag: InternedString, definition: ComponentDefinition, { frame, templates, hash }: ComponentDefinitionOptions) {
+    let appending = definition.begin(this, { frame, templates, hash, tag });
+    this.operations.didOpenComponent(tag, appending);
+    appending.process();
+  }
+
+  setAttribute(name: InternedString, value: any) {
+    if (!(this.operations instanceof NestedOperations)) throw new Error("WUT");
+    this.dom.setAttribute(<HTMLElement & Element>this.element, name, value);
+  }
+
   addClass(ref: ChainableReference) {
     let classList = this.classList;
     if (!classList) {
@@ -252,8 +254,7 @@ export class ElementStack extends ElementBuffer {
   closeElement(): { element: Element, classList: ClassList } {
     let { element, classList } = this;
     this.operations.willCloseElement();
-    let child = this._popElement();
-    this.dom.insertBefore(this.element, child, this.nextSibling);
+    this.operations.closeElement();
     this.operations.didCloseElement();
     return { element, classList };
   }
@@ -275,6 +276,7 @@ export interface Handler {
   didAppendComment(value: Comment);
   willOpenElement(tag: string);
   didOpenElement(element: Element);
+  didOpenComponent(tag: string, component: AppendingComponent);
   willAppendHTML(html: string);
   didAppendHTML(bounds: Bounds);
   willCreateMorph(Type: typeof Morph, attrs: Object);
@@ -294,6 +296,7 @@ export class NullHandler implements Handler {
   didAppendComment(value: Comment) {}
   willOpenElement(tag: string) {}
   didOpenElement(element: Element) {}
+  didOpenComponent(tag: string, component: AppendingComponent) {}
   willAppendHTML(html: string) {}
   didAppendHTML(bounds: Bounds) {}
   willCreateMorph(Type: typeof Morph, attrs: Object) {}
@@ -313,13 +316,37 @@ function eachHandler(handlers: Handler[], callback: (handler: Handler) => void) 
   }
 }
 
-export class DelegatingOperations {
-  private handlers: Handler[];
-  protected stack: ElementStack;
+abstract class Operations {
+  abstract didCreateContentMorph<M extends ContentMorph, InitOptions>(morph: ContentMorph);
+  abstract didCreateMorph(morph: Morph);
+}
+
+export class DelegatingOperations extends Operations implements Handler {
+  protected handlers: Handler[];
+  public stack: ElementStack;
 
   constructor(stack: ElementStack, handlers: Handler[]) {
+    super();
     this.stack = stack;
     this.handlers = handlers;
+  }
+
+  appendStatement(statement: StatementSyntax, frame: Frame, evaluation: TemplateEvaluation) {
+    let refinedStatement = frame.syntax(statement);
+
+    if (refinedStatement.isStatic) {
+      refinedStatement.evaluate(this.stack, frame, evaluation);
+      return;
+    }
+
+    let content = refinedStatement.evaluate(this.stack, frame, evaluation);
+    if (content) content.append(this.stack);
+  }
+
+  closeElement() {
+    let stack = this.stack;
+    let child = stack._popElement();
+    stack.dom.insertBefore(stack.element, child, stack.nextSibling);
   }
 
   willAppendText(text: string) {
@@ -344,6 +371,10 @@ export class DelegatingOperations {
 
   didOpenElement(element: Element) {
     eachHandler(this.handlers, handler => handler.didOpenElement(element));
+  }
+
+  didOpenComponent(tag: string, component: AppendingComponent) {
+    eachHandler(this.handlers, handler => handler.didOpenComponent(tag, component));
   }
 
   willAppendHTML(html: string) {
@@ -440,6 +471,11 @@ export class TopLevelOperations extends DelegatingOperations {
     this.stack.operations = new NestedOperations(this.stack, this.stack.handlers);
   }
 
+  didOpenComponent(tag: string, component: AppendingComponent) {
+    super.didOpenComponent(tag, component);
+    this.stack.operations = new ComponentOperations(this.stack, component, this);
+  }
+
   didAppendHTML(bounds: Bounds) {
     super.didAppendHTML(bounds);
     this.newNode(bounds.firstNode());
@@ -462,9 +498,38 @@ export class TopLevelOperations extends DelegatingOperations {
   }
 }
 
+export class ComponentOperations extends DelegatingOperations {
+  private parent: Operations;
+  private appending: AppendingComponent;
+  private attrs: AttributeSyntax[] = [];
+
+  constructor(stack: ElementStack, appending: AppendingComponent, parent: DelegatingOperations) {
+    super(stack, [parent]);
+    this.stack = stack;
+    this.appending = appending;
+    this.parent = parent;
+  }
+
+  closeElement() {}
+
+  didOpenElement(element: Element) {
+    this.stack.operations = new NestedOperations(this.stack, this.stack.handlers);
+  }
+
+  didOpenComponent(tag: string, component: AppendingComponent) {
+    this.stack.operations = new ComponentOperations(this.stack, component, this);
+  }
+
+  didCloseElement() {
+    let { appending, parent, stack } = this;
+    this.appending.commit();
+    stack.operations = parent;
+  }
+}
+
 export class NestedOperations extends DelegatingOperations {
   private level: number;
-  private parent: DelegatingOperations;
+  private parent: Operations;
 
   constructor(stack: ElementStack, handlers: Handler[]) {
     super(stack, handlers);
@@ -478,6 +543,11 @@ export class NestedOperations extends DelegatingOperations {
 
   didCreateMorph(morph: Morph) {
     this.parent.didCreateMorph(morph);
+  }
+
+  didOpenComponent(tag: string, component: AppendingComponent) {
+    super.didOpenComponent(tag, component);
+    this.stack.operations = new ComponentOperations(this.stack, component, this);
   }
 
   didCloseElement() {

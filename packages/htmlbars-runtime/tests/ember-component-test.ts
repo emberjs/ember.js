@@ -22,11 +22,11 @@ import {
   glimmerComponentDefinition,
   equalsElement,
   regex,
-  classes
+  classes,
+  compile
  } from "./support";
 
 import { Dict, dict } from "htmlbars-util";
-import { compile } from "htmlbars-compiler";
 
 import { equalTokens } from "htmlbars-test-helpers";
 
@@ -298,7 +298,15 @@ QUnit.test('with ariaRole specified', function() {
 
   appendViewFor('{{aria-test id="aria-test" ariaRole="main"}}');
 
-  assertAppended('<div id="aria-test" role="main">Here!</div>');
+  assertAppended('<div id="aria-test" class="ember-view" role="main">Here!</div>');
+});
+
+QUnit.test('with ariaRole and class specified', function() {
+  let def = env.registerEmberishComponent('aria-test', EmberishComponent, 'Here!');
+
+  appendViewFor('{{aria-test id="aria-test" class="foo" ariaRole="main"}}');
+
+  assertAppended('<div id="aria-test" class="ember-view foo" role="main">Here!</div>');
 });
 
 QUnit.test('with ariaRole specified as an outer binding', function() {
@@ -306,7 +314,7 @@ QUnit.test('with ariaRole specified as an outer binding', function() {
 
   appendViewFor('{{aria-test id="aria-test" ariaRole=myRole}}', { myRole: 'main' });
 
-  assertAppended('<div id="aria-test" role="main">Here!</div>');
+  assertAppended('<div id="aria-test" class="ember-view" role="main">Here!</div>');
 });
 
 QUnit.test('glimmer component with role specified as an outer binding and shadowed', function() {
@@ -680,7 +688,7 @@ QUnit.test('parameterized hasBlock inverse', function() {
 
   appendViewFor('{{#check-inverse id="expect-no"}}{{/check-inverse}}  {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}');
 
-  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+  assertAppended('<div id="expect-no" class="ember-view">No</div>  <div id="expect-yes" class="ember-view">Yes</div>');
 });
 
 QUnit.test('parameterized hasBlock default', function() {
@@ -688,7 +696,7 @@ QUnit.test('parameterized hasBlock default', function() {
 
   appendViewFor('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}');
 
-  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+  assertAppended('<div id="expect-no" class="ember-view">No</div>  <div id="expect-yes" class="ember-view">Yes</div>');
 });
 
 QUnit.test('non-expression hasBlock', function() {
@@ -696,7 +704,7 @@ QUnit.test('non-expression hasBlock', function() {
 
   appendViewFor('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}');
 
-  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+  assertAppended('<div id="expect-no" class="ember-view">No</div>  <div id="expect-yes" class="ember-view">Yes</div>');
 });
 
 QUnit.test('parameterized hasBlockParams', function() {
@@ -704,7 +712,7 @@ QUnit.test('parameterized hasBlockParams', function() {
 
   appendViewFor('{{#check-params id="expect-no"}}{{/check-params}}  {{#check-params id="expect-yes" as |foo|}}{{/check-params}}');
 
-  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+  assertAppended('<div id="expect-no" class="ember-view">No</div>  <div id="expect-yes" class="ember-view">Yes</div>');
 });
 
 QUnit.test('non-expression hasBlockParams', function() {
@@ -712,7 +720,7 @@ QUnit.test('non-expression hasBlockParams', function() {
 
   appendViewFor('{{#check-params id="expect-no"}}{{/check-params}}  {{#check-params id="expect-yes" as |foo|}}{{/check-params}}');
 
-  assertAppended('<div id="expect-no">No</div>  <div id="expect-yes">Yes</div>');
+  assertAppended('<div id="expect-no" class="ember-view">No</div>  <div id="expect-yes" class="ember-view">Yes</div>');
 });
 
 // QUnit.test('components in template of a yielding component should have the proper parentView', function() {
@@ -1077,21 +1085,23 @@ styles.forEach(style => {
     equalsElement(view.element, style.tagName, { class: classes('inner-class new-outer ember-view'), id: regex(/^ember\d*$/) }, '');
   });
 
-  // QUnit.skip(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
-  //   registry.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));
+  QUnit.test(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
+    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`);
 
-  //   view = appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
+    appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
 
-  //   equal(view.$(style.tagName).attr('data-static'), 'outer', 'the outer attribute wins');
-  //   equal(view.$(style.tagName).attr('data-dynamic'), 'outer', 'the outer attribute wins');
+    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'outer', 'data-dynamic': 'outer'}, '');
 
-  //   let component = view.childViews[0]; // HAX
+    // equal(view.$(style.tagName).attr('data-static'), 'outer', 'the outer attribute wins');
+    // equal(view.$(style.tagName).attr('data-dynamic'), 'outer', 'the outer attribute wins');
 
-  //   run(() => component.set('internal', 'changed'));
+    // let component = view.childViews[0]; // HAX
 
-  //   equal(view.$(style.tagName).attr('data-static'), 'outer', 'the outer attribute wins');
-  //   equal(view.$(style.tagName).attr('data-dynamic'), 'outer', 'the outer attribute wins');
-  // });
+    // run(() => component.set('internal', 'changed'));
+
+    // equal(view.$(style.tagName).attr('data-static'), 'outer', 'the outer attribute wins');
+    // equal(view.$(style.tagName).attr('data-dynamic'), 'outer', 'the outer attribute wins');
+  });
 
   // // TODO: When un-skipping, fix this so it handles all styles
   // QUnit.skip('non-block recursive invocations with outer attributes replaced with a div shadows inner attributes', function() {

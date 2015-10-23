@@ -64,6 +64,7 @@ export function buildElement(tag, attributes, modifiers, children, loc) {
     type: "ElementNode",
     tag: tag || "",
     attributes: attributes || [],
+    blockParams: [],
     modifiers: modifiers || [],
     children: children || [],
     loc: buildLoc(loc)
@@ -203,9 +204,12 @@ function buildPosition(line, column) {
   };
 }
 
-function buildLoc(startLine, startColumn, endLine, endColumn, source) {
-  if (arguments.length === 1) {
-    var loc = startLine;
+function buildLoc(loc: { source: any, start: any, end: any }): { source: any, start: any, end: any };
+function buildLoc(startLine, startColumn, endLine, endColumn, source): { source: any, start: any, end: any };
+
+function buildLoc(...args) {
+  if (args.length === 1) {
+    var loc = args[0];
 
     if (typeof loc === 'object') {
       return {
@@ -217,11 +221,12 @@ function buildLoc(startLine, startColumn, endLine, endColumn, source) {
       return null;
     }
   } else {
+    let [ startLine, startColumn, endLine, endColumn, source ] = args;
     return {
       source: buildSource(source),
       start: buildPosition(startLine, startColumn),
       end: buildPosition(endLine, endColumn)
-    }; 
+    };
   }
 }
 

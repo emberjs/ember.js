@@ -1,6 +1,6 @@
 import { voidMap } from 'htmlbars-util';
 import b from "../builders";
-import { appendChild, parseComponentBlockParams, unwrapMustache } from "../utils";
+import { appendChild, parseComponentBlockParams, parseElementBlockParams, unwrapMustache } from "../utils";
 
 export default {
   reset: function() {
@@ -65,7 +65,7 @@ export default {
 
     let tag = this.currentNode;
     tag.loc = b.loc(tagLine, tagColumn, line, column);
-    
+
     if (tag.type === 'StartTag') {
       this.finishStartTag();
 
@@ -98,6 +98,7 @@ export default {
     element.loc.end.column = this.tokenizer.column;
 
     if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
+      parseElementBlockParams(element);
       appendChild(parent, element);
     } else {
       let program = b.program(element.children);
