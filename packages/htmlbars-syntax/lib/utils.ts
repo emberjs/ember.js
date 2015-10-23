@@ -1,5 +1,5 @@
 import { indexOfArray } from "htmlbars-util";
-// Regex to validate the identifier for block parameters. 
+// Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
 
 var ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
@@ -9,6 +9,16 @@ var ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
 // removes the corresponding attributes from the element.
 
 export function parseComponentBlockParams(element, program) {
+  let params = parseBlockParams(element);
+  if (params) program.blockParams = params;
+}
+
+export function parseElementBlockParams(element) {
+  let params = parseBlockParams(element);
+  if (params) element.blockParams = params;
+}
+
+function parseBlockParams(element) {
   var l = element.attributes.length;
   var attrNames = [];
 
@@ -41,7 +51,7 @@ export function parseComponentBlockParams(element, program) {
     }
 
     element.attributes = element.attributes.slice(0, asIndex);
-    program.blockParams = params;
+    return params;
   }
 }
 

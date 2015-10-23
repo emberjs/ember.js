@@ -4,11 +4,15 @@ import Template, {
   Component as ComponentSyntax,
   Unknown,
   Inline,
+  Hash,
   EvaluatedHash,
   ParamsAndHash,
-  EvaluatedParams
+  EvaluatedParams,
+  TemplateEvaluation,
+  Templates
 } from "./template";
 
+import { ContentMorph } from './morph';
 import { ElementStack } from './builder';
 
 import {
@@ -161,9 +165,9 @@ export abstract class Environment {
   private dom: DOMHelper;
   private meta: MetaLookup;
   private createdComponents: Component[] = [];
-  private createdDefinitions: ComponentDefinition[] = [];
+  private createdHooks: ComponentDefinition[] = [];
   private updatedComponents: Component[] = [];
-  private updatedDefinitions: ComponentDefinition[] = [];
+  private updatedHooks: ComponentDefinition[] = [];
 
   constructor(dom: DOMHelper, meta: MetaLookup) {
     this.dom = dom;
@@ -199,38 +203,38 @@ export abstract class Environment {
 
   begin() {
     this.createdComponents = [];
-    this.createdDefinitions = [];
+    this.createdHooks = [];
     this.updatedComponents = [];
-    this.updatedDefinitions = [];
+    this.updatedHooks = [];
   }
 
-  didCreate(component: Component, definition: ComponentDefinition) {
+  didCreate(component: Component, hooks: ComponentHooks) {
     this.createdComponents.push(component);
-    this.createdDefinitions.push(definition);
+    this.createdHooks.push(hooks);
   }
 
-  didUpdate(component: Component, definition: ComponentDefinition) {
+  didUpdate(component: Component, hooks: ComponentHooks) {
     this.updatedComponents.push(component);
-    this.updatedDefinitions.push(definition);
+    this.updatedHooks.push(hooks);
   }
 
   commit() {
     this.createdComponents.forEach((component, i) => {
-      let definition = this.createdDefinitions[i];
-      definition.hooks.didInsertElement(component);
-      definition.hooks.didRender(component);
+      let hooks = this.createdHooks[i];
+      hooks.didInsertElement(component);
+      hooks.didRender(component);
     });
 
     this.updatedComponents.forEach((component, i) => {
-      let definition = this.updatedDefinitions[i];
-      definition.hooks.didUpdate(component);
-      definition.hooks.didRender(component);
+      let hooks = this.updatedHooks[i];
+      hooks.didUpdate(component);
+      hooks.didRender(component);
     });
   }
 
   abstract hasHelper(scope: Scope, helperName: string[]): boolean;
   abstract lookupHelper(scope: Scope, helperName: string[]): ConstReference<Helper>;
-  abstract getComponentDefinition(scope: Scope, tagName: string[], syntax: ComponentSyntax): ComponentDefinition;
+  abstract getComponentDefinition(scope: Scope, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
 }
 
 class YieldSyntax implements StatementSyntax {
@@ -257,6 +261,9 @@ class YieldSyntax implements StatementSyntax {
     }
 
     let block = frame.scope().getBlock(yieldTo || LITERAL('default'));
+
+    if (!block) throw new Error(`The block ${yieldTo} wasn't available to be yielded to.`);
+
     return stack.createBlockMorph(block, frame, params);
   }
 }
@@ -297,15 +304,26 @@ export interface ComponentHooks {
   didUpdate(Component);
 }
 
+export interface ComponentDefinitionOptions {
+  frame: Frame;
+  templates: Templates;
+  hash: EvaluatedHash;
+  tag: InternedString;
+}
+
 export interface ComponentDefinition {
-  class: ComponentClass;
+  ComponentClass: ComponentClass;
   layout: Template;
-  rootElement: (component: any, element: Element) => void;
-  rootElementAttrs: (component: any, outer: EvaluatedHash, attrs: AttributeSyntax[], layoutFrame: Frame, contentFrame: Frame) => AttributeSyntax[];
-  creationObjectForAttrs: (Component: ComponentClass, attrs: Object) => Object;
-  updateObjectFromAttrs: (component: any, attrs: Object) => void;
-  setupLayoutScope: (component: any, layout: Template, yielded: Template) => void;
-  allowedForSyntax: (component: any, syntax: StatementSyntax) => boolean;
+  begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions): AppendingComponent;
+  hooks: ComponentHooks;
+}
+
+export interface AppendingComponent {
+  ComponentClass: ComponentClass;
+  layout: Template;
+  process();
+  update(component: Component, attrs: EvaluatedHash);
+  commit();
   hooks: ComponentHooks;
 }
 
@@ -354,7 +372,7 @@ export class Frame {
     return this.env.lookupHelper(this._scope, helperName);
   }
 
-  getComponentDefinition(tagName: string[], syntax: ComponentSyntax): ComponentDefinition {
+  getComponentDefinition(tagName: string[], syntax: StatementSyntax): ComponentDefinition {
     return this.env.getComponentDefinition(this._scope, tagName, syntax);
   }
 
@@ -362,12 +380,12 @@ export class Frame {
     this.env.begin();
   }
 
-  didCreate(component: Component, definition: ComponentDefinition) {
-    this.env.didCreate(component, definition);
+  didCreate(component: Component, hooks: ComponentHooks) {
+    this.env.didCreate(component, hooks);
   }
 
-  didUpdate(component: Component, definition: ComponentDefinition) {
-    this.env.didUpdate(component, definition);
+  didUpdate(component: Component, hooks: ComponentHooks) {
+    this.env.didUpdate(component, hooks);
   }
 
   commit() {

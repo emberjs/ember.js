@@ -13,6 +13,9 @@ class Template {
   arity: number = null;
 }
 
+type RawExpression = string | number | boolean;
+type Expression = RawExpression | RawExpression[];
+
 class JavaScriptCompiler {
   static process(opcodes): Template[] {
     let compiler = new JavaScriptCompiler(opcodes);
@@ -22,7 +25,7 @@ class JavaScriptCompiler {
 
   private opcodes: any[];
   private output: any[];
-  private expressions: any[];
+  private expressions: Expression[];
   private templates: any[];
   private locals: string[] = null;
 
@@ -100,8 +103,8 @@ class JavaScriptCompiler {
     this.push('component', tag, attrs, template);
   }
 
-  openElement(tag: string) {
-    this.push('openElement', tag);
+  openElement(tag: string, blockParams: string[]) {
+    this.push('openElement', tag, blockParams);
   }
 
   closeElement() {
@@ -174,7 +177,7 @@ class JavaScriptCompiler {
 
   /// Utilities
 
-  push(name: string, ...args: any[]) {
+  push(name: string, ...args: Expression[]) {
     while (args[args.length - 1] === null) {
       args.pop();
     }
@@ -182,15 +185,16 @@ class JavaScriptCompiler {
     this.output.push([name, ...args]);
   }
 
-  pushExpression(name: string, ...args: any[]) {
-    this.expressions.push([name, ...args]);
+  pushExpression(name: string, ...args: Expression[]) {
+    let expr = [name, ...args];
+    this.expressions.push(<any>[name, ...args]);
   }
 
   pushValue(val: any) {
     this.expressions.push(val);
   }
 
-  popExpression() {
+  popExpression(): Expression {
     assert(this.expressions.length, "No expression found on stack");
     return this.expressions.pop();
   }
@@ -246,7 +250,7 @@ export default class TemplateCompiler {
   }
 
   openElement([action]) {
-    this.opcode('openElement', action, action.tag);
+    this.opcode('openElement', action, action.tag, action.blockParams);
 
     action.attributes.forEach(attr => this.attribute([attr]));
     action.modifiers.forEach(modifier => this.modifier([modifier]));
@@ -254,6 +258,19 @@ export default class TemplateCompiler {
 
   closeElement() {
     this.opcode('closeElement', null);
+  }
+
+  component([action]) {
+    let { attributes, tag } = action;
+
+    attributes.forEach(({ name, value }) => {
+      this.prepareAttributeValue(value);
+      this.opcode('pushLiteral', name, name);
+    });
+
+    this.opcode('prepareObject', null, attributes.length);
+
+    this.opcode('component', action, tag, this.templateIds.pop());
   }
 
   attribute([action]) {
@@ -295,19 +312,6 @@ export default class TemplateCompiler {
     let templateId = this.templateIds.pop();
     let inverseId = action.inverse === null ? null : this.templateIds.pop();
     this.opcode('block', action, action.path.parts, templateId, inverseId);
-  }
-
-  component([action]) {
-    let { attributes, tag } = action;
-
-    attributes.forEach(({ name, value }) => {
-      this.prepareAttributeValue(value);
-      this.opcode('pushLiteral', name, name);
-    });
-
-    this.opcode('prepareObject', null, attributes.length);
-
-    this.opcode('component', action, tag, this.templateIds.pop());
   }
 
   /// Internal actions, not found in the original processed actions

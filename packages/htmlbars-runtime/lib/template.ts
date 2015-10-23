@@ -1,4 +1,4 @@
-import { TopLevelOperations, Handler, renderStatement } from './builder';
+import { TopLevelOperations, Handler } from './builder';
 import { RenderResult } from './render';
 import { Frame } from './environment';
 import {
@@ -40,8 +40,8 @@ const EMPTY_ARRAY = Object.freeze([]);
 
 interface TemplateOptions {
   meta?: Object;
-  root: Template[];
-  position: number;
+  root?: Template[];
+  position?: number;
   locals?: InternedString[];
   statements?: StatementSyntax[];
   spec?: any;
@@ -101,13 +101,13 @@ export default class Template {
 
   constructor({ meta, root, position, locals, statements, spec, isEmpty }: TemplateOptions) {
     this.meta = meta || {};
-    this.root = root;
-    this.position = position;
+    this.root = root || null;
+    this.position = position || null;
     this.arity = locals ? locals.length : 0;
     this.statements = statements || EMPTY_ARRAY;
     this.locals = locals || EMPTY_ARRAY;
     this.spec = spec || null;
-    this.isEmpty = isEmpty || false;
+    this.isEmpty = isEmpty === true ? isEmpty : statements.length === 0;
     Object.seal(this);
   }
 
@@ -129,13 +129,17 @@ export default class Template {
   }
 
   private evaluateWithStack(stack: ElementStack, frame: Frame) {
-    this.statements.forEach(statement => stack.appendStatement(statement, frame));
+    TemplateEvaluation.evaluate(this, stack, frame);
 
     let morphs = stack.morphList();
     let bounds = stack.bounds();
     let scope = frame.scope();
 
     return new RenderResult({ morphs, scope, bounds, template: this });
+  }
+
+  process(stack: ElementStack, frame: Frame) {
+    TemplateEvaluation.evaluate(this, stack, frame);
   }
 
   evaluate(morph: ContentMorph, options: { nextSibling?: Node, handler?: Handler }=null): RenderResult {
@@ -160,6 +164,64 @@ export default class Template {
     let rootMorph = new RootMorph(options.appendTo, frame);
 
     return this.evaluate(rootMorph, null);
+  }
+}
+
+export class TemplateEvaluation {
+  static evaluate(template: Template, stack: ElementStack, frame: Frame) {
+    let evaluation = new TemplateEvaluation(template);
+    evaluation.evaluate(stack, frame);
+  }
+
+  private template: Template;
+  private position: number = 0;
+
+  constructor(template: Template) {
+    this.template = template;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame) {
+    let statements = this.template.statements;
+    for (let l=statements.length; this.position<l;) {
+      let i = this.position++;
+      stack.appendStatement(statements[i], frame, this);
+    }
+  }
+
+  takeHash(): AttributeSyntax[] {
+    let syntax = [];
+
+    let { template: { statements }, position } = this;
+    let element = statements[position];
+
+    while (true) {
+      if (!element[ATTRIBUTE_SYNTAX]) break;
+      syntax.push(element);
+      element = statements[++position];
+    }
+
+    this.position = position;
+    return syntax;
+  }
+
+  takeBlock(): StatementSyntax[] {
+    let syntax = [];
+    let nesting = 1;
+
+    let { template: { statements }, position } = this;
+    let element = statements[position];
+
+    while (true) {
+      if (element.type === 'open-element') nesting++;
+      else if (element.type === 'close-element') nesting--;
+
+      if (nesting === 0) break;
+      syntax.push(element);
+      element = statements[++position];
+    }
+
+    this.position = position;
+    return syntax;
   }
 }
 
@@ -203,17 +265,17 @@ export interface ExpressionSyntax {
 }
 
 export interface StatementSyntax {
-  evaluate(stack: ElementStack, frame?): any;
+  evaluate(stack: ElementStack, frame?, evaluation?): any;
   type: string;
   isStatic: boolean;
 }
 
 export interface StaticStatementSyntax extends StatementSyntax, PrettyPrintable {
-  evaluate(stack: ElementStack): void;
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation): void;
 }
 
 export interface DynamicStatementSyntax extends StatementSyntax {
-  evaluate(stack: ElementStack, frame: Frame): Morph;
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation): Morph;
 }
 
 abstract class StaticExpression {
@@ -421,16 +483,20 @@ export class Modifier implements StatementSyntax {
 }
 */
 
+export const ATTRIBUTE_SYNTAX = "e1185d30-7cac-4b12-b26a-35327d905d92";
+
 export interface AttributeSyntax extends StatementSyntax {
+  "e1185d30-7cac-4b12-b26a-35327d905d92": boolean;
   name: string;
   namespace?: string;
-
+  valueSyntax(): ExpressionSyntax;
   asEvaluated(frame: Frame): AttributeSyntax;
 }
 
 type DynamicPropSexp = [string, string, ExpressionSexp, string];
 
 export class DynamicProp extends DynamicExpression implements AttributeSyntax, DynamicStatementSyntax {
+  "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "dynamic-prop";
 
   static fromSpec(sexp: DynamicPropSexp): DynamicProp {
@@ -447,7 +513,7 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
   }
 
   public name: string;
-  private value: ExpressionSyntax;
+  public value: ExpressionSyntax;
 
   constructor(options: { name: string, value: ExpressionSyntax }) {
     super();
@@ -461,7 +527,11 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
-  asEvaluated(frame: Frame): AttributeSyntax {
+  valueSyntax(): ExpressionSyntax {
+    return this.value;
+  }
+
+  asEvaluated(frame: Frame): DynamicProp {
     let { name, value: _value } = this;
     let value = new EvaluatedRef(_value.evaluate(frame));
     return new DynamicProp({ name, value });
@@ -476,6 +546,7 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
 type DynamicAttrSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
 
 export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
+  "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "dynamic-attr";
 
   static fromSpec(sexp: DynamicAttrSexp): DynamicAttr {
@@ -515,7 +586,11 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
     }
   }
 
-  asEvaluated(frame: Frame): DynamicAttr {
+  valueSyntax(): ExpressionSyntax {
+    return this.value;
+  }
+
+  asEvaluated(frame: Frame): DynamicProp {
     let { name, value: _value, namespace } = this;
     let value = new EvaluatedRef(_value.evaluate(frame));
     return new DynamicAttr({ name, value, namespace });
@@ -531,6 +606,7 @@ export class DynamicAttr extends DynamicExpression implements AttributeSyntax {
 type AddClassSexpr = [InternedString, ExpressionSexp];
 
 export class AddClass extends StaticExpression implements AttributeSyntax, PrettyPrintable {
+  "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "add-class";
 
   static fromSpec(node: AddClassSexpr): AddClass {
@@ -555,12 +631,17 @@ export class AddClass extends StaticExpression implements AttributeSyntax, Prett
     return new PrettyPrint('attr', 'attr', ['class', this.value.prettyPrint()]);
   }
 
-  asEvaluated(frame: Frame): AddClass {
-    let value = new EvaluatedRef(this.value.evaluate(frame));
+  valueSyntax(): ExpressionSyntax {
+    return this.value;
+  }
+
+  asEvaluated(frame: Frame): DynamicProp {
+    let { value: _value } = this;
+    let value = new EvaluatedRef(_value.evaluate(frame));
     return new AddClass({ value });
   }
 
-  evaluate(stack: ElementStack, frame: Frame) {
+  evaluate(stack: ElementStack, frame: Frame): any {
     stack.addClass(this.value.evaluate(frame));
   }
 }
@@ -604,7 +685,7 @@ export class Component extends DynamicExpression implements StatementSyntax {
     return new PrettyPrint('block', 'component', [path.prettyPrint()], hash.prettyPrint(), templates.prettyPrint());
   }
 
-  evaluate(stack: ElementStack, frame: Frame): Morph {
+  evaluate(stack: ElementStack, frame: Frame) {
     let { path: ref, hash, templates } = this;
 
     let path = ref.path();
@@ -665,6 +746,21 @@ export class CloseElement extends DynamicExpression implements DynamicStatementS
 
 type FallbackOptions = { path: InternedString, attrs: Hash, contents: Template };
 
+export function hashToAttrList(hash: Hash): AttributeSyntax[] {
+  let attrList = [];
+
+  let { keys, values } = hash;
+
+  values.forEach((val, i) => {
+    let key = keys[i];
+    if (key === 'class') attrList.push(AddClass.build(val));
+    if (val.isStatic) attrList.push(StaticAttr.build(key, (<Value>val).inner()));
+    else attrList.push(DynamicAttr.build(key, val));
+  });
+
+  return attrList;
+}
+
 class FallbackMorph extends ContentMorph {
   static hasStaticElement = true;
 
@@ -676,19 +772,7 @@ class FallbackMorph extends ContentMorph {
   init({ path, attrs, contents }: FallbackOptions) {
     this.tag = path;
     this.contents = contents;
-
-    let attrList = [];
-
-    let { keys, values } = attrs;
-
-    values.forEach((val, i) => {
-      let key = keys[i];
-      if (key === 'class') attrList.push(AddClass.build(val));
-      if (val.isStatic) attrList.push(StaticAttr.build(key, val.evaluate(this.frame).value()));
-      else attrList.push(DynamicAttr.build(key, val));
-    });
-
-    this.attrs = attrList;
+    this.attrs = hashToAttrList(attrs);
   }
 
   firstNode() {
@@ -774,24 +858,61 @@ export class Comment extends StaticExpression implements StaticStatementSyntax {
   }
 }
 
-type OpenElementSexp = [string, string];
+type OpenElementSexp = [InternedString, InternedString, InternedString[]];
 
 export class OpenElement extends StaticExpression implements StaticStatementSyntax {
   type = "open-element";
 
   static fromSpec(sexp: OpenElementSexp): OpenElement {
-    let [, tag] = sexp;
+    let [, tag, blockParams] = sexp;
 
-    return new OpenElement({ tag });
+    return new OpenElement({ tag, blockParams });
   }
 
-  static build(tag): OpenElement {
-    return new this({ tag });
+  static build(tag, blockParams): OpenElement {
+    return new this({ tag, blockParams });
   }
 
-  private tag: string;
+  public tag: InternedString;
+  public blockParams: InternedString[]
 
-  constructor(options: { tag: string }) {
+  constructor(options: { tag: InternedString, blockParams: InternedString[] }) {
+    super();
+    this.tag = options.tag;
+    this.blockParams = options.blockParams;
+  }
+
+  prettyPrint() {
+    let params = new PrettyPrint('block-params', 'as', this.blockParams);
+    return new PrettyPrint('element', 'open-element', [this.tag, params]);
+  }
+
+  toIdentity(): OpenIdentityElement {
+    let { tag, blockParams } = this;
+    return new OpenIdentityElement({ tag, blockParams });
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+    let def = frame.getComponentDefinition([this.tag], this);
+    if (def) {
+      let hashSyntax = evaluation.takeHash()
+      let hash = attrListToHash(hashSyntax).evaluate(frame);
+      let template = new Template({ statements: evaluation.takeBlock(), locals: this.blockParams });
+      let templates = Templates.build(template, null, Template.fromStatements(hashSyntax));
+
+      stack.openComponent(this.tag, def, { frame, templates, hash });
+    } else {
+      stack.openElement(this.tag);
+    }
+  }
+}
+
+export class OpenIdentityElement extends StaticExpression implements StaticStatementSyntax {
+  type = "open-identity-element";
+
+  private tag: InternedString;
+
+  constructor(options: { tag: InternedString, blockParams: InternedString[] }) {
     super();
     this.tag = options.tag;
   }
@@ -800,9 +921,18 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
     return new PrettyPrint('element', 'open-element', [this.tag]);
   }
 
-  evaluate(stack: ElementStack) {
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
     stack.openElement(this.tag);
   }
+}
+
+export function attrListToHash(attrs: AttributeSyntax[]): Hash {
+  let d = attrs.reduce((d, attr) => {
+    d[attr.name] = attr.valueSyntax();
+    return d;
+  }, dict<ExpressionSyntax>());
+
+  return Hash.build(d);
 }
 
 interface CloseElementOptions {
@@ -852,6 +982,7 @@ class NoopMorph extends CloseElementMorph {
 type StaticAttrSexp = [InternedString, InternedString, InternedString, InternedString];
 
 export class StaticAttr extends StaticExpression implements AttributeSyntax, StaticStatementSyntax {
+  "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "static-attr";
 
   static fromSpec(node: StaticAttrSexp): StaticAttr {
@@ -860,7 +991,7 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
     return new StaticAttr({ name, value, namespace });
   }
 
-  static build(name, value, namespace=null): StaticAttr {
+  static build(name: string, value: string, namespace: string=null): StaticAttr {
     return new this({ name: intern(name), value: intern(value), namespace: namespace && intern(namespace) });
   }
 
@@ -885,7 +1016,11 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
     }
   }
 
-  asEvaluated(): AttributeSyntax {
+  valueSyntax(): ExpressionSyntax {
+    return Value.build(this.value);
+  }
+
+  asEvaluated(frame: Frame): StaticAttr {
     return this;
   }
 
@@ -1384,6 +1519,11 @@ export class EvaluatedHash extends PushPullReference {
     this.keys = hash.keys;
   }
 
+  forEach(callback: (key: InternedString, value: ChainableReference) => void) {
+    let values = this.values;
+    this.keys.forEach((key, i) => callback(key, this.values[i]));
+  }
+
   at(key: InternedString): ChainableReference {
     let ret: ChainableReference = null;
     this.keys.some((k, i) => {
@@ -1409,20 +1549,23 @@ export class Templates implements ExpressionSyntax {
     return new Templates({
       template: templateId === null ? null : children[templateId],
       inverse: inverseId === null ? null : children[inverseId],
+      attributes: null
     });
   }
 
-  static build(template: Template, inverse: Template): Templates {
-    return new this({ template, inverse });
+  static build(template: Template, inverse: Template=null, attributes: Template=null): Templates {
+    return new this({ template, inverse, attributes });
   }
 
   public isStatic = false;
   public default: Template;
   public inverse: Template;
+  public attributes: Template;
 
-  constructor(options: { template: Template, inverse: Template }) {
+  constructor(options: { template: Template, inverse: Template, attributes: Template }) {
     this.default = options.template;
     this.inverse = options.inverse;
+    this.attributes = options.attributes;
   }
 
   prettyPrint(): Dict<number> {
@@ -1440,11 +1583,18 @@ export class Templates implements ExpressionSyntax {
 }
 
 export let builders = {
-  value: Value.build.bind(Value),
-  hash: Hash.build.bind(Hash),
-  openElement: OpenElement.build.bind(OpenElement),
-  closeElement: CloseElement.build.bind(CloseElement)
+  value: bind(Value.build, Value),
+  hash: bind(Hash.build, Hash),
+  openElement: bind(OpenElement.build, OpenElement),
+  closeElement: bind(CloseElement.build, CloseElement),
+  staticAttr: bind(StaticAttr.build, StaticAttr),
+  dynamicAttr: bind(DynamicAttr.build, DynamicAttr),
+  addClass: bind(AddClass.build, AddClass)
 };
+
+function bind<T extends Function>(f: T, self: any): T {
+  return f.bind(self);
+}
 
 export class TemplateBuilder {
   private statements: any[];

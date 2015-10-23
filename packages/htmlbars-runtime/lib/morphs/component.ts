@@ -1,7 +1,7 @@
 import { TemplateMorph, ContentMorph } from '../morph';
 import { ElementStack, DelegatingOperations, NestedOperations, NullHandler } from '../builder';
 import { ComponentDefinition, ComponentClass, Component, Block, Scope, Frame } from '../environment';
-import Template, { Templates, Hash, EvaluatedHash, StaticAttr, DynamicAttr, Value, AttributeSyntax } from '../template';
+import Template, { Templates, Hash, EvaluatedHash, StaticAttr, DynamicAttr, Value, AttributeSyntax, hashToAttrList } from '../template';
 import { LITERAL, InternedString } from 'htmlbars-util';
 import { isWhitespace } from '../dom';
 import { RootReference } from 'htmlbars-reference';
@@ -28,23 +28,12 @@ export default class ComponentMorph extends TemplateMorph {
   private definition: ComponentDefinition;
 
   init({ definition, attrs: hash, templates }: ComponentOptions) {
-    this.template = definition.layout;
+    this.template = definition.layout.clone();
     this.klass = definition['class'];
     this.innerTemplates = templates;
     this.definition = definition;
 
-    let attrs = [];
-
-    let { keys, values } = hash;
-
-    values.forEach((expr, i) => {
-      let key = keys[i];
-      let val = <Value>expr;
-      if (val.isStatic) attrs.push(StaticAttr.build(key, val.inner()));
-      else attrs.push(DynamicAttr.build(key, val));
-    });
-
-    this.attrSyntax = attrs;
+    this.attrSyntax = hashToAttrList(hash);
     this.attrs = hash.evaluate(this.frame);
   }
 
@@ -69,8 +58,8 @@ export default class ComponentMorph extends TemplateMorph {
 
     definition.setupLayoutScope(layoutScope, template, innerTemplates.default);
 
-    let attrSyntax = definition.rootElementAttrs(component, attrs, this.attrSyntax, layoutFrame, invokeFrame);
-    let handler = new ComponentHandler(layoutFrame, attrSyntax);
+    definition.mergeAttrs(component, template, this.attrSyntax, layoutFrame, invokeFrame);
+    let handler = new ComponentHandler(layoutFrame, null);
 
     this.willAppend(stack);
     definition.hooks.didReceiveAttrs(component);
