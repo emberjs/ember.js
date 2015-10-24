@@ -1,5 +1,6 @@
 import EmberObject, {
-  HTMLBarsObjectFactory as EmberObjectFactory
+  HTMLBarsObjectFactory as EmberObjectFactory,
+  alias
 } from "htmlbars-object";
 
 import {
@@ -1355,17 +1356,38 @@ QUnit.test('block with properties on attrs', function() {
 //     runAppend(view);
 //   });
 
-//   QUnit.test('computed property alias on attrs', function() {
-//     registry.register('template:components/computed-alias', compile('<computed-alias>{{otherProp}}</computed-alias>'));
+QUnit.test('computed property alias on a static attr', function() {
+  let ComputedAlias = <any>EmberishGlimmerComponent.extend({
+    otherProp: alias('attrs.someProp')
+  });
 
-//     registry.register('component:computed-alias', GlimmerComponent.extend({
-//       otherProp: alias('attrs.someProp')
-//     }));
+  env.registerEmberishGlimmerComponent('computed-alias', ComputedAlias, '<computed-alias>{{otherProp}}</computed-alias>');
 
-//     view = appendViewFor('<computed-alias someProp="value"></computed-alias>');
+  appendViewFor('<computed-alias someProp="value"></computed-alias>', {
+    someProp: 'value'
+  });
 
-//     equal(view.$().text(), 'value');
-//   });
+  assertEmberishElement('computed-alias', { someProp: 'value' }, 'value');
+});
+
+QUnit.test('computed property alias on a dynamic attr', function() {
+  let ComputedAlias = <any>EmberishGlimmerComponent.extend({
+    otherProp: alias('attrs.someProp')
+  });
+
+  env.registerEmberishGlimmerComponent('computed-alias', ComputedAlias, '<computed-alias>{{otherProp}}</computed-alias>');
+
+  appendViewFor('<computed-alias someProp="{{someProp}}"></computed-alias>', {
+    someProp: 'value'
+  });
+
+  assertEmberishElement('computed-alias', { someProp: 'value' }, 'value');
+
+  set(view, 'someProp', 'other value');
+  rerender();
+
+  assertEmberishElement('computed-alias', { someProp: 'other value' }, 'other value');
+});
 
 //   QUnit.test('parameterized hasBlock default', function() {
 //     registry.register('template:components/check-block', compile('<check-block>{{#if (hasBlock)}}Yes{{else}}No{{/if}}</check-block>'));
@@ -1402,36 +1424,4 @@ QUnit.test('block with properties on attrs', function() {
 //     equal(view.$('#expect-no').text(), 'No');
 //     equal(view.$('#expect-yes').text(), 'Yes');
 //   });
-// }
-
-// function regex(r) {
-//   return {
-//     match(v) {
-//       return r.test(v);
-//     }
-//   };
-// }
-
-// function equalsElement(element, tagName, attributes, content) {
-//   QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
-
-//   let expectedCount = 0;
-//   for (let prop in attributes) {
-//     expectedCount++;
-//     let expected = attributes[prop];
-//     if (typeof expected === 'string') {
-//       QUnit.push(element.getAttribute(prop) === attributes[prop], element.getAttribute(prop), attributes[prop], `The element should have ${prop}=${attributes[prop]}`);
-//     } else {
-//       QUnit.push(attributes[prop].match(element.getAttribute(prop)), element.getAttribute(prop), attributes[prop], `The element should have ${prop}=${attributes[prop]}`);
-//     }
-//   }
-
-//   let actualAttributes = {};
-//   for (let i = 0, l = element.attributes.length; i < l; i++) {
-//     actualAttributes[element.attributes[i].name] = element.attributes[i].value;
-//   }
-
-//   QUnit.push(element.attributes.length === expectedCount, actualAttributes, attributes, `Expected ${expectedCount} attributes`);
-
-//   QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
 // }
