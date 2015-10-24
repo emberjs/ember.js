@@ -52,12 +52,36 @@ export function compile(template: string) {
   return rawCompile(template, { disableComponentGeneration: true });
 }
 
-export class TestEnvironment extends Environment {
+interface TestScopeOptions {
+  component: Component;
+}
+
+class TestScope extends Scope<TestScopeOptions> {
+  private hostOptions: TestScopeOptions = null;
+
+  child(localNames: InternedString[]): TestScope {
+    return new TestScope(this, this.meta, localNames);
+  }
+
+  bindHostOptions(options: TestScopeOptions) {
+    this.hostOptions = options;
+  }
+
+  getHostOptions(): TestScopeOptions {
+    return this.hostOptions || (this.parent && this.parent.getHostOptions());
+  }
+}
+
+export class TestEnvironment extends Environment<TestScopeOptions> {
   private helpers = {};
   private components = dict<ComponentDefinition>();
 
   constructor(doc: HTMLDocument=document) {
     super(new DOMHelper(doc), Meta);
+  }
+
+  createRootScope(): TestScope {
+    return new TestScope(null, this.meta, []);
   }
 
   registerHelper(name, helper) {
@@ -140,7 +164,7 @@ export class TestEnvironment extends Environment {
     return helperName.length === 1 && helperName[0] in this.helpers;
   }
 
-  lookupHelper(scope: Scope, helperParts: string[]) {
+  lookupHelper(scope: TestScope, helperParts: string[]) {
     let helperName = helperParts[0];
 
     if (helperName === 'hasBlock') return new ConstReference(hasBlock(scope));
@@ -157,13 +181,13 @@ export class TestEnvironment extends Environment {
   }
 }
 
-function hasBlock(scope: Scope) {
+function hasBlock(scope: TestScope) {
   return function([name]: [InternedString]) {
     return !!scope.getBlock(name || LITERAL('default'));
   }
 }
 
-function hasBlockParams(scope: Scope) {
+function hasBlockParams(scope: TestScope) {
   return function([name]: [InternedString]) {
     let block = scope.getBlock(name || LITERAL('default'));
     if (!block) return false;
@@ -319,23 +343,32 @@ abstract class TestAppendingComponent implements AppendingComponent {
   process() {
     let { stack, frame, templates, hash } = this;
 
+    let parentHostOptions = <TestScopeOptions>frame.scope().getHostOptions();
+
     let layoutFrame = frame.child();
     let layoutScope = layoutFrame.resetScope();
+    let blockScope;
 
-    if (templates && templates.default) {
-      let block = new Block(templates.default, frame);
-      layoutScope.bindBlock(LITERAL('default'), block);
-    }
+    if (templates) {
+      let blockFrame = frame.child();
+      blockScope = blockFrame.childScope();
 
-    if (templates && templates.inverse) {
-      let block = new Block(templates.inverse, frame);
-      layoutScope.bindBlock(LITERAL('inverse'), block);
+      if (templates.default) {
+        let block = new Block(templates.default, blockFrame);
+        layoutScope.bindBlock(LITERAL('default'), block);
+      }
+
+      if (templates.inverse) {
+        let block = new Block(templates.inverse, blockFrame);
+        layoutScope.bindBlock(LITERAL('inverse'), block);
+      }
     }
 
     let attrs = hash.value();
-    let component = this.createComponent(attrs);
-    layoutScope.bindSelf(component);
-    this.setupLayoutScope(layoutFrame);
+    let component = this.createComponent(attrs, parentHostOptions && parentHostOptions.component);
+
+    if (blockScope) blockScope.bindHostOptions({ component });
+    this.setupLayoutScope(layoutFrame, component);
 
     let layout = this.layoutWithAttrs(frame);
 
@@ -347,8 +380,11 @@ abstract class TestAppendingComponent implements AppendingComponent {
     return this.layout;
   }
 
-  protected setupLayoutScope(layoutFrame: Frame) {
+  protected setupLayoutScope(layoutFrame: Frame, component: Component) {
     let scope = layoutFrame.scope();
+
+    scope.bindSelf(component);
+    scope.bindHostOptions({ component });
 
     let template = this.templates && this.templates.default;
 
@@ -361,7 +397,7 @@ abstract class TestAppendingComponent implements AppendingComponent {
 
   abstract commit();
   abstract update(component: Component, hash: EvaluatedHash);
-  abstract protected createComponent(attrs: Dict<any>): Component;
+  abstract protected createComponent(attrs: Dict<any>, parentComponent: Component): Component;
   abstract protected templateIsPresent(template: Template): boolean;
 }
 
@@ -383,6 +419,9 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
       let tag = <OpenElement>item;
       if (tag.tag === identity) out.push(tag.toIdentity());
       else out.push(tag);
+      break;
+    } else if (item.type === 'open-primitive-element') {
+      out.push(item);
       break;
     }
 
@@ -528,12 +567,13 @@ class CurlyAppendingComponent extends TestAppendingComponent {
 
     super({ hooks, ComponentClass, layout, stack });
 
-    this.layout.statements.unshift(b.openElement('div'));
+    this.layout.statements.unshift(b.openPrimitiveElement('div'));
     this.layout.statements.push(b.closeElement());
   }
 
-  protected createComponent(attrs: Dict<any>) {
-    return new this.ComponentClass(attrs);
+  protected createComponent(attrs: Dict<any>, parentComponent: Component) {
+    let options = assign({ parentView: parentComponent }, attrs);
+    return new this.ComponentClass(options);
   }
 
   protected layoutWithAttrs() {
@@ -544,9 +584,7 @@ class CurlyAppendingComponent extends TestAppendingComponent {
     return !!template;
   }
 
-  commit() {
-    // this.frame.commit();
-  }
+  commit() {}
 
   update(component: Component, hash: EvaluatedHash) {
     let attrs = hash.value();
@@ -578,6 +616,8 @@ class CurlyEmberishAppendingComponent extends CurlyAppendingComponent {
 
     if (hashId) {
       defaults.push(b.dynamicAttr('id', new EvaluatedRef(hashId)));
+    } else {
+      defaults.push(b.staticAttr('id', `ember${uuid++}`));
     }
 
     if (hashClass) {
@@ -604,8 +644,8 @@ class GlimmerAppendingComponent extends TestAppendingComponent {
     super.begin(stack, { frame, templates, hash, tag });
   }
 
-  protected createComponent(attrs: Dict<any>): Component {
-    return new this.ComponentClass({ attrs });
+  protected createComponent(attrs: Dict<any>, parentComponent: Component): Component {
+    return new this.ComponentClass({ attrs, parentView: parentComponent });
   }
 
   protected layoutWithAttrs(invokeFrame: Frame) {
@@ -677,7 +717,7 @@ class CurlyComponent implements StatementSyntax {
     let { path, hash, templates } = this;
     let definition = frame.getComponentDefinition(path, this);
 
-    stack.openComponent('div', definition, { frame, templates, hash: hash.evaluate(frame) });
+    stack.openComponent(LITERAL('div'), definition, { frame, templates, hash: hash.evaluate(frame) });
     stack.closeElement();
   }
 }
@@ -730,7 +770,9 @@ export function equalsElement(element, tagName, attributes, content) {
 
   QUnit.push(element.attributes.length === expectedCount, element.attributes.length, expectedCount, `Expected ${expectedCount} attributes; got ${element.outerHTML}`);
 
-  QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+  if (content !== null) {
+    QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+  }
 }
 
 interface Matcher {

@@ -34,13 +34,13 @@ import { ChainableReference, setProperty as set } from 'htmlbars-reference';
 class Component extends EmberObject {
   protected _result: RenderResult;
   protected template: Template;
-  protected env: Environment;
+  protected env: Environment<any>;
   public attrs: Object; // provided by the component definition
   public element: Element; // provided by the component definition
 
   appendTo(selector: string) {
     let element = document.querySelector(selector);
-    this._result = this.template.render(this, this.env, { appendTo: element });
+    this._result = this.template.render(this, this.env, { appendTo: element, hostOptions: { component: this } });
     this.element = element.firstElementChild;
   }
 
@@ -50,14 +50,15 @@ class Component extends EmberObject {
 }
 
 class EmberishComponent extends Component {
-  attributeBindings = ['id', 'ariaRole:role']
+  public attributeBindings = ['id', 'ariaRole:role'];
+  public parentView: Component;
 }
 
 class GlimmerComponent extends Component {
 }
 
 class EmberishGlimmerComponent extends GlimmerComponent {
-
+  public parentView: Component = null;
 }
 
 let view: Component, env: TestEnvironment;
@@ -103,10 +104,20 @@ function assertFired(hooks: HookIntrospection, name: string, count=1) {
 }
 
 function assertEmberishElement(tagName: string, attrs: Object, contents: string);
+function assertEmberishElement(tagName: string, attrs: Object);
 function assertEmberishElement(tagName: string, contents: string);
+function assertEmberishElement(tagName: string);
 
 function assertEmberishElement(...args) {
-  let [ tagName, attrs, contents ] = args.length === 2 ? [ args[0], {}, args[1] ] : args;
+  let tagName, attrs, contents;
+  if (args.length === 2) {
+    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
+    else [tagName, attrs, contents] = [args[0], args[1], null];
+  } else if (args.length === 1) {
+    [tagName, attrs, contents] = [args[0], {}, null];
+  } else {
+    [tagName, attrs, contents] = args;
+  }
 
   let fullAttrs = assign({ class: classes('ember-view'), id: regex(/^ember\d*$/) }, attrs);
   equalsElement(view.element, tagName, fullAttrs, contents);
@@ -733,74 +744,79 @@ QUnit.test('non-expression hasBlockParams', function() {
   assertAppended('<div id="expect-no" class="ember-view">No</div>  <div id="expect-yes" class="ember-view">Yes</div>');
 });
 
-// QUnit.test('components in template of a yielding component should have the proper parentView', function() {
-//   var outer, innerTemplate, innerLayout;
+QUnit.test('components in template of a yielding component should have the proper parentView', function() {
+  var outer, innerTemplate, innerLayout;
 
-//   registry.register('component:x-outer', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       outer = this;
-//     }
-//   }));
+  let Outer = <any>EmberishComponent.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  });
 
-//   registry.register('component:x-inner-in-template', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       innerTemplate = this;
-//     }
-//   }));
+  let InnerInTemplate = <any>EmberishComponent.extend({
+    init() {
+      this._super(...arguments);
+      innerTemplate = this;
+    }
+  });
 
-//   registry.register('component:x-inner-in-layout', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       innerLayout = this;
-//     }
-//   }));
+  let InnerInLayout = <any>EmberishComponent.extend({
+    init() {
+      this._super(...arguments);
+      innerLayout = this;
+    }
+  });
 
-//   registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+  env.registerEmberishComponent('x-outer', Outer, `{{x-inner-in-layout}}{{yield}}`);
+  env.registerEmberishComponent('x-inner-in-layout', InnerInLayout, '');
+  env.registerEmberishComponent('x-inner-in-template', InnerInTemplate, '');
 
-//   view = EmberView.extend({
-//     template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
-//     container: container
-//   }).create();
+  appendViewFor('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}');
 
-//   runAppend(view);
+  assertEmberishElement('div');
 
-//   equal(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
-//   equal(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
-//   equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
-// });
+  equalObject(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+  equalObject(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
+  equalObject(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+});
 
-// QUnit.test('newly-added sub-components get correct parentView', function() {
-//   var outer, inner;
+function equalObject(actual: EmberObject, expected: EmberObject, msg: string) {
+  equal(actual._meta.identity(), expected._meta.identity(), msg);
+}
 
-//   registry.register('component:x-outer', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       outer = this;
-//     }
-//   }));
+QUnit.test('newly-added sub-components get correct parentView', function() {
+  var outer, inner;
 
-//   registry.register('component:x-inner', Component.extend({
-//     init() {
-//       this._super(...arguments);
-//       inner = this;
-//     }
-//   }));
+  var outer, innerTemplate, innerLayout;
 
-//   view = EmberView.extend({
-//     template: compile('{{#x-outer}}{{#if view.showInner}}{{x-inner}}{{/if}}{{/x-outer}}'),
-//     container: container,
-//     showInner: false
-//   }).create();
+  let Outer = <any>EmberishComponent.extend({
+    init() {
+      this._super(...arguments);
+      outer = this;
+    }
+  });
 
-//   runAppend(view);
+  let Inner = <any>EmberishComponent.extend({
+    init() {
+      this._super(...arguments);
+      inner = this;
+    }
+  });
 
-//   run(() => { view.set('showInner', true); });
+  env.registerEmberishComponent('x-outer', Outer, `{{x-inner-in-layout}}{{yield}}`);
+  env.registerEmberishComponent('x-inner', Inner, '');
 
-//   equal(inner.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
-//   equal(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
-// });
+  appendViewFor('{{#x-outer}}{{#if showInner}}{{x-inner}}{{/if}}{{/x-outer}}', { showInner: false });
+
+  equalObject(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+
+  set(view, 'showInner', true);
+  rerender();
+
+  equalObject(inner.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+  equalObject(outer.parentView, view, 'x-outer receives the ambient scope as its parentView');
+});
 
 // QUnit.test('components should receive the viewRegistry from the parent view', function() {
 //   var outer, innerTemplate, innerLayout;
