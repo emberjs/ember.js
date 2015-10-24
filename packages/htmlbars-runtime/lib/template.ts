@@ -538,7 +538,8 @@ export class DynamicProp extends DynamicExpression implements AttributeSyntax, D
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
-    let { name, value } = this;
+    let { name, value: _value } = this;
+    let value = _value.evaluate(frame);
     return stack.createMorph(SetPropertyMorph, { name, value }, frame);
   }
 }
