@@ -7,6 +7,7 @@ import { symbol } from 'ember-metal/utils';
 import { get } from 'ember-metal/property_get';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import EmberError from 'ember-metal/error';
+import run from 'ember-metal/run_loop';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
@@ -70,25 +71,24 @@ function createClosureAction(target, action, valuePath, actionArguments) {
   var closureAction;
 
   if (actionArguments.length > 0) {
-    closureAction = function() {
+    closureAction = function(...passedArguments) {
       var args = actionArguments;
-      if (arguments.length > 0) {
-        var passedArguments = Array.prototype.slice.apply(arguments);
+      if (passedArguments.length > 0) {
         args = actionArguments.concat(passedArguments);
       }
       if (valuePath && args.length > 0) {
         args[0] = get(args[0], valuePath);
       }
-      return action.apply(target, args);
+
+      return run.join(target, action, ...args);
     };
   } else {
-    closureAction = function() {
-      var args = arguments;
+    closureAction = function(...args) {
       if (valuePath && args.length > 0) {
-        args = Array.prototype.slice.apply(args);
         args[0] = get(args[0], valuePath);
       }
-      return action.apply(target, args);
+
+      return run.join(target, action, ...args);
     };
   }
 
