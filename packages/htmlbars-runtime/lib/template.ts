@@ -154,10 +154,14 @@ export default class Template {
     return this.evaluateWithStack(stack, morph.frame);
   }
 
-  render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
+  render(self: any, env: Environment<any>, options: RenderOptions, blockArguments: any[]=null) {
     let scope = env
       .createRootScope()
       .initTopLevel(self, this.locals, blockArguments, options.hostOptions);
+
+    if (options.hostOptions) {
+      scope.bindHostOptions(options.hostOptions);
+    }
 
     let frame = env.pushFrame(scope);
 
@@ -888,9 +892,9 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
-  toIdentity(): OpenIdentityElement {
+  toIdentity(): OpenPrimitiveElement {
     let { tag, blockParams } = this;
-    return new OpenIdentityElement({ tag, blockParams });
+    return new OpenPrimitiveElement({ tag });
   }
 
   evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
@@ -908,12 +912,16 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
   }
 }
 
-export class OpenIdentityElement extends StaticExpression implements StaticStatementSyntax {
-  type = "open-identity-element";
+export class OpenPrimitiveElement extends StaticExpression implements StaticStatementSyntax {
+  type = "open-primitive-element";
 
   private tag: InternedString;
 
-  constructor(options: { tag: InternedString, blockParams: InternedString[] }) {
+  static build(tag: string): OpenPrimitiveElement {
+    return new this({ tag: intern(tag) });
+  }
+
+  constructor(options: { tag: InternedString }) {
     super();
     this.tag = options.tag;
   }
@@ -1587,6 +1595,7 @@ export let builders = {
   value: bind(Value.build, Value),
   hash: bind(Hash.build, Hash),
   openElement: bind(OpenElement.build, OpenElement),
+  openPrimitiveElement: bind(OpenPrimitiveElement.build, OpenPrimitiveElement),
   closeElement: bind(CloseElement.build, CloseElement),
   staticAttr: bind(StaticAttr.build, StaticAttr),
   dynamicAttr: bind(DynamicAttr.build, DynamicAttr),

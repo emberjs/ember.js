@@ -46,15 +46,15 @@ export class Block {
   }
 }
 
-export class Scope {
-  private parent: Scope;
+export abstract class Scope<T extends Object> {
+  protected parent: Scope<T>;
   private self: RootReference = undefined;
   private locals: Dict<RootReference> = null;
   private blocks: Dict<Block> = null;
   private localNames: InternedString[];
-  private meta: MetaLookup;
+  protected meta: MetaLookup;
 
-  constructor(parent: Scope, meta: MetaLookup, localNames: InternedString[]) {
+  constructor(parent: Scope<T>, meta: MetaLookup, localNames: InternedString[]) {
     this.parent = parent;
     this.localNames = localNames;
     this.meta = meta;
@@ -75,13 +75,11 @@ export class Scope {
     return this;
   }
 
-  bindHostOptions(hostOptions: Object) {
-    throw new Error(`bindHostOptions not implemented for ${this.constructor.name}`)
-  }
+  abstract bindHostOptions(hostOptions: T);
 
-  child(localNames) {
-    return new Scope(this, this.meta, localNames);
-  }
+  abstract getHostOptions(): T;
+
+  abstract child(localNames: InternedString[]);
 
   bindSelf(object: any) {
     this.self = this.meta.for(object).root();
@@ -161,13 +159,13 @@ export interface Component {
   attrs: Object;
 }
 
-export abstract class Environment {
-  private dom: DOMHelper;
-  private meta: MetaLookup;
+export abstract class Environment<T extends Object> {
+  protected dom: DOMHelper;
+  protected meta: MetaLookup;
   private createdComponents: Component[] = [];
-  private createdHooks: ComponentDefinition[] = [];
+  private createdHooks: ComponentHooks[] = [];
   private updatedComponents: Component[] = [];
-  private updatedHooks: ComponentDefinition[] = [];
+  private updatedHooks: ComponentHooks[] = [];
 
   constructor(dom: DOMHelper, meta: MetaLookup) {
     this.dom = dom;
@@ -180,13 +178,11 @@ export abstract class Environment {
     return this.meta.identity(object);
   }
 
-  pushFrame(scope: Scope): Frame {
+  pushFrame(scope: Scope<T>): Frame {
     return new Frame(this, scope);
   }
 
-  createRootScope(): Scope {
-    return new Scope(null, this.meta, EMPTY_ARRAY);
-  }
+  abstract createRootScope(): Scope<T>;
 
   statement(statement: StatementSyntax): StatementSyntax {
     let type = statement.type;
@@ -232,9 +228,9 @@ export abstract class Environment {
     });
   }
 
-  abstract hasHelper(scope: Scope, helperName: string[]): boolean;
-  abstract lookupHelper(scope: Scope, helperName: string[]): ConstReference<Helper>;
-  abstract getComponentDefinition(scope: Scope, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
+  abstract hasHelper(scope: Scope<T>, helperName: string[]): boolean;
+  abstract lookupHelper(scope: Scope<T>, helperName: string[]): ConstReference<Helper>;
+  abstract getComponentDefinition(scope: Scope<T>, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
 }
 
 class YieldSyntax implements StatementSyntax {
@@ -328,10 +324,10 @@ export interface AppendingComponent {
 }
 
 export class Frame {
-  private env: Environment;
-  private _scope: Scope;
+  private env: Environment<any>;
+  private _scope: Scope<any>;
 
-  constructor(env: Environment, scope: Scope) {
+  constructor(env: Environment<any>, scope: Scope<any>) {
     this.env = env;
     this._scope = scope;
   }
@@ -348,15 +344,18 @@ export class Frame {
     return this.env.statement(statement);
   }
 
-  childScope(blockArguments: any[]) {
+  childScope(blockArguments: any[]=null) {
     return (this._scope = this._scope.child(blockArguments));
   }
 
-  resetScope(): Scope {
-    return (this._scope = this.env.createRootScope());
+  resetScope(): Scope<any> {
+    let parentHostOptions = this._scope.getHostOptions();
+    let scope = this._scope = this.env.createRootScope();
+    scope.bindHostOptions(parentHostOptions);
+    return scope;
   }
 
-  scope(): Scope {
+  scope(): Scope<any> {
     return this._scope;
   }
 
