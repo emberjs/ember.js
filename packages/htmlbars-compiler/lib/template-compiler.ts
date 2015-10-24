@@ -126,6 +126,11 @@ class JavaScriptCompiler {
     this.push('dynamicAttr', name, value, namespace);
   }
 
+  dynamicProp(name: string) {
+    let value = this.popExpression();
+    this.push('dynamicProp', name, value);
+  }
+
   /// Expressions
 
   literal(value: any) {
@@ -285,6 +290,8 @@ export default class TemplateCompiler {
       this.opcode('addClass', action);
     } else if (isStatic) {
       this.opcode('staticAttr', action, name, namespace);
+    } else if (action.value.type === 'MustacheStatement') {
+      this.opcode('dynamicProp', action, name);
     } else {
       this.opcode('dynamicAttr', action, name, namespace);
     }
