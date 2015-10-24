@@ -18,15 +18,13 @@ import {
 import {
   TestEnvironment,
   HookIntrospection,
-  curlyComponentDefinition,
-  glimmerComponentDefinition,
   equalsElement,
   regex,
   classes,
   compile
  } from "./support";
 
-import { Dict, dict } from "htmlbars-util";
+import { Dict, dict, assign } from "htmlbars-util";
 
 import { equalTokens } from "htmlbars-test-helpers";
 
@@ -36,8 +34,8 @@ class Component extends EmberObject {
   protected _result: RenderResult;
   protected template: Template;
   protected env: Environment;
-  public attrs; // provided by the component definition
-  public element; // provided by the component definition
+  public attrs: Object; // provided by the component definition
+  public element: Element; // provided by the component definition
 
   appendTo(selector: string) {
     let element = document.querySelector(selector);
@@ -102,6 +100,17 @@ function assertFired(hooks: HookIntrospection, name: string, count=1) {
     ok(false, `The ${name} hook fired`);
   }
 }
+
+function assertEmberishElement(tagName: string, attrs: Object, contents: string);
+function assertEmberishElement(tagName: string, contents: string);
+
+function assertEmberishElement(...args) {
+  let [ tagName, attrs, contents ] = args.length === 2 ? [ args[0], {}, args[1] ] : args;
+
+  let fullAttrs = assign({ class: classes('ember-view'), id: regex(/^ember\d*$/) }, attrs);
+  equalsElement(view.element, tagName, fullAttrs, contents);
+}
+
 
 function rerender() {
   env.begin();
@@ -320,7 +329,7 @@ QUnit.test('with ariaRole specified as an outer binding', function() {
 QUnit.test('glimmer component with role specified as an outer binding and shadowed', function() {
   let def = env.registerGlimmerComponent('aria-test', GlimmerComponent, '<div>Here!</div>');
 
-  appendViewFor('<aria-test id="aria-test" role={{myRole}} />', { myRole: 'main' });
+  appendViewFor('<aria-test id="aria-test" role="{{myRole}}" />', { myRole: 'main' });
 
   assertAppended('<div id="aria-test" role="main">Here!</div>');
 });
@@ -1086,21 +1095,24 @@ styles.forEach(style => {
   });
 
   QUnit.test(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
-    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`);
+    let component: MyComponent;
+
+    class MyComponent extends EmberishGlimmerComponent {
+      constructor(attrs: Object) {
+        super(attrs);
+        component = this;
+      }
+    }
+    MyComponent._Meta.seal();
+
+    env.registerEmberishGlimmerComponent('non-block', MyComponent, `<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`);
 
     appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
 
     equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'outer', 'data-dynamic': 'outer'}, '');
 
-    // equal(view.$(style.tagName).attr('data-static'), 'outer', 'the outer attribute wins');
-    // equal(view.$(style.tagName).attr('data-dynamic'), 'outer', 'the outer attribute wins');
-
-    // let component = view.childViews[0]; // HAX
-
-    // run(() => component.set('internal', 'changed'));
-
-    // equal(view.$(style.tagName).attr('data-static'), 'outer', 'the outer attribute wins');
-    // equal(view.$(style.tagName).attr('data-dynamic'), 'outer', 'the outer attribute wins');
+    set(component, 'internal', 'changed');
+    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'outer', 'data-dynamic': 'outer'}, '');
   });
 
   // // TODO: When un-skipping, fix this so it handles all styles
@@ -1121,68 +1133,65 @@ styles.forEach(style => {
   //   equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
   // });
 
-  // QUnit.skip(`non-block replaced with ${style.name} should have correct scope`, function() {
-  //   registry.register('template:components/non-block', compile(`<${style.tagName}>{{internal}}</${style.tagName}>`));
+  QUnit.test(`non-block replaced with ${style.name} should have correct scope`, function() {
+    class NonBlock extends EmberishGlimmerComponent {
+      init() {
+        this._super(...arguments);
+        set(this, 'internal', 'stuff');
+      }
+    }
+    NonBlock._Meta.seal();
 
-  //   registry.register('component:non-block', GlimmerComponent.extend({
-  //     init() {
-  //       this._super(...arguments);
-  //       this.set('internal', 'stuff');
-  //     }
-  //   }));
+    env.registerEmberishGlimmerComponent('non-block', NonBlock, `<${style.tagName}>{{internal}}</${style.tagName}>`)
 
-  //   view = appendViewFor('<non-block />');
+    appendViewFor('<non-block />');
 
-  //   equal(view.$().text(), 'stuff');
-  // });
+    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'stuff');
+  });
 
-  // QUnit.skip(`non-block replaced with ${style.name} should have correct 'element'`, function() {
-  //   registry.register('template:components/non-block', compile(`<${style.tagName} />`));
+  QUnit.test(`non-block replaced with ${style.name} should have correct 'element'`, function() {
+    let component: MyComponent;
 
-  //   let component;
+    class MyComponent extends EmberishGlimmerComponent {
+      constructor(attrs: Object) {
+        super(attrs);
+        component = this;
+      }
+    }
+    MyComponent._Meta.seal();
 
-  //   registry.register('component:non-block', GlimmerComponent.extend({
-  //     init() {
-  //       this._super(...arguments);
-  //       component = this;
-  //     }
-  //   }));
+    env.registerEmberishGlimmerComponent('non-block', MyComponent, `<${style.tagName} />`);
 
-  //   view = appendViewFor('<non-block />');
+    appendViewFor('<non-block />');
 
-  //   equal(component.element, view.$(style.tagName)[0]);
-  // });
+    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/) }, '');
+  });
 
-  // QUnit.skip(`non-block replaced with ${style.name} should have inner attributes`, function() {
-  //   registry.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));
+  QUnit.test(`non-block replaced with ${style.name} should have inner attributes`, function() {
+    class NonBlock extends EmberishGlimmerComponent {
+      init() {
+        this._super(...arguments);
+        set(this, 'internal', 'stuff');
+      }
+    }
+    NonBlock._Meta.seal();
 
-  //   registry.register('component:non-block', GlimmerComponent.extend({
-  //     init() {
-  //       this._super(...arguments);
-  //       this.set('internal', 'stuff');
-  //     }
-  //   }));
+    env.registerEmberishGlimmerComponent('non-block', NonBlock, `<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`);
 
-  //   view = appendViewFor('<non-block />');
+    appendViewFor('<non-block />');
 
-  //   equal(view.$(style.tagName).attr('data-static'), 'static');
-  //   equal(view.$(style.tagName).attr('data-dynamic'), 'stuff');
-  // });
+    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'static', 'data-dynamic': 'stuff' }, '');
+  });
 
-  // QUnit.skip(`only text attributes are reflected on the underlying DOM element (${style.name})`, function() {
-  //   registry.register('template:components/non-block', compile(`<${style.tagName}>In layout</${style.tagName}>`));
+  QUnit.test(`only text attributes are reflected on the underlying DOM element (${style.name})`, function() {
+    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `<${style.tagName}>In layout</${style.tagName}>`);
 
-  //   view = appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
-  //     dynamic: 'dynamic'
-  //   });
+    appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
+      dynamic: 'dynamic'
+    });
 
-  //   let el = view.$(style.tagName);
-  //   equal(el.length, 1, 'precond - the view was rendered');
-  //   equal(el.text(), 'In layout');
-  //   equal(el.attr('static-prop'), 'static text');
-  //   equal(el.attr('concat-prop'), 'dynamic text');
-  //   equal(el.attr('dynamic-prop'), undefined);
-  // });
+    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'static-prop': 'static text', 'concat-prop': 'dynamic text' }, 'In layout');
+  });
 
   // QUnit.skip(`partials templates should not be treated like a component layout for ${style.name}`, function() {
   //   registry.register('template:_zomg', compile(`<p>In partial</p>`));
@@ -1216,107 +1225,93 @@ styles.forEach(style => {
 //     equal(view.$().html(), '<p>first2</p><p>second2</p>', 'The fragment was updated');
 //   });
 
-//   QUnit.test('block without properties', function() {
-//     registry.register('template:components/with-block', compile('<with-block>In layout - {{yield}}</with-block>'));
+QUnit.test('block without properties', function() {
+  env.registerEmberishGlimmerComponent('with-block', EmberishGlimmerComponent, '<with-block>In layout - {{yield}}</with-block>');
 
-//     view = appendViewFor('<with-block>In template</with-block>');
+  appendViewFor('<with-block>In template</with-block>');
 
-//     equal(view.$('with-block.ember-view').text(), 'In layout - In template', 'Both the layout and template are rendered');
-//   });
+  equalsElement(view.element, 'with-block', { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'In layout - In template');
+});
 
-//   QUnit.test('attributes are not installed on the top level', function() {
-//     let component;
+QUnit.test('attributes are not installed on the top level', function() {
+  let component: NonBlock;
 
-//     registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>'));
-//     registry.register('component:non-block', GlimmerComponent.extend({
-//       // This is specifically attempting to trigger a 1.x-era heuristic that only copied
-//       // attrs that were present as defined properties on the component.
-//       text: null,
-//       dynamic: null,
+  class NonBlock extends EmberishGlimmerComponent {
 
-//       init() {
-//         this._super(...arguments);
-//         component = this;
-//       }
-//     }));
+    init() {
+      this._super(...arguments);
+      component = this;
+    }
+  }
+  NonBlock._Meta.seal();
 
-//     view = appendViewFor('<non-block text="texting" dynamic={{view.dynamic}} />', {
-//       dynamic: 'dynamic'
-//     });
+  // This is specifically attempting to trigger a 1.x-era heuristic that only copied
+  // attrs that were present as defined properties on the component.
+  NonBlock.prototype['text'] = null;
+  NonBlock.prototype['dynamic'] = null;
 
-//     let el = view.$('non-block.ember-view');
-//     ok(el, 'precond - the view was rendered');
+  env.registerEmberishGlimmerComponent('non-block', NonBlock, '<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>');
 
-//     equal(el.text(), 'In layout - texting -- ');
-//     equal(component.attrs.text, 'texting');
-//     equal(component.attrs.dynamic, 'dynamic');
-//     strictEqual(get(component, 'text'), null);
-//     strictEqual(get(component, 'dynamic'), null);
+  appendViewFor('<non-block text="texting" dynamic={{dynamic}} />', {
+    dynamic: 'dynamic'
+  });
 
-//     run(() => view.rerender());
+  equalsElement(view.element, 'non-block', { class: classes('ember-view'), id: regex(/^ember\d*$/), text: 'texting' }, 'In layout - texting -- null');
+  equal(component.attrs['text'], 'texting');
+  equal(component.attrs['dynamic'], 'dynamic');
+  strictEqual(component['text'], null);
+  strictEqual(component['dynamic'], null);
 
-//     equal(el.text(), 'In layout - texting -- ');
-//     equal(component.attrs.text, 'texting');
-//     equal(component.attrs.dynamic, 'dynamic');
-//     strictEqual(get(component, 'text'), null);
-//     strictEqual(get(component, 'dynamic'), null);
-//   });
+  rerender();
 
-//   QUnit.test('non-block with properties on attrs and component class', function() {
-//     registry.register('component:non-block', GlimmerComponent.extend());
-//     registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
+  equalsElement(view.element, 'non-block', { class: classes('ember-view'), id: regex(/^ember\d*$/), text: 'texting' }, 'In layout - texting -- <!---->');
+  equal(component.attrs['text'], 'texting');
+  equal(component.attrs['dynamic'], 'dynamic');
+  strictEqual(component['text'], null);
+  strictEqual(component['dynamic'], null);
+});
 
-//     view = appendViewFor('<non-block someProp="something here" />');
+QUnit.test('non-block with properties on attrs and component class', function() {
+  env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>');
 
-//     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
-//   });
+  appendViewFor('<non-block someProp="something here" />');
 
-//   QUnit.test('rerendering component with attrs from parent', function() {
-//     var willUpdate = 0;
-//     var didReceiveAttrs = 0;
+  assertEmberishElement('non-block', { someProp: 'something here' }, 'In layout - someProp: something here');
+});
 
-//     registry.register('component:non-block', GlimmerComponent.extend({
-//       didReceiveAttrs() {
-//         didReceiveAttrs++;
-//       },
+QUnit.test('rerendering component with attrs from parent', function() {
+  let { hooks } = env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>');
 
-//       willUpdate() {
-//         willUpdate++;
-//       }
-//     }));
+  appendViewFor('<non-block someProp={{someProp}} />', {
+    someProp: 'wycats'
+  });
 
-//     registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
+  assertFired(hooks, 'didReceiveAttrs');
 
-//     view = appendViewFor('<non-block someProp={{view.someProp}} />', {
-//       someProp: 'wycats'
-//     });
+  assertEmberishElement('non-block', 'In layout - someProp: wycats');
+  equalsElement(view.element, 'non-block', { class: classes('ember-view'), id: regex(/^ember\d*$/) }, 'In layout - someProp: wycats');
 
-//     equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
+  set(view, 'someProp', 'tomdale');
+  rerender();
 
-//     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: wycats');
+  assertEmberishElement('non-block', 'In layout - someProp: tomdale');
+  assertFired(hooks, 'didReceiveAttrs', 2);
+  assertFired(hooks, 'willUpdate', 1);
 
-//     run(function() {
-//       view.set('someProp', 'tomdale');
-//     });
+  rerender();
 
-//     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-//     equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
-//     equal(willUpdate, 1, 'The willUpdate hook fired once');
+  assertEmberishElement('non-block', 'In layout - someProp: tomdale');
+  assertFired(hooks, 'didReceiveAttrs', 3);
+  assertFired(hooks, 'willUpdate', 2);
+});
 
-//     run(view, 'rerender');
+QUnit.test('block with properties on attrs', function() {
+  env.registerEmberishGlimmerComponent('with-block', EmberishGlimmerComponent, '<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>');
 
-//     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: tomdale');
-//     equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
-//     equal(willUpdate, 2, 'The willUpdate hook fired again');
-//   });
+  appendViewFor('<with-block someProp="something here">In template</with-block>');
 
-//   QUnit.test('block with properties on attrs', function() {
-//     registry.register('template:components/with-block', compile('<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>'));
-
-//     view = appendViewFor('<with-block someProp="something here">In template</with-block>');
-
-//     equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
-//   });
+  assertEmberishElement('with-block', { someProp: 'something here' }, 'In layout - someProp: something here - In template');
+});
 
 //   QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
 //     expect(1);

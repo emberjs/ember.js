@@ -102,7 +102,7 @@ export default class Template {
   constructor({ meta, root, position, locals, statements, spec, isEmpty }: TemplateOptions) {
     this.meta = meta || {};
     this.root = root || null;
-    this.position = position || null;
+    this.position = position === undefined ? null : position;
     this.arity = locals ? locals.length : 0;
     this.statements = statements || EMPTY_ARRAY;
     this.locals = locals || EMPTY_ARRAY;
