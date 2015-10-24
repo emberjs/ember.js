@@ -10,11 +10,15 @@ export function merge(options, defaults) {
   return options;
 }
 
-export function assign<T, U>(obj: T, assignments: U): T & U {
-  Object.keys(assignments).forEach(key => {
-    obj[key] = assignments[key];
-  });
-  return <T & U>obj;
+export function assign<T, U>(obj: T, assignments: U): T & U;
+export function assign<T, U, V>(obj: T, a: U, b: V): T & U & V;
+export function assign<T, U, V, W>(obj: T, a: U, b: V, c: W): T & U & V & W;
+
+export function assign(obj, ...assignments) {
+  return assignments.reduce((obj, extensions) => {
+    Object.keys(extensions).forEach(key => obj[key] = extensions[key]);
+    return obj;
+  }, obj);
 }
 
 export function shallowCopy(obj) {
