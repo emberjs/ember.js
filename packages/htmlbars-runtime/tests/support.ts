@@ -3,6 +3,7 @@ import {
   Environment,
   DOMHelper,
   StatementSyntax,
+  Params,
   ParamsAndHash,
   ElementStack,
   Morph,
@@ -44,7 +45,7 @@ import {
   isWhitespace
 } from "htmlbars-runtime";
 import { compile as rawCompile } from "htmlbars-compiler";
-import { LITERAL, Dict, InternedString, dict, assign } from 'htmlbars-util';
+import { LITERAL, Dict, InternedString, dict, assign, intern } from 'htmlbars-util';
 
 import { Meta, ConstReference, ChainableReference, setProperty as set } from "htmlbars-reference";
 
@@ -434,7 +435,6 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
 
   if (outers) {
     outers.forEach(attr => {
-      if (seen[attr.name]) return;
       seen[attr.name] = true;
       attrs.push(attr);
     });
@@ -572,7 +572,7 @@ class CurlyAppendingComponent extends TestAppendingComponent {
   }
 
   protected createComponent(attrs: Dict<any>, parentComponent: Component) {
-    let options = assign({ parentView: parentComponent }, attrs);
+    let options = assign({ parentView: parentComponent, attrs }, attrs);
     return new this.ComponentClass(options);
   }
 
@@ -592,6 +592,8 @@ class CurlyAppendingComponent extends TestAppendingComponent {
     for (let prop in attrs) {
       set(component, prop, attrs[prop]);
     }
+
+    set(component, 'attrs', attrs);
   }
 }
 
@@ -691,7 +693,6 @@ class CurlyComponent implements StatementSyntax {
   type = "curly-component";
   isStatic = false;
   path: InternedString[];
-  hash: Hash;
   templates: Templates;
 
   private args: ParamsAndHash;
@@ -699,7 +700,6 @@ class CurlyComponent implements StatementSyntax {
 
   constructor(options: { path: InternedString[], hash: Hash, templates: Templates }) {
     this.path = options.path;
-    this.hash = options.hash;
     this.templates = options.templates;
   }
 
@@ -714,12 +714,47 @@ class CurlyComponent implements StatementSyntax {
   }
 
   evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
-    let { path, hash, templates } = this;
-    let definition = frame.getComponentDefinition(path, this);
+    let { path, args, templates } = this;
+    let tag = path[0];
 
-    stack.openComponent(LITERAL('div'), definition, { frame, templates, hash: hash.evaluate(frame) });
+    let definition = frame.getComponentDefinition(path, this);
+    let hash = processPositionals(definition, args);
+
+    stack.openComponent(LITERAL('div'), definition, { tag, frame, templates, hash: hash.evaluate(frame) });
     stack.closeElement();
   }
+}
+
+function processPositionals(definition: ComponentDefinition, args: ParamsAndHash): Hash {
+  let positionals: string[] | string = definition.ComponentClass['positionalParams'];
+  let { params, hash } = args;
+
+  if (positionals) {
+    hash = hash.clone();
+    let params = args.params;
+
+    if (typeof positionals === 'string') {
+      let key = intern(positionals);
+
+      if (hash.has(key)) {
+        if (params.length === 0) return hash;
+        throw new Error(`You cannot specify both positional params and the hash argument \`${key}\`.`);
+      }
+
+      hash.add(key, args.params);
+    } else {
+      positionals.some((p, i) => {
+        if (i >= params.length) return true;
+        let param = intern(p);
+        if (hash.has(param)) {
+          throw new Error(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${param}\`.`);
+        }
+        hash.add(param, params.at(i))
+      });
+    }
+  }
+
+  return hash;
 }
 
 type EachOptions = { args: ParamsAndHash };
@@ -747,7 +782,7 @@ class EachSyntax implements StatementSyntax {
   }
 }
 
-export function equalsElement(element, tagName, attributes, content) {
+export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {
   QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
 
   let expectedAttrs: Dict<Matcher> = dict<Matcher>();

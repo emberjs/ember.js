@@ -48,7 +48,7 @@ export class MorphList extends EmptyableMorph {
     this.willAppend(stack);
     let array: any[] = this.reference.value();
 
-    if (array.length === 0) return this.didBecomeEmpty();
+    if (!array || array.length === 0) return this.didBecomeEmpty();
 
     let nextSibling = this.nextSiblingForContent();
 
@@ -68,7 +68,7 @@ export class MorphList extends EmptyableMorph {
 
     let array: any[] = this.reference.value();
 
-    if (array.length === 0) return this.didBecomeEmpty();
+    if (!array || array.length === 0) return this.didBecomeEmpty();
 
     this.nextSiblingForContent();
 

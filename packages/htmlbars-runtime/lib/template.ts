@@ -8,7 +8,7 @@ import {
 } from 'htmlbars-reference';
 import { ElementStack, ClassList } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
-import { LITERAL, InternedString, Dict, dict, intern } from 'htmlbars-util';
+import { LITERAL, InternedString, Dict, dict, intern, assign } from 'htmlbars-util';
 
 interface Bounds {
   parentNode(): Node;
@@ -1397,15 +1397,26 @@ export class Params extends Enumerable<ExpressionSyntax> implements ExpressionSy
   }
 
   params: ExpressionSyntax[];
+  length: number;
   isStatic = false;
 
   constructor(exprs: ExpressionSyntax[]) {
     super();
     this.params = exprs;
+    this.length = exprs.length;
   }
 
   forEach(callback: EnumerableCallback<ExpressionSyntax>) {
     this.params.forEach(callback);
+  }
+
+  push(expr: ExpressionSyntax) {
+    this.params.push(expr);
+    this.length = this.params.length;
+  }
+
+  at(index: number): ExpressionSyntax {
+    return this.params[index];
   }
 
   prettyPrint(): PrettyPrintValue[] {
@@ -1453,43 +1464,48 @@ export class Hash implements ExpressionSyntax {
 
     let keys = [];
     let values = [];
+    let map = dict<ExpressionSyntax>();
 
     for (let i = 0, l = rawPairs.length; i < l; i += 2) {
       let key = rawPairs[i];
       let expr = rawPairs[i+1];
       keys.push(key);
-      values.push(buildExpression(expr));
+      let value = buildExpression(expr);
+      values.push(value);
+      map[key] = value;
     }
 
-    return new Hash({ keys, values });
+    return new Hash({ keys, values, map });
   }
 
-  static build(hash: Dict<ExpressionSyntax>): Hash {
-    if (hash === undefined) { return Hash.empty(); }
+  static build(map: Dict<ExpressionSyntax>): Hash {
+    if (map === undefined) { return Hash.empty(); }
     let keys = [];
     let values = [];
 
-    Object.keys(hash).forEach(key => {
+    Object.keys(map).forEach(key => {
       keys.push(key);
-      values.push(hash[key]);
+      values.push(map[key]);
     });
 
-    return new this({ keys, values });
+    return new this({ keys, values, map });
   }
 
   static _empty;
 
   static empty(): Hash {
-    return (this._empty = this._empty || new Hash({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY }));
+    return (this._empty = this._empty || new Hash({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY, map: dict<ExpressionSyntax>() }));
   }
 
+  public map: Dict<ExpressionSyntax>;
   public keys: InternedString[];
   public values: ExpressionSyntax[];
   public isStatic = false;
 
-  constructor({ keys, values }) {
+  constructor({ keys, values, map }: { keys: InternedString[], values: ExpressionSyntax[], map: Dict<ExpressionSyntax> }) {
     this.keys = keys;
     this.values = values;
+    this.map = map;
   }
 
   prettyPrint(): Dict<PrettyPrintValue> {
@@ -1500,14 +1516,31 @@ export class Hash implements ExpressionSyntax {
     return out;
   }
 
+  clone(): Hash {
+    let { keys, values, map } = this;
+
+    keys = keys.slice();
+    values = values.slice();
+    map = assign(dict<ExpressionSyntax>(), map);
+
+    return new Hash({ keys, values, map });
+  }
+
+  add(key: InternedString, value: ExpressionSyntax) {
+    this.keys.push(key);
+    this.values.push(value);
+    this.map[<string>key] = value;
+  }
+
+  at(key: InternedString): ExpressionSyntax {
+    return this.map[<string>key];
+  }
+
+  has(key: InternedString): boolean {
+    return !!this.map[<string>key];
+  }
+
   evaluate(frame: Frame): EvaluatedHash {
-    let { keys, values } = this;
-    let out = new Array(values.length);
-
-    for (let i = 0, l = values.length; i < l; i++) {
-      out[i] = values[i].evaluate(frame);
-    }
-
     return new EvaluatedHash(this, frame);
   }
 }
@@ -1515,16 +1548,22 @@ export class Hash implements ExpressionSyntax {
 export class EvaluatedHash extends PushPullReference {
   public values: ChainableReference[];
   public keys: InternedString[];
+  public map: Dict<ChainableReference>;
 
   constructor(hash: Hash, frame: Frame) {
     super();
 
-    this.values = hash.values.map(value => {
+    let { keys, values } = hash;
+    let map = dict<ChainableReference>();
+
+    this.values = values.map((value, i) => {
       let result = value.evaluate(frame);
+      map[<string>keys[i]] = result;
       this._addSource(result);
       return result;
     });
 
+    this.map = map;
     this.keys = hash.keys;
   }
 
@@ -1534,11 +1573,7 @@ export class EvaluatedHash extends PushPullReference {
   }
 
   at(key: InternedString): ChainableReference {
-    let ret: ChainableReference = null;
-    this.keys.some((k, i) => {
-      if (k === key) { ret = this.values[i]; return true; }
-    });
-    return ret;
+    return this.map[<string>key];
   }
 
   value(): Dict<any> {
