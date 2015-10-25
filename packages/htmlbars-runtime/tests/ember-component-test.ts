@@ -123,6 +123,25 @@ function assertEmberishElement(...args) {
   equalsElement(view.element, tagName, fullAttrs, contents);
 }
 
+function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object, contents: string);
+function assertElementIsEmberishElement(element: Element, tagName: string, attrs: Object);
+function assertElementIsEmberishElement(element: Element, tagName: string, contents: string);
+function assertElementIsEmberishElement(element: Element, tagName: string);
+
+function assertElementIsEmberishElement(element: Element, ...args) {
+  let tagName, attrs, contents;
+  if (args.length === 2) {
+    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
+    else [tagName, attrs, contents] = [args[0], args[1], null];
+  } else if (args.length === 1) {
+    [tagName, attrs, contents] = [args[0], {}, null];
+  } else {
+    [tagName, attrs, contents] = args;
+  }
+
+  let fullAttrs = assign({ class: classes('ember-view'), id: regex(/^ember\d*$/) }, attrs);
+  equalsElement(element, tagName, fullAttrs, contents);
+}
 
 function rerender() {
   env.begin();
@@ -422,204 +441,163 @@ QUnit.test('hasBlockParams is false when no block param supplied', function() {
   assertAppended('<div>In block No Block Param!</div>');
 });
 
-// QUnit.test('static named positional parameters', function() {
-//   class SampleComponent extends Component {
+QUnit.test('static named positional parameters', function() {
+  class SampleComponent extends EmberishComponent {
+    static positionalParams = ['name', 'age'];
+  }
+  SampleComponent._Meta.seal();
 
-//   }
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}{{age}}');
 
-//   SampleComponent.reopenClass({
-//     positionalParams: ['name', 'age']
-//   });
+  appendViewFor('{{sample-component "Quint" 4}}')
 
-//   env.registerCurlyComponent('sample-component', SampleComponent, '{{attrs.name}}{{attrs.age}}');
+  assertEmberishElement('div', 'Quint4');
+});
 
-//   appendViewFor('{{sample-component "Quint" 4}}')
+QUnit.test('dynamic named positional parameters', function() {
+  var SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['name', 'age']
+  });
 
-//   assertAppended('<div>Quint4</div>');
-// });
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}{{age}}')
 
-// QUnit.test('dynamic named positional parameters', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: ['name', 'age']
-//   });
+  appendViewFor('{{sample-component myName myAge}}', {
+    myName: 'Quint',
+    myAge: 4
+  });
 
-//   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  assertEmberishElement('div', 'Quint4');
 
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component myName myAge}}'),
-//     container: container,
-//     context: {
-//       myName: 'Quint',
-//       myAge: 4
-//     }
-//   }).create();
+  set(view, 'myName', 'Edward');
+  set(view, 'myAge', 5);
+  rerender();
 
-//   runAppend(view);
+  assertEmberishElement('div', 'Edward5');
+});
 
-//   equal(jQuery('#qunit-fixture').text(), 'Quint4');
-//   run(function() {
-//     set(view.context, 'myName', 'Edward');
-//     set(view.context, 'myAge', '5');
-//   });
+QUnit.test('if a value is passed as a non-positional parameter, it takes precedence over the named one', assert => {
+  let SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['name']
+  });
 
-//   equal(jQuery('#qunit-fixture').text(), 'Edward5');
-// });
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}');
 
-// QUnit.test('if a value is passed as a non-positional parameter, it takes precedence over the named one', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: ['name']
-//   });
+  assert.throws(() => {
+    appendViewFor('{{sample-component notMyName name=myName}}', {
+      myName: 'Quint',
+      notMyName: 'Sergio'
+    });
+  }, "You cannot specify both a positional param (at position 0) and the hash argument `name`.");
+});
 
-//   registry.register('template:components/sample-component', compile('{{attrs.name}}'));
-//   registry.register('component:sample-component', SampleComponent);
+QUnit.test('static arbitrary number of positional parameters', function() {
+  let SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: 'names'
+  });
 
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component notMyName name=myName}}'),
-//     container: container,
-//     context: {
-//       myName: 'Quint',
-//       notMyName: 'Sergio'
-//     }
-//   }).create();
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{#each names as |name|}}{{name}}{{/each}}')
 
-//   expectAssertion(function() {
-//     runAppend(view);
-//   }, `You cannot specify both a positional param (at position 0) and the hash argument \`name\`.`);
-// });
+  appendViewFor('<div>{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{!sample-component "Foo" 4 "Bar" 5 "Baz" id="helper"}}</div>');
 
-// QUnit.test('static arbitrary number of positional parameters', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: 'names'
-//   });
+  let first = <Element>view.element.firstChild;
+  let second = <Element>first.nextSibling;
+  // let third = <Element>second.nextSibling;
 
-//   registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  assertElementIsEmberishElement(first, 'div', { id: 'args-3' }, 'Foo4Bar');
+  assertElementIsEmberishElement(second, 'div', { id: 'args-5' }, 'Foo4Bar5Baz');
+  // equalsElement(third, ...emberishElement('div', { id: 'helper' }, 'Foo4Bar5Baz'));
+});
 
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}'),
-//     container: container
-//   }).create();
+QUnit.test('arbitrary positional parameter conflict with hash parameter is reported', assert => {
+  var SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: 'names'
+  });
 
-//   runAppend(view);
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{#each attrs.names as |name|}}{{name}}{{/each}}');
 
-//   equal(view.$('#args-3').text(), 'Foo4Bar');
-//   equal(view.$('#args-5').text(), 'Foo4Bar5Baz');
-//   equal(view.$('#helper').text(), 'Foo4Bar5Baz');
-// });
+  assert.throws(function() {
+    appendViewFor('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}', {
+      numbers: [1, 2, 3]
+    });
+  }, `You cannot specify positional parameters and the hash argument \`names\`.`);
+});
 
-// QUnit.test('arbitrary positional parameter conflict with hash parameter is reported', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: 'names'
-//   });
+QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12444]', function() {
+  var SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: 'names'
+  });
 
-//   registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{#each names as |name|}}{{name}}{{/each}}');
 
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}'),
-//     container: container,
-//     context: {
-//       numbers: [1, 2, 3]
-//     }
-//   }).create();
+  appendViewFor('{{sample-component names=things id="args-3"}}', {
+    things: ['Foo', 4, 'Bar']
+  });
 
-//   expectAssertion(function() {
-//     runAppend(view);
-//   }, `You cannot specify positional parameters and the hash argument \`names\`.`);
-// });
+  assertEmberishElement('div', { id: 'args-3' }, 'Foo4Bar');
+});
 
-// QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12444]', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: 'names'
-//   });
+QUnit.test('can use hash parameter instead of positional param', function() {
+  var SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: ['first', 'second']
+  });
 
-//   registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{first}} - {{second}}')
 
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component names=things id="args-3"}}'),
-//     container: container,
-//     context: {
-//       things: ['Foo', 4, 'Bar']
-//     }
-//   }).create();
+  appendViewFor(`<div>
+    {{sample-component "one" "two" id="two-positional"}}
+    {{sample-component "one" second="two" id="one-positional"}}
+    {{sample-component first="one" second="two" id="no-positional"}}</div>
+  `, {
+    things: ['Foo', 4, 'Bar']
+  })
 
-//   runAppend(view);
+  let first = view.element.firstElementChild;
+  let second = first.nextElementSibling;
+  let third = second.nextElementSibling;
 
-//   equal(view.$('#args-3').text(), 'Foo4Bar');
-// });
+  assertElementIsEmberishElement(first, 'div', { id: 'two-positional' }, 'one - two');
+  assertElementIsEmberishElement(second, 'div', { id: 'one-positional' }, 'one - two');
+  assertElementIsEmberishElement(third, 'div', { id: 'no-positional' }, 'one - two');
+});
 
-// QUnit.test('can use hash parameter instead of positional param', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: ['first', 'second']
-//   });
+QUnit.test('dynamic arbitrary number of positional parameters', function() {
+  var SampleComponent = <any>Component.extend();
+  SampleComponent.reopenClass({
+    positionalParams: 'n'
+  });
 
-//   registry.register('template:components/sample-component', compile('{{attrs.first}} - {{attrs.second}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{#each attrs.n as |name|}}{{name}}{{/each}}');
 
-//   view = EmberView.extend({
-//     layout: compile(`
-//       {{sample-component "one" "two" id="two-positional"}}
-//       {{sample-component "one" second="two" id="one-positional"}}
-//       {{sample-component first="one" second="two" id="no-positional"}}
+  appendViewFor('<div>{{sample-component user1 user2 id="direct"}}{{!component "sample-component" user1 user2 id="helper"}}</div>', {
+    user1: 'Foo',
+    user2: 4
+  });
 
-//     `),
-//     container: container,
-//     context: {
-//       things: ['Foo', 4, 'Bar']
-//     }
-//   }).create();
+  let first = view.element.firstElementChild;
+  // let second = first.nextElementSibling;
 
-//   runAppend(view);
+  assertElementIsEmberishElement(first, 'div', { id: 'direct' }, 'Foo4');
+  // assertElementIsEmberishElement(first, 'div', { id: 'helper' }, 'Foo4');
 
-//   equal(view.$('#two-positional').text(), 'one - two');
-//   equal(view.$('#one-positional').text(), 'one - two');
-//   equal(view.$('#no-positional').text(), 'one - two');
-// });
+  set(view, 'user1', "Bar");
+  set(view, 'user2', "5");
+  rerender();
 
-// QUnit.test('dynamic arbitrary number of positional parameters', function() {
-//   var SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: 'n'
-//   });
-//   registry.register('template:components/sample-component', compile('{{#each attrs.n as |name|}}{{name}}{{/each}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  assertElementIsEmberishElement(first, 'div', { id: 'direct' }, 'Bar5');
+  // assertElementIsEmberishElement(second, 'div', { id: 'helper' }, 'Bar5');
 
-//   view = EmberView.extend({
-//     layout: compile('{{sample-component user1 user2 id="direct"}}{{component "sample-component" user1 user2 id="helper"}}'),
-//     container: container,
-//     context: {
-//       user1: 'Foo',
-//       user2: 4
-//     }
-//   }).create();
+  set(view, 'user2', '6');
+  rerender();
 
-//   runAppend(view);
-
-//   equal(view.$('#direct').text(), 'Foo4');
-//   equal(view.$('#helper').text(), 'Foo4');
-//   run(function() {
-//     set(view.context, 'user1', 'Bar');
-//     set(view.context, 'user2', '5');
-//   });
-
-//   equal(view.$('#direct').text(), 'Bar5');
-//   equal(view.$('#helper').text(), 'Bar5');
-
-//   run(function() {
-//     set(view.context, 'user2', '6');
-//   });
-
-//   equal(view.$('#direct').text(), 'Bar6');
-//   equal(view.$('#helper').text(), 'Bar6');
-// });
+  assertElementIsEmberishElement(first, 'div', { id: 'direct' }, 'Bar6');
+  // assertElementIsEmberishElement(second, 'div', { id: 'helper' }, 'Bar6');
+});
 
 // QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
 //   expect(1);
