@@ -162,6 +162,22 @@ export function _getPath(root, path) {
   return root;
 }
 
+/**
+  Retrieves the value of a property from an Object, or a default value in the
+  case that the property returns `undefined`.
+
+  ```javascript
+  Ember.getWithDefault(person, 'lastName', 'Doe');
+  ```
+
+  @method getWithDefault
+  @for Ember
+  @param {Object} obj The object to retrieve from.
+  @param {String} keyName The name of the property to retrieve
+  @param {Object} defaultValue The value to return if the property value is undefined
+  @return {Object} The property value or the defaultValue.
+  @public
+*/
 export function getWithDefault(root, key, defaultValue) {
   var value = get(root, key);
 
