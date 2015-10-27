@@ -8,7 +8,7 @@ import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 import { setOwner } from 'container/owner';
 
 // These symbols will be used to limit link-to's public API surface area.
