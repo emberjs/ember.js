@@ -58,7 +58,7 @@ var librariesRegistered = false;
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
-  application. It helps to instantiate, initialize and coordinate the many
+  application. It helps to instantiate, initialize, and coordinate the many
   objects that make up your app.
 
   Each Ember app has one and only one `Ember.Application` object. In fact, the
@@ -177,7 +177,7 @@ var librariesRegistered = false;
   ```
 
   Initializers provide an opportunity to access the internal registry, which
-  organizes the different components of an Ember application. Additionally
+  organizes the different components of an Ember application. Additionally,
   they provide a chance to access the instantiated application. Beyond
   being used for libraries, initializers are also a great way to organize
   dependency injection or setup in your own application.
@@ -333,9 +333,9 @@ var Application = Namespace.extend(RegistryProxy, {
     This flag also exposes other internal APIs that assumes the existence of
     a special "default instance", like `App.__container__.lookup(...)`.
 
-    This option is currently not configurable, its value is derived from
+    This option is currently not configurable; its value is derived from
     the `autoboot` flag – disabling `autoboot` also implies opting-out of
-    globals mode support, although they are ultimately orthogonal concerns.
+    globals mode support, although they are ultimately independent concerns.
 
     Some of the global modes features are already deprecated in 1.x. The
     existence of this flag is to untangle the globals mode code paths from
@@ -382,7 +382,7 @@ var Application = Namespace.extend(RegistryProxy, {
       }
     } else {
       // Force-assign these flags to their default values when the feature is
-      // disabled, this ensures we can rely on their values in other paths.
+      // disabled. This ensures that we can rely on their values in other paths.
       this.autoboot = this._globalsMode = true;
 
       this._prepareForGlobalsMode();
@@ -439,7 +439,7 @@ var Application = Namespace.extend(RegistryProxy, {
     Build the deprecated instance for legacy globals mode support.
     Called when creating and resetting the application.
 
-    This is orthogonal to autoboot: the deprecated instance needs to
+    This is independent from autoboot: the deprecated instance needs to
     be created at Application construction (not boot) time to expose
     App.__container__ and the global Ember.View.views registry. If
     autoboot sees that this instance exists, it will continue booting
@@ -450,7 +450,7 @@ var Application = Namespace.extend(RegistryProxy, {
     @method _buildDeprecatedInstance
   */
   _buildDeprecatedInstance() {
-    // Build a default instance
+    // Build a default instance.
     let instance = this.buildInstance();
 
     // Legacy support for App.__container__ and other global methods
@@ -581,8 +581,8 @@ var Application = Namespace.extend(RegistryProxy, {
   },
 
   /**
-    Initialize the application and return a promise that resolves with the `Ember.Application`
-    object when the boot process is complete.
+    Initialize the application and return a promise that resolves with the
+    `Ember.Application` object when the boot process is complete.
 
     Run any application initializers and run the application load hook. These hooks may
     choose to defer readiness. For example, an authentication hook might want to defer
@@ -602,16 +602,16 @@ var Application = Namespace.extend(RegistryProxy, {
     try {
       this._bootSync();
     } catch(_) {
-      // Ignore th error: in the asynchronous boot path, the error is already reflected
-      // in the promise rejection
+      // Ignore the error: in the asynchronous boot path, the error is already reflected
+      // in the promise rejection.
     }
 
     return this._bootPromise;
   },
 
   /**
-    Unfortunately, a lot of existing code assumes the booting process is
-    "synchronous". Specifically, a lot of tests assumes the last call to
+    Unfortunately, much of the existing code assumes the booting process is
+    "synchronous". Specifically, many of the tests assume the last call to
     `app.advanceReadiness()` or `app.reset()` will result in the app being
     fully-booted when the current runloop completes.
 
@@ -681,8 +681,8 @@ var Application = Namespace.extend(RegistryProxy, {
 
     Advanced Example:
 
-    Occasionally you may want to prevent the app from initializing during
-    setup. This could enable extra configuration, or enable asserting prior
+    Occasionally, you may want to prevent the app from initializing during
+    setup. This could enable extra configuration or enable asserting prior
     to the app becoming ready.
 
     ```javascript
@@ -922,7 +922,7 @@ Application.reopenClass({
 
     Instance initializer receives an object which has the following attributes:
     `name`, `before`, `after`, `initialize`. The only required attribute is
-    `initialize`, all others are optional.
+    `initialize`; all others are optional.
 
     * `name` allows you to specify under which name the instanceInitializer is
     registered. This must be a unique name, as trying to register two
@@ -938,11 +938,11 @@ Application.reopenClass({
     });
     ```
 
-    * `before` and `after` are used to ensure that this initializer is ran prior
-    or after the one identified by the value. This value can be a single string
+    * `before` and `after` are used to ensure that this initializer is run prior
+    to or after the one identified by the value. This value can be a single string
     or an array of strings, referencing the `name` of other initializers.
 
-    * See Ember.Application.initializer for discussion on the usage of before
+    * See Ember.Application.initializer for a discussion on the usage of before
     and after.
 
     Example instanceInitializer to preload data into the store.
@@ -957,9 +957,9 @@ Application.reopenClass({
         // configuration generated server side and stored in the DOM of the main
         // index.html file. This allows the app to have access to a set of data
         // without making any additional remote calls. Good for basic data that is
-        // needed for immediate rendering of the page. Keep in mind, this data,
+        // needed for immediate rendering of the page. Keep in mind: this data,
         // like all local models and data can be manipulated by the user, so it
-        // should not be relied upon for security or authorization.
+        // should not be relied on for security or authorization.
         //
         // Grab the encoded data from the meta tag
         userConfigEncoded = Ember.$('head meta[name=app-user-config]').attr('content');
@@ -997,7 +997,7 @@ if (isEnabled('ember-application-visit')) {
 
       `Ember.ApplicationInstance.BootOptions` is an interface class that exists
       purely to document the available options; you do not need to construct it
-      manually. Simply pass a regular JavaScript object containing of the
+      manually. Simply pass a regular JavaScript object containing the
       desired options:
 
       ```javascript
@@ -1071,8 +1071,8 @@ if (isEnabled('ember-application-visit')) {
       });
       ```
 
-      Do note that each app instance maintains their own registry/container, so
-      they will run in complete isolation by default.
+      Do note that each app instance maintains its own registry/container, so
+      they will run in complete isolation from one another by default.
 
       #### Server-Side Rendering (also known as FastBoot)
 
@@ -1114,7 +1114,7 @@ if (isEnabled('ember-application-visit')) {
 
       This setup allows you to run the routing layer of your Ember app in a server
       environment using Node.js and completely disable rendering. This allows you
-      to simulate and discover the resources (i.e. AJAX requests) needed to fufill
+      to simulate and discover the resources (i.e. AJAX requests) needed to fulfill
       a given request and eagerly "push" these resources to the client.
 
       ```app/initializers/network-service.js
@@ -1124,7 +1124,7 @@ if (isEnabled('ember-application-visit')) {
       // Inject a (hypothetical) service for abstracting all AJAX calls and use
       // the appropiate implementaion on the client/server. This also allows the
       // server to log all the AJAX calls made during a particular request and use
-      // that for resource-discovery purpose.
+      // that for resource-discovery purposes.
 
       export function initialize(application) {
         if (window) { // browser
@@ -1145,7 +1145,7 @@ if (isEnabled('ember-application-visit')) {
       ```app/routes/post.js
       import Ember from 'ember';
 
-      // An example of how the (hypothetical) service is used in routes.
+      // An example of how the (hypothetical) service is used in routes
 
       export default Ember.Route.extend({
         model(params) {
@@ -1219,8 +1219,8 @@ Application.reopenClass({
     });
     ```
 
-    * `before` and `after` are used to ensure that this initializer is ran prior
-    or after the one identified by the value. This value can be a single string
+    * `before` and `after` are used to ensure that this initializer is run prior
+    to or after the one identified by the value. This value can be a single string
     or an array of strings, referencing the `name` of other initializers.
 
     An example of ordering initializers, we create an initializer named `first`:
@@ -1321,7 +1321,7 @@ Application.reopenClass({
     * registered views are created every time they are looked up (they are
       not singletons)
     * registered templates are not factories; the registered value is
-      returned directly.
+      returned directly
     * the router receives the application as its `namespace` property
     * all controllers receive the router as their `target` and `controllers`
       properties
@@ -1424,8 +1424,8 @@ Application.reopenClass({
   This function defines the default lookup rules for container lookups:
 
   * templates are looked up on `Ember.TEMPLATES`
-  * other names are looked up on the application after classifying the name.
-    For example, `controller:post` looks up `App.PostController` by default.
+  * other names are looked up on the application after classifying the name
+    (for example, `controller:post` looks up `App.PostController` by default)
   * if the default lookup fails, look for registered classes on the container
 
   This allows the application to register default injections in the container
