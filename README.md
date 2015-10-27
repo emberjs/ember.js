@@ -1,4 +1,4 @@
-# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.svg)](https://codeclimate.com/github/emberjs/ember.js)
+# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.svg)](https://codeclimate.com/github/emberjs/ember.js) [![Slack](https://ember-community-slackin.herokuapp.com/badge.svg)](https://ember-community-slackin.herokuapp.com)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/ember-ci.svg)](https://saucelabs.com/u/ember-ci)
 
 
