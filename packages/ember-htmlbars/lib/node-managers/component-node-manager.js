@@ -134,7 +134,8 @@ ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_en
   var { component } = this;
 
   return instrument(component, function ComponentNodeManager_render_instrument() {
-    let env = _env.childWithView(component);
+    let meta = this.block && this.block.template.meta;
+    let env = _env.childWithView(component, meta);
 
     env.renderer.componentWillRender(component);
     env.renderedViews.push(component.elementId);

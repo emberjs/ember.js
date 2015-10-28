@@ -221,8 +221,10 @@ export default EmberObject.extend({
     var name = fullNameWithoutType;
     var namespace = get(this, 'namespace');
     var root = namespace;
+    let lastSlashIndex = name.lastIndexOf('/');
+    let dirname = lastSlashIndex !== -1 ? name.slice(0, lastSlashIndex) : null;
 
-    if (type !== 'template' && name.indexOf('/') !== -1) {
+    if (type !== 'template' && lastSlashIndex !== -1) {
       var parts = name.split('/');
       name = parts[parts.length - 1];
       var namespaceName = capitalize(parts.slice(0, -1).join('.'));
@@ -245,6 +247,7 @@ export default EmberObject.extend({
       fullName: fullName,
       type: type,
       fullNameWithoutType: fullNameWithoutType,
+      dirname,
       name: name,
       root: root,
       resolveMethodName: 'resolve' + resolveMethodName

@@ -7,7 +7,8 @@ export default function buildOwner(props) {
   let Owner = EmberObject.extend(RegistryProxy, ContainerProxy, {
     init() {
       this._super(...arguments);
-      let registry = this.__registry__ = new Registry();
+      let registry = new Registry(this._registryOptions);
+      this.__registry__ = registry;
       this.__container__ = registry.container({ owner: this });
     }
   });

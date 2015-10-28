@@ -13,6 +13,7 @@ export default function RenderEnv(options) {
   this.owner = options.owner;
   this.renderer = options.renderer;
   this.dom = options.dom;
+  this.meta = options.meta;
 
   this.hooks = defaultEnv.hooks;
   this.helpers = defaultEnv.helpers;
@@ -20,17 +21,33 @@ export default function RenderEnv(options) {
   this.destinedForDOM = this.renderer._destinedForDOM;
 }
 
-RenderEnv.build = function(view) {
+RenderEnv.build = function(view, meta) {
   return new RenderEnv({
     view: view,
     outletState: view.outletState,
     owner: getOwner(view),
     renderer: view.renderer,
-    dom: view.renderer._dom
+    dom: view.renderer._dom,
+    meta
   });
 };
 
-RenderEnv.prototype.childWithView = function(view) {
+RenderEnv.prototype.childWithMeta = function(meta) {
+  return new RenderEnv({
+    view: this.view,
+    outletState: this.outletState,
+    owner: this.owner,
+    renderer: this.renderer,
+    dom: this.dom,
+    lifecycleHooks: this.lifecycleHooks,
+    renderedViews: this.renderedViews,
+    renderedNodes: this.renderedNodes,
+    hasParentOutlet: this.hasParentOutlet,
+    meta
+  });
+};
+
+RenderEnv.prototype.childWithView = function(view, meta=this.meta) {
   return new RenderEnv({
     view: view,
     outletState: this.outletState,
@@ -40,11 +57,12 @@ RenderEnv.prototype.childWithView = function(view) {
     lifecycleHooks: this.lifecycleHooks,
     renderedViews: this.renderedViews,
     renderedNodes: this.renderedNodes,
-    hasParentOutlet: this.hasParentOutlet
+    hasParentOutlet: this.hasParentOutlet,
+    meta
   });
 };
 
-RenderEnv.prototype.childWithOutletState = function(outletState, hasParentOutlet=this.hasParentOutlet) {
+RenderEnv.prototype.childWithOutletState = function(outletState, hasParentOutlet=this.hasParentOutlet, meta=this.meta) {
   return new RenderEnv({
     view: this.view,
     outletState: outletState,
@@ -54,6 +72,7 @@ RenderEnv.prototype.childWithOutletState = function(outletState, hasParentOutlet
     lifecycleHooks: this.lifecycleHooks,
     renderedViews: this.renderedViews,
     renderedNodes: this.renderedNodes,
-    hasParentOutlet: hasParentOutlet
+    hasParentOutlet: hasParentOutlet,
+    meta
   });
 };

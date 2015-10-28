@@ -3,12 +3,18 @@
 @submodule ember-htmlbars
 */
 
+import isEnabled from 'ember-metal/features';
 import {
   CONTAINS_DASH_CACHE,
   CONTAINS_DOT_CACHE
 } from 'ember-htmlbars/system/lookup-helper';
 import { isComponentCell } from 'ember-htmlbars/keywords/closure-component';
 import { isStream } from 'ember-metal/streams/utils';
+
+function hasComponentOrTemplate(owner, path, options) {
+  return owner.hasRegistration('component:' + path, options) ||
+    owner.hasRegistration('template:components/' + path, options);
+}
 
 /*
  Given a path name, returns whether or not a component with that
@@ -28,7 +34,24 @@ export default function isComponent(env, scope, path) {
       }
     }
     if (!CONTAINS_DASH_CACHE.get(path)) { return false; }
-    return owner.hasRegistration('component:' + path) ||
-           owner.hasRegistration('template:components/' + path);
+
+    if (hasComponentOrTemplate(owner, path)) {
+      return true; // global component found
+    } else {
+      if (isEnabled('ember-htmlbars-local-lookup')) {
+        let moduleName = env.meta && env.meta.moduleName;
+
+        if (!moduleName) {
+          // without a source moduleName we can not perform local lookups
+          return false;
+        }
+
+        let options = { source: `template:${moduleName}` };
+
+        return hasComponentOrTemplate(owner, path, options);
+      } else {
+        return false;
+      }
+    }
   }
 }
