@@ -20,6 +20,8 @@ import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
 
 var trim = jQuery.trim;
+var renderDeprecationMessage = /Calling "render" in a route is only allowed inside the renderTemplate hook/;
+var disconnectOutletDeprecationMessage = /Calling "disconnectOutlet" is only allowed inside the renderTemplate hook/;
 
 var Router, App, router, registry, container, originalLoggerError;
 
@@ -544,10 +546,12 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
     templateName: 'the_real_home_template',
     actions: {
       showAlert() {
-        this.render('alert', {
-          into: 'home',
-          outlet: 'alert'
-        });
+        expectDeprecation(() => {
+          this.render('alert', {
+            into: 'home',
+            outlet: 'alert'
+          });
+        }, renderDeprecationMessage);
       }
     }
   });
@@ -2625,13 +2629,17 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
   App.PostsRoute = Route.extend({
     actions: {
       showModal() {
-        this.render('postsModal', {
-          into: 'application',
-          outlet: 'modal'
-        });
+        expectDeprecation(() => {
+          this.render('postsModal', {
+            into: 'application',
+            outlet: 'modal'
+          });
+        }, renderDeprecationMessage);
       },
       hideModal() {
-        this.disconnectOutlet({ outlet: 'modal', parentView: 'application' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({ outlet: 'modal', parentView: 'application' });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -2639,12 +2647,16 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
   App.PostsIndexRoute = Route.extend({
     actions: {
       showExtra() {
-        this.render('postsExtra', {
-          into: 'posts/index'
-        });
+        expectDeprecation(() => {
+          this.render('postsExtra', {
+            into: 'posts/index'
+          });
+        }, renderDeprecationMessage);
       },
       hideExtra() {
-        this.disconnectOutlet({ parentView: 'posts/index' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({ parentView: 'posts/index' });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -2702,13 +2714,17 @@ QUnit.test('Route supports clearing outlet using string parameter', function() {
   App.PostsRoute = Route.extend({
     actions: {
       showModal() {
-        this.render('postsModal', {
-          into: 'application',
-          outlet: 'modal'
-        });
+        expectDeprecation(() => {
+          this.render('postsModal', {
+            into: 'application',
+            outlet: 'modal'
+          });
+        }, renderDeprecationMessage);
       },
       hideModal() {
-        this.disconnectOutlet('modal');
+        expectDeprecation(() => {
+          this.disconnectOutlet('modal');
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -2734,7 +2750,7 @@ QUnit.test('Route supports clearing outlet using string parameter', function() {
 });
 
 QUnit.test('Route silently fails when cleaning an outlet from an inactive view', function() {
-  expect(1); // handleURL
+  expect(4); // handleURL
 
   Ember.TEMPLATES.application = compile('{{outlet}}');
   Ember.TEMPLATES.posts = compile('{{outlet \'modal\'}}');
@@ -2747,13 +2763,19 @@ QUnit.test('Route silently fails when cleaning an outlet from an inactive view',
   App.PostsRoute = Route.extend({
     actions: {
       hideSelf() {
-        this.disconnectOutlet({ outlet: 'main', parentView: 'application' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({ outlet: 'main', parentView: 'application' });
+        }, disconnectOutletDeprecationMessage);
       },
       showModal() {
-        this.render('modal', { into: 'posts', outlet: 'modal' });
+        expectDeprecation(() => {
+          this.render('modal', { into: 'posts', outlet: 'modal' });
+        }, renderDeprecationMessage);
       },
       hideModal() {
-        this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -3563,10 +3585,12 @@ QUnit.test('Can disconnect a named outlet at the top level', function() {
     },
     actions: {
       banish() {
-        this.disconnectOutlet({
-          parentView: 'application',
-          outlet: 'other'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'application',
+            outlet: 'other'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   }));
@@ -3612,10 +3636,12 @@ QUnit.test('Can render into a named outlet at the top level, later', function() 
   registry.register('route:application', Route.extend({
     actions: {
       launch() {
-        this.render('modal', {
-          into: 'application',
-          outlet: 'other'
-        });
+        expectDeprecation(() => {
+          this.render('modal', {
+            into: 'application',
+            outlet: 'other'
+          });
+        }, renderDeprecationMessage);
       }
     }
   }));
@@ -3678,16 +3704,20 @@ QUnit.test('Tolerates stacked renders', function() {
   App.ApplicationRoute = Route.extend({
     actions: {
       openLayer: function() {
-        this.render('layer', {
-          into: 'application',
-          outlet: 'modal'
-        });
+        expectDeprecation(() => {
+          this.render('layer', {
+            into: 'application',
+            outlet: 'modal'
+          });
+        }, renderDeprecationMessage);
       },
       close: function() {
-        this.disconnectOutlet({
-          outlet: 'modal',
-          parentView: 'application'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            outlet: 'modal',
+            parentView: 'application'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -3735,20 +3765,24 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
   App.ApplicationRoute = Route.extend({
     actions: {
       openLayer: function() {
-        this.render('layer', {
-          into: 'application',
-          outlet: 'modal'
-        });
+        expectDeprecation(() => {
+          this.render('layer', {
+            into: 'application',
+            outlet: 'modal'
+          });
+        }, renderDeprecationMessage);
       }
     }
   });
   App.IndexRoute = Route.extend({
     actions: {
       close: function() {
-        this.disconnectOutlet({
-          parentView: 'application',
-          outlet: 'modal'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'application',
+            outlet: 'modal'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -3772,11 +3806,15 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
     },
     actions: {
       changeToBar: function() {
-        this.disconnectOutlet({
-          parentView: 'foo',
-          outlet: 'main'
-        });
-        this.render('bar', { into: 'foo' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'foo',
+            outlet: 'main'
+          });
+        }, disconnectOutletDeprecationMessage);
+        expectDeprecation(() => {
+          this.render('bar', { into: 'foo' });
+        }, renderDeprecationMessage);
       }
     }
   });
@@ -3798,10 +3836,12 @@ QUnit.test('Can disconnect from the render helper', function() {
     },
     actions: {
       disconnect: function() {
-        this.disconnectOutlet({
-          parentView: 'foo',
-          outlet: 'main'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'foo',
+            outlet: 'main'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -3827,11 +3867,15 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
     },
     actions: {
       changeToBar: function() {
-        this.disconnectOutlet({
-          parentView: 'index',
-          outlet: 'main'
-        });
-        this.render('bar', { into: 'index' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'index',
+            outlet: 'main'
+          });
+        }, disconnectOutletDeprecationMessage);
+        expectDeprecation(() => {
+          this.render('bar', { into: 'index' });
+        }, renderDeprecationMessage);
       }
     }
   });
@@ -3855,10 +3899,12 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
     },
     actions: {
       disconnect: function() {
-        this.disconnectOutlet({
-          parentView: 'index',
-          outlet: 'main'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'index',
+            outlet: 'main'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -3882,11 +3928,15 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
     },
     actions: {
       changeToBaz: function() {
-        this.disconnectOutlet({
-          parentView: 'bar',
-          outlet: 'main'
-        });
-        this.render('baz', { into: 'bar' });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'bar',
+            outlet: 'main'
+          });
+        }, disconnectOutletDeprecationMessage);
+        expectDeprecation(() => {
+          this.render('baz', { into: 'bar' });
+        }, renderDeprecationMessage);
       }
     }
   });
@@ -3909,10 +3959,12 @@ QUnit.test('Can disconnect from nested render helpers', function() {
     },
     actions: {
       disconnect: function() {
-        this.disconnectOutlet({
-          parentView: 'bar',
-          outlet: 'main'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            parentView: 'bar',
+            outlet: 'main'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
@@ -4010,16 +4062,20 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
   App.ApplicationRoute = Route.extend({
     actions: {
       showModal: function() {
-        this.render({
-          outlet: undefined,
-          parentView: 'application'
-        });
+        expectDeprecation(() => {
+          this.render({
+            outlet: undefined,
+            parentView: 'application'
+          });
+        }, renderDeprecationMessage);
       },
       hideModal: function() {
-        this.disconnectOutlet({
-          outlet: undefined,
-          parentView: 'application'
-        });
+        expectDeprecation(() => {
+          this.disconnectOutlet({
+            outlet: undefined,
+            parentView: 'application'
+          });
+        }, disconnectOutletDeprecationMessage);
       }
     }
   });
