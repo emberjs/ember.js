@@ -7,7 +7,9 @@ export {
   ParamsAndHash,
   Params,
   Hash,
+  EvaluatedParams,
   EvaluatedHash,
+  EvaluatedParamsAndHash,
   Inline,
   Unknown,
   StaticAttr,
@@ -37,12 +39,13 @@ export {
   ComponentDefinitionOptions,
   AppendingComponent,
   ComponentHooks,
-  Component
+  Component,
+  appendComponent
 } from './lib/environment';
 
 export { default as DOMHelper, isWhitespace } from './lib/dom';
 export { RenderResult, manualElement } from './lib/render';
 export { ElementStack, NullHandler } from './lib/builder';
-export { Morph, MorphSpecializer, ContentMorph, TemplateMorph, Bounds } from './lib/morph';
+export { Morph, MorphSpecializer, ContentMorph, TemplateMorph, EmptyableMorph, Bounds, createMorph } from './lib/morph';
 export { default as ComponentMorph } from './lib/morphs/component';
 export { MorphList, MorphListOptions } from './lib/morphs/list';

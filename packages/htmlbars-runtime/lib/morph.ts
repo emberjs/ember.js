@@ -92,6 +92,12 @@ export abstract class ContentMorph extends Morph implements Bounds {
     return this.parentNode;
   }
 
+  createStack(nextSibling: Node) {
+    let { parentNode, frame } = this;
+    let dom = frame.dom();
+    return new ElementStack({ parentNode, nextSibling, dom });
+  }
+
   abstract firstNode(): Node;
   abstract lastNode(): Node;
 }
@@ -111,6 +117,11 @@ export abstract class EmptyableMorph extends ContentMorph implements Bounds {
 
   nextSibling() {
     return this.lastNode().nextSibling;
+  }
+
+  stackForContent(): ElementStack {
+    let nextSibling = this.currentOperations.nextSiblingForContent();
+    return this.createStack(nextSibling);
   }
 
   protected willAppend(stack: ElementStack) {

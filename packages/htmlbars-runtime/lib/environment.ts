@@ -314,10 +314,17 @@ export interface ComponentDefinition {
   hooks: ComponentHooks;
 }
 
+export function appendComponent(stack: ElementStack, definition: ComponentDefinition, options: ComponentDefinitionOptions): ContentMorph {
+  let appending = definition.begin(stack, options);
+  let morph = appending.process();
+  morph.append(stack);
+  return morph;
+}
+
 export interface AppendingComponent {
   ComponentClass: ComponentClass;
   layout: Template;
-  process();
+  process(): ContentMorph;
   update(component: Component, attrs: EvaluatedHash);
   commit();
   hooks: ComponentHooks;

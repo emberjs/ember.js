@@ -1350,17 +1350,17 @@ export class EvaluatedParamsAndHash extends PushPullReference {
     return (this._empty = this._empty || ParamsAndHash.empty().evaluate(null));
   }
 
-  private paramsRef: ChainableReference;
-  private hashRef: ChainableReference;
+  public params: EvaluatedParams;
+  public hash: EvaluatedHash;
 
   constructor({ params, hash }: ParamsAndHash, frame: Frame) {
     super();
-    this.paramsRef = this._addSource(params.evaluate(frame));
-    this.hashRef = hash.evaluate(frame);
+    this.params = this._addSource(params.evaluate(frame));
+    this.hash = hash.evaluate(frame);
   }
 
   value(): { params: any[], hash: Dict<any> } {
-    return { params: this.paramsRef.value(), hash: this.hashRef.value() };
+    return { params: this.params.value(), hash: this.hash.value() };
   }
 }
 
