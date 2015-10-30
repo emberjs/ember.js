@@ -4,7 +4,7 @@
     "simple-html-tokenizer": "tildeio/simple-html-tokenizer#1982c82fd42088657791ebc0ccb49114f14c5571"
   },
   "devDependencies": {
-    "loader.js": "tildeio/loader.js#966324cae87ec11b1a07c998862f18ec002fb3b2",
+    "loader.js": "ember-cli/loader.js",
     "qunit": "~1.18.0",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#7b2034a19a4a66ece427ec96826e34a0782634fa"
   },

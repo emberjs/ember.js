@@ -4,10 +4,12 @@ import {
   DOMHelper,
   StatementSyntax,
   Params,
+  EvaluatedParamsAndHash,
   ParamsAndHash,
   ElementStack,
   Morph,
   ContentMorph,
+  EmptyableMorph,
   TemplateMorph,
   MorphList,
   MorphListOptions,
@@ -42,7 +44,9 @@ import {
   NullHandler,
   builders,
   hashToAttrList,
-  isWhitespace
+  isWhitespace,
+  createMorph,
+  appendComponent
 } from "htmlbars-runtime";
 import { compile as rawCompile } from "htmlbars-compiler";
 import { LITERAL, Dict, InternedString, dict, assign, intern } from 'htmlbars-util';
@@ -146,10 +150,17 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
     }
 
     if (block && isSimple && key === 'each') {
-      return new EachSyntax({ args: block.args, templates: block.templates });
     }
 
     if (isSimple) {
+      if (block && key === 'each') {
+        return new EachSyntax({ args: block.args, templates: block.templates });
+      }
+
+      if (key === 'component') {
+        return new DynamicComponentSyntax({ key, args, templates: block && block.templates });
+      }
+
       let definition = this.components[key];
 
       if (definition) {
@@ -341,7 +352,7 @@ abstract class TestAppendingComponent implements AppendingComponent {
     this.tag = tag;
   }
 
-  process() {
+  process(): ContentMorph {
     let { stack, frame, templates, hash } = this;
 
     let parentHostOptions = <TestScopeOptions>frame.scope().getHostOptions();
@@ -354,12 +365,12 @@ abstract class TestAppendingComponent implements AppendingComponent {
       let blockFrame = frame.child();
       blockScope = blockFrame.childScope();
 
-      if (templates.default) {
+      if (this.templateIsPresent(templates.default)) {
         let block = new Block(templates.default, blockFrame);
         layoutScope.bindBlock(LITERAL('default'), block);
       }
 
-      if (templates.inverse) {
+      if (this.templateIsPresent(templates.inverse)) {
         let block = new Block(templates.inverse, blockFrame);
         layoutScope.bindBlock(LITERAL('inverse'), block);
       }
@@ -373,8 +384,7 @@ abstract class TestAppendingComponent implements AppendingComponent {
 
     let layout = this.layoutWithAttrs(frame);
 
-    let morph: ComponentMorph = stack.createContentMorph(ComponentMorph, { attrs: hash, appending: this, layout, component }, layoutFrame);
-    morph.append(stack);
+    return createMorph(ComponentMorph, stack.element, layoutFrame, { attrs: hash, appending: this, layout, component });
   }
 
   protected layoutWithAttrs(invokeFrame: Frame): Template {
@@ -642,7 +652,7 @@ class GlimmerAppendingComponent extends TestAppendingComponent {
   protected attributes: Template = null;
 
   begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions) {
-    this.attributes = templates.attributes;
+    this.attributes = templates && templates.attributes;
     super.begin(stack, { frame, templates, hash, tag });
   }
 
@@ -651,8 +661,8 @@ class GlimmerAppendingComponent extends TestAppendingComponent {
   }
 
   protected layoutWithAttrs(invokeFrame: Frame) {
-    let attrSyntax = (<AttributeSyntax[]>this.templates.attributes.statements);
-    let outers = attrSyntax.map(s => s.asEvaluated(invokeFrame));
+    let attrSyntax = this.attributes && <AttributeSyntax[]>this.attributes.statements;
+    let outers = attrSyntax && attrSyntax.map(s => s.asEvaluated(invokeFrame));
     let identity = this.tag;
 
     return templateWithAttrs(this.layout, { identity, outers });
@@ -782,6 +792,87 @@ class EachSyntax implements StatementSyntax {
   }
 }
 
+class DynamicComponentSyntax implements StatementSyntax {
+  type = "dynamic-component";
+
+  private args: ParamsAndHash;
+  private key: InternedString;
+  private templates: Templates;
+  public isStatic = false;
+
+  constructor({ key, args, templates }: { key: InternedString, args: ParamsAndHash, templates: Templates }) {
+    this.key = key;
+    this.args = args;
+    this.templates = templates;
+  }
+
+  prettyPrint() {
+
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): DynamicComponentMorph {
+    let { args: _args, templates } = this;
+    let args = _args.evaluate(frame);
+
+    return stack.createContentMorph(DynamicComponentMorph, { args, templates, syntax: this }, frame);
+  }
+}
+
+class DynamicComponentMorph extends EmptyableMorph {
+  private path: ChainableReference;
+  private args: EvaluatedParamsAndHash;
+  private syntax: DynamicComponentSyntax;
+  private templates: Templates;
+  private lastTag: InternedString = null;
+  private inner: ContentMorph = null;
+
+  firstNode() {
+    return this.inner && this.inner.firstNode();
+  }
+
+  lastNode() {
+    return this.inner && this.inner.lastNode();
+  }
+
+  init({ args, syntax, templates }: { path: ChainableReference, args: EvaluatedParamsAndHash, syntax: DynamicComponentSyntax, templates: Templates }) {
+    this.path = args.params.nth(0);
+    this.args = args;
+    this.syntax = syntax;
+    this.templates = templates;
+  }
+
+  append(stack: ElementStack) {
+    let { frame, path, args: { params, hash }, syntax, templates } = this;
+    let layout = templates && templates.default;
+    let tag = this.lastTag = intern(path.value());
+
+    let definition = this.frame.getComponentDefinition([path.value()], syntax);
+    let appending = definition.begin(stack, { frame, templates, hash, tag })
+    let inner = this.inner = appending.process();
+
+    this.willAppend(stack);
+    inner.append(stack);
+    this.didInsertContent(inner);
+  }
+
+  update() {
+    let tag = this.path.value();
+
+    if (tag === this.lastTag) {
+      this.inner.update();
+    } else {
+      this.lastTag = tag;
+      let { frame, args: { hash }, syntax, templates } = this;
+
+      let definition = frame.getComponentDefinition([tag], syntax);
+      let stack = this.stackForContent();
+
+      let inner = this.inner = appendComponent(stack, definition, { frame, templates, hash, tag });
+      this.didInsertContent(inner);
+    }
+  }
+}
+
 export function equalsElement(element: Element, tagName: string, attributes: Object, content: string) {
   QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
 
@@ -852,7 +943,7 @@ export function regex(r) {
   };
 }
 
-export function classes(expected) {
+export function classes(expected: string) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
     match(actual) {

@@ -233,7 +233,10 @@ export class ElementStack extends ElementBuffer {
   openComponent(tag: InternedString, definition: ComponentDefinition, { frame, templates, hash }: ComponentDefinitionOptions) {
     let appending = definition.begin(this, { frame, templates, hash, tag });
     this.operations.didOpenComponent(tag, appending);
-    appending.process();
+    let morph = appending.process();
+    this.operations.didCreateMorph(morph);
+    this.operations.didCreateContentMorph(morph);
+    morph.append(this);
   }
 
   setAttribute(name: InternedString, value: any) {
