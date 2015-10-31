@@ -81,7 +81,7 @@ function createNestedClosureComponentCell(componentCell, params, hash) {
 
   return {
     [COMPONENT_PATH]: componentCell[COMPONENT_PATH],
-    [COMPONENT_HASH]: mergeHash(componentCell[COMPONENT_HASH], hash),
+    [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH], hash),
     [COMPONENT_POSITIONAL_PARAMS]: positionalParams,
     [COMPONENT_CELL]: true
   };
@@ -117,6 +117,6 @@ function getPositionalParams(container, componentPath) {
   }
 }
 
-export function mergeHash(original, updates) {
-  return assign(original, updates);
+export function mergeInNewHash(original, updates) {
+  return assign({}, original, updates);
 }
