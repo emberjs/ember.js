@@ -284,14 +284,14 @@ var Component = View.extend(TargetActionSupport, {
     if (action === undefined) {
       action = 'action';
     }
-    actionName = get(this, 'attrs.' + action) || get(this, action);
+    actionName = get(this, `attrs.${action}`) || get(this, action);
     actionName = validateAction(this, actionName);
 
     // If no action name for that action could be found, just abort.
     if (actionName === undefined) { return; }
 
     if (typeof actionName === 'function') {
-      actionName.apply(null, contexts);
+      actionName(...contexts);
     } else {
       this.triggerAction({
         action: actionName,
@@ -302,10 +302,10 @@ var Component = View.extend(TargetActionSupport, {
 
   send(actionName, ...args) {
     var target;
-    var hasAction = this.actions && this.actions[actionName];
+    var action = this.actions && this.actions[actionName];
 
-    if (hasAction) {
-      var shouldBubble = this.actions[actionName].apply(this, args) === true;
+    if (action) {
+      var shouldBubble = action.apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
@@ -317,7 +317,7 @@ var Component = View.extend(TargetActionSupport, {
       );
       target.send(...arguments);
     } else {
-      if (!hasAction) {
+      if (!action) {
         throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);
       }
     }

@@ -42,7 +42,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   _states: cloneStates(states),
 
   init() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
@@ -142,7 +142,7 @@ export var DeprecatedCoreView = CoreView.extend({
       'Ember.CoreView is deprecated. Please use Ember.View.',
       false, { id: 'ember-views.core-view', until: '2.4.0' }
     );
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });
 
