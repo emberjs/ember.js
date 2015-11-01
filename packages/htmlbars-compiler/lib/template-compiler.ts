@@ -69,12 +69,12 @@ class JavaScriptCompiler {
     this.push('text', content);
   }
 
-  comment(value: string) {
-    this.push('comment', value);
+  append(trusted: boolean) {
+    this.push('append', this.popExpression(), trusted);
   }
 
-  unknown(path: string, unsafe: boolean = null) {
-    this.push('unknown', path, unsafe);
+  comment(value: string) {
+    this.push('comment', value);
   }
 
   modifier(path: string) {
@@ -82,13 +82,6 @@ class JavaScriptCompiler {
     let hash = this.popExpression();
 
     this.push('modifier', path, params, hash);
-  }
-
-  inline(path: string, unsafe: boolean = null) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.push('inline', path, params, hash, unsafe);
   }
 
   block(path: string, template: number, inverse: number) {
@@ -135,6 +128,10 @@ class JavaScriptCompiler {
 
   literal(value: any) {
     this.pushValue(value);
+  }
+
+  unknown(path: string, unsafe: boolean = null) {
+    this.pushExpression('unknown', path);
   }
 
   get(path: string) {
@@ -203,7 +200,6 @@ class JavaScriptCompiler {
     assert(this.expressions.length, "No expression found on stack");
     return this.expressions.pop();
   }
-
 }
 
 export default class TemplateCompiler {
@@ -305,13 +301,13 @@ export default class TemplateCompiler {
   }
 
   mustache([action]) {
-    let { path, escaped } = action;
     if (isHelper(action)) {
-      this.prepareHelper(action);
-      this.opcode('inline', action, path.parts, !escaped);
+      this.SubExpression(action);
     } else {
-      this.opcode('unknown', action, path.parts, !escaped);
+      this.ambiguous([action]);
     }
+
+    this.opcode('append', action, !action.escaped);
   }
 
   block([action/*, index, count*/]) {
@@ -333,6 +329,10 @@ export default class TemplateCompiler {
     } else {
       this.opcode('literal', action, path.value);
     }
+  }
+
+  ambiguous([action]) {
+    this.opcode('unknown', action, action.path.parts);
   }
 
   /// Expressions, invoked recursively from prepareParams and prepareHash

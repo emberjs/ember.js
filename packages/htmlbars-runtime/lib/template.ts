@@ -261,6 +261,7 @@ interface PrettyPrintable {
 }
 
 export interface ExpressionSyntax {
+  type: string;
   isStatic: boolean;
   evaluate(frame: Frame): ChainableReference;
   prettyPrint(): any;
@@ -344,7 +345,7 @@ export class Block extends DynamicExpression implements DynamicStatementSyntax, 
 
 type UnknownSexp = [string, PathSexp, boolean];
 
-export class Unknown extends DynamicExpression implements DynamicStatementSyntax {
+export class Unknown extends DynamicExpression implements ExpressionSyntax {
   public type = "unknown";
 
   static fromSpec(sexp: UnknownSexp): Unknown {
@@ -367,69 +368,58 @@ export class Unknown extends DynamicExpression implements DynamicStatementSyntax
   }
 
   prettyPrint() {
-    let operation = this.trustingMorph ? 'append-html' : 'append-text';
-    let get = new PrettyPrint('expr', 'unknown', [this.ref.prettyPrint()], null);
-    return new PrettyPrint('append', operation, [get]);
+    return new PrettyPrint('expr', 'unknown', [this.ref.prettyPrint()], null);
   }
 
-  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
+  evaluate(frame: Frame): ChainableReference {
     let { ref, trustingMorph } = this;
 
     let content;
 
     if (ref.isHelper(frame)) {
       let path = frame.lookupHelper(ref.path());
-      content = new HelperInvocationReference(path, EvaluatedParamsAndHash.empty());
+      return new HelperInvocationReference(path, EvaluatedParamsAndHash.empty());
     } else {
-      content = ref.evaluate(frame);
+      return ref.evaluate(frame);
     }
+  }
 
-    return stack.createContentMorph(InsertionMorph, { content, trustingMorph }, frame);
+  simplePath(): InternedString {
+    return this.ref.simplePath();
   }
 }
 
-type InlineSexp = [string, string[], ParamsSexp, HashSexp, boolean];
+type AppendSexp = [InternedString, ExpressionSexp, boolean];
 
-export class Inline extends DynamicExpression implements DynamicStatementSyntax {
-  public type = "inline";
+export class Append extends DynamicExpression implements DynamicStatementSyntax {
+  public type = "append";
 
-  static fromSpec(sexp: InlineSexp) {
-    let [, path, params, hash, trust] = sexp;
+  static fromSpec(sexp: AppendSexp) {
+    let [, value, trustingMorph] = sexp;
 
-    return new Inline({
-      path,
-      trustingMorph: trust,
-      args: ParamsAndHash.fromSpec(params, hash),
-    });
+    return new Append({ value: buildExpression(value), trustingMorph });
   }
 
-  static build(_path: string, args: ParamsAndHash, trust: boolean) {
-    let path = internPath(_path);
-    return new this({ path, args, trustingMorph: trust });
+  static build(value: ExpressionSyntax, trustingMorph: boolean) {
+    return new this({ value, trustingMorph });
   }
 
-  path: InternedString[];
+  value: ExpressionSyntax;
   trustingMorph: boolean;
-  args: ParamsAndHash;
 
-  constructor(options) {
+  constructor({ value, trustingMorph }: { value: ExpressionSyntax, trustingMorph: boolean }) {
     super();
-    this.path = options.path;
-    this.trustingMorph = options.trustingMorph;
-    this.args = options.args;
+    this.value = value;
+    this.trustingMorph = trustingMorph;
   }
 
   prettyPrint() {
-    let operation = this.trustingMorph ? 'append-html' : 'append-text';
-    let [params, hash] = this.args.prettyPrint();
-    let helper = new PrettyPrint('expr', this.path.join('.'), params, hash);
-
-    return new PrettyPrint('append', operation, [helper]);
+    let operation = this.trustingMorph ? 'html' : 'text';
+    return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
   }
 
   evaluate(stack: ElementStack, frame: Frame): Morph {
-    let helper = frame.lookupHelper(this.path);
-    let content = new HelperInvocationReference(helper, this.args.evaluate(frame));
+    let content = this.value.evaluate(frame);
     let trustingMorph = this.trustingMorph;
 
     return stack.createContentMorph(HelperMorph, { content, trustingMorph }, frame);
@@ -693,7 +683,7 @@ export class Text extends StaticExpression implements StaticStatementSyntax {
   }
 
   prettyPrint() {
-    return new PrettyPrint('append', 'append-text', [this.content]);
+    return new PrettyPrint('append', 'text', [this.content]);
   }
 
   evaluate(stack: ElementStack) {
@@ -919,8 +909,7 @@ export class StaticAttr extends StaticExpression implements AttributeSyntax, Sta
 const StatementNodes = {
   /// dynamic statements
   block: Block,
-  inline: Inline,
-  unknown: Unknown,
+  append: Append,
   //modifier: Modifier,
   dynamicAttr: DynamicAttr,
   dynamicProp: DynamicProp,
@@ -1044,12 +1033,19 @@ class Ref extends DynamicExpression implements ExpressionSyntax {
     return this.parts;
   }
 
+  simplePath(): InternedString {
+    if (this.parts.length === 1) {
+      return this.parts[0];
+    }
+  }
+
   isHelper(frame: Frame): boolean {
     return frame.hasHelper(this.parts);
   }
 }
 
 export class EvaluatedRef implements ExpressionSyntax {
+  public type = "evaluated-ref";
   private ref: ChainableReference;
   public isStatic = false;
 
@@ -1102,6 +1098,10 @@ export class Helper implements ExpressionSyntax {
     let helper = frame.lookupHelper(this.ref.path());
     return new HelperInvocationReference(helper, this.args.evaluate(frame));
   }
+
+  simplePath(): InternedString {
+    return this.ref.simplePath();
+  }
 }
 
 type ConcatSexp = [string, ParamsSexp];
@@ -1153,6 +1153,7 @@ class ConcatReference extends PushPullReference {
 
 const ExpressionNodes = {
   get: Get,
+  unknown: Unknown,
   helper: Helper,
   concat: Concat
 };
@@ -1181,6 +1182,8 @@ function buildExpression(spec: Spec): ExpressionSyntax {
 }
 
 export class ParamsAndHash implements ExpressionSyntax {
+  public type = "params-and-hash";
+
   static fromSpec(params: ParamsSexp, hash: HashSexp): ParamsAndHash {
     return new ParamsAndHash({ params: Params.fromSpec(params), hash: Hash.fromSpec(hash) });
   }
@@ -1251,6 +1254,8 @@ class Enumerable<T> {
 }
 
 export class Params extends Enumerable<ExpressionSyntax> implements ExpressionSyntax {
+  public type = "params";
+
   static fromSpec(sexp: ParamsSexp): Params {
     if (!sexp || sexp.length === 0) return Params.empty();
     return new Params(sexp.map(buildExpression));
@@ -1329,6 +1334,8 @@ export class EvaluatedParams extends PushPullReference {
 }
 
 export class Hash implements ExpressionSyntax {
+  public type = "hash";
+
   static fromSpec(rawPairs: HashSexp): Hash {
     if (!rawPairs) { return Hash.empty(); }
 
@@ -1459,6 +1466,8 @@ export class EvaluatedHash extends PushPullReference {
 }
 
 export class Templates implements ExpressionSyntax {
+  public type = "templates";
+
   static fromSpec(templateId, inverseId, children): Templates {
     return new Templates({
       template: templateId === null ? null : children[templateId],
@@ -1546,8 +1555,8 @@ export class TemplateBuilder {
     return DynamicAttr.build(key, value);
   }
 
-  inline(path: string, params: ParamsAndHash=null, trust: boolean=false): Inline {
-    return Inline.build(path, params, trust)
+  append(expression: ExpressionSyntax, trust: boolean=false): Append {
+    return Append.build(expression, trust);
   }
 }
 

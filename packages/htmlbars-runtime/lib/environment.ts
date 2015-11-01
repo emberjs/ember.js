@@ -1,8 +1,9 @@
 import Template, {
   StatementSyntax,
   AttributeSyntax,
+  Helper as HelperSyntax,
   Unknown,
-  Inline,
+  Append,
   Hash,
   EvaluatedHash,
   ParamsAndHash,
@@ -183,11 +184,16 @@ export abstract class Environment<T extends Object> {
   statement(statement: StatementSyntax): StatementSyntax {
     let type = statement.type;
 
-    if (type === 'unknown' && (<Unknown>statement).ref.path()[0] === 'yield') {
-      return new YieldSyntax(null);
-    } else if (type === 'inline' && (<Inline>statement).path[0] === 'yield') {
-      let args = (<Inline>statement).args;
-      return new YieldSyntax((<Inline>statement).args);
+    if (type === 'append') {
+      let append = <Append>statement;
+      let unknown = append.value.type === 'unknown' ? <Unknown>append.value : null;
+      let helper = append.value.type === 'helper' ? <HelperSyntax>append.value : null;
+
+      if (unknown && unknown.simplePath() === 'yield') {
+        return new YieldSyntax(null);
+      } else if (helper && helper.ref.simplePath()) {
+        return new YieldSyntax(helper.args);
+      }
     }
 
     return statement;

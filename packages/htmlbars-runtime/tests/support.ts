@@ -15,7 +15,7 @@ import {
   MorphListOptions,
   Template,
   Templates,
-  Inline,
+  Append,
   Unknown,
   Hash,
   EvaluatedHash,
@@ -150,32 +150,36 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
   statement<Options>(statement: StatementSyntax): StatementSyntax {
     let type = statement.type;
     let block = type === 'block' ? <BlockSyntax>statement : null;
-    let inline = type === 'inline' ? <Inline>statement : null;
-    let unknown = type === 'unknown' ? <Unknown>statement : null;
+    let append = type === 'append' ? <Append>statement : null;
 
-    let hash: Hash, args: ParamsAndHash, path: InternedString[];
 
-    if (block || inline) {
-      args = (block || inline).args;
+    let hash: Hash;
+    let args: ParamsAndHash;
+    let path: InternedString[];
+    let unknown: Unknown;
+    let helper: HelperSyntax;
+
+    if (block) {
+      args = block.args;
       hash = args.hash;
-    } else if (unknown) {
+      path = block.path;
+    } else if (append && append.value.type === 'unknown') {
+      unknown = <Unknown>append.value;
       args = ParamsAndHash.empty();
       hash = Hash.empty();
+      path = unknown.ref.path();
+    } else if (append && append.value.type === 'helper') {
+      helper = <HelperSyntax>append.value;
+      args = helper.args;
+      hash = args.hash;
+      path = helper.ref.path();
     }
 
     let key: InternedString, isSimple: boolean;
 
-    if (block || inline) {
-      isSimple = (<BlockSyntax | Inline>statement).path.length === 1;
-      path = (<BlockSyntax | Inline>statement).path;
+    if (path) {
+      isSimple = path.length === 1;
       key = path[0];
-    } else if (unknown) {
-      isSimple = unknown.ref.path().length === 1;
-      path = unknown.ref.path();
-      key = path[0];
-    }
-
-    if (block && isSimple && key === 'each') {
     }
 
     if (isSimple) {
