@@ -27,7 +27,6 @@ import {
   AddClass,
   EvaluatedRef,
   GetSyntax,
-  ElementSyntax,
   ValueSyntax,
   BlockSyntax,
   OpenElement,
