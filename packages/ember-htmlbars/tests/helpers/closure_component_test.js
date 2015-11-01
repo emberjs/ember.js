@@ -385,4 +385,25 @@ if (isEnabled('ember-contextual-components')) {
     runAppend(component);
     equal(component.$().text(), expectedText, '-looked-up component rendered');
   });
+
+  QUnit.test('adding parameters to a closure component\'s instance does not add it to other instances', function(assert) {
+    registry.register(
+      'template:components/select-box',
+      compile('{{yield (hash option=(component "select-box-option"))}}')
+    );
+
+    registry.register(
+      'template:components/select-box-option',
+      compile('{{label}}')
+    );
+
+    let template = compile(
+      '{{#select-box as |sb|}}{{sb.option label="Foo"}}{{sb.option}}{{/select-box}}'
+    );
+
+    component = Component.extend({ container, template }).create();
+
+    runAppend(component);
+    equal(component.$().text(), 'Foo', 'there is only one Foo');
+  });
 }

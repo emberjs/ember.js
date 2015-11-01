@@ -4,7 +4,7 @@ import {
   COMPONENT_POSITIONAL_PARAMS,
   COMPONENT_HASH,
   isComponentCell,
-  mergeHash,
+  mergeInNewHash,
 } from  './closure-component';
 import { processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';
 
@@ -63,7 +63,7 @@ function render(morph, env, scope, [path, ...params], hash, template, inverse, v
     // This needs to be done in each nesting level to avoid raising assertions
     processPositionalParams(null, positionalParams, params, hash);
     params = [];
-    hash = mergeHash(closureComponent[COMPONENT_HASH], hash);
+    hash = mergeInNewHash(closureComponent[COMPONENT_HASH], hash);
   }
 
   let templates = { default: template, inverse };

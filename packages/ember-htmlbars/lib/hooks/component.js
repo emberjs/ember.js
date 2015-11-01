@@ -11,7 +11,7 @@ import {
   COMPONENT_PATH,
   COMPONENT_HASH,
   isComponentCell,
-  mergeHash,
+  mergeInNewHash,
 } from 'ember-htmlbars/keywords/closure-component';
 
 var IS_ANGLE_CACHE = new Cache(1000, function(key) {
@@ -33,7 +33,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     let componentCell = stream.value();
     if (isComponentCell(componentCell)) {
       tagName = componentCell[COMPONENT_PATH];
-      attrs = mergeHash(componentCell[COMPONENT_HASH], attrs);
+      attrs = mergeInNewHash(componentCell[COMPONENT_HASH], attrs);
     }
   }
 
