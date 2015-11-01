@@ -105,6 +105,7 @@ export class HelperMorph extends EmptyableMorph {
     let inner = this.inner = createMorph(insertion, this.parentNode, this.frame, { content: this.reference, trustingMorph });
 
     inner.append(stack);
+    this.didInsertContent(inner);
   }
 
   update() {
@@ -117,11 +118,12 @@ function insertionForUserContent(content: any, trustingMorph: boolean): typeof I
     case 'string':
       return insertionForText(content, trustingMorph);
     case 'object':
-      if (<string>SAFE_BRAND in content) { return HtmlInsertion; }
+      if (content && <string>SAFE_BRAND in content) { return HtmlInsertion; }
       // if ((<Node>content).nodeType)    { return NodeInsertion; }
       /* falls through */
     default:
-      throw new Error(`Helpers must return strings or safe strings, not ${content}`);
+      return insertionForText(String(content), trustingMorph);
+      // throw new Error(`Helpers must return strings or safe strings, not ${content}`);
   }
 }
 

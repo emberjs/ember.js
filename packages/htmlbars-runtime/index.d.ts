@@ -9,7 +9,7 @@ export {
   EvaluatedParams,
   EvaluatedHash,
   EvaluatedParamsAndHash,
-  Inline,
+  Append,
   Unknown,
   StaticAttr,
   DynamicAttr,
