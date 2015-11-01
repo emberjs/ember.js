@@ -14,14 +14,14 @@ import { Scope } from './environment';
 
 interface RenderResultOptions {
 	template: Template;
-  scope: Scope;
+  scope: Scope<any>;
 	morphs: Morph[];
   bounds: Bounds;
 }
 
 export class RenderResult implements Bounds {
   public template: Template;
-  public scope: Scope;
+  public scope: Scope<any>;
   private morphs: Morph[];
   private bounds: Bounds;
 

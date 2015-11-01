@@ -31,19 +31,18 @@ import {
   ValueSyntax,
   BlockSyntax,
   OpenElement,
-  ComponentSyntax,
   ComponentClass,
   ComponentDefinition,
   ComponentDefinitionOptions,
   AppendingComponent,
+  AppendingComponentOptions,
+  AppendingComponentClass,
   ComponentHooks,
   Component,
-  TemplateEvaluation,
   Scope,
   Block,
   NullHandler,
   builders,
-  hashToAttrList,
   isWhitespace,
   createMorph,
   appendComponent
@@ -74,136 +73,6 @@ class TestScope extends Scope<TestScopeOptions> {
 
   getHostOptions(): TestScopeOptions {
     return this.hostOptions || (this.parent && this.parent.getHostOptions());
-  }
-}
-
-export class TestEnvironment extends Environment<TestScopeOptions> {
-  private helpers = {};
-  private components = dict<ComponentDefinition>();
-
-  constructor(doc: HTMLDocument=document) {
-    super(new DOMHelper(doc), Meta);
-  }
-
-  createRootScope(): TestScope {
-    return new TestScope(null, this.meta, []);
-  }
-
-  registerHelper(name, helper) {
-    this.helpers[name] = helper;
-  }
-
-  registerComponent(name: string, definition: ComponentDefinition) {
-    this.components[name] = definition;
-  }
-
-  registerCurlyComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
-    let definition = new CurlyComponentDefinition(Component, compile(layout));
-    this.registerComponent(name, definition);
-    return definition;
-  }
-
-  registerEmberishComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
-    let definition = new CurlyEmberishComponentDefinition(Component, compile(layout));
-    this.registerComponent(name, definition);
-    return definition;
-  }
-
-  registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
-    let definition = new GlimmerComponentDefinition(Component, compile(layout));
-    this.registerComponent(name, definition);
-    return definition;
-  }
-
-  registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): TestComponentDefinition {
-    let definition = new GlimmerEmberishComponentDefinition(Component, compile(layout));
-    this.registerComponent(name, definition);
-    return definition;
-  }
-
-  statement<Options>(statement: StatementSyntax): StatementSyntax {
-    let type = statement.type;
-    let block = type === 'block' ? <BlockSyntax>statement : null;
-    let inline = type === 'inline' ? <Inline>statement : null;
-    let unknown = type === 'unknown' ? <Unknown>statement : null;
-
-    let hash: Hash, args: ParamsAndHash, path: InternedString[];
-
-    if (block || inline) {
-      args = (block || inline).args;
-      hash = args.hash;
-    } else if (unknown) {
-      args = ParamsAndHash.empty();
-      hash = Hash.empty();
-    }
-
-    let key: string, isSimple: boolean;
-
-    if (block || inline) {
-      isSimple = (<BlockSyntax | Inline>statement).path.length === 1;
-      path = (<BlockSyntax | Inline>statement).path;
-      key = path[0];
-    } else if (unknown) {
-      isSimple = unknown.ref.path().length === 1;
-      path = unknown.ref.path();
-      key = path[0];
-    }
-
-    if (block && isSimple && key === 'each') {
-    }
-
-    if (isSimple) {
-      if (block && key === 'each') {
-        return new EachSyntax({ args: block.args, templates: block.templates });
-      }
-
-      if (key === 'component') {
-        return new DynamicComponentSyntax({ key, args, templates: block && block.templates });
-      }
-
-      let definition = this.components[key];
-
-      if (definition) {
-        let templates = block && block.templates;
-        return (new CurlyComponent({ path, hash, templates }).withArgs(args);
-      }
-    }
-
-    return super.statement(statement);
-  }
-
-  hasHelper(scope, helperName) {
-    return helperName.length === 1 && helperName[0] in this.helpers;
-  }
-
-  lookupHelper(scope: TestScope, helperParts: string[]) {
-    let helperName = helperParts[0];
-
-    if (helperName === 'hasBlock') return new ConstReference(hasBlock(scope));
-    if (helperName === 'hasBlockParams') return new ConstReference(hasBlockParams(scope));
-
-    let helper = this.helpers[helperName];
-
-    if (!helper) throw new Error(`Helper for ${helperParts.join('.')} not found.`);
-    return new ConstReference(this.helpers[helperName]);
-  }
-
-  getComponentDefinition(scope, name: string[], syntax: ComponentSyntax): ComponentDefinition {
-    return this.components[name[0]];
-  }
-}
-
-function hasBlock(scope: TestScope) {
-  return function([name]: [InternedString]) {
-    return !!scope.getBlock(name || LITERAL('default'));
-  }
-}
-
-function hasBlockParams(scope: TestScope) {
-  return function([name]: [InternedString]) {
-    let block = scope.getBlock(name || LITERAL('default'));
-    if (!block) return false;
-    return !!block.template.arity;
   }
 }
 
@@ -239,6 +108,131 @@ const hooks: ComponentHooks = {
     if (typeof component.didUpdateAttrs === 'function') component.didUpdateAttrs();
   }
 };
+
+export class TestEnvironment extends Environment<TestScopeOptions> {
+  private helpers = {};
+  private components = dict<ComponentDefinition>();
+
+  constructor(doc: HTMLDocument=document) {
+    super(new DOMHelper(doc), Meta);
+  }
+
+  createRootScope(): TestScope {
+    return new TestScope(null, this.meta, []);
+  }
+
+  registerHelper(name, helper) {
+    this.helpers[name] = helper;
+  }
+
+  registerComponent(name: string, ComponentClass: ComponentClass, layout: string, AppendingComponent: AppendingComponentClass) {
+    let testHooks = new HookIntrospection(hooks);
+    let definition = new ComponentDefinition(testHooks, ComponentClass, compile(layout), AppendingComponent);
+    this.components[name] = definition;
+    return definition;
+  }
+
+  registerCurlyComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
+    return this.registerComponent(name, Component, layout, CurlyAppendingComponent)
+  }
+
+  registerEmberishComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
+    return this.registerComponent(name, Component, layout, CurlyEmberishAppendingComponent);
+  }
+
+  registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
+    return this.registerComponent(name, Component, layout, GlimmerAppendingComponent);
+  }
+
+  registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
+    return this.registerComponent(name, Component, layout, GlimmerEmberishAppendingComponent);
+  }
+
+  statement<Options>(statement: StatementSyntax): StatementSyntax {
+    let type = statement.type;
+    let block = type === 'block' ? <BlockSyntax>statement : null;
+    let inline = type === 'inline' ? <Inline>statement : null;
+    let unknown = type === 'unknown' ? <Unknown>statement : null;
+
+    let hash: Hash, args: ParamsAndHash, path: InternedString[];
+
+    if (block || inline) {
+      args = (block || inline).args;
+      hash = args.hash;
+    } else if (unknown) {
+      args = ParamsAndHash.empty();
+      hash = Hash.empty();
+    }
+
+    let key: InternedString, isSimple: boolean;
+
+    if (block || inline) {
+      isSimple = (<BlockSyntax | Inline>statement).path.length === 1;
+      path = (<BlockSyntax | Inline>statement).path;
+      key = path[0];
+    } else if (unknown) {
+      isSimple = unknown.ref.path().length === 1;
+      path = unknown.ref.path();
+      key = path[0];
+    }
+
+    if (block && isSimple && key === 'each') {
+    }
+
+    if (isSimple) {
+      if (block && key === 'each') {
+        return new EachSyntax({ args: block.args, templates: block.templates });
+      }
+
+      if (key === 'component') {
+        return new DynamicComponentSyntax({ key, args, templates: block && block.templates });
+      }
+
+      let definition = this.components[<string>key];
+
+      if (definition) {
+        let templates = block && block.templates;
+        return (new CurlyComponent({ path, hash, templates }).withArgs(args));
+      }
+    }
+
+    return super.statement(statement);
+  }
+
+  hasHelper(scope, helperName) {
+    return helperName.length === 1 && helperName[0] in this.helpers;
+  }
+
+  lookupHelper(scope: TestScope, helperParts: string[]) {
+    let helperName = helperParts[0];
+
+    if (helperName === 'hasBlock') return new ConstReference(hasBlock(scope));
+    if (helperName === 'hasBlockParams') return new ConstReference(hasBlockParams(scope));
+
+    let helper = this.helpers[helperName];
+
+    if (!helper) throw new Error(`Helper for ${helperParts.join('.')} not found.`);
+    return new ConstReference(this.helpers[helperName]);
+  }
+
+  getComponentDefinition(scope, name: string[], syntax: StatementSyntax): ComponentDefinition {
+    return this.components[name[0]];
+  }
+}
+
+function hasBlock(scope: TestScope) {
+  return function([name]: [InternedString]) {
+    return !!scope.getBlock(name || LITERAL('default'));
+  }
+}
+
+function hasBlockParams(scope: TestScope) {
+  return function([name]: [InternedString]) {
+    let block = scope.getBlock(name || LITERAL('default'));
+    if (!block) return false;
+    return !!block.template.arity;
+  }
+}
 
 export class HookIntrospection implements ComponentHooks {
   private inner: ComponentHooks;
@@ -297,104 +291,9 @@ export class HookIntrospection implements ComponentHooks {
   }
 }
 
-abstract class TestComponentDefinition implements ComponentDefinition {
-  public hooks: HookIntrospection = new HookIntrospection(hooks);
-  public ComponentClass: ComponentClass;
-  public layout: Template;
-  protected AppendingComponent: TestAppendingComponentClass;
-
-  constructor(ComponentClass: ComponentClass, layout: Template) {
-    this.ComponentClass = ComponentClass;
-    this.layout = layout;
-  }
-
-  begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions): TestAppendingComponent {
-    let { hooks, ComponentClass, layout } = this;
-    let appending = new this.AppendingComponent({ hooks, ComponentClass, layout, stack });
-    appending.begin(stack, { frame, templates, hash, tag });
-    return appending;
-  }
-}
-
-interface TestAppendingComponentClass {
-  new({ hooks, ComponentClass, layout, stack }: AppendingComponentOptions): TestAppendingComponent;
-}
-
-interface AppendingComponentOptions {
-  hooks: HookIntrospection;
-  ComponentClass: ComponentClass;
-  layout: Template;
-  stack: ElementStack;
-}
-
-abstract class TestAppendingComponent implements AppendingComponent {
-  public hooks: HookIntrospection;
-  public ComponentClass: ComponentClass;
-  public layout: Template;
-  protected stack: ElementStack;
-  protected frame: Frame = null;
-  protected attrs: ChainableReference = null;
-  protected templates: Templates = null;
-  protected hash: EvaluatedHash = null;
-  protected tag: InternedString = null;
-
-  constructor({ hooks, ComponentClass, layout, stack }: AppendingComponentOptions) {
-    this.hooks = hooks;
-    this.ComponentClass = ComponentClass;
-    this.layout = layout.clone();
-    this.stack = stack;
-  }
-
-  begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions) {
-    this.frame = frame;
-    this.templates = templates;
-    this.hash = hash;
-    this.tag = tag;
-  }
-
-  process(): ContentMorph {
-    let { stack, frame, templates, hash } = this;
-
-    let parentHostOptions = <TestScopeOptions>frame.scope().getHostOptions();
-
-    let layoutFrame = frame.child();
-    let layoutScope = layoutFrame.resetScope();
-    let blockScope;
-
-    if (templates) {
-      let blockFrame = frame.child();
-      blockScope = blockFrame.childScope();
-
-      if (this.templateIsPresent(templates.default)) {
-        let block = new Block(templates.default, blockFrame);
-        layoutScope.bindBlock(LITERAL('default'), block);
-      }
-
-      if (this.templateIsPresent(templates.inverse)) {
-        let block = new Block(templates.inverse, blockFrame);
-        layoutScope.bindBlock(LITERAL('inverse'), block);
-      }
-    }
-
-    let attrs = hash.value();
-    let component = this.createComponent(attrs, parentHostOptions && parentHostOptions.component);
-
-    if (blockScope) blockScope.bindHostOptions({ component });
-    this.setupLayoutScope(layoutFrame, component);
-
-    let layout = this.layoutWithAttrs(frame);
-
-    return createMorph(ComponentMorph, stack.element, layoutFrame, { attrs: hash, appending: this, layout, component });
-  }
-
-  protected layoutWithAttrs(invokeFrame: Frame): Template {
-    return this.layout;
-  }
-
-  protected setupLayoutScope(layoutFrame: Frame, component: Component) {
-    let scope = layoutFrame.scope();
-
-    scope.bindSelf(component);
+abstract class TestAppendingComponent extends AppendingComponent {
+  protected setupLayoutScope(scope: Scope<TestScopeOptions>, component: Component) {
+    super.setupLayoutScope(scope, component);
     scope.bindHostOptions({ component });
 
     let template = this.templates && this.templates.default;
@@ -406,10 +305,13 @@ abstract class TestAppendingComponent implements AppendingComponent {
     }
   }
 
-  abstract commit();
+  protected augmentBlockScope(blockScope: Scope<TestScopeOptions>, parentScope: Scope<TestScopeOptions>, component: Component) {
+    blockScope.bindHostOptions({ component });
+  }
+
   abstract update(component: Component, hash: EvaluatedHash);
-  abstract protected createComponent(attrs: Dict<any>, parentComponent: Component): Component;
-  abstract protected templateIsPresent(template: Template): boolean;
+  protected abstract createComponent(attrs: Dict<any>, parentScope: Scope<any>): Component;
+  protected abstract templateIsPresent(template: Template): boolean;
 }
 
 interface TemplateWithAttrsOptions {
@@ -478,96 +380,6 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
   return Template.fromStatements(out);
 }
 
-interface ComponentMorphOptions {
-  attrs: EvaluatedHash;
-  appending: AppendingComponent;
-  layout: Template;
-  component: Component;
-}
-
-class ComponentMorph extends TemplateMorph {
-  private attrs: EvaluatedHash;
-  private appending: AppendingComponent;
-  private component: Component;
-
-  init({ attrs, appending, layout, component }: ComponentMorphOptions) {
-    this.attrs = attrs;
-    this.appending = appending;
-    this.template = layout;
-    this.component = component;
-  }
-
-  append(stack: ElementStack) {
-    this.willAppend(stack);
-
-    let { frame, component, template, appending: { hooks } } = this;
-
-    frame.scope().bindSelf(component);
-
-    hooks.didReceiveAttrs(component);
-    hooks.willRender(component);
-    frame.didCreate(component, hooks);
-
-    super.appendTemplate(template, new ComponentHandler());
-  }
-
-  update() {
-    let { frame, appending, component, attrs } = this;
-    let { hooks } = appending;
-
-    appending.update(component, attrs);
-
-    hooks.didReceiveAttrs(component);
-    hooks.willUpdate(component);
-    hooks.willRender(component);
-
-    super.update();
-
-    frame.didUpdate(component, hooks);
-  }
-}
-
-export class ComponentHandler extends NullHandler {
-  public rootElement: Element = null;
-
-  willOpenElement(tag: string) {
-    if (this.rootElement) {
-      throw new Error("You cannot create multiple root elements in a component's layout");
-    }
-  }
-
-  didOpenElement(element: Element) {
-    this.rootElement = element;
-  }
-
-  willAppendText(text: string) {
-    if (isWhitespace(text)) return;
-    throw new Error("You cannot have non-whitespace text at the root of a component's layout");
-  }
-
-  willCreateContentMorph(Type: typeof ContentMorph, attrs: Object) {
-    if (Type.hasStaticElement) return;
-    throw new Error("You cannot have curlies (`{{}}`) at the root of a component's layout")
-  }
-}
-
-// class EmberishComponentDefinition extends CurlyComponentDefinition {
-//   mergeAttrs(component: any, layout: Template, outer: AttributeSyntax[], layoutFrame: Frame, contentFrame: Frame) {
-//     let rawBindings = component['attributeBindings'];
-
-//     let attrs = rawBindings.map(b => {
-//       let [value, key] = b.split(':');
-//       return DynamicAttr.build(key || value, new EvaluatedRef(GetSyntax.build(value).evaluate(layoutFrame)));
-//     });
-
-//     layout.statements.splice(1, 0, ...attrs);
-//   }
-// }
-
-class CurlyComponentDefinition extends TestComponentDefinition {
-  protected AppendingComponent = CurlyAppendingComponent;
-}
-
 class CurlyAppendingComponent extends TestAppendingComponent {
   protected templates: Templates;
   protected hash: EvaluatedHash;
@@ -581,7 +393,8 @@ class CurlyAppendingComponent extends TestAppendingComponent {
     this.layout.statements.push(b.closeElement());
   }
 
-  protected createComponent(attrs: Dict<any>, parentComponent: Component) {
+  protected createComponent(attrs: Dict<any>, parentScope: Scope<TestScopeOptions>) {
+    let parentComponent = parentScope.getHostOptions().component;
     let options = assign({ parentView: parentComponent, attrs }, attrs);
     return new this.ComponentClass(options);
   }
@@ -594,8 +407,6 @@ class CurlyAppendingComponent extends TestAppendingComponent {
     return !!template;
   }
 
-  commit() {}
-
   update(component: Component, hash: EvaluatedHash) {
     let attrs = hash.value();
 
@@ -605,11 +416,6 @@ class CurlyAppendingComponent extends TestAppendingComponent {
 
     set(component, 'attrs', attrs);
   }
-}
-
-
-class CurlyEmberishComponentDefinition extends TestComponentDefinition {
-  protected AppendingComponent = CurlyEmberishAppendingComponent;
 }
 
 let uuid = 1;
@@ -644,10 +450,6 @@ class CurlyEmberishAppendingComponent extends CurlyAppendingComponent {
   }
 }
 
-class GlimmerComponentDefinition extends TestComponentDefinition {
-  protected AppendingComponent = GlimmerAppendingComponent;
-}
-
 class GlimmerAppendingComponent extends TestAppendingComponent {
   protected attributes: Template = null;
 
@@ -656,7 +458,8 @@ class GlimmerAppendingComponent extends TestAppendingComponent {
     super.begin(stack, { frame, templates, hash, tag });
   }
 
-  protected createComponent(attrs: Dict<any>, parentComponent: Component): Component {
+  protected createComponent(attrs: Dict<any>, parentScope: Scope<TestScopeOptions>): Component {
+    let parentComponent = parentScope.getHostOptions().component;
     return new this.ComponentClass({ attrs, parentView: parentComponent });
   }
 
@@ -672,15 +475,9 @@ class GlimmerAppendingComponent extends TestAppendingComponent {
     return template && !template.isEmpty;
   }
 
-  commit() {}
-
   update(component: Component, hash: EvaluatedHash) {
     set(component, 'attrs', hash.value());
   }
-}
-
-class GlimmerEmberishComponentDefinition extends GlimmerComponentDefinition {
-  protected AppendingComponent = GlimmerEmberishAppendingComponent;
 }
 
 class GlimmerEmberishAppendingComponent extends GlimmerAppendingComponent {
@@ -698,6 +495,8 @@ class GlimmerEmberishAppendingComponent extends GlimmerAppendingComponent {
     this.layout = templateWithAttrs(this.layout, { defaults });
   }
 }
+
+const DIV = LITERAL('div');
 
 class CurlyComponent implements StatementSyntax {
   type = "curly-component";
@@ -723,14 +522,14 @@ class CurlyComponent implements StatementSyntax {
     return this;
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  evaluate(stack: ElementStack, frame: Frame) {
     let { path, args, templates } = this;
     let tag = path[0];
 
     let definition = frame.getComponentDefinition(path, this);
     let hash = processPositionals(definition, args);
 
-    stack.openComponent(LITERAL('div'), definition, { tag, frame, templates, hash: hash.evaluate(frame) });
+    stack.openComponent(definition, { tag: DIV, frame, templates, hash: hash.evaluate(frame) });
     stack.closeElement();
   }
 }
@@ -894,10 +693,14 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
     actualAttributes[element.attributes[i].name] = element.attributes[i].value;
   }
 
-  QUnit.push(element.attributes.length === expectedCount, element.attributes.length, expectedCount, `Expected ${expectedCount} attributes; got ${element.outerHTML}`);
+  if (!(element instanceof HTMLElement)) {
+    QUnit.push(element instanceof HTMLElement, null, null, "Element must be an HTML Element, not an SVG Element");
+  } else {
+    QUnit.push(element.attributes.length === expectedCount, element.attributes.length, expectedCount, `Expected ${expectedCount} attributes; got ${element.outerHTML}`);
 
-  if (content !== null) {
-    QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+    if (content !== null) {
+      QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+    }
   }
 }
 

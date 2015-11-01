@@ -229,7 +229,7 @@ class Replay {
       }
 
       let nextSibling = current && current.firstNode();
-      let child = createMorph(InnerBlockMorph, parentNode, childFrame, { template, prev: null, key, nextSibling });
+      let child: InnerBlockMorph = createMorph(InnerBlockMorph, parentNode, childFrame, { template, prev: null, key, nextSibling });
       child.handled = true;
       map[<string>key] = child;
       list.insertBefore(child, current);

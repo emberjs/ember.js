@@ -8,7 +8,13 @@ import {
   createMorph
 } from './morph';
 
-import { Frame, Block, ComponentDefinition, ComponentDefinitionOptions, AppendingComponent } from './environment';
+import {
+  ComponentDefinition,
+  ComponentDefinitionOptions,
+  AppendingComponent
+} from './component/interfaces';
+
+import { Frame, Block } from './environment';
 import DOMHelper from './dom';
 import {
   DynamicStatementSyntax,
@@ -204,8 +210,8 @@ export class ElementStack extends ElementBuffer {
     return morph;
   }
 
-  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams) {
-    return this.createContentMorph(BlockInvocationMorph, { block, blockArguments }, frame);
+  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams): BlockInvocationMorph {
+    return <BlockInvocationMorph>this.createContentMorph(BlockInvocationMorph, { block, blockArguments }, frame);
   }
 
   appendText(text: string): Text {
@@ -230,7 +236,7 @@ export class ElementStack extends ElementBuffer {
     return element;
   }
 
-  openComponent(tag: InternedString, definition: ComponentDefinition, { frame, templates, hash }: ComponentDefinitionOptions) {
+  openComponent(definition: ComponentDefinition, { tag, frame, templates, hash }: ComponentDefinitionOptions) {
     let appending = definition.begin(this, { frame, templates, hash, tag });
     this.operations.didOpenComponent(tag, appending);
     let morph = appending.process();
@@ -319,17 +325,18 @@ function eachHandler(handlers: Handler[], callback: (handler: Handler) => void) 
   }
 }
 
-abstract class Operations {
-  abstract didCreateContentMorph<M extends ContentMorph, InitOptions>(morph: ContentMorph);
-  abstract didCreateMorph(morph: Morph);
+interface Operations extends Handler {
+  didCreateContentMorph<M extends ContentMorph, InitOptions>(morph: ContentMorph);
+  didCreateMorph(morph: Morph);
+  closeElement();
+  appendStatement(statement: StatementSyntax, frame: Frame, evaluation: TemplateEvaluation);
 }
 
-export class DelegatingOperations extends Operations implements Handler {
+export class DelegatingOperations implements Operations {
   protected handlers: Handler[];
   public stack: ElementStack;
 
   constructor(stack: ElementStack, handlers: Handler[]) {
-    super();
     this.stack = stack;
     this.handlers = handlers;
   }
@@ -343,7 +350,7 @@ export class DelegatingOperations extends Operations implements Handler {
     }
 
     let content = refinedStatement.evaluate(this.stack, frame, evaluation);
-    if (content) content.append(this.stack);
+    if (content) content.append(this.stack, evaluation);
   }
 
   closeElement() {
@@ -525,7 +532,6 @@ export class ComponentOperations extends DelegatingOperations {
 
   didCloseElement() {
     let { appending, parent, stack } = this;
-    this.appending.commit();
     stack.operations = parent;
   }
 }
