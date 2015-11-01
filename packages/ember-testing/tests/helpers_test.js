@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import Route from 'ember-routing/system/route';
 import Controller from 'ember-runtime/controllers/controller';
-import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
@@ -64,11 +63,6 @@ function assertHelpers(application, helperContainer, expected) {
   checkHelperPresent('fillIn', expected);
   checkHelperPresent('wait', expected);
   checkHelperPresent('triggerEvent', expected);
-
-  if (isEnabled('ember-testing-checkbox-helpers')) {
-    checkHelperPresent('check', expected);
-    checkHelperPresent('uncheck', expected);
-  }
 }
 
 function assertNoHelpers(application, helperContainer) {
@@ -646,100 +640,6 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
 
   return wait();
 });
-
-if (isEnabled('ember-testing-checkbox-helpers')) {
-  QUnit.test('`check` ensures checkboxes are `checked` state for checkboxes', function() {
-    expect(2);
-    var check, find, visit, andThen, wait;
-
-    App.IndexView = EmberView.extend({
-      template: compile('<input type="checkbox" id="unchecked"><input type="checkbox" id="checked" checked>')
-    });
-
-    run(App, App.advanceReadiness);
-
-    check = App.testHelpers.check;
-    find = App.testHelpers.find;
-    visit = App.testHelpers.visit;
-    andThen = App.testHelpers.andThen;
-    wait = App.testHelpers.wait;
-
-    visit('/');
-    check('#unchecked');
-    check('#checked');
-    andThen(function() {
-      equal(find('#unchecked').is(':checked'), true, 'can check an unchecked checkbox');
-      equal(find('#checked').is(':checked'), true, 'can check a checked checkbox');
-    });
-
-    return wait();
-  });
-
-  QUnit.test('`uncheck` ensures checkboxes are not `checked`', function() {
-    expect(2);
-    var uncheck, find, visit, andThen, wait;
-
-    App.IndexView = EmberView.extend({
-      template: compile('<input type="checkbox" id="unchecked"><input type="checkbox" id="checked" checked>')
-    });
-
-    run(App, App.advanceReadiness);
-
-    uncheck = App.testHelpers.uncheck;
-    find = App.testHelpers.find;
-    visit = App.testHelpers.visit;
-    andThen = App.testHelpers.andThen;
-    wait = App.testHelpers.wait;
-
-    visit('/');
-    uncheck('#unchecked');
-    uncheck('#checked');
-    andThen(function() {
-      equal(find('#unchecked').is(':checked'), false, 'can uncheck an unchecked checkbox');
-      equal(find('#checked').is(':checked'), false, 'can uncheck a checked checkbox');
-    });
-
-    return wait();
-  });
-
-  QUnit.test('`check` asserts the selected inputs are checkboxes', function() {
-    var check, visit;
-
-    App.IndexView = EmberView.extend({
-      template: compile('<input type="text" id="text">')
-    });
-
-    run(App, App.advanceReadiness);
-
-    check = App.testHelpers.check;
-    visit = App.testHelpers.visit;
-
-    return visit('/').then(function() {
-      return check('#text').catch(function(error) {
-        ok(/must be a checkbox/.test(error.message));
-      });
-    });
-  });
-
-  QUnit.test('`uncheck` asserts the selected inputs are checkboxes', function() {
-    var visit, uncheck;
-
-    App.IndexView = EmberView.extend({
-      template: compile('<input type="text" id="text">')
-    });
-
-    run(App, App.advanceReadiness);
-
-    visit = App.testHelpers.visit;
-    uncheck = App.testHelpers.uncheck;
-
-    return visit('/').then(function() {
-      return uncheck('#text').catch(function(error) {
-        ok(/must be a checkbox/.test(error.message));
-      });
-    });
-  });
-}
 
 QUnit.test('`triggerEvent accepts an optional options hash and context', function() {
   expect(3);
