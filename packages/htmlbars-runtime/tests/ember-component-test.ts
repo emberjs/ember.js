@@ -1046,7 +1046,7 @@ QUnit.test('non-block with properties on attrs and component class', function() 
 });
 
 QUnit.test('rerendering component with attrs from parent', function() {
-  let { hooks } = env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>');
+  let hooks = env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>').hooks as HookIntrospection;
 
   appendViewFor('<non-block someProp={{someProp}} />', {
     someProp: 'wycats'
@@ -1139,7 +1139,7 @@ QUnit.test('rerendering component with attrs from parent', function() {
   class NonBlock extends Component {
   }
 
-  let { hooks } = env.registerCurlyComponent('non-block', NonBlock, 'In layout - someProp: {{someProp}}');
+  let hooks = <HookIntrospection>env.registerCurlyComponent('non-block', NonBlock, 'In layout - someProp: {{someProp}}').hooks;
 
   appendViewFor('{{non-block someProp=someProp}}', { someProp: 'wycats' })
 

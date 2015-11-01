@@ -30,8 +30,6 @@ import {
   BlockHelperMorph
 } from "./morphs/block";
 
-import ComponentMorph from './morphs/component';
-
 import { AttrMorph, SetPropertyMorph } from "./morphs/attrs";
 
 type Spec = any[];
@@ -651,83 +649,6 @@ export class AddClass extends StaticExpression implements AttributeSyntax, Prett
   }
 }
 
-type ComponentSexp = [InternedString, InternedString, HashSexp, number, number];
-
-export class Component extends DynamicExpression implements StatementSyntax {
-  type = "component";
-
-  static fromSpec(node: ComponentSexp, children: Template[]) {
-    let [, path, attrs, templateId, inverseId] = node;
-
-    return new Component({
-      path: new Ref([path]),
-      hash: Hash.fromSpec(attrs),
-      templates: Templates.fromSpec(templateId, inverseId, children)
-    });
-  }
-
-  static build(path: string, options: { default: Template, inverse: Template, hash: Hash }) {
-    return new this({
-      path: Ref.build(path),
-      hash: options.hash || null,
-      templates: Templates.build(options.default, options.inverse)
-    });
-  }
-
-  path: Ref;
-  hash: Hash;
-  templates: Templates;
-
-  constructor(options: { path: Ref, hash: Hash, templates: Templates }) {
-    super();
-    this.path = options.path;
-    this.hash = options.hash;
-    this.templates = options.templates;
-  }
-
-  prettyPrint() {
-    let { path, hash, templates } = this;
-    return new PrettyPrint('block', 'component', [path.prettyPrint()], hash.prettyPrint(), templates.prettyPrint());
-  }
-
-  evaluate(stack: ElementStack, frame: Frame) {
-    let { path: ref, hash, templates } = this;
-
-    let path = ref.path();
-
-    let definition = frame.getComponentDefinition(path, this);
-
-    if (definition) {
-      return stack.createContentMorph(ComponentMorph, { definition, attrs: this.hash, templates }, frame);
-    } else if (frame.hasHelper(path)) {
-      let helper = frame.lookupHelper(path);
-      let args = new ParamsAndHash({ params: Params.empty(), hash: this.hash }).evaluate(frame);
-      return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame);
-    } else {
-      return new ElementSyntax(path[0], hash, templates.default).evaluate(stack, frame);
-    }
-  }
-}
-
-export class ElementSyntax implements StatementSyntax {
-  private path: InternedString;
-  private attrs: Hash;
-  private contents: Template;
-  public type = "element";
-  public isStatic = false;
-
-  constructor(path: InternedString, attrs: Hash, contents: Template) {
-    this.path = path;
-    this.attrs = attrs;
-    this.contents = contents;
-  }
-
-  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
-    let { path, attrs, contents } = this;
-    return stack.createContentMorph(FallbackMorph, { path, attrs, contents }, frame)
-  }
-}
-
 export class CloseElement extends DynamicExpression implements DynamicStatementSyntax {
   type = "close-element";
 
@@ -747,58 +668,6 @@ export class CloseElement extends DynamicExpression implements DynamicStatementS
     let { element, classList } = stack.closeElement();
     return stack.createMorph(CloseElementMorph, { element, classList }, frame)
   }
-}
-
-type FallbackOptions = { path: InternedString, attrs: Hash, contents: Template };
-
-export function hashToAttrList(hash: Hash): AttributeSyntax[] {
-  let attrList = [];
-
-  let { keys, values } = hash;
-
-  values.forEach((val, i) => {
-    let key = keys[i];
-    if (key === 'class') attrList.push(AddClass.build(val));
-    if (val.isStatic) attrList.push(StaticAttr.build(key, (<Value>val).inner()));
-    else attrList.push(DynamicAttr.build(key, val));
-  });
-
-  return attrList;
-}
-
-class FallbackMorph extends ContentMorph {
-  static hasStaticElement = true;
-
-  tag: string;
-  contents: Template;
-  element: Element;
-  attrs: AttributeSyntax[];
-
-  init({ path, attrs, contents }: FallbackOptions) {
-    this.tag = path;
-    this.contents = contents;
-    this.attrs = hashToAttrList(attrs);
-  }
-
-  firstNode() {
-    return this.element;
-  }
-
-  lastNode() {
-    return this.element;
-  }
-
-  append(stack: ElementStack) {
-    let { tag, attrs, contents } = this;
-
-    this.element = stack.openElement(tag);
-    attrs.forEach(attr => stack.appendStatement(attr, this.frame));
-    if (!contents.isEmpty) stack.createContentMorph(SimpleTemplateMorph, { template: contents }, this.frame).append(stack);
-    let { element, classList } = stack.closeElement();
-    stack.createMorph(CloseElementMorph, { element, classList }, this.frame).append(stack);
-  }
-
-  update() {}
 }
 
 type TextSexp = [string, string];
@@ -874,8 +743,8 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
     return new OpenElement({ tag, blockParams });
   }
 
-  static build(tag, blockParams): OpenElement {
-    return new this({ tag, blockParams });
+  static build(tag: string, blockParams: string[]): OpenElement {
+    return new this({ tag: intern(tag), blockParams: blockParams && blockParams.map(intern) });
   }
 
   public tag: InternedString;
@@ -893,21 +762,23 @@ export class OpenElement extends StaticExpression implements StaticStatementSynt
   }
 
   toIdentity(): OpenPrimitiveElement {
-    let { tag, blockParams } = this;
+    let { tag } = this;
     return new OpenPrimitiveElement({ tag });
   }
 
   evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
-    let def = frame.getComponentDefinition([this.tag], this);
+    let { tag } = this;
+
+    let def = frame.getComponentDefinition([tag], this);
     if (def) {
-      let hashSyntax = evaluation.takeHash()
+      let hashSyntax = evaluation.takeHash();
       let hash = attrListToHash(hashSyntax).evaluate(frame);
       let template = new Template({ statements: evaluation.takeBlock(), locals: this.blockParams });
       let templates = Templates.build(template, null, Template.fromStatements(hashSyntax));
 
-      stack.openComponent(this.tag, def, { frame, templates, hash });
+      stack.openComponent(def, { tag, frame, templates, hash });
     } else {
-      stack.openElement(this.tag);
+      stack.openElement(tag);
     }
   }
 }
@@ -968,7 +839,7 @@ export class CloseElementMorph extends Morph {
     let val = this.lastValue = this.classList.value();
 
     if (val !== null) {
-      this.frame.dom().setAttribute(<HTMLElement>this.element, 'class', val);
+      this.frame.dom().setAttribute(this.element, 'class', val);
     }
   }
 
@@ -977,7 +848,7 @@ export class CloseElementMorph extends Morph {
     let val = this.lastValue = this.classList.value();
 
     if (lastVal !== val && val !== null) {
-      this.frame.dom().setAttribute(<HTMLElement>this.element, 'class', this.classList.value());
+      this.frame.dom().setAttribute(this.element, 'class', this.classList.value());
     }
   }
 }
@@ -1054,7 +925,6 @@ const StatementNodes = {
   dynamicAttr: DynamicAttr,
   dynamicProp: DynamicProp,
   addClass: AddClass,
-  component: Component,
 
   /// static statements
   text: Text,
@@ -1661,7 +1531,7 @@ export class TemplateBuilder {
   }
 
   openElement(tagName: string): OpenElement {
-    return OpenElement.build(tagName);
+    return OpenElement.build(tagName, null);
   }
 
   closeElement(): CloseElement {

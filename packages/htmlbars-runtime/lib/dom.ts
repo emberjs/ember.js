@@ -12,7 +12,7 @@ export default class DOMHelper {
     this.uselessElement = this.document.createElement('div');
 	}
 
-  setAttribute(element: HTMLElement, name: string, value: string) {
+  setAttribute(element: Element, name: string, value: string) {
     element.setAttribute(name, value);
   }
 

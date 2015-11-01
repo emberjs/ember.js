@@ -1,19 +1,23 @@
 import Template, {
   StatementSyntax,
   AttributeSyntax,
-  Component as ComponentSyntax,
   Unknown,
   Inline,
   Hash,
   EvaluatedHash,
   ParamsAndHash,
   EvaluatedParams,
-  TemplateEvaluation,
   Templates
 } from "./template";
 
-import { ContentMorph } from './morph';
+import { ContentMorph, TemplateMorph } from './morph';
 import { ElementStack } from './builder';
+
+import {
+  Component,
+  ComponentHooks,
+  ComponentDefinition
+} from './component/interfaces';
 
 import {
   Reference,
@@ -151,14 +155,6 @@ export abstract class Scope<T extends Object> {
 import DOMHelper from './dom';
 import { EMPTY_ARRAY } from './utils';
 
-export interface ComponentClass {
-  new (attrs: Object): Component;
-}
-
-export interface Component {
-  attrs: Object;
-}
-
 export abstract class Environment<T extends Object> {
   protected dom: DOMHelper;
   protected meta: MetaLookup;
@@ -188,7 +184,7 @@ export abstract class Environment<T extends Object> {
     let type = statement.type;
 
     if (type === 'unknown' && (<Unknown>statement).ref.path()[0] === 'yield') {
-      return new YieldSyntax(null, LITERAL('default'));
+      return new YieldSyntax(null);
     } else if (type === 'inline' && (<Inline>statement).path[0] === 'yield') {
       let args = (<Inline>statement).args;
       return new YieldSyntax((<Inline>statement).args);
@@ -238,7 +234,7 @@ class YieldSyntax implements StatementSyntax {
   isStatic = false;
   private args: ParamsAndHash;
 
-  constructor(args: ParamsAndHash, to: InternedString) {
+  constructor(args: ParamsAndHash) {
     this.args = args;
   }
 
@@ -283,51 +279,6 @@ export interface Helper {
 
 export function helper(h: Helper): ConstReference<Helper> {
   return new ConstReference(h);
-}
-
-export interface ComponentHooks {
-  begin(Component);
-  commit(Component);
-
-  didReceiveAttrs(Component);
-  didUpdateAttrs(Component);
-
-  didInsertElement(Component);
-
-  willRender(Component);
-  willUpdate(Component);
-  didRender(Component);
-  didUpdate(Component);
-}
-
-export interface ComponentDefinitionOptions {
-  frame: Frame;
-  templates: Templates;
-  hash: EvaluatedHash;
-  tag: InternedString;
-}
-
-export interface ComponentDefinition {
-  ComponentClass: ComponentClass;
-  layout: Template;
-  begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions): AppendingComponent;
-  hooks: ComponentHooks;
-}
-
-export function appendComponent(stack: ElementStack, definition: ComponentDefinition, options: ComponentDefinitionOptions): ContentMorph {
-  let appending = definition.begin(stack, options);
-  let morph = appending.process();
-  morph.append(stack);
-  return morph;
-}
-
-export interface AppendingComponent {
-  ComponentClass: ComponentClass;
-  layout: Template;
-  process(): ContentMorph;
-  update(component: Component, attrs: EvaluatedHash);
-  commit();
-  hooks: ComponentHooks;
 }
 
 export class Frame {

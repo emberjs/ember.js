@@ -2,7 +2,6 @@ export {
   default as Template,
   ATTRIBUTE_SYNTAX,
   Templates,
-  TemplateEvaluation,
   StatementSyntax,
   ParamsAndHash,
   Params,
@@ -19,13 +18,10 @@ export {
   Get as GetSyntax,
   Value as ValueSyntax,
   AttributeSyntax,
-  ElementSyntax,
   OpenElement,
-  Component as ComponentSyntax,
   Helper as HelperSyntax,
   Block as BlockSyntax,
-  builders,
-  hashToAttrList
+  builders
 } from './lib/template';
 
 export {
@@ -34,18 +30,27 @@ export {
   Helper,
   Frame,
   Block,
+} from './lib/environment';
+
+export {
   ComponentClass,
   ComponentDefinition,
+  AppendingComponentClass,
   ComponentDefinitionOptions,
-  AppendingComponent,
+  AppendingComponent as IAppendingComponent,
+  AppendingComponentOptions,
   ComponentHooks,
-  Component,
+  Component
+} from './lib/component/interfaces';
+
+export {
   appendComponent
-} from './lib/environment';
+} from './lib/component/utils';
+
+export { default as AppendingComponent } from './lib/component/appending';
 
 export { default as DOMHelper, isWhitespace } from './lib/dom';
 export { RenderResult, manualElement } from './lib/render';
 export { ElementStack, NullHandler } from './lib/builder';
 export { Morph, MorphSpecializer, ContentMorph, TemplateMorph, EmptyableMorph, Bounds, createMorph } from './lib/morph';
-export { default as ComponentMorph } from './lib/morphs/component';
 export { MorphList, MorphListOptions } from './lib/morphs/list';
