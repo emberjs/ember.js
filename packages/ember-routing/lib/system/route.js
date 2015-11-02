@@ -1216,10 +1216,19 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     if (isEnabled('ember-application-visit')) {
       if (!this._environment || this._environment.options.shouldRender) {
-        this.renderTemplate(controller, context);
+        this._invokeRenderTemplate(controller, context);
       }
     } else {
+      this._invokeRenderTemplate(controller, context);
+    }
+  },
+
+  _invokeRenderTemplate(controller, context) {
+    try {
+      this._insideRenderTemplate = true;
       this.renderTemplate(controller, context);
+    } finally {
+      this._insideRenderTemplate = false;
     }
   },
 
@@ -1942,6 +1951,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   render(_name, options) {
     assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
 
+    deprecate(`Calling "render" in a route is only allowed inside the renderTemplate hook. Rendering at any other time violates the purpose of Route, which is to bind URLs to the application state. Consider replacing the outlet you were targeting with a Component that injects a Service, and use the Service to communicate what should be rendered.`, this._insideRenderTemplate, { id: 'ember-routing.deprecate-render-outside-renderTemplate', until: '3.0.0' });
+
     var namePassed = typeof _name === 'string' && !!_name;
     var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
     var name;
@@ -2003,6 +2014,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @private
   */
   disconnectOutlet(options) {
+    deprecate(`Calling "disconnectOutlet" is only allowed inside the renderTemplate hook. Altering outlets at any other time violates the purpose of Route, which is to bind URLs to the application state. Consider replacing the outlet you were targeting with a Component that injects a Service, and use the Service to communicate what should be rendered.`, this._insideRenderTemplate, { id: 'ember-routing.deprecate-disconnectOutlet-outside-renderTemplate', until: '3.0.0' });
+
     var outletName;
     var parentView;
     if (!options || typeof options === 'string') {
