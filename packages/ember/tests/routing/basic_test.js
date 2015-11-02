@@ -1022,6 +1022,7 @@ QUnit.test('The Special page returning an error invokes SpecialRoute\'s error ha
     actions: {
       error(reason) {
         equal(reason, 'Setup error', 'SpecialRoute#error received the error thrown from setup');
+        return true;
       }
     }
   });
@@ -1059,6 +1060,7 @@ function testOverridableErrorHandler(handlersName) {
   attrs[handlersName] = {
     error(reason) {
       equal(reason, 'Setup error', 'error was correctly passed to custom ApplicationRoute handler');
+      return true;
     }
   };
 
