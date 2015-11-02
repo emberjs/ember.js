@@ -440,7 +440,6 @@ QUnit.test('Error events that aren\'t bubbled don\t throw application assertions
     },
     actions: {
       error(err) {
-        debugger
         equal(err.msg, 'did it broke?');
         return false;
       }
