@@ -725,6 +725,29 @@ let LinkComponent = EmberComponent.extend({
     return true;
   }),
 
+  _getModels(params) {
+    let modelCount = params.length - 1;
+    let models = new Array(modelCount);
+
+    for (let i = 0; i < modelCount; i++) {
+      let value = params[i + 1];
+
+      while (ControllerMixin.detect(value)) {
+        deprecate(
+          'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
+            (this.parentView ? 'Please update `' + this.parentView + '` to use `{{link-to "post" someController.model}}` instead.' : ''),
+          false,
+          { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' }
+        );
+        value = value.get('model');
+      }
+
+      models[i] = value;
+    }
+
+    return models;
+  },
+
   /**
     The default href value to use while a link-to is loading.
     Only applies when tagName is 'a'
@@ -769,25 +792,11 @@ let LinkComponent = EmberComponent.extend({
     this.set('queryParams', queryParams);
 
     // 4. Any remaining indices (excepting `targetRouteName` at 0) are `models`.
-    let models = [];
-
-    for (let i = 1; i < params.length; i++) {
-      let value = params[i];
-
-      while (ControllerMixin.detect(value)) {
-        deprecate(
-          'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
-            (this.parentView ? 'Please update `' + this.parentView + '` to use `{{link-to "post" someController.model}}` instead.' : ''),
-          false,
-          { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' }
-        );
-        value = value.get('model');
-      }
-
-      models.push(value);
+    if (params.length > 1) {
+      this.set('models', this._getModels(params));
+    } else {
+      this.set('models', []);
     }
-
-    this.set('models', models);
   }
 });
 
