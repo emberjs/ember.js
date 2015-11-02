@@ -18,34 +18,6 @@ for a detailed explanation.
   serially and call `reset()` each time), as well as being critical to
   for FastBoot.
 
-* `ember-testing-checkbox-helpers`
-
-  Add `check` and `uncheck` test helpers.
-
-  `check`:
-
-  Checks a checkbox. Ensures the presence of the `checked` attribute
-
-  Example:
-
-  ```javascript
-  check('#remember-me').then(function() {
-    // assert something
-  });
-  ```
-
-  `uncheck`:
-
-  Unchecks a checkbox. Ensures the absence of the `checked` attribute
-
-  Example:
-
-  ```javascript
-  uncheck('#remember-me').then(function() {
-    // assert something
-  });
-  ```
-
 * `ember-htmlbars-component-generation`
 
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
