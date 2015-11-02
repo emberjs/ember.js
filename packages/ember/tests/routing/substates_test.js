@@ -415,6 +415,41 @@ QUnit.test('Default error event moves into nested route', function() {
   equal(appController.get('currentPath'), 'grandma.error', 'Initial route fully loaded');
 });
 
+QUnit.test('Error events that aren\'t bubbled don\t throw application assertions', function() {
+  expect(2);
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+    actions: {
+      error(err) {
+        debugger
+        equal(err.msg, 'did it broke?');
+        return false;
+      }
+    }
+  });
+
+  bootApplication('/grandma/mom/sally');
+});
+
 QUnit.test('Setting a query param during a slow transition should work', function() {
   var deferred = RSVP.defer();
 
