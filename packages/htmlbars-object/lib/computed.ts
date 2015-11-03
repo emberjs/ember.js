@@ -179,6 +179,7 @@ function getPropertyDescriptor(subject, name) {
 
 export function computed(desc: ComputedDescriptor): ComputedBlueprint;
 export function computed(getter: ComputedGetCallback | LegacyComputedGetCallback): ComputedBlueprint;
+export function computed(...args): ComputedBlueprint;
 
 export function computed(...args) {
   let last: ComputedArgument = args.pop();
