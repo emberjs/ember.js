@@ -1,4 +1,5 @@
 import View from 'ember-views/views/view';
+import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 import Registry from 'container/registry';
@@ -7,6 +8,8 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
+import EventDispatcher from "ember-views/system/event_dispatcher";
+import ComponentLookup from "ember-views/component_lookup";
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -104,4 +107,55 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
   });
 
   equal(view.$().text(), 'qux - 2', 'observer is fired on update');
+});
+
+QUnit.test('behavior with computed property', function() {
+  registry.register('component-lookup:main', ComponentLookup);
+  registry.register('event_dispatcher:main', EventDispatcher);
+
+  var dispatcher = container.lookup('event_dispatcher:main');
+  dispatcher.setup({}, '#qunit-fixture');
+
+  var setterCount = 0;
+
+  registry.register('component:foo-bar', Component.extend({
+    layout: compile('{{myComputed}} <button {{action "test"}}>click me</button>'),
+
+    myComputed: Ember.computed({
+      get() {
+        return 'initial';
+      },
+      set(key, value) {
+        setterCount++;
+        return value;
+      }
+    }),
+
+    actions: {
+      test() {
+        this.set('myComputed', 'derp');
+      }
+    }
+  }));
+
+  view = View.extend({
+    someValue: 'herp',
+    template: compile('{{foo-bar myComputed=view.someValue}}')
+  }).create({
+    container: container
+  });
+
+  runAppend(view);
+
+  equal(setterCount, 1);
+
+  run(function() {
+    view.$('button').click();
+  });
+
+  equal(setterCount, 2);
+
+  run(function() {
+    dispatcher.destroy();
+  });
 });
