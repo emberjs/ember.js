@@ -41,8 +41,10 @@ import {
   dict
 } from 'htmlbars-util';
 
-export function compile(template: string, options: Object) {
-  let spec = compileSpec(template, options);
+import EmberObject from 'htmlbars-object';
+
+export function compile(template: string) {
+  let spec = compileSpec(template, { disableComponentGeneration: true });
   return Template.fromSpec(JSON.parse(spec));
 }
 
@@ -78,7 +80,8 @@ class GlimmerAppendingComponent extends DemoAppendingComponent {
   }
 
   protected createComponent(attrs: Dict<any>, parentScope: Scope<DemoScopeOptions>): Component {
-    let parentComponent = parentScope.getHostOptions().component;
+    let parentOptions = parentScope.getHostOptions();
+    let parentComponent = parentOptions && parentOptions.component;
     return new this.ComponentClass({ attrs, parentView: parentComponent });
   }
 
@@ -228,6 +231,8 @@ export class DemoEnvironment extends Environment<DemoScopeOptions> {
     return this.components[name[0]];
   }
 }
+
+export let EmberComponent = EmberObject.extend();
 
 export class MyComponent implements Component {
   public attrs: Object;

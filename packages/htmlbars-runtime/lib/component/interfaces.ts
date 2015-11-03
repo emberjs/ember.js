@@ -54,6 +54,38 @@ export interface AppendingComponentClass {
   new({ hooks, ComponentClass, layout, stack }: AppendingComponentOptions): AppendingComponent;
 }
 
+export interface ComponentHooks {
+  begin(Component);
+  commit(Component);
+
+  didReceiveAttrs(Component);
+  didUpdateAttrs(Component);
+
+  didInsertElement(Component);
+
+  willRender(Component);
+  willUpdate(Component);
+  didRender(Component);
+  didUpdate(Component);
+}
+
+class NullHooks implements ComponentHooks {
+  begin() {};
+  commit() {};
+
+  didReceiveAttrs() {};
+  didUpdateAttrs() {};
+
+  didInsertElement() {};
+
+  willRender() {};
+  willUpdate() {};
+  didRender() {};
+  didUpdate() {};
+}
+
+const NULL_HOOKS = new NullHooks();
+
 export class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
@@ -61,7 +93,7 @@ export class ComponentDefinition {
   protected AppendingComponent: AppendingComponentClass;
 
   constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: Template, AppendingComponent: AppendingComponentClass) {
-    this.hooks = hooks;
+    this.hooks = hooks || NULL_HOOKS;
     this.ComponentClass = ComponentClass;
     this.layout = layout;
     this.AppendingComponent = AppendingComponent;

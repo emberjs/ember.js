@@ -1,0 +1,77 @@
+<html>
+  <head>
+    <title>HTMLBars Ripples</title>
+    <style type="text/css">
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      server-uptime {
+        display: block;
+        overflow: hidden;
+        margin: 0 auto;
+        width: 50%;
+      }
+
+      server-uptime + server-uptime {
+        margin: 20px auto 0 auto;
+        border-top: 1px solid #999;
+      }
+
+      .days {
+        display: flex;
+        flex-direction: row;
+        flex-flow: wrap;
+      }
+
+      uptime-day {
+        display: flex;
+      }
+
+      span.uptime-day {
+        width: 10px;
+        height: 10px;
+        margin: 1px;
+      }
+
+      .hover {
+        display: none;
+      }
+
+      .uptime-day:hover + .hover {
+        display: flex;
+        position: absolute;
+        margin-top: -35px;
+        margin-left: -30px;
+        border-radius: 4px;
+        color: #eee;
+        background-color: #333;
+        padding: 10px;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="output"></div>
+
+    <script src="../assets/loader.js"></script>
+    <script>loader.noConflict({ define: 'enifed' });</script>
+    <script src="../amd/glimmer-compiler.amd.js"></script>
+    <script src="./demos.amd.js"></script>
+
+    <script>
+      require('htmlbars-demos/uptime').run();
+    </script>
+  </body>
+</html>
+
+
+
+

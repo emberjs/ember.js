@@ -48,6 +48,10 @@
 
       var Stats = requireModule('htmlbars-demos/stats').default;
 
+      function compile(template) {
+        return compileTemplate(template, { disableComponentGeneration: true });
+      }
+
       // Init
       var env = new DemoEnvironment();
       var templates = {};
@@ -113,11 +117,11 @@
         b.run({ async: true });
       }
 
-      var MyItem = function(attrs) {
-        this.attrs = attrs;
+      var MyItem = function(options) {
+        this.attrs = options.attrs;
       }
 
-      var itemLayout = compileTemplate(
+      var itemLayout = compile(
         '<div>{{attrs.item.id}}: ' +
         '{{#if attrs.item.visible}}' +
           '{{#each attrs.item.subitems key="id" as |subitem|}}' +
@@ -128,18 +132,18 @@
 
       env.registerComponent('my-item', MyItem, itemLayout);
 
-      var SubItem = function(attrs) {
-        this.attrs = attrs;
+      var SubItem = function(options) {
+        this.attrs = options.attrs;
       }
 
-      var subItemLayout = compileTemplate(
+      var subItemLayout = compile(
         '<p>{{attrs.id}}</p>'
       );
 
       env.registerComponent('sub-item', SubItem, subItemLayout);
 
       function benchmark(name, template) {
-        templates[name] = compileTemplate(template);
+        templates[name] = compile(template);
         return {
           setup: function() {
             template = templates[this.name];
@@ -173,7 +177,10 @@
 
           fn: function() {
             frag = document.createDocumentFragment();
+            env.begin();
             template.render(context, env, { appendTo: frag });
+            env.commit();
+            frag = null;
           },
 
           minSamples: 30
