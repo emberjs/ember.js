@@ -191,7 +191,7 @@ export abstract class Environment<T extends Object> {
 
       if (unknown && unknown.simplePath() === 'yield') {
         return new YieldSyntax(null);
-      } else if (helper && helper.ref.simplePath()) {
+      } else if (helper && helper.ref.simplePath() === 'yield') {
         return new YieldSyntax(helper.args);
       }
     }
