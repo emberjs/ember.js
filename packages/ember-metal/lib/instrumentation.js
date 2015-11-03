@@ -118,6 +118,7 @@ function DEFAULT_FINALIZER() {}
   @param {Function} _payload
   @return {Function} a finalizer function to call when the instrumented
     work has finished.
+  @private
 */
 export function asyncInstrument(name, _payload) {
   if (subscribers.length === 0) {
