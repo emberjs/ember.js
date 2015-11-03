@@ -29,6 +29,7 @@ import {
   normalizeControllerQueryParams,
   calculateCacheKey
 } from 'ember-routing/utils';
+import RSVP from 'rsvp';
 
 var slice = Array.prototype.slice;
 
@@ -1478,9 +1479,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     if (!name && sawParams) {
       return copy(params);
     } else if (!name) {
-      if (transition.resolveIndex < 1) { return; }
+      if (transition.requestIndex < 2) { return; }
 
-      var parentModel = transition.state.handlerInfos[transition.resolveIndex - 1].context;
+      var parentModel = transition.state.handlerInfos[transition.requestIndex - 2].modelPromise;
 
       return parentModel;
     }
@@ -1782,7 +1783,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       }
     }
 
-    return route && route.currentModel;
+    return route && RSVP.Promise.resolve(route.currentModel);
   },
 
   /**
