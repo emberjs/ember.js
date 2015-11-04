@@ -17,15 +17,16 @@ import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 import {
   runAppend,
   runDestroy
 } from 'ember-runtime/tests/utils';
 
-var dispatcher, view, originalViewKeyword, registry, container;
+var dispatcher, view, originalViewKeyword, owner;
 var originalRegisterAction = ActionHelper.registerAction;
 
 QUnit.module('ember-routing-htmlbars: action helper', {
@@ -1003,15 +1004,13 @@ QUnit.test('should respect preventDefault=false option if provided', function() 
 
 QUnit.module('ember-routing-htmlbars: action helper - action target without `controller`', {
   setup() {
-    registry = new Registry();
-    registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('component', { singleton: false });
-    registry.register('component-lookup:main', ComponentLookup);
-    registry.register('event_dispatcher:main', EventDispatcher);
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.register('component-lookup:main', ComponentLookup);
+    owner.register('event_dispatcher:main', EventDispatcher);
 
-    container = registry.container();
-
-    dispatcher = container.lookup('event_dispatcher:main');
+    dispatcher = owner.lookup('event_dispatcher:main');
     dispatcher.setup();
 
     this.originalLegacyControllerSupport = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
@@ -1024,7 +1023,7 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
   teardown() {
     runDestroy(view);
     runDestroy(dispatcher);
-    runDestroy(container);
+    runDestroy(owner);
 
     Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = this.originalLegacyControllerSupport;
     Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = this.originalLegacyViewSupport;
@@ -1034,26 +1033,26 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
 QUnit.test('should target the proper component when `action` is in yielded block [GH #12409]', function(assert) {
   assert.expect(2);
 
-  registry.register('template:components/x-outer', compile(`
+  owner.register('template:components/x-outer', compile(`
     {{#x-middle}}
       {{x-inner action="hey" }}
     {{/x-middle}}
   `));
 
-  registry.register('template:components/x-middle', compile('{{yield}}'));
-  registry.register('template:components/x-inner', compile(`
+  owner.register('template:components/x-middle', compile('{{yield}}'));
+  owner.register('template:components/x-inner', compile(`
     <button>Click Me</button>
     {{yield}}
   `));
 
-  registry.register('component:x-inner', EmberComponent.extend({
+  owner.register('component:x-inner', EmberComponent.extend({
     click() {
       assert.ok(true, 'click was triggered');
       this.sendAction();
     }
   }));
 
-  registry.register('component:x-outer', EmberComponent.extend({
+  owner.register('component:x-outer', EmberComponent.extend({
     actions: {
       hey: function() {
         assert.ok(true, 'action fired on proper target');
@@ -1062,7 +1061,7 @@ QUnit.test('should target the proper component when `action` is in yielded block
   }));
 
   view = EmberComponent.create({
-    container,
+    [OWNER]: owner,
     layout: compile('{{x-outer}}')
   });
 

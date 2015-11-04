@@ -11,7 +11,7 @@ import inject from 'ember-runtime/inject';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var App, registry, container, originalViewKeyword;
+var App, appInstance, originalViewKeyword;
 
 QUnit.module('Application Lifecycle - Helper Registration', {
   setup() {
@@ -23,7 +23,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
         App.destroy();
       }
 
-      App = null;
+      App = appInstance = null;
       Ember.TEMPLATES = {};
     });
     delete helpers['foo-bar-baz-widget'];
@@ -44,13 +44,12 @@ var boot = function(callback) {
       location: 'none'
     });
 
-    registry = App.__registry__;
-    container = App.__container__;
+    appInstance = App.__deprecatedInstance__;
 
     if (callback) { callback(); }
   });
 
-  var router = container.lookup('router:main');
+  var router = appInstance.lookup('router:main');
 
   run(App, 'advanceReadiness');
   run(function() {
@@ -65,7 +64,7 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
   });
 
   boot(() => {
-    registry.register('helper:x-borf', myHelper);
+    App.register('helper:x-borf', myHelper);
   });
 
   equal(jQuery('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
@@ -76,11 +75,11 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       foo: 'alex'
     }));
 
-    registry.register('helper:x-reverse', helper(function([ value ]) {
+    appInstance.register('helper:x-reverse', helper(function([ value ]) {
       return value ? value.split('').reverse().join('') : '--';
     }));
   });
@@ -93,11 +92,11 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>');
 
   boot(function() {
-    registry.register('helper:omg', helper(function() {
+    appInstance.register('helper:omg', helper(function() {
       return 'OMG';
     }));
 
-    registry.register('helper:yorp', helper(function([ value ]) {
+    appInstance.register('helper:yorp', helper(function([ value ]) {
       return value;
     }));
   });
@@ -110,12 +109,12 @@ QUnit.test('Helpers can receive injections', function() {
 
   var serviceCalled = false;
   boot(function() {
-    registry.register('service:name-builder', Ember.Service.extend({
+    appInstance.register('service:name-builder', Ember.Service.extend({
       build() {
         serviceCalled = true;
       }
     }));
-    registry.register('helper:full-name', Helper.extend({
+    appInstance.register('helper:full-name', Helper.extend({
       nameBuilder: inject.service('name-builder'),
       compute() {
         this.get('nameBuilder').build();

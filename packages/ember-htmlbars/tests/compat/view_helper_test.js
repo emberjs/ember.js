@@ -4,7 +4,8 @@ import EmberView from 'ember-views/views/view';
 import EmberSelectView from 'ember-views/views/select';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
-import Registry from 'container/registry';
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
 import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
 import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-helper';
@@ -12,7 +13,7 @@ import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-h
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-let component, registry, container, originalViewKeyword;
+let component, owner, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: compat - view helper', {
   setup() {
@@ -21,15 +22,14 @@ QUnit.module('ember-htmlbars: compat - view helper', {
 
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
-    registry = new Registry();
-    container = registry.container();
+    owner = buildOwner();
   },
   teardown() {
     runDestroy(component);
-    runDestroy(container);
+    runDestroy(owner);
     removeAstPlugin(AssertNoViewHelper);
     Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
-    registry = container = component = null;
+    owner = component = null;
 
     resetKeyword('view', originalViewKeyword);
   }
@@ -39,12 +39,12 @@ QUnit.test('using the view helper fails assertion', function(assert) {
   const ViewClass = EmberView.extend({
     template: compile('fooView')
   });
-  registry.register('view:foo', ViewClass);
+  owner.register('view:foo', ViewClass);
 
   expectAssertion(function() {
     component = EmberComponent.extend({
-      layout: compile('{{view \'foo\'}}'),
-      container
+      [OWNER]: owner,
+      layout: compile('{{view \'foo\'}}')
     }).create();
 
     runAppend(component);
@@ -55,13 +55,12 @@ QUnit.module('ember-htmlbars: compat - view helper [LEGACY]', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
-    registry = new Registry();
-    container = registry.container();
+    owner = buildOwner();
   },
   teardown() {
     runDestroy(component);
-    runDestroy(container);
-    registry = container = component = null;
+    runDestroy(owner);
+    owner = component = null;
 
     resetKeyword('view', originalViewKeyword);
   }
@@ -71,12 +70,12 @@ QUnit.test('using the view helper with a string (inline form) fails assertion [L
   const ViewClass = EmberView.extend({
     template: compile('fooView')
   });
-  registry.register('view:foo', ViewClass);
+  owner.register('view:foo', ViewClass);
 
   ignoreAssertion(function() {
     component = EmberComponent.extend({
-      layout: compile('{{view \'foo\'}}'),
-      container
+      [OWNER]: owner,
+      layout: compile('{{view \'foo\'}}')
     }).create();
 
     runAppend(component);
@@ -89,12 +88,12 @@ QUnit.test('using the view helper with a string (block form) fails assertion [LE
   const ViewClass = EmberView.extend({
     template: compile('Foo says: {{yield}}')
   });
-  registry.register('view:foo', ViewClass);
+  owner.register('view:foo', ViewClass);
 
   ignoreAssertion(function() {
     component = EmberComponent.extend({
-      layout: compile('{{#view \'foo\'}}I am foo{{/view}}'),
-      container
+      [OWNER]: owner,
+      layout: compile('{{#view \'foo\'}}I am foo{{/view}}')
     }).create();
 
     runAppend(component);
@@ -104,12 +103,12 @@ QUnit.test('using the view helper with a string (block form) fails assertion [LE
 });
 
 QUnit.test('using the view helper with string "select" fails assertion [LEGACY]', function(assert) {
-  registry.register('view:select', EmberSelectView);
+  owner.register('view:select', EmberSelectView);
 
   ignoreAssertion(function() {
     component = EmberComponent.extend({
-      layout: compile('{{view \'select\'}}'),
-      container
+      [OWNER]: owner,
+      layout: compile('{{view \'select\'}}')
     }).create();
 
     runAppend(component);

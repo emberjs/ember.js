@@ -3,7 +3,6 @@ import Ember from 'ember-metal/core';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/components/component';
-import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
@@ -26,7 +25,10 @@ import { computed } from 'ember-metal/computed';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var view, originalLookup, registry, container, lookup, originalViewKeyword;
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+
+var view, originalLookup, owner, lookup, originalViewKeyword;
 
 var trim = jQuery.trim;
 
@@ -39,7 +41,6 @@ function nthChild(view, nth) {
 }
 
 function viewClass(options) {
-  options.container = options.container || container;
   return EmberView.extend(options);
 }
 
@@ -52,17 +53,16 @@ QUnit.module('ember-htmlbars: {{#view}} helper', {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
 
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('view:toplevel', EmberView.extend());
-    registry.register('component-lookup:main', ComponentLookup);
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('view:toplevel', EmberView.extend());
+    owner.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(view);
-    registry = container = view = null;
+    owner = view = null;
 
     Ember.lookup = lookup = originalLookup;
 
@@ -101,18 +101,16 @@ QUnit.test('should not enter an infinite loop when binding an attribute in Handl
 });
 
 QUnit.test('By default view:toplevel is used', function() {
-  var registry = new Registry();
-
   var DefaultView = viewClass({
     elementId: 'toplevel-view',
     template: compile('hello world')
   });
 
-  registry.register('view:toplevel', DefaultView);
+  owner.register('view:toplevel', DefaultView);
 
   view = EmberView.extend({
-    template: compile('{{view}}'),
-    container: registry.container()
+    [OWNER]: owner,
+    template: compile('{{view}}')
   }).create();
 
   runAppend(view);
@@ -120,7 +118,7 @@ QUnit.test('By default view:toplevel is used', function() {
   equal(jQuery('#toplevel-view').text(), 'hello world');
 });
 
-QUnit.test('By default, without a container, EmberView is used', function() {
+QUnit.test('By default, without an owner, EmberView is used', function() {
   view = EmberView.extend({
     template: compile('{{view tagName="span"}}')
   }).create();
@@ -136,11 +134,11 @@ QUnit.test('View lookup - \'fu\'', function() {
     template: compile('bro')
   });
 
-  registry.register('view:fu', FuView);
+  owner.register('view:fu', FuView);
 
   view = EmberView.extend({
-    template: compile('{{view \'fu\'}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{view \'fu\'}}')
   }).create();
 
   runAppend(view);
@@ -154,12 +152,12 @@ QUnit.test('View lookup - \'fu\' when fu is a property and a view name', functio
     template: compile('bro')
   });
 
-  registry.register('view:fu', FuView);
+  owner.register('view:fu', FuView);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{view \'fu\'}}'),
-    context: { fu: 'boom!' },
-    container: container
+    context: { fu: 'boom!' }
   }).create();
 
   runAppend(view);
@@ -173,11 +171,11 @@ QUnit.test('View lookup - view.computed', function() {
     template: compile('bro')
   });
 
-  registry.register('view:fu', FuView);
+  owner.register('view:fu', FuView);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{view view.computed}}'),
-    container: container,
     computed: 'fu'
   }).create();
 
@@ -337,13 +335,11 @@ QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
 QUnit.test('allows you to pass attributes that will be assigned to the class instance, like class="foo"', function() {
   expect(4);
 
-  registry = new Registry();
-  container = registry.container();
-  registry.register('view:toplevel', EmberView.extend());
+  owner.register('view:toplevel', EmberView.extend());
 
   view = EmberView.extend({
-    template: compile('{{view id="foo" tagName="h1" class="foo"}}{{#view id="bar" class="bar"}}Bar{{/view}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{view id="foo" tagName="h1" class="foo"}}{{#view id="bar" class="bar"}}Bar{{/view}}')
   }).create();
 
   runAppend(view);
@@ -392,12 +388,12 @@ QUnit.test('Should apply classes when bound property specified', function() {
 });
 
 QUnit.test('Should apply a class from a sub expression', function() {
-  registry.register('helper:string-concat', makeHelper(function(params) {
+  owner.register('helper:string-concat', makeHelper(function(params) {
     return params.join('');
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     controller: {
       type: 'btn',
       size: 'large'
@@ -474,11 +470,11 @@ QUnit.test('bound properties should be available in the view', function() {
     template: compile('{{view.attrs.foo}}')
   });
 
-  registry.register('view:fu', FuView);
+  owner.register('view:fu', FuView);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{view \'fu\' foo=view.someProp}}'),
-    container: container,
     someProp: 'initial value'
   }).create();
 
@@ -598,10 +594,10 @@ QUnit.test('should update bound values after the view is removed and then re-app
 });
 
 QUnit.test('views set the template of their children to a passed block', function() {
-  registry.register('template:parent', compile('<h1>{{#view}}<span>It worked!</span>{{/view}}</h1>'));
+  owner.register('template:parent', compile('<h1>{{#view}}<span>It worked!</span>{{/view}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'parent'
   });
 
@@ -611,22 +607,18 @@ QUnit.test('views set the template of their children to a passed block', functio
 
 QUnit.test('{{view}} should not override class bindings defined on a child view', function() {
   var LabelView = EmberView.extend({
-    container:         container,
     classNameBindings: ['something'],
     something:         'visible'
   });
 
-  registry.register('controller:label', Controller, { instantiate: true });
-  registry.register('view:label', LabelView);
-  registry.register('template:label', compile('<div id="child-view"></div>'));
-  registry.register('template:nester', compile('{{render "label"}}'));
+  owner.register('controller:label', Controller, { instantiate: true });
+  owner.register('view:label', LabelView);
+  owner.register('template:label', compile('<div id="child-view"></div>'));
+  owner.register('template:nester', compile('{{render "label"}}'));
 
   view = EmberView.create({
-    container:    container,
-    templateName: 'nester',
-    controller:   Controller.create({
-      container: container
-    })
+    [OWNER]: owner,
+    templateName: 'nester'
   });
 
   runAppend(view);
@@ -635,22 +627,21 @@ QUnit.test('{{view}} should not override class bindings defined on a child view'
 });
 
 QUnit.test('child views can be inserted using the {{view}} helper', function() {
-  registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.labelView}}'));
-  registry.register('template:nested', compile('<div id="child-view">Goodbye {{cruel}} {{world}}</div>'));
+  owner.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.labelView}}'));
+  owner.register('template:nested', compile('<div id="child-view">Goodbye {{cruel}} {{world}}</div>'));
 
   var context = {
     world: 'world!'
   };
 
   var LabelView = EmberView.extend({
-    container: container,
     tagName: 'aside',
     templateName: 'nested'
   });
 
   view = EmberView.create({
+    [OWNER]: owner,
     labelView: LabelView,
-    container: container,
     templateName: 'nester',
     context: context
   });
@@ -685,16 +676,15 @@ QUnit.test('should be able to explicitly set a view\'s context', function() {
 });
 
 QUnit.test('Template views add an elementId to child views created using the view helper', function() {
-  registry.register('template:parent', compile('<div>{{view view.childView}}</div>'));
-  registry.register('template:child', compile('I can\'t believe it\'s not butter.'));
+  owner.register('template:parent', compile('<div>{{view view.childView}}</div>'));
+  owner.register('template:child', compile('I can\'t believe it\'s not butter.'));
 
   var ChildView = EmberView.extend({
-    container: container,
     templateName: 'child'
   });
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     childView: ChildView,
     templateName: 'parent'
   });
@@ -753,13 +743,13 @@ QUnit.test('Child views created using the view helper and that have a viewName s
 });
 
 QUnit.test('{{view}} id attribute should set id on layer', function() {
-  registry.register('template:foo', compile('{{#view view.idView id="bar"}}baz{{/view}}'));
+  owner.register('template:foo', compile('{{#view view.idView id="bar"}}baz{{/view}}'));
 
   var IdView = EmberView;
 
   view = EmberView.create({
+    [OWNER]: owner,
     idView: IdView,
-    container: container,
     templateName: 'foo'
   });
 
@@ -770,13 +760,13 @@ QUnit.test('{{view}} id attribute should set id on layer', function() {
 });
 
 QUnit.test('{{view}} tag attribute should set tagName of the view', function() {
-  registry.register('template:foo', compile('{{#view view.tagView tag="span"}}baz{{/view}}'));
+  owner.register('template:foo', compile('{{#view view.tagView tag="span"}}baz{{/view}}'));
 
   var TagView = EmberView;
 
   view = EmberView.create({
+    [OWNER]: owner,
     tagView: TagView,
-    container: container,
     templateName: 'foo'
   });
 
@@ -787,13 +777,13 @@ QUnit.test('{{view}} tag attribute should set tagName of the view', function() {
 });
 
 QUnit.test('{{view}} class attribute should set class on layer', function() {
-  registry.register('template:foo', compile('{{#view view.idView class="bar"}}baz{{/view}}'));
+  owner.register('template:foo', compile('{{#view view.idView class="bar"}}baz{{/view}}'));
 
   var IdView = EmberView;
 
   view = EmberView.create({
+    [OWNER]: owner,
     idView: IdView,
-    container: container,
     templateName: 'foo'
   });
 
@@ -868,13 +858,13 @@ QUnit.test('{{view}} should evaluate other attributes bindings set in the curren
 });
 
 QUnit.test('{{view}} should be able to bind class names to truthy properties', function() {
-  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
+  owner.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy"}}foo{{/view}}'));
 
   var ClassBindingView = EmberView.extend();
 
   view = EmberView.create({
+    [OWNER]: owner,
     classBindingView: ClassBindingView,
-    container: container,
     number: 5,
     templateName: 'template'
   });
@@ -891,13 +881,13 @@ QUnit.test('{{view}} should be able to bind class names to truthy properties', f
 });
 
 QUnit.test('{{view}} should be able to bind class names to truthy or falsy properties', function() {
-  registry.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
+  owner.register('template:template', compile('{{#view view.classBindingView classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
 
   var ClassBindingView = EmberView.extend();
 
   view = EmberView.create({
+    [OWNER]: owner,
     classBindingView: ClassBindingView,
-    container: container,
     number: 5,
     templateName: 'template'
   });
@@ -944,7 +934,7 @@ QUnit.test('a view helper\'s bindings are to the parent context', function() {
 QUnit.test('should expose a controller keyword when present on the view', function() {
   var templateString = '{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}';
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     controller: EmberObject.create({
       foo: 'bar',
       baz: 'bang'
@@ -981,7 +971,8 @@ QUnit.test('should expose a controller keyword when present on the view', functi
 QUnit.test('should expose a controller keyword that can be used in conditionals', function() {
   var templateString = '{{#view}}{{#if controller}}{{controller.foo}}{{/if}}{{/view}}';
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
+
     controller: EmberObject.create({
       foo: 'bar'
     }),
@@ -1007,7 +998,7 @@ QUnit.test('should expose a controller that can be used in the view instance', f
   };
   var childThingController;
   view = EmberView.create({
-    container,
+    [OWNER]: owner,
     controller,
 
     childThing: EmberView.extend({
@@ -1027,8 +1018,8 @@ QUnit.test('should expose a controller that can be used in the view instance', f
 QUnit.test('should expose a controller keyword that persists through Ember.ContainerView', function() {
   var templateString = '{{view view.containerView}}';
   view = EmberView.create({
+    [OWNER]: owner,
     containerView: ContainerView,
-    container: container,
     controller: EmberObject.create({
       foo: 'bar'
     }),
@@ -1240,12 +1231,12 @@ QUnit.test('{{view}} asserts that a view subclass instance is present off contro
 });
 
 QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {
-  registry.register('view:derp', EmberView.extend({
+  owner.register('view:derp', EmberView.extend({
     template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     foo: 'bar',
     template: compile('{{view "derp" id=view.foo}}')
   });
@@ -1258,12 +1249,12 @@ QUnit.test('Specifying `id` to {{view}} is set on the view.', function() {
 });
 
 QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', function() {
-  registry.register('view:derp', EmberView.extend({
+  owner.register('view:derp', EmberView.extend({
     template: compile('<div id="view-id">{{view.id}}</div><div id="view-elementId">{{view.elementId}}</div>')
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     foo: 'bar',
     template: compile('{{view "derp" id=view.foo}}')
   });
@@ -1278,16 +1269,16 @@ QUnit.test('Specifying `id` to {{view}} does not allow bound id changes.', funct
 });
 
 QUnit.test('using a bound view name does not change on view name property changes', function() {
-  registry.register('view:foo', viewClass({
+  owner.register('view:foo', viewClass({
     elementId: 'foo'
   }));
 
-  registry.register('view:bar', viewClass({
+  owner.register('view:bar', viewClass({
     elementId: 'bar'
   }));
 
   view = EmberView.extend({
-    container,
+    [OWNER]: owner,
     elementId: 'parent',
     viewName: 'foo',
     template: compile('{{view view.viewName}}')
@@ -1306,8 +1297,7 @@ QUnit.test('using a bound view name does not change on view name property change
 });
 
 QUnit.test('should have the correct action target', function() {
-  registry.register('component:x-outer', EmberComponent.extend({
-    container,
+  owner.register('component:x-outer', EmberComponent.extend({
     layout: compile('{{#x-middle}}{{view innerView dismiss="dismiss"}}{{/x-middle}}'),
     actions: {
       dismiss: function() {
@@ -1315,13 +1305,11 @@ QUnit.test('should have the correct action target', function() {
       }
     },
     innerView: EmberComponent.extend({
-      container,
       elementId: 'x-inner'
     })
   }));
 
-  registry.register('component:x-middle', EmberComponent.extend({
-    container,
+  owner.register('component:x-middle', EmberComponent.extend({
     actions: {
       dismiss: function() {
         throw new Error('action was not supposed to go here');
@@ -1330,7 +1318,7 @@ QUnit.test('should have the correct action target', function() {
   }));
 
   view = EmberView.extend({
-    container,
+    [OWNER]: owner,
     template: compile('{{x-outer}}')
   }).create();
 

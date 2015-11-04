@@ -5,6 +5,7 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Application from 'ember-application/system/application';
+import { getOwner } from 'container/owner';
 
 /**
 @module ember
@@ -58,19 +59,6 @@ export default EmberObject.extend({
     this._super(...arguments);
     this.releaseMethods = emberA();
   },
-
-  /**
-    The container of the application being debugged.
-    This property will be injected
-    on creation.
-
-    @property container
-    @default null
-    @since 1.3.0
-    @public
-  */
-  container: null,
-
 
   /**
     The container-debug-adapter which is used
@@ -171,7 +159,7 @@ export default EmberObject.extend({
 
   _nameToClass(type) {
     if (typeof type === 'string') {
-      type = this.container.lookupFactory(`model:${type}`);
+      type = getOwner(this)._lookupFactory(`model:${type}`);
     }
     return type;
   },

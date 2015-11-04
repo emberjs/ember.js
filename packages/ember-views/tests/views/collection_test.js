@@ -1,20 +1,22 @@
 import Ember from 'ember-metal/core'; // Ember.A
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
+import { runDestroy } from 'ember-runtime/tests/utils';
 import { Mixin } from 'ember-metal/mixin';
 import jQuery from 'ember-views/system/jquery';
 import CollectionView, { DeprecatedCollectionView } from 'ember-views/views/collection_view';
 import View from 'ember-views/views/view';
-import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import getElementStyle from 'ember-views/tests/test-helpers/get-element-style';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 var trim = jQuery.trim;
-var registry;
+var owner;
 var view;
 
 var originalLookup, originalViewKeyword;
@@ -24,13 +26,12 @@ QUnit.module('CollectionView', {
     CollectionView.CONTAINER_MAP.del = 'em';
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     originalLookup = Ember.lookup;
-    registry = new Registry();
+    owner = buildOwner();
   },
   teardown() {
     delete CollectionView.CONTAINER_MAP.del;
-    run(function() {
-      if (view) { view.destroy(); }
-    });
+    runDestroy(view);
+    runDestroy(owner);
 
     Ember.lookup = originalLookup;
     resetKeyword('view', originalViewKeyword);
@@ -467,13 +468,14 @@ QUnit.test('should allow items to access to the CollectionView\'s current index 
 });
 
 QUnit.test('should allow declaration of itemViewClass as a string', function() {
-  registry.register('view:simple-view', View.extend());
+  owner.register('view:simple-view', View.extend());
 
   view = CollectionView.create({
-    container: registry.container(),
-    content: emberA([1, 2, 3]),
+    [OWNER]: owner,
     itemViewClass: 'simple-view'
   });
+
+  view.set('content', emberA([1, 2, 3]));
 
   run(function() {
     view.appendTo('#qunit-fixture');
@@ -530,7 +532,6 @@ QUnit.test('when a collection view is emptied, deeply nested views elements are 
     itemViewClass: ChildView
   });
 
-
   run(function() {
     view.append();
   });
@@ -549,16 +550,15 @@ QUnit.test('when a collection view is emptied, deeply nested views elements are 
 });
 
 QUnit.test('should render the emptyView if content array is empty and emptyView is given as string', function() {
-  registry.register('view:custom-empty', View.extend({
+  owner.register('view:custom-empty', View.extend({
     tagName: 'kbd',
     template: compile('THIS IS AN EMPTY VIEW')
   }));
 
   view = CollectionView.create({
+    [OWNER]: owner,
     tagName: 'del',
     content: emberA(),
-    container: registry.container(),
-
     emptyView: 'custom-empty'
   });
 
@@ -574,13 +574,14 @@ QUnit.test('should lookup against the container if itemViewClass is given as a s
     template: compile('{{view.content}}')
   });
 
-  registry.register('view:item', ItemView);
+  owner.register('view:item', ItemView);
 
   view = CollectionView.create({
-    container: registry.container(),
-    content: emberA([1, 2, 3, 4]),
+    [OWNER]: owner,
     itemViewClass: 'item'
   });
+
+  view.set('content', emberA([1, 2, 3, 4]));
 
   run(function() {
     view.appendTo('#qunit-fixture');
@@ -594,13 +595,14 @@ QUnit.test('should lookup only global path against the container if itemViewClas
     template: compile('{{view.content}}')
   });
 
-  registry.register('view:top', ItemView);
+  owner.register('view:top', ItemView);
 
   view = CollectionView.create({
-    container: registry.container(),
-    content: emberA(['hi']),
+    [OWNER]: owner,
     itemViewClass: 'top'
   });
+
+  view.set('content', emberA(['hi']));
 
   run(function() {
     view.appendTo('#qunit-fixture');
@@ -615,10 +617,10 @@ QUnit.test('should lookup against the container and render the emptyView if empt
     template: compile('THIS IS AN EMPTY VIEW')
   });
 
-  registry.register('view:empty', EmptyView);
+  owner.register('view:empty', EmptyView);
 
   view = CollectionView.create({
-    container: registry.container(),
+    [OWNER]: owner,
     tagName: 'del',
     content: emberA(),
     emptyView: 'empty'
@@ -636,10 +638,10 @@ QUnit.test('should lookup from only global path against the container if emptyVi
     template: compile('EMPTY')
   });
 
-  registry.register('view:top', EmptyView);
+  owner.register('view:top', EmptyView);
 
   view = CollectionView.create({
-    container: registry.container(),
+    [OWNER]: owner,
     content: emberA(),
     emptyView: 'top'
   });

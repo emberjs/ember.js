@@ -9,6 +9,7 @@ import { Mixin } from 'ember-metal/mixin';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import isEnabled from 'ember-metal/features';
 import { symbol } from 'ember-metal/utils';
+import { getOwner } from 'container/owner';
 
 const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
@@ -117,13 +118,15 @@ export default Mixin.create({
     if (!name) { return; }
     assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
-    if (!this.container) {
+    const owner = getOwner(this);
+
+    if (!owner) {
       throw new EmberError('Container was not found when looking up a views template. ' +
                  'This is most likely due to manually instantiating an Ember.View. ' +
                  'See: http://git.io/EKPpnA');
     }
 
-    return this.container.lookup('template:' + name);
+    return owner.lookup('template:' + name);
   },
 
   /**

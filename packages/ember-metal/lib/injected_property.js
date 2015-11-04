@@ -2,6 +2,7 @@ import { assert } from 'ember-metal/debug';
 import { ComputedProperty } from 'ember-metal/computed';
 import { AliasedProperty } from 'ember-metal/alias';
 import { Descriptor } from 'ember-metal/properties';
+import { getOwner } from 'container/owner';
 
 /**
   Read-only property that returns the result of a container lookup.
@@ -24,11 +25,12 @@ function InjectedProperty(type, name) {
 
 function injectedPropertyGet(keyName) {
   var desc = this[keyName];
+  const owner = getOwner(this);
 
   assert(`InjectedProperties should be defined with the Ember.inject computed property macros.`, desc && desc.isDescriptor && desc.type);
-  assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, this.container);
+  assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, owner);
 
-  return this.container.lookup(desc.type + ':' + (desc.name || keyName));
+  return owner.lookup(desc.type + ':' + (desc.name || keyName));
 }
 
 InjectedProperty.prototype = Object.create(Descriptor.prototype);

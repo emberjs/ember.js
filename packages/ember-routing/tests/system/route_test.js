@@ -1,9 +1,10 @@
 import { runDestroy } from 'ember-runtime/tests/utils';
-import Registry from 'container/registry';
 import Service from 'ember-runtime/system/service';
 import EmberObject from 'ember-runtime/system/object';
 import EmberRoute from 'ember-routing/system/route';
 import inject from 'ember-runtime/inject';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { setOwner } from 'container/owner';
 
 var route, routeOne, routeTwo, lookupHash;
 
@@ -32,17 +33,17 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
     }
   });
 
-  route.container = {
-    has() {
+  setOwner(route, buildOwner({
+    hasRegistration() {
       return true;
     },
 
-    lookupFactory(fullName) {
+    _lookupFactory(fullName) {
       equal(fullName, 'model:post', 'correct factory was looked up');
 
       return Post;
     }
-  };
+  }));
 
   route.set('_qp', null);
 
@@ -54,8 +55,8 @@ QUnit.test('\'store\' can be injected by data persistence frameworks', function(
   expect(8);
   runDestroy(route);
 
-  var registry = new Registry();
-  var container = registry.container();
+  const owner = buildOwner();
+
   var post = {
     id: 1
   };
@@ -69,12 +70,12 @@ QUnit.test('\'store\' can be injected by data persistence frameworks', function(
     }
   });
 
-  registry.register('route:index', EmberRoute);
-  registry.register('store:main', Store);
+  owner.register('route:index', EmberRoute);
+  owner.register('store:main', Store);
 
-  registry.injection('route', 'store', 'store:main');
+  owner.inject('route', 'store', 'store:main');
 
-  route = container.lookup('route:index');
+  route = owner.lookup('route:index');
 
   equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
@@ -84,14 +85,13 @@ QUnit.test('assert if \'store.find\' method is not found', function() {
   expect(1);
   runDestroy(route);
 
-  var registry = new Registry();
-  var container = registry.container();
+  const owner = buildOwner();
   var Post = EmberObject.extend();
 
-  registry.register('route:index', EmberRoute);
-  registry.register('model:post', Post);
+  owner.register('route:index', EmberRoute);
+  owner.register('model:post', Post);
 
-  route = container.lookup('route:index');
+  route = owner.lookup('route:index');
 
   expectAssertion(function() {
     route.findModel('post', 1);
@@ -102,11 +102,10 @@ QUnit.test('asserts if model class is not found', function() {
   expect(1);
   runDestroy(route);
 
-  var registry = new Registry();
-  var container = registry.container();
-  registry.register('route:index', EmberRoute);
+  const owner = buildOwner();
+  owner.register('route:index', EmberRoute);
 
-  route = container.lookup('route:index');
+  route = owner.lookup('route:index');
 
   expectAssertion(function() {
     route.model({ post_id: 1 });
@@ -118,12 +117,11 @@ QUnit.test('\'store\' does not need to be injected', function() {
 
   runDestroy(route);
 
-  var registry = new Registry();
-  var container = registry.container();
+  const owner = buildOwner();
 
-  registry.register('route:index', EmberRoute);
+  owner.register('route:index', EmberRoute);
 
-  route = container.lookup('route:index');
+  route = owner.lookup('route:index');
 
   ignoreAssertion(function() {
     route.model({ post_id: 1 });
@@ -133,22 +131,21 @@ QUnit.test('\'store\' does not need to be injected', function() {
 });
 
 QUnit.test('modelFor doesn\'t require the router', function() {
-  var registry = new Registry();
-  var container = registry.container();
-  route.container = container;
+  expect(1);
 
-  var foo = { name: 'foo' };
+  const owner = buildOwner();
+  setOwner(route, owner);
 
-  var fooRoute = EmberRoute.extend({
-    container: container,
+  const foo = { name: 'foo' };
+
+  const FooRoute = EmberRoute.extend({
     currentModel: foo
   });
 
-  registry.register('route:foo', fooRoute);
+  owner.register('route:foo', FooRoute);
 
-  equal(route.modelFor('foo'), foo);
+  strictEqual(route.modelFor('foo'), foo);
 });
-
 
 QUnit.test('.send just calls an action if the router is absent', function() {
   expect(7);
@@ -275,14 +272,17 @@ QUnit.test('returns undefined if model is not set', function() {
 
 QUnit.module('Ember.Route interaction', {
   setup() {
-    var container = {
+    var owner = {
       lookup(fullName) {
         return lookupHash[fullName];
       }
     };
 
-    routeOne = EmberRoute.create({ container: container, routeName: 'one' });
-    routeTwo = EmberRoute.create({ container: container, routeName: 'two' });
+    routeOne = EmberRoute.create({ routeName: 'one' });
+    routeTwo = EmberRoute.create({ routeName: 'two' });
+
+    setOwner(routeOne, owner);
+    setOwner(routeTwo, owner);
 
     lookupHash = {
       'route:one': routeOne,
@@ -308,17 +308,16 @@ QUnit.test('controllerFor uses route\'s controllerName if specified', function()
 QUnit.module('Route injected properties');
 
 QUnit.test('services can be injected into routes', function() {
-  var registry = new Registry();
-  var container = registry.container();
+  const owner = buildOwner();
 
-  registry.register('route:application', EmberRoute.extend({
+  owner.register('route:application', EmberRoute.extend({
     authService: inject.service('auth')
   }));
 
-  registry.register('service:auth', Service.extend());
+  owner.register('service:auth', Service.extend());
 
-  var appRoute = container.lookup('route:application');
-  var authService = container.lookup('service:auth');
+  var appRoute = owner.lookup('route:application');
+  var authService = owner.lookup('service:auth');
 
   equal(authService, appRoute.get('authService'), 'service.auth is injected');
 });

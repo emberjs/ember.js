@@ -5,6 +5,7 @@ import {
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import InjectedProperty from 'ember-metal/injected_property';
+import { setOwner } from 'container/owner';
 
 QUnit.module('InjectedProperty');
 
@@ -33,27 +34,29 @@ QUnit.test('getting on an object without a container should fail assertion', fun
 QUnit.test('getting should return a lookup on the container', function() {
   expect(2);
 
-  var obj = {
-    container: {
-      lookup(key) {
-        ok(true, 'should call container.lookup');
-        return key;
-      }
+  var obj = {};
+
+  setOwner(obj, {
+    lookup(key) {
+      ok(true, 'should call container.lookup');
+      return key;
     }
-  };
+  });
+
   defineProperty(obj, 'foo', new InjectedProperty('type', 'name'));
 
   equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
 });
 
 QUnit.test('omitting the lookup name should default to the property name', function() {
-  var obj = {
-    container: {
-      lookup(key) {
-        return key;
-      }
+  var obj = {};
+
+  setOwner(obj, {
+    lookup(key) {
+      return key;
     }
-  };
+  });
+
   defineProperty(obj, 'foo', new InjectedProperty('type'));
 
   equal(get(obj, 'foo'), 'type:foo', 'should lookup the type using the property name');

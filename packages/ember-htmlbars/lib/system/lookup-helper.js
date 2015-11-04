@@ -36,11 +36,11 @@ export function findHelper(name, view, env) {
   var helper = env.helpers[name];
 
   if (!helper) {
-    var container = env.container;
-    if (validateLazyHelperName(name, container, env.hooks.keywords)) {
+    const owner = env.owner;
+    if (validateLazyHelperName(name, owner, env.hooks.keywords)) {
       var helperName = 'helper:' + name;
-      if (container.registry.has(helperName)) {
-        helper = container.lookupFactory(helperName);
+      if (owner.hasRegistration(helperName)) {
+        helper = owner._lookupFactory(helperName);
         assert(`Expected to find an Ember.Helper with the name ${helperName}, but found an object of type ${typeof helper} instead.`, helper.isHelperFactory || helper.isHelperInstance);
       }
     }

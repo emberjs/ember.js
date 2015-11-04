@@ -1,9 +1,6 @@
 import Ember from 'ember-metal/core'; // A
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-
-import Registry from 'container/registry';
 import Namespace from 'ember-runtime/system/namespace';
 import { classify } from 'ember-runtime/system/string';
 import Controller from 'ember-runtime/controllers/controller';
@@ -12,20 +9,19 @@ import generateController from 'ember-routing/system/generate_controller';
 import {
   generateControllerFactory
 } from 'ember-routing/system/generate_controller';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
-var buildContainer = function(namespace) {
-  var registry = new Registry();
-  var container = registry.container();
+var buildInstance = function(namespace) {
+  const owner = buildOwner();
 
-  registry.set = set;
-  registry.resolver = resolverFor(namespace);
-  registry.optionsForType('view', { singleton: false });
+  owner.__registry__.resolver = resolverFor(namespace);
+  owner.registerOptionsForType('view', { singleton: false });
 
-  registry.register('application:main', namespace, { instantiate: false });
+  owner.register('application:main', namespace, { instantiate: false });
 
-  registry.register('controller:basic', Controller, { instantiate: false });
+  owner.register('controller:basic', Controller, { instantiate: false });
 
-  return container;
+  return owner;
 };
 
 function resolverFor(namespace) {
@@ -44,25 +40,25 @@ function resolverFor(namespace) {
   };
 }
 
-var container, appController, namespace;
+var appInstance, appController, namespace;
 
 QUnit.module('Ember.controllerFor', {
   setup() {
     namespace = Namespace.create();
-    container = buildContainer(namespace);
-    container.registry.register('controller:app', Controller.extend());
-    appController = container.lookup('controller:app');
+    appInstance = buildInstance(namespace);
+    appInstance.register('controller:app', Controller.extend());
+    appController = appInstance.lookup('controller:app');
   },
   teardown() {
     run(function () {
-      container.destroy();
+      appInstance.destroy();
       namespace.destroy();
     });
   }
 });
 
 QUnit.test('controllerFor should lookup for registered controllers', function() {
-  var controller = controllerFor(container, 'app');
+  var controller = controllerFor(appInstance, 'app');
 
   equal(appController, controller, 'should find app controller');
 });
@@ -70,11 +66,11 @@ QUnit.test('controllerFor should lookup for registered controllers', function() 
 QUnit.module('Ember.generateController', {
   setup() {
     namespace = Namespace.create();
-    container = buildContainer(namespace);
+    appInstance = buildInstance(namespace);
   },
   teardown() {
     run(function () {
-      container.destroy();
+      appInstance.destroy();
       namespace.destroy();
     });
   }
@@ -86,7 +82,7 @@ QUnit.test('generateController and generateControllerFactory are properties on t
 });
 
 QUnit.test('generateController should create Ember.Controller', function() {
-  var controller = generateController(container, 'home');
+  var controller = generateController(appInstance, 'home');
 
   ok(controller instanceof Controller, 'should create controller');
 });
@@ -96,7 +92,7 @@ QUnit.test('generateController should create App.Controller if provided', functi
   var controller;
   namespace.Controller = Controller.extend();
 
-  controller = generateController(container, 'home');
+  controller = generateController(appInstance, 'home');
 
   ok(controller instanceof namespace.Controller, 'should create controller');
 });

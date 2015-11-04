@@ -4,32 +4,34 @@ import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 var trim = jQuery.trim;
-import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var MyApp, lookup, view, registry, container;
+var MyApp, lookup, view, owner;
 var originalLookup = Ember.lookup;
 
 QUnit.module('Support for {{partial}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
   },
   teardown() {
     runDestroy(view);
+    runDestroy(owner);
     Ember.lookup = originalLookup;
+    view = owner = null;
   }
 });
 
 QUnit.test('should render other templates registered with the container', function() {
-  registry.register('template:_subTemplateFromContainer', compile('sub-template'));
+  owner.register('template:_subTemplateFromContainer', compile('sub-template'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('This {{partial "subTemplateFromContainer"}} is pretty great.')
   });
 
@@ -39,10 +41,10 @@ QUnit.test('should render other templates registered with the container', functi
 });
 
 QUnit.test('should render other slash-separated templates registered with the container', function() {
-  registry.register('template:child/_subTemplateFromContainer', compile('sub-template'));
+  owner.register('template:child/_subTemplateFromContainer', compile('sub-template'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('This {{partial "child/subTemplateFromContainer"}} is pretty great.')
   });
 
@@ -52,12 +54,13 @@ QUnit.test('should render other slash-separated templates registered with the co
 });
 
 QUnit.test('should use the current view\'s context', function() {
-  registry.register('template:_person_name', compile('{{firstName}} {{lastName}}'));
+  owner.register('template:_person_name', compile('{{firstName}} {{lastName}}'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('Who is {{partial "person_name"}}?')
   });
+
   view.set('controller', EmberObject.create({
     firstName: 'Kris',
     lastName: 'Selden'
@@ -69,11 +72,11 @@ QUnit.test('should use the current view\'s context', function() {
 });
 
 QUnit.test('Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name', function() {
-  registry.register('template:_subTemplate', compile('sub-template'));
-  registry.register('template:_otherTemplate', compile('other-template'));
+  owner.register('template:_subTemplate', compile('sub-template'));
+  owner.register('template:_otherTemplate', compile('other-template'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('This {{partial view.partialName}} is pretty {{partial nonexistent}}great.'),
     partialName: 'subTemplate'
   });

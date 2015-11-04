@@ -1,5 +1,4 @@
 import EmberView from 'ember-views/views/view';
-import { Registry } from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -9,48 +8,48 @@ import { set } from 'ember-metal/property_set';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var view, registry, container, originalViewKeyword;
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
+
+var view, owner, originalViewKeyword;
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('view:toplevel', EmberView.extend());
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('view:toplevel', EmberView.extend());
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(view);
     resetKeyword('view', originalViewKeyword);
-    registry = container = view = null;
+    owner = view = null;
   }
 });
 
 QUnit.test('child views can be inserted inside a bind block', function() {
-  registry.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
-  registry.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as |thing|}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
-  registry.register('template:other', compile('cruel'));
+  owner.register('template:nester', compile('<h1 id="hello-world">Hello {{world}}</h1>{{view view.bqView}}'));
+  owner.register('template:nested', compile('<div id="child-view">Goodbye {{#with content as |thing|}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>'));
+  owner.register('template:other', compile('cruel'));
 
   var context = {
     world: 'world!'
   };
 
   var OtherView = EmberView.extend({
-    container: container,
     templateName: 'other'
   });
 
   var BQView = EmberView.extend({
-    container: container,
     otherView: OtherView,
     tagName: 'blockquote',
     templateName: 'nested'
   });
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     bqView: BQView,
     context: context,
     templateName: 'nester'
@@ -69,7 +68,7 @@ QUnit.test('child views can be inserted inside a bind block', function() {
 });
 
 QUnit.test('views render their template in the context of the parent view\'s context', function() {
-  registry.register('template:parent', compile('<h1>{{#with content as |person|}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  owner.register('template:parent', compile('<h1>{{#with content as |person|}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
     content: {
@@ -79,7 +78,7 @@ QUnit.test('views render their template in the context of the parent view\'s con
   };
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'parent',
     context: context
   });
@@ -89,10 +88,10 @@ QUnit.test('views render their template in the context of the parent view\'s con
 });
 
 QUnit.test('views make a view keyword available that allows template to reference view context', function() {
-  registry.register('template:parent', compile('<h1>{{#with view.content as |person|}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
+  owner.register('template:parent', compile('<h1>{{#with view.content as |person|}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'parent',
 
     content: {

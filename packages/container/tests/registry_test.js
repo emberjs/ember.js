@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
 import { Registry } from 'container';
-import { factory } from 'container/tests/container_helper';
+import factory from 'container/tests/test-helpers/factory';
 
 var originalModelInjections;
 

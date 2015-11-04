@@ -1,10 +1,11 @@
-import Registry from 'container/registry';
 import View from 'ember-views/views/view';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
 import isEnabled from 'ember-metal/features';
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
 let view;
 
@@ -47,12 +48,12 @@ function renderComponent(tag, component) {
     .map(key => `${key}=${hash[key]}`)
     .join(' ');
 
-  let registry = new Registry();
-  registry.register('component-lookup:main', ComponentLookup);
-  registry.register(`component:${tag}`, implementation);
+  const owner = buildOwner();
+  owner.register('component-lookup:main', ComponentLookup);
+  owner.register(`component:${tag}`, implementation);
 
   view = View.extend({
-    container: registry.container(),
+    [OWNER]: owner,
     template: compile(`<${tag} ${stringParams} ${stringHash}>${yielded}</${tag}>`)
   }).create();
 

@@ -2,7 +2,6 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Service from 'ember-runtime/system/service';
-import { Registry } from 'ember-runtime/system/container';
 import inject from 'ember-runtime/inject';
 import { get } from 'ember-metal/property_get';
 import Application from 'ember-application/system/application';
@@ -13,6 +12,7 @@ import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
 var a_slice = Array.prototype.slice;
 
@@ -231,17 +231,16 @@ QUnit.test('Calling sendAction on a component with multiple parameters', functio
 QUnit.module('Ember.Component - injected properties');
 
 QUnit.test('services can be injected into components', function() {
-  var registry = new Registry();
-  var container = registry.container();
+  const owner = buildOwner();
 
-  registry.register('component:application', Component.extend({
+  owner.register('component:application', Component.extend({
     profilerService: inject.service('profiler')
   }));
 
-  registry.register('service:profiler', Service.extend());
+  owner.register('service:profiler', Service.extend());
 
-  var appComponent = container.lookup('component:application');
-  var profilerService = container.lookup('service:profiler');
+  var appComponent = owner.lookup('component:application');
+  var profilerService = owner.lookup('service:profiler');
 
   equal(profilerService, appComponent.get('profilerService'), 'service.profiler is injected');
 });

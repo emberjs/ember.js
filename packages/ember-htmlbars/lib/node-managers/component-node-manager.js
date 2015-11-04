@@ -9,6 +9,7 @@ import LegacyEmberComponent from 'ember-views/components/component';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import { symbol } from 'ember-metal/utils';
+import { getOwner, setOwner } from 'container/owner';
 
 // These symbols will be used to limit link-to's public API surface area.
 export let HAS_BLOCK = symbol('HAS_BLOCK');
@@ -232,13 +233,15 @@ export function createComponent(_component, isAngleBracket, props, renderNode, e
     props._isAngleBracket = true;
   }
 
-  props.renderer = props.parentView ? props.parentView.renderer : env.container.lookup('renderer:-dom');
-  props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.container.lookup('-view-registry:main');
+  props.renderer = props.parentView ? props.parentView.renderer : env.owner.lookup('renderer:-dom');
+  props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.owner.lookup('-view-registry:main');
 
-  let component = _component.create(props);
+  const component = _component.create(props);
 
   // for the fallback case
-  component.container = component.container || env.container;
+  if (!getOwner(component)) {
+    setOwner(component, env.owner);
+  }
 
   if (props.parentView) {
     props.parentView.appendChild(component);

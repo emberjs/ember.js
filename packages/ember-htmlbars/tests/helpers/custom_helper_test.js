@@ -2,24 +2,24 @@ import Component from 'ember-views/components/component';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import Registry from 'container/registry';
 import run from 'ember-metal/run_loop';
 import ComponentLookup from 'ember-views/component_lookup';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-let registry, container, component;
+let owner, component;
 
 QUnit.module('ember-htmlbars: custom app helpers', {
   setup() {
-    registry = new Registry();
-    registry.optionsForType('template', { instantiate: false });
-    registry.optionsForType('helper', { singleton: false });
-    container = registry.container();
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.registerOptionsForType('helper', { singleton: false });
   },
 
   teardown() {
     runDestroy(component);
-    runDestroy(container);
-    registry = container = component = null;
+    runDestroy(owner);
+    owner = component = null;
   }
 });
 
@@ -27,9 +27,9 @@ QUnit.test('dashed shorthand helper is resolved from container', function() {
   var HelloWorld = makeHelper(function() {
     return 'hello world';
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile('{{hello-world}}')
   }).create();
 
@@ -43,9 +43,9 @@ QUnit.test('dashed helper is resolved from container', function() {
       return 'hello world';
     }
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile('{{hello-world}}')
   }).create();
 
@@ -70,9 +70,9 @@ QUnit.test('dashed helper can recompute a new value', function() {
       this._super();
     }
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile('{{hello-world}}')
   }).create();
 
@@ -102,9 +102,9 @@ QUnit.test('dashed helper with arg can recompute a new value', function() {
       this._super();
     }
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile('{{hello-world "whut"}}')
   }).create();
 
@@ -122,9 +122,9 @@ QUnit.test('dashed shorthand helper is called for param changes', function() {
   var HelloWorld = makeHelper(function() {
     return ++count;
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     name: 'bob',
     layout: compile('{{hello-world name}}')
   }).create();
@@ -151,9 +151,9 @@ QUnit.test('dashed helper compute is called for param changes', function() {
       return ++count;
     }
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     name: 'bob',
     layout: compile('{{hello-world name}}')
   }).create();
@@ -173,9 +173,9 @@ QUnit.test('dashed shorthand helper receives params, hash', function() {
     params = _params;
     hash = _hash;
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     name: 'bob',
     layout: compile('{{hello-world name "rich" last="sam"}}')
   }).create();
@@ -195,9 +195,9 @@ QUnit.test('dashed helper receives params, hash', function() {
       hash = _hash;
     }
   });
-  registry.register('helper:hello-world', HelloWorld);
+  owner.register('helper:hello-world', HelloWorld);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     name: 'bob',
     layout: compile('{{hello-world name "rich" last="sam"}}')
   }).create();
@@ -215,9 +215,9 @@ QUnit.test('dashed helper usable in subexpressions', function() {
       return params.join(' ');
     }
   });
-  registry.register('helper:join-words', JoinWords);
+  owner.register('helper:join-words', JoinWords);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(
       `{{join-words "Who"
                    (join-words "overcomes" "by")
@@ -234,9 +234,9 @@ QUnit.test('dashed helper usable in subexpressions', function() {
 
 QUnit.test('dashed helper not usable with a block', function() {
   var SomeHelper = makeHelper(function() {});
-  registry.register('helper:some-helper', SomeHelper);
+  owner.register('helper:some-helper', SomeHelper);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(`{{#some-helper}}{{/some-helper}}`)
   }).create();
 
@@ -247,9 +247,9 @@ QUnit.test('dashed helper not usable with a block', function() {
 
 QUnit.test('dashed helper not usable within element', function() {
   var SomeHelper = makeHelper(function() {});
-  registry.register('helper:some-helper', SomeHelper);
+  owner.register('helper:some-helper', SomeHelper);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(`<div {{some-helper}}></div>`)
   }).create();
 
@@ -269,9 +269,9 @@ QUnit.test('dashed helper is torn down', function() {
       return 'must define a compute';
     }
   });
-  registry.register('helper:some-helper', SomeHelper);
+  owner.register('helper:some-helper', SomeHelper);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(`{{some-helper}}`)
   }).create();
 
@@ -298,10 +298,10 @@ QUnit.test('dashed helper used in subexpression can recompute', function() {
       return params.join(' ');
     }
   });
-  registry.register('helper:dynamic-segment', DynamicSegment);
-  registry.register('helper:join-words', JoinWords);
+  owner.register('helper:dynamic-segment', DynamicSegment);
+  owner.register('helper:join-words', JoinWords);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(
       `{{join-words "Who"
                    (dynamic-segment)
@@ -341,14 +341,14 @@ QUnit.test('dashed helper used in subexpression can recompute component', functi
       return params.join(' ');
     }
   });
-  registry.register('component-lookup:main', ComponentLookup);
-  registry.register('component:some-component', Component.extend({
+  owner.register('component-lookup:main', ComponentLookup);
+  owner.register('component:some-component', Component.extend({
     layout: compile('{{first}} {{second}} {{third}} {{fourth}} {{fifth}}')
   }));
-  registry.register('helper:dynamic-segment', DynamicSegment);
-  registry.register('helper:join-words', JoinWords);
+  owner.register('helper:dynamic-segment', DynamicSegment);
+  owner.register('helper:join-words', JoinWords);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(
       `{{some-component first="Who"
                    second=(dynamic-segment)
@@ -386,10 +386,10 @@ QUnit.test('dashed helper used in subexpression is destroyed', function() {
   var JoinWords = makeHelper(function(params) {
     return params.join(' ');
   });
-  registry.register('helper:dynamic-segment', DynamicSegment);
-  registry.register('helper:join-words', JoinWords);
+  owner.register('helper:dynamic-segment', DynamicSegment);
+  owner.register('helper:join-words', JoinWords);
   component = Component.extend({
-    container,
+    [OWNER]: owner,
     layout: compile(
       `{{join-words "Who"
                    (dynamic-segment)

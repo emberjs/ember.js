@@ -1,39 +1,42 @@
-import Registry from 'container/registry';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
-let component, registry, container;
+let component, owner;
 
 if (isEnabled('ember-contextual-components')) {
   QUnit.module('ember-htmlbars: closure component helper', {
     setup() {
-      registry = new Registry();
-      container = registry.container();
+      owner = buildOwner();
 
-      registry.optionsForType('template', { instantiate: false });
-      registry.register('component-lookup:main', ComponentLookup);
+      owner.registerOptionsForType('template', { instantiate: false });
+      owner.register('component-lookup:main', ComponentLookup);
     },
 
     teardown() {
       runDestroy(component);
-      runDestroy(container);
-      registry = container = component = null;
+      runDestroy(owner);
+      owner = component = null;
     }
   });
 
   QUnit.test('renders with component helper', function() {
     let expectedText = 'Hodi';
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(expectedText)
     );
 
     let template = compile('{{component (component "-looked-up")}}');
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), expectedText, '-looked-up component rendered');
@@ -44,11 +47,11 @@ if (isEnabled('ember-contextual-components')) {
     LookedUp.reopenClass({
       positionalParams: ['name']
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{greeting}} {{name}}`)
     );
@@ -56,7 +59,10 @@ if (isEnabled('ember-contextual-components')) {
     let template = compile(
       `{{component (component "-looked-up") "Hodari" greeting="Hodi"}}`
     );
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), 'Hodi Hodari', '-looked-up component rendered');
@@ -67,11 +73,11 @@ if (isEnabled('ember-contextual-components')) {
     LookedUp.reopenClass({
       positionalParams: ['name']
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{greeting}} {{name}}`)
     );
@@ -79,7 +85,10 @@ if (isEnabled('ember-contextual-components')) {
     let template = compile(
       `{{component (component "-looked-up" "Hodari" greeting="Hodi") greeting="Hola"}}`
     );
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), 'Hola Hodari', '-looked-up component rendered');
@@ -87,22 +96,22 @@ if (isEnabled('ember-contextual-components')) {
 
   QUnit.test('updates when component path is bound', function() {
     let Mandarin = Component.extend();
-    registry.register(
+    owner.register(
       'component:-mandarin',
       Mandarin
     );
-    registry.register(
+    owner.register(
       'template:components/-mandarin',
       compile(`ni hao`)
     );
-    registry.register(
+    owner.register(
       'template:components/-hindi',
       compile(`Namaste`)
     );
 
     let template = compile('{{component (component lookupComponent)}}');
     component = Component.extend({
-      container,
+      [OWNER]: owner,
       template,
       lookupComponent: '-mandarin'
     }).create();
@@ -119,7 +128,7 @@ if (isEnabled('ember-contextual-components')) {
   });
 
   QUnit.test('updates when curried hash argument is bound', function() {
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{greeting}}`)
     );
@@ -127,7 +136,11 @@ if (isEnabled('ember-contextual-components')) {
     let template = compile(
       `{{component (component "-looked-up" greeting=greeting)}}`
     );
-    component = Component.extend({ container, template }).create();
+
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), '', '-looked-up component rendered');
@@ -143,11 +156,11 @@ if (isEnabled('ember-contextual-components')) {
     LookedUp.reopenClass({
       positionalParams: ['name', 'age']
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{name}} {{age}}`)
     );
@@ -158,14 +171,18 @@ if (isEnabled('ember-contextual-components')) {
                      "Marvin" 21)
           "Hodari"}}`
     );
-    component = Component.extend({ container, template }).create();
+
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), 'Hodari 21', '-looked-up component rendered');
   });
 
   QUnit.test('nested components overwrites hash parameters', function() {
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{greeting}} {{name}} {{age}}`)
     );
@@ -176,7 +193,12 @@ if (isEnabled('ember-contextual-components')) {
                               greeting="Hej" name="Sigmundur")
                     greeting=greeting}}`
     );
-    component = Component.extend({ container, template, greeting: 'Hodi' }).create();
+
+    component = Component.extend({
+      [OWNER]: owner,
+      template,
+      greeting: 'Hodi'
+    }).create();
 
     runAppend(component);
 
@@ -188,11 +210,11 @@ if (isEnabled('ember-contextual-components')) {
     InnerComponent.reopenClass({
       positionalParams: ['comp']
     });
-    registry.register(
+    owner.register(
       'component:-inner-component',
       InnerComponent
     );
-    registry.register(
+    owner.register(
       'template:components/-inner-component',
       compile(`{{component comp "Inner"}}`)
     );
@@ -201,11 +223,11 @@ if (isEnabled('ember-contextual-components')) {
     LookedUp.reopenClass({
       positionalParams: ['name', 'age']
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{name}} {{age}}`)
     );
@@ -214,7 +236,7 @@ if (isEnabled('ember-contextual-components')) {
       `{{component "-inner-component" (component "-looked-up" outerName outerAge)}}`
     );
     component = Component.extend({
-      container,
+      [OWNER]: owner,
       template,
       outerName: 'Outer',
       outerAge: 28
@@ -229,11 +251,11 @@ if (isEnabled('ember-contextual-components')) {
     InnerComponent.reopenClass({
       positionalParams: ['comp']
     });
-    registry.register(
+    owner.register(
       'component:-inner-component',
       InnerComponent
     );
-    registry.register(
+    owner.register(
       'template:components/-inner-component',
       compile(`{{component comp name="Inner"}}`)
     );
@@ -241,11 +263,11 @@ if (isEnabled('ember-contextual-components')) {
     let LookedUp = Component.extend();
     LookedUp.reopenClass({
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{name}} {{age}}`)
     );
@@ -254,7 +276,7 @@ if (isEnabled('ember-contextual-components')) {
       `{{component "-inner-component" (component "-looked-up" name=outerName age=outerAge)}}`
     );
     component = Component.extend({
-      container,
+      [OWNER]: owner,
       template,
       outerName: 'Outer',
       outerAge: 28
@@ -269,11 +291,11 @@ if (isEnabled('ember-contextual-components')) {
     LookedUp.reopenClass({
       positionalParams: ['name']
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{greeting}} {{name}}`)
     );
@@ -281,7 +303,10 @@ if (isEnabled('ember-contextual-components')) {
     let template = compile(
       `{{component (component "-looked-up" "Hodari" name="Sergio") "Hodari" greeting="Hodi"}}`
     );
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     expectAssertion(function() {
       runAppend(component);
@@ -293,11 +318,11 @@ if (isEnabled('ember-contextual-components')) {
     LookedUp.reopenClass({
       positionalParams: ['name']
     });
-    registry.register(
+    owner.register(
       'component:-looked-up',
       LookedUp
     );
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(`{{greeting}} {{name}}`)
     );
@@ -305,7 +330,10 @@ if (isEnabled('ember-contextual-components')) {
     let template = compile(
       `{{component (component "-looked-up" "Hodari") name="Sergio" greeting="Hodi"}}`
     );
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), 'Hodi Sergio', 'component is rendered');
@@ -313,7 +341,10 @@ if (isEnabled('ember-contextual-components')) {
 
   QUnit.test('raises an assertion when component path is null', function() {
     let template = compile(`{{component (component lookupComponent)}}`);
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     expectAssertion(() => {
       runAppend(component);
@@ -322,7 +353,10 @@ if (isEnabled('ember-contextual-components')) {
 
   QUnit.test('raises an assertion when component path is not a component name', function() {
     let template = compile(`{{component (component "not-a-component")}}`);
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     expectAssertion(() => {
       runAppend(component);
@@ -330,7 +364,7 @@ if (isEnabled('ember-contextual-components')) {
 
     template = compile(`{{component (component compName)}}`);
     component = Component.extend({
-      container,
+      [OWNER]: owner,
       template,
       compName: 'not-a-component'
     }).create();
@@ -342,13 +376,16 @@ if (isEnabled('ember-contextual-components')) {
 
   QUnit.test('renders with dot path', function() {
     let expectedText = 'Hodi';
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile(expectedText)
     );
 
     let template = compile('{{#with (hash lookedup=(component "-looked-up")) as |object|}}{{object.lookedup}}{{/with}}');
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), expectedText, '-looked-up component rendered');
@@ -356,13 +393,16 @@ if (isEnabled('ember-contextual-components')) {
 
   QUnit.test('renders with dot path and attr', function() {
     let expectedText = 'Hodi';
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile('{{expectedText}}')
     );
 
     let template = compile('{{#with (hash lookedup=(component "-looked-up")) as |object|}}{{object.lookedup expectedText=expectedText}}{{/with}}');
-    component = Component.extend({ container, template }).create({
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create({
       expectedText
     });
 
@@ -372,13 +412,16 @@ if (isEnabled('ember-contextual-components')) {
 
   QUnit.test('renders with dot path curried over attr', function() {
     let expectedText = 'Hodi';
-    registry.register(
+    owner.register(
       'template:components/-looked-up',
       compile('{{expectedText}}')
     );
 
     let template = compile('{{#with (hash lookedup=(component "-looked-up" expectedText=expectedText)) as |object|}}{{object.lookedup}}{{/with}}');
-    component = Component.extend({ container, template }).create({
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create({
       expectedText
     });
 
@@ -387,12 +430,12 @@ if (isEnabled('ember-contextual-components')) {
   });
 
   QUnit.test('adding parameters to a closure component\'s instance does not add it to other instances', function(assert) {
-    registry.register(
+    owner.register(
       'template:components/select-box',
       compile('{{yield (hash option=(component "select-box-option"))}}')
     );
 
-    registry.register(
+    owner.register(
       'template:components/select-box-option',
       compile('{{label}}')
     );
@@ -401,7 +444,10 @@ if (isEnabled('ember-contextual-components')) {
       '{{#select-box as |sb|}}{{sb.option label="Foo"}}{{sb.option}}{{/select-box}}'
     );
 
-    component = Component.extend({ container, template }).create();
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
 
     runAppend(component);
     equal(component.$().text(), 'Foo', 'there is only one Foo');

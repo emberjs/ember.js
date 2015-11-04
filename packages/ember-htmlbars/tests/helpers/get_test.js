@@ -1,31 +1,30 @@
 import Ember from 'ember-metal/core';
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
-import { Registry } from 'ember-runtime/system/container';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import EmberView from 'ember-views/views/view';
 import ComponentLookup from 'ember-views/component_lookup';
 import TextField from 'ember-views/views/text_field';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var view, registry, container;
+var view, owner;
 
 QUnit.module('ember-htmlbars: {{get}} helper', {
   setup() {
-    registry = new Registry();
-    registry.register('component:-text-field', TextField);
-    registry.register('component-lookup:main', ComponentLookup);
-
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
+    owner = buildOwner();
+    owner.register('component:-text-field', TextField);
+    owner.register('component-lookup:main', ComponentLookup);
+    owner.registerOptionsForType('template', { instantiate: false });
   },
   teardown() {
     run(function() {
       Ember.TEMPLATES = {};
     });
     runDestroy(view);
-    runDestroy(container);
-    registry = container = view = null;
+    runDestroy(owner);
+    owner = view = null;
   }
 });
 
@@ -403,8 +402,8 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - dyn
   };
 
   view = EmberView.create({
+    [OWNER]: owner,
     context: context,
-    container: container,
     template: compile(`{{input type='text' value=(mut (get source key)) id='get-input'}}`)
   });
 
@@ -438,8 +437,8 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - dyn
   };
 
   view = EmberView.create({
+    [OWNER]: owner,
     context: context,
-    container: container,
     template: compile(`{{input type='text' value=(mut (get source key)) id='get-input'}}`)
   });
 
@@ -471,8 +470,8 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - sta
   };
 
   view = EmberView.create({
+    [OWNER]: owner,
     context: context,
-    container: container,
     template: compile(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`)
   });
 

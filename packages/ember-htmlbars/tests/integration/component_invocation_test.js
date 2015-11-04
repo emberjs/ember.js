@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
-import Registry from 'container/registry';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
@@ -13,28 +12,29 @@ import { set } from 'ember-metal/property_set';
 import alias from 'ember-metal/alias';
 import run from 'ember-metal/run_loop';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var registry, container, view;
+var owner, view;
 
 function commonSetup() {
-  registry = new Registry();
-  container = registry.container();
-  registry.optionsForType('component', { singleton: false });
-  registry.optionsForType('view', { singleton: false });
-  registry.optionsForType('template', { instantiate: false });
-  registry.register('component-lookup:main', ComponentLookup);
+  owner = buildOwner();
+  owner.registerOptionsForType('component', { singleton: false });
+  owner.registerOptionsForType('view', { singleton: false });
+  owner.registerOptionsForType('template', { instantiate: false });
+  owner.register('component-lookup:main', ComponentLookup);
 }
 
 function commonTeardown() {
-  runDestroy(container);
+  runDestroy(owner);
   runDestroy(view);
-  registry = container = view = null;
+  owner = view = null;
 }
 
 function appendViewFor(template, hash={}) {
-  let view = EmberView.extend({
-    template: compile(template),
-    container: container
+  const view = EmberView.extend({
+    [OWNER]: owner,
+    template: compile(template)
   }).create(hash);
 
   runAppend(view);
@@ -55,11 +55,11 @@ QUnit.module('component - invocation', {
 QUnit.test('non-block without properties', function() {
   expect(1);
 
-  registry.register('template:components/non-block', compile('In layout'));
+  owner.register('template:components/non-block', compile('In layout'));
 
   view = EmberView.extend({
-    template: compile('{{non-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{non-block}}')
   }).create();
 
   runAppend(view);
@@ -68,8 +68,8 @@ QUnit.test('non-block without properties', function() {
 });
 
 QUnit.test('GlimmerComponent cannot be invoked with curly braces', function() {
-  registry.register('template:components/non-block', compile('In layout'));
-  registry.register('component:non-block', GlimmerComponent.extend());
+  owner.register('template:components/non-block', compile('In layout'));
+  owner.register('component:non-block', GlimmerComponent.extend());
 
   expectAssertion(function() {
     view = appendViewFor('{{non-block}}');
@@ -79,11 +79,11 @@ QUnit.test('GlimmerComponent cannot be invoked with curly braces', function() {
 QUnit.test('block without properties', function() {
   expect(1);
 
-  registry.register('template:components/with-block', compile('In layout - {{yield}}'));
+  owner.register('template:components/with-block', compile('In layout - {{yield}}'));
 
   view = EmberView.extend({
-    template: compile('{{#with-block}}In template{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block}}In template{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -94,11 +94,11 @@ QUnit.test('block without properties', function() {
 QUnit.test('non-block with properties on attrs', function() {
   expect(1);
 
-  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
+  owner.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
 
   view = EmberView.extend({
-    template: compile('{{non-block someProp="something here"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{non-block someProp="something here"}}')
   }).create();
 
   runAppend(view);
@@ -107,12 +107,12 @@ QUnit.test('non-block with properties on attrs', function() {
 });
 
 QUnit.test('non-block with properties on attrs and component class', function() {
-  registry.register('component:non-block', Component.extend());
-  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
+  owner.register('component:non-block', Component.extend());
+  owner.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
 
   view = EmberView.extend({
-    template: compile('{{non-block someProp="something here"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{non-block someProp="something here"}}')
   }).create();
 
   runAppend(view);
@@ -123,11 +123,11 @@ QUnit.test('non-block with properties on attrs and component class', function() 
 QUnit.test('lookup of component takes priority over property', function() {
   expect(1);
 
-  registry.register('template:components/some-component', compile('some-component'));
+  owner.register('template:components/some-component', compile('some-component'));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{some-prop}} {{some-component}}'),
-    container: container,
     context: {
       'some-component': 'not-some-component',
       'some-prop': 'some-prop'
@@ -142,11 +142,11 @@ QUnit.test('lookup of component takes priority over property', function() {
 QUnit.test('component without dash is not looked up', function() {
   expect(1);
 
-  registry.register('template:components/somecomponent', compile('somecomponent'));
+  owner.register('template:components/somecomponent', compile('somecomponent'));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{somecomponent}}'),
-    container: container,
     context: {
       'somecomponent': 'notsomecomponent'
     }
@@ -161,7 +161,7 @@ QUnit.test('rerendering component with attrs from parent', function() {
   var willUpdate = 0;
   var didReceiveAttrs = 0;
 
-  registry.register('component:non-block', Component.extend({
+  owner.register('component:non-block', Component.extend({
     didReceiveAttrs() {
       didReceiveAttrs++;
     },
@@ -170,11 +170,11 @@ QUnit.test('rerendering component with attrs from parent', function() {
       willUpdate++;
     }
   }));
-  registry.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
+  owner.register('template:components/non-block', compile('In layout - someProp: {{attrs.someProp}}'));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{non-block someProp=view.someProp}}'),
-    container: container,
     someProp: 'wycats'
   }).create();
 
@@ -204,11 +204,11 @@ QUnit.test('[DEPRECATED] non-block with properties on self', function() {
   // TODO: attrs
   // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
 
-  registry.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
+  owner.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
 
   view = EmberView.extend({
-    template: compile('{{non-block someProp="something here"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{non-block someProp="something here"}}')
   }).create();
 
   runAppend(view);
@@ -219,11 +219,11 @@ QUnit.test('[DEPRECATED] non-block with properties on self', function() {
 QUnit.test('block with properties on attrs', function() {
   expect(1);
 
-  registry.register('template:components/with-block', compile('In layout - someProp: {{attrs.someProp}} - {{yield}}'));
+  owner.register('template:components/with-block', compile('In layout - someProp: {{attrs.someProp}} - {{yield}}'));
 
   view = EmberView.extend({
-    template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -235,11 +235,11 @@ QUnit.test('[DEPRECATED] block with properties on self', function() {
   // TODO: attrs
   // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
 
-  registry.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
+  owner.register('template:components/with-block', compile('In layout - someProp: {{someProp}} - {{yield}}'));
 
   view = EmberView.extend({
-    template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block someProp="something here"}}In template{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -250,11 +250,11 @@ QUnit.test('[DEPRECATED] block with properties on self', function() {
 QUnit.test('with ariaRole specified', function() {
   expect(1);
 
-  registry.register('template:components/aria-test', compile('Here!'));
+  owner.register('template:components/aria-test', compile('Here!'));
 
   view = EmberView.extend({
-    template: compile('{{aria-test id="aria-test" ariaRole="main"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{aria-test id="aria-test" ariaRole="main"}}')
   }).create();
 
   runAppend(view);
@@ -265,14 +265,14 @@ QUnit.test('with ariaRole specified', function() {
 QUnit.test('`template` specified in a component is overridden by block', function() {
   expect(1);
 
-  registry.register('component:with-block', Component.extend({
+  owner.register('component:with-block', Component.extend({
     layout: compile('{{yield}}'),
     template: compile('Oh, noes!')
   }));
 
   view = EmberView.extend({
-    template: compile('{{#with-block}}Whoop, whoop!{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block}}Whoop, whoop!{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -283,11 +283,11 @@ QUnit.test('`template` specified in a component is overridden by block', functio
 QUnit.test('hasBlock is true when block supplied', function() {
   expect(1);
 
-  registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
+  owner.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
 
   view = EmberView.extend({
-    template: compile('{{#with-block}}In template{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block}}In template{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -298,11 +298,11 @@ QUnit.test('hasBlock is true when block supplied', function() {
 QUnit.test('hasBlock is false when no block supplied', function() {
   expect(1);
 
-  registry.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
+  owner.register('template:components/with-block', compile('{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}'));
 
   view = EmberView.extend({
-    template: compile('{{with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{with-block}}')
   }).create();
 
   runAppend(view);
@@ -313,11 +313,11 @@ QUnit.test('hasBlock is false when no block supplied', function() {
 QUnit.test('hasBlockParams is true when block param supplied', function() {
   expect(1);
 
-  registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block!{{/if}}'));
+  owner.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block!{{/if}}'));
 
   view = EmberView.extend({
-    template: compile('{{#with-block as |something|}}In template{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block as |something|}}In template{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -328,11 +328,11 @@ QUnit.test('hasBlockParams is true when block param supplied', function() {
 QUnit.test('hasBlockParams is false when no block param supplied', function() {
   expect(1);
 
-  registry.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}}{{else}}{{yield}} No Block Param!{{/if}}'));
+  owner.register('template:components/with-block', compile('{{#if hasBlockParams}}{{yield this}}{{else}}{{yield}} No Block Param!{{/if}}'));
 
   view = EmberView.extend({
-    template: compile('{{#with-block}}In block{{/with-block}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#with-block}}In block{{/with-block}}')
   }).create();
 
   runAppend(view);
@@ -345,12 +345,12 @@ QUnit.test('static named positional parameters', function() {
   SampleComponent.reopenClass({
     positionalParams: ['name', 'age']
   });
-  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
-    layout: compile('{{sample-component "Quint" 4}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{sample-component "Quint" 4}}')
   }).create();
 
   runAppend(view);
@@ -364,12 +364,12 @@ QUnit.test('dynamic named positional parameters', function() {
     positionalParams: ['name', 'age']
   });
 
-  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{sample-component myName myAge}}'),
-    container: container,
     context: {
       myName: 'Quint',
       myAge: 4
@@ -393,12 +393,12 @@ QUnit.test('if a value is passed as a non-positional parameter, it takes precede
     positionalParams: ['name']
   });
 
-  registry.register('template:components/sample-component', compile('{{attrs.name}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{attrs.name}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{sample-component notMyName name=myName}}'),
-    container: container,
     context: {
       myName: 'Quint',
       notMyName: 'Sergio'
@@ -416,12 +416,12 @@ QUnit.test('static arbitrary number of positional parameters', function() {
     positionalParams: 'names'
   });
 
-  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
-    layout: compile('{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}')
   }).create();
 
   runAppend(view);
@@ -437,12 +437,12 @@ QUnit.test('arbitrary positional parameter conflict with hash parameter is repor
     positionalParams: 'names'
   });
 
-  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}'),
-    container: container,
     context: {
       numbers: [1, 2, 3]
     }
@@ -459,12 +459,12 @@ QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12
     positionalParams: 'names'
   });
 
-  registry.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{#each attrs.names as |name|}}{{name}}{{/each}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{sample-component names=things id="args-3"}}'),
-    container: container,
     context: {
       things: ['Foo', 4, 'Bar']
     }
@@ -481,17 +481,17 @@ QUnit.test('can use hash parameter instead of positional param', function() {
     positionalParams: ['first', 'second']
   });
 
-  registry.register('template:components/sample-component', compile('{{attrs.first}} - {{attrs.second}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{attrs.first}} - {{attrs.second}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile(`
       {{sample-component "one" "two" id="two-positional"}}
       {{sample-component "one" second="two" id="one-positional"}}
       {{sample-component first="one" second="two" id="no-positional"}}
 
     `),
-    container: container,
     context: {
       things: ['Foo', 4, 'Bar']
     }
@@ -509,12 +509,12 @@ QUnit.test('dynamic arbitrary number of positional parameters', function() {
   SampleComponent.reopenClass({
     positionalParams: 'n'
   });
-  registry.register('template:components/sample-component', compile('{{#each attrs.n as |name|}}{{name}}{{/each}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{#each attrs.n as |name|}}{{name}}{{/each}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{sample-component user1 user2 id="direct"}}{{component "sample-component" user1 user2 id="helper"}}'),
-    container: container,
     context: {
       user1: 'Foo',
       user2: 4
@@ -548,16 +548,16 @@ QUnit.test('moduleName is available on _renderNode when a layout is present', fu
   var sampleComponentLayout = compile('Sample Component - {{yield}}', {
     moduleName: layoutModuleName
   });
-  registry.register('template:components/sample-component', sampleComponentLayout);
-  registry.register('component:sample-component', Component.extend({
+  owner.register('template:components/sample-component', sampleComponentLayout);
+  owner.register('component:sample-component', Component.extend({
     didInsertElement: function() {
       equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
     }
   }));
 
   view = EmberView.extend({
-    layout: compile('{{sample-component}}'),
-    container
+    [OWNER]: owner,
+    layout: compile('{{sample-component}}')
   }).create();
 
   runAppend(view);
@@ -567,17 +567,17 @@ QUnit.test('moduleName is available on _renderNode when no layout is present', f
   expect(1);
 
   var templateModuleName = 'my-app-name/templates/application';
-  registry.register('component:sample-component', Component.extend({
+  owner.register('component:sample-component', Component.extend({
     didInsertElement: function() {
       equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
     }
   }));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
       moduleName: templateModuleName
-    }),
-    container
+    })
   }).create();
 
   runAppend(view);
@@ -589,12 +589,12 @@ QUnit.test('{{component}} helper works with positional params', function() {
     positionalParams: ['name', 'age']
   });
 
-  registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-  registry.register('component:sample-component', SampleComponent);
+  owner.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
+  owner.register('component:sample-component', SampleComponent);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{component "sample-component" myName myAge}}'),
-    container: container,
     context: {
       myName: 'Quint',
       myAge: 4
@@ -612,11 +612,11 @@ QUnit.test('{{component}} helper works with positional params', function() {
 });
 
 QUnit.test('yield to inverse', function() {
-  registry.register('template:components/my-if', compile('{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}'));
+  owner.register('template:components/my-if', compile('{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}'));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     layout: compile('{{#my-if predicate=activated someValue=42 as |result|}}Hello{{result}}{{else}}Goodbye{{/my-if}}'),
-    container: container,
     context: {
       activated: true
     }
@@ -632,11 +632,11 @@ QUnit.test('yield to inverse', function() {
 });
 
 QUnit.test('parameterized hasBlock inverse', function() {
-  registry.register('template:components/check-inverse', compile('{{#if (hasBlock "inverse")}}Yes{{else}}No{{/if}}'));
+  owner.register('template:components/check-inverse', compile('{{#if (hasBlock "inverse")}}Yes{{else}}No{{/if}}'));
 
   view = EmberView.extend({
-    layout: compile('{{#check-inverse id="expect-no"}}{{/check-inverse}}  {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{#check-inverse id="expect-no"}}{{/check-inverse}}  {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}')
   }).create();
 
   runAppend(view);
@@ -645,11 +645,11 @@ QUnit.test('parameterized hasBlock inverse', function() {
 });
 
 QUnit.test('parameterized hasBlock default', function() {
-  registry.register('template:components/check-block', compile('{{#if (hasBlock)}}Yes{{else}}No{{/if}}'));
+  owner.register('template:components/check-block', compile('{{#if (hasBlock)}}Yes{{else}}No{{/if}}'));
 
   view = EmberView.extend({
-    layout: compile('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}')
   }).create();
 
   runAppend(view);
@@ -658,11 +658,11 @@ QUnit.test('parameterized hasBlock default', function() {
 });
 
 QUnit.test('non-expression hasBlock ', function() {
-  registry.register('template:components/check-block', compile('{{#if hasBlock}}Yes{{else}}No{{/if}}'));
+  owner.register('template:components/check-block', compile('{{#if hasBlock}}Yes{{else}}No{{/if}}'));
 
   view = EmberView.extend({
-    layout: compile('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{check-block id="expect-no"}}  {{#check-block id="expect-yes"}}{{/check-block}}')
   }).create();
 
   runAppend(view);
@@ -671,11 +671,11 @@ QUnit.test('non-expression hasBlock ', function() {
 });
 
 QUnit.test('parameterized hasBlockParams', function() {
-  registry.register('template:components/check-params', compile('{{#if (hasBlockParams)}}Yes{{else}}No{{/if}}'));
+  owner.register('template:components/check-params', compile('{{#if (hasBlockParams)}}Yes{{else}}No{{/if}}'));
 
   view = EmberView.extend({
-    layout: compile('{{#check-params id="expect-no"}}{{/check-params}}  {{#check-params id="expect-yes" as |foo|}}{{/check-params}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{#check-params id="expect-no"}}{{/check-params}}  {{#check-params id="expect-yes" as |foo|}}{{/check-params}}')
   }).create();
 
   runAppend(view);
@@ -684,11 +684,11 @@ QUnit.test('parameterized hasBlockParams', function() {
 });
 
 QUnit.test('non-expression hasBlockParams', function() {
-  registry.register('template:components/check-params', compile('{{#if hasBlockParams}}Yes{{else}}No{{/if}}'));
+  owner.register('template:components/check-params', compile('{{#if hasBlockParams}}Yes{{else}}No{{/if}}'));
 
   view = EmberView.extend({
-    layout: compile('{{#check-params id="expect-no"}}{{/check-params}}  {{#check-params id="expect-yes" as |foo|}}{{/check-params}}'),
-    container: container
+    [OWNER]: owner,
+    layout: compile('{{#check-params id="expect-no"}}{{/check-params}}  {{#check-params id="expect-yes" as |foo|}}{{/check-params}}')
   }).create();
 
   runAppend(view);
@@ -699,32 +699,32 @@ QUnit.test('non-expression hasBlockParams', function() {
 QUnit.test('components in template of a yielding component should have the proper parentView', function() {
   var outer, innerTemplate, innerLayout;
 
-  registry.register('component:x-outer', Component.extend({
+  owner.register('component:x-outer', Component.extend({
     init() {
       this._super(...arguments);
       outer = this;
     }
   }));
 
-  registry.register('component:x-inner-in-template', Component.extend({
+  owner.register('component:x-inner-in-template', Component.extend({
     init() {
       this._super(...arguments);
       innerTemplate = this;
     }
   }));
 
-  registry.register('component:x-inner-in-layout', Component.extend({
+  owner.register('component:x-inner-in-layout', Component.extend({
     init() {
       this._super(...arguments);
       innerLayout = this;
     }
   }));
 
-  registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+  owner.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
 
   view = EmberView.extend({
-    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}')
   }).create();
 
   runAppend(view);
@@ -737,14 +737,14 @@ QUnit.test('components in template of a yielding component should have the prope
 QUnit.test('newly-added sub-components get correct parentView', function() {
   var outer, inner;
 
-  registry.register('component:x-outer', Component.extend({
+  owner.register('component:x-outer', Component.extend({
     init() {
       this._super(...arguments);
       outer = this;
     }
   }));
 
-  registry.register('component:x-inner', Component.extend({
+  owner.register('component:x-inner', Component.extend({
     init() {
       this._super(...arguments);
       inner = this;
@@ -752,8 +752,8 @@ QUnit.test('newly-added sub-components get correct parentView', function() {
   }));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{#x-outer}}{{#if view.showInner}}{{x-inner}}{{/if}}{{/x-outer}}'),
-    container: container,
     showInner: false
   }).create();
 
@@ -770,33 +770,33 @@ QUnit.test('components should receive the viewRegistry from the parent view', fu
 
   var viewRegistry = {};
 
-  registry.register('component:x-outer', Component.extend({
+  owner.register('component:x-outer', Component.extend({
     init() {
       this._super(...arguments);
       outer = this;
     }
   }));
 
-  registry.register('component:x-inner-in-template', Component.extend({
+  owner.register('component:x-inner-in-template', Component.extend({
     init() {
       this._super(...arguments);
       innerTemplate = this;
     }
   }));
 
-  registry.register('component:x-inner-in-layout', Component.extend({
+  owner.register('component:x-inner-in-layout', Component.extend({
     init() {
       this._super(...arguments);
       innerLayout = this;
     }
   }));
 
-  registry.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
+  owner.register('template:components/x-outer', compile('{{x-inner-in-layout}}{{yield}}'));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     _viewRegistry: viewRegistry,
-    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}'),
-    container: container
+    template: compile('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}')
   }).create();
 
   runAppend(view);
@@ -811,35 +811,35 @@ QUnit.test('comopnent should rerender when a property is changed during children
 
   var outer, middle;
 
-  registry.register('component:x-outer', Component.extend({
+  owner.register('component:x-outer', Component.extend({
     value: 1,
     grabReference: Ember.on('init', function() {
       outer = this;
     })
   }));
 
-  registry.register('component:x-middle', Component.extend({
+  owner.register('component:x-middle', Component.extend({
     value: null,
     grabReference: Ember.on('init', function() {
       middle = this;
     })
   }));
 
-  registry.register('component:x-inner', Component.extend({
+  owner.register('component:x-inner', Component.extend({
     value: null,
     pushDataUp: Ember.observer('value', function() {
       middle.set('value', this.get('value'));
     })
   }));
 
-  registry.register('template:components/x-outer', compile('{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'));
-  registry.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
-  registry.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
+  owner.register('template:components/x-outer', compile('{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'));
+  owner.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
+  owner.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
 
 
   view = EmberView.extend({
-    template: compile('{{x-outer}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{x-outer}}')
   }).create();
 
   runAppend(view);
@@ -861,14 +861,14 @@ QUnit.test('comopnent should rerender when a property is changed during children
 QUnit.test('non-block with each rendering child components', function() {
   expect(2);
 
-  registry.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
-  registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
+  owner.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
+  owner.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
 
   var items = emberA(['Tom', 'Dick', 'Harry']);
 
   view = EmberView.extend({
+    [OWNER]: owner,
     template: compile('{{non-block items=view.items}}'),
-    container: container,
     items: items
   }).create();
 
@@ -887,7 +887,7 @@ QUnit.test('specifying classNames results in correct class', function(assert) {
   expect(3);
 
   let clickyThing;
-  registry.register('component:some-clicky-thing', Component.extend({
+  owner.register('component:some-clicky-thing', Component.extend({
     tagName: 'button',
     classNames: ['foo', 'bar'],
     init() {
@@ -897,8 +897,8 @@ QUnit.test('specifying classNames results in correct class', function(assert) {
   }));
 
   view = EmberView.extend({
-    template: compile('{{#some-clicky-thing classNames="baz"}}Click Me{{/some-clicky-thing}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#some-clicky-thing classNames="baz"}}Click Me{{/some-clicky-thing}}')
   }).create();
 
   runAppend(view);
@@ -917,7 +917,7 @@ QUnit.test('specifying custom concatenatedProperties avoids clobbering', functio
   expect(1);
 
   let clickyThing;
-  registry.register('component:some-clicky-thing', Component.extend({
+  owner.register('component:some-clicky-thing', Component.extend({
     concatenatedProperties: ['blahzz'],
     blahzz: ['blark', 'pory'],
     init() {
@@ -927,8 +927,8 @@ QUnit.test('specifying custom concatenatedProperties avoids clobbering', functio
   }));
 
   view = EmberView.extend({
-    template: compile('{{#some-clicky-thing blahzz="baz"}}Click Me{{/some-clicky-thing}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{#some-clicky-thing blahzz="baz"}}Click Me{{/some-clicky-thing}}')
   }).create();
 
   runAppend(view);
@@ -949,8 +949,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('legacy components cannot be invoked with angle brackets', function() {
-    registry.register('template:components/non-block', compile('In layout'));
-    registry.register('component:non-block', Component.extend());
+    owner.register('template:components/non-block', compile('In layout'));
+    owner.register('component:non-block', Component.extend());
 
     expectAssertion(function() {
       view = appendViewFor('<non-block />');
@@ -958,7 +958,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('using a text-fragment in a GlimmerComponent layout gives an error', function() {
-    registry.register('template:components/non-block', compile('In layout'));
+    owner.register('template:components/non-block', compile('In layout'));
 
     expectAssertion(() => {
       view = appendViewFor('<non-block />');
@@ -966,7 +966,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('having multiple top-level elements in a GlimmerComponent layout gives an error', function() {
-    registry.register('template:components/non-block', compile('<div>This is a</div><div>fragment</div>'));
+    owner.register('template:components/non-block', compile('<div>This is a</div><div>fragment</div>'));
 
     expectAssertion(() => {
       view = appendViewFor('<non-block />');
@@ -974,7 +974,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('using a modifier in a GlimmerComponent layout gives an error', function() {
-    registry.register('template:components/non-block', compile('<div {{action "foo"}}></div>'));
+    owner.register('template:components/non-block', compile('<div {{action "foo"}}></div>'));
 
     expectAssertion(() => {
       view = appendViewFor('<non-block />');
@@ -982,7 +982,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('using triple-curlies in a GlimmerComponent layout gives an error', function() {
-    registry.register('template:components/non-block', compile('<div style={{{bar}}}>This is a</div>'));
+    owner.register('template:components/non-block', compile('<div style={{{bar}}}>This is a</div>'));
 
     expectAssertion(() => {
       view = appendViewFor('<non-block />');
@@ -1004,7 +1004,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     QUnit.test(`non-block without attributes replaced with ${style.name}`, function() {
       // The whitespace is added intentionally to verify that the heuristic is not "a single node" but
       // rather "a single non-whitespace, non-comment node"
-      registry.register('template:components/non-block', compile(`  <${style.tagName}>In layout</${style.tagName}>  `));
+      owner.register('template:components/non-block', compile(`  <${style.tagName}>In layout</${style.tagName}>  `));
 
       view = appendViewFor('<non-block />');
 
@@ -1018,7 +1018,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block with attributes replaced with ${style.name}`, function() {
-      registry.register('template:components/non-block', compile(`  <${style.tagName} such="{{attrs.stability}}">In layout</${style.tagName}>  `));
+      owner.register('template:components/non-block', compile(`  <${style.tagName} such="{{attrs.stability}}">In layout</${style.tagName}>  `));
 
       view = appendViewFor('<non-block stability={{view.stability}} />', {
         stability: 'stability'
@@ -1034,7 +1034,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block replaced with ${style.name} (regression with single element in the root element)`, function() {
-      registry.register('template:components/non-block', compile(`  <${style.tagName} such="{{attrs.stability}}"><p>In layout</p></${style.tagName}>  `));
+      owner.register('template:components/non-block', compile(`  <${style.tagName} such="{{attrs.stability}}"><p>In layout</p></${style.tagName}>  `));
 
       view = appendViewFor('<non-block stability={{view.stability}} />', {
         stability: 'stability'
@@ -1050,7 +1050,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block with class replaced with ${style.name} merges classes`, function() {
-      registry.register('template:components/non-block', compile(`<${style.tagName} class="inner-class" />`));
+      owner.register('template:components/non-block', compile(`<${style.tagName} class="inner-class" />`));
 
       view = appendViewFor('<non-block class="{{view.outer}}" />', {
         outer: 'outer'
@@ -1064,7 +1064,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block with outer attributes replaced with ${style.name} shadows inner attributes`, function() {
-      registry.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));
+      owner.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));
 
       view = appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
 
@@ -1081,8 +1081,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
     // TODO: When un-skipping, fix this so it handles all styles
     QUnit.skip('non-block recursive invocations with outer attributes replaced with a div shadows inner attributes', function() {
-      registry.register('template:components/non-block-wrapper', compile('<non-block />'));
-      registry.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
+      owner.register('template:components/non-block-wrapper', compile('<non-block />'));
+      owner.register('template:components/non-block', compile('<div data-static="static" data-dynamic="{{internal}}" />'));
 
       view = appendViewFor('<non-block-wrapper data-static="outer" data-dynamic="outer" />');
 
@@ -1098,9 +1098,9 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block replaced with ${style.name} should have correct scope`, function() {
-      registry.register('template:components/non-block', compile(`<${style.tagName}>{{internal}}</${style.tagName}>`));
+      owner.register('template:components/non-block', compile(`<${style.tagName}>{{internal}}</${style.tagName}>`));
 
-      registry.register('component:non-block', GlimmerComponent.extend({
+      owner.register('component:non-block', GlimmerComponent.extend({
         init() {
           this._super(...arguments);
           this.set('internal', 'stuff');
@@ -1113,11 +1113,11 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block replaced with ${style.name} should have correct 'element'`, function() {
-      registry.register('template:components/non-block', compile(`<${style.tagName} />`));
+      owner.register('template:components/non-block', compile(`<${style.tagName} />`));
 
       let component;
 
-      registry.register('component:non-block', GlimmerComponent.extend({
+      owner.register('component:non-block', GlimmerComponent.extend({
         init() {
           this._super(...arguments);
           component = this;
@@ -1130,9 +1130,9 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`non-block replaced with ${style.name} should have inner attributes`, function() {
-      registry.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));
+      owner.register('template:components/non-block', compile(`<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`));
 
-      registry.register('component:non-block', GlimmerComponent.extend({
+      owner.register('component:non-block', GlimmerComponent.extend({
         init() {
           this._super(...arguments);
           this.set('internal', 'stuff');
@@ -1146,7 +1146,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.test(`only text attributes are reflected on the underlying DOM element (${style.name})`, function() {
-      registry.register('template:components/non-block', compile(`<${style.tagName}>In layout</${style.tagName}>`));
+      owner.register('template:components/non-block', compile(`<${style.tagName}>In layout</${style.tagName}>`));
 
       view = appendViewFor('<non-block static-prop="static text" concat-prop="{{view.dynamic}} text" dynamic-prop={{view.dynamic}} />', {
         dynamic: 'dynamic'
@@ -1161,8 +1161,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     });
 
     QUnit.skip(`partials templates should not be treated like a component layout for ${style.name}`, function() {
-      registry.register('template:_zomg', compile(`<p>In partial</p>`));
-      registry.register('template:components/non-block', compile(`<${style.tagName}>{{partial "zomg"}}</${style.tagName}>`));
+      owner.register('template:_zomg', compile(`<p>In partial</p>`));
+      owner.register('template:components/non-block', compile(`<${style.tagName}>{{partial "zomg"}}</${style.tagName}>`));
 
       view = appendViewFor('<non-block />');
 
@@ -1175,7 +1175,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.skip('[FRAGMENT] non-block rendering a fragment', function() {
-    registry.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
+    owner.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
 
     view = appendViewFor('<non-block first={{view.first}} second={{view.second}} />', {
       first: 'first1',
@@ -1193,7 +1193,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('block without properties', function() {
-    registry.register('template:components/with-block', compile('<with-block>In layout - {{yield}}</with-block>'));
+    owner.register('template:components/with-block', compile('<with-block>In layout - {{yield}}</with-block>'));
 
     view = appendViewFor('<with-block>In template</with-block>');
 
@@ -1203,8 +1203,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   QUnit.test('attributes are not installed on the top level', function() {
     let component;
 
-    registry.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>'));
-    registry.register('component:non-block', GlimmerComponent.extend({
+    owner.register('template:components/non-block', compile('<non-block>In layout - {{attrs.text}} -- {{text}}</non-block>'));
+    owner.register('component:non-block', GlimmerComponent.extend({
       // This is specifically attempting to trigger a 1.x-era heuristic that only copied
       // attrs that were present as defined properties on the component.
       text: null,
@@ -1239,8 +1239,8 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('non-block with properties on attrs and component class', function() {
-    registry.register('component:non-block', GlimmerComponent.extend());
-    registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
+    owner.register('component:non-block', GlimmerComponent.extend());
+    owner.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
 
     view = appendViewFor('<non-block someProp="something here" />');
 
@@ -1251,7 +1251,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     var willUpdate = 0;
     var didReceiveAttrs = 0;
 
-    registry.register('component:non-block', GlimmerComponent.extend({
+    owner.register('component:non-block', GlimmerComponent.extend({
       didReceiveAttrs() {
         didReceiveAttrs++;
       },
@@ -1261,7 +1261,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
       }
     }));
 
-    registry.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
+    owner.register('template:components/non-block', compile('<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'));
 
     view = appendViewFor('<non-block someProp={{view.someProp}} />', {
       someProp: 'wycats'
@@ -1287,7 +1287,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('block with properties on attrs', function() {
-    registry.register('template:components/with-block', compile('<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>'));
+    owner.register('template:components/with-block', compile('<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>'));
 
     view = appendViewFor('<with-block someProp="something here">In template</with-block>');
 
@@ -1301,16 +1301,16 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     var sampleComponentLayout = compile('<sample-component>Sample Component - {{yield}}</sample-component>', {
       moduleName: layoutModuleName
     });
-    registry.register('template:components/sample-component', sampleComponentLayout);
-    registry.register('component:sample-component', GlimmerComponent.extend({
+    owner.register('template:components/sample-component', sampleComponentLayout);
+    owner.register('component:sample-component', GlimmerComponent.extend({
       didInsertElement: function() {
         equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
       }
     }));
 
     view = EmberView.extend({
-      layout: compile('<sample-component />'),
-      container
+      [OWNER]: owner,
+      layout: compile('<sample-component />')
     }).create();
 
     runAppend(view);
@@ -1320,26 +1320,26 @@ if (isEnabled('ember-htmlbars-component-generation')) {
     expect(1);
 
     var templateModuleName = 'my-app-name/templates/application';
-    registry.register('component:sample-component', Component.extend({
+    owner.register('component:sample-component', Component.extend({
       didInsertElement: function() {
         equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
       }
     }));
 
     view = EmberView.extend({
+      [OWNER]: owner,
       layout: compile('{{#sample-component}}Derp{{/sample-component}}', {
         moduleName: templateModuleName
-      }),
-      container
+      })
     }).create();
 
     runAppend(view);
   });
 
   QUnit.test('computed property alias on attrs', function() {
-    registry.register('template:components/computed-alias', compile('<computed-alias>{{otherProp}}</computed-alias>'));
+    owner.register('template:components/computed-alias', compile('<computed-alias>{{otherProp}}</computed-alias>'));
 
-    registry.register('component:computed-alias', GlimmerComponent.extend({
+    owner.register('component:computed-alias', GlimmerComponent.extend({
       otherProp: alias('attrs.someProp')
     }));
 
@@ -1349,7 +1349,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('parameterized hasBlock default', function() {
-    registry.register('template:components/check-block', compile('<check-block>{{#if (hasBlock)}}Yes{{else}}No{{/if}}</check-block>'));
+    owner.register('template:components/check-block', compile('<check-block>{{#if (hasBlock)}}Yes{{else}}No{{/if}}</check-block>'));
 
     view = appendViewFor('<check-block id="expect-yes-1" />  <check-block id="expect-yes-2"></check-block>');
 
@@ -1358,7 +1358,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('non-expression hasBlock ', function() {
-    registry.register('template:components/check-block', compile('<check-block>{{#if hasBlock}}Yes{{else}}No{{/if}}</check-block>'));
+    owner.register('template:components/check-block', compile('<check-block>{{#if hasBlock}}Yes{{else}}No{{/if}}</check-block>'));
 
     view = appendViewFor('<check-block id="expect-yes-1" />  <check-block id="expect-yes-2"></check-block>');
 
@@ -1367,7 +1367,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('parameterized hasBlockParams', function() {
-    registry.register('template:components/check-params', compile('<check-params>{{#if (hasBlockParams)}}Yes{{else}}No{{/if}}</check-params>'));
+    owner.register('template:components/check-params', compile('<check-params>{{#if (hasBlockParams)}}Yes{{else}}No{{/if}}</check-params>'));
 
     view = appendViewFor('<check-params id="expect-no"/>  <check-params id="expect-yes" as |foo|></check-params>');
 
@@ -1376,7 +1376,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
   });
 
   QUnit.test('non-expression hasBlockParams', function() {
-    registry.register('template:components/check-params', compile('<check-params>{{#if hasBlockParams}}Yes{{else}}No{{/if}}</check-params>'));
+    owner.register('template:components/check-params', compile('<check-params>{{#if hasBlockParams}}Yes{{else}}No{{/if}}</check-params>'));
 
     view = appendViewFor('<check-params id="expect-no" />  <check-params id="expect-yes" as |foo|></check-params>');
 

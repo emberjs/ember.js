@@ -81,7 +81,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   let component, layout;
   if (isDasherized || !isAngleBracket) {
-    let result = lookupComponent(env.container, tagName);
+    let result = lookupComponent(env.owner, tagName);
     component = result.component;
     layout = result.layout;
 

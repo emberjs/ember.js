@@ -5,8 +5,8 @@ import inject from 'ember-runtime/inject';
 import {
   createInjectionHelper
 } from 'ember-runtime/inject';
-import { Registry } from 'ember-runtime/system/container';
 import Object from 'ember-runtime/system/object';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
 QUnit.module('inject');
 
@@ -26,32 +26,28 @@ if (!EmberDev.runningProdBuild) {
       ok(true, 'should call validation method');
     });
 
-    var registry = new Registry();
-    var container = registry.container();
+    const owner = buildOwner();
 
     var AnObject = Object.extend({
-      container: container,
       bar: inject.foo(),
       baz: inject.foo()
     });
 
-    registry.register('foo:main', AnObject);
-    container.lookupFactory('foo:main');
+    owner.register('foo:main', AnObject);
+    owner._lookupFactory('foo:main');
   });
 }
 
 QUnit.test('attempting to inject a nonexistent container key should error', function() {
-  var registry = new Registry();
-  var container = registry.container();
+  const owner = buildOwner();
   var AnObject = Object.extend({
-    container: container,
     foo: new InjectedProperty('bar', 'baz')
   });
 
-  registry.register('foo:main', AnObject);
+  owner.register('foo:main', AnObject);
 
   throws(function() {
-    container.lookup('foo:main');
+    owner.lookup('foo:main');
   }, /Attempting to inject an unknown injection: `bar:baz`/);
 });
 

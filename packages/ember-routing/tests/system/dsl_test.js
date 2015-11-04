@@ -5,8 +5,6 @@ import {
   registerHandler as registerWarnHandler
 } from 'ember-debug/warn';
 
-
-
 var Router, outerWarnHandler;
 
 QUnit.module('Ember Router DSL', {

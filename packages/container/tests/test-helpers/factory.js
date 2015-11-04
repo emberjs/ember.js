@@ -8,7 +8,7 @@ var setProperties = function(object, properties) {
 
 var guids = 0;
 
-var factory = function() {
+export default function factory() {
   /*jshint validthis: true */
 
   var Klass = function(options) {
@@ -61,9 +61,4 @@ var factory = function() {
 
     return Child;
   }
-};
-
-export {
-  factory,
-  setProperties
-};
+}
