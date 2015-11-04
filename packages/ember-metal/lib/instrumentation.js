@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // STRUCTURED_PROFILE
 
 /**
   The purpose of the Ember Instrumentation module is

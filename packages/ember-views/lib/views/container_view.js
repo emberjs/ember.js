@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import { assert, deprecate } from 'ember-metal/debug';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import { A as emberA } from 'ember-runtime/system/native_array';
@@ -8,6 +8,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
+import isEmpty from 'ember-metal/is_empty';
 
 import containerViewTemplate from 'ember-htmlbars/templates/container-view';
 containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
@@ -184,7 +185,7 @@ var ContainerView = View.extend(MutableArray, {
     var userChildViews = get(this, 'childViews');
     deprecate(
       'Setting `childViews` on a Container is deprecated.',
-      Ember.isEmpty(userChildViews),
+      isEmpty(userChildViews),
       { id: 'ember-views.container-child-views', until: '2.4.0' }
     );
 

@@ -1,19 +1,19 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
+import { assert as emberAssert } from 'ember-metal/debug';
 import EmberObject from 'ember-runtime/system/object';
 import { HANDLERS, generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
-import {
+import deprecate, {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionsUntilDeprecation
 } from 'ember-debug/deprecate';
 
-import {
+import warn, {
   missingOptionsIdDeprecation as missingWarnOptionsIdDeprecation,
   missingOptionsDeprecation as missingWarnOptionsDeprecation,
   registerHandler as registerWarnHandler
 } from 'ember-debug/warn';
-import deprecate from 'ember-debug/deprecate';
 
 let originalEnvValue;
 let originalDeprecateHandler;
@@ -39,7 +39,7 @@ QUnit.test('Ember.deprecate does not throw if RAISE_ON_DEPRECATION is false', fu
   Ember.ENV.RAISE_ON_DEPRECATION = false;
 
   try {
-    Ember.deprecate('Should not throw', false, { id: 'test', until: 'forever' });
+    deprecate('Should not throw', false, { id: 'test', until: 'forever' });
     assert.ok(true, 'Ember.deprecate did not throw');
   } catch(e) {
     assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
@@ -52,7 +52,7 @@ QUnit.test('Ember.deprecate re-sets deprecation level to RAISE if ENV.RAISE_ON_D
   Ember.ENV.RAISE_ON_DEPRECATION = false;
 
   try {
-    Ember.deprecate('Should not throw', false, { id: 'test', until: 'forever' });
+    deprecate('Should not throw', false, { id: 'test', until: 'forever' });
     assert.ok(true, 'Ember.deprecate did not throw');
   } catch(e) {
     assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
@@ -61,7 +61,7 @@ QUnit.test('Ember.deprecate re-sets deprecation level to RAISE if ENV.RAISE_ON_D
   Ember.ENV.RAISE_ON_DEPRECATION = true;
 
   assert.throws(function() {
-    Ember.deprecate('Should throw', false, { id: 'test', until: 'forever' });
+    deprecate('Should throw', false, { id: 'test', until: 'forever' });
   }, /Should throw/);
 });
 
@@ -76,18 +76,18 @@ QUnit.test('When ENV.RAISE_ON_DEPRECATION is true, it is still possible to silen
   });
 
   try {
-    Ember.deprecate('should be silenced with matching id', false, { id: 'my-deprecation', until: 'forever' });
+    deprecate('should be silenced with matching id', false, { id: 'my-deprecation', until: 'forever' });
     assert.ok(true, 'Did not throw when level is set by id');
   } catch(e) {
     assert.ok(false, `Expected Ember.deprecate not to throw but it did: ${e.message}`);
   }
 
   assert.throws(function() {
-    Ember.deprecate('Should throw with no matching id', false, { id: 'test', until: 'forever' });
+    deprecate('Should throw with no matching id', false, { id: 'test', until: 'forever' });
   }, /Should throw with no matching id/);
 
   assert.throws(function() {
-    Ember.deprecate('Should throw with non-matching id', false, { id: 'other-id', until: 'forever' });
+    deprecate('Should throw with non-matching id', false, { id: 'other-id', until: 'forever' });
   }, /Should throw with non-matching id/);
 });
 
@@ -95,15 +95,15 @@ QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', fun
   expect(3);
 
   throws(function() {
-    Ember.deprecate('Deprecation is thrown', false, { id: 'test', until: 'forever' });
+    deprecate('Deprecation is thrown', false, { id: 'test', until: 'forever' });
   });
 
   throws(function() {
-    Ember.deprecate('Deprecation is thrown', '', { id: 'test', until: 'forever' });
+    deprecate('Deprecation is thrown', '', { id: 'test', until: 'forever' });
   });
 
   throws(function() {
-    Ember.deprecate('Deprecation is thrown', 0, { id: 'test', until: 'forever' });
+    deprecate('Deprecation is thrown', 0, { id: 'test', until: 'forever' });
   });
 });
 
@@ -111,14 +111,14 @@ QUnit.test('Ember.deprecate throws deprecation if second argument is a function 
   assert.expect(1);
 
   throws(() => {
-    Ember.deprecate('This deprecation is not thrown, but argument deprecation is thrown', () => true, { id: 'test', until: 'forever' });
+    deprecate('This deprecation is not thrown, but argument deprecation is thrown', () => true, { id: 'test', until: 'forever' });
   });
 });
 
 QUnit.test('Ember.deprecate throws if second argument is a function and it returns false', function() {
   expect(1);
   throws(function() {
-    Ember.deprecate('Deprecation is thrown', function() {
+    deprecate('Deprecation is thrown', function() {
       return false;
     }, { id: 'test', until: 'forever' });
   });
@@ -127,9 +127,9 @@ QUnit.test('Ember.deprecate throws if second argument is a function and it retur
 QUnit.test('Ember.deprecate does not throw deprecations if second argument is truthy', function() {
   expect(1);
 
-  Ember.deprecate('Deprecation is thrown', true, { id: 'test', until: 'forever' });
-  Ember.deprecate('Deprecation is thrown', '1', { id: 'test', until: 'forever' });
-  Ember.deprecate('Deprecation is thrown', 1, { id: 'test', until: 'forever' });
+  deprecate('Deprecation is thrown', true, { id: 'test', until: 'forever' });
+  deprecate('Deprecation is thrown', '1', { id: 'test', until: 'forever' });
+  deprecate('Deprecation is thrown', 1, { id: 'test', until: 'forever' });
 
   ok(true, 'deprecations were not thrown');
 });
@@ -138,15 +138,15 @@ QUnit.test('Ember.assert throws if second argument is falsy', function() {
   expect(3);
 
   throws(function() {
-    Ember.assert('Assertion is thrown', false);
+    emberAssert('Assertion is thrown', false);
   });
 
   throws(function() {
-    Ember.assert('Assertion is thrown', '');
+    emberAssert('Assertion is thrown', '');
   });
 
   throws(function() {
-    Ember.assert('Assertion is thrown', 0);
+    emberAssert('Assertion is thrown', 0);
   });
 });
 
@@ -155,7 +155,7 @@ QUnit.test('Ember.assert does not throw if second argument is a function and it 
 
   // shouldn't trigger an assertion, but deprecation from using function as test is expected
   expectDeprecation(
-    () => Ember.assert('Assertion is thrown', () => true),
+    () => emberAssert('Assertion is thrown', () => true),
     generateTestAsFunctionDeprecation('Ember.assert')
   );
 });
@@ -163,7 +163,7 @@ QUnit.test('Ember.assert does not throw if second argument is a function and it 
 QUnit.test('Ember.assert throws if second argument is a function and it returns false', function() {
   expect(1);
   throws(function() {
-    Ember.assert('Assertion is thrown', function() {
+    emberAssert('Assertion is thrown', function() {
       return false;
     });
   });
@@ -172,9 +172,9 @@ QUnit.test('Ember.assert throws if second argument is a function and it returns 
 QUnit.test('Ember.assert does not throw if second argument is truthy', function() {
   expect(1);
 
-  Ember.assert('Assertion is thrown', true);
-  Ember.assert('Assertion is thrown', '1');
-  Ember.assert('Assertion is thrown', 1);
+  emberAssert('Assertion is thrown', true);
+  emberAssert('Assertion is thrown', '1');
+  emberAssert('Assertion is thrown', 1);
 
   ok(true, 'assertions were not thrown');
 });
@@ -183,8 +183,8 @@ QUnit.test('Ember.assert does not throw if second argument is an object', functi
   expect(1);
   let Igor = EmberObject.extend();
 
-  Ember.assert('is truthy', Igor);
-  Ember.assert('is truthy', Igor.create());
+  emberAssert('is truthy', Igor);
+  emberAssert('is truthy', Igor.create());
 
   ok(true, 'assertions were not thrown');
 });
@@ -204,14 +204,14 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
   });
 
   try {
-    Ember.deprecate('Deprecation for testing purposes', false, { id, until });
+    deprecate('Deprecation for testing purposes', false, { id, until });
     ok(true, 'Deprecation did not throw');
   } catch(e) {
     ok(false, 'Deprecation was thrown despite being added to blacklist');
   }
 
   try {
-    Ember.deprecate('Deprecation for testing purposes', false, { id, until });
+    deprecate('Deprecation for testing purposes', false, { id, until });
     ok(true, 'Deprecation did not throw');
   } catch(e) {
     ok(false, 'Deprecation was thrown despite being added to blacklist');
@@ -220,11 +220,11 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
   shouldThrow = true;
 
   throws(function() {
-    Ember.deprecate('Deprecation is thrown', false, { id, until });
+    deprecate('Deprecation is thrown', false, { id, until });
   });
 
   throws(function() {
-    Ember.deprecate('Deprecation is thrown', false, { id, until });
+    deprecate('Deprecation is thrown', false, { id, until });
   });
 });
 
@@ -239,8 +239,8 @@ QUnit.test('Ember.deprecate without options triggers a deprecation', function(as
     }
   });
 
-  Ember.deprecate('foo');
-  Ember.deprecate('foo', false, { });
+  deprecate('foo');
+  deprecate('foo', false, { });
 });
 
 QUnit.test('Ember.deprecate without options.id triggers a deprecation', function(assert) {
@@ -254,7 +254,7 @@ QUnit.test('Ember.deprecate without options.id triggers a deprecation', function
     }
   });
 
-  Ember.deprecate('foo', false, { until: 'forever' });
+  deprecate('foo', false, { until: 'forever' });
 });
 
 QUnit.test('Ember.deprecate without options.until triggers a deprecation', function(assert) {
@@ -268,7 +268,7 @@ QUnit.test('Ember.deprecate without options.until triggers a deprecation', funct
     }
   });
 
-  Ember.deprecate('foo', false, { id: 'test' });
+  deprecate('foo', false, { id: 'test' });
 });
 
 QUnit.test('Ember.warn without options triggers a deprecation', function(assert) {
@@ -282,7 +282,7 @@ QUnit.test('Ember.warn without options triggers a deprecation', function(assert)
     assert.equal(message, 'foo', 'original warning is triggered');
   });
 
-  Ember.warn('foo');
+  warn('foo');
 });
 
 QUnit.test('Ember.warn without options.id triggers a deprecation', function(assert) {
@@ -296,7 +296,7 @@ QUnit.test('Ember.warn without options.id triggers a deprecation', function(asse
     assert.equal(message, 'foo', 'original warning is triggered');
   });
 
-  Ember.warn('foo', false, { });
+  warn('foo', false, { });
 });
 
 QUnit.test('Ember.deprecate triggers a deprecation when test argument is a function', function(assert) {

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.LOG_BINDINGS
+import Ember from 'ember-metal/core'; // LOG_BINDINGS, ENV, lookup
 import Logger from 'ember-metal/logger';
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';

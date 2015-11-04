@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // MODEL_FACTORY_INJECTIONS
 import { Registry } from 'container';
 import factory from 'container/tests/test-helpers/factory';
 

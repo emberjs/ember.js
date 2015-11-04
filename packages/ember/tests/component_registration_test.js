@@ -1,7 +1,8 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 
+import Router from 'ember-routing/system/router';
 import Application from 'ember-application/system/application';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
@@ -58,7 +59,7 @@ function boot(callback, startURL='/') {
 
     App.deferReadiness();
 
-    App.Router = Ember.Router.extend({
+    App.Router = Router.extend({
       location: 'none'
     });
 

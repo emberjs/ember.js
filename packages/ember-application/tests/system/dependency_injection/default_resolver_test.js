@@ -1,5 +1,5 @@
 /* globals EmberDev */
-import Ember from 'ember-metal/core'; // Ember.TEMPLATES
+import Ember from 'ember-metal/core'; // lookup, TEMPLATES
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';

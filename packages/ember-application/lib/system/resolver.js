@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import { assert, info } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {

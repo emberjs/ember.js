@@ -7,7 +7,7 @@
 // HELPERS
 //
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // A
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import {

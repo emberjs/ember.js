@@ -1,10 +1,11 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import { set } from 'ember-metal/property_set';
 import get from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { defineProperty } from 'ember-metal/properties';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { addListener } from 'ember-metal/events';
+import { meta } from 'ember-metal/meta';
 import {
   watch,
   unwatch,
@@ -206,8 +207,8 @@ QUnit.test('when watching a global object, destroy should remove chain watchers 
 
   watch(obj, 'Global.foo');
 
-  var meta_Global = Ember.meta(Global);
-  var chainNode = Ember.meta(obj).readableChains()._chains.Global._chains.foo;
+  var meta_Global = meta(Global);
+  var chainNode = meta(obj).readableChains()._chains.Global._chains.foo;
 
   equal(meta_Global.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_Global.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
@@ -228,8 +229,8 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
 
   watch(objA, 'b.foo');
 
-  var meta_objB = Ember.meta(objB);
-  var chainNode = Ember.meta(objA).readableChains()._chains.b._chains.foo;
+  var meta_objB = meta(objB);
+  var chainNode = meta(objA).readableChains()._chains.b._chains.foo;
 
   equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_objB.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');

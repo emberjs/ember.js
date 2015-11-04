@@ -1,6 +1,6 @@
 /* globals RSVP:true */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Test, testing, __loader, onerror
 import { assert } from 'ember-metal/debug';
 import Logger from 'ember-metal/logger';
 import run from 'ember-metal/run_loop';

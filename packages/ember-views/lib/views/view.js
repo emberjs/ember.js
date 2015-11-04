@@ -1,7 +1,4 @@
-// jQuery, Ember.lookup,
-// Ember.ContainerView circular dependency
-// Ember.ENV
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import { deprecate, warn } from 'ember-metal/debug';
 
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues

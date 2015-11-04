@@ -3,7 +3,7 @@
 @submodule ember-views
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import { assert, deprecate } from 'ember-metal/debug';
 import ContainerView from 'ember-views/views/container_view';
 import View from 'ember-views/views/view';

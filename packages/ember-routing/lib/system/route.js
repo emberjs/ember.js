@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // FEATURES, A, deprecate, assert, Logger
+import Ember from 'ember-metal/core'; // Ember.testing
 import { assert, deprecate, info } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
@@ -8,6 +8,7 @@ import getProperties from 'ember-metal/get_properties';
 import isNone from 'ember-metal/is_none';
 import { computed } from 'ember-metal/computed';
 import assign from 'ember-metal/assign';
+import isEmpty from 'ember-metal/is_empty';
 import {
   typeOf
 } from 'ember-runtime/utils';
@@ -1944,7 +1945,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
-    var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
+    var isDefaultRender = arguments.length === 0 || isEmpty(arguments[0]);
     var name;
 
     if (typeof _name === 'object' && !options) {

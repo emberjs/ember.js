@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -11,6 +11,7 @@ import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
+import { dasherize } from 'ember-runtime/system/string';
 
 var Router, App, router, container;
 
@@ -195,7 +196,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           defaultValue: ''
         }
       },
-      serializeQueryParamKey: Ember.String.dasherize
+      serializeQueryParamKey: dasherize
     });
 
     bootApplication();
@@ -967,7 +968,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           defaultValue: ''
         }
       },
-      serializeQueryParamKey: Ember.String.dasherize
+      serializeQueryParamKey: dasherize
     });
 
     bootApplication();

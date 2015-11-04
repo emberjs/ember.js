@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';

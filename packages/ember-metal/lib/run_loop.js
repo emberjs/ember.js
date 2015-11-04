@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // testing
 import { assert } from 'ember-metal/debug';
 import {
   GUID_KEY

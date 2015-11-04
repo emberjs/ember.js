@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // ENV
 import EmberComponent from 'ember-views/components/component';
 import EmberView from 'ember-views/views/view';
 import EmberSelectView from 'ember-views/views/select';

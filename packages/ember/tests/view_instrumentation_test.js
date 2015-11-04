@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import run from 'ember-metal/run_loop';
 import $ from 'ember-views/system/jquery';
 import Application from 'ember-application/system/application';

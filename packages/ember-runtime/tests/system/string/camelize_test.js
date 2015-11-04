@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // EXTEND_PROTOTYPES
 import {camelize} from 'ember-runtime/system/string';
 
 QUnit.module('EmberStringUtils.camelize');

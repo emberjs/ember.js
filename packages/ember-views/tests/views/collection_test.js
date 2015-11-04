@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.A
+import Ember from 'ember-metal/core'; // lookup
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { runDestroy } from 'ember-runtime/tests/utils';

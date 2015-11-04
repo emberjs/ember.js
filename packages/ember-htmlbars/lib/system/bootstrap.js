@@ -5,7 +5,7 @@
 @submodule ember-htmlbars
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberError from 'ember-metal/error';

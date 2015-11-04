@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import {guidFor, GUID_KEY} from 'ember-metal/utils';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';

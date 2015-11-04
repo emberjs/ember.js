@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   Binding,

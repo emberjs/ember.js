@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // STRINGS
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

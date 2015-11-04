@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // lookup, TEMPLATES
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';

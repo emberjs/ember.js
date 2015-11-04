@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
+import Mixin from 'ember-metal/mixin';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -269,7 +270,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Support shared but overridable mixin pattern', function() {
-    var HasPage = Ember.Mixin.create({
+    var HasPage = Mixin.create({
       queryParams: 'page',
       page: 1
     });

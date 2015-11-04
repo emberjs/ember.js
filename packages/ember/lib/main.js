@@ -10,7 +10,7 @@ import 'ember-htmlbars';
 import 'ember-routing-htmlbars';
 import 'ember-routing-views';
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // __loader
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
 if (Ember.__loader.registry['ember-template-compiler']) {

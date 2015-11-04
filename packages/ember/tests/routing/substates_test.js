@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import RSVP from 'ember-runtime/ext/rsvp';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
@@ -6,6 +6,7 @@ import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
+import DefaultResolver from 'ember-application/system/resolver';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 
@@ -41,7 +42,7 @@ QUnit.module('Loading/Error Substates', {
         name: 'App',
         rootElement: '#qunit-fixture',
         // fake a modules resolver
-        Resolver: Ember.DefaultResolver.extend({ moduleBasedResolver: true })
+        Resolver: DefaultResolver.extend({ moduleBasedResolver: true })
       });
 
       App.deferReadiness();

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // lookup, etc
+import Ember from 'ember-metal/core'; // lookup, MODEL_FACTORY_INJECTIONS
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';

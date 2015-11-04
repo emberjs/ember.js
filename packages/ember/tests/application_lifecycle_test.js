@@ -1,6 +1,7 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // HTMLBars, TEMPLATES
 import Application from 'ember-application/system/application';
 import Route from 'ember-routing/system/route';
+import controllerFor from 'ember-routing/system/controller_for';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
@@ -78,13 +79,13 @@ QUnit.test('Resetting the application allows controller properties to be set whe
 
   handleURL('/');
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   App.reset();
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
 QUnit.test('Destroying the application resets the router before the appInstance is destroyed', function() {
@@ -115,13 +116,13 @@ QUnit.test('Destroying the application resets the router before the appInstance 
 
   handleURL('/');
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   run(App, 'destroy');
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // TEMPLATES
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -8,6 +8,7 @@ import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import { classify } from 'ember-runtime/system/string';
 import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, registry, container;
@@ -212,7 +213,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
 
 function queryParamsStickyTest4(urlPrefix, articleLookup) {
   return function() {
-    var articleClass = Ember.String.classify(articleLookup);
+    var articleClass = classify(articleLookup);
 
     if (isEnabled('ember-routing-route-configured-query-params')) {
       App[`${articleClass}Route`].reopen({
@@ -292,7 +293,7 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
 
 function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
   return function() {
-    var articleClass = Ember.String.classify(articleLookup);
+    var articleClass = classify(articleLookup);
 
     App[`${articleClass}Route`].reopen({
       resetController(controller, isExiting) {

@@ -3,7 +3,7 @@
 @submodule ember-template-compiler
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // __loader
 import compileOptions from 'ember-template-compiler/system/compile_options';
 import template from 'ember-template-compiler/system/template';
 
