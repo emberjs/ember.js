@@ -55,7 +55,7 @@ QUnit.test('\'store\' can be injected by data persistence frameworks', function(
   expect(8);
   runDestroy(route);
 
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   var post = {
     id: 1
@@ -85,7 +85,7 @@ QUnit.test('assert if \'store.find\' method is not found', function() {
   expect(1);
   runDestroy(route);
 
-  const owner = buildOwner();
+  let owner = buildOwner();
   var Post = EmberObject.extend();
 
   owner.register('route:index', EmberRoute);
@@ -102,7 +102,7 @@ QUnit.test('asserts if model class is not found', function() {
   expect(1);
   runDestroy(route);
 
-  const owner = buildOwner();
+  let owner = buildOwner();
   owner.register('route:index', EmberRoute);
 
   route = owner.lookup('route:index');
@@ -117,7 +117,7 @@ QUnit.test('\'store\' does not need to be injected', function() {
 
   runDestroy(route);
 
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('route:index', EmberRoute);
 
@@ -133,12 +133,12 @@ QUnit.test('\'store\' does not need to be injected', function() {
 QUnit.test('modelFor doesn\'t require the router', function() {
   expect(1);
 
-  const owner = buildOwner();
+  let owner = buildOwner();
   setOwner(route, owner);
 
-  const foo = { name: 'foo' };
+  let foo = { name: 'foo' };
 
-  const FooRoute = EmberRoute.extend({
+  let FooRoute = EmberRoute.extend({
     currentModel: foo
   });
 
@@ -308,7 +308,7 @@ QUnit.test('controllerFor uses route\'s controllerName if specified', function()
 QUnit.module('Route injected properties');
 
 QUnit.test('services can be injected into routes', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('route:application', EmberRoute.extend({
     authService: inject.service('auth')

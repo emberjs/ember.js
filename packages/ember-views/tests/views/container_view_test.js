@@ -32,7 +32,7 @@ QUnit.module('Ember.ContainerView', {
 });
 
 QUnit.test('should be able to insert views after the DOM representation is created', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   container = ContainerView.create({
     [OWNER]: owner,
@@ -87,7 +87,7 @@ QUnit.test('should be able to observe properties that contain child views', func
 });
 
 QUnit.test('childViews inherit their parents owner, and retain the original container even when moved', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   container = ContainerView.create({
     [OWNER]: owner

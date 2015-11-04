@@ -86,7 +86,7 @@ export default Mixin.create({
       throw new TypeError('createChildViews first argument must exist');
     }
 
-    const owner = getOwner(this);
+    let owner = getOwner(this);
 
     if (maybeViewClass.isView && maybeViewClass.parentView === this && getOwner(maybeViewClass) === owner) {
       return maybeViewClass;

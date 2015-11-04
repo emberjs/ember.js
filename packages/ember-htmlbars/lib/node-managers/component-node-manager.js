@@ -236,7 +236,7 @@ export function createComponent(_component, isAngleBracket, props, renderNode, e
   props.renderer = props.parentView ? props.parentView.renderer : env.owner.lookup('renderer:-dom');
   props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.owner.lookup('-view-registry:main');
 
-  const component = _component.create(props);
+  let component = _component.create(props);
 
   // for the fallback case
   if (!getOwner(component)) {

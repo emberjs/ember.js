@@ -155,7 +155,7 @@ QUnit.module('Controller injected properties');
 if (!EmberDev.runningProdBuild) {
   QUnit.test('defining a controller on a non-controller should fail assertion', function() {
     expectAssertion(function() {
-      const owner = buildOwner();
+      let owner = buildOwner();
 
       var AnObject = Object.extend({
         foo: inject.controller('bar')
@@ -169,7 +169,7 @@ if (!EmberDev.runningProdBuild) {
 }
 
 QUnit.test('controllers can be injected into controllers', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('controller:post', Controller.extend({
     postsController: inject.controller('posts')
@@ -184,7 +184,7 @@ QUnit.test('controllers can be injected into controllers', function() {
 });
 
 QUnit.test('services can be injected into controllers', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('controller:application', Controller.extend({
     authService: inject.service('auth')

@@ -14,7 +14,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
-    const arr = get(this, dependentKey);
+    let arr = get(this, dependentKey);
 
     if (arr === null || typeof arr !== 'object') { return initialValue; }
 

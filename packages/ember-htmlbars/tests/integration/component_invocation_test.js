@@ -32,7 +32,7 @@ function commonTeardown() {
 }
 
 function appendViewFor(template, hash={}) {
-  const view = EmberView.extend({
+  let view = EmberView.extend({
     [OWNER]: owner,
     template: compile(template)
   }).create(hash);

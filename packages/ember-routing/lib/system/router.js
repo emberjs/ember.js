@@ -247,7 +247,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       defaultParentState = ownState;
     }
     if (!this._toplevelView) {
-      const owner = getOwner(this);
+      let owner = getOwner(this);
       var OutletView = owner._lookupFactory('view:-outlet');
       this._toplevelView = OutletView.create();
       var instance = owner.lookup('-application-instance:main');
@@ -449,7 +449,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   _setupLocation() {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
-    const owner = getOwner(this);
+    let owner = getOwner(this);
 
     if ('string' === typeof location && owner) {
       var resolvedLocation = owner.lookup(`location:${location}`);
@@ -488,7 +488,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _getHandlerFunction() {
     var seen = new EmptyObject();
-    const owner = getOwner(this);
+    let owner = getOwner(this);
     var DefaultRoute = owner._lookupFactory('route:basic');
 
     return (name) => {
@@ -844,7 +844,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
 }
 
 function routeHasBeenDefined(router, name) {
-  const owner = getOwner(router);
+  let owner = getOwner(router);
   return router.hasRoute(name) &&
          (owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`));
 }

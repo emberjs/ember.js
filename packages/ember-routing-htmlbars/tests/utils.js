@@ -42,14 +42,14 @@ function resolverFor(namespace) {
 
 function buildAppInstance() {
   let registry;
-  const App = EmberObject.extend(RegistryProxy, ContainerProxy, {
+  let App = EmberObject.extend(RegistryProxy, ContainerProxy, {
     init() {
       this._super(...arguments);
       registry = this.__registry__ = new Registry();
       this.__container__ = registry.container({ owner: this });
     }
   });
-  const appInstance = App.create();
+  let appInstance = App.create();
 
   registry.resolver = resolverFor(App);
 

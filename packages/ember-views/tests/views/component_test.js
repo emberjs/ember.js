@@ -231,7 +231,7 @@ QUnit.test('Calling sendAction on a component with multiple parameters', functio
 QUnit.module('Ember.Component - injected properties');
 
 QUnit.test('services can be injected into components', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('component:application', Component.extend({
     profilerService: inject.service('profiler')

@@ -537,11 +537,11 @@ if (isEnabled('ember-container-inject-owner')) {
   });
 } else {
   QUnit.test('A `container` property is appended to every instantiated object', function() {
-    const registry = new Registry();
-    const container = registry.container();
-    const PostController = factory();
+    let registry = new Registry();
+    let container = registry.container();
+    let PostController = factory();
     registry.register('controller:post', PostController);
-    const postController = container.lookup('controller:post');
+    let postController = container.lookup('controller:post');
 
     strictEqual(postController.container, container, '');
   });

@@ -36,7 +36,7 @@ export function findHelper(name, view, env) {
   var helper = env.helpers[name];
 
   if (!helper) {
-    const owner = env.owner;
+    let owner = env.owner;
     if (validateLazyHelperName(name, owner, env.hooks.keywords)) {
       var helperName = 'helper:' + name;
       if (owner.hasRegistration(helperName)) {

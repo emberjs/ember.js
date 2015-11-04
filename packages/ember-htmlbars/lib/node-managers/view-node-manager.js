@@ -182,7 +182,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
     mergeBindings(props, snapshot);
 
-    const owner = options.parentView ? getOwner(options.parentView) : env.owner;
+    let owner = options.parentView ? getOwner(options.parentView) : env.owner;
 
     setOwner(props, owner);
     props.renderer = options.parentView ? options.parentView.renderer : owner && owner.lookup('renderer:-dom');

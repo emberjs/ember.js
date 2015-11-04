@@ -36,7 +36,7 @@ QUnit.module('ember-htmlbars: compat - view helper', {
 });
 
 QUnit.test('using the view helper fails assertion', function(assert) {
-  const ViewClass = EmberView.extend({
+  let ViewClass = EmberView.extend({
     template: compile('fooView')
   });
   owner.register('view:foo', ViewClass);
@@ -67,7 +67,7 @@ QUnit.module('ember-htmlbars: compat - view helper [LEGACY]', {
 });
 
 QUnit.test('using the view helper with a string (inline form) fails assertion [LEGACY]', function(assert) {
-  const ViewClass = EmberView.extend({
+  let ViewClass = EmberView.extend({
     template: compile('fooView')
   });
   owner.register('view:foo', ViewClass);
@@ -85,7 +85,7 @@ QUnit.test('using the view helper with a string (inline form) fails assertion [L
 });
 
 QUnit.test('using the view helper with a string (block form) fails assertion [LEGACY]', function(assert) {
-  const ViewClass = EmberView.extend({
+  let ViewClass = EmberView.extend({
     template: compile('Foo says: {{yield}}')
   });
   owner.register('view:foo', ViewClass);
