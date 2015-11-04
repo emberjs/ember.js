@@ -120,6 +120,27 @@ QUnit.test('non-block with properties on attrs and component class', function() 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
 
+QUnit.test('non-block with properties on overridden in init', function() {
+  owner.register('component:non-block', Component.extend({
+    someProp: null,
+
+    init() {
+      this._super(...arguments);
+      this.someProp = 'value set in init';
+    }
+  }));
+  owner.register('template:components/non-block', compile('In layout - someProp: {{someProp}}'));
+
+  view = EmberView.extend({
+    [OWNER]: owner,
+    template: compile('{{non-block someProp="something passed when invoked"}}')
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().text(), 'In layout - someProp: value set in init');
+});
+
 QUnit.test('lookup of component takes priority over property', function() {
   expect(1);
 
