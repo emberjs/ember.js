@@ -141,6 +141,24 @@ QUnit.test('non-block with properties on overridden in init', function() {
   equal(view.$().text(), 'In layout - someProp: value set in init');
 });
 
+QUnit.test('non-block built-in with properties on overridden in init', function() {
+  owner.register('component:non-block-text-field', Ember.TextField.extend({
+    init() {
+      this._super(...arguments);
+      this.set('placeholder', 'value set in init');
+    }
+  }));
+
+  view = EmberView.extend({
+    [OWNER]: owner,
+    template: compile('{{non-block-text-field placeholder="something passed when invoked"}}')
+  }).create();
+
+  runAppend(view);
+
+  equal(view.$().attr('placeholder'), 'value set in init');
+});
+
 QUnit.test('lookup of component takes priority over property', function() {
   expect(1);
 
