@@ -157,7 +157,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
   template: computed({
     get() {
-      Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`);
+      Ember.deprecate(`Accessing 'template' in ${this} is deprecated. To determine if a block was specified to ${this} please use '{{#if hasBlock}}' in the components layout.`,
+                      false,
+                      { id: 'ember-views.accessing-template', until: '2.0.0' });
 
       return get(this, '_template');
     },

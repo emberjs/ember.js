@@ -208,7 +208,9 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   init() {
-    Ember.deprecate(arrayControllerDeprecation, this.isGenerated, { url: 'http://emberjs.com/guides/deprecations#toc_arraycontroller' });
+    Ember.deprecate(arrayControllerDeprecation,
+                    this.isGenerated,
+                    { id: 'ember-runtime.array-controller', until: '2.0.0', url: 'http://emberjs.com/guides/deprecations#toc_arraycontroller' });
 
     this._super(...arguments);
     this._subControllers = [];
