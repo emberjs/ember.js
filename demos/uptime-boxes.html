@@ -58,17 +58,13 @@
     </style>
   </head>
   <body>
-
+    <button id="playpause" onclick='require("htmlbars-demos/uptime").toggle()'>Play</button>
     <div id="output"></div>
 
     <script src="../assets/loader.js"></script>
     <script>loader.noConflict({ define: 'enifed' });</script>
     <script src="../amd/glimmer-compiler.amd.js"></script>
     <script src="./demos.amd.js"></script>
-
-    <script>
-      require('htmlbars-demos/uptime').run();
-    </script>
   </body>
 </html>
 

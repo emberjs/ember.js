@@ -64,26 +64,38 @@ let app = compile(`
   {{/each}}
 `)
 
-export function run() {
+let clear;
+let playing = false;
+
+export function toggle() {
+  if (playing) {
+    window['playpause'].innerHTML = "Play";
+    clearInterval(clear);
+  } else {
+    window['playpause'].innerHTML = "Pause";
+    start();
+    playing = true;
+  }
+}
+
+function start() {
   let output = document.getElementById('output');
 
-  setTimeout(function() {
-    console.time('rendering');
-    env.begin();
+  console.time('rendering');
+  env.begin();
 
-    let result = app.render({ servers: servers() }, env, { appendTo: output });
+  let result = app.render({ servers: servers() }, env, { appendTo: output });
 
-    console.log(env['createdComponents'].length);
-    env.commit();
-    console.timeEnd('rendering');
+  console.log(env['createdComponents'].length);
+  env.commit();
+  console.timeEnd('rendering');
 
-    setTimeout(function() {
-      result.scope.updateSelf({ servers: servers() });
-      console.time('rendering 2');
-      result.rerender();
-      console.timeEnd('rendering 2');
-    }, 1000);
-  }, 25);
+  clear = setInterval(function() {
+    result.scope.updateSelf({ servers: servers() });
+    console.time('updating');
+    result.rerender();
+    console.timeEnd('updating');
+  }, 300);
 }
 
 function servers() {
