@@ -1345,11 +1345,11 @@ var View = CoreView.extend(
   scheduleRevalidate(node, label, manualRerender) {
     if (node && !this._dispatching && node.guid in this.env.renderedNodes) {
       if (manualRerender) {
-        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,
+        Ember.deprecate(`You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 3.0`,
                         false,
                         { id: 'ember-views.manual-parent-rerender', until: '3.0.0' });
       } else {
-        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`,
+        Ember.deprecate(`You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 3.0`,
                         false,
                         { id: 'ember-views.render-double-modify', until: '3.0.0' });
       }
