@@ -56,17 +56,12 @@ export default EmberComponent.extend({
   disabled: false,
   indeterminate: false,
 
-  init() {
-    this._super(...arguments);
-    this.on('change', this, this._updateElementValue);
-  },
-
   didInsertElement() {
     this._super(...arguments);
     get(this, 'element').indeterminate = !!get(this, 'indeterminate');
   },
 
-  _updateElementValue() {
+  change() {
     set(this, 'checked', this.$().prop('checked'));
   }
 });
