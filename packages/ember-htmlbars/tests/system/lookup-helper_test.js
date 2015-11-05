@@ -14,7 +14,7 @@ function generateEnv(helpers, owner) {
 }
 
 function generateOwner() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('component-lookup:main', ComponentLookup);
 
@@ -58,7 +58,7 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
 });
 
 QUnit.test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
-  const owner = generateOwner();
+  let owner = generateOwner();
   var env = generateEnv(null, owner);
   var view = {
     [OWNER]: owner
@@ -73,7 +73,7 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
 });
 
 QUnit.test('does a lookup in the container if the name is found in knownHelpers', function() {
-  const owner = generateOwner();
+  let owner = generateOwner();
   var env = generateEnv(null, owner);
   var view = {
     [OWNER]: owner
@@ -90,7 +90,7 @@ QUnit.test('does a lookup in the container if the name is found in knownHelpers'
 
 QUnit.test('looks up a shorthand helper in the container', function() {
   expect(2);
-  const owner = generateOwner();
+  let owner = generateOwner();
   var env = generateEnv(null, owner);
   var view = {
     [OWNER]: owner
@@ -113,7 +113,7 @@ QUnit.test('looks up a shorthand helper in the container', function() {
 
 QUnit.test('fails with a useful error when resolving a function', function() {
   expect(1);
-  const owner = generateOwner();
+  let owner = generateOwner();
   var env = generateEnv(null, owner);
   var view = {
     [OWNER]: owner

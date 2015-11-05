@@ -190,8 +190,8 @@ export default EmberObject.extend({
   setupHandler(rootElement, event, eventName) {
     var self = this;
 
-    const owner = getOwner(this);
-    const viewRegistry = owner && owner.lookup('-view-registry:main') || View.views;
+    let owner = getOwner(this);
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || View.views;
 
     if (eventName === null) {
       return;

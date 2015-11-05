@@ -2134,7 +2134,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     controller.set('model', options.model);
   }
 
-  const owner = getOwner(route);
+  let owner = getOwner(route);
   viewName = options && options.view || namePassed && name || route.viewName || name;
   ViewClass = owner._lookupFactory(`view:${viewName}`);
   template = owner.lookup(`template:${templateName}`);

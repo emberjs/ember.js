@@ -170,7 +170,7 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
   var post = {
     title: 'Rails is omakase'
   };
-  const controller = EmberController.create({
+  let controller = EmberController.create({
     [OWNER]: appInstance,
     post: post
   });
@@ -197,9 +197,9 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
 });
 
 QUnit.test('{{render}} helper should raise an error when a given controller name does not resolve to a controller', function() {
-  const template = '<h1>HI</h1>{{render "home" controller="postss"}}';
-  const Controller = EmberController.extend();
-  const controller = Controller.create({
+  let template = '<h1>HI</h1>{{render "home" controller="postss"}}';
+  let Controller = EmberController.extend();
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 
@@ -221,7 +221,7 @@ QUnit.test('{{render}} helper should raise an error when a given controller name
 QUnit.test('{{render}} helper should render with given controller', function() {
   var template = '{{render "home" controller="posts"}}';
   var Controller = EmberController.extend();
-  const controller = Controller.create({
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
   var id = 0;
@@ -251,7 +251,7 @@ QUnit.test('{{render}} helper should render with given controller', function() {
 QUnit.test('{{render}} helper should render a template without a model only once', function() {
   var template = '<h1>HI</h1>{{render \'home\'}}<hr/>{{render \'home\'}}';
   var Controller = EmberController.extend();
-  const controller = Controller.create({
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 
@@ -360,7 +360,7 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
 QUnit.test('{{render}} helper should not treat invocations with falsy contexts as context-less', function() {
   var template = '<h1>HI</h1> {{render \'post\' zero}} {{render \'post\' nonexistent}}';
 
-  const controller = EmberController.create({
+  let controller = EmberController.create({
     [OWNER]: appInstance,
     zero: false
   });
@@ -442,8 +442,8 @@ QUnit.test('{{render}} helper should render templates both with and without mode
 
 QUnit.test('{{render}} helper should link child controllers to the parent controller', function() {
   let parentTriggered = 0;
-  const template = '<h1>HI</h1>{{render "posts"}}';
-  const Controller = EmberController.extend({
+  let template = '<h1>HI</h1>{{render "posts"}}';
+  let Controller = EmberController.extend({
     actions: {
       parentPlease() {
         parentTriggered++;
@@ -451,7 +451,7 @@ QUnit.test('{{render}} helper should link child controllers to the parent contro
     },
     role: 'Mom'
   });
-  const controller = Controller.create({
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 
@@ -480,9 +480,9 @@ QUnit.test('{{render}} helper should link child controllers to the parent contro
 });
 
 QUnit.test('{{render}} helper should be able to render a template again when it was removed', function() {
-  const CoreOutlet = appInstance._lookupFactory('view:core-outlet');
-  const Controller = EmberController.extend();
-  const controller = Controller.create({
+  let CoreOutlet = appInstance._lookupFactory('view:core-outlet');
+  let Controller = EmberController.extend();
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 

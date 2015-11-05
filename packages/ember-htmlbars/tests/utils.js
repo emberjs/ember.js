@@ -6,7 +6,7 @@ function registerAstPlugin(plugin) {
 }
 
 function removeAstPlugin(plugin) {
-  const index = plugins['ast'].indexOf(plugin);
+  let index = plugins['ast'].indexOf(plugin);
   plugins['ast'].splice(index, 1);
 }
 

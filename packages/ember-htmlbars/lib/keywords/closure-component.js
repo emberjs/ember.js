@@ -64,7 +64,7 @@ function createClosureComponentCell(env, originalComponentPath, params, hash, la
 }
 
 function isValidComponentPath(env, path) {
-  const result = lookupComponent(env.owner, path);
+  let result = lookupComponent(env.owner, path);
 
   return !!(result.component || result.layout);
 }

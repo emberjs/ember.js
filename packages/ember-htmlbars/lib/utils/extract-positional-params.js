@@ -11,7 +11,7 @@ export default function extractPositionalParams(renderNode, component, params, a
 }
 
 export function processPositionalParams(renderNode, positionalParams, params, attrs) {
-  const isNamed = typeof positionalParams === 'string';
+  let isNamed = typeof positionalParams === 'string';
 
   if (isNamed) {
     processRestPositionalParameters(renderNode, positionalParams, params, attrs);

@@ -36,13 +36,13 @@ function mockBrowserHistory(overrides) {
 }
 
 function createLocation(location, history) {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('location:history', HistoryLocation);
   owner.register('location:hash', HashLocation);
   owner.register('location:none', NoneLocation);
 
-  const autolocation = AutoLocation.create({
+  let autolocation = AutoLocation.create({
     [OWNER]: owner,
     location: location,
     history: history,

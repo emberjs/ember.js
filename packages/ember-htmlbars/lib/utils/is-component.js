@@ -15,7 +15,7 @@ import { isStream } from 'ember-metal/streams/utils';
  name was found in the container.
 */
 export default function isComponent(env, scope, path) {
-  const owner = env.owner;
+  let owner = env.owner;
   if (!owner) { return false; }
   if (typeof path === 'string') {
     if (CONTAINS_DOT_CACHE.get(path)) {

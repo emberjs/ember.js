@@ -431,7 +431,7 @@ QUnit.test('properties values can be replaced', function() {
   ['uniq', uniq],
   ['union', union]
 ].forEach((tuple) => {
-  const [name, macro] = tuple;
+  let [name, macro] = tuple;
 
   QUnit.module(`computed.${name}`, {
     setup() {

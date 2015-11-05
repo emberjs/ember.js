@@ -26,7 +26,7 @@ if (!EmberDev.runningProdBuild) {
       ok(true, 'should call validation method');
     });
 
-    const owner = buildOwner();
+    let owner = buildOwner();
 
     var AnObject = Object.extend({
       bar: inject.foo(),
@@ -39,7 +39,7 @@ if (!EmberDev.runningProdBuild) {
 }
 
 QUnit.test('attempting to inject a nonexistent container key should error', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
   var AnObject = Object.extend({
     foo: new InjectedProperty('bar', 'baz')
   });

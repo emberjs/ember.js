@@ -12,7 +12,7 @@ import {
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
 var buildInstance = function(namespace) {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.__registry__.resolver = resolverFor(namespace);
   owner.registerOptionsForType('view', { singleton: false });

@@ -48,7 +48,7 @@ function renderComponent(tag, component) {
     .map(key => `${key}=${hash[key]}`)
     .join(' ');
 
-  const owner = buildOwner();
+  let owner = buildOwner();
   owner.register('component-lookup:main', ComponentLookup);
   owner.register(`component:${tag}`, implementation);
 

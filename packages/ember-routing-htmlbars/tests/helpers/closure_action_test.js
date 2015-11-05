@@ -120,10 +120,10 @@ QUnit.test('action should be called on the correct scope', function(assert) {
 QUnit.test('arguments to action are passed, curry', function(assert) {
   assert.expect(4);
 
-  const first = 'mitch';
-  const second =  'martin';
-  const third = 'matt';
-  const fourth = 'wacky wycats';
+  let first = 'mitch';
+  let second =  'martin';
+  let third = 'matt';
+  let fourth = 'wacky wycats';
 
   innerComponent = EmberComponent.extend({
     fireAction() {
@@ -155,7 +155,7 @@ QUnit.test('arguments to action are passed, curry', function(assert) {
 QUnit.test('arguments to action are bound', function(assert) {
   assert.expect(1);
 
-  const value = 'lazy leah';
+  let value = 'lazy leah';
 
   innerComponent = EmberComponent.extend({
     fireAction() {
@@ -186,9 +186,9 @@ QUnit.test('arguments to action are bound', function(assert) {
 QUnit.test('array arguments are passed correctly to action', function(assert) {
   assert.expect(3);
 
-  const first = 'foo';
-  const second = [3, 5];
-  const third = [4, 9];
+  let first = 'foo';
+  let second = [3, 5];
+  let third = [4, 9];
 
   innerComponent = EmberComponent.extend({
     fireAction() {
@@ -384,7 +384,7 @@ QUnit.test('action can create closures over actions with target', function(asser
 QUnit.test('value can be used with action over actions', function(assert) {
   assert.expect(1);
 
-  const newValue = 'yelping yehuda';
+  let newValue = 'yelping yehuda';
 
   innerComponent = EmberComponent.extend({
     fireAction() {
@@ -419,7 +419,7 @@ QUnit.test('value can be used with action over actions', function(assert) {
 QUnit.test('action will read the value of a first property', function(assert) {
   assert.expect(1);
 
-  const newValue = 'irate igor';
+  let newValue = 'irate igor';
 
   innerComponent = EmberComponent.extend({
     fireAction() {
@@ -449,7 +449,7 @@ QUnit.test('action will read the value of a first property', function(assert) {
 QUnit.test('action will read the value of a curried first argument property', function(assert) {
   assert.expect(1);
 
-  const newValue = 'kissing kris';
+  let newValue = 'kissing kris';
 
   innerComponent = EmberComponent.extend({
     fireAction() {

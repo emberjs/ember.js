@@ -6,7 +6,7 @@ import buildOwner from 'container/tests/test-helpers/build-owner';
 QUnit.module('EmberView - injected properties');
 
 QUnit.test('services can be injected into views', function() {
-  const owner = buildOwner();
+  let owner = buildOwner();
 
   owner.register('view:application', View.extend({
     profilerService: inject.service('profiler')

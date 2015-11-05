@@ -30,7 +30,7 @@ AssertNoViewHelper.prototype.transform = function AssertNoViewHelper_transform(a
 };
 
 function assertHelper(moduleName, node) {
-  const paramValue = node.params.length && node.params[0].value;
+  let paramValue = node.params.length && node.params[0].value;
 
   if (!paramValue) {
     return;

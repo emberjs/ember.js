@@ -15,8 +15,8 @@ import {
 } from 'ember-metal/observer';
 
 function labelFor(source, key) {
-  const sourceLabel = source.label ? source.label : '';
-  const keyLabel = key.label ? key.label : '';
+  let sourceLabel = source.label ? source.label : '';
+  let keyLabel = key.label ? key.label : '';
   return `(get ${sourceLabel} ${keyLabel})`;
 }
 
@@ -34,7 +34,7 @@ let DynamicKeyStream = BasicStream.extend({
   },
 
   key() {
-    const key = this.keyDep.getValue();
+    let key = this.keyDep.getValue();
     if (typeof key === 'string') {
       return key;
     }
@@ -84,12 +84,12 @@ let DynamicKeyStream = BasicStream.extend({
 });
 
 const buildStream = function buildStream(params) {
-  const [objRef, pathRef] = params;
+  let [objRef, pathRef] = params;
 
   assert('The first argument to {{get}} must be a stream', isStream(objRef));
   assert('{{get}} requires at least two arguments', params.length > 1);
 
-  const stream = buildDynamicKeyStream(objRef, pathRef);
+  let stream = buildDynamicKeyStream(objRef, pathRef);
 
   return stream;
 };
