@@ -5,7 +5,7 @@
 
 import { assert } from 'ember-metal/debug';
 import isNone from 'ember-metal/is_none';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 import BasicStream from 'ember-metal/streams/stream';
 import { read } from 'ember-metal/streams/utils';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';

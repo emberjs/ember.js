@@ -45,7 +45,7 @@ import {
   K
 } from 'ember-metal/core';
 import { validatePropertyInjections } from 'ember-runtime/inject';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 
 export let POST_INIT = symbol('POST_INIT');
 var schedule = run.schedule;

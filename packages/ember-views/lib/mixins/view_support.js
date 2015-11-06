@@ -8,7 +8,7 @@ import { computed } from 'ember-metal/computed';
 import { Mixin } from 'ember-metal/mixin';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import isEnabled from 'ember-metal/features';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 import { getOwner } from 'container/owner';
 
 const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');

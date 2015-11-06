@@ -3,7 +3,7 @@ import {
   read,
   readArray
 } from 'ember-metal/streams/utils';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 import { get } from 'ember-metal/property_get';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import EmberError from 'ember-metal/error';

@@ -80,7 +80,7 @@ var stringCache  = {};
   @private
   @return {String} interned version of the provided string
 */
-function intern(str) {
+export function intern(str) {
   var obj = {};
   obj[str] = 1;
   for (var key in obj) {
@@ -89,14 +89,6 @@ function intern(str) {
     }
   }
   return str;
-}
-
-export function symbol(debugName) {
-  // TODO: Investigate using platform symbols, but we do not
-  // want to require non-enumerability for this API, which
-  // would introduce a large cost.
-
-  return intern(debugName + ' [id=' + GUID_KEY + Math.floor(Math.random() * new Date()) + ']');
 }
 
 /**

@@ -9,7 +9,7 @@ import {
   accumulateListeners
 } from 'ember-metal/events';
 import ObserverSet from 'ember-metal/observer_set';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
