@@ -27,6 +27,7 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
 
 QUnit.test("works from a template with bindings [DEPRECATED]", function() {
   expectDeprecation(arrayControllerDeprecation);
+  expectDeprecation(/Ember.SortableMixin/);
   var Person = EmberObject.extend({
     id: null,
     firstName: null,

@@ -122,6 +122,11 @@ export default Mixin.create(MutableEnumerable, {
   */
   sortFunction: compare,
 
+  init() {
+    this._super(...arguments);
+    Ember.deprecate(`Ember.SortableMixin is deprecated and was used in ${this}. Please use Ember.computed.sort instead.`, this.isGenerated);
+  },
+
   orderBy(item1, item2) {
     var result = 0;
     var sortProperties = get(this, 'sortProperties');

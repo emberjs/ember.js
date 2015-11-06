@@ -6,6 +6,7 @@ import ActionManager from "ember-views/system/action_manager";
 import EmberView from "ember-views/views/view";
 import { arrayControllerDeprecation } from "ember-runtime/controllers/array_controller";
 
+
 import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile = EmberHandlebars.compile;
@@ -628,6 +629,7 @@ QUnit.test("The Homepage with a `setupController` hook modifying other controlle
 
 QUnit.test("The Homepage with a computed context that does not get overridden", function() {
   expectDeprecation(arrayControllerDeprecation);
+  expectDeprecation(/Ember.SortableMixin/);
 
   Router.map(function() {
     this.route("home", { path: "/" });
