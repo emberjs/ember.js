@@ -118,7 +118,7 @@ module.exports = function() {
     inputFiles: ['**/*.js'],
     outputFile: '/tests.js',
     sourceMapConfig: { enabled: true }
-  })
+  });
 
   var loader = new Funnel(bower, {
     srcDir: '/loader.js',
@@ -126,5 +126,9 @@ module.exports = function() {
     destDir: '/assets'
   });
 
-  return mergeTrees([demos, concatenatedCompiler, concatenatedRuntime, loader, testHarness, concatenatedTests]);
+  var es6Tree = new Funnel(packagesTree, {
+    destDir: 'es6'
+  });
+
+  return mergeTrees([es6Tree, demos, concatenatedCompiler, concatenatedRuntime, loader, testHarness, concatenatedTests]);
 }
