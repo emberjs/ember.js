@@ -12,6 +12,7 @@ import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
 import EmberRouterDSL from 'ember-routing/system/dsl';
 import EmberLocation from 'ember-routing/location/api';
+import { asyncInstrument } from 'ember-metal/instrumentation';
 import {
   routeArgs,
   getActiveTargetName,
@@ -20,6 +21,7 @@ import {
 } from 'ember-routing/utils';
 import RouterState from './router_state';
 import { getOwner } from 'container/owner';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -106,6 +108,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   init() {
     this._activeViews = {};
     this._qpCache = new EmptyObject();
+    this._instrumentationCallback = null;
     this._resetQueuedQueryParameterChanges();
   },
 
@@ -218,6 +221,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
     }
+
+    if (isEnabled('ember-improved-instrumentation')) {
+      this._endInstrumentation();
+    }
   },
 
   _setOutlets() {
@@ -267,6 +274,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     @since 1.11.0
   */
   willTransition(oldInfos, newInfos, transition) {
+    if (isEnabled('ember-improved-instrumentation')) {
+      this._beginInstrumentation(transition);
+    }
+
     run.once(this, this.trigger, 'willTransition', transition);
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
@@ -682,6 +693,27 @@ var EmberRouter = EmberObject.extend(Evented, {
   _scheduleLoadingEvent(transition, originRoute) {
     this._cancelSlowTransitionTimer();
     this._slowTransitionTimer = run.scheduleOnce('routerTransitions', this, '_handleSlowTransition', transition, originRoute);
+  },
+
+  _beginInstrumentation(transition) {
+    let callback;
+    let intent = transition.intent;
+
+    if ('url' in intent) {
+      let url = intent.url;
+      callback = asyncInstrument('routing.transition.url', () => { return { url }; });
+    } else {
+      let name = intent.name;
+      callback = asyncInstrument('routing.transition.named', () => { return { name }; });
+    }
+
+    this._instrumentationCallback = callback;
+  },
+
+  _endInstrumentation() {
+    let callback = this._instrumentationCallback;
+    callback();
+    this._instrumentationCallback = null;
   },
 
   currentState: null,

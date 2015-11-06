@@ -52,3 +52,12 @@ for a detailed explanation.
   ```
 
   Implements RFC [#64](https://github.com/emberjs/rfcs/blob/master/text/0064-contextual-component-lookup.md)
+
+* `ember-improved-instrumentation`
+
+  Adds additional instrumentation to Ember:
+
+  - `interaction.<event-name>` for events handled by a component.
+  - `interaction.ember-action` for closure actions.
+  - `routing.transition.url` for transitions to a URL.
+  - `routing.transition.named` for transitions to a named route.
