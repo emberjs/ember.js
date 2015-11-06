@@ -29,6 +29,8 @@ var VisibilitySupport = Mixin.create({
 
   becameVisible: K,
   becameHidden: K,
+  willBecomeVisible: K,
+  willBecomeHidden: K,
 
   /**
     When the view's `isVisible` property changes, toggle the visibility
@@ -42,6 +44,10 @@ var VisibilitySupport = Mixin.create({
     run.scheduleOnce('render', this, this._toggleVisibility);
   }),
 
+  /**
+    Toggle visibility of the view, firing event hooks before and after the element visibility is changed
+    @private
+  */
   _toggleVisibility() {
     var $el = this.$();
     var isVisible = get(this, 'isVisible');
@@ -54,40 +60,45 @@ var VisibilitySupport = Mixin.create({
 
     if (!$el) { return; }
 
+    if (isVisible) {
+      this._notifyVisibilityChange('willBecomeVisible');
+    } else {
+      this._notifyVisibilityChange('willBecomeHidden');
+    }
+
     $el.toggle(isVisible);
 
     if (this._isAncestorHidden()) { return; }
 
     if (isVisible) {
-      this._notifyBecameVisible();
+      this._notifyVisibilityChange('becameVisible');
     } else {
-      this._notifyBecameHidden();
+      this._notifyVisibilityChange('becameHidden');
     }
   },
 
-  _notifyBecameVisible() {
-    this.trigger('becameVisible');
+  /**
+    Trigger an event on the view and its visible children when visibility is changing
+    @param event The name of the event, such as `becameHidden` or `willBecomeVisible`
+    @private
+  */
+  _notifyVisibilityChange(event) {
+    this.trigger(event);
 
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
 
       if (isVisible || isVisible === null) {
-        view._notifyBecameVisible();
+        view._notifyVisibilityChange(event);
       }
     });
   },
 
-  _notifyBecameHidden() {
-    this.trigger('becameHidden');
-    this.forEachChildView(function(view) {
-      var isVisible = get(view, 'isVisible');
-
-      if (isVisible || isVisible === null) {
-        view._notifyBecameHidden();
-      }
-    });
-  },
-
+  /**
+    Check to see if any of the view's parents are hidden (`isVisible` === false)
+    @returns {boolean} True if an ancestor is hidden
+    @private
+  */
   _isAncestorHidden() {
     var parent = get(this, 'parentView');
 
