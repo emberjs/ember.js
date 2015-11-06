@@ -9,6 +9,6 @@
     "ember-routing-routable-components": null,
     "ember-metal-ember-assign": null,
     "ember-contextual-components": true,
-    "ember-container-inject-owner": null
+    "ember-container-inject-owner": true
   }
 }
