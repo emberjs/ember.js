@@ -32,6 +32,7 @@
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "github": "^0.2.3",
+    "glimmer": "rwjblue/glimmer#valid-imports",
     "glob": "~4.3.2",
     "htmlbars": "0.14.11",
     "qunit-extras": "^1.4.0",
