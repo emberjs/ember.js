@@ -42,6 +42,15 @@ function babelConfigFor(environment) {
   return { plugins: plugins };
 }
 
+function glimmerPackage(name, _options) {
+  var options = _options || {};
+
+  options.libPath = 'node_modules/glimmer/dist/es6/';
+  options.ignoreMain = true;
+
+  return htmlbarsPackage(name, options);
+}
+
 module.exports = function() {
   var emberBuild = new EmberBuild({
     babel: {
@@ -65,7 +74,13 @@ module.exports = function() {
       'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
       'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
       'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
-      'htmlbars-util':         htmlbarsPackage('htmlbars-util')
+      'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
+      'glimmer-runtime':       glimmerPackage('htmlbars-runtime'),
+      'glimmer-compiler':      glimmerPackage('htmlbars-compiler'),
+      'glimmer-syntax':        glimmerPackage('htmlbars-syntax'),
+      'glimmer-test-helpers':  glimmerPackage('htmlbars-test-helpers', { singleFile: true }),
+      'glimmer-util':          glimmerPackage('htmlbars-util')
+
     }
   });
 
