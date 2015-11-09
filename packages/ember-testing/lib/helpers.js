@@ -4,6 +4,7 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import Test from 'ember-testing/test';
 import RSVP from 'ember-runtime/ext/rsvp';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -12,6 +13,141 @@ import RSVP from 'ember-runtime/ext/rsvp';
 
 var helper = Test.registerHelper;
 var asyncHelper = Test.registerAsyncHelper;
+
+var keyboardEventTypes, mouseEventTypes, buildKeyboardEvent, buildMouseEvent, buildBasicEvent, fireEvent, focus;
+
+if (isEnabled('ember-test-helpers-fire-native-events')) {
+  let defaultEventOptions = { canBubble: true, cancelable: true };
+  keyboardEventTypes = ['keydown', 'keypress', 'keyup'];
+  mouseEventTypes = ['click', 'mousedown', 'mouseup', 'dblclick', 'mousenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover'];
+
+
+  buildKeyboardEvent = function buildKeyboardEvent(type, options = {}) {
+    let event;
+    try {
+      event = document.createEvent('KeyEvents');
+      let eventOpts = jQuery.extend({}, defaultEventOptions, options);
+      event.initKeyEvent(
+        type,
+        eventOpts.canBubble,
+        eventOpts.cancelable,
+        window,
+        eventOpts.ctrlKey,
+        eventOpts.altKey,
+        eventOpts.shiftKey,
+        eventOpts.metaKey,
+        eventOpts.keyCode,
+        eventOpts.charCode
+      );
+    } catch (e) {
+      event = buildBasicEvent(type, options);
+    }
+    return event;
+  };
+
+  buildMouseEvent = function buildMouseEvent(type, options = {}) {
+    let event;
+    try {
+      event = document.createEvent('MouseEvents');
+      let eventOpts = jQuery.extend({}, defaultEventOptions, options);
+      event.initMouseEvent(
+        type,
+        eventOpts.canBubble,
+        eventOpts.cancelable,
+        window,
+        eventOpts.detail,
+        eventOpts.screenX,
+        eventOpts.screenY,
+        eventOpts.clientX,
+        eventOpts.clientY,
+        eventOpts.ctrlKey,
+        eventOpts.altKey,
+        eventOpts.shiftKey,
+        eventOpts.metaKey,
+        eventOpts.button,
+        eventOpts.relatedTarget);
+    } catch (e) {
+      event = buildBasicEvent(type, options);
+    }
+    return event;
+  };
+
+  buildBasicEvent = function buildBasicEvent(type, options = {}) {
+    let event = document.createEvent('Events');
+    event.initEvent(type, true, true);
+    jQuery.extend(event, options);
+    return event;
+  };
+
+  fireEvent = function fireEvent(element, type, options = {}) {
+    if (!element) {
+      return;
+    }
+    let event;
+    if (keyboardEventTypes.indexOf(type) > -1) {
+      event = buildKeyboardEvent(type, options);
+    } else if (mouseEventTypes.indexOf(type) > -1) {
+      let rect = element.getBoundingClientRect();
+      let x = rect.left + 1;
+      let y = rect.top + 1;
+      let simulatedCoordinates = {
+        screenX: x + 5,
+        screenY: y + 95,
+        clientX: x,
+        clientY: y
+      };
+      event = buildMouseEvent(type, jQuery.extend(simulatedCoordinates, options));
+    } else {
+      event = buildBasicEvent(type, options);
+    }
+    element.dispatchEvent(event);
+  };
+
+  focus = function focus(el) {
+    if (!el) { return; }
+    let $el = jQuery(el);
+    if ($el.is(':input, [contenteditable=true]')) {
+      let type = $el.prop('type');
+      if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
+        run(null, function() {
+          // Firefox does not trigger the `focusin` event if the window
+          // does not have focus. If the document doesn't have focus just
+          // use trigger('focusin') instead.
+
+          if (!document.hasFocus || document.hasFocus()) {
+            el.focus();
+          } else {
+            $el.trigger('focusin');
+          }
+        });
+      }
+    }
+  };
+} else {
+  focus = function focus(el) {
+    if (el && el.is(':input, [contenteditable=true]')) {
+      var type = el.prop('type');
+      if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
+        run(el, function() {
+          // Firefox does not trigger the `focusin` event if the window
+          // does not have focus. If the document doesn't have focus just
+          // use trigger('focusin') instead.
+          if (!document.hasFocus || document.hasFocus()) {
+            this.focus();
+          } else {
+            this.trigger('focusin');
+          }
+        });
+      }
+    }
+  };
+
+  fireEvent = function fireEvent(element, type, options) {
+    var event = jQuery.Event(type, options);
+    jQuery(element).trigger(event);
+  };
+}
+
 
 function currentRouteName(app) {
   var routingService = app.__container__.lookup('service:-routing');
@@ -34,24 +170,6 @@ function currentURL(app) {
 function pauseTest() {
   Test.adapter.asyncStart();
   return new RSVP.Promise(function() { }, 'TestAdapter paused promise');
-}
-
-function focus(el) {
-  if (el && el.is(':input, [contenteditable=true]')) {
-    var type = el.prop('type');
-    if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      run(el, function() {
-        // Firefox does not trigger the `focusin` event if the window
-        // does not have focus. If the document doesn't have focus just
-        // use trigger('focusin') instead.
-        if (!document.hasFocus || document.hasFocus()) {
-          this.focus();
-        } else {
-          this.trigger('focusin');
-        }
-      });
-    }
-  }
 }
 
 function visit(app, url) {
@@ -78,13 +196,15 @@ function visit(app, url) {
 }
 
 function click(app, selector, context) {
-  var $el = app.testHelpers.findWithAssert(selector, context);
-  run($el, 'mousedown');
+  let $el = app.testHelpers.findWithAssert(selector, context);
+  let el = $el[0];
 
-  focus($el);
+  run(null, fireEvent, el, 'mousedown');
 
-  run($el, 'mouseup');
-  run($el, 'click');
+  focus(el);
+
+  run(null, fireEvent, el, 'mouseup');
+  run(null, fireEvent, el, 'click');
 
   return app.testHelpers.wait();
 }
@@ -119,10 +239,9 @@ function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptio
   }
 
   var $el = app.testHelpers.findWithAssert(selector, context);
+  var el = $el[0];
 
-  var event = jQuery.Event(type, options);
-
-  run($el, 'trigger', event);
+  run(null, fireEvent, el, type, options);
 
   return app.testHelpers.wait();
 }
@@ -143,18 +262,19 @@ function keyEvent(app, selector, contextOrType, typeOrKeyCode, keyCode) {
 }
 
 function fillIn(app, selector, contextOrText, text) {
-  var $el, context;
+  var $el, el, context;
   if (typeof text === 'undefined') {
     text = contextOrText;
   } else {
     context = contextOrText;
   }
   $el = app.testHelpers.findWithAssert(selector, context);
-  focus($el);
+  el = $el[0];
+  focus(el);
   run(function() {
     $el.val(text);
-    $el.trigger('input');
-    $el.change();
+    fireEvent(el, 'input');
+    fireEvent(el, 'change');
   });
   return app.testHelpers.wait();
 }
