@@ -68,14 +68,6 @@ let view: Component, env: TestEnvironment;
 QUnit.module("HTMLBarsComponent - invocation", {
   setup() {
     env = new TestEnvironment();
-
-    env.registerHelper('if', function(params, hash, options) {
-      if (!!params[0]) {
-        return options.template.yield();
-      } else if (options.inverse) {
-        return options.inverse.yield();
-      }
-    });
   }
 });
 
