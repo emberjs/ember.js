@@ -19,6 +19,16 @@ export class LinkedList<T extends LinkedListNode> {
     this.clear();
   }
 
+  clone(callback: (input: T) => T): LinkedList<T> {
+    let cloned = new LinkedList<T>();
+
+    this.forEachNode(node => {
+      cloned.append(callback(node));
+    });
+
+    return cloned;
+  }
+
   head(): T {
     let front = this._head.next;
     if (front === this._tail) return null;
@@ -36,6 +46,28 @@ export class LinkedList<T extends LinkedListNode> {
     let tail = this._tail = <T>new SentinelNode();
     head.next = tail;
     tail.prev = head;
+  }
+
+  isEmpty() {
+    return this._head.next === this._tail;
+  }
+
+  toArray(): T[] {
+    let out = [];
+    this.forEachNode(n => out.push(n));
+    return out;
+  }
+
+  splice(start: LinkedListNode, end: LinkedListNode, reference: LinkedListNode) {
+    reference = reference || this._tail;
+
+    let before = reference.prev;
+
+    before.next = start;
+    start.prev = before;
+
+    reference.prev = end;
+    end.next = reference;
   }
 
   nextNode(node: T): T {
@@ -59,7 +91,7 @@ export class LinkedList<T extends LinkedListNode> {
     }
   }
 
-  insertBefore(node: T, reference: T = null) {
+  insertBefore(node: T, reference: LinkedListNode = null) {
     if (reference === null) reference = this._tail;
 
     reference.prev.next = node;
@@ -70,6 +102,10 @@ export class LinkedList<T extends LinkedListNode> {
 
   append(node: T) {
     this.insertBefore(node, this._tail);
+  }
+
+  prepend(node: T) {
+    this.insertBefore(node, this._head.next);
   }
 
   remove(node: T) {

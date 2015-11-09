@@ -12,14 +12,6 @@ function rootElement() {
 function commonSetup() {
   env = new TestEnvironment(window.document); // TODO: Support SimpleDOM
   root = rootElement();
-
-  env.registerHelper('if', function(params, hash, options) {
-    if (!!params[0]) {
-      return options.template.yield();
-    } else if (options.inverse) {
-      return options.inverse.yield();
-    }
-  });
 }
 
 function render(template: Template, context={}) {

@@ -47,7 +47,7 @@ import {
   appendComponent
 } from "htmlbars-runtime";
 import { compile as rawCompile } from "htmlbars-compiler";
-import { LITERAL, Dict, InternedString, dict, assign, intern } from 'htmlbars-util';
+import { LITERAL, LinkedList, Dict, InternedString, dict, assign, intern } from 'htmlbars-util';
 
 import { Meta, ConstReference, ChainableReference, setProperty as set } from "htmlbars-reference";
 
@@ -187,6 +187,10 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
         return new EachSyntax({ args: block.args, templates: block.templates });
       }
 
+      if (block && key === 'if') {
+        return new IfSyntax({ args: block.args, templates: block.templates });
+      }
+
       if (key === 'component') {
         return new DynamicComponentSyntax({ key, args, templates: block && block.templates });
       }
@@ -195,7 +199,7 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
 
       if (definition) {
         let templates = block && block.templates;
-        return (new CurlyComponent({ path, hash, templates }).withArgs(args));
+        return (new CurlyComponent({ path, templates }).withArgs(args));
       }
     }
 
@@ -324,48 +328,55 @@ interface TemplateWithAttrsOptions {
 }
 
 function templateWithAttrs(template: Template, { defaults, outers, identity }: TemplateWithAttrsOptions): Template {
-  let out = [];
+  let out = new LinkedList<StatementSyntax>();
 
   let statements = template.statements;
-  let i = 0;
-  for (let l=statements.length; i<l; i++) {
-    let item = statements[i];
+  let current = statements.head();
+  let next;
 
-    if (item.type === 'open-element') {
-      let tag = <OpenElement>item;
-      if (tag.tag === identity) out.push(tag.toIdentity());
-      else out.push(tag);
+  while (current) {
+    next = statements.nextNode(current);
+
+    if (current.type === 'open-element') {
+      let tag = <OpenElement>current;
+      if (tag.tag === identity) out.append(tag.toIdentity());
+      else out.append(tag.clone());
       break;
-    } else if (item.type === 'open-primitive-element') {
-      out.push(item);
+    } else if (current.type === 'open-primitive-element') {
+      out.append(current.clone());
       break;
     }
 
-    out.push(item);
+    out.append(current.clone());
+    current = next;
   }
 
-  i++;
+  current = next;
+
   let seen = dict<boolean>();
   let attrs = [];
 
   if (outers) {
     outers.forEach(attr => {
       seen[attr.name] = true;
-      attrs.push(attr);
+      out.append(attr);
     });
   }
 
-  out.push(...attrs);
 
-  for (let l=statements.length; i<l; i++) {
-    let item = statements[i];
-    if (item.type === 'add-class') {
-      out.push(item);
-    } else if (item[ATTRIBUTE_SYNTAX]) {
-      if (!seen[(<AttributeSyntax>item).name]) {
-        out.push(item);
-        seen[(<AttributeSyntax>item).name] = true;
+  while (current) {
+    next = statements.nextNode(current);
+
+    if (current.type === 'add-class') {
+      out.append(current.clone());
+      current = next;
+    } else if (current[ATTRIBUTE_SYNTAX]) {
+      if (!seen[(<AttributeSyntax>current).name]) {
+        out.append(current.clone());
+        seen[(<AttributeSyntax>current).name] = true;
       }
+
+      current = next;
     } else {
       break;
     }
@@ -374,13 +385,17 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
   if (defaults) {
     defaults.forEach(item => {
       if (item.type !== 'add-class' && seen[item.name]) return;
-      out.push(item);
+      out.append(item);
     });
   }
 
-  out.push(...statements.slice(i));
+  while (current) {
+    next = statements.nextNode(current);
+    out.append(current.clone());
+    current = next;
+  }
 
-  return Template.fromStatements(out);
+  return Template.fromList(out);
 }
 
 class CurlyAppendingComponent extends TestAppendingComponent {
@@ -392,8 +407,9 @@ class CurlyAppendingComponent extends TestAppendingComponent {
 
     super({ hooks, ComponentClass, layout, stack });
 
-    this.layout.statements.unshift(b.openPrimitiveElement('div'));
-    this.layout.statements.push(b.closeElement());
+    let statements = this.layout.statements;
+    statements.prepend(b.openPrimitiveElement('div'));
+    statements.append(b.closeElement());
   }
 
   protected createComponent(attrs: Dict<any>, parentScope: Scope<TestScopeOptions>) {
@@ -436,17 +452,17 @@ class CurlyEmberishAppendingComponent extends CurlyAppendingComponent {
     let defaults: AttributeSyntax[] = [ b.addClass(b.value('ember-view')) ];
 
     if (hashId) {
-      defaults.push(b.dynamicAttr('id', new EvaluatedRef(hashId)));
+      defaults.push(b.dynamicAttr('id', new EvaluatedRef({ ref: hashId })));
     } else {
       defaults.push(b.staticAttr('id', `ember${uuid++}`));
     }
 
     if (hashClass) {
-      defaults.push(b.addClass(new EvaluatedRef(hashClass)));
+      defaults.push(b.addClass(new EvaluatedRef({ ref: hashClass })));
     }
 
     if (hashRole) {
-      defaults.push(b.dynamicAttr('role', new EvaluatedRef(hashRole)));
+      defaults.push(b.dynamicAttr('role', new EvaluatedRef({ ref: hashRole })));
     }
 
     this.layout = templateWithAttrs(this.layout, { defaults });
@@ -467,8 +483,8 @@ class GlimmerAppendingComponent extends TestAppendingComponent {
   }
 
   protected layoutWithAttrs(invokeFrame: Frame) {
-    let attrSyntax = this.attributes && <AttributeSyntax[]>this.attributes.statements;
-    let outers = attrSyntax && attrSyntax.map(s => s.asEvaluated(invokeFrame));
+    let attrSyntax = this.attributes && <LinkedList<AttributeSyntax>>this.attributes.statements;
+    let outers = attrSyntax && attrSyntax.toArray().map(s => s.asEvaluated(invokeFrame));
     let identity = this.tag;
 
     return templateWithAttrs(this.layout, { identity, outers });
@@ -501,7 +517,7 @@ class GlimmerEmberishAppendingComponent extends GlimmerAppendingComponent {
 
 const DIV = LITERAL('div');
 
-class CurlyComponent implements StatementSyntax {
+class CurlyComponent extends StatementSyntax {
   type = "curly-component";
   isStatic = false;
   path: InternedString[];
@@ -510,9 +526,14 @@ class CurlyComponent implements StatementSyntax {
   private args: ParamsAndHash;
   private inverse: Template;
 
-  constructor(options: { path: InternedString[], hash: Hash, templates: Templates }) {
+  constructor(options: { path: InternedString[], templates: Templates }) {
+    super();
     this.path = options.path;
     this.templates = options.templates;
+  }
+
+   clone(): CurlyComponent {
+    return new CurlyComponent(this);
   }
 
   withArgs(args: ParamsAndHash): CurlyComponent {
@@ -571,16 +592,21 @@ function processPositionals(definition: ComponentDefinition, args: ParamsAndHash
 
 type EachOptions = { args: ParamsAndHash };
 
-class EachSyntax implements StatementSyntax {
+class EachSyntax extends StatementSyntax {
   type = "each-statement";
 
-  private args: ParamsAndHash;
-  private templates: Templates;
+  public args: ParamsAndHash;
+  public templates: Templates;
   public isStatic = false;
 
   constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
     this.args = args;
     this.templates = templates;
+  }
+
+  clone(): EachSyntax {
+    return new EachSyntax(this);
   }
 
   prettyPrint() {
@@ -594,18 +620,79 @@ class EachSyntax implements StatementSyntax {
   }
 }
 
-class DynamicComponentSyntax implements StatementSyntax {
+class IfSyntax extends StatementSyntax {
+  type = "if-statement";
+
+  public args: ParamsAndHash;
+  public templates: Templates;
+  public isStatic = false;
+
+  constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
+    this.args = args;
+    this.templates = templates;
+  }
+
+  clone(): IfSyntax {
+    return new IfSyntax(this);
+  }
+
+  prettyPrint() {
+    return `#if ${this.args.prettyPrint()}`;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
+    let condition = this.args.params.evaluate(frame).nth(0);
+    return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
+  }
+}
+
+interface IfOptions {
+  reference: ChainableReference;
+  templates: Templates;
+}
+
+class IfMorph extends TemplateMorph {
+  reference: ChainableReference;
+  templates: Templates;
+
+  init({ reference, templates }: IfOptions) {
+    this.reference = reference;
+    this.templates = templates;
+  }
+
+  append(stack: ElementStack) {
+    let { reference, templates } = this;
+    let value = reference.value();
+    this.template = value ? templates.default : templates.inverse;
+    super.append(stack);
+  }
+
+  update() {
+    let { reference, templates } = this;
+    let value = reference.value();
+    this.template = value ? templates.default : templates.inverse;
+    super.update();
+  }
+}
+
+class DynamicComponentSyntax extends StatementSyntax {
   type = "dynamic-component";
 
-  private args: ParamsAndHash;
-  private key: InternedString;
-  private templates: Templates;
+  public args: ParamsAndHash;
+  public key: InternedString;
+  public templates: Templates;
   public isStatic = false;
 
   constructor({ key, args, templates }: { key: InternedString, args: ParamsAndHash, templates: Templates }) {
+    super();
     this.key = key;
     this.args = args;
     this.templates = templates;
+  }
+
+  clone(): DynamicComponentSyntax {
+    return new DynamicComponentSyntax(this);
   }
 
   prettyPrint() {

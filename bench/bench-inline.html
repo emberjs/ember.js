@@ -20,22 +20,18 @@
   </head>
 
   <body>
-    <button id='run-with-components'>With Components</button>
-    <button id='run-bare'>Bare Template</button>
-    <button id='run-single'>Single Component</button>
+    <button id='run-inline'>Inline If</button>
+    <button id='run-block'>Block If</button>
     <pre id='cycle'>Idle</pre>
     <pre id='benchmark-log'></pre>
 
     <script>
       // UI
-      var runWithComponents = document.getElementById('run-with-components');
-      runWithComponents.addEventListener('click', function() { runBenchmark('with-components') });
+      var runBlock = document.getElementById('run-block');
+      runBlock.addEventListener('click', function() { runBenchmark('block-if') });
 
-      var runBare = document.getElementById('run-bare');
-      runBare.addEventListener('click', function() { runBenchmark('bare') });
-
-      var singleComponent = document.getElementById('run-single');
-      singleComponent.addEventListener('click', function() { runBenchmark('single-component') });
+      var runInline = document.getElementById('run-inline');
+      runInline.addEventListener('click', function() { runBenchmark('inline-if') });
 
       var logPre = document.getElementById('benchmark-log');
       function log(message) { logPre.innerHTML += message; }
@@ -68,6 +64,15 @@
           blocks.template.yield();
         } else {
           blocks.inverse.yield();
+        }
+      });
+
+
+      env.registerHelper('inline-if', function(params, hash, blocks) {
+        if (!!params[0]) {
+          return params[1];
+        } else {
+          return params[2];
         }
       });
 
@@ -121,35 +126,13 @@
         b.run({ async: true });
       }
 
-      var MyItem = function(options) {
-        this.attrs = options.attrs;
-      }
-
-      var itemLayout = compile(
-        '<div>{{attrs.item.id}}: ' +
-        '{{#if attrs.item.visible}}' +
-          '{{#each attrs.item.subitems key="id" as |subitem|}}' +
-            '<sub-item id={{subitem.id}} />' +
-          '{{/each}}' +
-        '{{/if}}</div>'
-      );
-
-      env.registerComponent('my-item', MyItem, itemLayout);
-
-      var SubItem = function(options) {
-        this.attrs = options.attrs;
-      }
-
-      var subItemLayout = compile(
-        '<p>{{attrs.id}}</p>'
-      );
-
-      env.registerComponent('sub-item', SubItem, subItemLayout);
+      var run = true;
 
       function benchmark(name, template) {
         templates[name] = compile(template);
         return {
           setup: function() {
+            run = false;
             template = templates[this.name];
 
             // Context
@@ -175,7 +158,8 @@
             }
 
             context = {
-              items: items
+              truthy: true,
+              value: "Kris Selden"
             };
           },
 
@@ -192,26 +176,13 @@
       }
 
       var benchmarks = {
-        'single-component': benchmark('single-component',
-          '<sub-item id={{items.0.item.id}} />'
+        'inline-if': benchmark('inline-if',
+          '{{inline-if truthy value "empty"}}'
         ),
 
-        'with-components': benchmark('with-components',
-          '{{#each items key="id" as |item|}}' +
-            '<my-item item={{item}} />' +
-          '{{/each}}'
+        'block-if': benchmark('block-if',
+          '{{#if truthy}}\n  {{value}}\n{{else}}\n  empty{{/if}}'
         ),
-
-        'bare': benchmark('bare',
-          '{{#each items key="id" as |item|}}' +
-            '<div>{{item.id}}: ' +
-            '{{#if item.visible}}' +
-              '{{#each item.subitems key="id" as |subitem|}}' +
-                '<p>{{subitem.id}}</p>' +
-              '{{/each}}' +
-            '{{/if}}</div>' +
-          '{{/each}}'
-        )
       };
 
       function lineOf(size, char) {

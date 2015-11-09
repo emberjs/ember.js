@@ -260,7 +260,7 @@ export abstract class TemplateMorph extends EmptyableMorph {
   }
 
   appendTemplate(template: Template, options: { nextSibling?: Node, handler?: Handler }) {
-    if (template.isEmpty) {
+    if (!template || template.isEmpty) {
       this.didBecomeEmpty();
     } else {
       let result = this.lastResult = template.evaluate(this, options);
