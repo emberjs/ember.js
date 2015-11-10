@@ -955,6 +955,29 @@ export class CloseElementMorph extends Morph {
   }
 }
 
+interface JumpIfEqualOptions {
+  condition: ExpressionSyntax;
+  ifTrue: StatementSyntax;
+}
+
+export class JumpIfEqual extends StatementSyntax {
+  public condition: ExpressionSyntax;
+  public ifTrue: StatementSyntax;
+
+  constructor({ condition, ifTrue }: JumpIfEqualOptions) {
+    super();
+    this.condition = condition;
+    this.ifTrue = ifTrue;
+  }
+
+  clone(): JumpIfEqual {
+    return new JumpIfEqual(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  }
+}
+
 class NoopMorph extends CloseElementMorph {
   init() {}
   append() {}
