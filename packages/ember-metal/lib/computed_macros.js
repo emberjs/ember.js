@@ -196,7 +196,7 @@ export function bool(dependentKey) {
 /**
   A computed property which matches the original value for the
   dependent property against a given RegExp, returning `true`
-  if they values matches the RegExp and `false` if it does not.
+  if the value matches the RegExp and `false` if it does not.
 
   Example
 
