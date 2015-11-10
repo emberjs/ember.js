@@ -641,6 +641,10 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
+  inline(stack: ElementStack, frame: Frame) {
+    let statements = new LinkedList<StatementSyntax>();
+  }
+
   evaluate(stack: ElementStack, frame: Frame): ContentMorph {
     let condition = this.args.params.evaluate(frame).nth(0);
     return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
