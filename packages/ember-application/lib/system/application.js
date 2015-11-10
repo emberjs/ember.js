@@ -1352,12 +1352,6 @@ Application.reopenClass({
     registry.optionsForType('view', { singleton: false });
     registry.optionsForType('template', { instantiate: false });
 
-    if (isEnabled('ember-application-visit')) {
-      registry.register('-environment:main', environment, { instantiate: false });
-      registry.injection('view', '_environment', '-environment:main');
-      registry.injection('route', '_environment', '-environment:main');
-    }
-
     registry.register('application:main', namespace, { instantiate: false });
 
     registry.register('controller:basic', Controller, { instantiate: false });
