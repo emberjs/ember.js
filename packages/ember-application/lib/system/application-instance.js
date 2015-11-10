@@ -156,9 +156,8 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
       options = new BootOptions(options);
 
       let registry = this.__registry__;
-      let environment = options.toEnvironment();
 
-      registry.register('-environment:main', environment, { instantiate: false });
+      registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
       registry.injection('view', '_environment', '-environment:main');
       registry.injection('route', '_environment', '-environment:main');
 
