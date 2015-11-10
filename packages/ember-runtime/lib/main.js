@@ -69,6 +69,10 @@ import 'ember-runtime/ext/function'; // just for side effect of extending Functi
 import { isArray, typeOf } from 'ember-runtime/utils';
 
 import isEnabled from 'ember-metal/features';
+
+import RegistryProxyMixin from 'ember-runtime/mixins/registry_proxy';
+import ContainerProxyMixin from 'ember-runtime/mixins/container_proxy';
+
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -123,6 +127,9 @@ Ember.Registry = Registry;
 if (isEnabled('ember-container-inject-owner')) {
   Ember.getOwner = getOwner;
   Ember.setOwner = setOwner;
+
+  Ember._RegistryProxyMixin = RegistryProxyMixin;
+  Ember._ContainerProxyMixin = ContainerProxyMixin;
 }
 
 Ember.Namespace = Namespace;
