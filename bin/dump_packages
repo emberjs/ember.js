@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ "$CI" == "true" ]]; then
+  echo -e "DUMPING PACKAGES USED FOR THIS BUILD:\n\n"
+  npm list --json
+  echo -e "\n\n"
+fi

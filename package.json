@@ -5,7 +5,7 @@
   "scripts": {
     "build": "ember build --environment production",
     "postinstall": "bower install",
-    "pretest": "ember build",
+    "pretest": "bin/dump_packages && ember build",
     "test": "bin/run-tests.js",
     "test:sauce": "bin/run-sauce-tests.js",
     "test:testem": "testem -f testem.dist.json",
