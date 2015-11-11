@@ -1,9 +1,12 @@
 import {
   ATTRIBUTE_SYNTAX,
+  RenderResult,
   Block,
   Scope,
   Helper,
   Template,
+  TemplateEvaluation,
+  TemplateMorph,
   DOMHelper,
   Environment,
   Component,
@@ -13,6 +16,8 @@ import {
   ComponentDefinitionOptions,
   StatementSyntax,
   AttributeSyntax,
+  Jump,
+  JumpIf,
   OpenElement,
   BlockSyntax,
   ParamsAndHash,
@@ -31,6 +36,7 @@ import {
 import {
   Meta,
   ConstReference,
+  ChainableReference,
   setProperty as set
 } from 'htmlbars-reference';
 
@@ -226,6 +232,10 @@ export class DemoEnvironment extends Environment<DemoScopeOptions> {
       if (block.path.length === 1 && block.path[0] === 'each') {
         return new EachSyntax({ args: block.args, templates: block.templates });
       }
+
+      // if (block.path.length === 1 && block.path[0] === 'if') {
+      //   return new IfSyntax({ args: block.args, templates: block.templates });
+      // }
     }
 
     return super.statement(statement);
@@ -281,5 +291,162 @@ class EachSyntax extends StatementSyntax {
     let list = this.args.params.evaluate(frame).nth(0);
     let key = this.args.hash.evaluate(frame).at(LITERAL('key'));
     return stack.createContentMorph(MorphList, { key, reference: list, templates: this.templates }, frame);
+  }
+}
+
+class IfSyntax extends StatementSyntax {
+  type = "if-statement";
+
+  public args: ParamsAndHash;
+  public templates: Templates;
+  public isStatic = false;
+
+  constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
+    this.args = args;
+    this.templates = templates;
+  }
+
+  clone(): IfSyntax {
+    return new IfSyntax(this);
+  }
+
+  prettyPrint() {
+    return `#if ${this.args.prettyPrint()}`;
+  }
+
+  inline() {
+    // 1. OpenBlock
+    // 2. JumpIfTrue => 6
+    // 3. ...InverseStatements...
+    // 4. CloseBlock(inverse)
+    // 5. Jump => 8
+    // 6. ...DefaultStatements...
+    // 7. CloseBlock(default)
+    // 8. Noop
+
+    let { templates } = this;
+    let list = new LinkedList<StatementSyntax>();
+
+    // 1. OpenBlock
+    list.append(new OpenBlock());
+
+    // 4. CloseBlock(inverse)
+    let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
+    list.append(endElse);
+
+    // 7. CloseBlock(default)
+    let endIf = new CloseBlock({ syntax: this, template: templates.default })
+    list.append(endIf);
+
+    // 8. Noop
+    let end = new NoopSyntax()
+    list.append(end);
+
+    // 5. Jump => 8
+    let jump = new Jump({ jumpTo: end });
+    list.insertBefore(jump, endIf);
+
+    // 6. ...DefaultStatements...
+    templates.default.statements.forEachNode(n => {
+      list.insertBefore(n.clone(), endIf);
+    });
+
+    // 2. JumpIfTrue => 6
+    list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
+
+    // 3. ...InverseStatements...
+    if (templates.inverse) {
+      templates.inverse.statements.forEachNode(n => {
+        list.insertBefore(n.clone(), endElse);
+      });
+    }
+
+    console.log(list);
+    return list;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
+    let condition = this.args.params.evaluate(frame).nth(0);
+    return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
+  }
+}
+
+class NoopSyntax extends StatementSyntax {
+  clone(): NoopSyntax {
+    return new NoopSyntax();
+  }
+
+  evaluate() {}
+}
+
+class OpenBlock extends StatementSyntax {
+  clone(): OpenBlock {
+    return new OpenBlock();
+  }
+
+  evaluate(stack: ElementStack) {
+    stack.openBlock();
+  }
+}
+
+interface CloseBlockOptions {
+  syntax: StatementSyntax;
+  template: Template;
+}
+
+class CloseBlock extends StatementSyntax {
+  public syntax: StatementSyntax;
+  public template: Template;
+
+  constructor({ syntax, template }: CloseBlockOptions) {
+    super();
+    this.syntax = syntax;
+    this.template = template;
+  }
+
+  clone(): CloseBlock {
+    return new CloseBlock(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+    let result: RenderResult = stack.closeBlock(this.template);
+    let morph: TemplateMorph = this.syntax.evaluate(stack, frame, evaluation);
+    morph.willAppend(stack);
+
+    if (this.template) {
+      morph.setRenderResult(result);
+    } else {
+      morph.didBecomeEmpty();
+    }
+  }
+}
+
+interface IfOptions {
+  reference: ChainableReference;
+  templates: Templates;
+}
+
+class IfMorph extends TemplateMorph {
+  reference: ChainableReference;
+  templates: Templates;
+
+  init({ reference, templates }: IfOptions) {
+    this.reference = reference;
+    this.templates = templates;
+  }
+
+  append(stack: ElementStack) {
+    let { reference, templates } = this;
+    let value = reference.value();
+    this.template = value ? templates.default : templates.inverse;
+    super.append(stack);
+  }
+
+  update() {
+    let { reference, templates } = this;
+    let value = reference.value();
+    this.template = value ? templates.default : templates.inverse;
+    super.update();
   }
 }

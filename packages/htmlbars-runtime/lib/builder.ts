@@ -330,4 +330,4 @@ class BlockTracker {
   newMorph(morph: Morph) {
     this.morphs.push(morph);
   }
-}}
+}
