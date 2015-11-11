@@ -1,5 +1,5 @@
 import { Frame, Block } from './environment';
-import { ElementStack, Handler } from './builder';
+import { ElementStack } from './builder';
 import { Enumerable } from './utils';
 import DOMHelper from './dom';
 import Template, { EvaluatedParams } from './template';
@@ -259,7 +259,7 @@ export abstract class TemplateMorph extends EmptyableMorph {
     return super.lastNode();
   }
 
-  appendTemplate(template: Template, options: { nextSibling?: Node, handler?: Handler }) {
+  appendTemplate(template: Template, options: { nextSibling?: Node }) {
     if (!template || template.isEmpty) {
       this.didBecomeEmpty();
     } else {

@@ -8,7 +8,7 @@ import {
 } from './interfaces';
 
 import { TemplateMorph, ContentMorph } from '../morph';
-import { ElementStack, NullHandler } from '../builder';
+import { ElementStack } from '../builder';
 import { isWhitespace } from '../dom';
 
 export interface ComponentMorphOptions {
@@ -41,7 +41,7 @@ export default class ComponentMorph extends TemplateMorph {
     hooks.willRender(component);
     frame.didCreate(component, hooks);
 
-    super.appendTemplate(template, new ComponentHandler());
+    super.appendTemplate(template, {});
   }
 
   update() {
@@ -60,26 +60,26 @@ export default class ComponentMorph extends TemplateMorph {
   }
 }
 
-export class ComponentHandler extends NullHandler {
-  public rootElement: Element = null;
+// export class ComponentHandler extends NullHandler {
+//   public rootElement: Element = null;
 
-  willOpenElement(tag: string) {
-    if (this.rootElement) {
-      throw new Error("You cannot create multiple root elements in a component's layout");
-    }
-  }
+//   willOpenElement(tag: string) {
+//     if (this.rootElement) {
+//       throw new Error("You cannot create multiple root elements in a component's layout");
+//     }
+//   }
 
-  didOpenElement(element: Element) {
-    this.rootElement = element;
-  }
+//   didOpenElement(element: Element) {
+//     this.rootElement = element;
+//   }
 
-  willAppendText(text: string) {
-    if (isWhitespace(text)) return;
-    throw new Error("You cannot have non-whitespace text at the root of a component's layout");
-  }
+//   willAppendText(text: string) {
+//     if (isWhitespace(text)) return;
+//     throw new Error("You cannot have non-whitespace text at the root of a component's layout");
+//   }
 
-  willCreateContentMorph(Type: typeof ContentMorph, attrs: Object) {
-    if (Type.hasStaticElement) return;
-    throw new Error("You cannot have curlies (`{{}}`) at the root of a component's layout")
-  }
-}
+//   willCreateContentMorph(Type: typeof ContentMorph, attrs: Object) {
+//     if (Type.hasStaticElement) return;
+//     throw new Error("You cannot have curlies (`{{}}`) at the root of a component's layout")
+//   }
+// }

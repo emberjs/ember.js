@@ -70,6 +70,10 @@ export class LinkedList<T extends LinkedListNode> {
     end.next = reference;
   }
 
+  spliceList(list: LinkedList<T>, reference: LinkedListNode) {
+    this.splice(list.head(), list.tail(), reference);
+  }
+
   nextNode(node: T): T {
     let next = node.next;
     if (next === this._tail) return null;

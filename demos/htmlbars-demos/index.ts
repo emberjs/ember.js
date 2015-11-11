@@ -36,6 +36,7 @@ import {
 
 import {
   LITERAL,
+  LinkedList,
   InternedString,
   Dict,
   dict
@@ -86,7 +87,7 @@ class GlimmerAppendingComponent extends DemoAppendingComponent {
   }
 
   protected layoutWithAttrs(invokeFrame: Frame) {
-    let attrSyntax = this.attributes && <AttributeSyntax[]>this.attributes.statements;
+    let attrSyntax = this.attributes && <AttributeSyntax[]>this.attributes.statements.toArray();
     let outers = attrSyntax && attrSyntax.map(s => s.asEvaluated(invokeFrame));
     let identity = this.tag;
 
@@ -109,48 +110,55 @@ interface TemplateWithAttrsOptions {
 }
 
 function templateWithAttrs(template: Template, { defaults, outers, identity }: TemplateWithAttrsOptions): Template {
-  let out = [];
+  let out = new LinkedList<StatementSyntax>();
 
   let statements = template.statements;
-  let i = 0;
-  for (let l=statements.length; i<l; i++) {
-    let item = statements[i];
+  let current = statements.head();
+  let next;
 
-    if (item.type === 'open-element') {
-      let tag = <OpenElement>item;
-      if (tag.tag === identity) out.push(tag.toIdentity());
-      else out.push(tag);
+  while (current) {
+    next = statements.nextNode(current);
+
+    if (current.type === 'open-element') {
+      let tag = <OpenElement>current;
+      if (tag.tag === identity) out.append(tag.toIdentity());
+      else out.append(tag.clone());
       break;
-    } else if (item.type === 'open-primitive-element') {
-      out.push(item);
+    } else if (current.type === 'open-primitive-element') {
+      out.append(current.clone());
       break;
     }
 
-    out.push(item);
+    out.append(current.clone());
+    current = next;
   }
 
-  i++;
+  current = next;
+
   let seen = dict<boolean>();
   let attrs = [];
 
   if (outers) {
     outers.forEach(attr => {
       seen[attr.name] = true;
-      attrs.push(attr);
+      out.append(attr);
     });
   }
 
-  out.push(...attrs);
 
-  for (let l=statements.length; i<l; i++) {
-    let item = statements[i];
-    if (item.type === 'add-class') {
-      out.push(item);
-    } else if (item[ATTRIBUTE_SYNTAX]) {
-      if (!seen[(<AttributeSyntax>item).name]) {
-        out.push(item);
-        seen[(<AttributeSyntax>item).name] = true;
+  while (current) {
+    next = statements.nextNode(current);
+
+    if (current.type === 'add-class') {
+      out.append(current.clone());
+      current = next;
+    } else if (current[ATTRIBUTE_SYNTAX]) {
+      if (!seen[(<AttributeSyntax>current).name]) {
+        out.append(current.clone());
+        seen[(<AttributeSyntax>current).name] = true;
       }
+
+      current = next;
     } else {
       break;
     }
@@ -159,13 +167,17 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
   if (defaults) {
     defaults.forEach(item => {
       if (item.type !== 'add-class' && seen[item.name]) return;
-      out.push(item);
+      out.append(item);
     });
   }
 
-  out.push(...statements.slice(i));
+  while (current) {
+    next = statements.nextNode(current);
+    out.append(current.clone());
+    current = next;
+  }
 
-  return Template.fromStatements(out);
+  return Template.fromList(out);
 }
 
 interface DemoScopeOptions {
@@ -244,16 +256,21 @@ export class MyComponent implements Component {
 
 type EachOptions = { args: ParamsAndHash };
 
-class EachSyntax implements StatementSyntax {
+class EachSyntax extends StatementSyntax {
   type = "each-statement";
 
-  private args: ParamsAndHash;
-  private templates: Templates;
+  public args: ParamsAndHash;
+  public templates: Templates;
   public isStatic = false;
 
   constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
     this.args = args;
     this.templates = templates;
+  }
+
+  clone(): EachSyntax {
+    return new EachSyntax(this);
   }
 
   prettyPrint() {
