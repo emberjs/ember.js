@@ -38,6 +38,9 @@ import {
   AppendingComponentClass,
   ComponentHooks,
   Component,
+  JumpIf,
+  JumpUnless,
+  Jump,
   Scope,
   Block,
   NullHandler,
@@ -363,7 +366,6 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
     });
   }
 
-
   while (current) {
     next = statements.nextNode(current);
 
@@ -554,7 +556,6 @@ class CurlyComponent extends StatementSyntax {
     let hash = processPositionals(definition, args);
 
     stack.openComponent(definition, { tag: DIV, frame, templates, hash: hash.evaluate(frame) });
-    stack.closeElement();
   }
 }
 
@@ -641,14 +642,48 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  inline(stack: ElementStack, frame: Frame) {
-    let statements = new LinkedList<StatementSyntax>();
-  }
+  // inline() {
+  //   let { templates } = this;
+  //   let list = new LinkedList<StatementSyntax>();
+
+  //   let end = new NoopSyntax();
+
+  //   list.append(end);
+
+  //   if (templates.default) {
+  //     templates.default.statements.forEachNode(n => {
+  //       list.insertBefore(n.clone(), end);
+  //     });
+  //   }
+
+  //   let ifTrue = list.head();
+  //   let condition = new JumpIf({ condition: this.args.params.at(0), jumpTo: ifTrue });
+
+  //   list.insertBefore(condition, ifTrue);
+
+  //   if (templates.inverse) {
+  //     templates.inverse.statements.forEachNode(n => {
+  //       list.insertBefore(n.clone(), ifTrue);
+  //     });
+  //   }
+
+  //   list.insertBefore(new Jump({ jumpTo: end }), ifTrue);
+
+  //   return list;
+  // }
 
   evaluate(stack: ElementStack, frame: Frame): ContentMorph {
     let condition = this.args.params.evaluate(frame).nth(0);
     return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
   }
+}
+
+class NoopSyntax extends StatementSyntax {
+  clone(): NoopSyntax {
+    return new NoopSyntax();
+  }
+
+  evaluate() {}
 }
 
 interface IfOptions {

@@ -21,6 +21,9 @@ export {
   OpenElement,
   Helper as HelperSyntax,
   Block as BlockSyntax,
+  Jump,
+  JumpIf,
+  JumpUnless,
   builders
 } from './lib/template';
 

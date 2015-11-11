@@ -1,4 +1,3 @@
-import { TopLevelOperations, Handler } from './builder';
 import { RenderResult } from './render';
 import { Frame } from './environment';
 import {
@@ -151,14 +150,12 @@ export default class Template {
     return new RenderResult({ morphs, scope, bounds, template: this });
   }
 
-  private topLevel(morph: ContentMorph, options: { nextSibling?: Node, handler?: Handler }=null): { stack: ElementStack, frame: Frame } {
+  private topLevel(morph: ContentMorph, options: { nextSibling?: Node }=null): { stack: ElementStack, frame: Frame } {
     let nextSibling = options && options.nextSibling;
-    let handler = options && options.handler;
 
     let frame = morph.frame;
 
     let stack = new ElementStack({ parentNode: morph.parentNode, nextSibling, dom: frame.dom() });
-    if (handler) stack.addTopLevelHandler(handler);
 
     return { stack, frame };
   }
@@ -167,12 +164,12 @@ export default class Template {
     TemplateEvaluation.evaluate(this, stack, frame);
   }
 
-  evaluation(morph: ContentMorph, options: { nextSibling?: Node, handler?: Handler }=null): TemplateEvaluation {
+  evaluation(morph: ContentMorph, options: { nextSibling?: Node }=null): TemplateEvaluation {
     let { stack, frame } = this.topLevel(morph, options);
     return new TemplateEvaluation(this, stack, frame);
   }
 
-  evaluate(morph: ContentMorph, options: { nextSibling?: Node, handler?: Handler }=null): RenderResult {
+  evaluate(morph: ContentMorph, options: { nextSibling?: Node }=null): RenderResult {
     let { stack, frame } = this.topLevel(morph, options);
     return this.evaluateWithStack(stack, morph.frame);
   }
@@ -221,14 +218,26 @@ export class TemplateEvaluation {
     while (!this.next());
   }
 
+  goto(position: StatementSyntax) {
+    this.current = position;
+  }
+
   next(): boolean {
     let { current, statements, stack, frame } = this;
     if (current === null) return true;
 
     this.current = statements.nextNode(current);
-
     stack.appendStatement(current, frame, this);
+
     return false;
+  }
+
+  splice(inlined: LinkedList<StatementSyntax>) {
+    let { statements, current } = this;
+    let head = inlined.head();
+    statements.spliceList(inlined, current);
+    statements.remove(statements.prevNode(current));
+    this.current = head;
   }
 
   takeHash(): LinkedList<AttributeSyntax> {
@@ -266,7 +275,7 @@ export class TemplateEvaluation {
       current = next;
     }
 
-    this.current = current;
+    this.current = statements.nextNode(current);
     return out;
   }
 }
@@ -335,6 +344,10 @@ export abstract class StatementSyntax extends Syntax<StatementSyntax> {
   public prev: StatementSyntax = null;
 
   abstract clone(): StatementSyntax;
+
+  inline(): LinkedList<StatementSyntax> {
+    return null;
+  }
 }
 
 export abstract class StaticStatementSyntax extends StatementSyntax implements PrettyPrintable {
@@ -955,28 +968,83 @@ export class CloseElementMorph extends Morph {
   }
 }
 
-interface JumpIfEqualOptions {
-  condition: ExpressionSyntax;
-  ifTrue: StatementSyntax;
+interface JumpOptions {
+  jumpTo: StatementSyntax;
 }
 
-export class JumpIfEqual extends StatementSyntax {
-  public condition: ExpressionSyntax;
-  public ifTrue: StatementSyntax;
+export class Jump extends StatementSyntax {
+  public jumpTo: StatementSyntax;
 
-  constructor({ condition, ifTrue }: JumpIfEqualOptions) {
+  constructor({ jumpTo }: JumpOptions) {
     super();
-    this.condition = condition;
-    this.ifTrue = ifTrue;
+    this.jumpTo = jumpTo;
   }
 
-  clone(): JumpIfEqual {
-    return new JumpIfEqual(this);
+  clone(): Jump {
+    return new Jump(this);
   }
 
   evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+    evaluation.goto(this.jumpTo);
   }
 }
+
+interface JumpIfOptions {
+  condition: ExpressionSyntax;
+  jumpTo: StatementSyntax;
+}
+
+export class JumpIf extends StatementSyntax {
+  public condition: ExpressionSyntax;
+  public jumpTo: StatementSyntax;
+
+  constructor({ condition, jumpTo }: JumpIfOptions) {
+    super();
+    this.condition = condition;
+    this.jumpTo = jumpTo;
+  }
+
+  clone(): JumpIf {
+    return new JumpIf(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+    let value = this.condition.evaluate(frame).value();
+
+    if (value) {
+      evaluation.goto(this.jumpTo);
+    }
+  }
+}
+
+interface JumpUnlessOptions {
+  condition: ExpressionSyntax;
+  jumpTo: StatementSyntax;
+}
+
+export class JumpUnless extends StatementSyntax {
+  public condition: ExpressionSyntax;
+  public jumpTo: StatementSyntax;
+
+  constructor({ condition, jumpTo }: JumpUnlessOptions) {
+    super();
+    this.condition = condition;
+    this.jumpTo = jumpTo;
+  }
+
+  clone(): JumpUnless {
+    return new JumpUnless(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+    let value = this.condition.evaluate(frame).value();
+
+    if (!value) {
+      evaluation.goto(this.jumpTo);
+    }
+  }
+}
+
 
 class NoopMorph extends CloseElementMorph {
   init() {}

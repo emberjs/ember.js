@@ -190,9 +190,9 @@ export abstract class Environment<T extends Object> {
       let helper = append.value.type === 'helper' ? <HelperSyntax>append.value : null;
 
       if (unknown && unknown.simplePath() === 'yield') {
-        return new YieldSyntax(null);
+        return new YieldSyntax({ args: null });
       } else if (helper && helper.ref.simplePath() === 'yield') {
-        return new YieldSyntax(helper.args);
+        return new YieldSyntax({ args: helper.args });
       }
     }
 
@@ -235,13 +235,18 @@ export abstract class Environment<T extends Object> {
   abstract getComponentDefinition(scope: Scope<T>, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
 }
 
-class YieldSyntax implements StatementSyntax {
+class YieldSyntax extends StatementSyntax {
   type = "yield";
   isStatic = false;
-  private args: ParamsAndHash;
+  public args: ParamsAndHash;
 
-  constructor(args: ParamsAndHash) {
+  constructor({ args }: { args: ParamsAndHash }) {
+    super();
     this.args = args;
+  }
+
+  clone(): YieldSyntax {
+    return new YieldSyntax(this);
   }
 
   prettyPrint() {
