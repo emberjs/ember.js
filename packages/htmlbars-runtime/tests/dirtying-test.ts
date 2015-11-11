@@ -67,6 +67,24 @@ test("a simple implementation of a dirtying rerender without inverse", function(
   equalTokens(root, '<div><p>hello world</p></div>', "If the condition is true, the morph repopulates");
 });
 
+test("a conditional that is false on the first run", assert => {
+  var object = { condition: false, value: 'hello world' };
+  var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
+  var result = render(template, object);
+
+  equalTokens(root, '<div><!----></div>', "Initial render");
+
+  object.condition = true;
+
+  result.rerender();
+  equalTokens(root, '<div><p>hello world</p></div>', "If the condition is true, the morph populates");
+
+  object.condition = false;
+
+  result.rerender();
+  equalTokens(root, '<div><!----></div>', "If the condition is false, the morph is empty");
+});
+
 test("block helpers whose template has a morph at the edge", function() {
   env.registerHelper('id', function(params, hash, options) {
     return options.template.yield();

@@ -124,19 +124,19 @@ export abstract class EmptyableMorph extends ContentMorph implements Bounds {
     return this.createStack(nextSibling);
   }
 
-  protected willAppend(stack: ElementStack) {
+  willAppend(stack: ElementStack) {
     this.currentOperations = new Appending(this, this.frame.dom(), stack);
   }
 
-  protected didBecomeEmpty() {
+  didBecomeEmpty() {
     this.currentOperations.didBecomeEmpty();
   }
 
-  protected nextSiblingForContent(): Node {
+  nextSiblingForContent(): Node {
     return this.currentOperations.nextSiblingForContent();
   }
 
-  protected didInsertContent(bounds: Bounds) {
+  didInsertContent(bounds: Bounds) {
     this.currentOperations.didInsertContent(bounds);
   }
 }
@@ -248,6 +248,12 @@ class HasContent extends EmptyableMorphOperations {
 export abstract class TemplateMorph extends EmptyableMorph {
   protected lastResult: RenderResult = null;
   protected template: Template = null;
+
+  setRenderResult(result: RenderResult) {
+    this.lastResult = result;
+    this.template = result.template;
+    this.didInsertContent(result);
+  }
 
   firstNode(): Node {
     if (this.lastResult) return this.lastResult.firstNode();
