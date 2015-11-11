@@ -232,11 +232,11 @@ export class TemplateEvaluation {
     return false;
   }
 
-  splice(inlined: LinkedList<StatementSyntax>) {
+  splice(inlined: LinkedList<StatementSyntax>, reference: StatementSyntax) {
     let { statements, current } = this;
     let head = inlined.head();
     statements.spliceList(inlined, current);
-    statements.remove(statements.prevNode(current));
+    statements.remove(reference);
     this.current = head;
   }
 

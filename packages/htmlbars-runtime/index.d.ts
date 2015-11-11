@@ -2,6 +2,7 @@ export {
   default as Template,
   ATTRIBUTE_SYNTAX,
   Templates,
+  TemplateEvaluation,
   StatementSyntax,
   ParamsAndHash,
   Params,

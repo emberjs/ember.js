@@ -1,5 +1,6 @@
 import {
   ATTRIBUTE_SYNTAX,
+  RenderResult,
   Environment,
   DOMHelper,
   StatementSyntax,
@@ -15,6 +16,7 @@ import {
   MorphListOptions,
   Template,
   Templates,
+  TemplateEvaluation,
   Append,
   Unknown,
   Hash,
@@ -642,37 +644,57 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  // inline() {
-  //   let { templates } = this;
-  //   let list = new LinkedList<StatementSyntax>();
+  inline() {
+    // 1. OpenBlock
+    // 2. JumpIfTrue => 6
+    // 3. ...InverseStatements...
+    // 4. CloseBlock(inverse)
+    // 5. Jump => 8
+    // 6. ...DefaultStatements...
+    // 7. CloseBlock(default)
+    // 8. Noop
 
-  //   let end = new NoopSyntax();
+    let { templates } = this;
+    let list = new LinkedList<StatementSyntax>();
 
-  //   list.append(end);
+    // 1. OpenBlock
+    list.append(new OpenBlock());
 
-  //   if (templates.default) {
-  //     templates.default.statements.forEachNode(n => {
-  //       list.insertBefore(n.clone(), end);
-  //     });
-  //   }
+    // 4. CloseBlock(inverse)
+    let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
+    list.append(endElse);
 
-  //   let ifTrue = list.head();
-  //   let condition = new JumpIf({ condition: this.args.params.at(0), jumpTo: ifTrue });
+    // 7. CloseBlock(default)
+    let endIf = new CloseBlock({ syntax: this, template: templates.default })
+    list.append(endIf);
 
-  //   list.insertBefore(condition, ifTrue);
+    // 8. Noop
+    let end = new NoopSyntax()
+    list.append(end);
 
-  //   if (templates.inverse) {
-  //     templates.inverse.statements.forEachNode(n => {
-  //       list.insertBefore(n.clone(), ifTrue);
-  //     });
-  //   }
+    // 5. Jump => 8
+    let jump = new Jump({ jumpTo: end });
+    list.insertBefore(jump, endIf);
 
-  //   list.insertBefore(new Jump({ jumpTo: end }), ifTrue);
+    // 6. ...DefaultStatements...
+    templates.default.statements.forEachNode(n => {
+      list.insertBefore(n.clone(), endIf);
+    });
 
-  //   return list;
-  // }
+    // 2. JumpIfTrue => 6
+    list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
 
-  evaluate(stack: ElementStack, frame: Frame): ContentMorph {
+    // 3. ...InverseStatements...
+    if (templates.inverse) {
+      templates.inverse.statements.forEachNode(n => {
+        list.insertBefore(n.clone(), endElse);
+      });
+    }
+
+    return list;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
     let condition = this.args.params.evaluate(frame).nth(0);
     return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
   }
@@ -684,6 +706,48 @@ class NoopSyntax extends StatementSyntax {
   }
 
   evaluate() {}
+}
+
+class OpenBlock extends StatementSyntax {
+  clone(): OpenBlock {
+    return new OpenBlock();
+  }
+
+  evaluate(stack: ElementStack) {
+    stack.openBlock();
+  }
+}
+
+interface CloseBlockOptions {
+  syntax: StatementSyntax;
+  template: Template;
+}
+
+class CloseBlock extends StatementSyntax {
+  public syntax: StatementSyntax;
+  public template: Template;
+
+  constructor({ syntax, template }: CloseBlockOptions) {
+    super();
+    this.syntax = syntax;
+    this.template = template;
+  }
+
+  clone(): CloseBlock {
+    return new CloseBlock(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+    let result: RenderResult = stack.closeBlock(this.template);
+    let morph: TemplateMorph = this.syntax.evaluate(stack, frame, evaluation);
+    morph.willAppend(stack);
+
+    if (this.template) {
+      morph.setRenderResult(result);
+    } else {
+      morph.didBecomeEmpty();
+    }
+  }
 }
 
 interface IfOptions {

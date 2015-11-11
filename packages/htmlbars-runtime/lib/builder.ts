@@ -3,6 +3,7 @@ import {
   ConcreteBounds,
   Morph,
   ContentMorph,
+  TemplateMorph,
   MorphSpecializer,
   BlockInvocationMorph,
   createMorph
@@ -16,7 +17,7 @@ import {
 
 import { Frame, Block } from './environment';
 import DOMHelper from './dom';
-import {
+import Template, {
   DynamicStatementSyntax,
   StaticStatementSyntax,
   StatementSyntax,
@@ -27,6 +28,7 @@ import {
   Hash,
   ATTRIBUTE_SYNTAX
 } from './template'
+import { RenderResult } from './render';
 import { InternedString, Dict, intern, dict } from 'htmlbars-util';
 import { RootReference, ChainableReference, NotifiableReference, PushPullReference, Destroyable } from 'htmlbars-reference';
 
@@ -141,6 +143,19 @@ export class ElementStack {
     return topElement;
   }
 
+  private pushBlock() {
+    let tracker = new BlockTracker();
+    this.blockStack.push(tracker);
+    this.blockElement = tracker;
+  }
+
+  private popBlock() {
+    let tracker = this.blockStack.pop();
+    this.blockElement = this.blockStack[this.blockStack.length - 1];
+    if (this.blockElement === undefined) debugger;
+    return tracker;
+  }
+
   bounds(): Bounds {
     let { first, last } = this.blockElement;
     let { element } = this;
@@ -166,7 +181,7 @@ export class ElementStack {
 
     let inlined = refinedStatement.inline();
     if (inlined) {
-      evaluation.splice(inlined);
+      evaluation.splice(inlined, statement);
       return;
     }
 
@@ -198,6 +213,18 @@ export class ElementStack {
 
     this.blockElement.newMorph(morph);
     morph.append(this);
+  }
+
+  openBlock() {
+    this.pushBlock();
+  }
+
+  closeBlock(template: Template) {
+    let bounds = this.bounds();
+    let morphs = this.morphList();
+    this.popBlock();
+
+    return new RenderResult({ template, bounds, morphs, scope: null });
   }
 
   createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {
@@ -264,6 +291,8 @@ export class ElementStack {
 }
 
 class BlockTracker {
+  public template: Template;
+
   public first: FirstNode = null;
   public last: LastNode = null;
   public morphs: Morph[] = [];
@@ -301,8 +330,4 @@ class BlockTracker {
   newMorph(morph: Morph) {
     this.morphs.push(morph);
   }
-}
-
-class ComponentTracker extends BlockTracker {
-  closeElement() {}
-}
+}}
