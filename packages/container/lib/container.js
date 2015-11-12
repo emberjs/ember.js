@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
 import { setOwner } from './owner';
@@ -347,9 +347,9 @@ function injectDeprecatedContainer(object, container) {
     configurable: true,
     enumerable: false,
     get() {
-      Ember.deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
-                      false,
-                      { id: 'ember-application.injected-container', until: '3.0.0' });
+      deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
+                false,
+                { id: 'ember-application.injected-container', until: '3.0.0' });
       return container;
     }
   });
