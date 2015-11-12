@@ -8,6 +8,10 @@ import ComponentLookup from "ember-views/component_lookup";
 import TextField from 'ember-views/views/text_field';
 import Checkbox from 'ember-views/views/checkbox';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
+import {
+  disableInputTypeChanging,
+  resetInputTypeChanging
+} from 'ember-views/system/build-component-template';
 
 var view;
 var controller, registry, container;
@@ -269,6 +273,8 @@ QUnit.module("{{input type='text'}} - dynamic type in IE8 safe environment", {
   setup() {
     commonSetup();
 
+    disableInputTypeChanging();
+
     controller = {
       someProperty: 'password',
       ie8Safe: true
@@ -277,13 +283,15 @@ QUnit.module("{{input type='text'}} - dynamic type in IE8 safe environment", {
     view = View.extend({
       container: container,
       controller: controller,
-      template: compile('{{input type=someProperty ie8SafeInput=true}}')
+      template: compile('{{input type=someProperty}}')
     }).create();
 
     runAppend(view);
   },
 
   teardown() {
+    resetInputTypeChanging();
+
     runDestroy(view);
     runDestroy(container);
   }
