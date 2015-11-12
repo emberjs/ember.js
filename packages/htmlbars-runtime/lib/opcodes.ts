@@ -30,7 +30,6 @@ export interface PrettyPrintable {
 
 export interface ExpressionSyntax {
   type: string;
-  isStatic: boolean;
   evaluate(frame: Frame): ChainableReference;
   prettyPrint(): any;
 }

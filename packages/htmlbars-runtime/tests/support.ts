@@ -5,6 +5,7 @@ import {
   DOMHelper,
   StatementSyntax,
   Params,
+  Evaluate,
   EvaluatedParams,
   EvaluatedParamsAndHash,
   ParamsAndHash,
@@ -37,6 +38,8 @@ import {
   PushChildScope,
   PushRootScope,
   PopScope,
+  Deref,
+  GetLocal,
   ComponentClass,
   ComponentDefinition,
   ComponentDefinitionOptions,
@@ -57,7 +60,7 @@ import {
   appendComponent
 } from "htmlbars-runtime";
 import { compile as rawCompile } from "htmlbars-compiler";
-import { LITERAL, LinkedList, Dict, InternedString, dict, assign, intern } from 'htmlbars-util';
+import { LITERAL, LinkedList, Dict, InternedString, dict, assign, intern, symbol } from 'htmlbars-util';
 
 import { Meta, ConstReference, ChainableReference, setProperty as set } from "htmlbars-reference";
 
@@ -761,54 +764,67 @@ class WithSyntax extends StatementSyntax {
 
   inline() {
     // 1.  OpenBlock
-    // 2.  JumpIf => 6
-    // 3.  ...InverseStatements...
-    // 4.  CloseBlock(inverse)
-    // 5.  Jump => 10
-    // 6.  PushChildScope({ localNames, blockArguments })
-    // 7.  ...DefaultStatements...
-    // 8.  PopScope
-    // 9.  CloseBlock(default)
-    // 10. Noop
+    // 2.  Evaluate($params, blockArguments)
+    // 3.  Evaluate($condition, Deref($params, "0"))
+    // 4.  JumpIf($condition) => 8
+    // 5.  ...InverseStatements...
+    // 6.  CloseBlock(inverse)
+    // 7.  Jump => 12
+    // 8.  PushChildScope({ localNames, $params })
+    // 9.  ...DefaultStatements...
+    // 10. PopScope
+    // 11. CloseBlock(default)
+    // 12. Noop
 
     let { templates } = this;
     let list = new LinkedList<StatementSyntax>();
+    let $params = symbol("params");
+    let $condition = symbol("condition");
 
     // 1. OpenBlock
     list.append(new OpenBlock());
 
-    // 4. CloseBlock(inverse)
+    // 2. Evaluate($params, blockArguments)
+    list.append(new Evaluate({ name: $params, syntax: this.args.params }));
+
+    // 3. Evaluate($condition, Deref($params, "0"))
+    list.append(new Evaluate({ name: $condition, syntax: new Deref({ parent: $params, name: LITERAL('0') }) }));
+
+    // 6. CloseBlock(inverse)
     let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
     list.append(endElse);
 
-    // 9. CloseBlock(default)
+    // 11. CloseBlock(default)
     let endIf = new CloseBlock({ syntax: this, template: templates.default })
     list.append(endIf);
 
-    // 10. Noop
+    // 12. Noop
     let end = new NoopSyntax()
     list.append(end);
 
-    // 5. Jump => 10
+    // 7. Jump => 12
     let jump = new Jump({ jumpTo: end });
     list.insertBefore(jump, endIf);
 
-    // 6. PushChildScope({ localNames, blockArguments })
+    // 8. PushChildScope({ localNames, $params })
     list.insertBefore(new PushChildScope({
       localNames: templates.default.locals,
-      blockArguments: this.args.params
+      blockArguments: new GetLocal({ name: $params })
     }), endIf);
 
-    // 7. ...DefaultStatements...
+    // 9. ...DefaultStatements...
     templates.default.statements.forEachNode(n => {
       list.insertBefore(n.clone(), endIf);
     });
 
-    // 8. PopScope
+    // 10. PopScope
     list.insertBefore(new PopScope(), endIf);
 
-    // 2. JumpIf => 6
-    list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
+    // 4. JumpIf => 8
+    list.insertBefore(new JumpIf({
+      condition: new GetLocal({ name: $condition }),
+      jumpTo: list.nextNode(jump)
+    }), endElse);
 
     // 3. ...InverseStatements...
     if (templates.inverse) {

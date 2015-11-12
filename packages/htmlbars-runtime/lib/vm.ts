@@ -35,6 +35,10 @@ export class VM<T> {
     this.frameStack.tail().goto(statement);
   }
 
+  scope(): Scope<T> {
+    return this.currentScope;
+  }
+
   dupScope() {
     return this.pushScope(this.currentScope);
   }
