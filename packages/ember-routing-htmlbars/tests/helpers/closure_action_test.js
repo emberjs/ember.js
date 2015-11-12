@@ -381,6 +381,37 @@ QUnit.test('action can create closures over actions with target', function(asser
   });
 });
 
+QUnit.test('action can create closures over functions with target', function(assert) {
+  assert.expect(1);
+
+  innerComponent = EmberComponent.extend({
+    fireAction() {
+      this.attrs.submit();
+    }
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view innerComponent submit=(action otherComponent.outerAction target=otherComponent)}}
+      `),
+    innerComponent,
+    otherComponent: computed(function() {
+      var obj = {
+        outerAction() {
+          assert.ok(this === obj, 'action called on otherComponent with correct context');
+        }
+      };
+      return obj;
+    })
+  }).create();
+
+  runAppend(outerComponent);
+
+  run(function() {
+    innerComponent.fireAction();
+  });
+});
+
 QUnit.test('value can be used with action over actions', function(assert) {
   assert.expect(1);
 

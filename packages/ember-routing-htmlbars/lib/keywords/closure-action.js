@@ -45,6 +45,12 @@ export default function closureAction(morph, env, scope, params, hash, template,
         if (!action) {
           throw new EmberError(`An action named '${actionName}' was not found in ${target}.`);
         }
+      } else if (actionType === 'function') {
+        // on-change={{action setName}}
+        if (hash.target) {
+          // on-change={{action alternativeComponent.setName target=alternativeComponent}}
+          target = read(hash.target);
+        }
       } else if (actionType !== 'function') {
         throw new EmberError(`An action could not be made for \`${rawAction.label}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${rawAction.label}')\`) or a function available in ${target}.`);
       }
