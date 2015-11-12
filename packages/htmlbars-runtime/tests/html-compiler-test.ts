@@ -1,4 +1,4 @@
-import { compile } from "htmlbars-compiler";
+import { compile as rawCompile } from "htmlbars-compiler";
 import { forEach } from "htmlbars-util";
 import { normalizeInnerHTML, getTextContent, equalTokens } from "htmlbars-test-helpers";
 import { TestEnvironment } from "./support";
@@ -13,8 +13,12 @@ function registerYieldingHelper(name) {
   env.registerHelper(name, function(params, hash, blocks) { return blocks.template.yield(); });
 }
 
+function compile(template: string) {
+  return rawCompile(template, { disableComponentGeneration: true });
+}
+
 function compilesTo(html: string, expected: string=html, context: any={}) {
-  var template = compile(html, {});
+  var template = compile(html);
   root = rootElement();
   render(template, context);
   equalTokens(root, expected);
@@ -119,7 +123,7 @@ test("unquoted attribute expression is string", function() {
 });
 
 test("unquoted attribute expression works when followed by another attribute", function() {
-  var template = compile('<div foo={{funstuff}} name="Alice"></div>');
+  var template = compile('<div foo="{{funstuff}}" name="Alice"></div>');
   render(template, {funstuff: "oh my"});
 
   equalTokens(root, '<div name="Alice" foo="oh my"></div>');

@@ -46,6 +46,11 @@ abstract class AppendingComponent implements IAppendingComponent {
     this.tag = tag;
   }
 
+  // <my-component>{{foo}}</my-component>
+  // <my-component></my-component> <my-component /> "empty"
+  // {{#my-component}}{{/my-component}} "not empty"
+  // {{my-component}} "empty"
+
   process(): TemplateMorph {
     let { stack, frame, templates, hash } = this;
 

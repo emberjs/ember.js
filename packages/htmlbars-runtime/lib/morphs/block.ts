@@ -4,8 +4,9 @@ import { ChainableReference, ConstReference } from 'htmlbars-reference';
 import { assert } from "htmlbars-util";
 import Template, { EvaluatedParamsAndHash, Templates } from '../template';
 import { ElementStack } from '../builder';
-import { Helper, Frame } from '../environment';
+import { Helper, Frame, Scope } from '../environment';
 import { RenderResult } from '../render';
+import { VM } from '../vm';
 
 export interface BlockHelperOptions {
   helper: ConstReference<Helper>,
@@ -25,12 +26,12 @@ export class BlockHelperMorph extends TemplateMorph {
     this.templates = templates;
   }
 
-  append(stack: ElementStack) {
+  append(stack: ElementStack, vm: VM<any>) {
     this.willAppend(stack);
     let helper = this.helper.value();
     let { params, hash } = this.args.value();
     let { default: _default, inverse } = this.templates;
-    let group = this.group = new Group(this, stack, _default, inverse);
+    let group = this.group = new Group(this, stack, vm, _default, inverse);
     helper(params, hash, group);
 
     group.commitAppend(stack);
@@ -43,6 +44,14 @@ export class BlockHelperMorph extends TemplateMorph {
 
     this.group.commitUpdate();
   }
+
+  protected setupScope(attrs: any) {
+    this.frame.childScope().init(attrs);
+  }
+
+  protected updateScope(attrs: any) {
+    this.frame.scope().update(attrs);
+  }
 }
 
 class Group {
@@ -51,12 +60,14 @@ class Group {
   private stack: ElementStack;
   private comment: Comment = null;
   private morph: BlockHelperMorph;
+  public vm: VM<any>;
 
-  constructor(morph: BlockHelperMorph, stack: ElementStack, template: Template, inverse: Template) {
+  constructor(morph: BlockHelperMorph, stack: ElementStack, vm: VM<any>, template: Template, inverse: Template) {
     this.template = new YieldableTemplate(template, morph, this);
     this.inverse = new YieldableTemplate(inverse, morph, this);
     this.stack = stack;
     this.morph = morph;
+    this.vm = vm;
   }
 
   commit(): boolean {
@@ -68,6 +79,7 @@ class Group {
 
   commitAppend(stack: ElementStack) {
     let rendered = this.commit();
+    this.vm = null;
     if (!rendered) this.morph.didBecomeEmpty();
   }
 
@@ -76,12 +88,12 @@ class Group {
     if (!rendered) this.morph.didBecomeEmpty();
   }
 
-  appendTemplate(template: Template) {
-    this.morph.appendTemplate(template, this.stack.nextSibling);
+  appendTemplate(template: Template, attrs: Object) {
+    this.morph.appendTemplate(template, this.vm, attrs);
   }
 
-  updateTemplate(template: Template) {
-    this.morph.updateTemplate(template);
+  updateTemplate(template: Template, attrs: Object) {
+    this.morph.updateTemplate(template, attrs);
   }
 }
 
@@ -110,17 +122,13 @@ class YieldableTemplate  {
   }
 
   append(blockArguments: any[]=null, self: any=undefined) {
-    if (blockArguments || self) {
-      let childScope = this.morph.frame.childScope(this.template.locals);
-      if (self !== undefined) childScope.bindSelf(self);
-      if (blockArguments) childScope.bindLocals(blockArguments);
-    }
-
-    this.group.appendTemplate(this.template);
+    let localNames = this.template.locals;
+    this.group.appendTemplate(this.template, { self, localNames, blockArguments });
   }
 
   update(blockArguments: any[]=null, self: any=undefined) {
-    this.group.updateTemplate(this.template);
+    let localNames = this.template.locals;
+    this.group.updateTemplate(this.template, { self, localNames, blockArguments });
   }
 
   yield(blockArguments: any[]=null, self: any=undefined) {

@@ -1,9 +1,10 @@
-import { Frame, Block } from './environment';
+import { Frame, Block, Scope } from './environment';
 import { ElementStack } from './builder';
 import { Enumerable } from './utils';
 import DOMHelper from './dom';
 import Template, { EvaluatedParams } from './template';
 import { RenderResult } from './render';
+import { VM } from './vm';
 import { RootReference } from 'htmlbars-reference';
 
 export interface MorphSpecializer<T extends Morph, InitOptions> {
@@ -59,7 +60,7 @@ export abstract class Morph implements HasParentNode {
     This method gets called during the initial render process. A morph should
     append its contents to the stack.
   */
-  abstract append(stack: ElementStack);
+  abstract append(stack: ElementStack, vm: VM<any>);
 
   /**
     This method gets called during rerenders. A morph is responsible for
@@ -265,39 +266,52 @@ export abstract class TemplateMorph extends EmptyableMorph {
     return super.lastNode();
   }
 
-  appendTemplate(template: Template, options: { nextSibling?: Node }) {
+  protected setupScope(attrs: Object) {}
+
+  protected updateScope(attrs: Object) {}
+
+  appendTemplate(template: Template, vm: VM<any>, attrs: Object) {
+    this.setupScope(attrs);
+
     if (!template || template.isEmpty) {
       this.didBecomeEmpty();
     } else {
-      let result = this.lastResult = template.evaluate(this, options);
-      this.didInsertContent(result);
+      vm.pushScope(this.frame.scope());
+      vm.invoke(template, this);
     }
   }
 
-  append(stack: ElementStack) {
+  append(stack: ElementStack, vm: VM<any>) {
     this.willAppend(stack);
-    this.appendTemplate(this.template, { nextSibling: stack.nextSibling });
+    this.appendTemplate(this.template, vm, null);
   }
 
-  updateTemplate(template: Template) {
-    let { lastResult } = this;
+  updateTemplate(template: Template, attrs: Object) {
+    let { lastResult, parentNode, frame } = this;
 
-    if (!lastResult) {
-      let nextSibling = this.nextSiblingForContent();
-      this.appendTemplate(template, { nextSibling });
-      return;
-    }
+    this.updateScope(attrs);
 
-    if (template === lastResult.template) {
-      lastResult.rerender();
+    if (!lastResult || template !== lastResult.template) {
+      this.replaceTemplate(template);
     } else {
-      let nextSibling = this.nextSiblingForContent();
-      this.appendTemplate(template, { nextSibling });
+      lastResult.rerender();
+    }
+  }
+
+  replaceTemplate(template: Template) {
+    let { lastResult, parentNode, frame } = this;
+
+    let nextSibling = this.nextSiblingForContent();
+    if (!template || template.isEmpty) {
+      this.didBecomeEmpty();
+    } else {
+      let vm = frame.newVM(parentNode, nextSibling);
+      this.setRenderResult(vm.execute(template));
     }
   }
 
   update() {
-    this.updateTemplate(this.template);
+    this.updateTemplate(this.template, null);
   }
 
   didBecomeEmpty() {
@@ -337,10 +351,10 @@ export class BlockWithParamsMorph extends BlockInvocationMorph {
     this.blockArguments = blockArguments;
   }
 
-  append(stack: ElementStack) {
+  append(stack: ElementStack, vm: VM<any>) {
     this.frame.childScope(this.template.locals);
     this.frame.scope().bindLocalReferences(<RootReference[]>this.blockArguments.references);
-    super.append(stack);
+    super.append(stack, vm);
   }
 }
 
@@ -409,11 +423,6 @@ export function insertBoundsBefore(parent: Element, bounds: Bounds, reference: B
     if (current === last) break;
     current = current.nextSibling;
   }
-}
-
-export function renderIntoBounds(template: Template, bounds: Bounds, morph: ContentMorph) {
-  let nextSibling = clear(bounds);
-  return template.evaluate(morph, { nextSibling });
 }
 
 export function clear(bounds: Bounds) {

@@ -45,7 +45,7 @@ import {
   Jump,
   Scope,
   Block,
-  NullHandler,
+  VM,
   builders,
   isWhitespace,
   createMorph,
@@ -705,7 +705,9 @@ class NoopSyntax extends StatementSyntax {
     return new NoopSyntax();
   }
 
-  evaluate() {}
+  evaluate() {
+    return null;
+  }
 }
 
 class OpenBlock extends StatementSyntax {
@@ -715,6 +717,7 @@ class OpenBlock extends StatementSyntax {
 
   evaluate(stack: ElementStack) {
     stack.openBlock();
+    return null;
   }
 }
 
@@ -737,9 +740,9 @@ class CloseBlock extends StatementSyntax {
     return new CloseBlock(this);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
     let result: RenderResult = stack.closeBlock(this.template);
-    let morph: TemplateMorph = this.syntax.evaluate(stack, frame, evaluation);
+    let morph = <TemplateMorph>this.syntax.evaluate(stack, frame, vm);
     morph.willAppend(stack);
 
     if (this.template) {
@@ -747,6 +750,8 @@ class CloseBlock extends StatementSyntax {
     } else {
       morph.didBecomeEmpty();
     }
+
+    return null;
   }
 }
 
@@ -764,11 +769,11 @@ class IfMorph extends TemplateMorph {
     this.templates = templates;
   }
 
-  append(stack: ElementStack) {
+  append(stack: ElementStack, vm: VM<any>) {
     let { reference, templates } = this;
     let value = reference.value();
     this.template = value ? templates.default : templates.inverse;
-    super.append(stack);
+    super.append(stack, vm);
   }
 
   update() {

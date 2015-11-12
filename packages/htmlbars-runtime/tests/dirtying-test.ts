@@ -3,7 +3,8 @@ import { DOMHelper, Template, manualElement } from "htmlbars-runtime";
 import { equalTokens } from "htmlbars-test-helpers";
 import { TestEnvironment } from "./support";
 
-var hooks, env, dom, root;
+var hooks, dom, root;
+let env: TestEnvironment;
 
 function rootElement() {
   return env.getDOM().createElement('div', document.body);
@@ -83,6 +84,24 @@ test("a conditional that is false on the first run", assert => {
 
   result.rerender();
   equalTokens(root, '<div><!----></div>', "If the condition is false, the morph is empty");
+});
+
+test("block arguments", assert => {
+  env.registerHelper('with', (params, hash, blocks) => {
+    blocks.template.yield([ params[0] ]);
+  });
+
+  let template = compile("<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>");
+
+  let object = { person: { name: { first: "Godfrey", last: "Chan" } } };
+  let result = render(template, object);
+
+  equalTokens(root, '<div>Godfrey</div>', "Initial render");
+
+  object.person.name.first = "Godfreak";
+  result.rerender();
+
+  equalTokens(root, '<div>Godfreak</div>', "After updating");
 });
 
 test("block helpers whose template has a morph at the edge", function() {
@@ -475,95 +494,4 @@ test("Pruned lists invoke a cleanup hook on their subtrees when removing element
 
   strictEqual(destroyedRenderNodeCount, 6, "cleanup hook was invoked once for the wrapper morph and once for the {{item.word}}");
   strictEqual(destroyedRenderNode.lastValue, "hello", "The correct render node is passed in");
-});
-
-QUnit.module("Manual elements", {
-  beforeEach: commonSetup
-});
-
-QUnit.skip("Setting up a manual element renders and revalidates", function() {
-  hooks.keywords['manual-element'] = {
-    render: function(morph, env, scope, params, hash, template, inverse, visitor) {
-      var attributes = {
-        title: "Tom Dale",
-        href: ['concat', ['http://tomdale.', ['get', 'tld']]],
-        'data-bar': ['get', 'bar']
-      };
-
-      var layout = manualElement('span', attributes);
-
-      hostBlock(morph, env, scope, template, inverse, null, visitor, function(options) {
-        options.templates.template.yieldIn({ raw: layout }, hash);
-      });
-
-      manualElement(env, scope, 'span', attributes, morph);
-    },
-
-    isStable: function() { return true; }
-  };
-
-  var template = compile("{{#manual-element bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
-  render(template, { world: "world" });
-
-  equalTokens(root, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'>Hello world!</span>");
-});
-
-test("It is possible to nest multiple templates into a manual element", function() {
-  hooks.keywords['manual-element'] = {
-    render: function(morph, env, scope, params, hash, template, inverse, visitor) {
-      var attributes = {
-        title: "Tom Dale",
-        href: ['concat', ['http://tomdale.', ['get', 'tld']]],
-        'data-bar': ['get', 'bar']
-      };
-
-      var elementTemplate = manualElement('span', attributes);
-
-      var contentBlock = blockFor(template, { scope: scope });
-
-      var layoutBlock = blockFor(layout.raw, {
-        yieldTo: contentBlock,
-        self: { attrs: hash },
-      });
-
-      var elementBlock = blockFor(elementTemplate, {
-        yieldTo: layoutBlock,
-        self: hash
-      });
-
-      elementBlock.invoke(env, null, undefined, morph, null, visitor);
-    },
-
-    isStable: function() { return true; }
-  };
-
-  var layout = compile("<em>{{attrs.foo}}. {{yield}}</em>");
-  var template = compile("{{#manual-element foo='foo' bar='baz' tld='net'}}Hello {{world}}!{{/manual-element}}");
-  render(template, { world: "world" });
-
-  equalTokens(root, "<span title='Tom Dale' href='http://tomdale.net' data-bar='baz'><em>foo. Hello world!</em></span>");
-});
-
-test("The invoke helper hook can instruct the runtime to link the result", function() {
-  let invokeCount = 0;
-
-  env.hooks.invokeHelper = function(morph, env, scope, visitor, params, hash, helper) {
-    invokeCount++;
-    return { value: helper(params, hash), link: true };
-  };
-
-  env.registerHelper('double', function([input]) {
-    return input * 2;
-  });
-
-  let template = compile("{{double 12}}");
-  let result = render(template, {});
-
-  equalTokens(root, "24");
-  equal(invokeCount, 1);
-
-  result.rerender();
-
-  equalTokens(root, "24");
-  equal(invokeCount, 1);
 });

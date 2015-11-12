@@ -1,5 +1,19 @@
 import { RenderResult } from './render';
 import { Frame } from './environment';
+import { VM } from './vm';
+
+import {
+  StatementSyntax,
+  DynamicStatementSyntax,
+  StaticStatementSyntax,
+  StaticExpression,
+  DynamicExpression,
+  ExpressionSyntax,
+  PrettyPrint,
+  PrettyPrintable,
+  PrettyPrintValue
+} from './opcodes';
+
 import {
   ChainableReference,
   PushPullReference,
@@ -23,7 +37,7 @@ import {
   // SimpleHelperMorph
 } from './morphs/inline';
 
-import { Morph, ContentMorph, TemplateMorph, SimpleTemplateMorph, HasParentNode } from './morph';
+import { Morph, ContentMorph, TemplateMorph, BlockInvocationMorph, SimpleTemplateMorph, HasParentNode } from './morph';
 
 import {
   BlockHelperMorph
@@ -140,54 +154,29 @@ export default class Template {
     });
   }
 
-  private evaluateWithStack(stack: ElementStack, frame: Frame) {
-    TemplateEvaluation.evaluate(this, stack, frame);
-
-    let morphs = stack.morphList();
-    let bounds = stack.bounds();
-    let scope = frame.scope();
-
-    return new RenderResult({ morphs, scope, bounds, template: this });
+  splice(inlined: LinkedList<StatementSyntax>, reference: StatementSyntax) {
+    let { statements } = this;
+    let head = inlined.head();
+    statements.spliceList(inlined, reference);
+    statements.remove(reference);
+    return head;
   }
 
-  private topLevel(morph: ContentMorph, options: { nextSibling?: Node }=null): { stack: ElementStack, frame: Frame } {
-    let nextSibling = options && options.nextSibling;
-
-    let frame = morph.frame;
-
-    let stack = new ElementStack({ parentNode: morph.parentNode, nextSibling, dom: frame.dom() });
-
-    return { stack, frame };
-  }
-
-  process(stack: ElementStack, frame: Frame) {
-    TemplateEvaluation.evaluate(this, stack, frame);
-  }
-
-  evaluation(morph: ContentMorph, options: { nextSibling?: Node }=null): TemplateEvaluation {
-    let { stack, frame } = this.topLevel(morph, options);
-    return new TemplateEvaluation(this, stack, frame);
-  }
-
-  evaluate(morph: ContentMorph, options: { nextSibling?: Node }=null): RenderResult {
-    let { stack, frame } = this.topLevel(morph, options);
-    return this.evaluateWithStack(stack, morph.frame);
+  replace(statement: StatementSyntax, reference: StatementSyntax) {
+    let { statements } = this;
+    statements.insertBefore(statement, reference);
+    statements.remove(reference);
+    return statement;
   }
 
   render(self: any, env: Environment<any>, options: RenderOptions, blockArguments: any[]=null) {
-    let scope = env
-      .createRootScope()
-      .initTopLevel(self, this.locals, blockArguments, options.hostOptions);
+    let { hostOptions } = options;
+    let { locals: localNames } = this;
 
-    if (options.hostOptions) {
-      scope.bindHostOptions(options.hostOptions);
-    }
+    let elementStack = new ElementStack({ dom: env.getDOM(), parentNode: options.appendTo, nextSibling: null });
+    let vm = VM.initial(env, { self, localNames, blockArguments, hostOptions, elementStack });
 
-    let frame = env.pushFrame(scope);
-
-    let rootMorph = new RootMorph(options.appendTo, frame);
-
-    return this.evaluate(rootMorph, null);
+    return vm.execute(this);
   }
 }
 
@@ -291,82 +280,6 @@ class RootMorph extends ContentMorph {
   destroy() {}
 }
 
-type PrettyPrintValue = PrettyPrint | string;
-
-class PrettyPrint {
-  type: string;
-  operation: string;
-  params: PrettyPrintValue[];
-  hash: Dict<PrettyPrintValue>;
-  templates: Dict<number>;
-
-  constructor(type: string, operation: string, params: PrettyPrintValue[]=null, hash: Dict<PrettyPrintValue>=null, templates: Dict<number>=null) {
-    this.type = type;
-    this.operation = operation;
-    this.params = params;
-    this.hash = hash;
-    this.templates = templates;
-  }
-}
-
-interface PrettyPrintable {
-  prettyPrint(): PrettyPrint;
-}
-
-export interface ExpressionSyntax {
-  type: string;
-  isStatic: boolean;
-  evaluate(frame: Frame): ChainableReference;
-  prettyPrint(): any;
-}
-
-abstract class Syntax<T extends LinkedListNode> implements LinkedListNode {
-  static fromSpec(spec: any, templates: Template[]): Syntax<any> {
-    throw new Error(`You need to implement fromSpec on ${this}`);
-  }
-
-  public next: T = null;
-  public prev: T = null;
-
-  abstract clone(): T;
-}
-
-export abstract class StatementSyntax extends Syntax<StatementSyntax> {
-  static fromSpec(spec: any, templates: Template[]): StatementSyntax {
-    throw new Error(`You need to implement fromSpec on ${this}`);
-  }
-
-  abstract evaluate(stack: ElementStack, frame?, evaluation?): any;
-
-  public type: string;
-  public isStatic: boolean;
-  public next: StatementSyntax = null;
-  public prev: StatementSyntax = null;
-
-  abstract clone(): StatementSyntax;
-
-  inline(): LinkedList<StatementSyntax> {
-    return null;
-  }
-}
-
-export abstract class StaticStatementSyntax extends StatementSyntax implements PrettyPrintable {
-  abstract evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation): void;
-  abstract prettyPrint(): PrettyPrint;
-}
-
-export abstract class DynamicStatementSyntax extends StatementSyntax {
-  abstract evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation): Morph;
-}
-
-abstract class StaticExpression extends Syntax<StaticExpression> {
-  public isStatic: boolean = true;
-}
-
-abstract class DynamicExpression extends Syntax<DynamicExpression> {
-  public isStatic: boolean = false;
-}
-
 type PathSexp = InternedString[];
 type ExpressionSexp = any[];
 type ParamsSexp = ExpressionSexp[];
@@ -416,12 +329,12 @@ export class Block extends DynamicStatementSyntax {
     return new PrettyPrint('block', 'block', [block], null, this.templates.prettyPrint());
   }
 
-  evaluate(stack: ElementStack, frame: Frame): BlockHelperMorph {
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>): BlockHelperMorph {
     let helper = frame.lookupHelper(this.path);
     let args = this.args.evaluate(frame);
     let templates = this.templates;
 
-    return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame);
+    return stack.createContentMorph(BlockHelperMorph, { helper, args, templates }, frame, vm);
   }
 }
 
@@ -800,6 +713,7 @@ export class Text extends StaticStatementSyntax {
 
   evaluate(stack: ElementStack) {
     stack.appendText(this.content);
+    return null;
   }
 }
 
@@ -835,6 +749,7 @@ export class Comment extends StaticStatementSyntax {
 
   evaluate(stack: ElementStack) {
     stack.appendComment(this.value);
+    return null;
   }
 }
 
@@ -876,7 +791,7 @@ export class OpenElement extends StaticStatementSyntax {
     return new OpenPrimitiveElement({ tag });
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>): Morph {
     let { tag } = this;
 
     let def = frame.getComponentDefinition([tag], this);
@@ -890,6 +805,8 @@ export class OpenElement extends StaticStatementSyntax {
     } else {
       stack.openElement(tag);
     }
+
+    return null;
   }
 }
 
@@ -915,8 +832,9 @@ export class OpenPrimitiveElement extends StaticStatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag]);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  evaluate(stack: ElementStack, frame: Frame) {
     stack.openElement(this.tag);
+    return null;
   }
 }
 
@@ -984,8 +902,9 @@ export class Jump extends StatementSyntax {
     return new Jump(this);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
-    evaluation.goto(this.jumpTo);
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
+    vm.goto(this.jumpTo);
+    return null;
   }
 }
 
@@ -1008,12 +927,14 @@ export class JumpIf extends StatementSyntax {
     return new JumpIf(this);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
     let value = this.condition.evaluate(frame).value();
 
     if (value) {
-      evaluation.goto(this.jumpTo);
+      vm.goto(this.jumpTo);
     }
+
+    return null;
   }
 }
 
@@ -1036,14 +957,53 @@ export class JumpUnless extends StatementSyntax {
     return new JumpUnless(this);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, evaluation: TemplateEvaluation) {
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
     let value = this.condition.evaluate(frame).value();
 
     if (!value) {
-      evaluation.goto(this.jumpTo);
+      vm.goto(this.jumpTo);
     }
+
+    return null;
   }
 }
+
+export class YieldSyntax extends StatementSyntax {
+  type = "yield";
+  isStatic = false;
+  public args: ParamsAndHash;
+
+  constructor({ args }: { args: ParamsAndHash }) {
+    super();
+    this.args = args;
+  }
+
+  clone(): YieldSyntax {
+    return new YieldSyntax(this);
+  }
+
+  prettyPrint() {
+    return `{{yield}}`;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): BlockInvocationMorph {
+    let yieldTo: InternedString = null, params: EvaluatedParams = null;
+
+    if (this.args) {
+      params = this.args.params.evaluate(frame);
+      let hash = this.args.hash.evaluate(frame);
+      let toRef = hash.at(LITERAL('to'));
+      yieldTo = toRef && toRef.value();
+    }
+
+    let block = frame.scope().getBlock(yieldTo || LITERAL('default'));
+
+    if (!block) throw new Error(`The block ${yieldTo} wasn't available to be yielded to.`);
+
+    return stack.createBlockMorph(block, frame, params);
+  }
+}
+
 
 
 class NoopMorph extends CloseElementMorph {
@@ -1109,6 +1069,8 @@ export class StaticAttr extends AttributeSyntax {
     } else {
       stack.setAttribute(name, value);
     }
+
+    return null;
   }
 }
 
