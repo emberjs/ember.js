@@ -54,6 +54,14 @@ export class Block {
   }
 }
 
+interface InitScope {
+  self?: any;
+  localNames: InternedString[];
+  blockArguments?: any[];
+  blockArgumentReferences?: RootReference[];
+  hostOptions?: any;
+}
+
 export abstract class Scope<T extends Object> {
   protected parent: Scope<T>;
   private self: RootReference = undefined;
@@ -68,13 +76,15 @@ export abstract class Scope<T extends Object> {
     this.meta = meta;
   }
 
-  init({ self, localNames, blockArguments, hostOptions? }: { self: any, localNames: InternedString[], blockArguments: any[], hostOptions?: any }): Scope<T> {
+  init({ self, localNames, blockArguments, blockArgumentReferences, hostOptions }: InitScope): Scope<T> {
     if (self !== undefined) this.bindSelf(self);
     if (hostOptions) this.bindHostOptions(hostOptions);
 
     if (localNames && localNames.length) {
       this.localNames = localNames;
-      this.bindLocals(blockArguments);
+
+      if (blockArguments) this.bindLocals(blockArguments);
+      else if (blockArgumentReferences) this.bindLocalReferences(blockArgumentReferences);
     }
 
     return this;
@@ -307,10 +317,7 @@ export class Frame {
   }
 
   resetScope(): Scope<any> {
-    let parentHostOptions = this._scope.getHostOptions();
-    let scope = this._scope = this.env.createRootScope();
-    scope.bindHostOptions(parentHostOptions);
-    return scope;
+    return (this._scope = this.env.createRootScope());
   }
 
   scope(): Scope<any> {

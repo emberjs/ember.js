@@ -5,6 +5,7 @@ import {
   DOMHelper,
   StatementSyntax,
   Params,
+  EvaluatedParams,
   EvaluatedParamsAndHash,
   ParamsAndHash,
   ElementStack,
@@ -32,6 +33,10 @@ import {
   ValueSyntax,
   BlockSyntax,
   OpenElement,
+  PushScopeOptions,
+  PushChildScope,
+  PushRootScope,
+  PopScope,
   ComponentClass,
   ComponentDefinition,
   ComponentDefinitionOptions,
@@ -194,6 +199,10 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
 
       if (block && key === 'if') {
         return new IfSyntax({ args: block.args, templates: block.templates });
+      }
+
+      if (block && key === 'with') {
+        return new WithSyntax({ args: block.args, templates: block.templates });
       }
 
       if (key === 'component') {
@@ -646,7 +655,7 @@ class IfSyntax extends StatementSyntax {
 
   inline() {
     // 1. OpenBlock
-    // 2. JumpIfTrue => 6
+    // 2. JumpIf => 6
     // 3. ...InverseStatements...
     // 4. CloseBlock(inverse)
     // 5. Jump => 8
@@ -681,7 +690,7 @@ class IfSyntax extends StatementSyntax {
       list.insertBefore(n.clone(), endIf);
     });
 
-    // 2. JumpIfTrue => 6
+    // 2. JumpIf => 6
     list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
 
     // 3. ...InverseStatements...
@@ -697,6 +706,159 @@ class IfSyntax extends StatementSyntax {
   evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
     let condition = this.args.params.evaluate(frame).nth(0);
     return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
+  }
+}
+
+interface IfOptions {
+  reference: ChainableReference;
+  templates: Templates;
+}
+
+class IfMorph extends TemplateMorph {
+  reference: ChainableReference;
+  templates: Templates;
+
+  init({ reference, templates }: IfOptions) {
+    this.reference = reference;
+    this.templates = templates;
+  }
+
+  append(stack: ElementStack, vm: VM<any>) {
+    let { reference, templates } = this;
+    let value = reference.value();
+    this.template = value ? templates.default : templates.inverse;
+    super.append(stack, vm);
+  }
+
+  update() {
+    let { reference, templates } = this;
+    let value = reference.value();
+    this.template = value ? templates.default : templates.inverse;
+    super.update();
+  }
+}
+
+class WithSyntax extends StatementSyntax {
+  type = "with-statement";
+
+  public args: ParamsAndHash;
+  public templates: Templates;
+  public isStatic = false;
+
+  constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
+    this.args = args;
+    this.templates = templates;
+  }
+
+  clone(): WithSyntax {
+    return new WithSyntax(this);
+  }
+
+  prettyPrint() {
+    return `#with ${this.args.prettyPrint()}`;
+  }
+
+  inline() {
+    // 1.  OpenBlock
+    // 2.  JumpIf => 6
+    // 3.  ...InverseStatements...
+    // 4.  CloseBlock(inverse)
+    // 5.  Jump => 10
+    // 6.  PushChildScope({ localNames, blockArguments })
+    // 7.  ...DefaultStatements...
+    // 8.  PopScope
+    // 9.  CloseBlock(default)
+    // 10. Noop
+
+    let { templates } = this;
+    let list = new LinkedList<StatementSyntax>();
+
+    // 1. OpenBlock
+    list.append(new OpenBlock());
+
+    // 4. CloseBlock(inverse)
+    let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
+    list.append(endElse);
+
+    // 9. CloseBlock(default)
+    let endIf = new CloseBlock({ syntax: this, template: templates.default })
+    list.append(endIf);
+
+    // 10. Noop
+    let end = new NoopSyntax()
+    list.append(end);
+
+    // 5. Jump => 10
+    let jump = new Jump({ jumpTo: end });
+    list.insertBefore(jump, endIf);
+
+    // 6. PushChildScope({ localNames, blockArguments })
+    list.insertBefore(new PushChildScope({
+      localNames: templates.default.locals,
+      blockArguments: this.args.params
+    }), endIf);
+
+    // 7. ...DefaultStatements...
+    templates.default.statements.forEachNode(n => {
+      list.insertBefore(n.clone(), endIf);
+    });
+
+    // 8. PopScope
+    list.insertBefore(new PopScope(), endIf);
+
+    // 2. JumpIf => 6
+    list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
+
+    // 3. ...InverseStatements...
+    if (templates.inverse) {
+      templates.inverse.statements.forEachNode(n => {
+        list.insertBefore(n.clone(), endElse);
+      });
+    }
+
+    return list;
+  }
+
+  evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
+    let paths = this.args.params.evaluate(frame);
+    return stack.createContentMorph(WithMorph, { paths, templates: this.templates }, frame);
+  }
+}
+
+interface WithOptions {
+  paths: ChainableReference;
+  templates: Templates;
+}
+
+class WithMorph extends TemplateMorph {
+  paths: ChainableReference;
+  templates: Templates;
+
+  init({ paths, templates }: WithOptions) {
+    this.paths = paths;
+    this.templates = templates;
+  }
+
+  append(stack: ElementStack, vm: VM<any>) {
+    let { paths, templates } = this;
+    let value = paths.value();
+    this.template = value ? templates.default : templates.inverse;
+
+    this.willAppend(stack);
+    this.appendTemplate(this.template, vm, paths);
+  }
+
+  update() {
+    let { paths, templates } = this;
+    let value = paths.value();
+    this.template = value ? templates.default : templates.inverse;
+    this.updateTemplate(this.template, paths);
+  }
+
+  protected setupScope(blockArguments: EvaluatedParams) {
+    let localNames = this.template.locals;
+    this.frame.childScope(localNames).bindLocalReferences(blockArguments.toArray());
   }
 }
 
@@ -755,34 +917,6 @@ class CloseBlock extends StatementSyntax {
   }
 }
 
-interface IfOptions {
-  reference: ChainableReference;
-  templates: Templates;
-}
-
-class IfMorph extends TemplateMorph {
-  reference: ChainableReference;
-  templates: Templates;
-
-  init({ reference, templates }: IfOptions) {
-    this.reference = reference;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack, vm: VM<any>) {
-    let { reference, templates } = this;
-    let value = reference.value();
-    this.template = value ? templates.default : templates.inverse;
-    super.append(stack, vm);
-  }
-
-  update() {
-    let { reference, templates } = this;
-    let value = reference.value();
-    this.template = value ? templates.default : templates.inverse;
-    super.update();
-  }
-}
 
 class DynamicComponentSyntax extends StatementSyntax {
   type = "dynamic-component";
