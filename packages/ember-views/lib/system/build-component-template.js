@@ -26,7 +26,7 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
+      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs, tagName);
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
@@ -41,6 +41,30 @@ export default function buildComponentTemplate({ component, layout, isAngleBrack
   //   * the falsy value "" if set explicitly on the component
   //   * an actual tagName set explicitly on the component
   return { createdElement: !!tagName, block: blockToRender };
+}
+
+// Static flag used to see if we can mutate the type attribute on input elements. IE8
+// does not support changing the type attribute after an element is inserted in
+// a tree.
+var isInputTypeAttributeMutable = (function() {
+  var docFragment = document.createDocumentFragment();
+  var mutableInputTypeTextElement = document.createElement('input');
+  mutableInputTypeTextElement.type = 'text';
+  try {
+    docFragment.appendChild(mutableInputTypeTextElement);
+    mutableInputTypeTextElement.setAttribute('type', 'password');
+  } catch (e) {
+    return false;
+  }
+  return true;
+})();
+
+var canChangeInputType = isInputTypeAttributeMutable;
+export function disableInputTypeChanging() {
+  canChangeInputType = false;
+}
+export function resetInputTypeChanging() {
+  canChangeInputType = isInputTypeAttributeMutable;
 }
 
 function blockFor(template, options) {
@@ -113,7 +137,8 @@ function tagNameFor(view) {
 
 // Takes a component and builds a normalized set of attribute
 // bindings consumable by HTMLBars' `attribute` hook.
-function normalizeComponentAttributes(component, isAngleBracket, attrs) {
+function normalizeComponentAttributes(component, isAngleBracket, attrs, tagName) {
+  var hardCodeType = tagName === 'input' && !canChangeInputType;
   var normalized = {};
   var attributeBindings = component.attributeBindings;
   var i, l;
@@ -135,17 +160,32 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
       if (colonIndex !== -1) {
         var attrProperty = attr.substring(0, colonIndex);
         attrName = attr.substring(colonIndex + 1);
-        expression = ['get', 'view.' + attrProperty];
+
+        if (attrName === 'type' && hardCodeType) {
+          expression = component.get(attrProperty) + '';
+        } else {
+          expression = ['get', 'view.' + attrProperty];
+        }
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
         // probably want to suspend observers and allow the
         // willUpdateAttrs logic to trigger observers at the correct time.
         attrName = attr;
-        expression = ['value', attrs[attr]];
+
+        if (attrName === 'type' && hardCodeType) {
+          expression = getValue(attrs[attr]) + '';
+        } else {
+          expression = ['value', attrs[attr]];
+        }
       } else {
         attrName = attr;
-        expression = ['get', 'view.' + attr];
+
+        if (attrName === 'type' && hardCodeType) {
+          expression = component.get(attr) + '';
+        } else {
+          expression = ['get', 'view.' + attr];
+        }
       }
 
       Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');

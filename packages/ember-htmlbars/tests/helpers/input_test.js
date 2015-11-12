@@ -8,6 +8,10 @@ import ComponentLookup from "ember-views/component_lookup";
 import TextField from 'ember-views/views/text_field';
 import Checkbox from 'ember-views/views/checkbox';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
+import {
+  disableInputTypeChanging,
+  resetInputTypeChanging
+} from 'ember-views/system/build-component-template';
 
 var view;
 var controller, registry, container;
@@ -263,6 +267,48 @@ QUnit.test("should change if the type changes", function() {
   });
 
   equal(view.$('input').attr('type'), 'text', "it changes after the type changes");
+});
+
+QUnit.module("{{input type='text'}} - dynamic type in IE8 safe environment", {
+  setup() {
+    commonSetup();
+
+    disableInputTypeChanging();
+
+    controller = {
+      someProperty: 'password',
+      ie8Safe: true
+    };
+
+    view = View.extend({
+      container: container,
+      controller: controller,
+      template: compile('{{input type=someProperty}}')
+    }).create();
+
+    runAppend(view);
+  },
+
+  teardown() {
+    resetInputTypeChanging();
+
+    runDestroy(view);
+    runDestroy(container);
+  }
+});
+
+QUnit.test("should insert a text field into DOM", function() {
+  equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type in IE8.");
+});
+
+QUnit.test("should NOT change if the type changes", function() {
+  equal(view.$('input').attr('type'), 'password', "a bound property can be used to determine type in IE8.");
+
+  run(function() {
+    set(controller, 'someProperty', 'text');
+  });
+
+  equal(view.$('input').attr('type'), 'password', "it does NOT change after the type changes in IE8");
 });
 
 QUnit.module("{{input}} - default type", {
