@@ -265,6 +265,42 @@ export function equal(dependentKey, value) {
 }
 
 /**
+  A computed property that returns true if the provided two dependent properties
+  have the same value.
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    isSpy: Ember.computed.same('name', 'alias')
+  });
+
+  var hamster = Hamster.create({
+    name: 'Tomster'
+  });
+
+  hamster.get('isSpy'); // false
+  hamster.set('alias', 'Tomster');
+  hamster.get('isSpy'); // true
+  hamster.set('alias', 'J.J. Abrams');
+  hamster.get('isSpy'); // false
+  ```
+
+  @method same
+  @for Ember.computed
+  @param {String} dependentKey
+  @param {String} comparisonKey
+  @return {Ember.ComputedProperty} computed property that returns true if the
+  provided two dependent properties have the same value.
+  @public
+*/
+export function same(dependentKey, comparisonKey) {
+  return computed(dependentKey, comparisonKey, function() {
+    return get(this, dependentKey) === get(this, comparisonKey);
+  });
+}
+
+/**
   A computed property that returns true if the provided dependent property
   is greater than the provided value.
 
