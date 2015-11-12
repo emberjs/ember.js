@@ -6,6 +6,7 @@ import {
   bool,
   match,
   equal as computedEqual,
+  same,
   gt,
   gte,
   lt,
@@ -185,6 +186,17 @@ testBoth('computed.equal', function(get, set) {
   set(obj, 'name', 'Pierre');
 
   equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
+});
+
+testBoth('computed.same', function(get, set) {
+  var obj = { name: 'Paul', alias: 'Paul' };
+  defineProperty(obj, 'realName', same('name', 'alias'));
+
+  equal(get(obj, 'realName'), true, 'is Paul');
+
+  set(obj, 'alias', 'Pierre');
+
+  equal(get(obj, 'realName'), false, 'has an alias');
 });
 
 testBoth('computed.gt', function(get, set) {
