@@ -17,7 +17,8 @@ import {
 import {
   ChainableReference,
   PushPullReference,
-  ConstReference
+  ConstReference,
+  PathReference
 } from 'htmlbars-reference';
 import { ElementStack, ClassList } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
@@ -1495,7 +1496,7 @@ export class Params extends Enumerable<ExpressionSyntax> implements ExpressionSy
   }
 }
 
-export class EvaluatedParams extends PushPullReference {
+export class EvaluatedParams extends PushPullReference implements PathReference {
   public references: ChainableReference[];
 
   constructor(params: Params, frame: Frame) {
@@ -1506,6 +1507,10 @@ export class EvaluatedParams extends PushPullReference {
       this._addSource(result);
       return result;
     })
+  }
+
+  get(index: string): PathReference {
+    return this.references[index];
   }
 
   nth(n: number) {

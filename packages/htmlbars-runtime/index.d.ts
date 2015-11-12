@@ -35,7 +35,10 @@ export {
   PushScopeOptions,
   PushChildScope,
   PushRootScope,
-  PopScope
+  PopScope,
+  Evaluate,
+  Deref,
+  GetLocal
 } from './lib/opcodes/inlining';
 
 export {

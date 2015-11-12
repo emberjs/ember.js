@@ -32,7 +32,7 @@ import {
 
 import { VM } from './vm';
 
-import { InternedString, LITERAL } from 'htmlbars-util';
+import { InternedString, LITERAL, symbol } from 'htmlbars-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
@@ -58,14 +58,14 @@ interface InitScope {
   self?: any;
   localNames: InternedString[];
   blockArguments?: any[];
-  blockArgumentReferences?: RootReference[];
+  blockArgumentReferences?: PathReference[];
   hostOptions?: any;
 }
 
 export abstract class Scope<T extends Object> {
   protected parent: Scope<T>;
-  private self: RootReference = undefined;
-  private locals: Dict<RootReference> = null;
+  private self: PathReference = undefined;
+  private locals: Dict<PathReference> = null;
   private blocks: Dict<Block> = null;
   private localNames: InternedString[];
   protected meta: MetaLookup;
@@ -104,6 +104,10 @@ export abstract class Scope<T extends Object> {
 
   abstract child(localNames: InternedString[]): Scope<T>;
 
+  uniqueSymbol(debugName: string): Symbol | InternedString {
+    return symbol(debugName);
+  }
+
   bindSelf(object: any) {
     this.self = this.meta.for(object).root();
   }
@@ -112,17 +116,17 @@ export abstract class Scope<T extends Object> {
     this.self.update(value);
   }
 
-  getSelf(): RootReference {
+  getSelf(): PathReference {
     return this.self || (this.parent && this.parent.getSelf());
   }
 
   bindLocal(name: InternedString, value: any) {
-    let locals = this.locals = this.locals || dict<RootReference>();
+    let locals = this.locals = this.locals || dict<PathReference>();
     locals[<string>name] = this.meta.for(value).root();
   }
 
-  bindLocalReference(name: InternedString, value: RootReference) {
-    let locals = this.locals = this.locals || dict<RootReference>();
+  bindLocalReference(name: InternedString, value: PathReference) {
+    let locals = this.locals = this.locals || dict<PathReference>();
     locals[<string>name] = value;
   }
 
@@ -133,7 +137,7 @@ export abstract class Scope<T extends Object> {
     }
   }
 
-  bindLocalReferences(blockArguments: RootReference[]) {
+  bindLocalReferences(blockArguments: PathReference[]) {
     let { localNames } = this;
     for (let i = 0, l = localNames.length; i < l; i++) {
       this.bindLocalReference(localNames[i], blockArguments[i]);
@@ -151,7 +155,7 @@ export abstract class Scope<T extends Object> {
     }
   }
 
-  getLocal(name: InternedString): RootReference {
+  getLocal(name: InternedString): PathReference {
     if (!this.locals) return this.parent && this.parent.getLocal(name);
     return (<string>name in this.locals) ? this.locals[<string>name] : (this.parent && this.parent.getLocal(name));
   }
