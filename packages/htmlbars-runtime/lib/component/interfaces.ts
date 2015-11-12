@@ -55,18 +55,18 @@ export interface AppendingComponentClass {
 }
 
 export interface ComponentHooks {
-  begin(Component);
-  commit(Component);
+  begin(Component: Component);
+  commit(Component: Component);
 
-  didReceiveAttrs(Component);
-  didUpdateAttrs(Component);
+  didReceiveAttrs(Component: Component);
+  didUpdateAttrs(Component: Component);
 
-  didInsertElement(Component);
+  didInsertElement(Component: Component);
 
-  willRender(Component);
-  willUpdate(Component);
-  didRender(Component);
-  didUpdate(Component);
+  willRender(Component: Component);
+  willUpdate(Component: Component);
+  didRender(Component: Component);
+  didUpdate(Component: Component);
 }
 
 class NullHooks implements ComponentHooks {

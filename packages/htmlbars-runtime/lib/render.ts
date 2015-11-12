@@ -6,8 +6,7 @@ import {
   EmptyableMorph,
   Bounds,
   HasParentNode,
-  clear,
-  renderIntoBounds
+  clear
 } from './morph';
 import { InternedString } from 'htmlbars-util';
 import { Scope } from './environment';

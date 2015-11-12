@@ -18,9 +18,6 @@ import {
 import { Frame, Block } from './environment';
 import DOMHelper from './dom';
 import Template, {
-  DynamicStatementSyntax,
-  StaticStatementSyntax,
-  StatementSyntax,
   EvaluatedParams,
   AttributeSyntax,
   TemplateEvaluation,
@@ -31,6 +28,14 @@ import Template, {
 import { RenderResult } from './render';
 import { InternedString, Dict, intern, dict } from 'htmlbars-util';
 import { RootReference, ChainableReference, NotifiableReference, PushPullReference, Destroyable } from 'htmlbars-reference';
+
+import {
+  DynamicStatementSyntax,
+  StaticStatementSyntax,
+  StatementSyntax
+} from './opcodes'
+
+import { VM } from './vm';
 
 interface FirstNode {
   firstNode(): Node;
@@ -152,7 +157,6 @@ export class ElementStack {
   private popBlock() {
     let tracker = this.blockStack.pop();
     this.blockElement = this.blockStack[this.blockStack.length - 1];
-    if (this.blockElement === undefined) debugger;
     return tracker;
   }
 
@@ -169,24 +173,6 @@ export class ElementStack {
 
   morphList(): Morph[] {
     return this.blockElement.morphs;
-  }
-
-  appendStatement(statement: StatementSyntax, frame: Frame, evaluation: TemplateEvaluation) {
-    let refinedStatement = frame.syntax(statement);
-
-    if (refinedStatement.isStatic) {
-      refinedStatement.evaluate(this, frame, evaluation);
-      return;
-    }
-
-    let inlined = refinedStatement.inline();
-    if (inlined) {
-      evaluation.splice(inlined, statement);
-      return;
-    }
-
-    let content = refinedStatement.evaluate(this, frame, evaluation);
-    if (content) content.append(this, evaluation);
   }
 
   createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {

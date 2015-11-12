@@ -95,26 +95,36 @@ export class LinkedList<T extends LinkedListNode> {
     }
   }
 
-  insertBefore(node: T, reference: LinkedListNode = null) {
+  insertBefore(node: T, reference: LinkedListNode = null): T {
     if (reference === null) reference = this._tail;
 
     reference.prev.next = node;
     node.prev = reference.prev;
     node.next = reference;
     reference.prev = node;
+    return node;
   }
 
-  append(node: T) {
+  append(node: T): T {
     this.insertBefore(node, this._tail);
+    return node;
   }
 
-  prepend(node: T) {
+  pop(): T {
+    let tail = this.tail();
+    if (tail) this.remove(tail);
+    return tail;
+  }
+
+  prepend(node: T): T {
     this.insertBefore(node, this._head.next);
+    return node;
   }
 
-  remove(node: T) {
+  remove(node: T): T {
     node.prev.next = node.next;
     node.next.prev = node.prev;
+    return node;
   }
 }
 

@@ -1,5 +1,5 @@
 import Template, {
-  StatementSyntax,
+  YieldSyntax,
   AttributeSyntax,
   Helper as HelperSyntax,
   Unknown,
@@ -11,6 +11,7 @@ import Template, {
   Templates
 } from "./template";
 
+import { StatementSyntax } from './opcodes';
 import { ContentMorph, TemplateMorph } from './morph';
 import { ElementStack } from './builder';
 
@@ -29,11 +30,13 @@ import {
   MetaLookup
 } from 'htmlbars-reference';
 
+import { VM } from './vm';
+
 import { InternedString, LITERAL } from 'htmlbars-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
-import { Dict, dict } from 'htmlbars-util';
+import { LinkedList, LinkedListNode, Dict, dict } from 'htmlbars-util';
 import { Destroyable } from './utils';
 import { BlockInvocationMorph } from './morph';
 
@@ -65,26 +68,31 @@ export abstract class Scope<T extends Object> {
     this.meta = meta;
   }
 
-  initTopLevel(self, localNames, blockArguments, hostOptions) {
-    if (self) this.bindSelf(self);
+  init({ self, localNames, blockArguments, hostOptions? }: { self: any, localNames: InternedString[], blockArguments: any[], hostOptions?: any }): Scope<T> {
+    if (self !== undefined) this.bindSelf(self);
     if (hostOptions) this.bindHostOptions(hostOptions);
 
-    if (localNames) {
-      let locals = this.locals = this.locals || dict<RootReference>();
-
-      for (let i = 0, l = localNames.length; i < l; i++) {
-        locals[localNames[i]] = blockArguments[i];
-      }
+    if (localNames && localNames.length) {
+      this.localNames = localNames;
+      this.bindLocals(blockArguments);
     }
 
     return this;
+  }
+
+  update({ self, blockArguments }: { self: any, blockArguments: any[] }) {
+    if (self !== undefined) this.updateSelf(self);
+
+    if (blockArguments && blockArguments.length) {
+      this.updateLocals(blockArguments);
+    }
   }
 
   abstract bindHostOptions(hostOptions: T);
 
   abstract getHostOptions(): T;
 
-  abstract child(localNames: InternedString[]);
+  abstract child(localNames: InternedString[]): Scope<T>;
 
   bindSelf(object: any) {
     this.self = this.meta.for(object).root();
@@ -124,6 +132,13 @@ export abstract class Scope<T extends Object> {
 
   updateLocal(name: InternedString, value: any) {
     this.locals[<string>name].update(value);
+  }
+
+  updateLocals(blockArguments: any[]) {
+    let { localNames } = this;
+    for (let i = 0, l = localNames.length; i < l; i++) {
+      this.updateLocal(localNames[i], blockArguments[i]);
+    }
   }
 
   getLocal(name: InternedString): RootReference {
@@ -235,42 +250,6 @@ export abstract class Environment<T extends Object> {
   abstract getComponentDefinition(scope: Scope<T>, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
 }
 
-class YieldSyntax extends StatementSyntax {
-  type = "yield";
-  isStatic = false;
-  public args: ParamsAndHash;
-
-  constructor({ args }: { args: ParamsAndHash }) {
-    super();
-    this.args = args;
-  }
-
-  clone(): YieldSyntax {
-    return new YieldSyntax(this);
-  }
-
-  prettyPrint() {
-    return `{{yield}}`;
-  }
-
-  evaluate(stack: ElementStack, frame: Frame): BlockInvocationMorph {
-    let yieldTo: InternedString = null, params: EvaluatedParams = null;
-
-    if (this.args) {
-      params = this.args.params.evaluate(frame);
-      let hash = this.args.hash.evaluate(frame);
-      let toRef = hash.at(LITERAL('to'));
-      yieldTo = toRef && toRef.value();
-    }
-
-    let block = frame.scope().getBlock(yieldTo || LITERAL('default'));
-
-    if (!block) throw new Error(`The block ${yieldTo} wasn't available to be yielded to.`);
-
-    return stack.createBlockMorph(block, frame, params);
-  }
-}
-
 // TS does not allow us to use computed properties for this, so inlining for now
 // import { TRUSTED_STRING } from './symbols';
 
@@ -309,12 +288,22 @@ export class Frame {
     return this.env.getDOM();
   }
 
+  newVM(parentNode: Element, nextSibling: Node): VM<any> {
+    let stack = new ElementStack({ dom: this.dom(), parentNode, nextSibling });
+    return new VM(this.env, this.scope(), stack);
+  }
+
   syntax(statement: StatementSyntax): StatementSyntax {
     return this.env.statement(statement);
   }
 
-  childScope(blockArguments: any[]=null) {
+  childScope(blockArguments: any[]=null): Scope<any> {
     return (this._scope = this._scope.child(blockArguments));
+  }
+
+  setScope(scope: Scope<any>): Scope<any> {
+    this._scope = scope;
+    return scope;
   }
 
   resetScope(): Scope<any> {

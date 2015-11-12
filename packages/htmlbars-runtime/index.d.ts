@@ -3,7 +3,6 @@ export {
   ATTRIBUTE_SYNTAX,
   Templates,
   TemplateEvaluation,
-  StatementSyntax,
   ParamsAndHash,
   Params,
   Hash,
@@ -27,6 +26,10 @@ export {
   JumpUnless,
   builders
 } from './lib/template';
+
+export { StatementSyntax } from './lib/opcodes';
+
+export { VM } from './lib/vm';
 
 export {
   Scope,
@@ -55,6 +58,6 @@ export { default as AppendingComponent } from './lib/component/appending';
 
 export { default as DOMHelper, isWhitespace } from './lib/dom';
 export { RenderResult, manualElement } from './lib/render';
-export { ElementStack, NullHandler } from './lib/builder';
+export { ElementStack } from './lib/builder';
 export { Morph, MorphSpecializer, ContentMorph, TemplateMorph, EmptyableMorph, Bounds, createMorph } from './lib/morph';
 export { MorphList, MorphListOptions } from './lib/morphs/list';

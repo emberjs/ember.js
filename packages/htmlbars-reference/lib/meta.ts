@@ -43,18 +43,24 @@ class ConstPath implements IPathReference {
 
 class ConstRoot implements IRootReference {
   private inner: any;
+  private dirty = false;
 
   constructor(value) {
     this.inner = value;
   }
 
-  update() {}
+  update(inner: any) {
+    this.inner = inner;
+    this.dirty = true;
+  }
+
   chain() { return NOOP_DESTROY; }
-  isDirty() { return false; }
+  isDirty() { return this.dirty; }
   destroy() {}
   notify() {}
 
   value(): any {
+    this.dirty = false;
     return this.inner;
   }
 
