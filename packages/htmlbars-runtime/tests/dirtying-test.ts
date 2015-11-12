@@ -104,6 +104,24 @@ test("block arguments", assert => {
   equalTokens(root, '<div>Godfreak</div>', "After updating");
 });
 
+test("block arguments (ensure balanced push/pop)", assert => {
+  env.registerHelper('with', (params, hash, blocks) => {
+    blocks.template.yield([ params[0] ]);
+  });
+
+  let template = compile("<div>{{#with person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>");
+
+  let object = { person: { name: { first: "Godfrey", last: "Chan" } }, f: "Outer" };
+  let result = render(template, object);
+
+  equalTokens(root, '<div>GodfreyOuter</div>', "Initial render");
+
+  object.person.name.first = "Godfreak";
+  result.rerender();
+
+  equalTokens(root, '<div>GodfreakOuter</div>', "After updating");
+});
+
 test("block helpers whose template has a morph at the edge", function() {
   env.registerHelper('id', function(params, hash, options) {
     return options.template.yield();

@@ -32,6 +32,13 @@ export { StatementSyntax } from './lib/opcodes';
 export { VM } from './lib/vm';
 
 export {
+  PushScopeOptions,
+  PushChildScope,
+  PushRootScope,
+  PopScope
+} from './lib/opcodes/inlining';
+
+export {
   Scope,
   Environment,
   Helper,

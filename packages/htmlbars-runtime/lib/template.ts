@@ -1512,6 +1512,10 @@ export class EvaluatedParams extends PushPullReference {
     return this.references[n];
   }
 
+  toArray(): ChainableReference[] {
+    return this.references;
+  }
+
   first() {
     return this.nth(0);
   }
