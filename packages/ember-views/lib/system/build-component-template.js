@@ -162,7 +162,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs, tagName)
         attrName = attr.substring(colonIndex + 1);
 
         if (attrName === 'type' && hardCodeType) {
-          expression = component.get(attrProperty);
+          expression = component.get(attrProperty) + '';
         } else {
           expression = ['get', 'view.' + attrProperty];
         }
@@ -174,7 +174,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs, tagName)
         attrName = attr;
 
         if (attrName === 'type' && hardCodeType) {
-          expression = getValue(attrs[attr]);
+          expression = getValue(attrs[attr]) + '';
         } else {
           expression = ['value', attrs[attr]];
         }
@@ -182,7 +182,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs, tagName)
         attrName = attr;
 
         if (attrName === 'type' && hardCodeType) {
-          expression = component.get(attr);
+          expression = component.get(attr) + '';
         } else {
           expression = ['get', 'view.' + attr];
         }
