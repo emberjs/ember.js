@@ -165,7 +165,7 @@ var Component = View.extend(TargetActionSupport, {
     assert(
       `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
       this.tagName !== '' || !(() => {
-        let eventDispatcher = this.container.lookup('event_dispatcher:main');
+        let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
         let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 
         for (let key in events) {

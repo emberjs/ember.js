@@ -13,6 +13,7 @@ import Component from 'ember-views/components/component';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 var a_slice = Array.prototype.slice;
 
@@ -310,7 +311,7 @@ QUnit.test('throws an error if an event function is defined in a tagless compone
 
   let TestComponent = Component.extend({
     tagName: '',
-    container: appInstance,
+    [OWNER]: appInstance,
     click() { }
   });
 
@@ -339,7 +340,7 @@ QUnit.test('throws an error if an Application custom event handler is defined in
 
   let TestComponent = Component.extend({
     tagName: '',
-    container: appInstance,
+    [OWNER]: appInstance,
     sauce() { }
   });
 
@@ -367,7 +368,7 @@ QUnit.test('throws an error if an ApplicationInstance custom event handler is de
 
   let TestComponent = Component.extend({
     tagName: '',
-    container: appInstance,
+    [OWNER]: appInstance,
     hurts() { }
   });
 
