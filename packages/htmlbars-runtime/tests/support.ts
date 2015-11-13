@@ -38,8 +38,11 @@ import {
   PushChildScope,
   PushRootScope,
   PopScope,
-  Deref,
-  GetLocal,
+  PutObject,
+  GetObject,
+  DerefRegister,
+  StartIter,
+  NextIter,
   ComponentClass,
   ComponentDefinition,
   ComponentDefinitionOptions,
@@ -51,6 +54,9 @@ import {
   JumpIf,
   JumpUnless,
   Jump,
+  OpenBlock,
+  CloseBlock,
+  NoopSyntax,
   Scope,
   Block,
   VM,
@@ -628,10 +634,86 @@ class EachSyntax extends StatementSyntax {
     return `#each ${this.args.prettyPrint()}`;
   }
 
+  inline() {
+    //       OpenBlock <---- EachMorph
+    //       PutObject("generic", params)
+    //       PutObject("iterable", DerefRegister("generic", "0"))
+    //       StartIter
+    //       JumpUnless(ELSE)
+    // ITER: Noop
+    //       OpenBlock <---- InnerBlockMorph
+    //       PushChildScope({ localNames, [GetObject("iterationItem")] })
+    //       ...DefaultStatements...
+    //       PopScope
+    //       CloseBlock(default) <---- InnerBlockMorph
+    //       NextIter
+    //       JumpIf(ITER)
+    //       CloseBlock(???????) <---- EachMorph
+    //       Jump(END)
+    // ELSE: Noop
+    //       ...InverseStatements...
+    //       CloseBlock(inverse) <---- EachMorph
+    // END:  Noop
+
+    let { templates } = this;
+    let statements = new LinkedList<StatementSyntax>();
+
+    let ITER = new NoopSyntax();
+    let ELSE = new NoopSyntax();
+    let END = new NoopSyntax();
+
+    statements.append(new OpenBlock()); // EachMorph (this)
+    statements.append(new PutObject({ register: LITERAL('generic'), syntax: this.args.params }));
+    statements.append(new PutObject({ register: LITERAL('iterable'), syntax: new DerefRegister({ register: LITERAL('generic'), path: LITERAL('0') }) }));
+    statements.append(new StartIter());
+    statements.append(new JumpUnless({ jumpTo: ELSE }));
+
+    statements.append(ITER);
+
+    statements.append(new OpenBlock()); // InnerBlockMorph
+    statements.append(new PushChildScope({ localNames: templates.default.locals, blockArguments: [new GetObject({ register: LITERAL('iterationItem') })] }));
+
+    templates.default.statements.forEachNode(n => {
+      statements.append(n.clone());
+    });
+
+    statements.append(new PopScope());
+    statements.append(new CloseBlock({ syntax: new InnerBlockSyntax(), template: templates.default }));
+    statements.append(new NextIter());
+    statements.append(new JumpIf({ jumpTo: ITER }));
+    statements.append(new CloseBlock({ syntax: this, template: true }));
+    statements.append(new Jump({ jumpTo: END }));
+
+    statements.append(ELSE);
+
+    if (templates.inverse) {
+      templates.inverse.statements.forEachNode(n => {
+        statements.append(n.clone());
+      });
+    }
+
+    statements.append(new CloseBlock({ syntax: this, template: templates.inverse }));
+
+    statements.append(END);
+
+    debugger;
+
+    return statements;
+  }
+
   evaluate(stack: ElementStack, frame: Frame): ContentMorph {
     let list = this.args.params.evaluate(frame).nth(0);
     let key = this.args.hash.evaluate(frame).at(LITERAL('key'));
     return stack.createContentMorph(MorphList, { key, reference: list, templates: this.templates }, frame);
+  }
+}
+
+class InnerBlockSyntax extends StatementSyntax {
+  evaluate() {
+    return {
+      willAppend: () => null,
+      setRenderResult: () => null
+    }
   }
 }
 
@@ -657,53 +739,45 @@ class IfSyntax extends StatementSyntax {
   }
 
   inline() {
-    // 1. OpenBlock
-    // 2. JumpIf => 6
-    // 3. ...InverseStatements...
-    // 4. CloseBlock(inverse)
-    // 5. Jump => 8
-    // 6. ...DefaultStatements...
-    // 7. CloseBlock(default)
-    // 8. Noop
+    //       OpenBlock
+    //       PutObject("condition", params[0])
+    //       JumpUnless(ELSE)
+    //       ...DefaultStatements...
+    //       CloseBlock(default)
+    //       Jump(END)
+    // ELSE: Noop
+    //       ...InverseStatements...
+    //       CloseBlock(inverse)
+    // END:  Noop
 
     let { templates } = this;
-    let list = new LinkedList<StatementSyntax>();
+    let statements = new LinkedList<StatementSyntax>();
 
-    // 1. OpenBlock
-    list.append(new OpenBlock());
+    let ELSE = new NoopSyntax();
+    let END = new NoopSyntax();
 
-    // 4. CloseBlock(inverse)
-    let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
-    list.append(endElse);
+    statements.append(new OpenBlock());
+    statements.append(new PutObject({ register: LITERAL('condition'), syntax: this.args.params.at(0) }));
+    statements.append(new JumpUnless({ jumpTo: ELSE }));
 
-    // 7. CloseBlock(default)
-    let endIf = new CloseBlock({ syntax: this, template: templates.default })
-    list.append(endIf);
-
-    // 8. Noop
-    let end = new NoopSyntax()
-    list.append(end);
-
-    // 5. Jump => 8
-    let jump = new Jump({ jumpTo: end });
-    list.insertBefore(jump, endIf);
-
-    // 6. ...DefaultStatements...
     templates.default.statements.forEachNode(n => {
-      list.insertBefore(n.clone(), endIf);
+      statements.append(n.clone());
     });
 
-    // 2. JumpIf => 6
-    list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
+    statements.append(new CloseBlock({ syntax: this, template: templates.default }));
+    statements.append(new Jump({ jumpTo: END }));
+    statements.append(ELSE);
 
-    // 3. ...InverseStatements...
     if (templates.inverse) {
       templates.inverse.statements.forEachNode(n => {
-        list.insertBefore(n.clone(), endElse);
+        statements.append(n.clone());
       });
     }
 
-    return list;
+    statements.append(new CloseBlock({ syntax: this, template: templates.inverse }));
+    statements.append(END);
+
+    return statements;
   }
 
   evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
@@ -763,77 +837,53 @@ class WithSyntax extends StatementSyntax {
   }
 
   inline() {
-    // 1.  OpenBlock
-    // 2.  Evaluate($params, blockArguments)
-    // 3.  Evaluate($condition, Deref($params, "0"))
-    // 4.  JumpIf($condition) => 8
-    // 5.  ...InverseStatements...
-    // 6.  CloseBlock(inverse)
-    // 7.  Jump => 12
-    // 8.  PushChildScope({ localNames, $params })
-    // 9.  ...DefaultStatements...
-    // 10. PopScope
-    // 11. CloseBlock(default)
-    // 12. Noop
+    //       OpenBlock
+    //       PutObject("generic", params)
+    //       PutObject("condition", DerefRegister("generic", "0"))
+    //       JumpUnless(ELSE)
+    //       PutChildScope({ localNames, spreadBlockArguments: GetObject("generic") })
+    //       ...DefaultStatements...
+    //       PopScope
+    //       CloseBlock(default)
+    //       Jump(END)
+    // ELSE: Noop
+    //       ...InverseStatements...
+    //       CloseBlock(inverse)
+    // END:  Noop
 
     let { templates } = this;
-    let list = new LinkedList<StatementSyntax>();
-    let $params = symbol("params");
-    let $condition = symbol("condition");
+    let statements = new LinkedList<StatementSyntax>();
 
-    // 1. OpenBlock
-    list.append(new OpenBlock());
+    let ELSE = new NoopSyntax();
+    let END = new NoopSyntax();
 
-    // 2. Evaluate($params, blockArguments)
-    list.append(new Evaluate({ name: $params, syntax: this.args.params }));
+    statements.append(new OpenBlock());
+    statements.append(new PutObject({ register: LITERAL('generic'), syntax: this.args.params }));
+    statements.append(new PutObject({ register: LITERAL('condition'), syntax: new DerefRegister({ register: LITERAL('generic'), path: LITERAL('0') }) }));
+    statements.append(new JumpUnless({ jumpTo: ELSE }));
+    statements.append(new PushChildScope({ localNames: templates.default.locals, spreadBlockArguments: new GetObject({ register: LITERAL('generic') }) }));
 
-    // 3. Evaluate($condition, Deref($params, "0"))
-    list.append(new Evaluate({ name: $condition, syntax: new Deref({ parent: $params, name: LITERAL('0') }) }));
-
-    // 6. CloseBlock(inverse)
-    let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
-    list.append(endElse);
-
-    // 11. CloseBlock(default)
-    let endIf = new CloseBlock({ syntax: this, template: templates.default })
-    list.append(endIf);
-
-    // 12. Noop
-    let end = new NoopSyntax()
-    list.append(end);
-
-    // 7. Jump => 12
-    let jump = new Jump({ jumpTo: end });
-    list.insertBefore(jump, endIf);
-
-    // 8. PushChildScope({ localNames, $params })
-    list.insertBefore(new PushChildScope({
-      localNames: templates.default.locals,
-      blockArguments: new GetLocal({ name: $params })
-    }), endIf);
-
-    // 9. ...DefaultStatements...
     templates.default.statements.forEachNode(n => {
-      list.insertBefore(n.clone(), endIf);
+      statements.append(n.clone());
     });
 
-    // 10. PopScope
-    list.insertBefore(new PopScope(), endIf);
+    statements.append(new PopScope());
+    statements.append(new CloseBlock({ syntax: this, template: templates.default }));
+    statements.append(new Jump({ jumpTo: END }));
 
-    // 4. JumpIf => 8
-    list.insertBefore(new JumpIf({
-      condition: new GetLocal({ name: $condition }),
-      jumpTo: list.nextNode(jump)
-    }), endElse);
+    statements.append(ELSE);
 
-    // 3. ...InverseStatements...
     if (templates.inverse) {
       templates.inverse.statements.forEachNode(n => {
-        list.insertBefore(n.clone(), endElse);
+        statements.append(n.clone());
       });
     }
 
-    return list;
+    statements.append(new CloseBlock({ syntax: this, template: templates.inverse }));
+
+    statements.append(END);
+
+    return statements;
   }
 
   evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
@@ -877,62 +927,6 @@ class WithMorph extends TemplateMorph {
     this.frame.childScope(localNames).bindLocalReferences(blockArguments.toArray());
   }
 }
-
-class NoopSyntax extends StatementSyntax {
-  clone(): NoopSyntax {
-    return new NoopSyntax();
-  }
-
-  evaluate() {
-    return null;
-  }
-}
-
-class OpenBlock extends StatementSyntax {
-  clone(): OpenBlock {
-    return new OpenBlock();
-  }
-
-  evaluate(stack: ElementStack) {
-    stack.openBlock();
-    return null;
-  }
-}
-
-interface CloseBlockOptions {
-  syntax: StatementSyntax;
-  template: Template;
-}
-
-class CloseBlock extends StatementSyntax {
-  public syntax: StatementSyntax;
-  public template: Template;
-
-  constructor({ syntax, template }: CloseBlockOptions) {
-    super();
-    this.syntax = syntax;
-    this.template = template;
-  }
-
-  clone(): CloseBlock {
-    return new CloseBlock(this);
-  }
-
-  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
-    let result: RenderResult = stack.closeBlock(this.template);
-    let morph = <TemplateMorph>this.syntax.evaluate(stack, frame, vm);
-    morph.willAppend(stack);
-
-    if (this.template) {
-      morph.setRenderResult(result);
-    } else {
-      morph.didBecomeEmpty();
-    }
-
-    return null;
-  }
-}
-
 
 class DynamicComponentSyntax extends StatementSyntax {
   type = "dynamic-component";

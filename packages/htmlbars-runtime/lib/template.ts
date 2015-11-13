@@ -909,18 +909,11 @@ export class Jump extends StatementSyntax {
   }
 }
 
-interface JumpIfOptions {
-  condition: ExpressionSyntax;
-  jumpTo: StatementSyntax;
-}
-
 export class JumpIf extends StatementSyntax {
-  public condition: ExpressionSyntax;
   public jumpTo: StatementSyntax;
 
-  constructor({ condition, jumpTo }: JumpIfOptions) {
+  constructor({ jumpTo }: JumpOptions) {
     super();
-    this.condition = condition;
     this.jumpTo = jumpTo;
   }
 
@@ -928,10 +921,8 @@ export class JumpIf extends StatementSyntax {
     return new JumpIf(this);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
-    let value = this.condition.evaluate(frame).value();
-
-    if (value) {
+  evaluate(stack, frame: Frame, vm) {
+    if (frame.scope().condition.value()) {
       vm.goto(this.jumpTo);
     }
 
@@ -939,18 +930,11 @@ export class JumpIf extends StatementSyntax {
   }
 }
 
-interface JumpUnlessOptions {
-  condition: ExpressionSyntax;
-  jumpTo: StatementSyntax;
-}
-
 export class JumpUnless extends StatementSyntax {
-  public condition: ExpressionSyntax;
   public jumpTo: StatementSyntax;
 
-  constructor({ condition, jumpTo }: JumpUnlessOptions) {
+  constructor({ jumpTo }: JumpOptions) {
     super();
-    this.condition = condition;
     this.jumpTo = jumpTo;
   }
 
@@ -958,10 +942,8 @@ export class JumpUnless extends StatementSyntax {
     return new JumpUnless(this);
   }
 
-  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
-    let value = this.condition.evaluate(frame).value();
-
-    if (!value) {
+  evaluate(stack, frame: Frame, vm) {
+    if (!frame.scope().condition.value()) {
       vm.goto(this.jumpTo);
     }
 

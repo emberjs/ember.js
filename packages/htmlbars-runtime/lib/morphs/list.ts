@@ -1,10 +1,13 @@
 import { EmptyableMorph, TemplateMorph, Morph, Bounds, MorphConstructor, createMorph, insertBoundsBefore, clear } from '../morph';
 import { ChainableReference, Reference } from 'htmlbars-reference';
-import { InternedString, Dict, LinkedList, dict, intern } from 'htmlbars-util';
+import { InternedString, Dict, LinkedList, symbol, dict, intern } from 'htmlbars-util';
 import { ElementStack } from '../builder';
 import Template, { Templates } from '../template';
 import { RenderResult } from '../render';
 import { Frame } from '../environment';
+import { VM } from '../vm';
+import { NoopSyntax, OpenBlock, CloseBlock, GetLocal } from '../opcodes/inlining';
+import { Jump, JumpIf } from '../template';
 
 export interface MorphListOptions {
   reference: ChainableReference;
@@ -44,7 +47,7 @@ export class MorphList extends EmptyableMorph {
     return this.list.tail().lastNode();
   }
 
-  append(stack: ElementStack) {
+  append(stack: ElementStack, vm: VM<any>) {
     this.willAppend(stack);
     let array: any[] = this.reference.value();
 
@@ -56,7 +59,7 @@ export class MorphList extends EmptyableMorph {
     let builder = new Builder(stack, this);
 
     array.forEach((val, index) => {
-      builder.append({ template, val, index, frame: this.frame, key: this.keyFor(val) });
+      builder.append({ template, val, index, vm, frame: this.frame, key: this.keyFor(val) });
     });
 
     this.didInsertContent(this.presentBounds);
@@ -91,6 +94,8 @@ export class MorphList extends EmptyableMorph {
 
     this.list.clear();
   }
+
+  setRenderResult() {}
 
   private keyFor(obj: any): InternedString {
     let keyPath = this.key ? this.key.value() : '@identity';
@@ -168,7 +173,7 @@ class Builder {
     this.parent = parent;
   }
 
-  append({ template, key, index, frame, val }: { template: Template, key: InternedString, index: number, frame: Frame, val: any }) {
+  append({ template, key, index, frame, vm, val }: { template: Template, key: InternedString, index: number, frame: Frame, vm: VM<any>, val: any }) {
     let childFrame = frame.child();
 
     if (template.arity) {
@@ -178,7 +183,7 @@ class Builder {
     }
 
     let morph = createMorph(InnerBlockMorph, this.parentElement, childFrame, { template, key });
-    morph.append(this.stack);
+    morph.append(this.stack, vm);
     this.map[<string>key] = morph;
 
     this.parent.list.append(morph);

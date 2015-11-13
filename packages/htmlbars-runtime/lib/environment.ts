@@ -32,7 +32,7 @@ import {
 
 import { VM } from './vm';
 
-import { InternedString, LITERAL, symbol } from 'htmlbars-util';
+import { InternedString, LITERAL, symbol, intern } from 'htmlbars-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
@@ -69,6 +69,14 @@ export abstract class Scope<T extends Object> {
   private blocks: Dict<Block> = null;
   private localNames: InternedString[];
   protected meta: MetaLookup;
+
+  // Registers
+  public generic: any = null;
+  public condition: PathReference = null;
+  public iterable: PathReference = null;
+  public iterator: Iterator<any> = null;
+  public iterationCounter: number = null;
+  public iterationItem: PathReference = null;
 
   constructor(parent: Scope<T>, meta: MetaLookup, localNames: InternedString[]) {
     this.parent = parent;
@@ -259,6 +267,24 @@ export abstract class Environment<T extends Object> {
     });
   }
 
+  iteratorFor(iterable: PathReference) {
+    let position = 0;
+    let len = iterable.value().length;
+
+    return {
+      next() {
+        if (position >= len) return { done: true, value: undefined };
+
+        position++;
+
+        return {
+          done: false,
+          value: iterable.get(intern("" + (position - 1)))
+        };
+      }
+    }
+  }
+
   abstract hasHelper(scope: Scope<T>, helperName: string[]): boolean;
   abstract lookupHelper(scope: Scope<T>, helperName: string[]): ConstReference<Helper>;
   abstract getComponentDefinition(scope: Scope<T>, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
@@ -342,6 +368,10 @@ export class Frame {
 
   getComponentDefinition(tagName: string[], syntax: StatementSyntax): ComponentDefinition {
     return this.env.getComponentDefinition(this._scope, tagName, syntax);
+  }
+
+  iteratorFor(iterable: PathReference): { next: () => { done: boolean, value: any } } {
+    return this.env.iteratorFor(iterable);
   }
 
   begin() {

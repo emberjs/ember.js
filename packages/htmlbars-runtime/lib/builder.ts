@@ -205,7 +205,7 @@ export class ElementStack {
     this.pushBlock();
   }
 
-  closeBlock(template: Template) {
+  closeBlock(template: Template): RenderResult {
     let bounds = this.bounds();
     let morphs = this.morphList();
     this.popBlock();
