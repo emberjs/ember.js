@@ -696,8 +696,6 @@ class EachSyntax extends StatementSyntax {
 
     statements.append(END);
 
-    debugger;
-
     return statements;
   }
 
