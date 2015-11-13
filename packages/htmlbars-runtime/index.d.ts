@@ -38,7 +38,15 @@ export {
   PopScope,
   Evaluate,
   Deref,
-  GetLocal
+  DerefRegister,
+  PutObject,
+  GetObject,
+  GetLocal,
+  OpenBlock,
+  CloseBlock,
+  NoopSyntax,
+  StartIter,
+  NextIter
 } from './lib/opcodes/inlining';
 
 export {
