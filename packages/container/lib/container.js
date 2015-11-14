@@ -349,7 +349,7 @@ function injectDeprecatedContainer(object, container) {
     get() {
       deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
                 false,
-                { id: 'ember-application.injected-container', until: '3.0.0' });
+                { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
       return container;
     }
   });
