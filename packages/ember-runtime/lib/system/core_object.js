@@ -473,6 +473,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   _scheduledDestroy() {
     if (this.isDestroyed) { return; }
     destroy(this);
+    this.container = undefined;
     this.isDestroyed = true;
   },
 

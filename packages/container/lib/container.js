@@ -23,6 +23,7 @@ function Container(registry, options) {
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
+  this.isDestroyed = false;
 }
 
 Container.prototype = {
@@ -133,9 +134,7 @@ Container.prototype = {
    */
   destroy() {
     eachDestroyable(this, function(item) {
-      if (item.destroy) {
-        item.destroy();
-      }
+      item.destroy();
     });
 
     this.isDestroyed = true;
@@ -364,7 +363,8 @@ function eachDestroyable(container, callback) {
     key = keys[i];
     value = cache[key];
 
-    if (container.registry.getOption(key, 'instantiate') !== false) {
+    if (container.registry.getOption(key, 'instantiate') !== false &&
+       value.destroy) {
       callback(value);
     }
   }
@@ -372,9 +372,7 @@ function eachDestroyable(container, callback) {
 
 function resetCache(container) {
   eachDestroyable(container, function(value) {
-    if (value.destroy) {
-      value.destroy();
-    }
+    value.destroy();
   });
 
   container.cache.dict = dictionary(null);
