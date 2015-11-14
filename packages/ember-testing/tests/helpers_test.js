@@ -615,14 +615,14 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
       oninputHandler(e) {
         events.push(e.type);
       },
-      onchangeHanlders(e) {
+      onchangeHandler(e) {
         events.push(e.type);
       }
     }
   });
 
   App.IndexView = EmberView.extend({
-    template: compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHanlders"}}>')
+    template: compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>')
   });
 
   run(App, App.advanceReadiness);
