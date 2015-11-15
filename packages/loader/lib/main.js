@@ -32,6 +32,8 @@ var mainContext = this;
     requirejs = require = requireModule = function(name) {
       return internalRequire(name, null);
     }
+    require['default'] = require;
+
     function missingModule(name, referrerName) {
       if (referrerName) {
         throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
@@ -62,6 +64,8 @@ var mainContext = this;
       for (var i = 0; i < length; i++) {
         if (deps[i] === 'exports') {
           reified[i] = exports;
+        } else if (deps[i] === 'require') {
+          reified[i] = require;
         } else {
           reified[i] = internalRequire(deps[i], name);
         }
