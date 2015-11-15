@@ -8,7 +8,11 @@ import {
 import BasicStream from 'ember-metal/streams/stream';
 import { isStream  } from 'ember-metal/streams/utils';
 
-let KeyStream = BasicStream.extend({
+function labelFor(source, key) {
+  return source.label ? source.label + '.' + key : key;
+}
+
+export default BasicStream.extend({
   init(source, key) {
     assert('KeyStream error: source must be a stream', isStream(source)); // TODO: This isn't necessary.
     assert('KeyStream error: key must be a non-empty string', typeof key === 'string' && key.length > 0);
@@ -80,9 +84,3 @@ let KeyStream = BasicStream.extend({
     this._clearObservedObject();
   }
 });
-
-function labelFor(source, key) {
-  return source.label ? source.label + '.' + key : key;
-}
-
-export default KeyStream;
