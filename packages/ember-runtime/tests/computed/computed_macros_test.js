@@ -15,8 +15,12 @@ import {
   deprecatingAlias,
   and,
   or,
-  collect
 } from 'ember-metal/computed_macros';
+
+import {
+  collect
+} from 'ember-runtime/computed/reduce_computed_macros';
+
 import alias from 'ember-metal/alias';
 import { defineProperty } from 'ember-metal/properties';
 import EmberObject from 'ember-runtime/system/object';

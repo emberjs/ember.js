@@ -11,6 +11,8 @@ import { addObserver, removeObserver } from 'ember-metal/observer';
 import compare from 'ember-runtime/compare';
 import { isArray } from 'ember-runtime/utils';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import isNone from 'ember-metal/is_none';
+import getProperties from 'ember-metal/get_properties';
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
@@ -473,6 +475,49 @@ export function setDiff(setAProperty, setBProperty) {
 
     return setA.filter(x => setB.indexOf(x) === -1);
   }).readOnly();
+}
+
+/**
+  A computed property that returns the array of values
+  for the provided dependent properties.
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    clothes: Ember.computed.collect('hat', 'shirt')
+  });
+
+  var hamster = Hamster.create();
+
+  hamster.get('clothes'); // [null, null]
+  hamster.set('hat', 'Camp Hat');
+  hamster.set('shirt', 'Camp Shirt');
+  hamster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
+  ```
+
+  @method collect
+  @for Ember.computed
+  @param {String} dependentKey*
+  @return {Ember.ComputedProperty} computed property which maps
+  values of all passed in properties to an array.
+  @public
+*/
+export function collect(...dependentKeys) {
+  return multiArrayMacro(dependentKeys, function() {
+    var properties = getProperties(this, dependentKeys);
+    var res = emberA();
+    for (var key in properties) {
+      if (properties.hasOwnProperty(key)) {
+        if (isNone(properties[key])) {
+          res.push(null);
+        } else {
+          res.push(properties[key]);
+        }
+      }
+    }
+    return res;
+  });
 }
 
 /**
