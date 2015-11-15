@@ -27,7 +27,7 @@ export {
   builders
 } from './lib/template';
 
-export { StatementSyntax } from './lib/opcodes';
+export { StatementSyntax, ExpressionSyntax } from './lib/opcodes';
 
 export { VM } from './lib/vm';
 
@@ -78,4 +78,4 @@ export { default as DOMHelper, isWhitespace } from './lib/dom';
 export { RenderResult, manualElement } from './lib/render';
 export { ElementStack } from './lib/builder';
 export { Morph, MorphSpecializer, ContentMorph, TemplateMorph, EmptyableMorph, Bounds, createMorph } from './lib/morph';
-export { MorphList, MorphListOptions } from './lib/morphs/list';
+export { MorphList, InnerBlockMorph, MorphListOptions } from './lib/morphs/list';
