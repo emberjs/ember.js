@@ -36,7 +36,7 @@ var renderer;
   @uses Ember.ActionHandler
   @private
 */
-var CoreView = EmberObject.extend(Evented, ActionHandler, {
+const CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
 
   _states: cloneStates(states),
