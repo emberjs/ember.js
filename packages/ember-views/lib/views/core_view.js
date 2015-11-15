@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 
@@ -10,6 +9,7 @@ import { typeOf } from 'ember-runtime/utils';
 import Renderer from 'ember-metal-views/renderer';
 import { cloneStates, states } from 'ember-views/views/states';
 import { internal } from 'htmlbars-runtime';
+import require from 'require';
 
 function K() { return this; }
 
@@ -148,7 +148,7 @@ export var DeprecatedCoreView = CoreView.extend({
 
 var _domHelper;
 function domHelper() {
-  return _domHelper = _domHelper || Ember.__loader.require('ember-htmlbars/system/dom-helper')['default'];
+  return _domHelper = _domHelper || require('ember-htmlbars/system/dom-helper').default;
 }
 
 export default CoreView;
