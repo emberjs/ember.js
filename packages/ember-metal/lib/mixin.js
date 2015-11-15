@@ -6,16 +6,16 @@
 @module ember
 @submodule ember-metal
 */
-
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
 import EmberError from 'ember-metal/error';
-import { assert, deprecate, runInDebug } from 'ember-metal/debug';
+import { debugSeal, assert, deprecate, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
 import {
   guidFor,
+  GUID_KEY,
   wrap,
   makeArray
 } from 'ember-metal/utils';
@@ -499,6 +499,10 @@ export default function Mixin(args, properties) {
     this.mixins = undefined;
   }
   this.ownerConstructor = undefined;
+  this._without = undefined;
+  this[GUID_KEY] = null;
+  this[GUID_KEY + '_name'] = null;
+  debugSeal(this);
 }
 
 Mixin._apply = applyMixin;
@@ -527,6 +531,7 @@ Mixin.create = function(...args) {
 };
 
 var MixinPrototype = Mixin.prototype;
+
 
 /**
   @method reopen
@@ -641,6 +646,8 @@ MixinPrototype.keys = function() {
   }
   return ret;
 };
+
+debugSeal(MixinPrototype);
 
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
