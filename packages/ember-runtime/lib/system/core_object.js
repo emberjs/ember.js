@@ -9,7 +9,6 @@
 
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
-import Ember from 'ember-metal';
 import { assert, runInDebug } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import assign from 'ember-metal/assign';
@@ -945,8 +944,8 @@ ClassMixin.apply(CoreObject);
 CoreObject.reopen({
   didDefineProperty(proto, key, value) {
     if (hasCachedComputedProperties === false) { return; }
-    if (value instanceof Ember.ComputedProperty) {
-      var cache = Ember.meta(this.constructor).readableCache();
+    if (value instanceof ComputedProperty) {
+      var cache = meta(this.constructor).readableCache();
 
       if (cache && cache._computedProperties !== undefined) {
         cache._computedProperties = undefined;
