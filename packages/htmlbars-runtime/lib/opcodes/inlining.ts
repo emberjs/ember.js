@@ -147,13 +147,25 @@ export class NoopSyntax extends StatementSyntax {
   }
 }
 
+export interface OpenBlockOptions {
+  syntax: StatementSyntax;
+}
+
 export class OpenBlock extends StatementSyntax {
-  clone(): OpenBlock {
-    return new OpenBlock();
+  public syntax: StatementSyntax;
+
+  constructor({ syntax }: OpenBlockOptions) {
+    super();
+    this.syntax = syntax;
   }
 
-  evaluate(stack: ElementStack) {
+  clone(): OpenBlock {
+    return new OpenBlock(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
     stack.openBlock();
+    vm.scope().currentMorph = <TemplateMorph>this.syntax.evaluate(stack, frame, vm);
     return null;
   }
 }

@@ -95,7 +95,18 @@ export class MorphList extends EmptyableMorph {
     this.list.clear();
   }
 
-  setRenderResult() {}
+  setRenderResult(result: RenderResult) {
+    let list = this.list;
+
+    debugger;
+
+    result.morphs.forEach((morph: InnerBlockMorph) => {
+      list.append(morph);
+    });
+
+    this.didInsertContent(this.presentBounds);
+    this.map = dict<InnerBlockMorph>();
+  }
 
   private keyFor(obj: any): InternedString {
     let keyPath = this.key ? this.key.value() : '@identity';
@@ -120,7 +131,7 @@ interface InnerBlockOptions {
   nextSibling: Node
 }
 
-class InnerBlockMorph extends TemplateMorph {
+export class InnerBlockMorph extends TemplateMorph {
   public template: Template;
   public next: InnerBlockMorph;
   public prev: InnerBlockMorph;
@@ -238,8 +249,8 @@ class Replay {
       child.handled = true;
       map[<string>key] = child;
       list.insertBefore(child, current);
-      let stack = new ElementStack({ parentNode, nextSibling, dom: this.parent.frame.dom() });
-      child.append(stack);
+      let vm = this.parent.frame.newVM(parentNode, nextSibling);
+      child.append(vm.stack(), vm);
     }
   }
 

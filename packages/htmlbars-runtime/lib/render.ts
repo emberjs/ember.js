@@ -21,7 +21,7 @@ interface RenderResultOptions {
 export class RenderResult implements Bounds {
   public template: Template;
   public scope: Scope<any>;
-  private morphs: Morph[];
+  public morphs: Morph[];
   private bounds: Bounds;
 
   constructor(options: RenderResultOptions) {

@@ -1,9 +1,11 @@
 import {
   ATTRIBUTE_SYNTAX,
   RenderResult,
+  InnerBlockMorph,
   Environment,
   DOMHelper,
   StatementSyntax,
+  ExpressionSyntax,
   Params,
   Evaluate,
   EvaluatedParams,
@@ -637,9 +639,11 @@ class EachSyntax extends StatementSyntax {
   inline() {
     //       OpenBlock <---- EachMorph
     //       PutObject("generic", params)
+    //       PutObject("hash", hash)
     //       PutObject("iterable", DerefRegister("generic", "0"))
     //       StartIter
     //       JumpUnless(ELSE)
+    //       PutObject("key", HashGet("key"))
     // ITER: Noop
     //       OpenBlock <---- InnerBlockMorph
     //       PushChildScope({ localNames, [GetObject("iterationItem")] })
@@ -663,10 +667,13 @@ class EachSyntax extends StatementSyntax {
     let END = new NoopSyntax();
 
     statements.append(new OpenBlock()); // EachMorph (this)
+    statements.append(new PutObject({ register: LITERAL('hash'), syntax: this.args.hash }));
     statements.append(new PutObject({ register: LITERAL('generic'), syntax: this.args.params }));
     statements.append(new PutObject({ register: LITERAL('iterable'), syntax: new DerefRegister({ register: LITERAL('generic'), path: LITERAL('0') }) }));
     statements.append(new StartIter());
     statements.append(new JumpUnless({ jumpTo: ELSE }));
+
+    statements.append(new PutObject({ register: LITERAL('key'), syntax: new DerefRegister({ register: LITERAL('hash'), path: LITERAL('key') }) }));
 
     statements.append(ITER);
 
@@ -678,7 +685,7 @@ class EachSyntax extends StatementSyntax {
     });
 
     statements.append(new PopScope());
-    statements.append(new CloseBlock({ syntax: new InnerBlockSyntax(), template: templates.default }));
+    statements.append(new CloseBlock({ syntax: new InnerBlockSyntax({ key: new GetObject({ register: LITERAL('key') }) }), template: templates.default }));
     statements.append(new NextIter());
     statements.append(new JumpIf({ jumpTo: ITER }));
     statements.append(new CloseBlock({ syntax: this, template: true }));
@@ -707,11 +714,20 @@ class EachSyntax extends StatementSyntax {
 }
 
 class InnerBlockSyntax extends StatementSyntax {
-  evaluate() {
-    return {
-      willAppend: () => null,
-      setRenderResult: () => null
-    }
+  public key: ExpressionSyntax;
+
+  constructor({ key }: { key: ExpressionSyntax }) {
+    super();
+    this.key = key;
+  }
+
+  clone(): InnerBlockSyntax {
+    return new InnerBlockSyntax(this);
+  }
+
+  evaluate(stack: ElementStack, frame: Frame, vm): InnerBlockMorph {
+    let key = this.key.evaluate(frame);
+    return stack.createMorph(InnerBlockMorph, { template: null, key, nextSibling: null }, frame);
   }
 }
 

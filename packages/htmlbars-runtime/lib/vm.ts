@@ -35,6 +35,10 @@ export class VM<T> {
     this.frameStack.tail().goto(statement);
   }
 
+  stack(): ElementStack {
+    return this.elementStack;
+  }
+
   scope(): Scope<T> {
     return this.currentScope;
   }
@@ -75,10 +79,10 @@ export class VM<T> {
     let renderResult;
 
     this.invoke(template, { setRenderResult(result) { renderResult = result } });
-    let counter = 0;
+    // let counter = 0;
 
     while (true) {
-      if (counter++ > 10000) throw new Error("IE6 Error: Too many statements");
+      // if (counter++ > 10000) throw new Error("IE6 Error: Too many statements");
 
       if (frameStack.isEmpty()) break;
 

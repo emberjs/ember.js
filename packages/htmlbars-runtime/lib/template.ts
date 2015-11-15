@@ -1605,19 +1605,19 @@ export class Hash implements ExpressionSyntax {
   }
 }
 
-export class EvaluatedHash extends PushPullReference {
+export class EvaluatedHash extends PushPullReference implements PathReference {
   public values: ChainableReference[];
   public keys: InternedString[];
-  public map: Dict<ChainableReference>;
+  public map: Dict<PathReference>;
 
   constructor(hash: Hash, frame: Frame) {
     super();
 
     let { keys, values } = hash;
-    let map = dict<ChainableReference>();
+    let map = dict<PathReference>();
 
     this.values = values.map((value, i) => {
-      let result = value.evaluate(frame);
+      let result = <PathReference>value.evaluate(frame);
       map[<string>keys[i]] = result;
       this._addSource(result);
       return result;
@@ -1630,6 +1630,10 @@ export class EvaluatedHash extends PushPullReference {
   forEach(callback: (key: InternedString, value: ChainableReference) => void) {
     let values = this.values;
     this.keys.forEach((key, i) => callback(key, this.values[i]));
+  }
+
+  get(key: InternedString): PathReference {
+    return this.map[<string>key];
   }
 
   at(key: InternedString): ChainableReference {
