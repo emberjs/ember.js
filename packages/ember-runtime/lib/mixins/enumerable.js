@@ -7,7 +7,6 @@
 // HELPERS
 //
 
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import {
@@ -26,6 +25,12 @@ import {
   hasListeners
 } from 'ember-metal/events';
 import compare from 'ember-runtime/compare';
+
+let _emberA;
+
+function emberA() {
+  return (_emberA || (_emberA = require('ember-runtime/system/native_array').A))();
+}
 
 var contexts = [];
 
@@ -334,7 +339,7 @@ export default Mixin.create({
     @public
   */
   map(callback, target) {
-    var ret = Ember.A();
+    var ret = emberA();
 
     this.forEach(function(x, idx, i) {
       ret[idx] = callback.call(target, x, idx, i);
@@ -388,7 +393,7 @@ export default Mixin.create({
     @public
   */
   filter(callback, target) {
-    var ret = Ember.A();
+    var ret = emberA();
 
     this.forEach(function(x, idx, i) {
       if (callback.call(target, x, idx, i)) {
@@ -735,7 +740,7 @@ export default Mixin.create({
     @public
   */
   invoke(methodName, ...args) {
-    var ret = Ember.A();
+    var ret = emberA();
 
     this.forEach(function(x, idx) {
       var method = x && x[methodName];
@@ -757,7 +762,7 @@ export default Mixin.create({
     @public
   */
   toArray() {
-    var ret = Ember.A();
+    var ret = emberA();
 
     this.forEach(function(o, idx) {
       ret[idx] = o;
@@ -804,7 +809,7 @@ export default Mixin.create({
       return this; // nothing to do
     }
 
-    var ret = Ember.A();
+    var ret = emberA();
 
     this.forEach(function(k) {
       if (k !== value) {
@@ -831,7 +836,7 @@ export default Mixin.create({
     @public
   */
   uniq() {
-    var ret = Ember.A();
+    var ret = emberA();
 
     this.forEach((k) => {
       if (ret.indexOf(k) < 0) {
