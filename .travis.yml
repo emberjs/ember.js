@@ -1,7 +1,7 @@
 ---
 language: node_js
 node_js:
-  - "iojs"
+  - "5"
 
 sudo: false
 
@@ -13,12 +13,11 @@ cache:
 
 before_install:
   - "npm config set spin false"
-  - "npm install -g npm@^2"
   - "npm --version"
   - "phantomjs --version"
 
 install:
-  - "npm install --no-optional"
+  - "npm install"
 
 after_success:
   - "./bin/publish_builds"
