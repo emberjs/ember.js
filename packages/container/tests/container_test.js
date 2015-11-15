@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import Registry from 'container/registry';
 import factory from 'container/tests/test-helpers/factory';
+import { getOwner } from 'container/owner';
 import isEnabled from 'ember-metal/features';
 
 var originalModelInjections;
@@ -519,7 +520,7 @@ QUnit.test('Lazy injection validations are cached', function() {
 });
 
 if (isEnabled('ember-container-inject-owner')) {
-  QUnit.test('A deprecated `container` property is appended to every instantiated object', function() {
+  QUnit.test('A deprecated `container` property is appended to every object instantiated from an extendable factory', function() {
     let registry = new Registry();
     let container = registry.container();
     let PostController = factory();
@@ -533,6 +534,53 @@ if (isEnabled('ember-container-inject-owner')) {
     expectDeprecation(function() {
       let c = postController.container;
       strictEqual(c, container);
+    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+  });
+
+  QUnit.test('A deprecated `container` property is appended to every object instantiated from a non-extendable factory, and a fake container is available during instantiation.', function() {
+    expect(8);
+
+    let owner = {};
+    let registry = new Registry();
+    let container = registry.container({ owner });
+
+    // Define a simple non-extendable factory
+    let PostController = function() {};
+    PostController.create = function(options) {
+      ok(options.container, 'fake container has been injected and is available during `create`.');
+
+      expectDeprecation(function() {
+        options.container.lookup('abc:one');
+      }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper to access the owner of this object and then call `lookup` instead.');
+
+      expectDeprecation(function() {
+        options.container.lookupFactory('abc:two');
+      }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper to access the owner of this object and then call `_lookupFactory` instead.');
+
+      // non-deprecated usage of `lookup` and `_lookupFactory`
+      owner.lookup = function(fullName) {
+        equal(fullName, 'abc:one', 'lookup on owner called properly');
+      };
+      owner._lookupFactory = function(fullName) {
+        equal(fullName, 'abc:two', '_lookupFactory on owner called properly');
+      };
+      let foundOwner = getOwner(options);
+      foundOwner.lookup('abc:one');
+      foundOwner._lookupFactory('abc:two');
+
+      return new PostController(options);
+    };
+
+    registry.register('controller:post', PostController);
+    let postController = container.lookup('controller:post');
+
+    expectDeprecation(function() {
+      Ember.get(postController, 'container');
+    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+
+    expectDeprecation(function() {
+      let c = postController.container;
+      strictEqual(c, container, 'Injected container is now regular (not fake) container, but access is still deprecated.');
     }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
   });
 } else {
