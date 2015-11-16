@@ -8,7 +8,7 @@ import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import ViewMixin from 'ember-views/mixins/view_support';
 import EmberView from 'ember-views/views/view';
 
-export default CoreView.extend(
+const GlimmerComponent = CoreView.extend(
   ViewChildViewsSupport,
   ViewStateSupport,
   TemplateRenderingSupport,
@@ -24,3 +24,9 @@ export default CoreView.extend(
       this._viewRegistry = this._viewRegistry || EmberView.views;
     }
   });
+
+GlimmerComponent.reopenClass({
+  isGlimmerComponentFactory: true
+});
+
+export default GlimmerComponent;

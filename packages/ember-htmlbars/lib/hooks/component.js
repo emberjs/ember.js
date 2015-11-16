@@ -24,12 +24,14 @@ var IS_ANGLE_CACHE = new Cache(1000, function(key) {
 
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.getState();
+  let isClosureComponent = false;
+
 
   let tagName = _tagName;
   if (CONTAINS_DOT_CACHE.get(tagName)) {
-    let stream = env.hooks.get(env, scope, tagName);
-    let componentCell = stream.value();
+    let componentCell = getComponentCell(env, scope, tagName);
     if (isComponentCell(componentCell)) {
+      isClosureComponent = true;
       tagName = componentCell[COMPONENT_PATH];
 
       /*
@@ -62,10 +64,12 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   let isTopLevel = false;
   let isDasherized = false;
 
-  let angles = IS_ANGLE_CACHE.get(tagName);
+  let angles = IS_ANGLE_CACHE.get(_tagName);
 
   if (angles) {
-    tagName = angles[2];
+    if (!isClosureComponent) {
+      tagName = angles[2];
+    }
     isAngleBracket = true;
     isTopLevel = !!angles[1];
   }
@@ -163,4 +167,16 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     state.manager = manager;
     manager.render(env, visitor);
   }
+}
+
+function getComponentCell(env, scope, _tagName) {
+  let tagName = _tagName;
+
+  // Clean tagName if it is a glimmer component
+  if (tagName.charAt(0) === '<') {
+    tagName = tagName.substring(1, tagName.length - 1);
+  }
+
+  let stream = env.hooks.get(env, scope, tagName);
+  return stream.value();
 }
