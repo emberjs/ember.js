@@ -108,7 +108,7 @@ export class ElementStack {
   private nextSiblingStack: Node[];
   private morphs: Morph[];
   private classListStack: ClassList[] = [];
-  private classList: ClassList = null;
+  private classList: ClassList = undefined;
   private blockStack: BlockTracker[];
   private blockElement: BlockTracker;
 
@@ -268,6 +268,12 @@ export class ElementStack {
     this.blockElement.closeElement();
     let child = this.popElement();
     this.dom.insertBefore(this.element, child, this.nextSibling);
+
+    let classNames = classList ? classList.value() : null;
+    if (classNames !== null) {
+      this.dom.setAttribute(child, 'class', classNames);
+    }
+
     return { element: child, classList };
   }
 

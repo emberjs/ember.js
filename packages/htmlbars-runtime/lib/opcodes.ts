@@ -1,12 +1,12 @@
 import { Dict, LinkedList, LinkedListNode } from 'htmlbars-util';
-import { ChainableReference } from 'htmlbars-reference';
+import { ChainableReference, PathReference } from 'htmlbars-reference';
 import Template from './template';
-import { Frame } from './environment';
+import { Frame, Environment } from './environment';
 import { ElementStack } from './builder';
 import { Morph } from './morph';
 import { VM } from './vm';
 
-export type PrettyPrintValue = PrettyPrint | string;
+export type PrettyPrintValue = PrettyPrint | PrettyPrint[] | string | string[];
 
 export class PrettyPrint {
   type: string;
@@ -28,21 +28,18 @@ export interface PrettyPrintable {
   prettyPrint(): PrettyPrint;
 }
 
-export interface ExpressionSyntax {
-  type: string;
-  evaluate(frame: Frame): ChainableReference;
-  prettyPrint(): any;
-}
-
 abstract class Syntax<T extends LinkedListNode> implements LinkedListNode {
   static fromSpec(spec: any, templates: Template[]): Syntax<any> {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
+  public type: string;
   public next: T = null;
   public prev: T = null;
 
-  abstract clone(): T;
+  prettyPrint(): PrettyPrintValue {
+    return `<${this.type}>`;
+  }
 }
 
 export abstract class StatementSyntax extends Syntax<StatementSyntax> {
@@ -50,31 +47,29 @@ export abstract class StatementSyntax extends Syntax<StatementSyntax> {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
-  abstract evaluate(stack: ElementStack, frame: Frame, vm: VM<any>): Morph;
-
-  public type: string;
-  public isStatic: boolean;
-  public next: StatementSyntax = null;
-  public prev: StatementSyntax = null;
-
-  abstract clone(): StatementSyntax;
-
-  inline(): LinkedList<StatementSyntax> {
-    return null;
+  prettyPrint(): PrettyPrint {
+    return new PrettyPrint(this.type, this.type);
   }
+
+  abstract compile(opcodes: LinkedList<Opcode>, env: Environment<any>);
 }
 
-export abstract class StaticStatementSyntax extends StatementSyntax implements PrettyPrintable {
-  abstract prettyPrint(): PrettyPrint;
+export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {
+  public type: string;
+
+  prettyPrint(): PrettyPrintValue {
+    return `${this.type}`
+  }
+
+  abstract evaluate(frame: Frame): PathReference;
 }
 
-export abstract class DynamicStatementSyntax extends StatementSyntax {
+export interface Opcode extends LinkedListNode {
+  type: string;
+  next: Opcode;
+  prev: Opcode;
+
+  evaluate(vm: VM<any>);
 }
 
-export abstract class StaticExpression extends Syntax<StaticExpression> {
-  public isStatic: boolean = true;
-}
-
-export abstract class DynamicExpression extends Syntax<DynamicExpression> {
-  public isStatic: boolean = false;
-}
+export type OpSeq = LinkedList<Opcode>;

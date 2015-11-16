@@ -98,8 +98,6 @@ export class MorphList extends EmptyableMorph {
   setRenderResult(result: RenderResult) {
     let list = this.list;
 
-    debugger;
-
     result.morphs.forEach((morph: InnerBlockMorph) => {
       list.append(morph);
     });
