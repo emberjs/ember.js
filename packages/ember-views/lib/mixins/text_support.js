@@ -8,6 +8,11 @@ import { set } from 'ember-metal/property_set';
 import { Mixin } from 'ember-metal/mixin';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 
+const KEY_EVENTS = {
+  13: 'insertNewline',
+  27: 'cancel'
+};
+
 /**
   `TextSupport` is a shared mixin used by both `Ember.TextField` and
   `Ember.TextArea`. `TextSupport` adds a number of methods that allow you to
@@ -183,7 +188,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   bubbles: false,
 
   interpretKeyEvents(event) {
-    var map = TextSupport.KEY_EVENTS;
+    var map = KEY_EVENTS;
     var method = map[event.keyCode];
 
     this._elementValueDidChange();
@@ -324,11 +329,6 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     this.sendAction('key-down', get(this, 'value'), event);
   }
 });
-
-TextSupport.KEY_EVENTS = {
-  13: 'insertNewline',
-  27: 'cancel'
-};
 
 // In principle, this shouldn't be necessary, but the legacy
 // sendAction semantics for TextField are different from
