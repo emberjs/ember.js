@@ -128,6 +128,10 @@ import hashHelper from 'ember-htmlbars/helpers/hash';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import GlimmerComponent from 'ember-htmlbars/glimmer-component';
+import {
+  getTemplates,
+  setTemplates
+} from 'ember-htmlbars/template_registry';
 
 // importing adds template bootstrapping
 // initializer to enable embedded templates
@@ -173,3 +177,20 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 
 Helper.helper = makeHelper;
 Ember.Helper = Helper;
+
+/**
+  Global hash of shared templates. This will automatically be populated
+  by the build tools so that you can store your Handlebars templates in
+  separate files that get loaded into JavaScript at buildtime.
+
+  @property TEMPLATES
+  @for Ember
+  @type Object
+  @private
+*/
+Object.defineProperty(Ember, 'TEMPLATES', {
+  configurable: false,
+  get: getTemplates,
+  set: setTemplates
+});
+

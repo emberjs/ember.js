@@ -24,24 +24,26 @@ function prepare() {
 
 function cleanup() {
   run(function() {
-    if (App) {
-      App.destroy();
-    }
-    App = appInstance = null;
-    Ember.TEMPLATES = {};
+    try {
+      if (App) {
+        App.destroy();
+      }
+      App = appInstance = null;
+    } finally {
+      Ember.TEMPLATES = {};
 
-    cleanupHelpers();
+      cleanupHelpers();
+    }
   });
 }
 
 function cleanupHelpers() {
-  var currentHelpers = emberA(keys(helpers));
-
-  currentHelpers.forEach(function(name) {
-    if (!originalHelpers.contains(name)) {
-      delete helpers[name];
-    }
-  });
+  keys(helpers).
+    forEach((name) => {
+      if (!originalHelpers.contains(name)) {
+        delete helpers[name];
+      }
+    });
 }
 
 QUnit.module('Application Lifecycle - Component Registration', {

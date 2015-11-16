@@ -3,7 +3,6 @@
 @submodule ember-application
 */
 
-import Ember from 'ember-metal/core';
 import { assert, info } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {
@@ -17,6 +16,9 @@ import Namespace from 'ember-runtime/system/namespace';
 import helpers from 'ember-htmlbars/helpers';
 import validateType from 'ember-application/utils/validate-type';
 import dictionary from 'ember-metal/dictionary';
+import {
+  get as getTemplate
+} from 'ember-htmlbars/template_registry';
 
 export var Resolver = EmberObject.extend({
   /*
@@ -309,14 +311,7 @@ export default EmberObject.extend({
   resolveTemplate(parsedName) {
     var templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
-    if (Ember.TEMPLATES.hasOwnProperty(templateName)) {
-      return Ember.TEMPLATES[templateName];
-    }
-
-    templateName = decamelize(templateName);
-    if (Ember.TEMPLATES.hasOwnProperty(templateName)) {
-      return Ember.TEMPLATES[templateName];
-    }
+    return getTemplate(templateName) || getTemplate(decamelize(templateName));
   },
 
   /**

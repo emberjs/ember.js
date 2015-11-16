@@ -5,13 +5,16 @@
 @submodule ember-htmlbars
 */
 
-import Ember from 'ember-metal/core';
 import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberError from 'ember-metal/error';
 import { onLoad } from 'ember-runtime/system/lazy_load';
 import htmlbarsCompile from 'ember-template-compiler/system/compile';
 import environment from 'ember-metal/environment';
+import {
+  has as hasTemplate,
+  set as registerTemplate
+} from 'ember-htmlbars/template_registry';
 
 /**
 @module ember
@@ -58,12 +61,12 @@ function bootstrap(ctx) {
     }
 
     // Check if template of same name already exists
-    if (Ember.TEMPLATES[templateName] !== undefined) {
+    if (hasTemplate(templateName)) {
       throw new EmberError('Template named "' + templateName  + '" already exists.');
     }
 
     // For templates which have a name, we save them and then remove them from the DOM
-    Ember.TEMPLATES[templateName] = template;
+    registerTemplate(templateName, template);
 
     // Remove script tag from DOM
     script.remove();
