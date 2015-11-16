@@ -25,6 +25,7 @@ import {
   hasListeners
 } from 'ember-metal/events';
 import compare from 'ember-runtime/compare';
+import require from 'require';
 
 let _emberA;
 
