@@ -537,22 +537,20 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   computed property function. You can use this helper to define properties
   with mixins or via `Ember.defineProperty()`.
 
-  If you pass function as argument - it will be used as getter.
-  You can pass hash with two functions - instead of single function - as argument to provide both getter and setter.
-
-  The `get` function should accept two parameters, `key` and `value`. If `value` is not
-  undefined you should set the `value` first. In either case return the
-  current value of the property.
-
-  A computed property defined in this way might look like this:
+  If you pass a function as an argument, it will be used as a getter. A computed
+  property defined in this way might look like this:
 
   ```js
   let Person = Ember.Object.extend({
-    firstName: 'Betty',
-    lastName: 'Jones',
+    init() {
+      this._super(...arguments);
+
+      this.firstName = 'Betty';
+      this.lastName = 'Jones';
+    },
 
     fullName: Ember.computed('firstName', 'lastName', function() {
-      return this.get('firstName') + ' ' + this.get('lastName');
+      return `${this.get('firstName')} ${this.get('lastName')}`;
     })
   });
 
@@ -564,14 +562,45 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   client.get('fullName'); // 'Betty Fuller'
   ```
 
+  You can pass a hash with two functions, `get` and `set`, as an
+  argument to provide both a getter and setter:
+
+  ```js
+  let Person = Ember.Object.extend({
+    init() {
+      this._super(...arguments);
+
+      this.firstName = 'Betty';
+      this.lastName = 'Jones';
+    },
+
+    fullName: Ember.computed({
+      get(key) {
+        return `${this.get('firstName')} ${this.get('lastName')}`;
+      },
+      set(key, value) {
+        let [firstName, lastName] = value.split(/\s+/);
+        this.setProperties({ firstName, lastName });
+        return value;
+      }
+    });
+  })
+
+  let client = Person.create();
+  client.get('firstName'); // 'Betty'
+
+  client.set('fullName', 'Carroll Fuller');
+  client.get('firstName'); // 'Carroll'
+  ```
+
+  The `set` function should accept two parameters, `key` and `value`. The value
+  returned from `set` will be the new value of the property.
+
   _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
-  will have prototype extensions enabled._
+  will have [prototype Extensions](http://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/) enabled._
 
-  You might use this method if you disabled
-  [Prototype Extensions](http://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/).
-  The alternative syntax might look like this
-  (if prototype extensions are enabled, which is the default behavior):
+  The alternative syntax, with prototype extensions, might look like:
 
   ```js
   fullName() {
