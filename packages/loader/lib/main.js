@@ -32,6 +32,15 @@ var mainContext = this;
     requirejs = require = requireModule = function(name) {
       return internalRequire(name, null);
     }
+    require['default'] = require;
+
+    function missingModule(name, referrerName) {
+      if (referrerName) {
+        throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
+      } else {
+        throw new Error('Could not find module ' + name);
+      }
+    }
 
     function internalRequire(name, referrerName) {
       var exports = seen[name];
@@ -43,11 +52,7 @@ var mainContext = this;
       exports = seen[name] = {};
 
       if (!registry[name]) {
-        if (referrerName) {
-          throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
-        } else {
-          throw new Error('Could not find module ' + name);
-        }
+        missingModule(name, referrerName);
       }
 
       var mod = registry[name];
@@ -59,6 +64,8 @@ var mainContext = this;
       for (var i = 0; i < length; i++) {
         if (deps[i] === 'exports') {
           reified[i] = exports;
+        } else if (deps[i] === 'require') {
+          reified[i] = require;
         } else {
           reified[i] = internalRequire(deps[i], name);
         }

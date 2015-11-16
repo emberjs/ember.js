@@ -96,12 +96,14 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  run(function() {
-    App.destroy();
-    App = null;
-
+  try {
+    run(function() {
+      App.destroy();
+      App = null;
+    });
+  } finally {
     Ember.TEMPLATES = {};
-  });
+  }
 }
 
 QUnit.module('Routing with Query Params', {

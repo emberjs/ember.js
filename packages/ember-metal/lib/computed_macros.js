@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -476,46 +475,6 @@ export var or = generateComputedWithProperties(function(properties) {
     }
   }
   return value;
-});
-
-/**
-  A computed property that returns the array of values
-  for the provided dependent properties.
-
-  Example
-
-  ```javascript
-  var Hamster = Ember.Object.extend({
-    clothes: Ember.computed.collect('hat', 'shirt')
-  });
-
-  var hamster = Hamster.create();
-
-  hamster.get('clothes'); // [null, null]
-  hamster.set('hat', 'Camp Hat');
-  hamster.set('shirt', 'Camp Shirt');
-  hamster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
-  ```
-
-  @method collect
-  @for Ember.computed
-  @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which maps
-  values of all passed in properties to an array.
-  @public
-*/
-export var collect = generateComputedWithProperties(function(properties) {
-  var res = Ember.A();
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key)) {
-      if (isNone(properties[key])) {
-        res.push(null);
-      } else {
-        res.push(properties[key]);
-      }
-    }
-  }
-  return res;
 });
 
 /**

@@ -2,12 +2,14 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core'; // Ember.STRINGS
 import { deprecate } from 'ember-metal/debug';
 import {
   inspect as emberInspect
 } from 'ember-metal/utils';
 import { isArray } from 'ember-runtime/utils';
+import {
+  get as getString
+} from 'ember-runtime/string_registry';
 
 import Cache from 'ember-metal/cache';
 
@@ -107,7 +109,7 @@ function loc(str, formats) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
 
-  str = Ember.STRINGS[str] || str;
+  str = getString(str) || str;
   return _fmt(str, formats);
 }
 
@@ -138,18 +140,6 @@ function underscore(str) {
 function capitalize(str) {
   return CAPITALIZE_CACHE.get(str);
 }
-
-/**
-  Defines the hash of localized strings for the current language. Used by
-  the `Ember.String.loc()` helper. To localize, add string values to this
-  hash.
-
-  @property STRINGS
-  @for Ember
-  @type Object
-  @private
-*/
-Ember.STRINGS = {};
 
 /**
   Defines string helper methods including string formatting and localization.

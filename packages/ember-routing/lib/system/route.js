@@ -30,7 +30,7 @@ import {
   calculateCacheKey
 } from 'ember-routing/utils';
 import { getOwner } from 'container/owner';
-
+import isEmpty from 'ember-metal/is_empty';
 var slice = Array.prototype.slice;
 
 function K() { return this; }
@@ -1944,7 +1944,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     assert('The name in the given arguments is undefined', arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = typeof _name === 'string' && !!_name;
-    var isDefaultRender = arguments.length === 0 || Ember.isEmpty(arguments[0]);
+    var isDefaultRender = arguments.length === 0 || isEmpty(arguments[0]);
     var name;
 
     if (typeof _name === 'object' && !options) {

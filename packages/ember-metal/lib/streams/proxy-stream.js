@@ -1,7 +1,7 @@
 import EmberObject from 'ember-runtime/system/object';
 import BasicStream from 'ember-metal/streams/stream';
 
-let ProxyStream = BasicStream.extend({
+const ProxyStream = BasicStream.extend({
   init(source, label) {
     this.label = label;
     this.sourceDep = this.addMutableDependency(source);

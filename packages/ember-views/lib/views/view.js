@@ -23,7 +23,6 @@ import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import ViewMixin from 'ember-views/mixins/view_support';
 import { deprecateProperty } from 'ember-metal/deprecate_property';
-
 /**
 @module ember
 @submodule ember-views
@@ -36,19 +35,6 @@ warn(
     id: 'ember-views.view-preserves-context-flag',
     until: '2.0.0'
   });
-
-/**
-  Global hash of shared templates. This will automatically be populated
-  by the build tools so that you can store your Handlebars templates in
-  separate files that get loaded into JavaScript at buildtime.
-
-  @property TEMPLATES
-  @for Ember
-  @type Object
-  @private
-*/
-Ember.TEMPLATES = {};
-
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's

@@ -153,5 +153,24 @@ Ember._ProxyMixin = _ProxyMixin;
 
 Ember.RSVP = RSVP;
 // END EXPORTS
+import {
+  getStrings,
+  setStrings
+} from 'ember-runtime/string_registry';
+/**
+  Defines the hash of localized strings for the current language. Used by
+  the `Ember.String.loc()` helper. To localize, add string values to this
+  hash.
+
+  @property STRINGS
+  @for Ember
+  @type Object
+  @private
+*/
+Object.defineProperty(Ember, 'STRINGS', {
+  configurable: false,
+  get: getStrings,
+  set: setStrings
+});
 
 export default Ember;
