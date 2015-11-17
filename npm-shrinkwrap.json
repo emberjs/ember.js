@@ -1,6 +1,6 @@
 {
   "name": "ember",
-  "version": "2.3.0-canary",
+  "version": "2.4.0-canary",
   "dependencies": {
     "abbrev": {
       "version": "1.0.7",
@@ -1616,7 +1616,8 @@
             },
             "lodash": {
               "version": "2.4.2",
-              "from": "lodash@>=2.4.1 <2.5.0"
+              "from": "lodash@2.4.2",
+              "resolved": "https://registry.npmjs.org/lodash/-/lodash-2.4.2.tgz"
             },
             "strip-ansi": {
               "version": "0.1.1",
@@ -1961,7 +1962,8 @@
           "dependencies": {
             "git-repo-info": {
               "version": "1.1.2",
-              "from": "git-repo-info@>=1.0.4 <2.0.0"
+              "from": "git-repo-info@1.1.2",
+              "resolved": "https://registry.npmjs.org/git-repo-info/-/git-repo-info-1.1.2.tgz"
             }
           }
         },
@@ -2165,7 +2167,7 @@
             "esprima": {
               "version": "1.1.0-dev-harmony",
               "from": "git+https://github.com/ariya/esprima.git#harmony",
-              "resolved": "git+https://github.com/ariya/esprima.git#a65a3eb93b9a5dce9a1184ca2d1bd0b184c6b8fd"
+              "resolved": "git+https://github.com/thomasboyt/esprima.git#4be906f1abcbb6822e33526b4bab725c6095afcd"
             }
           }
         },
@@ -5438,7 +5440,8 @@
       "dependencies": {
         "esprima-fb": {
           "version": "15001.1001.0-dev-harmony-fb",
-          "from": "esprima-fb@>=15001.1001.0-dev-harmony-fb <15001.1002.0"
+          "from": "esprima-fb@15001.1001.0-dev-harmony-fb",
+          "resolved": "https://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz"
         },
         "source-map": {
           "version": "0.5.3",
