@@ -25,12 +25,6 @@ after_success:
 script:
   - npm test
 
-branches:
-  only:
-    - master
-    - beta
-    - stable
-
 env:
   global:
     - SAUCE_USERNAME=ember-ci
