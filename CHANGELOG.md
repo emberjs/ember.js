@@ -1,16 +1,14 @@
 # Ember Changelog
 
-### 2.2.0-beta.2 (October 24, 2015)
+### 2.2.0 (November 16, 2015)
 
+- [#12600](https://github.com/emberjs/ember.js/pull/12600) [BUGFIX beta] Guard against `null` `attrs` in `getRoot` hook.
 - [#12445](https://github.com/emberjs/ember.js/pull/12445) [BUGFIX] Ensure rest arg positionalParams can be supplied as hash arguments.
 - [#12456](https://github.com/emberjs/ember.js/pull/12456) [BUGFIX] Allow usage of bound properties in `{{link-to}}` for `bubbles`, `preventDefault`, `target`, `replace`, and `disabledWhen`.
 - [#12503](https://github.com/emberjs/ember.js/pull/12503) [BUGFIX] Add assertions for tagless components that include event handler functions (i.e. `click`).
 - [#12464](https://github.com/emberjs/ember.js/pull/12464) [BUGFIX] `Ember.String.htmlSafe()` should return a instance of SafeString for `null` / `undefined`.
 - [#12463](https://github.com/emberjs/ember.js/pull/12463) [BUGFIX] Fix uglification introduced bug with super wrapping.
 - [#12519](https://github.com/emberjs/ember.js/pull/12519) [BUGFIX] Ensure closure actions are wrapped in a run loop.
-
-### 2.2.0-beta.1 (October 4, 2015)
-
 - [#12214](https://github.com/emberjs/ember.js/pull/12214) Remove most of defeaturEify in favor of babel-plugin-filter-imports.
 - [#12253](https://github.com/emberjs/ember.js/pull/12253) [BUGFIX] Remove superfluous `routing-service` initializer.
 - [#12247](https://github.com/emberjs/ember.js/pull/12247) [BUGFIX] Avoid dirtying based on `Ember.Object`'s when `Ember.set` is not used.
