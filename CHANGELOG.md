@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v2.3.0-beta.1 (November 16, 2015)
+
+- [#12532](https://github.com/emberjs/ember.js/pull/12532) Bump RSVP dependency from 3.0.6 to 3.1.0.
+- [#12422](https://github.com/emberjs/ember.js/pull/12422) / [#12495](https://github.com/emberjs/ember.js/pull/12495) / [#12517](https://github.com/emberjs/ember.js/pull/12517) / [#12561](https://github.com/emberjs/ember.js/pull/12561) / [#12542](https://github.com/emberjs/ember.js/pull/12542) / [#12570](https://github.com/emberjs/ember.js/pull/12570) [FEATURE ember-contextual-components]
+- [#11874](https://github.com/emberjs/ember.js/pull/11874) / [#12562](https://github.com/emberjs/ember.js/pull/12562) / [#12557](https://github.com/emberjs/ember.js/pull/12557) / [#12578](https://github.com/emberjs/ember.js/pull/12578) / [#12599](https://github.com/emberjs/ember.js/pull/12599) / [#12570](https://github.com/emberjs/ember.js/pull/12570) / [#12604](https://github.com/emberjs/ember.js/pull/12604) / [#12609](https://github.com/emberjs/ember.js/pull/12609) [FEATURE ember-container-inject-owner]
+- [#12314](https://github.com/emberjs/ember.js/pull/12314) [BUGFIX] Mandatory setter should check prototype descriptors.
+- [#12485](https://github.com/emberjs/ember.js/pull/12485) [BUGFIX] Access property only once during `Ember.get`.
+- [#12503](https://github.com/emberjs/ember.js/pull/12503) Add helpful assertion when a tagless component includes event handler methods.
+
 ### v2.2.0-beta.2 (October 25, 2015)
 
 - [#12445](https://github.com/emberjs/ember.js/pull/12445) [BUGFIX] Ensure rest arg positionalParams can be supplied as hash arguments.
