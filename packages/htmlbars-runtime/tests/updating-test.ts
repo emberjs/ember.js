@@ -21,8 +21,48 @@ function render(template: Template, context={}) {
   return result;
 }
 
-QUnit.module("HTML-based compiler (dirtying)", {
+QUnit.module("Updating", {
   beforeEach: commonSetup
+});
+
+test("updating a single curly", () => {
+  var object = { value: 'hello world' };
+  var template = compile('<div><p>{{value}}</p></div>');
+  var result = render(template, object);
+  var valueNode = root.firstChild.firstChild.firstChild;
+
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
+
+  result.rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "no change");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+
+  object.value = 'goodbye world';
+  result.rerender();
+
+  equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+});
+
+test("updating a single trusting curly", () => {
+  var object = { value: '<p>hello world</p>' };
+  var template = compile('<div>{{{value}}}</div>');
+  var result = render(template, object);
+  var valueNode = root.firstChild.firstChild.firstChild;
+
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
+
+  result.rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "no change");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+
+  object.value = '<span>goodbye world</span>';
+  result.rerender();
+
+  equalTokens(root, '<div><span>goodbye world</span></div>', "After updating and dirtying");
+  notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 });
 
 test("a simple implementation of a dirtying rerender", function() {
@@ -87,10 +127,6 @@ test("a conditional that is false on the first run", assert => {
 });
 
 test("block arguments", assert => {
-  env.registerHelper('with', (params, hash, blocks) => {
-    blocks.template.yield([ params[0] ]);
-  });
-
   let template = compile("<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>");
 
   let object = { person: { name: { first: "Godfrey", last: "Chan" } } };
@@ -123,11 +159,7 @@ test("block arguments (ensure balanced push/pop)", assert => {
 });
 
 test("block helpers whose template has a morph at the edge", function() {
-  env.registerHelper('id', function(params, hash, options) {
-    return options.template.yield();
-  });
-
-  var template = compile("{{#id}}{{value}}{{/id}}");
+  var template = compile("{{#identity}}{{value}}{{/identity}}");
   var object = { value: "hello world" };
   let result = render(template, object);
 
@@ -193,8 +225,8 @@ test("helper calls follow the normal dirtying rules", function() {
   equal(textNode.nodeValue, "GOODBYE");
 });
 
-test("attribute nodes follow the normal dirtying rules", function() {
-  var template = compile("<div class={{value}}>hello</div>");
+test("class attribute follow the normal dirtying rules", function() {
+  var template = compile("<div class='{{value}}'>hello</div>");
   var object = { value: "world" };
 
   var result = render(template, object);
@@ -210,13 +242,13 @@ test("attribute nodes follow the normal dirtying rules", function() {
 
   equalTokens(root, "<div class='universe'>hello</div>", "Revalidating after dirtying");
 
-  object.value = "universe";
+  object.value = "world";
   result.rerender();
 
-  equalTokens(root, "<div class='universe'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div class='world'>hello</div>", "Revalidating after dirtying");
 });
 
-test("attribute nodes w/ concat follow the normal dirtying rules", function() {
+test("class attribute w/ concat follow the normal dirtying rules", function() {
   var template = compile("<div class='hello {{value}}'>hello</div>");
   var object = { value: "world" };
   var result = render(template, object);
@@ -232,8 +264,82 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
 
   equalTokens(root, "<div class='hello universe'>hello</div>");
 
-  object.value = "universe";
+  object.value = "world";
   result.rerender();
+
+  equalTokens(root, "<div class='hello world'>hello</div>");
+});
+
+test("attribute nodes follow the normal dirtying rules", function() {
+  var template = compile("<div data-value='{{value}}'>hello</div>");
+  var object = { value: "world" };
+
+  var result = render(template, object);
+
+  equalTokens(root, "<div data-value='world'>hello</div>", "Initial render");
+
+  object.value = "universe";
+  result.rerender(); // without setting the node to dirty
+
+  equalTokens(root, "<div data-value='universe'>hello</div>", "Revalidating without dirtying");
+
+  result.rerender();
+
+  equalTokens(root, "<div data-value='universe'>hello</div>", "Revalidating after dirtying");
+
+  object.value = "world";
+  result.rerender();
+
+  equalTokens(root, "<div data-value='world'>hello</div>", "Revalidating after dirtying");
+});
+
+test("attribute nodes w/ concat follow the normal dirtying rules", function() {
+  var template = compile("<div data-value='hello {{value}}'>hello</div>");
+  var object = { value: "world" };
+  var result = render(template, object);
+
+  equalTokens(root, "<div data-value='hello world'>hello</div>");
+
+  object.value = "universe";
+  result.rerender(); // without setting the node to dirty
+
+  equalTokens(root, "<div data-value='hello universe'>hello</div>");
+
+  result.rerender();
+
+  equalTokens(root, "<div data-value='hello universe'>hello</div>");
+
+  object.value = "world";
+  result.rerender();
+
+  equalTokens(root, "<div data-value='hello world'>hello</div>");
+});
+
+test("property nodes follow the normal dirtying rules", function() {
+  var template = compile("<div foo={{value}}>hello</div>");
+  var object = { value: true };
+
+  var result = render(template, object);
+
+  equalTokens(root, "<div>hello</div>", "Initial render");
+  strictEqual(root.firstChild.foo, true, "Initial render");
+
+  object.value = false;
+  result.rerender(); // without setting the node to dirty
+
+  equalTokens(root, "<div>hello</div>", "Revalidating without dirtying");
+  strictEqual(root.firstChild.foo, false, "Revalidating without dirtying");
+
+  result.rerender();
+
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
+  strictEqual(root.firstChild.foo, false, "Revalidating after dirtying");
+
+  object.value = true;
+  result.rerender();
+
+  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
+  strictEqual(root.firstChild.foo, true, "Revalidating after dirtying");
 });
 
 testEachHelper(

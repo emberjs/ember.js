@@ -13,7 +13,10 @@ import {
 } from './opcodes';
 
 import {
-  ArgsOpcode
+  ArgsOpcode,
+  EnterOpcode,
+  ExitOpcode,
+  EvaluateOpcode
 } from './opcodes/vm';
 
 import {
@@ -87,6 +90,34 @@ interface EvaluateOptions {
   nextSibling?: Node
 }
 
+export class RawTemplate {
+  syntax: LinkedList<StatementSyntax>;
+  ops: OpSeq = null;
+  locals: InternedString[];
+
+  static fromOpSeq(ops: OpSeq, locals: InternedString[]) {
+    return new RawTemplate({ ops, locals, syntax: null });
+  }
+
+  constructor({ ops, locals, syntax }: { ops: OpSeq, locals: InternedString[], syntax?: LinkedList<StatementSyntax> }) {
+    this.ops = ops;
+    this.locals = locals;
+    this.syntax = syntax || null;
+  }
+
+  opcodes(env: Environment<any>): OpSeq {
+    if (this.ops) return this.ops;
+    this.compile(env);
+    return this.ops;
+  }
+
+  compile(env: Environment<any>) {
+    let compiled = new LinkedList<Opcode>();
+    this.syntax.forEachNode(statement => env.statement(statement).compile(compiled, env));
+    this.ops = compiled;
+  }
+}
+
 export default class Template {
   static fromSpec(specs: any): Template {
     let templates = new Array(specs.length);
@@ -139,19 +170,18 @@ export default class Template {
   root: Template[];
   position: number;
   arity: number;
-  locals: InternedString[];
   spec: any[];
   isEmpty: boolean;
-  statements: LinkedList<StatementSyntax>;
-  compiled: LinkedList<Opcode> = null;
+  raw: RawTemplate;
 
   constructor({ meta, root, position, locals, statements, spec, isEmpty }: TemplateOptions) {
+    statements = statements || new LinkedList<StatementSyntax>();
+
     this.meta = meta || {};
     this.root = root || null;
     this.position = position === undefined ? null : position;
     this.arity = locals ? locals.length : 0;
-    this.statements = statements || new LinkedList<StatementSyntax>();
-    this.locals = locals || EMPTY_ARRAY;
+    this.raw = new RawTemplate({ ops: null, locals, syntax: statements })
     this.spec = spec || null;
     this.isEmpty = isEmpty === true ? isEmpty : statements.isEmpty();
     Object.seal(this);
@@ -174,42 +204,14 @@ export default class Template {
     });
   }
 
-  splice(inlined: LinkedList<StatementSyntax>, reference: StatementSyntax) {
-    let { statements } = this;
-    let head = inlined.head();
-    statements.spliceList(inlined, reference);
-    statements.remove(reference);
-    return head;
-  }
-
-  replace(statement: StatementSyntax, reference: StatementSyntax) {
-    let { statements } = this;
-    statements.insertBefore(statement, reference);
-    statements.remove(reference);
-    return statement;
-  }
-
   render(self: any, env: Environment<any>, options: RenderOptions, blockArguments: any[]=null) {
     let { hostOptions } = options;
-    let { locals: localNames } = this;
+    let { raw: { locals: localNames } } = this;
 
     let elementStack = new ElementStack({ dom: env.getDOM(), parentNode: options.appendTo, nextSibling: null });
     let vm = VM.initial(env, { self, localNames, blockArguments, hostOptions, elementStack });
 
-    return vm.execute(this.opcodes(env));
-  }
-
-  opcodes(env: Environment<any>): OpSeq {
-    if (!this.compiled) this.compile(env);
-    return this.compiled;
-  }
-
-  compile(env: Environment<any>) {
-    let compiled = new LinkedList<Opcode>();
-
-    this.statements.forEachNode(statement => statement.compile(compiled, env));
-
-    this.compiled = compiled;
+    return vm.execute(this.raw.opcodes(env));
   }
 }
 
@@ -250,6 +252,10 @@ export class Block extends StatementSyntax {
     this.path = options.path;
     this.args = options.args;
     this.templates = options.templates;
+  }
+
+  compile(ops: OpSeq) {
+    throw new Error("SyntaxError");
   }
 
   prettyPrint() {
@@ -332,20 +338,24 @@ export class Append extends StatementSyntax {
   }
 }
 
-class HelperInvocationReference extends PushPullReference {
-  private helper: ConstReference<EnvHelper>;
-  private args: ChainableReference;
+class HelperInvocationReference extends PushPullReference implements PathReference {
+  private helper: EnvHelper;
+  private args: EvaluatedParamsAndHash;
 
-  constructor(helper: ConstReference<EnvHelper>, args: EvaluatedParamsAndHash) {
+  constructor(helper: EnvHelper, args: EvaluatedParamsAndHash) {
     super();
-    this.helper = this._addSource(helper);
+    this.helper = helper;
     this.args = this._addSource(args);
+  }
+
+  get() {
+    throw new Error("Unimplemented: Yielding the result of a helper call.");
   }
 
   value(): Insertion {
     let { helper, args }  = this;
     let { params, hash } = args.value();
-    return this.helper.value()(params, hash, null);
+    return this.helper.call(undefined, params, hash, null);
   }
 }
 
@@ -966,6 +976,11 @@ export class Helper extends ExpressionSyntax {
     return new PrettyPrint('expr', this.ref.prettyPrint(), params, hash);
   }
 
+  evaluate(frame: Frame): PathReference {
+    let helper = frame.lookupHelper(this.ref.parts);
+    return new HelperInvocationReference(helper, this.args.evaluate(frame));
+  }
+
   simplePath(): InternedString {
     return this.ref.simplePath();
   }
@@ -1210,7 +1225,7 @@ export class Params extends ExpressionSyntax {
 }
 
 export class EvaluatedParams extends PushPullReference implements PathReference {
-  public references: ChainableReference[];
+  public references: PathReference[];
 
   constructor(params: Params, frame: Frame) {
     super();
@@ -1234,7 +1249,7 @@ export class EvaluatedParams extends PushPullReference implements PathReference 
     return this.references[n];
   }
 
-  toArray(): ChainableReference[] {
+  toArray(): PathReference[] {
     return this.references;
   }
 
@@ -1332,7 +1347,7 @@ export class Hash extends ExpressionSyntax {
 }
 
 export class EvaluatedHash extends PushPullReference implements PathReference {
-  public values: ChainableReference[];
+  public values: PathReference[];
   public keys: InternedString[];
   public map: Dict<PathReference>;
 
@@ -1353,7 +1368,7 @@ export class EvaluatedHash extends PushPullReference implements PathReference {
     this.keys = hash.keys;
   }
 
-  forEach(callback: (key: InternedString, value: ChainableReference) => void) {
+  forEach(callback: (key: InternedString, value: PathReference) => void) {
     let values = this.values;
     this.keys.forEach((key, i) => callback(key, this.values[i]));
   }
@@ -1362,7 +1377,7 @@ export class EvaluatedHash extends PushPullReference implements PathReference {
     return this.map[<string>key];
   }
 
-  at(key: InternedString): ChainableReference {
+  at(key: InternedString): PathReference {
     return this.map[<string>key];
   }
 

@@ -2,7 +2,6 @@ export {
   default as Template,
   ATTRIBUTE_SYNTAX,
   Templates,
-  TemplateEvaluation,
   ParamsAndHash,
   Params,
   Hash,
@@ -14,7 +13,6 @@ export {
   StaticAttr,
   DynamicAttr,
   AddClass,
-  EvaluatedRef,
   Get as GetSyntax,
   Value as ValueSyntax,
   AttributeSyntax,
@@ -27,9 +25,22 @@ export {
   builders
 } from './lib/template';
 
-export { StatementSyntax, ExpressionSyntax } from './lib/opcodes';
+export { StatementSyntax, ExpressionSyntax, OpSeq } from './lib/opcodes';
+export {
+  PushChildScopeOpcode,
+  PopScopeOpcode,
+  ArgsOpcode,
+  NoopOpcode,
+  EnterOpcode,
+  ExitOpcode,
+  EvaluateOpcode,
+  TestOpcode,
+  JumpOpcode,
+  JumpIfOpcode,
+  JumpUnlessOpcode
+} from './lib/opcodes/vm';
 
-export { VM } from './lib/vm';
+export { VM, UpdatingVM } from './lib/vm';
 
 export {
   PushScopeOptions,

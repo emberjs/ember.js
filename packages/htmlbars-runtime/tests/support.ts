@@ -20,7 +20,6 @@ import {
   MorphListOptions,
   Template,
   Templates,
-  TemplateEvaluation,
   Append,
   Unknown,
   Hash,
@@ -31,7 +30,6 @@ import {
   DynamicAttr,
   StaticAttr,
   AddClass,
-  EvaluatedRef,
   GetSyntax,
   ValueSyntax,
   BlockSyntax,
@@ -62,6 +60,17 @@ import {
   Scope,
   Block,
   VM,
+  OpSeq,
+  NoopOpcode,
+  EnterOpcode,
+  ExitOpcode,
+  EvaluateOpcode,
+  PushChildScopeOpcode,
+  PopScopeOpcode,
+  ArgsOpcode,
+  TestOpcode,
+  JumpOpcode,
+  JumpUnlessOpcode,
   builders,
   isWhitespace,
   createMorph,
@@ -204,6 +213,14 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
     }
 
     if (isSimple) {
+      if (block && key === 'identity') {
+        return new IdentitySyntax({ args: block.args, templates: block.templates })
+      }
+
+      if (block && key === 'render-inverse') {
+        return new RenderInverseIdentitySyntax({ args: block.args, templates: block.templates })
+      }
+
       if (block && key === 'each') {
         return new EachSyntax({ args: block.args, templates: block.templates });
       }
@@ -244,7 +261,7 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
     let helper = this.helpers[helperName];
 
     if (!helper) throw new Error(`Helper for ${helperParts.join('.')} not found.`);
-    return new ConstReference(this.helpers[helperName]);
+    return this.helpers[helperName];
   }
 
   getComponentDefinition(scope, name: string[], syntax: StatementSyntax): ComponentDefinition {
@@ -731,6 +748,40 @@ class InnerBlockSyntax extends StatementSyntax {
   }
 }
 
+class IdentitySyntax extends StatementSyntax {
+  type = "identity";
+
+  public args: ParamsAndHash;
+  public templates: Templates;
+
+  constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
+    this.args = args;
+    this.templates = templates;
+  }
+
+  compile(ops: OpSeq) {
+    ops.append(new EvaluateOpcode(this.templates.default.raw));
+  }
+}
+
+class RenderInverseIdentitySyntax extends StatementSyntax {
+  type = "render-inverse-identity";
+
+  public args: ParamsAndHash;
+  public templates: Templates;
+
+  constructor({ args, templates }: { args: ParamsAndHash, templates: Templates }) {
+    super();
+    this.args = args;
+    this.templates = templates;
+  }
+
+  compile(ops: OpSeq) {
+    ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+  }
+}
+
 class IfSyntax extends StatementSyntax {
   type = "if-statement";
 
@@ -750,6 +801,45 @@ class IfSyntax extends StatementSyntax {
 
   prettyPrint() {
     return `#if ${this.args.prettyPrint()}`;
+  }
+
+  compile(ops: OpSeq) {
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
+    //        Args
+    //        Test
+    //        JumpUnless(ELSE)
+    //        Evalulate(default)
+    //        Jump(END)
+    // ELSE:  Noop
+    //        Evalulate(inverse)
+    // END:   Noop
+    //        Exit
+
+    let { templates } = this;
+
+    let BEGIN = new NoopOpcode("BEGIN");
+    let ELSE = new NoopOpcode("ELSE");
+    let END = new NoopOpcode("END");
+
+    ops.append(new EnterOpcode(BEGIN, END));
+    ops.append(BEGIN);
+    ops.append(new ArgsOpcode(this.args));
+    ops.append(new TestOpcode());
+
+    if (this.templates.inverse) {
+      ops.append(new JumpUnlessOpcode(ELSE));
+      ops.append(new EvaluateOpcode(this.templates.default.raw));
+      ops.append(new JumpOpcode(END));
+      ops.append(ELSE);
+      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+    } else {
+      ops.append(new JumpUnlessOpcode(END));
+      ops.append(new EvaluateOpcode(this.templates.default.raw));
+    }
+
+    ops.append(END);
+    ops.append(new ExitOpcode());
   }
 
   inline() {
@@ -848,6 +938,52 @@ class WithSyntax extends StatementSyntax {
 
   prettyPrint() {
     return `#with ${this.args.prettyPrint()}`;
+  }
+
+  compile(ops: OpSeq) {
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
+    //        Args
+    //        Test
+    //        JumpUnless(ELSE)
+    //        PushChildScope(default.localNames)
+    //        Evalulate(default)
+    //        PopScope
+    //        Jump(END)
+    // ELSE:  Noop
+    //        Evalulate(inverse)
+    // END:   Noop
+    //        Exit
+
+    let { templates } = this;
+
+    let BEGIN = new NoopOpcode("BEGIN");
+    let ELSE = new NoopOpcode("ELSE");
+    let END = new NoopOpcode("END");
+
+    ops.append(new EnterOpcode(BEGIN, END));
+    ops.append(BEGIN);
+    ops.append(new ArgsOpcode(this.args));
+    ops.append(new TestOpcode());
+
+    if (this.templates.inverse) {
+      ops.append(new JumpUnlessOpcode(ELSE));
+    } else {
+      ops.append(new JumpUnlessOpcode(END));
+    }
+
+    ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    ops.append(new EvaluateOpcode(this.templates.default.raw));
+    ops.append(new PopScopeOpcode());
+    ops.append(new JumpOpcode(END));
+
+    if (this.templates.inverse) {
+      ops.append(ELSE);
+      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+    }
+
+    ops.append(END);
+    ops.append(new ExitOpcode());
   }
 
   inline() {

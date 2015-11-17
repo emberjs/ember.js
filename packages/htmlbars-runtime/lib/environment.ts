@@ -286,7 +286,7 @@ export abstract class Environment<T extends Object> {
   }
 
   abstract hasHelper(scope: Scope<T>, helperName: string[]): boolean;
-  abstract lookupHelper(scope: Scope<T>, helperName: string[]): ConstReference<Helper>;
+  abstract lookupHelper(scope: Scope<T>, helperName: string[]): Helper;
   abstract getComponentDefinition(scope: Scope<T>, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
 }
 
@@ -362,7 +362,7 @@ export class Frame {
     return this.env.hasHelper(this._scope, helperName);
   }
 
-  lookupHelper(helperName: InternedString[]): ConstReference<Helper> {
+  lookupHelper(helperName: InternedString[]): Helper {
     return this.env.lookupHelper(this._scope, helperName);
   }
 
