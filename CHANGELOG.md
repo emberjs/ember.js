@@ -1,17 +1,24 @@
 # Ember Changelog
 
-### v2.2.0-beta.2 (October 25, 2015)
+### v2.3.0-beta.1 (November 16, 2015)
 
+- [#12532](https://github.com/emberjs/ember.js/pull/12532) Bump RSVP dependency from 3.0.6 to 3.1.0.
+- [#12422](https://github.com/emberjs/ember.js/pull/12422) / [#12495](https://github.com/emberjs/ember.js/pull/12495) / [#12517](https://github.com/emberjs/ember.js/pull/12517) / [#12561](https://github.com/emberjs/ember.js/pull/12561) / [#12542](https://github.com/emberjs/ember.js/pull/12542) / [#12570](https://github.com/emberjs/ember.js/pull/12570) [FEATURE ember-contextual-components]
+- [#11874](https://github.com/emberjs/ember.js/pull/11874) / [#12562](https://github.com/emberjs/ember.js/pull/12562) / [#12557](https://github.com/emberjs/ember.js/pull/12557) / [#12578](https://github.com/emberjs/ember.js/pull/12578) / [#12599](https://github.com/emberjs/ember.js/pull/12599) / [#12570](https://github.com/emberjs/ember.js/pull/12570) / [#12604](https://github.com/emberjs/ember.js/pull/12604) / [#12609](https://github.com/emberjs/ember.js/pull/12609) [FEATURE ember-container-inject-owner]
+- [#12314](https://github.com/emberjs/ember.js/pull/12314) [BUGFIX] Mandatory setter should check prototype descriptors.
+- [#12485](https://github.com/emberjs/ember.js/pull/12485) [BUGFIX] Access property only once during `Ember.get`.
+- [#12503](https://github.com/emberjs/ember.js/pull/12503) Add helpful assertion when a tagless component includes event handler methods.
+
+### v2.2.0 (November 16, 2015)
+
+- [#12600](https://github.com/emberjs/ember.js/pull/12600) [BUGFIX beta] Guard against `null` `attrs` in `getRoot` hook.
 - [#12445](https://github.com/emberjs/ember.js/pull/12445) [BUGFIX] Ensure rest arg positionalParams can be supplied as hash arguments.
 - [#12456](https://github.com/emberjs/ember.js/pull/12456) [BUGFIX] Allow usage of bound properties in `{{link-to}}` for `bubbles`, `preventDefault`, `target`, `replace`, and `disabledWhen`.
 - [#12503](https://github.com/emberjs/ember.js/pull/12503) [BUGFIX] Add assertions for tagless components that include event handler functions (i.e. `click`).
 - [#12464](https://github.com/emberjs/ember.js/pull/12464) [BUGFIX] `Ember.String.htmlSafe()` should return a instance of SafeString for `null` / `undefined`.
 - [#12463](https://github.com/emberjs/ember.js/pull/12463) [BUGFIX] Fix uglification introduced bug with super wrapping.
 - [#12519](https://github.com/emberjs/ember.js/pull/12519) [BUGFIX] Ensure closure actions are wrapped in a run loop.
-
-### v2.2.0-beta.1 (October 5, 2015)
-
-- [#12214](https://github.com/emberjs/ember.js/pull/12214) Remove most of defeatureify in favor of babel-plugin-filter-imports.
+- [#12214](https://github.com/emberjs/ember.js/pull/12214) Remove most of defeaturEify in favor of babel-plugin-filter-imports.
 - [#12253](https://github.com/emberjs/ember.js/pull/12253) [BUGFIX] Remove superfluous `routing-service` initializer.
 - [#12247](https://github.com/emberjs/ember.js/pull/12247) [BUGFIX] Avoid dirtying based on `Ember.Object`'s when `Ember.set` is not used.
 - [#12262](https://github.com/emberjs/ember.js/pull/12262) [BUGFIX] Break circular references in rejected jqXhr promises.
@@ -20,6 +27,13 @@
 - [#12318](https://github.com/emberjs/ember.js/pull/12318) [BUGFIX] Ensure attributeBindings work when legacy view addon is not present.
 - [#12370](https://github.com/emberjs/ember.js/pull/12370) [DEPRECATION] Deprecate passing function as test argument to `Ember.deprecate` / `Ember.warn` / `Ember.assert`.
 - [#12416](https://github.com/emberjs/ember.js/pull/12416) [BUGFIX] Ensure components actions function without controller addon.
+
+### v2.1.1 (November 16, 2015)
+
+- [#12445](https://github.com/emberjs/ember.js/pull/12445) [BUGFIX] Ensure rest arg style positionalParams can be omitted.
+- [#12456](https://github.com/emberjs/ember.js/pull/12456) [BUGFIX]Allow usage of bound properties in `{{link-to}}` for `bubbles`, `preventDefault`, `target`, `replace`, and `disabledWhen`.
+- [#12463](https://github.com/emberjs/ember.js/pull/12463) [BUGFIX] Fix uglification introduced bug with super wrapping.
+- [#12464](https://github.com/emberjs/ember.js/pull/12464) [BUGFIX] `Ember.String.htmlSafe()` should return a instance of SafeString for `null` / `undefined`.
 
 ### v2.1.0 (October 5, 2015)
 
@@ -188,6 +202,15 @@
 - [#11375](https://github.com/emberjs/ember.js/pull/11375) Transition feature flag infrastructure to modules.
 - [#11383](https://github.com/emberjs/ember.js/pull/11383) Update {{each-in}} to use ember-metal/should-display.
 - [#11396](https://github.com/emberjs/ember.js/pull/11396) Make Ember.Checkbox extend from Ember.Component.
+
+### 1.13.11 (November 16, 2015)
+
+- [#12334](https://github.com/emberjs/ember.js/pull/12334) [BUGFIX] Fix for Array.prototype.filter polyfill on IE8.
+- [#12344](https://github.com/emberjs/ember.js/pull/12344) [BUGFIX] Allow `{{link-to}}`'s `current-when` param be specified as a bound value.
+- [#12449](https://github.com/emberjs/ember.js/pull/12449) [BUGFIX] Updated backburner.js. Backported from master.
+- [#12471](https://github.com/emberjs/ember.js/pull/12471) [BUGFIX] Added deprecation for `Ember.SortableMixin`.
+- [#12481](https://github.com/emberjs/ember.js/pull/12481) [BUGFIX] Add deprecation options to some 1.13 deprecations (to make handling with ember-cli-deprecation-workflow easier).
+- [#12596](https://github.com/emberjs/ember.js/pull/12596) [BUGFIX] Fix `{{input}}` helper on IE8.
 
 ### 1.13.8 (August 13, 2015)
 
