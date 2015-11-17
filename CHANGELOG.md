@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 1.13.11 (November 16, 2015)
+
+- [#12334](https://github.com/emberjs/ember.js/pull/12334) [BUGFIX] Fix for Array.prototype.filter polyfill on IE8.
+- [#12344](https://github.com/emberjs/ember.js/pull/12344) [BUGFIX] Allow `{{link-to}}`'s `current-when` param be specified as a bound value.
+- [#12449](https://github.com/emberjs/ember.js/pull/12449) [BUGFIX] Updated backburner.js. Backported from master.
+- [#12471](https://github.com/emberjs/ember.js/pull/12471) [BUGFIX] Added deprecation for `Ember.SortableMixin`.
+- [#12481](https://github.com/emberjs/ember.js/pull/12481) [BUGFIX] Add deprecation options to some 1.13 deprecations (to make handling with ember-cli-deprecation-workflow easier).
+- [#12596](https://github.com/emberjs/ember.js/pull/12596) [BUGFIX] Fix `{{input}}` helper on IE8.
+
 ### 1.13.10 (September 6, 2015)
 
 - [#12104](https://github.com/emberjs/ember.js/pull/12104) [BUGFIX] Ensure `concatenatedProperties` are not stomped.
