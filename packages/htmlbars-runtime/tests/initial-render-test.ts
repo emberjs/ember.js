@@ -37,7 +37,7 @@ function render(template: Template, self: any) {
   return template.render(self, env, { appendTo: root });
 }
 
-QUnit.module("HTML-based compiler (output)", {
+QUnit.module("Initial render", {
   beforeEach: commonSetup
 });
 
@@ -287,7 +287,7 @@ test("The compiler can handle unescaped tr in top of content", function() {
     return blocks.template.yield();
   });
 
-  var template = compile('{{#test}}{{{html}}}{{/test}}');
+  var template = compile('{{#identity}}{{{html}}}{{/identity}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
   root = createElement('table');
   render(template, context);
@@ -300,7 +300,7 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
     return blocks.template.yield();
   });
 
-  var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
+  var template = compile('<table>{{#identity}}{{{html}}}{{/identity}}</table>');
   var context = { html: '<tr><td>Yo</td></tr>' };
   render(template, context);
   var tableNode = root.firstChild;
@@ -374,17 +374,11 @@ test("Morphs are escaped correctly", function() {
   });
 
   env.registerHelper('testing-escaped', function(params, hash, blocks) {
-    if (blocks && blocks.template) {
-      return blocks.template.yield();
-    }
-
     return params[0];
   });
 
   compilesTo('<div>{{{testing-unescaped "<span>hi</span>"}}}</div>', '<div><span>hi</span></div>');
   compilesTo('<div>{{testing-escaped "<hi>"}}</div>', '<div>&lt;hi&gt;</div>');
-  compilesTo('<div>{{#testing-escaped}}<em></em>{{/testing-escaped}}</div>', '<div><em></em></div>');
-  //compilesTo('<div><testing-escaped><em></em></testing-escaped></div>', '<div><em></em></div>');
 });
 
 test("Attributes can use computed values", function() {
@@ -574,44 +568,16 @@ test("Attribute runs can contain helpers", function() {
   equalTokens(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
 });
 */
-test("A simple block helper can return the default document fragment", function() {
-  registerYieldingHelper('testing');
-
-  compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
+test("Elements inside a yielded block", function() {
+  compilesTo('{{#identity}}<div id="test">123</div>{{/identity}}', '<div id="test">123</div>');
 });
 
-// TODO: NEXT
 test("A simple block helper can return text", function() {
-  registerYieldingHelper('testing');
-
-  compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
+  compilesTo('{{#identity}}test{{else}}not shown{{/identity}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  env.registerHelper('testing', function(params, hash, options) {
-    return options.inverse.yield();
-  });
-
-  compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
-});
-
-test("A block helper can pass a context to be used in the child", function() {
-  env.registerHelper('testing', function(params, hash, blocks) {
-    var context = { title: 'Rails is omakase' };
-    return blocks.template.yield(null, context);
-  });
-
-  compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
-});
-
-test("Block helpers receive hash arguments", function() {
-  env.registerHelper('testing', function(params, hash, blocks) {
-    if (hash.truth) {
-      return blocks.template.yield();
-    }
-  });
-
-  compilesTo('{{#testing truth=true}}<p>Yep!</p>{{/testing}}{{#testing truth=false}}<p>Nope!</p>{{/testing}}', '<p>Yep!</p><!---->');
+  compilesTo('{{#render-inverse}}Nope{{else}}<div id="test">123</div>{{/render-inverse}}', '<div id="test">123</div>');
 });
 
 QUnit.skip("Node helpers can modify the node", function() {
@@ -687,7 +653,7 @@ function equalHash(_actual, expected) {
   QUnit.deepEqual(actual, expected);
 }
 
-test('Components - Called as helpers', function () {
+QUnit.skip('Components - Called as helpers', function () {
   env.registerHelper('x-append', function(params, hash, blocks) {
     equalHash(hash, { text: 'de' });
     blocks.template.yield();
@@ -741,7 +707,7 @@ test('Block params in HTML syntax - Throws exception if given zero parameters', 
 });
 
 
-test('Block params in HTML syntax - Works with a single parameter', function () {
+QUnit.skip('Block params in HTML syntax - Works with a single parameter', function () {
   env.registerHelper('x-bar', function(params, hash, blocks) {
     return blocks.template.yield(['Xerxes']);
   });
@@ -749,7 +715,7 @@ test('Block params in HTML syntax - Works with a single parameter', function () 
   compilesTo('<x-bar as |x|>{{x}}</x-bar>', 'Xerxes', {});
 });
 
-test('Block params in HTML syntax - Works with other attributes', function () {
+QUnit.skip('Block params in HTML syntax - Works with other attributes', function () {
   env.registerHelper('x-bar', function(params, hash) {
     equalHash(hash, {firstName: 'Alice', lastName: 'Smith'});
   });
@@ -757,7 +723,7 @@ test('Block params in HTML syntax - Works with other attributes', function () {
   render(template, {});
 });
 
-test('Block params in HTML syntax - Ignores whitespace', function () {
+QUnit.skip('Block params in HTML syntax - Ignores whitespace', function () {
   expect(3);
 
   env.registerHelper('x-bar', function(params, hash, blocks) {
@@ -769,7 +735,7 @@ test('Block params in HTML syntax - Ignores whitespace', function () {
   compilesTo('<x-bar as | x y |>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
 });
 
-test('Block params in HTML syntax - Helper should know how many block params it was called with', function () {
+QUnit.skip('Block params in HTML syntax - Helper should know how many block params it was called with', function () {
   expect(4);
 
   env.registerHelper('count-block-params', function(params, hash, options) {
@@ -810,7 +776,7 @@ test("Block params in HTML syntax - Throws an error on invalid identifiers for p
   }, /Invalid identifier for block parameters: 'foo\[bar\]' in 'as \|foo\[bar\]\|'/);
 });
 
-QUnit.module("HTML-based compiler (invalid HTML errors)", {
+QUnit.module("Initial render (invalid HTML)", {
   beforeEach: commonSetup
 });
 
@@ -894,7 +860,7 @@ test("error line numbers include multiple mustache lines", function() {
 
 if (document.createElement('div').namespaceURI) {
 
-QUnit.module("HTML-based compiler (output, svg)", {
+QUnit.module("Initial render (svg)", {
   beforeEach: commonSetup
 });
 

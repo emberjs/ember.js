@@ -1,7 +1,9 @@
-import { Opcode } from '../opcodes';
-import { VM } from '../vm';
+import { Opcode, UpdatingOpcode } from '../opcodes';
+import { VM, UpdatingVM } from '../vm';
 import { InternedString } from 'htmlbars-util';
 import { StaticAttr, DynamicAttr, DynamicProp, AddClass, Comment } from '../template';
+import { ClassList } from '../builder';
+import { ChainableReference } from 'htmlbars-reference';
 
 abstract class DOMOpcode implements Opcode {
   public type: string;
@@ -9,6 +11,14 @@ abstract class DOMOpcode implements Opcode {
   public prev = null;
 
   abstract evaluate(vm: VM<any>);
+}
+
+abstract class DOMUpdatingOpcode implements UpdatingOpcode {
+  public type: string;
+  public next = null;
+  public prev = null;
+
+  abstract evaluate(vm: UpdatingVM);
 }
 
 export class TextOpcode extends DOMOpcode {
@@ -22,7 +32,6 @@ export class TextOpcode extends DOMOpcode {
 
   evaluate(vm: VM<any>) {
     vm.stack().appendText(this.text);
-    return null;
   }
 }
 
@@ -37,7 +46,6 @@ export class OpenPrimitiveElementOpcode extends DOMOpcode {
 
   evaluate(vm: VM<any>) {
     vm.stack().openElement(this.tag);
-    return null;
   }
 }
 
@@ -45,9 +53,11 @@ export class CloseElementOpcode extends DOMOpcode {
   public type = "close-element";
 
   evaluate(vm: VM<any>) {
-    let { element, classList } = vm.stack().closeElement();
+    let { element, classList, classNames } = vm.stack().closeElement();
 
-    return null;
+    if (classList) {
+      vm.updateWith(new UpdateAttributeOpcode(element, "class", classList, classNames));
+    }
   }
 }
 
@@ -89,12 +99,48 @@ export class DynamicAttrOpcode extends DOMOpcode {
 
   evaluate(vm: VM<any>) {
     let { name, namespace } = this;
-    let value = vm.registers.args.params.nth(0);
+    let reference = vm.registers.args.params.nth(0);
+    let value = reference.value();
 
     if (this.namespace) {
-      vm.stack().setAttributeNS(name, value.value(), namespace);
+      vm.stack().setAttributeNS(name, value, namespace);
     } else {
-      vm.stack().setAttribute(name, value.value());
+      vm.stack().setAttribute(name, value);
+    }
+
+    vm.updateWith(new UpdateAttributeOpcode(vm.stack().element, name, reference, value));
+  }
+}
+
+export class UpdateAttributeOpcode extends DOMUpdatingOpcode {
+  public type = "update-attribute";
+
+  private element: Element;
+  private name: string;
+  private namespace: string;
+  private reference: ChainableReference;
+  private lastValue: string;
+
+  constructor(element: Element, name: string, reference: ChainableReference, lastValue: string, namespace?: string) {
+    super();
+    this.element = element;
+    this.name = name;
+    this.reference = reference;
+    this.lastValue = lastValue;
+    this.namespace = namespace;
+  }
+
+  evaluate(vm: UpdatingVM) {
+    let value = this.reference.value();
+
+    if (value !== this.lastValue) {
+      if (this.namespace) {
+        vm.dom.setAttributeNS(this.element, this.name, value, this.namespace);
+      } else {
+        vm.dom.setAttribute(this.element, this.name, value);
+      }
+
+      this.lastValue = value;
     }
   }
 }
@@ -111,9 +157,38 @@ export class DynamicPropOpcode extends DOMOpcode {
 
   evaluate(vm: VM<any>) {
     let { name } = this;
-    let value = vm.registers.args.params.nth(0);
+    let element = vm.stack().element;
+    let reference = vm.registers.args.params.nth(0);
+    let value = reference.value();
 
-    vm.stack().element[<string>name] = value.value();
+    element[<string>name] = value;
+
+    vm.updateWith(new UpdatePropertyOpcode(element, name, reference, value));
+  }
+}
+
+export class UpdatePropertyOpcode extends DOMUpdatingOpcode {
+  public type = "update-property";
+
+  private element: Element;
+  private name: string;
+  private reference: ChainableReference;
+  private lastValue: any;
+
+  constructor(element: Element, name: string, reference: ChainableReference, lastValue: any) {
+    super();
+    this.element = element;
+    this.name = name;
+    this.reference = reference;
+    this.lastValue = lastValue;
+  }
+
+  evaluate(vm: UpdatingVM) {
+    let value = this.reference.value();
+
+    if (value !== this.lastValue) {
+      this.lastValue = this.element[this.name] = value;
+    }
   }
 }
 

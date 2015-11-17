@@ -4,7 +4,8 @@ import Template from './template';
 import { Frame, Environment } from './environment';
 import { ElementStack } from './builder';
 import { Morph } from './morph';
-import { VM } from './vm';
+import { VM, UpdatingVM } from './vm';
+import DOMHelper from './dom';
 
 export type PrettyPrintValue = PrettyPrint | PrettyPrint[] | string | string[];
 
@@ -63,6 +64,16 @@ export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {
 
   abstract evaluate(frame: Frame): PathReference;
 }
+
+export interface UpdatingOpcode extends LinkedListNode {
+  type: string;
+  next: Opcode;
+  prev: Opcode;
+
+  evaluate(vm: UpdatingVM);
+}
+
+export type UpdatingOpSeq = LinkedList<UpdatingOpcode>;
 
 export interface Opcode extends LinkedListNode {
   type: string;

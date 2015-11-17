@@ -20,7 +20,6 @@ import DOMHelper from './dom';
 import Template, {
   EvaluatedParams,
   AttributeSyntax,
-  TemplateEvaluation,
   Templates,
   Hash,
   ATTRIBUTE_SYNTAX
@@ -30,8 +29,6 @@ import { InternedString, Dict, intern, dict } from 'htmlbars-util';
 import { RootReference, ChainableReference, NotifiableReference, PushPullReference, Destroyable } from 'htmlbars-reference';
 
 import {
-  DynamicStatementSyntax,
-  StaticStatementSyntax,
   StatementSyntax
 } from './opcodes'
 
@@ -110,7 +107,7 @@ export class ElementStack {
   private classListStack: ClassList[] = [];
   private classList: ClassList = undefined;
   private blockStack: BlockTracker[];
-  private blockElement: BlockTracker;
+  public blockElement: BlockTracker;
 
   constructor({ dom, parentNode, nextSibling }: ElementStackOptions) {
     this.dom = dom;
@@ -154,10 +151,20 @@ export class ElementStack {
     this.blockElement = tracker;
   }
 
-  private popBlock() {
-    let tracker = this.blockStack.pop();
+  private popBlock(): Bounds {
+    if (this.blockElement.first === null) {
+      this.appendComment("");
+    }
+
+    let { element } = this;
+    let { first, last } = this.blockStack.pop();
     this.blockElement = this.blockStack[this.blockStack.length - 1];
-    return tracker;
+
+    return {
+      parentElement() { return element },
+      firstNode() { return first.firstNode(); },
+      lastNode() { return last.lastNode(); }
+    };
   }
 
   bounds(): Bounds {
@@ -168,7 +175,7 @@ export class ElementStack {
       parentElement() { return element },
       firstNode() { return first.firstNode(); },
       lastNode() { return last.lastNode(); }
-    }
+    };
   }
 
   morphList(): Morph[] {
@@ -205,12 +212,8 @@ export class ElementStack {
     this.pushBlock();
   }
 
-  closeBlock(template: Template): RenderResult {
-    let bounds = this.bounds();
-    let morphs = this.morphList();
-    this.popBlock();
-
-    return new RenderResult({ template, bounds, morphs, scope: null });
+  closeBlock(): Bounds {
+    return this.popBlock();
   }
 
   createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {
@@ -263,7 +266,7 @@ export class ElementStack {
     classList.append(ref);
   }
 
-  closeElement(): { element: Element, classList: ClassList } {
+  closeElement(): { element: Element, classList: ClassList, classNames: string } {
     let { classList } = this;
     this.blockElement.closeElement();
     let child = this.popElement();
@@ -274,7 +277,7 @@ export class ElementStack {
       this.dom.setAttribute(child, 'class', classNames);
     }
 
-    return { element: child, classList };
+    return { element: child, classList, classNames };
   }
 
   appendHTML(html: string): Bounds {
