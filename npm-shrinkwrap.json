@@ -1,6 +1,6 @@
 {
   "name": "ember",
-  "version": "2.3.0-canary",
+  "version": "2.3.0-beta.1",
   "dependencies": {
     "abbrev": {
       "version": "1.0.7",
