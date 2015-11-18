@@ -1,12 +1,11 @@
 import assign from 'ember-metal/assign';
 import {
   COMPONENT_PATH,
-  COMPONENT_POSITIONAL_PARAMS,
   COMPONENT_HASH,
   isComponentCell,
   mergeInNewHash,
+  processPositionalParamsFromCell,
 } from  './closure-component';
-import { processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';
 
 export default {
   setupState(lastState, env, scope, params, hash) {
@@ -58,10 +57,9 @@ function render(morph, env, scope, [path, ...params], hash, template, inverse, v
 
   if (isComponentCell(path)) {
     let closureComponent = env.hooks.getValue(path);
-    let positionalParams = closureComponent[COMPONENT_POSITIONAL_PARAMS];
 
     // This needs to be done in each nesting level to avoid raising assertions
-    processPositionalParams(null, positionalParams, params, hash);
+    processPositionalParamsFromCell(closureComponent, params, hash);
     params = [];
     hash = mergeInNewHash(closureComponent[COMPONENT_HASH], hash);
   }

@@ -429,6 +429,33 @@ if (isEnabled('ember-contextual-components')) {
     equal(component.$().text(), expectedText, '-looked-up component rendered');
   });
 
+  QUnit.test('renders with dot path and with rest positional parameters', function() {
+    let LookedUp = Component.extend();
+    LookedUp.reopenClass({
+      positionalParams: 'params'
+    });
+    owner.register(
+      'component:-looked-up',
+      LookedUp
+    );
+    let expectedText = 'Hodi';
+    owner.register(
+      'template:components/-looked-up',
+      compile('{{params}}')
+    );
+
+    let template = compile('{{#with (hash lookedup=(component "-looked-up")) as |object|}}{{object.lookedup expectedText "Hola"}}{{/with}}');
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create({
+      expectedText
+    });
+
+    runAppend(component);
+    equal(component.$().text(), `${expectedText},Hola`, '-looked-up component rendered with rest params');
+  });
+
   QUnit.test('adding parameters to a closure component\'s instance does not add it to other instances', function(assert) {
     owner.register(
       'template:components/select-box',
