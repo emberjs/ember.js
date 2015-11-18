@@ -5,7 +5,6 @@ import {
   Scope,
   Helper,
   Template,
-  TemplateEvaluation,
   TemplateMorph,
   DOMHelper,
   Environment,
@@ -26,7 +25,16 @@ import {
   Frame,
   ContentMorph,
   Templates,
-  MorphList
+  MorphList,
+  OpSeq,
+  NoopOpcode,
+  EnterOpcode,
+  ArgsOpcode,
+  TestOpcode,
+  JumpUnlessOpcode,
+  EvaluateOpcode,
+  JumpOpcode,
+  ExitOpcode
 } from 'htmlbars-runtime';
 
 import {
@@ -233,9 +241,9 @@ export class DemoEnvironment extends Environment<DemoScopeOptions> {
         return new EachSyntax({ args: block.args, templates: block.templates });
       }
 
-      // if (block.path.length === 1 && block.path[0] === 'if') {
-      //   return new IfSyntax({ args: block.args, templates: block.templates });
-      // }
+      if (block.path.length === 1 && block.path[0] === 'if') {
+        return new IfSyntax({ args: block.args, templates: block.templates });
+      }
     }
 
     return super.statement(statement);
@@ -294,6 +302,7 @@ class EachSyntax extends StatementSyntax {
   }
 }
 
+
 class IfSyntax extends StatementSyntax {
   type = "if-statement";
 
@@ -307,70 +316,50 @@ class IfSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  clone(): IfSyntax {
-    return new IfSyntax(this);
-  }
-
   prettyPrint() {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  inline() {
-    // 1. OpenBlock
-    // 2. JumpIfTrue => 6
-    // 3. ...InverseStatements...
-    // 4. CloseBlock(inverse)
-    // 5. Jump => 8
-    // 6. ...DefaultStatements...
-    // 7. CloseBlock(default)
-    // 8. Noop
+  compile(ops: OpSeq) {
+    //        Enter(BEGIN, END)
+    // BEGIN: Noop
+    //        Args
+    //        Test
+    //        JumpUnless(ELSE)
+    //        Evalulate(default)
+    //        Jump(END)
+    // ELSE:  Noop
+    //        Evalulate(inverse)
+    // END:   Noop
+    //        Exit
 
     let { templates } = this;
-    let list = new LinkedList<StatementSyntax>();
 
-    // 1. OpenBlock
-    list.append(new OpenBlock());
+    let BEGIN = new NoopOpcode("BEGIN");
+    let ELSE = new NoopOpcode("ELSE");
+    let END = new NoopOpcode("END");
 
-    // 4. CloseBlock(inverse)
-    let endElse = new CloseBlock({ syntax: this, template: templates.inverse });
-    list.append(endElse);
+    ops.append(new EnterOpcode(BEGIN, END));
+    ops.append(BEGIN);
+    ops.append(new ArgsOpcode(this.args));
+    ops.append(new TestOpcode());
 
-    // 7. CloseBlock(default)
-    let endIf = new CloseBlock({ syntax: this, template: templates.default })
-    list.append(endIf);
-
-    // 8. Noop
-    let end = new NoopSyntax()
-    list.append(end);
-
-    // 5. Jump => 8
-    let jump = new Jump({ jumpTo: end });
-    list.insertBefore(jump, endIf);
-
-    // 6. ...DefaultStatements...
-    templates.default.statements.forEachNode(n => {
-      list.insertBefore(n.clone(), endIf);
-    });
-
-    // 2. JumpIfTrue => 6
-    list.insertBefore(new JumpIf({ condition: this.args.params.at(0), jumpTo: list.nextNode(jump) }), endElse);
-
-    // 3. ...InverseStatements...
-    if (templates.inverse) {
-      templates.inverse.statements.forEachNode(n => {
-        list.insertBefore(n.clone(), endElse);
-      });
+    if (this.templates.inverse) {
+      ops.append(new JumpUnlessOpcode(ELSE));
+      ops.append(new EvaluateOpcode(this.templates.default.raw));
+      ops.append(new JumpOpcode(END));
+      ops.append(ELSE);
+      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+    } else {
+      ops.append(new JumpUnlessOpcode(END));
+      ops.append(new EvaluateOpcode(this.templates.default.raw));
     }
 
-    console.log(list);
-    return list;
-  }
-
-  evaluate(stack: ElementStack, frame: Frame): TemplateMorph {
-    let condition = this.args.params.evaluate(frame).nth(0);
-    return stack.createContentMorph(IfMorph, { reference: condition, templates: this.templates }, frame);
+    ops.append(END);
+    ops.append(new ExitOpcode());
   }
 }
+
 
 class NoopSyntax extends StatementSyntax {
   clone(): NoopSyntax {
