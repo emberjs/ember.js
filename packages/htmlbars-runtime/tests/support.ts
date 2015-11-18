@@ -795,10 +795,6 @@ class IfSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  clone(): IfSyntax {
-    return new IfSyntax(this);
-  }
-
   prettyPrint() {
     return `#if ${this.args.prettyPrint()}`;
   }
