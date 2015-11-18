@@ -74,17 +74,21 @@ export function isComponentCell(component) {
 }
 
 function createNestedClosureComponentCell(componentCell, params, hash) {
-  let positionalParams = componentCell[COMPONENT_POSITIONAL_PARAMS];
-
   // This needs to be done in each nesting level to avoid raising assertions
-  processPositionalParams(null, positionalParams, params, hash);
+  processPositionalParamsFromCell(componentCell, params, hash);
 
   return {
     [COMPONENT_PATH]: componentCell[COMPONENT_PATH],
     [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH], hash),
-    [COMPONENT_POSITIONAL_PARAMS]: positionalParams,
+    [COMPONENT_POSITIONAL_PARAMS]: componentCell[COMPONENT_POSITIONAL_PARAMS],
     [COMPONENT_CELL]: true
   };
+}
+
+export function processPositionalParamsFromCell(componentCell, params, hash) {
+  let positionalParams = componentCell[COMPONENT_POSITIONAL_PARAMS];
+
+  processPositionalParams(null, positionalParams, params, hash);
 }
 
 function createNewClosureComponentCell(env, componentPath, params, hash) {

@@ -12,6 +12,7 @@ import {
   COMPONENT_HASH,
   isComponentCell,
   mergeInNewHash,
+  processPositionalParamsFromCell,
 } from 'ember-htmlbars/keywords/closure-component';
 
 var IS_ANGLE_CACHE = new Cache(1000, function(key) {
@@ -33,6 +34,21 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     let componentCell = stream.value();
     if (isComponentCell(componentCell)) {
       tagName = componentCell[COMPONENT_PATH];
+
+      /*
+       * Processing positional params before merging into a hash must be done
+       * here to avoid problems with rest positional parameters rendered using
+       * the dot notation.
+       *
+       * Closure components (for the contextual component feature) do not
+       * actually keep the positional params, but process them at each level.
+       * Therefore, when rendering a closure component with the component
+       * helper we process the parameters and attributes and then merge those
+       * on top of the closure component attributes.
+       *
+       */
+      processPositionalParamsFromCell(componentCell, params, attrs);
+      params = [];
       attrs = mergeInNewHash(componentCell[COMPONENT_HASH], attrs);
     }
   }
