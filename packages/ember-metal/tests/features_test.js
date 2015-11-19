@@ -2,12 +2,11 @@ import Ember from 'ember-metal/core';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import assign from 'ember-metal/assign';
 
-var origFeatures, origEnableAll, origEnableOptional;
+var origFeatures, origEnableOptional;
 
 QUnit.module('isEnabled', {
   setup() {
     origFeatures = assign({}, FEATURES);
-    origEnableAll = Ember.ENV.ENABLE_ALL_FEATURES;
     origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
   },
 
@@ -17,19 +16,8 @@ QUnit.module('isEnabled', {
     }
     assign(FEATURES, origFeatures);
 
-    Ember.ENV.ENABLE_ALL_FEATURES = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;
   }
-});
-
-QUnit.test('ENV.ENABLE_ALL_FEATURES', function() {
-  Ember.ENV.ENABLE_ALL_FEATURES = true;
-  FEATURES['fred'] = false;
-  FEATURES['wilma'] = null;
-
-  equal(isEnabled('fred'), true, 'overrides features set to false');
-  equal(isEnabled('wilma'), true, 'enables optional features');
-  equal(isEnabled('betty'), true, 'enables non-specified features');
 });
 
 QUnit.test('ENV.ENABLE_OPTIONAL_FEATURES', function() {
@@ -45,7 +33,6 @@ QUnit.test('ENV.ENABLE_OPTIONAL_FEATURES', function() {
 });
 
 QUnit.test('isEnabled without ENV options', function() {
-  Ember.ENV.ENABLE_ALL_FEATURES = false;
   Ember.ENV.ENABLE_OPTIONAL_FEATURES = false;
 
   FEATURES['fred'] = false;
