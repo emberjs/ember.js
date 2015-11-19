@@ -164,7 +164,7 @@ setDebugFunction('deprecate', _deprecate);
 setDebugFunction('warn', _warn);
 
 /**
-  Will call `Ember.warn()` if ENABLE_ALL_FEATURES, ENABLE_OPTIONAL_FEATURES, or
+  Will call `Ember.warn()` if ENABLE_OPTIONAL_FEATURES or
   any specific FEATURES flag is truthy.
 
   This method is called automatically in debug canary builds.
@@ -175,7 +175,6 @@ setDebugFunction('warn', _warn);
 */
 export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped) {
   if (featuresWereStripped) {
-    warn('Ember.ENV.ENABLE_ALL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_ALL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
     warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
 
     for (var key in FEATURES) {
