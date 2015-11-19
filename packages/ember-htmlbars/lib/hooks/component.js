@@ -22,12 +22,6 @@ var IS_ANGLE_CACHE = new Cache(1000, function(key) {
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.getState();
 
-  // Determine if this is an initial render or a re-render
-  if (state.manager) {
-    state.manager.rerender(env, attrs, visitor);
-    return;
-  }
-
   let tagName = _tagName;
   if (CONTAINS_DOT_CACHE.get(tagName)) {
     let stream = env.hooks.get(env, scope, tagName);
@@ -52,6 +46,13 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
       attrs = mergeInNewHash(componentCell[COMPONENT_HASH], attrs);
     }
   }
+
+  // Determine if this is an initial render or a re-render
+  if (state.manager) {
+    state.manager.rerender(env, attrs, visitor);
+    return;
+  }
+
 
   let isAngleBracket = false;
   let isTopLevel = false;
