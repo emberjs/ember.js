@@ -456,6 +456,51 @@ if (isEnabled('ember-contextual-components')) {
     equal(component.$().text(), `${expectedText},Hola`, '-looked-up component rendered with rest params');
   });
 
+  QUnit.test('renders with dot path and updates attributes', function() {
+    owner.register(
+      'component:my-nested-component',
+      Component.extend({
+        didReceiveAttrs() {
+          this.set('myProp', this.getAttr('my-parent-attr'));
+        }
+      })
+    );
+
+    owner.register(
+      'template:components/my-nested-component',
+      compile(`<span id='nested-prop'>{{myProp}}</span>`)
+    );
+
+    owner.register(
+      'template:components/my-component',
+      compile(`{{yield (hash my-nested-component=(component 'my-nested-component' my-parent-attr=attrs.my-attr))}}`)
+    );
+
+    let template = compile(`{{#my-component my-attr=myProp as |api|}}
+                             {{api.my-nested-component}}
+                           {{/my-component}}
+                           <br>
+                           <button onclick={{action 'changeValue'}}>Change value</button>`);
+    component = Component.extend({
+      [OWNER]: owner,
+      template,
+      myProp: 1,
+      actions: {
+        changeValue() { this.incrementProperty(`myProp`); }
+      }
+    }).create({ });
+
+    runAppend(component);
+
+    component.$('button').click();
+
+    equal(component.$('#nested-prop').text(), '2', 'value got updated');
+
+    component.$('button').click();
+
+    equal(component.$('#nested-prop').text(), '3', 'value got updated again');
+  });
+
   QUnit.test('adding parameters to a closure component\'s instance does not add it to other instances', function(assert) {
     owner.register(
       'template:components/select-box',
