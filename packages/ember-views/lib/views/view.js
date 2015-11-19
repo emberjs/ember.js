@@ -2,7 +2,7 @@
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
-import { deprecate, warn } from 'ember-metal/debug';
+import { deprecate } from 'ember-metal/debug';
 
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
@@ -28,13 +28,6 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
 @submodule ember-views
 */
 
-warn(
-  'The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.',
-  Ember.ENV.VIEW_PRESERVES_CONTEXT !== false,
-  {
-    id: 'ember-views.view-preserves-context-flag',
-    until: '2.0.0'
-  });
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
