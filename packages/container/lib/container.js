@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
-import { setOwner } from './owner';
+import { setOwner, OWNER } from './owner';
 import { buildFakeContainerWithDeprecations } from 'ember-runtime/mixins/container_proxy';
 
 /**
@@ -159,6 +159,18 @@ Container.prototype = {
     } else {
       resetCache(this);
     }
+  },
+
+  /**
+   Returns an object that can be used to provide an owner to a
+   manually created instance.
+
+   @private
+   @method ownerInjection
+   @returns { Object }
+  */
+  ownerInjection() {
+    return { [OWNER]: this.owner };
   }
 };
 
