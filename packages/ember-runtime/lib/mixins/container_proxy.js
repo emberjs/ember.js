@@ -24,6 +24,27 @@ export default Mixin.create({
   __container__: null,
 
   /**
+   Returns an object that can be used to provide an owner to a
+   manually created instance.
+
+   Example:
+
+   ```
+   let owner = Ember.getOwner(this);
+
+   User.create(
+     owner.ownerInjection(),
+     { username: 'rwjblue' }
+   )
+   ```
+
+   @public
+   @method ownerInjection
+   @return {Object}
+  */
+  ownerInjection: containerAlias('ownerInjection'),
+
+  /**
    Given a fullName return a corresponding instance.
 
    The default behaviour is for lookup to return a singleton instance.

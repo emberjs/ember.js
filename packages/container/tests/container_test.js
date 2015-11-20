@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 import Registry from 'container/registry';
 import factory from 'container/tests/test-helpers/factory';
-import { getOwner } from 'container/owner';
+import { getOwner, OWNER } from 'container/owner';
 import isEnabled from 'ember-metal/features';
 
 var originalModelInjections;
@@ -517,6 +517,16 @@ QUnit.test('Lazy injection validations are cached', function() {
 
   container.lookup('apple:main');
   container.lookup('apple:main');
+});
+
+QUnit.test('An object with its owner pre-set should be returned from ownerInjection', function() {
+  let owner = { };
+  var registry = new Registry();
+  var container = registry.container({ owner });
+
+  let result = container.ownerInjection();
+
+  equal(result[OWNER], owner, 'owner is properly included');
 });
 
 if (isEnabled('ember-container-inject-owner')) {
