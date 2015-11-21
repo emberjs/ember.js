@@ -57,19 +57,6 @@ function isMethod(obj) {
 
 var CONTINUE = {};
 
-function mixinProperties(mixinsMeta, mixin) {
-  var guid;
-
-  if (mixin instanceof Mixin) {
-    guid = guidFor(mixin);
-    if (mixinsMeta.peekMixins(guid)) { return CONTINUE; }
-    mixinsMeta.writeMixins(guid, mixin);
-    return mixin.properties;
-  } else {
-    return mixin; // apply anonymous mixin properties
-  }
-}
-
 function concatenatedMixinProperties(concatProp, props, values, base) {
   var concats;
 
@@ -221,8 +208,36 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
   }
 }
 
+function mixinProperties(mixinsMeta, mixin) {
+  var guid;
+
+  if (mixin instanceof Mixin) {
+    guid = guidFor(mixin);
+    if (mixinsMeta.peekMixins(guid)) {
+      // should be the same as undefined?
+      //return CONTINUE;
+      return;
+    }
+    mixinsMeta.writeMixins(guid, mixin);
+    return mixin.properties;
+  } else {
+    // TODO assert always is a Mixin
+    //console.assert(false, 'this was for createWithMixins');
+    return mixin; // apply anonymous mixin properties
+  }
+}
+
+function addNormalizedProperties(base, meta, props, allKeys, descs, values, concats, mergings) {
+  let keys = Object.keys(props);
+  for (let i = 0, l = keys.length; i < l; i++) {
+    let key = keys[i];
+    allKeys.push(key);
+    addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
+  }
+}
+
 function mergeMixins(mixins, m, descs, values, base, keys) {
-  var currentMixin, props, key, concats, mergings, meta;
+  var currentMixin, props, concats, mergings;
 
   function removeKeys(keyName) {
     delete descs[keyName];
@@ -237,23 +252,25 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
     );
 
     props = mixinProperties(m, currentMixin);
-    if (props === CONTINUE) { continue; }
+    //if (props === CONTINUE) { continue; }
+
+    //Object.seal(props);
 
     if (props) {
-      meta = metaFor(base);
-      if (base.willMergeMixin) { base.willMergeMixin(props); }
+      //meta = metaFor(base);
+      //console.assert(m === meta, 'this is the base meta');
+      if (base.willMergeMixin) {
+        // we should not be mutating props, at best we should apply a different mixin based on the source mixin
+        base.willMergeMixin(props);
+      }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
-      for (key in props) {
-        if (!props.hasOwnProperty(key)) { continue; }
-        keys.push(key);
-        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
-      }
+      addNormalizedProperties(base, m, props, keys, descs, values, concats, mergings);
 
       // manually copy toString() because some JS engines do not enumerate it
-      if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
-    } else if (currentMixin.mixins) {
+      //if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
+    } else if (currentMixin.mixins) { // TODO just enqueue into a queue of mixins instead of recursing
       mergeMixins(currentMixin.mixins, m, descs, values, base, keys);
       if (currentMixin._without) { currentMixin._without.forEach(removeKeys); }
     }
@@ -362,6 +379,18 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
   }
 }
 
+function elemEq(arr1, arr2) {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function applyMixin(obj, mixins, partial) {
   var descs = {};
   var values = {};
@@ -380,9 +409,16 @@ function applyMixin(obj, mixins, partial) {
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, m, descs, values, obj, keys);
 
+  // TODO deal with this
+  //console.assert(elemEq(keys, Object.keys(values)), 'this should always match');
+
   for (var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
-    if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
+    // values.hasOwnProperty(key) TODO is this because mixin without doesn't remove this key?!
+    if (key === 'constructor' || !values.hasOwnProperty(key)) {
+      // this is fixing a bug with keys being wrong
+      continue;
+    }
 
     desc = descs[key];
     value = values[key];
@@ -651,6 +687,12 @@ MixinPrototype.keys = function() {
   return ret;
 };
 
+MixinPrototype.toString = function () {
+  // TODO FIX this to be just this[NAME_KEY] || '(unknown mixin)';
+  return '(unknown mixin)';
+};
+
+//Object.seal(MixinPrototype);
 debugSeal(MixinPrototype);
 
 // returns the mixins currently applied to the specified object
