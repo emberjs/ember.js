@@ -55,7 +55,7 @@ function isMethod(obj) {
          obj !== String;
 }
 
-var CONTINUE = {};
+var CONTINUE = {}; // remove
 
 function concatenatedMixinProperties(concatProp, props, values, base) {
   var concats;
@@ -69,6 +69,7 @@ function concatenatedMixinProperties(concatProp, props, values, base) {
   return concats;
 }
 
+// TODO move this to CP?
 function giveDescriptorSuper(meta, key, property, values, descs, base) {
   var superProperty;
 
@@ -231,7 +232,10 @@ function addNormalizedProperties(base, meta, props, allKeys, descs, values, conc
   let keys = Object.keys(props);
   for (let i = 0, l = keys.length; i < l; i++) {
     let key = keys[i];
-    allKeys.push(key);
+    //console.assert(allKeys.indexOf(key) === -1, 'do not push duplicates');
+    if (allKeys.indexOf(key) === -1) {
+      allKeys.push(key);
+    }
     addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
   }
 }
@@ -240,8 +244,14 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
   var currentMixin, props, concats, mergings;
 
   function removeKeys(keyName) {
-    delete descs[keyName];
-    delete values[keyName];
+    //delete descs[keyName];
+    //delete values[keyName];
+    descs[keyName] = undefined;
+    values[keyName] = undefined;
+    var index = keys.indexOf(keyName);
+    if (index !== -1) {
+      keys.splice(index, 1);
+    }
   }
 
   for (var i = 0, l = mixins.length; i < l; i++) {
@@ -379,17 +389,17 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
   }
 }
 
-function elemEq(arr1, arr2) {
-  if (arr1.length !== arr2.length) {
-    return false;
-  }
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) {
-      return false;
-    }
-  }
-  return true;
-}
+// function elemEq(arr1, arr2) {
+//   if (arr1.length !== arr2.length) {
+//     return false;
+//   }
+//   for (let i = 0; i < arr1.length; i++) {
+//     if (arr1[i] !== arr2[i]) {
+//       return false;
+//     }
+//   }
+//   return true;
+// }
 
 function applyMixin(obj, mixins, partial) {
   var descs = {};
