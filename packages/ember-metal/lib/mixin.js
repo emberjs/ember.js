@@ -585,6 +585,10 @@ MixinPrototype.applyPartial = function(obj) {
   return applyMixin(obj, [this], true);
 };
 
+MixinPrototype.toString = function Mixin_toString() {
+  return '(unknown mixin)';
+};
+
 function _detect(curMixin, targetMixin, seen) {
   var guid = guidFor(curMixin);
 
