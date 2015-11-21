@@ -8,7 +8,7 @@ export default class RootReference extends PushPullReference implements IRootRef
   private object: any;
   private chains = dict<PathReference>();
 
-  constructor(object) {
+  constructor(object: any) {
     super();
     this.object = object;
   }
