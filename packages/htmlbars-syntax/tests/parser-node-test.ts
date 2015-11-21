@@ -1,6 +1,6 @@
-import { parse as handlebarsParse } from "../htmlbars-syntax/handlebars/compiler/base";
-import { parse } from "../htmlbars-syntax";
-import b from "../htmlbars-syntax/builders";
+import { parse as handlebarsParse } from "handlebars/compiler/base";
+import { parse } from "htmlbars-syntax";
+import b from "htmlbars-syntax/lib/builders";
 import { astEqual } from "./support";
 
 QUnit.module("[htmlbars-syntax] Parser - AST");
