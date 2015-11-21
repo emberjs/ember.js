@@ -7,6 +7,16 @@ export interface LinkedListNode {
   prev: LinkedListNode;
 }
 
+export class ListNode<T> implements LinkedListNode {
+  public next: ListNode<T> = null;
+  public prev: ListNode<T> = null;
+  public value: T;
+
+  constructor(value: T) {
+    this.value = value;
+  }
+}
+
 // we are unable to express the constraint that T's .prev and .next are
 // themselves T. However, it will always be true, so trust us.
 type trust = any;
@@ -48,7 +58,7 @@ export class LinkedList<T extends LinkedListNode> {
     tail.prev = head;
   }
 
-  isEmpty() {
+  isEmpty(): boolean {
     return this._head.next === this._tail;
   }
 
