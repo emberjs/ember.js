@@ -1,4 +1,4 @@
-import { parse } from '../htmlbars-syntax';
+import { parse } from 'htmlbars-syntax';
 
 function normalizeNode(obj) {
   if (obj && typeof obj === 'object') {

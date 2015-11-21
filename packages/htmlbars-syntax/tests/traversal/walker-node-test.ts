@@ -1,4 +1,4 @@
-import { parse, Walker } from '../../htmlbars-syntax';
+import { parse, Walker } from 'htmlbars-syntax';
 
 function compareWalkedNodes(html, expected) {
   var ast = parse(html);

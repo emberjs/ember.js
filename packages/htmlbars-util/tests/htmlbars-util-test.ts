@@ -1,4 +1,4 @@
-import {SafeString} from "../htmlbars-util";
+import {SafeString} from "htmlbars-util";
 
 QUnit.module('htmlbars-util');
 
