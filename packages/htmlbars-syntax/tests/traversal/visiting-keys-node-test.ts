@@ -1,4 +1,4 @@
-import { parse, traverse } from '../../htmlbars-syntax';
+import { parse, traverse } from 'htmlbars-syntax';
 
 function traversalEqual(node, expectedTraversal) {
   let actualTraversal = [];

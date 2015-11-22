@@ -7,7 +7,7 @@ import {
 import {
   cannotRemoveNode,
   cannotReplaceNode,
-} from 'htmlbars-syntax/traversal/errors';
+} from 'htmlbars-syntax/lib/traversal/errors';
 
 QUnit.module('[htmlbars-syntax] Traversal - manipulating');
 
