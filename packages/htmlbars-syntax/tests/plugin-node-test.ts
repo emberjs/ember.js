@@ -1,4 +1,4 @@
-import { parse, Walker } from '../htmlbars-syntax';
+import { parse, Walker } from 'htmlbars-syntax';
 
 QUnit.module('[htmlbars-syntax] Plugins - AST Transforms');
 
