@@ -1398,7 +1398,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     });
     ```
 
-    The model for the `post` route is `store.find('post', params.post_id)`.
+    The model for the `post` route is `store.findRecord('post', params.post_id)`.
 
     By default, if your route has a dynamic segment ending in `_id`:
 
@@ -1423,7 +1423,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     this.transitionTo('posts');
 
     // model passed in, so model hook not called
-    thePost = store.find('post', 1);
+    thePost = store.findRecord('post', 1);
     this.transitionTo('post', thePost);
 
     // integer passed in, model hook is called
@@ -1431,7 +1431,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     // model id passed in, model hook is called
     // useful for forcing the hook to execute
-    thePost = store.find('post', 1);
+    thePost = store.findRecord('post', 1);
     this.transitionTo('post', thePost.id);
     ```
 
@@ -1446,7 +1446,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     ```javascript
     App.PostRoute = Ember.Route.extend({
       model: function(params) {
-        return this.store.find('post', params.post_id);
+        return this.store.findRecord('post', params.post_id);
       }
     });
     ```
@@ -1623,7 +1623,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     ```javascript
     App.PhotosRoute = Ember.Route.extend({
       model: function() {
-        return this.store.find('photo');
+        return this.store.findAll('photo');
       },
 
       setupController: function (controller, model) {
