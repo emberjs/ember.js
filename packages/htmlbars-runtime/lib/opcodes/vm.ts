@@ -151,6 +151,7 @@ export class JumpIfOpcode extends JumpOpcode {
       vm.updateWith(new AssertFalse(reference));
     }
   }
+}
 
 export class JumpUnlessOpcode extends JumpOpcode {
   public type = "jump-unless";

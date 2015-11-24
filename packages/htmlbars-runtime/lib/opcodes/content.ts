@@ -24,10 +24,6 @@ abstract class UpdatingContentOpcode implements UpdatingOpcode {
 }
 
 export class AppendOpcode extends ContentOpcode {
-  constructor(append: Append) {
-    super();
-  }
-
   evaluate(vm: VM<any>) {
     let reference = vm.registers.args.params.nth(0);
     let value = reference.value();

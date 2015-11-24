@@ -2,7 +2,7 @@ import { Scope, Environment, Frame } from './environment';
 import { Bounds } from './morph';
 import { ElementStack } from './builder';
 import { LinkedList, LinkedListNode, InternedString } from 'htmlbars-util';
-import { ChainableReference, PathReference } from 'htmlbars-reference';
+import { ChainableReference, PathReference, RootReference, ListIterator } from 'htmlbars-reference';
 import Template, { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
 import { StatementSyntax, ExpressionSyntax, Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
 import DOMHelper from './dom';
@@ -19,6 +19,7 @@ interface VMOptions<T> {
 interface Registers {
   operand: ChainableReference;
   condition: ChainableReference;
+  iterator: ListIterator;
   args: EvaluatedArgs;
 }
 
@@ -161,6 +162,8 @@ export class VM<T> {
     let { elementStack, frameStack } = this;
     let renderResult;
 
+    elementStack.openBlock();
+
     this.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     this.frameStack.append(new VMFrame(this, opcodes));
 
@@ -178,7 +181,7 @@ export class VM<T> {
       this.evaluateOpcode(opcode);
     }
 
-    return new RenderResult(this.updatingOpcodeStack.pop(), elementStack.closeBlock(), this.env.getDOM());
+    return new RenderResult(this.updatingOpcodeStack.pop(), elementStack.closeBlock(), this.env.getDOM(), this.currentScope.getSelf());
   }
 
   evaluateOpcode(opcode: Opcode) {
@@ -331,15 +334,22 @@ export class RenderResult implements Bounds, ExceptionHandler {
   private updating: UpdatingOpSeq;
   private bounds: Bounds;
   private dom: DOMHelper;
+  private self: RootReference;
 
-  constructor(updating: UpdatingOpSeq, bounds: Bounds, dom: DOMHelper) {
+  constructor(updating: UpdatingOpSeq, bounds: Bounds, dom: DOMHelper, self: RootReference) {
     this.updating = updating;
     this.bounds = bounds;
     this.dom = dom;
+    this.self = self;
   }
 
-  rerender() {
+  rerender(self?: any) {
     let vm = new UpdatingVM(this.dom);
+
+    if (self !== undefined) {
+      this.self.update(self);
+    }
+
     vm.execute(this.updating, this);
   }
 
@@ -380,6 +390,7 @@ export class VMFrame<T> implements LinkedListNode {
   public registers: Registers = {
     operand: null,
     condition: null,
+    iterator: null,
     args: null
   };
 

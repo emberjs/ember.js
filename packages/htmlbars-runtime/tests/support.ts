@@ -71,6 +71,8 @@ import {
   TestOpcode,
   JumpOpcode,
   JumpUnlessOpcode,
+  IterateOpcode,
+  ContinueOpcode,
   builders,
   isWhitespace,
   createMorph,
@@ -651,6 +653,61 @@ class EachSyntax extends StatementSyntax {
 
   prettyPrint() {
     return `#each ${this.args.prettyPrint()}`;
+  }
+
+  compile(ops: OpSeq) {
+    //             Enter(BEGIN, END)
+    // BEGIN:      Noop
+    //             Args
+    //             Iterate(ELSE)
+    // ITER:       Noop
+    //             Enter(NULL, NULL)
+    //             PushChildScope(default.localNames)
+    //             Evaluate(default)
+    //             PopScope
+    //             Exit
+    //             Continue(ITER)
+    //             Jump(END)
+    // ELSE:       Noop
+    //             Evaluate(inverse)
+    // END:        Noop
+    //             Exit
+
+    let { templates } = this;
+
+    let BEGIN = new NoopOpcode("BEGIN");
+    let ITER = new NoopOpcode("ITER");
+    let ELSE = new NoopOpcode("ELSE");
+    let END = new NoopOpcode("END");
+
+    ops.append(new EnterOpcode(BEGIN, END));
+    ops.append(BEGIN);
+    ops.append(new ArgsOpcode(this.args));
+
+    if (this.templates.inverse) {
+      ops.append(new IterateOpcode(ELSE));
+    } else {
+      ops.append(new IterateOpcode(END));
+    }
+
+    ops.append(ITER);
+
+    ops.append(new EnterOpcode(null, null));
+    ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    ops.append(new EvaluateOpcode(this.templates.default.raw));
+    ops.append(new PopScopeOpcode());
+    ops.append(new ExitOpcode());
+
+    ops.append(new ContinueOpcode(ITER));
+    ops.append(new JumpOpcode(END));
+
+    if (this.templates.inverse) {
+      ops.append(ELSE);
+      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+    }
+
+    ops.append(END);
+    ops.append(new ExitOpcode());
   }
 
   inline() {

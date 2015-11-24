@@ -1107,7 +1107,10 @@ export class ParamsAndHash extends ExpressionSyntax {
   }
 
   evaluate(frame: Frame): EvaluatedParamsAndHash {
-    return new EvaluatedParamsAndHash(this, frame);
+    return new EvaluatedParamsAndHash({
+      params: this.params.evaluate(frame),
+      hash: this.hash.evaluate(frame)
+    })
   }
 }
 
@@ -1118,13 +1121,20 @@ export class EvaluatedParamsAndHash extends PushPullReference implements PathRef
     return (this._empty = this._empty || ParamsAndHash.empty().evaluate(null));
   }
 
+  static single(ref: PathReference): EvaluatedParamsAndHash {
+    return new EvaluatedParamsAndHash({
+      params: EvaluatedParams.single(ref),
+      hash: EvaluatedHash.empty()
+    });
+  }
+
   public params: EvaluatedParams;
   public hash: EvaluatedHash;
 
-  constructor({ params, hash }: ParamsAndHash, frame: Frame) {
+  constructor({ params, hash }: { params: EvaluatedParams, hash: EvaluatedHash }) {
     super();
-    this.params = this._addSource(params.evaluate(frame));
-    this.hash = hash.evaluate(frame);
+    this.params = this._addSource(params);
+    this.hash = this._addSource(hash);
   }
 
   get(): PathReference {
@@ -1216,7 +1226,8 @@ export class Params extends ExpressionSyntax {
   }
 
   evaluate(frame: Frame): EvaluatedParams {
-    return new EvaluatedParams(this, frame);
+    let references = this.params.map(param => param.evaluate(frame));
+    return new EvaluatedParams(references);
   }
 
   prettyPrint(): PrettyPrintValue {
@@ -1225,20 +1236,16 @@ export class Params extends ExpressionSyntax {
 }
 
 export class EvaluatedParams extends PushPullReference implements PathReference {
+  static single(ref: PathReference): EvaluatedParams {
+    return new EvaluatedParams([ref]);
+  }
+
   public references: PathReference[];
 
-  constructor(params: Params, frame: Frame) {
+  constructor(params: PathReference[]) {
     super();
-
-    let references = [];
-
-    params.forEach(param => {
-      let result = param.evaluate(frame);
-      this._addSource(result);
-      references.push(result);
-    });
-
-    this.references = references;
+    params.forEach(p => this._addSource(p));
+    this.references = params;
   }
 
   get(index: string): PathReference {
@@ -1342,30 +1349,41 @@ export class Hash extends ExpressionSyntax {
   }
 
   evaluate(frame: Frame): EvaluatedHash {
-    return new EvaluatedHash(this, frame);
+    let { keys, values } = this;
+
+    let valueReferences = values.map((value, i) => {
+      return <PathReference>value.evaluate(frame);
+    });
+
+    return new EvaluatedHash({ keys, values: valueReferences });
   }
 }
 
 export class EvaluatedHash extends PushPullReference implements PathReference {
+  static empty() {
+    if (this._empty) return this._empty;
+    return this._empty = new EvaluatedHash({ keys: [], values: [] });
+  }
+
+  static  _empty: EvaluatedHash = null;
+  
   public values: PathReference[];
   public keys: InternedString[];
   public map: Dict<PathReference>;
 
-  constructor(hash: Hash, frame: Frame) {
+  constructor({ keys, values }: { keys: InternedString[], values: PathReference[] }) {
     super();
 
-    let { keys, values } = hash;
     let map = dict<PathReference>();
 
-    this.values = values.map((value, i) => {
-      let result = <PathReference>value.evaluate(frame);
-      map[<string>keys[i]] = result;
-      this._addSource(result);
-      return result;
+    values.forEach((v, i) => {
+      map[<string>keys[i]] = v;
+      this._addSource(v);
     });
 
+    this.keys = keys;
+    this.values = values;
     this.map = map;
-    this.keys = hash.keys;
   }
 
   forEach(callback: (key: InternedString, value: PathReference) => void) {

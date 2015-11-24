@@ -6,4 +6,4 @@ export { PushPullReference } from './lib/references/push-pull';
 export * from './lib/types';
 export { default as UpdatableReference } from './lib/references/root';
 export { ConstReference } from './lib/references/const';
-export { ListManager, ListDelegate } from './lib/references/iterable';
+export { ListManager, ListIterator, ListDelegate } from './lib/references/iterable';

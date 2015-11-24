@@ -64,7 +64,7 @@ interface InitScope {
 
 export abstract class Scope<T extends Object> {
   protected parent: Scope<T>;
-  private self: PathReference = undefined;
+  private self: RootReference = undefined;
   private locals: Dict<PathReference> = null;
   private blocks: Dict<Block> = null;
   private localNames: InternedString[];
@@ -124,7 +124,7 @@ export abstract class Scope<T extends Object> {
     this.self.update(value);
   }
 
-  getSelf(): PathReference {
+  getSelf(): RootReference {
     return this.self || (this.parent && this.parent.getSelf());
   }
 

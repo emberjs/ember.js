@@ -6,9 +6,11 @@ import UpdatableReference from './root';
 export const REFERENCE_ITERATOR: string = symbol("reference-iterator");
 
 export interface ListDelegate {
+  retain(key: InternedString, item: RootReference);
   insert(key: InternedString, item: RootReference, before: InternedString);
   move(key: InternedString, item: RootReference, before: InternedString);
   delete(key: InternedString);
+  done();
 }
 
 class ListItem extends ListNode<UpdatableReference> {
@@ -40,72 +42,135 @@ export class ListManager {
     this.target = target;
   }
 
-  isDirty(): boolean {
-    return true;
+  iterator(): ListIterator {
+    let { array, target, map, list, keyPath } = this;
+    
+    function keyFor(item): InternedString {
+      return intern(item[<string>keyPath]);
+    }
+    
+    return new ListIterator({ array: array.value(), keyFor, target, map, list });    
   }
 
-  destroy() {}
-
   sync() {
-    console.log("Syncing...");
-    let { array, keyPath, target,list, map } = this;
+    let iterator = this.iterator();
+    while (!iterator.next());
+  }
+}
 
-    if (list.isEmpty()) {  
-      return array.value().map(item => {
-        let key = intern(item[<string>keyPath]);
-        let reference = new UpdatableReference(item);
-        let node = map[<string>key] = new ListItem(reference, key);
-        list.append(node);
-        target.insert(node.key, node.value, null);
-      });
+interface IteratorOptions {
+  array: any[];
+  keyFor: (obj) => InternedString;
+  target: ListDelegate;
+  map: Dict<ListItem>;
+  list: LinkedList<ListItem>;
+}
+
+enum Phase {
+  Append,
+  Prune,
+  Done
+}
+
+export class ListIterator {
+  private candidates = dict<ListItem>();
+  private array: any[];
+  private keyFor: (obj) => InternedString;
+  private target: ListDelegate;
+
+  private map: Dict<ListItem>;
+  private list: LinkedList<ListItem>;
+
+  private arrayPosition = 0;
+  private listPosition: ListItem;
+  private phase: Phase = Phase.Append;
+
+  constructor({ array, keyFor, target, map, list }: IteratorOptions) {
+    this.array = array;
+    this.keyFor = keyFor;
+    this.target = target;
+    this.map = map;
+    this.list = list;
+
+    this.listPosition = list.head();
+  }
+
+  advanceToKey(key: InternedString) {
+    let { listPosition, candidates, list } = this;
+
+    let seek = listPosition;
+
+    while (seek && seek.key !== key) {
+      candidates[<string>seek.key] = seek;
+      seek = list.nextNode(seek);
+    }
+    
+    this.listPosition = seek && list.nextNode(seek);
+  }  
+
+  next(): boolean {
+    switch (this.phase) {
+      case Phase.Append: return this.nextAppend();
+      case Phase.Prune: return this.nextPrune();
+      case Phase.Done: return true;
+    }
+  }
+
+  private nextAppend(): boolean {
+    let { keyFor, array, listPosition, list, map, candidates, target } = this;
+
+    if (array.length <= this.arrayPosition) {
+      this.phase = Phase.Prune;
+      this.listPosition = list.head();
+      return this.nextPrune();
     }
 
-    let current = list.head();
-    let candidates = dict<ListItem>();
+    let item = array[this.arrayPosition++];
+    let key = keyFor(item);
 
-    array.value().forEach(item => {
-      let key = intern(item[<string>keyPath]);
+    if (listPosition && listPosition.key === key) {
+      listPosition.handle(item);
+      this.listPosition = list.nextNode(listPosition);
+      target.retain(key, item);
+    } else if (map[<string>key]) {
+      let found = map[<string>key];
+      found.handle(item);
 
-      if (current && current.key === key) {
-        current.handle(item);
-        current = list.nextNode(current);
-      } else if (map[<string>key]) {
-        let found = map[<string>key];
-        found.handle(item);
-
-        if (candidates[<string>key]) {
-          target.move(found.key, found.value, current ? current.key : null);
-        } else {
-          advanceToKey(key);
-        }
+      if (candidates[<string>key]) {
+        target.move(found.key, found.value, listPosition ? listPosition.key : null);
       } else {
-        let reference = new UpdatableReference(item);
-        let node = map[<string>key] = new ListItem(reference, key);
-        list.append(node);
-        target.insert(node.key, node.value, current ? current.key : null);
+        this.advanceToKey(key);
+        this.nextAppend();
       }
-    });
+    } else {
+      let reference = new UpdatableReference(item);
+      let node = map[<string>key] = new ListItem(reference, key);
+      list.append(node);
+      target.insert(node.key, node.value, listPosition ? listPosition.key : null);
+    }
 
-    list.forEachNode(node => {
-      if (node.handled) {
-        node.handled = false;
-      } else {
-        let next = list.nextNode(node);
-        list.remove(node);
-        delete this.map[<string>node.key];
-        target.delete(node.key);
-      }
-    });
+    return false;
+  }
 
-    function advanceToKey(key: InternedString) {
-      let seek = current;
+  private nextPrune(): boolean {
+    let { list, target } = this;
 
-      while (seek && seek.key !== key) {
-        candidates[<string>seek.key] = seek;
-        seek = list.nextNode(seek);
-      }
-      
-      current = seek && list.nextNode(seek);
+    if (this.listPosition === null) {
+      this.phase = Phase.Done;
+      return true;
+    }
+
+    let node = this.listPosition;    
+    this.listPosition = list.nextNode(node);
+
+    if (node.handled) {
+      node.handled = false;
+      return this.nextPrune();
+    } else {
+      list.remove(node);
+      delete this.map[<string>node.key];
+      target.delete(node.key);
+      return false;
     }
   }
 }
