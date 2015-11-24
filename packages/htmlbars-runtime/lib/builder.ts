@@ -160,11 +160,15 @@ export class ElementStack {
     let { first, last } = this.blockStack.pop();
     this.blockElement = this.blockStack[this.blockStack.length - 1];
 
-    return {
+    let bounds = {
       parentElement() { return element },
       firstNode() { return first.firstNode(); },
       lastNode() { return last.lastNode(); }
     };
+
+    this.blockElement.newBounds(bounds);
+
+    return bounds;
   }
 
   bounds(): Bounds {

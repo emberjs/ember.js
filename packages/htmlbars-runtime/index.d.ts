@@ -39,6 +39,10 @@ export {
   JumpIfOpcode,
   JumpUnlessOpcode
 } from './lib/opcodes/vm';
+export {
+  IterateOpcode,
+  ContinueOpcode
+} from './lib/opcodes/lists';
 
 export { VM, UpdatingVM } from './lib/vm';
 

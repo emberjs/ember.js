@@ -7,6 +7,9 @@ class Target implements ListDelegate {
   private map = dict<ListNode<RootReference>>();
   private list = new LinkedList<ListNode<RootReference>>();
 
+  retain() {}
+  done() {}
+
   insert(key: InternedString, item: RootReference, before: InternedString) {
     console.log("insert", key, item, before);
     let referenceNode = before ? this.map[<string>before] : null;

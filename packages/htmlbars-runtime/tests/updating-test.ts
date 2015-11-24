@@ -458,8 +458,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
 
     function rerender(context?) {
-      if (context !== undefined) result.scope.updateSelf(context);
-      result.rerender();
+      result.rerender(context);
     }
 
     function assertStableNodes(className, message) {
