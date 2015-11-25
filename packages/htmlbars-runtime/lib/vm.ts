@@ -81,20 +81,8 @@ export class VM<T> {
     this.didEnter(tryOpcode, updating);
   }
 
-  enterList(manager: ListManager, ops: OpSeq) {
-    this.stack().openBlockList();
-
-    let updating = new LinkedList<UpdatingOpcode>();
-
-    let opcode = new ListBlockOpcode({ ops, vm: this, updating, manager });
-
-    this.listBlockStack.push(opcode);
-
-    this.didEnter(opcode, updating);
-  }
-
   enterWithKey(key: InternedString, ops: OpSeq) {
-    this.stack().openKeyedBlock(key);
+    this.stack().openBlock();
 
     let updating = new LinkedList<UpdatingOpcode>();
 
@@ -103,6 +91,17 @@ export class VM<T> {
     this.listBlockStack.current.map[<string>key] = tryOpcode;
 
     this.didEnter(tryOpcode, updating);
+  }
+
+  enterList(manager: ListManager, ops: OpSeq) {
+    let updating = new LinkedList<BlockOpcode>();
+    this.stack().openBlockList(updating);
+
+    let opcode = new ListBlockOpcode({ ops, vm: this, updating, manager });
+
+    this.listBlockStack.push(opcode);
+
+    this.didEnter(opcode, updating);
   }
 
   private didEnter(opcode: BlockOpcode, updating: LinkedList<UpdatingOpcode>) {
@@ -279,7 +278,7 @@ interface BlockOpcodeOptions {
   updating: LinkedList<UpdatingOpcode>;
 }
 
-abstract class BlockOpcode implements UpdatingOpcode {
+abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   public type = "block";
   public next = null;
   public prev = null;
@@ -287,7 +286,7 @@ abstract class BlockOpcode implements UpdatingOpcode {
   protected env: Environment<any>;
   protected scope: Scope<any>;
   protected updating: LinkedList<UpdatingOpcode>;
-  public bounds: Bounds;
+  protected bounds: Bounds;
   public ops: OpSeq;
 
   constructor({ ops, vm, updating }: BlockOpcodeOptions) {
@@ -296,6 +295,18 @@ abstract class BlockOpcode implements UpdatingOpcode {
     this.env = vm.env;
     this.scope = vm.scope();
     this.bounds = vm.stack().blockElement;
+  }
+
+  parentElement() {
+    return this.bounds.parentElement();
+  }
+
+  firstNode() {
+    return this.bounds.firstNode();
+  }
+
+  lastNode() {
+    return this.bounds.lastNode();
   }
 
   evaluate(vm: UpdatingVM) {
@@ -340,12 +351,16 @@ class ListRevalidationDelegate implements ListDelegate {
     this.updating = updating;
   }
 
+
+
   insert(key: InternedString, item: RootReference, before: InternedString) {
     let { map, opcode, updating } = this;
     let nextSibling: Node = null;
+    let reference = null;
 
     if (before) {
-      nextSibling = map[<string>before].bounds.firstNode();
+      reference = map[<string>before];
+      nextSibling = reference.bounds.firstNode();
     }
 
     let vm = opcode.vmForInsertion(nextSibling);
@@ -364,7 +379,7 @@ class ListRevalidationDelegate implements ListDelegate {
       });
     });
 
-    updating.append(tryOpcode);
+    updating.insertBefore(tryOpcode, reference);
 
     map[<string>key] = tryOpcode;
   }
@@ -373,22 +388,25 @@ class ListRevalidationDelegate implements ListDelegate {
   }
 
   move(key: InternedString, item: RootReference, before: InternedString) {
-    let { map } = this;
+    let { map, updating } = this;
 
     let entry = map[<string>key];
-    let reference = map[<string>before];
+    let reference = map[<string>before] || null;
 
     if (before) {
-      move(entry.bounds, reference.bounds.firstNode());
+      move(entry, reference.firstNode());
     } else {
-      move(entry.bounds, this.opcode.bounds.lastNode());
+      move(entry, this.opcode.lastNode());
     }
+
+    updating.remove(entry);
+    updating.insertBefore(entry, reference);
   }
 
   delete(key: InternedString) {
     let { map } = this;
     let opcode = map[<string>key];
-    clear(opcode.bounds);
+    clear(opcode);
     this.updating.remove(opcode);
     delete map[<string>key];
   }
@@ -410,6 +428,20 @@ class ListBlockOpcode extends BlockOpcode {
   constructor(options: ListBlockOpcodeOptions) {
     super(options);
     this.manager = options.manager;
+  }
+
+  firstNode(): Node {
+    let head: BlockOpcode = <any>this.updating.head();
+
+    if (head) {
+      return head.firstNode();
+    } else {
+      return this.lastNode();
+    }
+  }
+
+  lastNode(): Node {
+    return this.bounds.lastNode();
   }
 
   evaluate(vm: UpdatingVM) {

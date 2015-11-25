@@ -52,7 +52,7 @@ export abstract class StatementSyntax extends Syntax<StatementSyntax> {
     return new PrettyPrint(this.type, this.type);
   }
 
-  abstract compile(opcodes: LinkedList<Opcode>, env: Environment<any>);
+  abstract compile(opcodes: OpSeqBuilder, env: Environment<any>);
 }
 
 export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {
@@ -84,3 +84,4 @@ export interface Opcode extends LinkedListNode {
 }
 
 export type OpSeq = Slice<Opcode>;
+export type OpSeqBuilder = LinkedList<Opcode>;

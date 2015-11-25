@@ -5,7 +5,7 @@ import { ElementStack } from '../builder';
 import { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args, RawTemplate } from '../template';
 import { Frame } from '../environment';
 import { Bounds } from '../morph';
-import { LITERAL, InternedString, Dict, ListSlice, dict } from 'htmlbars-util';
+import { LITERAL, InternedString, Dict, ListSlice, dict, assert } from 'htmlbars-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'htmlbars-reference';
 import { clear, move } from '../morph';
 
@@ -42,7 +42,7 @@ export class EnterListOpcode extends ListOpcode {
     let keyPath = vm.registers.args.hash.get(LITERAL("key")).value();
 
     let manager =  new ListManager(<RootReference>listRef /* WTF */, keyPath);
-    let delegate = new IterateDelegate(vm, null);
+    let delegate = new IterateDelegate(vm);
 
     let iterator = vm.registers.iterator = manager.iterator(delegate);
 
@@ -77,49 +77,32 @@ export class EnterWithKeyOpcode extends ListOpcode {
 
 class IterateDelegate implements ListDelegate {
   private vm: VM<any>;
-  private map: Dict<Bounds>;
 
-  constructor(vm: VM<any>, map: Dict<Bounds>) {
+  constructor(vm: VM<any>) {
     this.vm = vm;
-    this.map = map;
   }
 
   insert(key: InternedString, item: RootReference, before: InternedString) {
-    let { vm, map } = this;
+    let { vm } = this;
 
-    if (before) {
-      vm.stack().nextSibling = map[<string>before].firstNode();
-    } else {
-      // TODO
-      console.warn("TODO");
-    }
+    assert(!before, "Insertion should be append-only on initial render");
 
     vm.registers.args = EvaluatedArgs.single(item);
     vm.registers.operand = item;
     vm.registers.condition = new ConstReference(true);
     vm.registers.key = key;
-
-    // map[<string>key] = vm.stack().blockElement;
   }
 
   retain(key: InternedString, item: RootReference) {
-    let { vm, map } = this;
-    vm.stack().newBounds(map[<string>key]);
+    assert(false, "Insertion should be append-only on initial render");
   }
 
   move(key: InternedString, item: RootReference, before: InternedString) {
-    let { vm, map } = this;
-
-    let bounds = map[<string>key];
-    let reference = map[<string>before];
-
-    move(bounds, reference && reference.firstNode());
-    vm.stack().newBounds(bounds);
+    assert(false, "Insertion should be append-only on initial render");
   }
 
   delete(key: InternedString) {
-    let { map } = this;
-    clear(map[<string>key]);
+    assert(false, "Insertion should be append-only on initial render");
   }
 
   done() {

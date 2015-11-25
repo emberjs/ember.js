@@ -49,6 +49,7 @@ import {
   Block,
   VM,
   OpSeq,
+  OpSeqBuilder,
   NoopOpcode,
   EnterOpcode,
   EnterListOpcode,
@@ -646,42 +647,42 @@ class EachSyntax extends StatementSyntax {
     return `#each ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeq) {
-    //         Args
-    //         EnterList(BEGIN, END)
-    // BEGIN:  Noop
-    //         NextIter(END)
-    //         EnterWithKey(BEGIN2, END2)
-    // BEGIN2: Noop
-    //         PushChildScope(default.localNames)
-    //         Evaluate(default)
-    //         PopScope
-    // END2:   Noop
-    //         Exit
-    //         Jump(BEGIN)
-    // END:    Noop
-    //         ExitList
+  compile(ops: OpSeqBuilder) {
+    //        Args
+    //        EnterList(BEGIN, END)
+    // ITER:  Noop
+    //        NextIter(BREAK)
+    //        EnterWithKey(BEGIN, END)
+    // BEGIN: Noop
+    //        PushChildScope(default.localNames)
+    //        Evaluate(default)
+    //        PopScope
+    // END:   Noop
+    //        Exit
+    //        Jump(ITER)
+    // BREAK: Noop
+    //        ExitList
 
     let { templates } = this;
 
     let BEGIN = new NoopOpcode("BEGIN");
-    let BEGIN2 = new NoopOpcode("BEGIN2");
-    let END2 = new NoopOpcode("END2");
+    let ITER = new NoopOpcode("ITER");
+    let BREAK = new NoopOpcode("BREAK");
     let END = new NoopOpcode("END");
 
     ops.append(new ArgsOpcode(this.args));
-    ops.append(new EnterListOpcode(BEGIN2, END2));
+    ops.append(new EnterListOpcode(BEGIN, END));
+    ops.append(ITER);
+    ops.append(new NextIterOpcode(BREAK));
+    ops.append(new EnterWithKeyOpcode(BEGIN, END));
     ops.append(BEGIN);
-    ops.append(new NextIterOpcode(END));
-    ops.append(new EnterWithKeyOpcode(BEGIN2, END2));
-    ops.append(BEGIN2);
     ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
     ops.append(new EvaluateOpcode(this.templates.default.raw));
     ops.append(new PopScopeOpcode());
-    ops.append(END2);
-    ops.append(new ExitOpcode());
-    ops.append(new JumpOpcode(BEGIN));
     ops.append(END);
+    ops.append(new ExitOpcode());
+    ops.append(new JumpOpcode(ITER));
+    ops.append(BREAK);
     ops.append(new ExitListOpcode());
   }
 }
@@ -698,7 +699,7 @@ class IdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new EvaluateOpcode(this.templates.default.raw));
   }
 }
@@ -715,7 +716,7 @@ class RenderInverseIdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new EvaluateOpcode(this.templates.inverse.raw));
   }
 }
@@ -737,7 +738,7 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        Args

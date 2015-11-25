@@ -25,7 +25,7 @@ import Template, {
   ATTRIBUTE_SYNTAX
 } from './template'
 import { RenderResult } from './render';
-import { InternedString, Dict, intern, dict, assert } from 'htmlbars-util';
+import { InternedString, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'htmlbars-util';
 import {
   ListDelegate,
   RootReference,
@@ -161,17 +161,8 @@ export class ElementStack {
     this.blockElement = tracker;
   }
 
-  private pushKeyedBlock(key: InternedString) {
-    let tracker = new BlockTracker(this.element);
-
-    if (this.blockElement) this.blockElement.newKeyedBounds(key, tracker);
-
-    this.blockStack.push(tracker);
-    this.blockElement = tracker;
-  }
-
-  private pushBlockList() {
-    let tracker = new BlockListTracker(this.element);
+  private pushBlockList(list: LinkedList<Bounds & LinkedListNode>) {
+    let tracker = new BlockListTracker(this.element, list);
 
     if (this.blockElement) this.blockElement.newBounds(tracker);
 
@@ -203,16 +194,12 @@ export class ElementStack {
     this.pushBlock();
   }
 
-  openKeyedBlock(key: InternedString) {
-    this.pushKeyedBlock(key);
-  }
-
   closeBlock(): Bounds {
     return this.popBlock();
   }
 
-  openBlockList() {
-    this.pushBlockList();
+  openBlockList(list: LinkedList<Bounds & LinkedListNode>) {
+    this.pushBlockList(list);
   }
 
   newBounds(bounds: Bounds) {
@@ -286,7 +273,6 @@ interface Tracker extends Bounds {
   closeElement();
   newNode(node: Node);
   newBounds(bounds: Bounds);
-  newKeyedBounds(key: InternedString, bounds: Bounds);
   finalize(stack: ElementStack);
 }
 
@@ -342,10 +328,6 @@ class BlockTracker implements Tracker {
     this.last = bounds;
   }
 
-  newKeyedBounds(key: InternedString, bounds: Bounds) {
-    assert(false, 'Cannot insert a keyed bounds outside of a block list');
-  }
-
   finalize(stack: ElementStack) {
     if (!this.first) {
       stack.appendComment('');
@@ -356,11 +338,12 @@ class BlockTracker implements Tracker {
 class BlockListTracker implements Tracker {
   private first: Bounds = null;
   private last: Node = null;
-  private map = dict<Bounds>();
   private parent: Element;
+  private boundList: LinkedList<Bounds & LinkedListNode>;
 
-  constructor(parent: Element){
+  constructor(parent: Element, boundList: LinkedList<Bounds & LinkedListNode>) {
     this.parent = parent;
+    this.boundList = boundList;
   }
 
   parentElement() {
@@ -368,7 +351,9 @@ class BlockListTracker implements Tracker {
   }
 
   firstNode() {
-    return this.first ? this.first.firstNode() : this.last;
+    let head = this.boundList.head();
+
+    return head ? head.firstNode() : this.last;
   }
 
   lastNode() {
@@ -388,13 +373,6 @@ class BlockListTracker implements Tracker {
   }
 
   newBounds(bounds: Bounds) {
-    assert(false, 'Cannot open an unkeyed block directly inside a block list');
-  }
-
-  newKeyedBounds(key: InternedString, bounds: Bounds) {
-    if (!this.first) this.first = bounds;
-
-    this.map[<string>key] = bounds;
   }
 
   finalize(stack: ElementStack) {
