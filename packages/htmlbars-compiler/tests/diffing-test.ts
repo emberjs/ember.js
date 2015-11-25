@@ -40,7 +40,7 @@ QUnit.module("Diffing", {
   beforeEach: commonSetup
 });
 
-test("Morph order is preserved when rerendering with duplicate keys", function() {
+QUnit.skip("Morph order is preserved when rerendering with duplicate keys", function() {
   var template = compile(`<ul>{{#each items as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`);
 
   let a1 = { key: "a", name: "A1" };
@@ -80,7 +80,7 @@ test("Morph order is preserved when rerendering with duplicate keys", function()
   deepEqual(getNames(), ['B1', 'A1']);
 });
 
-test("duplicate keys are allowed when duplicate is last morph", function() {
+QUnit.skip("duplicate keys are allowed when duplicate is last morph", function() {
   var template = compile(`<ul>{{#each items as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`);
 
   let a1 = { key: "a", name: "A1" };
