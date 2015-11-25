@@ -1,8 +1,8 @@
-//import FragmentOpcodeCompiler from "../htmlbars-compiler/fragment-opcode-compiler";
-//import FragmentJavaScriptCompiler from "../htmlbars-compiler/fragment-javascript-compiler";
+//import FragmentOpcodeCompiler from "../glimmer-compiler/fragment-opcode-compiler";
+//import FragmentJavaScriptCompiler from "../glimmer-compiler/fragment-javascript-compiler";
 //import DOMHelper from "../dom-helper";
-//import { preprocess } from "../htmlbars-syntax/parser";
-//import { equalHTML, getTextContent } from "../htmlbars-test-helpers";
+//import { preprocess } from "../glimmer-syntax/parser";
+//import { equalHTML, getTextContent } from "../glimmer-test-helpers";
 
 //var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     //svgNamespace = "http://www.w3.org/2000/svg";
@@ -44,7 +44,7 @@
            //'span has the right namespace' );
   //});
 //}
-  
+
 //test('compiles an svg element with classes', function () {
   //var ast = preprocess('<svg class="red right hand"></svg>');
   //var svgNode = fragmentFor(ast).firstChild;

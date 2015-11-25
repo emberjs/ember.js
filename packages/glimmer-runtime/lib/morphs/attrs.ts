@@ -1,6 +1,6 @@
-import { InternedString, getAttrNamespace } from "htmlbars-util";
+import { InternedString, getAttrNamespace } from "glimmer-util";
 import { Morph, MorphConstructor, MorphSpecializer } from "../morph";
-import { Reference, ChainableReference } from 'htmlbars-reference';
+import { Reference, ChainableReference } from 'glimmer-reference';
 import { ExpressionSyntax } from '../template';
 import { Frame } from '../environment';
 import { ElementStack } from '../builder';

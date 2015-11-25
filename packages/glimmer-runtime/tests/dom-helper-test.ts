@@ -1,8 +1,8 @@
-import { DOMHelper } from "htmlbars-runtime";
+import { DOMHelper } from "glimmer-runtime";
 import {
   equalHTML,
   isCheckedInputHTML
-} from "htmlbars-test-helpers";
+} from "glimmer-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     xlinkNamespace = "http://www.w3.org/1999/xlink",

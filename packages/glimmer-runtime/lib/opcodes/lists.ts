@@ -5,8 +5,8 @@ import { ElementStack } from '../builder';
 import { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args, RawTemplate } from '../template';
 import { Frame } from '../environment';
 import { Bounds } from '../morph';
-import { LITERAL, InternedString, Dict, ListSlice, dict, assert } from 'htmlbars-util';
-import { RootReference, ConstReference, ListManager, ListDelegate } from 'htmlbars-reference';
+import { LITERAL, InternedString, Dict, ListSlice, dict, assert } from 'glimmer-util';
+import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
 import { clear, move } from '../morph';
 
 abstract class ListOpcode implements Opcode {

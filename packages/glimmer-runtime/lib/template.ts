@@ -25,10 +25,10 @@ import {
   PushPullReference,
   ConstReference,
   PathReference
-} from 'htmlbars-reference';
+} from 'glimmer-reference';
 import { ElementStack, ClassList } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
-import { LinkedList, LinkedListNode, LITERAL, InternedString, Dict, dict, intern, assign } from 'htmlbars-util';
+import { LinkedList, LinkedListNode, LITERAL, InternedString, Dict, dict, intern, assign } from 'glimmer-util';
 
 import {
   TextOpcode,

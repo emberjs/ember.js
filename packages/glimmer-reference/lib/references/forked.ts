@@ -1,12 +1,12 @@
-import { ChainableReference, NotifiableReference, Destroyable } from 'htmlbars-reference';
-import { HasGuid } from 'htmlbars-util';
+import { ChainableReference, NotifiableReference, Destroyable } from 'glimmer-reference';
+import { HasGuid } from 'glimmer-util';
 
 export default class ForkedReference implements NotifiableReference, HasGuid {
   private reference: ChainableReference;
   private chain: Destroyable;
   public _guid: number = null;
   private dirty: boolean = true;
-  
+
   constructor(reference: ChainableReference) {
     this.reference = reference;
     this._guid = null;

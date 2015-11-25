@@ -1,4 +1,4 @@
-import EmberObject, { computed, observer, alias } from 'htmlbars-object';
+import EmberObject, { computed, observer, alias } from 'glimmer-object';
 
 var moduleOptions, originalLookup;
 

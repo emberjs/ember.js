@@ -1,4 +1,4 @@
-import { intern } from 'htmlbars-util';
+import { intern } from 'glimmer-util';
 
 export const EMPTY_ARRAY = [];
 export const EMPTY_OBJECT = {};

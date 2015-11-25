@@ -1,8 +1,8 @@
 import TemplateVisitor from "./template-visitor";
 import { assert } from "./utils";
-import { getAttrNamespace } from "htmlbars-util";
-import { isHelper } from "htmlbars-syntax";
-import { struct, types } from "htmlbars-util";
+import { getAttrNamespace } from "glimmer-util";
+import { isHelper } from "glimmer-syntax";
+import { struct, types } from "glimmer-util";
 
 type Statement = any;
 

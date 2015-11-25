@@ -1,7 +1,7 @@
-import { InternedString, intern, dict } from 'htmlbars-util';
+import { InternedString, intern, dict } from 'glimmer-util';
 import { PathReference } from './path';
-import { Dict, HasGuid } from 'htmlbars-util';
-import { RootReference as IRootReference, PathReference as IPathReference, NotifiableReference } from 'htmlbars-reference';
+import { Dict, HasGuid } from 'glimmer-util';
+import { RootReference as IRootReference, PathReference as IPathReference, NotifiableReference } from 'glimmer-reference';
 import PushPullReference from './push-pull';
 
 export default class RootReference extends PushPullReference implements IRootReference, IPathReference {
@@ -46,4 +46,3 @@ export default class RootReference extends PushPullReference implements IRootRef
     return '[reference Root]';
   }
 }
-

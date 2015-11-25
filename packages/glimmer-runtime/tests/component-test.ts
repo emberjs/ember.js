@@ -1,6 +1,6 @@
-import { compile as defaultCompile } from "htmlbars-compiler";
-import { DOMHelper, Template, RenderResult, manualElement } from "htmlbars-runtime";
-import { equalTokens } from "htmlbars-test-helpers";
+import { compile as defaultCompile } from "glimmer-compiler";
+import { DOMHelper, Template, RenderResult, manualElement } from "glimmer-runtime";
+import { equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
 let env: TestEnvironment, root: Element, result: RenderResult;

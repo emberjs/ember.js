@@ -1,5 +1,5 @@
-import { Destroyable, Reference, NotifiableReference, ChainableReference } from 'htmlbars-reference';
-import { HasGuid } from 'htmlbars-util';
+import { Destroyable, Reference, NotifiableReference, ChainableReference } from 'glimmer-reference';
+import { HasGuid } from 'glimmer-util';
 
 class NotifyNode {
   public parent: PushPullReference;

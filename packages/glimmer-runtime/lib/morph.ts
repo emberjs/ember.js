@@ -5,7 +5,7 @@ import DOMHelper from './dom';
 import Template, { EvaluatedParams } from './template';
 import { RenderResult } from './render';
 import { VM } from './vm';
-import { RootReference } from 'htmlbars-reference';
+import { RootReference } from 'glimmer-reference';
 
 export interface MorphSpecializer<T extends Morph, InitOptions> {
   specialize(options: InitOptions): MorphConstructor<T, InitOptions>;

@@ -1,4 +1,4 @@
-import { parse, traverse } from 'htmlbars-syntax';
+import { parse, traverse } from 'glimmer-syntax';
 
 function traversalEqual(node, expectedTraversal) {
   let actualTraversal = [];
@@ -27,7 +27,7 @@ function traversalEqual(node, expectedTraversal) {
   ok(nodesEqual, "Actual nodes match expected nodes");
 }
 
-QUnit.module('[htmlbars-syntax] Traversal - visiting');
+QUnit.module('[glimmer-syntax] Traversal - visiting');
 
 test('Elements and attributes', function() {
   let ast = parse(`<div id="id" class="large {{classes}}" value={{value}}><b></b><b></b></div>`);

@@ -1,4 +1,4 @@
-import { voidMap } from 'htmlbars-util';
+import { voidMap } from 'glimmer-util';
 import b from "../builders";
 import { appendChild, parseComponentBlockParams, parseElementBlockParams, unwrapMustache } from "../utils";
 

@@ -1,4 +1,4 @@
-import { indexOfArray } from "htmlbars-util";
+import { indexOfArray } from "glimmer-util";
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
 

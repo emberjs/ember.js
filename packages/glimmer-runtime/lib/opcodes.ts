@@ -1,5 +1,5 @@
-import { Dict, LinkedList, LinkedListNode, Slice } from 'htmlbars-util';
-import { ChainableReference, PathReference } from 'htmlbars-reference';
+import { Dict, LinkedList, LinkedListNode, Slice } from 'glimmer-util';
+import { ChainableReference, PathReference } from 'glimmer-reference';
 import Template from './template';
 import { Frame, Environment } from './environment';
 import { ElementStack } from './builder';

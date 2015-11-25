@@ -1,4 +1,4 @@
-import EmberObject, { computed } from 'htmlbars-object';
+import EmberObject, { computed } from 'glimmer-object';
 import { EmberComponent, DemoEnvironment, compile } from './index';
 
 let ServerUptime = <any>EmberComponent.extend({

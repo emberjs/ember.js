@@ -1,5 +1,5 @@
-import { Reference, RootReference, UpdatableReference, ListManager, ListDelegate } from 'htmlbars-reference';
-import { LITERAL, LinkedList, ListNode, InternedString, Dict, dict } from 'htmlbars-util';
+import { Reference, RootReference, UpdatableReference, ListManager, ListDelegate } from 'glimmer-reference';
+import { LITERAL, LinkedList, ListNode, InternedString, Dict, dict } from 'glimmer-util';
 
 QUnit.module("Reference iterables");
 

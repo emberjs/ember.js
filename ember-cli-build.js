@@ -68,7 +68,7 @@ module.exports = function() {
   var packagesTree = mergeTrees([DTSTree, libTree, HTMLTokenizer]);
 
   var runtimeTree = new Funnel(packagesTree, {
-    include: ['htmlbars-runtime/**/*']
+    include: ['glimmer-runtime/**/*']
   });
 
   runtimeTree = mergeTrees([runtimeTree, handlebarsInlinedTrees.runtime]);

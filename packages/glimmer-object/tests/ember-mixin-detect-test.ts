@@ -1,4 +1,4 @@
-import { Mixin } from 'htmlbars-object';
+import { Mixin } from 'glimmer-object';
 
 QUnit.module('Mixin.detect');
 

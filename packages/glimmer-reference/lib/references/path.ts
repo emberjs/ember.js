@@ -1,11 +1,11 @@
 import { EMPTY_CACHE } from '../utils';
-import { InternedString, DictSet, dict } from 'htmlbars-util';
+import { InternedString, DictSet, dict } from 'glimmer-util';
 import Meta from '../meta';
 import ForkedReference from './forked';
 import { PropertyReference } from './descriptors';
 import PushPullReference from './push-pull';
-import { PathReference as IPathReference, Reference, NotifiableReference, Destroyable } from 'htmlbars-reference';
-import { Dict, HasGuid, installGuid } from 'htmlbars-util';
+import { PathReference as IPathReference, Reference, NotifiableReference, Destroyable } from 'glimmer-reference';
+import { Dict, HasGuid, installGuid } from 'glimmer-util';
 
 class UnchainFromPath {
   private set: DictSet<PathReference & HasGuid>;

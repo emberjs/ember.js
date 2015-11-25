@@ -1,6 +1,6 @@
-import { parse, Walker } from 'htmlbars-syntax';
+import { parse, Walker } from 'glimmer-syntax';
 
-QUnit.module('[htmlbars-syntax] Plugins - AST Transforms');
+QUnit.module('[glimmer-syntax] Plugins - AST Transforms');
 
 test('AST plugins can be provided to the compiler', function() {
   expect(1);
@@ -70,7 +70,7 @@ test('AST plugins can be chained', function() {
 
   var ast = parse('<div></div>', {
     plugins: {
-      ast: [ 
+      ast: [
         Plugin,
         SecondaryPlugin
       ]

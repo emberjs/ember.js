@@ -43,10 +43,10 @@
       }
 
       // Imports
-      var compileTemplate = requireModule('htmlbars-demos/index').compile,
-          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment;
+      var compileTemplate = requireModule('glimmer-demos/index').compile,
+          DemoEnvironment = requireModule('glimmer-demos/index').DemoEnvironment;
 
-      var Stats = requireModule('htmlbars-demos/stats').default;
+      var Stats = requireModule('glimmer-demos/stats').default;
 
       function compile(template) {
         return compileTemplate(template, { disableComponentGeneration: true });

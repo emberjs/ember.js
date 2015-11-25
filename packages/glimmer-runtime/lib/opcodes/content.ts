@@ -1,8 +1,8 @@
 import { Opcode, UpdatingOpcode } from '../opcodes';
 import { VM, UpdatingVM } from '../vm';
-import { InternedString } from 'htmlbars-util';
+import { InternedString } from 'glimmer-util';
 import { Append } from '../template';
-import { PathReference } from 'htmlbars-reference';
+import { PathReference } from 'glimmer-reference';
 import DOMHelper from '../dom';
 import { Bounds, clear } from '../morph';
 

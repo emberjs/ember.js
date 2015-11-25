@@ -1,5 +1,5 @@
-import { ClassMeta, Mixin, Blueprint, toMixin } from 'htmlbars-object';
-import { setProperty, notifyProperty } from 'htmlbars-reference';
+import { ClassMeta, Mixin, Blueprint, toMixin } from 'glimmer-object';
+import { setProperty, notifyProperty } from 'glimmer-reference';
 export { Mixin };
 
 export function get(obj, key) {

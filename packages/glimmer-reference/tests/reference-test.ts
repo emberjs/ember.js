@@ -1,4 +1,4 @@
-import { fork, metaFor, setProperty } from "htmlbars-reference";
+import { fork, metaFor, setProperty } from "glimmer-reference";
 
 //function computed(obj, name, getter, depStrings) {
   //Object.defineProperty(obj, name, {
@@ -13,7 +13,7 @@ import { fork, metaFor, setProperty } from "htmlbars-reference";
   //Meta.for(obj).addReferenceTypeFor(name, ComputedBlueprint(name, deps)); [>jshint +W064<]
 //}
 
-import { intern } from 'htmlbars-util';
+import { intern } from 'glimmer-util';
 
 function addObserver(obj: any, name: string, path: string) {
   return fork(metaFor(obj).root().referenceFromParts(path.split('.').map(intern)));

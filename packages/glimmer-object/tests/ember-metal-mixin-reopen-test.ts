@@ -1,4 +1,4 @@
-import EmberObject, { Mixin } from 'htmlbars-object';
+import EmberObject, { Mixin } from 'glimmer-object';
 import { get } from './support';
 
 QUnit.module('Mixin#reopen');

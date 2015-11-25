@@ -1,6 +1,6 @@
-import { InternedString, symbol } from "htmlbars-util";
+import { InternedString, symbol } from "glimmer-util";
 import { ExpressionSyntax, EvaluatedParamsAndHash, Templates } from '../template';
-import { Reference, PushPullReference } from 'htmlbars-reference';
+import { Reference, PushPullReference } from 'glimmer-reference';
 import { Frame, Helper, Insertion as PrimitiveInsertion } from '../environment';
 import { ElementStack } from '../builder';
 

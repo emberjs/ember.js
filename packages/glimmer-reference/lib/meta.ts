@@ -2,9 +2,9 @@ import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { ConstReference } from './references/const';
 import { MetaOptions } from './types';
-import { InternedString, installGuid, assign, intern, numberKey } from 'htmlbars-util';
+import { InternedString, installGuid, assign, intern, numberKey } from 'glimmer-util';
 
-import { Dict, DictSet, HasGuid, Set, dict } from 'htmlbars-util';
+import { Dict, DictSet, HasGuid, Set, dict } from 'glimmer-util';
 
 import {
   Reference,

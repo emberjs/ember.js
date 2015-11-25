@@ -1,4 +1,4 @@
-import { InternedString } from 'htmlbars-util';
+import { InternedString } from 'glimmer-util';
 import {
   Frame
 } from '../environment';

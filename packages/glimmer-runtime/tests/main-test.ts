@@ -1,11 +1,11 @@
 /*globals SVGElement, SVGLinearGradientElement */
-import { manualElement, DOMHelper } from "htmlbars-runtime";
-import { compile } from "htmlbars-compiler";
-import { equalTokens } from "htmlbars-test-helpers";
+import { manualElement, DOMHelper } from "glimmer-runtime";
+import { compile } from "glimmer-compiler";
+import { equalTokens } from "glimmer-test-helpers";
 
 let env;
 
-QUnit.module("htmlbars-runtime", {
+QUnit.module("glimmer-runtime", {
   setup() {
     env = {
       dom: new DOMHelper(),

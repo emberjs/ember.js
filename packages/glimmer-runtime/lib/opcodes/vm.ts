@@ -2,8 +2,8 @@ import { Opcode, UpdatingOpcode, ExpressionSyntax } from '../opcodes';
 import { VM, UpdatingVM } from '../vm';
 import { ParamsAndHash as Args, RawTemplate } from '../template';
 import { Frame } from '../environment';
-import { InternedString, ListSlice } from 'htmlbars-util';
-import { ChainableReference } from 'htmlbars-reference';
+import { InternedString, ListSlice } from 'glimmer-util';
+import { ChainableReference } from 'glimmer-reference';
 
 abstract class VMOpcode implements Opcode {
   public type: string;
@@ -202,4 +202,3 @@ export class AssertFalse extends VMUpdatingOpcode {
     }
   }
 }
-

@@ -5,8 +5,8 @@ import { Scope, Frame } from '../environment';
 import { ElementStack } from '../builder';
 import { TemplateMorph } from '../morph';
 import { RenderResult } from '../render';
-import { InternedString } from 'htmlbars-util';
-import { ChainableReference, RootReference, ConstReference, PathReference } from 'htmlbars-reference';
+import { InternedString } from 'glimmer-util';
+import { ChainableReference, RootReference, ConstReference, PathReference } from 'glimmer-reference';
 
 export interface PushScopeOptions {
   localNames: InternedString[];

@@ -61,7 +61,7 @@ The above vanilla HB AST looks something like:
       Mustache: `onclick` params=[`"like"`]
       Content: '>Like</button> </p>'
 
-See [parser.js](packages/htmlbars-syntax/lib/parser.js)
+See [parser.js](packages/glimmer-syntax/lib/parser.js)
 
 ### 2. Convert to Glimmer AST
 
@@ -86,8 +86,8 @@ something like:
       Element tag='button' helpers=[Mustache(`onclick "like"`)]
         "Like"
 
-See [parser.js](packages/htmlbars-syntax/lib/parser.js) and
-[ast.js](packages/htmlbars-compiler/lib/ast.js).
+See [parser.js](packages/glimmer-syntax/lib/parser.js) and
+[ast.js](packages/glimmer-compiler/lib/ast.js).
 
 ### 3. Build document fragment generator from HTMLbars AST
 
@@ -148,7 +148,7 @@ build up this fragment (i.e. the `createDocumentFragment`, `createElement`,
 `createTextNode`, etc., code from above). HTMLbars accomplishes this in
 two passes (on the compile side):
 
-1. In [fragment-opcode-compiler.js](packages/htmlbars-compiler/lib/fragment-opcode-compiler.js),
+1. In [fragment-opcode-compiler.js](packages/glimmer-compiler/lib/fragment-opcode-compiler.js),
    the HTMLbars AST is recursively walked and a flattened
    array of opcodes (used in step 2) is generated.
    The intent of this phase is to flatten the recursive structure of the

@@ -1,8 +1,8 @@
-import { compile as rawCompile } from "htmlbars-compiler";
-import { forEach } from "htmlbars-util";
-import { normalizeInnerHTML, getTextContent, equalTokens } from "htmlbars-test-helpers";
+import { compile as rawCompile } from "glimmer-compiler";
+import { forEach } from "glimmer-util";
+import { normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
-import { Template } from 'htmlbars-runtime';
+import { Template } from 'glimmer-runtime';
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
