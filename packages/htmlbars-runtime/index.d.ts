@@ -40,8 +40,10 @@ export {
   JumpUnlessOpcode
 } from './lib/opcodes/vm';
 export {
-  IterateOpcode,
-  ContinueOpcode
+  EnterListOpcode,
+  ExitListOpcode,
+  EnterWithKeyOpcode,
+  NextIterOpcode
 } from './lib/opcodes/lists';
 
 export { VM, UpdatingVM } from './lib/vm';

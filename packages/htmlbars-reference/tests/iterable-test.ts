@@ -47,8 +47,8 @@ QUnit.test("They provide a sequence of references with keys", assert => {
   let arrRef = new UpdatableReference(arr);
   let target = new Target();
 
-  let manager = new ListManager(arrRef, LITERAL('key'), target);
-  manager.sync();
+  let manager = new ListManager(arrRef, LITERAL('key'));
+  manager.sync(target);
 
   assert.deepEqual(toValues(target), arr);
 });
@@ -58,9 +58,9 @@ QUnit.test("When re-iterated via mutation, the original references are updated",
   let arrRef = new UpdatableReference(arr);
   let target = new Target();
 
-  let manager = new ListManager(arrRef, LITERAL('key'), target);
-  manager.sync();
-  
+  let manager = new ListManager(arrRef, LITERAL('key'));
+  manager.sync(target);
+
   let [ yehudaRef, godfreyRef ] = target.toArray();
 
   assert.equal(yehudaRef.value().name, "Yehuda");
@@ -68,24 +68,24 @@ QUnit.test("When re-iterated via mutation, the original references are updated",
 
   arr.reverse();
 
-  manager.sync();
+  manager.sync(target);
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef ]);
-  
+
   arr.push({ key: "c", name: "Godhuda" });
-  
-  manager.sync();
-  
+
+  manager.sync(target);
+
   let [ , , godhudaRef ] = target.toArray();
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef, godhudaRef ]);
-  
+
   arr.shift();
-  
-  manager.sync();
-  
+
+  manager.sync(target);
+
   assert.deepEqual(target.toArray(), [ yehudaRef, godhudaRef ]);
   assert.deepEqual(toValues(target), arr);
 });
@@ -95,9 +95,9 @@ QUnit.test("When re-iterated via deep mutation, the original references are upda
   let arrRef = new UpdatableReference(arr);
   let target = new Target();
 
-  let manager = new ListManager(arrRef, LITERAL('key'), target);
-  manager.sync();
-  
+  let manager = new ListManager(arrRef, LITERAL('key'));
+  manager.sync(target);
+
   let [ yehudaRef, godfreyRef ] = target.toArray();
 
   assert.equal(yehudaRef.value().name, "Yehuda");
@@ -108,32 +108,32 @@ QUnit.test("When re-iterated via deep mutation, the original references are upda
   arr[1].key = "a";
   arr[1].name = "Yehuda";
 
-  manager.sync();
+  manager.sync(target);
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef ]);
-  
+
   arr[0].name = "Yehuda";
   arr[1].name = "Godfrey";
 
-  manager.sync();
+  manager.sync(target);
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef ]);
-  
+
   arr.push({ key: "c", name: "Godhuda" });
-  
-  manager.sync();
-  
+
+  manager.sync(target);
+
   let [ , , godhudaRef ] = target.toArray();
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef, godhudaRef ]);
-  
+
   arr.shift();
-  
-  manager.sync();
-  
+
+  manager.sync(target);
+
   assert.deepEqual(target.toArray(), [ yehudaRef, godhudaRef ]);
   assert.deepEqual(toValues(target), arr);
 });
@@ -143,9 +143,9 @@ QUnit.test("When re-iterated via replacement, the original references are update
   let arrRef = new UpdatableReference(arr);
   let target = new Target();
 
-  let manager = new ListManager(arrRef, LITERAL('key'), target);
-  manager.sync();
-  
+  let manager = new ListManager(arrRef, LITERAL('key'));
+  manager.sync(target);
+
   let [ yehudaRef, godfreyRef ] = target.toArray();
 
   assert.equal(yehudaRef.value().name, "Yehuda");
@@ -155,28 +155,34 @@ QUnit.test("When re-iterated via replacement, the original references are update
   arr.reverse();
   arrRef.update(arr);
 
-  manager.sync();
+  manager.sync(target);
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef ]);
-  
+
+  arrRef.update([{ key: 'a', name: "Tom" }, { key: "b", name: "Stef "}]);
+  manager.sync(target);
+
+  assert.deepEqual(toValues(target), [{ key: 'a', name: "Tom" }, { key: "b", name: "Stef "}]);
+  assert.deepEqual(target.toArray(), [ yehudaRef, godfreyRef ]);
+
   arr = arr.slice();
   arr.push({ key: "c", name: "Godhuda" });
   arrRef.update(arr);
-  
-  manager.sync();
-  
+
+  manager.sync(target);
+
   let [ , , godhudaRef ] = target.toArray();
 
   assert.deepEqual(toValues(target), arr);
   assert.deepEqual(target.toArray(), [ godfreyRef, yehudaRef, godhudaRef ]);
-  
+
   arr = arr.slice();
   arr.shift();
   arrRef.update(arr);
-  
-  manager.sync();
-  
+
+  manager.sync(target);
+
   assert.deepEqual(target.toArray(), [ yehudaRef, godhudaRef ]);
   assert.deepEqual(toValues(target), arr);
 });

@@ -365,20 +365,20 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     var itemNode = getItemNode('tomdale');
     var nameNode = getNameNode('tomdale');
 
-    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "Initial render");
+    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li><!----></ul>", "Initial render");
 
     rerender();
     assertStableNodes('tomdale', "after no-op rerender");
-    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
+    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li><!----></ul>", "After no-op re-render");
 
     rerender();
     assertStableNodes('tomdale', "after non-dirty rerender");
-    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>", "After no-op re-render");
+    equalTokens(root, "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li><!----></ul>", "After no-op re-render");
 
     object = { list: [yehuda, tom] };
     rerender(object);
     assertStableNodes('tomdale', "after changing the list order");
-    equalTokens(root, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>", "After changing the list order");
+    equalTokens(root, "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li><!----></ul>", "After changing the list order");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -386,7 +386,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     ]};
     rerender(object);
     assertStableNodes('mmun', "after changing the list entries, but with stable keys");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li></ul>", "After changing the list entries, but with stable keys");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li><!----></ul>", "After changing the list entries, but with stable keys");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -395,7 +395,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     ]};
     rerender(object);
     assertStableNodes('mmun', "after adding an additional entry");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li></ul>", "After adding an additional entry");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li><!----></ul>", "After adding an additional entry");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -404,7 +404,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
 
     rerender(object);
     assertStableNodes('mmun', "after removing the middle entry");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li></ul>", "after removing the middle entry");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='mixonic'>Matthew Beale</li><!----></ul>", "after removing the middle entry");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -414,7 +414,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
 
     rerender(object);
     assertStableNodes('mmun', "after adding two more entries");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding two more entries");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li><!----></ul>", "After adding two more entries");
 
     // New node for stability check
     itemNode = getItemNode('rwjblue');
@@ -426,7 +426,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
 
     rerender(object);
     assertStableNodes('rwjblue', "after removing two entries");
-    equalTokens(root, "<ul><li class='rwjblue'>Robert Jackson</li></ul>", "After removing two entries");
+    equalTokens(root, "<ul><li class='rwjblue'>Robert Jackson</li><!----></ul>", "After removing two entries");
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -437,7 +437,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     console.log("adding back");
     rerender(object);
     assertStableNodes('rwjblue', "after adding back entries");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li></ul>", "After adding back entries");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li><!----></ul>", "After adding back entries");
 
     // New node for stability check
     itemNode = getItemNode('mmun');
@@ -449,7 +449,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
 
     rerender(object);
     assertStableNodes('mmun', "after removing from the back");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li></ul>", "After removing from the back");
+    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><!----></ul>", "After removing from the back");
 
     object = { list: [] };
 
@@ -470,7 +470,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
       // <li>
       var itemNode = root.firstChild.firstChild;
 
-      while (itemNode) {
+      while (itemNode && itemNode.getAttribute) {
         if (itemNode.getAttribute('class') === className) { break; }
         itemNode = itemNode.nextSibling;
       }

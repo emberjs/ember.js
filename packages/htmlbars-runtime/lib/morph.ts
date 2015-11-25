@@ -425,6 +425,23 @@ export function insertBoundsBefore(parent: Element, bounds: Bounds, reference: B
   }
 }
 
+export function move(bounds: Bounds, reference: Node) {
+  let parent = bounds.parentElement();
+  let first = bounds.firstNode();
+  let last = bounds.lastNode();
+
+  let node = first;
+
+  while (node) {
+    let next = node.nextSibling;
+    parent.insertBefore(node, reference);
+    if (node === last) return next;
+    node = next;
+  }
+
+  return null;
+}
+
 export function clear(bounds: Bounds) {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();

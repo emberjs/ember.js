@@ -21,7 +21,7 @@ export class ListNode<T> implements LinkedListNode {
 // themselves T. However, it will always be true, so trust us.
 type trust = any;
 
-export class LinkedList<T extends LinkedListNode> {
+export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   private _head: T;
   private _tail: T;
 
@@ -155,4 +155,38 @@ class LinkedListRemover implements Destroyable {
 class SentinelNode implements LinkedListNode {
   next: LinkedListNode = null;
   prev: LinkedListNode = null;
+}
+
+export interface Slice<T extends LinkedListNode> {
+  head(): T;
+  tail(): T;
+  nextNode(node: T): T;
+  isEmpty(): boolean;
+}
+
+export class ListSlice<T extends LinkedListNode> implements Slice<T> {
+  private _head: T;
+  private _tail: T;
+
+  constructor(head: T, tail: T) {
+    this._head = head;
+    this._tail = tail;
+  }
+
+  head(): T {
+    return this._head;
+  }
+
+  tail(): T {
+    return this._tail;
+  }
+
+  nextNode(node: T): T {
+    if (node === this._tail) return null;
+    return <T>node.next;
+  }
+
+  isEmpty() {
+    return false;
+  }
 }

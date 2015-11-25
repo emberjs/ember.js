@@ -1,4 +1,4 @@
-import { Dict, LinkedList, LinkedListNode } from 'htmlbars-util';
+import { Dict, LinkedList, LinkedListNode, Slice } from 'htmlbars-util';
 import { ChainableReference, PathReference } from 'htmlbars-reference';
 import Template from './template';
 import { Frame, Environment } from './environment';
@@ -73,7 +73,7 @@ export interface UpdatingOpcode extends LinkedListNode {
   evaluate(vm: UpdatingVM);
 }
 
-export type UpdatingOpSeq = LinkedList<UpdatingOpcode>;
+export type UpdatingOpSeq = Slice<UpdatingOpcode>;
 
 export interface Opcode extends LinkedListNode {
   type: string;
@@ -83,4 +83,4 @@ export interface Opcode extends LinkedListNode {
   evaluate(vm: VM<any>);
 }
 
-export type OpSeq = LinkedList<Opcode>;
+export type OpSeq = Slice<Opcode>;

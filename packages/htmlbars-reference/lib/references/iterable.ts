@@ -31,29 +31,27 @@ class ListItem extends ListNode<UpdatableReference> {
 export class ListManager {
   private array: RootReference;
   private keyPath: InternedString;
-  private target: ListDelegate;
 
   private map = dict<ListItem>();
   private list = new LinkedList<ListItem>();
 
-  constructor(array: RootReference, keyPath: InternedString, target: ListDelegate) {
+  constructor(array: RootReference, keyPath: InternedString) {
     this.array = array;
     this.keyPath = keyPath;
-    this.target = target;
   }
 
-  iterator(): ListIterator {
-    let { array, target, map, list, keyPath } = this;
-    
+  iterator(target: ListDelegate): ListIterator {
+    let { array, map, list, keyPath } = this;
+
     function keyFor(item): InternedString {
       return intern(item[<string>keyPath]);
     }
-    
-    return new ListIterator({ array: array.value(), keyFor, target, map, list });    
+
+    return new ListIterator({ array: array.value(), keyFor, target, map, list });
   }
 
-  sync() {
-    let iterator = this.iterator();
+  sync(target: ListDelegate) {
+    let iterator = this.iterator(target);
     while (!iterator.next());
   }
 }
@@ -104,15 +102,15 @@ export class ListIterator {
       candidates[<string>seek.key] = seek;
       seek = list.nextNode(seek);
     }
-    
+
     this.listPosition = seek && list.nextNode(seek);
-  }  
+  }
 
   next(): boolean {
     switch (this.phase) {
       case Phase.Append: return this.nextAppend();
       case Phase.Prune: return this.nextPrune();
-      case Phase.Done: return true;
+      case Phase.Done: return this.nextDone();
     }
   }
 
@@ -132,16 +130,20 @@ export class ListIterator {
       listPosition.handle(item);
       this.listPosition = list.nextNode(listPosition);
       target.retain(key, item);
+      return this.nextAppend();
     } else if (map[<string>key]) {
       let found = map[<string>key];
       found.handle(item);
 
       if (candidates[<string>key]) {
+        list.remove(found);
+        list.insertBefore(found, listPosition);
         target.move(found.key, found.value, listPosition ? listPosition.key : null);
       } else {
         this.advanceToKey(key);
-        this.nextAppend();
       }
+
+      return this.nextAppend();
     } else {
       let reference = new UpdatableReference(item);
       let node = map[<string>key] = new ListItem(reference, key);
@@ -157,10 +159,10 @@ export class ListIterator {
 
     if (this.listPosition === null) {
       this.phase = Phase.Done;
-      return true;
+      return this.nextDone();
     }
 
-    let node = this.listPosition;    
+    let node = this.listPosition;
     this.listPosition = list.nextNode(node);
 
     if (node.handled) {
@@ -170,7 +172,12 @@ export class ListIterator {
       list.remove(node);
       delete this.map[<string>node.key];
       target.delete(node.key);
-      return false;
+      return this.nextPrune();
     }
+  }
+
+  private nextDone(): boolean {
+    this.target.done();
+    return true;
   }
 }

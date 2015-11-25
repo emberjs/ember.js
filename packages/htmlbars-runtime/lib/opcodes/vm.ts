@@ -2,7 +2,7 @@ import { Opcode, UpdatingOpcode, ExpressionSyntax } from '../opcodes';
 import { VM, UpdatingVM } from '../vm';
 import { ParamsAndHash as Args, RawTemplate } from '../template';
 import { Frame } from '../environment';
-import { InternedString } from 'htmlbars-util';
+import { InternedString, ListSlice } from 'htmlbars-util';
 import { ChainableReference } from 'htmlbars-reference';
 
 abstract class VMOpcode implements Opcode {
@@ -74,7 +74,7 @@ export class EnterOpcode extends VMOpcode {
   }
 
   evaluate(vm: VM<any>) {
-    vm.enter(this.begin, this.end);
+    vm.enter(new ListSlice(this.begin, this.end));
   }
 }
 

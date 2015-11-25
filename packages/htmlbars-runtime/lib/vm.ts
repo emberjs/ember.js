@@ -1,12 +1,12 @@
 import { Scope, Environment, Frame } from './environment';
 import { Bounds } from './morph';
 import { ElementStack } from './builder';
-import { LinkedList, LinkedListNode, InternedString } from 'htmlbars-util';
-import { ChainableReference, PathReference, RootReference, ListIterator } from 'htmlbars-reference';
+import { LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'htmlbars-util';
+import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'htmlbars-reference';
 import Template, { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
 import { StatementSyntax, ExpressionSyntax, Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
 import DOMHelper from './dom';
-import { clear } from './morph';
+import { clear, move } from './morph';
 
 interface VMOptions<T> {
   self: any,
@@ -18,9 +18,10 @@ interface VMOptions<T> {
 
 interface Registers {
   operand: ChainableReference;
+  args: EvaluatedArgs;
   condition: ChainableReference;
   iterator: ListIterator;
-  args: EvaluatedArgs;
+  key: InternedString;
 }
 
 class Stack<T> {
@@ -50,7 +51,8 @@ export class VM<T> {
   private currentScope: Scope<T>;
   private scopeStack: Scope<T>[] = [];
   private elementStack: ElementStack;
-  public updatingOpcodeStack: Stack<UpdatingOpSeq> = new Stack<UpdatingOpSeq>();
+  public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
+  public listBlockStack = new Stack<ListBlockOpcode>();
 
   public registers: Registers;
 
@@ -69,36 +71,53 @@ export class VM<T> {
     this.currentFrame.goto(opcode);
   }
 
-  enter(begin: Opcode, end: Opcode) {
+  enter(ops: OpSeq) {
     this.stack().openBlock();
 
     let updating = new LinkedList<UpdatingOpcode>();
 
-    let tracker = this.stack().blockElement;
+    let tryOpcode = new TryOpcode({ ops, vm: this, updating });
 
-    let parentElement = this.stack().element;
+    this.didEnter(tryOpcode, updating);
+  }
 
-    let bounds = {
-      parentElement() {
-        return parentElement;
-      },
+  enterList(manager: ListManager, ops: OpSeq) {
+    this.stack().openBlockList();
 
-      firstNode() {
-        return tracker.first.firstNode();
-      },
+    let updating = new LinkedList<UpdatingOpcode>();
 
-      lastNode() {
-        return tracker.last.lastNode();
-      }
-    };
+    let opcode = new ListBlockOpcode({ ops, vm: this, updating, manager });
 
-    this.updateWith(new TryOpcode(begin, end, updating, this.env, this.currentScope, bounds));
+    this.listBlockStack.push(opcode);
+
+    this.didEnter(opcode, updating);
+  }
+
+  enterWithKey(key: InternedString, ops: OpSeq) {
+    this.stack().openKeyedBlock(key);
+
+    let updating = new LinkedList<UpdatingOpcode>();
+
+    let tryOpcode = new TryOpcode({ ops, vm: this, updating });
+
+    this.listBlockStack.current.map[<string>key] = tryOpcode;
+
+    this.didEnter(tryOpcode, updating);
+  }
+
+  private didEnter(opcode: BlockOpcode, updating: LinkedList<UpdatingOpcode>) {
+    this.updateWith(opcode);
     this.updatingOpcodeStack.push(updating);
   }
 
   exit() {
     this.stack().closeBlock();
     this.updatingOpcodeStack.pop();
+  }
+
+  exitList() {
+    this.exit();
+    this.listBlockStack.pop();
   }
 
   updateWith(opcode: UpdatingOpcode) {
@@ -158,7 +177,10 @@ export class VM<T> {
     return scope;
   }
 
-  execute(opcodes: LinkedList<Opcode>): RenderResult {
+  execute(opcodes: OpSeq, initialize?: (vm: VM<any>) => void): RenderResult {
+    console.group("execute");
+    console.time("execute");
+
     let { elementStack, frameStack } = this;
     let renderResult;
 
@@ -167,10 +189,13 @@ export class VM<T> {
     this.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     this.frameStack.append(new VMFrame(this, opcodes));
 
+    if (initialize) initialize(this);
+
     while (true) {
       if (frameStack.isEmpty()) break;
 
       let opcode = this.currentFrame.nextStatement();
+
 
       if (opcode === null) {
         this.popFrame();
@@ -178,8 +203,13 @@ export class VM<T> {
         continue;
       }
 
+      console.time(opcode.type);
       this.evaluateOpcode(opcode);
+      console.timeEnd(opcode.type);
     }
+
+    console.timeEnd("execute");
+    console.groupEnd();
 
     return new RenderResult(this.updatingOpcodeStack.pop(), elementStack.closeBlock(), this.env.getDOM(), this.currentScope.getSelf());
   }
@@ -230,8 +260,8 @@ export class UpdatingVM {
     this.frameStack.push(new UpdatingVMFrame(this, ops, handler));
   }
 
-  throw() {
-    this.frameStack.current.handleException();
+  throw(initialize?: (vm: VM<any>) => void) {
+    this.frameStack.current.handleException(initialize);
   }
 
   evaluateOpcode(opcode: UpdatingOpcode) {
@@ -240,69 +270,166 @@ export class UpdatingVM {
 }
 
 interface ExceptionHandler {
-  handleException();
+  handleException(initialize?: (vm: VM<any>) => void);
 }
 
-class TryOpcode implements UpdatingOpcode, ExceptionHandler {
-  public type = "try";
+interface BlockOpcodeOptions {
+  ops: OpSeq,
+  vm: VM<any>;
+  updating: LinkedList<UpdatingOpcode>;
+}
+
+abstract class BlockOpcode implements UpdatingOpcode {
+  public type = "block";
   public next = null;
   public prev = null;
 
-  private begin: Opcode;
-  private end: Opcode;
-  private updating: UpdatingOpSeq;
-  private env: Environment<any>;
-  private scope: Scope<any>;
-  private bounds: Bounds;
+  protected env: Environment<any>;
+  protected scope: Scope<any>;
+  protected updating: LinkedList<UpdatingOpcode>;
+  public bounds: Bounds;
+  public ops: OpSeq;
 
-  constructor(begin: Opcode, end: Opcode, updating: UpdatingOpSeq, env: Environment<any>, scope: Scope<any>, bounds: Bounds) {
-    this.begin = begin;
-    this.end = end;
+  constructor({ ops, vm, updating }: BlockOpcodeOptions) {
+    this.ops = ops;
     this.updating = updating;
-    this.env = env;
-    this.scope = scope;
-    this.bounds = bounds;
+    this.env = vm.env;
+    this.scope = vm.scope();
+    this.bounds = vm.stack().blockElement;
   }
+
+  evaluate(vm: UpdatingVM) {
+    vm.try(this.updating, null);
+  }
+}
+
+class TryOpcode extends BlockOpcode implements UpdatingOpcode, ExceptionHandler {
+  public type = "try";
 
   evaluate(vm: UpdatingVM) {
     vm.try(this.updating, this);
   }
 
-  handleException() {
+  handleException(initialize?: (vm: VM<any>) => void) {
     let stack = new ElementStack({
       dom: this.env.getDOM(),
       parentNode: this.bounds.parentElement(),
-      nextSibling: clear(this.bounds)
+      nextSibling: initialize ? this.bounds.lastNode().nextSibling : clear(this.bounds)
     });
 
     let vm = new VM(this.env, this.scope, stack);
-    let result = vm.execute(<any>new LinkedListRange(this.begin, this.end));
+    let result = vm.execute(this.ops, initialize);
 
-    this.updating = result.opcodes();
+    if (!initialize) {
+      this.updating = result.opcodes();
+    }
+
     this.bounds = result;
   }
 }
 
-class LinkedListRange {
-  private _head: LinkedListNode;
-  private _tail: LinkedListNode;
+class ListRevalidationDelegate implements ListDelegate {
+  private opcode: ListBlockOpcode;
+  private map: Dict<BlockOpcode>;
+  private updating: LinkedList<UpdatingOpcode>;
 
-  constructor(head: LinkedListNode, tail: LinkedListNode) {
-    this._head = head;
-    this._tail = tail;
+  constructor(opcode: ListBlockOpcode) {
+    let { map, updating } = opcode;
+    this.opcode = opcode;
+    this.map = map;
+    this.updating = updating;
   }
 
-  head() {
-    return this._head;
+  insert(key: InternedString, item: RootReference, before: InternedString) {
+    let { map, opcode, updating } = this;
+    let nextSibling: Node = null;
+
+    if (before) {
+      nextSibling = map[<string>before].bounds.firstNode();
+    }
+
+    let vm = opcode.vmForInsertion(nextSibling);
+    let tryOpcode;
+
+    let result = vm.execute(opcode.ops, vm => {
+      vm.registers.args = EvaluatedArgs.single(item);
+      vm.registers.operand = item;
+      vm.registers.condition = new ConstReference(true);
+      vm.registers.key = key;
+
+      tryOpcode = new TryOpcode({
+        vm,
+        ops: opcode.ops,
+        updating: vm.updatingOpcodeStack.current
+      });
+    });
+
+    updating.append(tryOpcode);
+
+    map[<string>key] = tryOpcode;
   }
 
-  nextNode(node: LinkedListNode): LinkedListNode {
-    if (node === this._tail) return null;
-    return node.next;
+  retain(key: InternedString, item: RootReference) {
   }
 
-  isEmpty() {
-    return false;
+  move(key: InternedString, item: RootReference, before: InternedString) {
+    let { map } = this;
+
+    let entry = map[<string>key];
+    let reference = map[<string>before];
+
+    if (before) {
+      move(entry.bounds, reference.bounds.firstNode());
+    } else {
+      move(entry.bounds, this.opcode.bounds.lastNode());
+    }
+  }
+
+  delete(key: InternedString) {
+    let { map } = this;
+    let opcode = map[<string>key];
+    clear(opcode.bounds);
+    this.updating.remove(opcode);
+    delete map[<string>key];
+  }
+
+  done() {
+    // this.vm.registers.condition = new ConstReference(false);
+  }
+}
+
+interface ListBlockOpcodeOptions extends BlockOpcodeOptions {
+  manager: ListManager;
+}
+
+class ListBlockOpcode extends BlockOpcode {
+  public type = "list-block";
+  public map = dict<BlockOpcode>();
+  public manager: ListManager;
+
+  constructor(options: ListBlockOpcodeOptions) {
+    super(options);
+    this.manager = options.manager;
+  }
+
+  evaluate(vm: UpdatingVM) {
+    // Revalidate list somehow....
+    let delegate = new ListRevalidationDelegate(this);
+
+    this.manager.sync(delegate);
+
+    // Run now-updated updating opcodes
+    super.evaluate(vm);
+  }
+
+  vmForInsertion(nextSibling?: Node) {
+    let stack = new ElementStack({
+      dom: this.env.getDOM(),
+      parentNode: this.bounds.parentElement(),
+      nextSibling: nextSibling || this.bounds.lastNode()
+    });
+
+    return new VM(this.env, this.scope, stack);
   }
 }
 
@@ -325,18 +452,18 @@ class UpdatingVMFrame {
     return current;
   }
 
-  handleException() {
-    this.exceptionHandler.handleException();
+  handleException(initialize?: (vm: VM<any>) => void) {
+    this.exceptionHandler.handleException(initialize);
   }
 }
 
 export class RenderResult implements Bounds, ExceptionHandler {
-  private updating: UpdatingOpSeq;
+  private updating: LinkedList<UpdatingOpcode>;
   private bounds: Bounds;
   private dom: DOMHelper;
   private self: RootReference;
 
-  constructor(updating: UpdatingOpSeq, bounds: Bounds, dom: DOMHelper, self: RootReference) {
+  constructor(updating: LinkedList<UpdatingOpcode>, bounds: Bounds, dom: DOMHelper, self: RootReference) {
     this.updating = updating;
     this.bounds = bounds;
     this.dom = dom;
@@ -365,7 +492,7 @@ export class RenderResult implements Bounds, ExceptionHandler {
     return this.bounds.lastNode();
   }
 
-  opcodes(): UpdatingOpSeq {
+  opcodes(): LinkedList<UpdatingOpcode> {
     return this.updating;
   }
 
@@ -389,9 +516,10 @@ export class VMFrame<T> implements LinkedListNode {
 
   public registers: Registers = {
     operand: null,
+    args: null,
     condition: null,
     iterator: null,
-    args: null
+    key: null
   };
 
   constructor(vm: VM<T>, ops: OpSeq) {
