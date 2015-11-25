@@ -48,7 +48,8 @@
 
       // Imports
       var compileTemplate = requireModule('htmlbars-demos/index').compile,
-          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment;
+          DemoEnvironment = requireModule('htmlbars-demos/index').TestEnvironment,
+          runtime         = requireModule('htmlbars-runtime');
 
       var Stats = requireModule('htmlbars-demos/stats').default;
 
@@ -134,7 +135,7 @@
         '{{/if}}</div>'
       );
 
-      env.registerComponent('my-item', MyItem, itemLayout);
+      // env.registerComponent('my-item', MyItem, itemLayout);
 
       var SubItem = function(options) {
         this.attrs = options.attrs;
@@ -144,7 +145,7 @@
         '<p>{{attrs.id}}</p>'
       );
 
-      env.registerComponent('sub-item', SubItem, subItemLayout);
+      // env.registerComponent('sub-item', SubItem, subItemLayout);
 
       function benchmark(name, template) {
         templates[name] = compile(template);
@@ -185,6 +186,7 @@
             template.render(context, env, { appendTo: frag });
             env.commit();
             frag = null;
+            context = null;
           },
 
           minSamples: 30

@@ -219,7 +219,7 @@
       var escape          = requireModule('handlebars/utils').escapeExpression;
 
       var compileTemplate = requireModule('htmlbars-demos/index').compile,
-          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment,
+          DemoEnvironment = requireModule('htmlbars-demos/index').TestEnvironment,
           MyComponent     = requireModule('htmlbars-demos/index').MyComponent;
 
       var env = new DemoEnvironment();
@@ -278,8 +278,8 @@
         return value;
       }
 
-      var layout = compileTemplate('<div color="{{attrs.color}}">{{yield}}</div>');
-      env.registerComponent('my-component', MyComponent, layout);
+      // var layout = compileTemplate('<div color="{{attrs.color}}">{{yield}}</div>');
+      // env.registerComponent('my-component', MyComponent, layout);
 
       var templateSource = localStorage.getItem('templateSource');
       var data = localStorage.getItem('templateData');
