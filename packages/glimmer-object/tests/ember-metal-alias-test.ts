@@ -1,6 +1,6 @@
-import { alias } from 'htmlbars-object';
-import { Meta, fork } from 'htmlbars-reference';
-import { LITERAL } from 'htmlbars-util';
+import { alias } from 'glimmer-object';
+import { Meta, fork } from 'glimmer-reference';
+import { LITERAL } from 'glimmer-util';
 import { get, set, defineProperty } from './support';
 
 var obj, count;

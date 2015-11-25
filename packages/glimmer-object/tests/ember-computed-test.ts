@@ -1,4 +1,4 @@
-import GlimmerObject, { computed, observer, alias } from 'htmlbars-object';
+import GlimmerObject, { computed, observer, alias } from 'glimmer-object';
 
 interface Get {
   (obj: any, key: string): any;

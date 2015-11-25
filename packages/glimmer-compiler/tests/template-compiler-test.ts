@@ -1,5 +1,5 @@
-import { TemplateCompiler } from "htmlbars-compiler";
-import { preprocess } from "htmlbars-syntax";
+import { TemplateCompiler } from "glimmer-compiler";
+import { preprocess } from "glimmer-syntax";
 
 QUnit.module("TemplateCompiler");
 

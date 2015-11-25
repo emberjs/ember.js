@@ -1,8 +1,8 @@
 import { Scope, Environment, Frame } from './environment';
 import { Bounds } from './morph';
 import { ElementStack } from './builder';
-import { LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'htmlbars-util';
-import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'htmlbars-reference';
+import { LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'glimmer-util';
+import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
 import Template, { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
 import { StatementSyntax, ExpressionSyntax, Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
 import DOMHelper from './dom';

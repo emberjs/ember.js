@@ -1,7 +1,7 @@
 // import { RegionMorph, EmptyInsertion } from "./region";
 import { Morph, TemplateMorph, HasParentNode, clear } from '../morph';
-import { ChainableReference, ConstReference } from 'htmlbars-reference';
-import { assert } from "htmlbars-util";
+import { ChainableReference, ConstReference } from 'glimmer-reference';
+import { assert } from "glimmer-util";
 import Template, { EvaluatedParamsAndHash, Templates } from '../template';
 import { ElementStack } from '../builder';
 import { Helper, Frame, Scope } from '../environment';

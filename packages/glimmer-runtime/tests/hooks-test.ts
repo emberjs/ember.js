@@ -1,9 +1,9 @@
-import { DOMHelper } from "htmlbars-runtime";
-import { merge } from "htmlbars-util";
-// import { manualElement } from "../htmlbars-runtime/render";
-import { compile } from "htmlbars-compiler";
-// import { hostBlock } from "../htmlbars-runtime/hooks";
-import { equalTokens } from "htmlbars-test-helpers";
+import { DOMHelper } from "glimmer-runtime";
+import { merge } from "glimmer-util";
+// import { manualElement } from "../glimmer-runtime/render";
+import { compile } from "glimmer-compiler";
+// import { hostBlock } from "../glimmer-runtime/hooks";
+import { equalTokens } from "glimmer-test-helpers";
 
 var hooks, helpers, partials, env;
 
@@ -26,7 +26,7 @@ function commonSetup() {
   };
 }
 
-QUnit.module("htmlbars-runtime: hooks", {
+QUnit.module("glimmer-runtime: hooks", {
   beforeEach: commonSetup
 });
 

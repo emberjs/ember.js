@@ -69,11 +69,11 @@ import {
   isWhitespace,
   createMorph,
   appendComponent
-} from "htmlbars-runtime";
-import { compile as rawCompile } from "htmlbars-compiler";
-import { LITERAL, LinkedList, Dict, InternedString, dict, assign, intern, symbol } from 'htmlbars-util';
+} from "glimmer-runtime";
+import { compile as rawCompile } from "glimmer-compiler";
+import { LITERAL, LinkedList, Dict, InternedString, dict, assign, intern, symbol } from 'glimmer-util';
 
-import { Meta, ConstReference, ChainableReference, setProperty as set } from "htmlbars-reference";
+import { Meta, ConstReference, ChainableReference, setProperty as set } from "glimmer-reference";
 
 export function compile(template: string) {
   return rawCompile(template, { disableComponentGeneration: true });

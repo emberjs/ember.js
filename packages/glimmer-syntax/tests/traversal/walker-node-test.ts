@@ -1,4 +1,4 @@
-import { parse, Walker } from 'htmlbars-syntax';
+import { parse, Walker } from 'glimmer-syntax';
 
 function compareWalkedNodes(html, expected) {
   var ast = parse(html);
@@ -12,7 +12,7 @@ function compareWalkedNodes(html, expected) {
   deepEqual(nodes, expected);
 }
 
-QUnit.module('[htmlbars-syntax] (Legacy) Traversal - Walker');
+QUnit.module('[glimmer-syntax] (Legacy) Traversal - Walker');
 
 test('walks elements', function() {
   compareWalkedNodes('<div><li></li></div>', [

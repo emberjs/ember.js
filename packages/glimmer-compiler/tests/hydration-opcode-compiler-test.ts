@@ -1,6 +1,6 @@
-//import HydrationOpcodeCompiler from "../htmlbars-compiler/hydration-opcode-compiler";
-//import { preprocess } from "../htmlbars-syntax/parser";
-//import { compile } from "../htmlbars-compiler/compiler";
+//import HydrationOpcodeCompiler from "../glimmer-compiler/hydration-opcode-compiler";
+//import { preprocess } from "../glimmer-syntax/parser";
+//import { compile } from "../glimmer-compiler/compiler";
 
 //function opcodesFor(html, options) {
   //var ast = preprocess(html, options),

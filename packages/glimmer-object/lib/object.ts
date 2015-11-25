@@ -3,8 +3,8 @@ import {
   setProperty,
   InnerReferenceFactory,
   PropertyReference
-} from 'htmlbars-reference';
-import { InternedString, Dict, dict, isArray, intern, assign } from 'htmlbars-util';
+} from 'glimmer-reference';
+import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
 import {
   Mixin,
   Descriptor,

@@ -1,7 +1,7 @@
-import { compile } from "htmlbars-compiler";
-import { Environment, DOMHelper } from "htmlbars-runtime";
-import { merge } from "htmlbars-util";
-import { equalTokens } from "htmlbars-test-helpers";
+import { compile } from "glimmer-compiler";
+import { Environment, DOMHelper } from "glimmer-runtime";
+import { merge } from "glimmer-util";
+import { equalTokens } from "glimmer-test-helpers";
 
 var hooks, helpers, partials, env;
 

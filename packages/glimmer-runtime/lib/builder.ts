@@ -25,7 +25,7 @@ import Template, {
   ATTRIBUTE_SYNTAX
 } from './template'
 import { RenderResult } from './render';
-import { InternedString, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'htmlbars-util';
+import { InternedString, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'glimmer-util';
 import {
   ListDelegate,
   RootReference,
@@ -33,7 +33,7 @@ import {
   NotifiableReference,
   PushPullReference,
   Destroyable,
-} from 'htmlbars-reference';
+} from 'glimmer-reference';
 
 import {
   StatementSyntax

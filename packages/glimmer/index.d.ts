@@ -7,12 +7,12 @@
  */
 
 // Break cycles in the module loader.
-import "./htmlbars-syntax";
+import "./glimmer-syntax";
 
 import {
   compile,
   compileSpec
-} from "htmlbars-compiler";
+} from "glimmer-compiler";
 
 export {
   compile,

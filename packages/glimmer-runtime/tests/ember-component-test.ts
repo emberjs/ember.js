@@ -1,7 +1,7 @@
 import EmberObject, {
   GlimmerObjectFactory as EmberObjectFactory,
   alias
-} from "htmlbars-object";
+} from "glimmer-object";
 
 import {
   Template,
@@ -14,7 +14,7 @@ import {
   DynamicAttr,
   EvaluatedRef,
   Frame
-} from "htmlbars-runtime";
+} from "glimmer-runtime";
 
 import {
   TestEnvironment,
@@ -25,11 +25,11 @@ import {
   compile
  } from "./support";
 
-import { Dict, dict, assign } from "htmlbars-util";
+import { Dict, dict, assign } from "glimmer-util";
 
-import { equalTokens } from "htmlbars-test-helpers";
+import { equalTokens } from "glimmer-test-helpers";
 
-import { ChainableReference, setProperty as set } from 'htmlbars-reference';
+import { ChainableReference, setProperty as set } from 'glimmer-reference';
 
 class Component extends EmberObject {
   private parent: Element;
@@ -779,7 +779,7 @@ QUnit.skip('newly-added sub-components get correct parentView', function() {
 // });
 
 // // jscs:disable validateIndentation
-// if (isEnabled('ember-htmlbars-component-generation')) {
+// if (isEnabled('ember-glimmer-component-generation')) {
 //   QUnit.module('component - invocation (angle brackets)', {
 //     setup() {
 //       commonSetup();

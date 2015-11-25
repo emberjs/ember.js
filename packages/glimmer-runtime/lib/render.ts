@@ -1,4 +1,4 @@
-import { Dict, voidMap } from 'htmlbars-util';
+import { Dict, voidMap } from 'glimmer-util';
 import Template, { TemplateBuilder } from './template';
 import {
   Morph,
@@ -8,7 +8,7 @@ import {
   HasParentNode,
   clear
 } from './morph';
-import { InternedString } from 'htmlbars-util';
+import { InternedString } from 'glimmer-util';
 import { Scope } from './environment';
 
 interface RenderResultOptions {

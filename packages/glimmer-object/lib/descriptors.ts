@@ -1,7 +1,7 @@
 import { Blueprint, Descriptor } from './mixin';
 import { ClassMeta } from './object';
 import { ComputedBlueprint } from './computed';
-import { InternedString, intern } from 'htmlbars-util';
+import { InternedString, intern } from 'glimmer-util';
 
 class AliasMethodDescriptor extends Descriptor {
   private name: InternedString;

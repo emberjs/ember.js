@@ -1,6 +1,6 @@
-import GlimmerObject, { computed } from 'htmlbars-object';
-import { metaFor, setProperty, fork } from 'htmlbars-reference';
-import { intern } from 'htmlbars-util';
+import GlimmerObject, { computed } from 'glimmer-object';
+import { metaFor, setProperty, fork } from 'glimmer-reference';
+import { intern } from 'glimmer-util';
 
 let Wrapper = GlimmerObject.extend({
   fullName: computed(function() {

@@ -1,6 +1,6 @@
-import { parse } from "htmlbars-syntax";
+import { parse } from "glimmer-syntax";
 
-QUnit.module("[htmlbars-syntax] Parser - Location Info");
+QUnit.module("[glimmer-syntax] Parser - Location Info");
 
 function locEqual(node, startLine, startColumn, endLine, endColumn, message) {
 

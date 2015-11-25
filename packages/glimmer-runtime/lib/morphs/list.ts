@@ -1,6 +1,6 @@
 import { EmptyableMorph, TemplateMorph, Morph, Bounds, MorphConstructor, createMorph, insertBoundsBefore, clear } from '../morph';
-import { ChainableReference, Reference } from 'htmlbars-reference';
-import { InternedString, Dict, LinkedList, symbol, dict, intern } from 'htmlbars-util';
+import { ChainableReference, Reference } from 'glimmer-reference';
+import { InternedString, Dict, LinkedList, symbol, dict, intern } from 'glimmer-util';
 import { ElementStack } from '../builder';
 import Template, { Templates } from '../template';
 import { RenderResult } from '../render';

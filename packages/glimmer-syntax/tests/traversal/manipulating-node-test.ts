@@ -3,13 +3,13 @@ import {
   parse,
   traverse,
   builders as b
-} from 'htmlbars-syntax';
+} from 'glimmer-syntax';
 import {
   cannotRemoveNode,
   cannotReplaceNode,
-} from 'htmlbars-syntax/lib/traversal/errors';
+} from 'glimmer-syntax/lib/traversal/errors';
 
-QUnit.module('[htmlbars-syntax] Traversal - manipulating');
+QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
 ['enter', 'exit'].forEach(eventName => {
   QUnit.test(`[${eventName}] Replacing self in a key (returning null)`, assert => {
@@ -186,7 +186,7 @@ QUnit.module('[htmlbars-syntax] Traversal - manipulating');
 });
 
 
-QUnit.module('[htmlbars-syntax] Traversal - manipulating (edge cases)');
+QUnit.module('[glimmer-syntax] Traversal - manipulating (edge cases)');
 
 QUnit.test('Inside of a block', () => {
   let ast = parse(`{{y}}{{#w}}{{x}}{{y}}{{z}}{{/w}}`);

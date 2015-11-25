@@ -1,5 +1,5 @@
-import { LinkedList } from 'htmlbars-util';
-import { Reference } from 'htmlbars-reference';
+import { LinkedList } from 'glimmer-util';
+import { Reference } from 'glimmer-reference';
 
 type Check = () => void;
 

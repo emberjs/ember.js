@@ -2,7 +2,7 @@ import { Mixin, get, mixin } from './support';
 import {
   Mixin as ParentMixin,
   aliasMethod
-} from 'htmlbars-object';
+} from 'glimmer-object';
 
 QUnit.module('Mixin.aliasMethod');
 

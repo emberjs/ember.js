@@ -18,8 +18,8 @@ import { TemplateMorph, Morph, createMorph } from '../morph';
 import { ElementStack } from '../builder';
 import { Frame, Block, Scope } from '../environment';
 
-import { LITERAL, InternedString, Dict } from 'htmlbars-util';
-import { ChainableReference } from 'htmlbars-reference';
+import { LITERAL, InternedString, Dict } from 'glimmer-util';
+import { ChainableReference } from 'glimmer-reference';
 
 abstract class AppendingComponent implements IAppendingComponent {
   public hooks: ComponentHooks;

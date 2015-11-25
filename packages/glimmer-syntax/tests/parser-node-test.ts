@@ -1,9 +1,9 @@
 import { parse as handlebarsParse } from "handlebars/compiler/base";
-import { parse } from "htmlbars-syntax";
-import b from "htmlbars-syntax/lib/builders";
+import { parse } from "glimmer-syntax";
+import b from "glimmer-syntax/lib/builders";
 import { astEqual } from "./support";
 
-QUnit.module("[htmlbars-syntax] Parser - AST");
+QUnit.module("[glimmer-syntax] Parser - AST");
 
 test("a simple piece of content", function() {
   var t = 'some content';

@@ -1,5 +1,5 @@
 import { tokenize } from "simple-html-tokenizer";
-import { forEach } from "htmlbars-util";
+import { forEach } from "glimmer-util";
 
 export function equalInnerHTML(fragment, html) {
   var actualHTML = normalizeInnerHTML(fragment.innerHTML);

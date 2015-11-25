@@ -1,6 +1,6 @@
-import { preprocess } from "htmlbars-syntax";
+import { preprocess } from "glimmer-syntax";
 import TemplateCompiler from "./template-compiler";
-import { Template } from "htmlbars-runtime";
+import { Template } from "glimmer-runtime";
 
 /*
  * Compile a string into a template spec string. The template spec is a string
@@ -51,7 +51,7 @@ export function template(templateSpec) {
  *     //   1. `hooks` - Basic hooks for rendering a template
  *     //   2. `dom` - An instance of DOMHelper
  *     //
- *     import {hooks} from 'htmlbars-runtime';
+ *     import {hooks} from 'glimmer-runtime';
  *     import {DOMHelper} from 'morph';
  *     var context = {name: 'whatever'},
  *         env = {hooks: hooks, dom: new DOMHelper()},

@@ -1,4 +1,4 @@
-import EmberObject from 'htmlbars-object';
+import EmberObject from 'glimmer-object';
 
 QUnit.module('GlimmerObject.extend');
 

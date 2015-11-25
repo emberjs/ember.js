@@ -1,4 +1,4 @@
-import { compile } from "../htmlbars-compiler/compiler";
+import { compile } from "../glimmer-compiler/compiler";
 
 QUnit.module('compile: buildMeta');
 

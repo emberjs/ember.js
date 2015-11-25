@@ -1,5 +1,5 @@
-import { preprocess } from "htmlbars-syntax";
-import { TemplateVisitor } from "htmlbars-compiler";
+import { preprocess } from "glimmer-syntax";
+import { TemplateVisitor } from "glimmer-compiler";
 
 function actionsEqual(input, expectedActions) {
   var ast = preprocess(input);

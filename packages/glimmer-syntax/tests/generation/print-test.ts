@@ -1,4 +1,4 @@
-import { parse, print, builders } from 'htmlbars-syntax';
+import { parse, print, builders } from 'glimmer-syntax';
 
 const b = builders;
 
@@ -7,7 +7,7 @@ function printEqual(template) {
   equal(print(ast), template);
 }
 
-QUnit.module('[htmlbars-syntax] Code generation');
+QUnit.module('[glimmer-syntax] Code generation');
 
 test('ElementNode: tag', function() {
   printEqual('<h1></h1>');

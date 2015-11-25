@@ -1,5 +1,5 @@
-import { Meta, ComputedReferenceBlueprint, setProperty } from 'htmlbars-reference';
-import { InternedString, Dict, dict, isArray, intern, assign } from 'htmlbars-util';
+import { Meta, ComputedReferenceBlueprint, setProperty } from 'glimmer-reference';
+import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
 import GlimmerObject, {
   EMPTY_CACHE,
   GlimmerObjectFactory,

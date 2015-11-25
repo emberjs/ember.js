@@ -28,15 +28,15 @@ import {
   PathReference,
   ConstReference,
   MetaLookup
-} from 'htmlbars-reference';
+} from 'glimmer-reference';
 
 import { VM } from './vm';
 
-import { InternedString, LITERAL, symbol, intern } from 'htmlbars-util';
+import { InternedString, LITERAL, symbol, intern } from 'glimmer-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
-import { LinkedList, LinkedListNode, Dict, dict } from 'htmlbars-util';
+import { LinkedList, LinkedListNode, Dict, dict } from 'glimmer-util';
 import { Destroyable } from './utils';
 import { BlockInvocationMorph } from './morph';
 

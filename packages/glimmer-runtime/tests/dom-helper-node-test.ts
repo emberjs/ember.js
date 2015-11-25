@@ -1,4 +1,4 @@
-import { DOMHelper } from "htmlbars-runtime";
+import { DOMHelper } from "glimmer-runtime";
 
 var dom;
 

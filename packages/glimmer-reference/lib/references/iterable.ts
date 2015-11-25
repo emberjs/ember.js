@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, InternedString, Dict, dict, intern, symbol } from 'htmlbars-util';
+import { LinkedList, ListNode, InternedString, Dict, dict, intern, symbol } from 'glimmer-util';
 import { Reference, RootReference } from '../types';
 import { ConstReference } from './const';
 import UpdatableReference from './root';

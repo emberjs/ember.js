@@ -1,5 +1,5 @@
-import { InternedString, intern } from 'htmlbars-util';
-import { ComputedReferenceBlueprint, Meta } from 'htmlbars-reference';
+import { InternedString, intern } from 'glimmer-util';
+import { ComputedReferenceBlueprint, Meta } from 'glimmer-reference';
 import { EMPTY_CACHE, ClassMeta } from './object';
 import { Descriptor, Blueprint } from './mixin';
 

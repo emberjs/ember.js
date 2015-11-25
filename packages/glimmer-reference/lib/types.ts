@@ -1,4 +1,4 @@
-import { Dict, Set, InternedString } from 'htmlbars-util';
+import { Dict, Set, InternedString } from 'glimmer-util';
 
 export interface Destroyable {
   destroy();
