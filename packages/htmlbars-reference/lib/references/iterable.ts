@@ -124,6 +124,9 @@ export class ListIterator {
     }
 
     let item = array[this.arrayPosition++];
+
+    if (item === null || item === undefined) return this.nextAppend();
+
     let key = keyFor(item);
 
     if (listPosition && listPosition.key === key) {
