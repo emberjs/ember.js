@@ -27,12 +27,12 @@ export interface InstanceWithMixins {
   constructor: ObjectWithMixins
 }
 
-export interface HTMLBarsObjectFactory<T> {
+export interface GlimmerObjectFactory<T> {
   new<U>(attrs?: U): T & U;
-  extend(): HTMLBarsObjectFactory<Object>;
-  extend<T>(extension: T): HTMLBarsObjectFactory<T>;
-  extend(...extensions: Object[]): HTMLBarsObjectFactory<Object>;
-  create<U>(attrs?: U): HTMLBarsObject & T & U;
+  extend(): GlimmerObjectFactory<Object>;
+  extend<T>(extension: T): GlimmerObjectFactory<T>;
+  extend(...extensions: Object[]): GlimmerObjectFactory<Object>;
+  create<U>(attrs?: U): GlimmerObject & T & U;
   reopen<U>(extensions: U);
   reopenClass<U>(extensions: U);
   metaForProperty(property: string): Object;
@@ -63,7 +63,7 @@ export class ClassMeta {
   private appliedMixins: Mixin[] = [];
   private staticMixins: Mixin[] = [];
   private appliedStaticMixins: Mixin[] = [];
-  private subclasses: HTMLBarsObjectFactory<any>[] = [];
+  private subclasses: GlimmerObjectFactory<any>[] = [];
   private slots: InternedString[] = [];
   public InstanceMetaConstructor: typeof Meta = null;
 
@@ -79,7 +79,7 @@ export class ClassMeta {
     else return null;
   }
 
-  init(object: HTMLBarsObject, attrs: Object) {
+  init(object: GlimmerObject, attrs: Object) {
     if (typeof attrs !== 'object' || attrs === null) return;
 
     if (this.hasConcatenatedProperties) {
@@ -135,13 +135,13 @@ export class ClassMeta {
     return this.staticMixins.indexOf(mixin) !== -1;
   }
 
-  static applyAllMixins(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+  static applyAllMixins(Subclass: GlimmerObjectFactory<any>, Parent: GlimmerObjectFactory<any>) {
     Subclass._Meta.getMixins().forEach(m => m.extendPrototypeOnto(Subclass, Parent));
     Subclass._Meta.getStaticMixins().forEach(m => m.extendStatic(Subclass));
     Subclass._Meta.seal();
   }
 
-  addSubclass(constructor: HTMLBarsObjectFactory<any>) {
+  addSubclass(constructor: GlimmerObjectFactory<any>) {
     this.subclasses.push(constructor);
   }
 
@@ -330,19 +330,19 @@ export class InstanceMeta extends ClassMeta {
   }
 }
 
-export default class HTMLBarsObject {
+export default class GlimmerObject {
   static _Meta: InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 
-  static extend(): typeof HTMLBarsObject;
-  static extend<T>(extension: T): typeof HTMLBarsObject;
-  static extend(...extensions: Object[]): typeof HTMLBarsObject;
+  static extend(): typeof GlimmerObject;
+  static extend<T>(extension: T): typeof GlimmerObject;
+  static extend(...extensions: Object[]): typeof GlimmerObject;
 
   static extend(...extensions) {
     return extendClass(this, ...extensions);
   }
 
-  static create(attrs?: Object): HTMLBarsObject {
+  static create(attrs?: Object): GlimmerObject {
     return new this(attrs);
   }
 
@@ -380,7 +380,7 @@ export default class HTMLBarsObject {
 
   constructor(attrs?: Object) {
     if (attrs) assign(this, attrs);
-    (<typeof HTMLBarsObject>this.constructor)._Meta.init(this, attrs);
+    (<typeof GlimmerObject>this.constructor)._Meta.init(this, attrs);
     this._super = ROOT;
     this.init();
   }

@@ -14,7 +14,7 @@ import { Template } from "htmlbars-runtime";
  *     var template = new Function("return " + templateSpec)();
  *
  * @method compileSpec
- * @param {String} string An HTMLBars template string
+ * @param {String} string An Glimmer template string
  * @return {TemplateSpec} A template spec string
  */
 export function compileSpec(string, options) {
@@ -59,7 +59,7 @@ export function template(templateSpec) {
  *     var domFragment = template(context, env, contextualElement);
  *
  * @method compile
- * @param {String} string An HTMLBars template string
+ * @param {String} string An Glimmer template string
  * @param {Object} options A set of options to provide to the compiler
  * @return {Template} A function for rendering the template
  */

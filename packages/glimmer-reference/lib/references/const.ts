@@ -7,7 +7,7 @@ export class ConstReference<T> implements ChainableReference {
     this.inner = inner;
   }
 
-  // TODO: A protocol for telling HTMLBars to stop asking; could also be useful
+  // TODO: A protocol for telling Glimmer to stop asking; could also be useful
   // for finalized references. Also, a reference composed only of const references
   // should itself be const.
 

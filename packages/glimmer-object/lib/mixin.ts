@@ -1,8 +1,8 @@
 import { Meta, ComputedReferenceBlueprint, setProperty } from 'htmlbars-reference';
 import { InternedString, Dict, dict, isArray, intern, assign } from 'htmlbars-util';
-import HTMLBarsObject, {
+import GlimmerObject, {
   EMPTY_CACHE,
-  HTMLBarsObjectFactory,
+  GlimmerObjectFactory,
   ClassMeta,
   InstanceMeta,
   turbocharge
@@ -155,19 +155,19 @@ export class Mixin {
     return target;
   }
 
-  extendPrototype(Original: HTMLBarsObjectFactory<any>) {
+  extendPrototype(Original: GlimmerObjectFactory<any>) {
     Original.prototype = Object.create(Original.prototype);
     this.dependencies.forEach(m => m.extendPrototype(Original));
     this.extendPrototypeOnto(Original, Original)
   }
 
-  extendPrototypeOnto(Subclass: HTMLBarsObjectFactory<any>, Parent: HTMLBarsObjectFactory<any>) {
+  extendPrototypeOnto(Subclass: GlimmerObjectFactory<any>, Parent: GlimmerObjectFactory<any>) {
     this.dependencies.forEach(m => m.extendPrototypeOnto(Subclass, Parent));
     this.mergeProperties(Subclass.prototype, Parent.prototype, Subclass._Meta);
     Subclass._Meta.addMixin(this);
   }
 
-  extendStatic(Target: HTMLBarsObjectFactory<any>) {
+  extendStatic(Target: GlimmerObjectFactory<any>) {
     this.dependencies.forEach(m => m.extendStatic(Target));
     this.mergeProperties(Target, Object.getPrototypeOf(Target), Target._Meta._Meta);
     Target._Meta.addStaticMixin(this);
@@ -195,8 +195,8 @@ export class Mixin {
 
 type Extension = Mixin | Extensions;
 
-export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T>, ...extensions: Extension[]): typeof HTMLBarsObject {
-  let Super = <typeof HTMLBarsObject>Parent;
+export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>, ...extensions: Extension[]): typeof GlimmerObject {
+  let Super = <typeof GlimmerObject>Parent;
 
   let Subclass = class extends Super {};
   Subclass._Meta = InstanceMeta.fromParent(Parent._Meta);
@@ -210,8 +210,8 @@ export function extend<T extends HTMLBarsObject>(Parent: HTMLBarsObjectFactory<T
   return Subclass;
 }
 
-export function relinkSubclasses(Parent: HTMLBarsObjectFactory<any>) {
-  Parent._Meta.getSubclasses().forEach((Subclass: HTMLBarsObjectFactory<any>) => {
+export function relinkSubclasses(Parent: GlimmerObjectFactory<any>) {
+  Parent._Meta.getSubclasses().forEach((Subclass: GlimmerObjectFactory<any>) => {
     Subclass._Meta.reset(Parent._Meta);
     Subclass.prototype = Object.create(Parent.prototype);
 

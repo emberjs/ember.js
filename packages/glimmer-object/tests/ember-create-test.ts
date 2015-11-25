@@ -2,7 +2,7 @@ import EmberObject, { computed, observer, alias } from 'htmlbars-object';
 
 var moduleOptions, originalLookup;
 
-QUnit.module('HTMLBarsObject.create', moduleOptions);
+QUnit.module('GlimmerObject.create', moduleOptions);
 
 QUnit.test('simple properties are set', function() {
   var o = EmberObject.create({ ohai: 'there' });
