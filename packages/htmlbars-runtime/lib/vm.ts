@@ -177,8 +177,8 @@ export class VM<T> {
   }
 
   execute(opcodes: OpSeq, initialize?: (vm: VM<any>) => void): RenderResult {
-    console.group("execute");
-    console.time("execute");
+    // console.group("execute");
+    // console.time("execute");
 
     let { elementStack, frameStack } = this;
     let renderResult;
@@ -202,13 +202,13 @@ export class VM<T> {
         continue;
       }
 
-      console.time(opcode.type);
+      // console.time(opcode.type);
       this.evaluateOpcode(opcode);
-      console.timeEnd(opcode.type);
+      // console.timeEnd(opcode.type);
     }
 
-    console.timeEnd("execute");
-    console.groupEnd();
+    // console.timeEnd("execute");
+    // console.groupEnd();
 
     return new RenderResult(this.updatingOpcodeStack.pop(), elementStack.closeBlock(), this.env.getDOM(), this.currentScope.getSelf());
   }
