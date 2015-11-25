@@ -25,8 +25,15 @@ import Template, {
   ATTRIBUTE_SYNTAX
 } from './template'
 import { RenderResult } from './render';
-import { InternedString, Dict, intern, dict } from 'htmlbars-util';
-import { RootReference, ChainableReference, NotifiableReference, PushPullReference, Destroyable } from 'htmlbars-reference';
+import { InternedString, Dict, intern, dict, assert } from 'htmlbars-util';
+import {
+  ListDelegate,
+  RootReference,
+  ChainableReference,
+  NotifiableReference,
+  PushPullReference,
+  Destroyable,
+} from 'htmlbars-reference';
 
 import {
   StatementSyntax
@@ -106,8 +113,8 @@ export class ElementStack {
   private morphs: Morph[];
   private classListStack: ClassList[] = [];
   private classList: ClassList = undefined;
-  private blockStack: BlockTracker[];
-  public blockElement: BlockTracker;
+  private blockStack: Tracker[];
+  public blockElement: Tracker;
 
   constructor({ dom, parentNode, nextSibling }: ElementStackOptions) {
     this.dom = dom;
@@ -118,8 +125,8 @@ export class ElementStack {
     this.elementStack = [this.element];
     this.nextSiblingStack = [this.nextSibling];
 
-    this.blockStack = [new BlockTracker()];
-    this.blockElement = this.blockStack[0];
+    this.blockStack = [];
+    this.blockElement = null;
   }
 
   private pushElement(element) {
@@ -146,55 +153,38 @@ export class ElementStack {
   }
 
   private pushBlock() {
-    let tracker = new BlockTracker();
+    let tracker = new BlockTracker(this.element);
+
+    if (this.blockElement) this.blockElement.newBounds(tracker);
+
+    this.blockStack.push(tracker);
+    this.blockElement = tracker;
+  }
+
+  private pushKeyedBlock(key: InternedString) {
+    let tracker = new BlockTracker(this.element);
+
+    if (this.blockElement) this.blockElement.newKeyedBounds(key, tracker);
+
+    this.blockStack.push(tracker);
+    this.blockElement = tracker;
+  }
+
+  private pushBlockList() {
+    let tracker = new BlockListTracker(this.element);
+
+    if (this.blockElement) this.blockElement.newBounds(tracker);
+
     this.blockStack.push(tracker);
     this.blockElement = tracker;
   }
 
   private popBlock(): Bounds {
-    if (this.blockElement.first === null) {
-      this.appendComment("");
-    }
+    this.blockElement.finalize(this);
 
-    let { element } = this;
-    let { first, last } = this.blockStack.pop();
+    let bounds = this.blockStack.pop();
     this.blockElement = this.blockStack[this.blockStack.length - 1];
-
-    let bounds = {
-      parentElement() { return element },
-      firstNode() { return first.firstNode(); },
-      lastNode() { return last.lastNode(); }
-    };
-
-    this.blockElement.newBounds(bounds);
-
     return bounds;
-  }
-
-  bounds(): Bounds {
-    let { first, last } = this.blockElement;
-    let { element } = this;
-
-    return {
-      parentElement() { return element },
-      firstNode() { return first.firstNode(); },
-      lastNode() { return last.lastNode(); }
-    };
-  }
-
-  morphList(): Morph[] {
-    return this.blockElement.morphs;
-  }
-
-  createContentMorph<M extends ContentMorph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {
-    let morph = this.createMorph(Type, attrs, frame);
-    this.blockElement.newBounds(morph);
-
-    return morph;
-  }
-
-  createBlockMorph(block: Block, frame: Frame, blockArguments: EvaluatedParams): BlockInvocationMorph {
-    return <BlockInvocationMorph>this.createContentMorph(BlockInvocationMorph, { block, blockArguments }, frame);
   }
 
   openElement(tag: string): Element {
@@ -206,26 +196,28 @@ export class ElementStack {
 
   openComponent(definition: ComponentDefinition, { tag, frame, templates, hash }: ComponentDefinitionOptions) {
     let appending = definition.begin(this, { frame, templates, hash, tag });
-    let morph = appending.process();
-
-    this.blockElement.newMorph(morph);
-    morph.append(this);
+    let _ = appending.process();
   }
 
   openBlock() {
     this.pushBlock();
   }
 
+  openKeyedBlock(key: InternedString) {
+    this.pushKeyedBlock(key);
+  }
+
   closeBlock(): Bounds {
     return this.popBlock();
   }
 
-  createMorph<M extends Morph, InitOptions>(Type: MorphSpecializer<M, InitOptions>, attrs: InitOptions, frame: Frame): M {
-    let morph = createMorph(Type, this.element, frame, attrs);
-    this.blockElement.newMorph(morph);
-    return morph;
+  openBlockList() {
+    this.pushBlockList();
   }
 
+  newBounds(bounds: Bounds) {
+    this.blockElement.newBounds(bounds);
+  }
   appendText(string: string): Text {
     let { dom } = this;
     let text = dom.createTextNode(string);
@@ -289,13 +281,37 @@ export class ElementStack {
   }
 }
 
-class BlockTracker {
-  public template: Template;
+interface Tracker extends Bounds {
+  openElement(element: Element);
+  closeElement();
+  newNode(node: Node);
+  newBounds(bounds: Bounds);
+  newKeyedBounds(key: InternedString, bounds: Bounds);
+  finalize(stack: ElementStack);
+}
 
-  public first: FirstNode = null;
-  public last: LastNode = null;
-  public morphs: Morph[] = [];
+class BlockTracker implements Tracker {
+  private first: FirstNode = null;
+  private last: LastNode = null;
   private nesting = 0;
+
+  private parent: Element;
+
+  constructor(parent: Element){
+    this.parent = parent;
+  }
+
+  parentElement() {
+    return this.parent;
+  }
+
+  firstNode() {
+    return this.first && this.first.firstNode();
+  }
+
+  lastNode() {
+    return this.last && this.last.lastNode();
+  }
 
   openElement(element: Element) {
     this.newNode(element);
@@ -326,7 +342,67 @@ class BlockTracker {
     this.last = bounds;
   }
 
-  newMorph(morph: Morph) {
-    this.morphs.push(morph);
+  newKeyedBounds(key: InternedString, bounds: Bounds) {
+    assert(false, 'Cannot insert a keyed bounds outside of a block list');
+  }
+
+  finalize(stack: ElementStack) {
+    if (!this.first) {
+      stack.appendComment('');
+    }
+  }
+}
+
+class BlockListTracker implements Tracker {
+  private first: Bounds = null;
+  private last: Node = null;
+  private map = dict<Bounds>();
+  private parent: Element;
+
+  constructor(parent: Element){
+    this.parent = parent;
+  }
+
+  parentElement() {
+    return this.parent;
+  }
+
+  firstNode() {
+    return this.first ? this.first.firstNode() : this.last;
+  }
+
+  lastNode() {
+    return this.last;
+  }
+
+  openElement(element: Element) {
+    assert(false, 'Cannot openElement directly inside a block list');
+  }
+
+  closeElement() {
+    assert(false, 'Cannot closeElement directly inside a block list');
+  }
+
+  newNode(node: Node) {
+    assert(false, 'Cannot create a new node directly inside a block list');
+  }
+
+  newBounds(bounds: Bounds) {
+    assert(false, 'Cannot open an unkeyed block directly inside a block list');
+  }
+
+  newKeyedBounds(key: InternedString, bounds: Bounds) {
+    if (!this.first) this.first = bounds;
+
+    this.map[<string>key] = bounds;
+  }
+
+  finalize(stack: ElementStack) {
+    let { dom, element: parent, nextSibling } = stack;
+
+    let comment = dom.createComment('');
+    dom.insertBefore(parent, comment, nextSibling);
+
+    this.last = comment;
   }
 }

@@ -14,4 +14,4 @@ export { installGuid, HasGuid } from './lib/guid';
 
 export { types };
 export { Dict, Set, DictSet, dict } from './lib/collections';
-export { LinkedList, LinkedListNode, ListNode } from './lib/list-utils';
+export { LinkedList, LinkedListNode, ListNode, ListSlice, Slice } from './lib/list-utils';
