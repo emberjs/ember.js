@@ -171,9 +171,9 @@ test("block helpers whose template has a morph at the edge", function() {
   strictEqual(firstNode.nextSibling, null, "there should only be one nodes");
 });
 
-function assertInvariants(result) {
-  strictEqual(result.firstNode(), root.firstChild, "The firstNode of the result is the same as the root's firstChild");
-  strictEqual(result.lastNode(), root.lastChild, "The lastNode of the result is the same as the root's lastChild");
+function assertInvariants(result, msg?) {
+  strictEqual(result.firstNode(), root.firstChild, `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`);
+  strictEqual(result.lastNode(), root.lastChild, `The lastNode of the result is the same as the root's lastChild${msg ? ': ' + msg : ''}`);
 }
 
 test("clean content doesn't get blown away", function() {
@@ -340,6 +340,32 @@ test("property nodes follow the normal dirtying rules", function() {
 
   equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
   strictEqual(root.firstChild.foo, true, "Revalidating after dirtying");
+});
+
+test("top-level bounds are correct when swapping order", assert => {
+  var template = compile("{{#each list key='key' as |item|}}{{item.name}}{{/each}}");
+
+  let tom = { key: "1", name: "Tom Dale", "class": "tomdale" };
+  var yehuda = { key: "2", name: "Yehuda Katz", "class": "wycats" };
+  var object = { list: [ tom, yehuda ] };
+
+  var result = render(template, object);
+  assertInvariants(result, "initial render");
+
+  result.rerender();
+  assertInvariants(result, "after no-op rerender");
+
+  object = { list: [yehuda, tom] };
+  result.rerender(object);
+  assertInvariants(result, "after reordering");
+
+  object = { list: [tom] };
+  result.rerender(object);
+  assertInvariants(result, "after deleting from the front");
+
+  object = { list: [] };
+  result.rerender(object);
+  assertInvariants(result, "after emptying the list");
 });
 
 testEachHelper(

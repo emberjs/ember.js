@@ -25,7 +25,13 @@ export {
   builders
 } from './lib/template';
 
-export { StatementSyntax, ExpressionSyntax, OpSeq } from './lib/opcodes';
+export {
+  StatementSyntax,
+  ExpressionSyntax,
+  OpSeq,
+  OpSeqBuilder
+} from './lib/opcodes';
+
 export {
   PushChildScopeOpcode,
   PopScopeOpcode,
