@@ -55,7 +55,7 @@ class MyComponent {
   }
 }
 
-QUnit.test('creating a new component', assert => {
+QUnit.skip('creating a new component', assert => {
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
 
@@ -64,7 +64,7 @@ QUnit.test('creating a new component', assert => {
   equalTokens(root, "<div color='green'>hello!</div>");
 });
 
-QUnit.test('the component class is its context', assert => {
+QUnit.skip('the component class is its context', assert => {
   env.registerComponent('my-component', MyComponent, compile('<div><p>{{testing}}</p>{{yield}}</div>'))
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
@@ -74,7 +74,7 @@ QUnit.test('the component class is its context', assert => {
   equalTokens(root, "<div color='green'><p>456</p>hello!</div>");
 });
 
-QUnit.test('attrs are available in the layout', assert => {
+QUnit.skip('attrs are available in the layout', assert => {
   env.registerComponent('my-component', MyComponent, compile('<div><p>{{attrs.color}}</p>{{yield}}</div>'))
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   let result = render(template, { color: 'red' });
@@ -85,7 +85,7 @@ QUnit.test('attrs are available in the layout', assert => {
 });
 
 function testError(layout: string, expected: RegExp) {
-  QUnit.test(`'${layout}' produces an error like ${expected}`, assert => {
+  QUnit.skip(`'${layout}' produces an error like ${expected}`, assert => {
     env.registerComponent('my-component', MyComponent, compile(layout));
     let template = compile("<my-component>hello!</my-component>");
     assert.throws(() => render(template), expected);

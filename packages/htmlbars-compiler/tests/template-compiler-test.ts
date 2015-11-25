@@ -11,7 +11,7 @@ function countNamespaceChanges(template) {
   return matches ? matches.length : 0;
 }
 
-test("it omits unnecessary namespace changes", function () {
+QUnit.skip("it omits unnecessary namespace changes", function () {
   equal(countNamespaceChanges('<div></div>'), 0);  // sanity check
   equal(countNamespaceChanges('<div><svg></svg></div><svg></svg>'), 1);
   equal(countNamespaceChanges('<div><svg></svg></div><div></div>'), 2);
