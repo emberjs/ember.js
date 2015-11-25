@@ -1,24 +1,24 @@
-An HTMLBars runtime environment implements a series of hooks (and
+An Glimmer runtime environment implements a series of hooks (and
 keywords) that are responsible for guaranteeing the most important
-property of an HTMLBars template: idempotence.
+property of an Glimmer template: idempotence.
 
 This means that a template that is re-rendered with the same dynamic
 environment will result in the same DOM nodes (with the same identity)
 as the first render.
 
-HTMLBars comes with support for idempotent helpers. This means that a
-helper implemented using the HTMLBars API is guaranteed to fulfill the
-idempotence requirement. That is because an HTMLBars template is a "pure
+Glimmer comes with support for idempotent helpers. This means that a
+helper implemented using the Glimmer API is guaranteed to fulfill the
+idempotence requirement. That is because an Glimmer template is a "pure
 function"; it takes in data parameters and returns data values.
 
 > Block helpers also have access to `this.yield()`, which allows them to
 > render the block passed to the block helper, but they do not have
 > access to the block itself, nor the ability to directly insert the
 > block into the DOM. As long as `this.yield()` is invoked in two
-> successive renders, HTMLBars guarantees that the second call
+> successive renders, Glimmer guarantees that the second call
 > effectively becomes a no-op and does not tear down the template.
 
-HTMLBars environments are expected to implement an idempotent component
+Glimmer environments are expected to implement an idempotent component
 implementation. What this means is that they are responsible for
 exposing a public API that ensures that users can write components with
 stable elements even when their attributes change. Ember.js has an
@@ -26,21 +26,21 @@ implementation, but it's fairly involved.
 
 ## Hooks
 
-An HTMLBars environment exposes a series of hooks that a runtime
+An Glimmer environment exposes a series of hooks that a runtime
 environment can use to define the behavior of templates. These hooks
-are defined on the `env` passed into an HTMLBars `render` function,
-and are invoked by HTMLBars as the template's dynamic portions are
+are defined on the `env` passed into an Glimmer `render` function,
+and are invoked by Glimmer as the template's dynamic portions are
 reached.
 
 ### The Scope
 
-Scope management in HTMLBars is the heart of the system: by implementing
+Scope management in Glimmer is the heart of the system: by implementing
 a coherent notion of "scope", many domain-specific constructs will
 behave as expected.
 
 While the implementation of these hooks can be involved, they result in
 a single scope object that can be passed around and shared freely, and
-they make it possible for `yield` to be implemented in HTMLBars, rather
+they make it possible for `yield` to be implemented in Glimmer, rather
 than in the host environment.
 
 #### The "Reference" Type
@@ -63,7 +63,7 @@ arguments:
 {{/each}}
 ```
 
-HTMLBars evaluates path expressions (`item.name`) by asking the host
+Glimmer evaluates path expressions (`item.name`) by asking the host
 environment to look up the path in the current scope and to return a
 *reference*.
 
@@ -81,9 +81,9 @@ are never used.
 
 [frp-property]: https://github.com/baconjs/bacon.js/#property
 
-HTMLBars itself is agnostic to the precise reference type used: you can
+Glimmer itself is agnostic to the precise reference type used: you can
 even just use a regular JavaScript value, but a number of the hooks in
-HTMLBars are designed to make a system with a stable reference type,
+Glimmer are designed to make a system with a stable reference type,
 like Ember, work correctly.
 
 #### Example: Rendering and Re-Rendering
@@ -118,7 +118,7 @@ First, this template is invoked with a `self`:
 }
 ```
 
-The first thing that happens is that the HTMLBars runtime asks the host
+The first thing that happens is that the Glimmer runtime asks the host
 to create a fresh scope using `hooks.createFreshScope`, which returns an
 object with slots for `self` and `locals`.
 
@@ -166,7 +166,7 @@ function ifHelper(params) {
 
 If the value of `author` is truthy, the helper invokes `this.yield`.
 Since this is the first time this template is rendered, that tells the
-HTMLBars runtime to render the template. The runtime remembers that the
+Glimmer runtime to render the template. The runtime remembers that the
 block was invoked, which will be used later when we re-render.
 
 The call to `this.yield` invokes the template inside of the conditional:
@@ -179,7 +179,7 @@ Because `this.yield()` was invoked without block arguments and without a
 new `self`, the parent scope is reused. You will see later what happens
 if a child scope is needed.
 
-The HTMLBars runtime encounters `{{author.name}}`, and it asks the host
+The Glimmer runtime encounters `{{author.name}}`, and it asks the host
 to provide a reference for that expression by calling
 `hooks.getChild(hooks.getRoot(scope, 'author'), 'name')`, and that
 reference is linked to the render node managing the dynamic area. The
@@ -212,7 +212,7 @@ The helper invokes `yieldItem` once for each item in the list. The
 In this case, the `[ item ]` parameter will become the `|comment|` block
 argument.
 
-Since this is the first time this template is rendered, the HTMLBars
+Since this is the first time this template is rendered, the Glimmer
 runtime will render the child template once for each call to
 `yieldItem`, and remember that it rendered a template for the supplied
 key.
@@ -390,7 +390,7 @@ yielded before was not yielded again. In those cases, it reorders or
 prunes the render nodes, which reorders or prunes the associated DOM.
 
 Just a few primitives are enough to describe almost all of the possible
-features of HTMLBars:
+features of Glimmer:
 
 * the `scope`, which holds references that are consulted when the
   runtime resolves paths into references.
@@ -519,16 +519,16 @@ once for the `format-person` helper, and its result is provided to the
 the DOM.
 
 The second time the template is rendered, the same hooks are called.
-HTMLBars compares the result value with the last value inserted into the
+Glimmer compares the result value with the last value inserted into the
 DOM, and if they are the same, does nothing.
 
-Because HTMLBars is responsible for updating the DOM, and simply
+Because Glimmer is responsible for updating the DOM, and simply
 delegates to "pure helpers" to calculate the values to insert, it can
 guarantee idempotence.
 
 ## Keywords
 
-HTMLBars allows a host environment to define *keywords*, which receive
+Glimmer allows a host environment to define *keywords*, which receive
 the full set of environment information (such as the current scope and a
 reference to the runtime) as well as all parameters as unevaluated
 references.
@@ -580,7 +580,7 @@ The first time this template is rendered, the `{{#if}}` block receives a
 fresh, empty render node.
 
 It evaluates `subtitle`, and if the value is truthy, yields to the
-block. HTMLBars creates the static parts of the template (the `<h2>`)
+block. Glimmer creates the static parts of the template (the `<h2>`)
 and inserts them into the DOM).
 
 When it descends into the block, it creates a fresh, empty render node
@@ -591,10 +591,10 @@ The second time the template is rendered, the `{{#if}}` block receives
 the same render node again.
 
 It evaluates `subtitle`, and if the value is truthy, yields to the
-block. HTMLBars sees that the same block as last time was yielded, and
+block. Glimmer sees that the same block as last time was yielded, and
 **does not** replace the static portions of the block.
 
-(If the value is falsy, it does not yield to the block. HTMLBars sees
+(If the value is falsy, it does not yield to the block. Glimmer sees
 that the block was not yielded to, and prunes the DOM produced last
 time, and does not descend.)
 
@@ -606,7 +606,7 @@ If the value of `subtitle` is the same as the last value of `subtitle`,
 nothing happens. If the value of `subtitle` has changed, the render node
 is updated with the new value.
 
-This example shows how HTMLBars itself guarantees idempotence. The
+This example shows how Glimmer itself guarantees idempotence. The
 easiest way for a keyword to satisfy these requirements are to implement
 a series of functions, as the next section will describe.
 
@@ -696,7 +696,7 @@ re-render, but the keyword is responsible for maintaining the
 idempotence invariant when appropriate.
 
 This also means that it's possible to precisely describe what
-idempotence guarantees exist. HTMLBars defines the guarantees for
+idempotence guarantees exist. Glimmer defines the guarantees for
 built-in constructs (including invoked user helpers), and each keyword
 defines the guarantees for the keyword. Since those are the only
 constructs that can directly manipulate the lexical environment or the

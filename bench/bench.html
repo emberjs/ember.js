@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>HTMLBars Benchmark</title>
+    <title>Glimmer Benchmark</title>
     <script src='./benchmark.js'></script>
     <script src="../assets/loader.js"></script>
     <script>loader.noConflict({ define: 'enifed' });</script>
@@ -47,11 +47,11 @@
       }
 
       // Imports
-      var compileTemplate = requireModule('htmlbars-demos/index').compile,
-          DemoEnvironment = requireModule('htmlbars-demos/index').TestEnvironment,
-          runtime         = requireModule('htmlbars-runtime');
+      var compileTemplate = requireModule('glimmer-demos/index').compile,
+          DemoEnvironment = requireModule('glimmer-demos/index').TestEnvironment,
+          runtime         = requireModule('glimmer-runtime');
 
-      var Stats = requireModule('htmlbars-demos/stats').default;
+      var Stats = requireModule('glimmer-demos/stats').default;
 
       function compile(template) {
         return compileTemplate(template, { disableComponentGeneration: true });
