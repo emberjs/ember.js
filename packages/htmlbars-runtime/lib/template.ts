@@ -21,6 +21,7 @@ import {
 
 import {
   ChainableReference,
+  NotifiableReference,
   PushPullReference,
   ConstReference,
   PathReference
@@ -1114,11 +1115,58 @@ export class ParamsAndHash extends ExpressionSyntax {
   }
 }
 
-export class EvaluatedParamsAndHash extends PushPullReference implements PathReference {
-  static _empty: EvaluatedParamsAndHash;
 
+const NOOP_DESTROY = {
+  destroy() {}
+};
+
+const EMPTY_PARAMS: Reference & ChainableReference & NotifiableReference = {
+  _guid: null,
+  references: [],
+  get() { return null; },
+  nth() { return null; },
+  toArray() { return this.references },
+  first() { return null; },
+  last() { return null; },
+
+  isDirty() { return false; },
+  value() { return []; },
+  destroy() {},
+
+  chain() { return NOOP_DESTROY; },
+  notify() {}
+};
+
+const EMPTY_DICT = dict();
+
+const EMPTY_HASH: Reference & ChainableReference & NotifiableReference = {
+  _guid: null,
+  keys: [],
+  values: [],
+  map: EMPTY_DICT,
+
+  forEach() {},
+  get() { return null; },
+  at() { return null; },
+
+  isDirty() { return false; },
+  value() { return EMPTY_DICT; },
+  destroy() {},
+
+  chain() { return NOOP_DESTROY; },
+  notify() {}
+};
+
+const EMPTY_ARGS = {
+  params: EMPTY_PARAMS,
+  hash: EMPTY_HASH,
+  get() { return NULL_REFERENCE; },
+  value() { return { params: EMPTY_PARAMS, hash: EMPTY_HASH } }
+};
+
+export class EvaluatedParamsAndHash extends PushPullReference implements PathReference {
   static empty(): EvaluatedParamsAndHash {
-    return (this._empty = this._empty || ParamsAndHash.empty().evaluate(null));
+    return <any>EMPTY_ARGS;
   }
 
   static single(ref: PathReference): EvaluatedParamsAndHash {
@@ -1236,6 +1284,10 @@ export class Params extends ExpressionSyntax {
 }
 
 export class EvaluatedParams extends PushPullReference implements PathReference {
+  static empty(): EvaluatedParams {
+    return <any>EMPTY_PARAMS;
+  }
+
   static single(ref: PathReference): EvaluatedParams {
     return new EvaluatedParams([ref]);
   }
@@ -1360,13 +1412,10 @@ export class Hash extends ExpressionSyntax {
 }
 
 export class EvaluatedHash extends PushPullReference implements PathReference {
-  static empty() {
-    if (this._empty) return this._empty;
-    return this._empty = new EvaluatedHash({ keys: [], values: [] });
+  static empty(): EvaluatedHash {
+    return <any>EMPTY_HASH;
   }
 
-  static  _empty: EvaluatedHash = null;
-  
   public values: PathReference[];
   public keys: InternedString[];
   public map: Dict<PathReference>;
