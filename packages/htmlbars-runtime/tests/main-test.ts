@@ -43,7 +43,7 @@ QUnit.skip("manualElement function honors namespaces", function() {
     equalTokens(result.fragment, '<svg version="1.1"><linearGradient><stop offset="0.1"></stop><stop offset="0.6"></stop></linearGradient></svg>');
 });
 
-test("manualElement function honors void elements", function() {
+QUnit.skip("manualElement function honors void elements", function() {
   var attributes = {
     class: 'foo-bar'
   };

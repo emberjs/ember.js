@@ -28,13 +28,13 @@ QUnit.module('DOM Helper', {
   }
 });
 
-test('#createElement', function(){
+QUnit.skip('#createElement', function(){
   var node = dom.createElement('div');
   equal(node.tagName, 'DIV');
   equalHTML(node, '<div></div>');
 });
 
-test('#childAtIndex', function() {
+QUnit.skip('#childAtIndex', function() {
   var node = dom.createElement('div');
 
   var child1 = dom.createElement('p');
@@ -55,14 +55,14 @@ test('#childAtIndex', function() {
   strictEqual(dom.childAtIndex(node, 2), null);
 });
 
-test('#appendText adds text', function(){
+QUnit.skip('#appendText adds text', function(){
   var node = dom.createElement('div');
   var text = dom.appendText(node, 'Howdy');
   ok(!!text, 'returns node');
   equalHTML(node, '<div>Howdy</div>');
 });
 
-test('#setAttribute', function(){
+QUnit.skip('#setAttribute', function(){
   var node = dom.createElement('div');
   dom.setAttribute(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>');
@@ -77,7 +77,7 @@ test('#setAttribute', function(){
   ok(node.getAttribute('disabled') !== disabledAbsentValue, 'disabled set to false is present');
 });
 
-test('#setAttributeNS', function(){
+QUnit.skip('#setAttributeNS', function(){
   var node = dom.createElement('svg');
   dom.setAttributeNS(node, xlinkNamespace, 'xlink:href', 'super-fun');
   // chrome adds (xmlns:xlink="http://www.w3.org/1999/xlink") property while others don't
@@ -92,7 +92,7 @@ test('#setAttributeNS', function(){
 
 });
 
-test('#getElementById', function() {
+QUnit.skip('#getElementById', function() {
   var parentNode = dom.createElement('div'),
       childNode = dom.createElement('div');
   dom.setAttribute(parentNode, 'id', 'parent');
@@ -103,7 +103,7 @@ test('#getElementById', function() {
   dom.document.body.removeChild(parentNode);
 });
 
-test('#setPropertyStrict', function(){
+QUnit.skip('#setPropertyStrict', function(){
   var node = dom.createElement('div');
   dom.setPropertyStrict(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>');
@@ -117,7 +117,7 @@ test('#setPropertyStrict', function(){
 });
 
 // IE dislikes undefined or null for value
-test('#setPropertyStrict value', function(){
+QUnit.skip('#setPropertyStrict value', function(){
   var node = dom.createElement('input');
   dom.setPropertyStrict(node, 'value', undefined);
   equal(node.value, '', 'blank string is set for undefined');
@@ -126,7 +126,7 @@ test('#setPropertyStrict value', function(){
 });
 
 // IE dislikes undefined or null for type
-test('#setPropertyStrict type', function(){
+QUnit.skip('#setPropertyStrict type', function(){
   var node = dom.createElement('input');
   dom.setPropertyStrict(node, 'type', undefined);
   equal(node.type, 'text', 'text default is set for undefined');
@@ -135,7 +135,7 @@ test('#setPropertyStrict type', function(){
 });
 
 // setting undefined or null to src makes a network request
-test('#setPropertyStrict src', function(){
+QUnit.skip('#setPropertyStrict src', function(){
   var node = dom.createElement('img');
   dom.setPropertyStrict(node, 'src', undefined);
   notEqual(node.src, undefined, 'blank string is set for undefined');
@@ -143,7 +143,7 @@ test('#setPropertyStrict src', function(){
   notEqual(node.src, null, 'blank string is set for undefined');
 });
 
-test('#removeAttribute', function(){
+QUnit.skip('#removeAttribute', function(){
   var node = dom.createElement('div');
   dom.setAttribute(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>', 'precond - attribute exists');
@@ -152,7 +152,7 @@ test('#removeAttribute', function(){
   equalHTML(node, '<div></div>', 'attribute was removed');
 });
 
-test('#removeAttribute of SVG', function(){
+QUnit.skip('#removeAttribute of SVG', function(){
   dom.setNamespace(svgNamespace);
   var node = dom.createElement('svg');
   dom.setAttribute(node, 'viewBox', '0 0 100 100');
@@ -162,7 +162,7 @@ test('#removeAttribute of SVG', function(){
   equalHTML(node, '<svg></svg>', 'attribute was removed');
 });
 
-test('#setProperty', function(){
+QUnit.skip('#setProperty', function(){
   var node = dom.createElement('div');
   dom.setProperty(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>');
@@ -186,7 +186,7 @@ test('#setProperty', function(){
   equalHTML(node, '<div style="color: red;"></div>');
 });
 
-test('#setProperty removes attr with undefined', function(){
+QUnit.skip('#setProperty removes attr with undefined', function(){
   var node = dom.createElement('div');
   dom.setProperty(node, 'data-fun', 'whoopie');
   equalHTML(node, '<div data-fun="whoopie"></div>');
@@ -194,7 +194,7 @@ test('#setProperty removes attr with undefined', function(){
   equalHTML(node, '<div></div>', 'undefined attribute removes the attribute');
 });
 
-test('#setProperty uses setAttribute for special non-compliant element props', function() {
+QUnit.skip('#setProperty uses setAttribute for special non-compliant element props', function() {
   expect(6);
 
   var badPairs = [
@@ -224,7 +224,7 @@ test('#setProperty uses setAttribute for special non-compliant element props', f
   });
 });
 
-test('#addClasses', function(){
+QUnit.skip('#addClasses', function(){
   var node = dom.createElement('div');
   dom.addClasses(node, ['super-fun']);
   equal(node.className, 'super-fun');
@@ -236,7 +236,7 @@ test('#addClasses', function(){
   equal(node.className, 'super-fun super-blast bacon ham');
 });
 
-test('#removeClasses', function(){
+QUnit.skip('#removeClasses', function(){
   var node = dom.createElement('div');
   node.setAttribute('class', 'this-class that-class');
   dom.removeClasses(node, ['this-class']);
@@ -250,14 +250,14 @@ test('#removeClasses', function(){
   equal(node.className, 'woop');
 });
 
-test('#createElement of tr with contextual table element', function(){
+QUnit.skip('#createElement of tr with contextual table element', function(){
   var tableElement = document.createElement('table'),
       node = dom.createElement('tr', tableElement);
   equal(node.tagName, 'TR');
   equalHTML(node, '<tr></tr>');
 });
 
-test('#createMorph has optional contextualElement', function(){
+QUnit.skip('#createMorph has optional contextualElement', function(){
   var parent = document.createElement('div'),
       fragment = document.createDocumentFragment(),
       start = document.createTextNode(''),
@@ -278,7 +278,7 @@ test('#createMorph has optional contextualElement', function(){
   equal(morph.contextualElement, parent, "morph's contextualElement is parent");
 });
 
-test('#appendMorph', function(){
+QUnit.skip('#appendMorph', function(){
   var element = document.createElement('div');
 
   dom.appendText(element, 'a');
@@ -290,7 +290,7 @@ test('#appendMorph', function(){
   equal(element.innerHTML, 'abc');
 });
 
-test('#insertMorphBefore', function(){
+QUnit.skip('#insertMorphBefore', function(){
   var element = document.createElement('div');
 
   dom.appendText(element, 'a');
@@ -302,7 +302,7 @@ test('#insertMorphBefore', function(){
   equal(element.innerHTML, 'abc');
 });
 
-test('#parseHTML combinations', function(){
+QUnit.skip('#parseHTML combinations', function(){
   var parsingCombinations = [
     // omitted start tags
     //
@@ -333,7 +333,7 @@ test('#parseHTML combinations', function(){
   }
 });
 
-test('#parseHTML of script then tr inside table context wraps the tr in a tbody', function(){
+QUnit.skip('#parseHTML of script then tr inside table context wraps the tr in a tbody', function(){
   var tableElement = document.createElement('table'),
       nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tableElement).childNodes;
   // The HTML spec suggests the first item must be the child of
@@ -343,14 +343,14 @@ test('#parseHTML of script then tr inside table context wraps the tr in a tbody'
   equal(nodes[1].tagName, 'TBODY');
 });
 
-test('#parseHTML of select allows the initial implicit option selection to remain', function(){
+QUnit.skip('#parseHTML of select allows the initial implicit option selection to remain', function(){
   var div = document.createElement('div');
   var select = dom.parseHTML('<select><option></option></select>', div).childNodes[0];
 
   ok(select.childNodes[0].selected, 'first element is selected');
 });
 
-test('#parseHTML of options removes an implicit selection', function(){
+QUnit.skip('#parseHTML of options removes an implicit selection', function(){
   var select = document.createElement('select');
   var options = dom.parseHTML(
     '<option value="1"></option><option value="2"></option>',
@@ -361,7 +361,7 @@ test('#parseHTML of options removes an implicit selection', function(){
   ok(!options[1].selected, 'second element is not selected');
 });
 
-test('#parseHTML of options leaves an explicit first selection', function(){
+QUnit.skip('#parseHTML of options leaves an explicit first selection', function(){
   var select = document.createElement('select');
   var options = dom.parseHTML(
     '<option value="1" selected></option><option value="2"></option>',
@@ -372,7 +372,7 @@ test('#parseHTML of options leaves an explicit first selection', function(){
   ok(!options[1].selected, 'second element is not selected');
 });
 
-test('#parseHTML of options leaves an explicit second selection', function(){
+QUnit.skip('#parseHTML of options leaves an explicit second selection', function(){
   var select = document.createElement('select');
   var options = dom.parseHTML(
     '<option value="1"></option><option value="2" selected="selected"></option>',
@@ -383,7 +383,7 @@ test('#parseHTML of options leaves an explicit second selection', function(){
   ok(options[1].selected, 'second element is selected');
 });
 
-test('#parseHTML of script then tr inside tbody context', function(){
+QUnit.skip('#parseHTML of script then tr inside tbody context', function(){
   var tbodyElement = document.createElement('tbody'),
       nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tbodyElement).childNodes;
   equal(nodes.length, 2, 'Leading script tag corrupts');
@@ -391,7 +391,7 @@ test('#parseHTML of script then tr inside tbody context', function(){
   equal(nodes[1].tagName, 'TR');
 });
 
-test('#parseHTML with retains whitespace', function(){
+QUnit.skip('#parseHTML with retains whitespace', function(){
   var div = document.createElement('div');
   var nodes = dom.parseHTML('leading<script id="first"></script> <script id="second"></script><div><script></script> <script></script>, indeed.</div>', div).childNodes;
   equal(nodes[0].data, 'leading');
@@ -405,14 +405,14 @@ test('#parseHTML with retains whitespace', function(){
   equal(nodes[4].childNodes[3].data, ', indeed.');
 });
 
-test('#parseHTML with retains whitespace of top element', function(){
+QUnit.skip('#parseHTML with retains whitespace of top element', function(){
   var div = document.createElement('div');
   var nodes = dom.parseHTML('<span>hello <script id="first"></script> yeah</span>', div).childNodes;
   equal(nodes[0].tagName, 'SPAN');
   equalHTML(nodes, '<span>hello <script id="first"></script> yeah</span>');
 });
 
-test('#parseHTML with retains whitespace after script', function(){
+QUnit.skip('#parseHTML with retains whitespace after script', function(){
   var div = document.createElement('div');
   var nodes = dom.parseHTML('<span>hello</span><script id="first"></script><span><script></script> kwoop</span>', div).childNodes;
   equal(nodes[0].tagName, 'SPAN');
@@ -421,14 +421,14 @@ test('#parseHTML with retains whitespace after script', function(){
   equalHTML(nodes, '<span>hello</span><script id="first"></script><span><script></script> kwoop</span>');
 });
 
-test('#parseHTML of number', function(){
+QUnit.skip('#parseHTML of number', function(){
   var div = document.createElement('div');
   var nodes = dom.parseHTML(5, div).childNodes;
   equal(nodes[0].data, '5');
   equalHTML(nodes, '5');
 });
 
-test('#protocolForURL', function() {
+QUnit.skip('#protocolForURL', function() {
   var protocol = dom.protocolForURL("http://www.emberjs.com");
   equal(protocol, "http:");
 
@@ -438,7 +438,7 @@ test('#protocolForURL', function() {
   equal(protocol, "javascript:");
 });
 
-test('#cloneNode shallow', function(){
+QUnit.skip('#cloneNode shallow', function(){
   var divElement = document.createElement('div');
 
   divElement.appendChild( document.createElement('span') );
@@ -449,7 +449,7 @@ test('#cloneNode shallow', function(){
   equalHTML(node, '<div></div>');
 });
 
-test('#cloneNode deep', function(){
+QUnit.skip('#cloneNode deep', function(){
   var divElement = document.createElement('div');
 
   divElement.appendChild( document.createElement('span') );
@@ -460,7 +460,7 @@ test('#cloneNode deep', function(){
   equalHTML(node, '<div><span></span></div>');
 });
 
-test('dom node has empty text after cloning and ensuringBlankTextNode', function(){
+QUnit.skip('dom node has empty text after cloning and ensuringBlankTextNode', function(){
   var div = document.createElement('div');
 
   div.appendChild( document.createTextNode('') );
@@ -477,7 +477,7 @@ test('dom node has empty text after cloning and ensuringBlankTextNode', function
   equal(clonedDiv.childNodes[0].nodeType, 3);
 });
 
-test('dom node has empty start text after cloning and ensuringBlankTextNode', function(){
+QUnit.skip('dom node has empty start text after cloning and ensuringBlankTextNode', function(){
   var div = document.createElement('div');
 
   div.appendChild( document.createTextNode('') );
@@ -495,7 +495,7 @@ test('dom node has empty start text after cloning and ensuringBlankTextNode', fu
   equal(clonedDiv.childNodes[0].nodeType, 3);
 });
 
-test('dom node checked after cloning and ensuringChecked', function(){
+QUnit.skip('dom node checked after cloning and ensuringChecked', function(){
   var input = document.createElement('input');
 
   input.setAttribute('checked', 'checked');
@@ -522,38 +522,38 @@ QUnit.module('DOM Helper namespaces', {
   }
 });
 
-test('#createElement div is xhtml', function(){
+QUnit.skip('#createElement div is xhtml', function(){
   var node = dom.createElement('div');
   equal(node.namespaceURI, xhtmlNamespace);
 });
 
-test('#createElement of svg with svg namespace', function(){
+QUnit.skip('#createElement of svg with svg namespace', function(){
   dom.setNamespace(svgNamespace);
   var node = dom.createElement('svg');
   equal(node.tagName, 'svg');
   equal(node.namespaceURI, svgNamespace);
 });
 
-test('#createElement of path with detected svg contextual element', function(){
+QUnit.skip('#createElement of path with detected svg contextual element', function(){
   dom.setNamespace(svgNamespace);
   var node = dom.createElement('path');
   equal(node.tagName, 'path');
   equal(node.namespaceURI, svgNamespace);
 });
 
-test('#createElement of path with svg contextual element', function(){
+QUnit.skip('#createElement of path with svg contextual element', function(){
   var node = dom.createElement('path', document.createElementNS(svgNamespace, 'svg'));
   equal(node.tagName, 'path');
   equal(node.namespaceURI, svgNamespace);
 });
 
-test('#createElement of svg with div namespace', function(){
+QUnit.skip('#createElement of svg with div namespace', function(){
   var node = dom.createElement('svg', document.createElement('div'));
   equal(node.tagName, 'svg');
   equal(node.namespaceURI, svgNamespace);
 });
 
-test('#getElementById with different root node', function() {
+QUnit.skip('#getElementById with different root node', function() {
   var doc = document.implementation.createDocument(xhtmlNamespace, 'html', null),
       body = document.createElementNS(xhtmlNamespace, 'body'),
       parentNode = dom.createElement('div'),
@@ -567,7 +567,7 @@ test('#getElementById with different root node', function() {
   equalHTML(dom.getElementById('child', doc), '<div id="child"></div>');
 });
 
-test('#setProperty with namespaced attributes', function() {
+QUnit.skip('#setProperty with namespaced attributes', function() {
   var node;
 
   dom.setNamespace(svgNamespace);
@@ -587,7 +587,7 @@ test('#setProperty with namespaced attributes', function() {
   equal(node.getAttribute('xlink:title'), null, 'ns attr is removed');
 });
 
-test("#setProperty removes namespaced attr with undefined", function() {
+QUnit.skip("#setProperty removes namespaced attr with undefined", function() {
   var node;
 
   node = dom.createElement('svg');
@@ -599,13 +599,13 @@ test("#setProperty removes namespaced attr with undefined", function() {
 for (i=0;i<foreignNamespaces.length;i++) {
   foreignNamespace = foreignNamespaces[i];
 
-  test('#createElement of div with '+foreignNamespace+' contextual element', function(){
+  QUnit.skip('#createElement of div with '+foreignNamespace+' contextual element', function(){
     var node = dom.createElement('div', document.createElementNS(svgNamespace, foreignNamespace));
     equal(node.tagName, 'DIV');
     equal(node.namespaceURI, xhtmlNamespace);
   }); // jshint ignore:line
 
-  test('#parseHTML of div with '+foreignNamespace, function(){
+  QUnit.skip('#parseHTML of div with '+foreignNamespace, function(){
     dom.setNamespace(xhtmlNamespace);
     var foreignObject = document.createElementNS(svgNamespace, foreignNamespace),
         nodes = dom.parseHTML('<div></div>', foreignObject).childNodes;
@@ -614,7 +614,7 @@ for (i=0;i<foreignNamespaces.length;i++) {
   }); // jshint ignore:line
 }
 
-test('#parseHTML of path with svg contextual element', function(){
+QUnit.skip('#parseHTML of path with svg contextual element', function(){
   dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'svg'),
       nodes = dom.parseHTML('<path></path>', svgElement).childNodes;
@@ -622,7 +622,7 @@ test('#parseHTML of path with svg contextual element', function(){
   equal(nodes[0].namespaceURI, svgNamespace);
 });
 
-test('#parseHTML of stop with linearGradient contextual element', function(){
+QUnit.skip('#parseHTML of stop with linearGradient contextual element', function(){
   dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'linearGradient'),
       nodes = dom.parseHTML('<stop />', svgElement).childNodes;
@@ -630,7 +630,7 @@ test('#parseHTML of stop with linearGradient contextual element', function(){
   equal(nodes[0].namespaceURI, svgNamespace);
 });
 
-test('#addClasses on SVG', function(){
+QUnit.skip('#addClasses on SVG', function(){
   var node = document.createElementNS(svgNamespace, 'svg');
   dom.addClasses(node, ['super-fun']);
   equal(node.getAttribute('class'), 'super-fun');
@@ -640,7 +640,7 @@ test('#addClasses on SVG', function(){
   equal(node.getAttribute('class'), 'super-fun super-blast');
 });
 
-test('#removeClasses on SVG', function(){
+QUnit.skip('#removeClasses on SVG', function(){
   var node = document.createElementNS(svgNamespace, 'svg');
   node.setAttribute('class', 'this-class that-class');
   dom.removeClasses(node, ['this-class']);

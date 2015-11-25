@@ -864,7 +864,7 @@ QUnit.module("Initial render (svg)", {
   beforeEach: commonSetup
 });
 
-test("Simple elements can have namespaced attributes", function() {
+QUnit.skip("Simple elements can have namespaced attributes", function() {
   var template = compile("<svg xlink:title='svg-title'>content</svg>");
   var svgNode = render(template, {}).fragment.firstChild;
 
@@ -872,7 +872,7 @@ test("Simple elements can have namespaced attributes", function() {
   equal(svgNode.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
 });
 
-test("Simple elements can have bound namespaced attributes", function() {
+QUnit.skip("Simple elements can have bound namespaced attributes", function() {
   var template = compile("<svg xlink:title={{title}}>content</svg>");
   var svgNode = render(template, {title: 'svg-title'}, env).fragment.firstChild;
 
@@ -880,13 +880,13 @@ test("Simple elements can have bound namespaced attributes", function() {
   equal(svgNode.attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink');
 });
 
-test("SVG element can have capitalized attributes", function() {
+QUnit.skip("SVG element can have capitalized attributes", function() {
   var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
   var svgNode = render(template, {}).fragment.firstChild;
   equalTokens(svgNode, '<svg viewBox=\"0 0 0 0\"></svg>');
 });
 
-test("The compiler can handle namespaced elements", function() {
+QUnit.skip("The compiler can handle namespaced elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
   var svgNode = render(template, {}).fragment.firstChild;
@@ -895,7 +895,7 @@ test("The compiler can handle namespaced elements", function() {
   equalTokens(svgNode, html);
 });
 
-test("The compiler sets namespaces on nested namespaced elements", function() {
+QUnit.skip("The compiler sets namespaces on nested namespaced elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
   var svgNode = render(template, {}).fragment.firstChild;
@@ -905,7 +905,7 @@ test("The compiler sets namespaces on nested namespaced elements", function() {
   equalTokens(svgNode, html);
 });
 
-test("The compiler sets a namespace on an HTML integration point", function() {
+QUnit.skip("The compiler sets a namespace on an HTML integration point", function() {
   var html = '<svg><foreignObject>Hi</foreignObject></svg>';
   var template = compile(html);
   var svgNode = render(template, {}).fragment.firstChild;
@@ -917,7 +917,7 @@ test("The compiler sets a namespace on an HTML integration point", function() {
   equalTokens(svgNode, html);
 });
 
-test("The compiler does not set a namespace on an element inside an HTML integration point", function() {
+QUnit.skip("The compiler does not set a namespace on an element inside an HTML integration point", function() {
   var html = '<svg><foreignObject><div></div></foreignObject></svg>';
   var template = compile(html);
   var svgNode = render(template, {}).fragment.firstChild;
@@ -927,7 +927,7 @@ test("The compiler does not set a namespace on an element inside an HTML integra
   equalTokens(svgNode, html);
 });
 
-test("The compiler pops back to the correct namespace", function() {
+QUnit.skip("The compiler pops back to the correct namespace", function() {
   var html = '<svg></svg><svg></svg><div></div>';
   var template = compile(html);
   var fragment = render(template, {}).fragment;
@@ -941,7 +941,7 @@ test("The compiler pops back to the correct namespace", function() {
   equalTokens(fragment, html);
 });
 
-test("The compiler pops back to the correct namespace even if exiting last child", function () {
+QUnit.skip("The compiler pops back to the correct namespace even if exiting last child", function () {
   var html = '<div><svg></svg></div><div></div>';
   var fragment = render(compile(html), {}).fragment;
 
@@ -950,7 +950,7 @@ test("The compiler pops back to the correct namespace even if exiting last child
   equal(fragment.lastChild.namespaceURI, xhtmlNamespace, "last div's namespace is xhtmlNamespace");
 });
 
-test("The compiler preserves capitalization of tags", function() {
+QUnit.skip("The compiler preserves capitalization of tags", function() {
   var html = '<svg><linearGradient id="gradient"></linearGradient></svg>';
   var template = compile(html);
   var fragment = render(template, {}).fragment;
@@ -958,7 +958,7 @@ test("The compiler preserves capitalization of tags", function() {
   equalTokens(fragment, html);
 });
 
-test("svg can live with hydration", function() {
+QUnit.skip("svg can live with hydration", function() {
   var template = compile('<svg></svg>{{name}}');
 
   var fragment = render(template, { name: 'Milly' }, env, { contextualElement: document.body }).fragment;
@@ -968,7 +968,7 @@ test("svg can live with hydration", function() {
     "svg namespace inside a block is present" );
 });
 
-test("top-level unsafe morph uses the correct namespace", function() {
+QUnit.skip("top-level unsafe morph uses the correct namespace", function() {
   var template = compile('<svg></svg>{{{foo}}}');
   var fragment = render(template, { foo: '<span>FOO</span>' }).fragment;
 
@@ -976,7 +976,7 @@ test("top-level unsafe morph uses the correct namespace", function() {
   equal(fragment.childNodes[1].namespaceURI, xhtmlNamespace, 'element from unsafe morph has correct namespace');
 });
 
-test("nested unsafe morph uses the correct namespace", function() {
+QUnit.skip("nested unsafe morph uses the correct namespace", function() {
   var template = compile('<svg>{{{foo}}}</svg><div></div>');
   var fragment = render(template, { foo: '<path></path>' }).fragment;
 
@@ -984,7 +984,7 @@ test("nested unsafe morph uses the correct namespace", function() {
         'element from unsafe morph has correct namespace');
 });
 
-test("svg can take some hydration", function() {
+QUnit.skip("svg can take some hydration", function() {
   var template = compile('<div><svg>{{name}}</svg></div>');
 
   var fragment = render(template, { name: 'Milly' }).fragment;
@@ -995,7 +995,7 @@ test("svg can take some hydration", function() {
              "html is valid" );
 });
 
-test("root svg can take some hydration", function() {
+QUnit.skip("root svg can take some hydration", function() {
   var template = compile('<svg>{{name}}</svg>');
   var fragment = render(template, { name: 'Milly' }, env).fragment;
   var svgNode = fragment.firstChild;
@@ -1007,7 +1007,7 @@ test("root svg can take some hydration", function() {
              "html is valid" );
 });
 
-test("Block helper allows interior namespace", function() {
+QUnit.skip("Block helper allows interior namespace", function() {
   var isTrue = true;
 
   env.registerHelper('testing', function(params, hash, blocks) {
@@ -1035,7 +1035,7 @@ test("Block helper allows interior namespace", function() {
     "svg namespace inside an element inside a block is present" );
 });
 
-test("Block helper allows namespace to bleed through", function() {
+QUnit.skip("Block helper allows namespace to bleed through", function() {
   registerYieldingHelper('testing');
 
   var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
@@ -1048,7 +1048,7 @@ test("Block helper allows namespace to bleed through", function() {
          "circle tag inside block inside svg has an svg namespace" );
 });
 
-test("Block helper with root svg allows namespace to bleed through", function() {
+QUnit.skip("Block helper with root svg allows namespace to bleed through", function() {
   registerYieldingHelper('testing');
 
   var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
@@ -1061,7 +1061,7 @@ test("Block helper with root svg allows namespace to bleed through", function() 
          "circle tag inside block inside svg has an svg namespace" );
 });
 
-test("Block helper with root foreignObject allows namespace to bleed through", function() {
+QUnit.skip("Block helper with root foreignObject allows namespace to bleed through", function() {
   registerYieldingHelper('testing');
 
   var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');

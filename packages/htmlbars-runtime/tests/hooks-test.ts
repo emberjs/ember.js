@@ -30,7 +30,7 @@ QUnit.module("htmlbars-runtime: hooks", {
   beforeEach: commonSetup
 });
 
-test("inline hook correctly handles false-like values", function() {
+QUnit.skip("inline hook correctly handles false-like values", function() {
 
   registerHelper('get', function(params) {
     return params[0];
@@ -50,7 +50,7 @@ test("inline hook correctly handles false-like values", function() {
 
 });
 
-test("inline hook correctly handles false-like values", function() {
+QUnit.skip("inline hook correctly handles false-like values", function() {
 
   registerHelper('get', function(params) {
     return params[0];
@@ -70,7 +70,7 @@ test("inline hook correctly handles false-like values", function() {
 
 });
 
-test("createChildScope hook creates a new object for `blocks`", function() {
+QUnit.skip("createChildScope hook creates a new object for `blocks`", function() {
   let scope = env.hooks.createFreshScope();
   let child = env.hooks.createChildScope(scope);
 
