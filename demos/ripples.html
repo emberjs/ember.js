@@ -11,8 +11,8 @@
     <script data-template-name="application" type="text/x-handlebars-template">
       <svg width="{{width}}" height="{{height}}">
         <rect x="0" y="0" width="{{width}}" height="{{height}}" fill="#1B1B1B" />
-    
-        {{#each points as |point|}}
+
+        {{#each points.items key="key" as |point|}}
           <circle cx="{{point.x}}" cy="{{point.y}}" r="{{point.size}}" stroke-width="1" stroke="lightblue" stroke-opacity="{{point.opacity}}" fill-opacity="0" />
         {{/each}}
 
@@ -58,7 +58,7 @@
       };
 
       function Point(timestamp, x, y) {
-        this.key = "" + timestamp;
+        this.key = null;
         this.timestamp = timestamp;
 
         this.x = x;
@@ -67,15 +67,16 @@
         this.opacity = 1.0;
       };
 
-      Point.prototype.update = function(currentTimestamp) {
+      Point.prototype.update = function(index, currentTimestamp) {
         var delta = currentTimestamp - this.timestamp;
 
         this.size    = Math.max(delta/10, 0);
         this.opacity = Math.exp(-delta/250);
+        this.key = String(index);
       };
 
       var compileTemplate = requireModule('htmlbars-demos/index').compile,
-          DemoEnvironment = requireModule('htmlbars-demos/index').DemoEnvironment;
+          DemoEnvironment = requireModule('htmlbars-demos/index').TestEnvironment;
 
       TEMPLATES = {};
 
@@ -133,7 +134,7 @@
 
         data.points.forEach(function(point, i) {
           if (point) {
-            point.update(walltime);
+            point.update(i, walltime);
 
             if (point.opacity > 0.001) {
               data.count++;
@@ -143,8 +144,7 @@
           }
         });
 
-        result.scope.updateSelf(data);
-        result.rerender();
+        result.rerender(data);
 
         window.requestAnimationFrame(tick);
       }
