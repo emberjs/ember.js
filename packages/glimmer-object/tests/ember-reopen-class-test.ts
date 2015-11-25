@@ -4,7 +4,7 @@ function get(obj, key) {
   return obj[key];
 }
 
-QUnit.module('HTMLBarsObject.reopenClass');
+QUnit.module('GlimmerObject.reopenClass');
 
 QUnit.test('adds new properties to subclass', function() {
   var Subclass: any = EmberObject.extend();

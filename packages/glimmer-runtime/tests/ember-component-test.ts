@@ -1,5 +1,5 @@
 import EmberObject, {
-  HTMLBarsObjectFactory as EmberObjectFactory,
+  GlimmerObjectFactory as EmberObjectFactory,
   alias
 } from "htmlbars-object";
 
@@ -65,7 +65,7 @@ class EmberishGlimmerComponent extends GlimmerComponent {
 
 let view: Component, env: TestEnvironment;
 
-QUnit.module("HTMLBarsComponent - invocation", {
+QUnit.module("GlimmerComponent - invocation", {
   setup() {
     env = new TestEnvironment();
   }

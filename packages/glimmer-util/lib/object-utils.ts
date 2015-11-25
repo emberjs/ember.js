@@ -87,7 +87,7 @@ let alreadyWarned = false;
 export function debugStruct(shape) {
   if (typeof console !== 'undefined' && !alreadyWarned) {
     alreadyWarned = true;
-    console.log("Do not leave debugStruct around when not developing HTMLBars");
+    console.log("Do not leave debugStruct around when not developing Glimmer");
   }
 
   let keys = Object.keys(shape);

@@ -1,26 +1,26 @@
-import HTMLBarsObject, { computed } from 'htmlbars-object';
+import GlimmerObject, { computed } from 'htmlbars-object';
 import { metaFor, setProperty, fork } from 'htmlbars-reference';
 import { intern } from 'htmlbars-util';
 
-let Wrapper = HTMLBarsObject.extend({
+let Wrapper = GlimmerObject.extend({
   fullName: computed(function() {
     return this.model && this.model.fullName;
   }).property('model.fullName')
 });
 
-let Model = HTMLBarsObject.extend({
+let Model = GlimmerObject.extend({
   fullName: computed(function() {
     return this.person && this.person.fullName;
   }).property('person.fullName')
 });
 
-let Person = HTMLBarsObject.extend({
+let Person = GlimmerObject.extend({
   fullName: computed(function() {
     return this.name && this.name.fullName;
   }).property('name.fullName')
 });
 
-let Name = HTMLBarsObject.extend({
+let Name = GlimmerObject.extend({
   fullName: computed(function() {
     return `${this.first} ${this.last}`;
   }).property('first', 'last')

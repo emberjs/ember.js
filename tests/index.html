@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>HTMLBars Test Suite</title>
+  <title>Glimmer Test Suite</title>
   <link rel="stylesheet" href="qunit.css">
 </head>
 <body>
@@ -54,7 +54,7 @@
     } else {
       testMatch = /\-test$/;
     }
-    
+
     Object.keys(requireModule.entries).forEach(function(entry) {
       if (entry.match(testMatch)) requireModule(entry);
     });

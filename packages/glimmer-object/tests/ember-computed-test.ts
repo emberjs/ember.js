@@ -1,4 +1,4 @@
-import HTMLBarsObject, { computed, observer, alias } from 'htmlbars-object';
+import GlimmerObject, { computed, observer, alias } from 'htmlbars-object';
 
 interface Get {
   (obj: any, key: string): any;
@@ -17,11 +17,11 @@ function testWithDefault(name: string, callback: (Get, Set) => void) {
   });
 }
 
-let EmberObject = HTMLBarsObject;
+let EmberObject = GlimmerObject;
 
 function K() { return this; }
 
-QUnit.module('HTMLBarsObject.extend - Computed Properties');
+QUnit.module('GlimmerObject.extend - Computed Properties');
 
 testWithDefault('computed property on instance', function(get, set) {
   var MyClass = EmberObject.extend({
