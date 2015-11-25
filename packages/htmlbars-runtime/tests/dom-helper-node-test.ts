@@ -9,7 +9,7 @@ QUnit.module('DOM Helper (Node)', {
 });
 
 if (typeof document === 'undefined') {
-  test('it throws when instantiated without document', function(){
+  QUnit.skip('it throws when instantiated without document', function(){
     var throws = false;
     try {
       dom = new DOMHelper();
@@ -20,7 +20,7 @@ if (typeof document === 'undefined') {
   });
 }
 
-test('it instantiates with a stub document', function(){
+QUnit.skip('it instantiates with a stub document', function(){
   var called = false;
   var element = {};
   var doc = {

@@ -534,7 +534,7 @@ QUnit.module("HTML-based compiler (dirtying) - pruning", {
   }
 });
 
-test("Pruned render nodes invoke a cleanup hook when replaced", function() {
+QUnit.skip("Pruned render nodes invoke a cleanup hook when replaced", function() {
   var object = { condition: true, value: 'hello world', falsy: "Nothing" };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>{{falsy}}</p>{{/if}}</div>');
 
@@ -555,7 +555,7 @@ test("Pruned render nodes invoke a cleanup hook when replaced", function() {
   strictEqual(destroyedRenderNode.lastValue, 'Nothing', "The correct render node is passed in");
 });
 
-test("MorphLists in childMorphs are properly cleared", function() {
+QUnit.skip("MorphLists in childMorphs are properly cleared", function() {
   var object = {
     condition: true,
     falsy: "Nothing",
@@ -583,7 +583,7 @@ test("MorphLists in childMorphs are properly cleared", function() {
   strictEqual(destroyedRenderNodeCount, 6, "cleanup hook was invoked again");
 });
 
-test("Pruned render nodes invoke a cleanup hook when cleared", function() {
+QUnit.skip("Pruned render nodes invoke a cleanup hook when cleared", function() {
   var object = { condition: true, value: 'hello world' };
   var template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
 
@@ -603,7 +603,7 @@ test("Pruned render nodes invoke a cleanup hook when cleared", function() {
   strictEqual(destroyedRenderNodeCount, 1, "cleanup hook was not invoked again");
 });
 
-test("Pruned lists invoke a cleanup hook when removing elements", function() {
+QUnit.skip("Pruned lists invoke a cleanup hook when removing elements", function() {
   var object = { list: [{ key: "1", word: "hello" }, { key: "2", word: "world" }] };
   var template = compile('<div>{{#each list as |item|}}<p>{{item.word}}</p>{{/each}}</div>');
 
@@ -624,7 +624,7 @@ test("Pruned lists invoke a cleanup hook when removing elements", function() {
   strictEqual(destroyedRenderNode.lastValue, "hello", "The correct render node is passed in");
 });
 
-test("Pruned lists invoke a cleanup hook on their subtrees when removing elements", function() {
+QUnit.skip("Pruned lists invoke a cleanup hook on their subtrees when removing elements", function() {
   var object = { list: [{ key: "1", word: "hello" }, { key: "2", word: "world" }] };
   var template = compile('<div>{{#each list as |item|}}<p>{{#if item.word}}{{item.word}}{{/if}}</p>{{/each}}</div>');
 
