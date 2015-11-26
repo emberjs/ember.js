@@ -17,6 +17,8 @@ matrix:
   fast_finish: true
 before_script:
   - npm run sauce:connect
+script:
+  - npm run test:ci
 after_script:
   - sleep 10
   - npm run sauce:disconnect

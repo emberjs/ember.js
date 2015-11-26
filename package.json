@@ -7,7 +7,8 @@
     "prepublish": "bower install && ember build",
     "build": "ember build",
     "pretest": "ember build",
-    "test": "bin/run-tests.js",
+    "test": "ember test",
+    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json",
     "start": "ember serve",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect"
