@@ -1,10 +1,10 @@
 {
   "name": "htmlbars",
   "dependencies": {
-    "simple-html-tokenizer": "tildeio/simple-html-tokenizer#1982c82fd42088657791ebc0ccb49114f14c5571"
+    "simple-html-tokenizer": "tildeio/simple-html-tokenizer#8b09fc2079877d3477f6a0f140f1bf04cf7e8c91"
   },
   "devDependencies": {
-    "loader.js": "tildeio/loader.js#node-style",
+    "loader.js": "~3.5.0",
     "qunit": "~1.20.0",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#7b2034a19a4a66ece427ec96826e34a0782634fa"
   },

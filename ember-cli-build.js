@@ -50,7 +50,7 @@ module.exports = function() {
     include: ['*/index.d.ts'],
 
     getDestinationPath: function(relativePath) {
-      return relativePath.replace(/\/index\.d\.ts$/, '.js');
+      return relativePath.replace(/\.d\.ts$/, '.js');
     }
   });
 
@@ -62,7 +62,7 @@ module.exports = function() {
   var jsTree = typescript(tsTree);
 
   var libTree = new Funnel(jsTree, {
-    include: ["*/lib/**/*.js"],
+    include: ["*/lib/**/*.js"]
   });
 
   var packagesTree = mergeTrees([DTSTree, libTree, HTMLTokenizer]);
