@@ -13,13 +13,13 @@ import 'ember-routing-views';
 import Ember from 'ember-metal/core';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
-if (Ember.__loader.registry['ember-template-compiler']) {
+if (Ember.__loader.registry['ember-template-compiler/index']) {
   requireModule('ember-template-compiler');
 }
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
-if (Ember.__loader.registry['ember-testing']) {
+if (Ember.__loader.registry['ember-testing/index']) {
   requireModule('ember-testing');
 }
 

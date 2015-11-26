@@ -358,7 +358,7 @@ Ember.onerror = null;
 // do this for side-effects of updating Ember.assert, warn, etc when
 // ember-debug is present
 // This needs to be called before any deprecateFunc
-if (Ember.__loader.registry['ember-debug']) {
+if (Ember.__loader.registry['ember-debug/index']) {
   requireModule('ember-debug');
 } else {
   Ember.Debug = { };
