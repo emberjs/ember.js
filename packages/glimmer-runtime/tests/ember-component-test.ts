@@ -12,7 +12,6 @@ import {
   GetSyntax,
   StaticAttr,
   DynamicAttr,
-  EvaluatedRef,
   Frame
 } from "glimmer-runtime";
 

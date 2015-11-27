@@ -18,8 +18,10 @@ import { ROOT } from './utils';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
+const CLASS_META = "df8be4c8-4e89-44e2-a8f9-550c8dacdca7";
+
 export interface ObjectWithMixins {
-  _Meta: ClassMeta,
+  "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta,
   _meta: Meta
 }
 
@@ -37,7 +39,7 @@ export interface GlimmerObjectFactory<T> {
   reopenClass<U>(extensions: U);
   metaForProperty(property: string): Object;
   eachComputedProperty(callback: (InternedString, Object) => void);
-  _Meta: InstanceMeta;
+  "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta;
 }
 
 export function turbocharge(obj) {
@@ -74,8 +76,8 @@ export class ClassMeta {
   }
 
   static for(object: ObjectWithMixins | InstanceWithMixins): ClassMeta {
-    if ('_Meta' in object) return (<ObjectWithMixins>object)._Meta;
-    else if (object.constructor) return (<InstanceWithMixins>object).constructor._Meta || null;
+    if (CLASS_META in object) return (<ObjectWithMixins>object)[CLASS_META];
+    else if (object.constructor) return (<InstanceWithMixins>object).constructor[CLASS_META] || null;
     else return null;
   }
 
@@ -136,9 +138,9 @@ export class ClassMeta {
   }
 
   static applyAllMixins(Subclass: GlimmerObjectFactory<any>, Parent: GlimmerObjectFactory<any>) {
-    Subclass._Meta.getMixins().forEach(m => m.extendPrototypeOnto(Subclass, Parent));
-    Subclass._Meta.getStaticMixins().forEach(m => m.extendStatic(Subclass));
-    Subclass._Meta.seal();
+    Subclass[CLASS_META].getMixins().forEach(m => m.extendPrototypeOnto(Subclass, Parent));
+    Subclass[CLASS_META].getStaticMixins().forEach(m => m.extendStatic(Subclass));
+    Subclass[CLASS_META].seal();
   }
 
   addSubclass(constructor: GlimmerObjectFactory<any>) {
@@ -277,8 +279,8 @@ export class ClassMeta {
     }
 
     this.InstanceMetaConstructor = class extends SealedMeta {
-      private slots: Slots = new Slots();
-      private referenceTypes: Dict<InnerReferenceFactory> = referenceTypes;
+      protected slots: Slots = new Slots();
+      public referenceTypes: Dict<InnerReferenceFactory> = referenceTypes;
 
       getReferenceTypes() {
         return this.referenceTypes;
@@ -313,7 +315,7 @@ function mergeMergedProperties(attrs: Object, parent: Object) {
 }
 
 export class InstanceMeta extends ClassMeta {
-  public _Meta: ClassMeta = ClassMeta.fromParent(null);
+  public "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta = ClassMeta.fromParent(null);
 
   static fromParent(parent: InstanceMeta): InstanceMeta {
     return <InstanceMeta>super.fromParent(parent);
@@ -321,17 +323,17 @@ export class InstanceMeta extends ClassMeta {
 
   reset(parent: InstanceMeta) {
     super.reset(parent);
-    if (parent) this._Meta.reset(parent._Meta);
+    if (parent) this[CLASS_META].reset(parent[CLASS_META]);
   }
 
   seal() {
     super.seal();
-    this._Meta.seal();
+    this[CLASS_META].seal();
   }
 }
 
 export default class GlimmerObject {
-  static _Meta: InstanceMeta = InstanceMeta.fromParent(null);
+  static "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 
   static extend(): typeof GlimmerObject;
@@ -348,24 +350,24 @@ export default class GlimmerObject {
 
   static reopen<U>(extensions: U) {
     toMixin(extensions).extendPrototype(this);
-    this._Meta.seal();
+    this[CLASS_META].seal();
 
     relinkSubclasses(this);
   }
 
   static reopenClass(extensions: Object) {
     toMixin(extensions).extendStatic(this);
-    this._Meta.seal();
+    this[CLASS_META].seal();
   }
 
   static metaForProperty(property: string): Object {
-    let value = this._Meta.metadataForProperty(intern(property));
+    let value = this[CLASS_META].metadataForProperty(intern(property));
     if (!value) throw new Error(`metaForProperty() could not find a computed property with key '${property}'.`);
     return value;
   }
 
   static eachComputedProperty(callback: (InternedString, Object) => void) {
-    let metadata = this._Meta.getPropertyMetadata();
+    let metadata = this[CLASS_META].getPropertyMetadata();
     if (!metadata) return;
 
     for (let prop in metadata) {
@@ -380,7 +382,7 @@ export default class GlimmerObject {
 
   constructor(attrs?: Object) {
     if (attrs) assign(this, attrs);
-    (<typeof GlimmerObject>this.constructor)._Meta.init(this, attrs);
+    (<typeof GlimmerObject>this.constructor)[CLASS_META].init(this, attrs);
     this._super = ROOT;
     this.init();
   }
