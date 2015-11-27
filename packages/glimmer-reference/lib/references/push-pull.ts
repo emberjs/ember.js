@@ -39,10 +39,11 @@ export abstract class PushPullReference implements Reference, ChainableReference
   private sources: Destroyable[] = null;
   public _guid: number = null;
 
-  isDirty() { return this.dirty; }
+  isDirty() { return true; }
 
   chain(child: NotifiableReference): Destroyable {
-    return this._append(child);
+    // return this._append(child);
+    return null;
   }
 
   abstract value(): any;
@@ -61,8 +62,8 @@ export abstract class PushPullReference implements Reference, ChainableReference
   }
 
   protected _addSource<T extends ChainableReference>(source: T): T {
-    this.sources = this.sources || [];
-    this.sources.push(source.chain(this));
+    // this.sources = this.sources || [];
+    // this.sources.push(source.chain(this));
     return source;
   }
 

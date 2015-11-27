@@ -13,7 +13,7 @@ export default class RootReference extends PushPullReference implements IRootRef
     this.object = object;
   }
 
-  isDirty() { return false; }
+  isDirty() { return true; }
 
   value() { return this.object; }
 

@@ -20,7 +20,7 @@ export default class ForkedReference implements NotifiableReference, HasGuid {
   }
 
   isDirty() {
-    return this.dirty;
+    return true;
   }
 
   value() {
