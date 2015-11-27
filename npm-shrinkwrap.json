@@ -1454,7 +1454,8 @@
       "dependencies": {
         "esprima-fb": {
           "version": "15001.1001.0-dev-harmony-fb",
-          "from": "esprima-fb@>=15001.1001.0-dev-harmony-fb <15001.1002.0"
+          "from": "esprima-fb@15001.1001.0-dev-harmony-fb",
+          "resolved": "https://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz"
         }
       }
     },
@@ -1539,7 +1540,7 @@
     },
     "ember-cli": {
       "version": "1.13.13",
-      "from": "ember-cli@1.13.13",
+      "from": "ember-cli@>=1.13.13 <2.0.0",
       "resolved": "https://registry.npmjs.org/ember-cli/-/ember-cli-1.13.13.tgz",
       "dependencies": {
         "ansi-regex": {
@@ -1616,7 +1617,7 @@
             },
             "lodash": {
               "version": "2.4.2",
-              "from": "lodash@2.4.2",
+              "from": "lodash@>=2.4.1 <2.5.0",
               "resolved": "https://registry.npmjs.org/lodash/-/lodash-2.4.2.tgz"
             },
             "strip-ansi": {
@@ -1809,9 +1810,8 @@
       }
     },
     "emberjs-build": {
-      "version": "0.4.7",
-      "from": "emberjs-build@0.4.7",
-      "resolved": "https://registry.npmjs.org/emberjs-build/-/emberjs-build-0.4.7.tgz",
+      "version": "0.5.2",
+      "from": "emberjs-build@0.5.2",
       "dependencies": {
         "assert-plus": {
           "version": "0.1.2",
@@ -1841,9 +1841,9 @@
           "resolved": "https://registry.npmjs.org/broccoli-funnel/-/broccoli-funnel-0.2.15.tgz",
           "dependencies": {
             "rimraf": {
-              "version": "2.4.3",
+              "version": "2.4.4",
               "from": "rimraf@>=2.4.3 <3.0.0",
-              "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.4.3.tgz"
+              "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-2.4.4.tgz"
             }
           }
         },
@@ -1950,7 +1950,7 @@
           "dependencies": {
             "git-repo-info": {
               "version": "1.1.2",
-              "from": "git-repo-info@1.1.2",
+              "from": "git-repo-info@>=1.0.4 <2.0.0",
               "resolved": "https://registry.npmjs.org/git-repo-info/-/git-repo-info-1.1.2.tgz"
             }
           }
