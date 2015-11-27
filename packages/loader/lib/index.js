@@ -32,7 +32,13 @@ var mainContext = this;
     requirejs = require = requireModule = function(name) {
       return internalRequire(name, null);
     }
+
+    // setup `require` module
     require['default'] = require;
+
+    require.has = function registryHas(moduleName) {
+      return !!registry[moduleName] || !!registry[moduleName + '/index'];
+    };
 
     function missingModule(name, referrerName) {
       if (referrerName) {
