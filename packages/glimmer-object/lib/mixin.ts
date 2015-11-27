@@ -1,4 +1,4 @@
-import { Meta, ComputedReferenceBlueprint, setProperty } from 'glimmer-reference';
+import { CLASS_META, Meta, ComputedReferenceBlueprint, setProperty } from 'glimmer-reference';
 import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
 import GlimmerObject, {
   EMPTY_CACHE,
@@ -145,7 +145,7 @@ export class Mixin {
   }
 
   apply(target: any) {
-    let meta: ClassMeta = target._Meta = target._Meta || new ClassMeta();
+    let meta: ClassMeta = target[CLASS_META] = target[CLASS_META] || new ClassMeta();
     this.dependencies.forEach(m => m.apply(target));
     this.mergeProperties(target, target, meta);
     meta.addMixin(this);
@@ -163,14 +163,14 @@ export class Mixin {
 
   extendPrototypeOnto(Subclass: GlimmerObjectFactory<any>, Parent: GlimmerObjectFactory<any>) {
     this.dependencies.forEach(m => m.extendPrototypeOnto(Subclass, Parent));
-    this.mergeProperties(Subclass.prototype, Parent.prototype, Subclass._Meta);
-    Subclass._Meta.addMixin(this);
+    this.mergeProperties(Subclass.prototype, Parent.prototype, Subclass[CLASS_META]);
+    Subclass[CLASS_META].addMixin(this);
   }
 
   extendStatic(Target: GlimmerObjectFactory<any>) {
     this.dependencies.forEach(m => m.extendStatic(Target));
-    this.mergeProperties(Target, Object.getPrototypeOf(Target), Target._Meta._Meta);
-    Target._Meta.addStaticMixin(this);
+    this.mergeProperties(Target, Object.getPrototypeOf(Target), Target[CLASS_META][CLASS_META]);
+    Target[CLASS_META].addStaticMixin(this);
   }
 
   mergeProperties(target: Object, parent: Object, meta: ClassMeta) {
@@ -199,11 +199,11 @@ export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>,
   let Super = <typeof GlimmerObject>Parent;
 
   let Subclass = class extends Super {};
-  Subclass._Meta = InstanceMeta.fromParent(Parent._Meta);
+  Subclass[CLASS_META] = InstanceMeta.fromParent(Parent[CLASS_META]);
 
   let mixins = extensions.map(toMixin);
-  Parent._Meta.addSubclass(Subclass);
-  mixins.forEach(m => Subclass._Meta.addMixin(m));
+  Parent[CLASS_META].addSubclass(Subclass);
+  mixins.forEach(m => Subclass[CLASS_META].addMixin(m));
 
   ClassMeta.applyAllMixins(Subclass, Parent);
 
@@ -211,8 +211,8 @@ export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>,
 }
 
 export function relinkSubclasses(Parent: GlimmerObjectFactory<any>) {
-  Parent._Meta.getSubclasses().forEach((Subclass: GlimmerObjectFactory<any>) => {
-    Subclass._Meta.reset(Parent._Meta);
+  Parent[CLASS_META].getSubclasses().forEach((Subclass: GlimmerObjectFactory<any>) => {
+    Subclass[CLASS_META].reset(Parent[CLASS_META]);
     Subclass.prototype = Object.create(Parent.prototype);
 
     ClassMeta.applyAllMixins(Subclass, Parent);

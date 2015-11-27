@@ -2,7 +2,7 @@ import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { ConstReference } from './references/const';
 import { MetaOptions } from './types';
-import { InternedString, installGuid, assign, intern, numberKey } from 'glimmer-util';
+import { InternedString, installGuid, assign, intern, numberKey, symbol } from 'glimmer-util';
 
 import { Dict, DictSet, HasGuid, Set, dict } from 'glimmer-util';
 
@@ -89,6 +89,8 @@ class ConstMeta implements IMeta {
   }
 }
 
+export const CLASS_META = "df8be4c8-4e89-44e2-a8f9-550c8dacdca7";
+
 const hasOwnProperty = Object.hasOwnProperty;
 
 class Meta implements IMeta, HasGuid {
@@ -99,11 +101,11 @@ class Meta implements IMeta, HasGuid {
 
     let MetaToUse: typeof Meta = Meta;
 
-    if (obj.constructor && obj.constructor._Meta) {
-      let classMeta: ClassMeta = obj.constructor._Meta;
+    if (obj.constructor && obj.constructor[<string>CLASS_META]) {
+      let classMeta: ClassMeta = obj.constructor[<string>CLASS_META];
       MetaToUse = classMeta.InstanceMetaConstructor;
-    } else if (obj._Meta) {
-      MetaToUse = obj._Meta.InstanceMetaConstructor;
+    } else if (obj[<string>CLASS_META]) {
+      MetaToUse = obj[<string>CLASS_META].InstanceMetaConstructor;
     }
 
     return (obj._meta = new MetaToUse(obj, {}));
@@ -127,8 +129,8 @@ class Meta implements IMeta, HasGuid {
   private DefaultPathReferenceFactory: InnerReferenceFactory;
   private rootCache: IRootReference;
   private references: Dict<DictSet<IPathReference & HasGuid>> = null;
-  private slots: Dict<any> = null;
   public _guid;
+  protected slots: Dict<any> = null;
   protected referenceTypes: Dict<InnerReferenceFactory> = null;
   protected propertyMetadata: Dict<any> = null;
 
