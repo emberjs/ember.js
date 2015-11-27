@@ -1538,9 +1538,9 @@
       "resolved": "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz"
     },
     "ember-cli": {
-      "version": "1.13.12",
-      "from": "ember-cli@>=1.13.12 <2.0.0",
-      "resolved": "https://registry.npmjs.org/ember-cli/-/ember-cli-1.13.12.tgz",
+      "version": "1.13.13",
+      "from": "ember-cli@1.13.13",
+      "resolved": "https://registry.npmjs.org/ember-cli/-/ember-cli-1.13.13.tgz",
       "dependencies": {
         "ansi-regex": {
           "version": "2.0.0",
@@ -1660,18 +1660,6 @@
           "version": "2.0.0",
           "from": "supports-color@>=2.0.0 <3.0.0",
           "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-2.0.0.tgz"
-        },
-        "testem": {
-          "version": "0.9.10",
-          "from": "testem@0.9.10",
-          "resolved": "https://registry.npmjs.org/testem/-/testem-0.9.10.tgz",
-          "dependencies": {
-            "async": {
-              "version": "1.5.0",
-              "from": "async@>=1.0.0 <2.0.0",
-              "resolved": "https://registry.npmjs.org/async/-/async-1.5.0.tgz"
-            }
-          }
         },
         "xdg-basedir": {
           "version": "2.0.0",
