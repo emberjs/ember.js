@@ -65,7 +65,10 @@ module.exports = function() {
       'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
       'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
       'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
-      'htmlbars-util':         htmlbarsPackage('htmlbars-util')
+      'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
+      'ember-qunit':           vendoredES6Package('ember-qunit'),
+      'ember-test-helpers':    vendoredES6Package('ember-test-helpers'),
+      'klassy':                vendoredES6Package('klassy')
     }
   });
 
