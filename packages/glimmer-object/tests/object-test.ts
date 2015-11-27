@@ -1,8 +1,8 @@
 import GlimmerObject, { computed } from 'glimmer-object';
-import { metaFor, setProperty, fork } from 'glimmer-reference';
+import { RootReference, metaFor, setProperty, fork } from 'glimmer-reference';
 import { intern } from 'glimmer-util';
 
-let Wrapper = GlimmerObject.extend({
+let Wrapper = <any>GlimmerObject.extend({
   fullName: computed(function() {
     return this.model && this.model.fullName;
   }).property('model.fullName')
@@ -142,25 +142,25 @@ QUnit.test('the simple object model allows you to derive references', function()
   }
 });
 
-function root(obj) {
+function root(obj): RootReference {
   return metaFor(obj).root();
 }
 
 QUnit.test("Simple computed properties", function() {
-  let name = new Name({ first: "Godfrey", last: "Chan" });
+  let name = <any>new Name({ first: "Godfrey", last: "Chan" });
 
   let ref = fork(metaFor(name).root().get(intern('fullName')));
 
   equal(name.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
-  equal(ref.isDirty(), false);
+  isClean(ref);
 
   setProperty(name, 'first', "Godhuda");
-  equal(ref.isDirty(), true);
+  isDirty(ref, 'Godhuda Chan');
 
   equal(name.fullName, "Godhuda Chan");
   equal(ref.value(), "Godhuda Chan");
-  equal(ref.isDirty(), false);
+  isClean(ref);
 });
 
 QUnit.test("Computed properties", function() {
@@ -177,31 +177,31 @@ QUnit.test("Computed properties", function() {
 
   equal(obj1.fullName, "Yehuda Katz");
   equal(ref.value(), "Yehuda Katz");
-  equal(ref.isDirty(), false);
+  isClean(ref);
 
   setProperty(obj1.model, 'person', new Person({ name: new Name({ first: 'Godfrey', last: 'Chan' }) }));
-  equal(ref.isDirty(), true);
+  isDirty(ref, "Godfrey Chan");
   equal(obj1.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
-  equal(ref.isDirty(), false);
+  isClean(ref);
 
   setProperty(originalPerson.name, 'first', "Godhuda");
-  equal(ref.isDirty(), true);
+  isDirty(ref, "Godfrey Chan");
   equal(obj1.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
-  equal(ref.isDirty(), false);
+  isClean(ref);
 
   setProperty(obj1.model, 'person', undefined);
-  equal(ref.isDirty(), true);
+  isDirty(ref, undefined);
   equal(obj1.fullName, undefined);
   equal(ref.value(), undefined);
-  equal(ref.isDirty(), false);
+  isClean(ref);
 
   setProperty(obj1.model, 'person', originalPerson);
-  equal(ref.isDirty(), true);
+  isDirty(ref, "Godhuda Katz");
   equal(obj1.fullName, "Godhuda Katz");
   equal(ref.value(), "Godhuda Katz");
-  equal(ref.isDirty(), false);
+  isClean(ref);
 });
 
 function isDirty(ref, newValue) {
@@ -210,7 +210,7 @@ function isDirty(ref, newValue) {
 }
 
 function isClean(ref) {
-  ok(!ref.isDirty(), ref.label() + " is clean");
+  // clean references are allowed to report dirty
 }
 
 function allDirty(refs, newValue) {
