@@ -1403,6 +1403,10 @@ export class Hash extends ExpressionSyntax {
   evaluate(frame: Frame): EvaluatedHash {
     let { keys, values } = this;
 
+    if (keys.length === 0) {
+      return <EvaluatedHash>EMPTY_HASH;
+    }
+
     let valueReferences = values.map((value, i) => {
       return <PathReference>value.evaluate(frame);
     });
