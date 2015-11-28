@@ -107,10 +107,15 @@ export class ListIterator {
   }
 
   next(): boolean {
-    switch (this.phase) {
-      case Phase.Append: return this.nextAppend();
-      case Phase.Prune: return this.nextPrune();
-      case Phase.Done: return this.nextDone();
+    while (true) {
+      let handled = false;
+      switch (this.phase) {
+        case Phase.Append: handled = this.nextAppend(); break;
+        case Phase.Prune: handled = this.nextPrune(); break;
+        case Phase.Done: this.nextDone(); return true;
+      }
+
+      if (handled) return false;
     }
   }
 
@@ -120,7 +125,7 @@ export class ListIterator {
     if (array.length <= this.arrayPosition) {
       this.phase = Phase.Prune;
       this.listPosition = list.head();
-      return this.nextPrune();
+      return;
     }
 
     let item = array[this.arrayPosition++];
@@ -133,7 +138,7 @@ export class ListIterator {
       listPosition.handle(item);
       this.listPosition = list.nextNode(listPosition);
       target.retain(key, item);
-      return this.nextAppend();
+      return
     } else if (map[<string>key]) {
       let found = map[<string>key];
       found.handle(item);
@@ -146,15 +151,14 @@ export class ListIterator {
         this.advanceToKey(key);
       }
 
-      return this.nextAppend();
+      return;
     } else {
       let reference = new UpdatableReference(item);
       let node = map[<string>key] = new ListItem(reference, key);
       list.append(node);
       target.insert(node.key, node.value, listPosition ? listPosition.key : null);
+      return true;
     }
-
-    return false;
   }
 
   private nextPrune(): boolean {
@@ -162,7 +166,7 @@ export class ListIterator {
 
     if (this.listPosition === null) {
       this.phase = Phase.Done;
-      return this.nextDone();
+      return;
     }
 
     let node = this.listPosition;
@@ -170,17 +174,16 @@ export class ListIterator {
 
     if (node.handled) {
       node.handled = false;
-      return this.nextPrune();
+      return;
     } else {
       list.remove(node);
       delete this.map[<string>node.key];
       target.delete(node.key);
-      return this.nextPrune();
+      return;
     }
   }
 
-  private nextDone(): boolean {
+  private nextDone() {
     this.target.done();
-    return true;
   }
 }
