@@ -1,5 +1,7 @@
 /*globals Ember:true,ENV,EmberENV */
 
+import require from 'require';
+
 /**
 @module ember
 @submodule ember-metal
@@ -47,7 +49,7 @@ Ember.toString = function() { return 'Ember'; };
 
 // The debug functions are exported to globals with `require` to
 // prevent babel-plugin-filter-imports from removing them.
-let debugModule = Ember.__loader.require('ember-metal/debug');
+let debugModule = require('ember-metal/debug');
 Ember.assert = debugModule.assert;
 Ember.warn = debugModule.warn;
 Ember.debug = debugModule.debug;

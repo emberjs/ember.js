@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-template-compiler
 */
-import Ember from 'ember-metal/core';
+import require, { has } from 'require';
 import compileOptions from 'ember-template-compiler/system/compile_options';
 
 var compileSpec;
@@ -18,8 +18,8 @@ var compileSpec;
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
 export default function(templateString, options) {
-  if (!compileSpec && Ember.__loader.registry['htmlbars-compiler/compiler']) {
-    compileSpec = requireModule('htmlbars-compiler/compiler').compileSpec;
+  if (!compileSpec && has('htmlbars-compiler/compiler')) {
+    compileSpec = require('htmlbars-compiler/compiler').compileSpec;
   }
 
   if (!compileSpec) {

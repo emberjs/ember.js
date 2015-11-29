@@ -4,6 +4,7 @@
 */
 
 // BEGIN IMPORTS
+import require, { has } from 'require';
 import Ember from 'ember-metal/core';
 import { deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
@@ -358,8 +359,8 @@ Ember.onerror = null;
 // do this for side-effects of updating Ember.assert, warn, etc when
 // ember-debug is present
 // This needs to be called before any deprecateFunc
-if (Ember.__loader.registry['ember-debug']) {
-  requireModule('ember-debug');
+if (has('ember-debug')) {
+  require('ember-debug');
 } else {
   Ember.Debug = { };
 
