@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### v2.3.0-beta.2 (November 29, 2015)
+
+- [#12626](https://github.com/emberjs/ember.js/pull/12626) [BUGFIX] Fix "rest" style positional params in contextual components when using dot syntax.
+- [#12627](https://github.com/emberjs/ember.js/pull/12627) [CLEANUP] Remove unused `ENV` flags.
+  * `Ember.ENV.ENABLE_ALL_FEATURES` is removed (wasn't functionally different than `Ember.ENV.ENABLE_OPTIONAL_FEATURES`).
+  * `Ember.SHIM_ES5` is removed (Ember 2.x only supports ES5 compliant browsers so this flag was unused).
+  * `Ember.ENV.DISABLE_RANGE_API` is removed (unused since HTMLBars landed in 1.10).
+- [#12628](https://github.com/emberjs/ember.js/pull/12628) [BUGFIX] Fix processing arguments in rerender for contextual components.
+- [#12629](https://github.com/emberjs/ember.js/pull/12629) [BUGFIX] Expose `ownerInjection` method on `ContainerProxy`.
+- [#12636](https://github.com/emberjs/ember.js/pull/12636) [BUGFIX] Ensure `Ember.Mixin.prototype.toString` is defined (prevents issues with `Object.seal(Ember.Mixin.prototype)` in debug builds.
+
 ### v2.3.0-beta.1 (November 16, 2015)
 
 - [#12532](https://github.com/emberjs/ember.js/pull/12532) Bump RSVP dependency from 3.0.6 to 3.1.0.
