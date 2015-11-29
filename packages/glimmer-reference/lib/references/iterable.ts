@@ -43,9 +43,18 @@ export class ListManager {
   iterator(target: ListDelegate): ListIterator {
     let { array, map, list, keyPath } = this;
 
-    function keyFor(item): InternedString {
-      return intern(item[<string>keyPath]);
+    let keyFor;
+
+    if (keyPath === '@index') {
+      keyFor = (_, index: number) => {
+        return String(index);
+      };
+    } else {
+      keyFor = (item: InternedString) => {
+        return intern(item[<string>keyPath]);
+      };
     }
+
 
     return new ListIterator({ array: array.value(), keyFor, target, map, list });
   }
@@ -58,7 +67,7 @@ export class ListManager {
 
 interface IteratorOptions {
   array: any[];
-  keyFor: (obj) => InternedString;
+  keyFor: (obj: any, index: number) => InternedString;
   target: ListDelegate;
   map: Dict<ListItem>;
   list: LinkedList<ListItem>;
@@ -73,7 +82,7 @@ enum Phase {
 export class ListIterator {
   private candidates = dict<ListItem>();
   private array: any[];
-  private keyFor: (obj) => InternedString;
+  private keyFor: (obj, index: number) => InternedString;
   private target: ListDelegate;
 
   private map: Dict<ListItem>;
@@ -132,7 +141,7 @@ export class ListIterator {
 
     if (item === null || item === undefined) return this.nextAppend();
 
-    let key = keyFor(item);
+    let key = keyFor(item, this.arrayPosition - 1);
 
     if (listPosition && listPosition.key === key) {
       listPosition.handle(item);

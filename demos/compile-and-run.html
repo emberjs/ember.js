@@ -150,14 +150,14 @@
   </head>
   <body>
     <script type="template" id="pretty-print">
-      {{#each templates as |template|}}
+      {{#each templates key="index" as |template|}}
         <h4>Template <span class='template-num'>{{template.index}}</span></h4>
 
         {{#if (is-empty template.statements)}}
           <pre>Empty Template</pre>
         {{else}}
           <ol start="0">
-            {{#each template.statements as |statement|}}
+            {{#each template.statements key="@index" as |statement|}}
               <li><pre class='statement'>{{{format-statement statement}}}</pre></li>
             {{/each}}
           </ol>
