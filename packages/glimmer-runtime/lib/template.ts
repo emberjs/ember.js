@@ -188,12 +188,6 @@ export default class Template {
     Object.seal(this);
   }
 
-  clone(): Template {
-    let { meta, root, position, arity, statements, locals, spec, isEmpty } = this;
-    statements = statements.clone(node => node.clone());
-    return new Template({ meta, root, position, statements, locals, spec, isEmpty });
-  }
-
   prettyPrint() {
     function pretty(obj) {
       if (typeof obj.prettyPrint === 'function') return obj.prettyPrint();
@@ -201,7 +195,7 @@ export default class Template {
     }
 
     return this.root.map(template => {
-      return template.statements.toArray().map(statement => pretty(statement));
+      return template.raw.syntax.toArray().map(statement => pretty(statement));
     });
   }
 
@@ -1274,7 +1268,13 @@ export class Params extends ExpressionSyntax {
   }
 
   evaluate(frame: Frame): EvaluatedParams {
-    let references = this.params.map(param => param.evaluate(frame));
+    let { params, length } = this;
+    let references = new Array(length);
+
+    for (let i=0; i<length; i++) {
+      references[i] = params[i].evaluate(frame);
+    }
+
     return new EvaluatedParams(references);
   }
 
