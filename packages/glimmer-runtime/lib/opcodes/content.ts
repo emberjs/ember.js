@@ -25,7 +25,7 @@ abstract class UpdatingContentOpcode implements UpdatingOpcode {
 
 export class AppendOpcode extends ContentOpcode {
   evaluate(vm: VM<any>) {
-    let reference = vm.registers.args.params.nth(0);
+    let reference = vm.registers.operand;
     let value = reference.value();
     let node = vm.stack().appendText(value);
     vm.updateWith(new UpdateAppendOpcode(reference, value, node));
