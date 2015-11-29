@@ -17,7 +17,7 @@ interface VMOptions<T> {
 }
 
 interface Registers {
-  operand: ChainableReference;
+  operand: PathReference;
   args: EvaluatedArgs;
   condition: ChainableReference;
   iterator: ListIterator;
@@ -177,9 +177,6 @@ export class VM<T> {
   }
 
   execute(opcodes: OpSeq, initialize?: (vm: VM<any>) => void): RenderResult {
-    // console.group("execute");
-    // console.time("execute");
-
     let { elementStack, frameStack } = this;
     let renderResult;
 
@@ -190,25 +187,16 @@ export class VM<T> {
 
     if (initialize) initialize(this);
 
-    while (true) {
-      if (frameStack.isEmpty()) break;
-
+    while (!frameStack.isEmpty()) {
       let opcode = this.currentFrame.nextStatement();
-
 
       if (opcode === null) {
         this.popFrame();
-        // this.popScope();
         continue;
       }
 
-      // console.time(opcode.type);
-      this.evaluateOpcode(opcode);
-      // console.timeEnd(opcode.type);
+      opcode.evaluate(this);
     }
-
-    // console.timeEnd("execute");
-    // console.groupEnd();
 
     return new RenderResult(this.updatingOpcodeStack.pop(), elementStack.closeBlock(), this.env.getDOM(), this.currentScope.getSelf());
   }
@@ -251,7 +239,7 @@ export class UpdatingVM {
         continue;
       }
 
-      this.evaluateOpcode(opcode);
+      opcode.evaluate(this);
     }
   }
 
