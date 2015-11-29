@@ -63,18 +63,15 @@ export class ArgsOpcode extends VMOpcode {
 
 export class EnterOpcode extends VMOpcode {
   public type = "enter";
-
-  private begin: Opcode;
-  private end: Opcode;
+  private slice: ListSlice<Opcode>;
 
   constructor(begin: Opcode, end: Opcode) {
     super();
-    this.begin = begin;
-    this.end = end;
+    this.slice = new ListSlice(begin, end);
   }
 
   evaluate(vm: VM<any>) {
-    vm.enter(new ListSlice(this.begin, this.end));
+    vm.enter(this.slice);
   }
 }
 
