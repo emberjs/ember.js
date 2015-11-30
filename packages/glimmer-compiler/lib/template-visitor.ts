@@ -1,13 +1,14 @@
 var push = Array.prototype.push;
 
-function Frame() {
-  this.parentNode = null;
-  this.children = null;
-  this.childIndex = null;
-  this.childCount = null;
-  this.childTemplateCount = 0;
-  this.mustacheCount = 0;
-  this.actions = [];
+class Frame {
+  public parentNode: Object = null;
+  public children: Object = null;
+  public childIndex: number = null;
+  public childCount: number = null;
+  public childTemplateCount: number = 0;
+  public mustacheCount: number = 0;
+  public actions: any[] = [];
+  public blankChildTextNodes: number[] = null;
 }
 
 /**
