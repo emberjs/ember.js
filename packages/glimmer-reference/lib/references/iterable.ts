@@ -55,7 +55,6 @@ export class ListManager {
       };
     }
 
-
     return new ListIterator({ array: array.value(), keyFor, target, map, list });
   }
 
@@ -74,6 +73,7 @@ interface IteratorOptions {
 }
 
 enum Phase {
+  FirstAppend,
   Append,
   Prune,
   Done
@@ -99,6 +99,12 @@ export class ListIterator {
     this.map = map;
     this.list = list;
 
+    if (list.isEmpty()) {
+      this.phase = Phase.FirstAppend;
+    } else {
+      this.phase = Phase.Append;
+    }
+
     this.listPosition = list.head();
   }
 
@@ -119,8 +125,9 @@ export class ListIterator {
     while (true) {
       let handled = false;
       switch (this.phase) {
+        case Phase.FirstAppend: handled = this.nextInitialAppend(); break;
         case Phase.Append: handled = this.nextAppend(); break;
-        case Phase.Prune: handled = this.nextPrune(); break;
+        case Phase.Prune: this.nextPrune(); break;
         case Phase.Done: this.nextDone(); return true;
       }
 
@@ -128,12 +135,26 @@ export class ListIterator {
     }
   }
 
-  private nextAppend(): boolean {
-    let { keyFor, array, listPosition, list, map, candidates, target } = this;
+  private nextInitialAppend(): boolean {
+    let { array, arrayPosition } = this;
 
-    if (array.length <= this.arrayPosition) {
-      this.phase = Phase.Prune;
-      this.listPosition = list.head();
+    if (array.length <= arrayPosition) {
+      this.startPrune();
+      return;
+    } else {
+      let { keyFor, listPosition, map } = this;
+      let item = array[this.arrayPosition++];
+      let key = keyFor(item, arrayPosition);
+      this.nextInsert(map, listPosition, key, item);
+      return true;
+    }
+  }
+
+  private nextAppend(): boolean {
+    let { keyFor, array, listPosition, arrayPosition, map } = this;
+
+    if (array.length <= arrayPosition) {
+      this.startPrune();
       return;
     }
 
@@ -141,36 +162,55 @@ export class ListIterator {
 
     if (item === null || item === undefined) return this.nextAppend();
 
-    let key = keyFor(item, this.arrayPosition - 1);
+    let key = keyFor(item, arrayPosition);
 
     if (listPosition && listPosition.key === key) {
-      listPosition.handle(item);
-      this.listPosition = list.nextNode(listPosition);
-      target.retain(key, item);
-      return
+      this.nextRetain(listPosition, key, item);
+      return false;
     } else if (map[<string>key]) {
-      let found = map[<string>key];
-      found.handle(item);
-
-      if (candidates[<string>key]) {
-        list.remove(found);
-        list.insertBefore(found, listPosition);
-        target.move(found.key, found.value, listPosition ? listPosition.key : null);
-      } else {
-        this.advanceToKey(key);
-      }
-
-      return;
+      this.nextMove(map, listPosition, key, item);
+      return false;
     } else {
-      let reference = new UpdatableReference(item);
-      let node = map[<string>key] = new ListItem(reference, key);
-      list.append(node);
-      target.insert(node.key, node.value, listPosition ? listPosition.key : null);
+      this.nextInsert(map, listPosition, key, item);
       return true;
     }
   }
 
-  private nextPrune(): boolean {
+  private nextRetain(current: ListItem, key: InternedString, item: any) {
+    current.handle(item);
+    this.listPosition = this.list.nextNode(current);
+    this.target.retain(key, item);
+  }
+
+  private nextMove(map: Dict<ListItem>, current: ListItem, key: InternedString, item: any) {
+    let { candidates, list, target } = this;
+    let found = map[<string>key];
+    found.handle(item);
+
+    if (candidates[<string>key]) {
+      list.remove(found);
+      list.insertBefore(found, current);
+      target.move(found.key, found.value, current ? current.key : null);
+    } else {
+      this.advanceToKey(key);
+    }
+  }
+
+  private nextInsert(map: Dict<ListItem>, current: ListItem, key: InternedString, item: any) {
+    let { list, target } = this;
+
+    let reference = new UpdatableReference(item);
+    let node = map[<string>key] = new ListItem(reference, key);
+    list.append(node);
+    target.insert(node.key, node.value, current ? current.key : null);
+  }
+
+  private startPrune() {
+    this.phase = Phase.Prune;
+    this.listPosition = this.list.head();
+  }
+
+  private nextPrune() {
     let { list, target } = this;
 
     if (this.listPosition === null) {
