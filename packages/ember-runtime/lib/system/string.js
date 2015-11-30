@@ -324,7 +324,7 @@ export default {
     'action_name'.capitalize()       // 'Action_name'
     'css-class-name'.capitalize()    // 'Css-class-name'
     'my favorite items'.capitalize() // 'My favorite items'
-    'privateDocs/ownerInvoice'.capitalize(); // 'PrivateDocs/OwnerInvoice'
+    'privateDocs/ownerInvoice'.capitalize(); // 'PrivateDocs/ownerInvoice'
     ```
 
     @method capitalize
