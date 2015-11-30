@@ -25,7 +25,7 @@ import Template, {
   ATTRIBUTE_SYNTAX
 } from './template'
 import { RenderResult } from './render';
-import { InternedString, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'glimmer-util';
+import { InternedString, Stack, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'glimmer-util';
 import {
   ListDelegate,
   RootReference,
@@ -78,7 +78,7 @@ export class ClassList extends PushPullReference {
 
   append(reference: ChainableReference) {
     this.list.push(reference);
-    this._addSource(reference);
+    // this._addSource(reference);
   }
 
   value(): string {
@@ -107,14 +107,13 @@ export class ElementStack {
   public nextSibling: Node;
   public dom: DOMHelper;
   public element: Element;
+  public classList: ClassList = null;
 
-  private elementStack: Element[];
-  private nextSiblingStack: Node[];
+  private elementStack = new Stack<Element>();
+  private nextSiblingStack = new Stack<Node>();
   private morphs: Morph[];
-  private classListStack: ClassList[] = [];
-  private classList: ClassList = undefined;
-  private blockStack: Tracker[];
-  public blockElement: Tracker;
+  private classListStack = new Stack<ClassList>();
+  private blockStack = new Stack<Tracker>();
 
   constructor({ dom, parentNode, nextSibling }: ElementStackOptions) {
     this.dom = dom;
@@ -122,11 +121,12 @@ export class ElementStack {
     this.nextSibling = nextSibling;
     if (nextSibling && !(nextSibling instanceof Node)) throw new Error("NOPE");
 
-    this.elementStack = [this.element];
-    this.nextSiblingStack = [this.nextSibling];
+    this.elementStack.push(this.element);
+    this.nextSiblingStack.push(this.nextSibling);
+  }
 
-    this.blockStack = [];
-    this.blockElement = null;
+  block(): Tracker {
+    return this.blockStack.current;
   }
 
   private pushElement(element) {
@@ -145,9 +145,9 @@ export class ElementStack {
     nextSiblingStack.pop();
     classListStack.pop();
 
-    this.element = elementStack[elementStack.length - 1];
-    this.nextSibling = nextSiblingStack[nextSiblingStack.length - 1];
-    this.classList = classListStack[classListStack.length - 1];
+    this.element = elementStack.current;
+    this.nextSibling = nextSiblingStack.current;
+    this.classList = classListStack.current;
 
     return topElement;
   }
@@ -155,33 +155,29 @@ export class ElementStack {
   private pushBlock() {
     let tracker = new BlockTracker(this.element);
 
-    if (this.blockElement) this.blockElement.newBounds(tracker);
+    if (this.blockStack.current !== null) this.blockStack.current.newBounds(tracker);
 
     this.blockStack.push(tracker);
-    this.blockElement = tracker;
   }
 
   private pushBlockList(list: LinkedList<Bounds & LinkedListNode>) {
     let tracker = new BlockListTracker(this.element, list);
 
-    if (this.blockElement) this.blockElement.newBounds(tracker);
+    if (this.blockStack.current !== null) this.blockStack.current.newBounds(tracker);
 
     this.blockStack.push(tracker);
-    this.blockElement = tracker;
   }
 
   private popBlock(): Bounds {
-    this.blockElement.finalize(this);
+    this.blockStack.current.finalize(this);
 
-    let bounds = this.blockStack.pop();
-    this.blockElement = this.blockStack[this.blockStack.length - 1];
-    return bounds;
+    return this.blockStack.pop();
   }
 
   openElement(tag: string): Element {
     let element = this.dom.createElement(tag, this.element);
     this.pushElement(element);
-    this.blockElement.openElement(element);
+    this.blockStack.current.openElement(element);
     return element;
   }
 
@@ -203,13 +199,13 @@ export class ElementStack {
   }
 
   newBounds(bounds: Bounds) {
-    this.blockElement.newBounds(bounds);
+    this.blockStack.current.newBounds(bounds);
   }
   appendText(string: string): Text {
     let { dom } = this;
     let text = dom.createTextNode(string);
     dom.insertBefore(this.element, text, this.nextSibling);
-    this.blockElement.newNode(text);
+    this.blockStack.current.newNode(text);
     return text;
   }
 
@@ -217,7 +213,7 @@ export class ElementStack {
     let { dom } = this;
     let comment = dom.createComment(string);
     dom.insertBefore(this.element, comment, this.nextSibling);
-    this.blockElement.newNode(comment);
+    this.blockStack.current.newNode(comment);
     return comment;
   }
 
@@ -227,7 +223,7 @@ export class ElementStack {
     }
 
     let bounds = this.dom.insertHTMLBefore(<HTMLElement & Element>this.element, nextSibling, html);
-    this.blockElement.newBounds(bounds);
+    this.blockStack.current.newBounds(bounds);
     return bounds;
   }
 
@@ -241,9 +237,9 @@ export class ElementStack {
 
   addClass(ref: ChainableReference) {
     let classList = this.classList;
-    if (!classList) {
+    if (classList === null) {
       classList = this.classList = new ClassList();
-      this.classListStack[this.classListStack.length - 1] = classList;
+      this.classListStack.push(classList);
     }
 
     classList.append(ref);
@@ -251,7 +247,7 @@ export class ElementStack {
 
   closeElement(): { element: Element, classList: ClassList, classNames: string } {
     let { classList } = this;
-    this.blockElement.closeElement();
+    this.blockStack.current.closeElement();
     let child = this.popElement();
     this.dom.insertBefore(this.element, child, this.nextSibling);
 

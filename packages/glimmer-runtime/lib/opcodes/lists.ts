@@ -5,7 +5,7 @@ import { ElementStack } from '../builder';
 import { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args, RawTemplate } from '../template';
 import { Frame } from '../environment';
 import { Bounds } from '../morph';
-import { LITERAL, InternedString, Dict, ListSlice, dict, assert } from 'glimmer-util';
+import { LITERAL, InternedString, Dict, ListSlice, Slice, dict, assert } from 'glimmer-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
 import { clear, move } from '../morph';
 
@@ -61,17 +61,15 @@ export class ExitListOpcode extends ListOpcode {
 export class EnterWithKeyOpcode extends ListOpcode {
   public type = "enter-with-key";
 
-  private begin: Opcode;
-  private end: Opcode;
+  private slice: Slice<Opcode>;
 
   constructor(begin: Opcode, end: Opcode) {
     super();
-    this.begin = begin;
-    this.end = end;
+    this.slice = new ListSlice(begin, end);
   }
 
   evaluate(vm: VM<any>) {
-    vm.enterWithKey(vm.registers.key, new ListSlice(this.begin, this.end));
+    vm.enterWithKey(vm.registers.key, this.slice);
   }
 }
 

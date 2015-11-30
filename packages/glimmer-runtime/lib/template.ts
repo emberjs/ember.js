@@ -1269,6 +1269,11 @@ export class Params extends ExpressionSyntax {
 
   evaluate(frame: Frame): EvaluatedParams {
     let { params, length } = this;
+
+    if (length === 0) {
+      return <EvaluatedParams>EMPTY_PARAMS;
+    }
+
     let references = new Array(length);
 
     for (let i=0; i<length; i++) {
@@ -1296,7 +1301,7 @@ export class EvaluatedParams extends PushPullReference implements PathReference 
 
   constructor(params: PathReference[]) {
     super();
-    params.forEach(p => this._addSource(p));
+    // params.forEach(p => this._addSource(p));
     this.references = params;
   }
 
