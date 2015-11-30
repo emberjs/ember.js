@@ -23,6 +23,7 @@
     <button id='run-with-components'>With Components</button>
     <button id='run-bare'>Bare Template</button>
     <button id='run-single'>Single Component</button>
+    <button id='run-single-bare'>Single Bare</button>
     <pre id='cycle'>Idle</pre>
     <pre id='benchmark-log'></pre>
 
@@ -36,6 +37,14 @@
 
       var singleComponent = document.getElementById('run-single');
       singleComponent.addEventListener('click', function() { runBenchmark('single-component') });
+
+      var singleBare = document.getElementById('run-single-bare');
+      singleBare.addEventListener('click', function() {
+        console.time('single-bare');
+        benchmarks.bare.setup.call({ name: 'bare' });
+        benchmarks.bare.fn();
+        console.timeEnd('single-bare');
+      });
 
       var logPre = document.getElementById('benchmark-log');
       function log(message) { logPre.innerHTML += message; }
