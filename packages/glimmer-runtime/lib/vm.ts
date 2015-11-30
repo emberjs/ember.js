@@ -1,7 +1,7 @@
 import { Scope, Environment, Frame } from './environment';
 import { Bounds } from './morph';
 import { ElementStack } from './builder';
-import { LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'glimmer-util';
+import { Stack, LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'glimmer-util';
 import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
 import Template, { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
 import { StatementSyntax, ExpressionSyntax, Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
@@ -24,37 +24,15 @@ interface Registers {
   key: InternedString;
 }
 
-class Stack<T> {
-  private stack: T[] = [];
-  public current: T = null;
-
-  push(item: T) {
-    this.current = item;
-    this.stack.push(item);
-  }
-
-  pop(): T {
-    let item = this.stack.pop();
-    this.current = this.stack[this.stack.length-1];
-    return item;
-  }
-
-  isEmpty(): boolean {
-    return this.stack.length === 0;
-  }
-}
-
 export class VM<T> {
   public env: Environment<T>;
-  private frameStack = new LinkedList<VMFrame<T>>();
-  public currentFrame: VMFrame<T> = null;
-  private currentScope: Scope<T>;
-  private scopeStack: Scope<T>[] = [];
+  private frameStack = new Stack<VMFrame<T>>();
+  private scopeStack = new Stack<Scope<T>>();
   private elementStack: ElementStack;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
 
-  public registers: Registers;
+  public registers: Registers = null;
 
   static initial(env: Environment<any>, { self, localNames, blockArguments, hostOptions, elementStack }: VMOptions<any>) {
     let scope = env.createRootScope().init({ self, localNames, blockArguments, hostOptions });
@@ -63,12 +41,12 @@ export class VM<T> {
 
   constructor(env: Environment<T>, scope: Scope<any>, elementStack: ElementStack) {
     this.env = env;
-    this.pushScope(scope);
     this.elementStack = elementStack;
+    this.pushScope(scope);
   }
 
   goto(opcode: Opcode) {
-    this.currentFrame.goto(opcode);
+    this.frameStack.current.goto(opcode);
   }
 
   enter(ops: OpSeq) {
@@ -128,28 +106,30 @@ export class VM<T> {
   }
 
   scope(): Scope<T> {
-    return this.currentScope;
+    return this.scopeStack.current;
   }
 
   dupScope() {
-    return this.pushScope(this.currentScope);
+    return this.pushScope(this.scope());
   }
 
   pushFrame(ops: OpSeq) {
-    this.frameStack.append(new VMFrame(this, ops));
+    this.frameStack.push(new VMFrame(this, ops));
   }
 
   popFrame() {
-    this.frameStack.pop();
-    let currentFrame = this.currentFrame = this.frameStack.tail();
+    let { frameStack } = this;
 
-    if (!currentFrame) return;
+    frameStack.pop();
+    let current = frameStack.current;
 
-    this.registers = this.currentFrame.registers;
+    if (current === null) return;
+
+    this.registers = current.registers;
   }
 
   pushChildScope({ self, localNames, blockArguments, blockArgumentReferences }: { self?: any, localNames: InternedString[], blockArguments?: any[], blockArgumentReferences?: PathReference[] }): Scope<T> {
-    let scope = this.currentScope.child(localNames);
+    let scope = this.scope().child(localNames);
 
     if (localNames && localNames.length) {
       if (blockArguments) scope.bindLocals(blockArguments);
@@ -165,30 +145,27 @@ export class VM<T> {
 
   pushScope(scope: Scope<T>): Scope<T> {
     this.scopeStack.push(scope);
-    this.currentScope = scope;
     return scope;
   }
 
   popScope(): Scope<T> {
-    let scope = this.currentScope;
-    this.scopeStack.pop();
-    this.currentScope = this.scopeStack[this.scopeStack.length - 1];
-    return scope;
+    return this.scopeStack.pop();
   }
 
   execute(opcodes: OpSeq, initialize?: (vm: VM<any>) => void): RenderResult {
-    let { elementStack, frameStack } = this;
+    let { elementStack, frameStack, updatingOpcodeStack, env } = this;
+    let self = this.scope().getSelf();
     let renderResult;
 
     elementStack.openBlock();
 
-    this.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
-    this.frameStack.append(new VMFrame(this, opcodes));
+    updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+    frameStack.push(new VMFrame(this, opcodes));
 
     if (initialize) initialize(this);
 
     while (!frameStack.isEmpty()) {
-      let opcode = this.currentFrame.nextStatement();
+      let opcode = frameStack.current.nextStatement();
 
       if (opcode === null) {
         this.popFrame();
@@ -198,7 +175,7 @@ export class VM<T> {
       opcode.evaluate(this);
     }
 
-    return new RenderResult(this.updatingOpcodeStack.pop(), elementStack.closeBlock(), this.env.getDOM(), this.currentScope.getSelf());
+    return new RenderResult(updatingOpcodeStack.pop(), elementStack.closeBlock(), env.getDOM(), self);
   }
 
   evaluateOpcode(opcode: Opcode) {
@@ -207,11 +184,11 @@ export class VM<T> {
 
   invoke(template: Template, morph: ReturnHandler) {
     this.elementStack.openBlock();
-    this.frameStack.append(new VMFrame(this, template.raw.opcodes(this.env)));
+    this.frameStack.push(new VMFrame(this, template.raw.opcodes(this.env)));
   }
 
   evaluateArgs(args: Args) {
-    let evaledArgs = this.registers.args = args.evaluate(new Frame(this.env, this.currentScope));
+    let evaledArgs = this.registers.args = args.evaluate(new Frame(this.env, this.scope()));
     this.registers.operand = evaledArgs.params.nth(0);
   }
 }
@@ -282,7 +259,7 @@ abstract class BlockOpcode implements UpdatingOpcode, Bounds {
     this.updating = updating;
     this.env = vm.env;
     this.scope = vm.scope();
-    this.bounds = vm.stack().blockElement;
+    this.bounds = vm.stack().block();
   }
 
   parentElement() {
@@ -338,8 +315,6 @@ class ListRevalidationDelegate implements ListDelegate {
     this.map = map;
     this.updating = updating;
   }
-
-
 
   insert(key: InternedString, item: RootReference, before: InternedString) {
     let { map, opcode, updating } = this;
@@ -547,7 +522,6 @@ export class VMFrame<T> implements LinkedListNode {
     this.ops = ops;
     this.current = ops.head();
 
-    vm.currentFrame = this;
     vm.registers = this.registers;
   }
 

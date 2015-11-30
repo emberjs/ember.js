@@ -40,26 +40,19 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   }
 
   head(): T {
-    let front = this._head.next;
-    if (front === this._tail) return null;
-    return <trust>front;
+    return this._head;
   }
 
   tail(): T {
-    let back = this._tail.prev;
-    if (back === this._head) return null;
-    return <trust>back;
+    return this._tail;
   }
 
   clear() {
-    let head = this._head = <T>new SentinelNode();
-    let tail = this._tail = <T>new SentinelNode();
-    head.next = tail;
-    tail.prev = head;
+    this._head = this._tail = null;
   }
 
   isEmpty(): boolean {
-    return this._head.next === this._tail;
+    return this._head === null;
   }
 
   toArray(): T[] {
@@ -68,7 +61,7 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     return out;
   }
 
-  splice(start: LinkedListNode, end: LinkedListNode, reference: LinkedListNode) {
+  splice(start: T, end: T, reference: T) {
     reference = reference || this._tail;
 
     let before = reference.prev;
@@ -80,60 +73,71 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     end.next = reference;
   }
 
-  spliceList(list: LinkedList<T>, reference: LinkedListNode) {
+  spliceList(list: LinkedList<T>, reference: T) {
     this.splice(list.head(), list.tail(), reference);
   }
 
   nextNode(node: T): T {
-    let next = node.next;
-    if (next === this._tail) return null;
-    return <trust>next;
+    return <trust>node.next;
   }
 
   prevNode(node: T): T {
-    let prev = node.prev;
-    if (prev === this._head) return null;
-    return <trust>prev;
+    return <trust>node.prev;
   }
 
   forEachNode(callback: (node: T) => void) {
-    let node = this._head.next;
+    let node = this._head;
 
-    while (node !== this._tail) {
+    while (node !== null) {
       callback(<trust>node);
-      node = node.next;
+      node = <trust>node.next;
     }
   }
 
-  insertBefore(node: T, reference: LinkedListNode = null): T {
-    if (reference === null) reference = this._tail;
+  insertBefore(node: T, reference: T = null): T {
+    if (reference === null) return this.append(node);
 
-    reference.prev.next = node;
+    if (reference.prev) reference.prev.next = node;
+    else this._head = node;
+
     node.prev = reference.prev;
     node.next = reference;
     reference.prev = node;
+
     return node;
   }
 
   append(node: T): T {
-    this.insertBefore(node, this._tail);
-    return node;
+    let tail = this._tail;
+
+    if (tail) {
+      tail.next = node;
+      node.prev = tail;
+      node.next = null;
+    } else {
+      this._head = node;
+    }
+
+    return (this._tail = node);
   }
 
   pop(): T {
-    let tail = this.tail();
-    if (tail) this.remove(tail);
-    return tail;
+    if (this._tail) return this.remove(this._tail);
+    return null;
   }
 
   prepend(node: T): T {
-    this.insertBefore(node, this._head.next);
-    return node;
+    if (this._head) return this.insertBefore(node, this._head);
+    return (this._head = this._tail = node);
   }
 
   remove(node: T): T {
-    node.prev.next = node.next;
-    node.next.prev = node.prev;
+    if (node.prev) node.prev.next = node.next;
+    else this._head = <trust>node.next;
+
+    if (node.next) node.next.prev = node.prev;
+    else this._tail = <trust>node.prev;
+
     return node;
   }
 }

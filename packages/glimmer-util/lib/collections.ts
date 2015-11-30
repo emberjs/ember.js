@@ -38,3 +38,25 @@ export class DictSet<T extends HasGuid> implements Set<T> {
     Object.keys(dict).forEach(key => callback(dict[key]));
   }
 }
+
+export class Stack<T> {
+  private stack: T[] = [];
+  public current: T = null;
+
+  push(item: T) {
+    this.current = item;
+    this.stack.push(item);
+  }
+
+  pop(): T {
+    let item = this.stack.pop();
+    let len = this.stack.length;
+    this.current = len === 0 ? null : this.stack[len - 1];
+
+    return item;
+  }
+
+  isEmpty(): boolean {
+    return this.stack.length === 0;
+  }
+}
