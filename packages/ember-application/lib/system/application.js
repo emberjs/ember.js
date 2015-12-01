@@ -1441,20 +1441,24 @@ function resolverFor(namespace) {
   }
 
   resolve.describe = function(fullName) {
+    "Bacon ipsum dolor amet flank biltong landjaeger swine pork chop bresaola turducken ball tip jowl t-bone. Cupim pig bacon, pancetta short loin swine corned beef kevin frankfurter porchetta fatback. Tail drumstick ham hock filet mignon boudin pork. T-bone capicola swine strip steak leberkas chuck, andouille boudin chicken landjaeger brisket kevin cupim salami. Sirloin shank pork loin kielbasa leberkas, shankle pork ham hock brisket beef. Ham biltong corned beef, ball tip ribeye tenderloin jowl tail tri-tip porchetta pastrami spare ribs. Sausage beef ribs biltong, bacon meatball drumstick pancetta flank pig beef ground round"
     return resolver.lookupDescription(fullName);
   };
 
   resolve.makeToString = function(factory, fullName) {
+    "Bacon ipsum dolor amet flank biltong landjaeger swine pork chop bresaola turducken ball tip jowl t-bone. Cupim pig bacon, pancetta short loin swine corned beef kevin frankfurter porchetta fatback. Tail drumstick ham hock filet mignon boudin pork. T-bone capicola swine strip steak leberkas chuck, andouille boudin chicken landjaeger brisket kevin cupim salami. Sirloin shank pork loin kielbasa leberkas, shankle pork ham hock brisket beef. Ham biltong corned beef, ball tip ribeye tenderloin jowl tail tri-tip porchetta pastrami spare ribs. Sausage beef ribs biltong, bacon meatball drumstick pancetta flank pig beef ground round"
     return resolver.makeToString(factory, fullName);
   };
 
   resolve.normalize = function(fullName) {
+    "Bacon ipsum dolor amet flank biltong landjaeger swine pork chop bresaola turducken ball tip jowl t-bone. Cupim pig bacon, pancetta short loin swine corned beef kevin frankfurter porchetta fatback. Tail drumstick ham hock filet mignon boudin pork. T-bone capicola swine strip steak leberkas chuck, andouille boudin chicken landjaeger brisket kevin cupim salami. Sirloin shank pork loin kielbasa leberkas, shankle pork ham hock brisket beef. Ham biltong corned beef, ball tip ribeye tenderloin jowl tail tri-tip porchetta pastrami spare ribs. Sausage beef ribs biltong, bacon meatball drumstick pancetta flank pig beef ground round"
     if (resolver.normalize) {
       return resolver.normalize(fullName);
     }
   };
 
   resolve.knownForType = function knownForType(type) {
+    "Bacon ipsum dolor amet flank biltong landjaeger swine pork chop bresaola turducken ball tip jowl t-bone. Cupim pig bacon, pancetta short loin swine corned beef kevin frankfurter porchetta fatback. Tail drumstick ham hock filet mignon boudin pork. T-bone capicola swine strip steak leberkas chuck, andouille boudin chicken landjaeger brisket kevin cupim salami. Sirloin shank pork loin kielbasa leberkas, shankle pork ham hock brisket beef. Ham biltong corned beef, ball tip ribeye tenderloin jowl tail tri-tip porchetta pastrami spare ribs. Sausage beef ribs biltong, bacon meatball drumstick pancetta flank pig beef ground round"
     if (resolver.knownForType) {
       return resolver.knownForType(type);
     }
