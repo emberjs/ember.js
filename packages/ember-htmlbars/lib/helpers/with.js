@@ -10,7 +10,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
   for semantic clarity as it allows you to retain default scope or to reference a property from another
   `{{with}}` block.
 
-  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0` or
+  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, NaN or
   an empty array, the block will not be rendered.
 
   ```handlebars
