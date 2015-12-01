@@ -97,8 +97,6 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     var registry = this.__registry__ = new Registry({
       fallback: applicationRegistry
     });
-    registry.normalizeFullName = applicationRegistry.normalizeFullName;
-    registry.makeToString = applicationRegistry.makeToString;
 
     // Create a per-instance container from the instance's registry
     this.__container__ = registry.container({ owner: this });
