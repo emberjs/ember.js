@@ -7,7 +7,15 @@ import { Morph } from './morph';
 import { VM, UpdatingVM } from './vm';
 import DOMHelper from './dom';
 
-export type PrettyPrintValue = PrettyPrint | PrettyPrint[] | string | string[];
+export type PrettyPrintValue = PrettyPrint | string | string[] | PrettyPrintValueArray | PrettyPrintValueDict;
+
+interface PrettyPrintValueArray extends Array<PrettyPrintValue> {
+
+}
+
+interface PrettyPrintValueDict extends Dict<PrettyPrintValue> {
+
+}
 
 export class PrettyPrint {
   type: string;

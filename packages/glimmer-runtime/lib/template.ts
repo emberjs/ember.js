@@ -5,6 +5,7 @@ import { VM } from './vm';
 import {
   Opcode,
   OpSeq,
+  OpSeqBuilder,
   StatementSyntax,
   ExpressionSyntax,
   PrettyPrint,
@@ -230,7 +231,7 @@ export class Block extends StatementSyntax {
     return new Block({
       path,
       args: ParamsAndHash.fromSpec(params, hash),
-      templates: Templates.fromSpec(templateId, inverseId, children)
+      templates: Templates.fromSpec(null, [templateId, inverseId, children])
     });
   }
 
@@ -322,13 +323,13 @@ export class Append extends StatementSyntax {
     return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: LinkedList<Opcode>) {
     ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
 
     if (this.trustingMorph) {
-      ops.append(new TrustingAppendOpcode(this));
+      ops.append(new TrustingAppendOpcode());
     } else {
-      ops.append(new AppendOpcode(this));
+      ops.append(new AppendOpcode());
     }
   }
 }
@@ -343,7 +344,7 @@ class HelperInvocationReference extends PushPullReference implements PathReferen
     this.args = this._addSource(args);
   }
 
-  get() {
+  get(): PathReference {
     throw new Error("Unimplemented: Yielding the result of a helper call.");
   }
 
@@ -429,7 +430,7 @@ export class DynamicProp extends AttributeSyntax {
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
     ops.append(new DynamicPropOpcode(this));
   }
@@ -476,7 +477,7 @@ export class StaticAttr extends AttributeSyntax {
     }
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new StaticAttrOpcode(this));
   }
 
@@ -529,7 +530,7 @@ export class DynamicAttr extends AttributeSyntax {
     }
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
     ops.append(new DynamicAttrOpcode(this));
   }
@@ -567,7 +568,7 @@ export class AddClass extends AttributeSyntax {
     return new PrettyPrint('attr', 'attr', ['class', this.value.prettyPrint()]);
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
     ops.append(new AddClassOpcode());
   }
@@ -592,7 +593,7 @@ export class CloseElement extends StatementSyntax {
     return new PrettyPrint('element', 'close-element');
   }
 
-  compile(seq: OpSeq) {
+  compile(seq: OpSeqBuilder) {
     seq.append(new CloseElementOpcode());
   }
 }
@@ -654,7 +655,7 @@ export class Comment extends StatementSyntax {
     return new PrettyPrint('append', 'append-comment', [this.value]);
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new CommentOpcode(this));
   }
 }
@@ -688,7 +689,7 @@ export class OpenElement extends StatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     ops.append(new OpenPrimitiveElementOpcode(this.tag));
   }
 
@@ -1008,12 +1009,12 @@ export class Concat extends ExpressionSyntax {
     return new PrettyPrint('expr', 'concat', this.parts.map(p => p.prettyPrint()));
   }
 
-  evaluate(frame: Frame): PushPullReference {
+  evaluate(frame: Frame): PathReference {
     return new ConcatReference(this, frame);
   }
 }
 
-class ConcatReference extends PushPullReference {
+class ConcatReference extends PushPullReference implements PathReference {
   private parts: ChainableReference[];
 
   constructor(concat: Concat, frame: Frame) {
@@ -1024,6 +1025,10 @@ class ConcatReference extends PushPullReference {
     concat.parts.forEach(part => {
       parts.push(this._addSource(part.evaluate(frame)));
     });
+  }
+
+  get(): PathReference {
+    return NULL_REFERENCE;
   }
 
   value() {
@@ -1383,12 +1388,12 @@ export class Hash extends ExpressionSyntax {
     this.map = map;
   }
 
-  prettyPrint(): Dict<PrettyPrintValue> {
+  prettyPrint() {
     let out = dict<PrettyPrintValue>();
     this.keys.forEach((key, i) => {
       out[<string>key] = this.values[i].prettyPrint();
     })
-    return out;
+    return JSON.stringify(out);
   }
 
   add(key: InternedString, value: ExpressionSyntax) {
@@ -1472,7 +1477,7 @@ export class EvaluatedHash extends PushPullReference implements PathReference {
 export class Templates extends ExpressionSyntax {
   public type = "templates";
 
-  static fromSpec(templateId, inverseId, children): Templates {
+  static fromSpec(_, [templateId, inverseId, children]): Templates {
     return new Templates({
       template: templateId === null ? null : children[templateId],
       inverse: inverseId === null ? null : children[inverseId],
@@ -1496,16 +1501,16 @@ export class Templates extends ExpressionSyntax {
     this.attributes = options.attributes;
   }
 
-  prettyPrint(): Dict<number> {
+  prettyPrint(): string {
     let { default: _default, inverse } = this;
 
-    return {
+    return JSON.stringify({
       default: _default && _default.position,
       inverse: inverse && inverse.position
-    }
+    });
   }
 
-  evaluate(frame: Frame): ChainableReference {
+  evaluate(frame: Frame): PathReference {
     throw new Error("unimplemented evaluate for ExpressionSyntax");
   }
 }

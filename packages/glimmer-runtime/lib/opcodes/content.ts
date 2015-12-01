@@ -54,10 +54,6 @@ export class UpdateAppendOpcode extends UpdatingContentOpcode {
 }
 
 export class TrustingAppendOpcode extends ContentOpcode {
-  constructor(append: Append) {
-    super();
-  }
-
   evaluate(vm: VM<any>) {
     let reference = vm.registers.args.params.nth(0);
     let value = reference.value();
