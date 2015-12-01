@@ -10,7 +10,7 @@ function assertHTMLMatches(assert, actualHTML, expectedHTML) {
 function handleError(assert) {
   return function(error) {
     assert.ok(false, error.stack);
-  }
+  };
 }
 
 // This is based on what fastboot-server does
@@ -133,6 +133,24 @@ if (appModule.canRunTests) {
     ]);
   });
 
+  QUnit.test('FastBoot: attributes are sanitized', function(assert) {
+    this.template('application', '<a href={{test}}></a>');
+
+    this.controller('application', {
+      /*jshint scripturl:true*/
+      test: 'javascript:alert("hello")'
+    });
+
+    var App = this.createApplication();
+
+    return RSVP.all([
+      fastbootVisit(App, '/').then(
+        assertFastbootResult(assert, { url: '/', body: '<a href="unsafe:javascript:alert\\(&quot;hello&quot;\\)"></a>' }),
+        handleError(assert)
+      )
+    ]);
+  });
+
   QUnit.test('FastBoot: route error', function(assert) {
     this.routes(function() {
       this.route('a');
@@ -159,7 +177,7 @@ if (appModule.canRunTests) {
     return RSVP.all([
       fastbootVisit(App, '/a').then(
         function(instance) {
-          assert.ok(false, 'It should not render')
+          assert.ok(false, 'It should not render');
           instance.destroy();
         },
         function(error) {
@@ -168,7 +186,7 @@ if (appModule.canRunTests) {
       ),
       fastbootVisit(App, '/b').then(
         function(instance) {
-          assert.ok(false, 'It should not render')
+          assert.ok(false, 'It should not render');
           instance.destroy();
         },
         function(error) {
@@ -203,7 +221,7 @@ if (appModule.canRunTests) {
         return this.network.fetch('/a');
       },
       afterModel: function() {
-        this.replaceWith('b')
+        this.replaceWith('b');
       }
     });
 
@@ -212,7 +230,7 @@ if (appModule.canRunTests) {
         return this.network.fetch('/b');
       },
       afterModel: function() {
-        this.replaceWith('c')
+        this.replaceWith('c');
       }
     });
 
@@ -227,7 +245,7 @@ if (appModule.canRunTests) {
         return this.network.fetch('/d');
       },
       afterModel: function() {
-        this.replaceWith('e')
+        this.replaceWith('e');
       }
     });
 
