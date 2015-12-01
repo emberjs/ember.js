@@ -2704,8 +2704,8 @@
       "resolved": "https://registry.npmjs.org/home-or-tmp/-/home-or-tmp-1.0.0.tgz"
     },
     "htmlbars": {
-      "version": "0.14.7",
-      "from": "htmlbars@0.14.7"
+      "version": "0.14.8",
+      "from": "htmlbars@0.14.8"
     },
     "htmlparser2": {
       "version": "3.8.3",
