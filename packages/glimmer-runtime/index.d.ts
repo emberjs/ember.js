@@ -43,8 +43,9 @@ export {
   TestOpcode,
   JumpOpcode,
   JumpIfOpcode,
-  JumpUnlessOpcode
+  JumpUnlessOpcode,
 } from './lib/opcodes/vm';
+
 export {
   EnterListOpcode,
   ExitListOpcode,
@@ -52,7 +53,7 @@ export {
   NextIterOpcode
 } from './lib/opcodes/lists';
 
-export { VM, UpdatingVM } from './lib/vm';
+export { VM, UpdatingVM, RenderResult } from './lib/vm';
 
 export {
   PushScopeOptions,
@@ -98,7 +99,5 @@ export {
 export { default as AppendingComponent } from './lib/component/appending';
 
 export { default as DOMHelper, isWhitespace } from './lib/dom';
-export { RenderResult, manualElement } from './lib/render';
 export { ElementStack } from './lib/builder';
-export { Morph, MorphSpecializer, ContentMorph, TemplateMorph, EmptyableMorph, Bounds, createMorph } from './lib/morph';
-export { MorphList, InnerBlockMorph, MorphListOptions } from './lib/morphs/list';
+export { Bounds } from './lib/morph';

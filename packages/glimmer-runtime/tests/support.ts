@@ -1,7 +1,6 @@
 import {
   ATTRIBUTE_SYNTAX,
   RenderResult,
-  InnerBlockMorph,
   Environment,
   DOMHelper,
   StatementSyntax,
@@ -12,12 +11,6 @@ import {
   EvaluatedParamsAndHash,
   ParamsAndHash,
   ElementStack,
-  Morph,
-  ContentMorph,
-  EmptyableMorph,
-  TemplateMorph,
-  MorphList,
-  MorphListOptions,
   Template,
   Templates,
   Append,
@@ -67,7 +60,6 @@ import {
   NextIterOpcode,
   builders,
   isWhitespace,
-  createMorph,
   appendComponent
 } from "glimmer-runtime";
 import { compile as rawCompile } from "glimmer-compiler";
@@ -580,16 +572,6 @@ class CurlyComponent extends StatementSyntax {
     this.inverse = inverse;
     return this;
   }
-
-  evaluate(stack: ElementStack, frame: Frame) {
-    let { path, args, templates } = this;
-    let tag = path[0];
-
-    let definition = frame.getComponentDefinition(path, this);
-    let hash = processPositionals(definition, args);
-
-    stack.openComponent(definition, { tag: DIV, frame, templates, hash: hash.evaluate(frame) });
-  }
 }
 
 function processPositionals(definition: ComponentDefinition, args: ParamsAndHash): Hash {
@@ -778,35 +760,6 @@ class IfSyntax extends StatementSyntax {
   }
 }
 
-interface IfOptions {
-  reference: ChainableReference;
-  templates: Templates;
-}
-
-class IfMorph extends TemplateMorph {
-  reference: ChainableReference;
-  templates: Templates;
-
-  init({ reference, templates }: IfOptions) {
-    this.reference = reference;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack, vm: VM<any>) {
-    let { reference, templates } = this;
-    let value = reference.value();
-    this.template = value ? templates.default : templates.inverse;
-    super.append(stack, vm);
-  }
-
-  update() {
-    let { reference, templates } = this;
-    let value = reference.value();
-    this.template = value ? templates.default : templates.inverse;
-    super.update();
-  }
-}
-
 class WithSyntax extends StatementSyntax {
   type = "with-statement";
 
@@ -828,7 +781,7 @@ class WithSyntax extends StatementSyntax {
     return `#with ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: OpSeqBuilder) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        Args
@@ -872,128 +825,6 @@ class WithSyntax extends StatementSyntax {
 
     ops.append(END);
     ops.append(new ExitOpcode());
-  }
-}
-
-interface WithOptions {
-  paths: ChainableReference;
-  templates: Templates;
-}
-
-class WithMorph extends TemplateMorph {
-  paths: ChainableReference;
-  templates: Templates;
-
-  init({ paths, templates }: WithOptions) {
-    this.paths = paths;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack, vm: VM<any>) {
-    let { paths, templates } = this;
-    let value = paths.value();
-    this.template = value ? templates.default : templates.inverse;
-
-    this.willAppend(stack);
-    this.appendTemplate(this.template, vm, paths);
-  }
-
-  update() {
-    let { paths, templates } = this;
-    let value = paths.value();
-    this.template = value ? templates.default : templates.inverse;
-    this.updateTemplate(this.template, paths);
-  }
-
-  protected setupScope(blockArguments: EvaluatedParams) {
-    let localNames = this.template.locals;
-    this.frame.childScope(localNames).bindLocalReferences(blockArguments.toArray());
-  }
-}
-
-class DynamicComponentSyntax extends StatementSyntax {
-  type = "dynamic-component";
-
-  public args: ParamsAndHash;
-  public key: InternedString;
-  public templates: Templates;
-  public isStatic = false;
-
-  constructor({ key, args, templates }: { key: InternedString, args: ParamsAndHash, templates: Templates }) {
-    super();
-    this.key = key;
-    this.args = args;
-    this.templates = templates;
-  }
-
-  clone(): DynamicComponentSyntax {
-    return new DynamicComponentSyntax(this);
-  }
-
-  prettyPrint() {
-
-  }
-
-  evaluate(stack: ElementStack, frame: Frame): DynamicComponentMorph {
-    let { args: _args, templates } = this;
-    let args = _args.evaluate(frame);
-
-    return stack.createContentMorph(DynamicComponentMorph, { args, templates, syntax: this }, frame);
-  }
-}
-
-class DynamicComponentMorph extends EmptyableMorph {
-  private path: ChainableReference;
-  private args: EvaluatedParamsAndHash;
-  private syntax: DynamicComponentSyntax;
-  private templates: Templates;
-  private lastTag: InternedString = null;
-  private inner: ContentMorph = null;
-
-  firstNode() {
-    return this.inner && this.inner.firstNode();
-  }
-
-  lastNode() {
-    return this.inner && this.inner.lastNode();
-  }
-
-  init({ args, syntax, templates }: { path: ChainableReference, args: EvaluatedParamsAndHash, syntax: DynamicComponentSyntax, templates: Templates }) {
-    this.path = args.params.nth(0);
-    this.args = args;
-    this.syntax = syntax;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack) {
-    let { frame, path, args: { params, hash }, syntax, templates } = this;
-    let layout = templates && templates.default;
-    let tag = this.lastTag = intern(path.value());
-
-    let definition = this.frame.getComponentDefinition([path.value()], syntax);
-    let appending = definition.begin(stack, { frame, templates, hash, tag })
-    let inner = this.inner = appending.process();
-
-    this.willAppend(stack);
-    inner.append(stack);
-    this.didInsertContent(inner);
-  }
-
-  update() {
-    let tag = this.path.value();
-
-    if (tag === this.lastTag) {
-      this.inner.update();
-    } else {
-      this.lastTag = tag;
-      let { frame, args: { hash }, syntax, templates } = this;
-
-      let definition = frame.getComponentDefinition([tag], syntax);
-      let stack = this.stackForContent();
-
-      let inner = this.inner = appendComponent(stack, definition, { frame, templates, hash, tag });
-      this.didInsertContent(inner);
-    }
   }
 }
 
