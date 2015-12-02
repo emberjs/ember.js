@@ -168,13 +168,32 @@ export interface Slice<T extends LinkedListNode> {
   isEmpty(): boolean;
 }
 
+interface CloneableListNode extends LinkedListNode {
+  clone(): this;
+}
+
 export class ListSlice<T extends LinkedListNode> implements Slice<T> {
+  static toList<U extends CloneableListNode>(slice: ListSlice<U>): LinkedList<U> {
+    let list = new LinkedList<U>();
+    slice.forEachNode(n => list.append(n.clone()));
+    return list;
+  }
+
   private _head: T;
   private _tail: T;
 
   constructor(head: T, tail: T) {
     this._head = head;
     this._tail = tail;
+  }
+
+  forEachNode(callback: (node: T) => void) {
+    let node = this._head;
+
+    while (node !== null) {
+      callback(node);
+      node = this.nextNode(node);
+    }
   }
 
   head(): T {

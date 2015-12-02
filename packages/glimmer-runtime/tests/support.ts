@@ -1,5 +1,6 @@
 import {
   ATTRIBUTE_SYNTAX,
+  Compiler,
   RenderResult,
   Environment,
   DOMHelper,
@@ -30,9 +31,7 @@ import {
   ComponentClass,
   ComponentDefinition,
   ComponentDefinitionOptions,
-  AppendingComponent,
-  AppendingComponentOptions,
-  AppendingComponentClass,
+  ComponentInvocation,
   ComponentHooks,
   Component,
   OpenBlock,
@@ -63,7 +62,7 @@ import {
   appendComponent
 } from "glimmer-runtime";
 import { compile as rawCompile } from "glimmer-compiler";
-import { LITERAL, LinkedList, Dict, InternedString, dict, assign, intern, symbol } from 'glimmer-util';
+import { LITERAL, Slice, LinkedList, Dict, InternedString, dict, assign, intern, symbol } from 'glimmer-util';
 
 import { Meta, ConstReference, ChainableReference, setProperty as set } from "glimmer-reference";
 
@@ -140,9 +139,7 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
     this.helpers[name] = helper;
   }
 
-  registerComponent(name: string, ComponentClass: ComponentClass, layout: string, AppendingComponent: AppendingComponentClass) {
-    let testHooks = new HookIntrospection(hooks);
-    let definition = new ComponentDefinition(testHooks, ComponentClass, compile(layout), AppendingComponent);
+  registerComponent(name: string, definition: ComponentDefinition) {
     this.components[name] = definition;
     return definition;
   }
@@ -156,7 +153,9 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
   }
 
   registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
-    return this.registerComponent(name, Component, layout, GlimmerAppendingComponent);
+    let testHooks = new HookIntrospection(hooks);
+    let definition = new GlimmerComponentDefinition(testHooks, Component, compile(layout), GlimmerComponentInvocation);
+    return this.registerComponent(name, definition);
   }
 
   registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
@@ -250,8 +249,8 @@ export class TestEnvironment extends Environment<TestScopeOptions> {
     return this.helpers[helperName];
   }
 
-  getComponentDefinition(scope, name: string[], syntax: StatementSyntax): ComponentDefinition {
-    return this.components[name[0]];
+  getComponentDefinition(name: InternedString[], syntax: StatementSyntax): ComponentDefinition {
+    return this.components[<string>name[0]];
   }
 }
 
@@ -324,29 +323,6 @@ export class HookIntrospection implements ComponentHooks {
   private initialize(name: string) {
     return (this.hooks[name] = this.hooks[name] || []);
   }
-}
-
-abstract class TestAppendingComponent extends AppendingComponent {
-  protected setupLayoutScope(scope: Scope<TestScopeOptions>, component: Component) {
-    super.setupLayoutScope(scope, component);
-    scope.bindHostOptions({ component });
-
-    let template = this.templates && this.templates.default;
-
-    if (this.templateIsPresent(template)) {
-      scope.bindLocal(LITERAL('hasBlock'), true);
-
-      if (template.arity > 0) scope.bindLocal(LITERAL('hasBlockParams'), true);
-    }
-  }
-
-  protected augmentBlockScope(blockScope: Scope<TestScopeOptions>, parentScope: Scope<TestScopeOptions>, component: Component) {
-    blockScope.bindHostOptions({ component });
-  }
-
-  abstract update(component: Component, hash: EvaluatedHash);
-  protected abstract createComponent(attrs: Dict<any>, parentScope: Scope<any>): Component;
-  protected abstract templateIsPresent(template: Template): boolean;
 }
 
 interface TemplateWithAttrsOptions {
@@ -425,120 +401,19 @@ function templateWithAttrs(template: Template, { defaults, outers, identity }: T
   return Template.fromList(out);
 }
 
-class CurlyAppendingComponent extends TestAppendingComponent {
-  protected templates: Templates;
-  protected hash: EvaluatedHash;
-
-  constructor({ hooks, ComponentClass, layout, stack }: AppendingComponentOptions) {
-    let b = builders;
-
-    super({ hooks, ComponentClass, layout, stack });
-
-    let statements = this.layout.statements;
-    statements.prepend(b.openPrimitiveElement('div'));
-    statements.append(b.closeElement());
-  }
-
-  protected createComponent(attrs: Dict<any>, parentScope: Scope<TestScopeOptions>) {
-    let parentComponent = parentScope.getHostOptions().component;
-    let options = assign({ parentView: parentComponent, attrs }, attrs);
-    return new this.ComponentClass(options);
-  }
-
-  protected layoutWithAttrs() {
-    return this.layout;
-  }
-
-  protected templateIsPresent(template: Template): boolean {
-    return !!template;
-  }
-
-  update(component: Component, hash: EvaluatedHash) {
-    let attrs = hash.value();
-
-    for (let prop in attrs) {
-      set(component, prop, attrs[prop]);
-    }
-
-    set(component, 'attrs', attrs);
+class GlimmerComponentDefinition extends ComponentDefinition {
+  compile(attributes: Slice<AttributeSyntax>, templates: Templates): GlimmerComponentInvocation {
+    return new GlimmerComponentInvocation(templates, this.layout);
   }
 }
 
-let uuid = 1;
+class GlimmerComponentInvocation implements ComponentInvocation {
+  public templates: Templates;
+  public layout: Template;
 
-class CurlyEmberishAppendingComponent extends CurlyAppendingComponent {
-  begin(stack: ElementStack, options: ComponentDefinitionOptions) {
-    super.begin(stack, options);
-
-    let b = builders;
-
-    let hashRole = this.hash.at(LITERAL('ariaRole'));
-    let hashId = this.hash.at(LITERAL('id'));
-    let hashClass = this.hash.at(LITERAL('class'));
-
-    let defaults: AttributeSyntax[] = [ b.addClass(b.value('ember-view')) ];
-
-    if (hashId) {
-      defaults.push(b.dynamicAttr('id', new EvaluatedRef({ ref: hashId })));
-    } else {
-      defaults.push(b.staticAttr('id', `ember${uuid++}`));
-    }
-
-    if (hashClass) {
-      defaults.push(b.addClass(new EvaluatedRef({ ref: hashClass })));
-    }
-
-    if (hashRole) {
-      defaults.push(b.dynamicAttr('role', new EvaluatedRef({ ref: hashRole })));
-    }
-
-    this.layout = templateWithAttrs(this.layout, { defaults });
-  }
-}
-
-class GlimmerAppendingComponent extends TestAppendingComponent {
-  protected attributes: Template = null;
-
-  begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions) {
-    this.attributes = templates && templates.attributes;
-    super.begin(stack, { frame, templates, hash, tag });
-  }
-
-  protected createComponent(attrs: Dict<any>, parentScope: Scope<TestScopeOptions>): Component {
-    let parentComponent = parentScope.getHostOptions().component;
-    return new this.ComponentClass({ attrs, parentView: parentComponent });
-  }
-
-  protected layoutWithAttrs(invokeFrame: Frame) {
-    let attrSyntax = this.attributes && <LinkedList<AttributeSyntax>>this.attributes.statements;
-    let outers = attrSyntax && attrSyntax.toArray().map(s => s.asEvaluated(invokeFrame));
-    let identity = this.tag;
-
-    return templateWithAttrs(this.layout, { identity, outers });
-  }
-
-  protected templateIsPresent(template: Template): boolean {
-    return template && !template.isEmpty;
-  }
-
-  update(component: Component, hash: EvaluatedHash) {
-    set(component, 'attrs', hash.value());
-  }
-}
-
-class GlimmerEmberishAppendingComponent extends GlimmerAppendingComponent {
-  begin(stack: ElementStack, options: ComponentDefinitionOptions) {
-    super.begin(stack, options);
-
-    let b = builders;
-
-    let hashClass = this.hash.at(LITERAL('class'));
-
-    let defaults: AttributeSyntax[] = [ b.addClass(b.value('ember-view')) ];
-
-    defaults.push(b.dynamicAttr('id', b.value(`ember${uuid++}`)));
-
-    this.layout = templateWithAttrs(this.layout, { defaults });
+  constructor(templates: Templates, layout: Template) {
+    this.templates = templates;
+    this.layout = layout;
   }
 }
 
@@ -629,7 +504,7 @@ class EachSyntax extends StatementSyntax {
     return `#each ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeqBuilder) {
+  compile(compiler: Compiler) {
     //        Args
     //        EnterList(BEGIN, END)
     // ITER:  Noop
@@ -652,20 +527,20 @@ class EachSyntax extends StatementSyntax {
     let BREAK = new NoopOpcode("BREAK");
     let END = new NoopOpcode("END");
 
-    ops.append(new ArgsOpcode(this.args));
-    ops.append(new EnterListOpcode(BEGIN, END));
-    ops.append(ITER);
-    ops.append(new NextIterOpcode(BREAK));
-    ops.append(new EnterWithKeyOpcode(BEGIN, END));
-    ops.append(BEGIN);
-    ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
-    ops.append(new EvaluateOpcode(this.templates.default.raw));
-    ops.append(new PopScopeOpcode());
-    ops.append(END);
-    ops.append(new ExitOpcode());
-    ops.append(new JumpOpcode(ITER));
-    ops.append(BREAK);
-    ops.append(new ExitListOpcode());
+    compiler.append(new ArgsOpcode(this.args));
+    compiler.append(new EnterListOpcode(BEGIN, END));
+    compiler.append(ITER);
+    compiler.append(new NextIterOpcode(BREAK));
+    compiler.append(new EnterWithKeyOpcode(BEGIN, END));
+    compiler.append(BEGIN);
+    compiler.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+    compiler.append(new PopScopeOpcode());
+    compiler.append(END);
+    compiler.append(new ExitOpcode());
+    compiler.append(new JumpOpcode(ITER));
+    compiler.append(BREAK);
+    compiler.append(new ExitListOpcode());
   }
 }
 
@@ -681,8 +556,8 @@ class IdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new EvaluateOpcode(this.templates.default.raw));
+  compile(compiler: Compiler) {
+    compiler.append(new EvaluateOpcode(this.templates.default.raw));
   }
 }
 
@@ -698,8 +573,8 @@ class RenderInverseIdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+  compile(compiler: Compiler) {
+    compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
   }
 }
 
@@ -720,7 +595,7 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeqBuilder) {
+  compile(compiler: Compiler) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        Args
@@ -739,24 +614,24 @@ class IfSyntax extends StatementSyntax {
     let ELSE = new NoopOpcode("ELSE");
     let END = new NoopOpcode("END");
 
-    ops.append(new EnterOpcode(BEGIN, END));
-    ops.append(BEGIN);
-    ops.append(new ArgsOpcode(this.args));
-    ops.append(new TestOpcode());
+    compiler.append(new EnterOpcode(BEGIN, END));
+    compiler.append(BEGIN);
+    compiler.append(new ArgsOpcode(this.args));
+    compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
-      ops.append(new JumpUnlessOpcode(ELSE));
-      ops.append(new EvaluateOpcode(this.templates.default.raw));
-      ops.append(new JumpOpcode(END));
-      ops.append(ELSE);
-      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+      compiler.append(new JumpUnlessOpcode(ELSE));
+      compiler.append(new EvaluateOpcode(this.templates.default.raw));
+      compiler.append(new JumpOpcode(END));
+      compiler.append(ELSE);
+      compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
     } else {
-      ops.append(new JumpUnlessOpcode(END));
-      ops.append(new EvaluateOpcode(this.templates.default.raw));
+      compiler.append(new JumpUnlessOpcode(END));
+      compiler.append(new EvaluateOpcode(this.templates.default.raw));
     }
 
-    ops.append(END);
-    ops.append(new ExitOpcode());
+    compiler.append(END);
+    compiler.append(new ExitOpcode());
   }
 }
 
@@ -781,7 +656,7 @@ class WithSyntax extends StatementSyntax {
     return `#with ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeqBuilder) {
+  compile(compiler: Compiler) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        Args
@@ -802,29 +677,29 @@ class WithSyntax extends StatementSyntax {
     let ELSE = new NoopOpcode("ELSE");
     let END = new NoopOpcode("END");
 
-    ops.append(new EnterOpcode(BEGIN, END));
-    ops.append(BEGIN);
-    ops.append(new ArgsOpcode(this.args));
-    ops.append(new TestOpcode());
+    compiler.append(new EnterOpcode(BEGIN, END));
+    compiler.append(BEGIN);
+    compiler.append(new ArgsOpcode(this.args));
+    compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
-      ops.append(new JumpUnlessOpcode(ELSE));
+      compiler.append(new JumpUnlessOpcode(ELSE));
     } else {
-      ops.append(new JumpUnlessOpcode(END));
+      compiler.append(new JumpUnlessOpcode(END));
     }
 
-    ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
-    ops.append(new EvaluateOpcode(this.templates.default.raw));
-    ops.append(new PopScopeOpcode());
-    ops.append(new JumpOpcode(END));
+    compiler.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+    compiler.append(new PopScopeOpcode());
+    compiler.append(new JumpOpcode(END));
 
     if (this.templates.inverse) {
-      ops.append(ELSE);
-      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+      compiler.append(ELSE);
+      compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
     }
 
-    ops.append(END);
-    ops.append(new ExitOpcode());
+    compiler.append(END);
+    compiler.append(new ExitOpcode());
   }
 }
 

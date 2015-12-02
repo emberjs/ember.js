@@ -28,7 +28,7 @@ import { Dict, dict, assign } from "glimmer-util";
 
 import { equalTokens } from "glimmer-test-helpers";
 
-import { ChainableReference, setProperty as set } from 'glimmer-reference';
+import { CLASS_META, ChainableReference, setProperty as set } from 'glimmer-reference';
 
 class Component extends EmberObject {
   private parent: Element;
@@ -75,7 +75,8 @@ function appendViewFor(template: string, attrs: Object = {}) {
     protected env = env;
     protected template = compile(template);
   }
-  MyComponent._Meta.seal();
+
+  MyComponent[CLASS_META].seal();
 
   view = new MyComponent(attrs);
 
@@ -95,6 +96,26 @@ function assertFired(hooks: HookIntrospection, name: string, count=1) {
     ok(false, `The ${name} hook fired`);
   }
 }
+
+function assertComponentElement(tagName: string, attrs: Object, contents: string);
+function assertComponentElement(tagName: string, attrs: Object);
+function assertComponentElement(tagName: string, contents: string);
+function assertComponentElement(tagName: string);
+
+function assertComponentElement(...args) {
+  let tagName, attrs, contents;
+  if (args.length === 2) {
+    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
+    else [tagName, attrs, contents] = [args[0], args[1], null];
+  } else if (args.length === 1) {
+    [tagName, attrs, contents] = [args[0], {}, null];
+  } else {
+    [tagName, attrs, contents] = args;
+  }
+
+  equalsElement(view.element, tagName, attrs, contents);
+}
+
 
 function assertEmberishElement(tagName: string, attrs: Object, contents: string);
 function assertEmberishElement(tagName: string, attrs: Object);
@@ -175,92 +196,119 @@ function testComponent(title: string, { kind, layout, invokeAs, block, expected:
 
   let { attrs, context, blockParams, template, inverse } = invokeAs;
 
-  if (!kind || kind === 'curly') {
-    let expected: Expected;
-    if (typeof _expected === 'string') {
-      expected = {
-        content: <string>_expected,
-        attrs: {}
-      }
-    } else {
-      expected = <Expected>_expected;
-    }
+  // if (!kind || kind === 'curly') {
+  //   let expected: Expected;
+  //   if (typeof _expected === 'string') {
+  //     expected = {
+  //       content: <string>_expected,
+  //       attrs: {}
+  //     }
+  //   } else {
+  //     expected = <Expected>_expected;
+  //   }
 
-    QUnit.skip(`curly: ${title}`, () => {
-      env.registerEmberishComponent('test-component', EmberishComponent, layout);
+  //   QUnit.skip(`curly: ${title}`, () => {
+  //     env.registerEmberishComponent('test-component', EmberishComponent, layout);
 
-      let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
-        return list.concat(`${key}=${attrs[key]}`);
-      }, <string[]>[]);
+  //     let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
+  //       return list.concat(`${key}=${attrs[key]}`);
+  //     }, <string[]>[]);
 
-      if (typeof template === 'string') {
-        let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-        let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
-        appendViewFor(`{{#test-component ${attrList.join(' ')}${args}}}${template}${inv}{{/test-component}}`, context || {});
-      } else {
-        appendViewFor(`{{test-component ${attrList.join(' ')}}}`, context || {});
-      }
+  //     if (typeof template === 'string') {
+  //       let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+  //       let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
+  //       appendViewFor(`{{#test-component ${attrList.join(' ')}${args}}}${template}${inv}{{/test-component}}`, context || {});
+  //     } else {
+  //       appendViewFor(`{{test-component ${attrList.join(' ')}}}`, context || {});
+  //     }
 
-      assertEmberishElement('div', expected.attrs, expected.content);
-    });
+  //     assertEmberishElement('div', expected.attrs, expected.content);
+  //   });
 
-    QUnit.skip(`curly - component helper: ${title}`, () => {
-      env.registerEmberishComponent('test-component', EmberishComponent, layout);
-      env.registerEmberishComponent('test-component2', EmberishComponent, `${layout} -- 2`);
+  //   QUnit.skip(`curly - component helper: ${title}`, () => {
+  //     env.registerEmberishComponent('test-component', EmberishComponent, layout);
+  //     env.registerEmberishComponent('test-component2', EmberishComponent, `${layout} -- 2`);
 
-      let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
-        return list.concat(`${key}=${attrs[key]}`);
-      }, <string[]>[]);
+  //     let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
+  //       return list.concat(`${key}=${attrs[key]}`);
+  //     }, <string[]>[]);
 
-      let creation = assign({ componentName: 'test-component' }, context || {});
+  //     let creation = assign({ componentName: 'test-component' }, context || {});
 
-      if (typeof template === 'string') {
-        let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-        let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
-        appendViewFor(`{{#component componentName ${attrList.join(' ')}${args}}}${template}${inv}{{/component}}`, creation);
-      } else {
-        appendViewFor(`{{component componentName ${attrList.join(' ')}}}`, creation);
-      }
+  //     if (typeof template === 'string') {
+  //       let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+  //       let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
+  //       appendViewFor(`{{#component componentName ${attrList.join(' ')}${args}}}${template}${inv}{{/component}}`, creation);
+  //     } else {
+  //       appendViewFor(`{{component componentName ${attrList.join(' ')}}}`, creation);
+  //     }
 
-      assertEmberishElement('div', expected.attrs, expected.content);
+  //     assertEmberishElement('div', expected.attrs, expected.content);
 
-      set(view, 'componentName', 'test-component2');
-      rerender();
+  //     set(view, 'componentName', 'test-component2');
+  //     rerender();
 
-      assertEmberishElement('div', expected.attrs, `${expected.content} -- 2`);
-    });
-  }
+  //     assertEmberishElement('div', expected.attrs, `${expected.content} -- 2`);
+  //   });
+  // }
 
   let keys = Object.keys(attrs);
 
-  if (!kind || kind === 'glimmer') {
-    let expected: Expected;
-    if (typeof _expected === 'string') {
-      expected = {
-        content: <string>_expected,
-        attrs
-      }
+  // if (!kind || kind === 'glimmer') {
+  //   let expected: Expected;
+  //   if (typeof _expected === 'string') {
+  //     expected = {
+  //       content: <string>_expected,
+  //       attrs
+  //     }
+  //   } else {
+  //     expected = <Expected>_expected;
+  //   }
+
+  //   QUnit.skip(`glimmer: ${title}`, () => {
+  //     env.registerEmberishGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
+
+  //     let attrList: string[] = keys.reduce((list, key) => {
+  //       return list.concat(`${key}=${attrs[key]}`);
+  //     }, <string[]>[]);
+
+  //     if (typeof template === 'string') {
+  //       let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+  //       appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
+  //     } else {
+  //       appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
+  //     }
+
+  //     assertEmberishElement('aside', expected.attrs, expected.content)
+  //   });
+  // }
+
+  let expected: Expected;
+  if (typeof _expected === 'string') {
+    expected = {
+      content: <string>_expected,
+      attrs
+    }
+  } else {
+    expected = <Expected>_expected;
+  }
+
+  QUnit.skip(`basic: ${title}`, () => {
+    env.registerGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
+
+    let attrList: string[] = keys.reduce((list, key) => {
+      return list.concat(`${key}=${attrs[key]}`);
+    }, <string[]>[]);
+
+    if (typeof template === 'string') {
+      let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+      appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
     } else {
-      expected = <Expected>_expected;
+      appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
     }
 
-    QUnit.skip(`glimmer: ${title}`, () => {
-      env.registerEmberishGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
-
-      let attrList: string[] = keys.reduce((list, key) => {
-        return list.concat(`${key}=${attrs[key]}`);
-      }, <string[]>[]);
-
-      if (typeof template === 'string') {
-        let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-        appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
-      } else {
-        appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
-      }
-
-      assertEmberishElement('aside', expected.attrs, expected.content)
-    });
-  }
+    assertComponentElement('aside', expected.attrs, expected.content)
+  });
 }
 
   // TODO: <component>
@@ -296,7 +344,6 @@ testComponent('block without properties', {
   expected: 'In layout -- In template',
   block: 'In template'
 });
-
 
 testComponent('non-block with properties on attrs', {
   layout: 'In layout - someProp: {{attrs.someProp}}',

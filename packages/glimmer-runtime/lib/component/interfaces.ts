@@ -1,10 +1,11 @@
-import { InternedString } from 'glimmer-util';
+import { InternedString, Slice } from 'glimmer-util';
 import {
   Frame
 } from '../environment';
 import Template, {
   Templates,
-  EvaluatedHash
+  EvaluatedHash,
+  AttributeSyntax
 } from '../template';
 import {
   ElementStack
@@ -86,32 +87,46 @@ class NullHooks implements ComponentHooks {
 
 const NULL_HOOKS = new NullHooks();
 
-export class ComponentDefinition {
+export abstract class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
   public layout: Template;
-  protected AppendingComponent: AppendingComponentClass;
+  protected ComponentInvocation: ComponentInvocationClass;
 
-  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: Template, AppendingComponent: AppendingComponentClass) {
+  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: Template, ComponentInvocation: ComponentInvocationClass) {
     this.hooks = hooks || NULL_HOOKS;
     this.ComponentClass = ComponentClass;
     this.layout = layout;
-    this.AppendingComponent = AppendingComponent;
+    this.ComponentInvocation = ComponentInvocation;
   }
 
-  begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions): AppendingComponent {
-    let { hooks, ComponentClass, layout } = this;
-    let appending = new this.AppendingComponent({ hooks, ComponentClass, layout, stack });
-    appending.begin(stack, { frame, templates, hash, tag });
-    return appending;
-  }
+  abstract compile(attributes: Slice<AttributeSyntax>, yieldTo: Templates): ComponentInvocation;
 }
 
-export interface AppendingComponent {
-  ComponentClass: ComponentClass;
+export interface ComponentInvocationClass {
+  new(templates: Templates, layout: Template): ComponentInvocation;
+}
+
+export interface ComponentInvocation {
+  templates: Templates;
   layout: Template;
-  begin(stack: ElementStack, options: ComponentDefinitionOptions);
-  process(): TemplateMorph;
-  update(component: Component, attrs: EvaluatedHash);
-  hooks: ComponentHooks;
 }
+
+// export class ComponentDefinition {
+
+//   begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions): AppendingComponent {
+//     let { hooks, ComponentClass, layout } = this;
+//     let appending = new this.AppendingComponent({ hooks, ComponentClass, layout, stack });
+//     appending.begin(stack, { frame, templates, hash, tag });
+//     return appending;
+//   }
+// }
+
+// export interface AppendingComponent {
+//   ComponentClass: ComponentClass;
+//   layout: Template;
+//   begin(stack: ElementStack, options: ComponentDefinitionOptions);
+//   process(): TemplateMorph;
+//   update(component: Component, attrs: EvaluatedHash);
+//   hooks: ComponentHooks;
+// }

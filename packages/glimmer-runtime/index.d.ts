@@ -1,6 +1,7 @@
 export {
-  default as Template,
   ATTRIBUTE_SYNTAX,
+  default as Template,
+  Compiler,
   Templates,
   ParamsAndHash,
   Params,
@@ -19,9 +20,6 @@ export {
   OpenElement,
   Helper as HelperSyntax,
   Block as BlockSyntax,
-  Jump,
-  JumpIf,
-  JumpUnless,
   builders
 } from './lib/template';
 
@@ -86,8 +84,7 @@ export {
   ComponentDefinition,
   AppendingComponentClass,
   ComponentDefinitionOptions,
-  AppendingComponent as IAppendingComponent,
-  AppendingComponentOptions,
+  ComponentInvocation,
   ComponentHooks,
   Component
 } from './lib/component/interfaces';

@@ -21,6 +21,10 @@ import {
 } from './opcodes/vm';
 
 import {
+  OpenComponentOpcode
+} from './opcodes/component';
+
+import {
   ChainableReference,
   NotifiableReference,
   PushPullReference,
@@ -29,7 +33,19 @@ import {
 } from 'glimmer-reference';
 import { ElementStack, ClassList } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
-import { LinkedList, LinkedListNode, LITERAL, InternedString, Dict, dict, intern, assign } from 'glimmer-util';
+
+import {
+  LITERAL,
+  LinkedList,
+  LinkedListNode,
+  InternedString,
+  ListSlice,
+  Slice,
+  Dict,
+  dict,
+  intern,
+  assign
+} from 'glimmer-util';
 
 import {
   TextOpcode,
@@ -114,9 +130,77 @@ export class RawTemplate {
   }
 
   compile(env: Environment<any>) {
-    let compiled = new LinkedList<Opcode>();
-    this.syntax.forEachNode(statement => env.statement(statement).compile(compiled, env));
-    this.ops = compiled;
+    this.ops = new Compiler(this, env).compile();
+  }
+}
+
+export class Compiler {
+  private env: Environment<any>;
+  private template: RawTemplate;
+  private current: StatementSyntax;
+  private ops: OpSeqBuilder;
+
+  constructor(template: RawTemplate, environment: Environment<any>) {
+    this.template = template;
+    this.current = template.syntax.head();
+    this.ops = new LinkedList<Opcode>();
+    this.env = environment;
+  }
+
+  compile(): OpSeqBuilder {
+    let { template: { syntax }, ops, env } = this;
+
+    while (this.current) {
+      let current = this.current;
+      this.current = syntax.nextNode(current);
+      env.statement(current).compile(this, env);
+    }
+
+    return ops;
+  }
+
+  append(op: Opcode) {
+    this.ops.append(op);
+  }
+
+  sliceAttributes(): Slice<AttributeSyntax> {
+    let { template: { syntax } } = this;
+
+    let begin: AttributeSyntax = null;
+    let end: AttributeSyntax = null;
+
+    while (this.current[ATTRIBUTE_SYNTAX]) {
+      let current = this.current;
+      this.current = syntax.nextNode(current);
+      begin = begin || <AttributeSyntax>current;
+      end = <AttributeSyntax>current;
+    }
+
+    return new ListSlice(begin, end);
+  }
+
+  templateFromTagContents(): Template {
+    let { template: { syntax } } = this;
+
+    let begin: StatementSyntax = null;
+    let end: StatementSyntax = null;
+    let nesting = 1;
+
+    while (true) {
+      let current = this.current;
+      this.current = syntax.nextNode(current);
+      begin = begin || current;
+
+      if (current instanceof CloseElement && --nesting === 0) {
+        end = syntax.prevNode(current);
+        break;
+      } else if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
+        nesting++;
+      }
+    }
+
+    let slice = new ListSlice(begin, end);
+    return Template.fromList(ListSlice.toList(slice));
   }
 }
 
@@ -209,6 +293,10 @@ export default class Template {
 
     return vm.execute(this.raw.opcodes(env));
   }
+
+  opcodes(env: Environment<any>): OpSeq {
+    return this.raw.opcodes(env);
+  }
 }
 
 type PathSexp = InternedString[];
@@ -250,7 +338,7 @@ export class Block extends StatementSyntax {
     this.templates = options.templates;
   }
 
-  compile(ops: OpSeq) {
+  compile(ops: Compiler) {
     throw new Error("SyntaxError");
   }
 
@@ -430,7 +518,7 @@ export class DynamicProp extends AttributeSyntax {
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
-  compile(ops: OpSeqBuilder) {
+  compile(ops: Compiler) {
     ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
     ops.append(new DynamicPropOpcode(this));
   }
@@ -477,8 +565,8 @@ export class StaticAttr extends AttributeSyntax {
     }
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new StaticAttrOpcode(this));
+  compile(compiler: Compiler) {
+    compiler.append(new StaticAttrOpcode(this));
   }
 
   valueSyntax(): ExpressionSyntax {
@@ -530,9 +618,9 @@ export class DynamicAttr extends AttributeSyntax {
     }
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
-    ops.append(new DynamicAttrOpcode(this));
+  compile(compiler: Compiler) {
+    compiler.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
+    compiler.append(new DynamicAttrOpcode(this));
   }
 
   valueSyntax(): ExpressionSyntax {
@@ -568,9 +656,9 @@ export class AddClass extends AttributeSyntax {
     return new PrettyPrint('attr', 'attr', ['class', this.value.prettyPrint()]);
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
-    ops.append(new AddClassOpcode());
+  compile(compiler: Compiler) {
+    compiler.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
+    compiler.append(new AddClassOpcode());
   }
 
   valueSyntax(): ExpressionSyntax {
@@ -593,8 +681,8 @@ export class CloseElement extends StatementSyntax {
     return new PrettyPrint('element', 'close-element');
   }
 
-  compile(seq: OpSeqBuilder) {
-    seq.append(new CloseElementOpcode());
+  compile(compiler: Compiler) {
+    compiler.append(new CloseElementOpcode());
   }
 }
 
@@ -624,8 +712,8 @@ export class Text extends StatementSyntax {
     return new PrettyPrint('append', 'text', [this.content]);
   }
 
-  compile(opcodes: LinkedList<Opcode>) {
-    opcodes.append(new TextOpcode(this.content));
+  compile(compiler: Compiler) {
+    compiler.append(new TextOpcode(this.content));
   }
 }
 
@@ -655,8 +743,8 @@ export class Comment extends StatementSyntax {
     return new PrettyPrint('append', 'append-comment', [this.value]);
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new CommentOpcode(this));
+  compile(compiler: Compiler) {
+    compiler.append(new CommentOpcode(this));
   }
 }
 
@@ -689,8 +777,16 @@ export class OpenElement extends StatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new OpenPrimitiveElementOpcode(this.tag));
+  compile(compiler: Compiler, env: Environment<any>) {
+    let component = env.getComponentDefinition([this.tag], this);
+
+    if (component) {
+      let attrs = compiler.sliceAttributes();
+      let templates = new Templates({ template: compiler.templateFromTagContents(), inverse: null });
+      compiler.append(new OpenComponentOpcode(component.compile(attrs, templates)));
+    } else {
+      compiler.append(new OpenPrimitiveElementOpcode(this.tag));
+    }
   }
 
   toIdentity(): OpenPrimitiveElement {
@@ -728,70 +824,6 @@ export function attrListToHash(attrs: LinkedList<AttributeSyntax>): Hash {
   return Hash.build(d);
 }
 
-interface JumpOptions {
-  jumpTo: StatementSyntax;
-}
-
-export class Jump extends StatementSyntax {
-  public jumpTo: StatementSyntax;
-
-  constructor({ jumpTo }: JumpOptions) {
-    super();
-    this.jumpTo = jumpTo;
-  }
-
-  clone(): Jump {
-    return new Jump(this);
-  }
-
-  evaluate(stack: ElementStack, frame: Frame, vm: VM<any>) {
-    vm.goto(this.jumpTo);
-    return null;
-  }
-}
-
-export class JumpIf extends StatementSyntax {
-  public jumpTo: StatementSyntax;
-
-  constructor({ jumpTo }: JumpOptions) {
-    super();
-    this.jumpTo = jumpTo;
-  }
-
-  clone(): JumpIf {
-    return new JumpIf(this);
-  }
-
-  evaluate(stack, frame: Frame, vm) {
-    if (frame.scope().condition.value()) {
-      vm.goto(this.jumpTo);
-    }
-
-    return null;
-  }
-}
-
-export class JumpUnless extends StatementSyntax {
-  public jumpTo: StatementSyntax;
-
-  constructor({ jumpTo }: JumpOptions) {
-    super();
-    this.jumpTo = jumpTo;
-  }
-
-  clone(): JumpUnless {
-    return new JumpUnless(this);
-  }
-
-  evaluate(stack, frame: Frame, vm) {
-    if (!frame.scope().condition.value()) {
-      vm.goto(this.jumpTo);
-    }
-
-    return null;
-  }
-}
-
 export class YieldSyntax extends StatementSyntax {
   type = "yield";
   isStatic = false;
@@ -800,6 +832,18 @@ export class YieldSyntax extends StatementSyntax {
   constructor({ args }: { args: ParamsAndHash }) {
     super();
     this.args = args;
+  }
+
+  compile(compiler: Compiler) {
+    compiler.append(new InvokeBlockOpcode());
+  }
+}
+
+class InvokeBlockOpcode extends Opcode {
+  type = "invoke-block";
+
+  evaluate(vm: VM<any>) {
+    vm.invokeTemplate(<InternedString>'default');
   }
 }
 
@@ -1481,24 +1525,21 @@ export class Templates extends ExpressionSyntax {
     return new Templates({
       template: templateId === null ? null : children[templateId],
       inverse: inverseId === null ? null : children[inverseId],
-      attributes: null
     });
   }
 
   static build(template: Template, inverse: Template=null, attributes: Template=null): Templates {
-    return new this({ template, inverse, attributes });
+    return new this({ template, inverse });
   }
 
   public isStatic = false;
   public default: Template;
   public inverse: Template;
-  public attributes: Template;
 
-  constructor(options: { template: Template, inverse: Template, attributes: Template }) {
+  constructor(options: { template: Template, inverse: Template }) {
     super();
     this.default = options.template;
     this.inverse = options.inverse;
-    this.attributes = options.attributes;
   }
 
   prettyPrint(): string {
