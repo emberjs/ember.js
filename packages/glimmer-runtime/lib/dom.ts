@@ -2,15 +2,15 @@ import { ConcreteBounds, Bounds } from './morph';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 export default class DOMHelper {
-	private document: HTMLDocument;
+  private document: HTMLDocument;
   private namespace: string;
   private uselessElement: HTMLElement;
 
-	constructor(document) {
-		this.document = document;
+  constructor(document) {
+    this.document = document;
     this.namespace = null;
     this.uselessElement = this.document.createElement('div');
-	}
+  }
 
   setAttribute(element: Element, name: string, value: string) {
     element.setAttribute(name, value);
