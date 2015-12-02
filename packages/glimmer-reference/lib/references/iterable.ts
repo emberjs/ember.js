@@ -141,13 +141,17 @@ export class ListIterator {
     if (array.length <= arrayPosition) {
       this.startPrune();
       return;
-    } else {
-      let { keyFor, listPosition, map } = this;
-      let item = array[this.arrayPosition++];
-      let key = keyFor(item, arrayPosition);
-      this.nextInsert(map, listPosition, key, item);
-      return true;
     }
+
+    let { keyFor, listPosition, map } = this;
+
+    let item = array[this.arrayPosition++];
+
+    if (item === null || item === undefined) return this.nextInitialAppend();
+
+    let key = keyFor(item, arrayPosition);
+    this.nextInsert(map, listPosition, key, item);
+    return true;
   }
 
   private nextAppend(): boolean {
