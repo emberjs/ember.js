@@ -285,9 +285,9 @@ export abstract class Environment<T extends Object> {
     }
   }
 
-  abstract hasHelper(scope: Scope<T>, helperName: string[]): boolean;
-  abstract lookupHelper(scope: Scope<T>, helperName: string[]): Helper;
-  abstract getComponentDefinition(scope: Scope<T>, tagName: string[], syntax: StatementSyntax): ComponentDefinition;
+  abstract hasHelper(scope: Scope<T>, helperName: InternedString[]): boolean;
+  abstract lookupHelper(scope: Scope<T>, helperName: InternedString[]): Helper;
+  abstract getComponentDefinition(tagName: InternedString[], syntax: StatementSyntax): ComponentDefinition;
 }
 
 // TS does not allow us to use computed properties for this, so inlining for now
@@ -364,10 +364,6 @@ export class Frame {
 
   lookupHelper(helperName: InternedString[]): Helper {
     return this.env.lookupHelper(this._scope, helperName);
-  }
-
-  getComponentDefinition(tagName: string[], syntax: StatementSyntax): ComponentDefinition {
-    return this.env.getComponentDefinition(this._scope, tagName, syntax);
   }
 
   iteratorFor(iterable: PathReference): { next: () => { done: boolean, value: any } } {

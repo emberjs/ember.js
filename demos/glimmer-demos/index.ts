@@ -1,7 +1,6 @@
 import {
   ATTRIBUTE_SYNTAX,
   RenderResult,
-  InnerBlockMorph,
   Environment,
   DOMHelper,
   StatementSyntax,
@@ -12,12 +11,7 @@ import {
   EvaluatedParamsAndHash,
   ParamsAndHash,
   ElementStack,
-  Morph,
-  ContentMorph,
-  EmptyableMorph,
-  TemplateMorph,
-  MorphList,
-  MorphListOptions,
+  Compiler,
   Template,
   Templates,
   Append,
@@ -67,7 +61,6 @@ import {
   NextIterOpcode,
   builders,
   isWhitespace,
-  createMorph,
   appendComponent
 } from "glimmer-runtime";
 import { compile as rawCompile } from "glimmer-compiler";
@@ -647,7 +640,7 @@ class EachSyntax extends StatementSyntax {
     return `#each ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeqBuilder) {
+  compile(compiler: Compiler) {
     //        Args
     //        EnterList(BEGIN, END)
     // ITER:  Noop
@@ -670,20 +663,20 @@ class EachSyntax extends StatementSyntax {
     let BREAK = new NoopOpcode("BREAK");
     let END = new NoopOpcode("END");
 
-    ops.append(new ArgsOpcode(this.args));
-    ops.append(new EnterListOpcode(BEGIN, END));
-    ops.append(ITER);
-    ops.append(new NextIterOpcode(BREAK));
-    ops.append(new EnterWithKeyOpcode(BEGIN, END));
-    ops.append(BEGIN);
-    ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
-    ops.append(new EvaluateOpcode(this.templates.default.raw));
-    ops.append(new PopScopeOpcode());
-    ops.append(END);
-    ops.append(new ExitOpcode());
-    ops.append(new JumpOpcode(ITER));
-    ops.append(BREAK);
-    ops.append(new ExitListOpcode());
+    compiler.append(new ArgsOpcode(this.args));
+    compiler.append(new EnterListOpcode(BEGIN, END));
+    compiler.append(ITER);
+    compiler.append(new NextIterOpcode(BREAK));
+    compiler.append(new EnterWithKeyOpcode(BEGIN, END));
+    compiler.append(BEGIN);
+    compiler.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+    compiler.append(new PopScopeOpcode());
+    compiler.append(END);
+    compiler.append(new ExitOpcode());
+    compiler.append(new JumpOpcode(ITER));
+    compiler.append(BREAK);
+    compiler.append(new ExitListOpcode());
   }
 }
 
@@ -699,8 +692,8 @@ class IdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new EvaluateOpcode(this.templates.default.raw));
+  compile(compiler: Compiler) {
+    compiler.append(new EvaluateOpcode(this.templates.default.raw));
   }
 }
 
@@ -716,8 +709,8 @@ class RenderInverseIdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(ops: OpSeqBuilder) {
-    ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+  compile(compiler: Compiler) {
+    compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
   }
 }
 
@@ -738,7 +731,7 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeqBuilder) {
+  compile(compiler: Compiler) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        Args
@@ -757,53 +750,24 @@ class IfSyntax extends StatementSyntax {
     let ELSE = new NoopOpcode("ELSE");
     let END = new NoopOpcode("END");
 
-    ops.append(new EnterOpcode(BEGIN, END));
-    ops.append(BEGIN);
-    ops.append(new ArgsOpcode(this.args));
-    ops.append(new TestOpcode());
+    compiler.append(new EnterOpcode(BEGIN, END));
+    compiler.append(BEGIN);
+    compiler.append(new ArgsOpcode(this.args));
+    compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
-      ops.append(new JumpUnlessOpcode(ELSE));
-      ops.append(new EvaluateOpcode(this.templates.default.raw));
-      ops.append(new JumpOpcode(END));
-      ops.append(ELSE);
-      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+      compiler.append(new JumpUnlessOpcode(ELSE));
+      compiler.append(new EvaluateOpcode(this.templates.default.raw));
+      compiler.append(new JumpOpcode(END));
+      compiler.append(ELSE);
+      compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
     } else {
-      ops.append(new JumpUnlessOpcode(END));
-      ops.append(new EvaluateOpcode(this.templates.default.raw));
+      compiler.append(new JumpUnlessOpcode(END));
+      compiler.append(new EvaluateOpcode(this.templates.default.raw));
     }
 
-    ops.append(END);
-    ops.append(new ExitOpcode());
-  }
-}
-
-interface IfOptions {
-  reference: ChainableReference;
-  templates: Templates;
-}
-
-class IfMorph extends TemplateMorph {
-  reference: ChainableReference;
-  templates: Templates;
-
-  init({ reference, templates }: IfOptions) {
-    this.reference = reference;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack, vm: VM<any>) {
-    let { reference, templates } = this;
-    let value = reference.value();
-    this.template = value ? templates.default : templates.inverse;
-    super.append(stack, vm);
-  }
-
-  update() {
-    let { reference, templates } = this;
-    let value = reference.value();
-    this.template = value ? templates.default : templates.inverse;
-    super.update();
+    compiler.append(END);
+    compiler.append(new ExitOpcode());
   }
 }
 
@@ -828,7 +792,7 @@ class WithSyntax extends StatementSyntax {
     return `#with ${this.args.prettyPrint()}`;
   }
 
-  compile(ops: OpSeq) {
+  compile(compiler: Compiler) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        Args
@@ -849,151 +813,29 @@ class WithSyntax extends StatementSyntax {
     let ELSE = new NoopOpcode("ELSE");
     let END = new NoopOpcode("END");
 
-    ops.append(new EnterOpcode(BEGIN, END));
-    ops.append(BEGIN);
-    ops.append(new ArgsOpcode(this.args));
-    ops.append(new TestOpcode());
+    compiler.append(new EnterOpcode(BEGIN, END));
+    compiler.append(BEGIN);
+    compiler.append(new ArgsOpcode(this.args));
+    compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
-      ops.append(new JumpUnlessOpcode(ELSE));
+      compiler.append(new JumpUnlessOpcode(ELSE));
     } else {
-      ops.append(new JumpUnlessOpcode(END));
+      compiler.append(new JumpUnlessOpcode(END));
     }
 
-    ops.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
-    ops.append(new EvaluateOpcode(this.templates.default.raw));
-    ops.append(new PopScopeOpcode());
-    ops.append(new JumpOpcode(END));
+    compiler.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+    compiler.append(new PopScopeOpcode());
+    compiler.append(new JumpOpcode(END));
 
     if (this.templates.inverse) {
-      ops.append(ELSE);
-      ops.append(new EvaluateOpcode(this.templates.inverse.raw));
+      compiler.append(ELSE);
+      compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
     }
 
-    ops.append(END);
-    ops.append(new ExitOpcode());
-  }
-}
-
-interface WithOptions {
-  paths: ChainableReference;
-  templates: Templates;
-}
-
-class WithMorph extends TemplateMorph {
-  paths: ChainableReference;
-  templates: Templates;
-
-  init({ paths, templates }: WithOptions) {
-    this.paths = paths;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack, vm: VM<any>) {
-    let { paths, templates } = this;
-    let value = paths.value();
-    this.template = value ? templates.default : templates.inverse;
-
-    this.willAppend(stack);
-    this.appendTemplate(this.template, vm, paths);
-  }
-
-  update() {
-    let { paths, templates } = this;
-    let value = paths.value();
-    this.template = value ? templates.default : templates.inverse;
-    this.updateTemplate(this.template, paths);
-  }
-
-  protected setupScope(blockArguments: EvaluatedParams) {
-    let localNames = this.template.locals;
-    this.frame.childScope(localNames).bindLocalReferences(blockArguments.toArray());
-  }
-}
-
-class DynamicComponentSyntax extends StatementSyntax {
-  type = "dynamic-component";
-
-  public args: ParamsAndHash;
-  public key: InternedString;
-  public templates: Templates;
-  public isStatic = false;
-
-  constructor({ key, args, templates }: { key: InternedString, args: ParamsAndHash, templates: Templates }) {
-    super();
-    this.key = key;
-    this.args = args;
-    this.templates = templates;
-  }
-
-  clone(): DynamicComponentSyntax {
-    return new DynamicComponentSyntax(this);
-  }
-
-  prettyPrint() {
-
-  }
-
-  evaluate(stack: ElementStack, frame: Frame): DynamicComponentMorph {
-    let { args: _args, templates } = this;
-    let args = _args.evaluate(frame);
-
-    return stack.createContentMorph(DynamicComponentMorph, { args, templates, syntax: this }, frame);
-  }
-}
-
-class DynamicComponentMorph extends EmptyableMorph {
-  private path: ChainableReference;
-  private args: EvaluatedParamsAndHash;
-  private syntax: DynamicComponentSyntax;
-  private templates: Templates;
-  private lastTag: InternedString = null;
-  private inner: ContentMorph = null;
-
-  firstNode() {
-    return this.inner && this.inner.firstNode();
-  }
-
-  lastNode() {
-    return this.inner && this.inner.lastNode();
-  }
-
-  init({ args, syntax, templates }: { path: ChainableReference, args: EvaluatedParamsAndHash, syntax: DynamicComponentSyntax, templates: Templates }) {
-    this.path = args.params.nth(0);
-    this.args = args;
-    this.syntax = syntax;
-    this.templates = templates;
-  }
-
-  append(stack: ElementStack) {
-    let { frame, path, args: { params, hash }, syntax, templates } = this;
-    let layout = templates && templates.default;
-    let tag = this.lastTag = intern(path.value());
-
-    let definition = this.frame.getComponentDefinition([path.value()], syntax);
-    let appending = definition.begin(stack, { frame, templates, hash, tag })
-    let inner = this.inner = appending.process();
-
-    this.willAppend(stack);
-    inner.append(stack);
-    this.didInsertContent(inner);
-  }
-
-  update() {
-    let tag = this.path.value();
-
-    if (tag === this.lastTag) {
-      this.inner.update();
-    } else {
-      this.lastTag = tag;
-      let { frame, args: { hash }, syntax, templates } = this;
-
-      let definition = frame.getComponentDefinition([tag], syntax);
-      let stack = this.stackForContent();
-
-      let inner = this.inner = appendComponent(stack, definition, { frame, templates, hash, tag });
-      this.didInsertContent(inner);
-    }
+    compiler.append(END);
+    compiler.append(new ExitOpcode());
   }
 }
 

@@ -3,7 +3,7 @@ import { Bounds } from './morph';
 import { ElementStack } from './builder';
 import { Stack, LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'glimmer-util';
 import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
-import Template, { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
+import Template, { Templates, EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
 import { StatementSyntax, ExpressionSyntax, Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
 import DOMHelper from './dom';
 import { clear, move } from './morph';
@@ -22,6 +22,7 @@ interface Registers {
   condition: ChainableReference;
   iterator: ListIterator;
   key: InternedString;
+  templates: Dict<Template>;
 }
 
 export class VM<T> {
@@ -190,6 +191,14 @@ export class VM<T> {
   evaluateArgs(args: Args) {
     let evaledArgs = this.registers.args = args.evaluate(new Frame(this.env, this.scope()));
     this.registers.operand = evaledArgs.params.nth(0);
+  }
+
+  setTemplates(templates: Dict<Template>) {
+    this.registers.templates = templates;
+  }
+
+  invokeTemplate(name: InternedString) {
+    this.pushFrame(this.registers.templates[<string>name].opcodes(this.env));
   }
 }
 

@@ -1,6 +1,6 @@
-import { Dict, LinkedList, LinkedListNode, Slice } from 'glimmer-util';
+import { Dict, LinkedList, LinkedListNode, ListNode, Slice } from 'glimmer-util';
 import { ChainableReference, PathReference } from 'glimmer-reference';
-import Template from './template';
+import Template, { Compiler } from './template';
 import { Frame, Environment } from './environment';
 import { ElementStack } from './builder';
 import { Morph } from './morph';
@@ -60,7 +60,13 @@ export abstract class StatementSyntax extends Syntax<StatementSyntax> {
     return new PrettyPrint(this.type, this.type);
   }
 
-  abstract compile(opcodes: OpSeqBuilder, env: Environment<any>);
+  clone(): this {
+    // not type safe but the alternative is extreme boilerplate per
+    // syntax subclass.
+    return new (<new (any) => any>this.constructor)(this);
+  }
+
+  abstract compile(opcodes: Compiler, env: Environment<any>);
 }
 
 export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {
@@ -83,12 +89,12 @@ export interface UpdatingOpcode extends LinkedListNode {
 
 export type UpdatingOpSeq = Slice<UpdatingOpcode>;
 
-export interface Opcode extends LinkedListNode {
+export abstract class Opcode implements LinkedListNode {
   type: string;
-  next: Opcode;
-  prev: Opcode;
+  next: Opcode = null;
+  prev: Opcode = null;
 
-  evaluate(vm: VM<any>);
+  abstract evaluate(vm: VM<any>);
 }
 
 export type OpSeq = Slice<Opcode>;
