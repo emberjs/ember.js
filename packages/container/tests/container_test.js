@@ -301,9 +301,11 @@ QUnit.test('The container can use a registry hook to resolve factories lazily', 
   var container = registry.container();
   var PostController = factory();
 
-  registry.resolver = function(fullName) {
-    if (fullName === 'controller:post') {
-      return PostController;
+  registry.resolver = {
+    resolve(fullName) {
+      if (fullName === 'controller:post') {
+        return PostController;
+      }
     }
   };
 
@@ -347,9 +349,11 @@ QUnit.test('Options can be registered that should be applied to a given factory'
   var container = registry.container();
   var PostView = factory();
 
-  registry.resolver = function(fullName) {
-    if (fullName === 'view:post') {
-      return PostView;
+  registry.resolver = {
+    resolve(fullName) {
+      if (fullName === 'view:post') {
+        return PostView;
+      }
     }
   };
 
@@ -369,9 +373,11 @@ QUnit.test('Options can be registered that should be applied to all factories fo
   var container = registry.container();
   var PostView = factory();
 
-  registry.resolver = function(fullName) {
-    if (fullName === 'view:post') {
-      return PostView;
+  registry.resolver = {
+    resolve(fullName) {
+      if (fullName === 'view:post') {
+        return PostView;
+      }
     }
   };
 
