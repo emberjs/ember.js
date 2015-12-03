@@ -6,13 +6,19 @@
 import subscribe from 'ember-htmlbars/utils/subscribe';
 import { isArray } from 'ember-runtime/utils';
 import { chain, read, isStream, addDependency } from 'ember-metal/streams/utils';
+import { CONTAINS_DOT_CACHE } from 'ember-htmlbars/system/lookup-helper';
+import {
+  COMPONENT_HASH,
+  isComponentCell,
+  mergeInNewHash
+} from 'ember-htmlbars/keywords/closure-component';
 
 export default function linkRenderNode(renderNode, env, scope, path, params, hash) {
   if (renderNode.streamUnsubscribers) {
     return true;
   }
 
-  var keyword = env.hooks.keywords[path];
+  let keyword = env.hooks.keywords[path];
   if (keyword && keyword.link) {
     keyword.link(renderNode.getState(), params, hash);
   } else {
@@ -24,14 +30,30 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
     }
   }
 
+  // If has a dot in the path, we need to subscribe to the arguments in the
+  // closure component as well.
+
+  if (CONTAINS_DOT_CACHE.get(path)) {
+    let stream = env.hooks.get(env, scope, path);
+    let componentCell = stream.value();
+
+    if (isComponentCell(componentCell)) {
+      let closureAttrs = mergeInNewHash(componentCell[COMPONENT_HASH], hash);
+
+      for (let key in closureAttrs) {
+        subscribe(renderNode, env, scope, closureAttrs[key]);
+      }
+    }
+  }
+
   if (params && params.length) {
-    for (var i = 0; i < params.length; i++) {
+    for (let i = 0; i < params.length; i++) {
       subscribe(renderNode, env, scope, params[i]);
     }
   }
 
   if (hash) {
-    for (var key in hash) {
+    for (let key in hash) {
       subscribe(renderNode, env, scope, hash[key]);
     }
   }
@@ -43,9 +65,9 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
 }
 
 function eachParam(list) {
-  var listChange = getKey(list, '[]');
+  let listChange = getKey(list, '[]');
 
-  var stream = chain(list, function() {
+  let stream = chain(list, function() {
     read(listChange);
     return read(list);
   }, 'each');
@@ -55,13 +77,13 @@ function eachParam(list) {
 }
 
 function shouldDisplay(predicate) {
-  var length = getKey(predicate, 'length');
-  var isTruthy = getKey(predicate, 'isTruthy');
+  let length = getKey(predicate, 'length');
+  let isTruthy = getKey(predicate, 'isTruthy');
 
-  var stream = chain(predicate, function() {
-    var predicateVal = read(predicate);
-    var lengthVal = read(length);
-    var isTruthyVal = read(isTruthy);
+  let stream = chain(predicate, function() {
+    let predicateVal = read(predicate);
+    let lengthVal = read(length);
+    let isTruthyVal = read(isTruthy);
 
     if (isArray(predicateVal)) {
       return lengthVal > 0;
