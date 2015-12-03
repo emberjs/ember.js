@@ -1,20 +1,19 @@
-import { Opcode, UpdatingOpcode, ExpressionSyntax } from '../opcodes';
-import { VM, UpdatingVM } from '../vm';
+import { Opcode, UpdatingOpcode } from '../../opcodes';
+import { VM, UpdatingVM } from '../../vm';
 import { Assert } from './vm';
-import { ElementStack } from '../builder';
-import { EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args, RawTemplate } from '../template';
-import { Frame } from '../environment';
-import { Bounds } from '../morph';
+import { ElementStack } from '../../builder';
+import { Args } from '../../template';
+import { RawTemplate } from '../../compiler';
+import { Bounds, clear, move } from '../../bounds';
 import { LITERAL, InternedString, Dict, ListSlice, Slice, dict, assert } from 'glimmer-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
-import { clear, move } from '../morph';
 
 abstract class ListOpcode implements Opcode {
   public type: string;
   public next = null;
   public prev = null;
 
-  abstract evaluate(vm: VM<any>);
+  abstract evaluate(vm: VM);
 }
 
 abstract class ListUpdatingOpcode implements UpdatingOpcode {
@@ -37,9 +36,9 @@ export class EnterListOpcode extends ListOpcode {
     this.end = end;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let listRef = vm.registers.operand;
-    let keyPath = vm.registers.args.hash.get(LITERAL("key")).value();
+    let keyPath = vm.registers.args.named.get(LITERAL("key")).value();
 
     let manager =  new ListManager(<RootReference>listRef /* WTF */, keyPath);
     let delegate = new IterateDelegate(vm);
@@ -53,7 +52,7 @@ export class EnterListOpcode extends ListOpcode {
 export class ExitListOpcode extends ListOpcode {
   public type = "exit-list";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.exitList();
   }
 }
@@ -68,15 +67,15 @@ export class EnterWithKeyOpcode extends ListOpcode {
     this.slice = new ListSlice(begin, end);
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.enterWithKey(vm.registers.key, this.slice);
   }
 }
 
 class IterateDelegate implements ListDelegate {
-  private vm: VM<any>;
+  private vm: VM;
 
-  constructor(vm: VM<any>) {
+  constructor(vm: VM) {
     this.vm = vm;
   }
 
@@ -85,7 +84,6 @@ class IterateDelegate implements ListDelegate {
 
     assert(!before, "Insertion should be append-only on initial render");
 
-    vm.registers.args = EvaluatedArgs.single(item);
     vm.registers.operand = item;
     vm.registers.condition = new ConstReference(true);
     vm.registers.key = key;
@@ -118,7 +116,7 @@ export class NextIterOpcode extends ListOpcode {
     this.end = end;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     if (vm.registers.iterator.next()) {
       vm.goto(this.end);
     }
@@ -128,9 +126,9 @@ export class NextIterOpcode extends ListOpcode {
 class ReiterateOpcode extends ListUpdatingOpcode {
   public type = "reiterate";
 
-  private initialize: (vm: VM<any>) => void;
+  private initialize: (vm: VM) => void;
 
-  constructor(initialize: (vm: VM<any>) => void) {
+  constructor(initialize: (vm: VM) => void) {
     super();
     this.initialize = initialize;
   }

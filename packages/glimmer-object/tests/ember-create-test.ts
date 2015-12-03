@@ -1,4 +1,4 @@
-import EmberObject, { computed, observer, alias } from 'glimmer-object';
+import EmberObject, { Mixin, computed, observer, alias } from 'glimmer-object';
 
 var moduleOptions, originalLookup;
 
@@ -124,16 +124,16 @@ QUnit.skip('calls setUnknownProperty if defined', function() {
   ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
 });
 
-QUnit.skip('throws if you try to define a computed property', function() {
-  expectAssertion(function() {
+QUnit.skip('throws if you try to define a computed property', assert => {
+  assert.throws(function() {
     EmberObject.create({
       foo: computed(function() {})
     });
   }, 'Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
 });
 
-QUnit.skip('throws if you try to call _super in a method', function() {
-  expectAssertion(function() {
+QUnit.skip('throws if you try to call _super in a method', assert => {
+  assert.throws(function() {
     EmberObject.create({
       foo() {
         this._super.apply(this, arguments);
@@ -142,14 +142,14 @@ QUnit.skip('throws if you try to call _super in a method', function() {
   }, 'Ember.Object.create no longer supports defining methods that call _super.');
 });
 
-QUnit.skip('throws if you try to \'mixin\' a definition', function() {
+QUnit.skip('throws if you try to \'mixin\' a definition', assert => {
   var myMixin = Mixin.create({
     adder(arg1, arg2) {
       return arg1 + arg2;
     }
   });
 
-  expectAssertion(function() {
+  assert.throws(function() {
     EmberObject.create(myMixin);
   }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create seperately instead.');
 });
@@ -167,7 +167,7 @@ QUnit.test('inherits properties from passed in EmberObject', function() {
   var baseObj = EmberObject.create({ foo: 'bar' });
   var secondaryObj = EmberObject.create(baseObj);
 
-  equal(secondaryObj.foo, baseObj.foo, 'Em.O.create inherits properties from EmberObject parameter');
+  equal(secondaryObj['foo'], baseObj['foo'], 'Em.O.create inherits properties from EmberObject parameter');
 });
 
 QUnit.skip('throws if you try to pass anything a string as a parameter', function() {

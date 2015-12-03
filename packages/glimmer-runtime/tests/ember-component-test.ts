@@ -11,8 +11,7 @@ import {
   AttributeSyntax,
   GetSyntax,
   StaticAttr,
-  DynamicAttr,
-  Frame
+  DynamicAttr
 } from "glimmer-runtime";
 
 import {
@@ -34,7 +33,7 @@ class Component extends EmberObject {
   private parent: Element;
   protected _result: RenderResult;
   protected template: Template;
-  protected env: Environment<any>;
+  protected env: Environment;
   public attrs: Object; // provided by the component definition
   public element: Element; // provided by the component definition
 
@@ -489,7 +488,7 @@ QUnit.skip('static named positional parameters', function() {
   class SampleComponent extends EmberishComponent {
     static positionalParams = ['name', 'age'];
   }
-  SampleComponent._Meta.seal();
+  SampleComponent[CLASS_META].seal();
 
   env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}{{age}}');
 
@@ -955,7 +954,7 @@ styles.forEach(style => {
         component = this;
       }
     }
-    MyComponent._Meta.seal();
+    MyComponent[CLASS_META].seal();
 
     env.registerEmberishGlimmerComponent('non-block', MyComponent, `<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`);
 
@@ -974,7 +973,7 @@ styles.forEach(style => {
         set(this, 'internal', 'stuff');
       }
     }
-    NonBlock._Meta.seal();
+    NonBlock[CLASS_META].seal();
 
     env.registerEmberishGlimmerComponent('non-block', NonBlock, `<${style.tagName}>{{internal}}</${style.tagName}>`)
 
@@ -992,7 +991,7 @@ styles.forEach(style => {
         component = this;
       }
     }
-    MyComponent._Meta.seal();
+    MyComponent[CLASS_META].seal();
 
     env.registerEmberishGlimmerComponent('non-block', MyComponent, `<${style.tagName} />`);
 
@@ -1008,7 +1007,7 @@ styles.forEach(style => {
         set(this, 'internal', 'stuff');
       }
     }
-    NonBlock._Meta.seal();
+    NonBlock[CLASS_META].seal();
 
     env.registerEmberishGlimmerComponent('non-block', NonBlock, `<${style.tagName} data-static="static" data-dynamic="{{internal}}" />`);
 
@@ -1047,7 +1046,7 @@ QUnit.skip('attributes are not installed on the top level', function() {
       component = this;
     }
   }
-  NonBlock._Meta.seal();
+  NonBlock[CLASS_META].seal();
 
   // This is specifically attempting to trigger a 1.x-era heuristic that only copied
   // attrs that were present as defined properties on the component.

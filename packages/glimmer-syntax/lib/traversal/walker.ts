@@ -1,4 +1,4 @@
-function Walker(order) {
+function Walker(order=undefined) {
   this.order = order;
   this.stack = [];
 }

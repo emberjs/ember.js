@@ -31,7 +31,7 @@ function normalizeNode(obj) {
   }
 }
 
-export function astEqual(actual, expected, message) {
+export function astEqual(actual, expected, message?) {
   if (typeof actual === 'string') {
     actual = parse(actual);
   }

@@ -82,7 +82,7 @@ QUnit.test('overriding inherited objects', function() {
   equal(cnt, 2, 'should invoke both methods');
 
   cnt = 0;
-  objA.foo();
+  objA['foo']();
   equal(cnt, 1, 'should not screw w/ parent obj');
 });
 
@@ -109,7 +109,7 @@ QUnit.test('Including the same mixin more than once will only run once', functio
   MixinA.apply(obj); // try to apply again..
 
   cnt = 0;
-  obj.foo();
+  obj['foo']();
 
   equal(cnt, 1, 'should invoke MixinA.foo one time');
 });
@@ -124,7 +124,7 @@ QUnit.test('_super from a single mixin with no superclass does not error', funct
   var obj = {};
   MixinA.apply(obj);
 
-  obj.foo();
+  obj['foo']();
   ok(true);
 });
 
@@ -148,7 +148,7 @@ QUnit.test('_super from a first-of-two mixins with no superclass function does n
   MixinA.apply(obj);
   MixinB.apply(obj);
 
-  obj.foo();
+  obj['foo']();
   ok(true);
 });
 
@@ -204,6 +204,6 @@ QUnit.test('applying several mixins at once with sup already defined causes infi
   mixin(obj, MixinB, MixinC); // must be more than one mixin
 
   cnt = 0;
-  obj.foo();
+  obj['foo']();
   equal(cnt, 3, 'should invoke all 3 methods');
 });

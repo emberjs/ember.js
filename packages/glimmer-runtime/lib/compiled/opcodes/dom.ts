@@ -1,8 +1,8 @@
-import { Opcode, UpdatingOpcode } from '../opcodes';
-import { VM, UpdatingVM } from '../vm';
+import { Opcode, UpdatingOpcode } from '../../opcodes';
+import { VM, UpdatingVM } from '../../vm';
 import { InternedString } from 'glimmer-util';
-import { StaticAttr, DynamicAttr, DynamicProp, AddClass, Comment } from '../template';
-import { ClassList } from '../builder';
+import { StaticAttr, DynamicAttr, DynamicProp, AddClass, Comment } from '../../template';
+import { ClassList } from '../../builder';
 import { ChainableReference } from 'glimmer-reference';
 
 abstract class DOMOpcode implements Opcode {
@@ -10,7 +10,7 @@ abstract class DOMOpcode implements Opcode {
   public next = null;
   public prev = null;
 
-  abstract evaluate(vm: VM<any>);
+  abstract evaluate(vm: VM);
 }
 
 abstract class DOMUpdatingOpcode implements UpdatingOpcode {
@@ -30,7 +30,7 @@ export class TextOpcode extends DOMOpcode {
     this.text = text;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.stack().appendText(this.text);
   }
 }
@@ -44,7 +44,7 @@ export class OpenPrimitiveElementOpcode extends DOMOpcode {
     this.tag = tag;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.stack().openElement(this.tag);
   }
 }
@@ -52,7 +52,7 @@ export class OpenPrimitiveElementOpcode extends DOMOpcode {
 export class CloseElementOpcode extends DOMOpcode {
   public type = "close-element";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let { element, classList, classNames } = vm.stack().closeElement();
 
     if (classList) {
@@ -74,7 +74,7 @@ export class StaticAttrOpcode extends DOMOpcode {
     this.namespace = attr.namespace;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let { name, value, namespace } = this;
 
     if (this.namespace) {
@@ -97,9 +97,9 @@ export class DynamicAttrOpcode extends DOMOpcode {
     this.namespace = attr.namespace;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let { name, namespace } = this;
-    let reference = vm.registers.args.params.nth(0);
+    let reference = vm.registers.operand;
     let value = reference.value();
 
     if (this.namespace) {
@@ -155,10 +155,10 @@ export class DynamicPropOpcode extends DOMOpcode {
     this.name = attr.name;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let { name } = this;
     let element = vm.stack().element;
-    let reference = vm.registers.args.params.nth(0);
+    let reference = vm.registers.operand;
     let value = reference.value();
 
     element[<string>name] = value;
@@ -195,8 +195,8 @@ export class UpdatePropertyOpcode extends DOMUpdatingOpcode {
 export class AddClassOpcode extends DOMOpcode {
   public type = "add-class";
 
-  evaluate(vm: VM<any>) {
-    vm.stack().addClass(vm.registers.args.params.nth(0));
+  evaluate(vm: VM) {
+    vm.stack().addClass(vm.registers.operand);
   }
 }
 
@@ -209,7 +209,7 @@ export class CommentOpcode extends DOMOpcode {
     this.value = comment.value;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.stack().appendComment(this.value);
   }
 }

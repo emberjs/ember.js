@@ -22,5 +22,6 @@ export function LITERAL(str: string): InternedString {
 let BASE_KEY = intern(`__htmlbars${+ new Date()}`);
 
 export function symbol(debugName) {
-  return intern(debugName + ' [id=' + BASE_KEY + Math.floor(Math.random() * new Date()) + ']');
+  let number = +(new Date());
+  return intern(debugName + ' [id=' + BASE_KEY + Math.floor(Math.random() * number) + ']');
 }

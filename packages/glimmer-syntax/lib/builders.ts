@@ -1,6 +1,6 @@
 // Statements
 
-export function buildMustache(path, params, hash, raw, loc) {
+export function buildMustache(path, params?, hash?, raw?, loc?) {
   return {
     type: "MustacheStatement",
     path: buildPath(path),
@@ -11,7 +11,7 @@ export function buildMustache(path, params, hash, raw, loc) {
   };
 }
 
-export function buildBlock(path, params, hash, program, inverse, loc) {
+export function buildBlock(path, params?, hash?, program?, inverse?, loc?) {
   return {
     type: "BlockStatement",
     path: buildPath(path),
@@ -23,7 +23,7 @@ export function buildBlock(path, params, hash, program, inverse, loc) {
   };
 }
 
-export function buildElementModifier(path, params, hash, loc) {
+export function buildElementModifier(path, params?, hash?, loc?) {
   return {
     type: "ElementModifierStatement",
     path: buildPath(path),
@@ -59,7 +59,7 @@ export function buildConcat(parts) {
 
 // Nodes
 
-export function buildElement(tag, attributes, modifiers, children, loc) {
+export function buildElement(tag, attributes?, modifiers?, children?, loc?) {
   return {
     type: "ElementNode",
     tag: tag || "",
@@ -96,7 +96,7 @@ export function buildAttr(name, value) {
   };
 }
 
-export function buildText(chars, loc) {
+export function buildText(chars?, loc?) {
   return {
     type: "TextNode",
     chars: chars || "",
@@ -106,7 +106,7 @@ export function buildText(chars, loc) {
 
 // Expressions
 
-export function buildSexpr(path, params, hash) {
+export function buildSexpr(path, params?, hash?) {
   return {
     type: "SubExpression",
     path: buildPath(path),
@@ -169,7 +169,7 @@ export function buildUndefined() {
 
 // Miscellaneous
 
-export function buildHash(pairs) {
+export function buildHash(pairs?) {
   return {
     type: "Hash",
     pairs: pairs || []
@@ -184,7 +184,7 @@ export function buildPair(key, value) {
   };
 }
 
-export function buildProgram(body, blockParams, loc) {
+export function buildProgram(body?, blockParams?, loc?) {
   return {
     type: "Program",
     body: body || [],
@@ -193,7 +193,7 @@ export function buildProgram(body, blockParams, loc) {
   };
 }
 
-function buildSource(source) {
+function buildSource(source?) {
   return source || null;
 }
 
@@ -205,7 +205,7 @@ function buildPosition(line, column) {
 }
 
 function buildLoc(loc: { source: any, start: any, end: any }): { source: any, start: any, end: any };
-function buildLoc(startLine, startColumn, endLine, endColumn, source): { source: any, start: any, end: any };
+function buildLoc(startLine, startColumn, endLine?, endColumn?, source?): { source: any, start: any, end: any };
 
 function buildLoc(...args) {
   if (args.length === 1) {

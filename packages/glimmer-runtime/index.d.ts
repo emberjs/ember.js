@@ -1,31 +1,35 @@
 export {
+  StatementSyntax,
+  ExpressionSyntax,
+  AttributeSyntax,
   ATTRIBUTE_SYNTAX,
+  default as Syntax
+} from './lib/syntax';
+
+export {
   default as Template,
-  Compiler,
   Templates,
-  ParamsAndHash,
-  Params,
-  Hash,
-  EvaluatedParams,
-  EvaluatedHash,
-  EvaluatedParamsAndHash,
   Append,
   Unknown,
   StaticAttr,
   DynamicAttr,
   AddClass,
+  Args as ArgsSyntax,
+  NamedArgs as NamedArgsSyntax,
+  PositionalArgs as PositionalArgsSyntax,
   Get as GetSyntax,
   Value as ValueSyntax,
-  AttributeSyntax,
   OpenElement,
   Helper as HelperSyntax,
   Block as BlockSyntax,
-  builders
 } from './lib/template';
 
 export {
-  StatementSyntax,
-  ExpressionSyntax,
+  default as Compiler,
+  RawTemplate
+} from './lib/compiler';
+
+export {
   OpSeq,
   OpSeqBuilder
 } from './lib/opcodes';
@@ -33,7 +37,8 @@ export {
 export {
   PushChildScopeOpcode,
   PopScopeOpcode,
-  ArgsOpcode,
+  PutArgsOpcode,
+  BindArgsOpcode,
   NoopOpcode,
   EnterOpcode,
   ExitOpcode,
@@ -42,59 +47,41 @@ export {
   JumpOpcode,
   JumpIfOpcode,
   JumpUnlessOpcode,
-} from './lib/opcodes/vm';
+} from './lib/compiled/opcodes/vm';
+
+export {
+  CompiledArgs,
+  CompiledNamedArgs,
+  CompiledPositionalArgs,
+  EvaluatedArgs,
+  EvaluatedNamedArgs,
+  EvaluatedPositionalArgs
+} from './lib/compiled/expressions/args';
 
 export {
   EnterListOpcode,
   ExitListOpcode,
   EnterWithKeyOpcode,
   NextIterOpcode
-} from './lib/opcodes/lists';
+} from './lib/compiled/opcodes/lists';
 
 export { VM, UpdatingVM, RenderResult } from './lib/vm';
 
 export {
-  PushScopeOptions,
-  PushChildScope,
-  PushRootScope,
-  PopScope,
-  Evaluate,
-  Deref,
-  DerefRegister,
-  PutObject,
-  GetObject,
-  GetLocal,
-  OpenBlock,
-  CloseBlock,
-  NoopSyntax,
-  StartIter,
-  NextIter
-} from './lib/opcodes/inlining';
-
-export {
   Scope,
-  Environment,
+  default as Environment,
   Helper,
-  Frame,
-  Block,
 } from './lib/environment';
 
 export {
   ComponentClass,
   ComponentDefinition,
-  AppendingComponentClass,
   ComponentDefinitionOptions,
   ComponentInvocation,
   ComponentHooks,
   Component
 } from './lib/component/interfaces';
 
-export {
-  appendComponent
-} from './lib/component/utils';
-
-export { default as AppendingComponent } from './lib/component/appending';
 
 export { default as DOMHelper, isWhitespace } from './lib/dom';
 export { ElementStack } from './lib/builder';
-export { Bounds } from './lib/morph';

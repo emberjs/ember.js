@@ -51,7 +51,7 @@ export abstract class PushPullReference implements Reference, ChainableReference
   notify() {
     let notifyNode = this._notifyTail;
     while (notifyNode) {
-      notifyNode.child.notify();
+      // notifyNode.child.notify();
       notifyNode = notifyNode.previousSibling;
     }
   }

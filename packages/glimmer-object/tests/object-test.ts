@@ -1,5 +1,5 @@
 import GlimmerObject, { computed } from 'glimmer-object';
-import { RootReference, metaFor, setProperty, fork } from 'glimmer-reference';
+import { UpdatableReference, RootReference, metaFor, setProperty, fork } from 'glimmer-reference';
 import { intern } from 'glimmer-util';
 
 let Wrapper = <any>GlimmerObject.extend({
@@ -142,8 +142,8 @@ QUnit.test('the simple object model allows you to derive references', function()
   }
 });
 
-function root(obj): RootReference {
-  return metaFor(obj).root();
+function root(obj): UpdatableReference {
+  return metaFor(obj).root() as UpdatableReference;
 }
 
 QUnit.test("Simple computed properties", function() {

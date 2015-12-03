@@ -6,7 +6,7 @@ import namedCharRefs from "simple-html-tokenizer/html5-named-char-refs";
 import handlebarsNodeVisitors from "./parser/handlebars-node-visitors";
 import tokenizerEventHandlers from "./parser/tokenizer-event-handlers";
 
-export function preprocess(html, options) {
+export function preprocess(html, options?) {
   var ast = (typeof html === 'object') ? html : parse(html);
   var combined = new Parser(html, options).acceptNode(ast);
 

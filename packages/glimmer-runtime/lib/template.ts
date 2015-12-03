@@ -1,35 +1,65 @@
-import { RenderResult } from './render';
-import { Frame } from './environment';
 import { VM } from './vm';
+import Compiler, { RawTemplate } from './compiler';
+
+import Syntax, {
+  ATTRIBUTE_SYNTAX,
+  AttributeSyntax,
+  ExpressionSyntax,
+  StatementSyntax,
+  PrettyPrintValue,
+  PrettyPrint
+} from './syntax';
 
 import {
   Opcode,
   OpSeq,
   OpSeqBuilder,
-  StatementSyntax,
-  ExpressionSyntax,
-  PrettyPrint,
-  PrettyPrintable,
-  PrettyPrintValue
 } from './opcodes';
 
 import {
+  PutValue,
   ArgsOpcode,
   EnterOpcode,
   ExitOpcode,
   EvaluateOpcode
-} from './opcodes/vm';
+} from './compiled/opcodes/vm';
 
 import {
   OpenComponentOpcode
-} from './opcodes/component';
+} from './compiled/opcodes/component';
+
+import {
+  CompiledArgs,
+  CompiledNamedArgs,
+  CompiledPositionalArgs,
+  EvaluatedArgs,
+  EvaluatedNamedArgs,
+  EvaluatedPositionalArgs
+} from './compiled/expressions/args';
+
+import CompiledValue from './compiled/expressions/value';
+
+import {
+  CompiledLocalRef,
+  CompiledSelfRef
+} from './compiled/expressions/ref';
+
+import CompiledHelper from './compiled/expressions/helper';
+
+import CompiledConcat from './compiled/expressions/concat';
+
+import {
+  CompiledExpression
+} from './compiled/expressions';
 
 import {
   ChainableReference,
   NotifiableReference,
   PushPullReference,
   ConstReference,
-  PathReference
+  PathReference,
+  UpdatableReference,
+  referenceFromParts
 } from 'glimmer-reference';
 import { ElementStack, ClassList } from './builder';
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
@@ -56,12 +86,12 @@ import {
   DynamicPropOpcode,
   AddClassOpcode,
   CommentOpcode
-} from './opcodes/dom';
+} from './compiled/opcodes/dom';
 
 import {
   AppendOpcode,
   TrustingAppendOpcode
-} from './opcodes/content';
+} from './compiled/opcodes/content';
 
 interface Bounds {
   parentNode(): Node;
@@ -70,20 +100,6 @@ interface Bounds {
 }
 
 interface Reference {}
-
-import {
-  HelperMorph,
-  InsertionMorph,
-  // SimpleHelperMorph
-} from './morphs/inline';
-
-import { Morph, ContentMorph, TemplateMorph, BlockInvocationMorph, SimpleTemplateMorph, HasParentNode } from './morph';
-
-import {
-  BlockHelperMorph
-} from "./morphs/block";
-
-import { AttrMorph, SetPropertyMorph } from "./morphs/attrs";
 
 type Spec = any[];
 
@@ -106,102 +122,6 @@ interface RenderOptions {
 
 interface EvaluateOptions {
   nextSibling?: Node
-}
-
-export class RawTemplate {
-  syntax: LinkedList<StatementSyntax>;
-  ops: OpSeq = null;
-  locals: InternedString[];
-
-  static fromOpSeq(ops: OpSeq, locals: InternedString[]) {
-    return new RawTemplate({ ops, locals, syntax: null });
-  }
-
-  constructor({ ops, locals, syntax }: { ops: OpSeq, locals: InternedString[], syntax?: LinkedList<StatementSyntax> }) {
-    this.ops = ops;
-    this.locals = locals;
-    this.syntax = syntax || null;
-  }
-
-  opcodes(env: Environment<any>): OpSeq {
-    if (this.ops) return this.ops;
-    this.compile(env);
-    return this.ops;
-  }
-
-  compile(env: Environment<any>) {
-    this.ops = new Compiler(this, env).compile();
-  }
-}
-
-export class Compiler {
-  private env: Environment<any>;
-  private template: RawTemplate;
-  private current: StatementSyntax;
-  private ops: OpSeqBuilder;
-
-  constructor(template: RawTemplate, environment: Environment<any>) {
-    this.template = template;
-    this.current = template.syntax.head();
-    this.ops = new LinkedList<Opcode>();
-    this.env = environment;
-  }
-
-  compile(): OpSeqBuilder {
-    let { template: { syntax }, ops, env } = this;
-
-    while (this.current) {
-      let current = this.current;
-      this.current = syntax.nextNode(current);
-      env.statement(current).compile(this, env);
-    }
-
-    return ops;
-  }
-
-  append(op: Opcode) {
-    this.ops.append(op);
-  }
-
-  sliceAttributes(): Slice<AttributeSyntax> {
-    let { template: { syntax } } = this;
-
-    let begin: AttributeSyntax = null;
-    let end: AttributeSyntax = null;
-
-    while (this.current[ATTRIBUTE_SYNTAX]) {
-      let current = this.current;
-      this.current = syntax.nextNode(current);
-      begin = begin || <AttributeSyntax>current;
-      end = <AttributeSyntax>current;
-    }
-
-    return new ListSlice(begin, end);
-  }
-
-  templateFromTagContents(): Template {
-    let { template: { syntax } } = this;
-
-    let begin: StatementSyntax = null;
-    let end: StatementSyntax = null;
-    let nesting = 1;
-
-    while (true) {
-      let current = this.current;
-      this.current = syntax.nextNode(current);
-      begin = begin || current;
-
-      if (current instanceof CloseElement && --nesting === 0) {
-        end = syntax.prevNode(current);
-        break;
-      } else if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
-        nesting++;
-      }
-    }
-
-    let slice = new ListSlice(begin, end);
-    return Template.fromList(ListSlice.toList(slice));
-  }
 }
 
 export default class Template {
@@ -284,27 +204,27 @@ export default class Template {
     });
   }
 
-  render(self: any, env: Environment<any>, options: RenderOptions, blockArguments: any[]=null) {
+  render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
     let { hostOptions } = options;
     let { raw: { locals: localNames } } = this;
 
     let elementStack = new ElementStack({ dom: env.getDOM(), parentNode: options.appendTo, nextSibling: null });
-    let vm = VM.initial(env, { self, localNames, blockArguments, hostOptions, elementStack });
+    let vm = VM.initial(env, { self: new UpdatableReference(self), elementStack });
 
     return vm.execute(this.raw.opcodes(env));
   }
 
-  opcodes(env: Environment<any>): OpSeq {
+  opcodes(env: Environment): OpSeq {
     return this.raw.opcodes(env);
   }
 }
 
 type PathSexp = InternedString[];
 type ExpressionSexp = any[];
-type ParamsSexp = ExpressionSexp[];
-type HashSexp = any[];
+type PositionalArgsSexp = ExpressionSexp[];
+type NamedArgsSexp = any[];
 
-type BlockSexp = [InternedString, PathSexp, ParamsSexp, HashSexp, number, number];
+type BlockSexp = [InternedString, PathSexp, PositionalArgsSexp, NamedArgsSexp, number, number];
 
 export interface BlockOptions {
 
@@ -318,7 +238,7 @@ export class Block extends StatementSyntax {
 
     return new Block({
       path,
-      args: ParamsAndHash.fromSpec(params, hash),
+      args: Args.fromSpec(params, hash),
       templates: Templates.fromSpec(null, [templateId, inverseId, children])
     });
   }
@@ -328,10 +248,10 @@ export class Block extends StatementSyntax {
   }
 
   path: InternedString[];
-  args: ParamsAndHash;
+  args: Args;
   templates: Templates;
 
-  constructor(options: { path: InternedString[], args: ParamsAndHash, templates: Templates }) {
+  constructor(options: { path: InternedString[], args: Args, templates: Templates }) {
     super();
     this.path = options.path;
     this.args = options.args;
@@ -345,7 +265,8 @@ export class Block extends StatementSyntax {
   prettyPrint() {
     let [params, hash] = this.args.prettyPrint();
     let block = new PrettyPrint('expr', this.path.join('.'), params, hash);
-    return new PrettyPrint('block', 'block', [block], null, this.templates.prettyPrint());
+    return null;
+    // return new PrettyPrint('block', 'block', [block], null, this.templates.prettyPrint());
   }
 }
 
@@ -373,8 +294,14 @@ export class Unknown extends ExpressionSyntax {
     this.trustingMorph = !!options.unsafe;
   }
 
-  evaluate(frame: Frame): PathReference {
-    return this.ref.evaluate(frame);
+  compile(compiler: Compiler): CompiledExpression {
+    let { ref } = this;
+
+    if (compiler.env.hasHelper(ref.parts)) {
+      return new CompiledHelper({ helper: compiler.env.lookupHelper(ref.parts), args: CompiledArgs.empty() });
+    } else {
+      return this.ref.compile(compiler);
+    }
   }
 
   simplePath(): InternedString {
@@ -411,25 +338,25 @@ export class Append extends StatementSyntax {
     return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
   }
 
-  compile(ops: LinkedList<Opcode>) {
-    ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
+  compile(compiler: Compiler) {
+    compiler.append(new PutValue(this.value.compile(compiler)));
 
     if (this.trustingMorph) {
-      ops.append(new TrustingAppendOpcode());
+      compiler.append(new TrustingAppendOpcode());
     } else {
-      ops.append(new AppendOpcode());
+      compiler.append(new AppendOpcode());
     }
   }
 }
 
 class HelperInvocationReference extends PushPullReference implements PathReference {
   private helper: EnvHelper;
-  private args: EvaluatedParamsAndHash;
+  private args: EvaluatedArgs;
 
-  constructor(helper: EnvHelper, args: EvaluatedParamsAndHash) {
+  constructor(helper: EnvHelper, args: EvaluatedArgs) {
     super();
     this.helper = helper;
-    this.args = this._addSource(args);
+    this.args = args;
   }
 
   get(): PathReference {
@@ -437,9 +364,8 @@ class HelperInvocationReference extends PushPullReference implements PathReferen
   }
 
   value(): Insertion {
-    let { helper, args }  = this;
-    let { params, hash } = args.value();
-    return this.helper.call(undefined, params, hash, null);
+    let { helper, args: { positional, named } }  = this;
+    return this.helper.call(undefined, positional.value(), named.value(), null);
   }
 }
 
@@ -475,15 +401,6 @@ export class Modifier implements StatementSyntax {
 }
 */
 
-export const ATTRIBUTE_SYNTAX = "e1185d30-7cac-4b12-b26a-35327d905d92";
-
-export abstract class AttributeSyntax extends StatementSyntax {
-  "e1185d30-7cac-4b12-b26a-35327d905d92": boolean;
-  name: string;
-  namespace: string;
-  abstract valueSyntax(): ExpressionSyntax;
-}
-
 type DynamicPropSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
 
 export class DynamicProp extends AttributeSyntax {
@@ -518,9 +435,9 @@ export class DynamicProp extends AttributeSyntax {
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
-  compile(ops: Compiler) {
-    ops.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
-    ops.append(new DynamicPropOpcode(this));
+  compile(compiler: Compiler) {
+    compiler.append(new PutValue(this.value.compile(compiler)));
+    compiler.append(new DynamicPropOpcode(this));
   }
 
   valueSyntax(): ExpressionSyntax {
@@ -619,7 +536,7 @@ export class DynamicAttr extends AttributeSyntax {
   }
 
   compile(compiler: Compiler) {
-    compiler.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
+    compiler.append(new PutValue(this.value.compile(compiler)));
     compiler.append(new DynamicAttrOpcode(this));
   }
 
@@ -657,7 +574,7 @@ export class AddClass extends AttributeSyntax {
   }
 
   compile(compiler: Compiler) {
-    compiler.append(new ArgsOpcode(ParamsAndHash.fromParams(Params.build([this.value]))));
+    compiler.append(new PutValue(this.value.compile(compiler)));
     compiler.append(new AddClassOpcode());
   }
 
@@ -777,7 +694,7 @@ export class OpenElement extends StatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
-  compile(compiler: Compiler, env: Environment<any>) {
+  compile(compiler: Compiler, env: Environment) {
     let component = env.getComponentDefinition([this.tag], this);
 
     if (component) {
@@ -812,24 +729,28 @@ export class OpenPrimitiveElement extends StatementSyntax {
   prettyPrint() {
     return new PrettyPrint('element', 'open-element', [this.tag]);
   }
+
+  compile(compiler: Compiler) {
+    compiler.append(new OpenPrimitiveElementOpcode(this.tag));
+  }
 }
 
-export function attrListToHash(attrs: LinkedList<AttributeSyntax>): Hash {
+export function attrListToHash(attrs: LinkedList<AttributeSyntax>): NamedArgs {
   let d = dict<ExpressionSyntax>();
 
   attrs.forEachNode(attr => {
     d[attr.name] = attr.valueSyntax();
   });
 
-  return Hash.build(d);
+  return NamedArgs.build(d);
 }
 
 export class YieldSyntax extends StatementSyntax {
   type = "yield";
   isStatic = false;
-  public args: ParamsAndHash;
+  public args: Args;
 
-  constructor({ args }: { args: ParamsAndHash }) {
+  constructor({ args }: { args: Args }) {
     super();
     this.args = args;
   }
@@ -842,7 +763,7 @@ export class YieldSyntax extends StatementSyntax {
 class InvokeBlockOpcode extends Opcode {
   type = "invoke-block";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.invokeTemplate(<InternedString>'default');
   }
 }
@@ -883,20 +804,16 @@ export class Value extends ExpressionSyntax {
     this.value = value;
   }
 
-  clone(): Value {
-    return new Value(this);
-  }
-
   prettyPrint() {
     return String(this.value);
   }
 
-  evaluate(): PrimitiveReference {
-    return new PrimitiveReference(this.value);
-  }
-
   inner() {
     return this.value;
+  }
+
+  compile(compiler: Compiler): CompiledExpression {
+    return new CompiledValue(this);
   }
 }
 
@@ -927,8 +844,8 @@ export class Get extends ExpressionSyntax {
     return new PrettyPrint('expr', 'get', [this.ref.prettyPrint()], null);
   }
 
-  evaluate(frame: Frame): PathReference {
-    return this.ref.evaluate(frame);
+  compile(compiler: Compiler): CompiledExpression {
+    return this.ref.compile(compiler);
   }
 }
 
@@ -957,15 +874,17 @@ class Ref extends ExpressionSyntax {
     return this.parts.join('.');
   }
 
-  evaluate(frame: Frame): PathReference {
-    let parts = this.parts;
-    let path = frame.scope().getBase(parts[0]);
+  compile(compiler: Compiler): CompiledExpression {
+    let { parts } = this;
+    let front = parts[0];
+    let symbol = compiler.getSymbol(front);
 
-    for (let i = 1; i < parts.length; i++) {
-      path = path.get(parts[i]);
+    if (symbol) {
+      let lookup = parts.slice(1);
+      return new CompiledLocalRef({ symbol, lookup });
+    } else {
+      return new CompiledSelfRef({ parts });
     }
-
-    return path;
   }
 
   path(): InternedString[] {
@@ -977,13 +896,9 @@ class Ref extends ExpressionSyntax {
       return this.parts[0];
     }
   }
-
-  isHelper(frame: Frame): boolean {
-    return frame.hasHelper(this.parts);
-  }
 }
 
-type HelperSexp = [string, PathSexp, ParamsSexp, HashSexp];
+type HelperSexp = [string, PathSexp, PositionalArgsSexp, NamedArgsSexp];
 
 export class Helper extends ExpressionSyntax {
   type = "helper";
@@ -993,19 +908,19 @@ export class Helper extends ExpressionSyntax {
 
     return new Helper({
       ref: new Ref({ parts: path }),
-      args: ParamsAndHash.fromSpec(params, hash)
+      args: Args.fromSpec(params, hash)
     });
   }
 
-  static build(path: string, params: Params, hash: Hash): Helper {
-    return new this({ ref: Ref.build(path), args: new ParamsAndHash({ params, hash }) });
+  static build(path: string, positional: PositionalArgs, named: NamedArgs): Helper {
+    return new this({ ref: Ref.build(path), args: new Args({ positional, named }) });
   }
 
   isStatic = false;
   ref: Ref;
-  args: ParamsAndHash;
+  args: Args;
 
-  constructor(options: { ref: Ref, args: ParamsAndHash }) {
+  constructor(options: { ref: Ref, args: Args }) {
     super();
     this.ref = options.ref;
     this.args = options.args;
@@ -1016,9 +931,13 @@ export class Helper extends ExpressionSyntax {
     return new PrettyPrint('expr', this.ref.prettyPrint(), params, hash);
   }
 
-  evaluate(frame: Frame): PathReference {
-    let helper = frame.lookupHelper(this.ref.parts);
-    return new HelperInvocationReference(helper, this.args.evaluate(frame));
+  compile(compiler: Compiler): CompiledExpression {
+    if (compiler.env.hasHelper(this.ref.parts)) {
+      let { args, ref } = this;
+      return new CompiledHelper({ helper: compiler.env.lookupHelper(ref.parts), args: args.compile(compiler) });
+    } else {
+      throw new Error(`Compile Error: ${this.ref.prettyPrint()} is not a helper`);
+    }
   }
 
   simplePath(): InternedString {
@@ -1026,15 +945,15 @@ export class Helper extends ExpressionSyntax {
   }
 }
 
-type ConcatSexp = [string, ParamsSexp];
+type ConcatSexp = [string, PositionalArgsSexp];
 
-export class Concat extends ExpressionSyntax {
+export class Concat extends Syntax<Concat> {
   type = "concat";
 
   static fromSpec(sexp: ConcatSexp): Concat {
     let [, params] = sexp;
 
-    return new Concat({ parts: Params.fromSpec(params) });
+    return new Concat({ parts: params.map(buildExpression) });
   }
 
   static build(parts): Concat {
@@ -1042,41 +961,19 @@ export class Concat extends ExpressionSyntax {
   }
 
   isStatic = false;
-  parts: Params;
+  parts: ExpressionSyntax[];
 
-  constructor(options) {
+  constructor({ parts }: { parts: ExpressionSyntax[] }) {
     super();
-    this.parts = options.parts;
+    this.parts = parts;
   }
 
   prettyPrint() {
     return new PrettyPrint('expr', 'concat', this.parts.map(p => p.prettyPrint()));
   }
 
-  evaluate(frame: Frame): PathReference {
-    return new ConcatReference(this, frame);
-  }
-}
-
-class ConcatReference extends PushPullReference implements PathReference {
-  private parts: ChainableReference[];
-
-  constructor(concat: Concat, frame: Frame) {
-    super();
-
-    let parts = this.parts = [];
-
-    concat.parts.forEach(part => {
-      parts.push(this._addSource(part.evaluate(frame)));
-    });
-  }
-
-  get(): PathReference {
-    return NULL_REFERENCE;
-  }
-
-  value() {
-    return this.parts.map(p => p.value()).join('');
+  compile(compiler: Compiler): CompiledConcat {
+    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler)) });
   }
 }
 
@@ -1110,280 +1007,103 @@ function buildExpression(spec: Spec): ExpressionSyntax {
   }
 }
 
-export class ParamsAndHash extends ExpressionSyntax {
-  public type = "params-and-hash";
+export class Args extends Syntax<Args> {
+  public type = "args";
 
-  static fromSpec(params: ParamsSexp, hash: HashSexp): ParamsAndHash {
-    return new ParamsAndHash({ params: Params.fromSpec(params), hash: Hash.fromSpec(hash) });
+  static fromSpec(positional: PositionalArgsSexp, named: NamedArgsSexp): Args {
+    return new Args({ positional: PositionalArgs.fromSpec(positional), named: NamedArgs.fromSpec(named) });
   }
 
-  static _empty: ParamsAndHash;
+  static _empty: Args;
 
-  static empty(): ParamsAndHash {
-    return (this._empty = this._empty || new ParamsAndHash({ params: Params.empty(), hash: Hash.empty() }));
+  static empty(): Args {
+    return (this._empty = this._empty || new Args({ positional: PositionalArgs.empty(), named: NamedArgs.empty() }));
   }
 
-  static fromParams(params: Params): ParamsAndHash {
-    return new ParamsAndHash({ params, hash: Hash.empty() });
+  static fromPositionalArgs(positional: PositionalArgs): Args {
+    return new Args({ positional, named: NamedArgs.empty() });
   }
 
-  static fromHash(hash: Hash): ParamsAndHash {
-    return new ParamsAndHash({ params: Params.empty(), hash });
+  static fromHash(named: NamedArgs): Args {
+    return new Args({ positional: PositionalArgs.empty(), named });
   }
 
-  static build(params: Params, hash: Hash): ParamsAndHash {
-    return new this({ params, hash });
+  static build(positional: PositionalArgs, named: NamedArgs): Args {
+    return new this({ positional, named });
   }
 
-  public params: Params;
-  public hash: Hash;
+  public positional: PositionalArgs;
+  public named: NamedArgs;
   public isStatic = false;
 
-  constructor(options: { params: Params, hash: Hash }) {
+  constructor(options: { positional: PositionalArgs, named: NamedArgs }) {
     super();
-    this.params = options.params;
-    this.hash = options.hash;
+    this.positional = options.positional;
+    this.named = options.named;
   }
 
   prettyPrint() {
-    // return [this.params.prettyPrint(), this.hash.prettyPrint()];
+    // return [this.positional.prettyPrint(), this.named.prettyPrint()];
     return null;
   }
 
-  evaluate(frame: Frame): EvaluatedParamsAndHash {
-    return new EvaluatedParamsAndHash({
-      params: this.params.evaluate(frame),
-      hash: this.hash.evaluate(frame)
-    })
+  compile(compiler: Compiler): CompiledArgs {
+    let { positional, named } = this;
+    return CompiledArgs.create({ positional: positional.compile(compiler), named: named.compile(compiler) });
   }
 }
 
+export class PositionalArgs extends Syntax<PositionalArgs> {
+  public type = "positional";
 
-const NOOP_DESTROY = {
-  destroy() {}
-};
-
-const EMPTY_PARAMS: Reference & ChainableReference & NotifiableReference = {
-  _guid: null,
-  references: [],
-  get() { return null; },
-  nth() { return null; },
-  toArray() { return this.references },
-  first() { return null; },
-  last() { return null; },
-
-  isDirty() { return false; },
-  value() { return []; },
-  destroy() {},
-
-  chain() { return NOOP_DESTROY; },
-  notify() {}
-};
-
-const EMPTY_DICT = dict();
-
-const EMPTY_HASH: Reference & ChainableReference & NotifiableReference = {
-  _guid: null,
-  keys: [],
-  values: [],
-  map: EMPTY_DICT,
-
-  forEach() {},
-  get() { return null; },
-  at() { return null; },
-
-  isDirty() { return false; },
-  value() { return EMPTY_DICT; },
-  destroy() {},
-
-  chain() { return NOOP_DESTROY; },
-  notify() {}
-};
-
-const EMPTY_ARGS = {
-  params: EMPTY_PARAMS,
-  hash: EMPTY_HASH,
-  get() { return NULL_REFERENCE; },
-  value() { return { params: EMPTY_PARAMS, hash: EMPTY_HASH } }
-};
-
-export class EvaluatedParamsAndHash extends PushPullReference implements PathReference {
-  static empty(): EvaluatedParamsAndHash {
-    return <any>EMPTY_ARGS;
+  static fromSpec(sexp: PositionalArgsSexp): PositionalArgs {
+    if (!sexp || sexp.length === 0) return PositionalArgs.empty();
+    return new PositionalArgs(sexp.map(buildExpression));
   }
 
-  static single(ref: PathReference): EvaluatedParamsAndHash {
-    return new EvaluatedParamsAndHash({
-      params: EvaluatedParams.single(ref),
-      hash: EvaluatedHash.empty()
-    });
-  }
-
-  public params: EvaluatedParams;
-  public hash: EvaluatedHash;
-
-  constructor({ params, hash }: { params: EvaluatedParams, hash: EvaluatedHash }) {
-    super();
-    this.params = this._addSource(params);
-    this.hash = this._addSource(hash);
-  }
-
-  get(): PathReference {
-    return NULL_REFERENCE;
-  }
-
-  value(): { params: any[], hash: Dict<any> } {
-    return { params: this.params.value(), hash: this.hash.value() };
-  }
-}
-
-class NullReference extends ConstReference<any> implements PathReference {
-  constructor() {
-    super(null);
-  }
-
-  notify() {}
-
-  get(): PathReference {
-    return this;
-  }
-}
-
-class PrimitiveReference extends ConstReference<any> implements PathReference {
-  notify() {}
-
-  get(): PathReference {
-    return NULL_REFERENCE;
-  }
-}
-
-const NULL_REFERENCE = new NullReference();
-
-interface EnumerableCallback<T> {
-  (value: T): void;
-}
-
-class Enumerable<T> {
-  forEach(callback: EnumerableCallback<T>) {
-    throw new Error(`unimplemented forEach for ${this.constructor.name}`);
-  }
-
-  map<U>(callback: (T) => U): U[] {
-    let out = [];
-    this.forEach(val => out.push(callback(val)));
-    return out;
-  }
-}
-
-export class Params extends ExpressionSyntax {
-  public type = "params";
-
-  static fromSpec(sexp: ParamsSexp): Params {
-    if (!sexp || sexp.length === 0) return Params.empty();
-    return new Params(sexp.map(buildExpression));
-  }
-
-  static build(exprs: ExpressionSyntax[]): Params {
+  static build(exprs: ExpressionSyntax[]): PositionalArgs {
     return new this(exprs);
   }
 
-  static _empty: Params;
+  static _empty: PositionalArgs;
 
-  static empty(): Params {
-    return (this._empty = this._empty || new Params([]));
+  static empty(): PositionalArgs {
+    return (this._empty = this._empty || new PositionalArgs([]));
   }
 
-  params: ExpressionSyntax[];
+  values: ExpressionSyntax[];
   length: number;
   isStatic = false;
 
   constructor(exprs: ExpressionSyntax[]) {
     super();
-    this.params = exprs;
+    this.values = exprs;
     this.length = exprs.length;
   }
 
-  forEach(callback: EnumerableCallback<ExpressionSyntax>) {
-    this.params.forEach(callback);
-  }
-
   push(expr: ExpressionSyntax) {
-    this.params.push(expr);
-    this.length = this.params.length;
+    this.values.push(expr);
+    this.length = this.values.length;
   }
 
   at(index: number): ExpressionSyntax {
-    return this.params[index];
+    return this.values[index];
   }
 
-  evaluate(frame: Frame): EvaluatedParams {
-    let { params, length } = this;
-
-    if (length === 0) {
-      return <EvaluatedParams>EMPTY_PARAMS;
-    }
-
-    let references = new Array(length);
-
-    for (let i=0; i<length; i++) {
-      references[i] = params[i].evaluate(frame);
-    }
-
-    return new EvaluatedParams(references);
+  compile(compiler: Compiler): CompiledPositionalArgs {
+    return CompiledPositionalArgs.create({ values: this.values.map(v => v.compile(compiler)) });
   }
 
   prettyPrint(): PrettyPrintValue {
-    return <any>this.params.map(p => p.prettyPrint());
+    return <any>this.values.map(p => p.prettyPrint());
   }
 }
 
-export class EvaluatedParams extends PushPullReference implements PathReference {
-  static empty(): EvaluatedParams {
-    return <any>EMPTY_PARAMS;
-  }
+export class NamedArgs extends Syntax<NamedArgs> {
+  public type = "named";
 
-  static single(ref: PathReference): EvaluatedParams {
-    return new EvaluatedParams([ref]);
-  }
-
-  public references: PathReference[];
-
-  constructor(params: PathReference[]) {
-    super();
-    // params.forEach(p => this._addSource(p));
-    this.references = params;
-  }
-
-  get(index: string): PathReference {
-    return this.references[index];
-  }
-
-  nth(n: number) {
-    return this.references[n];
-  }
-
-  toArray(): PathReference[] {
-    return this.references;
-  }
-
-  first() {
-    return this.nth(0);
-  }
-
-  last() {
-    return this.nth(this.references.length - 1);
-  }
-
-  value() {
-    return this.references.map(p => p.value());
-  }
-}
-
-export class Hash extends ExpressionSyntax {
-  public type = "hash";
-
-  static fromSpec(rawPairs: HashSexp): Hash {
-    if (!rawPairs) { return Hash.empty(); }
+  static fromSpec(rawPairs: NamedArgsSexp): NamedArgs {
+    if (!rawPairs) { return NamedArgs.empty(); }
 
     let keys = [];
     let values = [];
@@ -1398,11 +1118,11 @@ export class Hash extends ExpressionSyntax {
       map[key] = value;
     }
 
-    return new Hash({ keys, values, map });
+    return new NamedArgs({ keys, values, map });
   }
 
-  static build(map: Dict<ExpressionSyntax>): Hash {
-    if (map === undefined) { return Hash.empty(); }
+  static build(map: Dict<ExpressionSyntax>): NamedArgs {
+    if (map === undefined) { return NamedArgs.empty(); }
     let keys = [];
     let values = [];
 
@@ -1416,8 +1136,8 @@ export class Hash extends ExpressionSyntax {
 
   static _empty;
 
-  static empty(): Hash {
-    return (this._empty = this._empty || new Hash({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY, map: dict<ExpressionSyntax>() }));
+  static empty(): NamedArgs {
+    return (this._empty = this._empty || new NamedArgs({ keys: EMPTY_ARRAY, values: EMPTY_ARRAY, map: dict<ExpressionSyntax>() }));
   }
 
   public map: Dict<ExpressionSyntax>;
@@ -1454,71 +1174,15 @@ export class Hash extends ExpressionSyntax {
     return !!this.map[<string>key];
   }
 
-  evaluate(frame: Frame): EvaluatedHash {
-    let { keys, values } = this;
+  compile(compiler: Compiler): CompiledNamedArgs {
+    let { keys, values: rawValues } = this;
+    let values = rawValues.map(v => v.compile(compiler));
 
-    if (keys.length === 0) {
-      return <EvaluatedHash>EMPTY_HASH;
-    }
-
-    let valueReferences = values.map((value, i) => {
-      return <PathReference>value.evaluate(frame);
-    });
-
-    return new EvaluatedHash({ keys, values: valueReferences });
+    return CompiledNamedArgs.create({ keys, values });
   }
 }
 
-export class EvaluatedHash extends PushPullReference implements PathReference {
-  static empty(): EvaluatedHash {
-    return <any>EMPTY_HASH;
-  }
-
-  public values: PathReference[];
-  public keys: InternedString[];
-  public map: Dict<PathReference>;
-
-  constructor({ keys, values }: { keys: InternedString[], values: PathReference[] }) {
-    super();
-
-    let map = dict<PathReference>();
-
-    values.forEach((v, i) => {
-      map[<string>keys[i]] = v;
-      this._addSource(v);
-    });
-
-    this.keys = keys;
-    this.values = values;
-    this.map = map;
-  }
-
-  forEach(callback: (key: InternedString, value: PathReference) => void) {
-    let values = this.values;
-    this.keys.forEach((key, i) => callback(key, this.values[i]));
-  }
-
-  get(key: InternedString): PathReference {
-    return this.map[<string>key];
-  }
-
-  at(key: InternedString): PathReference {
-    return this.map[<string>key];
-  }
-
-  value(): Dict<any> {
-    let hash = dict();
-    let refs = this.values;
-
-    this.keys.forEach((k, i) => {
-      hash[<string>k] = refs[i].value();
-    });
-
-    return hash;
-  }
-}
-
-export class Templates extends ExpressionSyntax {
+export class Templates extends Syntax<Templates> {
   public type = "templates";
 
   static fromSpec(_, [templateId, inverseId, children]): Templates {
@@ -1532,7 +1196,6 @@ export class Templates extends ExpressionSyntax {
     return new this({ template, inverse });
   }
 
-  public isStatic = false;
   public default: Template;
   public inverse: Template;
 
@@ -1551,74 +1214,7 @@ export class Templates extends ExpressionSyntax {
     });
   }
 
-  evaluate(frame: Frame): PathReference {
+  evaluate(vm: VM): PathReference {
     throw new Error("unimplemented evaluate for ExpressionSyntax");
   }
 }
-
-export let builders = {
-  value: bind(Value.build, Value),
-  hash: bind(Hash.build, Hash),
-  openElement: bind(OpenElement.build, OpenElement),
-  openPrimitiveElement: bind(OpenPrimitiveElement.build, OpenPrimitiveElement),
-  closeElement: bind(CloseElement.build, CloseElement),
-  staticAttr: bind(StaticAttr.build, StaticAttr),
-  dynamicAttr: bind(DynamicAttr.build, DynamicAttr),
-  addClass: bind(AddClass.build, AddClass)
-};
-
-function bind<T extends Function>(f: T, self: any): T {
-  return f.bind(self);
-}
-
-export class TemplateBuilder {
-  private statements: any[];
-
-  constructor() {
-    this.statements = [];
-  }
-
-  template() {
-    return Template.fromStatements(this.statements);
-  }
-
-  specExpr(spec: any[]): ExpressionSyntax {
-    return buildExpression(spec);
-  }
-
-  params(params: Params, hash: Hash): ParamsAndHash {
-    return new ParamsAndHash({ params, hash });
-  }
-
-  openElement(tagName: string): OpenElement {
-    return OpenElement.build(tagName, null);
-  }
-
-  closeElement(): CloseElement {
-    return CloseElement.build();
-  }
-
-  staticAttr(key: string, value: string): StaticAttr {
-    return StaticAttr.build(key, value);
-  }
-
-  dynamicAttr(key: string, value: ExpressionSyntax, namespace: string=null): DynamicAttr {
-    return DynamicAttr.build(key, value);
-  }
-
-  append(expression: ExpressionSyntax, trust: boolean=false): Append {
-    return Append.build(expression, trust);
-  }
-}
-
-// export all statement nodes as builders via their static `build` method
-Object.keys(StatementNodes).forEach(key => {
-  let builderKey = `${key[0].toLowerCase()}${key.slice(1)}`;
-  builders[builderKey] = StatementNodes[key].build.bind(StatementNodes[key]);
-});
-
-Object.keys(builders).forEach(key => {
-  TemplateBuilder.prototype[key] = function(...args) {
-    this.statements.push(builders[key](...args));
-  };
-});

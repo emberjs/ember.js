@@ -1,4 +1,4 @@
-import { compile } from "../glimmer-compiler/compiler";
+import { compile } from "glimmer-compiler";
 
 QUnit.module('compile: buildMeta');
 
@@ -9,7 +9,7 @@ QUnit.skip('is merged into meta in template', function() {
     }
   });
 
-  equal(template.meta.blah, 'zorz', 'return value from buildMeta was pass through');
+  equal(template.meta['blah'], 'zorz', 'return value from buildMeta was pass through');
 });
 
 QUnit.skip('the program is passed to the callback function', function() {
@@ -19,7 +19,7 @@ QUnit.skip('the program is passed to the callback function', function() {
     }
   });
 
-  equal(template.meta.loc.start.line, 1, 'the loc was passed through from program');
+  equal(template.meta['loc'].start.line, 1, 'the loc was passed through from program');
 });
 
 QUnit.skip('value keys are properly stringified', function() {

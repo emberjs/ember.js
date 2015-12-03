@@ -1,5 +1,5 @@
 import { compile as defaultCompile } from "glimmer-compiler";
-import { DOMHelper, Template, RenderResult, manualElement } from "glimmer-runtime";
+import { DOMHelper, Template, RenderResult } from "glimmer-runtime";
 import { equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
@@ -15,7 +15,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment(window.document); // TODO: Support SimpleDOM
-  env.registerComponent('my-component', MyComponent, "<div>{{yield}}</div>")
+  env.registerGlimmerComponent('my-component', MyComponent, "<div>{{yield}}</div>")
   root = rootElement();
 }
 
@@ -26,8 +26,7 @@ function render(template: Template, context={}) {
 }
 
 function rerender(context: Object={}) {
-  result.scope.updateSelf(context);
-  result.rerender();
+  result.rerender(context);
 }
 
 function assertInvariants(result) {
@@ -65,7 +64,7 @@ QUnit.skip('creating a new component', assert => {
 });
 
 QUnit.skip('the component class is its context', assert => {
-  env.registerComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>')
+  env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>')
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
 
@@ -75,7 +74,7 @@ QUnit.skip('the component class is its context', assert => {
 });
 
 QUnit.skip('attrs are available in the layout', assert => {
-  env.registerComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>')
+  env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>')
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   let result = render(template, { color: 'red' });
 
@@ -86,7 +85,7 @@ QUnit.skip('attrs are available in the layout', assert => {
 
 function testError(layout: string, expected: RegExp) {
   QUnit.skip(`'${layout}' produces an error like ${expected}`, assert => {
-    env.registerComponent('my-component', MyComponent, layout);
+    env.registerGlimmerComponent('my-component', MyComponent, layout);
     let template = compile("<my-component>hello!</my-component>");
     assert.throws(() => render(template), expected);
   });

@@ -1,10 +1,10 @@
-import { Opcode, UpdatingOpcode } from '../opcodes';
-import { VM, UpdatingVM } from '../vm';
+import { Opcode, UpdatingOpcode } from '../../opcodes';
+import { VM, UpdatingVM } from '../../vm';
 import { InternedString } from 'glimmer-util';
-import { Append } from '../template';
+import { Append } from '../../template';
 import { PathReference } from 'glimmer-reference';
-import DOMHelper from '../dom';
-import { Bounds, clear } from '../morph';
+import DOMHelper from '../../dom';
+import Bounds, { clear } from '../../bounds';
 
 
 abstract class ContentOpcode implements Opcode {
@@ -12,7 +12,7 @@ abstract class ContentOpcode implements Opcode {
   public next = null;
   public prev = null;
 
-  abstract evaluate(vm: VM<any>);
+  abstract evaluate(vm: VM);
 }
 
 abstract class UpdatingContentOpcode implements UpdatingOpcode {
@@ -24,7 +24,7 @@ abstract class UpdatingContentOpcode implements UpdatingOpcode {
 }
 
 export class AppendOpcode extends ContentOpcode {
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let reference = vm.registers.operand;
     let value = reference.value();
     let node = vm.stack().appendText(value);
@@ -54,8 +54,8 @@ export class UpdateAppendOpcode extends UpdatingContentOpcode {
 }
 
 export class TrustingAppendOpcode extends ContentOpcode {
-  evaluate(vm: VM<any>) {
-    let reference = vm.registers.args.params.nth(0);
+  evaluate(vm: VM) {
+    let reference = vm.registers.operand;
     let value = reference.value();
 
     let bounds = vm.stack().insertHTMLBefore(null, value);

@@ -1,18 +1,20 @@
 import { InternedString, Slice } from 'glimmer-util';
-import {
-  Frame
-} from '../environment';
+
 import Template, {
   Templates,
-  EvaluatedHash,
-  AttributeSyntax
 } from '../template';
+
 import {
   ElementStack
 } from '../builder';
+
 import {
-  TemplateMorph
-} from '../morph';
+  EvaluatedNamedArgs
+} from '../compiled/expressions/args';
+
+import {
+  AttributeSyntax
+} from '../syntax';
 
 export interface ComponentClass {
   new (attrs: Object): Component;
@@ -38,21 +40,9 @@ export interface ComponentHooks {
 }
 
 export interface ComponentDefinitionOptions {
-  frame: Frame;
   templates: Templates;
-  hash: EvaluatedHash;
+  attrs: EvaluatedNamedArgs;
   tag: InternedString;
-}
-
-export interface AppendingComponentOptions {
-  hooks: ComponentHooks;
-  ComponentClass: ComponentClass;
-  layout: Template;
-  stack: ElementStack;
-}
-
-export interface AppendingComponentClass {
-  new({ hooks, ComponentClass, layout, stack }: AppendingComponentOptions): AppendingComponent;
 }
 
 export interface ComponentHooks {
@@ -111,22 +101,3 @@ export interface ComponentInvocation {
   templates: Templates;
   layout: Template;
 }
-
-// export class ComponentDefinition {
-
-//   begin(stack: ElementStack, { frame, templates, hash, tag }: ComponentDefinitionOptions): AppendingComponent {
-//     let { hooks, ComponentClass, layout } = this;
-//     let appending = new this.AppendingComponent({ hooks, ComponentClass, layout, stack });
-//     appending.begin(stack, { frame, templates, hash, tag });
-//     return appending;
-//   }
-// }
-
-// export interface AppendingComponent {
-//   ComponentClass: ComponentClass;
-//   layout: Template;
-//   begin(stack: ElementStack, options: ComponentDefinitionOptions);
-//   process(): TemplateMorph;
-//   update(component: Component, attrs: EvaluatedHash);
-//   hooks: ComponentHooks;
-// }

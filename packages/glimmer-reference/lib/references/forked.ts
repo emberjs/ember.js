@@ -3,7 +3,7 @@ import { HasGuid } from 'glimmer-util';
 
 export default class ForkedReference implements NotifiableReference, HasGuid {
   private reference: ChainableReference;
-  private chain: Destroyable;
+  // private chain: Destroyable;
   public _guid: number = null;
   private dirty: boolean = true;
 
@@ -12,7 +12,7 @@ export default class ForkedReference implements NotifiableReference, HasGuid {
     this._guid = null;
     this.dirty = true;
 
-    this.chain = reference.chain(this);
+    // this.chain = reference.chain(this);
   }
 
   notify() {
@@ -29,7 +29,7 @@ export default class ForkedReference implements NotifiableReference, HasGuid {
   }
 
   destroy() {
-    this.chain.destroy();
+    // this.chain.destroy();
   }
 
   label() {
