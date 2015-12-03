@@ -2,6 +2,7 @@ import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
+import factory from 'container/tests/test-helpers/factory';
 
 let app, appInstance;
 
@@ -123,4 +124,27 @@ QUnit.test('customEvents added to the application instance before setupEventDisp
   };
 
   appInstance.setupEventDispatcher();
+});
+
+QUnit.test('unregistering a factory clears all cached instances of that factory', function(assert) {
+  assert.expect(3);
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+  });
+
+  let PostController = factory();
+
+  appInstance.register('controller:post', PostController);
+
+  let postController1 = appInstance.lookup('controller:post');
+  assert.ok(postController1, 'lookup creates instance');
+
+  appInstance.unregister('controller:post');
+  appInstance.register('controller:post', PostController);
+
+  let postController2 = appInstance.lookup('controller:post');
+  assert.ok(postController2, 'lookup creates instance');
+
+  assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because previous one was reset');
 });

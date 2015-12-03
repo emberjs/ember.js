@@ -278,6 +278,21 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   willDestroy() {
     this._super(...arguments);
     run(this.__container__, 'destroy');
+  },
+
+  /**
+   Unregister a factory.
+
+   Overrides `RegistryProxy#unregister` in order to clear any cached instances
+   of the unregistered factory.
+
+   @public
+   @method unregister
+   @param {String} fullName
+   */
+  unregister(fullName) {
+    this.__container__.reset(fullName);
+    this._super(...arguments);
   }
 });
 
