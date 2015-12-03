@@ -2,6 +2,8 @@ import _default from 'ember-views/views/states/default';
 import assign from 'ember-metal/assign';
 import jQuery from 'ember-views/system/jquery';
 import run from 'ember-metal/run_loop';
+import symbol from 'ember-metal/symbol';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -13,10 +15,46 @@ import { internal } from 'htmlbars-runtime';
 
 var hasElement = Object.create(_default);
 
+const ELEMENTS = symbol('ELEMENTS');
+
 assign(hasElement, {
+  [ELEMENTS](view) {
+    let firstNode = view._renderNode.firstNode;
+    let lastNode = view._renderNode.lastNode;
+    let node = firstNode;
+    let nodeList = [];
+
+    function testNode(node) {
+      //Skip comment nodes and empty text nodes
+      return !(node.nodeType === 8 || (node.nodeType === 3 && !/\S/.test(node.nodeValue)));
+    }
+
+    //handle first node
+    if (testNode(node)) { nodeList.push(node); }
+    node = node.nextSibling;
+
+    while (node && node !== lastNode) {
+      if (node.nodeType !== 8) { nodeList.push(node); }
+      node = node.nextSibling;
+    }
+
+    //handle last node
+    if (testNode(lastNode)) { nodeList.push(lastNode); }
+
+    return nodeList;
+  },
+
   $(view, sel) {
-    var elem = view.element;
-    return sel ? jQuery(sel, elem) : jQuery(elem);
+    if (view.tagName === '') {
+      if (isEnabled('ember-views-tagless-jquery')) {
+        var range = jQuery(this[ELEMENTS](view));
+        //Return inner find and topmost elements filter if a selector is provided
+        return sel ? jQuery(sel, range).add(range.filter(sel)) : range;
+      }
+    } else {
+      var elem = view.element;
+      return sel ? jQuery(sel, elem) : jQuery(elem);
+    }
   },
 
   getElement(view) {
