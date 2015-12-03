@@ -151,6 +151,32 @@ if (isEnabled('ember-contextual-components')) {
           'greeting is bound');
   });
 
+  QUnit.test('updates when curried hash arguments is bound in block form', function() {
+    owner.register(
+      'template:components/-looked-up',
+      compile(`{{greeting}}`)
+    );
+
+    let template = compile(
+      `{{#with (hash comp=(component "-looked-up" greeting=greeting)) as |my|}}
+        {{#my.comp}}{{/my.comp}}
+      {{/with}}`
+    );
+
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
+
+    runAppend(component);
+    equal(component.$().text().trim(), '', '-looked-up component rendered');
+    run(() => {
+      component.set('greeting', 'Hodi');
+    });
+    equal(component.$().text().trim(), `Hodi`,
+          'greeting is bound');
+  });
+
   QUnit.test('nested components overwrites named positional parameters', function() {
     let LookedUp = Component.extend();
     LookedUp.reopenClass({
