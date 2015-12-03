@@ -1,5 +1,5 @@
 import { compile } from "glimmer-compiler";
-import { DOMHelper, Template, manualElement } from "glimmer-runtime";
+import { DOMHelper, Template } from "glimmer-runtime";
 import { equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
@@ -141,10 +141,6 @@ test("block arguments", assert => {
 });
 
 test("block arguments (ensure balanced push/pop)", assert => {
-  env.registerHelper('with', (params, hash, blocks) => {
-    blocks.template.yield([ params[0] ]);
-  });
-
   let template = compile("<div>{{#with person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>");
 
   let object = { person: { name: { first: "Godfrey", last: "Chan" } }, f: "Outer" };

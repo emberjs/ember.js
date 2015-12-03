@@ -77,7 +77,7 @@ class ConstRoot implements IRootReference {
   }
 }
 
-class ConstMeta implements IMeta {
+class ConstMeta /*implements IMeta*/ {
   private object: any;
 
   constructor(object: any) {
@@ -97,7 +97,7 @@ class Meta implements IMeta, HasGuid {
   static for(obj: any): IMeta {
     if (obj === null || obj === undefined) return new Meta(obj, {});
     if (hasOwnProperty.call(obj, '_meta') && obj._meta) return obj._meta;
-    if (!Object.isExtensible(obj)) return new ConstMeta(obj);
+    if (!Object.isExtensible(obj)) return <any>new ConstMeta(obj);
 
     let MetaToUse: typeof Meta = Meta;
 
@@ -113,11 +113,6 @@ class Meta implements IMeta, HasGuid {
 
   static exists(obj: any): boolean {
     return typeof obj === 'object' && obj._meta;
-  }
-
-  static identity(obj: any): InternedString {
-    if (typeof obj === 'string') return intern(obj);
-    else if (typeof obj === 'object') return this.for(obj).identity();
   }
 
   static metadataForProperty(key: InternedString): any {
@@ -178,10 +173,6 @@ class Meta implements IMeta, HasGuid {
 
   root(): IRootReference {
     return (this.rootCache = this.rootCache || new this.RootReferenceFactory(this.object));
-  }
-
-  identity(): InternedString {
-    return numberKey(installGuid(this));
   }
 }
 

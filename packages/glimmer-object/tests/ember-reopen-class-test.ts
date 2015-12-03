@@ -26,6 +26,6 @@ QUnit.test('class properties inherited by subclasses', function() {
 
   var SubSub = Subclass.extend();
 
-  equal(SubSub.foo(), 'FOO', 'Adds method');
+  equal(SubSub['foo'](), 'FOO', 'Adds method');
   equal(get(SubSub, 'bar'), 'BAR', 'Adds property');
 });

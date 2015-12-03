@@ -10,11 +10,11 @@ export interface Reference extends Destroyable {
 }
 
 export interface NotifiableReference extends Reference {
-  notify();
+  // notify();
 }
 
 export interface ChainableReference extends Reference {
-  chain(child: Reference): Destroyable;
+  // chain(child: Reference): Destroyable;
 }
 
 export interface PathReferenceFactory {
@@ -54,7 +54,6 @@ export interface MetaOptions {
 
 export interface Meta {
   root(): RootReference;
-  identity(): InternedString;
   referencesFor(property: InternedString): Set<PathReference>;
   referenceTypeFor(property: InternedString): InnerReferenceFactory;
   getReferenceTypes(): Dict<InnerReferenceFactory>;
@@ -65,5 +64,4 @@ export interface Meta {
 
 export interface MetaLookup {
   for(obj: any): Meta;
-  identity(obj: any): InternedString;
 }

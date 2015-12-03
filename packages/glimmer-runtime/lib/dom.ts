@@ -1,4 +1,4 @@
-import { ConcreteBounds, Bounds } from './morph';
+import { ConcreteBounds, Bounds } from './bounds';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 export default class DOMHelper {

@@ -156,7 +156,7 @@ function pathParams(ast) {
   return compactJoin([name, path, params, hash], ' ');
 }
 
-function compactJoin(array, delimiter) {
+function compactJoin(array, delimiter?) {
   return compact(array).join(delimiter || '');
 }
 

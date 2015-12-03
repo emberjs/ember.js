@@ -63,7 +63,7 @@ export class PathReference extends PushPullReference implements IPathReference, 
   }
 
   notify() {
-    this._notify();
+    // this._notify();
     super.notify();
   }
 

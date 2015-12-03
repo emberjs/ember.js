@@ -1,19 +1,17 @@
-import { Scope, Environment, Frame } from './environment';
-import { Bounds } from './morph';
+import { Scope, Environment } from './environment';
+import { Bounds, clear, move } from './bounds';
 import { ElementStack } from './builder';
 import { Stack, LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'glimmer-util';
-import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
-import Template, { Templates, EvaluatedParamsAndHash as EvaluatedArgs, ParamsAndHash as Args } from './template';
-import { StatementSyntax, ExpressionSyntax, Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
+import { ConstReference, UpdatableReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
+import Template, { Templates, Args } from './template';
+import { CompiledExpression } from './compiled/expressions';
+import { CompiledArgs, EvaluatedArgs } from './compiled/expressions/args';
+import { Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
 import DOMHelper from './dom';
-import { clear, move } from './morph';
 
-interface VMOptions<T> {
-  self: any,
-  localNames: InternedString[];
-  blockArguments: any[];
+interface VMOptions {
+  self: RootReference,
   elementStack: ElementStack;
-  hostOptions: T;
 }
 
 interface Registers {
@@ -25,22 +23,22 @@ interface Registers {
   templates: Dict<Template>;
 }
 
-export class VM<T> {
-  public env: Environment<T>;
-  private frameStack = new Stack<VMFrame<T>>();
-  private scopeStack = new Stack<Scope<T>>();
+export class VM {
+  public env: Environment;
+  private frameStack = new Stack<VMFrame>();
+  private scopeStack = new Stack<Scope>();
   private elementStack: ElementStack;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
 
   public registers: Registers = null;
 
-  static initial(env: Environment<any>, { self, localNames, blockArguments, hostOptions, elementStack }: VMOptions<any>) {
-    let scope = env.createRootScope().init({ self, localNames, blockArguments, hostOptions });
+  static initial(env: Environment, { elementStack, self }: VMOptions) {
+    let scope = env.createRootScope(0).init({ self });
     return new VM(env, scope, elementStack);
   }
 
-  constructor(env: Environment<T>, scope: Scope<any>, elementStack: ElementStack) {
+  constructor(env: Environment, scope: Scope, elementStack: ElementStack) {
     this.env = env;
     this.elementStack = elementStack;
     this.pushScope(scope);
@@ -106,7 +104,7 @@ export class VM<T> {
     return this.elementStack;
   }
 
-  scope(): Scope<T> {
+  scope(): Scope {
     return this.scopeStack.current;
   }
 
@@ -129,31 +127,32 @@ export class VM<T> {
     this.registers = current.registers;
   }
 
-  pushChildScope({ self, localNames, blockArguments, blockArgumentReferences }: { self?: any, localNames: InternedString[], blockArguments?: any[], blockArgumentReferences?: PathReference[] }): Scope<T> {
-    let scope = this.scope().child(localNames);
-
-    if (localNames && localNames.length) {
-      if (blockArguments) scope.bindLocals(blockArguments);
-      else if (blockArgumentReferences) scope.bindLocalReferences(blockArgumentReferences);
-    }
-
-    if (self !== undefined) {
-      scope.bindSelf(self);
-    }
-
-    return this.pushScope(scope);
+  pushChildScope({ self, localNames, blockArguments, blockArgumentReferences }: { self?: any, localNames: InternedString[], blockArguments?: any[], blockArgumentReferences?: PathReference[] }): Scope {
+    return null;
   }
 
-  pushScope(scope: Scope<T>): Scope<T> {
+  pushScope(scope: Scope): Scope {
     this.scopeStack.push(scope);
     return scope;
   }
 
-  popScope(): Scope<T> {
+  popScope(): Scope {
     return this.scopeStack.pop();
   }
 
-  execute(opcodes: OpSeq, initialize?: (vm: VM<any>) => void): RenderResult {
+  /// SCOPE HELPERS
+
+  getSelf() {
+    return this.scope().getSelf();
+  }
+
+  referenceForSymbol(symbol: number) {
+    return this.scope().getSymbol(symbol);
+  }
+
+  /// EXECUTION
+
+  execute(opcodes: OpSeq, initialize?: (vm: VM) => void): RenderResult {
     let { elementStack, frameStack, updatingOpcodeStack, env } = this;
     let self = this.scope().getSelf();
     let renderResult;
@@ -188,9 +187,22 @@ export class VM<T> {
     this.frameStack.push(new VMFrame(this, template.raw.opcodes(this.env)));
   }
 
-  evaluateArgs(args: Args) {
-    let evaledArgs = this.registers.args = args.evaluate(new Frame(this.env, this.scope()));
-    this.registers.operand = evaledArgs.params.nth(0);
+  evaluateOperand(expr: CompiledExpression) {
+    this.registers.operand = expr.evaluate(this);
+  }
+
+  evaluateArgs(args: CompiledArgs) {
+    let evaledArgs = this.registers.args = args.evaluate(this);
+    this.registers.operand = evaledArgs.positional.at(0);
+  }
+
+  bindArgs(symbols: number[]) {
+    let args = this.registers.args.positional;
+    let scope = this.scope();
+
+    for(let i=0; i<symbols.length; i++) {
+      scope.bindSymbol(symbols[i], args.at(i));
+    }
   }
 
   setTemplates(templates: Dict<Template>) {
@@ -201,6 +213,8 @@ export class VM<T> {
     this.pushFrame(this.registers.templates[<string>name].opcodes(this.env));
   }
 }
+
+export default VM;
 
 export class UpdatingVM {
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
@@ -233,7 +247,7 @@ export class UpdatingVM {
     this.frameStack.push(new UpdatingVMFrame(this, ops, handler));
   }
 
-  throw(initialize?: (vm: VM<any>) => void) {
+  throw(initialize?: (vm: VM) => void) {
     this.frameStack.current.handleException(initialize);
   }
 
@@ -243,12 +257,12 @@ export class UpdatingVM {
 }
 
 interface ExceptionHandler {
-  handleException(initialize?: (vm: VM<any>) => void);
+  handleException(initialize?: (vm: VM) => void);
 }
 
 interface BlockOpcodeOptions {
-  ops: OpSeq,
-  vm: VM<any>;
+  ops: OpSeq;
+  vm: VM;
   updating: LinkedList<UpdatingOpcode>;
 }
 
@@ -257,8 +271,8 @@ abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   public next = null;
   public prev = null;
 
-  protected env: Environment<any>;
-  protected scope: Scope<any>;
+  protected env: Environment;
+  protected scope: Scope;
   protected updating: LinkedList<UpdatingOpcode>;
   protected bounds: Bounds;
   public ops: OpSeq;
@@ -295,7 +309,7 @@ class TryOpcode extends BlockOpcode implements UpdatingOpcode, ExceptionHandler 
     vm.try(this.updating, this);
   }
 
-  handleException(initialize?: (vm: VM<any>) => void) {
+  handleException(initialize?: (vm: VM) => void) {
     let stack = new ElementStack({
       dom: this.env.getDOM(),
       parentNode: this.bounds.parentElement(),
@@ -339,7 +353,6 @@ class ListRevalidationDelegate implements ListDelegate {
     let tryOpcode;
 
     let result = vm.execute(opcode.ops, vm => {
-      vm.registers.args = EvaluatedArgs.single(item);
       vm.registers.operand = item;
       vm.registers.condition = new ConstReference(true);
       vm.registers.key = key;
@@ -456,7 +469,7 @@ class UpdatingVMFrame {
     return current;
   }
 
-  handleException(initialize?: (vm: VM<any>) => void) {
+  handleException(initialize?: (vm: VM) => void) {
     this.exceptionHandler.handleException(initialize);
   }
 }
@@ -509,11 +522,11 @@ interface ReturnHandler {
   setRenderResult(renderResult: RenderResult);
 }
 
-export class VMFrame<T> implements LinkedListNode {
-  public next: VMFrame<T>;
-  public prev: VMFrame<T>;
+export class VMFrame implements LinkedListNode {
+  public next: VMFrame;
+  public prev: VMFrame;
 
-  private vm: VM<T>;
+  private vm: VM;
   public ops: OpSeq;
   public current: Opcode;
   public onReturn: ReturnHandler;
@@ -523,10 +536,11 @@ export class VMFrame<T> implements LinkedListNode {
     args: null,
     condition: null,
     iterator: null,
-    key: null
+    key: null,
+    templates: null
   };
 
-  constructor(vm: VM<T>, ops: OpSeq) {
+  constructor(vm: VM, ops: OpSeq) {
     this.vm = vm;
     this.ops = ops;
     this.current = ops.head();
@@ -543,8 +557,4 @@ export class VMFrame<T> implements LinkedListNode {
     if (current) this.current = ops.nextNode(current);
     return current;
   }
-
-  // finalize(elementStack: ElementStack, scope: Scope<any>) {
-    // this.onReturn.setRenderResult(elementStack.closeBlock(this.template));
-  // }
 }

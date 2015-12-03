@@ -1,19 +1,14 @@
 import Template, {
   YieldSyntax,
-  AttributeSyntax,
   Helper as HelperSyntax,
   Unknown,
   Append,
-  Hash,
-  EvaluatedHash,
-  ParamsAndHash,
-  EvaluatedParams,
   Templates
 } from "./template";
 
-import { StatementSyntax } from './opcodes';
-import { ContentMorph, TemplateMorph } from './morph';
 import { ElementStack } from './builder';
+
+import { StatementSyntax } from './syntax';
 
 import {
   Component,
@@ -32,168 +27,60 @@ import {
 
 import { VM } from './vm';
 
-import { InternedString, LITERAL, symbol, intern } from 'glimmer-util';
+import {
+  LITERAL,
+  HasGuid,
+  InternedString,
+  symbol,
+  intern,
+  installGuid
+} from 'glimmer-util';
 
 let EMPTY_OBJECT = Object.freeze(Object.create(null));
 
 import { LinkedList, LinkedListNode, Dict, dict } from 'glimmer-util';
 import { Destroyable } from './utils';
-import { BlockInvocationMorph } from './morph';
 
 function fork(ref: ChainableReference): Reference {
   throw new Error("unimplemented");
 }
 
-export class Block {
-  template: Template;
-  frame: Frame;
+export class Scope {
+  private parent: Scope = null;
 
-  constructor(template: Template, frame: Frame) {
-    this.template = template;
-    this.frame = frame;
-  }
-}
+  // the 0th slot is `self`
+  private references: PathReference[];
 
-interface InitScope {
-  self?: any;
-  localNames: InternedString[];
-  blockArguments?: any[];
-  blockArgumentReferences?: PathReference[];
-  hostOptions?: any;
-}
-
-export abstract class Scope<T extends Object> {
-  protected parent: Scope<T>;
-  private self: RootReference = undefined;
-  private locals: Dict<PathReference> = null;
-  private blocks: Dict<Block> = null;
-  private localNames: InternedString[];
-  protected meta: MetaLookup;
-
-  // Registers
-  public generic: any = null;
-  public condition: PathReference = null;
-  public iterable: PathReference = null;
-  public iterator: Iterator<any> = null;
-  public iterationCounter: number = null;
-  public iterationItem: PathReference = null;
-
-  constructor(parent: Scope<T>, meta: MetaLookup, localNames: InternedString[]) {
+  constructor(parent: Scope, size = 0) {
     this.parent = parent;
-    this.localNames = localNames;
-    this.meta = meta;
+    let refs = this.references = new Array(size + 1);
+    for (let i=0; i<size; i++) {
+      refs[i] = null;
+    }
   }
 
-  init({ self, localNames, blockArguments, blockArgumentReferences, hostOptions }: InitScope): Scope<T> {
-    if (self !== undefined) this.bindSelf(self);
-    if (hostOptions) this.bindHostOptions(hostOptions);
-
-    if (localNames && localNames.length) {
-      this.localNames = localNames;
-
-      if (blockArguments) this.bindLocals(blockArguments);
-      else if (blockArgumentReferences) this.bindLocalReferences(blockArgumentReferences);
-    }
-
+  init({ self }: { self: PathReference }): this {
+    this.references[0] = self;
     return this;
   }
 
-  update({ self, blockArguments }: { self: any, blockArguments: any[] }) {
-    if (self !== undefined) this.updateSelf(self);
-
-    if (blockArguments && blockArguments.length) {
-      this.updateLocals(blockArguments);
-    }
+  getSelf(): PathReference {
+    return this.references[0];
   }
 
-  abstract bindHostOptions(hostOptions: T);
-
-  abstract getHostOptions(): T;
-
-  abstract child(localNames: InternedString[]): Scope<T>;
-
-  uniqueSymbol(debugName: string): Symbol | InternedString {
-    return symbol(debugName);
+  getSymbol(symbol: number): PathReference {
+    return this.references[symbol];
   }
 
-  bindSelf(object: any) {
-    this.self = this.meta.for(object).root();
-  }
-
-  updateSelf(value: any) {
-    this.self.update(value);
-  }
-
-  getSelf(): RootReference {
-    return this.self || (this.parent && this.parent.getSelf());
-  }
-
-  bindLocal(name: InternedString, value: any) {
-    let locals = this.locals = this.locals || dict<PathReference>();
-    locals[<string>name] = this.meta.for(value).root();
-  }
-
-  bindLocalReference(name: InternedString, value: PathReference) {
-    let locals = this.locals = this.locals || dict<PathReference>();
-    locals[<string>name] = value;
-  }
-
-  bindLocals(blockArguments: any[]) {
-    let { localNames } = this;
-    for (let i = 0, l = localNames.length; i < l; i++) {
-      this.bindLocal(localNames[i], blockArguments[i]);
-    }
-  }
-
-  bindLocalReferences(blockArguments: PathReference[]) {
-    let { localNames } = this;
-    for (let i = 0, l = localNames.length; i < l; i++) {
-      this.bindLocalReference(localNames[i], blockArguments[i]);
-    }
-  }
-
-  updateLocal(name: InternedString, value: any) {
-    this.locals[<string>name].update(value);
-  }
-
-  updateLocals(blockArguments: any[]) {
-    let { localNames } = this;
-    for (let i = 0, l = localNames.length; i < l; i++) {
-      this.updateLocal(localNames[i], blockArguments[i]);
-    }
-  }
-
-  getLocal(name: InternedString): PathReference {
-    if (!this.locals) return this.parent && this.parent.getLocal(name);
-    return (<string>name in this.locals) ? this.locals[<string>name] : (this.parent && this.parent.getLocal(name));
-  }
-
-  hasLocal(name: InternedString): boolean {
-    if (!this.locals) return this.parent && this.parent.hasLocal(name);
-    return (<string>name in this.locals) || (this.parent && this.parent.hasLocal(name));
-  }
-
-  bindBlock(name: InternedString, block: Block) {
-    let blocks = this.blocks = this.blocks || dict<Block>();
-    blocks[<string>name] = block;
-  }
-
-  getBlock(name: InternedString): Block {
-    if (!this.blocks) return this.parent && this.parent.getBlock(name);
-    return (<string>name in this.blocks) ? this.blocks[<string>name] : (this.parent && this.parent.getBlock(name));
-  }
-
-  getBase(name: InternedString): PathReference {
-    if (this.hasLocal(name)) return this.getLocal(name);
-    let self = this.getSelf();
-    if (self) return self.get(name);
+  bindSymbol(symbol: number, value: PathReference) {
+    this.references[symbol] = value;
   }
 }
 
 import DOMHelper from './dom';
 import { EMPTY_ARRAY } from './utils';
 
-export abstract class Environment<T extends Object> {
+export abstract class Environment {
   protected dom: DOMHelper;
   protected meta: MetaLookup;
   private createdComponents: Component[] = [];
@@ -208,15 +95,13 @@ export abstract class Environment<T extends Object> {
 
   getDOM(): DOMHelper { return this.dom; }
 
-  getIdentity(object: any): InternedString {
-    return this.meta.identity(object);
+  getIdentity(object: HasGuid): InternedString {
+    return intern(installGuid(object) + '');
   }
 
-  pushFrame(scope: Scope<T>): Frame {
-    return new Frame(this, scope);
+  createRootScope(size: number): Scope {
+    return new Scope(null, 0);
   }
-
-  abstract createRootScope(): Scope<T>;
 
   statement(statement: StatementSyntax): StatementSyntax {
     let type = statement.type;
@@ -285,10 +170,12 @@ export abstract class Environment<T extends Object> {
     }
   }
 
-  abstract hasHelper(scope: Scope<T>, helperName: InternedString[]): boolean;
-  abstract lookupHelper(scope: Scope<T>, helperName: InternedString[]): Helper;
+  abstract hasHelper(helperName: InternedString[]): boolean;
+  abstract lookupHelper(helperName: InternedString[]): Helper;
   abstract getComponentDefinition(tagName: InternedString[], syntax: StatementSyntax): ComponentDefinition;
 }
+
+export default Environment;
 
 // TS does not allow us to use computed properties for this, so inlining for now
 // import { TRUSTED_STRING } from './symbols';
@@ -309,80 +196,4 @@ export interface Helper {
 
 export function helper(h: Helper): ConstReference<Helper> {
   return new ConstReference(h);
-}
-
-export class Frame {
-  private env: Environment<any>;
-  private _scope: Scope<any>;
-
-  constructor(env: Environment<any>, scope: Scope<any>) {
-    this.env = env;
-    this._scope = scope;
-  }
-
-  child(): Frame {
-    return new Frame(this.env, this._scope);
-  }
-
-  dom(): DOMHelper {
-    return this.env.getDOM();
-  }
-
-  newVM(parentNode: Element, nextSibling: Node): VM<any> {
-    let stack = new ElementStack({ dom: this.dom(), parentNode, nextSibling });
-    return new VM(this.env, this.scope(), stack);
-  }
-
-  syntax(statement: StatementSyntax): StatementSyntax {
-    return this.env.statement(statement);
-  }
-
-  childScope(blockArguments: any[]=null): Scope<any> {
-    return (this._scope = this._scope.child(blockArguments));
-  }
-
-  setScope(scope: Scope<any>): Scope<any> {
-    this._scope = scope;
-    return scope;
-  }
-
-  resetScope(): Scope<any> {
-    return (this._scope = this.env.createRootScope());
-  }
-
-  scope(): Scope<any> {
-    return this._scope;
-  }
-
-  identity(object: any): InternedString {
-    return this.env.getIdentity(object);
-  }
-
-  hasHelper(helperName: InternedString[]): boolean {
-    return this.env.hasHelper(this._scope, helperName);
-  }
-
-  lookupHelper(helperName: InternedString[]): Helper {
-    return this.env.lookupHelper(this._scope, helperName);
-  }
-
-  iteratorFor(iterable: PathReference): { next: () => { done: boolean, value: any } } {
-    return this.env.iteratorFor(iterable);
-  }
-
-  begin() {
-    this.env.begin();
-  }
-
-  didCreate(component: Component, hooks: ComponentHooks) {
-    this.env.didCreate(component, hooks);
-  }
-
-  didUpdate(component: Component, hooks: ComponentHooks) {
-    this.env.didUpdate(component, hooks);
-  }
-
-  commit() {
-    this.env.commit();
-  }
 }

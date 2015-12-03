@@ -43,7 +43,7 @@ export function ComputedReferenceBlueprint(property, dependencies) {
 
     notify() {
       this.dirty = true;
-      this.outer.notify();
+      // this.outer.notify();
       super.notify();
     }
 

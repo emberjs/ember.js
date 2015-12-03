@@ -19,7 +19,7 @@ export default class RootReference extends PushPullReference implements IRootRef
 
   update(object: any) {
     this.object = object;
-    this.notify();
+    // this.notify();
   }
 
   get(prop: InternedString): IPathReference {
@@ -45,4 +45,8 @@ export default class RootReference extends PushPullReference implements IRootRef
   label() {
     return '[reference Root]';
   }
+}
+
+export function referenceFromParts(path: IPathReference, parts: InternedString[]): IPathReference {
+  return parts.reduce((ref, part) => ref.get(part), path);
 }

@@ -1,9 +1,9 @@
 import { tokenize } from "simple-html-tokenizer";
 import { forEach } from "glimmer-util";
 
-export function equalInnerHTML(fragment, html) {
+export function equalInnerHTML(fragment, html, msg?) {
   var actualHTML = normalizeInnerHTML(fragment.innerHTML);
-  QUnit.push(actualHTML === html, actualHTML, html);
+  QUnit.push(actualHTML === html, actualHTML, html, msg);
 }
 
 export function equalHTML(node, html) {
@@ -78,7 +78,7 @@ var ieSVGInnerHTML = (function () {
   var div = document.createElement('div');
   var node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   div.appendChild(node);
-  var clone = div.cloneNode(true);
+  var clone = <HTMLDivElement>div.cloneNode(true);
   return clone.innerHTML === '<svg xmlns="http://www.w3.org/2000/svg" />';
 })();
 

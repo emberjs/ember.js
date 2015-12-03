@@ -16,6 +16,12 @@
   <script src="/amd/glimmer-compiler.amd.js"></script>
   <script src="/tests.js"></script>
 
+  <style>
+    #qunit-tests.hidepass li.skipped {
+      display: none;
+    }
+  </style>
+
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
 

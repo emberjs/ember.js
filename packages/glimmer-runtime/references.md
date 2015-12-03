@@ -329,7 +329,7 @@ class MapReference {
     this._dirty = true;
 
     // notify any chainable references that asked to be notified
-    this._chainedRefs.forEach(ref => chainedRef.notify());
+    // this._chainedRefs.forEach(ref => chainedRef.notify());
   }
 
   // this is how children ask us to be notified
@@ -368,7 +368,7 @@ class NotifyingReference {
 
   notify() {
     this._dirty = true;
-    this._chainedRefs.forEach(ref => chainedRef.notify());
+    // this._chainedRefs.forEach(ref => chainedRef.notify());
   }
 
   chain(child) {

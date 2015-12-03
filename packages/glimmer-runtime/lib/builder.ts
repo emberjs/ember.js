@@ -1,43 +1,28 @@
-import {
-  Bounds,
-  ConcreteBounds,
-  Morph,
-  ContentMorph,
-  TemplateMorph,
-  MorphSpecializer,
-  BlockInvocationMorph,
-  createMorph
-} from './morph';
+import Bounds, {
+  ConcreteBounds
+} from './bounds';
 
 import {
   ComponentDefinition,
-  ComponentDefinitionOptions,
-  AppendingComponent
+  ComponentDefinitionOptions
 } from './component/interfaces';
 
-import { Frame, Block } from './environment';
 import DOMHelper from './dom';
+
 import Template, {
-  EvaluatedParams,
-  AttributeSyntax,
-  Templates,
-  Hash,
-  ATTRIBUTE_SYNTAX
+  Templates
 } from './template'
-import { RenderResult } from './render';
+
 import { InternedString, Stack, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'glimmer-util';
+
 import {
   ListDelegate,
   RootReference,
   ChainableReference,
   NotifiableReference,
   PushPullReference,
-  Destroyable,
+  Destroyable
 } from 'glimmer-reference';
-
-import {
-  StatementSyntax
-} from './opcodes'
 
 import { VM } from './vm';
 
@@ -98,7 +83,6 @@ interface ElementStackClass<T extends ElementStack> {
 }
 
 class BlockStackElement {
-  public morphList: Morph[] = null;
   public firstNode: Node = null;
   public lastNode: Node = null;
 }
@@ -111,7 +95,6 @@ export class ElementStack {
 
   private elementStack = new Stack<Element>();
   private nextSiblingStack = new Stack<Node>();
-  private morphs: Morph[];
   private classListStack = new Stack<ClassList>();
   private blockStack = new Stack<Tracker>();
 
@@ -179,11 +162,6 @@ export class ElementStack {
     this.pushElement(element);
     this.blockStack.current.openElement(element);
     return element;
-  }
-
-  openComponent(definition: ComponentDefinition, { tag, frame, templates, hash }: ComponentDefinitionOptions) {
-    let appending = definition.begin(this, { frame, templates, hash, tag });
-    let _ = appending.process();
   }
 
   openBlock() {

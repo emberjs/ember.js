@@ -1,7 +1,9 @@
-import { Opcode, UpdatingOpcode, ExpressionSyntax } from '../opcodes';
-import { VM, UpdatingVM } from '../vm';
-import { ParamsAndHash as Args, RawTemplate } from '../template';
-import { Frame } from '../environment';
+import { Opcode, UpdatingOpcode } from '../../opcodes';
+import { CompiledExpression } from '../expressions';
+import { CompiledArgs } from '../expressions/args';
+import { VM, UpdatingVM } from '../../vm';
+import { Args } from '../../template';
+import { RawTemplate } from '../../compiler';
 import { InternedString, ListSlice } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
 
@@ -10,7 +12,7 @@ abstract class VMOpcode implements Opcode {
   public next = null;
   public prev = null;
 
-  abstract evaluate(vm: VM<any>);
+  abstract evaluate(vm: VM);
 }
 
 abstract class VMUpdatingOpcode implements UpdatingOpcode {
@@ -31,33 +33,59 @@ export class PushChildScopeOpcode extends VMOpcode {
     this.localNames = localNames;
   }
 
-  evaluate(vm: VM<any>) {
-    let { localNames } = this;
-    let blockArgumentReferences = vm.registers.args.params.toArray();
-    vm.pushChildScope({ localNames, blockArgumentReferences })
+  evaluate(vm: VM) {
   }
 }
 
 export class PopScopeOpcode extends VMOpcode {
   public type = "pop-scope";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.popScope();
   }
 }
 
-export class ArgsOpcode extends VMOpcode {
-  public type = "expression";
+export class PutValue extends VMOpcode {
+  public type = "put-value";
+  private expression: CompiledExpression;
 
-  private syntax: Args;
-
-  constructor(syntax: Args) {
+  constructor(expression: CompiledExpression) {
     super();
-    this.syntax = syntax;
+    this.expression = expression;
   }
 
-  evaluate(vm: VM<any>) {
-    vm.evaluateArgs(this.syntax);
+  evaluate(vm: VM) {
+    vm.evaluateOperand(this.expression);
+  }
+}
+
+export class PutArgsOpcode extends VMOpcode {
+  public type = "put-args";
+
+  private args: CompiledArgs;
+
+  constructor(args: CompiledArgs) {
+    super();
+    this.args = args;
+  }
+
+  evaluate(vm: VM) {
+    vm.evaluateArgs(this.args);
+  }
+}
+
+export class BindArgsOpcode extends VMOpcode {
+  public type = "bind-args";
+
+  private symbols: number[];
+
+  constructor(symbols: number[]) {
+    super();
+    this.symbols = symbols;
+  }
+
+  evaluate(vm: VM) {
+    vm.bindArgs(this.symbols);
   }
 }
 
@@ -70,7 +98,7 @@ export class EnterOpcode extends VMOpcode {
     this.slice = new ListSlice(begin, end);
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.enter(this.slice);
   }
 }
@@ -78,7 +106,7 @@ export class EnterOpcode extends VMOpcode {
 export class ExitOpcode extends VMOpcode {
   public type = "exit";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.exit();
   }
 }
@@ -93,7 +121,7 @@ export class NoopOpcode extends VMOpcode {
     if (label) this.label = label;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
   }
 }
 
@@ -106,7 +134,7 @@ export class EvaluateOpcode extends VMOpcode {
     this.template = template;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.pushFrame(this.template.opcodes(vm.env));
   }
 }
@@ -114,7 +142,7 @@ export class EvaluateOpcode extends VMOpcode {
 export class TestOpcode extends VMOpcode {
   public type = "test";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.registers.condition = vm.registers.operand;
   }
 }
@@ -129,7 +157,7 @@ export class JumpOpcode extends VMOpcode {
     this.target = target;
   }
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     vm.goto(this.target);
   }
 }
@@ -137,7 +165,7 @@ export class JumpOpcode extends VMOpcode {
 export class JumpIfOpcode extends JumpOpcode {
   public type = "jump-if";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let reference = vm.registers.condition;
     let value = reference.value();
 
@@ -153,7 +181,7 @@ export class JumpIfOpcode extends JumpOpcode {
 export class JumpUnlessOpcode extends JumpOpcode {
   public type = "jump-unless";
 
-  evaluate(vm: VM<any>) {
+  evaluate(vm: VM) {
     let reference = vm.registers.condition;
     let value = reference.value();
 
