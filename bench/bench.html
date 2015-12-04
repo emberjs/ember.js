@@ -194,8 +194,6 @@
             env.begin();
             template.render(context, env, { appendTo: frag });
             env.commit();
-            frag = null;
-            context = null;
           },
 
           minSamples: 30

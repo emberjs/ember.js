@@ -1,5 +1,6 @@
 {
   "rules": {
-    "curly": false
+    "curly": false,
+    "no-unused-variable": true
   }
 }

@@ -125,7 +125,13 @@ export class ListIterator {
     while (true) {
       let handled = false;
       switch (this.phase) {
-        case Phase.FirstAppend: handled = this.nextInitialAppend(); break;
+        case Phase.FirstAppend:
+          if (this.array.length <= this.arrayPosition) {
+            this.startPrune();
+          } else {
+            handled = this.nextInitialAppend();
+          }
+          break;
         case Phase.Append: handled = this.nextAppend(); break;
         case Phase.Prune: this.nextPrune(); break;
         case Phase.Done: this.nextDone(); return true;
@@ -136,18 +142,11 @@ export class ListIterator {
   }
 
   private nextInitialAppend(): boolean {
-    let { array, arrayPosition } = this;
-
-    if (array.length <= arrayPosition) {
-      this.startPrune();
-      return;
-    }
-
-    let { keyFor, listPosition, map } = this;
+    let { array, arrayPosition, keyFor, listPosition, map } = this;
 
     let item = array[this.arrayPosition++];
 
-    if (item === null || item === undefined) return this.nextInitialAppend();
+    if (item === null || item === undefined) return;
 
     let key = keyFor(item, arrayPosition);
     this.nextInsert(map, listPosition, key, item);
@@ -164,7 +163,7 @@ export class ListIterator {
 
     let item = array[this.arrayPosition++];
 
-    if (item === null || item === undefined) return this.nextAppend();
+    if (item === null || item === undefined) return;
 
     let key = keyFor(item, arrayPosition);
 
@@ -209,9 +208,10 @@ export class ListIterator {
     target.insert(node.key, node.value, current ? current.key : null);
   }
 
-  private startPrune() {
+  private startPrune(): boolean {
     this.phase = Phase.Prune;
     this.listPosition = this.list.head();
+    return true;
   }
 
   private nextPrune() {

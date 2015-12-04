@@ -14,17 +14,21 @@ module.exports = function() {
     return transpileES6(tree, label, { resolveModuleSource: null, sourceMaps: 'inline' });
   }
 
-  var dependableTrees = {};
-
   var bower = 'bower_components';
   var demoHTML = new Funnel('demos', {
     include: ['*.html'],
     destDir: '/demos'
   });
 
-  var demoTS = new Funnel('demos', {
-    include: ['**/*.ts']
-  });
+  var demoTS = mergeTrees([
+    new Funnel('demos', {
+      include: ['**/*.ts']
+    }),
+    moveFile('packages/glimmer-runtime/tests', {
+      srcFile: 'support.ts',
+      destFile: 'glimmer-demos/index.ts'
+    })
+  ]);
 
   var demoES6 = typescript(demoTS);
   var demoES5 = transpile(demoES6);
@@ -91,12 +95,6 @@ module.exports = function() {
     srcDir: '/qunit/qunit',
     destDir: '/tests'
   })]);
-
-  var cliSauce = new Funnel('./node_modules/ember-cli-sauce', {
-    srcDir: '/vendor',
-    files: [ 'export-test-results.js' ],
-    destDir: '/tests'
-  });
 
   var transpiledCompiler = transpile(compilerTree, 'transpiledLibs');
   var transpiledRuntime = transpile(runtimeTree, 'transpiledRuntime');
