@@ -127,7 +127,7 @@ function select(app, selector, ...texts) {
   let type = $options.prop('type');
 
   assert(
-    `To select '${selector}', the elment must be a select box`,
+    `To select '${selector}', the element must be a select box`,
     type === 'select-one' || type === 'select-multiple'
   );
 
