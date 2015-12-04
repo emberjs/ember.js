@@ -165,6 +165,8 @@ export interface Slice<T extends LinkedListNode> {
   head(): T;
   tail(): T;
   nextNode(node: T): T;
+  prevNode(node: T): T;
+  toArray(): T[];
   isEmpty(): boolean;
 }
 
@@ -204,12 +206,25 @@ export class ListSlice<T extends LinkedListNode> implements Slice<T> {
     return this._tail;
   }
 
+  toArray(): T[] {
+    let out = [];
+    this.forEachNode(n => out.push(n));
+    return out;
+  }
+
   nextNode(node: T): T {
     if (node === this._tail) return null;
     return <T>node.next;
+  }
+
+  prevNode(node: T): T {
+    if (node === this._head) return null;
+    return <T>node.prev;
   }
 
   isEmpty() {
     return false;
   }
 }
+
+export const EMPTY_SLICE = new ListSlice(null, null);

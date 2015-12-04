@@ -68,8 +68,12 @@ export abstract class EvaluatedArgs {
     return EMPTY_EVALUATED_ARGS;
   }
 
-  static create(options: EvaluatedArgsOptions) {
+  static create(options: EvaluatedArgsOptions): EvaluatedArgs {
     return new NonEmptyEvaluatedArgs(options);
+  }
+
+  static positional(values: PathReference[]): EvaluatedArgs {
+    return new NonEmptyEvaluatedArgs({ positional: EvaluatedPositionalArgs.create({ values }), named: EvaluatedNamedArgs.empty() })
   }
 
   public type: string;

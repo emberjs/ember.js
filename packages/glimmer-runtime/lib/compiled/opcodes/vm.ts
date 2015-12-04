@@ -26,14 +26,8 @@ abstract class VMUpdatingOpcode implements UpdatingOpcode {
 export class PushChildScopeOpcode extends VMOpcode {
   public type = "push-child-scope";
 
-  private localNames: InternedString[];
-
-  constructor(localNames: InternedString[]) {
-    super();
-    this.localNames = localNames;
-  }
-
   evaluate(vm: VM) {
+    vm.pushChildScope();
   }
 }
 
@@ -79,9 +73,9 @@ export class BindArgsOpcode extends VMOpcode {
 
   private symbols: number[];
 
-  constructor(symbols: number[]) {
+  constructor(template: RawTemplate) {
     super();
-    this.symbols = symbols;
+    this.symbols = template.locals.map(name => template.symbolTable.get(name));
   }
 
   evaluate(vm: VM) {

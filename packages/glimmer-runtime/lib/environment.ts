@@ -46,17 +46,24 @@ function fork(ref: ChainableReference): Reference {
 }
 
 export class Scope {
-  private parent: Scope = null;
+  static root(parent: Scope, size = 0) {
+    let refs: PathReference[] = new Array(size + 1);
+
+    for (let i = 0; i < size; i++) {
+      refs[i] = null;
+    }
+
+    return new Scope(parent, refs);
+  }
+
+  private parent: Scope;
 
   // the 0th slot is `self`
   private references: PathReference[];
 
-  constructor(parent: Scope, size = 0) {
+  constructor(parent: Scope, references: PathReference[]) {
     this.parent = parent;
-    let refs = this.references = new Array(size + 1);
-    for (let i=0; i<size; i++) {
-      refs[i] = null;
-    }
+    this.references = references;
   }
 
   init({ self }: { self: PathReference }): this {
@@ -74,6 +81,10 @@ export class Scope {
 
   bindSymbol(symbol: number, value: PathReference) {
     this.references[symbol] = value;
+  }
+
+  child() {
+    return new Scope(this, this.references.slice());
   }
 }
 
@@ -100,7 +111,7 @@ export abstract class Environment {
   }
 
   createRootScope(size: number): Scope {
-    return new Scope(null, 0);
+    return Scope.root(null, size);
   }
 
   statement(statement: StatementSyntax): StatementSyntax {
