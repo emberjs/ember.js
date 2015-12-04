@@ -3,12 +3,15 @@ import Compiler, { RawTemplate } from './compiler';
 
 import Syntax, {
   ATTRIBUTE_SYNTAX,
+  Program,
   AttributeSyntax,
   ExpressionSyntax,
   StatementSyntax,
   PrettyPrintValue,
   PrettyPrint
 } from './syntax';
+
+import Scanner from './scanner';
 
 import {
   Opcode,
@@ -18,7 +21,7 @@ import {
 
 import {
   PutValue,
-  ArgsOpcode,
+  PutArgsOpcode,
   EnterOpcode,
   ExitOpcode,
   EvaluateOpcode
@@ -61,10 +64,13 @@ import {
   UpdatableReference,
   referenceFromParts
 } from 'glimmer-reference';
+
 import { ElementStack, ClassList } from './builder';
+
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
 
 import {
+  EMPTY_SLICE,
   LITERAL,
   LinkedList,
   LinkedListNode,
@@ -108,9 +114,11 @@ const EMPTY_ARRAY = Object.freeze([]);
 interface TemplateOptions {
   meta?: Object;
   root?: Template[];
+  parent?: Template;
+  children?: Template[];
   position?: number;
   locals?: InternedString[];
-  statements?: LinkedList<StatementSyntax>;
+  program?: Program;
   spec?: any;
   isEmpty?: boolean;
 }
@@ -125,44 +133,29 @@ interface EvaluateOptions {
 }
 
 export default class Template {
-  static fromSpec(specs: any): Template {
-    let templates = new Array(specs.length);
-
-    for (let i = 0; i < specs.length; i++) {
-      let spec = specs[i];
-
-      templates[i] = new Template({
-        statements: buildStatements(spec.statements, templates),
-        root: templates,
-        position: i,
-        meta: spec.meta,
-        locals: spec.locals,
-        isEmpty: spec.statements.length === 0,
-        spec: spec
-      });
-    }
-
-    return templates[templates.length - 1];
+  static fromSpec(specs: any[]): Template {
+    let scanner = new Scanner(specs);
+    return scanner.scan();
   }
 
-  static fromList(statements: LinkedList<StatementSyntax>): Template {
+  static fromList(program: Program): Template {
     return new Template({
-      statements,
+      program,
       root: null,
       position: null,
       meta: null,
       locals: null,
-      isEmpty: statements.isEmpty(),
+      isEmpty: program.isEmpty(),
       spec: null
     });
   }
 
   static fromStatements(statements: StatementSyntax[]): Template {
-    let list = new LinkedList<StatementSyntax>();
-    statements.forEach(s => list.append(s));
+    let program = new LinkedList<StatementSyntax>();
+    statements.forEach(s => program.append(s));
 
     return new Template({
-      statements: list,
+      program,
       root: null,
       position: null,
       meta: null,
@@ -173,6 +166,8 @@ export default class Template {
   }
 
   meta: Object;
+  parent: Template;
+  children: Template[];
   root: Template[];
   position: number;
   arity: number;
@@ -180,16 +175,15 @@ export default class Template {
   isEmpty: boolean;
   raw: RawTemplate;
 
-  constructor({ meta, root, position, locals, statements, spec, isEmpty }: TemplateOptions) {
-    statements = statements || new LinkedList<StatementSyntax>();
-
+  constructor({ meta, children, root, position, locals, program, spec, isEmpty }: TemplateOptions) {
     this.meta = meta || {};
+    this.children = children;
     this.root = root || null;
     this.position = position === undefined ? null : position;
     this.arity = locals ? locals.length : 0;
-    this.raw = new RawTemplate({ ops: null, locals, syntax: statements })
+    this.raw = new RawTemplate({ ops: null, locals, program })
     this.spec = spec || null;
-    this.isEmpty = isEmpty === true ? isEmpty : statements.isEmpty();
+    this.isEmpty = isEmpty === true ? isEmpty : program.isEmpty();
     Object.seal(this);
   }
 
@@ -200,7 +194,7 @@ export default class Template {
     }
 
     return this.root.map(template => {
-      return template.raw.syntax.toArray().map(statement => pretty(statement));
+      return template.raw.program.toArray().map(statement => pretty(statement));
     });
   }
 
@@ -209,7 +203,7 @@ export default class Template {
     let { raw: { locals: localNames } } = this;
 
     let elementStack = new ElementStack({ dom: env.getDOM(), parentNode: options.appendTo, nextSibling: null });
-    let vm = VM.initial(env, { self: new UpdatableReference(self), elementStack });
+    let vm = VM.initial(env, { self: new UpdatableReference(self), elementStack, size: this.raw.symbolTable.size });
 
     return vm.execute(this.raw.opcodes(env));
   }
@@ -768,24 +762,6 @@ class InvokeBlockOpcode extends Opcode {
   }
 }
 
-// these are all constructors, indexed by statement type
-const StatementNodes = {
-  /// dynamic statements
-  block: Block,
-  append: Append,
-  //modifier: Modifier,
-  dynamicAttr: DynamicAttr,
-  dynamicProp: DynamicProp,
-  addClass: AddClass,
-
-  /// static statements
-  text: Text,
-  comment: Comment,
-  openElement: OpenElement,
-  closeElement: CloseElement,
-  staticAttr: StaticAttr,
-};
-
 export class Value extends ExpressionSyntax {
   type = "value";
 
@@ -983,21 +959,6 @@ const ExpressionNodes = {
   helper: Helper,
   concat: Concat
 };
-
-const EMPTY_LIST = new LinkedList<StatementSyntax>();
-
-export function buildStatements(statements: any[], templates: Template[]): LinkedList<StatementSyntax> {
-  if (statements.length === 0) { return EMPTY_LIST; }
-
-  let list = new LinkedList<StatementSyntax>();
-
-  statements.forEach(s => {
-    let statement: typeof StatementSyntax = StatementNodes[s[0]];
-    list.append(statement.fromSpec(s, templates));
-  })
-
-  return list;
-}
 
 function buildExpression(spec: Spec): ExpressionSyntax {
   if (typeof spec !== 'object' || spec === null) {

@@ -1,4 +1,4 @@
-import { Dict, LinkedListNode } from 'glimmer-util';
+import { Dict, LinkedListNode, Slice } from 'glimmer-util';
 import Template from './template';
 import Compiler from './compiler';
 import { Environment } from './environment';
@@ -67,6 +67,8 @@ export abstract class StatementSyntax extends Syntax<StatementSyntax> {
 
   abstract compile(opcodes: Compiler, env: Environment);
 }
+
+export type Program = Slice<StatementSyntax>;
 
 export const ATTRIBUTE_SYNTAX = "e1185d30-7cac-4b12-b26a-35327d905d92";
 

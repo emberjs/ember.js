@@ -288,7 +288,7 @@ interface TemplateWithAttrsOptions {
 function templateWithAttrs(template: Template, { defaults, outers, identity }: TemplateWithAttrsOptions): Template {
   let out = new LinkedList<StatementSyntax>();
 
-  let statements = template.raw.syntax;
+  let statements = template.raw.program;
   let current = statements.head();
   let next;
 
@@ -397,7 +397,8 @@ class EachSyntax extends StatementSyntax {
     //        NextIter(BREAK)
     //        EnterWithKey(BEGIN, END)
     // BEGIN: Noop
-    //        PushChildScope(default.localNames)
+    //        PushChildScope
+    //        BindArgs(default)
     //        Evaluate(default)
     //        PopScope
     // END:   Noop
@@ -419,7 +420,8 @@ class EachSyntax extends StatementSyntax {
     compiler.append(new NextIterOpcode(BREAK));
     compiler.append(new EnterWithKeyOpcode(BEGIN, END));
     compiler.append(BEGIN);
-    compiler.append(new PushChildScopeOpcode(this.templates.default.raw.locals));
+    compiler.append(new PushChildScopeOpcode());
+    compiler.append(new BindArgsOpcode(this.templates.default.raw));
     compiler.append(new EvaluateOpcode(this.templates.default.raw));
     compiler.append(new PopScopeOpcode());
     compiler.append(END);
@@ -546,7 +548,6 @@ class WithSyntax extends StatementSyntax {
     //        JumpUnless(ELSE)
     //        BindArgs(default)
     //        Evaluate(default)
-    //        PopScope
     //        Jump(END)
     // ELSE:  Noop
     //        Evaluate(inverse)
@@ -568,7 +569,7 @@ class WithSyntax extends StatementSyntax {
       compiler.append(new JumpUnlessOpcode(END));
     }
 
-    compiler.append(new BindArgsOpcode(compiler.pushChildSymbols(this.templates.default.raw)));
+    compiler.append(new BindArgsOpcode(this.templates.default.raw));
     compiler.append(new EvaluateOpcode(this.templates.default.raw));
     compiler.append(new JumpOpcode(END));
 

@@ -1,23 +1,24 @@
 import { Slice, ListSlice, LinkedList, InternedString, Stack, Dict, dict } from 'glimmer-util';
 import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
-import { ATTRIBUTE_SYNTAX, StatementSyntax, AttributeSyntax } from './syntax';
+import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax } from './syntax';
 import { Environment } from './environment';
 import Template, { OpenElement, OpenPrimitiveElement, CloseElement } from './template';
-
+import SymbolTable from './symbol-table';
 
 export class RawTemplate {
-  syntax: LinkedList<StatementSyntax>;
-  ops: OpSeq = null;
-  locals: InternedString[];
+  public program: Program;
+  public ops: OpSeq = null;
+  public symbolTable: SymbolTable = null;
+  public locals: InternedString[];
 
   static fromOpSeq(ops: OpSeq, locals: InternedString[]) {
-    return new RawTemplate({ ops, locals, syntax: null });
+    return new RawTemplate({ ops, locals, program: null });
   }
 
-  constructor({ ops, locals, syntax }: { ops: OpSeq, locals: InternedString[], syntax?: LinkedList<StatementSyntax> }) {
+  constructor({ ops, locals, program }: { ops: OpSeq, locals: InternedString[], program?: Program }) {
     this.ops = ops;
     this.locals = locals;
-    this.syntax = syntax || null;
+    this.program = program || null;
   }
 
   opcodes(env: Environment): OpSeq {
@@ -26,95 +27,33 @@ export class RawTemplate {
     return this.ops;
   }
 
-
   compile(env: Environment) {
     this.ops = new Compiler(this, env).compile();
   }
 }
 
-class SymbolTable {
-  private parent: SymbolTable;
-  private top: SymbolTable;
-  private locals = dict<number>();
-  private position = 1;
-
-  constructor(parent: SymbolTable) {
-    this.parent = parent;
-    this.top = parent ? parent.top : this;
-  }
-
-  get(name: InternedString): number {
-    let { locals, parent } = this;
-
-    let symbol = locals[<string>name];
-
-    if (!symbol && parent) {
-      symbol = parent.get(name);
-    }
-
-    return symbol;
-  }
-
-  put(name: InternedString): number {
-    let position = this.locals[<string>name];
-
-    if (!position) {
-      position = this.locals[<string>name] = this.top.position++;
-    }
-
-    return position;
-  }
-
-  child(): SymbolTable {
-    return new SymbolTable(this);
-  }
-}
-
 export default class Compiler {
-  private frameStack = new Stack<CompilerFrame>();
-  public env: Environment;
-
-  constructor(template: RawTemplate, environment: Environment) {
-    let frame = new CompilerFrame(this, template, new SymbolTable(null));
-    this.env = environment;
-  }
-
-  compileChildTemplate(template: RawTemplate) {
-    
-  }
-
-  sliceAttributes(): Slice<AttributeSyntax> {
-    return this.frameStack.current.sliceAttributes();
-  }
-
-  templateFromTagContents(): Template {
-    return this.frameStack.current.templateFromTagContents();
-  }
-}
-
-class CompilerFrame {
   public env: Environment;
   private template: RawTemplate;
   private current: StatementSyntax;
   private ops: OpSeqBuilder;
   private symbolTable: SymbolTable;
-  private compiler: Compiler;
 
-  constructor(compiler: Compiler, template: RawTemplate, symbolTable: SymbolTable) {
-    this.compiler = compiler;
+  constructor(template: RawTemplate, env: Environment) {
+    this.env = env;
     this.template = template;
-    this.current = template.syntax.head();
+    this.current = template.program.head();
     this.ops = new LinkedList<Opcode>();
-    this.symbolTable = symbolTable;
+    this.symbolTable = template.symbolTable;
   }
 
   compile(): OpSeqBuilder {
-    let { template: { syntax }, ops, env } = this;
+    let { template: { program }, ops, env } = this;
 
     while (this.current) {
       let current = this.current;
-      this.current = syntax.nextNode(current);
-      env.statement(current).compile(this.compiler, env);
+      this.current = program.nextNode(current);
+      env.statement(current).compile(this, env);
     }
 
     return ops;
@@ -124,23 +63,19 @@ class CompilerFrame {
     this.ops.append(op);
   }
 
-  putSymbol(name: InternedString): number {
-    return this.symbolTable.put(name);
-  }
-
   getSymbol(name: InternedString): number {
     return this.symbolTable.get(name);
   }
 
   sliceAttributes(): Slice<AttributeSyntax> {
-    let { template: { syntax } } = this;
+    let { template: { program } } = this;
 
     let begin: AttributeSyntax = null;
     let end: AttributeSyntax = null;
 
     while (this.current[ATTRIBUTE_SYNTAX]) {
       let current = this.current;
-      this.current = syntax.nextNode(current);
+      this.current = program.nextNode(current);
       begin = begin || <AttributeSyntax>current;
       end = <AttributeSyntax>current;
     }
@@ -149,7 +84,7 @@ class CompilerFrame {
   }
 
   templateFromTagContents(): Template {
-    let { template: { syntax } } = this;
+    let { template: { program } } = this;
 
     let begin: StatementSyntax = null;
     let end: StatementSyntax = null;
@@ -157,11 +92,11 @@ class CompilerFrame {
 
     while (true) {
       let current = this.current;
-      this.current = syntax.nextNode(current);
+      this.current = program.nextNode(current);
       begin = begin || current;
 
       if (current instanceof CloseElement && --nesting === 0) {
-        end = syntax.prevNode(current);
+        end = program.prevNode(current);
         break;
       } else if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
         nesting++;

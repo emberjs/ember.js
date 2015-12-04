@@ -10,8 +10,9 @@ import { Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
 import DOMHelper from './dom';
 
 interface VMOptions {
-  self: RootReference,
+  self: RootReference;
   elementStack: ElementStack;
+  size: number;
 }
 
 interface Registers {
@@ -33,15 +34,15 @@ export class VM {
 
   public registers: Registers = null;
 
-  static initial(env: Environment, { elementStack, self }: VMOptions) {
-    let scope = env.createRootScope(0).init({ self });
+  static initial(env: Environment, { elementStack, self, size }: VMOptions) {
+    let scope = env.createRootScope(size).init({ self });
     return new VM(env, scope, elementStack);
   }
 
   constructor(env: Environment, scope: Scope, elementStack: ElementStack) {
     this.env = env;
     this.elementStack = elementStack;
-    this.pushScope(scope);
+    this.scopeStack.push(scope);
   }
 
   goto(opcode: Opcode) {
@@ -108,10 +109,6 @@ export class VM {
     return this.scopeStack.current;
   }
 
-  dupScope() {
-    return this.pushScope(this.scope());
-  }
-
   pushFrame(ops: OpSeq) {
     this.frameStack.push(new VMFrame(this, ops));
   }
@@ -127,17 +124,12 @@ export class VM {
     this.registers = current.registers;
   }
 
-  pushChildScope({ self, localNames, blockArguments, blockArgumentReferences }: { self?: any, localNames: InternedString[], blockArguments?: any[], blockArgumentReferences?: PathReference[] }): Scope {
-    return null;
+  pushChildScope() {
+    this.scopeStack.push(this.scopeStack.current.child());
   }
 
-  pushScope(scope: Scope): Scope {
-    this.scopeStack.push(scope);
-    return scope;
-  }
-
-  popScope(): Scope {
-    return this.scopeStack.pop();
+  popScope() {
+    this.scopeStack.pop();
   }
 
   /// SCOPE HELPERS
@@ -353,6 +345,7 @@ class ListRevalidationDelegate implements ListDelegate {
     let tryOpcode;
 
     let result = vm.execute(opcode.ops, vm => {
+      vm.registers.args = EvaluatedArgs.positional([item]);
       vm.registers.operand = item;
       vm.registers.condition = new ConstReference(true);
       vm.registers.key = key;
@@ -478,9 +471,9 @@ export class RenderResult implements Bounds, ExceptionHandler {
   private updating: LinkedList<UpdatingOpcode>;
   private bounds: Bounds;
   private dom: DOMHelper;
-  private self: RootReference;
+  private self: PathReference;
 
-  constructor(updating: LinkedList<UpdatingOpcode>, bounds: Bounds, dom: DOMHelper, self: RootReference) {
+  constructor(updating: LinkedList<UpdatingOpcode>, bounds: Bounds, dom: DOMHelper, self: PathReference) {
     this.updating = updating;
     this.bounds = bounds;
     this.dom = dom;

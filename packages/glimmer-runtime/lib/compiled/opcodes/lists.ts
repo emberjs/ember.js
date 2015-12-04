@@ -4,6 +4,7 @@ import { Assert } from './vm';
 import { ElementStack } from '../../builder';
 import { Args } from '../../template';
 import { RawTemplate } from '../../compiler';
+import { EvaluatedArgs, EvaluatedPositionalArgs, EvaluatedNamedArgs } from '../expressions/args';
 import { Bounds, clear, move } from '../../bounds';
 import { LITERAL, InternedString, Dict, ListSlice, Slice, dict, assert } from 'glimmer-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
@@ -84,6 +85,7 @@ class IterateDelegate implements ListDelegate {
 
     assert(!before, "Insertion should be append-only on initial render");
 
+    vm.registers.args = EvaluatedArgs.positional([item]);
     vm.registers.operand = item;
     vm.registers.condition = new ConstReference(true);
     vm.registers.key = key;
