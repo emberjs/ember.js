@@ -62,8 +62,8 @@ export class Scope {
   private references: PathReference[];
 
   constructor(parent: Scope, references: PathReference[]) {
-    this.parent = parent;
     this.references = references;
+    this.parent = parent;
   }
 
   init({ self }: { self: PathReference }): this {
