@@ -12,7 +12,6 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import EmptyObject from 'ember-metal/empty_object';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
-import Namespace from 'ember-runtime/system/namespace';
 import DefaultResolver from 'ember-application/system/resolver';
 import run from 'ember-metal/run_loop';
 import { canInvoke } from 'ember-metal/utils';
@@ -40,9 +39,10 @@ import LinkToComponent from 'ember-routing-views/components/link-to';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import { _loaded } from 'ember-runtime/system/lazy_load';
-import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
+import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
+import Engine from './engine';
 
 function props(obj) {
   var properties = [];
@@ -208,12 +208,12 @@ var librariesRegistered = false;
 
   @class Application
   @namespace Ember
-  @extends Ember.Namespace
+  @extends Ember.Engine
   @uses RegistryProxyMixin
   @public
 */
 
-var Application = Namespace.extend(RegistryProxy, {
+var Application = Engine.extend({
   _suppressDeferredDeprecation: true,
 
   /**

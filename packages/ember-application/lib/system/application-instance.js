@@ -7,18 +7,17 @@ import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Registry from 'container/registry';
-import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
+import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
+import EngineInstance from './engine-instance';
 
 
 let BootOptions;
@@ -45,12 +44,10 @@ let BootOptions;
 
   @public
   @class Ember.ApplicationInstance
-  @extends Ember.Object
-  @uses RegistryProxyMixin
-  @uses ContainerProxyMixin
+  @extends Ember.EngineInstance
 */
 
-let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
+let ApplicationInstance = EngineInstance.extend({
   /**
     The `Application` for which this is an instance.
 
