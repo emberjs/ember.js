@@ -52,3 +52,10 @@ for a detailed explanation.
   ```
 
   Implements RFC [#64](https://github.com/emberjs/rfcs/blob/master/text/0064-contextual-component-lookup.md)
+
+* `ember-htmlbars-local-lookup`
+
+  Provides the ability for component lookup to be relative to the source template.
+
+  When the proper API's are implemented by the resolver in use this feature allows `{{x-foo}}` in a
+  given routes template (say the `post` route) to lookup a component nested under `post`.

@@ -11,6 +11,16 @@ export default function hasHelperHook(env, scope, helperName) {
     if (owner.hasRegistration(registrationName)) {
       return true;
     }
+
+    let options = {};
+    let moduleName = env.meta && env.meta.moduleName;
+    if (moduleName) {
+      options.source = `template:${moduleName}`;
+    }
+
+    if (owner.hasRegistration(registrationName, options)) {
+      return true;
+    }
   }
 
   return false;

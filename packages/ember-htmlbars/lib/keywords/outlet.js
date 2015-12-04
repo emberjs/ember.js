@@ -91,7 +91,11 @@ export default {
   },
 
   childEnv(state, env) {
-    return env.childWithOutletState(state.outletState && state.outletState.outlets, true);
+    let outletState = state.outletState;
+    let toRender = outletState && outletState.render;
+    let meta = toRender && toRender.template && toRender.template.meta;
+
+    return env.childWithOutletState(outletState && outletState.outlets, true, meta);
   },
 
   isStable(lastState, nextState) {

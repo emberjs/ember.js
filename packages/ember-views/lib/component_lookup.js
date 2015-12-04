@@ -36,21 +36,21 @@ export default EmberObject.extend({
     }
   },
 
-  componentFor(name, owner) {
+  componentFor(name, owner, options) {
     if (this.invalidName(name)) {
       return;
     }
 
     var fullName = 'component:' + name;
-    return owner._lookupFactory(fullName);
+    return owner._lookupFactory(fullName, options);
   },
 
-  layoutFor(name, owner) {
+  layoutFor(name, owner, options) {
     if (this.invalidName(name)) {
       return;
     }
 
     var templateFullName = 'template:components/' + name;
-    return owner.lookup(templateFullName);
+    return owner.lookup(templateFullName, options);
   }
 });

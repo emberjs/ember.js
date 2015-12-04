@@ -1,3 +1,4 @@
+import isEnabled from 'ember-metal/features';
 import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
@@ -98,7 +99,17 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   let component, layout;
   if (isDasherized || !isAngleBracket) {
-    let result = lookupComponent(env.owner, tagName);
+    let options = { };
+    if (isEnabled('ember-htmlbars-local-lookup')) {
+      let moduleName = env.meta && env.meta.moduleName;
+
+      if (moduleName) {
+        options.source = `template:${moduleName}`;
+      }
+    }
+
+    let result = lookupComponent(env.owner, tagName, options);
+
     component = result.component;
     layout = result.layout;
 

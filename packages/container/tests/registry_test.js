@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core';
 import { Registry } from 'container';
 import factory from 'container/tests/test-helpers/factory';
+import isEnabled from 'ember-metal/features';
 
 var originalModelInjections;
 
@@ -102,7 +103,7 @@ QUnit.test('The registry normalizes names when checking if the factory is regist
   var PostController = factory();
 
   registry.normalizeFullName = function(fullName) {
-    return 'controller:post';
+    return fullName === 'controller:normalized' ? 'controller:post' : fullName;
   };
 
   registry.register('controller:post', PostController);
@@ -505,3 +506,225 @@ QUnit.test('A registry can be created with a deprecated `resolver` function inst
 
   equal(registry.resolve('foo:bar'), 'foo:bar-resolved', '`resolve` still calls the deprecated function');
 });
+
+if (isEnabled('ember-htmlbars-local-lookup')) {
+  // jscs:disable validateIndentation
+
+QUnit.test('resolver.expandLocalLookup is not required', function(assert) {
+  assert.expect(1);
+
+  var registry = new Registry({
+    resolver: { }
+  });
+
+  let result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, null);
+});
+
+QUnit.test('expandLocalLookup is called on the resolver if present', function(assert) {
+  assert.expect(4);
+
+  let resolver = {
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the resolver');
+      assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+      assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
+
+      return 'foo:qux/bar';
+    }
+  };
+
+  var registry = new Registry({
+    resolver
+  });
+
+  let result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar');
+});
+
+QUnit.test('`expandLocalLookup` is handled by the resolver, then by the fallback registry, if available', function(assert) {
+  assert.expect(9);
+
+  let fallbackResolver = {
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the fallback resolver');
+      assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+      assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
+
+      return 'foo:qux/bar-fallback';
+    }
+  };
+
+  let resolver = {
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the resolver');
+      assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+      assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
+
+      return 'foo:qux/bar-resolver';
+    }
+  };
+
+  let fallbackRegistry = new Registry({
+    resolver: fallbackResolver
+  });
+
+  let registry = new Registry({
+    fallback: fallbackRegistry,
+    resolver
+  });
+
+  let result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar-resolver', 'handled by the resolver');
+
+  registry.resolver = null;
+
+  result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar-fallback', 'handled by the fallback registry');
+
+  registry.fallback = null;
+
+  result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, null, 'null is returned by default when no resolver or fallback registry is present');
+});
+
+QUnit.test('resolver.expandLocalLookup result is cached', function(assert) {
+  assert.expect(3);
+  let result;
+
+  let resolver = {
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the resolver');
+
+      return 'foo:qux/bar';
+    }
+  };
+
+  var registry = new Registry({
+    resolver
+  });
+
+  result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar');
+
+  result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar');
+});
+
+QUnit.test('resolver.expandLocalLookup cache is busted when any unregister is called', function(assert) {
+  assert.expect(4);
+  let result;
+
+  let resolver = {
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the resolver');
+
+      return 'foo:qux/bar';
+    }
+  };
+
+  var registry = new Registry({
+    resolver
+  });
+
+  result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar');
+
+  registry.unregister('foo:bar');
+
+  result = registry.expandLocalLookup('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.equal(result, 'foo:qux/bar');
+});
+
+QUnit.test('resolve calls expandLocallookup when it receives options.source', function(assert) {
+  assert.expect(3);
+
+  let resolver = {
+    resolve() { },
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the resolver');
+      assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+      assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
+
+      return 'foo:qux/bar';
+    }
+  };
+
+  var registry = new Registry({
+    resolver
+  });
+
+  registry.resolve('foo:bar', {
+    source: 'baz:qux'
+  });
+});
+
+QUnit.test('has uses expandLocalLookup', function(assert) {
+  assert.expect(5);
+  let resolvedFullNames = [];
+  let result;
+
+  let resolver = {
+    resolve(name) {
+      resolvedFullNames.push(name);
+
+      return 'yippie!';
+    },
+
+    expandLocalLookup(targetFullName, sourceFullName) {
+      assert.ok(true, 'expandLocalLookup is called on the resolver');
+
+      if (targetFullName === 'foo:bar') {
+        return 'foo:qux/bar';
+      } else {
+        return null;
+      }
+    }
+  };
+
+  var registry = new Registry({
+    resolver
+  });
+
+  result = registry.has('foo:bar', {
+    source: 'baz:qux'
+  });
+
+  assert.ok(result, 'found foo:bar/qux');
+
+  result = registry.has('foo:baz', {
+    source: 'baz:qux'
+  });
+
+  assert.ok(!result, 'foo:baz/qux not found');
+
+  assert.deepEqual(['foo:qux/bar'], resolvedFullNames);
+});
+}

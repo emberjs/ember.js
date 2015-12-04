@@ -610,3 +610,45 @@ if (isEnabled('ember-container-inject-owner')) {
     strictEqual(postController.container, container, '');
   });
 }
+
+if (isEnabled('ember-htmlbars-local-lookup')) {
+  QUnit.test('lookupFactory passes options through to expandlocallookup', function(assert) {
+    let registry = new Registry();
+    let container = registry.container();
+    let PostController = factory();
+
+    registry.register('controller:post', PostController);
+
+    registry.expandLocalLookup = function(fullName, options) {
+      assert.ok(true, 'expandLocalLookup was called');
+      assert.equal(fullName, 'foo:bar');
+      assert.deepEqual(options, { source: 'baz:qux' });
+
+      return 'controller:post';
+    };
+
+    let PostControllerFactory = container.lookupFactory('foo:bar', { source: 'baz:qux' });
+
+    assert.ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
+  });
+
+  QUnit.test('lookup passes options through to expandlocallookup', function(assert) {
+    let registry = new Registry();
+    let container = registry.container();
+    let PostController = factory();
+
+    registry.register('controller:post', PostController);
+
+    registry.expandLocalLookup = function(fullName, options) {
+      assert.ok(true, 'expandLocalLookup was called');
+      assert.equal(fullName, 'foo:bar');
+      assert.deepEqual(options, { source: 'baz:qux' });
+
+      return 'controller:post';
+    };
+
+    let PostControllerLookupResult = container.lookup('foo:bar', { source: 'baz:qux' });
+
+    assert.ok(PostControllerLookupResult instanceof PostController);
+  });
+}

@@ -88,6 +88,10 @@ ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, v
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
+    } else {
+      let meta = this.block && this.block.template.meta;
+
+      newEnv = env.childWithMeta(meta);
     }
 
     if (component) {
@@ -138,7 +142,12 @@ ViewNodeManager.prototype.rerender = function ViewNodeManager_rerender(env, attr
       env.renderer.willRender(component);
 
       env.renderedViews.push(component.elementId);
+    } else {
+      let meta = this.block && this.block.template.meta;
+
+      newEnv = env.childWithMeta(meta);
     }
+
     if (this.block) {
       this.block.invoke(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }

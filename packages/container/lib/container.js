@@ -108,7 +108,8 @@ Container.prototype = {
    @private
    @method lookup
    @param {String} fullName
-   @param {Object} options
+   @param {Object} [options]
+   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
   lookup(fullName, options) {
@@ -122,11 +123,13 @@ Container.prototype = {
    @private
    @method lookupFactory
    @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  lookupFactory(fullName) {
+  lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-    return factoryFor(this, this.registry.normalize(fullName));
+    return factoryFor(this, this.registry.normalize(fullName), options);
   },
 
   /**
@@ -178,8 +181,18 @@ function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function lookup(container, fullName, options) {
-  options = options || {};
+function lookup(container, _fullName, _options) {
+  let options = _options || {};
+  let fullName = _fullName;
+
+  if (isEnabled('ember-htmlbars-local-lookup')) {
+    if (options.source) {
+      fullName = container.registry.expandLocalLookup(fullName, options);
+
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!fullName) { return; }
+    }
+  }
 
   if (container.cache[fullName] && options.singleton !== false) {
     return container.cache[fullName];
@@ -232,12 +245,24 @@ function buildInjections(/* container, ...injections */) {
   return hash;
 }
 
-function factoryFor(container, fullName) {
+function factoryFor(container, _fullName, _options) {
+  let options = _options || {};
+  let registry = container.registry;
+  let fullName = _fullName;
+
+  if (isEnabled('ember-htmlbars-local-lookup')) {
+    if (options.source) {
+      fullName = registry.expandLocalLookup(fullName, options);
+
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!fullName) { return; }
+    }
+  }
+
   var cache = container.factoryCache;
   if (cache[fullName]) {
     return cache[fullName];
   }
-  var registry = container.registry;
   var factory = registry.resolve(fullName);
   if (factory === undefined) { return; }
 
