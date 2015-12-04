@@ -2,15 +2,11 @@
 @module ember
 @submodule ember-application
 */
-import Registry from 'container/registry';
-
 import Ember from 'ember-metal'; // Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import { assert, debug } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
-import DefaultResolver from 'ember-application/system/resolver';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import Renderer from 'ember-metal-views/renderer';
@@ -347,8 +343,6 @@ var Application = Engine.extend({
       this.$ = jQuery;
     }
 
-    this.buildRegistry();
-
     registerLibraries();
     logLibraryVersions();
 
@@ -375,19 +369,6 @@ var Application = Engine.extend({
       this._prepareForGlobalsMode();
       this.waitForDOMReady();
     }
-  },
-
-  /**
-    Build and configure the registry for the current application.
-
-    @private
-    @method buildRegistry
-    @return {Ember.Registry} the configured registry
-  */
-  buildRegistry() {
-    var registry = this.__registry__ = this.constructor.buildRegistry(this);
-
-    return registry;
   },
 
   /**
@@ -792,24 +773,6 @@ var Application = Engine.extend({
   */
   ready() { return this; },
 
-  /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
-
-
-    @deprecated Use 'Resolver' instead
-    @property resolver
-    @public
-  */
-  resolver: null,
-
-  /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
-
-    @property resolver
-    @public
-  */
-  Resolver: null,
-
   // This method must be moved to the application instance object
   willDestroy() {
     this._super(...arguments);
@@ -1073,11 +1036,7 @@ Application.reopenClass({
     @public
   */
   buildRegistry(namespace) {
-    var registry = new Registry({
-      resolver: resolverFor(namespace)
-    });
-
-    registry.set = set;
+    let registry = this._super(...arguments);
 
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
@@ -1144,30 +1103,6 @@ Application.reopenClass({
     return registry;
   }
 });
-
-/**
-  This function defines the default lookup rules for container lookups:
-
-  * templates are looked up on `Ember.TEMPLATES`
-  * other names are looked up on the application after classifying the name.
-    For example, `controller:post` looks up `App.PostController` by default.
-  * if the default lookup fails, look for registered classes on the container
-
-  This allows the application to register default injections in the container
-  that could be overridden by the normal naming convention.
-
-  @private
-  @method resolverFor
-  @param {Ember.Namespace} namespace the namespace to look for classes
-  @return {*} the resolved value for a given lookup
-*/
-function resolverFor(namespace) {
-  let ResolverClass = namespace.get('Resolver') || DefaultResolver;
-
-  return ResolverClass.create({
-    namespace: namespace
-  });
-}
 
 function registerLibraries() {
   if (!librariesRegistered) {

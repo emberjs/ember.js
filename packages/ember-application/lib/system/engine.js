@@ -3,12 +3,15 @@
 @submodule ember-application
 */
 import Namespace from 'ember-runtime/system/namespace';
+import Registry from 'container/registry';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import DAG from 'dag-map';
 import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import { assert, deprecate } from 'ember-metal/debug';
 import { canInvoke } from 'ember-metal/utils';
 import EmptyObject from 'ember-metal/empty_object';
+import DefaultResolver from 'ember-application/system/resolver';
 
 function props(obj) {
   var properties = [];
@@ -38,6 +41,25 @@ function props(obj) {
   @public
 */
 let Engine = Namespace.extend(RegistryProxy, {
+  init() {
+    this._super(...arguments);
+
+    this.buildRegistry();
+  },
+
+  /**
+    Build and configure the registry for the current application.
+
+    @private
+    @method buildRegistry
+    @return {Ember.Registry} the configured registry
+  */
+  buildRegistry() {
+    var registry = this.__registry__ = this.constructor.buildRegistry(this);
+
+    return registry;
+  },
+
   /**
     @private
     @method initializer
@@ -293,8 +315,86 @@ Engine.reopenClass({
     @param instanceInitializer
     @public
   */
-  instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer')
+  instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer'),
+
+  /**
+    This creates a registry with the default Ember naming conventions.
+
+    It also configures the registry:
+
+    * registered views are created every time they are looked up (they are
+      not singletons)
+    * registered templates are not factories; the registered value is
+      returned directly.
+    * the router receives the application as its `namespace` property
+    * all controllers receive the router as their `target` and `controllers`
+      properties
+    * all controllers receive the application as their `namespace` property
+    * the application view receives the application controller as its
+      `controller` property
+    * the application view receives the application template as its
+      `defaultTemplate` property
+
+    @private
+    @method buildRegistry
+    @static
+    @param {Ember.Application} namespace the application for which to
+      build the registry
+    @return {Ember.Registry} the built registry
+    @public
+  */
+  buildRegistry(namespace) {
+    var registry = new Registry({
+      resolver: resolverFor(namespace)
+    });
+
+    registry.set = set;
+
+    return registry;
+  },
+
+  /**
+    Set this to provide an alternate class to `Ember.DefaultResolver`
+
+
+    @deprecated Use 'Resolver' instead
+    @property resolver
+    @public
+  */
+  resolver: null,
+
+  /**
+    Set this to provide an alternate class to `Ember.DefaultResolver`
+
+    @property resolver
+    @public
+  */
+  Resolver: null
 });
+
+/**
+  This function defines the default lookup rules for container lookups:
+
+  * templates are looked up on `Ember.TEMPLATES`
+  * other names are looked up on the application after classifying the name.
+    For example, `controller:post` looks up `App.PostController` by default.
+  * if the default lookup fails, look for registered classes on the container
+
+  This allows the application to register default injections in the container
+  that could be overridden by the normal naming convention.
+
+  @private
+  @method resolverFor
+  @param {Ember.Namespace} namespace the namespace to look for classes
+  @return {*} the resolved value for a given lookup
+*/
+function resolverFor(namespace) {
+  let ResolverClass = namespace.get('Resolver') || DefaultResolver;
+
+  return ResolverClass.create({
+    namespace: namespace
+  });
+}
 
 function buildInitializerMethod(bucketName, humanName) {
   return function(initializer) {
