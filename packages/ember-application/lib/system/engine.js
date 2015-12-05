@@ -12,6 +12,7 @@ import { assert, deprecate } from 'ember-metal/debug';
 import { canInvoke } from 'ember-metal/utils';
 import EmptyObject from 'ember-metal/empty_object';
 import DefaultResolver from 'ember-application/system/resolver';
+import EngineInstance from './engine-instance';
 
 function props(obj) {
   var properties = [];
@@ -45,6 +46,18 @@ let Engine = Namespace.extend(RegistryProxy, {
     this._super(...arguments);
 
     this.buildRegistry();
+  },
+
+  /**
+    Create an EngineInstance for this application.
+
+    @private
+    @method buildInstance
+    @return {Ember.EngineInstance} the application instance
+  */
+  buildInstance(options = {}) {
+    options.base = this;
+    return EngineInstance.create(options);
   },
 
   /**

@@ -379,6 +379,7 @@ var Application = Engine.extend({
     @return {Ember.ApplicationInstance} the application instance
   */
   buildInstance(options = {}) {
+    options.base = this;
     options.application = this;
     return ApplicationInstance.create(options);
   },

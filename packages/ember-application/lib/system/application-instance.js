@@ -10,7 +10,6 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
-import Registry from 'container/registry';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
@@ -82,21 +81,11 @@ let ApplicationInstance = EngineInstance.extend({
   init() {
     this._super(...arguments);
 
-    var application = get(this, 'application');
+    let application = get(this, 'application');
 
     if (!isEnabled('ember-application-visit')) {
       set(this, 'rootElement', get(application, 'rootElement'));
     }
-
-    // Create a per-instance registry that will use the application's registry
-    // as a fallback for resolving registrations.
-    var applicationRegistry = get(application, '__registry__');
-    var registry = this.__registry__ = new Registry({
-      fallback: applicationRegistry
-    });
-
-    // Create a per-instance container from the instance's registry
-    this.__container__ = registry.container({ owner: this });
 
     // Register this instance in the per-instance registry.
     //
@@ -267,29 +256,6 @@ let ApplicationInstance = EngineInstance.extend({
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
-  },
-
-  /**
-    @private
-  */
-  willDestroy() {
-    this._super(...arguments);
-    run(this.__container__, 'destroy');
-  },
-
-  /**
-   Unregister a factory.
-
-   Overrides `RegistryProxy#unregister` in order to clear any cached instances
-   of the unregistered factory.
-
-   @public
-   @method unregister
-   @param {String} fullName
-   */
-  unregister(fullName) {
-    this.__container__.reset(fullName);
-    this._super(...arguments);
   }
 });
 
