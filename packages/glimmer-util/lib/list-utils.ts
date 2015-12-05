@@ -156,11 +156,6 @@ class LinkedListRemover implements Destroyable {
   }
 }
 
-class SentinelNode implements LinkedListNode {
-  next: LinkedListNode = null;
-  prev: LinkedListNode = null;
-}
-
 export interface Slice<T extends LinkedListNode> {
   head(): T;
   tail(): T;
