@@ -1,20 +1,12 @@
 import {
-  RenderResult,
   Template,
 
   // Compiler
   Compiler,
 
   // Environment
-  Scope,
   Environment,
   DOMHelper,
-  ElementStack,
-
-  // VM
-  VM,
-  OpSeq,
-  OpSeqBuilder,
 
   // Opcodes
   NoopOpcode,
@@ -30,23 +22,19 @@ import {
   BindArgsOpcode,
   TestOpcode,
   JumpOpcode,
-  JumpIfOpcode,
   JumpUnlessOpcode,
   NextIterOpcode,
 
   // Components
   ComponentClass,
   ComponentDefinition,
-  ComponentDefinitionOptions,
   ComponentInvocation,
   ComponentHooks,
   Component,
 
   // Syntax Classes
   StatementSyntax,
-  ExpressionSyntax,
   AttributeSyntax,
-  ATTRIBUTE_SYNTAX,
 
   // Concrete Syntax
   Templates,
@@ -54,24 +42,14 @@ import {
   Unknown,
   ArgsSyntax,
   NamedArgsSyntax,
-  PositionalArgsSyntax,
   HelperSyntax,
-  DynamicAttr,
-  StaticAttr,
-  AddClass,
-  GetSyntax,
-  ValueSyntax,
-  BlockSyntax,
-  OpenElement,
-
-  // Helpers
-  isWhitespace
+  BlockSyntax
 } from "glimmer-runtime";
 
 import { compile as rawCompile } from "glimmer-compiler";
-import { LITERAL, Slice, LinkedList, Dict, InternedString, dict, assign, intern, symbol } from 'glimmer-util';
+import { Slice, Dict, InternedString, dict } from 'glimmer-util';
 
-import { Meta, ConstReference, ChainableReference, setProperty as set } from "glimmer-reference";
+import { Meta } from "glimmer-reference";
 
 export function compile(template: string) {
   return rawCompile(template, { disableComponentGeneration: true });
@@ -285,76 +263,6 @@ interface TemplateWithAttrsOptions {
   identity?: InternedString;
 }
 
-function templateWithAttrs(template: Template, { defaults, outers, identity }: TemplateWithAttrsOptions): Template {
-  let out = new LinkedList<StatementSyntax>();
-
-  let statements = template.raw.program;
-  let current = statements.head();
-  let next;
-
-  while (current) {
-    next = statements.nextNode(current);
-
-    if (current.type === 'open-element') {
-      let tag = <OpenElement>current;
-      if (tag.tag === identity) out.append(tag.toIdentity());
-      else out.append(tag.clone());
-      break;
-    } else if (current.type === 'open-primitive-element') {
-      out.append(current.clone());
-      break;
-    }
-
-    out.append(current.clone());
-    current = next;
-  }
-
-  current = next;
-
-  let seen = dict<boolean>();
-  let attrs = [];
-
-  if (outers) {
-    outers.forEach(attr => {
-      seen[attr.name] = true;
-      out.append(attr);
-    });
-  }
-
-  while (current) {
-    next = statements.nextNode(current);
-
-    if (current.type === 'add-class') {
-      out.append(current.clone());
-      current = next;
-    } else if (current[ATTRIBUTE_SYNTAX]) {
-      if (!seen[(<AttributeSyntax>current).name]) {
-        out.append(current.clone());
-        seen[(<AttributeSyntax>current).name] = true;
-      }
-
-      current = next;
-    } else {
-      break;
-    }
-  }
-
-  if (defaults) {
-    defaults.forEach(item => {
-      if (item.type !== 'add-class' && seen[item.name]) return;
-      out.append(item);
-    });
-  }
-
-  while (current) {
-    next = statements.nextNode(current);
-    out.append(current.clone());
-    current = next;
-  }
-
-  return Template.fromList(out);
-}
-
 class GlimmerComponentDefinition extends ComponentDefinition {
   compile(attributes: Slice<AttributeSyntax>, templates: Templates): GlimmerComponentInvocation {
     return new GlimmerComponentInvocation(templates, this.layout);
@@ -406,8 +314,6 @@ class EachSyntax extends StatementSyntax {
     //        Jump(ITER)
     // BREAK: Noop
     //        ExitList
-
-    let { templates } = this;
 
     let BEGIN = new NoopOpcode("BEGIN");
     let ITER = new NoopOpcode("ITER");
@@ -495,8 +401,6 @@ class IfSyntax extends StatementSyntax {
     //        Evalulate(inverse)
     // END:   Noop
     //        Exit
-
-    let { templates } = this;
 
     let BEGIN = new NoopOpcode("BEGIN");
     let ELSE = new NoopOpcode("ELSE");

@@ -1,12 +1,8 @@
 import { NULL_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm';
-import { ChainableReference, PathReference } from 'glimmer-reference';
+import { PathReference } from 'glimmer-reference';
 import { InternedString, Dict, dict } from 'glimmer-util';
-
-const NOOP_DESTROY = {
-  destroy() {}
-};
 
 export abstract class CompiledNamedArgs {
   static create({ keys, values }: { keys: InternedString[], values: CompiledExpression[] }): CompiledNamedArgs {
@@ -65,8 +61,8 @@ export abstract class EvaluatedNamedArgs {
   public keys: InternedString[];
 
   forEach(callback: (key: InternedString, value: PathReference) => void) {
-    let values = this.values;
-    this.keys.forEach((key, i) => callback(key, this.values[i]));
+    let { keys, values } = this;
+    keys.forEach((key, i) => callback(key, values[i]));
   }
 
   abstract get(key: InternedString): PathReference;

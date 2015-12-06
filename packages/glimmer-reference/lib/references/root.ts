@@ -1,7 +1,6 @@
 import { InternedString, intern, dict } from 'glimmer-util';
 import { PathReference } from './path';
-import { Dict, HasGuid } from 'glimmer-util';
-import { RootReference as IRootReference, PathReference as IPathReference, NotifiableReference } from 'glimmer-reference';
+import { RootReference as IRootReference, PathReference as IPathReference } from 'glimmer-reference';
 import PushPullReference from './push-pull';
 
 export default class RootReference extends PushPullReference implements IRootReference, IPathReference {

@@ -2,8 +2,7 @@ import { CompiledExpression } from '../expressions';
 import { CompiledArgs, EvaluatedArgs } from './args';
 import VM from '../../vm';
 import { Helper } from '../../environment';
-import { InternedString } from 'glimmer-util';
-import { PathReference, referenceFromParts } from 'glimmer-reference';
+import { PathReference } from 'glimmer-reference';
 
 export default class CompiledHelper implements CompiledExpression {
   public type = "helper";
@@ -39,7 +38,7 @@ class HelperInvocationReference implements PathReference {
 
   value(): any {
     let { helper, args: { positional, named } }  = this;
-    return this.helper.call(undefined, positional.value(), named.value(), null);
+    return helper(positional.value(), named.value(), null);
   }
 
   destroy() {}

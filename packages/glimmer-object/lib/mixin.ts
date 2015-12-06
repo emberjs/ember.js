@@ -1,22 +1,13 @@
-import { CLASS_META, Meta, ComputedReferenceBlueprint, setProperty } from 'glimmer-reference';
+import { CLASS_META } from 'glimmer-reference';
 import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
 import GlimmerObject, {
-  EMPTY_CACHE,
   GlimmerObjectFactory,
   ClassMeta,
   InstanceMeta,
   turbocharge
 } from './object';
 
-import {
-  ComputedDescriptor,
-  ComputedGetCallback,
-  LegacyComputedGetCallback,
-  ComputedSetCallback,
-  LegacyComputedSetCallback
-} from './computed';
-
-import { ROOT, hasSuper } from './utils';
+import { ROOT } from './utils';
 
 export const DESCRIPTOR = "5d90f84f-908e-4a42-9749-3d0f523c262c";
 export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";
@@ -43,7 +34,6 @@ export class Mixin {
   private concatenatedProperties: InternedString[] = [];
   private mergedProperties: InternedString[] = [];
   private dependencies: Mixin[] = [];
-  private wasApplied = false;
 
   static create(...args: (Mixin | Extensions)[]) {
     let extensions = args[args.length - 1];

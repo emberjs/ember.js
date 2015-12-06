@@ -1,8 +1,5 @@
 import { Mixin, get, mixin } from './support';
-import {
-  Mixin as ParentMixin,
-  aliasMethod
-} from 'glimmer-object';
+import { aliasMethod } from 'glimmer-object';
 
 QUnit.module('Mixin.aliasMethod');
 

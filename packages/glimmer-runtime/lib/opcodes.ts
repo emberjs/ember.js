@@ -1,11 +1,5 @@
-import { Dict, LinkedList, LinkedListNode, ListNode, Slice } from 'glimmer-util';
-import { ChainableReference, PathReference } from 'glimmer-reference';
-import Template from './template';
-import Compiler from './compiler';
-import Environment from './environment';
-import { ElementStack } from './builder';
+import { LinkedList, LinkedListNode, Slice } from 'glimmer-util';
 import { VM, UpdatingVM } from './vm';
-import DOMHelper from './dom';
 
 export interface UpdatingOpcode extends LinkedListNode {
   type: string;

@@ -1,4 +1,4 @@
-import { ChainableReference, NotifiableReference, Destroyable } from 'glimmer-reference';
+import { ChainableReference, NotifiableReference } from 'glimmer-reference';
 import { HasGuid } from 'glimmer-util';
 
 export default class ForkedReference implements NotifiableReference, HasGuid {

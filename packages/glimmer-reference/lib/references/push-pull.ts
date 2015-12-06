@@ -66,16 +66,6 @@ export abstract class PushPullReference implements Reference, ChainableReference
     // this.sources.push(source.chain(this));
     return source;
   }
-
-  private _append(child): Unchain {
-    let node = new NotifyNode(this, child);
-
-    node.previousSibling = this._notifyTail;
-    this._notifyTail = node;
-
-    return new Unchain(this, node);
-  }
-
 }
 
 export default PushPullReference;

@@ -1,6 +1,6 @@
-import EmberObject, { Mixin, computed, observer, alias } from 'glimmer-object';
+import EmberObject, { Mixin, computed } from 'glimmer-object';
 
-var moduleOptions, originalLookup;
+var moduleOptions;
 
 QUnit.module('GlimmerObject.create', moduleOptions);
 

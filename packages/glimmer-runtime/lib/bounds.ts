@@ -1,5 +1,3 @@
-import DOMHelper from './dom';
-
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately
   parentElement(): Element;

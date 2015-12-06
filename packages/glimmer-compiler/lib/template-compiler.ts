@@ -2,7 +2,6 @@ import TemplateVisitor from "./template-visitor";
 import { assert } from "./utils";
 import { getAttrNamespace } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
-import { types } from "glimmer-util";
 
 type Statement = any;
 
@@ -188,7 +187,6 @@ class JavaScriptCompiler {
   }
 
   pushExpression(name: string, ...args: Expression[]) {
-    let expr = [name, ...args];
     this.expressions.push(<any>[name, ...args]);
   }
 
@@ -215,8 +213,6 @@ export default class TemplateCompiler {
   private options: Object;
   private templateId = 0;
   private templateIds: number[] = [];
-  private templates: any[] = [];
-  private childTemplates: any[] = [];
   private opcodes: any[] = [];
   private includeMeta = false;
 

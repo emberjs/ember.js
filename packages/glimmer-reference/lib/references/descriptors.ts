@@ -1,5 +1,5 @@
 import Meta from '../meta';
-import { Reference, ChainableReference, NotifiableReference } from 'glimmer-reference';
+import { Reference, NotifiableReference } from 'glimmer-reference';
 import { InternedString } from 'glimmer-util';
 import PushPullReference from './push-pull';
 

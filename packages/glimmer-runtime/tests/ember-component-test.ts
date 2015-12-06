@@ -1,17 +1,11 @@
 import EmberObject, {
-  GlimmerObjectFactory as EmberObjectFactory,
   alias
 } from "glimmer-object";
 
 import {
   Template,
-  ComponentClass,
   Environment,
   RenderResult,
-  AttributeSyntax,
-  GetSyntax,
-  StaticAttr,
-  DynamicAttr
 } from "glimmer-runtime";
 
 import {
@@ -23,11 +17,11 @@ import {
   compile
  } from "./support";
 
-import { Dict, dict, assign } from "glimmer-util";
+import { assign } from "glimmer-util";
 
 import { equalTokens } from "glimmer-test-helpers";
 
-import { CLASS_META, ChainableReference, setProperty as set } from 'glimmer-reference';
+import { CLASS_META, setProperty as set } from 'glimmer-reference';
 
 class Component extends EmberObject {
   private parent: Element;
@@ -183,7 +177,7 @@ interface Expected {
   attrs: Object
 };
 
-function testComponent(title: string, { kind, layout, invokeAs, block, expected: _expected }: ComponentTestOptions) {
+function testComponent(title: string, { layout, invokeAs, block, expected: _expected }: ComponentTestOptions) {
   if (typeof block === 'string') invokeAs = { template: block };
 
   invokeAs = assign({
@@ -193,7 +187,7 @@ function testComponent(title: string, { kind, layout, invokeAs, block, expected:
     inverse: null
   }, invokeAs || <InvokeAs>{});
 
-  let { attrs, context, blockParams, template, inverse } = invokeAs;
+  let { attrs, context, blockParams, template } = invokeAs;
 
   // if (!kind || kind === 'curly') {
   //   let expected: Expected;
@@ -715,7 +709,7 @@ function equalObject(actual: EmberObject, expected: EmberObject, msg: string) {
 QUnit.skip('newly-added sub-components get correct parentView', function() {
   var outer, inner;
 
-  var outer, innerTemplate, innerLayout;
+  var outer
 
   let Outer = <any>EmberishComponent.extend({
     init() {

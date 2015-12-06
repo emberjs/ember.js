@@ -1,9 +1,9 @@
 import { Scope, Environment } from './environment';
 import { Bounds, clear, move } from './bounds';
 import { ElementStack } from './builder';
-import { Stack, LinkedList, LinkedListNode, ListSlice, Slice, InternedString, Dict, dict } from 'glimmer-util';
-import { ConstReference, UpdatableReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
-import Template, { Templates, Args } from './template';
+import { Stack, LinkedList, LinkedListNode, InternedString, Dict, dict } from 'glimmer-util';
+import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
+import Template from './template';
 import { CompiledExpression } from './compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from './compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
@@ -147,7 +147,6 @@ export class VM {
   execute(opcodes: OpSeq, initialize?: (vm: VM) => void): RenderResult {
     let { elementStack, frameStack, updatingOpcodeStack, env } = this;
     let self = this.scope().getSelf();
-    let renderResult;
 
     elementStack.openBlock();
 
@@ -344,7 +343,7 @@ class ListRevalidationDelegate implements ListDelegate {
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode;
 
-    let result = vm.execute(opcode.ops, vm => {
+    vm.execute(opcode.ops, vm => {
       vm.registers.args = EvaluatedArgs.positional([item]);
       vm.registers.operand = item;
       vm.registers.condition = new ConstReference(true);

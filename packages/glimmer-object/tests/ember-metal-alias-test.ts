@@ -15,10 +15,6 @@ QUnit.module('defineProperty - alias', {
   }
 });
 
-function incrementCount() {
-  count++;
-}
-
 function shouldBeClean(reference: Reference, msg?: string) {
   // a "clean" reference is allowed to report dirty
 }

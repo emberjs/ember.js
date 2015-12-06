@@ -2,9 +2,8 @@ import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
-import { Args } from '../../template';
 import { RawTemplate } from '../../compiler';
-import { InternedString, ListSlice } from 'glimmer-util';
+import { ListSlice } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
 
 abstract class VMOpcode implements Opcode {

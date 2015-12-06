@@ -1,7 +1,5 @@
 /*globals console*/
 
-import assert from "./assert";
-
 export function merge(options, defaults) {
   for (var prop in defaults) {
     if (options.hasOwnProperty(prop)) { continue; }

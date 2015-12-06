@@ -1,12 +1,9 @@
-import Template, {
+import {
   YieldSyntax,
   Helper as HelperSyntax,
   Unknown,
   Append,
-  Templates
 } from "./template";
-
-import { ElementStack } from './builder';
 
 import { StatementSyntax } from './syntax';
 
@@ -17,33 +14,19 @@ import {
 } from './component/interfaces';
 
 import {
-  Reference,
-  ChainableReference,
-  RootReference,
   PathReference,
   ConstReference,
   MetaLookup
 } from 'glimmer-reference';
 
-import { VM } from './vm';
-
 import {
-  LITERAL,
   HasGuid,
   InternedString,
-  symbol,
   intern,
   installGuid
 } from 'glimmer-util';
 
-let EMPTY_OBJECT = Object.freeze(Object.create(null));
-
-import { LinkedList, LinkedListNode, Dict, dict } from 'glimmer-util';
-import { Destroyable } from './utils';
-
-function fork(ref: ChainableReference): Reference {
-  throw new Error("unimplemented");
-}
+import { Dict } from 'glimmer-util';
 
 export class Scope {
   static root(parent: Scope, size = 0) {
@@ -89,7 +72,6 @@ export class Scope {
 }
 
 import DOMHelper from './dom';
-import { EMPTY_ARRAY } from './utils';
 
 export abstract class Environment {
   protected dom: DOMHelper;

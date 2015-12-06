@@ -1,6 +1,5 @@
 import { LinkedList, ListNode, InternedString, Dict, dict, intern, symbol } from 'glimmer-util';
-import { Reference, RootReference } from '../types';
-import { ConstReference } from './const';
+import { RootReference } from '../types';
 import UpdatableReference from './root';
 
 export const REFERENCE_ITERATOR: string = symbol("reference-iterator");

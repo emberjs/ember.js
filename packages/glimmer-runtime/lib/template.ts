@@ -2,7 +2,6 @@ import { VM } from './vm';
 import Compiler, { RawTemplate } from './compiler';
 
 import Syntax, {
-  ATTRIBUTE_SYNTAX,
   Program,
   AttributeSyntax,
   ExpressionSyntax,
@@ -15,16 +14,11 @@ import Scanner from './scanner';
 
 import {
   Opcode,
-  OpSeq,
-  OpSeqBuilder,
+  OpSeq
 } from './opcodes';
 
 import {
-  PutValue,
-  PutArgsOpcode,
-  EnterOpcode,
-  ExitOpcode,
-  EvaluateOpcode
+  PutValue
 } from './compiled/opcodes/vm';
 
 import {
@@ -35,9 +29,7 @@ import {
   CompiledArgs,
   CompiledNamedArgs,
   CompiledPositionalArgs,
-  EvaluatedArgs,
-  EvaluatedNamedArgs,
-  EvaluatedPositionalArgs
+  EvaluatedArgs
 } from './compiled/expressions/args';
 
 import CompiledValue from './compiled/expressions/value';
@@ -56,31 +48,21 @@ import {
 } from './compiled/expressions';
 
 import {
-  ChainableReference,
-  NotifiableReference,
   PushPullReference,
-  ConstReference,
   PathReference,
   UpdatableReference,
-  referenceFromParts
 } from 'glimmer-reference';
 
-import { ElementStack, ClassList } from './builder';
+import { ElementStack } from './builder';
 
 import { Environment, Insertion, Helper as EnvHelper } from './environment';
 
 import {
-  EMPTY_SLICE,
-  LITERAL,
   LinkedList,
-  LinkedListNode,
   InternedString,
-  ListSlice,
-  Slice,
   Dict,
   dict,
   intern,
-  assign
 } from 'glimmer-util';
 
 import {
@@ -199,9 +181,6 @@ export default class Template {
   }
 
   render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {
-    let { hostOptions } = options;
-    let { raw: { locals: localNames } } = this;
-
     let elementStack = new ElementStack({ dom: env.getDOM(), parentNode: options.appendTo, nextSibling: null });
     let vm = VM.initial(env, { self: new UpdatableReference(self), elementStack, size: this.raw.symbolTable.size });
 
@@ -257,9 +236,10 @@ export class Block extends StatementSyntax {
   }
 
   prettyPrint() {
-    let [params, hash] = this.args.prettyPrint();
-    let block = new PrettyPrint('expr', this.path.join('.'), params, hash);
     return null;
+
+    // let [params, hash] = this.args.prettyPrint();
+    // let block = new PrettyPrint('expr', this.path.join('.'), params, hash);
     // return new PrettyPrint('block', 'block', [block], null, this.templates.prettyPrint());
   }
 }
@@ -358,7 +338,7 @@ class HelperInvocationReference extends PushPullReference implements PathReferen
   }
 
   value(): Insertion {
-    let { helper, args: { positional, named } }  = this;
+    let { args: { positional, named } }  = this;
     return this.helper.call(undefined, positional.value(), named.value(), null);
   }
 }
@@ -402,7 +382,7 @@ export class DynamicProp extends AttributeSyntax {
   type = "dynamic-prop";
 
   static fromSpec(sexp: DynamicPropSexp): DynamicProp {
-    let [, name, value, namespace] = sexp;
+    let [, name, value] = sexp;
 
     return new DynamicProp({
       name,

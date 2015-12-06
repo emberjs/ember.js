@@ -1,5 +1,5 @@
 import { compile as defaultCompile } from "glimmer-compiler";
-import { DOMHelper, Template, RenderResult } from "glimmer-runtime";
+import { Template, RenderResult } from "glimmer-runtime";
 import { equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
@@ -76,7 +76,7 @@ QUnit.skip('the component class is its context', assert => {
 QUnit.skip('attrs are available in the layout', assert => {
   env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>')
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
-  let result = render(template, { color: 'red' });
+  render(template, { color: 'red' });
 
   equalTokens(root, "<div color='red'><p>red</p>hello!</div>");
   rerender({ color: 'green' });

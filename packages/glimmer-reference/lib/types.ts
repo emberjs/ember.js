@@ -29,7 +29,7 @@ export interface RootReferenceFactory {
   new (parent: any): RootReference;
 }
 
-const CONST_REFERENCE = "503c5a44-e4a9-4bb5-85bc-102d35af6985";
+export const CONST_REFERENCE = "503c5a44-e4a9-4bb5-85bc-102d35af6985";
 
 // this interface asserts that isDirty() will always be false and
 // the value() will always be `===` to the previous value. It can

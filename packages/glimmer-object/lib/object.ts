@@ -1,13 +1,11 @@
 import {
   Meta,
-  setProperty,
   InnerReferenceFactory,
   PropertyReference
 } from 'glimmer-reference';
 import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
 import {
   Mixin,
-  Descriptor,
   extend as extendClass,
   toMixin,
   relinkSubclasses,
@@ -64,7 +62,6 @@ export class ClassMeta {
   private mixins: Mixin[] = [];
   private appliedMixins: Mixin[] = [];
   private staticMixins: Mixin[] = [];
-  private appliedStaticMixins: Mixin[] = [];
   private subclasses: GlimmerObjectFactory<any>[] = [];
   private slots: InternedString[] = [];
   public InstanceMetaConstructor: typeof Meta = null;

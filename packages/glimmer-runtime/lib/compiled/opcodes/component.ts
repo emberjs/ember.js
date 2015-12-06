@@ -1,8 +1,6 @@
 import { Opcode } from '../../opcodes';
 import { VM } from '../../vm';
 import { ComponentInvocation } from '../../component/interfaces';
-import { Dict } from 'glimmer-util';
-import Template from '../../template';
 
 export class OpenComponentOpcode extends Opcode {
   public type = "open-component";
