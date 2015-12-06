@@ -81,7 +81,7 @@ const ApplicationInstance = EngineInstance.extend({
   init() {
     this._super(...arguments);
 
-    let application = get(this, 'application');
+    let application = this.application;
 
     if (!isEnabled('ember-application-visit')) {
       set(this, 'rootElement', get(application, 'rootElement'));

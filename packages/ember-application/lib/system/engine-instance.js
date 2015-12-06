@@ -7,8 +7,6 @@ import EmberObject from 'ember-runtime/system/object';
 import Registry from 'container/registry';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 
 /**
@@ -34,18 +32,17 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   init() {
     this._super(...arguments);
 
-    let base = get(this, 'base');
+    let base = this.base;
 
     if (!base) {
-      base = get(this, 'application');
-      set(this, 'base', base);
+      base = this.application;
+      this.base = base;
     }
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
-    let baseRegistry = get(base, '__registry__');
     let registry = this.__registry__ = new Registry({
-      fallback: baseRegistry
+      fallback: base.__registry__
     });
 
     // Create a per-instance container from the instance's registry
