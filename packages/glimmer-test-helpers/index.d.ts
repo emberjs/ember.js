@@ -4,5 +4,7 @@ export {
   equalTokens,
   normalizeInnerHTML,
   isCheckedInputHTML,
-  getTextContent
+  getTextContent,
+  strip,
+  stripTight
 } from './lib/helpers';

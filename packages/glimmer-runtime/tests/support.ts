@@ -500,7 +500,12 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
     let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equals(expected);
     expectedAttrs[prop] = expected;
 
-    QUnit.push(attributes[prop].match(element.getAttribute(prop)), matcher.fail(element.getAttribute(prop)), matcher.fail(element.getAttribute(prop)), `Expected element's ${prop} attribute ${matcher.expected()}`);
+    QUnit.push(
+      attributes[prop].match(element.getAttribute(prop)),
+      matcher.fail(element.getAttribute(prop)),
+      matcher.fail(element.getAttribute(prop)),
+      `Expected element's ${prop} attribute ${matcher.expected()}`
+    );
   }
 
   let actualAttributes = {};
@@ -511,7 +516,11 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
   if (!(element instanceof HTMLElement)) {
     QUnit.push(element instanceof HTMLElement, null, null, "Element must be an HTML Element, not an SVG Element");
   } else {
-    QUnit.push(element.attributes.length === expectedCount, element.attributes.length, expectedCount, `Expected ${expectedCount} attributes; got ${element.outerHTML}`);
+    QUnit.push(
+      element.attributes.length === expectedCount,
+      element.attributes.length, expectedCount,
+      `Expected ${expectedCount} attributes; got ${element.outerHTML}`
+    );
 
     if (content !== null) {
       QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);

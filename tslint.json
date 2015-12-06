@@ -1,18 +1,25 @@
 {
   "rules": {
     "curly": false,
-    "no-unused-variable": false,
-    "indent": true,
+    "no-unused-variable": true,
+    "indent": [true, "spaces"],
     "label-position": true,
     "label-undefined": true,
+    "max-line-length": [ true, 150 ],
     "no-consecutive-blank-lines": true,
     "no-construct": true,
     "no-debugger": true,
     "no-duplicate-key": true,
     "no-duplicate-variable": true,
+    "no-inferrable-types": true,
     "no-trailing-whitespace": true,
     "no-unreachable": true,
     "no-unused-expression": true,
-    "semicolon": true
+    "semicolon": true,
+    "triple-equals": true,
+    "class-name": true,
+    "comment-format": { "check-space": true },
+    "no-null-keyword": true,
+    "no-require-imports": true
   }
 }

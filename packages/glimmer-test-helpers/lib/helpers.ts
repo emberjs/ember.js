@@ -114,3 +114,11 @@ export function getTextContent(el) {
     return el[textProperty];
   }
 }
+
+export function strip(strings: string[]) {
+  return strings[0].split('\n').map(s => s.trim()).join(' ');
+}
+
+export function stripTight(strings: string[]) {
+  return strings[0].split('\n').map(s => s.trim()).join('');
+}

@@ -7,7 +7,9 @@ export { default as assert } from './lib/assert';
 export { forEach, map, isArray, indexOfArray } from './lib/array-utils';
 export { default as voidMap } from './lib/void-tag-names';
 
+/* tslint:disable:no-unused-variable */
 import * as types from './lib/object-utils';
+/* tslint:enable:no-unused-variable */
 export { merge, assign } from './lib/object-utils';
 export { installGuid, HasGuid } from './lib/guid';
 

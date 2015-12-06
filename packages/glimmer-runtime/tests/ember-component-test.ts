@@ -19,7 +19,7 @@ import {
 
 import { assign } from "glimmer-util";
 
-import { equalTokens } from "glimmer-test-helpers";
+import { equalTokens, stripTight } from "glimmer-test-helpers";
 
 import { CLASS_META, setProperty as set } from 'glimmer-reference';
 
@@ -536,7 +536,10 @@ QUnit.skip('static arbitrary number of positional parameters', function() {
 
   env.registerEmberishComponent('sample-component', SampleComponent, '{{#each names as |name|}}{{name}}{{/each}}');
 
-  appendViewFor('<div>{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{!sample-component "Foo" 4 "Bar" 5 "Baz" id="helper"}}</div>');
+  appendViewFor(
+    stripTight`<div>{{sample-component "Foo" 4 "Bar" id="args-3"}}
+      {{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}
+      {{!sample-component "Foo" 4 "Bar" 5 "Baz" id="helper"}}</div>`);
 
   let first = <Element>view.element.firstChild;
   let second = <Element>first.nextSibling;
@@ -738,7 +741,10 @@ QUnit.skip('newly-added sub-components get correct parentView', function() {
 // QUnit.skip('non-block with each rendering child components', function() {
 //   expect(2);
 
-//   registry.register('template:components/non-block', compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}'));
+//   registry.register(
+//     'template:components/non-block',
+//     compile('In layout. {{#each attrs.items as |item|}}[{{child-non-block item=item}}]{{/each}}')
+//   );
 //   registry.register('template:components/child-non-block', compile('Child: {{attrs.item}}.'));
 
 //   var items = emberA(['Tom', 'Dick', 'Harry']);
@@ -863,7 +869,9 @@ QUnit.skip('newly-added sub-components get correct parentView', function() {
 
 //     expectAssertion(() => {
 //       view = appendViewFor('<non-block />');
-//     }, `You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <non-block> template because it is a GlimmerComponent.`);
+//     }, strip`You cannot use triple curlies (e.g. style={{{ ... }}}) 
+//       in the top-level element of the <non-block> template because it is a GlimmerComponent.`
+//     );
 //   });
 
 let styles = [{
@@ -893,7 +901,11 @@ styles.forEach(style => {
   });
 
   QUnit.skip(`non-block with attributes replaced with ${style.name}`, function() {
-    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `  <${style.tagName} such="{{attrs.stability}}">In layout</${style.tagName}>  `);
+    env.registerEmberishGlimmerComponent(
+      'non-block',
+      EmberishGlimmerComponent,
+      `  <${style.tagName} such="{{attrs.stability}}">In layout</${style.tagName}>  `
+    );
 
     appendViewFor('<non-block stability={{view.stability}} />', { stability: 'stability' });
 
@@ -908,7 +920,11 @@ styles.forEach(style => {
   });
 
   QUnit.skip(`non-block replaced with ${style.name} (regression with single element in the root element)`, function() {
-    env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, `  <${style.tagName} such="{{attrs.stability}}"><p>In layout</p></${style.tagName}>  `);
+    env.registerEmberishGlimmerComponent(
+      'non-block',
+      EmberishGlimmerComponent,
+      `  <${style.tagName} such="{{attrs.stability}}"><p>In layout</p></${style.tagName}>  `
+    );
 
     appendViewFor('<non-block stability={{view.stability}} />', { stability: 'stability' });
 
@@ -950,10 +966,20 @@ styles.forEach(style => {
 
     appendViewFor('<non-block data-static="outer" data-dynamic="outer" />');
 
-    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'outer', 'data-dynamic': 'outer'}, '');
+    equalsElement(view.element, style.tagName, {
+      class: classes('ember-view'),
+      id: regex(/^ember\d*$/),
+      'data-static': 'outer',
+      'data-dynamic': 'outer'
+    }, '');
 
     set(component, 'internal', 'changed');
-    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'outer', 'data-dynamic': 'outer'}, '');
+    equalsElement(view.element, style.tagName, {
+      class: classes('ember-view'),
+      id: regex(/^ember\d*$/),
+      'data-static': 'outer',
+      'data-dynamic': 'outer'
+    }, '');
   });
 
   QUnit.skip(`non-block replaced with ${style.name} should have correct scope`, function() {
@@ -1003,7 +1029,12 @@ styles.forEach(style => {
 
     appendViewFor('<non-block />');
 
-    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'data-static': 'static', 'data-dynamic': 'stuff' }, '');
+    equalsElement(view.element, style.tagName, {
+      class: classes('ember-view'),
+      id: regex(/^ember\d*$/),
+      'data-static': 'static',
+      'data-dynamic': 'stuff'
+    }, '');
   });
 
   QUnit.skip(`only text attributes are reflected on the underlying DOM element (${style.name})`, function() {
@@ -1013,7 +1044,12 @@ styles.forEach(style => {
       dynamic: 'dynamic'
     });
 
-    equalsElement(view.element, style.tagName, { class: classes('ember-view'), id: regex(/^ember\d*$/), 'static-prop': 'static text', 'concat-prop': 'dynamic text' }, 'In layout');
+    equalsElement(view.element, style.tagName, {
+      class: classes('ember-view'),
+      id: regex(/^ember\d*$/),
+      'static-prop': 'static text',
+      'concat-prop': 'dynamic text'
+    }, 'In layout');
   });
 
 });
@@ -1049,7 +1085,11 @@ QUnit.skip('attributes are not installed on the top level', function() {
     dynamic: 'dynamic'
   });
 
-  equalsElement(view.element, 'non-block', { class: classes('ember-view'), id: regex(/^ember\d*$/), text: 'texting' }, 'In layout - texting -- null');
+  equalsElement(view.element, 'non-block', {
+    class: classes('ember-view'),
+    id: regex(/^ember\d*$/),
+    text: 'texting'
+  }, 'In layout - texting -- null');
   equal(component.attrs['text'], 'texting');
   equal(component.attrs['dynamic'], 'dynamic');
   strictEqual(component['text'], null);
@@ -1057,7 +1097,11 @@ QUnit.skip('attributes are not installed on the top level', function() {
 
   rerender();
 
-  equalsElement(view.element, 'non-block', { class: classes('ember-view'), id: regex(/^ember\d*$/), text: 'texting' }, 'In layout - texting -- <!---->');
+  equalsElement(view.element, 'non-block', {
+    class: classes('ember-view'),
+    id: regex(/^ember\d*$/),
+    text: 'texting'
+  }, 'In layout - texting -- <!---->');
   equal(component.attrs['text'], 'texting');
   equal(component.attrs['dynamic'], 'dynamic');
   strictEqual(component['text'], null);
@@ -1073,7 +1117,11 @@ QUnit.skip('non-block with properties on attrs and component class', function() 
 });
 
 QUnit.skip('rerendering component with attrs from parent', function() {
-  let hooks = env.registerEmberishGlimmerComponent('non-block', EmberishGlimmerComponent, '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>').hooks as HookIntrospection;
+  let hooks = env.registerEmberishGlimmerComponent(
+    'non-block',
+    EmberishGlimmerComponent,
+    '<non-block>In layout - someProp: {{attrs.someProp}}</non-block>'
+  ).hooks as HookIntrospection;
 
   appendViewFor('<non-block someProp={{someProp}} />', {
     someProp: 'wycats'
@@ -1099,7 +1147,11 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 });
 
 QUnit.skip('block with properties on attrs', function() {
-  env.registerEmberishGlimmerComponent('with-block', EmberishGlimmerComponent, '<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>');
+  env.registerEmberishGlimmerComponent(
+    'with-block',
+    EmberishGlimmerComponent,
+    '<with-block>In layout - someProp: {{attrs.someProp}} - {{yield}}</with-block>'
+  );
 
   appendViewFor('<with-block someProp="something here">In template</with-block>');
 

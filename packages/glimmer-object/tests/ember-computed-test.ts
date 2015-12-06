@@ -1,7 +1,5 @@
 import GlimmerObject, { computed, observer, alias } from 'glimmer-object';
 
-const noop = function() {};
-
 interface Get {
   (obj: any, key: string): any;
 }

@@ -357,7 +357,11 @@ test("The compiler can handle multiple invocations of sexprs", function() {
     return "" + params[0] + params[1];
   });
 
-  compilesTo('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', '<div>helloFOOBARlolBAZ</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
+  compilesTo(
+    '<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>',
+    '<div>helloFOOBARlolBAZ</div>',
+    { foo: "FOO", bar: "BAR", baz: "BAZ" }
+  );
 });
 
 test("The compiler passes along the hash arguments", function() {
@@ -446,7 +450,11 @@ test("Attributes containing multiple helpers are treated like a block", function
     return params[0];
   });
 
-  compilesTo('<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>', '<a href="http://foo.com/bar/baz">linky</a>', { foo: 'foo.com', bar: 'bar' });
+  compilesTo(
+    '<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>',
+    '<a href="http://foo.com/bar/baz">linky</a>',
+    { foo: 'foo.com', bar: 'bar' }
+  );
 });
 
 test("Attributes containing a helper are treated like a block", function() {
@@ -457,7 +465,11 @@ test("Attributes containing a helper are treated like a block", function() {
     return "example.com";
   });
 
-  compilesTo('<a href="http://{{testing 123}}/index.html">linky</a>', '<a href="http://example.com/index.html">linky</a>', { person: { url: 'example.com' } });
+  compilesTo(
+    '<a href="http://{{testing 123}}/index.html">linky</a>',
+    '<a href="http://example.com/index.html">linky</a>',
+    { person: { url: 'example.com' } }
+  );
 });
 /*
 test("It is possible to trigger a re-render of an attribute from a child resolution", function() {
@@ -521,7 +533,11 @@ test("Attribute runs can contain helpers", function() {
   });
 
   var context = { url: "example.com", path: 'index' };
-  var fragment = compilesTo('<a href="http://{{url}}/{{testing path}}/{{testing "linky"}}">linky</a>', '<a href="http://example.com/index.html/linky">linky</a>', context);
+  var fragment = compilesTo(
+    '<a href="http://{{url}}/{{testing path}}/{{testing "linky"}}">linky</a>',
+    '<a href="http://example.com/index.html/linky">linky</a>',
+    context
+  );
 
   context.url = "www.example.com";
   context.path = "yep";
@@ -708,7 +724,11 @@ QUnit.skip('Block params in HTML syntax - Helper should know how many block para
   expect(4);
 
   env.registerHelper('count-block-params', function(params, hash, options) {
-    equal(options.template.arity, parseInt(hash.count, 10), 'Helpers should receive the correct number of block params in options.template.blockParams.');
+    equal(
+      options.template.arity,
+      parseInt(hash.count, 10),
+      'Helpers should receive the correct number of block params in options.template.blockParams.'
+    );
   });
 
   render(compile('<count-block-params count="0"></count-block-params>'), { count: 0 });

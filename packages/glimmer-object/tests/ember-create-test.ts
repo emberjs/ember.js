@@ -1,4 +1,5 @@
 import EmberObject, { Mixin, computed } from 'glimmer-object';
+import { strip } from 'glimmer-test-helpers';
 
 var moduleOptions;
 
@@ -128,7 +129,8 @@ QUnit.skip('throws if you try to define a computed property', assert => {
     EmberObject.create({
       foo: computed(function() {})
     });
-  }, 'Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
+  }, strip`Ember.Object.create no longer supports defining computed properties.
+           Define computed properties using extend() or reopen() before calling create().`);
 });
 
 QUnit.skip('throws if you try to call _super in a method', assert => {
