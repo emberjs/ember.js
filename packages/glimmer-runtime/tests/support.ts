@@ -159,11 +159,11 @@ export class TestEnvironment extends Environment {
 
     if (isSimple) {
       if (block && key === 'identity') {
-        return new IdentitySyntax({ args: block.args, templates: block.templates })
+        return new IdentitySyntax({ args: block.args, templates: block.templates });
       }
 
       if (block && key === 'render-inverse') {
-        return new RenderInverseIdentitySyntax({ args: block.args, templates: block.templates })
+        return new RenderInverseIdentitySyntax({ args: block.args, templates: block.templates });
       }
 
       if (block && key === 'each') {
@@ -210,7 +210,7 @@ export class HookIntrospection implements ComponentHooks {
 
   begin(component: Component) {
     this.hooks = {};
-    this.inner.begin(component)
+    this.inner.begin(component);
   }
 
   commit(component: Component) {
@@ -573,5 +573,5 @@ export function classes(expected: string) {
     fail(actual) {
       return `'${actual}'' did not match '${expected}'`;
     }
-  }
+  };
 }

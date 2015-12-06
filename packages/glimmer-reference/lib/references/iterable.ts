@@ -31,8 +31,10 @@ export class ListManager {
   private array: RootReference;
   private keyPath: InternedString;
 
+  /*tslint:disable no-unused-variable*/
   private map = dict<ListItem>();
   private list = new LinkedList<ListItem>();
+  /*tslint:enable no-unused-variable*/
 
   constructor(array: RootReference, keyPath: InternedString) {
     this.array = array;

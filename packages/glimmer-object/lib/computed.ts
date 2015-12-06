@@ -87,9 +87,7 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
   };
 
   if (_desc.get && _desc.get.length > 0) {
-    originalGet = function() {
-      return _desc.get.call(this, accessorName);
-    }
+    originalGet = function() { return _desc.get.call(this, accessorName); };
   } else {
     originalGet = <ComputedGetCallback>_desc.get;
   }
@@ -97,7 +95,7 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
   if (_desc.set && _desc.set.length > 1) {
     originalSet = function(value) {
       return _desc.set.call(this, accessorName, value);
-    }
+    };
   } else {
     originalSet = <ComputedGetCallback>_desc.set;
   }
@@ -109,7 +107,7 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
     }
 
     return originalGet.call(this);
-  }
+  };
 
   let cacheSet;
 
@@ -123,13 +121,13 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
       if (ret !== undefined) {
         slots[<string>accessorName] = ret;
       }
-    }
+    };
   } else {
     cacheSet = function(value) {
       let meta = Meta.for(this);
       let slots = meta.getSlots();
       if (value !== undefined) slots[<string>accessorName] = value;
-    }
+    };
   }
 
   if (!superDesc || 'value' in superDesc) {
@@ -142,27 +140,27 @@ function wrapAccessor(home: Object, accessorName: InternedString, _desc: Compute
     let lastSuper = this._super;
     this._super = function() {
       return superDesc.get.call(this);
-    }
+    };
 
     try {
       return cacheGet.call(this);
     } finally {
       this._super = lastSuper;
     }
-  }
+  };
 
   desc.set = function(val) {
     let lastSuper = this._super;
     this._super = function() {
       return superDesc.set.call(this, val);
-    }
+    };
 
     try {
       return cacheSet.call(this, val);
     } finally {
       this._super = lastSuper;
     }
-  }
+  };
 
   return desc;
 }
@@ -192,7 +190,7 @@ export function computed(...args) {
   } else if (typeof last === 'object') {
     return new ComputedBlueprint(<ComputedDescriptor>last).property(...deps);
   } else {
-    throw new TypeError("computed expects a function or an object as last argument")
+    throw new TypeError("computed expects a function or an object as last argument");
   }
 }
 

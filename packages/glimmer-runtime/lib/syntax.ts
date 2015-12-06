@@ -83,7 +83,7 @@ export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {
   public type: string;
 
   prettyPrint(): PrettyPrintValue {
-    return `${this.type}`
+    return `${this.type}`;
   }
 
   abstract compile(compiler: Compiler): CompiledExpression;

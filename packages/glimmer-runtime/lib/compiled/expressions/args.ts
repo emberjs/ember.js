@@ -70,7 +70,7 @@ export abstract class EvaluatedArgs {
   }
 
   static positional(values: PathReference[]): EvaluatedArgs {
-    return new NonEmptyEvaluatedArgs({ positional: EvaluatedPositionalArgs.create({ values }), named: EvaluatedNamedArgs.empty() })
+    return new NonEmptyEvaluatedArgs({ positional: EvaluatedPositionalArgs.create({ values }), named: EvaluatedNamedArgs.empty() });
   }
 
   public type: string;

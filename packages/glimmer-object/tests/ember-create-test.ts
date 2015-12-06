@@ -64,13 +64,13 @@ QUnit.test('reopening a parent with a computed property flushes the child', asse
 
   var SubClass = MyClass.extend({
     hello: computed(function() {
-      return this._super()
+      return this._super();
     })
   });
 
   var GrandChild = SubClass.extend({
     hello: computed(function() {
-      return this._super()
+      return this._super();
     })
   });
 

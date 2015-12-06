@@ -148,7 +148,7 @@ export class Mixin {
   extendPrototype(Original: GlimmerObjectFactory<any>) {
     Original.prototype = Object.create(Original.prototype);
     this.dependencies.forEach(m => m.extendPrototype(Original));
-    this.extendPrototypeOnto(Original, Original)
+    this.extendPrototypeOnto(Original, Original);
   }
 
   extendPrototypeOnto(Subclass: GlimmerObjectFactory<any>, Parent: GlimmerObjectFactory<any>) {
@@ -314,7 +314,7 @@ export abstract class AccessorBlueprint extends Blueprint {
       configurable: this.configurable,
       get: this.get,
       set: this.set
-    })
+    });
   }
 }
 
@@ -369,5 +369,5 @@ function maybeWrap(original: Function) {
     } finally {
       this._super = lastSuper;
     }
-  }
+  };
 }
