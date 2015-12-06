@@ -4,8 +4,8 @@ import Meta from '../meta';
 import ForkedReference from './forked';
 import { PropertyReference } from './descriptors';
 import PushPullReference from './push-pull';
-import { PathReference as IPathReference, Reference, NotifiableReference, Destroyable } from 'glimmer-reference';
-import { Dict, HasGuid, installGuid } from 'glimmer-util';
+import { PathReference as IPathReference, Reference, Destroyable } from 'glimmer-reference';
+import { Dict, HasGuid } from 'glimmer-util';
 
 class UnchainFromPath {
   private set: DictSet<PathReference & HasGuid>;
@@ -85,23 +85,6 @@ export class PathReference extends PushPullReference implements IPathReference, 
 
   label(): string {
     return '[reference Direct]';
-  }
-
-  private _notify() {
-    this.cache = EMPTY_CACHE;
-    let { chains, notifyChildren, lastParentValue } = this;
-
-    if (typeof lastParentValue === 'object' && lastParentValue !== null) {
-      Meta.for(lastParentValue).removeReference(this.property, this);
-    }
-
-    if (chains) {
-      Object.keys(chains).forEach(function(key) { chains[key]._notify(); });
-    }
-
-    if (notifyChildren) {
-      notifyChildren.forEach(function(child) { child.notify(); });
-    }
   }
 
   private _getNotifyChildren(): DictSet<PathReference> {

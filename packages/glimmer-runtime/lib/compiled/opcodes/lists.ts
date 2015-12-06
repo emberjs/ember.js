@@ -1,12 +1,7 @@
 import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { Assert } from './vm';
-import { ElementStack } from '../../builder';
-import { Args } from '../../template';
-import { RawTemplate } from '../../compiler';
-import { EvaluatedArgs, EvaluatedPositionalArgs, EvaluatedNamedArgs } from '../expressions/args';
-import { Bounds, clear, move } from '../../bounds';
-import { LITERAL, InternedString, Dict, ListSlice, Slice, dict, assert } from 'glimmer-util';
+import { EvaluatedArgs } from '../expressions/args';
+import { LITERAL, InternedString, ListSlice, Slice, assert } from 'glimmer-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
 
 abstract class ListOpcode implements Opcode {
@@ -44,7 +39,7 @@ export class EnterListOpcode extends ListOpcode {
     let manager =  new ListManager(<RootReference>listRef /* WTF */, keyPath);
     let delegate = new IterateDelegate(vm);
 
-    let iterator = vm.registers.iterator = manager.iterator(delegate);
+    vm.registers.iterator = manager.iterator(delegate);
 
     vm.enterList(manager, new ListSlice(this.begin, this.end));
   }

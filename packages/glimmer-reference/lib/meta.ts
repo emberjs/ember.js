@@ -1,13 +1,11 @@
 import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
-import { ConstReference } from './references/const';
 import { MetaOptions } from './types';
-import { InternedString, installGuid, assign, intern, numberKey, symbol } from 'glimmer-util';
+import { InternedString } from 'glimmer-util';
 
 import { Dict, DictSet, HasGuid, Set, dict } from 'glimmer-util';
 
 import {
-  Reference,
   RootReferenceFactory,
   PathReferenceFactory,
   PathReference as IPathReference,
@@ -180,12 +178,6 @@ export default Meta;
 
 interface ClassMeta {
   InstanceMetaConstructor: typeof Meta;
-}
-
-function turbocharge(obj) {
-  function Dummy() {}
-  Dummy.prototype = obj;
-  return obj;
 }
 
 export function metaFor(obj: any): IMeta {

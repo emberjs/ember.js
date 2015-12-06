@@ -1,13 +1,5 @@
-import builders from "./builders";
-import parse from "./parser";
-import print from "./generation/print";
-import traverse from "./traversal/traverse";
-import Walker from "./traversal/walker";
-
-export {
-  builders,
-  parse,
-  print,
-  traverse,
-  Walker
-};
+export { default as builders } from "./builders";
+export { default as parse } from "./parser";
+export { default as print } from "./generation/print";
+export { default as traverse } from "./traversal/traverse";
+export { default as Walker } from "./traversal/walker";

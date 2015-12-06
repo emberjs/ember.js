@@ -1,9 +1,9 @@
 import { compile } from "glimmer-compiler";
-import { DOMHelper, Template } from "glimmer-runtime";
+import { Template } from "glimmer-runtime";
 import { equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
-var hooks, dom, root;
+var hooks, root;
 let env: TestEnvironment;
 
 function rootElement() {

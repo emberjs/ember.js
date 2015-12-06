@@ -1,30 +1,13 @@
-import Bounds, {
-  ConcreteBounds
-} from './bounds';
-
-import {
-  ComponentDefinition,
-  ComponentDefinitionOptions
-} from './component/interfaces';
+import Bounds from './bounds';
 
 import DOMHelper from './dom';
 
-import Template, {
-  Templates
-} from './template'
-
-import { InternedString, Stack, LinkedList, LinkedListNode, Dict, intern, dict, assert } from 'glimmer-util';
+import { InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
 import {
-  ListDelegate,
-  RootReference,
   ChainableReference,
-  NotifiableReference,
   PushPullReference,
-  Destroyable
 } from 'glimmer-reference';
-
-import { VM } from './vm';
 
 interface FirstNode {
   firstNode(): Node;
@@ -310,7 +293,6 @@ class BlockTracker implements Tracker {
 }
 
 class BlockListTracker implements Tracker {
-  private first: Bounds = null;
   private last: Node = null;
   private parent: Element;
   private boundList: LinkedList<Bounds & LinkedListNode>;

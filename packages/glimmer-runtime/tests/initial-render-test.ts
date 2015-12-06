@@ -4,14 +4,7 @@ import { normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-he
 import { TestEnvironment } from "./support";
 import { Template } from 'glimmer-runtime';
 
-var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
-    svgNamespace   = "http://www.w3.org/2000/svg";
-
 let env: TestEnvironment, root: HTMLElement;
-
-function registerYieldingHelper(name) {
-  env.registerHelper(name, function(params, hash, blocks) { return blocks.template.yield(); });
-}
 
 function compile(template: string) {
   return rawCompile(template, { disableComponentGeneration: true });
@@ -256,13 +249,6 @@ test("The compiler can handle unescaped HTML", function() {
 test("The compiler can handle top-level unescaped HTML", function() {
   compilesTo('{{{html}}}', '<strong>hello</strong>', { html: '<strong>hello</strong>' });
 });
-
-// REFACTOR TODO: This exists because if we add back boundary nodes (which we
-// likely will for now), I don't want to have to change it in a bunch of places
-// again.
-function firstChild(fragment) {
-  return fragment.firstChild;
-}
 
 function createElement(tag) {
   return env.getDOM().createElement(tag, document.body);

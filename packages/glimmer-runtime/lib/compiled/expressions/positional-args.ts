@@ -1,12 +1,7 @@
 import { NULL_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm';
-import { ChainableReference, PathReference } from 'glimmer-reference';
-import { InternedString, Dict, dict } from 'glimmer-util';
-
-const NOOP_DESTROY = {
-  destroy() {}
-};
+import { PathReference } from 'glimmer-reference';
 
 export abstract class CompiledPositionalArgs {
   static create({ values }: { values: CompiledExpression[] }): CompiledPositionalArgs {

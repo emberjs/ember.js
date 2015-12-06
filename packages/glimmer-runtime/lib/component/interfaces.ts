@@ -5,10 +5,6 @@ import Template, {
 } from '../template';
 
 import {
-  ElementStack
-} from '../builder';
-
-import {
   EvaluatedNamedArgs
 } from '../compiled/expressions/args';
 

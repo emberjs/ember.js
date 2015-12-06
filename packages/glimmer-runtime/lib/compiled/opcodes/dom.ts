@@ -1,8 +1,7 @@
 import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { InternedString } from 'glimmer-util';
-import { StaticAttr, DynamicAttr, DynamicProp, AddClass, Comment } from '../../template';
-import { ClassList } from '../../builder';
+import { StaticAttr, DynamicAttr, DynamicProp, Comment } from '../../template';
 import { ChainableReference } from 'glimmer-reference';
 
 abstract class DOMOpcode implements Opcode {

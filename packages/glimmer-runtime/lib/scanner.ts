@@ -1,8 +1,8 @@
 import { Program, StatementSyntax } from './syntax';
 import StatementNodes from './syntax/statements';
-import Template, { Block, Templates } from './template';
+import Template, { Block } from './template';
 import SymbolTable from './symbol-table';
-import { EMPTY_SLICE, LinkedList, Stack, InternedString, dict } from 'glimmer-util';
+import { EMPTY_SLICE, LinkedList } from 'glimmer-util';
 
 export default class Scanner {
   private specs: any[];

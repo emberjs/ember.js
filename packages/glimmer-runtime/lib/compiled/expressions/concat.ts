@@ -1,7 +1,6 @@
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm';
 import { PathReference, ChainableReference } from 'glimmer-reference';
-import { InternedString } from 'glimmer-util';
 
 export default class CompiledConcat {
   public type = "concat";

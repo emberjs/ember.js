@@ -1,4 +1,4 @@
-import { Slice, ListSlice, LinkedList, InternedString, Stack, Dict, dict } from 'glimmer-util';
+import { Slice, ListSlice, LinkedList, InternedString } from 'glimmer-util';
 import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
 import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax } from './syntax';
 import { Environment } from './environment';
