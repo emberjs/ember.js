@@ -196,7 +196,7 @@ var librariesRegistered = false;
   @public
 */
 
-var Application = Engine.extend({
+const Application = Engine.extend({
   _suppressDeferredDeprecation: true,
 
   /**

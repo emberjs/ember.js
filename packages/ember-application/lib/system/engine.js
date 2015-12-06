@@ -41,7 +41,7 @@ function props(obj) {
   @uses RegistryProxy
   @public
 */
-let Engine = Namespace.extend(RegistryProxy, {
+const Engine = Namespace.extend(RegistryProxy, {
   init() {
     this._super(...arguments);
 

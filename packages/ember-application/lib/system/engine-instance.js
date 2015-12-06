@@ -22,7 +22,7 @@ import run from 'ember-metal/run_loop';
   @uses ContainerProxyMixin
 */
 
-let EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
+const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   /**
     The base `Engine` for which this is an instance.
 

@@ -46,7 +46,7 @@ let BootOptions;
   @extends Ember.EngineInstance
 */
 
-let ApplicationInstance = EngineInstance.extend({
+const ApplicationInstance = EngineInstance.extend({
   /**
     The `Application` for which this is an instance.
 
