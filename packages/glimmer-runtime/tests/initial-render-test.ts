@@ -159,7 +159,6 @@ test("checked attribute and checked property are present after clone and hydrate
   equal(inputNode.checked, true, 'input tag is checked');
 });
 
-
 function shouldBeVoid(tagName) {
   root.innerHTML = "";
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
@@ -271,7 +270,6 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
 
   equal(root.firstChild['tagName'], 'TD', "root td is returned");
 });
-
 
 test("second render respects whitespace", function () {
   var template = compile('Hello {{ foo }} ');
@@ -677,7 +675,6 @@ test('Block params in HTML syntax - Throws exception if given zero parameters', 
     compile('<x-bar as | |>foo</x-bar>');
   }, /Cannot use zero block parameters: 'as \| \|'/);
 });
-
 
 QUnit.skip('Block params in HTML syntax - Works with a single parameter', function () {
   env.registerHelper('x-bar', function(params, hash, blocks) {

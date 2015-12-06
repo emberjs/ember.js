@@ -98,7 +98,6 @@ export default {
         appendChild(this.currentElement(), mustache);
     }
 
-
     return mustache;
   },
 

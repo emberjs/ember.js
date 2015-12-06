@@ -43,7 +43,6 @@ testWithDefault('computed property on subclass', function(get, set) {
   equal(get(new Subclass(), 'foo'), 'BAR');
 });
 
-
 testWithDefault('replacing computed property with regular val', function(get, set) {
   var MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
@@ -126,8 +125,7 @@ testWithDefault('complex dependent keys changing complex dependent keys', functi
 
 QUnit.test('can retrieve metadata for a computed property', assert => {
   var MyClass = EmberObject.extend({
-    computedProperty: computed(function() {
-    }).meta({ key: 'keyValue' })
+    computedProperty: computed(() => {}).meta({ key: 'keyValue' })
   });
 
   equal(emberGet(MyClass.metaForProperty('computedProperty'), 'key'), 'keyValue', 'metadata saved on the computed property can be retrieved');

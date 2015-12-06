@@ -109,7 +109,6 @@ function assertComponentElement(...args) {
   equalsElement(view.element, tagName, attrs, contents);
 }
 
-
 function assertEmberishElement(tagName: string, attrs: Object, contents: string);
 function assertEmberishElement(tagName: string, attrs: Object);
 function assertEmberishElement(tagName: string, contents: string);
@@ -664,7 +663,6 @@ QUnit.skip('dynamic arbitrary number of positional parameters', function() {
 //   equal(jQuery('#qunit-fixture').text(), 'Edward5');
 // });
 
-
 QUnit.skip('components in template of a yielding component should have the proper parentView', function() {
   var outer, innerTemplate, innerLayout;
 
@@ -708,8 +706,6 @@ function equalObject(actual: EmberObject, expected: EmberObject, msg: string) {
 
 QUnit.skip('newly-added sub-components get correct parentView', function() {
   var outer, inner;
-
-  var outer
 
   let Outer = <any>EmberishComponent.extend({
     init() {
@@ -1143,7 +1139,6 @@ QUnit.skip('computed property alias on a dynamic attr', function() {
   assertEmberishElement('computed-alias', { someProp: 'other value' }, 'other value');
 });
 
-
 QUnit.skip('lookup of component takes priority over property', function() {
   expect(1);
 
@@ -1163,7 +1158,6 @@ QUnit.skip('lookup of component takes priority over property', function() {
 
   assertAppended('<div>some-prop <div>some-component</div></div>');
 });
-
 
 QUnit.skip('rerendering component with attrs from parent', function() {
 
@@ -1203,8 +1197,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
   assertFired(hooks, 'didRender', 3);
 });
 
-
-
 // QUnit.skip('[DEPRECATED] non-block with properties on self', function() {
 //   // TODO: attrs
 //   // expectDeprecation("You accessed the `someProp` attribute directly. Please use `attrs.someProp` instead.");
@@ -1236,7 +1228,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 
 //   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
 // });
-
 
 //   QUnit.skip('moduleName is available on _renderNode when a layout is present', function() {
 //     expect(1);
@@ -1280,7 +1271,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //     runAppend(view);
 //   });
 
-
 // QUnit.skip('component without dash is not looked up', function() {
 //   expect(1);
 
@@ -1299,7 +1289,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //   equal(jQuery('#qunit-fixture').text(), 'notsomecomponent');
 // });
 
-
 // QUnit.skip(`partials templates should not be treated like a component layout for ${style.name}`, function() {
 //   registry.register('template:_zomg', compile(`<p>In partial</p>`));
 //   registry.register('template:components/non-block', compile(`<${style.tagName}>{{partial "zomg"}}</${style.tagName}>`));
@@ -1312,7 +1301,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //   strictEqual(el.attr('id'), undefined, 'the partial should not get an id');
 //   strictEqual(el.attr('class'), undefined, 'the partial should not get a class');
 // });
-
 
 //   QUnit.skip('[FRAGMENT] non-block rendering a fragment', function() {
 //     registry.register('template:components/non-block', compile('<p>{{attrs.first}}</p><p>{{attrs.second}}</p>'));
@@ -1332,7 +1320,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //     equal(view.$().html(), '<p>first2</p><p>second2</p>', 'The fragment was updated');
 //   });
 
-
 // // TODO: When un-skipping, fix this so it handles all styles
 // QUnit.skip('non-block recursive invocations with outer attributes replaced with a div shadows inner attributes', function() {
 //   registry.register('template:components/non-block-wrapper', compile('<non-block />'));
@@ -1350,7 +1337,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //   equal(view.$('div').attr('data-static'), 'outer', 'the outer-most attribute wins');
 //   equal(view.$('div').attr('data-dynamic'), 'outer', 'the outer-most attribute wins');
 // });
-
 
 // QUnit.skip('components should receive the viewRegistry from the parent view', function() {
 //   var outer, innerTemplate, innerLayout;
@@ -1423,7 +1409,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //   registry.register('template:components/x-middle', compile('<div id="middle-value">{{value}}</div>{{yield}}'));
 //   registry.register('template:components/x-inner', compile('<div id="inner-value">{{value}}</div>'));
 
-
 //   view = EmberView.extend({
 //     template: compile('{{x-outer}}'),
 //     container: container
@@ -1444,7 +1429,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 //   equal(view.$('#inner-value').text(), '3', 'third render of inner');
 //   equal(view.$('#middle-value').text(), '3', 'third render of middle');
 // });
-
 
 // QUnit.skip('moduleName is available on _renderNode when a layout is present', function() {
 //   expect(1);
@@ -1487,7 +1471,6 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 
 //   runAppend(view);
 // });
-
 
 // QUnit.skip('`template` specified in a component is overridden by block', function() {
 //   expect(1);

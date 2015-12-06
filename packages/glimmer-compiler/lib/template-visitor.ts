@@ -172,7 +172,6 @@ TemplateVisitor.prototype.ComponentNode = function(node) {
   if (node.program) { this.visit(node.program); }
 };
 
-
 TemplateVisitor.prototype.PartialStatement = function(node) {
   var frame = this.getCurrentFrame();
   frame.mustacheCount++;
@@ -207,7 +206,6 @@ TemplateVisitor.prototype.popFrame = function() {
 };
 
 export default TemplateVisitor;
-
 
 // Returns the index of `domNode` in the `nodes` array, skipping
 // over any nodes which do not represent DOM nodes.

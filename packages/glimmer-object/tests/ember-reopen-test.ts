@@ -26,7 +26,6 @@ QUnit.test('reopened properties inherited by subclasses', function() {
     bar: 'BAR'
   });
 
-
   equal(new SubSub()['foo'](), 'FOO', 'Adds method');
   equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
 });

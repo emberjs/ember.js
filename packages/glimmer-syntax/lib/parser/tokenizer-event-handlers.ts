@@ -21,7 +21,6 @@ export default {
     appendChild(this.currentElement(), this.currentNode);
   },
 
-
   // Data
 
   beginData: function() {

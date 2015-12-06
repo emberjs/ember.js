@@ -465,7 +465,6 @@ export class StaticAttr extends AttributeSyntax {
   }
 }
 
-
 type DynamicAttrSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
 
 export class DynamicAttr extends AttributeSyntax {
