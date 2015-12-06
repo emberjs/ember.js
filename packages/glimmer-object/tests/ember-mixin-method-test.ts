@@ -57,7 +57,6 @@ QUnit.test('overriding public methods', function() {
   equal(obj.publicMethod(), 'objF', 'should define super for F');
 });
 
-
 QUnit.test('overriding inherited objects', function() {
   var cnt = 0;
   var MixinA = Mixin.create({
@@ -157,7 +156,6 @@ QUnit.test('_super from a first-of-two mixins with no superclass function does n
 //
 
 QUnit.module('Mixin.create - Method Conflicts');
-
 
 QUnit.test('overriding toString', function() {
   var MixinA = Mixin.create({

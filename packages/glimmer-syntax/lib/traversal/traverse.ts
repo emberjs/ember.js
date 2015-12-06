@@ -47,7 +47,7 @@ function visitKey(visitor, handler, node, key) {
   } else {
     let result = visitNode(visitor, value);
     if (result !== undefined) {
-      assignKey(node, key, result); 
+      assignKey(node, key, result);
     }
   }
 

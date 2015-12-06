@@ -129,7 +129,6 @@
   //}
 //};
 
-
 //QUnit.module(`Compiling <my-component> with isStatic plugin: <my-component />`);
 
 //test("isStatic skips boundary nodes", function() {

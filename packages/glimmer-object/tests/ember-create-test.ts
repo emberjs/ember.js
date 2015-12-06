@@ -55,7 +55,6 @@ QUnit.test('reopening a parent flushes the child', assert => {
   assert.equal(sub.hello(), "original hello new hello");
 });
 
-
 QUnit.test('reopening a parent with a computed property flushes the child', assert => {
   var MyClass = EmberObject.extend({
     hello: computed(function() {

@@ -150,7 +150,6 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
   ]));
 });
 
-
 test("Handlebars embedded in an attribute with other content surrounding it", function() {
   var t = 'some <a href="http://{{link}}/">content</a> done';
   astEqual(t, b.program([
@@ -307,7 +306,6 @@ test("Stripping - blocks", function() {
   ]));
 });
 
-
 test("Stripping - programs", function() {
   var t = "{{#wat~}} foo {{else}}{{/wat}}";
   astEqual(t, b.program([
@@ -364,7 +362,6 @@ test("Stripping - removes unnecessary text nodes", function() {
 //    b.element('div', [ b.attr('class', concat([b.sexpr([b.path('foo')]), b.string("b")])) ])
 //  ]));
 //});
-
 
 test("an HTML comment", function() {
   var t = 'before <!-- some comment --> after';

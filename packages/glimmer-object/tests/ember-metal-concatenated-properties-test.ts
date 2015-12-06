@@ -31,7 +31,6 @@ QUnit.test('defining concatenated properties should concat future version', func
   deepEqual(obj.concatenatedProperties, []);
 });
 
-
 QUnit.test('concatenatedProperties should be concatenated', function() {
   var MixinA = Mixin.create({
     concatenatedProperties: ['foo'],

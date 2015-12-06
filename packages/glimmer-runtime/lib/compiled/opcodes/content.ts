@@ -3,7 +3,6 @@ import { VM, UpdatingVM } from '../../vm';
 import { PathReference } from 'glimmer-reference';
 import Bounds, { clear } from '../../bounds';
 
-
 abstract class ContentOpcode implements Opcode {
   public type: string;
   public next = null;

@@ -82,6 +82,5 @@ export {
   Component
 } from './lib/component/interfaces';
 
-
 export { default as DOMHelper, isWhitespace } from './lib/dom';
 export { ElementStack } from './lib/builder';

@@ -99,7 +99,6 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     }, cannotReplaceNode(attr.value, attr, 'value'));
   });
 
-
   QUnit.test(`[${eventName}] Replacing self in an array (returning null)`, () => {
     let ast = parse(`{{x}}{{y}}{{z}}`);
 
@@ -184,7 +183,6 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     astEqual(ast, `{{x}}{{a}}{{b}}{{c}}{{z}}`);
   });
 });
-
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating (edge cases)');
 
