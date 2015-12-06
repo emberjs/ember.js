@@ -89,6 +89,60 @@ function click(app, selector, context) {
   return app.testHelpers.wait();
 }
 
+
+function check(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  var type = $el.prop('type');
+
+  assert(
+    `To check '${selector}', the input must be a checkbox`,
+    type === 'checkbox'
+  );
+
+  if (!$el.prop('checked')) {
+    app.testHelpers.click(selector, context);
+  }
+
+  return app.testHelpers.wait();
+}
+
+function uncheck(app, selector, context) {
+  var $el = app.testHelpers.findWithAssert(selector, context);
+  var type = $el.prop('type');
+
+  assert(
+    `To uncheck '${selector}', the input must be a checkbox`,
+    type === 'checkbox'
+  );
+
+  if ($el.prop('checked')) {
+    app.testHelpers.click(selector, context);
+  }
+
+  return app.testHelpers.wait();
+}
+
+function select(app, selector, ...texts) {
+  let $options = app.testHelpers.findWithAssert(`${selector} option`);
+  let type = $options.prop('type');
+
+  assert(
+    `To select '${selector}', the element must be a select box`,
+    type === 'select-one' || type === 'select-multiple'
+  );
+
+  $options.each(function() {
+    let $option = Ember.$(this);
+
+    Ember.run(() => {
+      this.selected = texts.some(text => $option.is(`:contains('${text}')`));
+      $option.trigger('change');
+    });
+  });
+
+  return app.testHelpers.wait();
+}
+
 function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions) {
   var arity = arguments.length;
   var context, type, options;
@@ -249,6 +303,81 @@ asyncHelper('visit', visit);
   @public
 */
 asyncHelper('click', click);
+
+
+if (isEnabled('ember-testing-checkbox-helpers')) {
+  /**
+    Checks a checkbox. Ensures the presence of the `checked` attribute
+
+    Example:
+
+    ```javascript
+    check('#remember-me').then(function() {
+      // assert something
+    });
+    ```
+
+    @method check
+    @param {String} selector jQuery selector finding an `input[type="checkbox"]`
+    element on the DOM to check
+    @return {RSVP.Promise}
+    @private
+  */
+  asyncHelper('check', check);
+
+  /**
+    Unchecks a checkbox. Ensures the absence of the `checked` attribute
+
+    Example:
+
+    ```javascript
+    uncheck('#remember-me').then(function() {
+     // assert something
+    });
+    ```
+
+    @method check
+    @param {String} selector jQuery selector finding an `input[type="checkbox"]`
+    element on the DOM to uncheck
+    @return {RSVP.Promise}
+    @private
+  */
+  asyncHelper('uncheck', uncheck);
+}
+
+if (Ember.FEATURES.isEnabled("ember-testing-select-helper")) {
+  /**
+   Selects options in a select box.
+
+   Say you your handlebars file looks like this:
+
+   ```handlebars
+     <select class="my-drop-down">
+       <option value="1">My Option</option>
+       <option value="2">My Two</option>
+       <option value="3">My Three</option>
+     </select>
+   ```
+
+   You could select the first option like this:
+
+   ```javascript
+     select('.my-drop-down', 'My Option');
+   ```
+
+   And for multiselecting:
+
+   ```javascript
+     select('.my-drop-down', 'My Option', 'My Option Two', 'My Option Three');
+   ```
+
+   @method select
+   @param {String} selector jQuery selector finding a `<select>`
+   @param {String} texts String of the `option` text you want to select.
+   @private
+   */
+  asyncHelper('select', select);
+}
 
 /**
   Simulates a key event, e.g. `keypress`, `keydown`, `keyup` with the desired keyCode

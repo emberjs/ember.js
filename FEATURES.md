@@ -59,3 +59,29 @@ for a detailed explanation.
 
   When the proper API's are implemented by the resolver in use this feature allows `{{x-foo}}` in a
   given routes template (say the `post` route) to lookup a component nested under `post`.
+
+* `ember-testing-select-helper`
+
+  Add a `select` test helper.
+
+  Say your handlebars file looks like this:
+
+  ```handlebars
+    <select class="my-drop-down">
+      <option value="1">My Option</option>
+      <option value="2">My Two</option>
+      <option value="3">My Three</option>
+    </select>
+  ```
+
+  You could select the first option like this:
+
+  ```javascript
+   select('.my-drop-down', 'My Option');
+  ```
+
+  And for multiselecting:
+
+  ```javascript
+    select('.my-drop-down', 'My Option', 'My Option Two', 'My Option Three');
+  ```
