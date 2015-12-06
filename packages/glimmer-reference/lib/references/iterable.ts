@@ -31,10 +31,10 @@ export class ListManager {
   private array: RootReference;
   private keyPath: InternedString;
 
-  /*tslint:disable no-unused-variable*/
+  /* tslint:disable:no-unused-variable */
   private map = dict<ListItem>();
   private list = new LinkedList<ListItem>();
-  /*tslint:enable no-unused-variable*/
+  /* tslint:enable:no-unused-variable */
 
   constructor(array: RootReference, keyPath: InternedString) {
     this.array = array;
@@ -81,7 +81,9 @@ enum Phase {
 }
 
 export class ListIterator {
+  /* tslint:disable:no-unused-variable */
   private candidates = dict<ListItem>();
+  /* tslint:enable:no-unused-variable*/
   private array: any[];
   private keyFor: (obj, index: number) => InternedString;
   private target: ListDelegate;

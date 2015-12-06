@@ -1,5 +1,5 @@
 import GlimmerObject, { computed } from 'glimmer-object';
-import { UpdatableReference, RootReference, metaFor, setProperty, fork } from 'glimmer-reference';
+import { UpdatableReference, metaFor, setProperty, fork } from 'glimmer-reference';
 import { intern } from 'glimmer-util';
 
 let Wrapper = <any>GlimmerObject.extend({

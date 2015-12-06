@@ -76,12 +76,12 @@ export default class DOMHelper {
   }
 }
 
-/*tslint:disable no-unused-variable*/
+/* tslint:disable:no-unused-variable */
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
 
-/*tslint:enable no-unused-variable*/
+/* tslint:enable:no-unused-variable */
 
 // http://www.w3.org/TR/html/syntax.html#adjust-svg-attributes
 // TODO: Adjust SVG attributes

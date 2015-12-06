@@ -1,6 +1,6 @@
 import { compile } from "glimmer-compiler";
 import { Template } from "glimmer-runtime";
-import { equalTokens } from "glimmer-test-helpers";
+import { equalTokens, stripTight } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
 var hooks, root;
@@ -408,7 +408,11 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     ]};
     rerender(object);
     assertStableNodes('mmun', "after changing the list entries, but with stable keys");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li><!----></ul>", "After changing the list entries, but with stable keys");
+    equalTokens(
+      root,
+      `<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kris Selden</li><!----></ul>`,
+      `After changing the list entries, but with stable keys`
+    );
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -417,7 +421,12 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     ]};
     rerender(object);
     assertStableNodes('mmun', "after adding an additional entry");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li><li class='mixonic'>Matthew Beale</li><!----></ul>", "After adding an additional entry");
+    equalTokens(
+      root,
+      stripTight`<ul><li class='mmun'>Martin Muñoz</li><li class='krisselden'>Kristoph Selden</li>
+        <li class='mixonic'>Matthew Beale</li><!----></ul>`,
+      `After adding an additional entry`
+    );
 
     object = { list: [
       { key: "1", name: "Martin Muñoz", "class": "mmun" },
@@ -436,7 +445,12 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
 
     rerender(object);
     assertStableNodes('mmun', "after adding two more entries");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li><!----></ul>", "After adding two more entries");
+    equalTokens(
+      root,
+      stripTight`<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li>
+        <li class='rwjblue'>Robert Jackson</li><!----></ul>`,
+      `After adding two more entries`
+    );
 
     // New node for stability check
     itemNode = getItemNode('rwjblue');
@@ -459,7 +473,12 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
     console.log("adding back");
     rerender(object);
     assertStableNodes('rwjblue', "after adding back entries");
-    equalTokens(root, "<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li><li class='rwjblue'>Robert Jackson</li><!----></ul>", "After adding back entries");
+    equalTokens(
+      root,
+      stripTight`<ul><li class='mmun'>Martin Muñoz</li><li class='stefanpenner'>Stefan Penner</li>
+        <li class='rwjblue'>Robert Jackson</li><!----></ul>`,
+      `After adding back entries`
+    );
 
     // New node for stability check
     itemNode = getItemNode('mmun');

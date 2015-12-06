@@ -43,5 +43,8 @@ QUnit.module('Mixin.mixins (introspection)', {
 });
 
 QUnit.test('Ember.mixins()', function() {
-  deepEqual(Mixin.mixins(obj), [PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, BarProperties, BarMethods, Combined], 'should return included mixins');
+  deepEqual(Mixin.mixins(obj),
+    [PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, BarProperties, BarMethods, Combined],
+    'should return included mixins'
+  );
 });
