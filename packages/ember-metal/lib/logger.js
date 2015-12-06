@@ -14,23 +14,11 @@ function consoleMethod(name) {
   var method = typeof consoleObj === 'object' ? consoleObj[name] : null;
 
   if (method) {
-    // Older IE doesn't support bind, but Chrome needs it
-    if (typeof method.bind === 'function') {
-      logToConsole = method.bind(consoleObj);
-      logToConsole.displayName = 'console.' + name;
-      return logToConsole;
-    } else if (typeof method.apply === 'function') {
-      logToConsole = function() {
-        method.apply(consoleObj, arguments);
-      };
-      logToConsole.displayName = 'console.' + name;
-      return logToConsole;
-    } else {
-      return function() {
-        var message = Array.prototype.join.call(arguments, ', ');
-        method(message);
-      };
-    }
+    logToConsole = function() {
+      method.apply(consoleObj, arguments);
+    };
+    logToConsole.displayName = 'console.' + name;
+    return logToConsole;
   }
 }
 
@@ -71,7 +59,7 @@ export default {
    @param {*} arguments
    @public
   */
-  log:   consoleMethod('log')   || K,
+  log: consoleMethod('log') || K,
 
   /**
    Prints the arguments to the console with a warning icon.
@@ -87,7 +75,7 @@ export default {
    @param {*} arguments
    @public
   */
-  warn:  consoleMethod('warn')  || K,
+  warn: consoleMethod('warn') || K,
 
   /**
    Prints the arguments to the console with an error icon, red text and a stack trace.
@@ -120,7 +108,7 @@ export default {
    @param {*} arguments
    @public
   */
-  info:  consoleMethod('info')  || K,
+  info: consoleMethod('info') || K,
 
   /**
    Logs the arguments to the console in blue text.
