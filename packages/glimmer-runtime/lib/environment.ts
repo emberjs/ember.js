@@ -160,7 +160,7 @@ export abstract class Environment {
           value: iterable.get(intern("" + (position - 1)))
         };
       }
-    }
+    };
   }
 
   abstract hasHelper(helperName: InternedString[]): boolean;
@@ -174,8 +174,8 @@ export default Environment;
 // import { TRUSTED_STRING } from './symbols';
 
 interface SafeString {
-  "trusted string [id=7d10c13d-cdf5-45f4-8859-b09ce16517c2]": boolean, // true
-  string: string
+  "trusted string [id=7d10c13d-cdf5-45f4-8859-b09ce16517c2]": boolean; // true
+  string: string;
 }
 
 export type Insertion = string | SafeString | Node;
@@ -184,7 +184,7 @@ type PositionalArguments = any[];
 type KeywordArguments = Dict<any>;
 
 export interface Helper {
-  (positional: PositionalArguments, named: KeywordArguments, options: Object): Insertion
+  (positional: PositionalArguments, named: KeywordArguments, options: Object): Insertion;
 }
 
 export function helper(h: Helper): ConstReference<Helper> {

@@ -172,8 +172,8 @@ interface InvokeAs {
 }
 
 interface Expected {
-  content: string,
-  attrs: Object
+  content: string;
+  attrs: Object;
 };
 
 function testComponent(title: string, { layout, invokeAs, block, expected: _expected }: ComponentTestOptions) {
@@ -280,7 +280,7 @@ function testComponent(title: string, { layout, invokeAs, block, expected: _expe
     expected = {
       content: <string>_expected,
       attrs
-    }
+    };
   } else {
     expected = <Expected>_expected;
   }
@@ -299,7 +299,7 @@ function testComponent(title: string, { layout, invokeAs, block, expected: _expe
       appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
     }
 
-    assertComponentElement('aside', expected.attrs, expected.content)
+    assertComponentElement('aside', expected.attrs, expected.content);
   });
 }
 
@@ -485,7 +485,7 @@ QUnit.skip('static named positional parameters', function() {
 
   env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}{{age}}');
 
-  appendViewFor('{{sample-component "Quint" 4}}')
+  appendViewFor('{{sample-component "Quint" 4}}');
 
   assertEmberishElement('div', 'Quint4');
 });
@@ -496,7 +496,7 @@ QUnit.skip('dynamic named positional parameters', function() {
     positionalParams: ['name', 'age']
   });
 
-  env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}{{age}}')
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{name}}{{age}}');
 
   appendViewFor('{{sample-component myName myAge}}', {
     myName: 'Quint',
@@ -534,7 +534,7 @@ QUnit.skip('static arbitrary number of positional parameters', function() {
     positionalParams: 'names'
   });
 
-  env.registerEmberishComponent('sample-component', SampleComponent, '{{#each names as |name|}}{{name}}{{/each}}')
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{#each names as |name|}}{{name}}{{/each}}');
 
   appendViewFor('<div>{{sample-component "Foo" 4 "Bar" id="args-3"}}{{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}{{!sample-component "Foo" 4 "Bar" 5 "Baz" id="helper"}}</div>');
 
@@ -583,7 +583,7 @@ QUnit.skip('can use hash parameter instead of positional param', function() {
     positionalParams: ['first', 'second']
   });
 
-  env.registerEmberishComponent('sample-component', SampleComponent, '{{first}} - {{second}}')
+  env.registerEmberishComponent('sample-component', SampleComponent, '{{first}} - {{second}}');
 
   appendViewFor(`<div>
     {{sample-component "one" "two" id="two-positional"}}
@@ -591,7 +591,7 @@ QUnit.skip('can use hash parameter instead of positional param', function() {
     {{sample-component first="one" second="two" id="no-positional"}}</div>
   `, {
     things: ['Foo', 4, 'Bar']
-  })
+  });
 
   let first = view.element.firstElementChild;
   let second = first.nextElementSibling;
@@ -965,7 +965,7 @@ styles.forEach(style => {
     }
     NonBlock[CLASS_META].seal();
 
-    env.registerEmberishGlimmerComponent('non-block', NonBlock, `<${style.tagName}>{{internal}}</${style.tagName}>`)
+    env.registerEmberishGlimmerComponent('non-block', NonBlock, `<${style.tagName}>{{internal}}</${style.tagName}>`);
 
     appendViewFor('<non-block />');
 
@@ -1151,7 +1151,7 @@ QUnit.skip('lookup of component takes priority over property', function() {
 
   }
 
-  env.registerCurlyComponent('my-component', MyComponent, '{{some-prop}} {{some-component}}')
+  env.registerCurlyComponent('my-component', MyComponent, '{{some-prop}} {{some-component}}');
   env.registerCurlyComponent('some-component', SomeComponent, 'some-component');
 
   appendViewFor('{{my-component}}');
@@ -1166,7 +1166,7 @@ QUnit.skip('rerendering component with attrs from parent', function() {
 
   let hooks = <HookIntrospection>env.registerCurlyComponent('non-block', NonBlock, 'In layout - someProp: {{someProp}}').hooks;
 
-  appendViewFor('{{non-block someProp=someProp}}', { someProp: 'wycats' })
+  appendViewFor('{{non-block someProp=someProp}}', { someProp: 'wycats' });
 
   assertFired(hooks, 'didReceiveAttrs');
   assertFired(hooks, 'willRender');

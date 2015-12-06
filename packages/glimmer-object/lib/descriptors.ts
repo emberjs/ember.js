@@ -50,12 +50,12 @@ class AliasBlueprint extends ComputedBlueprint {
 
     let get = function() {
       return name.reduce((obj, n) => obj[<string>n], this);
-    }
+    };
 
     let set = function(value) {
       let p = parent.reduce((obj, n) => obj[<string>n], this);
       p[<string>last] = value;
-    }
+    };
 
     super({ get, set }, [name]);
     this.name = name;

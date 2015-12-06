@@ -15,7 +15,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment(window.document); // TODO: Support SimpleDOM
-  env.registerGlimmerComponent('my-component', MyComponent, "<div>{{yield}}</div>")
+  env.registerGlimmerComponent('my-component', MyComponent, "<div>{{yield}}</div>");
   root = rootElement();
 }
 
@@ -64,7 +64,7 @@ QUnit.skip('creating a new component', assert => {
 });
 
 QUnit.skip('the component class is its context', assert => {
-  env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>')
+  env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{testing}}</p>{{yield}}</div>');
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
 
@@ -74,7 +74,7 @@ QUnit.skip('the component class is its context', assert => {
 });
 
 QUnit.skip('attrs are available in the layout', assert => {
-  env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>')
+  env.registerGlimmerComponent('my-component', MyComponent, '<div><p>{{attrs.color}}</p>{{yield}}</div>');
   let template = compile("<my-component color='{{color}}'>hello!</my-component>");
   render(template, { color: 'red' });
 

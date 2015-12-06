@@ -48,8 +48,8 @@ export interface RootReference extends PathReference {
 import { InnerReferenceFactory } from './references/descriptors';
 
 export interface MetaOptions {
-  RootReferenceFactory?: RootReferenceFactory,
-  DefaultPathReferenceFactory?: InnerReferenceFactory
+  RootReferenceFactory?: RootReferenceFactory;
+  DefaultPathReferenceFactory?: InnerReferenceFactory;
 }
 
 export interface Meta {

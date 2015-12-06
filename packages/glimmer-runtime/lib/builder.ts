@@ -180,7 +180,7 @@ export class ElementStack {
 
   insertHTMLBefore(nextSibling: Node, html: string): Bounds {
     if (!(this.element instanceof HTMLElement)) {
-      throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.element.tagName}`)
+      throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${this.element.tagName}`);
     }
 
     let bounds = this.dom.insertHTMLBefore(<HTMLElement & Element>this.element, nextSibling, html);

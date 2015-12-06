@@ -54,7 +54,7 @@ QUnit.test('overriding computed properties', function() {
     aProp: computed(function(key) {
       return 'obj';
     })
-  })
+  });
 
   MixinD.apply(obj);
   equal(get(obj, 'aProp'), 'objD', 'should preserve original computed property');

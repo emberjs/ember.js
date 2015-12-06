@@ -106,12 +106,12 @@ interface TemplateOptions {
 }
 
 interface RenderOptions {
-  hostOptions?: Object,
-  appendTo: Element
+  hostOptions?: Object;
+  appendTo: Element;
 }
 
 interface EvaluateOptions {
-  nextSibling?: Node
+  nextSibling?: Node;
 }
 
 export default class Template {
@@ -163,7 +163,7 @@ export default class Template {
     this.root = root || null;
     this.position = position === undefined ? null : position;
     this.arity = locals ? locals.length : 0;
-    this.raw = new RawTemplate({ ops: null, locals, program })
+    this.raw = new RawTemplate({ ops: null, locals, program });
     this.spec = spec || null;
     this.isEmpty = isEmpty === true ? isEmpty : program.isEmpty();
     Object.seal(this);
@@ -654,7 +654,7 @@ export class OpenElement extends StatementSyntax {
   }
 
   public tag: InternedString;
-  public blockParams: InternedString[]
+  public blockParams: InternedString[];
 
   constructor(options: { tag: InternedString, blockParams: InternedString[] }) {
     super();
@@ -1096,7 +1096,7 @@ export class NamedArgs extends Syntax<NamedArgs> {
     let out = dict<PrettyPrintValue>();
     this.keys.forEach((key, i) => {
       out[<string>key] = this.values[i].prettyPrint();
-    })
+    });
     return JSON.stringify(out);
   }
 

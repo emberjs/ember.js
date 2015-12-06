@@ -19,12 +19,12 @@ export const EMPTY_CACHE = function EMPTY_CACHE() {};
 const CLASS_META = "df8be4c8-4e89-44e2-a8f9-550c8dacdca7";
 
 export interface ObjectWithMixins {
-  "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta,
-  _meta: Meta
+  "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta;
+  _meta: Meta;
 }
 
 export interface InstanceWithMixins {
-  constructor: ObjectWithMixins
+  constructor: ObjectWithMixins;
 }
 
 export interface GlimmerObjectFactory<T> {
@@ -290,7 +290,7 @@ export class ClassMeta {
       getSlots() {
         return this.slots;
       }
-    }
+    };
 
     turbocharge(this);
   }
