@@ -11,14 +11,12 @@ class Target implements ListDelegate {
   done() {}
 
   insert(key: InternedString, item: RootReference, before: InternedString) {
-    console.log("insert", key, item, before);
     let referenceNode = before ? this.map[<string>before] : null;
     let node = this.map[<string>key] = new ListNode(item);
     this.list.insertBefore(node, referenceNode);
   }
 
   move(key: InternedString, item: RootReference, before: InternedString) {
-    console.log("move", key, item, before);
     let referenceNode = before ? this.map[<string>before] : null;
     let node = this.map[<string>key];
     this.list.remove(node);
@@ -26,7 +24,6 @@ class Target implements ListDelegate {
   }
 
   delete(key: InternedString) {
-    console.log("delete", key);
     let node = this.map[<string>key];
     delete this.map[<string>key];
     this.list.remove(node);
