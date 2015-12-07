@@ -23,9 +23,6 @@ DOM vs the HTML-unaware string building approach of Handlebars.
 
 TODO: much change. This section will be updated shortly.
 
-Until then, check out [ARCHITECTURE.md](ARCHITECTURE.md) for
-info on how Glimmer is structured and its approach to efficiently building / emitting DOM.
-
 # Building Glimmer
 
 1. Ensure that [Node.js](http://nodejs.org/) is installed.
