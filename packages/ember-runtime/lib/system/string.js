@@ -99,7 +99,7 @@ function fmt(str, formats) {
   deprecate(
     'Ember.String.fmt is deprecated, use ES6 template strings instead.',
     false,
-    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'https://babeljs.io/docs/learn-es6/#template-strings' }
+    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'http://babeljs.io/docs/learn-es2015/#template-strings' }
   );
   return _fmt(...arguments);
 }
@@ -172,7 +172,7 @@ export default {
     @param {Array} formats An array of parameters to interpolate into string.
     @return {String} formatted string
     @public
-    @deprecated Use ES6 template strings instead: https://babeljs.io/docs/learn-es6/#template-strings');
+    @deprecated Use ES6 template strings instead: http://babeljs.io/docs/learn-es2015/#template-strings
   */
   fmt,
 
