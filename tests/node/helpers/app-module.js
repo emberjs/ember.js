@@ -9,7 +9,6 @@ var emberPath = path.join(distPath, 'ember.debug.cjs');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 var features = require(path.join(__dirname, '../../../features.json')).features;
 var SimpleDOM = require('simple-dom');
-var URL = require('url');
 
 /*
  * This helper sets up a QUnit test module with all of the environment and
@@ -108,19 +107,6 @@ module.exports = function(moduleName) {
       this.routes = registerRoutes;
       this.registry = {};
       this.renderToHTML = renderToHTML;
-
-      // TODO: REMOVE ME
-
-      // Patch DOMHelper
-      Ember.HTMLBars.DOMHelper.prototype.protocolForURL = function(url) {
-        var protocol = URL.parse(url).protocol;
-        return (protocol == null) ? ':' : protocol;
-      };
-
-      Ember.HTMLBars.DOMHelper.prototype.setMorphHTML = function(morph, html) {
-        var section = this.document.createRawHTMLSection(html);
-        morph.setNode(section);
-      };
     },
 
     afterEach: function() {
