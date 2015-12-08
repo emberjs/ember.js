@@ -7,18 +7,16 @@ import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
-import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
-import Registry from 'container/registry';
-import RegistryProxy, { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
+import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
+import EngineInstance from './engine-instance';
 
 
 let BootOptions;
@@ -45,12 +43,10 @@ let BootOptions;
 
   @public
   @class Ember.ApplicationInstance
-  @extends Ember.Object
-  @uses RegistryProxyMixin
-  @uses ContainerProxyMixin
+  @extends Ember.EngineInstance
 */
 
-let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
+const ApplicationInstance = EngineInstance.extend({
   /**
     The `Application` for which this is an instance.
 
@@ -85,21 +81,11 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   init() {
     this._super(...arguments);
 
-    var application = get(this, 'application');
+    let application = this.application;
 
     if (!isEnabled('ember-application-visit')) {
       set(this, 'rootElement', get(application, 'rootElement'));
     }
-
-    // Create a per-instance registry that will use the application's registry
-    // as a fallback for resolving registrations.
-    var applicationRegistry = get(application, '__registry__');
-    var registry = this.__registry__ = new Registry({
-      fallback: applicationRegistry
-    });
-
-    // Create a per-instance container from the instance's registry
-    this.__container__ = registry.container({ owner: this });
 
     // Register this instance in the per-instance registry.
     //
@@ -270,29 +256,6 @@ let ApplicationInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
-  },
-
-  /**
-    @private
-  */
-  willDestroy() {
-    this._super(...arguments);
-    run(this.__container__, 'destroy');
-  },
-
-  /**
-   Unregister a factory.
-
-   Overrides `RegistryProxy#unregister` in order to clear any cached instances
-   of the unregistered factory.
-
-   @public
-   @method unregister
-   @param {String} fullName
-   */
-  unregister(fullName) {
-    this.__container__.reset(fullName);
-    this._super(...arguments);
   }
 });
 

@@ -20,7 +20,7 @@ import {
   get as getTemplate
 } from 'ember-htmlbars/template_registry';
 
-export var Resolver = EmberObject.extend({
+export const Resolver = EmberObject.extend({
   /*
     This will be set to the Application instance when it is
     created.
