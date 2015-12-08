@@ -883,14 +883,13 @@ var ClassMixinProps = {
     @private
   */
   eachComputedProperty(callback, binding) {
-    var property, name;
+    var property;
     var empty = {};
 
     var properties = get(this, '_computedProperties');
 
     for (var i = 0, length = properties.length; i < length; i++) {
       property = properties[i];
-      name = property.name;
       callback.call(binding || this, property.name, property.meta || empty);
     }
   }
