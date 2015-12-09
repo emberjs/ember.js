@@ -196,7 +196,7 @@ QUnit.test('should trigger parentViewDidChange when parentView is changed', func
 QUnit.test('should be able to push initial views onto the ContainerView and have it behave', function() {
   var Container = ContainerView.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       this.pushObject(View.create({
         name: 'A',
         template: compile('A')

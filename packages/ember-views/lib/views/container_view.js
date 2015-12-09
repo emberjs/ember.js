@@ -320,7 +320,7 @@ function containerViewDeprecationMessage() {
 export var DeprecatedContainerView = ContainerView.extend({
   init() {
     containerViewDeprecationMessage();
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });
 

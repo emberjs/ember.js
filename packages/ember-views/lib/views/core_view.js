@@ -89,7 +89,7 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     @private
   */
   trigger() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     var name = arguments[0];
     var method = this[name];
     if (method) {

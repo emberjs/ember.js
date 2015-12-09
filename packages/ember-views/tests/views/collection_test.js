@@ -365,11 +365,11 @@ QUnit.test('should fire life cycle events when elements are added and removed', 
         },
         willDestroy() {
           willDestroy++;
-          this._super.apply(this, arguments);
+          this._super(...arguments);
         },
         destroy() {
           destroy++;
-          this._super.apply(this, arguments);
+          this._super(...arguments);
         }
       })
     });

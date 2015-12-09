@@ -120,7 +120,7 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
     classNames: ['pagination'],
 
     init: function() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       if (!this.get('content')) {
         this.set('content', Ember.A());
       }

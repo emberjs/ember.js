@@ -230,7 +230,7 @@ QUnit.test('With ember-data like initializer and constant', function() {
           set(DS, 'defaultStore', this);
         }
 
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       },
       willDestroy() {
         if (get(DS, 'defaultStore') === this) {

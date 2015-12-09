@@ -86,7 +86,7 @@ styles.forEach(style => {
         init() {
           this.label = label;
           components[label] = this;
-          this._super.apply(this, arguments);
+          this._super(...arguments);
           pushHook(label, 'init');
         },
 
@@ -238,7 +238,7 @@ styles.forEach(style => {
         init() {
           this.label = label;
           components[label] = this;
-          this._super.apply(this, arguments);
+          this._super(...arguments);
           pushHook(label, 'init');
         },
 

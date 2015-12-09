@@ -1023,13 +1023,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         homeShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
     App.HomeController = Controller.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(homeShouldBeCreated, 'HomeController should be created at this time');
       }
     });
@@ -1042,13 +1042,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         aboutShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
     App.AboutController = Controller.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(aboutShouldBeCreated, 'AboutController should be created at this time');
       }
     });
@@ -1067,7 +1067,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         catsIndexShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       },
       setupController(controller, context) {
         controller.set('model', context);
@@ -1076,7 +1076,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.CatsIndexController = Controller.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(catsIndexShouldBeCreated, 'CatsIndexController should be created at this time');
       }
     });
@@ -2120,7 +2120,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.HomeRoute = Route.extend({
       setup() {
         homeShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
@@ -2128,7 +2128,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       queryParams: ['foo'],
       foo: '123',
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(homeShouldBeCreated, 'HomeController should be created at this time');
       }
     });
@@ -2136,7 +2136,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.AboutRoute = Route.extend({
       setup() {
         aboutShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
@@ -2144,7 +2144,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       queryParams: ['lol'],
       lol: 'haha',
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(aboutShouldBeCreated, 'AboutController should be created at this time');
       }
     });
@@ -2155,7 +2155,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         catsIndexShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       },
       setupController(controller, context) {
         controller.set('model', context);
@@ -2167,7 +2167,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       breed: 'Golden',
       name: null,
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(catsIndexShouldBeCreated, 'CatsIndexController should be created at this time');
       }
     });

@@ -263,7 +263,7 @@ QUnit.test('dashed helper is torn down', function() {
   var SomeHelper = Helper.extend({
     destroy() {
       destroyCalled++;
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     },
     compute() {
       return 'must define a compute';

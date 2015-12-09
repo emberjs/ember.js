@@ -146,7 +146,7 @@ QUnit.test('{{render}} helper should render given template with a supplied model
   var postController;
   var PostController = EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       postController = this;
     }
   });
@@ -228,7 +228,7 @@ QUnit.test('{{render}} helper should render with given controller', function() {
 
   appInstance.register('controller:posts', EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       this.uniqueId = id++;
     }
   }));
@@ -295,7 +295,7 @@ QUnit.test('{{render}} helper should render templates with models multiple times
   var postController1, postController2;
   var PostController = EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       if (!postController1) {
         postController1 = this;
       } else if (!postController2) {
@@ -342,7 +342,7 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
   var postController;
   var PostController = EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       postController = this;
     }
   });
@@ -374,7 +374,7 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
   var postController1, postController2;
   var PostController = EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       if (!postController1) {
         postController1 = this;
       } else if (!postController2) {
@@ -416,7 +416,7 @@ QUnit.test('{{render}} helper should render templates both with and without mode
   var postController1, postController2;
   var PostController = EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       if (!postController1) {
         postController1 = this;
       } else if (!postController2) {
@@ -537,7 +537,7 @@ QUnit.test('{{render}} works with dot notation', function() {
   var id = 0;
   var BlogPostController = EmberController.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       controller = this;
       this.uniqueId = id++;
     }

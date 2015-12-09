@@ -74,7 +74,7 @@ export var Freezable = Mixin.create({
       false,
       { id: 'ember-runtime.freezable-init', until: '3.0.0' }
     );
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   },
 
   /**

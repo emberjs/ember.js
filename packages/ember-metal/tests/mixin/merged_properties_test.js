@@ -122,7 +122,7 @@ QUnit.test('mergedProperties\' overwriting methods can call _super', function() 
     foo: {
       meth(a) {
         ok(true, 'MixinB\'s `foo.meth` method called');
-        return this._super.apply(this, arguments);
+        return this._super(...arguments);
       }
     }
   });

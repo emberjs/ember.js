@@ -504,14 +504,14 @@ let LinkComponent = EmberComponent.extend({
     ```javascript
     App.MyLinkComponent = Ember.LinkComponent.extend({
       init: function() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         Ember.Logger.log('Event is ' + this.get('eventName'));
       }
     });
     ```
 
     NOTE: If you do override `init` for a framework class like `Ember.View`,
-    be sure to call `this._super.apply(this, arguments)` in your
+    be sure to call `this._super(...arguments)` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.
