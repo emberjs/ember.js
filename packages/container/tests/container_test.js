@@ -561,7 +561,10 @@ if (isEnabled('ember-container-inject-owner')) {
     let container = registry.container({ owner });
 
     // Define a simple non-extendable factory
-    let PostController = function() {};
+    let PostController = function(options) {
+      this.container = options.container;
+    };
+
     PostController.create = function(options) {
       ok(options.container, 'fake container has been injected and is available during `create`.');
 
@@ -598,6 +601,46 @@ if (isEnabled('ember-container-inject-owner')) {
       let c = postController.container;
       strictEqual(c, container, 'Injected container is now regular (not fake) container, but access is still deprecated.');
     }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+  });
+
+  QUnit.test('A deprecated `container` property is only set on a non-extendable factory instance if `container` is present and writable.', function() {
+    expect(2);
+
+    let owner = {};
+    let registry = new Registry();
+    let container = registry.container({ owner });
+
+    // Define a non-extendable factory that is frozen after `create`
+    let PostController = function() {};
+    PostController.create = function() {
+      let instance = new PostController();
+
+      Object.seal(instance);
+
+      return instance;
+    };
+
+    registry.register('controller:post', PostController);
+    let postController = container.lookup('controller:post');
+
+    equal(postController.container, undefined, 'container was not added');
+
+    let OtherController = function() {
+      this.container = 'foo';
+    };
+
+    OtherController.create = function() {
+      let instance = new OtherController();
+
+      Object.freeze(instance);
+
+      return instance;
+    };
+
+    registry.register('controller:other', OtherController);
+    let otherController = container.lookup('controller:other');
+
+    equal(otherController.container, 'foo', 'container was not added');
   });
 } else {
   QUnit.test('A `container` property is appended to every instantiated object', function() {
