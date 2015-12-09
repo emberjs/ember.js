@@ -226,7 +226,7 @@ Ember.TEMPLATES = {};
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
-  Updates to the the value of a class name binding will result in automatic
+  Updates to the value of a class name binding will result in automatic
   update of the  HTML `class` attribute in the view's rendered HTML
   representation. If the value becomes `false` or `undefined` the class name
   will be removed.
@@ -323,7 +323,7 @@ Ember.TEMPLATES = {};
   });
   ```
 
-  Updates to the the property of an attribute binding will result in automatic
+  Updates to the property of an attribute binding will result in automatic
   update of the  HTML attribute in the view's rendered HTML representation.
 
   `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
@@ -507,7 +507,7 @@ Ember.TEMPLATES = {};
   ```javascript
   AView = Ember.View.extend({
     click: function(event) {
-      // will be called when when an instance's
+      // will be called when an instance's
       // rendered element is clicked
     }
   });
@@ -528,7 +528,7 @@ Ember.TEMPLATES = {};
   AView = Ember.View.extend({
     eventManager: Ember.Object.create({
       doubleClick: function(event, view) {
-        // will be called when when an instance's
+        // will be called when an instance's
         // rendered element or any rendering
         // of this view's descendant
         // elements is clicked
