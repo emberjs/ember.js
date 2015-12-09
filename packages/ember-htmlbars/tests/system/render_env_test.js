@@ -41,7 +41,7 @@ function constructComponent(label) {
     init() {
       this.label = label;
       components[label] = this;
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     }
   });
 }

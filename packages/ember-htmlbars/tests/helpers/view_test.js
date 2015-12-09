@@ -246,7 +246,7 @@ QUnit.test('"Binding"-suffixed bindings are runloop-synchronized [DEPRECATED]', 
   var Subview = EmberView.extend({
     init() {
       subview = this;
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     },
     template: compile('<div class="color">{{view.color}}</div>')
   });
@@ -295,7 +295,7 @@ QUnit.test('Non-"Binding"-suffixed bindings are runloop-synchronized', function(
   var Subview = EmberView.extend({
     init() {
       subview = this;
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     },
     template: compile('<div class="color">{{view.attrs.color}}</div>')
   });

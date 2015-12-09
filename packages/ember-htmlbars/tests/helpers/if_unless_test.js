@@ -571,7 +571,7 @@ QUnit.test('edge case: child conditional should not render children if parent co
     cond2: false,
     viewClass: EmberView.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         childCreated = true;
         child = this;
       }

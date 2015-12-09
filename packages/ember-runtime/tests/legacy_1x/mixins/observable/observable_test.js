@@ -17,7 +17,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 
   * Added ObservableObject which applies the Ember.Observable mixin.
   * Changed reference to Ember.T_FUNCTION to 'function'
-  * Changed all references to sc_super to this._super.apply(this, arguments)
+  * Changed all references to sc_super to this._super(...arguments)
   * Changed Ember.objectForPropertyPath() to Ember.getPath()
   * Removed allPropertiesDidChange test - no longer supported
   * Changed test that uses 'ObjectE' as path to 'objectE' to reflect new

@@ -22,14 +22,14 @@ QUnit.test('using reopen() and calling _super where there is not a super functio
       // There is no original createBreakfast function.
       // Calling the wrapped _super function here
       // used to end in an infinite call loop
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       return 'Breakfast!';
     }
   });
 
   Taco.reopen({
     createBreakfast() {
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     }
   });
 

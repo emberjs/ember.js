@@ -20,19 +20,19 @@ QUnit.test('overriding computed properties', function() {
 
   MixinB = Mixin.create(MixinA, {
     aProp: computed(function() {
-      return this._super.apply(this, arguments) + 'B';
+      return this._super(...arguments) + 'B';
     })
   });
 
   MixinC = Mixin.create(MixinA, {
     aProp: computed(function() {
-      return this._super.apply(this, arguments) + 'C';
+      return this._super(...arguments) + 'C';
     })
   });
 
   MixinD = Mixin.create({
     aProp: computed(function() {
-      return this._super.apply(this, arguments) + 'D';
+      return this._super(...arguments) + 'D';
     })
   });
 
@@ -74,8 +74,8 @@ QUnit.test('calling set on overridden computed properties', function() {
 
   SubMixin = Mixin.create(SuperMixin, {
     aProp: computed({
-      get: function(key) { return this._super.apply(this, arguments); },
-      set: function(key, value) { return this._super.apply(this, arguments); }
+      get: function(key) { return this._super(...arguments); },
+      set: function(key, value) { return this._super(...arguments); }
     })
   });
 

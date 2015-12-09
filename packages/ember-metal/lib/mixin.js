@@ -467,7 +467,7 @@ export function mixin(obj, ...args) {
   //filters will be created as a separate array during the object's initialization
   App.Filterable = Ember.Mixin.create({
     init: function() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       this.set("filters", Ember.A());
     }
   });

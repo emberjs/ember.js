@@ -31,7 +31,7 @@ QUnit.test('Overriding a method several layers deep', function() {
     barCnt: 0,
     bar() {
       this.barCnt++;
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     }
   });
 
@@ -39,7 +39,7 @@ QUnit.test('Overriding a method several layers deep', function() {
     fooCnt: 0,
     foo() {
       this.fooCnt++;
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     }
   });
 
@@ -53,7 +53,7 @@ QUnit.test('Overriding a method several layers deep', function() {
   obj = FinalClass.extend({
     foo() {
       this.fooCnt++;
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     }
   }).create();
 

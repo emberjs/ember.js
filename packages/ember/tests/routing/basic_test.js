@@ -1162,12 +1162,12 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
   App.RootRoute = Route.extend({
     model() {
       rootModel++;
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     },
 
     serialize() {
       rootSerialize++;
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     },
 
     setupController() {
@@ -1961,14 +1961,14 @@ QUnit.test('Generated names can be customized when providing routes with dot not
   App.FooRoute = Route.extend({
     renderTemplate() {
       ok(true, 'FooBarRoute was called');
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     }
   });
 
   App.BarBazRoute = Route.extend({
     renderTemplate() {
       ok(true, 'BarBazRoute was called');
-      return this._super.apply(this, arguments);
+      return this._super(...arguments);
     }
   });
 
@@ -2103,7 +2103,7 @@ QUnit.test('Parent route context change', function() {
       return null;
     },
     setup() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       editCount++;
     }
   });
@@ -2914,7 +2914,7 @@ QUnit.test('`didTransition` can be reopened', function() {
 
   Router.reopen({
     didTransition() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       ok(true, 'reopened didTransition was called');
     }
   });
@@ -2933,7 +2933,7 @@ QUnit.test('`activate` event fires on the route', function() {
 
   App.NorkRoute = Route.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
 
       this.on('activate', function() {
         equal(++eventFired, 1, 'activate event is fired once');
@@ -2962,7 +2962,7 @@ QUnit.test('`deactivate` event fires on the route', function() {
 
   App.NorkRoute = Route.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
 
       this.on('deactivate', function() {
         equal(++eventFired, 1, 'deactivate event is fired once');
