@@ -360,7 +360,9 @@ function instantiate(container, fullName) {
 
       // TODO - remove when Ember reaches v3.0.0
       if (isEnabled('ember-container-inject-owner')) {
-        injectDeprecatedContainer(obj, container);
+        if (!Object.isFrozen(obj) && 'container' in obj) {
+          injectDeprecatedContainer(obj, container);
+        }
       }
     }
 
