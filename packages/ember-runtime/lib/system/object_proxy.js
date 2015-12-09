@@ -44,7 +44,7 @@ import _ProxyMixin from 'ember-runtime/mixins/-proxy';
 
   ```javascript
   ProxyWithComputedProperty = Ember.ObjectProxy.extend({
-    fullName: function () {
+    fullName: function() {
       var firstName = this.get('firstName'),
           lastName = this.get('lastName');
       if (firstName && lastName) {

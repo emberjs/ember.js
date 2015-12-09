@@ -411,7 +411,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     App.ArticlesRoute = Ember.Route.extend({
       // ...
 
-      resetController: function (controller, isExiting, transition) {
+      resetController: function(controller, isExiting, transition) {
         if (isExiting) {
           controller.set('page', 1);
         }
@@ -1626,7 +1626,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         return this.store.findAll('photo');
       },
 
-      setupController: function (controller, model) {
+      setupController: function(controller, model) {
         // Call _super for default behavior
         this._super(controller, model);
         // Implement your custom setup after
