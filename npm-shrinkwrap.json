@@ -1810,8 +1810,8 @@
       }
     },
     "emberjs-build": {
-      "version": "0.5.2",
-      "from": "emberjs-build@0.5.2",
+      "version": "0.5.3",
+      "from": "emberjs-build@0.5.3",
       "dependencies": {
         "assert-plus": {
           "version": "0.1.2",
