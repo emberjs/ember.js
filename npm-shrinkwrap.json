@@ -1812,6 +1812,7 @@
     "emberjs-build": {
       "version": "0.5.3",
       "from": "emberjs-build@0.5.3",
+      "resolved": "https://registry.npmjs.org/emberjs-build/-/emberjs-build-0.5.3.tgz",
       "dependencies": {
         "assert-plus": {
           "version": "0.1.2",
@@ -2692,8 +2693,9 @@
       "resolved": "https://registry.npmjs.org/home-or-tmp/-/home-or-tmp-1.0.0.tgz"
     },
     "htmlbars": {
-      "version": "0.14.8",
-      "from": "htmlbars@0.14.8"
+      "version": "0.14.9",
+      "from": "htmlbars@0.14.9",
+      "resolved": "https://registry.npmjs.org/htmlbars/-/htmlbars-0.14.9.tgz"
     },
     "htmlparser2": {
       "version": "3.8.3",
