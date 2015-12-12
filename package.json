@@ -2,7 +2,7 @@
   "name": "glimmer",
   "version": "0.5.0",
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
-  "main": "dist/cjs/htmlbars.js",
+  "main": "dist/es6/glimmer/index.js",
   "scripts": {
     "prepublish": "bower install && ember build",
     "build": "ember build",
