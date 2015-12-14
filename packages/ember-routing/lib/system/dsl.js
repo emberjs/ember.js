@@ -9,6 +9,7 @@ function DSL(name, options) {
   this.parent = name;
   this.enableLoadingSubstates = options && options.enableLoadingSubstates;
   this.matches = [];
+  this.explicitIndex = undefined;
 }
 export default DSL;
 
