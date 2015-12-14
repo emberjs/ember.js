@@ -2,6 +2,8 @@
 @module ember
 @submodule ember-templates
 */
+import isEnabled from 'ember-metal/features';
+import closureComponent from 'ember-htmlbars/keywords/closure-component';
 
 /**
   `{{textarea}}` inserts a new instance of `<textarea>` tag into the template.
@@ -184,12 +186,27 @@
 
   See more about [Ember components](/api/classes/Ember.Component.html)
 
+  ### Contextual version
+
+  This helper can create a closure for using as a contextual component.
+
+  ```handlebar
+  {{yield (hash my-input=(textarea value=myValue))}}
+  ```
+
+
   @method textarea
   @for Ember.Templates.helpers
   @param {Hash} options
   @public
 */
 export default function textarea(morph, env, scope, originalParams, hash, template, inverse, visitor) {
+  if (isEnabled('ember-contextual-components')) {
+    if (!morph) {
+      return closureComponent(env, ['-text-area', ...originalParams], hash);
+    }
+  }
+
   env.hooks.component(morph, env, scope, '-text-area', originalParams, hash, { default: template, inverse }, visitor);
   return true;
 }

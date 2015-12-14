@@ -2,8 +2,13 @@
 @module ember
 @submodule ember-templates
 */
+import { keyword } from 'htmlbars-runtime/hooks';
 import { assert } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
+import BasicStream from 'ember-metal/streams/stream';
+import isEnabled from 'ember-metal/features';
+import closureComponent from 'ember-htmlbars/keywords/closure-component';
+import { isStream, labelFor } from 'ember-metal/streams/utils';
 
 /**
   The `{{input}}` helper lets you create an HTML `<input />` component.
@@ -145,16 +150,24 @@ import assign from 'ember-metal/assign';
   });
   ```
 
+  ### Contextual version
+
+  This helper can create a closure for using as a contextual component.
+
+  ```handlebar
+  {{yield (hash my-input=(input "text" value=myValue))}}
+  ```
+
 
   @method input
   @for Ember.Templates.helpers
   @param {Hash} options
   @public
 */
-export default {
+export const elementInput = {
   setupState(lastState, env, scope, params, hash) {
     var type = env.hooks.getValue(hash.type);
-    var componentName = componentNameMap[type] || defaultComponentName;
+    var componentName = getComponentName(type);
 
     assert(
       '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
@@ -173,6 +186,49 @@ export default {
     this.render(...args);
   }
 };
+
+const InputTypeStream = BasicStream.extend({
+  init(env, type) {
+    this._env = env;
+    this._type = type;
+    this.label = `(actionInputType ${labelFor(type)})`;
+  },
+
+  compute() {
+    return getComponentName(this._env.hooks.getValue(this._type));
+  }
+});
+
+export default function(morph, env, scope, params, hash, template, inverse, visitor) {
+  if (isEnabled('ember-contextual-components')) {
+    if (!morph) {
+      return closureComponent(env, createParamsWithType(env, scope, params, hash), hash);
+    }
+  }
+
+  keyword('@element_input', morph, env, scope, params, hash, template, inverse, visitor);
+  return true;
+}
+
+function createParamsWithType(env, scope, params, hash) {
+  return [createArgumentForType(env, hash.type), ...params];
+}
+
+function createArgumentForType(env, type) {
+  if (isStream(type)) {
+    let stream = new InputTypeStream(env, type);
+
+    stream.addDependency(type);
+
+    return stream;
+  } else {
+    return getComponentName(type);
+  }
+}
+
+function getComponentName(type) {
+  return componentNameMap[type] || defaultComponentName;
+}
 
 var defaultComponentName = '-text-field';
 
