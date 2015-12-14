@@ -339,6 +339,38 @@ if (isEnabled('ember-contextual-components')) {
     }, `You cannot specify both a positional param (at position 0) and the hash argument \`name\`.`);
   });
 
+  QUnit.test('conflicting positional and hash parameters does not raise and assertion if rerendered', function() {
+    let LookedUp = Component.extend();
+    LookedUp.reopenClass({
+      positionalParams: ['name']
+    });
+    owner.register(
+      'component:-looked-up',
+      LookedUp
+    );
+    owner.register(
+      'template:components/-looked-up',
+      compile(`{{greeting}} {{name}}`)
+    );
+
+    let template = compile(
+      `{{component (component "-looked-up" name greeting="Hodi")}}`
+    );
+
+    component = Component.extend({
+      [OWNER]: owner,
+      template,
+      name: 'Hodari'
+    }).create();
+
+    runAppend(component);
+    equal(component.$().text(), 'Hodi Hodari', 'component is rendered');
+
+    run(() => component.set('name', 'Sergio'));
+
+    equal(component.$().text(), 'Hodi Sergio', 'component is rendered');
+  });
+
   QUnit.test('conflicting positional and hash parameters does not raise and assertion if in the different closure', function() {
     let LookedUp = Component.extend();
     LookedUp.reopenClass({

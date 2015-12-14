@@ -1,6 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import { Stream } from 'ember-metal/streams/stream';
-import { readArray } from 'ember-metal/streams/utils';
+import { isStream, readArray } from 'ember-metal/streams/utils';
 
 export default function extractPositionalParams(renderNode, component, params, attrs) {
   let positionalParams = component.positionalParams;
@@ -25,9 +25,10 @@ function processNamedPositionalParameters(renderNode, positionalParams, params, 
 
   for (let i = 0; i < limit; i++) {
     let param = params[i];
+    let isActiveStreamParam = isStream(param) && param.isActive;
 
     assert(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${positionalParams[i]}\`.`,
-           !(positionalParams[i] in attrs));
+           isActiveStreamParam || !(positionalParams[i] in attrs));
 
     attrs[positionalParams[i]] = param;
   }
