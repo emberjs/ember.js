@@ -1,4 +1,4 @@
-import { InternedString, dict } from 'glimmer-util';
+import { InternedString, dict, assign } from 'glimmer-util';
 import { RawTemplate } from './compiler';
 
 export default class SymbolTable {
@@ -12,6 +12,13 @@ export default class SymbolTable {
     this.parent = parent;
     this.top = parent ? parent.top : this;
     this.template = template;
+  }
+
+  cloneFor(template: RawTemplate): SymbolTable {
+    let table = new SymbolTable(this.parent, template);
+    table.locals = assign({}, this.locals);
+    table.size = this.size;
+    return table;
   }
 
   initPositional(positional: InternedString[]): this {

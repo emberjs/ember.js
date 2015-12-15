@@ -114,19 +114,19 @@ export class TestEnvironment extends Environment {
 
   registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new GlimmerComponentDefinition(testHooks, Component, compile(layout), GlimmerComponentInvocation);
+    let definition = new GlimmerComponentDefinition(testHooks, Component, compile(layout).raw, GlimmerComponentInvocation);
     return this.registerComponent(name, definition);
   }
 
   registerEmberishComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new EmberishComponentDefinition(testHooks, Component, compile(layout), GlimmerComponentInvocation);
+    let definition = new EmberishComponentDefinition(testHooks, Component, compile(layout).raw, GlimmerComponentInvocation);
     return this.registerComponent(name, definition);
   }
 
   registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): any {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, compile(layout), GlimmerComponentInvocation);
+    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, compile(layout).raw, GlimmerComponentInvocation);
     return this.registerComponent(name, definition);
   }
 
@@ -325,31 +325,27 @@ interface TemplateWithAttrsOptions {
 
 class GlimmerComponentDefinition extends ComponentDefinition {
   compile({ syntax, args, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
-    let layout = this.templateWithAttrs(syntax, args);
-    if (named) layout.addNamed(named);
+    let layout = this.templateWithAttrs(syntax, args, named);
     return new GlimmerComponentInvocation(templates, layout);
   }
 
-  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax) {
-    let template = this.layout.raw;
+  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax, named: InternedString[]) {
+    return this.layout.cloneWith((program, table) => {
+      let toSplice = ListSlice.toList(attrs);
+      let current = program.head();
+      table.putNamed(named);
 
-    let program = ListSlice.toList(template.program) as LinkedList<AttributeSyntax>;
-    let toSplice = ListSlice.toList(attrs);
-    let current = program.head();
+      while (current) {
+        let next = program.nextNode(current);
 
-    while (current) {
-      let next = program.nextNode(current);
+        if (current.type === 'open-element' || current.type === 'open-primitive-element') {
+          program.spliceList(toSplice, program.nextNode(current));
+          break;
+        }
 
-      if (current.type === 'open-element' || current.type === 'open-primitive-element') {
-        program.spliceList(toSplice, program.nextNode(current));
-        break;
+        current = next;
       }
-
-      current = next;
-    }
-
-    template.program = program;
-    return template;
+    });
   }
 }
 
@@ -358,83 +354,73 @@ let id = 1;
 
 class EmberishComponentDefinition extends ComponentDefinition {
   compile({ args, locals, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
-    let layout = this.templateWithAttrs(args);
+    let layout = this.templateWithAttrs(args, named);
     if (locals) throw new Error("Positional arguments not supported");
-    if (named) layout.addNamed(named);
     return new EmberishComponentInvocation(templates, layout);
   }
 
-  private templateWithAttrs(args: ArgsSyntax) {
-    let template = this.layout.raw;
+  private templateWithAttrs(args: ArgsSyntax, named: InternedString[]) {
+    return this.layout.cloneWith((program, table) => {
+      let toSplice = new LinkedList<AttributeSyntax>();
 
-    let program = ListSlice.toList(template.program) as LinkedList<StatementSyntax>;
+      toSplice.append(new AddClass({ value: EMBER_VIEW }));
+      toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
 
-    let toSplice = new LinkedList<AttributeSyntax>();
+      let named = args.named.map;
+      Object.keys(named).forEach((name: InternedString) => {
+        let attr;
+        let value = named[<string>name];
+        if (name === 'class') {
+          attr = new AddClass({ value });
+        } else if (name === 'id') {
+          attr = new DynamicAttr({ name, value, namespace: null });
+        } else if (name === 'ariaRole') {
+          attr = new DynamicAttr({ name: <InternedString>'role', value, namespace: null });
+        } else {
+          return;
+        }
 
-    toSplice.append(new AddClass({ value: EMBER_VIEW }));
-    toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
+        toSplice.append(attr);
+      });
 
-    let named = args.named.map;
-    Object.keys(named).forEach((name: InternedString) => {
-      let attr;
-      let value = named[<string>name];
-      if (name === 'class') {
-        attr = new AddClass({ value });
-      } else if (name === 'id') {
-        attr = new DynamicAttr({ name, value, namespace: null });
-      } else if (name === 'ariaRole') {
-        attr = new DynamicAttr({ name: <InternedString>'role', value, namespace: null });
-      } else {
-        return;
-      }
-
-      toSplice.append(attr);
+      let head = program.head();
+      program.insertBefore(new OpenPrimitiveElementSyntax({ tag: <InternedString>'div' }), head);
+      program.spliceList(toSplice, program.nextNode(head));
+      program.append(new CloseElementSyntax());
     });
-
-    let head = program.head();
-    program.insertBefore(new OpenPrimitiveElementSyntax({ tag: <InternedString>'div' }), head);
-    program.spliceList(toSplice, program.nextNode(head));
-    program.append(new CloseElementSyntax());
-
-    template.program = program;
-    return template;
   }
 }
 
 class EmberishGlimmerComponentDefinition extends ComponentDefinition {
   compile({ syntax, args, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
-    let layout = this.templateWithAttrs(syntax, args);
-    if (named) layout.addNamed(named);
+    let layout = this.templateWithAttrs(syntax, args, named);
     return new GlimmerComponentInvocation(templates, layout);
   }
 
-  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax) {
-    let template = this.layout.raw;
+  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax, named: InternedString[]) {
+    return this.layout.cloneWith((program, table) => {
+      let toSplice = ListSlice.toList(attrs);
+      toSplice.append(new AddClass({ value: EMBER_VIEW }));
 
-    let program = ListSlice.toList(template.program) as LinkedList<AttributeSyntax>;
-
-    let toSplice = ListSlice.toList(attrs);
-    toSplice.append(new AddClass({ value: EMBER_VIEW }));
-
-    if (!args.named.has('@id' as InternedString)) {
-      toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
-    }
-
-    let current = program.head();
-
-    while (current) {
-      let next = program.nextNode(current);
-
-      if (current.type === 'open-element' || current.type === 'open-primitive-element') {
-        program.spliceList(toSplice, program.nextNode(current));
-        break;
+      if (!args.named.has('@id' as InternedString)) {
+        toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
       }
 
-      current = next;
-    }
+      table.putNamed(named);
 
-    template.program = program;
-    return template;
+      let current = program.head();
+
+      while (current) {
+        let next = program.nextNode(current);
+
+        if (current.type === 'open-element' || current.type === 'open-primitive-element') {
+          program.spliceList(toSplice, program.nextNode(current));
+          break;
+        }
+
+        current = next;
+      }
+    });
   }
 }
 

@@ -22,6 +22,12 @@ export class ListNode<T> implements LinkedListNode {
 type trust = any;
 
 export class LinkedList<T extends LinkedListNode> implements Slice<T> {
+  static fromSlice<U extends CloneableListNode>(slice: Slice<U>): LinkedList<U> {
+    let list = new LinkedList<U>();
+    slice.forEachNode(n => list.append(n.clone()));
+    return list;
+  }
+
   private _head: T;
   private _tail: T;
 
