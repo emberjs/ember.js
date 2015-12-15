@@ -1,34 +1,52 @@
-import { Slice, ListSlice, LinkedList, InternedString } from 'glimmer-util';
+import { Slice, ListSlice, LinkedList, InternedString, assert, dict } from 'glimmer-util';
 import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
+import { BindArgsOpcode } from './compiled/opcodes/vm';
 import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax } from './syntax';
 import { Environment } from './environment';
-import Template, { OpenElement, OpenPrimitiveElement, CloseElement } from './template';
+import Template from './template';
+import { OpenElement, OpenPrimitiveElement, CloseElement } from './syntax/core';
 import SymbolTable from './symbol-table';
+
+export interface RawTemplateOptions {
+  ops: OpSeq;
+  locals: InternedString[];
+  named: InternedString[];
+  program?: Program;
+}
 
 export class RawTemplate {
   public program: Program;
   public ops: OpSeq = null;
   public symbolTable: SymbolTable = null;
   public locals: InternedString[];
+  public named: InternedString[];
 
-  static fromOpSeq(ops: OpSeq, locals: InternedString[]) {
-    return new RawTemplate({ ops, locals, program: null });
-  }
-
-  constructor({ ops, locals, program }: { ops: OpSeq, locals: InternedString[], program?: Program }) {
+  constructor({ ops, locals, named, program }: RawTemplateOptions) {
     this.ops = ops;
     this.locals = locals;
+    this.named = named;
     this.program = program || null;
   }
 
-  opcodes(env: Environment): OpSeq {
-    if (this.ops) return this.ops;
-    this.compile(env);
-    return this.ops;
+  compile(env: Environment) {
+    this.compileSyntax(env);
   }
 
-  compile(env: Environment) {
-    this.ops = new Compiler(this, env).compile();
+  private compileSyntax(env: Environment) {
+    this.ops = this.ops || new Compiler(this, env).compile();
+  }
+
+  addNamed(names: InternedString[]) {
+    assert(!this.ops, "Cannot add symbols after a template has already been compiled");
+    this.symbolTable.putNamed(names);
+  }
+
+  isTop(): boolean {
+    return this.symbolTable.isTop();
+  }
+
+  hasLocals(): boolean {
+    return !!(this.locals || this.named);
   }
 }
 
@@ -48,7 +66,10 @@ export default class Compiler {
   }
 
   compile(): OpSeqBuilder {
-    let { template: { program }, ops, env } = this;
+    let { template, ops, env } = this;
+    let { program } = template;
+
+    if (template.hasLocals()) ops.append(new BindArgsOpcode(this.template));
 
     while (this.current) {
       let current = this.current;

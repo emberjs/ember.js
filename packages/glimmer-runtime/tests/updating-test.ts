@@ -3,7 +3,7 @@ import { Template } from "glimmer-runtime";
 import { equalTokens, stripTight } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
-var hooks, root;
+var hooks, root: Element;
 let env: TestEnvironment;
 
 function rootElement() {
@@ -13,6 +13,7 @@ function rootElement() {
 function commonSetup() {
   env = new TestEnvironment(window.document); // TODO: Support SimpleDOM
   root = rootElement();
+  root.setAttribute('debug-root', 'true');
 }
 
 function render(template: Template, context={}) {
@@ -419,6 +420,7 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
       { key: "2", name: "Kristoph Selden", "class": "krisselden" },
       { key: "3", name: "Matthew Beale", "class": "mixonic" }
     ]};
+
     rerender(object);
     assertStableNodes('mmun', "after adding an additional entry");
     equalTokens(

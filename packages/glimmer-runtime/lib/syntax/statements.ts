@@ -9,7 +9,7 @@ import {
   OpenElement,
   CloseElement,
   StaticAttr
-} from '../template';
+} from './core';
 
 import { StatementSyntax } from '../syntax';
 

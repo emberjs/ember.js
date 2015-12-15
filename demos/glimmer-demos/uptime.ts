@@ -1,5 +1,5 @@
 import EmberObject, { computed } from 'glimmer-object';
-import { EmberComponent, DemoEnvironment, compile } from './index';
+import { EmberComponent, DemoEnvironment, compile } from 'glimmer-demos/index';
 
 let ServerUptime = <any>EmberComponent.extend({
   upDays: computed(function() {

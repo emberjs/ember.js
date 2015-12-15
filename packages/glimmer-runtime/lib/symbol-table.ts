@@ -1,19 +1,33 @@
 import { InternedString, dict } from 'glimmer-util';
+import { RawTemplate } from './compiler';
 
 export default class SymbolTable {
   private parent: SymbolTable;
   private top: SymbolTable;
+  private template: RawTemplate;
   private locals = dict<number>();
   public size = 1;
 
-  constructor(parent: SymbolTable) {
+  constructor(parent: SymbolTable, template: RawTemplate) {
     this.parent = parent;
     this.top = parent ? parent.top : this;
+    this.template = template;
   }
 
-  init(symbols: InternedString[]): this {
-    symbols.forEach(s => this.put(s));
+  initPositional(positional: InternedString[]): this {
+    if (positional) positional.forEach(s => this.putPositional(s));
     return this;
+  }
+
+  initNamed(named: InternedString[]): this {
+    if (named) named.forEach(s => this.locals[<string>s] = this.size++);
+
+    return this;
+  }
+
+  putNamed(names: InternedString[]) {
+    let top = this.top;
+    names.forEach(s => top.putSingleNamed(s));
   }
 
   get(name: InternedString): number {
@@ -28,7 +42,19 @@ export default class SymbolTable {
     return symbol;
   }
 
-  private put(name: InternedString): number {
+  isTop(): boolean {
+    return this.top === this;
+  }
+
+  private putSingleNamed(name: InternedString) {
+    if (!this.locals[<string>name]) {
+      this.locals[<string>name] = this.size++;
+      this.template.named = this.template.named || [];
+      this.template.named.push(name);
+    }
+  }
+
+  private putPositional(name: InternedString): number {
     let position = this.locals[<string>name];
 
     if (!position) {

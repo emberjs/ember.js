@@ -74,6 +74,7 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   }
 
   spliceList(list: LinkedList<T>, reference: T) {
+    if (list.isEmpty()) return;
     this.splice(list.head(), list.tail(), reference);
   }
 
@@ -161,6 +162,7 @@ export interface Slice<T extends LinkedListNode> {
   tail(): T;
   nextNode(node: T): T;
   prevNode(node: T): T;
+  forEachNode(callback: (node: T) => void);
   toArray(): T[];
   isEmpty(): boolean;
 }
@@ -170,7 +172,7 @@ interface CloneableListNode extends LinkedListNode {
 }
 
 export class ListSlice<T extends LinkedListNode> implements Slice<T> {
-  static toList<U extends CloneableListNode>(slice: ListSlice<U>): LinkedList<U> {
+  static toList<U extends CloneableListNode>(slice: Slice<U>): LinkedList<U> {
     let list = new LinkedList<U>();
     slice.forEachNode(n => list.append(n.clone()));
     return list;

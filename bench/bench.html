@@ -135,26 +135,24 @@
         this.attrs = options.attrs;
       }
 
-      var itemLayout = compile(
-        '<div>{{attrs.item.id}}: ' +
-        '{{#if attrs.item.visible}}' +
-          '{{#each attrs.item.subitems key="id" as |subitem|}}' +
+      var itemLayout =
+        '<div>{{@item.id}}: ' +
+        '{{#if @item.visible}}' +
+          '{{#each @item.subitems key="id" as |subitem|}}' +
             '<sub-item id={{subitem.id}} />' +
           '{{/each}}' +
-        '{{/if}}</div>'
-      );
+        '{{/if}}</div>';
 
-      // env.registerComponent('my-item', MyItem, itemLayout);
+      env.registerGlimmerComponent('my-item', MyItem, itemLayout);
 
       var SubItem = function(options) {
         this.attrs = options.attrs;
       }
 
-      var subItemLayout = compile(
-        '<p>{{attrs.id}}</p>'
-      );
+      var subItemLayout =
+        '<p>{{@id}}</p>';
 
-      // env.registerComponent('sub-item', SubItem, subItemLayout);
+      env.registerGlimmerComponent('sub-item', SubItem, subItemLayout);
 
       function benchmark(name, template) {
         templates[name] = compile(template);
@@ -192,6 +190,7 @@
           fn: function() {
             frag = document.createDocumentFragment();
             env.begin();
+            debugger;
             template.render(context, env, { appendTo: frag });
             env.commit();
           },
@@ -202,7 +201,7 @@
 
       var benchmarks = {
         'single-component': benchmark('single-component',
-          '<sub-item id={{items.0.item.id}} />'
+          '<sub-item id={{items.0.subitems.0.id}} />'
         ),
 
         'with-components': benchmark('with-components',
