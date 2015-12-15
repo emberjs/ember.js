@@ -88,10 +88,10 @@ export interface CompileComponentOptions {
 export abstract class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
-  public layout: Template;
+  public layout: RawTemplate;
   protected ComponentInvocation: ComponentInvocationClass;
 
-  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: Template, ComponentInvocation: ComponentInvocationClass) {
+  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: RawTemplate, ComponentInvocation: ComponentInvocationClass) {
     this.hooks = hooks || NULL_HOOKS;
     this.ComponentClass = ComponentClass;
     this.layout = layout;

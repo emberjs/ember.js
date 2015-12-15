@@ -28,17 +28,30 @@ export class RawTemplate {
     this.program = program || null;
   }
 
+  cloneWith(callback: (builder: LinkedList<StatementSyntax>, table: SymbolTable) => void): RawTemplate {
+    let { program, locals, named } = this;
+
+    let newProgram = LinkedList.fromSlice(program);
+
+    let template = new RawTemplate({
+      ops: null,
+      locals: locals && locals.slice(),
+      named: named && named.slice(),
+      program: newProgram
+    });
+
+    template.symbolTable = this.symbolTable.cloneFor(template);
+    callback(newProgram, template.symbolTable);
+
+    return template;
+  }
+
   compile(env: Environment) {
     this.compileSyntax(env);
   }
 
   private compileSyntax(env: Environment) {
     this.ops = this.ops || new Compiler(this, env).compile();
-  }
-
-  addNamed(names: InternedString[]) {
-    assert(!this.ops, "Cannot add symbols after a template has already been compiled");
-    this.symbolTable.putNamed(names);
   }
 
   isTop(): boolean {
@@ -114,12 +127,15 @@ export default class Compiler {
     while (true) {
       let current = this.current;
       this.current = program.nextNode(current);
-      begin = begin || current;
 
       if (current instanceof CloseElement && --nesting === 0) {
-        end = program.prevNode(current);
         break;
-      } else if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
+      }
+
+      begin = begin || current;
+      end = current;
+
+      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
         nesting++;
       }
     }
