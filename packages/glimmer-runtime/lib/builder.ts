@@ -162,6 +162,7 @@ export class ElementStack {
   newBounds(bounds: Bounds) {
     this.blockStack.current.newBounds(bounds);
   }
+
   appendText(string: string): Text {
     let { dom } = this;
     let text = dom.createTextNode(string);

@@ -160,6 +160,7 @@ interface ComponentTestOptions {
   layout: string;
   invokeAs?: InvokeAs;
   block?: string;
+  skip?: boolean;
   expected: string | Expected;
 }
 
@@ -176,7 +177,8 @@ interface Expected {
   attrs: Object;
 };
 
-function testComponent(title: string, { layout, invokeAs, block, expected: _expected }: ComponentTestOptions) {
+function testComponent(title: string, { kind, layout, invokeAs, block, expected: _expected, skip }: ComponentTestOptions) {
+  if (skip !== false) return;
   if (typeof block === 'string') invokeAs = { template: block };
 
   invokeAs = assign({
@@ -186,94 +188,94 @@ function testComponent(title: string, { layout, invokeAs, block, expected: _expe
     inverse: null
   }, invokeAs || <InvokeAs>{});
 
-  let { attrs, context, blockParams, template } = invokeAs;
+  let { attrs, context, blockParams, template, inverse } = invokeAs;
 
-  // if (!kind || kind === 'curly') {
-  //   let expected: Expected;
-  //   if (typeof _expected === 'string') {
-  //     expected = {
-  //       content: <string>_expected,
-  //       attrs: {}
-  //     }
-  //   } else {
-  //     expected = <Expected>_expected;
-  //   }
+  if (!kind || kind === 'curly') {
+    let expected: Expected;
+    if (typeof _expected === 'string') {
+      expected = {
+        content: <string>_expected,
+        attrs: {}
+      };
+    } else {
+      expected = <Expected>_expected;
+    }
 
-  //   QUnit.skip(`curly: ${title}`, () => {
-  //     env.registerEmberishComponent('test-component', EmberishComponent, layout);
+    QUnit.test(`curly: ${title}`, () => {
+      env.registerEmberishComponent('test-component', EmberishComponent, layout);
 
-  //     let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
-  //       return list.concat(`${key}=${attrs[key]}`);
-  //     }, <string[]>[]);
+      let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
+        return list.concat(`${key}=${attrs[key]}`);
+      }, <string[]>[]);
 
-  //     if (typeof template === 'string') {
-  //       let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-  //       let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
-  //       appendViewFor(`{{#test-component ${attrList.join(' ')}${args}}}${template}${inv}{{/test-component}}`, context || {});
-  //     } else {
-  //       appendViewFor(`{{test-component ${attrList.join(' ')}}}`, context || {});
-  //     }
+      if (typeof template === 'string') {
+        let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+        let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
+        appendViewFor(`{{#test-component ${attrList.join(' ')}${args}}}${template}${inv}{{/test-component}}`, context || {});
+      } else {
+        appendViewFor(`{{test-component ${attrList.join(' ')}}}`, context || {});
+      }
 
-  //     assertEmberishElement('div', expected.attrs, expected.content);
-  //   });
+      assertEmberishElement('div', expected.attrs, expected.content);
+    });
 
-  //   QUnit.skip(`curly - component helper: ${title}`, () => {
-  //     env.registerEmberishComponent('test-component', EmberishComponent, layout);
-  //     env.registerEmberishComponent('test-component2', EmberishComponent, `${layout} -- 2`);
+    // QUnit.skip(`curly - component helper: ${title}`, () => {
+    //   env.registerEmberishComponent('test-component', EmberishComponent, layout);
+    //   env.registerEmberishComponent('test-component2', EmberishComponent, `${layout} -- 2`);
 
-  //     let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
-  //       return list.concat(`${key}=${attrs[key]}`);
-  //     }, <string[]>[]);
+    //   let attrList: string[] = Object.keys(attrs).reduce((list, key) => {
+    //     return list.concat(`${key}=${attrs[key]}`);
+    //   }, <string[]>[]);
 
-  //     let creation = assign({ componentName: 'test-component' }, context || {});
+    //   let creation = assign({ componentName: 'test-component' }, context || {});
 
-  //     if (typeof template === 'string') {
-  //       let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-  //       let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
-  //       appendViewFor(`{{#component componentName ${attrList.join(' ')}${args}}}${template}${inv}{{/component}}`, creation);
-  //     } else {
-  //       appendViewFor(`{{component componentName ${attrList.join(' ')}}}`, creation);
-  //     }
+    //   if (typeof template === 'string') {
+    //     let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+    //     let inv = typeof inverse === 'string' ? `{{else}}${inverse}` : '';
+    //     appendViewFor(`{{#component componentName ${attrList.join(' ')}${args}}}${template}${inv}{{/component}}`, creation);
+    //   } else {
+    //     appendViewFor(`{{component componentName ${attrList.join(' ')}}}`, creation);
+    //   }
 
-  //     assertEmberishElement('div', expected.attrs, expected.content);
+    //   assertEmberishElement('div', expected.attrs, expected.content);
 
-  //     set(view, 'componentName', 'test-component2');
-  //     rerender();
+    //   set(view, 'componentName', 'test-component2');
+    //   rerender();
 
-  //     assertEmberishElement('div', expected.attrs, `${expected.content} -- 2`);
-  //   });
-  // }
+    //   assertEmberishElement('div', expected.attrs, `${expected.content} -- 2`);
+    // });
+  }
 
   let keys = Object.keys(attrs);
 
-  // if (!kind || kind === 'glimmer') {
-  //   let expected: Expected;
-  //   if (typeof _expected === 'string') {
-  //     expected = {
-  //       content: <string>_expected,
-  //       attrs
-  //     }
-  //   } else {
-  //     expected = <Expected>_expected;
-  //   }
+  if (!kind || kind === 'glimmer') {
+    let expected: Expected;
+    if (typeof _expected === 'string') {
+      expected = {
+        content: <string>_expected,
+        attrs
+      };
+    } else {
+      expected = <Expected>_expected;
+    }
 
-  //   QUnit.skip(`glimmer: ${title}`, () => {
-  //     env.registerEmberishGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
+    QUnit.test(`glimmer: ${title}`, () => {
+      env.registerEmberishGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
 
-  //     let attrList: string[] = keys.reduce((list, key) => {
-  //       return list.concat(`${key}=${attrs[key]}`);
-  //     }, <string[]>[]);
+      let attrList: string[] = keys.reduce((list, key) => {
+        return list.concat(`${key}=${attrs[key]}`);
+      }, <string[]>[]);
 
-  //     if (typeof template === 'string') {
-  //       let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-  //       appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
-  //     } else {
-  //       appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
-  //     }
+      if (typeof template === 'string') {
+        let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+        appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
+      } else {
+        appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
+      }
 
-  //     assertEmberishElement('aside', expected.attrs, expected.content)
-  //   });
-  // }
+      assertEmberishElement('aside', expected.attrs, expected.content);
+    });
+  }
 
   let expected: Expected;
   if (typeof _expected === 'string') {
@@ -285,22 +287,24 @@ function testComponent(title: string, { layout, invokeAs, block, expected: _expe
     expected = <Expected>_expected;
   }
 
-  QUnit.skip(`basic: ${title}`, () => {
-    env.registerGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
+  if (!kind || kind === 'glimmer') {
+    QUnit.test(`basic: ${title}`, () => {
+      env.registerGlimmerComponent('test-component', GlimmerComponent, ` <aside>${layout}</aside><!-- hi -->`);
 
-    let attrList: string[] = keys.reduce((list, key) => {
-      return list.concat(`${key}=${attrs[key]}`);
-    }, <string[]>[]);
+      let attrList: string[] = keys.reduce((list, key) => {
+        return list.concat(`${key}=${attrs[key]}`);
+      }, <string[]>[]);
 
-    if (typeof template === 'string') {
-      let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
-      appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
-    } else {
-      appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
-    }
+      if (typeof template === 'string') {
+        let args = blockParams ? ` as |${blockParams.join(' ')}|` : '';
+        appendViewFor(`<test-component ${attrList.join(' ')}${args}>${template}</test-component>`, context || {});
+      } else {
+        appendViewFor(`<test-component ${attrList.join(' ')} />`, context || {});
+      }
 
-    assertComponentElement('aside', expected.attrs, expected.content);
-  });
+      assertComponentElement('aside', expected.attrs, expected.content);
+    });
+  }
 }
 
   // TODO: <component>
@@ -327,29 +331,34 @@ function testComponent(title: string, { layout, invokeAs, block, expected: _expe
   // });
 
 testComponent('non-block without properties', {
+  skip: false,
   layout: 'In layout',
   expected: 'In layout'
 });
 
 testComponent('block without properties', {
+  skip: false,
   layout: 'In layout -- {{yield}}',
   expected: 'In layout -- In template',
   block: 'In template'
 });
 
 testComponent('non-block with properties on attrs', {
-  layout: 'In layout - someProp: {{attrs.someProp}}',
+  skip: false,
+  layout: 'In layout - someProp: {{@someProp}}',
   invokeAs: { attrs: { someProp: '"something here"' } },
   expected: 'In layout - someProp: something here'
 });
 
 testComponent('block with properties on attrs', {
-  layout: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
+  skip: false,
+  layout: 'In layout - someProp: {{@someProp}} - {{yield}}',
   invokeAs: { template: 'In template', attrs: { someProp: '"something here"' } },
   expected: 'In layout - someProp: something here - In template',
 });
 
 testComponent('with ariaRole specified', {
+  skip: false,
   kind: 'curly',
   layout: 'Here!',
   invokeAs: { attrs: { id: '"aria-test"', ariaRole: '"main"' } },
@@ -385,6 +394,7 @@ testComponent('with ariaRole specified as an outer binding', {
 });
 
 testComponent('glimmer component with role specified as an outer binding and copied', {
+  skip: false,
   kind: 'glimmer',
   layout: 'Here!',
   invokeAs: {
@@ -475,6 +485,82 @@ testComponent('hasBlock keyword when block supplied', {
 testComponent('hasBlock keyword when block not supplied', {
   layout: '{{#if hasBlock}}Yes{{else}}No{{/if}}',
   expected: 'No'
+});
+
+QUnit.test('correct scope - simple', assert => {
+  env.registerGlimmerComponent('sub-item', EmberishComponent,
+    `<p>{{@name}}</p>`
+  );
+
+  let subitemId = 0;
+  let subitems = [];
+
+  for (let i = 0; i < 1; i++) {
+    subitems.push({
+      id: subitemId++
+    });
+  }
+
+  appendViewFor(
+    stripTight`
+      {{#each items key="id" as |item|}}
+        <sub-item name={{item.id}} />
+      {{/each}}`
+    , { items: subitems });
+
+   equalsElement(view.element, 'p', {}, '0');
+});
+
+QUnit.test('correct scope - complex', assert => {
+  env.registerGlimmerComponent('my-item', EmberishComponent,
+    stripTight`
+      <aside>{{@item.id}}:
+        {{#if @item.visible}}
+          {{#each @item.subitems key="id" as |subitem|}}
+             <sub-item name={{subitem.id}} />
+          {{/each}}
+        {{/if}}
+      </aside>`);
+
+    env.registerGlimmerComponent('sub-item', EmberishComponent,
+      `<p>{{@name}}</p>`
+    );
+
+    var itemId = 0;
+
+    var items = [];
+
+    for (var i = 0; i < 3; i++) {
+      var subitems = [];
+      var subitemId = 0;
+
+      for (var j = 0; j < 2; j++) {
+        subitems.push({
+          id: `${itemId}.${subitemId++}`
+        });
+      }
+
+      items.push({
+        id: String(itemId++),
+        visible: i % 2 === 0,
+        subitems
+      });
+    }
+
+    appendViewFor(
+      stripTight`
+        <article>{{#each items key="id" as |item|}}
+          <my-item item={{item}} />
+        {{/each}}</article>`
+      , { items });
+
+    equalsElement(view.element, 'article', {},
+      stripTight`
+        <aside>0:<p>0.0</p><p>0.1</p><!----></aside>
+        <aside>1:<!----></aside>
+        <aside>2:<p>2.0</p><p>2.1</p><!----></aside>
+        <!---->`
+    );
 });
 
 QUnit.skip('static named positional parameters', function() {

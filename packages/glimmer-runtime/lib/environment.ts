@@ -3,9 +3,11 @@ import {
   Helper as HelperSyntax,
   Unknown,
   Append,
-} from "./template";
+} from "./syntax/core";
 
 import { StatementSyntax } from './syntax';
+
+import { NULL_REFERENCE } from './references';
 
 import {
   Component,
@@ -32,8 +34,8 @@ export class Scope {
   static root(parent: Scope, size = 0) {
     let refs: PathReference[] = new Array(size + 1);
 
-    for (let i = 0; i < size; i++) {
-      refs[i] = null;
+    for (let i = 0; i <= size; i++) {
+      refs[i] = NULL_REFERENCE;
     }
 
     return new Scope(parent, refs);

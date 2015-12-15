@@ -1,8 +1,7 @@
 import {
-  Template,
-
   // Compiler
   Compiler,
+  RawTemplate,
 
   // Environment
   Environment,
@@ -19,21 +18,23 @@ import {
   PushChildScopeOpcode,
   PopScopeOpcode,
   PutArgsOpcode,
-  BindArgsOpcode,
   TestOpcode,
   JumpOpcode,
   JumpUnlessOpcode,
   NextIterOpcode,
+  OpenComponentOpcode,
 
   // Components
   ComponentClass,
   ComponentDefinition,
   ComponentInvocation,
   ComponentHooks,
+  CompileComponentOptions,
   Component,
 
   // Syntax Classes
   StatementSyntax,
+  ExpressionSyntax,
   AttributeSyntax,
 
   // Concrete Syntax
@@ -43,11 +44,17 @@ import {
   ArgsSyntax,
   NamedArgsSyntax,
   HelperSyntax,
-  BlockSyntax
+  BlockSyntax,
+  OpenPrimitiveElementSyntax,
+  CloseElementSyntax,
+  StaticAttr,
+  DynamicAttr,
+  ValueSyntax,
+  AddClass
 } from "glimmer-runtime";
 
 import { compile as rawCompile } from "glimmer-compiler";
-import { Slice, Dict, InternedString, dict } from 'glimmer-util';
+import { LinkedList, Slice, ListSlice, Dict, InternedString, dict } from 'glimmer-util';
 
 import { Meta } from "glimmer-reference";
 
@@ -111,12 +118,16 @@ export class TestEnvironment extends Environment {
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishComponent(...args: any[]): any {
-    throw new Error("Emberish components not yet implemented");
+  registerEmberishComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
+    let testHooks = new HookIntrospection(hooks);
+    let definition = new EmberishComponentDefinition(testHooks, Component, compile(layout), GlimmerComponentInvocation);
+    return this.registerComponent(name, definition);
   }
 
-  registerEmberishGlimmerComponent(...args: any[]): any {
-    throw new Error("Emberish Glimmer components not yet implemented");
+  registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): any {
+    let testHooks = new HookIntrospection(hooks);
+    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, compile(layout), GlimmerComponentInvocation);
+    return this.registerComponent(name, definition);
   }
 
   registerCurlyComponent(...args: any[]): any {
@@ -157,25 +168,26 @@ export class TestEnvironment extends Environment {
       key = path[0];
     }
 
-    if (isSimple) {
-      if (block && key === 'identity') {
-        return new IdentitySyntax({ args: block.args, templates: block.templates });
+    if (isSimple && block) {
+      switch (key) {
+        case 'identity':
+          return new IdentitySyntax({ args: block.args, templates: block.templates });
+        case 'render-inverse':
+          return new RenderInverseIdentitySyntax({ args: block.args, templates: block.templates });
+        case 'each':
+          return new EachSyntax({ args: block.args, templates: block.templates });
+        case 'if':
+          return new IfSyntax({ args: block.args, templates: block.templates });
+        case 'with':
+          return new WithSyntax({ args: block.args, templates: block.templates });
       }
+    }
 
-      if (block && key === 'render-inverse') {
-        return new RenderInverseIdentitySyntax({ args: block.args, templates: block.templates });
-      }
+    if (isSimple && (append || block)) {
+      let component = this.getComponentDefinition(path, statement);
 
-      if (block && key === 'each') {
-        return new EachSyntax({ args: block.args, templates: block.templates });
-      }
-
-      if (block && key === 'if') {
-        return new IfSyntax({ args: block.args, templates: block.templates });
-      }
-
-      if (block && key === 'with') {
-        return new WithSyntax({ args: block.args, templates: block.templates });
+      if (component) {
+        return new CurlyComponent({ args, component, templates: block && block.templates });
       }
     }
 
@@ -197,6 +209,54 @@ export class TestEnvironment extends Environment {
 
   getComponentDefinition(name: InternedString[], syntax: StatementSyntax): ComponentDefinition {
     return this.components[<string>name[0]];
+  }
+}
+
+class CurlyComponent extends StatementSyntax {
+  public args: ArgsSyntax;
+  public component: ComponentDefinition;
+  public templates: Templates;
+
+  constructor({ args, component, templates }: { args: ArgsSyntax, component: ComponentDefinition, templates: Templates }) {
+    super();
+    this.args = args;
+    this.component = component;
+    this.templates = templates;
+  }
+
+  compile(compiler: Compiler) {
+    let lookup = this.getLookup();
+
+    compiler.append(
+      new OpenComponentOpcode(
+        this.component.compile(lookup, this.templates),
+        this.getArgs().compile(compiler)
+      )
+    );
+  }
+
+  private getLookup(): CompileComponentOptions {
+    return {
+      args: this.args,
+      syntax: new LinkedList<AttributeSyntax>(),
+      named: this.getNamed(),
+      locals: null
+    };
+  }
+
+  private getArgs(): ArgsSyntax {
+    let original = this.args.named.map;
+    let map = dict<ExpressionSyntax>();
+
+    Object.keys(original).forEach(a => {
+      map[`@${a}`] = original[a];
+    });
+
+    return ArgsSyntax.fromHash(NamedArgsSyntax.build(map));
+  }
+
+  private getNamed(): InternedString[] {
+    return this.args.named.keys;
   }
 }
 
@@ -264,16 +324,145 @@ interface TemplateWithAttrsOptions {
 }
 
 class GlimmerComponentDefinition extends ComponentDefinition {
-  compile(attributes: Slice<AttributeSyntax>, templates: Templates): GlimmerComponentInvocation {
-    return new GlimmerComponentInvocation(templates, this.layout);
+  compile({ syntax, args, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
+    let layout = this.templateWithAttrs(syntax, args);
+    if (named) layout.addNamed(named);
+    return new GlimmerComponentInvocation(templates, layout);
+  }
+
+  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax) {
+    let template = this.layout.raw;
+
+    let program = ListSlice.toList(template.program) as LinkedList<AttributeSyntax>;
+    let toSplice = ListSlice.toList(attrs);
+    let current = program.head();
+
+    while (current) {
+      let next = program.nextNode(current);
+
+      if (current.type === 'open-element' || current.type === 'open-primitive-element') {
+        program.spliceList(toSplice, program.nextNode(current));
+        break;
+      }
+
+      current = next;
+    }
+
+    template.program = program;
+    return template;
+  }
+}
+
+const EMBER_VIEW = new ValueSyntax('ember-view');
+let id = 1;
+
+class EmberishComponentDefinition extends ComponentDefinition {
+  compile({ args, locals, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
+    let layout = this.templateWithAttrs(args);
+    if (locals) throw new Error("Positional arguments not supported");
+    if (named) layout.addNamed(named);
+    return new EmberishComponentInvocation(templates, layout);
+  }
+
+  private templateWithAttrs(args: ArgsSyntax) {
+    let template = this.layout.raw;
+
+    let program = ListSlice.toList(template.program) as LinkedList<StatementSyntax>;
+
+    let toSplice = new LinkedList<AttributeSyntax>();
+
+    toSplice.append(new AddClass({ value: EMBER_VIEW }));
+    toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
+
+    let named = args.named.map;
+    Object.keys(named).forEach((name: InternedString) => {
+      let attr;
+      let value = named[<string>name];
+      if (name === 'class') {
+        attr = new AddClass({ value });
+      } else if (name === 'id') {
+        attr = new DynamicAttr({ name, value, namespace: null });
+      } else if (name === 'ariaRole') {
+        attr = new DynamicAttr({ name: <InternedString>'role', value, namespace: null });
+      } else {
+        return;
+      }
+
+      toSplice.append(attr);
+    });
+
+    let head = program.head();
+    program.insertBefore(new OpenPrimitiveElementSyntax({ tag: <InternedString>'div' }), head);
+    program.spliceList(toSplice, program.nextNode(head));
+    program.append(new CloseElementSyntax());
+
+    template.program = program;
+    return template;
+  }
+}
+
+class EmberishGlimmerComponentDefinition extends ComponentDefinition {
+  compile({ syntax, args, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
+    let layout = this.templateWithAttrs(syntax, args);
+    if (named) layout.addNamed(named);
+    return new GlimmerComponentInvocation(templates, layout);
+  }
+
+  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax) {
+    let template = this.layout.raw;
+
+    let program = ListSlice.toList(template.program) as LinkedList<AttributeSyntax>;
+
+    let toSplice = ListSlice.toList(attrs);
+    toSplice.append(new AddClass({ value: EMBER_VIEW }));
+
+    if (!args.named.has('@id' as InternedString)) {
+      toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
+    }
+
+    let current = program.head();
+
+    while (current) {
+      let next = program.nextNode(current);
+
+      if (current.type === 'open-element' || current.type === 'open-primitive-element') {
+        program.spliceList(toSplice, program.nextNode(current));
+        break;
+      }
+
+      current = next;
+    }
+
+    template.program = program;
+    return template;
   }
 }
 
 class GlimmerComponentInvocation implements ComponentInvocation {
   public templates: Templates;
-  public layout: Template;
+  public layout: RawTemplate;
 
-  constructor(templates: Templates, layout: Template) {
+  constructor(templates: Templates, layout: RawTemplate) {
+    this.templates = templates;
+    this.layout = layout;
+  }
+}
+
+class EmberishComponentInvocation implements ComponentInvocation {
+  public templates: Templates;
+  public layout: RawTemplate;
+
+  constructor(templates: Templates, layout: RawTemplate) {
+    this.templates = templates;
+    this.layout = layout;
+  }
+}
+
+class EmberishGlimmrComponentInvocation implements ComponentInvocation {
+  public templates: Templates;
+  public layout: RawTemplate;
+
+  constructor(templates: Templates, layout: RawTemplate) {
     this.templates = templates;
     this.layout = layout;
   }
@@ -306,7 +495,6 @@ class EachSyntax extends StatementSyntax {
     //        EnterWithKey(BEGIN, END)
     // BEGIN: Noop
     //        PushChildScope
-    //        BindArgs(default)
     //        Evaluate(default)
     //        PopScope
     // END:   Noop
@@ -327,7 +515,6 @@ class EachSyntax extends StatementSyntax {
     compiler.append(new EnterWithKeyOpcode(BEGIN, END));
     compiler.append(BEGIN);
     compiler.append(new PushChildScopeOpcode());
-    compiler.append(new BindArgsOpcode(this.templates.default.raw));
     compiler.append(new EvaluateOpcode(this.templates.default.raw));
     compiler.append(new PopScopeOpcode());
     compiler.append(END);
@@ -395,7 +582,7 @@ class IfSyntax extends StatementSyntax {
     //        PutArgs
     //        Test
     //        JumpUnless(ELSE)
-    //        Evalulate(default)
+    //        Evaluate(default)
     //        Jump(END)
     // ELSE:  Noop
     //        Evalulate(inverse)
@@ -450,7 +637,6 @@ class WithSyntax extends StatementSyntax {
     //        PutArgs
     //        Test
     //        JumpUnless(ELSE)
-    //        BindArgs(default)
     //        Evaluate(default)
     //        Jump(END)
     // ELSE:  Noop
@@ -473,7 +659,6 @@ class WithSyntax extends StatementSyntax {
       compiler.append(new JumpUnlessOpcode(END));
     }
 
-    compiler.append(new BindArgsOpcode(this.templates.default.raw));
     compiler.append(new EvaluateOpcode(this.templates.default.raw));
     compiler.append(new JumpOpcode(END));
 
@@ -497,11 +682,11 @@ export function equalsElement(element: Element, tagName: string, attributes: Obj
     expectedCount++;
     let expected = attributes[prop];
 
-    let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equals(expected);
-    expectedAttrs[prop] = expected;
+    let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equalsAttr(expected);
+    expectedAttrs[prop] = matcher;
 
     QUnit.push(
-      attributes[prop].match(element.getAttribute(prop)),
+      expectedAttrs[prop].match(element.getAttribute(prop)),
       matcher.fail(element.getAttribute(prop)),
       matcher.fail(element.getAttribute(prop)),
       `Expected element's ${prop} attribute ${matcher.expected()}`
@@ -537,6 +722,23 @@ interface Matcher {
 
 export const MATCHER = "3d4ef194-13be-4ccf-8dc7-862eea02c93e";
 
+export function equalsAttr(expected) {
+  return {
+    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    match(actual) {
+      return expected[0] === '"' && expected.slice(-1) === '"' && expected.slice(1, -1) === actual;
+    },
+
+    expected() {
+      return `to equal ${expected.slice(1, -1)}`;
+    },
+
+    fail(actual) {
+      return `${actual} did not equal ${expected.slice(1, -1)}`;
+    }
+  };
+}
+
 export function equals(expected) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
@@ -552,7 +754,6 @@ export function equals(expected) {
       return `${actual} did not equal ${expected}`;
     }
   };
-
 }
 
 export function regex(r) {
@@ -574,7 +775,7 @@ export function classes(expected: string) {
   return {
     "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
     match(actual) {
-      return expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' ');
+      return actual && (expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' '));
     },
     expected() {
       return `to include '${expected}'`;

@@ -126,7 +126,6 @@ export default {
   },
 
   PathExpression: function(path) {
-    delete path.data;
     delete path.depth;
 
     return path;

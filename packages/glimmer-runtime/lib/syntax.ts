@@ -1,4 +1,4 @@
-import { Dict, LinkedListNode, Slice } from 'glimmer-util';
+import { Dict, LinkedListNode, Slice, InternedString } from 'glimmer-util';
 import Template from './template';
 import Compiler from './compiler';
 import { Environment } from './environment';
@@ -74,8 +74,10 @@ export const ATTRIBUTE_SYNTAX = "e1185d30-7cac-4b12-b26a-35327d905d92";
 
 export abstract class AttributeSyntax extends StatementSyntax {
   "e1185d30-7cac-4b12-b26a-35327d905d92": boolean;
-  name: string;
-  namespace: string;
+  name: InternedString;
+  namespace: InternedString;
+
+  abstract toLookup(): { syntax: AttributeSyntax, symbol: InternedString };
   abstract valueSyntax(): ExpressionSyntax;
 }
 

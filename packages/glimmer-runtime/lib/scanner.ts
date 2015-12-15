@@ -1,6 +1,7 @@
 import { Program, StatementSyntax } from './syntax';
 import StatementNodes from './syntax/statements';
-import Template, { Block } from './template';
+import Template from './template';
+import { Block } from './syntax/core';
 import SymbolTable from './symbol-table';
 import { EMPTY_SLICE, LinkedList } from 'glimmer-util';
 
@@ -14,7 +15,7 @@ export default class Scanner {
   scan() {
     let { specs } = this;
 
-    let templates = new Array(specs.length);
+    let templates = new Array<Template>(specs.length);
 
     for (let i = 0; i < specs.length; i++) {
       let spec = specs[i];
@@ -28,20 +29,29 @@ export default class Scanner {
         position: i,
         meta: spec.meta,
         locals: spec.locals,
+        named: spec.named,
         isEmpty: spec.statements.length === 0,
         spec: spec
       });
     }
 
     let top = templates[templates.length - 1];
-    initTemplate(top, new SymbolTable(null));
+    let table = top.raw.symbolTable =
+      new SymbolTable(null, top.raw).initNamed(top.raw.named);
+
+    top.children.forEach(t => initTemplate(t, table));
+
     return top;
   }
 }
 
 function initTemplate(template: Template, parent: SymbolTable) {
-  let locals = template.raw.locals;
-  let table = template.raw.symbolTable = (locals ? new SymbolTable(parent).init(locals) : parent);
+  let { locals } = template.raw;
+  let table = parent;
+
+  table = new SymbolTable(parent, template.raw).initPositional(locals);
+
+  template.raw.symbolTable = table;
   template.children.forEach(t => initTemplate(t, table));
 }
 

@@ -1,7 +1,7 @@
 import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { InternedString } from 'glimmer-util';
-import { StaticAttr, DynamicAttr, DynamicProp, Comment } from '../../template';
+import { StaticAttr, DynamicAttr, DynamicProp, Comment } from '../../syntax/core';
 import { ChainableReference } from 'glimmer-reference';
 
 abstract class DOMOpcode implements Opcode {
@@ -98,7 +98,7 @@ export class DynamicAttrOpcode extends DOMOpcode {
 
   evaluate(vm: VM) {
     let { name, namespace } = this;
-    let reference = vm.registers.operand;
+    let reference = vm.frame.getOperand();
     let value = reference.value();
 
     if (this.namespace) {
@@ -157,7 +157,7 @@ export class DynamicPropOpcode extends DOMOpcode {
   evaluate(vm: VM) {
     let { name } = this;
     let element = vm.stack().element;
-    let reference = vm.registers.operand;
+    let reference = vm.frame.getOperand();
     let value = reference.value();
 
     element[<string>name] = value;
@@ -195,7 +195,7 @@ export class AddClassOpcode extends DOMOpcode {
   public type = "add-class";
 
   evaluate(vm: VM) {
-    vm.stack().addClass(vm.registers.operand);
+    vm.stack().addClass(vm.frame.getOperand());
   }
 }
 

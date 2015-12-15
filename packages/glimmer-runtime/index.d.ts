@@ -6,13 +6,15 @@ export {
   default as Syntax
 } from './lib/syntax';
 
+export { default as Template } from './lib/template';
+
 export {
-  default as Template,
   Templates,
   Append,
   Unknown,
   StaticAttr,
   DynamicAttr,
+  DynamicProp,
   AddClass,
   Args as ArgsSyntax,
   NamedArgs as NamedArgsSyntax,
@@ -22,7 +24,9 @@ export {
   OpenElement,
   Helper as HelperSyntax,
   Block as BlockSyntax,
-} from './lib/template';
+  OpenPrimitiveElement as OpenPrimitiveElementSyntax,
+  CloseElement as CloseElementSyntax
+} from './lib/syntax/core';
 
 export {
   default as Compiler,
@@ -48,6 +52,15 @@ export {
   JumpIfOpcode,
   JumpUnlessOpcode,
 } from './lib/compiled/opcodes/vm';
+
+export {
+  OpenComponentOpcode
+} from './lib/compiled/opcodes/component';
+
+
+export {
+  CloseElementOpcode
+} from './lib/compiled/opcodes/dom';
 
 export {
   CompiledArgs,
@@ -79,6 +92,7 @@ export {
   ComponentDefinitionOptions,
   ComponentInvocation,
   ComponentHooks,
+  CompileComponentOptions,
   Component
 } from './lib/component/interfaces';
 

@@ -1,7 +1,9 @@
-import { Opcode, UpdatingOpcode } from '../../opcodes';
+import { Opcode, UpdatingOpcode, UnflattenedOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
+import { BindArgsOpcode, NoopOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
-import { LITERAL, InternedString, ListSlice, Slice, assert } from 'glimmer-util';
+import { ListRange, Range } from '../../utils';
+import { LITERAL, ListSlice, Slice, Dict, InternedString, assert } from 'glimmer-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
 
 abstract class ListOpcode implements Opcode {
@@ -23,25 +25,23 @@ abstract class ListUpdatingOpcode implements UpdatingOpcode {
 export class EnterListOpcode extends ListOpcode {
   public type = "enter-list";
 
-  private begin: Opcode;
-  private end: Opcode;
+  private slice: Slice<Opcode>;
 
-  constructor(begin: Opcode, end: Opcode) {
+  constructor(start: NoopOpcode, end: NoopOpcode) {
     super();
-    this.begin = begin;
-    this.end = end;
+    this.slice = new ListSlice(start, end);
   }
 
   evaluate(vm: VM) {
-    let listRef = vm.registers.operand;
-    let keyPath = vm.registers.args.named.get(LITERAL("key")).value();
+    let listRef = vm.frame.getOperand();
+    let keyPath = vm.frame.getArgs().named.get(LITERAL("key")).value();
 
     let manager =  new ListManager(<RootReference>listRef /* WTF */, keyPath);
     let delegate = new IterateDelegate(vm);
 
-    vm.registers.iterator = manager.iterator(delegate);
+    vm.frame.setIterator(manager.iterator(delegate));
 
-    vm.enterList(manager, new ListSlice(this.begin, this.end));
+    vm.enterList(manager, this.slice);
   }
 }
 
@@ -58,15 +58,18 @@ export class EnterWithKeyOpcode extends ListOpcode {
 
   private slice: Slice<Opcode>;
 
-  constructor(begin: Opcode, end: Opcode) {
+  constructor(start: NoopOpcode, end: NoopOpcode) {
     super();
-    this.slice = new ListSlice(begin, end);
+    this.slice = new ListSlice(start, end);
   }
 
   evaluate(vm: VM) {
-    vm.enterWithKey(vm.registers.key, this.slice);
+    vm.enterWithKey(vm.frame.getKey(), this.slice);
   }
 }
+
+const TRUE_REF = new ConstReference(true);
+const FALSE_REF = new ConstReference(false);
 
 class IterateDelegate implements ListDelegate {
   private vm: VM;
@@ -80,10 +83,10 @@ class IterateDelegate implements ListDelegate {
 
     assert(!before, "Insertion should be append-only on initial render");
 
-    vm.registers.args = EvaluatedArgs.positional([item]);
-    vm.registers.operand = item;
-    vm.registers.condition = new ConstReference(true);
-    vm.registers.key = key;
+    vm.frame.setArgs(EvaluatedArgs.positional([item]));
+    vm.frame.setOperand(item);
+    vm.frame.setCondition(TRUE_REF);
+    vm.frame.setKey(key);
   }
 
   retain(key: InternedString, item: RootReference) {
@@ -99,22 +102,22 @@ class IterateDelegate implements ListDelegate {
   }
 
   done() {
-    this.vm.registers.condition = new ConstReference(false);
+    this.vm.frame.setCondition(FALSE_REF);
   }
 }
 
 export class NextIterOpcode extends ListOpcode {
   public type = "next-iter";
 
-  private end: Opcode;
+  private end: NoopOpcode;
 
-  constructor(end: Opcode) {
+  constructor(end: NoopOpcode) {
     super();
     this.end = end;
   }
 
   evaluate(vm: VM) {
-    if (vm.registers.iterator.next()) {
+    if (vm.frame.getIterator().next()) {
       vm.goto(this.end);
     }
   }
@@ -134,17 +137,3 @@ class ReiterateOpcode extends ListUpdatingOpcode {
     vm.throw(this.initialize);
   }
 }
-
-    // let delegate = new IterateDelegate(vm);
-    // let keyPath = vm.registers.args.hash.get(LITERAL("key")).value();
-
-    // let listRef = vm.registers.operand;
-    // let manager = new ListManager(<RootReference>listRef /* WTF */, keyPath, delegate);
-    // let iterator = vm.registers.iterator = manager.iterator();
-
-    // if (iterator.next()) {
-    //   // vm.updateWith(???);
-    //   vm.goto(this.elseTarget);
-    // } else {
-    //   // vm.updateWith(???);
-    // }

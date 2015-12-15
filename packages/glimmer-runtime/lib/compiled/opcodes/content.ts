@@ -21,7 +21,7 @@ abstract class UpdatingContentOpcode implements UpdatingOpcode {
 
 export class AppendOpcode extends ContentOpcode {
   evaluate(vm: VM) {
-    let reference = vm.registers.operand;
+    let reference = vm.frame.getOperand();
     let value = reference.value();
     let node = vm.stack().appendText(value);
     vm.updateWith(new UpdateAppendOpcode(reference, value, node));
@@ -51,7 +51,7 @@ export class UpdateAppendOpcode extends UpdatingContentOpcode {
 
 export class TrustingAppendOpcode extends ContentOpcode {
   evaluate(vm: VM) {
-    let reference = vm.registers.operand;
+    let reference = vm.frame.getOperand();
     let value = reference.value();
 
     let bounds = vm.stack().insertHTMLBefore(null, value);

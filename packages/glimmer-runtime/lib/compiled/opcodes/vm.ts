@@ -3,7 +3,8 @@ import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
 import { RawTemplate } from '../../compiler';
-import { ListSlice } from 'glimmer-util';
+import { Range } from '../../utils';
+import { ListSlice, Slice, Dict, dict, assign } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
 
 abstract class VMOpcode implements Opcode {
@@ -70,23 +71,38 @@ export class PutArgsOpcode extends VMOpcode {
 export class BindArgsOpcode extends VMOpcode {
   public type = "bind-args";
 
-  private symbols: number[];
+  private positional: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  private named: Dict<number>;
 
   constructor(template: RawTemplate) {
     super();
-    this.symbols = template.locals.map(name => template.symbolTable.get(name));
+
+    if (template.locals) {
+      template.locals.forEach((name, i) => {
+        this.positional[<number>i] = template.symbolTable.get(name);
+      });
+    }
+
+    if (template.isTop() && template.named) {
+      this.named = template.named.reduce(
+        (obj, name) => assign(obj, { [<string>name]: template.symbolTable.get(name) }),
+        dict<number>()
+      );
+    } else {
+      this.named = dict<number>();
+    }
   }
 
   evaluate(vm: VM) {
-    vm.bindArgs(this.symbols);
+    vm.bindArgs(this.positional, this.named);
   }
 }
 
 export class EnterOpcode extends VMOpcode {
   public type = "enter";
-  private slice: ListSlice<Opcode>;
+  private slice: Slice<Opcode>;
 
-  constructor(begin: Opcode, end: Opcode) {
+  constructor(begin: NoopOpcode, end: NoopOpcode) {
     super();
     this.slice = new ListSlice(begin, end);
   }
@@ -107,7 +123,7 @@ export class ExitOpcode extends VMOpcode {
 export class NoopOpcode extends VMOpcode {
   public type = "noop";
 
-  private label: string = null;
+  public label: string = null;
 
   constructor(label?: string) {
     super();
@@ -128,7 +144,8 @@ export class EvaluateOpcode extends VMOpcode {
   }
 
   evaluate(vm: VM) {
-    vm.pushFrame(this.template.opcodes(vm.env));
+    this.template.compile(vm.env);
+    vm.pushFrame(this.template.ops, vm.frame.getArgs());
   }
 }
 
@@ -136,22 +153,22 @@ export class TestOpcode extends VMOpcode {
   public type = "test";
 
   evaluate(vm: VM) {
-    vm.registers.condition = vm.registers.operand;
+    vm.frame.setCondition(vm.frame.getOperand());
   }
 }
 
 export class JumpOpcode extends VMOpcode {
   public type = "jump";
 
-  private target: Opcode;
+  public target: NoopOpcode;
 
-  constructor(target: Opcode) {
+  constructor(target: NoopOpcode) {
     super();
     this.target = target;
   }
 
   evaluate(vm: VM) {
-    vm.goto(this.target);
+    vm.goto(this.target)
   }
 }
 
@@ -159,7 +176,7 @@ export class JumpIfOpcode extends JumpOpcode {
   public type = "jump-if";
 
   evaluate(vm: VM) {
-    let reference = vm.registers.condition;
+    let reference = vm.frame.getCondition();
     let value = reference.value();
 
     if (value) {
@@ -175,7 +192,7 @@ export class JumpUnlessOpcode extends JumpOpcode {
   public type = "jump-unless";
 
   evaluate(vm: VM) {
-    let reference = vm.registers.condition;
+    let reference = vm.frame.getCondition();
     let value = reference.value();
 
     if (value) {

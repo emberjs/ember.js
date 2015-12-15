@@ -1,16 +1,21 @@
 import { InternedString, Slice } from 'glimmer-util';
 
-import Template, {
-  Templates,
-} from '../template';
+import Template from '../template';
 
 import {
-  EvaluatedNamedArgs
+  Templates,
+  Args
+} from '../syntax/core';
+
+import {
+  EvaluatedNamedArgs,
 } from '../compiled/expressions/args';
 
 import {
   AttributeSyntax
 } from '../syntax';
+
+import { RawTemplate } from '../compiler';
 
 export interface ComponentClass {
   new (attrs: Object): Component;
@@ -73,6 +78,13 @@ class NullHooks implements ComponentHooks {
 
 const NULL_HOOKS = new NullHooks();
 
+export interface CompileComponentOptions {
+  syntax: Slice<AttributeSyntax>;
+  args: Args;
+  locals: InternedString[];
+  named: InternedString[];
+}
+
 export abstract class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
@@ -86,14 +98,14 @@ export abstract class ComponentDefinition {
     this.ComponentInvocation = ComponentInvocation;
   }
 
-  abstract compile(attributes: Slice<AttributeSyntax>, yieldTo: Templates): ComponentInvocation;
+  abstract compile(options: CompileComponentOptions, yieldTo: Templates): ComponentInvocation;
 }
 
 export interface ComponentInvocationClass {
-  new(templates: Templates, layout: Template): ComponentInvocation;
+  new(templates: Templates, layout: RawTemplate): ComponentInvocation;
 }
 
 export interface ComponentInvocation {
   templates: Templates;
-  layout: Template;
+  layout: RawTemplate;
 }

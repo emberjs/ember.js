@@ -1,6 +1,6 @@
 import TemplateVisitor from "./template-visitor";
 import { assert } from "./utils";
-import { getAttrNamespace } from "glimmer-util";
+import { getAttrNamespace, dict } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
 
 type Statement = any;
@@ -8,6 +8,7 @@ type Statement = any;
 class Template {
   statements: Statement[] = null;
   locals: string[] = null;
+  named: string[] = null;
   meta: Object = null;
   arity: number = null;
 }
@@ -27,6 +28,7 @@ class JavaScriptCompiler {
   private expressions: Expression[];
   private templates: any[];
   private locals: string[] = null;
+  private namedAttrs = dict<boolean>();
 
   constructor(opcodes) {
     this.opcodes = opcodes;
@@ -50,10 +52,17 @@ class JavaScriptCompiler {
 
   endProgram() {
     let template = new Template();
-    // REFACTOR TODO: meta
+
+    let attrs = Object.keys(this.namedAttrs);
+
     if (this.locals.length) {
       template.locals = this.locals;
       this.locals = [];
+    }
+
+    if (attrs.length) {
+      template.named = attrs;
+      this.namedAttrs = dict<boolean>();
     }
 
     template.statements = this.output;
@@ -129,8 +138,13 @@ class JavaScriptCompiler {
     this.pushValue(value);
   }
 
-  unknown(path: string, unsafe: boolean = null) {
+  unknown(path: string[]) {
     this.pushExpression('unknown', path);
+  }
+
+  attr(path: string[]) {
+    this.namedAttrs[path[0]] = true;
+    this.pushExpression('attr', path);
   }
 
   get(path: string) {
@@ -297,7 +311,9 @@ export default class TemplateCompiler {
   }
 
   mustache([action]) {
-    if (isHelper(action)) {
+    if (action.path.data) {
+      this.attr([action.path]);
+    } else if (isHelper(action)) {
       this.SubExpression(action);
     } else {
       this.ambiguous([action]);
@@ -317,7 +333,9 @@ export default class TemplateCompiler {
 
   attributeMustache([action]) {
     let { path } = action;
-    if (isHelper(action)) {
+    if (path.data) {
+      this.attr([action.path]);
+    } else if (isHelper(action)) {
       this.prepareHelper(action);
       this.opcode('helper', action, path.parts);
     } else if (path.type === 'PathExpression') {
@@ -325,6 +343,17 @@ export default class TemplateCompiler {
     } else {
       this.opcode('literal', action, path.value);
     }
+  }
+
+  attr([path]) {
+    let { parts, data } = path;
+
+    if (data) {
+      parts = parts.slice();
+      parts[0] = `@${parts[0]}`;
+    }
+
+    this.opcode('attr', path, parts);
   }
 
   ambiguous([action]) {
@@ -339,7 +368,11 @@ export default class TemplateCompiler {
   }
 
   PathExpression(expr) {
-    this.opcode('get', expr, expr.parts);
+    if (expr.data) {
+      this.attr([expr]);
+    } else {
+      this.opcode('get', expr, expr.parts);
+    }
   }
 
   StringLiteral(action) {

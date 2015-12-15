@@ -1,12 +1,15 @@
 import { Scope, Environment } from './environment';
 import { Bounds, clear, move } from './bounds';
 import { ElementStack } from './builder';
-import { Stack, LinkedList, LinkedListNode, InternedString, Dict, dict } from 'glimmer-util';
+import { Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
 import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
 import Template from './template';
+import { Templates } from './syntax/core';
+import { RawTemplate } from './compiler';
 import { CompiledExpression } from './compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from './compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
+import { Range } from './utils';
 import DOMHelper from './dom';
 
 interface VMOptions {
@@ -24,15 +27,19 @@ interface Registers {
   templates: Dict<Template>;
 }
 
+interface FrameDidPop {
+  frameDidPop();
+}
+
+type OpList = Range<Opcode>;
+
 export class VM {
   public env: Environment;
-  private frameStack = new Stack<VMFrame>();
   private scopeStack = new Stack<Scope>();
   private elementStack: ElementStack;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-
-  public registers: Registers = null;
+  public frame = new FrameStack();
 
   static initial(env: Environment, { elementStack, self, size }: VMOptions) {
     let scope = env.createRootScope(size).init({ self });
@@ -45,8 +52,8 @@ export class VM {
     this.scopeStack.push(scope);
   }
 
-  goto(opcode: Opcode) {
-    this.frameStack.current.goto(opcode);
+  goto(op: Opcode) {
+    this.frame.goto(op);
   }
 
   enter(ops: OpSeq) {
@@ -109,19 +116,20 @@ export class VM {
     return this.scopeStack.current;
   }
 
-  pushFrame(ops: OpSeq) {
-    this.frameStack.push(new VMFrame(this, ops));
+  pushFrame(ops: OpSeq, args?: EvaluatedArgs, templates?: Templates, frameDidPop?: FrameDidPop) {
+    this.frame.push(ops);
+    if (args) this.frame.setArgs(args);
+    if (templates) this.frame.setTemplates(<any>templates);
+    if (frameDidPop) this.frame.setPopHandler(frameDidPop);
   }
 
   popFrame() {
-    let { frameStack } = this;
+    let { frame } = this;
 
-    frameStack.pop();
-    let current = frameStack.current;
+    frame.pop();
+    let current = frame.getCurrent();
 
     if (current === null) return;
-
-    this.registers = current.registers;
   }
 
   pushChildScope() {
@@ -145,25 +153,20 @@ export class VM {
   /// EXECUTION
 
   execute(opcodes: OpSeq, initialize?: (vm: VM) => void): RenderResult {
-    let { elementStack, frameStack, updatingOpcodeStack, env } = this;
+    let { elementStack, frame, updatingOpcodeStack, env } = this;
     let self = this.scope().getSelf();
 
     elementStack.openBlock();
 
     updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
-    frameStack.push(new VMFrame(this, opcodes));
+    frame.push(opcodes);
 
     if (initialize) initialize(this);
 
-    while (!frameStack.isEmpty()) {
-      let opcode = frameStack.current.nextStatement();
+    let opcode: Opcode;
 
-      if (opcode === null) {
-        this.popFrame();
-        continue;
-      }
-
-      opcode.evaluate(this);
+    while (frame.hasOpcodes()) {
+      if (opcode = frame.nextStatement()) opcode.evaluate(this);
     }
 
     return new RenderResult(updatingOpcodeStack.pop(), elementStack.closeBlock(), env.getDOM(), self);
@@ -173,35 +176,59 @@ export class VM {
     opcode.evaluate(this);
   }
 
-  invoke(template: Template, morph: ReturnHandler) {
+  invoke(template: RawTemplate, args: CompiledArgs, templates: Templates) {
     this.elementStack.openBlock();
-    this.frameStack.push(new VMFrame(this, template.raw.opcodes(this.env)));
+    let evaledArgs = args.evaluate(this);
+    template.compile(this.env);
+    this.pushFrame(template.ops, evaledArgs, templates, this);
+  }
+
+  frameDidPop() {
+    this.elementStack.closeBlock();
   }
 
   evaluateOperand(expr: CompiledExpression) {
-    this.registers.operand = expr.evaluate(this);
+    this.frame.setOperand(expr.evaluate(this));
   }
 
   evaluateArgs(args: CompiledArgs) {
-    let evaledArgs = this.registers.args = args.evaluate(this);
-    this.registers.operand = evaledArgs.positional.at(0);
+    let evaledArgs = this.frame.setArgs(args.evaluate(this));
+    this.frame.setOperand(evaledArgs.positional.at(0));
   }
 
-  bindArgs(symbols: number[]) {
-    let args = this.registers.args.positional;
+  bindArgs(positionalParams: number[], namedParams: Dict<number>) {
+    let args = this.frame.getArgs();
+    if (!args) return;
+
+    let { positional, named } = args;
+
     let scope = this.scope();
 
-    for(let i=0; i<symbols.length; i++) {
-      scope.bindSymbol(symbols[i], args.at(i));
+    if (positionalParams) {
+      for(let i = 0; i < positionalParams.length; i++) {
+        let symbol = positionalParams[i];
+
+        if (symbol !== 0) {
+          scope.bindSymbol(symbol, positional.at(i));
+        }
+      }
+    }
+
+    if (namedParams) {
+      Object.keys(namedParams).forEach(p => {
+        scope.bindSymbol(namedParams[p], named.get(<InternedString>p));
+      });
     }
   }
 
   setTemplates(templates: Dict<Template>) {
-    this.registers.templates = templates;
+    this.frame.setTemplates(templates);
   }
 
   invokeTemplate(name: InternedString) {
-    this.pushFrame(this.registers.templates[<string>name].opcodes(this.env));
+    let template = this.frame.getTemplates()[<string>name].raw;
+    template.compile(this.env);
+    this.pushFrame(template.ops);
   }
 }
 
@@ -344,10 +371,10 @@ class ListRevalidationDelegate implements ListDelegate {
     let tryOpcode;
 
     vm.execute(opcode.ops, vm => {
-      vm.registers.args = EvaluatedArgs.positional([item]);
-      vm.registers.operand = item;
-      vm.registers.condition = new ConstReference(true);
-      vm.registers.key = key;
+      vm.frame.setArgs(EvaluatedArgs.positional([item]));
+      vm.frame.setOperand(item);
+      vm.frame.setCondition(new ConstReference(true));
+      vm.frame.setKey(key);
 
       tryOpcode = new TryOpcode({
         vm,
@@ -514,39 +541,143 @@ interface ReturnHandler {
   setRenderResult(renderResult: RenderResult);
 }
 
-export class VMFrame implements LinkedListNode {
-  public next: VMFrame;
-  public prev: VMFrame;
+class Frame {
+  ops: OpSeq;
+  op: Opcode;
+  operand: PathReference = null;
+  args: EvaluatedArgs = null;
+  condition: ChainableReference = null;
+  iterator: ListIterator = null;
+  key: InternedString = null;
+  templates: Dict<Template> = null;
+  popHandler: FrameDidPop = null;
 
-  private vm: VM;
-  public ops: OpSeq;
-  public current: Opcode;
-  public onReturn: ReturnHandler;
-
-  public registers: Registers = {
-    operand: null,
-    args: null,
-    condition: null,
-    iterator: null,
-    key: null,
-    templates: null
-  };
-
-  constructor(vm: VM, ops: OpSeq) {
-    this.vm = vm;
+  constructor(ops: OpSeq) {
     this.ops = ops;
-    this.current = ops.head();
+    this.op = ops.head();
+  }
+}
 
-    vm.registers = this.registers;
+class FrameStack {
+  private frames: Frame[] = [];
+  private frame: number = undefined;
+
+  push(ops: OpSeq) {
+    let frame = (this.frame === undefined) ? (this.frame = 0) : ++this.frame;
+
+    if (this.frames.length <= frame) {
+      this.frames.push(null);
+    }
+
+    this.frames[frame] = new Frame(ops);
   }
 
-  goto(opcode: Opcode) {
-    this.current = opcode;
+  pop() {
+    let popHandler = this.getPopHandler();
+    if (popHandler) popHandler.frameDidPop();
+
+    let { frames, frame } = this;
+    frames[frame] = null;
+    this.frame = frame === 0 ? undefined : frame - 1;
+  }
+
+  getOps(): OpSeq {
+    return this.frames[this.frame].ops;
+  }
+
+  getCurrent(): Opcode {
+    return this.frames[this.frame].op;
+  }
+
+  setCurrent(op: Opcode): Opcode {
+    return this.frames[this.frame].op = op;
+  }
+
+  getOperand(): PathReference {
+    return this.frames[this.frame].operand;
+  }
+
+  setOperand(operand: PathReference): PathReference {
+    return this.frames[this.frame].operand = operand;
+  }
+
+  getArgs(): EvaluatedArgs {
+    return this.frames[this.frame].args;
+  }
+
+  setArgs(args: EvaluatedArgs): EvaluatedArgs {
+    return this.frames[this.frame].args = args;
+  }
+
+  getCondition(): ChainableReference {
+    return this.frames[this.frame].condition;
+  }
+
+  setCondition(condition: ChainableReference): ChainableReference {
+    return this.frames[this.frame].condition = condition;
+  }
+
+  getIterator(): ListIterator {
+    return this.frames[this.frame].iterator;
+  }
+
+  setIterator(iterator: ListIterator): ListIterator {
+    return this.frames[this.frame].iterator = iterator;
+  }
+
+  getKey(): InternedString {
+    return this.frames[this.frame].key;
+  }
+
+  setKey(key: InternedString): InternedString {
+    return this.frames[this.frame].key = key;
+  }
+
+  getTemplates(): Dict<Template> {
+    return this.frames[this.frame].templates;
+  }
+
+  setTemplates(templates: Dict<Template>): Dict<Template> {
+    return this.frames[this.frame].templates = templates;
+  }
+
+  getPopHandler(): FrameDidPop {
+    return this.frames[this.frame].popHandler;
+  }
+
+  setPopHandler(handler: FrameDidPop): FrameDidPop {
+    return this.frames[this.frame].popHandler = handler;
+  }
+
+  goto(op: Opcode) {
+    this.setCurrent(op);
+  }
+
+  hasOpcodes(): boolean {
+    return this.frame !== undefined;
   }
 
   nextStatement(): Opcode {
-    let { current, ops } = this;
-    if (current) this.current = ops.nextNode(current);
-    return current;
+    let op = this.frames[this.frame].op;
+    let ops = this.getOps();
+
+    if (op) {
+      this.setCurrent(ops.nextNode(op));
+      return op;
+    } else {
+      this.pop();
+      return null;
+    }
   }
+}
+
+enum Slots {
+  Ops = 0,
+  Current = 1,
+  Operand = 2,
+  Args = 3,
+  Condition = 4,
+  Iterator = 5,
+  Key = 6,
+  Templates = 7
 }

@@ -1,4 +1,4 @@
-import { LinkedList, LinkedListNode, Slice } from 'glimmer-util';
+import { LinkedList, LinkedListNode, Slice, Dict } from 'glimmer-util';
 import { VM, UpdatingVM } from './vm';
 
 export interface UpdatingOpcode extends LinkedListNode {
@@ -17,6 +17,14 @@ export abstract class Opcode implements LinkedListNode {
   prev: Opcode = null;
 
   abstract evaluate(vm: VM);
+}
+
+export abstract class UnflattenedOpcode extends Opcode {
+  abstract flatten(list: Opcode[], labels: Dict<number>);
+
+  evaluate() {
+    throw new Error("Unreachable");
+  }
 }
 
 export type OpSeq = Slice<Opcode>;

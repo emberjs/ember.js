@@ -15,7 +15,7 @@ export function buildBlock(path, params?, hash?, program?, inverse?, loc?) {
   return {
     type: "BlockStatement",
     path: buildPath(path),
-    params: params || [],
+    params: params ? params.map(buildPath) : [],
     hash: hash || buildHash([]),
     program: program || null,
     inverse: inverse || null,
@@ -116,15 +116,14 @@ export function buildSexpr(path, params?, hash?) {
 }
 
 export function buildPath(original) {
-  if (typeof original === 'string') {
-    return {
-      type: "PathExpression",
-      original: original,
-      parts: original.split('.')
-    };
-  } else {
-    return original;
-  }
+  if (typeof original !== 'string') return original;
+
+  return {
+    type: "PathExpression",
+    original: original,
+    parts: original.split('.'),
+    data: false
+  };
 }
 
 export function buildString(value) {
