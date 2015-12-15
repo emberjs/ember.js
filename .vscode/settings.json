@@ -14,7 +14,7 @@
     "dist": true,
     "tmp": true
   },
-  "files.trimTrailingWhitespace": false,
+  "files.trimTrailingWhitespace": true,
   "editor.renderWhitespace": true,
   "editor.insertSpaces": true
 }
