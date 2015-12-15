@@ -7,7 +7,6 @@ import { info } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-import isEnabled from 'ember-metal/features';
 
 topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
@@ -120,11 +119,7 @@ export default {
       ViewClass = env.owner._lookupFactory('view:toplevel');
     }
 
-    var Component;
-
-    if (isEnabled('ember-routing-routable-components')) {
-      Component = outletState.render.Component;
-    }
+    var Component = outletState.render.Component;
 
     var options;
     var attrs = {};
