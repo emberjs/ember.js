@@ -3,7 +3,7 @@ import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
 import { RawTemplate } from '../../compiler';
-import { Range } from '../../utils';
+import { Range, turbocharge } from '../../utils';
 import { ListSlice, Slice, Dict, dict, assign } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
 
@@ -68,33 +68,44 @@ export class PutArgsOpcode extends VMOpcode {
   }
 }
 
-export class BindArgsOpcode extends VMOpcode {
-  public type = "bind-args";
+export class BindPositionalArgsOpcode extends VMOpcode {
+  public type = "bind-positional-args";
 
-  private positional: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  private positional: number[];
+
+  constructor(template: RawTemplate) {
+    super();
+    
+    let positional = this.positional = [];
+
+    template.locals.forEach((name) => {
+      positional.push(template.symbolTable.get(name));
+    });
+  }
+
+  evaluate(vm: VM) {
+    vm.bindPositionalArgs(this.positional);
+  }
+}
+
+export class BindNamedArgsOpcode extends VMOpcode {
+  public type = "bind-named-args";
+
   private named: Dict<number>;
 
   constructor(template: RawTemplate) {
     super();
 
-    if (template.locals) {
-      template.locals.forEach((name, i) => {
-        this.positional[<number>i] = template.symbolTable.get(name);
-      });
-    }
+    let named = this.named = template.named.reduce(
+      (obj, name) => assign(obj, { [<string>name]: template.symbolTable.get(name) }),
+      dict<number>()
+    );
 
-    if (template.isTop() && template.named) {
-      this.named = template.named.reduce(
-        (obj, name) => assign(obj, { [<string>name]: template.symbolTable.get(name) }),
-        dict<number>()
-      );
-    } else {
-      this.named = dict<number>();
-    }
+    turbocharge(named);
   }
 
   evaluate(vm: VM) {
-    vm.bindArgs(this.positional, this.named);
+    vm.bindNamedArgs(this.named);
   }
 }
 

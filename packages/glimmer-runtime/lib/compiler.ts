@@ -1,6 +1,6 @@
 import { Slice, ListSlice, LinkedList, InternedString, assert, dict } from 'glimmer-util';
 import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
-import { BindArgsOpcode } from './compiled/opcodes/vm';
+import { BindNamedArgsOpcode, BindPositionalArgsOpcode } from './compiled/opcodes/vm';
 import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax } from './syntax';
 import { Environment } from './environment';
 import Template from './template';
@@ -58,8 +58,12 @@ export class RawTemplate {
     return this.symbolTable.isTop();
   }
 
-  hasLocals(): boolean {
-    return !!(this.locals || this.named);
+  hasPositionalArgs(): boolean {
+    return !!(this.locals);
+  }
+
+  hasNamedArgs(): boolean {
+    return !!(this.named);
   }
 }
 
@@ -82,7 +86,13 @@ export default class Compiler {
     let { template, ops, env } = this;
     let { program } = template;
 
-    if (template.hasLocals()) ops.append(new BindArgsOpcode(this.template));
+    if (template.hasPositionalArgs()) {
+      ops.append(new BindPositionalArgsOpcode(this.template));
+    }
+
+    if (template.hasNamedArgs() && template.isTop()) {
+      ops.append(new BindNamedArgsOpcode(this.template));
+    }
 
     while (this.current) {
       let current = this.current;

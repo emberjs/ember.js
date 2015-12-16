@@ -195,29 +195,31 @@ export class VM {
     let evaledArgs = this.frame.setArgs(args.evaluate(this));
     this.frame.setOperand(evaledArgs.positional.at(0));
   }
-
-  bindArgs(positionalParams: number[], namedParams: Dict<number>) {
+  
+  bindPositionalArgs(entries: number[]) {
     let args = this.frame.getArgs();
     if (!args) return;
 
-    let { positional, named } = args;
+    let { positional } = args;
 
     let scope = this.scope();
 
-    if (positionalParams) {
-      for(let i = 0; i < positionalParams.length; i++) {
-        let symbol = positionalParams[i];
-
-        if (symbol !== 0) {
-          scope.bindSymbol(symbol, positional.at(i));
-        }
-      }
+    for(let i=0; i < entries.length; i++) {
+      scope.bindSymbol(entries[i], positional.at(i));
     }
+  }
 
-    if (namedParams) {
-      Object.keys(namedParams).forEach(p => {
-        scope.bindSymbol(namedParams[p], named.get(<InternedString>p));
-      });
+  bindNamedArgs(entries: Dict<number>) {
+    let args = this.frame.getArgs();
+    if (!args) return;
+
+    let { named } = args;
+
+    let keys = Object.keys(entries);
+    let scope = this.scope();
+
+    for(let i=0; i < keys.length; i++) {
+      scope.bindSymbol(entries[i], named.get(<InternedString>keys[i]));
     }
   }
 
