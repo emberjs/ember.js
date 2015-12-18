@@ -54,7 +54,8 @@ import {
   filterBy,
   uniq,
   union,
-  intersect
+  intersect,
+  collect
 } from 'ember-runtime/computed/reduce_computed_macros';
 
 import Controller from 'ember-runtime/controllers/controller';
@@ -118,6 +119,7 @@ EmComputed.filterBy = filterBy;
 EmComputed.uniq = uniq;
 EmComputed.union = union;
 EmComputed.intersect = intersect;
+EmComputed.collect = collect;
 
 Ember.String = EmberStringUtils;
 Ember.Object = EmberObject;
