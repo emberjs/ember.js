@@ -131,8 +131,7 @@ import {
   deprecatingAlias,
   and,
   or,
-  any,
-  collect
+  any
 } from 'ember-metal/computed_macros';
 
 computed.empty = empty;
@@ -155,7 +154,6 @@ computed.deprecatingAlias = deprecatingAlias;
 computed.and = and;
 computed.or = or;
 computed.any = any;
-computed.collect = collect;
 
 import {
   _suspendObserver,
