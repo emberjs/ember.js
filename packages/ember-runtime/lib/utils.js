@@ -20,14 +20,14 @@ var toString = Object.prototype.toString;
 /**
   Returns true if the passed object is an array or Array-like.
 
-  Ember Array Protocol:
+  Objects are considered Array-like if any of the following are true:
 
-    - the object has an objectAt property
     - the object is a native Array
+    - the object has an objectAt property
     - the object is an Object, and has a length property
 
   Unlike `Ember.typeOf` this method returns true even if the passed object is
-  not formally array but appears to be array-like (i.e. implements `Ember.Array`)
+  not formally an array but appears to be array-like (i.e. implements `Ember.Array`)
 
   ```javascript
   Ember.isArray();                                          // false
@@ -53,7 +53,7 @@ export function isArray(obj) {
 }
 
 /**
-  Returns a consistent type for the passed item.
+  Returns a consistent type for the passed object.
 
   Use this instead of the built-in `typeof` to get the type of an item.
   It will return the same result across all browsers and includes a bit
