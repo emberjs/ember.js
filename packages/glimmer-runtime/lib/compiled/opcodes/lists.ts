@@ -1,18 +1,9 @@
-import { Opcode, UpdatingOpcode, UnflattenedOpcode } from '../../opcodes';
+import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { BindArgsOpcode, NoopOpcode } from '../../compiled/opcodes/vm';
+import { NoopOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
-import { ListRange, Range } from '../../utils';
-import { LITERAL, ListSlice, Slice, Dict, InternedString, assert } from 'glimmer-util';
+import { LITERAL, ListSlice, Slice, InternedString, assert } from 'glimmer-util';
 import { RootReference, ConstReference, ListManager, ListDelegate } from 'glimmer-reference';
-
-abstract class ListOpcode implements Opcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: VM);
-}
 
 abstract class ListUpdatingOpcode implements UpdatingOpcode {
   public type: string;
@@ -22,10 +13,10 @@ abstract class ListUpdatingOpcode implements UpdatingOpcode {
   abstract evaluate(vm: UpdatingVM);
 }
 
-export class EnterListOpcode extends ListOpcode {
+export class EnterListOpcode extends Opcode {
   public type = "enter-list";
 
-  private slice: Slice<Opcode>;
+  public slice: Slice<Opcode>;
 
   constructor(start: NoopOpcode, end: NoopOpcode) {
     super();
@@ -45,7 +36,7 @@ export class EnterListOpcode extends ListOpcode {
   }
 }
 
-export class ExitListOpcode extends ListOpcode {
+export class ExitListOpcode extends Opcode {
   public type = "exit-list";
 
   evaluate(vm: VM) {
@@ -53,7 +44,7 @@ export class ExitListOpcode extends ListOpcode {
   }
 }
 
-export class EnterWithKeyOpcode extends ListOpcode {
+export class EnterWithKeyOpcode extends Opcode {
   public type = "enter-with-key";
 
   private slice: Slice<Opcode>;
@@ -106,7 +97,7 @@ class IterateDelegate implements ListDelegate {
   }
 }
 
-export class NextIterOpcode extends ListOpcode {
+export class NextIterOpcode extends Opcode {
   public type = "next-iter";
 
   private end: NoopOpcode;
