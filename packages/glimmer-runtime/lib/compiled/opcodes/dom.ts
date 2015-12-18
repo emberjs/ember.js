@@ -1,16 +1,8 @@
 import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { InternedString } from 'glimmer-util';
-import { StaticAttr, DynamicAttr, DynamicProp, Comment } from '../../syntax/core';
 import { ChainableReference } from 'glimmer-reference';
 
-abstract class DOMOpcode implements Opcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: VM);
-}
 
 abstract class DOMUpdatingOpcode implements UpdatingOpcode {
   public type: string;
@@ -20,11 +12,11 @@ abstract class DOMUpdatingOpcode implements UpdatingOpcode {
   abstract evaluate(vm: UpdatingVM);
 }
 
-export class TextOpcode extends DOMOpcode {
+export class TextOpcode extends Opcode {
   public type = "text";
-  private text: InternedString;
+  public text: InternedString;
 
-  constructor(text: InternedString) {
+  constructor({ text }: { text: InternedString }) {
     super();
     this.text = text;
   }
@@ -34,11 +26,11 @@ export class TextOpcode extends DOMOpcode {
   }
 }
 
-export class OpenPrimitiveElementOpcode extends DOMOpcode {
+export class OpenPrimitiveElementOpcode extends Opcode {
   public type = "open-primitive-element";
-  private tag: InternedString;
+  public tag: InternedString;
 
-  constructor(tag: InternedString) {
+  constructor({ tag }: { tag: InternedString }) {
     super();
     this.tag = tag;
   }
@@ -48,7 +40,7 @@ export class OpenPrimitiveElementOpcode extends DOMOpcode {
   }
 }
 
-export class CloseElementOpcode extends DOMOpcode {
+export class CloseElementOpcode extends Opcode {
   public type = "close-element";
 
   evaluate(vm: VM) {
@@ -60,17 +52,17 @@ export class CloseElementOpcode extends DOMOpcode {
   }
 }
 
-export class StaticAttrOpcode extends DOMOpcode {
+export class StaticAttrOpcode extends Opcode {
   public type = "static-attr";
   public name: InternedString;
   public value: InternedString;
   public namespace: InternedString;
 
-  constructor(attr: StaticAttr) {
+  constructor({ name, value, namespace }: { name: InternedString, value: InternedString, namespace: InternedString }) {
     super();
-    this.name = attr.name;
-    this.value = attr.value;
-    this.namespace = attr.namespace;
+    this.name = name;
+    this.value = value;
+    this.namespace = namespace;
   }
 
   evaluate(vm: VM) {
@@ -84,16 +76,15 @@ export class StaticAttrOpcode extends DOMOpcode {
   }
 }
 
-export class DynamicAttrOpcode extends DOMOpcode {
+export class DynamicAttrOpcode extends Opcode {
   public type = "dynamic-attr";
   public name: InternedString;
-  public value: InternedString;
   public namespace: InternedString;
 
-  constructor(attr: DynamicAttr) {
+  constructor({ name, namespace }: { name: InternedString, namespace: InternedString }) {
     super();
-    this.name = attr.name;
-    this.namespace = attr.namespace;
+    this.name = name;
+    this.namespace = namespace;
   }
 
   evaluate(vm: VM) {
@@ -144,14 +135,13 @@ export class UpdateAttributeOpcode extends DOMUpdatingOpcode {
   }
 }
 
-export class DynamicPropOpcode extends DOMOpcode {
+export class DynamicPropOpcode extends Opcode {
   public type = "dynamic-prop";
   public name: InternedString;
-  public value: InternedString;
 
-  constructor(attr: DynamicProp) {
+  constructor({ name }: { name: InternedString }) {
     super();
-    this.name = attr.name;
+    this.name = name;
   }
 
   evaluate(vm: VM) {
@@ -191,7 +181,7 @@ export class UpdatePropertyOpcode extends DOMUpdatingOpcode {
   }
 }
 
-export class AddClassOpcode extends DOMOpcode {
+export class AddClassOpcode extends Opcode {
   public type = "add-class";
 
   evaluate(vm: VM) {
@@ -199,16 +189,16 @@ export class AddClassOpcode extends DOMOpcode {
   }
 }
 
-export class CommentOpcode extends DOMOpcode {
+export class CommentOpcode extends Opcode {
   public type = "comment";
-  public value: InternedString;
+  public comment: InternedString;
 
-  constructor(comment: Comment) {
+  constructor({ comment }: { comment: InternedString }) {
     super();
-    this.value = comment.value;
+    this.comment = comment;
   }
 
   evaluate(vm: VM) {
-    vm.stack().appendComment(this.value);
+    vm.stack().appendComment(this.comment);
   }
 }

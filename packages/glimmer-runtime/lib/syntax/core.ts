@@ -1,5 +1,5 @@
 import { VM } from '../vm';
-import Compiler from '../compiler';
+import { CompileInto as Compiler } from '../syntax';
 
 import Template from '../template';
 
@@ -20,7 +20,8 @@ import {
 } from '../compiled/opcodes/vm';
 
 import {
-  OpenComponentOpcode
+  OpenComponentOpcode,
+  CloseComponentOpcode
 } from '../compiled/opcodes/component';
 
 import {
@@ -169,11 +170,11 @@ export class Unknown extends ExpressionSyntax {
     this.trustingMorph = !!options.unsafe;
   }
 
-  compile(compiler: Compiler): CompiledExpression {
+  compile(compiler: Compiler, env: Environment): CompiledExpression {
     let { ref } = this;
 
-    if (compiler.env.hasHelper(ref.parts)) {
-      return new CompiledHelper({ helper: compiler.env.lookupHelper(ref.parts), args: CompiledArgs.empty() });
+    if (env.hasHelper(ref.parts)) {
+      return new CompiledHelper({ helper: env.lookupHelper(ref.parts), args: CompiledArgs.empty() });
     } else {
       return this.ref.compile(compiler);
     }
@@ -213,8 +214,8 @@ export class Append extends StatementSyntax {
     return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new PutValue(this.value.compile(compiler)));
+  compile(compiler: Compiler, env: Environment) {
+    compiler.append(new PutValue(this.value.compile(compiler, env)));
 
     if (this.trustingMorph) {
       compiler.append(new TrustingAppendOpcode());
@@ -310,8 +311,8 @@ export class DynamicProp extends AttributeSyntax {
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new PutValue(this.value.compile(compiler)));
+  compile(compiler: Compiler, env: Environment) {
+    compiler.append(new PutValue(this.value.compile(compiler, env)));
     compiler.append(new DynamicPropOpcode(this));
   }
 
@@ -423,8 +424,8 @@ export class DynamicAttr extends AttributeSyntax {
     }
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new PutValue(this.value.compile(compiler)));
+  compile(compiler: Compiler, env: Environment) {
+    compiler.append(new PutValue(this.value.compile(compiler, env)));
     compiler.append(new DynamicAttrOpcode(this));
   }
 
@@ -468,8 +469,8 @@ export class AddClass extends AttributeSyntax {
     return new PrettyPrint('attr', 'attr', ['class', this.value.prettyPrint()]);
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new PutValue(this.value.compile(compiler)));
+  compile(compiler: Compiler, env: Environment) {
+    compiler.append(new PutValue(this.value.compile(compiler, env)));
     compiler.append(new AddClassOpcode());
   }
 
@@ -532,7 +533,7 @@ export class Text extends StatementSyntax {
   }
 
   compile(compiler: Compiler) {
-    compiler.append(new TextOpcode(this.content));
+    compiler.append(new TextOpcode({ text: this.content }));
   }
 }
 
@@ -551,15 +552,15 @@ export class Comment extends StatementSyntax {
     return new this({ value: intern(value) });
   }
 
-  public value: InternedString;
+  public comment: InternedString;
 
   constructor(options) {
     super();
-    this.value = options.value;
+    this.comment = options.value;
   }
 
   prettyPrint() {
-    return new PrettyPrint('append', 'append-comment', [this.value]);
+    return new PrettyPrint('append', 'append-comment', [this.comment]);
   }
 
   compile(compiler: Compiler) {
@@ -606,8 +607,8 @@ export class OpenElement extends StatementSyntax {
       let template = compiler.templateFromTagContents();
       let templates = new Templates({ template, inverse: null });
 
-      debugger;
       compiler.append(new OpenComponentOpcode(component.compile(lookup, templates), namedArgs.compile(compiler)));
+      compiler.append(new CloseComponentOpcode());
     } else {
       compiler.append(new OpenPrimitiveElementOpcode(this.tag));
     }

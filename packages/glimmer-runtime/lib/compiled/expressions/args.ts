@@ -76,6 +76,7 @@ export abstract class EvaluatedArgs {
   public type: string;
   public positional: EvaluatedPositionalArgs;
   public named: EvaluatedNamedArgs;
+  public internal: Object;
 }
 
 class NonEmptyEvaluatedArgs extends EvaluatedArgs {
@@ -83,12 +84,14 @@ class NonEmptyEvaluatedArgs extends EvaluatedArgs {
     super();
     this.positional = positional;
     this.named = named;
+    this.internal = null;
   }
 }
 
 export const EMPTY_EVALUATED_ARGS = new (class extends EvaluatedArgs {
   public positional = EVALUATED_EMPTY_POSITIONAL_ARGS;
   public named = EVALUATED_EMPTY_NAMED_ARGS;
+  public internal = null;
 });
 
 export { CompiledPositionalArgs, EvaluatedPositionalArgs, CompiledNamedArgs, EvaluatedNamedArgs };

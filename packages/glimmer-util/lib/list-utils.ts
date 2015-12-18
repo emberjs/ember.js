@@ -21,6 +21,10 @@ export class ListNode<T> implements LinkedListNode {
 // themselves T. However, it will always be true, so trust us.
 type trust = any;
 
+function clone<T extends CloneableListNode>(node: T): T {
+  return node.clone();
+}
+
 export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   static fromSlice<U extends CloneableListNode>(slice: Slice<U>): LinkedList<U> {
     let list = new LinkedList<U>();
@@ -35,14 +39,17 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
     this.clear();
   }
 
-  clone(callback: (input: T) => T): LinkedList<T> {
+  clone<T extends CloneableListNode>(): this & LinkedList<T>;
+  clone(callback: (input: this) => this): this & LinkedList<T>;
+
+  clone(callback?): this {
     let cloned = new LinkedList<T>();
 
-    this.forEachNode(node => {
-      cloned.append(callback(node));
-    });
+    callback = callback || clone;
 
-    return cloned;
+    this.forEachNode(node => cloned.append(callback(node)));
+
+    return <this>cloned;
   }
 
   head(): T {
@@ -173,7 +180,7 @@ export interface Slice<T extends LinkedListNode> {
   isEmpty(): boolean;
 }
 
-interface CloneableListNode extends LinkedListNode {
+export interface CloneableListNode extends LinkedListNode {
   clone(): this;
 }
 

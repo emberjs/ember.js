@@ -3,14 +3,6 @@ import { VM, UpdatingVM } from '../../vm';
 import { PathReference } from 'glimmer-reference';
 import Bounds, { clear } from '../../bounds';
 
-abstract class ContentOpcode implements Opcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: VM);
-}
-
 abstract class UpdatingContentOpcode implements UpdatingOpcode {
   public type: string;
   public next = null;
@@ -19,7 +11,7 @@ abstract class UpdatingContentOpcode implements UpdatingOpcode {
   abstract evaluate(vm: UpdatingVM);
 }
 
-export class AppendOpcode extends ContentOpcode {
+export class AppendOpcode extends Opcode {
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
     let value = reference.value();
@@ -49,7 +41,7 @@ export class UpdateAppendOpcode extends UpdatingContentOpcode {
   }
 }
 
-export class TrustingAppendOpcode extends ContentOpcode {
+export class TrustingAppendOpcode extends Opcode {
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
     let value = reference.value();

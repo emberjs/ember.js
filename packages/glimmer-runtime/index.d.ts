@@ -42,7 +42,6 @@ export {
   PushChildScopeOpcode,
   PopScopeOpcode,
   PutArgsOpcode,
-  BindArgsOpcode,
   NoopOpcode,
   EnterOpcode,
   ExitOpcode,
@@ -54,9 +53,10 @@ export {
 } from './lib/compiled/opcodes/vm';
 
 export {
-  OpenComponentOpcode
+  OpenComponentOpcode,
+  CloseComponentOpcode,
+  ShadowAttributesOpcode
 } from './lib/compiled/opcodes/component';
-
 
 export {
   CloseElementOpcode

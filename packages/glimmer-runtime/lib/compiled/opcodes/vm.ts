@@ -7,14 +7,6 @@ import { Range, turbocharge } from '../../utils';
 import { ListSlice, Slice, Dict, dict, assign } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
 
-abstract class VMOpcode implements Opcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: VM);
-}
-
 abstract class VMUpdatingOpcode implements UpdatingOpcode {
   public type: string;
   public next = null;
@@ -23,7 +15,7 @@ abstract class VMUpdatingOpcode implements UpdatingOpcode {
   abstract evaluate(vm: UpdatingVM);
 }
 
-export class PushChildScopeOpcode extends VMOpcode {
+export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
 
   evaluate(vm: VM) {
@@ -31,7 +23,21 @@ export class PushChildScopeOpcode extends VMOpcode {
   }
 }
 
-export class PopScopeOpcode extends VMOpcode {
+export class PushRootScopeOpcode extends Opcode {
+  public type = "push-root-scope";
+  public size: number;
+
+  constructor(size: number) {
+    super();
+    this.size = size;
+  }
+
+  evaluate(vm: VM) {
+    vm.pushRootScope(this.size);
+  }
+}
+
+export class PopScopeOpcode extends Opcode {
   public type = "pop-scope";
 
   evaluate(vm: VM) {
@@ -39,7 +45,7 @@ export class PopScopeOpcode extends VMOpcode {
   }
 }
 
-export class PutValue extends VMOpcode {
+export class PutValue extends Opcode {
   public type = "put-value";
   private expression: CompiledExpression;
 
@@ -53,7 +59,7 @@ export class PutValue extends VMOpcode {
   }
 }
 
-export class PutArgsOpcode extends VMOpcode {
+export class PutArgsOpcode extends Opcode {
   public type = "put-args";
 
   private args: CompiledArgs;
@@ -68,14 +74,14 @@ export class PutArgsOpcode extends VMOpcode {
   }
 }
 
-export class BindPositionalArgsOpcode extends VMOpcode {
+export class BindPositionalArgsOpcode extends Opcode {
   public type = "bind-positional-args";
 
   private positional: number[];
 
   constructor(template: RawTemplate) {
     super();
-    
+
     let positional = this.positional = [];
 
     template.locals.forEach((name) => {
@@ -88,7 +94,7 @@ export class BindPositionalArgsOpcode extends VMOpcode {
   }
 }
 
-export class BindNamedArgsOpcode extends VMOpcode {
+export class BindNamedArgsOpcode extends Opcode {
   public type = "bind-named-args";
 
   private named: Dict<number>;
@@ -109,7 +115,7 @@ export class BindNamedArgsOpcode extends VMOpcode {
   }
 }
 
-export class EnterOpcode extends VMOpcode {
+export class EnterOpcode extends Opcode {
   public type = "enter";
   private slice: Slice<Opcode>;
 
@@ -123,7 +129,7 @@ export class EnterOpcode extends VMOpcode {
   }
 }
 
-export class ExitOpcode extends VMOpcode {
+export class ExitOpcode extends Opcode {
   public type = "exit";
 
   evaluate(vm: VM) {
@@ -131,7 +137,7 @@ export class ExitOpcode extends VMOpcode {
   }
 }
 
-export class NoopOpcode extends VMOpcode {
+export class NoopOpcode extends Opcode {
   public type = "noop";
 
   public label: string = null;
@@ -145,7 +151,7 @@ export class NoopOpcode extends VMOpcode {
   }
 }
 
-export class EvaluateOpcode extends VMOpcode {
+export class EvaluateOpcode extends Opcode {
   public type = "evaluate";
   private template: RawTemplate;
 
@@ -160,7 +166,7 @@ export class EvaluateOpcode extends VMOpcode {
   }
 }
 
-export class TestOpcode extends VMOpcode {
+export class TestOpcode extends Opcode {
   public type = "test";
 
   evaluate(vm: VM) {
@@ -168,7 +174,7 @@ export class TestOpcode extends VMOpcode {
   }
 }
 
-export class JumpOpcode extends VMOpcode {
+export class JumpOpcode extends Opcode {
   public type = "jump";
 
   public target: NoopOpcode;

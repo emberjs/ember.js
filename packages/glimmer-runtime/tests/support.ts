@@ -23,6 +23,7 @@ import {
   JumpUnlessOpcode,
   NextIterOpcode,
   OpenComponentOpcode,
+  CloseComponentOpcode,
 
   // Components
   ComponentClass,
@@ -233,6 +234,8 @@ class CurlyComponent extends StatementSyntax {
         this.getArgs().compile(compiler)
       )
     );
+
+    compiler.append(new CloseComponentOpcode());
   }
 
   private getLookup(): CompileComponentOptions {

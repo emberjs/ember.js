@@ -1,84 +1,120 @@
-import { Slice, ListSlice, LinkedList, InternedString, assert, dict } from 'glimmer-util';
+import { Slice, ListSlice, LinkedList, InternedString } from 'glimmer-util';
 import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
 import { BindNamedArgsOpcode, BindPositionalArgsOpcode } from './compiled/opcodes/vm';
-import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax } from './syntax';
+import { OpenPrimitiveElementOpcode, CloseElementOpcode } from './compiled/opcodes/dom';
+import { ShadowAttributesOpcode } from './compiled/opcodes/component';
+import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax, CompileInto } from './syntax';
 import { Environment } from './environment';
-import Template from './template';
 import { OpenElement, OpenPrimitiveElement, CloseElement } from './syntax/core';
 import SymbolTable from './symbol-table';
 
 export interface RawTemplateOptions {
-  ops: OpSeq;
   locals: InternedString[];
   named: InternedString[];
   program?: Program;
 }
 
-export class RawTemplate {
+export abstract class RawTemplate {
   public program: Program;
   public ops: OpSeq = null;
   public symbolTable: SymbolTable = null;
   public locals: InternedString[];
   public named: InternedString[];
+}
 
-  constructor({ ops, locals, named, program }: RawTemplateOptions) {
+export interface RawBlockOptions extends RawTemplateOptions {
+  ops: OpSeq;
+}
+
+export class RawBlock extends RawTemplate {
+  constructor({ ops, locals, program }: RawBlockOptions) {
+    super();
     this.ops = ops;
     this.locals = locals;
+    this.program = program || null;
+  }
+
+  compile(env: Environment) {
+    this.ops = this.ops || new BlockCompiler(this, env).compile();
+  }
+
+  hasPositionalParameters(): boolean {
+    return !!this.locals;
+  }
+}
+
+export interface RawEntryPointOptions extends RawTemplateOptions {
+  ops: OpSeq;
+}
+
+export class RawEntryPoint extends RawTemplate {
+  constructor({ ops, named, program }: RawEntryPointOptions) {
+    super();
+    this.ops = ops;
     this.named = named;
     this.program = program || null;
   }
 
-  cloneWith(callback: (builder: LinkedList<StatementSyntax>, table: SymbolTable) => void): RawTemplate {
-    let { program, locals, named } = this;
-
-    let newProgram = LinkedList.fromSlice(program);
-
-    let template = new RawTemplate({
-      ops: null,
-      locals: locals && locals.slice(),
-      named: named && named.slice(),
-      program: newProgram
-    });
-
-    template.symbolTable = this.symbolTable.cloneFor(template);
-    callback(newProgram, template.symbolTable);
-
-    return template;
-  }
-
   compile(env: Environment) {
-    this.compileSyntax(env);
+    this.ops = this.ops || new EntryPointCompiler(this, env).compile();
   }
 
-  private compileSyntax(env: Environment) {
-    this.ops = this.ops || new Compiler(this, env).compile();
-  }
-
-  isTop(): boolean {
-    return this.symbolTable.isTop();
-  }
-
-  hasPositionalArgs(): boolean {
-    return !!(this.locals);
-  }
-
-  hasNamedArgs(): boolean {
-    return !!(this.named);
+  hasNamedParameters(): boolean {
+    return !!this.named;
   }
 }
 
-export default class Compiler {
+export interface RawLayoutOptions extends RawTemplateOptions {
+  parts: CompiledComponentParts;
+}
+
+export class RawLayout extends RawTemplate {
+  private parts: CompiledComponentParts;
+
+  constructor({ parts, named, program }: RawLayoutOptions) {
+    super();
+    this.parts = parts;
+    // positional params in Ember may want this
+    // this.locals = locals;
+    this.named = named;
+    this.program = program || null;
+  }
+
+  compile(env: Environment) {
+    if (this.ops) return;
+
+    this.parts = this.parts || new LayoutCompiler(this, env).compile();
+    let { tag, preamble, main } = this.parts;
+
+    let ops = new LinkedList<Opcode>();
+    ops.append(new OpenPrimitiveElementOpcode({ tag }));
+    ops.spliceList(preamble.clone(), null);
+    ops.append(new ShadowAttributesOpcode());
+    ops.spliceList(main.clone(), null);
+    ops.append(new CloseElementOpcode());
+  }
+
+  hasNamedParameters(): boolean {
+    return !!this.named;
+  }
+}
+
+abstract class Compiler {
   public env: Environment;
-  private template: RawTemplate;
-  private current: StatementSyntax;
-  private ops: OpSeqBuilder;
-  private symbolTable: SymbolTable;
+  protected template: RawTemplate;
+  protected symbolTable: SymbolTable;
+}
+
+export default Compiler;
+
+export class EntryPointCompiler extends Compiler {
+  private ops: CompileIntoList;
 
   constructor(template: RawTemplate, env: Environment) {
+    super();
     this.env = env;
     this.template = template;
-    this.current = template.program.head();
-    this.ops = new LinkedList<Opcode>();
+    this.ops = new CompileIntoList(template.symbolTable);
     this.symbolTable = template.symbolTable;
   }
 
@@ -86,18 +122,12 @@ export default class Compiler {
     let { template, ops, env } = this;
     let { program } = template;
 
-    if (template.hasPositionalArgs()) {
-      ops.append(new BindPositionalArgsOpcode(this.template));
-    }
+    let current = program.head();
 
-    if (template.hasNamedArgs() && template.isTop()) {
-      ops.append(new BindNamedArgsOpcode(this.template));
-    }
-
-    while (this.current) {
-      let current = this.current;
-      this.current = program.nextNode(current);
-      env.statement(current).compile(this, env);
+    while (current) {
+      let next = program.nextNode(current);
+      env.statement(current).compile(ops, env);
+      current = next;
     }
 
     return ops;
@@ -110,47 +140,150 @@ export default class Compiler {
   getSymbol(name: InternedString): number {
     return this.symbolTable.get(name);
   }
+}
 
-  sliceAttributes(): Slice<AttributeSyntax> {
-    let { template: { program } } = this;
+export class BlockCompiler extends Compiler {
+  private ops: CompileIntoList;
+  protected template: RawBlock;
 
-    let begin: AttributeSyntax = null;
-    let end: AttributeSyntax = null;
-
-    while (this.current[ATTRIBUTE_SYNTAX]) {
-      let current = this.current;
-      this.current = program.nextNode(current);
-      begin = begin || <AttributeSyntax>current;
-      end = <AttributeSyntax>current;
-    }
-
-    return new ListSlice(begin, end);
+  constructor(template: RawBlock, env: Environment) {
+    super();
+    this.env = env;
+    this.template = template;
+    this.ops = new CompileIntoList(template.symbolTable);
+    this.symbolTable = template.symbolTable;
   }
 
-  templateFromTagContents(): Template {
-    let { template: { program } } = this;
+  compile(): CompileIntoList {
+    let { template, ops, env } = this;
+    let { program } = template;
 
-    let begin: StatementSyntax = null;
-    let end: StatementSyntax = null;
-    let nesting = 1;
-
-    while (true) {
-      let current = this.current;
-      this.current = program.nextNode(current);
-
-      if (current instanceof CloseElement && --nesting === 0) {
-        break;
-      }
-
-      begin = begin || current;
-      end = current;
-
-      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
-        nesting++;
-      }
+    if (template.hasPositionalParameters()) {
+      ops.append(new BindPositionalArgsOpcode(this.template));
     }
 
-    let slice = new ListSlice(begin, end);
-    return Template.fromList(ListSlice.toList(slice));
+    let current = program.head();
+
+    while (current) {
+      let next = program.nextNode(current);
+      env.statement(current).compile(ops, env);
+      current = next;
+    }
+
+    return ops;
   }
+}
+
+interface ComponentParts {
+  tag: InternedString;
+  attrs: Slice<AttributeSyntax>;
+  body: Slice<StatementSyntax>;
+}
+
+interface CompiledComponentParts {
+  tag: InternedString;
+  preamble: CompileIntoList;
+  main: CompileIntoList;
+}
+
+export class LayoutCompiler extends Compiler {
+  private preamble: CompileIntoList;
+  private body: CompileIntoList;
+  protected template: RawLayout;
+
+  constructor(template: RawLayout, env: Environment) {
+    super();
+    this.env = env;
+    this.template = template;
+    this.symbolTable = template.symbolTable;
+  }
+
+  compile(): CompiledComponentParts {
+    let { template } = this;
+    let { program } = template;
+
+    let current = program.head();
+
+    while (current.type !== 'open-element') {
+      current = current.next;
+    }
+
+    let { tag, attrs, body } = extractComponent(<any>current);
+    let preamble = this.preamble = new CompileIntoList(this.symbolTable);
+    let main = this.body = new CompileIntoList(this.symbolTable);
+
+    if (template.hasNamedParameters()) {
+      preamble.append(new BindNamedArgsOpcode(this.template));
+    }
+
+    attrs.forEachNode(attr => {
+      attr.compile(preamble, this.env);
+    });
+
+    body.forEachNode(statement => {
+      statement.compile(main, this.env);
+    });
+
+    return { tag, preamble, main };
+  }
+
+  getSymbol(name: InternedString): number {
+    return this.symbolTable.get(name);
+  }
+}
+
+class CompileIntoList extends LinkedList<Opcode> implements CompileInto {
+  private symbolTable: SymbolTable;
+
+  constructor(symbolTable: SymbolTable) {
+    super();
+    this.symbolTable = symbolTable;
+  }
+
+  getSymbol(name: InternedString): number {
+    return this.symbolTable.get(name);
+  }
+}
+
+function extractComponent(head: OpenElement): ComponentParts {
+  let tag = head.tag;
+  let current = head.next;
+
+  let beginAttrs: AttributeSyntax = null;
+  let endAttrs: AttributeSyntax = null;
+
+  while (current[ATTRIBUTE_SYNTAX]) {
+    beginAttrs = beginAttrs || <AttributeSyntax>current;
+    endAttrs = <AttributeSyntax>current;
+    current = current.next;
+  }
+
+  let attrs = new ListSlice(beginAttrs, endAttrs);
+
+  let beginBody: StatementSyntax = null;
+  let endBody: StatementSyntax = null;
+  let nesting = 1;
+
+  while (true) {
+    if (current instanceof CloseElement && --nesting === 0) {
+      break;
+    }
+
+    beginBody = beginBody || current;
+    endBody = current;
+
+    if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
+      nesting++;
+    }
+
+    current = current.next;
+  }
+
+  let body = new ListSlice(beginBody, endBody);
+
+  return {
+    tag,
+    attrs,
+    body
+  };
 }

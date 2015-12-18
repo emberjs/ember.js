@@ -136,6 +136,10 @@ export class VM {
     this.scopeStack.push(this.scopeStack.current.child());
   }
 
+  pushRootScope(size: number) {
+    this.scopeStack.push(this.env.createRootScope(size));
+  }
+
   popScope() {
     this.scopeStack.pop();
   }
@@ -183,6 +187,14 @@ export class VM {
     this.pushFrame(template.ops, evaledArgs, templates, this);
   }
 
+  invokeLayout(template: RawTemplate, args: CompiledArgs, templates: Templates) {
+    this.elementStack.openBlock();
+    let evaledArgs = args.evaluate(this);
+    template.compile(this.env);
+    this.pushRootScope(template.symbolTable.size);
+    this.pushFrame(template.ops, evaledArgs, templates, this);
+  }
+
   frameDidPop() {
     this.elementStack.closeBlock();
   }
@@ -195,7 +207,7 @@ export class VM {
     let evaledArgs = this.frame.setArgs(args.evaluate(this));
     this.frame.setOperand(evaledArgs.positional.at(0));
   }
-  
+
   bindPositionalArgs(entries: number[]) {
     let args = this.frame.getArgs();
     if (!args) return;
@@ -219,7 +231,7 @@ export class VM {
     let scope = this.scope();
 
     for(let i=0; i < keys.length; i++) {
-      scope.bindSymbol(entries[i], named.get(<InternedString>keys[i]));
+      scope.bindSymbol(entries[keys[i]], named.get(<InternedString>keys[i]));
     }
   }
 

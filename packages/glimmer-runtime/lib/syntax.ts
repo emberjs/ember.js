@@ -3,6 +3,7 @@ import Template from './template';
 import Compiler from './compiler';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
+import { Opcode } from './opcodes';
 
 export type PrettyPrintValue = PrettyPrint | string | string[] | PrettyPrintValueArray | PrettyPrintValueDict;
 
@@ -50,6 +51,11 @@ abstract class Syntax<T extends LinkedListNode> implements LinkedListNode {
 
 export default Syntax;
 
+export interface CompileInto {
+  append(op: Opcode);
+  getSymbol(name: InternedString): number;
+}
+
 export abstract class StatementSyntax extends Syntax<StatementSyntax> {
   static fromSpec(spec: any, templates: Template[]): StatementSyntax {
     throw new Error(`You need to implement fromSpec on ${this}`);
@@ -65,7 +71,7 @@ export abstract class StatementSyntax extends Syntax<StatementSyntax> {
     return new (<new (any) => any>this.constructor)(this);
   }
 
-  abstract compile(opcodes: Compiler, env: Environment);
+  abstract compile(opcodes: CompileInto, env: Environment);
 }
 
 export type Program = Slice<StatementSyntax>;
@@ -88,5 +94,5 @@ export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {
     return `${this.type}`;
   }
 
-  abstract compile(compiler: Compiler): CompiledExpression;
+  abstract compile(compiler: CompileInto, env: Environment): CompiledExpression;
 }
