@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### v2.3.0-beta.3 (December 19, 2015)
+
+- [#12659](https://github.com/emberjs/ember.js/pull/12659) [BUGFIX] Update HTMLBars to 0.14.7.
+- [#12666](https://github.com/emberjs/ember.js/pull/12666) [BUGFIX] Prevent triggering V8 memory leak bug through registry / resolver access.
+- [#12677](https://github.com/emberjs/ember.js/pull/12677) [BUGFIX] Remove FastBoot monkeypatches.
+- [#12680](https://github.com/emberjs/ember.js/pull/12680) [BUGFIX] Clear cached instances when factories are unregistered.
+- [#12682](https://github.com/emberjs/ember.js/pull/12682) [BUGFIX] Fix rerendering contextual components when invoked with dot syntax and block form.
+- [#12686](https://github.com/emberjs/ember.js/pull/12686) [BUGFIX] Ensure HTML safe warning is not thrown for `null` and `undefined` values.
+- [#12699](https://github.com/emberjs/ember.js/pull/12699) [BUGFIX] Only add deprecated container after create when present (prevents errors when non-extendable factory is frozen after creation).
+- [#12705](https://github.com/emberjs/ember.js/pull/12705) [BUGFIX] Fix FastBoot URL parsing crash.
+- [#12728](https://github.com/emberjs/ember.js/pull/12728) [BUGFIX] Fix incorrect export for `Ember.computed.collect`.
+- [#12731](https://github.com/emberjs/ember.js/pull/12731) [BUGFIX] Ensure `container` can still be provided to `.create` (prevents an error and provides a helpful deprecation).
+
 ### v2.3.0-beta.2 (November 29, 2015)
 
 - [#12626](https://github.com/emberjs/ember.js/pull/12626) [BUGFIX] Fix "rest" style positional params in contextual components when using dot syntax.
