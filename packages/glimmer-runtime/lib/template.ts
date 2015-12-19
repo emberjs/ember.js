@@ -1,23 +1,13 @@
-import { InternedString, LinkedList } from 'glimmer-util';
 import { UpdatableReference } from 'glimmer-reference';
-import { Program, StatementSyntax } from './syntax';
-import { RawTemplate } from './compiler';
+import { SerializedTemplate } from 'glimmer-compiler';
+import { RawEntryPoint, RawLayout } from './compiler';
 import { Environment } from './environment';
 import { ElementStack } from './builder';
 import VM from './vm';
 import Scanner from './scanner';
 
 interface TemplateOptions {
-  meta?: Object;
-  root?: Template[];
-  parent?: Template;
-  children?: Template[];
-  position?: number;
-  locals?: InternedString[];
-  named?: InternedString[];
-  program?: Program;
-  spec?: any;
-  isEmpty?: boolean;
+  raw: RawEntryPoint;
 }
 
 interface RenderOptions {
@@ -30,69 +20,25 @@ interface EvaluateOptions {
 }
 
 export default class Template {
-  static fromSpec(specs: any[]): Template {
+  static fromSpec(specs: SerializedTemplate[]): Template {
     let scanner = new Scanner(specs);
-    return scanner.scan();
-  }
-
-  static fromList(program: Program): Template {
     return new Template({
-      program,
-      root: null,
-      position: null,
-      meta: null,
-      locals: null,
-      isEmpty: program.isEmpty(),
-      spec: null
+      raw: scanner.scanEntryPoint()
     });
   }
 
-  static fromStatements(statements: StatementSyntax[]): Template {
-    let program = new LinkedList<StatementSyntax>();
-    statements.forEach(s => program.append(s));
-
-    return new Template({
-      program,
-      root: null,
-      position: null,
-      meta: null,
-      locals: null,
-      isEmpty: statements.length === 0,
-      spec: null
-    });
+  static layoutFromSpec(specs: SerializedTemplate[]): RawLayout {
+    let scanner = new Scanner(specs);
+    return scanner.scanLayout();
   }
 
-  meta: Object;
-  parent: Template;
-  children: Template[];
-  root: Template[];
-  position: number;
-  arity: number;
-  spec: any[];
-  isEmpty: boolean;
-  raw: RawTemplate;
+  raw: RawEntryPoint;
 
-  constructor({ meta, children, root, position, locals, named, program, spec, isEmpty }: TemplateOptions) {
-    this.meta = meta || {};
-    this.children = children;
-    this.root = root || null;
-    this.position = position === undefined ? null : position;
-    this.arity = locals ? locals.length : 0;
-    this.raw = new RawTemplate({ ops: null, locals, named, program });
-    this.spec = spec || null;
-    this.isEmpty = isEmpty === true ? isEmpty : program.isEmpty();
-    Object.seal(this);
+  constructor({ raw }: TemplateOptions) {
+    this.raw = raw;
   }
 
   prettyPrint() {
-    function pretty(obj) {
-      if (typeof obj.prettyPrint === 'function') return obj.prettyPrint();
-      else throw new Error(`Cannot pretty print ${obj.constructor.name}`);
-    }
-
-    return this.root.map(template => {
-      return template.raw.program.toArray().map(statement => pretty(statement));
-    });
   }
 
   render(self: any, env: Environment, options: RenderOptions, blockArguments: any[]=null) {

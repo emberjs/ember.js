@@ -1,11 +1,19 @@
 import TemplateVisitor from "./template-visitor";
 import { assert } from "./utils";
-import { getAttrNamespace, dict } from "glimmer-util";
+import { InternedString, getAttrNamespace, dict } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
 
 type Statement = any;
 
-class Template {
+export interface SerializedTemplate {
+  statements: Statement[];
+  locals: InternedString[];
+  named: InternedString[];
+  meta: Object;
+  arity: number;
+}
+
+export class Template {
   statements: Statement[] = null;
   locals: string[] = null;
   named: string[] = null;

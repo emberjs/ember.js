@@ -1,7 +1,10 @@
 import {
+  CompileInto,
+
   // Compiler
   Compiler,
   RawTemplate,
+  RawLayout,
 
   // Environment
   Environment,
@@ -54,13 +57,17 @@ import {
   AddClass
 } from "glimmer-runtime";
 
-import { compile as rawCompile } from "glimmer-compiler";
+import { compile as rawCompile, compileLayout as rawCompileLayout } from "glimmer-compiler";
 import { LinkedList, Slice, ListSlice, Dict, InternedString, dict } from 'glimmer-util';
 
 import { Meta } from "glimmer-reference";
 
 export function compile(template: string) {
   return rawCompile(template, { disableComponentGeneration: true });
+}
+
+export function compileLayout(template: string): RawLayout {
+  return rawCompileLayout(template, { disableComponentGeneration: true });
 }
 
 const hooks: ComponentHooks = {
@@ -115,19 +122,19 @@ export class TestEnvironment extends Environment {
 
   registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new GlimmerComponentDefinition(testHooks, Component, compile(layout).raw, GlimmerComponentInvocation);
+    let definition = new GlimmerComponentDefinition(testHooks, Component, compileLayout(layout), GlimmerComponentInvocation);
     return this.registerComponent(name, definition);
   }
 
   registerEmberishComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new EmberishComponentDefinition(testHooks, Component, compile(layout).raw, GlimmerComponentInvocation);
+    let definition = new EmberishComponentDefinition(testHooks, Component, compileLayout(layout), GlimmerComponentInvocation);
     return this.registerComponent(name, definition);
   }
 
   registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): any {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, compile(layout).raw, GlimmerComponentInvocation);
+    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, compileLayout(layout), GlimmerComponentInvocation);
     return this.registerComponent(name, definition);
   }
 
@@ -225,13 +232,13 @@ class CurlyComponent extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto, env: Environment) {
     let lookup = this.getLookup();
 
     compiler.append(
       new OpenComponentOpcode(
         this.component.compile(lookup, this.templates),
-        this.getArgs().compile(compiler)
+        this.getArgs().compile(compiler, env)
       )
     );
 
@@ -476,7 +483,7 @@ class EachSyntax extends StatementSyntax {
     return `#each ${this.args.prettyPrint()}`;
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto, env: Environment) {
     //        PutArgs
     //        EnterList(BEGIN, END)
     // ITER:  Noop
@@ -497,14 +504,14 @@ class EachSyntax extends StatementSyntax {
     let BREAK = new NoopOpcode("BREAK");
     let END = new NoopOpcode("END");
 
-    compiler.append(new PutArgsOpcode(this.args.compile(compiler)));
+    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env)));
     compiler.append(new EnterListOpcode(BEGIN, END));
     compiler.append(ITER);
     compiler.append(new NextIterOpcode(BREAK));
     compiler.append(new EnterWithKeyOpcode(BEGIN, END));
     compiler.append(BEGIN);
     compiler.append(new PushChildScopeOpcode());
-    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+    compiler.append(new EvaluateOpcode(this.templates.default));
     compiler.append(new PopScopeOpcode());
     compiler.append(END);
     compiler.append(new ExitOpcode());
@@ -526,8 +533,8 @@ class IdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+  compile(compiler: CompileInto) {
+    compiler.append(new EvaluateOpcode(this.templates.default));
   }
 }
 
@@ -543,8 +550,8 @@ class RenderInverseIdentitySyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
+  compile(compiler: CompileInto) {
+    compiler.append(new EvaluateOpcode(this.templates.inverse));
   }
 }
 
@@ -565,7 +572,7 @@ class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto, env: Environment) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        PutArgs
@@ -584,18 +591,18 @@ class IfSyntax extends StatementSyntax {
 
     compiler.append(new EnterOpcode(BEGIN, END));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode(this.args.compile(compiler)));
+    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env)));
     compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
       compiler.append(new JumpUnlessOpcode(ELSE));
-      compiler.append(new EvaluateOpcode(this.templates.default.raw));
+      compiler.append(new EvaluateOpcode(this.templates.default));
       compiler.append(new JumpOpcode(END));
       compiler.append(ELSE);
-      compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
+      compiler.append(new EvaluateOpcode(this.templates.inverse));
     } else {
       compiler.append(new JumpUnlessOpcode(END));
-      compiler.append(new EvaluateOpcode(this.templates.default.raw));
+      compiler.append(new EvaluateOpcode(this.templates.default));
     }
 
     compiler.append(END);
@@ -620,7 +627,7 @@ class WithSyntax extends StatementSyntax {
     return `#with ${this.args.prettyPrint()}`;
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto, env: Environment) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        PutArgs
@@ -639,7 +646,7 @@ class WithSyntax extends StatementSyntax {
 
     compiler.append(new EnterOpcode(BEGIN, END));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode(this.args.compile(compiler)));
+    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env)));
     compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
@@ -648,12 +655,12 @@ class WithSyntax extends StatementSyntax {
       compiler.append(new JumpUnlessOpcode(END));
     }
 
-    compiler.append(new EvaluateOpcode(this.templates.default.raw));
+    compiler.append(new EvaluateOpcode(this.templates.default));
     compiler.append(new JumpOpcode(END));
 
     if (this.templates.inverse) {
       compiler.append(ELSE);
-      compiler.append(new EvaluateOpcode(this.templates.inverse.raw));
+      compiler.append(new EvaluateOpcode(this.templates.inverse));
     }
 
     compiler.append(END);

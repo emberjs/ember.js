@@ -1,43 +1,65 @@
 import { Program, StatementSyntax } from './syntax';
 import StatementNodes from './syntax/statements';
-import Template from './template';
 import { Block } from './syntax/core';
 import SymbolTable from './symbol-table';
+import { RawTemplate, RawEntryPoint, RawBlock, RawLayout } from './compiler';
 import { EMPTY_SLICE, LinkedList } from 'glimmer-util';
+import { SerializedTemplate } from 'glimmer-compiler';
 
 export default class Scanner {
-  private specs: any[];
+  private specs: SerializedTemplate[];
 
-  constructor(specs: any[]) {
+  constructor(specs: SerializedTemplate[]) {
     this.specs = specs;
   }
 
-  scan() {
+  scanEntryPoint(): RawEntryPoint {
     let { specs } = this;
 
-    let templates = new Array<Template>(specs.length);
+    let top: RawEntryPoint;
+    let templates = new Array<RawTemplate>(specs.length);
 
     for (let i = 0; i < specs.length; i++) {
       let spec = specs[i];
 
       let { program, children } = buildStatements(spec.statements, templates);
 
-      templates[i] = new Template({
-        program,
-        children,
-        root: templates,
-        position: i,
-        meta: spec.meta,
-        locals: spec.locals,
-        named: spec.named,
-        isEmpty: spec.statements.length === 0,
-        spec: spec
-      });
+      if (i === specs.length - 1) {
+        templates[i] = top = new RawEntryPoint({ children, program });
+      } else {
+        let { locals } = spec;
+        templates[i] = new RawBlock({ children, locals, program });
+      }
     }
 
-    let top = templates[templates.length - 1];
-    let table = top.raw.symbolTable =
-      new SymbolTable(null, top.raw).initNamed(top.raw.named);
+    let table = top.symbolTable = new SymbolTable(null, top);
+
+    top.children.forEach(t => initTemplate(t, table));
+
+    return top;
+  }
+
+  scanLayout(): RawLayout {
+    let { specs } = this;
+
+    let top: RawLayout;
+    let templates = new Array<RawTemplate>(specs.length);
+
+    for (let i = 0; i < specs.length; i++) {
+      let spec = specs[i];
+
+      let { program, children } = buildStatements(spec.statements, templates);
+
+      if (i === specs.length - 1) {
+        let { named } = spec;
+        templates[i] = top = new RawLayout({ children, named, program });
+      } else {
+        let { locals } = spec;
+        templates[i] = new RawBlock({ children, locals, program });
+      }
+    }
+
+    let table = top.symbolTable = new SymbolTable(null, top).initNamed(top.named);
 
     top.children.forEach(t => initTemplate(t, table));
 
@@ -45,21 +67,21 @@ export default class Scanner {
   }
 }
 
-function initTemplate(template: Template, parent: SymbolTable) {
-  let { locals } = template.raw;
+function initTemplate(template: RawTemplate, parent: SymbolTable) {
+  let { locals } = template;
   let table = parent;
 
-  table = new SymbolTable(parent, template.raw).initPositional(locals);
+  table = new SymbolTable(parent, template).initPositional(locals);
 
-  template.raw.symbolTable = table;
+  template.symbolTable = table;
   template.children.forEach(t => initTemplate(t, table));
 }
 
-export function buildStatements(statements: any[], templates: Template[]): { program: Program, children: Template[] } {
+export function buildStatements(statements: any[], templates: RawTemplate[]): { program: Program, children: RawTemplate[] } {
   if (statements.length === 0) { return { program: EMPTY_SLICE, children: [] }; }
 
   let program = new LinkedList<StatementSyntax>();
-  let children: Template[] = [];
+  let children: RawTemplate[] = [];
 
   statements.forEach(s => {
     let Statement: typeof StatementSyntax = StatementNodes(s[0]);

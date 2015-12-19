@@ -9,9 +9,7 @@ import { OpenElement, OpenPrimitiveElement, CloseElement } from './syntax/core';
 import SymbolTable from './symbol-table';
 
 export interface RawTemplateOptions {
-  locals: InternedString[];
-  named: InternedString[];
-  program?: Program;
+  children: RawTemplate[];
 }
 
 export abstract class RawTemplate {
@@ -20,16 +18,23 @@ export abstract class RawTemplate {
   public symbolTable: SymbolTable = null;
   public locals: InternedString[];
   public named: InternedString[];
+  public children: RawTemplate[];
+
+  constructor({ children }: RawTemplateOptions) {
+    this.children = children;
+  }
 }
 
 export interface RawBlockOptions extends RawTemplateOptions {
-  ops: OpSeq;
+  locals: InternedString[];
+  program?: Program;
+  ops?: OpSeq;
 }
 
 export class RawBlock extends RawTemplate {
-  constructor({ ops, locals, program }: RawBlockOptions) {
-    super();
-    this.ops = ops;
+  constructor({ children, ops, locals, program }: RawBlockOptions) {
+    super({ children });
+    this.ops = ops || null;
     this.locals = locals;
     this.program = program || null;
   }
@@ -44,35 +49,33 @@ export class RawBlock extends RawTemplate {
 }
 
 export interface RawEntryPointOptions extends RawTemplateOptions {
-  ops: OpSeq;
+  ops?: OpSeq;
+  program?: Program;
 }
 
 export class RawEntryPoint extends RawTemplate {
-  constructor({ ops, named, program }: RawEntryPointOptions) {
-    super();
-    this.ops = ops;
-    this.named = named;
+  constructor({ children, ops, program }: RawEntryPointOptions) {
+    super({ children });
+    this.ops = ops || null;
     this.program = program || null;
   }
 
   compile(env: Environment) {
     this.ops = this.ops || new EntryPointCompiler(this, env).compile();
   }
-
-  hasNamedParameters(): boolean {
-    return !!this.named;
-  }
 }
 
 export interface RawLayoutOptions extends RawTemplateOptions {
-  parts: CompiledComponentParts;
+  parts?: CompiledComponentParts;
+  named: InternedString[];
+  program?: Program;
 }
 
 export class RawLayout extends RawTemplate {
   private parts: CompiledComponentParts;
 
-  constructor({ parts, named, program }: RawLayoutOptions) {
-    super();
+  constructor({ children, parts, named, program }: RawLayoutOptions) {
+    super({ children });
     this.parts = parts;
     // positional params in Ember may want this
     // this.locals = locals;
@@ -103,6 +106,42 @@ abstract class Compiler {
   public env: Environment;
   protected template: RawTemplate;
   protected symbolTable: SymbolTable;
+  protected current: StatementSyntax;
+
+  constructor(template: RawTemplate, env: Environment) {
+    this.template = template;
+    this.current = template.program.head();
+    this.env = env;
+    this.symbolTable = template.symbolTable;
+  }
+
+  templateFromTagContents(): RawBlock {
+    let { template: { program } } = this;
+
+    let begin: StatementSyntax = null;
+    let end: StatementSyntax = null;
+    let nesting = 1;
+
+    while (true) {
+      let current = this.current;
+      this.current = program.nextNode(current);
+
+      if (current instanceof CloseElement && --nesting === 0) {
+        break;
+      }
+
+      begin = begin || current;
+      end = current;
+
+      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
+        nesting++;
+      }
+    }
+
+    let slice = new ListSlice(begin, end);
+    return Template.fromList(ListSlice.toList(slice));
+  }
+
 }
 
 export default Compiler;
@@ -111,11 +150,8 @@ export class EntryPointCompiler extends Compiler {
   private ops: CompileIntoList;
 
   constructor(template: RawTemplate, env: Environment) {
-    super();
-    this.env = env;
-    this.template = template;
+    super(template, env);
     this.ops = new CompileIntoList(template.symbolTable);
-    this.symbolTable = template.symbolTable;
   }
 
   compile(): OpSeqBuilder {
@@ -145,13 +181,11 @@ export class EntryPointCompiler extends Compiler {
 export class BlockCompiler extends Compiler {
   private ops: CompileIntoList;
   protected template: RawBlock;
+  protected current: StatementSyntax;
 
   constructor(template: RawBlock, env: Environment) {
-    super();
-    this.env = env;
-    this.template = template;
+    super(template, env);
     this.ops = new CompileIntoList(template.symbolTable);
-    this.symbolTable = template.symbolTable;
   }
 
   compile(): CompileIntoList {
@@ -190,13 +224,6 @@ export class LayoutCompiler extends Compiler {
   private preamble: CompileIntoList;
   private body: CompileIntoList;
   protected template: RawLayout;
-
-  constructor(template: RawLayout, env: Environment) {
-    super();
-    this.env = env;
-    this.template = template;
-    this.symbolTable = template.symbolTable;
-  }
 
   compile(): CompiledComponentParts {
     let { template } = this;

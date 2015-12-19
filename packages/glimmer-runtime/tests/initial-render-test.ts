@@ -39,6 +39,7 @@ function module(name: string) {
 module("Initial render - simple content");
 
 test("Simple content gets appended properly", function() {
+  debugger;
   var template = compile("content");
   render(template, {});
 
