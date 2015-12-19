@@ -1,9 +1,9 @@
 import { Dict, LinkedListNode, Slice, InternedString } from 'glimmer-util';
 import Template from './template';
-import Compiler from './compiler';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
 import { Opcode } from './opcodes';
+import { RawTemplate } from './compiler';
 
 export type PrettyPrintValue = PrettyPrint | string | string[] | PrettyPrintValueArray | PrettyPrintValueDict;
 
@@ -36,7 +36,7 @@ export interface PrettyPrintable {
 }
 
 abstract class Syntax<T extends LinkedListNode> implements LinkedListNode {
-  static fromSpec(spec: any, templates: Template[]): Syntax<any> {
+  static fromSpec(spec: any, templates: RawTemplate[]): Syntax<any> {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
@@ -57,7 +57,7 @@ export interface CompileInto {
 }
 
 export abstract class StatementSyntax extends Syntax<StatementSyntax> {
-  static fromSpec(spec: any, templates: Template[]): StatementSyntax {
+  static fromSpec(spec: any, templates: RawTemplate[]): StatementSyntax {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 

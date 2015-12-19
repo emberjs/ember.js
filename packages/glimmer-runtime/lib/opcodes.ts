@@ -1,4 +1,4 @@
-import { LinkedList, LinkedListNode, CloneableListNode, Slice, Dict } from 'glimmer-util';
+import { LinkedList, LinkedListNode, CloneableListNode, Slice } from 'glimmer-util';
 import { VM, UpdatingVM } from './vm';
 
 export interface UpdatingOpcode extends LinkedListNode {

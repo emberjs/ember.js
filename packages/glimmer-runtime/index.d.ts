@@ -2,6 +2,7 @@ export {
   StatementSyntax,
   ExpressionSyntax,
   AttributeSyntax,
+  CompileInto,
   ATTRIBUTE_SYNTAX,
   default as Syntax
 } from './lib/syntax';
@@ -30,7 +31,12 @@ export {
 
 export {
   default as Compiler,
-  RawTemplate
+  RawTemplate,
+  RawTemplateOptions,
+  RawLayout,
+  RawLayoutOptions,
+  RawBlock,
+  RawBlockOptions
 } from './lib/compiler';
 
 export {

@@ -1,15 +1,19 @@
 import { VM } from '../vm';
-import { CompileInto as Compiler } from '../syntax';
 
 import Template from '../template';
 
 import Syntax, {
+  CompileInto,
   AttributeSyntax,
   ExpressionSyntax,
   StatementSyntax,
   PrettyPrintValue,
   PrettyPrint
 } from '../syntax';
+
+import {
+  RawTemplate
+} from '../compiler';
 
 import {
   Opcode
@@ -108,7 +112,7 @@ export interface BlockOptions {
 export class Block extends StatementSyntax {
   public type = "block";
 
-  static fromSpec(sexp: BlockSexp, children: Template[]): Block {
+  static fromSpec(sexp: BlockSexp, children: RawTemplate[]): Block {
     let [, path, params, hash, templateId, inverseId] = sexp;
 
     return new Block({
@@ -133,7 +137,7 @@ export class Block extends StatementSyntax {
     this.templates = options.templates;
   }
 
-  compile(ops: Compiler) {
+  compile(ops: CompileInto) {
     throw new Error("SyntaxError");
   }
 
@@ -170,7 +174,7 @@ export class Unknown extends ExpressionSyntax {
     this.trustingMorph = !!options.unsafe;
   }
 
-  compile(compiler: Compiler, env: Environment): CompiledExpression {
+  compile(compiler: CompileInto, env: Environment): CompiledExpression {
     let { ref } = this;
 
     if (env.hasHelper(ref.parts)) {
@@ -214,7 +218,7 @@ export class Append extends StatementSyntax {
     return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
   }
 
-  compile(compiler: Compiler, env: Environment) {
+  compile(compiler: CompileInto, env: Environment) {
     compiler.append(new PutValue(this.value.compile(compiler, env)));
 
     if (this.trustingMorph) {
@@ -311,7 +315,7 @@ export class DynamicProp extends AttributeSyntax {
     return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
   }
 
-  compile(compiler: Compiler, env: Environment) {
+  compile(compiler: CompileInto, env: Environment) {
     compiler.append(new PutValue(this.value.compile(compiler, env)));
     compiler.append(new DynamicPropOpcode(this));
   }
@@ -365,7 +369,7 @@ export class StaticAttr extends AttributeSyntax {
     }
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto) {
     compiler.append(new StaticAttrOpcode(this));
   }
 
@@ -424,7 +428,7 @@ export class DynamicAttr extends AttributeSyntax {
     }
   }
 
-  compile(compiler: Compiler, env: Environment) {
+  compile(compiler: CompileInto, env: Environment) {
     compiler.append(new PutValue(this.value.compile(compiler, env)));
     compiler.append(new DynamicAttrOpcode(this));
   }
@@ -469,7 +473,7 @@ export class AddClass extends AttributeSyntax {
     return new PrettyPrint('attr', 'attr', ['class', this.value.prettyPrint()]);
   }
 
-  compile(compiler: Compiler, env: Environment) {
+  compile(compiler: CompileInto, env: Environment) {
     compiler.append(new PutValue(this.value.compile(compiler, env)));
     compiler.append(new AddClassOpcode());
   }
@@ -501,7 +505,7 @@ export class CloseElement extends StatementSyntax {
     return new PrettyPrint('element', 'close-element');
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto) {
     compiler.append(new CloseElementOpcode());
   }
 }
@@ -532,7 +536,7 @@ export class Text extends StatementSyntax {
     return new PrettyPrint('append', 'text', [this.content]);
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto) {
     compiler.append(new TextOpcode({ text: this.content }));
   }
 }
@@ -563,7 +567,7 @@ export class Comment extends StatementSyntax {
     return new PrettyPrint('append', 'append-comment', [this.comment]);
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto) {
     compiler.append(new CommentOpcode(this));
   }
 }
@@ -597,20 +601,20 @@ export class OpenElement extends StatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
-  compile(compiler: Compiler, env: Environment) {
+  compile(compiler: CompileInto, env: Environment) {
     let component = env.getComponentDefinition([this.tag], this);
 
     if (component) {
-      let attrs = compiler.sliceAttributes();
-      let namedArgs = Args.fromHash(attributesToNamedArgs(attrs));
-      let lookup = attributeInvocationToLookup(attrs, namedArgs);
+      // let attrs = compiler.sliceAttributes();
+      // let namedArgs = Args.fromHash(attributesToNamedArgs(attrs));
+      // let lookup = attributeInvocationToLookup(attrs, namedArgs);
       let template = compiler.templateFromTagContents();
       let templates = new Templates({ template, inverse: null });
 
       compiler.append(new OpenComponentOpcode(component.compile(lookup, templates), namedArgs.compile(compiler)));
       compiler.append(new CloseComponentOpcode());
     } else {
-      compiler.append(new OpenPrimitiveElementOpcode(this.tag));
+      compiler.append(new OpenPrimitiveElementOpcode(this));
     }
   }
 
@@ -666,8 +670,8 @@ export class OpenPrimitiveElement extends StatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag]);
   }
 
-  compile(compiler: Compiler) {
-    compiler.append(new OpenPrimitiveElementOpcode(this.tag));
+  compile(compiler: CompileInto) {
+    compiler.append(new OpenPrimitiveElementOpcode({ tag: this.tag }));
   }
 }
 
@@ -681,7 +685,7 @@ export class YieldSyntax extends StatementSyntax {
     this.args = args;
   }
 
-  compile(compiler: Compiler) {
+  compile(compiler: CompileInto) {
     compiler.append(new InvokeBlockOpcode());
   }
 }
@@ -720,7 +724,7 @@ export class Value extends ExpressionSyntax {
     return this.value;
   }
 
-  compile(compiler: Compiler): CompiledExpression {
+  compile(compiler: CompileInto): CompiledExpression {
     return new CompiledValue(this);
   }
 }
@@ -752,7 +756,7 @@ export class Get extends ExpressionSyntax {
     return new PrettyPrint('expr', 'get', [this.ref.prettyPrint()], null);
   }
 
-  compile(compiler: Compiler): CompiledExpression {
+  compile(compiler: CompileInto): CompiledExpression {
     return this.ref.compile(compiler);
   }
 }
@@ -783,7 +787,7 @@ export class GetNamedParameter extends ExpressionSyntax {
     return new PrettyPrint('expr', 'get-named', [this.parts.join('.')], null);
   }
 
-  compile(compiler: Compiler): CompiledExpression {
+  compile(compiler: CompileInto): CompiledExpression {
     let { parts } = this;
     let front = parts[0];
     let symbol = compiler.getSymbol(front);
@@ -818,7 +822,7 @@ class Ref extends ExpressionSyntax {
     return this.parts.join('.');
   }
 
-  compile(compiler: Compiler): CompiledExpression {
+  compile(compiler: CompileInto): CompiledExpression {
     let { parts } = this;
     let front = parts[0];
     let symbol = compiler.getSymbol(front);
@@ -875,10 +879,10 @@ export class Helper extends ExpressionSyntax {
     return new PrettyPrint('expr', this.ref.prettyPrint(), params, hash);
   }
 
-  compile(compiler: Compiler): CompiledExpression {
-    if (compiler.env.hasHelper(this.ref.parts)) {
+  compile(compiler: CompileInto, env: Environment): CompiledExpression {
+    if (env.hasHelper(this.ref.parts)) {
       let { args, ref } = this;
-      return new CompiledHelper({ helper: compiler.env.lookupHelper(ref.parts), args: args.compile(compiler) });
+      return new CompiledHelper({ helper: env.lookupHelper(ref.parts), args: args.compile(compiler, env) });
     } else {
       throw new Error(`Compile Error: ${this.ref.prettyPrint()} is not a helper`);
     }
@@ -916,8 +920,8 @@ export class Concat extends Syntax<Concat> {
     return new PrettyPrint('expr', 'concat', this.parts.map(p => p.prettyPrint()));
   }
 
-  compile(compiler: Compiler): CompiledConcat {
-    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler)) });
+  compile(compiler: CompileInto, env: Environment): CompiledConcat {
+    return new CompiledConcat({ parts: this.parts.map(p => p.compile(compiler, env)) });
   }
 }
 
@@ -977,9 +981,9 @@ export class Args extends Syntax<Args> {
     return null;
   }
 
-  compile(compiler: Compiler): CompiledArgs {
+  compile(compiler: CompileInto, env: Environment): CompiledArgs {
     let { positional, named } = this;
-    return CompiledArgs.create({ positional: positional.compile(compiler), named: named.compile(compiler) });
+    return CompiledArgs.create({ positional: positional.compile(compiler, env), named: named.compile(compiler, env) });
   }
 }
 
@@ -1020,8 +1024,8 @@ export class PositionalArgs extends Syntax<PositionalArgs> {
     return this.values[index];
   }
 
-  compile(compiler: Compiler): CompiledPositionalArgs {
-    return CompiledPositionalArgs.create({ values: this.values.map(v => v.compile(compiler)) });
+  compile(compiler: CompileInto, env: Environment): CompiledPositionalArgs {
+    return CompiledPositionalArgs.create({ values: this.values.map(v => v.compile(compiler, env)) });
   }
 
   prettyPrint(): PrettyPrintValue {
@@ -1104,9 +1108,9 @@ export class NamedArgs extends Syntax<NamedArgs> {
     return !!this.map[<string>key];
   }
 
-  compile(compiler: Compiler): CompiledNamedArgs {
+  compile(compiler: CompileInto, env: Environment): CompiledNamedArgs {
     let { keys, values: rawValues } = this;
-    let values = rawValues.map(v => v.compile(compiler));
+    let values = rawValues.map(v => v.compile(compiler, env));
 
     return CompiledNamedArgs.create({ keys, values });
   }
@@ -1122,26 +1126,27 @@ export class Templates extends Syntax<Templates> {
     });
   }
 
-  static build(template: Template, inverse: Template=null, attributes: Template=null): Templates {
+  static build(template: RawTemplate, inverse: RawTemplate=null): Templates {
     return new this({ template, inverse });
   }
 
-  public default: Template;
-  public inverse: Template;
+  public default: RawTemplate;
+  public inverse: RawTemplate;
 
-  constructor(options: { template: Template, inverse: Template }) {
+  constructor(options: { template: RawTemplate, inverse: RawTemplate }) {
     super();
     this.default = options.template;
     this.inverse = options.inverse;
   }
 
   prettyPrint(): string {
-    let { default: _default, inverse } = this;
+    // let { default: _default, inverse } = this;
 
-    return JSON.stringify({
-      default: _default && _default.position,
-      inverse: inverse && inverse.position
-    });
+    // return JSON.stringify({
+    //   // default: _default && _default.position,
+    //   // inverse: inverse && inverse.position
+    // });
+    return "";
   }
 
   evaluate(vm: VM): PathReference {

@@ -1,7 +1,5 @@
 import { InternedString, Slice } from 'glimmer-util';
 
-import Template from '../template';
-
 import {
   Templates,
   Args
@@ -15,7 +13,7 @@ import {
   AttributeSyntax
 } from '../syntax';
 
-import { RawTemplate } from '../compiler';
+import { RawTemplate, RawLayout } from '../compiler';
 
 export interface ComponentClass {
   new (attrs: Object): Component;
@@ -88,10 +86,10 @@ export interface CompileComponentOptions {
 export abstract class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
-  public layout: RawTemplate;
+  public layout: RawLayout;
   protected ComponentInvocation: ComponentInvocationClass;
 
-  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: RawTemplate, ComponentInvocation: ComponentInvocationClass) {
+  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: RawLayout, ComponentInvocation: ComponentInvocationClass) {
     this.hooks = hooks || NULL_HOOKS;
     this.ComponentClass = ComponentClass;
     this.layout = layout;
