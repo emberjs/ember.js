@@ -140,8 +140,7 @@
   ### Keeping a link active for other routes
 
   If you need a link to be 'active' even when it doesn't match
-  the current route, you can use the the `current-when`
-  argument.
+  the current route, you can use the `current-when` argument.
 
   ```handlebars
   {{#link-to 'photoGallery' current-when='photos'}}

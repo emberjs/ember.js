@@ -24,7 +24,7 @@ import {
 /**
   Find templates stored in the head tag as script tags and make them available
   to `Ember.CoreView` in the global `Ember.TEMPLATES` object. This will be run
-  as as jQuery DOM-ready callback.
+  as a jQuery DOM-ready callback.
 
   Script tags with `text/x-handlebars` will be compiled
   with Ember's template compiler and are suitable for use as a view's template.
