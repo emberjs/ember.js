@@ -172,7 +172,7 @@
   the model context of the linked route:
 
   ```javascript
-  App.Router.map(function() {
+  Router.map(function() {
     this.route("photoGallery", {path: "hamster-photos/:photo_id"});
   });
   ```
@@ -197,7 +197,7 @@
   route with the dynamic segments:
 
   ```javascript
-  App.Router.map(function() {
+  Router.map(function() {
     this.route("photoGallery", { path: "hamster-photos/:photo_id" }, function() {
       this.route("comment", {path: "comments/:comment_id"});
     });
@@ -224,7 +224,7 @@
   of the dynamic segment:
 
   ```javascript
-  App.Router.map(function() {
+  Router.map(function() {
     this.route("photoGallery", { path: "hamster-photos/:photo_id" });
   });
   ```
@@ -463,7 +463,7 @@ let LinkComponent = EmberComponent.extend({
 
     @property classNameBindings
     @type Array
-    @default ['active', 'loading', 'disabled']
+    @default ['active', 'loading', 'disabled', 'ember-transitioning-in', 'ember-transitioning-out']
     @public
   */
   classNameBindings: ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'],
