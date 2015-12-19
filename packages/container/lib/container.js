@@ -4,6 +4,9 @@ import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
 import { setOwner, OWNER } from './owner';
 import { buildFakeContainerWithDeprecations } from 'ember-runtime/mixins/container_proxy';
+import symbol from 'ember-metal/symbol';
+
+const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
 /**
  A container used to instantiate and cache objects.
@@ -27,6 +30,7 @@ function Container(registry, options) {
 
   if (isEnabled('ember-container-inject-owner')) {
     this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
+    this[CONTAINER_OVERRIDE] = undefined;
   }
 }
 
@@ -404,7 +408,19 @@ function injectDeprecatedContainer(object, container) {
       deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
                 false,
                 { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
-      return container;
+      return this[CONTAINER_OVERRIDE] || container;
+    },
+
+    set(value) {
+      deprecate(
+        `Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`,
+        false,
+        { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' }
+      );
+
+      this[CONTAINER_OVERRIDE] = value;
+
+      return value;
     }
   });
 }

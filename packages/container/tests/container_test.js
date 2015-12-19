@@ -642,6 +642,28 @@ if (isEnabled('ember-container-inject-owner')) {
 
     equal(otherController.container, 'foo', 'container was not added');
   });
+
+  QUnit.test('An extendable factory can provide `container` upon create, with a deprecation', function(assert) {
+    let registry = new Registry();
+    let container = registry.container();
+
+    registry.register('controller:post', factory());
+
+    let PostController = container.lookupFactory('controller:post');
+
+    let postController;
+
+    expectDeprecation(function() {
+      postController = PostController.create({
+        container: 'foo'
+      });
+    }, /Providing the \`container\` property to .+ is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection\(\)\` instead to provide an owner to the instance being created/);
+
+    expectDeprecation(function() {
+      let c = postController.container;
+      assert.equal(c, 'foo', 'the `container` provided to `.create`was used');
+    }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
+  });
 } else {
   QUnit.test('A `container` property is appended to every instantiated object', function() {
     let registry = new Registry();
