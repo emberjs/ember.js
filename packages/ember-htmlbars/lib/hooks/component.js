@@ -2,6 +2,8 @@ import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import assign from 'ember-metal/assign';
+import EmptyObject from 'ember-metal/empty_object';
 import Cache from 'ember-metal/cache';
 import {
   CONTAINS_DASH_CACHE,
@@ -41,9 +43,10 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
        * on top of the closure component attributes.
        *
        */
-      processPositionalParamsFromCell(componentCell, params, attrs);
+      let newAttrs = assign(new EmptyObject(), attrs);
+      processPositionalParamsFromCell(componentCell, params, newAttrs);
       params = [];
-      attrs = mergeInNewHash(componentCell[COMPONENT_HASH], attrs);
+      attrs = mergeInNewHash(componentCell[COMPONENT_HASH], newAttrs);
     }
   }
 
