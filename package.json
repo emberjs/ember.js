@@ -49,6 +49,6 @@
     "qunit": "^0.7.2",
     "rsvp": "~3.0.6",
     "tslint": "^3.1.0-dev.1",
-    "typescript": "^1.8.0-dev.20151204"
+    "typescript": "^1.8.0-dev.20151219"
   }
 }
