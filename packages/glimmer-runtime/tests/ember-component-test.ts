@@ -13,8 +13,7 @@ import {
   HookIntrospection,
   equalsElement,
   regex,
-  classes,
-  compile
+  classes
  } from "./support";
 
 import { assign } from "glimmer-util";
@@ -66,7 +65,7 @@ QUnit.module("GlimmerComponent - invocation", {
 function appendViewFor(template: string, attrs: Object = {}) {
   class MyComponent extends Component {
     protected env = env;
-    protected template = compile(template);
+    protected template = env.compile(template);
   }
 
   MyComponent[CLASS_META].seal();
@@ -955,7 +954,7 @@ QUnit.skip('newly-added sub-components get correct parentView', function() {
 
 //     expectAssertion(() => {
 //       view = appendViewFor('<non-block />');
-//     }, strip`You cannot use triple curlies (e.g. style={{{ ... }}}) 
+//     }, strip`You cannot use triple curlies (e.g. style={{{ ... }}})
 //       in the top-level element of the <non-block> template because it is a GlimmerComponent.`
 //     );
 //   });

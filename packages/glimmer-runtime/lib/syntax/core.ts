@@ -219,7 +219,7 @@ export class Append extends StatementSyntax {
   }
 
   compile(compiler: CompileInto, env: Environment) {
-    compiler.append(new PutValue(this.value.compile(compiler, env)));
+    compiler.append(new PutValue({ expression: this.value.compile(compiler, env) }));
 
     if (this.trustingMorph) {
       compiler.append(new TrustingAppendOpcode());
@@ -316,7 +316,7 @@ export class DynamicProp extends AttributeSyntax {
   }
 
   compile(compiler: CompileInto, env: Environment) {
-    compiler.append(new PutValue(this.value.compile(compiler, env)));
+    compiler.append(new PutValue({ expression: this.value.compile(compiler, env) }));
     compiler.append(new DynamicPropOpcode(this));
   }
 
@@ -325,10 +325,14 @@ export class DynamicProp extends AttributeSyntax {
   }
 
   toLookup(): { syntax: DynamicProp, symbol: InternedString } {
-    let symbol = intern(`@${this.name}`);
+    let symbol = this.lookupName();
     let lookup = GetNamedParameter.build(symbol);
 
     return { syntax: DynamicProp.build(this.name, lookup), symbol };
+  }
+
+  isAttribute(): boolean {
+    return false;
   }
 }
 
@@ -378,10 +382,14 @@ export class StaticAttr extends AttributeSyntax {
   }
 
   toLookup(): { syntax: DynamicAttr, symbol: InternedString } {
-    let symbol = intern(`@${this.name}`);
+    let symbol = this.lookupName();
     let lookup = GetNamedParameter.build(symbol);
 
     return { syntax: DynamicAttr.build(this.name, lookup, this.namespace), symbol };
+  }
+
+  isAttribute(): boolean {
+    return true;
   }
 }
 
@@ -429,7 +437,7 @@ export class DynamicAttr extends AttributeSyntax {
   }
 
   compile(compiler: CompileInto, env: Environment) {
-    compiler.append(new PutValue(this.value.compile(compiler, env)));
+    compiler.append(new PutValue({ expression: this.value.compile(compiler, env) }));
     compiler.append(new DynamicAttrOpcode(this));
   }
 
@@ -438,10 +446,14 @@ export class DynamicAttr extends AttributeSyntax {
   }
 
   toLookup(): { syntax: DynamicAttr, symbol: InternedString } {
-    let symbol = intern(`@${this.name}`);
+    let symbol = this.lookupName();
     let lookup = GetNamedParameter.build(symbol);
 
     return { syntax: DynamicAttr.build(this.name, lookup, this.namespace), symbol };
+  }
+
+  isAttribute(): boolean {
+    return true;
   }
 }
 
@@ -474,7 +486,7 @@ export class AddClass extends AttributeSyntax {
   }
 
   compile(compiler: CompileInto, env: Environment) {
-    compiler.append(new PutValue(this.value.compile(compiler, env)));
+    compiler.append(new PutValue({ expression: this.value.compile(compiler, env) }));
     compiler.append(new AddClassOpcode());
   }
 
@@ -483,10 +495,14 @@ export class AddClass extends AttributeSyntax {
   }
 
   toLookup(): { syntax: AddClass, symbol: InternedString } {
-    let symbol = intern(`@${this.name}`);
+    let symbol = this.lookupName();
     let lookup = GetNamedParameter.build(name);
 
     return { syntax: AddClass.build(lookup), symbol };
+  }
+
+  isAttribute() {
+    return true;
   }
 }
 
@@ -601,27 +617,46 @@ export class OpenElement extends StatementSyntax {
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
-  compile(compiler: CompileInto, env: Environment) {
-    let component = env.getComponentDefinition([this.tag], this);
-
-    if (component) {
-      // let attrs = compiler.sliceAttributes();
-      // let namedArgs = Args.fromHash(attributesToNamedArgs(attrs));
-      // let lookup = attributeInvocationToLookup(attrs, namedArgs);
-      let template = compiler.templateFromTagContents();
-      let templates = new Templates({ template, inverse: null });
-
-      compiler.append(new OpenComponentOpcode(component.compile(lookup, templates), namedArgs.compile(compiler)));
-      compiler.append(new CloseComponentOpcode());
-    } else {
-      compiler.append(new OpenPrimitiveElementOpcode(this));
-    }
+  compile(list: CompileInto, env: Environment) {
+    list.append(new OpenPrimitiveElementOpcode(this));
   }
 
   toIdentity(): OpenPrimitiveElement {
     let { tag } = this;
     return new OpenPrimitiveElement({ tag });
   }
+}
+
+export class Component extends StatementSyntax {
+  public type = 'component';
+  public tag: InternedString;
+  public attrs: Slice<AttributeSyntax>;
+  public contents: Slice<StatementSyntax>;
+
+  constructor({ tag, attrs, contents }: { tag: InternedString, attrs: Slice<AttributeSyntax>, contents: Slice<StatementSyntax> }) {
+    super();
+    this.tag = tag;
+    this.attrs = attrs;
+    this.contents = contents;
+  }
+
+  compile(list: CompileInto, env: Environment) {
+    let definition = env.getComponentDefinition([this.tag], this);
+    let args = Args.fromHash(attributesToNamedArgs(this.attrs)).compile(list, env);
+    let shadow = shadowList(this.attrs);
+    list.append(new OpenComponentOpcode({ definition, args, shadow }));
+    list.append(new CloseComponentOpcode());
+  }
+}
+
+function shadowList(attrs: Slice<AttributeSyntax>) {
+  let list: InternedString[] = [];
+
+  attrs.forEachNode(node => {
+    if (node.isAttribute()) list.push(node.name);
+  });
+
+  return list;
 }
 
 function attributesToNamedArgs(attrs: Slice<AttributeSyntax>): NamedArgs {

@@ -6,6 +6,7 @@ import { ShadowAttributesOpcode } from './compiled/opcodes/component';
 import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax, CompileInto } from './syntax';
 import { Environment } from './environment';
 import { OpenElement, OpenPrimitiveElement, CloseElement } from './syntax/core';
+import { ComponentDefinition } from './component/interfaces';
 import SymbolTable from './symbol-table';
 
 export interface RawTemplateOptions {
@@ -83,7 +84,7 @@ export class RawLayout extends RawTemplate {
     this.program = program || null;
   }
 
-  compile(env: Environment) {
+  compile(definition: ComponentDefinition, env: Environment) {
     if (this.ops) return;
 
     this.parts = this.parts || new LayoutCompiler(this, env).compile();
@@ -95,6 +96,7 @@ export class RawLayout extends RawTemplate {
     ops.append(new ShadowAttributesOpcode());
     ops.spliceList(main.clone(), null);
     ops.append(new CloseElementOpcode());
+    this.ops = ops;
   }
 
   hasNamedParameters(): boolean {
@@ -114,34 +116,6 @@ abstract class Compiler {
     this.env = env;
     this.symbolTable = template.symbolTable;
   }
-
-  templateFromTagContents(): RawBlock {
-    let { template: { program } } = this;
-
-    let begin: StatementSyntax = null;
-    let end: StatementSyntax = null;
-    let nesting = 1;
-
-    while (true) {
-      let current = this.current;
-      this.current = program.nextNode(current);
-
-      if (current instanceof CloseElement && --nesting === 0) {
-        break;
-      }
-
-      begin = begin || current;
-      end = current;
-
-      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
-        nesting++;
-      }
-    }
-
-    let slice = new ListSlice(begin, end);
-    return Template.fromList(ListSlice.toList(slice));
-  }
-
 }
 
 export default Compiler;
@@ -193,7 +167,7 @@ export class BlockCompiler extends Compiler {
     let { program } = template;
 
     if (template.hasPositionalParameters()) {
-      ops.append(new BindPositionalArgsOpcode(this.template));
+      ops.append(new BindPositionalArgsOpcode({ template }));
     }
 
     let current = program.head();
@@ -231,7 +205,7 @@ export class LayoutCompiler extends Compiler {
 
     let current = program.head();
 
-    while (current.type !== 'open-element') {
+    while (current.type !== 'open-primitive-element') {
       current = current.next;
     }
 
@@ -240,7 +214,7 @@ export class LayoutCompiler extends Compiler {
     let main = this.body = new CompileIntoList(this.symbolTable);
 
     if (template.hasNamedParameters()) {
-      preamble.append(new BindNamedArgsOpcode(this.template));
+      preamble.append(BindNamedArgsOpcode.create(template));
     }
 
     attrs.forEachNode(attr => {

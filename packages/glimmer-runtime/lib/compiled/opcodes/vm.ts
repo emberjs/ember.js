@@ -27,7 +27,7 @@ export class PushRootScopeOpcode extends Opcode {
   public type = "push-root-scope";
   public size: number;
 
-  constructor(size: number) {
+  constructor({ size }: { size: number }) {
     super();
     this.size = size;
   }
@@ -49,7 +49,7 @@ export class PutValue extends Opcode {
   public type = "put-value";
   private expression: CompiledExpression;
 
-  constructor(expression: CompiledExpression) {
+  constructor({ expression }: { expression: CompiledExpression }) {
     super();
     this.expression = expression;
   }
@@ -64,7 +64,7 @@ export class PutArgsOpcode extends Opcode {
 
   private args: CompiledArgs;
 
-  constructor(args: CompiledArgs) {
+  constructor({ args }: { args: CompiledArgs }) {
     super();
     this.args = args;
   }
@@ -79,7 +79,7 @@ export class BindPositionalArgsOpcode extends Opcode {
 
   private positional: number[];
 
-  constructor(template: RawTemplate) {
+  constructor({ template }: { template: RawTemplate }) {
     super();
 
     let positional = this.positional = [];
@@ -97,17 +97,21 @@ export class BindPositionalArgsOpcode extends Opcode {
 export class BindNamedArgsOpcode extends Opcode {
   public type = "bind-named-args";
 
-  private named: Dict<number>;
+  public named: Dict<number>;
 
-  constructor(template: RawTemplate) {
-    super();
-
-    let named = this.named = template.named.reduce(
+  static create(template: RawTemplate) {
+    let named = template.named.reduce(
       (obj, name) => assign(obj, { [<string>name]: template.symbolTable.get(name) }),
       dict<number>()
     );
 
     turbocharge(named);
+    return new BindNamedArgsOpcode({ named });
+  }
+
+  constructor({ named }: { named: Dict<number> }) {
+    super();
+    this.named = named;
   }
 
   evaluate(vm: VM) {
@@ -119,7 +123,7 @@ export class EnterOpcode extends Opcode {
   public type = "enter";
   private slice: Slice<Opcode>;
 
-  constructor(begin: NoopOpcode, end: NoopOpcode) {
+  constructor({ begin, end }: { begin: NoopOpcode, end: NoopOpcode }) {
     super();
     this.slice = new ListSlice(begin, end);
   }
@@ -142,7 +146,7 @@ export class NoopOpcode extends Opcode {
 
   public label: string = null;
 
-  constructor(label?: string) {
+  constructor({ label }: { label?: string }) {
     super();
     if (label) this.label = label;
   }
@@ -155,7 +159,7 @@ export class EvaluateOpcode extends Opcode {
   public type = "evaluate";
   private template: RawTemplate;
 
-  constructor(template: RawTemplate) {
+  constructor({ template }: { template: RawTemplate }) {
     super();
     this.template = template;
   }
@@ -179,7 +183,7 @@ export class JumpOpcode extends Opcode {
 
   public target: NoopOpcode;
 
-  constructor(target: NoopOpcode) {
+  constructor({ target }: { target: NoopOpcode }) {
     super();
     this.target = target;
   }

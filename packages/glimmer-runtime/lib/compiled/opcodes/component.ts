@@ -1,25 +1,28 @@
 import { Opcode } from '../../opcodes';
+import { ComponentDefinition } from '../../component/interfaces';
 import { UpdateAttributeOpcode } from './dom';
 import { VM } from '../../vm';
-import { ComponentInvocation } from '../../component/interfaces';
 import { CompiledArgs } from '../../compiled/expressions/args';
-import { InternedString } from 'glimmer-util';
+import { InternedString, intern } from 'glimmer-util';
 import { CONST_REFERENCE } from 'glimmer-reference';
 
 export class OpenComponentOpcode extends Opcode {
   public type = "open-component";
-  public invocation: ComponentInvocation;
+  public definition: ComponentDefinition;
   public args: CompiledArgs;
+  public shadow: InternedString[];
 
-  constructor(invocation: ComponentInvocation, args: CompiledArgs) {
+  constructor({ definition, args, shadow }: { definition: ComponentDefinition, args: CompiledArgs, shadow: InternedString[] }) {
     super();
-    this.invocation = invocation;
+    this.definition = definition;
     this.args = args;
+    this.shadow = shadow;
   }
 
   evaluate(vm: VM) {
-    let { args, invocation: { templates, layout } } = this;
-    vm.invokeLayout(layout, args, templates);
+    let { args, shadow, definition } = this;
+
+    vm.invokeLayout({ templates: null, args, shadow, definition });
   }
 }
 
@@ -31,14 +34,17 @@ export class ShadowAttributesOpcode extends Opcode {
   evaluate(vm: VM) {
     let args = vm.frame.getArgs();
     let internal = args.internal;
-    let shadow: InternedString[] = internal && internal['shadow'];
-
-    if (!shadow) return;
+    let shadow: InternedString[] = internal['shadow'];
+    let definition: ComponentDefinition = internal['definition'];
 
     let named = args.named;
 
+    definition.didCreateElement(vm);
+
+    if (!shadow) return;
+
     shadow.forEach(name => {
-      let reference = named.get(name);
+      let reference = named.get(intern(`@${name}`));
       let value = reference.value();
       vm.stack().setAttribute(name, value);
 
@@ -46,6 +52,7 @@ export class ShadowAttributesOpcode extends Opcode {
         vm.updateWith(new UpdateAttributeOpcode(vm.stack().element, name, reference, value));
       }
     });
+
   }
 }
 

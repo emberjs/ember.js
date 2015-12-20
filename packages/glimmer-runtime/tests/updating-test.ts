@@ -1,10 +1,13 @@
-import { compile } from "glimmer-compiler";
 import { Template } from "glimmer-runtime";
 import { equalTokens, stripTight } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
 
 var hooks, root: Element;
 let env: TestEnvironment;
+
+function compile(template: string) {
+  return env.compile(template);
+}
 
 function rootElement() {
   return env.getDOM().createElement('div', document.body);
@@ -319,24 +322,24 @@ test("property nodes follow the normal dirtying rules", function() {
   var result = render(template, object);
 
   equalTokens(root, "<div>hello</div>", "Initial render");
-  strictEqual(root.firstChild.foo, true, "Initial render");
+  strictEqual(root.firstChild['foo'], true, "Initial render");
 
   object.value = false;
   result.rerender(); // without setting the node to dirty
 
   equalTokens(root, "<div>hello</div>", "Revalidating without dirtying");
-  strictEqual(root.firstChild.foo, false, "Revalidating without dirtying");
+  strictEqual(root.firstChild['foo'], false, "Revalidating without dirtying");
 
   result.rerender();
 
   equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
-  strictEqual(root.firstChild.foo, false, "Revalidating after dirtying");
+  strictEqual(root.firstChild['foo'], false, "Revalidating after dirtying");
 
   object.value = true;
   result.rerender();
 
   equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
-  strictEqual(root.firstChild.foo, true, "Revalidating after dirtying");
+  strictEqual(root.firstChild['foo'], true, "Revalidating after dirtying");
 });
 
 test("top-level bounds are correct when swapping order", assert => {
@@ -512,8 +515,8 @@ function testEachHelper(testName, templateSource, testMethod=QUnit.test) {
       // <li>
       var itemNode = root.firstChild.firstChild;
 
-      while (itemNode && itemNode.getAttribute) {
-        if (itemNode.getAttribute('class') === className) { break; }
+      while (itemNode && itemNode['getAttribute']) {
+        if (itemNode['getAttribute']('class') === className) { break; }
         itemNode = itemNode.nextSibling;
       }
 
