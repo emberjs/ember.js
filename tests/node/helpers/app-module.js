@@ -126,9 +126,7 @@ module.exports.canRunTests = canRunTests;
 function createApplication() {
   if (this.app) return this.app;
 
-  var app = this.Ember.Application.extend().create({
-    autoboot: false
-  });
+  var app = this.Ember.Application.extend().create({});
 
   app.Router = this.Ember.Router.extend({
     location: 'none'
