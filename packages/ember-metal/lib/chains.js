@@ -72,9 +72,9 @@ ChainWatchers.prototype = {
   },
 
   // key: the string key that is part of a path changed
-  // revalidate: boolean the chains that are watching this value should revalidate
-  // callback: function that will be called with the the object and path that
-  //           will be/are invalidated by this key change depending on the
+  // revalidate: boolean; the chains that are watching this value should revalidate
+  // callback: function that will be called with the object and path that
+  //           will be/are invalidated by this key change, depending on
   //           whether the revalidate flag is passed
   notify(key, revalidate, callback) {
     let nodes = this.chains[key];
