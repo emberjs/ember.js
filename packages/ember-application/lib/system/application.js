@@ -277,11 +277,15 @@ const Application = Engine.extend({
   customEvents: null,
 
   /**
-    Whether the application should automatically start routing and render
-    templates to the `rootElement` on DOM ready. While default by true,
-    other environments such as FastBoot or a testing harness can set this
-    property to `false` and control the precise timing and behavior of the boot
-    process.
+
+    By defualt, this is set to true for the browser environment. It determines
+    whether the application should automatically start routing and render
+    templates to the `rootElement` on DOM ready.
+
+    In node, this is set to false in the init method by default. This is b/c in
+    node we must pass a URL when booting an instance of the application that
+    represents the state of our app for a given request, at a given URL on the
+    server.
 
     @property autoboot
     @type Boolean
@@ -352,8 +356,13 @@ const Application = Engine.extend({
     this._booted = false;
 
     if (isEnabled('ember-application-visit')) {
-      this.autoboot = this._globalsMode = !!this.autoboot;
+      if (typeof document === 'undefined' && typeof process !== 'undefined') {
+        this.autoboot = this._globalsMode = false;
+      }
 
+      // can we remove these code paths here if we're in node after the feature
+      // flag is removed? autoboot: true always blows up in node anyway, do we
+      // have a use case within node?
       if (this._globalsMode) {
         this._prepareForGlobalsMode();
       }
@@ -362,10 +371,6 @@ const Application = Engine.extend({
         this.waitForDOMReady();
       }
     } else {
-      // Force-assign these flags to their default values when the feature is
-      // disabled, this ensures we can rely on their values in other paths.
-      this.autoboot = this._globalsMode = true;
-
       this._prepareForGlobalsMode();
       this.waitForDOMReady();
     }
