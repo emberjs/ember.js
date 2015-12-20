@@ -1,11 +1,12 @@
 import { Scope, Environment } from './environment';
 import { Bounds, clear, move } from './bounds';
 import { ElementStack } from './builder';
+import { ComponentDefinition } from './component/interfaces';
 import { Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
 import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
 import Template from './template';
 import { Templates } from './syntax/core';
-import { RawTemplate } from './compiler';
+import { RawBlock, RawLayout } from './compiler';
 import { CompiledExpression } from './compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from './compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
@@ -25,6 +26,13 @@ interface Registers {
   iterator: ListIterator;
   key: InternedString;
   templates: Dict<Template>;
+}
+
+interface InvokeLayoutOptions {
+  args: CompiledArgs;
+  shadow: InternedString[];
+  definition: ComponentDefinition;
+  templates: Templates;
 }
 
 interface FrameDidPop {
@@ -180,19 +188,24 @@ export class VM {
     opcode.evaluate(this);
   }
 
-  invoke(template: RawTemplate, args: CompiledArgs, templates: Templates) {
+  invokeBlock(template: RawBlock, args: CompiledArgs, templates: Templates) {
     this.elementStack.openBlock();
     let evaledArgs = args.evaluate(this);
     template.compile(this.env);
     this.pushFrame(template.ops, evaledArgs, templates, this);
   }
 
-  invokeLayout(template: RawTemplate, args: CompiledArgs, templates: Templates) {
+  invokeLayout({ args, shadow, definition, templates }: InvokeLayoutOptions) {
     this.elementStack.openBlock();
     let evaledArgs = args.evaluate(this);
-    template.compile(this.env);
-    this.pushRootScope(template.symbolTable.size);
-    this.pushFrame(template.ops, evaledArgs, templates, this);
+    let layout = definition.layout;
+
+    evaledArgs.internal = evaledArgs.internal || dict<any>();
+    evaledArgs.internal['shadow'] = shadow;
+    evaledArgs.internal['definition'] = definition;
+    layout.compile(this.env);
+    this.pushRootScope(layout.symbolTable.size);
+    this.pushFrame(layout.ops, evaledArgs, templates, this);
   }
 
   frameDidPop() {

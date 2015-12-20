@@ -1,4 +1,4 @@
-import { Dict, LinkedListNode, Slice, InternedString } from 'glimmer-util';
+import { Dict, LinkedListNode, Slice, InternedString, dict, intern } from 'glimmer-util';
 import Template from './template';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
@@ -57,7 +57,7 @@ export interface CompileInto {
 }
 
 export abstract class StatementSyntax extends Syntax<StatementSyntax> {
-  static fromSpec(spec: any, templates: RawTemplate[]): StatementSyntax {
+  static fromSpec<T extends StatementSyntax>(spec: any, templates: RawTemplate[]): T {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
@@ -83,8 +83,13 @@ export abstract class AttributeSyntax extends StatementSyntax {
   name: InternedString;
   namespace: InternedString;
 
+  lookupName(): InternedString {
+    return intern(`@${this.name}`);
+  }
+
   abstract toLookup(): { syntax: AttributeSyntax, symbol: InternedString };
   abstract valueSyntax(): ExpressionSyntax;
+  abstract isAttribute(): boolean;
 }
 
 export abstract class ExpressionSyntax extends Syntax<ExpressionSyntax> {

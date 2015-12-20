@@ -66,6 +66,7 @@ export abstract class EvaluatedNamedArgs {
   }
 
   abstract get(key: InternedString): PathReference;
+  abstract has(key: InternedString): boolean;
   abstract value(): Dict<any>;
 }
 
@@ -90,6 +91,10 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
     return this.map[<string>key];
   }
 
+  has(key: InternedString): boolean {
+    return !!this.map[<string>key];
+  }
+
   value(): Dict<any> {
     let hash = dict();
     let refs = this.values;
@@ -105,6 +110,10 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
 export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs {
   get(): PathReference {
     return NULL_REFERENCE;
+  }
+
+  has(key: InternedString): boolean {
+    return false;
   }
 
   value(): Dict<any> {

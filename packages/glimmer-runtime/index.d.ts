@@ -96,7 +96,6 @@ export {
   ComponentClass,
   ComponentDefinition,
   ComponentDefinitionOptions,
-  ComponentInvocation,
   ComponentHooks,
   CompileComponentOptions,
   Component

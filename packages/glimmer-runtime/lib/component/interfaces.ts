@@ -13,7 +13,9 @@ import {
   AttributeSyntax
 } from '../syntax';
 
-import { RawTemplate, RawLayout } from '../compiler';
+import { RawLayout } from '../compiler';
+
+import { VM } from '../vm';
 
 export interface ComponentClass {
   new (attrs: Object): Component;
@@ -87,23 +89,12 @@ export abstract class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
   public layout: RawLayout;
-  protected ComponentInvocation: ComponentInvocationClass;
 
-  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: RawLayout, ComponentInvocation: ComponentInvocationClass) {
+  didCreateElement(vm: VM) {}
+
+  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: RawLayout) {
     this.hooks = hooks || NULL_HOOKS;
     this.ComponentClass = ComponentClass;
     this.layout = layout;
-    this.ComponentInvocation = ComponentInvocation;
   }
-
-  abstract compile(options: CompileComponentOptions, yieldTo: Templates): ComponentInvocation;
-}
-
-export interface ComponentInvocationClass {
-  new(templates: Templates, layout: RawTemplate): ComponentInvocation;
-}
-
-export interface ComponentInvocation {
-  templates: Templates;
-  layout: RawTemplate;
 }

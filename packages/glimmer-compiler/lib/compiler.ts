@@ -1,6 +1,6 @@
 import { preprocess } from "glimmer-syntax";
 import TemplateCompiler, { SerializedTemplate } from "./template-compiler";
-import { Template, RawLayout } from "glimmer-runtime";
+import { Environment, Template, RawLayout } from "glimmer-runtime";
 
 /*
  * Compile a string into a template spec string. The template spec is a string
@@ -30,6 +30,11 @@ export function compileSpec(string, options) {
  */
 export function template(templateSpec): SerializedTemplate[] {
   return new Function("return " + templateSpec)();
+}
+
+interface CompileOptions {
+  disableComponentGeneration?: boolean;
+  env: Environment;
 }
 
 /*
@@ -63,12 +68,12 @@ export function template(templateSpec): SerializedTemplate[] {
  * @param {Object} options A set of options to provide to the compiler
  * @return {Template} A function for rendering the template
  */
-export function compile(string: string, options: Object={}): Template {
+export function compile(string: string, options: CompileOptions): Template {
   let templateSpec = template(compileSpec(string, options));
-  return Template.fromSpec(templateSpec);
+  return Template.fromSpec(templateSpec, options.env);
 }
 
-export function compileLayout(string: string, options: Object={}): RawLayout {
+export function compileLayout(string: string, options: CompileOptions): RawLayout {
   let templateSpec = template(compileSpec(string, options));
-  return Template.layoutFromSpec(templateSpec);
+  return Template.layoutFromSpec(templateSpec, options.env);
 }

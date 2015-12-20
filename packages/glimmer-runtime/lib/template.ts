@@ -20,15 +20,15 @@ interface EvaluateOptions {
 }
 
 export default class Template {
-  static fromSpec(specs: SerializedTemplate[]): Template {
-    let scanner = new Scanner(specs);
+  static fromSpec(specs: SerializedTemplate[], env: Environment): Template {
+    let scanner = new Scanner(specs, env);
     return new Template({
       raw: scanner.scanEntryPoint()
     });
   }
 
-  static layoutFromSpec(specs: SerializedTemplate[]): RawLayout {
-    let scanner = new Scanner(specs);
+  static layoutFromSpec(specs: SerializedTemplate[], env: Environment): RawLayout {
+    let scanner = new Scanner(specs, env);
     return scanner.scanLayout();
   }
 

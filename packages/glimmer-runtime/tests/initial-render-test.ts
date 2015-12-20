@@ -1,4 +1,3 @@
-import { compile as rawCompile } from "glimmer-compiler";
 import { forEach } from "glimmer-util";
 import { normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
 import { TestEnvironment } from "./support";
@@ -7,7 +6,7 @@ import { Template } from 'glimmer-runtime';
 let env: TestEnvironment, root: HTMLElement;
 
 function compile(template: string) {
-  return rawCompile(template, { disableComponentGeneration: true });
+  return env.compile(template);
 }
 
 function compilesTo(html: string, expected: string=html, context: any={}) {
@@ -39,7 +38,6 @@ function module(name: string) {
 module("Initial render - simple content");
 
 test("Simple content gets appended properly", function() {
-  debugger;
   var template = compile("content");
   render(template, {});
 

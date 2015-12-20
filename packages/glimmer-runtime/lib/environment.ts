@@ -167,6 +167,7 @@ export abstract class Environment {
 
   abstract hasHelper(helperName: InternedString[]): boolean;
   abstract lookupHelper(helperName: InternedString[]): Helper;
+  abstract hasComponentDefinition(tagName: InternedString[], syntax: StatementSyntax): boolean;
   abstract getComponentDefinition(tagName: InternedString[], syntax: StatementSyntax): ComponentDefinition;
 }
 

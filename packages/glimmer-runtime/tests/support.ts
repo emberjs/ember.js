@@ -1,5 +1,6 @@
 import {
   CompileInto,
+  VM,
 
   // Compiler
   Compiler,
@@ -31,7 +32,6 @@ import {
   // Components
   ComponentClass,
   ComponentDefinition,
-  ComponentInvocation,
   ComponentHooks,
   CompileComponentOptions,
   Component,
@@ -60,15 +60,7 @@ import {
 import { compile as rawCompile, compileLayout as rawCompileLayout } from "glimmer-compiler";
 import { LinkedList, Slice, ListSlice, Dict, InternedString, dict } from 'glimmer-util';
 
-import { Meta } from "glimmer-reference";
-
-export function compile(template: string) {
-  return rawCompile(template, { disableComponentGeneration: true });
-}
-
-export function compileLayout(template: string): RawLayout {
-  return rawCompileLayout(template, { disableComponentGeneration: true });
-}
+import { Meta, ConstReference } from "glimmer-reference";
 
 const hooks: ComponentHooks = {
   begin() {},
@@ -122,19 +114,19 @@ export class TestEnvironment extends Environment {
 
   registerGlimmerComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new GlimmerComponentDefinition(testHooks, Component, compileLayout(layout), GlimmerComponentInvocation);
+    let definition = new GlimmerComponentDefinition(testHooks, Component, this.compileLayout(layout));
     return this.registerComponent(name, definition);
   }
 
   registerEmberishComponent(name: string, Component: ComponentClass, layout: string): ComponentDefinition {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new EmberishComponentDefinition(testHooks, Component, compileLayout(layout), GlimmerComponentInvocation);
+    let definition = new EmberishComponentDefinition(testHooks, Component, this.compileLayout(layout));
     return this.registerComponent(name, definition);
   }
 
   registerEmberishGlimmerComponent(name: string, Component: ComponentClass, layout: string): any {
     let testHooks = new HookIntrospection(hooks);
-    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, compileLayout(layout), GlimmerComponentInvocation);
+    let definition = new EmberishGlimmerComponentDefinition(testHooks, Component, this.compileLayout(layout));
     return this.registerComponent(name, definition);
   }
 
@@ -215,58 +207,40 @@ export class TestEnvironment extends Environment {
     return this.helpers[helperName];
   }
 
+  hasComponentDefinition(name: InternedString[], syntax: StatementSyntax): boolean {
+    return !!this.components[<string>name[0]];
+  }
+
   getComponentDefinition(name: InternedString[], syntax: StatementSyntax): ComponentDefinition {
     return this.components[<string>name[0]];
+  }
+
+  compile(template: string) {
+    return rawCompile(template, { disableComponentGeneration: true, env: this });
+  }
+
+  private compileLayout(template: string) {
+    return rawCompileLayout(template, { disableComponentGeneration: true, env: this });
   }
 }
 
 class CurlyComponent extends StatementSyntax {
   public args: ArgsSyntax;
-  public component: ComponentDefinition;
+  public definition: ComponentDefinition;
   public templates: Templates;
 
-  constructor({ args, component, templates }: { args: ArgsSyntax, component: ComponentDefinition, templates: Templates }) {
+  constructor({ args, definition, templates }: { args: ArgsSyntax, definition: ComponentDefinition, templates: Templates }) {
     super();
     this.args = args;
-    this.component = component;
+    this.definition = definition;
     this.templates = templates;
   }
 
-  compile(compiler: CompileInto, env: Environment) {
-    let lookup = this.getLookup();
-
-    compiler.append(
-      new OpenComponentOpcode(
-        this.component.compile(lookup, this.templates),
-        this.getArgs().compile(compiler, env)
-      )
-    );
-
-    compiler.append(new CloseComponentOpcode());
-  }
-
-  private getLookup(): CompileComponentOptions {
-    return {
-      args: this.args,
-      syntax: new LinkedList<AttributeSyntax>(),
-      named: this.getNamed(),
-      locals: null
-    };
-  }
-
-  private getArgs(): ArgsSyntax {
-    let original = this.args.named.map;
-    let map = dict<ExpressionSyntax>();
-
-    Object.keys(original).forEach(a => {
-      map[`@${a}`] = original[a];
-    });
-
-    return ArgsSyntax.fromHash(NamedArgsSyntax.build(map));
-  }
-
-  private getNamed(): InternedString[] {
-    return this.args.named.keys;
+  compile(list: CompileInto, env: Environment) {
+    let definition = this.definition;
+    let args = this.args.compile(list, env);
+    list.append(new OpenComponentOpcode({ definition, args, shadow: null }));
+    list.append(new CloseComponentOpcode());
   }
 }
 
@@ -334,41 +308,12 @@ interface TemplateWithAttrsOptions {
 }
 
 class GlimmerComponentDefinition extends ComponentDefinition {
-  compile({ syntax, args, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
-    let layout = this.templateWithAttrs(syntax, args, named);
-    return new GlimmerComponentInvocation(templates, layout);
-  }
-
-  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax, named: InternedString[]) {
-    return this.layout.cloneWith((program, table) => {
-      let toSplice = ListSlice.toList(attrs);
-      let current = program.head();
-      table.putNamed(named);
-
-      while (current) {
-        let next = program.nextNode(current);
-
-        if (current.type === 'open-element' || current.type === 'open-primitive-element') {
-          program.spliceList(toSplice, program.nextNode(current));
-          break;
-        }
-
-        current = next;
-      }
-    });
-  }
 }
 
-const EMBER_VIEW = new ValueSyntax('ember-view');
+const EMBER_VIEW = new ConstReference('ember-view');
 let id = 1;
 
 class EmberishComponentDefinition extends ComponentDefinition {
-  compile({ args, locals, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
-    let layout = this.templateWithAttrs(args, named);
-    if (locals) throw new Error("Positional arguments not supported");
-    return new EmberishComponentInvocation(templates, layout);
-  }
-
   private templateWithAttrs(args: ArgsSyntax, named: InternedString[]) {
     return this.layout.cloneWith((program, table) => {
       let toSplice = new LinkedList<AttributeSyntax>();
@@ -402,65 +347,14 @@ class EmberishComponentDefinition extends ComponentDefinition {
 }
 
 class EmberishGlimmerComponentDefinition extends ComponentDefinition {
-  compile({ syntax, args, named }: CompileComponentOptions, templates: Templates): GlimmerComponentInvocation {
-    let layout = this.templateWithAttrs(syntax, args, named);
-    return new GlimmerComponentInvocation(templates, layout);
-  }
+  didCreateElement(vm: VM) {
+    let args = vm.frame.getArgs();
 
-  private templateWithAttrs(attrs: Slice<AttributeSyntax>, args: ArgsSyntax, named: InternedString[]) {
-    return this.layout.cloneWith((program, table) => {
-      let toSplice = ListSlice.toList(attrs);
-      toSplice.append(new AddClass({ value: EMBER_VIEW }));
+    vm.stack().addClass(EMBER_VIEW);
 
-      if (!args.named.has('@id' as InternedString)) {
-        toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
-      }
-
-      table.putNamed(named);
-
-      let current = program.head();
-
-      while (current) {
-        let next = program.nextNode(current);
-
-        if (current.type === 'open-element' || current.type === 'open-primitive-element') {
-          program.spliceList(toSplice, program.nextNode(current));
-          break;
-        }
-
-        current = next;
-      }
-    });
-  }
-}
-
-class GlimmerComponentInvocation implements ComponentInvocation {
-  public templates: Templates;
-  public layout: RawTemplate;
-
-  constructor(templates: Templates, layout: RawTemplate) {
-    this.templates = templates;
-    this.layout = layout;
-  }
-}
-
-class EmberishComponentInvocation implements ComponentInvocation {
-  public templates: Templates;
-  public layout: RawTemplate;
-
-  constructor(templates: Templates, layout: RawTemplate) {
-    this.templates = templates;
-    this.layout = layout;
-  }
-}
-
-class EmberishGlimmrComponentInvocation implements ComponentInvocation {
-  public templates: Templates;
-  public layout: RawTemplate;
-
-  constructor(templates: Templates, layout: RawTemplate) {
-    this.templates = templates;
-    this.layout = layout;
+    if (!args.named.has('@id' as InternedString)) {
+      vm.stack().setAttribute('id' as InternedString, `ember${id++}`);
+    }
   }
 }
 
@@ -504,18 +398,18 @@ class EachSyntax extends StatementSyntax {
     let BREAK = new NoopOpcode("BREAK");
     let END = new NoopOpcode("END");
 
-    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env)));
+    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
     compiler.append(new EnterListOpcode(BEGIN, END));
     compiler.append(ITER);
     compiler.append(new NextIterOpcode(BREAK));
     compiler.append(new EnterWithKeyOpcode(BEGIN, END));
     compiler.append(BEGIN);
     compiler.append(new PushChildScopeOpcode());
-    compiler.append(new EvaluateOpcode(this.templates.default));
+    compiler.append(new EvaluateOpcode({ template: this.templates.default }));
     compiler.append(new PopScopeOpcode());
     compiler.append(END);
     compiler.append(new ExitOpcode());
-    compiler.append(new JumpOpcode(ITER));
+    compiler.append(new JumpOpcode({ target: ITER }));
     compiler.append(BREAK);
     compiler.append(new ExitListOpcode());
   }
@@ -534,7 +428,7 @@ class IdentitySyntax extends StatementSyntax {
   }
 
   compile(compiler: CompileInto) {
-    compiler.append(new EvaluateOpcode(this.templates.default));
+    compiler.append(new EvaluateOpcode({ template: this.templates.default }));
   }
 }
 
@@ -551,7 +445,7 @@ class RenderInverseIdentitySyntax extends StatementSyntax {
   }
 
   compile(compiler: CompileInto) {
-    compiler.append(new EvaluateOpcode(this.templates.inverse));
+    compiler.append(new EvaluateOpcode({ template: this.templates.inverse }));
   }
 }
 
@@ -589,20 +483,20 @@ class IfSyntax extends StatementSyntax {
     let ELSE = new NoopOpcode("ELSE");
     let END = new NoopOpcode("END");
 
-    compiler.append(new EnterOpcode(BEGIN, END));
+    compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env)));
+    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
     compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
-      compiler.append(new JumpUnlessOpcode(ELSE));
-      compiler.append(new EvaluateOpcode(this.templates.default));
-      compiler.append(new JumpOpcode(END));
+      compiler.append(new JumpUnlessOpcode({ target: ELSE }));
+      compiler.append(new EvaluateOpcode({ template: this.templates.default }));
+      compiler.append(new JumpOpcode({ target: END }));
       compiler.append(ELSE);
-      compiler.append(new EvaluateOpcode(this.templates.inverse));
+      compiler.append(new EvaluateOpcode({ template: this.templates.inverse }));
     } else {
-      compiler.append(new JumpUnlessOpcode(END));
-      compiler.append(new EvaluateOpcode(this.templates.default));
+      compiler.append(new JumpUnlessOpcode({ target: END }));
+      compiler.append(new EvaluateOpcode({ template: this.templates.default }));
     }
 
     compiler.append(END);
@@ -644,23 +538,23 @@ class WithSyntax extends StatementSyntax {
     let ELSE = new NoopOpcode("ELSE");
     let END = new NoopOpcode("END");
 
-    compiler.append(new EnterOpcode(BEGIN, END));
+    compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode(this.args.compile(compiler, env)));
+    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
     compiler.append(new TestOpcode());
 
     if (this.templates.inverse) {
-      compiler.append(new JumpUnlessOpcode(ELSE));
+      compiler.append(new JumpUnlessOpcode({ target: ELSE }));
     } else {
-      compiler.append(new JumpUnlessOpcode(END));
+      compiler.append(new JumpUnlessOpcode({ target: END }));
     }
 
-    compiler.append(new EvaluateOpcode(this.templates.default));
-    compiler.append(new JumpOpcode(END));
+    compiler.append(new EvaluateOpcode({ template: this.templates.default }));
+    compiler.append(new JumpOpcode({ target: END }));
 
     if (this.templates.inverse) {
       compiler.append(ELSE);
-      compiler.append(new EvaluateOpcode(this.templates.inverse));
+      compiler.append(new EvaluateOpcode({ template: this.templates.inverse }));
     }
 
     compiler.append(END);

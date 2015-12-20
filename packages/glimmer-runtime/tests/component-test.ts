@@ -10,7 +10,7 @@ function rootElement() {
 }
 
 function compile(template: string) {
-  return defaultCompile(template, { disableComponentGeneration: false });
+  return env.compile(template);
 }
 
 function commonSetup() {
