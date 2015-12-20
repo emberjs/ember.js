@@ -75,15 +75,21 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   }
 
   splice(start: T, end: T, reference: T) {
-    reference = reference || this._tail;
+    let before: T;
 
-    let before = reference.prev;
+    if (reference === null) {
+      before = this._tail;
+      this._tail = end;
+    } else {
+      before = <T>reference.prev;
+      end.next = reference;
+      reference.prev = end;
+    }
 
-    before.next = start;
-    start.prev = before;
-
-    reference.prev = end;
-    end.next = reference;
+    if (before) {
+      before.next = start;
+      start.prev = before;
+    }
   }
 
   spliceList(list: LinkedList<T>, reference: T) {
