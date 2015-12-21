@@ -7,6 +7,7 @@ import { assert } from 'ember-metal/debug';
 import isNone from 'ember-metal/is_none';
 import symbol from 'ember-metal/symbol';
 import BasicStream from 'ember-metal/streams/stream';
+import EmptyObject from 'ember-metal/empty_object';
 import { read } from 'ember-metal/streams/utils';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import assign from 'ember-metal/assign';
@@ -54,12 +55,14 @@ function createClosureComponentCell(env, originalComponentPath, params, hash, la
   assert(`Component path cannot be null in ${label}`,
          !isNone(componentPath));
 
+  let newHash = assign(new EmptyObject(), hash);
+
   if (isComponentCell(componentPath)) {
-    return createNestedClosureComponentCell(componentPath, params, hash);
+    return createNestedClosureComponentCell(componentPath, params, newHash);
   } else {
     assert(`The component helper cannot be used without a valid component name. You used "${componentPath}" via ${label}`,
           isValidComponentPath(env, componentPath));
-    return createNewClosureComponentCell(env, componentPath, params, hash);
+    return createNewClosureComponentCell(env, componentPath, params, newHash);
   }
 }
 
