@@ -80,3 +80,29 @@ To run a specific browser, you can use the `--launch` flag
 
 * `ember test --server --launch SL_Firefox_Current`
 * `ember test --launch SL_Firefox_Current`
+
+## Fastboot Tests
+
+To run the node Fastboot tests a single time run:
+
+    $ npm run test:node
+
+### Running Fastboot tests on file change
+
+To automatically run the Fastboot tests on save of a file in ember or the node tests themselves, the following steps produce a new build and run the tests very fast, thanks to ember-cli and broccoli.
+
+Install [nodemon](https://github.com/remy/nodemon) globally:
+
+    $ npm install -g nodemon
+
+In one terminal window run the the following:
+
+    $ npm run build:watch
+
+In a second terminal run the following command. This will use [nodemon](https://github.com/remy/nodemon) to watch files within `tests/node`:
+
+    $ npm run test:node:watch
+
+**Optional**: You may want to keep an eye on the browser tests as well to ensure you don't break anything while working on Fastboot code in Ember:
+
+    $ ember test --server
