@@ -102,9 +102,9 @@ import { getHash } from 'ember-routing/location/util';
   in the actual URL. This is generally used for testing purposes, and is one
   of the changes made when calling `App.setupForTesting()`.
 
-  ### Extending Implementations
+  ## Extending Implementations
 
-  Ember scans the path app/locations/* for extending the Location API.
+  Ember scans the path `app/locations/*` for extending the Location API.
 
   Example:
  
