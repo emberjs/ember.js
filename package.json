@@ -3,12 +3,15 @@
   "license": "MIT",
   "version": "2.4.0-canary",
   "scripts": {
-    "build": "ember build --environment production",
+    "build": "ember build --prod",
+    "build:watch": "ember build --prod --watch",
     "postinstall": "bower install",
     "pretest": "ember build",
     "test": "bin/run-tests.js",
     "test:sauce": "bin/run-sauce-tests.js",
     "test:testem": "testem -f testem.dist.json",
+    "test:node": "./bin/run-node-tests.js",
+    "test:node:watch": "nodemon --exec npm run test:node",
     "start": "ember serve",
     "docs": "ember ember-cli-yuidoc",
     "sauce:launch": "ember sauce:launch"
