@@ -108,7 +108,7 @@ import { getHash } from 'ember-routing/location/util';
 
   Example:
  
-  app/locations/hashbang.js 
+  ```app/locations/hashbang.js 
 	#Creates URLs prefixed with #!
 	import Ember from 'ember';
 
@@ -146,7 +146,7 @@ import { getHash } from 'ember-routing/location/util';
 	    }	
 	
 	});
-
+  ```
   
 
   ## Location API
