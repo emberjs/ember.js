@@ -415,6 +415,182 @@ QUnit.test('Default error event moves into nested route', function() {
   equal(appController.get('currentPath'), 'grandma.error', 'Initial route fully loaded');
 });
 
+QUnit.test('Error events that aren\'t bubbled don\t throw application assertions', function() {
+  expect(2);
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+    actions: {
+      error(err) {
+        equal(err.msg, 'did it broke?');
+        return false;
+      }
+    }
+  });
+
+  bootApplication('/grandma/mom/sally');
+});
+
+QUnit.test('Non-bubbled errors that re-throw aren\'t swallowed', function() {
+  expect(2);
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+    actions: {
+      error(err) {
+        // returns undefined which is falsey
+        throw err;
+      }
+    }
+  });
+
+  throws(function() {
+    bootApplication('/grandma/mom/sally');
+  }, function(err) { return err.msg === 'did it broke?';});
+});
+
+QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
+  expect(4);
+
+  var handledError;
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+        this.route('this-route-throws');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+    actions: {
+      error(err) {
+        step(2, 'MomSallyRoute#error');
+
+        handledError = err;
+
+        this.transitionTo('mom.this-route-throws');
+
+        // Marks error as handled
+        return false;
+      }
+    }
+  });
+
+  App.MomThisRouteThrowsRoute = Ember.Route.extend({
+    model() {
+      step(3, 'MomThisRouteThrows#model');
+
+      throw handledError;
+    }
+  });
+
+  throws(function() {
+    bootApplication('/grandma/mom/sally');
+  }, function(err) { return err.msg === 'did it broke?'; });
+});
+
+QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed', function() {
+  expect(4);
+
+  var handledError;
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+        this.route('this-route-throws');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+    actions: {
+      error(err) {
+        step(2, 'MomSallyRoute#error');
+
+        handledError = err;
+
+        this.transitionTo('mom.this-route-throws');
+
+        // Marks error as handled
+        return false;
+      }
+    }
+  });
+
+  App.MomThisRouteThrowsRoute = Ember.Route.extend({
+    model() {
+      step(3, 'MomThisRouteThrows#model');
+
+      return Ember.RSVP.reject(handledError);
+    }
+  });
+
+  throws(function() {
+    bootApplication('/grandma/mom/sally');
+  }, function(err) { return err.msg === 'did it broke?'; });
+});
+
 QUnit.test('Setting a query param during a slow transition should work', function() {
   var deferred = RSVP.defer();
 
