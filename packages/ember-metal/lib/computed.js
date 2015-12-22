@@ -260,7 +260,7 @@ ComputedPropertyPrototype.property = function() {
   };
 
   args = [];
-  for (var i = 0, l = arguments.length; i < l; i++) {
+  for (var i = 0; i < arguments.length; i++) {
     expandProperties(arguments[i], addArg);
   }
 

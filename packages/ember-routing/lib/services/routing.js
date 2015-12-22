@@ -92,7 +92,7 @@ export default Service.extend({
 
 function numberOfContextsAcceptedByHandler(handler, handlerInfos) {
   var req = 0;
-  for (var i = 0, l = handlerInfos.length; i < l; i++) {
+  for (var i = 0; i < handlerInfos.length; i++) {
     req = req + handlerInfos[i].names.length;
     if (handlerInfos[i].handler === handler) {
       break;

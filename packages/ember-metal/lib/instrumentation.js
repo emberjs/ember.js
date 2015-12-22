@@ -55,7 +55,7 @@ var populateListeners = function(name) {
   var listeners = [];
   var subscriber;
 
-  for (var i = 0, l = subscribers.length; i < l; i++) {
+  for (var i = 0; i < subscribers.length; i++) {
     subscriber = subscribers[i];
     if (subscriber.regex.test(name)) {
       listeners.push(subscriber.object);
@@ -150,19 +150,18 @@ export function _instrumentStart(name, _payload) {
     console.time(timeName);
   }
 
-  var l = listeners.length;
-  var beforeValues = new Array(l);
+  var beforeValues = new Array(listeners.length);
   var i, listener;
   var timestamp = time();
-  for (i = 0; i < l; i++) {
+  for (i = 0; i < listeners.length; i++) {
     listener = listeners[i];
     beforeValues[i] = listener.before(name, timestamp, payload);
   }
 
   return function _instrumentEnd() {
-    var i, l, listener;
+    var i, listener;
     var timestamp = time();
-    for (i = 0, l = listeners.length; i < l; i++) {
+    for (i = 0; i < listeners.length; i++) {
       listener = listeners[i];
       if (typeof listener.after === 'function') {
         listener.after(name, timestamp, payload, beforeValues[i]);
@@ -192,7 +191,7 @@ export function subscribe(pattern, object) {
   var path;
   var regex = [];
 
-  for (var i = 0, l = paths.length; i < l; i++) {
+  for (var i = 0; i < paths.length; i++) {
     path = paths[i];
     if (path === '*') {
       regex.push('[^\\.]*');
@@ -228,7 +227,7 @@ export function subscribe(pattern, object) {
 export function unsubscribe(subscriber) {
   var index;
 
-  for (var i = 0, l = subscribers.length; i < l; i++) {
+  for (var i = 0; i < subscribers.length; i++) {
     if (subscribers[i] === subscriber) {
       index = i;
     }

@@ -21,7 +21,7 @@ export default {
     );
 
     var actionArgs = [];
-    for (var i = 1, l = params.length; i < l; i++) {
+    for (var i = 1; i < params.length; i++) {
       actionArgs.push(readUnwrappedModel(params[i]));
     }
 
@@ -136,7 +136,7 @@ function isAllowedEvent(event, allowedKeys) {
     return true;
   }
 
-  for (var i = 0, l = MODIFIERS.length; i < l; i++) {
+  for (var i = 0; i < MODIFIERS.length; i++) {
     if (event[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
       return false;
     }

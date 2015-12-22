@@ -231,7 +231,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
     delete values[keyName];
   }
 
-  for (var i = 0, l = mixins.length; i < l; i++) {
+  for (var i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
     assert(
       `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
@@ -344,7 +344,7 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
   var paths = observerOrListener[pathsKey];
 
   if (paths) {
-    for (var i = 0, l = paths.length; i < l; i++) {
+    for (var i = 0; i < paths.length; i++) {
       updateMethod(obj, paths[i], null, key);
     }
   }
@@ -384,7 +384,7 @@ function applyMixin(obj, mixins, partial) {
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, m, descs, values, obj, keys);
 
-  for (var i = 0, l = keys.length; i < l; i++) {
+  for (var i = 0; i < keys.length; i++) {
     key = keys[i];
     if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
 
@@ -553,11 +553,10 @@ MixinPrototype.reopen = function() {
     this.mixins = [];
   }
 
-  var len = arguments.length;
   var mixins = this.mixins;
   var idx;
 
-  for (idx = 0; idx < len; idx++) {
+  for (idx = 0; idx < arguments.length; idx++) {
     currentMixin = arguments[idx];
     assert(
       `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
@@ -805,7 +804,7 @@ export function observer(...args) {
 export function _immediateObserver() {
   deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
 
-  for (var i = 0, l = arguments.length; i < l; i++) {
+  for (var i = 0; i < arguments.length; i++) {
     var arg = arguments[i];
     assert(
       'Immediate observers must observe internal properties only, not properties on other objects.',

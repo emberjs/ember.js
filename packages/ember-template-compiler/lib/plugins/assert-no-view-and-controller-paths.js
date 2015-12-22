@@ -32,8 +32,8 @@ function assertHash(moduleName, node, hash) {
   if (!hash || !hash.pairs) {
     return;
   }
-  var i, l, pair, paths;
-  for (i = 0, l = hash.pairs.length;i < l;i++) {
+  var i, pair, paths;
+  for (i = 0; i < hash.pairs.length; i++) {
     pair = hash.pairs[i];
     paths = pair.value.params;
     assertPaths(moduleName, pair, paths);
@@ -44,8 +44,8 @@ function assertPaths(moduleName, node, paths) {
   if (!paths) {
     return;
   }
-  var i, l, path;
-  for (i = 0, l = paths.length;i < l;i++) {
+  var i, path;
+  for (i = 0; i < paths.length; i++) {
     path = paths[i];
     assertPath(moduleName, node, path);
   }

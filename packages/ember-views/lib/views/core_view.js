@@ -89,9 +89,8 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     var name = arguments[0];
     var method = this[name];
     if (method) {
-      var length = arguments.length;
-      var args = new Array(length - 1);
-      for (var i = 1; i < length; i++) {
+      var args = new Array(arguments.length - 1);
+      for (var i = 1; i < arguments.length; i++) {
         args[i - 1] = arguments[i];
       }
       return method.apply(this, args);

@@ -223,7 +223,7 @@ function buildInjections(/* container, ...injections */) {
     var injections = [];
     var injection;
 
-    for (var i = 1, l = arguments.length; i < l; i++) {
+    for (var i = 1; i < arguments.length; i++) {
       if (arguments[i]) {
         injections = injections.concat(arguments[i]);
       }
@@ -231,7 +231,7 @@ function buildInjections(/* container, ...injections */) {
 
     container.registry.validateInjections(injections);
 
-    for (i = 0, l = injections.length; i < l; i++) {
+    for (i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
       if (!isSingleton(container, injection.fullName)) {
@@ -410,7 +410,7 @@ function eachDestroyable(container, callback) {
   var keys = Object.keys(cache);
   var key, value;
 
-  for (var i = 0, l = keys.length; i < l; i++) {
+  for (var i = 0; i < keys.length; i++) {
     key = keys[i];
     value = cache[key];
 

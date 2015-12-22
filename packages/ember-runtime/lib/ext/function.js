@@ -114,7 +114,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       'Immediate observers must observe internal properties only, ' +
       'not properties on other objects.',
       function checkIsInternalProperty() {
-        for (var i = 0, l = arguments.length; i < l; i++) {
+        for (var i = 0; i < arguments.length; i++) {
           if (arguments[i].indexOf('.') !== -1) {
             return false;
           }
