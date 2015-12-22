@@ -107,15 +107,15 @@ import { getHash } from 'ember-routing/location/util';
   Ember scans the path `app/locations/*` for extending the Location API.
 
   Example:
- 
-  ```app/locations/hashbang.js 
+
+  ```app/locations/hashbang.js
 	#Creates URLs prefixed with #!
 	import Ember from 'ember';
 
 	var get = Ember.get, set = Ember.set;
 
 	export default Ember.HashLocation.extend({
-	
+
 	    getURL: function() {
 	        return get(this, 'location').hash.substr(2);
 	    },
@@ -143,11 +143,11 @@ import { getHash } from 'ember-routing/location/util';
 
 	    formatURL: function(url) {
 	        return '#!'+url;
-	    }	
+	    }
 	
 	});
   ```
-  
+
 
   ## Location API
 
