@@ -144,7 +144,7 @@ import { getHash } from 'ember-routing/location/util';
 	    formatURL: function(url) {
 	        return '#!'+url;
 	    }
-	
+
 	});
   ```
 
