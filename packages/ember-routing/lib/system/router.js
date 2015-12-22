@@ -669,7 +669,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var routerjs = this.router;
     var recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
 
-    for (var i = 0, len = recogHandlerInfos.length; i < len; ++i) {
+    for (var i = 0; i < recogHandlerInfos.length; ++i) {
       var recogHandler = recogHandlerInfos[i];
       var route = routerjs.getHandler(recogHandler.handler);
       var qpMeta = get(route, '_qp');
@@ -692,7 +692,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var appCache = this._bucketCache;
     stashParamNames(this, handlerInfos);
 
-    for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+    for (var i = 0; i < handlerInfos.length; ++i) {
       var route = handlerInfos[i].handler;
       var qpMeta = get(route, '_qp');
 
@@ -944,7 +944,7 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
   var handlerInfos = state.handlerInfos;
   var params = state.params;
 
-  for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+  for (var i = 0; i < handlerInfos.length; ++i) {
     var handlerInfo = handlerInfos[i];
     if (!handlerInfo.isResolved) {
       handlerInfo = handlerInfo.becomeResolved(null, handlerInfo.context);
@@ -1047,7 +1047,7 @@ EmberRouter.reopenClass({
     // ['foo', 'foo.bar.baz'] => 'foo.bar.baz', not 'foo.foo.bar.baz'
 
     function intersectionMatches(a1, a2) {
-      for (var i = 0, len = a1.length; i < len; ++i) {
+      for (var i = 0; i < a1.length; ++i) {
         if (a1[i] !== a2[i]) {
           return false;
         }
@@ -1056,7 +1056,7 @@ EmberRouter.reopenClass({
     }
 
     var name, nameParts, oldNameParts;
-    for (var i = 1, l = handlerInfos.length; i < l; i++) {
+    for (var i = 1; i < handlerInfos.length; i++) {
       name = handlerInfos[i].name;
       nameParts = name.split('.');
       oldNameParts = slice.call(path);

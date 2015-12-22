@@ -28,7 +28,7 @@ export default function setProperties(obj, properties) {
     var props = Object.keys(properties);
     var propertyName;
 
-    for (var i = 0, l = props.length; i < l; i++) {
+    for (var i = 0; i < props.length; i++) {
       propertyName = props[i];
 
       set(obj, propertyName, properties[propertyName]);

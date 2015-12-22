@@ -672,7 +672,7 @@ Registry.prototype = {
 
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
-    for (let index = 0, length = registeredNames.length; index < length; index++) {
+    for (let index = 0; index < registeredNames.length; index++) {
       let fullName = registeredNames[index];
       let itemType = fullName.split(':')[0];
 
@@ -704,7 +704,7 @@ Registry.prototype = {
 
     var fullName;
 
-    for (var i = 0, length = injections.length; i < length; i++) {
+    for (var i = 0; i < injections.length; i++) {
       fullName = injections[i].fullName;
 
       if (!this.has(fullName)) {

@@ -23,7 +23,7 @@ export default function subexpr(env, scope, helperName, params, hash) {
 
   var helperStream = buildHelperStream(helper, params, hash, null, env, scope, label);
 
-  for (var i = 0, l = params.length; i < l; i++) {
+  for (var i = 0; i < params.length; i++) {
     helperStream.addDependency(params[i]);
   }
 

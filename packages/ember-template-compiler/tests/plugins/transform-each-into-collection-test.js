@@ -38,7 +38,7 @@ function testNonBlockForm(attr) {
   });
 }
 
-for (let i = 0, l = deprecatedAttrs.length; i < l; i++) {
+for (let i = 0; i < deprecatedAttrs.length; i++) {
   let attr = deprecatedAttrs[i];
 
   testBlockForm(attr);

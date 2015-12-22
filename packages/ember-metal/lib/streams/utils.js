@@ -80,9 +80,8 @@ export function read(object) {
                  and replaced with the stream's current value.
  */
 export function readArray(array) {
-  var length = array.length;
-  var ret = new Array(length);
-  for (var i = 0; i < length; i++) {
+  var ret = new Array(array.length);
+  for (var i = 0; i < array.length; i++) {
     ret[i] = read(array[i]);
   }
   return ret;
@@ -120,10 +119,9 @@ export function readHash(object) {
                    otherwise.
 */
 export function scanArray(array) {
-  var length = array.length;
   var containsStream = false;
 
-  for (var i = 0; i < length; i++) {
+  for (var i = 0; i < array.length; i++) {
     if (isStream(array[i])) {
       containsStream = true;
       break;
@@ -196,7 +194,7 @@ export function concat(array, separator) {
   if (hasStream) {
     let stream = new ConcatStream(array, separator);
 
-    for (let i = 0, l = array.length; i < l; i++) {
+    for (let i = 0; i < array.length; i++) {
       addDependency(stream, array[i]);
     }
 
@@ -209,7 +207,7 @@ export function concat(array, separator) {
 export function labelsFor(streams) {
   var labels =  [];
 
-  for (var i = 0, l = streams.length; i < l; i++) {
+  for (var i = 0; i < streams.length; i++) {
     var stream = streams[i];
     labels.push(labelFor(stream));
   }
@@ -275,7 +273,7 @@ export function zip(streams, callback, label) {
     return `${label}(${labelsFor(streams)})`;
   });
 
-  for (var i = 0, l = streams.length; i < l; i++) {
+  for (var i = 0; i < streams.length; i++) {
     stream.addDependency(streams[i]);
   }
 

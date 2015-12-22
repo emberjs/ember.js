@@ -298,10 +298,9 @@ export function wrap(func, superFunc) {
 function _wrap(func, superFunc) {
   function superWrapper() {
     let orig = this._super;
-    let length = arguments.length;
     let ret;
     this._super = superFunc;
-    switch (length) {
+    switch (arguments.length) {
       case 0:  ret = func.call(this); break;
       case 1:  ret = func.call(this, arguments[0]); break;
       case 2:  ret = func.call(this, arguments[0], arguments[1]); break;
@@ -311,8 +310,8 @@ function _wrap(func, superFunc) {
       default:
         // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
         // we may want to keep this around till this ages out on mobile
-        let args = new Array(length);
-        for (var x = 0; x < length; x++) {
+        let args = new Array(arguments.length);
+        for (var x = 0; x < arguments.length; x++) {
           args[x] = arguments[x];
         }
         ret = func.apply(this, args);

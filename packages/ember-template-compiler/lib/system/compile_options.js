@@ -55,7 +55,7 @@ function fragmentReason(program) {
 
   let problems = {};
 
-  for (let i = 0, l = body.length; i < l; i++) {
+  for (let i = 0; i < body.length; i++) {
     let curr = body[i];
 
     // text node with whitespace only

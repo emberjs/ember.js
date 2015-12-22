@@ -82,7 +82,7 @@ function makeCtor() {
       var concatenatedProperties = this.concatenatedProperties;
       var mergedProperties = this.mergedProperties;
 
-      for (var i = 0, l = props.length; i < l; i++) {
+      for (var i = 0; i < props.length; i++) {
         var properties = props[i];
 
         assert(
@@ -99,7 +99,7 @@ function makeCtor() {
 
         var keyNames = Object.keys(properties);
 
-        for (var j = 0, ll = keyNames.length; j < ll; j++) {
+        for (var j = 0; j < keyNames.length; j++) {
           var keyName = keyNames[j];
           var value = properties[keyName];
 
@@ -169,17 +169,15 @@ function makeCtor() {
 
     finishPartial(this, m);
 
-    var length = arguments.length;
-
-    if (length === 0) {
+    if (arguments.length === 0) {
       this.init();
-    } else if (length === 1) {
+    } else if (arguments.length === 1) {
       this.init(arguments[0]);
     } else {
       // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
       // we may want to keep this around till this ages out on mobile
-      var args = new Array(length);
-      for (var x = 0; x < length; x++) {
+      var args = new Array(arguments.length);
+      for (var x = 0; x < arguments.length; x++) {
         args[x] = arguments[x];
       }
       this.init.apply(this, args);
@@ -888,7 +886,7 @@ var ClassMixinProps = {
 
     var properties = get(this, '_computedProperties');
 
-    for (var i = 0, length = properties.length; i < length; i++) {
+    for (var i = 0; i < properties.length; i++) {
       property = properties[i];
       callback.call(binding || this, property.name, property.meta || empty);
     }

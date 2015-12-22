@@ -34,7 +34,7 @@ function testMap(nameAndFunc) {
   var mapHasEntries = function(entries, theMap) {
     theMap = theMap || map;
 
-    for (var i = 0, l = entries.length; i < l; i++) {
+    for (var i = 0; i < entries.length; i++) {
       equal(theMap.get(entries[i][0]), entries[i][1]);
       equal(theMap.has(entries[i][0]), true);
     }

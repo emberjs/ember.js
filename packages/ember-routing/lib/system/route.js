@@ -276,14 +276,13 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     var qps = get(this, '_qp.qps');
-    var len = qps.length;
 
     var namePaths = new Array(names.length);
-    for (var a = 0, nlen = names.length; a < nlen; ++a) {
+    for (var a = 0; a < names.length; ++a) {
       namePaths[a] = `${handlerInfo.name}.${names[a]}`;
     }
 
-    for (var i = 0; i < len; ++i) {
+    for (var i = 0; i < qps.length; ++i) {
       var qp = qps[i];
       if (qp.scope === 'model') {
         qp.parts = namePaths;
@@ -757,7 +756,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       var qpMap = get(this, '_qp').map;
 
       var totalChanged = Object.keys(changed).concat(Object.keys(removed));
-      for (var i = 0, len = totalChanged.length; i < len; ++i) {
+      for (var i = 0; i < totalChanged.length; ++i) {
         var qp = qpMap[totalChanged[i]];
         if (qp && get(this._optionsForQueryParam(qp), 'refreshModel')) {
           this.refresh();
@@ -781,7 +780,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       stashParamNames(router, handlerInfos);
 
-      for (var i = 0, len = qpMeta.qps.length; i < len; ++i) {
+      for (var i = 0; i < qpMeta.qps.length; ++i) {
         var qp = qpMeta.qps[i];
         var route = qp.route;
         var controller = route.controller;
@@ -2091,7 +2090,7 @@ function handlerInfoFor(route, handlerInfos, _offset) {
 
   var offset = _offset || 0;
   var current;
-  for (var i = 0, l = handlerInfos.length; i < l; i++) {
+  for (var i = 0; i < handlerInfos.length; i++) {
     current = handlerInfos[i].handler;
     if (current === route) { return handlerInfos[i + offset]; }
   }
@@ -2207,7 +2206,7 @@ function getQueryParamsFor(route, state) {
   // Copy over all the query params for this route/controller into params hash.
   var qpMeta = get(route, '_qp');
   var qps = qpMeta.qps;
-  for (var i = 0, len = qps.length; i < len; ++i) {
+  for (var i = 0; i < qps.length; ++i) {
     // Put deserialized qp on params hash.
     var qp = qps[i];
 

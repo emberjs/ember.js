@@ -29,7 +29,7 @@ export function stashParamNames(router, handlerInfos) {
   var recogHandlers = router.router.recognizer.handlersFor(targetRouteName);
   var dynamicParent = null;
 
-  for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+  for (var i = 0; i < handlerInfos.length; ++i) {
     var handlerInfo = handlerInfos[i];
     var names = recogHandlers[i].names;
 
@@ -59,7 +59,7 @@ function _calculateCacheValuePrefix(prefix, part) {
   var prefixParts = prefix.split('.');
   var currPrefix = '';
 
-  for (var i = 0, len = prefixParts.length; i < len; i++) {
+  for (var i = 0; i < prefixParts.length; i++) {
     var currPart = prefixParts.slice(0, i + 1).join('.');
     if (part.indexOf(currPart) !== 0) {
       break;
@@ -76,7 +76,7 @@ function _calculateCacheValuePrefix(prefix, part) {
 export function calculateCacheKey(prefix, _parts, values) {
   var parts = _parts || [];
   var suffixes = '';
-  for (var i = 0, len = parts.length; i < len; ++i) {
+  for (var i = 0; i < parts.length; ++i) {
     var part = parts[i];
     var cacheValuePrefix = _calculateCacheValuePrefix(prefix, part);
     var value;
@@ -134,7 +134,7 @@ export function normalizeControllerQueryParams(queryParams) {
 
   var qpMap = queryParams._qpMap = {};
 
-  for (var i = 0, len = queryParams.length; i < len; ++i) {
+  for (var i = 0; i < queryParams.length; ++i) {
     accumulateQueryParamDescriptors(queryParams[i], qpMap);
   }
 

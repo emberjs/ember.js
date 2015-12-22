@@ -437,7 +437,7 @@ EmberApplication.reopen({
       protoWrap(Test.Promise.prototype, name, helper(this, name), helpers[name].meta.wait);
     }
 
-    for (var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
+    for (var i = 0; i < injectHelpersCallbacks.length; i++) {
       injectHelpersCallbacks[i](this);
     }
   },

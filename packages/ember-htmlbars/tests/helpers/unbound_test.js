@@ -97,7 +97,7 @@ QUnit.test('should property escape unsafe hrefs', function() {
   runAppend(view);
 
   var links = view.$('a');
-  for (var i = 0, l = links.length; i < l; i++) {
+  for (var i = 0; i < links.length; i++) {
     var link = links[i];
     equal(link.protocol, 'unsafe:', 'properly escaped');
   }

@@ -182,10 +182,9 @@ OrderedSet.prototype = {
     if (this.size === 0) { return; }
 
     var list = this.list;
-    var length = arguments.length;
     var i;
 
-    if (length === 2) {
+    if (arguments.length === 2) {
       for (i = 0; i < list.length; i++) {
         fn.call(arguments[1], list[i]);
       }
@@ -382,11 +381,10 @@ Map.prototype = {
 
     if (this.size === 0) { return; }
 
-    var length = arguments.length;
     var map = this;
     var cb, thisArg;
 
-    if (length === 2) {
+    if (arguments.length === 2) {
       thisArg = arguments[1];
       cb = function(key) {
         callback.call(thisArg, map.get(key), key, map);

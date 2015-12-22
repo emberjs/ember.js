@@ -73,9 +73,8 @@ export function get(obj, keyName) {
 export function _getPath(root, path) {
   let obj = root;
   let parts = path.split('.');
-  let len = parts.length;
 
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < parts.length; i++) {
     if (obj == null) {
       return obj;
     }
