@@ -4,6 +4,7 @@ import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
+import isEmpty from 'ember-metal/is_empty';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
@@ -512,6 +513,39 @@ if (isEnabled('ember-contextual-components')) {
 
     runAppend(component);
     equal(component.$().text(), `${expectedText},Hola`, '-looked-up component rendered with rest params');
+  });
+
+  QUnit.test('renders with dot path and rest parameter does not leak', function() {
+    let value = false;
+    let MyComponent = Component.extend({
+      didReceiveAttrs() {
+        value = this.getAttr('value');
+      }
+    });
+
+    MyComponent.reopenClass({
+      positionalParams: ['value']
+    });
+
+    owner.register(
+      'component:my-component',
+      MyComponent
+    );
+
+    let template = compile(
+      `{{#with (hash my-component=(component 'my-component')) as |c|}}
+        {{c.my-component }}
+       {{/with}}`
+    );
+
+    component = Component.extend({
+      [OWNER]: owner,
+      template
+    }).create();
+
+    runAppend(component);
+
+    ok(isEmpty(value), 'value is an empty parameter');
   });
 
   QUnit.test('renders with dot path and updates attributes', function() {
