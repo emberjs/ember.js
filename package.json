@@ -46,9 +46,9 @@
     "testem": "^0.9.5"
   },
   "dependencies": {
-    "broccoli-funnel": "^0.2.8",
-    "broccoli-merge-trees": "^0.2.3",
-    "broccoli-stew": "^0.3.5",
+    "broccoli-funnel": "^1.0.1",
+    "broccoli-merge-trees": "^1.1.0",
+    "broccoli-stew": "^1.2.0",
     "broccoli-unwatched-tree": "^0.1.1",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-get-dependency-depth": "^1.0.0",
