@@ -87,7 +87,7 @@ export class RawLayout extends RawTemplate {
   compile(definition: ComponentDefinition, env: Environment) {
     if (this.ops) return;
 
-    this.parts = this.parts || new LayoutCompiler(this, env).compile();
+    this.parts = this.parts || new LayoutCompiler(this, env, definition).compile();
     let { tag, preamble, main } = this.parts;
 
     let ops = new LinkedList<Opcode>();
@@ -197,15 +197,22 @@ interface CompiledComponentParts {
 export class LayoutCompiler extends Compiler {
   private preamble: CompileIntoList;
   private body: CompileIntoList;
+  private definition: ComponentDefinition;
   protected template: RawLayout;
 
+  constructor(layout: RawLayout, env: Environment, definition: ComponentDefinition) {
+    super(layout, env);
+    this.definition = definition;
+  }
+
   compile(): CompiledComponentParts {
+    let { tag, attrs, body } = ComponentDefinition.compile
     let { template } = this;
     let { program } = template;
 
     let current = program.head();
 
-    while (current.type !== 'open-primitive-element') {
+    while (current && current.type !== 'open-primitive-element') {
       current = current.next;
     }
 
@@ -233,7 +240,7 @@ export class LayoutCompiler extends Compiler {
   }
 }
 
-class CompileIntoList extends LinkedList<Opcode> implements CompileInto {
+export class CompileIntoList extends LinkedList<Opcode> implements CompileInto {
   private symbolTable: SymbolTable;
 
   constructor(symbolTable: SymbolTable) {

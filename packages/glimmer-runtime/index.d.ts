@@ -9,6 +9,8 @@ export {
 
 export { default as Template } from './lib/template';
 
+export { default as SymbolTable } from './lib/symbol-table';
+
 export {
   Templates,
   Append,
@@ -36,7 +38,8 @@ export {
   RawLayout,
   RawLayoutOptions,
   RawBlock,
-  RawBlockOptions
+  RawBlockOptions,
+  CompileIntoList
 } from './lib/compiler';
 
 export {
@@ -56,6 +59,7 @@ export {
   JumpOpcode,
   JumpIfOpcode,
   JumpUnlessOpcode,
+  BindNamedArgsOpcode
 } from './lib/compiled/opcodes/vm';
 
 export {
