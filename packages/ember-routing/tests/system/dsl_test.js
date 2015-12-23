@@ -117,8 +117,11 @@ QUnit.test('should add loading and error routes if _isRouterMapResult is true', 
     this.route('blork');
   });
 
-  var router = Router.create();
-  router._initRouterJs(true);
+  var router = Router.create({
+    _hasModuleBasedResolver() { return true; }
+  });
+
+  router._initRouterJs();
 
   ok(router.router.recognizer.names['blork'], 'main route was created');
   ok(router.router.recognizer.names['blork_loading'], 'loading route was added');

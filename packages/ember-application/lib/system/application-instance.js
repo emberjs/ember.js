@@ -209,7 +209,7 @@ const ApplicationInstance = EngineInstance.extend({
   */
   startRouting() {
     var router = get(this, 'router');
-    router.startRouting(isResolverModuleBased(this));
+    router.startRouting();
     this._didSetupRouter = true;
   },
 
@@ -227,7 +227,7 @@ const ApplicationInstance = EngineInstance.extend({
     this._didSetupRouter = true;
 
     var router = get(this, 'router');
-    router.setupRouter(isResolverModuleBased(this));
+    router.setupRouter();
   },
 
   /**
@@ -509,10 +509,6 @@ if (isEnabled('ember-application-visit')) {
     env.options = this;
     return env;
   };
-}
-
-function isResolverModuleBased(applicationInstance) {
-  return !!applicationInstance.application.__registry__.resolver.moduleBasedResolver;
 }
 
 Object.defineProperty(ApplicationInstance.prototype, 'container', {
