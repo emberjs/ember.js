@@ -203,7 +203,7 @@ export class VM {
     evaledArgs.internal = evaledArgs.internal || dict<any>();
     evaledArgs.internal['shadow'] = shadow;
     evaledArgs.internal['definition'] = definition;
-    layout.compile(this.env);
+    layout.compile(definition, this.env);
     this.pushRootScope(layout.symbolTable.size);
     this.pushFrame(layout.ops, evaledArgs, templates, this);
   }

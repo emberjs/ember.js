@@ -182,7 +182,7 @@ export class BlockCompiler extends Compiler {
   }
 }
 
-interface ComponentParts {
+export interface ComponentParts {
   tag: InternedString;
   attrs: Slice<AttributeSyntax>;
   body: Slice<StatementSyntax>;
@@ -206,17 +206,9 @@ export class LayoutCompiler extends Compiler {
   }
 
   compile(): CompiledComponentParts {
-    let { tag, attrs, body } = ComponentDefinition.compile
-    let { template } = this;
-    let { program } = template;
+    let { template, env, symbolTable } = this;
+    let { tag, attrs, body } = this.definition.compile({ template, env, symbolTable });
 
-    let current = program.head();
-
-    while (current && current.type !== 'open-primitive-element') {
-      current = current.next;
-    }
-
-    let { tag, attrs, body } = extractComponent(<any>current);
     let preamble = this.preamble = new CompileIntoList(this.symbolTable);
     let main = this.body = new CompileIntoList(this.symbolTable);
 
