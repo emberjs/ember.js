@@ -321,7 +321,7 @@ interface ComponentParts {
 }
 
 class GlimmerComponentDefinition extends ComponentDefinition {
-  compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }) {
+  compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
     let { program } = template;
 
     let current = program.head();
@@ -330,23 +330,7 @@ class GlimmerComponentDefinition extends ComponentDefinition {
       current = current.next;
     }
 
-    let { tag, attrs, body } = this.extractComponent(<any>current);
-    let preamble = new CompileIntoList(symbolTable);
-    let main = new CompileIntoList(symbolTable);
-
-    if (template.hasNamedParameters()) {
-      preamble.append(BindNamedArgsOpcode.create(template));
-    }
-
-    attrs.forEachNode(attr => {
-      attr.compile(preamble, env);
-    });
-
-    body.forEachNode(statement => {
-      statement.compile(main, env);
-    });
-
-    return { tag, preamble, main };
+    return this.extractComponent(<any>current);
   }
 
   private extractComponent(head: OpenElementSyntax): ComponentParts {
@@ -397,48 +381,48 @@ const EMBER_VIEW = new ConstReference('ember-view');
 let id = 1;
 
 class EmberishComponentDefinition extends ComponentDefinition {
-  private templateWithAttrs(args: ArgsSyntax, named: InternedString[]) {
-    return this.layout.cloneWith((program, table) => {
-      let toSplice = new LinkedList<AttributeSyntax>();
+  // private templateWithAttrs(args: ArgsSyntax, named: InternedString[]) {
+  //   return this.layout.cloneWith((program, table) => {
+  //     let toSplice = new LinkedList<AttributeSyntax>();
 
-      toSplice.append(new AddClass({ value: EMBER_VIEW }));
-      toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
+  //     toSplice.append(new AddClass({ value: EMBER_VIEW }));
+  //     toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
 
-      let named = args.named.map;
-      Object.keys(named).forEach((name: InternedString) => {
-        let attr;
-        let value = named[<string>name];
-        if (name === 'class') {
-          attr = new AddClass({ value });
-        } else if (name === 'id') {
-          attr = new DynamicAttr({ name, value, namespace: null });
-        } else if (name === 'ariaRole') {
-          attr = new DynamicAttr({ name: <InternedString>'role', value, namespace: null });
-        } else {
-          return;
-        }
+  //     let named = args.named.map;
+  //     Object.keys(named).forEach((name: InternedString) => {
+  //       let attr;
+  //       let value = named[<string>name];
+  //       if (name === 'class') {
+  //         attr = new AddClass({ value });
+  //       } else if (name === 'id') {
+  //         attr = new DynamicAttr({ name, value, namespace: null });
+  //       } else if (name === 'ariaRole') {
+  //         attr = new DynamicAttr({ name: <InternedString>'role', value, namespace: null });
+  //       } else {
+  //         return;
+  //       }
 
-        toSplice.append(attr);
-      });
+  //       toSplice.append(attr);
+  //     });
 
-      let head = program.head();
-      program.insertBefore(new OpenPrimitiveElementSyntax({ tag: <InternedString>'div' }), head);
-      program.spliceList(toSplice, program.nextNode(head));
-      program.append(new CloseElementSyntax());
-    });
-  }
+  //     let head = program.head();
+  //     program.insertBefore(new OpenPrimitiveElementSyntax({ tag: <InternedString>'div' }), head);
+  //     program.spliceList(toSplice, program.nextNode(head));
+  //     program.append(new CloseElementSyntax());
+  //   });
+  // }
 }
 
-class EmberishGlimmerComponentDefinition extends ComponentDefinition {
-  didCreateElement(vm: VM) {
-    let args = vm.frame.getArgs();
+class EmberishGlimmerComponentDefinition extends GlimmerComponentDefinition {
+  // didCreateElement(vm: VM) {
+  //   let args = vm.frame.getArgs();
 
-    vm.stack().addClass(EMBER_VIEW);
+  //   vm.stack().addClass(EMBER_VIEW);
 
-    if (!args.named.has('@id' as InternedString)) {
-      vm.stack().setAttribute('id' as InternedString, `ember${id++}`);
-    }
-  }
+  //   if (!args.named.has('@id' as InternedString)) {
+  //     vm.stack().setAttribute('id' as InternedString, `ember${id++}`);
+  //   }
+  // }
 }
 
 type EachOptions = { args: ArgsSyntax };

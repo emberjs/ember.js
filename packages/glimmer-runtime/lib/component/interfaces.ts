@@ -13,7 +13,7 @@ import {
   AttributeSyntax
 } from '../syntax';
 
-import { RawLayout } from '../compiler';
+import { RawLayout, ComponentParts } from '../compiler';
 
 import { VM } from '../vm';
 
@@ -101,5 +101,5 @@ export abstract class ComponentDefinition {
     this.layout = layout;
   }
 
-  abstract compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable });
+  abstract compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts;
 }
