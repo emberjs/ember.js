@@ -6,7 +6,7 @@ module('<%= friendlyTestName %>');
 
 // Replace this with your real tests.
 test('it works', function(assert) {
-  var <%= classifiedModuleName %>Object = Ember.Object.extend(<%= classifiedModuleName %>Mixin);
-  var subject = <%= classifiedModuleName %>Object.create();
+  let <%= classifiedModuleName %>Object = Ember.Object.extend(<%= classifiedModuleName %>Mixin);
+  let subject = <%= classifiedModuleName %>Object.create();
   assert.ok(subject);
 });

@@ -1,16 +1,7 @@
-import { module, test } from 'qunit';
-import startApp from '<%= testFolderRoot %>/tests/helpers/start-app';
-import destroyApp from '<%= testFolderRoot %>/tests/helpers/destroy-app';
+import { test } from 'qunit';
+import moduleForAcceptance from '<%= testFolderRoot %>/tests/helpers/module-for-acceptance';
 
-module('<%= friendlyTestName %>', {
-  beforeEach: function() {
-    this.application = startApp();
-  },
-
-  afterEach: function() {
-    destroyApp(this.application);
-  }
-});
+moduleForAcceptance('<%= friendlyTestName %>');
 
 test('visiting /<%= dasherizedModuleName %>', function(assert) {
   visit('/<%= dasherizedModuleName %>');

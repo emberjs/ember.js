@@ -8,8 +8,7 @@ moduleForComponent('<%= componentPathName %>', '<%= friendlyTestDescription %>',
 });
 
 test('it renders', function(assert) {
-  <% if (testType === 'integration' ) { %>
-  // Set any properties with this.set('myProperty', 'value');
+  <% if (testType === 'integration' ) { %>// Set any properties with this.set('myProperty', 'value');
   // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
 
   this.render(hbs`{{<%= componentPathName %>}}`);
@@ -25,7 +24,7 @@ test('it renders', function(assert) {
 
   assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>
   // Creates the component instance
-  /*var component =*/ this.subject();
+  /*let component =*/ this.subject();
   // Renders the component to the page
   this.render();
   assert.equal(this.$().text().trim(), '');<% } %>
