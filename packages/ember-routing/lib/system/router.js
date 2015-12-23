@@ -74,7 +74,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   rootURL: '/',
 
-  _initRouterJs(moduleBasedResolver) {
+  _initRouterJs() {
     var router = this.router = new Router();
     router.triggerEvent = triggerEvent;
 
@@ -82,19 +82,13 @@ var EmberRouter = EmberObject.extend(Evented, {
     router._triggerWillLeave = K;
 
     var dslCallbacks = this.constructor.dslCallbacks || [K];
-    var dsl = new EmberRouterDSL(null, {
-      enableLoadingSubstates: !!moduleBasedResolver
+    var dsl = this._buildDSL();
+
+    dsl.route('application', { path: '/', resetNamespace: true, overrideNameAssertion: true }, function() {
+      for (var i = 0; i < dslCallbacks.length; i++) {
+        dslCallbacks[i].call(this);
+      }
     });
-
-    function generateDSL() {
-      this.route('application', { path: '/', resetNamespace: true, overrideNameAssertion: true }, function() {
-        for (var i = 0; i < dslCallbacks.length; i++) {
-          dslCallbacks[i].call(this);
-        }
-      });
-    }
-
-    generateDSL.call(dsl);
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
       router.log = Logger.debug;
@@ -103,7 +97,17 @@ var EmberRouter = EmberObject.extend(Evented, {
     router.map(dsl.generate());
   },
 
+  _buildDSL() {
+    let moduleBasedResolver = this._hasModuleBasedResolver();
+
+    return new EmberRouterDSL(null, {
+      enableLoadingSubstates: !!moduleBasedResolver
+    });
+  },
+
   init() {
+    this._super(...arguments);
+
     this._activeViews = {};
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
@@ -129,6 +133,18 @@ var EmberRouter = EmberObject.extend(Evented, {
     return get(this, 'location').getURL();
   }),
 
+  _hasModuleBasedResolver() {
+    let owner = getOwner(this);
+
+    if (!owner) { return false; }
+
+    let resolver = owner.application && owner.application.__registry__ && owner.application.__registry__.resolver;
+
+    if (!resolver) { return false; }
+
+    return !!resolver.moduleBasedResolver;
+  },
+
   /**
     Initializes the current router instance and sets up the change handling
     event listeners used by the instances `location` implementation.
@@ -139,10 +155,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method startRouting
     @private
   */
-  startRouting(moduleBasedResolver) {
+  startRouting() {
     var initialURL = get(this, 'initialURL');
 
-    if (this.setupRouter(moduleBasedResolver)) {
+    if (this.setupRouter()) {
       if (typeof initialURL === 'undefined') {
         initialURL = get(this, 'location').getURL();
       }
@@ -153,8 +169,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
   },
 
-  setupRouter(moduleBasedResolver) {
-    this._initRouterJs(moduleBasedResolver);
+  setupRouter() {
+    this._initRouterJs();
     this._setupLocation();
 
     var router = this.router;
@@ -849,7 +865,7 @@ function routeHasBeenDefined(router, name) {
          (owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`));
 }
 
-function triggerEvent(handlerInfos, ignoreFailure, args) {
+export function triggerEvent(handlerInfos, ignoreFailure, args) {
   var name = args.shift();
 
   if (!handlerInfos) {
