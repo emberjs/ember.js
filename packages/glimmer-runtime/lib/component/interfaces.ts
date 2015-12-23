@@ -17,6 +17,9 @@ import { RawLayout } from '../compiler';
 
 import { VM } from '../vm';
 
+import Environment from '../environment';
+import SymbolTable from '../symbol-table';
+
 export interface ComponentClass {
   new (attrs: Object): Component;
 }
@@ -97,4 +100,6 @@ export abstract class ComponentDefinition {
     this.ComponentClass = ComponentClass;
     this.layout = layout;
   }
+
+  abstract compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable });
 }

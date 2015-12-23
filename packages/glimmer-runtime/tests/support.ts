@@ -1,4 +1,7 @@
 import {
+  // Constants
+  ATTRIBUTE_SYNTAX,
+
   CompileInto,
   VM,
 
@@ -6,6 +9,8 @@ import {
   Compiler,
   RawTemplate,
   RawLayout,
+  CompileIntoList,
+  SymbolTable,
 
   // Environment
   Environment,
@@ -28,6 +33,7 @@ import {
   NextIterOpcode,
   OpenComponentOpcode,
   CloseComponentOpcode,
+  BindNamedArgsOpcode,
 
   // Components
   ComponentClass,
@@ -49,6 +55,7 @@ import {
   NamedArgsSyntax,
   HelperSyntax,
   BlockSyntax,
+  OpenElement as OpenElementSyntax,
   OpenPrimitiveElementSyntax,
   CloseElementSyntax,
   StaticAttr,
@@ -187,7 +194,7 @@ export class TestEnvironment extends Environment {
       let component = this.getComponentDefinition(path, statement);
 
       if (component) {
-        return new CurlyComponent({ args, component, templates: block && block.templates });
+        return new CurlyComponent({ args, definition: component, templates: block && block.templates });
       }
     }
 
@@ -307,7 +314,83 @@ interface TemplateWithAttrsOptions {
   identity?: InternedString;
 }
 
+interface ComponentParts {
+  tag: InternedString;
+  attrs: Slice<AttributeSyntax>;
+  body: Slice<StatementSyntax>;
+}
+
 class GlimmerComponentDefinition extends ComponentDefinition {
+  compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }) {
+    let { program } = template;
+
+    let current = program.head();
+
+    while (current && current.type !== 'open-primitive-element') {
+      current = current.next;
+    }
+
+    let { tag, attrs, body } = this.extractComponent(<any>current);
+    let preamble = new CompileIntoList(symbolTable);
+    let main = new CompileIntoList(symbolTable);
+
+    if (template.hasNamedParameters()) {
+      preamble.append(BindNamedArgsOpcode.create(template));
+    }
+
+    attrs.forEachNode(attr => {
+      attr.compile(preamble, env);
+    });
+
+    body.forEachNode(statement => {
+      statement.compile(main, env);
+    });
+
+    return { tag, preamble, main };
+  }
+
+  private extractComponent(head: OpenElementSyntax): ComponentParts {
+    let tag = head.tag;
+    let current = head.next;
+
+    let beginAttrs: AttributeSyntax = null;
+    let endAttrs: AttributeSyntax = null;
+
+    while (current[ATTRIBUTE_SYNTAX]) {
+      beginAttrs = beginAttrs || <AttributeSyntax>current;
+      endAttrs = <AttributeSyntax>current;
+      current = current.next;
+    }
+
+    let attrs = new ListSlice(beginAttrs, endAttrs);
+
+    let beginBody: StatementSyntax = null;
+    let endBody: StatementSyntax = null;
+    let nesting = 1;
+
+    while (true) {
+      if (current instanceof CloseElementSyntax && --nesting === 0) {
+        break;
+      }
+
+      beginBody = beginBody || current;
+      endBody = current;
+
+      if (current instanceof OpenElementSyntax || current instanceof OpenPrimitiveElementSyntax) {
+        nesting++;
+      }
+
+      current = current.next;
+    }
+
+    let body = new ListSlice(beginBody, endBody);
+
+    return {
+      tag,
+      attrs,
+      body
+    };
+  }
 }
 
 const EMBER_VIEW = new ConstReference('ember-view');
