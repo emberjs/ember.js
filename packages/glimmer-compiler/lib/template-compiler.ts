@@ -262,9 +262,13 @@ export default class TemplateCompiler {
 
   openElement([action]) {
     this.opcode('openElement', action, action.tag, action.blockParams);
+    for (let i = 0; i < action.attributes.length; i++) {
+      this.attribute([action.attributes[i]]);
+    }
 
-    action.attributes.forEach(attr => this.attribute([attr]));
-    action.modifiers.forEach(modifier => this.modifier([modifier]));
+    for (let i = 0; i < action.modifiers.length; i++) {
+      this.modifier([action.modifiers[i]]);
+    }
   }
 
   closeElement() {
@@ -274,10 +278,11 @@ export default class TemplateCompiler {
   component([action]) {
     let { attributes, tag } = action;
 
-    attributes.forEach(({ name, value }) => {
+    for (let i = 0; i < attributes.length; i++) {
+      let { name, value } = attributes[i];
       this.prepareAttributeValue(value);
       this.opcode('pushLiteral', name, name);
-    });
+    }
 
     this.opcode('prepareObject', null, attributes.length);
 
@@ -304,10 +309,10 @@ export default class TemplateCompiler {
   }
 
   modifier([action]) {
-    let { path } = action;
+    let { path: { parts } } = action;
 
     this.prepareHelper(action);
-    this.opcode('modifier', action, path.parts);
+    this.opcode('modifier', action, parts);
   }
 
   mustache([action]) {
@@ -421,8 +426,8 @@ export default class TemplateCompiler {
       return;
     }
 
-    for (var i = params.length - 1; i >= 0; i--) {
-      var param = params[i];
+    for (let i = params.length - 1; i >= 0; i--) {
+      let param = params[i];
 
       if (param.type === 'MustacheStatement') {
         this.attributeMustache([param]);
@@ -436,16 +441,15 @@ export default class TemplateCompiler {
   }
 
   prepareHash(hash) {
-    var pairs = hash.pairs;
+    let pairs = hash.pairs;
 
     if (!pairs.length) {
       this.opcode('pushLiteral', null, null);
       return;
     }
 
-    for (var i = pairs.length - 1; i >= 0; i--) {
-      var key = pairs[i].key;
-      var value = pairs[i].value;
+    for (let i = pairs.length - 1; i >= 0; i--) {
+      let { key, value } = pairs[i];
 
       assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       this[value.type](value);
