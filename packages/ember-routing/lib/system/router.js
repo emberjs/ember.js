@@ -18,8 +18,10 @@ import {
   stashParamNames,
   calculateCacheKey
 } from 'ember-routing/utils';
+import { guidFor } from 'ember-metal/utils';
 import RouterState from './router_state';
 import { getOwner } from 'container/owner';
+import dictionary from 'ember-metal/dictionary';
 
 /**
 @module ember
@@ -32,6 +34,7 @@ import 'router/transition';
 function K() { return this; }
 
 var slice = [].slice;
+
 
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to
@@ -111,6 +114,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     this._activeViews = {};
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
+    this._handledErrors = dictionary(null);
   },
 
   /*
@@ -299,8 +303,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _doURLTransition(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
-    didBeginTransition(transition, this);
-    return transition;
+    return didBeginTransition(transition, this);
   },
 
   transitionTo(...args) {
@@ -724,6 +727,20 @@ var EmberRouter = EmberObject.extend(Evented, {
       run.cancel(this._slowTransitionTimer);
     }
     this._slowTransitionTimer = null;
+  },
+
+  // These three helper functions are used to ensure errors aren't
+  // re-raised if they're handled in a route's error action.
+  _markErrorAsHandled(errorGuid) {
+    this._handledErrors[errorGuid] = true;
+  },
+
+  _isErrorHandled(errorGuid) {
+    return this._handledErrors[errorGuid];
+  },
+
+  _clearHandledError(errorGuid) {
+    delete this._handledErrors[errorGuid];
   }
 });
 
@@ -884,6 +901,11 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
       if (handler.actions[name].apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
+        // Should only hit here if a non-bubbling error action is triggered on a route.
+        if (name === 'error') {
+          var errorId = guidFor(args[0]);
+          handler.router._markErrorAsHandled(errorId);
+        }
         return;
       }
     }
@@ -1047,6 +1069,16 @@ function didBeginTransition(transition, router) {
     router.set('currentState', routerState);
   }
   router.set('targetState', routerState);
+
+  return transition.catch(function(error) {
+    var errorId = guidFor(error);
+
+    if (router._isErrorHandled(errorId)) {
+      router._clearHandledError(errorId);
+    } else {
+      throw error;
+    }
+  });
 }
 
 function resemblesURL(str) {
