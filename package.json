@@ -35,7 +35,7 @@
     "glob": "~4.3.2",
     "htmlbars": "0.14.11",
     "qunit-extras": "^1.4.0",
-    "qunitjs": "^1.19.0",
+    "qunitjs": "^1.20.0",
     "route-recognizer": "0.1.5",
     "rsvp": "~3.1.0",
     "serve-static": "^1.10.0",
