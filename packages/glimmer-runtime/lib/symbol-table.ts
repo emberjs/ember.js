@@ -6,6 +6,7 @@ export default class SymbolTable {
   private top: SymbolTable;
   private template: RawTemplate;
   private locals = dict<number>();
+  private yields = dict<number>();
   public size = 1;
 
   constructor(parent: SymbolTable, template: RawTemplate) {
@@ -28,13 +29,29 @@ export default class SymbolTable {
 
   initNamed(named: InternedString[]): this {
     if (named) named.forEach(s => this.locals[<string>s] = this.size++);
+    return this;
+  }
 
+  initYields(yields: InternedString[]): this {
+    if (yields) yields.forEach(b => this.yields[<string>b] = this.size++);
     return this;
   }
 
   putNamed(names: InternedString[]) {
     let top = this.top;
     names.forEach(s => top.putSingleNamed(s));
+  }
+
+  getYield(name: InternedString): number {
+    let { yields, parent } = this;
+
+    let symbol = yields[<string>name];
+
+    if (!symbol && parent) {
+      symbol = parent.getYield(name);
+    }
+
+    return symbol;
   }
 
   get(name: InternedString): number {

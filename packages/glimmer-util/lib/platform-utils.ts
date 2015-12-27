@@ -19,7 +19,7 @@ export function LITERAL(str: string): InternedString {
   return <InternedString>str;
 }
 
-let BASE_KEY = intern(`__htmlbars${+ new Date()}`);
+let BASE_KEY = intern(`__glimmer{+ new Date()}`);
 
 export function symbol(debugName) {
   let number = +(new Date());

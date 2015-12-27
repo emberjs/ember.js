@@ -1,4 +1,5 @@
 import { HasGuid, installGuid } from './guid';
+import { InternedString } from './platform-utils';
 
 export interface Dict<T> {
   [index: string]: T;
@@ -17,7 +18,9 @@ export function dict<T>(): Dict<T> {
   return d;
 }
 
-export class DictSet<T extends HasGuid> implements Set<T> {
+export type SetMember = HasGuid | InternedString | string;
+
+export class DictSet<T extends SetMember> implements Set<T> {
   private dict: Dict<T>;
 
   constructor() {
@@ -25,17 +28,23 @@ export class DictSet<T extends HasGuid> implements Set<T> {
   }
 
   add(obj: T): Set<T> {
-    this.dict[installGuid(obj)] = obj;
+    if (typeof obj === 'string') this.dict[<any>obj] = obj;
+    else this.dict[installGuid(<any>obj)] = obj;
     return this;
   }
 
   delete(obj: T) {
-    if (obj._guid) delete this.dict[obj._guid];
+    if (typeof obj === 'string') delete this.dict[<any>obj];
+    else if ((obj as any)._guid) delete this.dict[(obj as any)._guid];
   }
 
   forEach(callback: (T) => void) {
     let { dict } = this;
     Object.keys(dict).forEach(key => callback(dict[key]));
+  }
+
+  toArray(): InternedString[] {
+    return Object.keys(this.dict) as InternedString[];
   }
 }
 

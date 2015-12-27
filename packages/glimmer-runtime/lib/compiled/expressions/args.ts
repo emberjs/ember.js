@@ -1,6 +1,7 @@
 import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, CompiledPositionalArgs, EvaluatedPositionalArgs } from './positional-args';
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
 import VM from '../../vm';
+import { RawBlock } from '../../compiler';
 import { PathReference } from 'glimmer-reference';
 
 interface CompiledArgOptions {
@@ -76,6 +77,7 @@ export abstract class EvaluatedArgs {
   public type: string;
   public positional: EvaluatedPositionalArgs;
   public named: EvaluatedNamedArgs;
+  public blocks: RawBlock[];
   public internal: Object;
 }
 

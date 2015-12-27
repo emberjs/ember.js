@@ -1,4 +1,5 @@
 import {
+  Yield,
   Block,
   Append,
   DynamicAttr,
@@ -11,20 +12,37 @@ import {
   StaticAttr
 } from './core';
 
-import { StatementSyntax } from '../syntax';
+import { RawBlock } from '../compiler';
+import { Statement as StatementSyntax } from '../syntax';
+import {
+  Statements as SerializedStatements,
+  Statement as SerializedStatement
+} from 'glimmer-compiler';
 
-// these are all constructors, indexed by statement type
-export default function(name: string): typeof StatementSyntax {
-  switch (name) {
-    case 'block': return <any>Block;
-    case 'append': return <any>Append;
-    case 'dynamicAttr': return <any>DynamicAttr;
-    case 'dynamicProp': return <any>DynamicProp;
-    case 'addClass': return <any>AddClass;
-    case 'text': return <any>Text;
-    case 'comment': return <any>Comment;
-    case 'openElement': return <any>OpenElement;
-    case 'closeElement': return <any>CloseElement;
-    case 'staticAttr': return <any>StaticAttr;
-  }
+const {
+  isYield,
+  isBlock,
+  isAppend,
+  isDynamicAttr,
+  isDynamicProp,
+  isAddClass,
+  isText,
+  isComment,
+  isOpenElement,
+  isCloseElement,
+  isStaticAttr
+} = SerializedStatements;
+
+export default function(sexp: SerializedStatement, children: RawBlock[]): StatementSyntax {
+  if (isYield(sexp)) return Yield.fromSpec(sexp);
+  if (isBlock(sexp)) return Block.fromSpec(sexp, children);
+  if (isAppend(sexp)) return Append.fromSpec(sexp);
+  if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
+  if (isDynamicProp(sexp)) return DynamicProp.fromSpec(sexp);
+  if (isAddClass(sexp)) return AddClass.fromSpec(sexp);
+  if (isText(sexp)) return Text.fromSpec(sexp);
+  if (isComment(sexp)) return Comment.fromSpec(sexp);
+  if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp);
+  if (isCloseElement(sexp)) return CloseElement.fromSpec();
+  if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);
 };

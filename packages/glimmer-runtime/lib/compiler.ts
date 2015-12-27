@@ -1,11 +1,10 @@
-import { Slice, ListSlice, LinkedList, InternedString } from 'glimmer-util';
+import { Slice, LinkedList, InternedString } from 'glimmer-util';
 import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
-import { BindNamedArgsOpcode, BindPositionalArgsOpcode } from './compiled/opcodes/vm';
+import { BindNamedArgsOpcode, BindBlocksOpcode, BindPositionalArgsOpcode } from './compiled/opcodes/vm';
 import { OpenPrimitiveElementOpcode, CloseElementOpcode } from './compiled/opcodes/dom';
 import { ShadowAttributesOpcode } from './compiled/opcodes/component';
-import { ATTRIBUTE_SYNTAX, Program, StatementSyntax, AttributeSyntax, CompileInto } from './syntax';
+import { Program, Statement as StatementSyntax, Attribute as AttributeSyntax, CompileInto } from './syntax';
 import { Environment } from './environment';
-import { OpenElement, OpenPrimitiveElement, CloseElement } from './syntax/core';
 import { ComponentDefinition } from './component/interfaces';
 import SymbolTable from './symbol-table';
 
@@ -19,6 +18,7 @@ export abstract class RawTemplate {
   public symbolTable: SymbolTable = null;
   public locals: InternedString[];
   public named: InternedString[];
+  public yields: InternedString[];
   public children: RawTemplate[];
 
   constructor({ children }: RawTemplateOptions) {
@@ -69,18 +69,20 @@ export class RawEntryPoint extends RawTemplate {
 export interface RawLayoutOptions extends RawTemplateOptions {
   parts?: CompiledComponentParts;
   named: InternedString[];
+  yields: InternedString[];
   program?: Program;
 }
 
 export class RawLayout extends RawTemplate {
   private parts: CompiledComponentParts;
 
-  constructor({ children, parts, named, program }: RawLayoutOptions) {
+  constructor({ children, parts, named, yields, program }: RawLayoutOptions) {
     super({ children });
     this.parts = parts;
     // positional params in Ember may want this
     // this.locals = locals;
     this.named = named;
+    this.yields = yields;
     this.program = program || null;
   }
 
@@ -102,6 +104,10 @@ export class RawLayout extends RawTemplate {
   hasNamedParameters(): boolean {
     return !!this.named;
   }
+
+  hasYields(): boolean {
+    return !!this.yields;
+  }
 }
 
 abstract class Compiler {
@@ -116,6 +122,11 @@ abstract class Compiler {
     this.env = env;
     this.symbolTable = template.symbolTable;
   }
+
+  protected compileStatement(statement: StatementSyntax, ops: CompileIntoList) {
+    this.env.statement(statement).compile(ops, this.env);
+  }
+
 }
 
 export default Compiler;
@@ -129,14 +140,14 @@ export class EntryPointCompiler extends Compiler {
   }
 
   compile(): OpSeqBuilder {
-    let { template, ops, env } = this;
+    let { template, ops } = this;
     let { program } = template;
 
     let current = program.head();
 
     while (current) {
       let next = program.nextNode(current);
-      env.statement(current).compile(ops, env);
+      this.compileStatement(current, ops);
       current = next;
     }
 
@@ -149,6 +160,10 @@ export class EntryPointCompiler extends Compiler {
 
   getSymbol(name: InternedString): number {
     return this.symbolTable.get(name);
+  }
+
+  getYieldSymbol(name: InternedString): number {
+    return this.symbolTable.getYield(name);
   }
 }
 
@@ -163,7 +178,7 @@ export class BlockCompiler extends Compiler {
   }
 
   compile(): CompileIntoList {
-    let { template, ops, env } = this;
+    let { template, ops } = this;
     let { program } = template;
 
     if (template.hasPositionalParameters()) {
@@ -174,7 +189,7 @@ export class BlockCompiler extends Compiler {
 
     while (current) {
       let next = program.nextNode(current);
-      env.statement(current).compile(ops, env);
+      this.compileStatement(current, ops);
       current = next;
     }
 
@@ -216,12 +231,16 @@ export class LayoutCompiler extends Compiler {
       preamble.append(BindNamedArgsOpcode.create(template));
     }
 
+    if (template.hasYields()) {
+      preamble.append(BindBlocksOpcode.create(template));
+    }
+
     attrs.forEachNode(attr => {
-      attr.compile(preamble, this.env);
+      this.compileStatement(attr, preamble);
     });
 
     body.forEachNode(statement => {
-      statement.compile(main, this.env);
+      this.compileStatement(statement, main);
     });
 
     return { tag, preamble, main };
@@ -229,6 +248,10 @@ export class LayoutCompiler extends Compiler {
 
   getSymbol(name: InternedString): number {
     return this.symbolTable.get(name);
+  }
+
+  getBlockSymbol(name: InternedString): number {
+    return this.symbolTable.getYield(name);
   }
 }
 
@@ -243,47 +266,8 @@ export class CompileIntoList extends LinkedList<Opcode> implements CompileInto {
   getSymbol(name: InternedString): number {
     return this.symbolTable.get(name);
   }
-}
 
-function extractComponent(head: OpenElement): ComponentParts {
-  let tag = head.tag;
-  let current = head.next;
-
-  let beginAttrs: AttributeSyntax = null;
-  let endAttrs: AttributeSyntax = null;
-
-  while (current[ATTRIBUTE_SYNTAX]) {
-    beginAttrs = beginAttrs || <AttributeSyntax>current;
-    endAttrs = <AttributeSyntax>current;
-    current = current.next;
+  getBlockSymbol(name: InternedString): number {
+    return this.symbolTable.getYield(name);
   }
-
-  let attrs = new ListSlice(beginAttrs, endAttrs);
-
-  let beginBody: StatementSyntax = null;
-  let endBody: StatementSyntax = null;
-  let nesting = 1;
-
-  while (true) {
-    if (current instanceof CloseElement && --nesting === 0) {
-      break;
-    }
-
-    beginBody = beginBody || current;
-    endBody = current;
-
-    if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
-      nesting++;
-    }
-
-    current = current.next;
-  }
-
-  let body = new ListSlice(beginBody, endBody);
-
-  return {
-    tag,
-    attrs,
-    body
-  };
 }
