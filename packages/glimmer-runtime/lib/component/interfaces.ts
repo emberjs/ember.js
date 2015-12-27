@@ -10,7 +10,7 @@ import {
 } from '../compiled/expressions/args';
 
 import {
-  AttributeSyntax
+  Attribute as AttributeSyntax
 } from '../syntax';
 
 import { RawLayout, ComponentParts } from '../compiler';
@@ -101,5 +101,5 @@ export abstract class ComponentDefinition {
     this.layout = layout;
   }
 
-  abstract compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts;
+  abstract compile(options: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts;
 }

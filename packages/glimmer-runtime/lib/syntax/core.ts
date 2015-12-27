@@ -1,18 +1,16 @@
 import { VM } from '../vm';
 
-import Template from '../template';
-
 import Syntax, {
   CompileInto,
-  AttributeSyntax,
-  ExpressionSyntax,
-  StatementSyntax,
+  Attribute as AttributeSyntax,
+  Expression as ExpressionSyntax,
+  Statement as StatementSyntax,
   PrettyPrintValue,
   PrettyPrint
 } from '../syntax';
 
 import {
-  RawTemplate
+  RawBlock
 } from '../compiler';
 
 import {
@@ -28,9 +26,7 @@ import {
   CloseComponentOpcode
 } from '../compiled/opcodes/component';
 
-import {
-  CompileComponentOptions
-} from '../component/interfaces';
+import buildExpression from './expressions';
 
 import {
   CompiledArgs,
@@ -62,7 +58,6 @@ import {
 import { Environment, Insertion, Helper as EnvHelper } from '../environment';
 
 import {
-  LinkedList,
   InternedString,
   Slice,
   Dict,
@@ -86,6 +81,12 @@ import {
   TrustingAppendOpcode
 } from '../compiled/opcodes/content';
 
+import {
+  Statements as SerializedStatements,
+  Expressions as SerializedExpressions,
+  Core as SerializedCore
+} from 'glimmer-compiler';
+
 interface Bounds {
   parentNode(): Node;
   firstNode(): Node;
@@ -94,16 +95,7 @@ interface Bounds {
 
 interface Reference {}
 
-type Spec = any[];
-
 const EMPTY_ARRAY = Object.freeze([]);
-
-type PathSexp = InternedString[];
-type ExpressionSexp = any[];
-type PositionalArgsSexp = ExpressionSexp[];
-type NamedArgsSexp = any[];
-
-type BlockSexp = [InternedString, PathSexp, PositionalArgsSexp, NamedArgsSexp, number, number];
 
 export interface BlockOptions {
 
@@ -112,13 +104,13 @@ export interface BlockOptions {
 export class Block extends StatementSyntax {
   public type = "block";
 
-  static fromSpec(sexp: BlockSexp, children: RawTemplate[]): Block {
+  static fromSpec(sexp: SerializedStatements.Block, children: RawBlock[]): Block {
     let [, path, params, hash, templateId, inverseId] = sexp;
 
     return new Block({
-      path,
-      args: Args.fromSpec(params, hash),
-      templates: Templates.fromSpec(null, [templateId, inverseId, children])
+      path: path as InternedString[],
+      args: Args.fromSpec(params as InternedString[], hash),
+      templates: Templates.fromSpec([templateId, inverseId], children)
     });
   }
 
@@ -150,15 +142,13 @@ export class Block extends StatementSyntax {
   }
 }
 
-type UnknownSexp = [string, PathSexp, boolean];
-
 export class Unknown extends ExpressionSyntax {
   public type = "unknown";
 
-  static fromSpec(sexp: UnknownSexp): Unknown {
-    let [, path, unsafe] = sexp;
+  static fromSpec(sexp: SerializedExpressions.Unknown): Unknown {
+    let [, path] = sexp;
 
-    return new Unknown({ ref: new Ref({ parts: path }), unsafe });
+    return new Unknown({ ref: new Ref({ parts: path as InternedString[] }) });
   }
 
   static build(path: string, unsafe: boolean): Unknown {
@@ -189,12 +179,10 @@ export class Unknown extends ExpressionSyntax {
   }
 }
 
-type AppendSexp = [InternedString, ExpressionSexp, boolean];
-
 export class Append extends StatementSyntax {
   public type = "append";
 
-  static fromSpec(sexp: AppendSexp) {
+  static fromSpec(sexp: SerializedStatements.Append): Append {
     let [, value, trustingMorph] = sexp;
 
     return new Append({ value: buildExpression(value), trustingMorph });
@@ -281,17 +269,15 @@ export class Modifier implements StatementSyntax {
 }
 */
 
-type DynamicPropSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
-
 export class DynamicProp extends AttributeSyntax {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "dynamic-prop";
 
-  static fromSpec(sexp: DynamicPropSexp): DynamicProp {
+  static fromSpec(sexp: SerializedStatements.DynamicProp): DynamicProp {
     let [, name, value] = sexp;
 
     return new DynamicProp({
-      name,
+      name: name as InternedString,
       value: buildExpression(value)
     });
   }
@@ -336,13 +322,11 @@ export class DynamicProp extends AttributeSyntax {
   }
 }
 
-type StaticAttrSexp = [InternedString, InternedString, InternedString, InternedString];
-
 export class StaticAttr extends AttributeSyntax {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "static-attr";
 
-  static fromSpec(node: StaticAttrSexp): StaticAttr {
+  static fromSpec(node: SerializedStatements.StaticAttr): StaticAttr {
     let [, name, value, namespace] = node;
 
     return new StaticAttr({ name, value, namespace });
@@ -393,18 +377,16 @@ export class StaticAttr extends AttributeSyntax {
   }
 }
 
-type DynamicAttrSexp = [InternedString, InternedString, ExpressionSexp, InternedString];
-
 export class DynamicAttr extends AttributeSyntax {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "dynamic-attr";
 
-  static fromSpec(sexp: DynamicAttrSexp): DynamicAttr {
+  static fromSpec(sexp: SerializedStatements.DynamicAttr): DynamicAttr {
     let [, name, value, namespace] = sexp;
 
     return new DynamicAttr({
-      name,
-      namespace,
+      name: name as InternedString,
+      namespace: namespace as InternedString,
       value: buildExpression(value)
     });
   }
@@ -457,13 +439,11 @@ export class DynamicAttr extends AttributeSyntax {
   }
 }
 
-type AddClassSexpr = [InternedString, ExpressionSexp];
-
 export class AddClass extends AttributeSyntax {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "add-class";
 
-  static fromSpec(node: AddClassSexpr): AddClass {
+  static fromSpec(node: SerializedStatements.AddClass): AddClass {
     let [, value] = node;
 
     return new AddClass({ value: buildExpression(value) });
@@ -526,15 +506,13 @@ export class CloseElement extends StatementSyntax {
   }
 }
 
-type TextSexp = [InternedString, InternedString];
-
 export class Text extends StatementSyntax {
   type = "text";
 
-  static fromSpec(node: TextSexp): Text {
+  static fromSpec(node: SerializedStatements.Text): Text {
     let [, content] = node;
 
-    return new Text({ content });
+    return new Text({ content: content as InternedString });
   }
 
   static build(content): Text {
@@ -557,12 +535,10 @@ export class Text extends StatementSyntax {
   }
 }
 
-type CommentSexp = [InternedString, InternedString];
-
 export class Comment extends StatementSyntax {
   type = "comment";
 
-  static fromSpec(sexp: CommentSexp): Comment {
+  static fromSpec(sexp: SerializedStatements.Comment): Comment {
     let [, value] = sexp;
 
     return new Comment({ value });
@@ -588,15 +564,16 @@ export class Comment extends StatementSyntax {
   }
 }
 
-type OpenElementSexp = [InternedString, InternedString, InternedString[]];
-
 export class OpenElement extends StatementSyntax {
   type = "open-element";
 
-  static fromSpec(sexp: OpenElementSexp): OpenElement {
+  static fromSpec(sexp: SerializedStatements.OpenElement): OpenElement {
     let [, tag, blockParams] = sexp;
 
-    return new OpenElement({ tag, blockParams });
+    return new OpenElement({
+      tag: tag as InternedString,
+      blockParams: blockParams as InternedString[]
+    });
   }
 
   static build(tag: string, blockParams: string[]): OpenElement {
@@ -644,7 +621,10 @@ export class Component extends StatementSyntax {
     let definition = env.getComponentDefinition([this.tag], this);
     let args = Args.fromHash(attributesToNamedArgs(this.attrs)).compile(list, env);
     let shadow = shadowList(this.attrs);
-    list.append(new OpenComponentOpcode({ definition, args, shadow }));
+    let block = new RawBlock({ children: null, ops: null, locals: null, program: this.contents });
+    let templates = new Templates({ template: block, inverse: null });
+
+    list.append(new OpenComponentOpcode({ definition, args, shadow, templates }));
     list.append(new CloseComponentOpcode());
   }
 }
@@ -667,24 +647,6 @@ function attributesToNamedArgs(attrs: Slice<AttributeSyntax>): NamedArgs {
   });
 
   return NamedArgs.build(map);
-}
-
-function attributeInvocationToLookup(attrs: Slice<AttributeSyntax>, namedArgs: Args): CompileComponentOptions {
-  let builder = new LinkedList<AttributeSyntax>();
-  let symbols = dict<boolean>();
-
-  attrs.forEachNode(a => {
-    let { syntax, symbol } = a.toLookup();
-    builder.append(syntax);
-    symbols[<string>symbol] = true;
-  });
-
-  return {
-    args: namedArgs,
-    syntax: builder,
-    locals: null,
-    named: <InternedString[]>Object.keys(symbols)
-  };
 }
 
 export class OpenPrimitiveElement extends StatementSyntax {
@@ -710,33 +672,54 @@ export class OpenPrimitiveElement extends StatementSyntax {
   }
 }
 
-export class YieldSyntax extends StatementSyntax {
+export class Yield extends StatementSyntax {
+  static fromSpec(sexp: SerializedStatements.Yield): Yield {
+    let [, to, params] = sexp;
+
+    let args = Args.fromSpec(params, null);
+
+    return new Yield({ to: to as InternedString, args });
+  }
+
+  static build(params: ExpressionSyntax[], to: string): Yield {
+    let args = Args.fromPositionalArgs(PositionalArgs.build(params));
+    return new this({ to: intern(to), args });
+  }
+
   type = "yield";
-  isStatic = false;
+  public to: InternedString;
   public args: Args;
 
-  constructor({ args }: { args: Args }) {
+  constructor({ to, args }: { to: InternedString, args: Args }) {
     super();
+    this.to = to;
     this.args = args;
   }
 
   compile(compiler: CompileInto) {
-    compiler.append(new InvokeBlockOpcode());
+    let to = compiler.getBlockSymbol(this.to);
+    compiler.append(new InvokeBlockOpcode({ to }));
   }
 }
 
 class InvokeBlockOpcode extends Opcode {
   type = "invoke-block";
+  public to: number;
+
+  constructor({ to }: { to: number }) {
+    super();
+    this.to = to;
+  }
 
   evaluate(vm: VM) {
-    vm.invokeTemplate(<InternedString>'default');
+    vm.invokeTemplate(this.to);
   }
 }
 
 export class Value extends ExpressionSyntax {
   type = "value";
 
-  static fromSpec(value): Value {
+  static fromSpec(value: SerializedExpressions.Value): Value {
     return new Value(value);
   }
 
@@ -764,16 +747,13 @@ export class Value extends ExpressionSyntax {
   }
 }
 
-type Path = InternedString[];
-type GetSexp = [InternedString, Path];
-
 export class Get extends ExpressionSyntax {
   type = "get";
 
-  static fromSpec(sexp: GetSexp): Get {
+  static fromSpec(sexp: SerializedExpressions.Get): Get {
     let [, parts] = sexp;
 
-    return new Get({ ref: new Ref({ parts }) });
+    return new Get({ ref: new Ref({ parts: parts as InternedString[] }) });
   }
 
   static build(path: string): Get {
@@ -796,15 +776,13 @@ export class Get extends ExpressionSyntax {
   }
 }
 
-type GetNamedParameterSexp = [InternedString, Path];
-
 export class GetNamedParameter extends ExpressionSyntax {
   type = "get";
 
-  static fromSpec(sexp: GetNamedParameterSexp): GetNamedParameter {
+  static fromSpec(sexp: SerializedExpressions.Attr): GetNamedParameter {
     let [, parts] = sexp;
 
-    return new GetNamedParameter({ parts });
+    return new GetNamedParameter({ parts: parts as InternedString[] });
   }
 
   static build(path: string): GetNamedParameter {
@@ -881,16 +859,14 @@ class Ref extends ExpressionSyntax {
   }
 }
 
-type HelperSexp = [string, PathSexp, PositionalArgsSexp, NamedArgsSexp];
-
 export class Helper extends ExpressionSyntax {
   type = "helper";
 
-  static fromSpec(sexp: HelperSexp): Helper {
+  static fromSpec(sexp: SerializedExpressions.Helper): Helper {
     let [, path, params, hash] = sexp;
 
     return new Helper({
-      ref: new Ref({ parts: path }),
+      ref: new Ref({ parts: path as InternedString[] }),
       args: Args.fromSpec(params, hash)
     });
   }
@@ -928,12 +904,10 @@ export class Helper extends ExpressionSyntax {
   }
 }
 
-type ConcatSexp = [string, PositionalArgsSexp];
-
-export class Concat extends Syntax<Concat> {
+export class Concat extends Syntax {
   type = "concat";
 
-  static fromSpec(sexp: ConcatSexp): Concat {
+  static fromSpec(sexp: SerializedExpressions.Concat): Concat {
     let [, params] = sexp;
 
     return new Concat({ parts: params.map(buildExpression) });
@@ -960,26 +934,10 @@ export class Concat extends Syntax<Concat> {
   }
 }
 
-const ExpressionNodes = {
-  get: Get,
-  attr: GetNamedParameter,
-  unknown: Unknown,
-  helper: Helper,
-  concat: Concat
-};
-
-function buildExpression(spec: Spec): ExpressionSyntax {
-  if (typeof spec !== 'object' || spec === null) {
-    return Value.fromSpec(spec);
-  } else {
-    return ExpressionNodes[spec[0]].fromSpec(spec);
-  }
-}
-
-export class Args extends Syntax<Args> {
+export class Args extends Syntax {
   public type = "args";
 
-  static fromSpec(positional: PositionalArgsSexp, named: NamedArgsSexp): Args {
+  static fromSpec(positional: SerializedCore.Params, named: SerializedCore.Hash): Args {
     return new Args({ positional: PositionalArgs.fromSpec(positional), named: NamedArgs.fromSpec(named) });
   }
 
@@ -1022,10 +980,10 @@ export class Args extends Syntax<Args> {
   }
 }
 
-export class PositionalArgs extends Syntax<PositionalArgs> {
+export class PositionalArgs extends Syntax {
   public type = "positional";
 
-  static fromSpec(sexp: PositionalArgsSexp): PositionalArgs {
+  static fromSpec(sexp: SerializedCore.Params): PositionalArgs {
     if (!sexp || sexp.length === 0) return PositionalArgs.empty();
     return new PositionalArgs(sexp.map(buildExpression));
   }
@@ -1068,39 +1026,35 @@ export class PositionalArgs extends Syntax<PositionalArgs> {
   }
 }
 
-export class NamedArgs extends Syntax<NamedArgs> {
+export class NamedArgs extends Syntax {
   public type = "named";
 
-  static fromSpec(rawPairs: NamedArgsSexp): NamedArgs {
-    if (!rawPairs) { return NamedArgs.empty(); }
-
-    let keys = [];
+  static fromSpec(sexp: SerializedCore.Hash): NamedArgs {
+    if (sexp === undefined) { return NamedArgs.empty(); }
+    let keys: InternedString[] = [];
     let values = [];
     let map = dict<ExpressionSyntax>();
 
-    for (let i = 0, l = rawPairs.length; i < l; i += 2) {
-      let key = rawPairs[i];
-      let expr = rawPairs[i+1];
-      keys.push(key);
-      let value = buildExpression(expr);
+    Object.keys(sexp).forEach(key => {
+      keys.push(key as InternedString);
+      let value = map[key] = buildExpression(sexp[key]);
       values.push(value);
-      map[key] = value;
-    }
-
-    return new NamedArgs({ keys, values, map });
-  }
-
-  static build(map: Dict<ExpressionSyntax>): NamedArgs {
-    if (map === undefined) { return NamedArgs.empty(); }
-    let keys = [];
-    let values = [];
-
-    Object.keys(map).forEach(key => {
-      keys.push(key);
-      values.push(map[key]);
     });
 
     return new this({ keys, values, map });
+  }
+
+  static build(map: Dict<ExpressionSyntax>): NamedArgs {
+    let keys = [];
+    let values = [];
+
+    Object.keys(map).forEach(k => {
+      let value = map[k];
+      keys.push(k as InternedString);
+      values.push(value);
+    });
+
+    return new NamedArgs({ keys, values, map });
   }
 
   static _empty;
@@ -1114,9 +1068,10 @@ export class NamedArgs extends Syntax<NamedArgs> {
   public values: ExpressionSyntax[];
   public isStatic = false;
 
-  constructor({ keys, values, map }: { keys: InternedString[], values: ExpressionSyntax[], map: Dict<ExpressionSyntax> }) {
+  constructor({ map, keys, values }: { keys: InternedString[], values: ExpressionSyntax[], map: Dict<ExpressionSyntax> }) {
     super();
-    this.keys = keys;
+
+    this.keys = keys as InternedString[];
     this.values = values;
     this.map = map;
   }
@@ -1151,24 +1106,24 @@ export class NamedArgs extends Syntax<NamedArgs> {
   }
 }
 
-export class Templates extends Syntax<Templates> {
+export class Templates extends Syntax {
   public type = "templates";
 
-  static fromSpec(_, [templateId, inverseId, children]): Templates {
+  static fromSpec([templateId, inverseId]: [number, number], children: RawBlock[]): Templates {
     return new Templates({
       template: templateId === null ? null : children[templateId],
       inverse: inverseId === null ? null : children[inverseId],
     });
   }
 
-  static build(template: RawTemplate, inverse: RawTemplate=null): Templates {
+  static build(template: RawBlock, inverse: RawBlock=null): Templates {
     return new this({ template, inverse });
   }
 
-  public default: RawTemplate;
-  public inverse: RawTemplate;
+  public default: RawBlock;
+  public inverse: RawBlock;
 
-  constructor(options: { template: RawTemplate, inverse: RawTemplate }) {
+  constructor(options: { template: RawBlock, inverse: RawBlock }) {
     super();
     this.default = options.template;
     this.inverse = options.inverse;
@@ -1182,6 +1137,10 @@ export class Templates extends Syntax<Templates> {
     //   // inverse: inverse && inverse.position
     // });
     return "";
+  }
+
+  compile(compiler: CompileInto) {
+    return this;
   }
 
   evaluate(vm: VM): PathReference {

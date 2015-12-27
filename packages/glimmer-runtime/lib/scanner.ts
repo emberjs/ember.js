@@ -1,75 +1,61 @@
-import { Program, StatementSyntax, AttributeSyntax, ATTRIBUTE_SYNTAX } from './syntax';
-import StatementNodes from './syntax/statements';
+import { Program, Statement as StatementSyntax, Attribute as AttributeSyntax, ATTRIBUTE_SYNTAX } from './syntax';
+import buildStatement from './syntax/statements';
 import { Block, OpenElement, OpenPrimitiveElement, CloseElement, Component as ComponentSyntax } from './syntax/core';
 import SymbolTable from './symbol-table';
 import { RawTemplate, RawEntryPoint, RawBlock, RawLayout } from './compiler';
 import Environment from './environment';
 import { EMPTY_SLICE, Slice, LinkedList } from 'glimmer-util';
-import { SerializedTemplate } from 'glimmer-compiler';
+import { SerializedTemplate, Statement as SerializedStatement } from 'glimmer-compiler';
 
 export default class Scanner {
-  private specs: SerializedTemplate[];
+  private spec: SerializedTemplate;
   private env: Environment;
 
-  constructor(specs: SerializedTemplate[], env: Environment) {
-    this.specs = specs;
+  constructor(spec: SerializedTemplate, env: Environment) {
+    this.spec = spec;
     this.env = env;
   }
 
   scanEntryPoint(): RawEntryPoint {
-    let { specs } = this;
-
-    let top: RawEntryPoint;
-    let templates = new Array<RawTemplate>(specs.length);
-
-    for (let i = 0; i < specs.length; i++) {
-      let spec = specs[i];
-
-      let { program, children } = this.buildStatements(spec.statements, templates);
-
-      if (i === specs.length - 1) {
-        templates[i] = top = new RawEntryPoint({ children, program });
-      } else {
-        let { locals } = spec;
-        templates[i] = new RawBlock({ children, locals, program });
-      }
-    }
-
-    let table = top.symbolTable = new SymbolTable(null, top);
-
-    top.children.forEach(t => initTemplate(t, table));
-
-    return top;
+    return this.scanTop<RawEntryPoint>(({ program, children }) => {
+      return new RawEntryPoint({ children, ops: null, program });
+    });
   }
 
   scanLayout(): RawLayout {
-    let { specs } = this;
+    return this.scanTop<RawLayout>(({ program, children }) => {
+      let { named, yields } = this.spec;
+      return new RawLayout({ children, program, named, yields });
+    });
+  }
 
-    let top: RawLayout;
-    let templates = new Array<RawTemplate>(specs.length);
+  private scanTop<T extends RawTemplate>(makeTop: (options: { program: Program, children: RawTemplate[] }) => T) {
+    let { spec } = this;
+    let { blocks: specBlocks } = spec;
 
-    for (let i = 0; i < specs.length; i++) {
-      let spec = specs[i];
+    let len = specBlocks.length;
+    let blocks = new Array<RawBlock>(len);
 
-      let { program, children } = this.buildStatements(spec.statements, templates);
+    for (let i = 0; i < len; i++) {
+      let spec = specBlocks[i];
 
-      if (i === specs.length - 1) {
-        let { named } = spec;
-        templates[i] = top = new RawLayout({ children, named, program });
-      } else {
-        let { locals } = spec;
-        templates[i] = new RawBlock({ children, locals, program });
-      }
+      let { program, children } = this.buildStatements(spec.statements, blocks);
+
+      let { locals } = spec;
+      blocks[i] = new RawBlock({ children, locals, program });
     }
 
-    let table = top.symbolTable = new SymbolTable(null, top).initNamed(top.named);
+    let { program, children } = this.buildStatements(spec.statements, blocks);
+    let top = makeTop({ program, children });
+
+    let table = top.symbolTable = new SymbolTable(null, top).initNamed(top.named).initYields(top.yields);
 
     top.children.forEach(t => initTemplate(t, table));
 
     return top;
   }
 
-  private buildStatements(statements: any[], templates: RawTemplate[]): { program: Program, children: RawTemplate[] } {
+  private buildStatements(statements: SerializedStatement[], templates: RawBlock[]): { program: Program, children: RawTemplate[] } {
     if (statements.length === 0) { return { program: EMPTY_SLICE, children: [] }; }
 
     let program = new LinkedList<StatementSyntax>();
@@ -138,14 +124,14 @@ export default class Scanner {
 }
 
 class SyntaxReader {
-  statements: any[];
+  statements: SerializedStatement[];
   current: number = 0;
-  templates: RawTemplate[];
+  blocks: RawBlock[];
   last: StatementSyntax = null;
 
-  constructor(statements: any[], templates: RawTemplate[]) {
+  constructor(statements: SerializedStatement[], blocks: RawBlock[]) {
     this.statements = statements;
-    this.templates = templates;
+    this.blocks = blocks;
   }
 
   unput(statement: StatementSyntax) {
@@ -161,9 +147,8 @@ class SyntaxReader {
       return null;
     }
 
-    let s = this.statements[this.current++];
-    let Statement: typeof StatementSyntax = StatementNodes(s[0]);
-    return Statement.fromSpec(s, this.templates);
+    let sexp = this.statements[this.current++];
+    return buildStatement(sexp, this.blocks);
   }
 }
 

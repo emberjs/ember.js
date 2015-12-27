@@ -33,6 +33,8 @@ interface InvokeLayoutOptions {
   shadow: InternedString[];
   definition: ComponentDefinition;
   templates: Templates;
+  defaultTemplate: number;
+  inverseTemplate: number;
 }
 
 interface FrameDidPop {
@@ -195,7 +197,7 @@ export class VM {
     this.pushFrame(template.ops, evaledArgs, templates, this);
   }
 
-  invokeLayout({ args, shadow, definition, templates }: InvokeLayoutOptions) {
+  invokeLayout({ args, shadow, definition, templates, defaultTemplate, inverseTemplate }: InvokeLayoutOptions) {
     this.elementStack.openBlock();
     let evaledArgs = args.evaluate(this);
     let layout = definition.layout;
@@ -206,6 +208,14 @@ export class VM {
     layout.compile(definition, this.env);
     this.pushRootScope(layout.symbolTable.size);
     this.pushFrame(layout.ops, evaledArgs, templates, this);
+
+    if (defaultTemplate) {
+      this.scope().bindBlock(defaultTemplate, templates.default as RawBlock);
+    }
+
+    if (inverseTemplate) {
+      this.scope().bindBlock(inverseTemplate, templates.inverse as RawBlock);
+    }
   }
 
   frameDidPop() {
@@ -248,12 +258,23 @@ export class VM {
     }
   }
 
+  bindBlocks(entries: number[]) {
+    let blocks = this.frame.getBlocks();
+    if (!blocks) return;
+
+    let scope = this.scope();
+
+    for(let i=0; i < entries.length; i++) {
+      scope.bindBlock(entries[i], blocks[i]);
+    }
+  }
+
   setTemplates(templates: Dict<Template>) {
     this.frame.setTemplates(templates);
   }
 
-  invokeTemplate(name: InternedString) {
-    let template = this.frame.getTemplates()[<string>name].raw;
+  invokeTemplate(symbol: number) {
+    let template = this.scope().getBlock(symbol);
     template.compile(this.env);
     this.pushFrame(template.ops);
   }
@@ -573,6 +594,7 @@ class Frame {
   op: Opcode;
   operand: PathReference = null;
   args: EvaluatedArgs = null;
+  blocks: RawBlock[] = null;
   condition: ChainableReference = null;
   iterator: ListIterator = null;
   key: InternedString = null;
@@ -658,6 +680,14 @@ class FrameStack {
 
   setKey(key: InternedString): InternedString {
     return this.frames[this.frame].key = key;
+  }
+
+  getBlocks(): RawBlock[] {
+    return this.frames[this.frame].blocks;
+  }
+
+  setBlocks(blocks: RawBlock[]): RawBlock[] {
+    return this.frames[this.frame].blocks = blocks;
   }
 
   getTemplates(): Dict<Template> {

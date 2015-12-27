@@ -9,8 +9,3 @@ export function processOpcodes(compiler, opcodes) {
     }
   }
 }
-
-// REFACTOR TODO: Remove
-export function assert(test, error) {
-  if (!test) { throw new Error(error); }
-}

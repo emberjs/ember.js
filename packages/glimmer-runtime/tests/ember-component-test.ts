@@ -434,6 +434,7 @@ testComponent('hasBlockParams is false when no block param supplied', {
 });
 
 testComponent('yield to inverse', {
+  skip: false,
   kind: 'curly',
   layout: '{{#if predicate}}Yes:{{yield someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
 

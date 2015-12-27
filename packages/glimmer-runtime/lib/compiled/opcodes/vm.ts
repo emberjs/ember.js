@@ -2,8 +2,8 @@ import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
-import { RawTemplate } from '../../compiler';
-import { Range, turbocharge } from '../../utils';
+import { RawTemplate, RawBlock } from '../../compiler';
+import { turbocharge } from '../../utils';
 import { ListSlice, Slice, Dict, dict, assign } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
 
@@ -119,6 +119,26 @@ export class BindNamedArgsOpcode extends Opcode {
   }
 }
 
+export class BindBlocksOpcode extends Opcode {
+  public type = "bind-blocks";
+
+  public blocks: number[];
+
+  static create(template: RawTemplate) {
+    let blocks = template.yields.map(name => template.symbolTable.getYield(name));
+    return new BindBlocksOpcode({ blocks });
+  }
+
+  constructor({ blocks }: { blocks: number[] }) {
+    super();
+    this.blocks = blocks;
+  }
+
+  evaluate(vm: VM) {
+    vm.bindBlocks(this.blocks);
+  }
+}
+
 export class EnterOpcode extends Opcode {
   public type = "enter";
   private slice: Slice<Opcode>;
@@ -157,9 +177,9 @@ export class NoopOpcode extends Opcode {
 
 export class EvaluateOpcode extends Opcode {
   public type = "evaluate";
-  private template: RawTemplate;
+  private template: RawBlock;
 
-  constructor({ template }: { template: RawTemplate }) {
+  constructor({ template }: { template: RawBlock }) {
     super();
     this.template = template;
   }
@@ -189,7 +209,7 @@ export class JumpOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    vm.goto(this.target)
+    vm.goto(this.target);
   }
 }
 

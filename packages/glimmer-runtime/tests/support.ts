@@ -3,13 +3,9 @@ import {
   ATTRIBUTE_SYNTAX,
 
   CompileInto,
-  VM,
 
   // Compiler
-  Compiler,
-  RawTemplate,
   RawLayout,
-  CompileIntoList,
   SymbolTable,
 
   // Environment
@@ -33,18 +29,15 @@ import {
   NextIterOpcode,
   OpenComponentOpcode,
   CloseComponentOpcode,
-  BindNamedArgsOpcode,
 
   // Components
   ComponentClass,
   ComponentDefinition,
   ComponentHooks,
-  CompileComponentOptions,
   Component,
 
   // Syntax Classes
   StatementSyntax,
-  ExpressionSyntax,
   AttributeSyntax,
 
   // Concrete Syntax
@@ -59,7 +52,6 @@ import {
   OpenPrimitiveElementSyntax,
   CloseElementSyntax,
   StaticAttr,
-  DynamicAttr,
   ValueSyntax,
   AddClass
 } from "glimmer-runtime";
@@ -67,7 +59,7 @@ import {
 import { compile as rawCompile, compileLayout as rawCompileLayout } from "glimmer-compiler";
 import { LinkedList, Slice, ListSlice, Dict, InternedString, dict } from 'glimmer-util';
 
-import { Meta, ConstReference } from "glimmer-reference";
+import { Meta } from "glimmer-reference";
 
 const hooks: ComponentHooks = {
   begin() {},
@@ -244,9 +236,9 @@ class CurlyComponent extends StatementSyntax {
   }
 
   compile(list: CompileInto, env: Environment) {
-    let definition = this.definition;
-    let args = this.args.compile(list, env);
-    list.append(new OpenComponentOpcode({ definition, args, shadow: null }));
+    let { definition, templates, args: _args } = this;
+    let args = _args.compile(list, env);
+    list.append(new OpenComponentOpcode({ definition, args, templates, shadow: null }));
     list.append(new CloseComponentOpcode());
   }
 }
@@ -321,7 +313,7 @@ interface ComponentParts {
 }
 
 class GlimmerComponentDefinition extends ComponentDefinition {
-  compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
+  compile({ template }: { template: RawLayout }): ComponentParts {
     let { program } = template;
 
     let current = program.head();
@@ -381,7 +373,7 @@ const EMBER_VIEW = new ValueSyntax('ember-view');
 let id = 1;
 
 class EmberishComponentDefinition extends ComponentDefinition {
-  compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
+  compile({ template }: { template: RawLayout }): ComponentParts {
     let { program } = template;
 
     let attrs = new LinkedList<AttributeSyntax>();
@@ -395,93 +387,11 @@ class EmberishComponentDefinition extends ComponentDefinition {
       body: program
     };
   }
-
-  //   let current = program.head();
-
-  //   while (current && current.type !== 'open-primitive-element') {
-  //     current = current.next;
-  //   }
-
-  //   return this.extractComponent(<any>current);
-  // }
-
-  // private extractComponent(head: OpenElementSyntax): ComponentParts {
-  //   let tag = head.tag;
-  //   let current = head.next;
-
-  //   let beginAttrs: AttributeSyntax = null;
-  //   let endAttrs: AttributeSyntax = null;
-
-  //   while (current[ATTRIBUTE_SYNTAX]) {
-  //     beginAttrs = beginAttrs || <AttributeSyntax>current;
-  //     endAttrs = <AttributeSyntax>current;
-  //     current = current.next;
-  //   }
-
-  //   let attrs = new ListSlice(beginAttrs, endAttrs);
-
-  //   let beginBody: StatementSyntax = null;
-  //   let endBody: StatementSyntax = null;
-  //   let nesting = 1;
-
-  //   while (true) {
-  //     if (current instanceof CloseElementSyntax && --nesting === 0) {
-  //       break;
-  //     }
-
-  //     beginBody = beginBody || current;
-  //     endBody = current;
-
-  //     if (current instanceof OpenElementSyntax || current instanceof OpenPrimitiveElementSyntax) {
-  //       nesting++;
-  //     }
-
-  //     current = current.next;
-  //   }
-
-  //   let body = new ListSlice(beginBody, endBody);
-
-  //   return {
-  //     tag,
-  //     attrs,
-  //     body
-  //   };
-  // }
-  private templateWithAttrs(args: ArgsSyntax, named: InternedString[]) {
-    return this.layout.cloneWith((program, table) => {
-      let toSplice = new LinkedList<AttributeSyntax>();
-
-      toSplice.append(new AddClass({ value: EMBER_VIEW }));
-      toSplice.append(new StaticAttr({ name: 'id', value: `ember${id++}` }));
-
-      let named = args.named.map;
-      Object.keys(named).forEach((name: InternedString) => {
-        let attr;
-        let value = named[<string>name];
-        if (name === 'class') {
-          attr = new AddClass({ value });
-        } else if (name === 'id') {
-          attr = new DynamicAttr({ name, value, namespace: null });
-        } else if (name === 'ariaRole') {
-          attr = new DynamicAttr({ name: <InternedString>'role', value, namespace: null });
-        } else {
-          return;
-        }
-
-        toSplice.append(attr);
-      });
-
-      let head = program.head();
-      program.insertBefore(new OpenPrimitiveElementSyntax({ tag: <InternedString>'div' }), head);
-      program.spliceList(toSplice, program.nextNode(head));
-      program.append(new CloseElementSyntax());
-    });
-  }
 }
 
 class EmberishGlimmerComponentDefinition extends GlimmerComponentDefinition {
-  compile({ template, env, symbolTable }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
-    let { tag, attrs: _attrs, body } = super.compile({ template, env, symbolTable });
+  compile({ template }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
+    let { tag, attrs: _attrs, body } = super.compile({ template });
 
     let attrs = LinkedList.fromSlice(_attrs);
     attrs.append(new AddClass({ value: EMBER_VIEW }));

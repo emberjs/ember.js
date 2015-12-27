@@ -1,226 +1,8 @@
 import TemplateVisitor from "./template-visitor";
-import { assert } from "./utils";
-import { InternedString, getAttrNamespace, dict } from "glimmer-util";
+import JavaScriptCompiler from "./javascript-compiler";
+import { getAttrNamespace } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
-
-type Statement = any;
-
-export interface SerializedTemplate {
-  statements: Statement[];
-  locals: InternedString[];
-  named: InternedString[];
-  meta: Object;
-  arity: number;
-}
-
-export class Template {
-  statements: Statement[] = null;
-  locals: string[] = null;
-  named: string[] = null;
-  meta: Object = null;
-  arity: number = null;
-}
-
-type RawExpression = string | number | boolean;
-type Expression = RawExpression | RawExpression[];
-
-class JavaScriptCompiler {
-  static process(opcodes): Template[] {
-    let compiler = new JavaScriptCompiler(opcodes);
-    compiler.process();
-    return compiler.templates;
-  }
-
-  private opcodes: any[];
-  private output: any[];
-  private expressions: Expression[];
-  private templates: any[];
-  private locals: string[] = null;
-  private namedAttrs = dict<boolean>();
-
-  constructor(opcodes) {
-    this.opcodes = opcodes;
-    this.output = [];
-    this.expressions = [];
-    this.templates = [];
-  }
-
-  process() {
-    this.opcodes.forEach(([opcode, ...args]) => {
-      if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`); }
-      this[opcode](...args);
-    });
-  }
-
-  /// Nesting
-
-  startProgram([program]) {
-    this.locals = program.blockParams;
-  }
-
-  endProgram() {
-    let template = new Template();
-
-    let attrs = Object.keys(this.namedAttrs);
-
-    if (this.locals.length) {
-      template.locals = this.locals;
-      this.locals = [];
-    }
-
-    if (attrs.length) {
-      template.named = attrs;
-      this.namedAttrs = dict<boolean>();
-    }
-
-    template.statements = this.output;
-    this.output = [];
-
-    this.templates.push(template);
-  }
-
-  /// Statements
-
-  text(content: string) {
-    this.push('text', content);
-  }
-
-  append(trusted: boolean) {
-    this.push('append', this.popExpression(), trusted);
-  }
-
-  comment(value: string) {
-    this.push('comment', value);
-  }
-
-  modifier(path: string) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.push('modifier', path, params, hash);
-  }
-
-  block(path: string, template: number, inverse: number) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.push('block', path, params, hash, template, inverse);
-  }
-
-  component(tag: string, template: number) {
-    let attrs = this.popExpression();
-    this.push('component', tag, attrs, template);
-  }
-
-  openElement(tag: string, blockParams: string[]) {
-    this.push('openElement', tag, blockParams);
-  }
-
-  closeElement() {
-    this.push('closeElement');
-  }
-
-  addClass(name: string) {
-    let value = this.popExpression();
-    this.push('addClass', value);
-  }
-
-  staticAttr(name: string, namespace: string) {
-    let value = this.popExpression();
-    this.push('staticAttr', name, value, namespace);
-  }
-
-  dynamicAttr(name: string, namespace: string) {
-    let value = this.popExpression();
-    this.push('dynamicAttr', name, value, namespace);
-  }
-
-  dynamicProp(name: string) {
-    let value = this.popExpression();
-    this.push('dynamicProp', name, value);
-  }
-
-  /// Expressions
-
-  literal(value: any) {
-    this.pushValue(value);
-  }
-
-  unknown(path: string[]) {
-    this.pushExpression('unknown', path);
-  }
-
-  attr(path: string[]) {
-    this.namedAttrs[path[0]] = true;
-    this.pushExpression('attr', path);
-  }
-
-  get(path: string) {
-    this.pushExpression('get', path);
-  }
-
-  concat() {
-    this.pushExpression('concat', this.popExpression());
-  }
-
-  helper(path: string) {
-    let params = this.popExpression();
-    let hash = this.popExpression();
-
-    this.pushExpression('helper', path, params, hash);
-  }
-
-  /// Stack Management Opcodes
-
-  pushLiteral(literal: any) {
-    this.pushValue(literal);
-  }
-
-  prepareArray(size: number) {
-    let values = [];
-
-    for (let i = 0; i < size; i++) {
-      values.push(this.popExpression());
-    }
-
-    this.pushValue(values);
-  }
-
-  prepareObject(size: number) {
-    assert(this.expressions.length >= size, `Expected ${size} expressions on the stack, found ${this.expressions.length}`);
-
-    let pairs = [];
-
-    for (let i = 0; i < size; i++) {
-      pairs.push(this.popExpression(), this.popExpression());
-    }
-
-    this.pushValue(pairs);
-  }
-
-  /// Utilities
-
-  push(name: string, ...args: Expression[]) {
-    while (args[args.length - 1] === null) {
-      args.pop();
-    }
-
-    this.output.push([name, ...args]);
-  }
-
-  pushExpression(name: string, ...args: Expression[]) {
-    this.expressions.push(<any>[name, ...args]);
-  }
-
-  pushValue(val: any) {
-    this.expressions.push(val);
-  }
-
-  popExpression(): Expression {
-    assert(this.expressions.length, "No expression found on stack");
-    return this.expressions.pop();
-  }
-}
+import { assert } from "./utils";
 
 export default class TemplateCompiler {
   static compile(options, ast) {
@@ -324,7 +106,10 @@ export default class TemplateCompiler {
   }
 
   mustache([action]) {
-    if (action.path.data) {
+    if (isYield(action)) {
+      let to = assertValidYield(action);
+      return this.yield(to, action);
+    } else if (action.path.data) {
       this.attr([action.path]);
     } else if (isHelper(action)) {
       this.SubExpression(action);
@@ -371,6 +156,13 @@ export default class TemplateCompiler {
 
   ambiguous([action]) {
     this.opcode('unknown', action, action.path.parts);
+  }
+
+  /// Internal Syntax
+
+  yield(to: string, action) {
+    this.prepareParams(action.params);
+    this.opcode('yield', action, to);
   }
 
   /// Expressions, invoked recursively from prepareParams and prepareHash
@@ -490,5 +282,23 @@ export default class TemplateCompiler {
 
     let { source, start, end } = loc;
     return [ 'loc', [source || null, [start.line, start.column], [end.line, end.column]] ];
+  }
+}
+
+function isYield(mustache) {
+  return mustache.path.original === 'yield';
+}
+
+function assertValidYield(mustache): string {
+  let pairs = mustache.hash.pairs;
+
+  if ((pairs.length === 1 && pairs[0].key !== 'to') || pairs.length > 1) {
+    throw new Error(`yield only takes a single named argument: 'to'`);
+  } else if (pairs.length === 1 && pairs[0].value.type !== 'StringLiteral') {
+    throw new Error(`you can only yield to a literal value`);
+  } else if (pairs.length === 0) {
+    return 'default';
+  } else {
+    return pairs[0].value.value;
   }
 }

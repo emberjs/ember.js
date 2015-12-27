@@ -1,5 +1,6 @@
 import { preprocess } from "glimmer-syntax";
-import TemplateCompiler, { SerializedTemplate } from "./template-compiler";
+import TemplateCompiler from "./template-compiler";
+import { SerializedTemplate } from './types';
 import { Environment, Template, RawLayout } from "glimmer-runtime";
 
 /*
@@ -17,7 +18,7 @@ import { Environment, Template, RawLayout } from "glimmer-runtime";
  * @param {String} string An Glimmer template string
  * @return {TemplateSpec} A template spec string
  */
-export function compileSpec(string, options) {
+export function compileSpec(string, options): string {
   var ast = preprocess(string, options);
   var program = TemplateCompiler.compile(options, ast);
   return JSON.stringify(program);
@@ -28,7 +29,7 @@ export function compileSpec(string, options) {
  * @param {TemplateSpec} templateSpec A precompiled template
  * @return {Template} A template spec string
  */
-export function template(templateSpec): SerializedTemplate[] {
+export function template(templateSpec): SerializedTemplate {
   return new Function("return " + templateSpec)();
 }
 

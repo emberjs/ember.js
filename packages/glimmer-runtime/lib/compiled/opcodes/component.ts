@@ -3,26 +3,48 @@ import { ComponentDefinition } from '../../component/interfaces';
 import { UpdateAttributeOpcode } from './dom';
 import { VM } from '../../vm';
 import { CompiledArgs } from '../../compiled/expressions/args';
+import { Templates } from '../../syntax/core';
 import { InternedString, intern } from 'glimmer-util';
 import { CONST_REFERENCE } from 'glimmer-reference';
+
+interface OpenComponentOptions {
+  definition: ComponentDefinition;
+  args: CompiledArgs;
+  shadow: InternedString[];
+  templates: Templates;
+}
 
 export class OpenComponentOpcode extends Opcode {
   public type = "open-component";
   public definition: ComponentDefinition;
   public args: CompiledArgs;
   public shadow: InternedString[];
+  public templates: Templates;
 
-  constructor({ definition, args, shadow }: { definition: ComponentDefinition, args: CompiledArgs, shadow: InternedString[] }) {
+  constructor({ definition, args, shadow, templates }: OpenComponentOptions) {
     super();
     this.definition = definition;
     this.args = args;
     this.shadow = shadow;
+    this.templates = templates;
   }
 
   evaluate(vm: VM) {
-    let { args, shadow, definition } = this;
+    let { args, shadow, definition, templates } = this;
 
-    vm.invokeLayout({ templates: null, args, shadow, definition });
+    let symbols = definition.layout.symbolTable;
+    let defaultTemplate = null;
+    let inverseTemplate = null;
+
+    if (templates.default) {
+      defaultTemplate = symbols.getYield('default' as InternedString);
+    }
+
+    if (templates.inverse) {
+      inverseTemplate = symbols.getYield('inverse' as InternedString);
+    }
+
+    vm.invokeLayout({ templates, args, shadow, definition, defaultTemplate, inverseTemplate });
   }
 }
 

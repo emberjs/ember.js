@@ -1,5 +1,4 @@
 import {
-  YieldSyntax,
   Helper as HelperSyntax,
   Unknown,
   Append,
@@ -28,7 +27,11 @@ import {
   installGuid
 } from 'glimmer-util';
 
+import { RawBlock } from './compiler';
+
 import { Dict } from 'glimmer-util';
+
+type ScopeSlot = PathReference | RawBlock;
 
 export class Scope {
   static root(parent: Scope, size = 0) {
@@ -44,32 +47,40 @@ export class Scope {
   private parent: Scope;
 
   // the 0th slot is `self`
-  private references: PathReference[];
+  private slots: ScopeSlot[];
 
-  constructor(parent: Scope, references: PathReference[]) {
-    this.references = references;
+  constructor(parent: Scope, references: ScopeSlot[]) {
+    this.slots = references;
     this.parent = parent;
   }
 
   init({ self }: { self: PathReference }): this {
-    this.references[0] = self;
+    this.slots[0] = self;
     return this;
   }
 
   getSelf(): PathReference {
-    return this.references[0];
+    return this.slots[0] as PathReference;
   }
 
   getSymbol(symbol: number): PathReference {
-    return this.references[symbol];
+    return this.slots[symbol] as PathReference;
+  }
+
+  getBlock(symbol: number): RawBlock {
+    return this.slots[symbol] as RawBlock;
   }
 
   bindSymbol(symbol: number, value: PathReference) {
-    this.references[symbol] = value;
+    this.slots[symbol] = value;
+  }
+
+  bindBlock(symbol: number, value: RawBlock) {
+    this.slots[symbol] = value;
   }
 
   child() {
-    return new Scope(this, this.references.slice());
+    return new Scope(this, this.slots.slice());
   }
 }
 
