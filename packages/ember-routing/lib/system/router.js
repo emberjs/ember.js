@@ -21,6 +21,7 @@ import {
 import { guidFor } from 'ember-metal/utils';
 import RouterState from './router_state';
 import { getOwner } from 'container/owner';
+import dictionary from 'ember-metal/dictionary';
 
 /**
 @module ember
@@ -109,6 +110,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     this._activeViews = {};
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
+    this._handledErrors = dictionary(null);
   },
 
   /*
@@ -711,22 +713,18 @@ var EmberRouter = EmberObject.extend(Evented, {
     this._slowTransitionTimer = null;
   },
 
-  _handledErrors: computed(function() {
-    return {};
-  }),
-
   // These three helper functions are used to ensure errors aren't
   // re-raised if they're handled in a route's error action.
-  _markErrorAsHandled(error) {
-    this.get('_handledErrors')[error] = true;
+  _markErrorAsHandled(errorGuid) {
+    this._handledErrors[errorGuid] = true;
   },
 
-  _isErrorHandled(error) {
-    return this.get('_handledErrors')[error];
+  _isErrorHandled(errorGuid) {
+    return this._handledErrors[errorGuid];
   },
 
-  _clearHandledError(error) {
-    delete this.get('_handledErrors')[error];
+  _clearHandledError(errorGuid) {
+    delete this._handledErrors[errorGuid];
   }
 });
 
