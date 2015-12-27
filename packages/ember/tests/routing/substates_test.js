@@ -538,6 +538,104 @@ QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
   }, function(err) { return err.msg === 'did it broke?'; });
 });
 
+QUnit.test('Handled errors that bubble can be handled at a higher level', function() {
+  expect(4);
+
+  var handledError;
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomRoute = Ember.Route.extend({
+    actions: {
+      error(err) {
+        step(3, 'MomRoute#error');
+
+        equal(err, handledError, 'error handled and rebubbled is handleable at heigher route');
+      }
+    }
+  });
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+
+    actions: {
+      error(err) {
+        step(2, 'MomSallyRoute#error');
+
+        handledError = err;
+
+        return true;
+      }
+    }
+  });
+
+  bootApplication('/grandma/mom/sally');
+});
+
+QUnit.test('errors that are bubbled are thrown at a higher level if not handled', function() {
+  expect(3);
+
+  var handledError;
+
+  templates['grandma'] = 'GRANDMA {{outlet}}';
+
+  Router.map(function() {
+    this.route('grandma', function() {
+      this.route('mom', { resetNamespace: true }, function() {
+        this.route('sally');
+      });
+    });
+  });
+
+  App.ApplicationController = Ember.Controller.extend();
+
+  App.MomSallyRoute = Ember.Route.extend({
+    model() {
+      step(1, 'MomSallyRoute#model');
+
+      return Ember.RSVP.reject({
+        msg: 'did it broke?'
+      });
+    },
+
+    actions: {
+      error(err) {
+        step(2, 'MomSallyRoute#error');
+
+        handledError = err;
+
+        return true;
+      }
+    }
+  });
+
+  throws(
+    function() {
+      bootApplication('/grandma/mom/sally');
+    },
+    function(err) {
+      return err.msg === 'did it broke?';
+    },
+    'Correct error was thrown'
+  );
+});
+
 QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed', function() {
   expect(4);
 
