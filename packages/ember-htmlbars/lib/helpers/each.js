@@ -11,7 +11,7 @@ import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
   of the base Handlebars `{{#each}}` helper.
 
   The default behavior of `{{#each}}` is to yield its inner block once for every
-  item in an array.
+  item in an array passing the item as the first block parameter.
 
   ```javascript
   var developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
@@ -34,6 +34,16 @@ import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
   {{#each developerNames key="@index" as |name|}}
     {{name}}
   {{/each}}
+  ```
+
+  During iteration, the index of each item in the array is provided as a second block parameter.
+
+  ```handlebars
+  <ul>
+    {{#each people as |person index|}}
+      <li>Hello, {{person.name}}! You're number {{index}} in line</li>
+    {{/each}}
+  </ul>
   ```
 
   ### Specifying Keys
