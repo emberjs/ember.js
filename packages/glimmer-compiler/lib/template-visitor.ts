@@ -79,18 +79,29 @@ TemplateVisitor.prototype.Program = function(program) {
   var parentFrame = this.getCurrentFrame();
   var programFrame = this.pushFrame();
 
+  let startType, endType;
+
+  if (this.programDepth === 0) {
+    startType = 'startProgram';
+    endType = 'endProgram';
+  } else {
+    startType = 'startBlock';
+    endType = 'endBlock';
+  }
+
   programFrame.parentNode = program;
   programFrame.children = program.body;
   programFrame.childCount = program.body.length;
   programFrame.blankChildTextNodes = [];
-  programFrame.actions.push(['endProgram', [program, this.programDepth]]);
+  programFrame.actions.push([endType, [program, this.programDepth]]);
 
   for (var i = program.body.length - 1; i >= 0; i--) {
     programFrame.childIndex = i;
     this.visit(program.body[i]);
   }
 
-  programFrame.actions.push(['startProgram', [
+
+  programFrame.actions.push([startType, [
     program, programFrame.childTemplateCount,
     programFrame.blankChildTextNodes.reverse()
   ]]);

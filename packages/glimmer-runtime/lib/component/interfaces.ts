@@ -13,7 +13,8 @@ import {
   Attribute as AttributeSyntax
 } from '../syntax';
 
-import { RawLayout, ComponentParts } from '../compiler';
+import { Layout } from '../compiled/blocks';
+import { ComponentParts } from '../compiler';
 
 import { VM } from '../vm';
 
@@ -91,15 +92,15 @@ export interface CompileComponentOptions {
 export abstract class ComponentDefinition {
   public hooks: ComponentHooks;
   public ComponentClass: ComponentClass;
-  public layout: RawLayout;
+  public layout: Layout;
 
   didCreateElement(vm: VM) {}
 
-  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: RawLayout) {
+  constructor(hooks: ComponentHooks, ComponentClass: ComponentClass, layout: Layout) {
     this.hooks = hooks || NULL_HOOKS;
     this.ComponentClass = ComponentClass;
     this.layout = layout;
   }
 
-  abstract compile(options: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts;
+  abstract compile(options: { layout: Layout, env: Environment, symbolTable: SymbolTable }): ComponentParts;
 }

@@ -1,13 +1,13 @@
 import { UpdatableReference } from 'glimmer-reference';
 import { SerializedTemplate } from 'glimmer-compiler';
-import { RawEntryPoint, RawLayout } from './compiler';
+import { EntryPoint, Layout } from './compiled/blocks';
 import { Environment } from './environment';
 import { ElementStack } from './builder';
 import VM from './vm';
 import Scanner from './scanner';
 
 interface TemplateOptions {
-  raw: RawEntryPoint;
+  raw: EntryPoint;
 }
 
 interface RenderOptions {
@@ -27,12 +27,12 @@ export default class Template {
     });
   }
 
-  static layoutFromSpec(spec: SerializedTemplate, env: Environment): RawLayout {
+  static layoutFromSpec(spec: SerializedTemplate, env: Environment): Layout {
     let scanner = new Scanner(spec, env);
     return scanner.scanLayout();
   }
 
-  raw: RawEntryPoint;
+  raw: EntryPoint;
 
   constructor({ raw }: TemplateOptions) {
     this.raw = raw;

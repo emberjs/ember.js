@@ -1,10 +1,11 @@
 export {
-  StatementSyntax,
-  ExpressionSyntax,
-  AttributeSyntax,
+  default as Syntax,
+  ATTRIBUTE as ATTRIBUTE_SYNTAX,
+  Statement as StatementSyntax,
+  Expression as ExpressionSyntax,
+  Attribute as AttributeSyntax,
   CompileInto,
-  ATTRIBUTE_SYNTAX,
-  default as Syntax
+  isAttribute
 } from './lib/syntax';
 
 export { default as Template } from './lib/template';
@@ -33,14 +34,18 @@ export {
 
 export {
   default as Compiler,
-  RawTemplate,
-  RawTemplateOptions,
-  RawLayout,
-  RawLayoutOptions,
-  RawBlock,
-  RawBlockOptions,
   CompileIntoList
 } from './lib/compiler';
+
+export {
+  Block as CompiledBlock,
+  BlockOptions as CompiledBlockOptions,
+  Layout as CompiledLayout,
+  LayoutOptions as CompiledLayoutOptions,
+  InlineBlock as CompiledInlineBlock,
+  InlineBlockOptions as CompiledInlineBlockOptions,
+  EntryPoint as CompiledEntryPoint
+} from './lib/compiled/blocks';
 
 export {
   OpSeq,

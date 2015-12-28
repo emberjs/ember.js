@@ -1,29 +1,56 @@
 import { InternedString, dict, assign } from 'glimmer-util';
-import { RawTemplate } from './compiler';
+import { Block, InlineBlock, Layout, EntryPoint } from './compiled/blocks';
 
 export default class SymbolTable {
+  static initForEntryPoint(top: EntryPoint): SymbolTable {
+    return top.symbolTable = new SymbolTable(null, top).initEntryPoint(top);
+  }
+
+  static initForLayout(layout: Layout): SymbolTable {
+    return layout.symbolTable = new SymbolTable(null, layout).initLayout(layout);
+  }
+
+  static initForBlock({ parent, block }: { parent: SymbolTable, block: InlineBlock }): SymbolTable {
+    return block.symbolTable = new SymbolTable(parent, block).initBlock(block);
+  }
+
   private parent: SymbolTable;
   private top: SymbolTable;
-  private template: RawTemplate;
+  private template: Block;
   private locals = dict<number>();
   private yields = dict<number>();
   public size = 1;
 
-  constructor(parent: SymbolTable, template: RawTemplate) {
+  constructor(parent: SymbolTable, template: Block) {
     this.parent = parent;
     this.top = parent ? parent.top : this;
     this.template = template;
   }
 
-  cloneFor(template: RawTemplate): SymbolTable {
+  cloneFor(template: Block): SymbolTable {
     let table = new SymbolTable(this.parent, template);
     table.locals = assign({}, this.locals);
     table.size = this.size;
     return table;
   }
 
-  initPositional(positional: InternedString[]): this {
-    if (positional) positional.forEach(s => this.putPositional(s));
+  initEntryPoint(_: any): this {
+    return this;
+  }
+
+  initBlock({ locals }: { locals: InternedString[] }): this {
+    this.initPositionals(locals);
+    return this;
+  }
+
+  initLayout({ named, yields }: { named: InternedString[], yields: InternedString[] }): this {
+    this.initNamed(named);
+    this.initYields(yields);
+    return this;
+  }
+
+  initPositionals(positionals: InternedString[]): this {
+    if (positionals) positionals.forEach(s => this.locals[<string>s] = this.size++);
     return this;
   }
 
@@ -35,11 +62,6 @@ export default class SymbolTable {
   initYields(yields: InternedString[]): this {
     if (yields) yields.forEach(b => this.yields[<string>b] = this.size++);
     return this;
-  }
-
-  putNamed(names: InternedString[]) {
-    let top = this.top;
-    names.forEach(s => top.putSingleNamed(s));
   }
 
   getYield(name: InternedString): number {
@@ -68,23 +90,5 @@ export default class SymbolTable {
 
   isTop(): boolean {
     return this.top === this;
-  }
-
-  private putSingleNamed(name: InternedString) {
-    if (!this.locals[<string>name]) {
-      this.locals[<string>name] = this.size++;
-      this.template.named = this.template.named || [];
-      this.template.named.push(name);
-    }
-  }
-
-  private putPositional(name: InternedString): number {
-    let position = this.locals[<string>name];
-
-    if (!position) {
-      position = this.locals[<string>name] = this.top.size++;
-    }
-
-    return position;
   }
 }

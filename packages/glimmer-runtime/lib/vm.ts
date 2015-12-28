@@ -6,7 +6,7 @@ import { Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
 import { ConstReference, ChainableReference, PathReference, RootReference, ListManager, ListIterator, ListDelegate } from 'glimmer-reference';
 import Template from './template';
 import { Templates } from './syntax/core';
-import { RawBlock, RawLayout } from './compiler';
+import { InlineBlock as CompiledInlineBlock } from './compiled/blocks';
 import { CompiledExpression } from './compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from './compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode, UpdatingOpSeq } from './opcodes';
@@ -180,6 +180,7 @@ export class VM {
     let opcode: Opcode;
 
     while (frame.hasOpcodes()) {
+      debugger;
       if (opcode = frame.nextStatement()) opcode.evaluate(this);
     }
 
@@ -190,11 +191,11 @@ export class VM {
     opcode.evaluate(this);
   }
 
-  invokeBlock(template: RawBlock, args: CompiledArgs, templates: Templates) {
+  invokeBlock(block: CompiledInlineBlock, args: CompiledArgs, templates: Templates) {
     this.elementStack.openBlock();
     let evaledArgs = args.evaluate(this);
-    template.compile(this.env);
-    this.pushFrame(template.ops, evaledArgs, templates, this);
+    block.compile(this.env);
+    this.pushFrame(block.ops, evaledArgs, templates, this);
   }
 
   invokeLayout({ args, shadow, definition, templates, defaultTemplate, inverseTemplate }: InvokeLayoutOptions) {
@@ -210,11 +211,11 @@ export class VM {
     this.pushFrame(layout.ops, evaledArgs, templates, this);
 
     if (defaultTemplate) {
-      this.scope().bindBlock(defaultTemplate, templates.default as RawBlock);
+      this.scope().bindBlock(defaultTemplate, templates.default);
     }
 
     if (inverseTemplate) {
-      this.scope().bindBlock(inverseTemplate, templates.inverse as RawBlock);
+      this.scope().bindBlock(inverseTemplate, templates.inverse);
     }
   }
 
@@ -558,7 +559,7 @@ export class RenderResult implements Bounds, ExceptionHandler {
     let vm = new UpdatingVM(this.dom);
 
     if (self !== undefined) {
-      this.self.update(self);
+      this.self['update'](self);
     }
 
     vm.execute(this.updating, this);
@@ -594,7 +595,7 @@ class Frame {
   op: Opcode;
   operand: PathReference = null;
   args: EvaluatedArgs = null;
-  blocks: RawBlock[] = null;
+  blocks: CompiledInlineBlock[] = null;
   condition: ChainableReference = null;
   iterator: ListIterator = null;
   key: InternedString = null;
@@ -682,11 +683,11 @@ class FrameStack {
     return this.frames[this.frame].key = key;
   }
 
-  getBlocks(): RawBlock[] {
+  getBlocks(): CompiledInlineBlock[] {
     return this.frames[this.frame].blocks;
   }
 
-  setBlocks(blocks: RawBlock[]): RawBlock[] {
+  setBlocks(blocks: CompiledInlineBlock[]): CompiledInlineBlock[] {
     return this.frames[this.frame].blocks = blocks;
   }
 

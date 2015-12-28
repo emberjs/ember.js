@@ -12,7 +12,7 @@ import {
   StaticAttr
 } from './core';
 
-import { RawBlock } from '../compiler';
+import { InlineBlock as CompiledInlineBlock } from '../compiled/blocks';
 import { Statement as StatementSyntax } from '../syntax';
 import {
   Statements as SerializedStatements,
@@ -33,9 +33,9 @@ const {
   isStaticAttr
 } = SerializedStatements;
 
-export default function(sexp: SerializedStatement, children: RawBlock[]): StatementSyntax {
+export default function(sexp: SerializedStatement, blocks: CompiledInlineBlock[]): StatementSyntax {
   if (isYield(sexp)) return Yield.fromSpec(sexp);
-  if (isBlock(sexp)) return Block.fromSpec(sexp, children);
+  if (isBlock(sexp)) return Block.fromSpec(sexp, blocks);
   if (isAppend(sexp)) return Append.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
   if (isDynamicProp(sexp)) return DynamicProp.fromSpec(sexp);
