@@ -1,8 +1,9 @@
 import { Dict, LinkedListNode, Slice, InternedString, intern } from 'glimmer-util';
+import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
 import { Opcode } from './opcodes';
-import { RawTemplate, RawBlock } from './compiler';
+import { Block, InlineBlock } from './compiled/blocks';
 
 import {
   Statement as SerializedStatement,
@@ -40,7 +41,7 @@ export interface PrettyPrintable {
 }
 
 abstract class Syntax {
-  static (spec: any, blocks?: RawTemplate[]): Syntax {
+  static (spec: any, blocks?: Block[]): Syntax {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
@@ -56,17 +57,17 @@ abstract class Syntax {
 export default Syntax;
 
 interface StatementClass<T extends SerializedStatement, U extends Statement> {
-  fromSpec(spec: T, blocks?: RawBlock[]): U;
+  fromSpec(spec: T, blocks?: InlineBlock[]): U;
 }
 
 export abstract class Statement extends Syntax implements LinkedListNode {
-  static fromSpec<T extends SerializedStatement>(spec: T, blocks?: RawTemplate[]): Statement {
+  static fromSpec<T extends SerializedStatement>(spec: T, blocks?: InlineBlock[]): Statement {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
   public type: string;
-  public next: this = null;
-  public prev: this = null;
+  public next: Statement = null;
+  public prev: Statement = null;
 
   prettyPrint(): PrettyPrintValue {
     return new PrettyPrint(this.type, this.type);
@@ -79,14 +80,18 @@ export abstract class Statement extends Syntax implements LinkedListNode {
   }
 
   abstract compile(opcodes: CompileInto, env: Environment);
+
+  scan(scanner: BlockScanner): Statement {
+    return this;
+  }
 }
 
 interface ExpressionClass<T extends SerializedExpression, U extends Expression> {
-  fromSpec(spec: T, blocks?: RawBlock[]): U;
+  fromSpec(spec: T, blocks?: InlineBlock[]): U;
 }
 
 export abstract class Expression extends Syntax{
-  static fromSpec<T extends SerializedExpression, U extends Expression>(spec: T, blocks?: RawTemplate[]): U {
+  static fromSpec<T extends SerializedExpression, U extends Expression>(spec: T, blocks?: InlineBlock[]): U {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
@@ -107,10 +112,10 @@ export interface CompileInto {
 
 export type Program = Slice<Statement>;
 
-export const ATTRIBUTE_SYNTAX = "e1185d30-7cac-4b12-b26a-35327d905d92";
+export const ATTRIBUTE = "e1185d30-7cac-4b12-b26a-35327d905d92";
 
 export abstract class Attribute extends Statement {
-  "e1185d30-7cac-4b12-b26a-35327d905d92": boolean;
+  "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   name: InternedString;
   namespace: InternedString;
 
@@ -121,4 +126,8 @@ export abstract class Attribute extends Statement {
   abstract toLookup(): { syntax: Attribute, symbol: InternedString };
   abstract valueSyntax(): Expression;
   abstract isAttribute(): boolean;
+}
+
+export function isAttribute(value: Statement): value is Attribute {
+  return value && value[ATTRIBUTE] === true;
 }

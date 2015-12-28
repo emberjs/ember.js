@@ -1,126 +1,23 @@
 import { Slice, LinkedList, InternedString } from 'glimmer-util';
-import { OpSeq, OpSeqBuilder, Opcode } from './opcodes';
+import { OpSeqBuilder, Opcode } from './opcodes';
 import { BindNamedArgsOpcode, BindBlocksOpcode, BindPositionalArgsOpcode } from './compiled/opcodes/vm';
-import { OpenPrimitiveElementOpcode, CloseElementOpcode } from './compiled/opcodes/dom';
-import { ShadowAttributesOpcode } from './compiled/opcodes/component';
-import { Program, Statement as StatementSyntax, Attribute as AttributeSyntax, CompileInto } from './syntax';
+import { Statement as StatementSyntax, Attribute as AttributeSyntax, CompileInto } from './syntax';
 import { Environment } from './environment';
 import { ComponentDefinition } from './component/interfaces';
 import SymbolTable from './symbol-table';
-
-export interface RawTemplateOptions {
-  children: RawTemplate[];
-}
-
-export abstract class RawTemplate {
-  public program: Program;
-  public ops: OpSeq = null;
-  public symbolTable: SymbolTable = null;
-  public locals: InternedString[];
-  public named: InternedString[];
-  public yields: InternedString[];
-  public children: RawTemplate[];
-
-  constructor({ children }: RawTemplateOptions) {
-    this.children = children;
-  }
-}
-
-export interface RawBlockOptions extends RawTemplateOptions {
-  locals: InternedString[];
-  program?: Program;
-  ops?: OpSeq;
-}
-
-export class RawBlock extends RawTemplate {
-  constructor({ children, ops, locals, program }: RawBlockOptions) {
-    super({ children });
-    this.ops = ops || null;
-    this.locals = locals;
-    this.program = program || null;
-  }
-
-  compile(env: Environment) {
-    this.ops = this.ops || new BlockCompiler(this, env).compile();
-  }
-
-  hasPositionalParameters(): boolean {
-    return !!this.locals;
-  }
-}
-
-export interface RawEntryPointOptions extends RawTemplateOptions {
-  ops?: OpSeq;
-  program?: Program;
-}
-
-export class RawEntryPoint extends RawTemplate {
-  constructor({ children, ops, program }: RawEntryPointOptions) {
-    super({ children });
-    this.ops = ops || null;
-    this.program = program || null;
-  }
-
-  compile(env: Environment) {
-    this.ops = this.ops || new EntryPointCompiler(this, env).compile();
-  }
-}
-
-export interface RawLayoutOptions extends RawTemplateOptions {
-  parts?: CompiledComponentParts;
-  named: InternedString[];
-  yields: InternedString[];
-  program?: Program;
-}
-
-export class RawLayout extends RawTemplate {
-  private parts: CompiledComponentParts;
-
-  constructor({ children, parts, named, yields, program }: RawLayoutOptions) {
-    super({ children });
-    this.parts = parts;
-    // positional params in Ember may want this
-    // this.locals = locals;
-    this.named = named;
-    this.yields = yields;
-    this.program = program || null;
-  }
-
-  compile(definition: ComponentDefinition, env: Environment) {
-    if (this.ops) return;
-
-    this.parts = this.parts || new LayoutCompiler(this, env, definition).compile();
-    let { tag, preamble, main } = this.parts;
-
-    let ops = new LinkedList<Opcode>();
-    ops.append(new OpenPrimitiveElementOpcode({ tag }));
-    ops.spliceList(preamble.clone(), null);
-    ops.append(new ShadowAttributesOpcode());
-    ops.spliceList(main.clone(), null);
-    ops.append(new CloseElementOpcode());
-    this.ops = ops;
-  }
-
-  hasNamedParameters(): boolean {
-    return !!this.named;
-  }
-
-  hasYields(): boolean {
-    return !!this.yields;
-  }
-}
+import { Block, EntryPoint, InlineBlock, Layout } from './compiled/blocks';
 
 abstract class Compiler {
   public env: Environment;
-  protected template: RawTemplate;
+  protected block: Block;
   protected symbolTable: SymbolTable;
   protected current: StatementSyntax;
 
-  constructor(template: RawTemplate, env: Environment) {
-    this.template = template;
-    this.current = template.program.head();
+  constructor(block: Block, env: Environment) {
+    this.block = block;
+    this.current = block.program.head();
     this.env = env;
-    this.symbolTable = template.symbolTable;
+    this.symbolTable = block.symbolTable;
   }
 
   protected compileStatement(statement: StatementSyntax, ops: CompileIntoList) {
@@ -133,15 +30,16 @@ export default Compiler;
 
 export class EntryPointCompiler extends Compiler {
   private ops: CompileIntoList;
+  protected block: EntryPoint;
 
-  constructor(template: RawTemplate, env: Environment) {
+  constructor(template: EntryPoint, env: Environment) {
     super(template, env);
     this.ops = new CompileIntoList(template.symbolTable);
   }
 
   compile(): OpSeqBuilder {
-    let { template, ops } = this;
-    let { program } = template;
+    let { block, ops } = this;
+    let { program } = block;
 
     let current = program.head();
 
@@ -167,22 +65,22 @@ export class EntryPointCompiler extends Compiler {
   }
 }
 
-export class BlockCompiler extends Compiler {
+export class InlineBlockCompiler extends Compiler {
   private ops: CompileIntoList;
-  protected template: RawBlock;
+  protected block: InlineBlock;
   protected current: StatementSyntax;
 
-  constructor(template: RawBlock, env: Environment) {
-    super(template, env);
-    this.ops = new CompileIntoList(template.symbolTable);
+  constructor(block: InlineBlock, env: Environment) {
+    super(block, env);
+    this.ops = new CompileIntoList(block.symbolTable);
   }
 
   compile(): CompileIntoList {
-    let { template, ops } = this;
-    let { program } = template;
+    let { block, ops } = this;
+    let { program } = block;
 
-    if (template.hasPositionalParameters()) {
-      ops.append(new BindPositionalArgsOpcode({ template }));
+    if (block.hasPositionalParameters()) {
+      ops.append(new BindPositionalArgsOpcode({ block }));
     }
 
     let current = program.head();
@@ -203,7 +101,7 @@ export interface ComponentParts {
   body: Slice<StatementSyntax>;
 }
 
-interface CompiledComponentParts {
+export interface CompiledComponentParts {
   tag: InternedString;
   preamble: CompileIntoList;
   main: CompileIntoList;
@@ -213,26 +111,26 @@ export class LayoutCompiler extends Compiler {
   private preamble: CompileIntoList;
   private body: CompileIntoList;
   private definition: ComponentDefinition;
-  protected template: RawLayout;
+  protected block: Layout;
 
-  constructor(layout: RawLayout, env: Environment, definition: ComponentDefinition) {
+  constructor(layout: Layout, env: Environment, definition: ComponentDefinition) {
     super(layout, env);
     this.definition = definition;
   }
 
   compile(): CompiledComponentParts {
-    let { template, env, symbolTable } = this;
-    let { tag, attrs, body } = this.definition.compile({ template, env, symbolTable });
+    let { block: layout, env, symbolTable } = this;
+    let { tag, attrs, body } = this.definition.compile({ layout, env, symbolTable });
 
     let preamble = this.preamble = new CompileIntoList(this.symbolTable);
     let main = this.body = new CompileIntoList(this.symbolTable);
 
-    if (template.hasNamedParameters()) {
-      preamble.append(BindNamedArgsOpcode.create(template));
+    if (layout.hasNamedParameters()) {
+      preamble.append(BindNamedArgsOpcode.create(layout));
     }
 
-    if (template.hasYields()) {
-      preamble.append(BindBlocksOpcode.create(template));
+    if (layout.hasYields()) {
+      preamble.append(BindBlocksOpcode.create(layout));
     }
 
     attrs.forEachNode(attr => {

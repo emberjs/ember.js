@@ -76,7 +76,6 @@ export namespace Expressions {
   export function isValue(value: any): value is Value {
     return value !== null && typeof value !== 'object';
   }
-
 }
 
 export type Expression = Expressions.Expression;

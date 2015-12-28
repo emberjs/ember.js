@@ -1,6 +1,11 @@
 import { VM } from '../vm';
 
+import {
+  BlockScanner
+} from '../scanner';
+
 import Syntax, {
+  ATTRIBUTE as ATTRIBUTE_SYNTAX,
   CompileInto,
   Attribute as AttributeSyntax,
   Expression as ExpressionSyntax,
@@ -10,8 +15,8 @@ import Syntax, {
 } from '../syntax';
 
 import {
-  RawBlock
-} from '../compiler';
+  InlineBlock as CompiledInlineBlock
+} from '../compiled/blocks';
 
 import {
   Opcode
@@ -58,6 +63,7 @@ import {
 import { Environment, Insertion, Helper as EnvHelper } from '../environment';
 
 import {
+  LinkedList,
   InternedString,
   Slice,
   Dict,
@@ -104,7 +110,7 @@ export interface BlockOptions {
 export class Block extends StatementSyntax {
   public type = "block";
 
-  static fromSpec(sexp: SerializedStatements.Block, children: RawBlock[]): Block {
+  static fromSpec(sexp: SerializedStatements.Block, children: CompiledInlineBlock[]): Block {
     let [, path, params, hash, templateId, inverseId] = sexp;
 
     return new Block({
@@ -127,6 +133,15 @@ export class Block extends StatementSyntax {
     this.path = options.path;
     this.args = options.args;
     this.templates = options.templates;
+  }
+
+  scan(scanner: BlockScanner): StatementSyntax {
+    let { default: _default, inverse } = this.templates;
+
+    if (_default) scanner.addChild(_default);
+    if (inverse)  scanner.addChild(inverse);
+
+    return this;
   }
 
   compile(ops: CompileInto) {
@@ -589,6 +604,18 @@ export class OpenElement extends StatementSyntax {
     this.blockParams = options.blockParams;
   }
 
+  scan(scanner: BlockScanner): StatementSyntax {
+    let { tag } = this;
+
+    if (scanner.env.hasComponentDefinition([tag], this)) {
+      let attrs = this.attributes(scanner);
+      let contents = this.tagContents(scanner);
+      return new Component({ tag, attrs, contents });
+    } else {
+      return new OpenPrimitiveElement({ tag });
+    }
+  }
+
   prettyPrint() {
     let params = new PrettyPrint('block-params', 'as', this.blockParams);
     return new PrettyPrint('element', 'open-element', [this.tag, params]);
@@ -601,6 +628,41 @@ export class OpenElement extends StatementSyntax {
   toIdentity(): OpenPrimitiveElement {
     let { tag } = this;
     return new OpenPrimitiveElement({ tag });
+  }
+
+  private attributes(scanner: BlockScanner): Slice<AttributeSyntax> {
+    let current = scanner.next();
+    let attrs = new LinkedList<AttributeSyntax>();
+
+    while (current[ATTRIBUTE_SYNTAX]) {
+      let attr = <AttributeSyntax>current;
+      attrs.append(attr);
+      current = scanner.next();
+    }
+
+    scanner.unput(current);
+
+    return attrs;
+  }
+
+  private tagContents(scanner: BlockScanner): Slice<StatementSyntax> {
+    let nesting = 1;
+    let list = new LinkedList<StatementSyntax>();
+
+    while (true) {
+      let current = scanner.next();
+      if (current instanceof CloseElement && --nesting === 0) {
+        break;
+      }
+
+      list.append(current);
+
+      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
+        nesting++;
+      }
+    }
+
+    return list;
   }
 }
 
@@ -621,7 +683,7 @@ export class Component extends StatementSyntax {
     let definition = env.getComponentDefinition([this.tag], this);
     let args = Args.fromHash(attributesToNamedArgs(this.attrs)).compile(list, env);
     let shadow = shadowList(this.attrs);
-    let block = new RawBlock({ children: null, ops: null, locals: null, program: this.contents });
+    let block = new CompiledInlineBlock({ children: null, ops: null, locals: [], program: this.contents });
     let templates = new Templates({ template: block, inverse: null });
 
     list.append(new OpenComponentOpcode({ definition, args, shadow, templates }));
@@ -1030,7 +1092,7 @@ export class NamedArgs extends Syntax {
   public type = "named";
 
   static fromSpec(sexp: SerializedCore.Hash): NamedArgs {
-    if (sexp === undefined) { return NamedArgs.empty(); }
+    if (sexp === null || sexp === undefined) { return NamedArgs.empty(); }
     let keys: InternedString[] = [];
     let values = [];
     let map = dict<ExpressionSyntax>();
@@ -1109,21 +1171,25 @@ export class NamedArgs extends Syntax {
 export class Templates extends Syntax {
   public type = "templates";
 
-  static fromSpec([templateId, inverseId]: [number, number], children: RawBlock[]): Templates {
+  static fromSpec([templateId, inverseId]: [number, number], children: CompiledInlineBlock[]): Templates {
     return new Templates({
       template: templateId === null ? null : children[templateId],
       inverse: inverseId === null ? null : children[inverseId],
     });
   }
 
-  static build(template: RawBlock, inverse: RawBlock=null): Templates {
+  static empty(): Templates {
+    return new Templates({ template: null, inverse: null });
+  }
+
+  static build(template: CompiledInlineBlock, inverse: CompiledInlineBlock=null): Templates {
     return new this({ template, inverse });
   }
 
-  public default: RawBlock;
-  public inverse: RawBlock;
+  public default: CompiledInlineBlock;
+  public inverse: CompiledInlineBlock;
 
-  constructor(options: { template: RawBlock, inverse: RawBlock }) {
+  constructor(options: { template: CompiledInlineBlock, inverse: CompiledInlineBlock }) {
     super();
     this.default = options.template;
     this.inverse = options.inverse;

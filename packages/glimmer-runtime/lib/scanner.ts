@@ -1,11 +1,9 @@
-import { Program, Statement as StatementSyntax, Attribute as AttributeSyntax, ATTRIBUTE_SYNTAX } from './syntax';
+import { Program, Statement as StatementSyntax } from './syntax';
 import buildStatement from './syntax/statements';
-import { Block, OpenElement, OpenPrimitiveElement, CloseElement, Component as ComponentSyntax } from './syntax/core';
-import SymbolTable from './symbol-table';
-import { RawTemplate, RawEntryPoint, RawBlock, RawLayout } from './compiler';
+import { TopLevelTemplate, EntryPoint, InlineBlock, Layout } from './compiled/blocks';
 import Environment from './environment';
-import { EMPTY_SLICE, Slice, LinkedList } from 'glimmer-util';
-import { SerializedTemplate, Statement as SerializedStatement } from 'glimmer-compiler';
+import { EMPTY_SLICE, LinkedList } from 'glimmer-util';
+import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement } from 'glimmer-compiler';
 
 export default class Scanner {
   private spec: SerializedTemplate;
@@ -16,120 +14,95 @@ export default class Scanner {
     this.env = env;
   }
 
-  scanEntryPoint(): RawEntryPoint {
-    return this.scanTop<RawEntryPoint>(({ program, children }) => {
-      return new RawEntryPoint({ children, ops: null, program });
+  scanEntryPoint(): EntryPoint {
+    return this.scanTop<EntryPoint>(({ program, children }) => {
+      return EntryPoint.create({ children, ops: null, program });
     });
   }
 
-  scanLayout(): RawLayout {
-    return this.scanTop<RawLayout>(({ program, children }) => {
+  scanLayout(): Layout {
+    return this.scanTop<Layout>(({ program, children }) => {
       let { named, yields } = this.spec;
-      return new RawLayout({ children, program, named, yields });
+      return Layout.create({ children, program, named, yields });
     });
   }
 
-  private scanTop<T extends RawTemplate>(makeTop: (options: { program: Program, children: RawTemplate[] }) => T) {
+  private scanTop<T extends TopLevelTemplate>(makeTop: (options: { program: Program, children: InlineBlock[] }) => T): T {
     let { spec } = this;
     let { blocks: specBlocks } = spec;
 
-    let len = specBlocks.length;
-    let blocks = new Array<RawBlock>(len);
+    let blocks: InlineBlock[] = [];
 
-    for (let i = 0; i < len; i++) {
-      let spec = specBlocks[i];
-
-      let { program, children } = this.buildStatements(spec.statements, blocks);
-
-      let { locals } = spec;
-      blocks[i] = new RawBlock({ children, locals, program });
+    for (let i = 0, block: SerializedBlock; block = specBlocks[i]; i++) {
+      blocks.push(this.buildBlock(block, blocks));
     }
 
-    let { program, children } = this.buildStatements(spec.statements, blocks);
-    let top = makeTop({ program, children });
-
-    let table = top.symbolTable = new SymbolTable(null, top).initNamed(top.named).initYields(top.yields);
-
-    top.children.forEach(t => initTemplate(t, table));
-
-    return top;
+    return makeTop(this.buildStatements(spec, blocks)).initBlocks();
   }
 
-  private buildStatements(statements: SerializedStatement[], templates: RawBlock[]): { program: Program, children: RawTemplate[] } {
-    if (statements.length === 0) { return { program: EMPTY_SLICE, children: [] }; }
-
-    let program = new LinkedList<StatementSyntax>();
-    let children: RawTemplate[] = [];
-    let reader = new SyntaxReader(statements, templates);
-    let statement: StatementSyntax;
-
-    while (statement = reader.next()) {
-      if (statement instanceof Block) {
-        let block = <Block>statement;
-        if (block.templates.default) children.push(block.templates.default);
-        if (block.templates.inverse) children.push(block.templates.inverse);
-      } else if (statement instanceof OpenElement) {
-        let openElement = <OpenElement>statement;
-        let { tag } = openElement;
-
-        if (this.env.hasComponentDefinition([tag], statement)) {
-          let attrs = this.attributes(reader);
-          let contents = this.tagContents(reader);
-          statement = new ComponentSyntax({ tag, attrs, contents });
-        } else {
-          statement = new OpenPrimitiveElement({ tag });
-        }
-      }
-
-      program.append(statement);
-    }
-
-    return { program, children };
+  private buildBlock(block: SerializedBlock, blocks: InlineBlock[]): InlineBlock{
+    let { program, children } = this.buildStatements(block, blocks);
+    return new InlineBlock({ children, locals: block.locals, program });
   }
 
-  private attributes(reader: SyntaxReader): Slice<AttributeSyntax> {
-    let current = reader.next();
-    let attrs = new LinkedList<AttributeSyntax>();
-
-    while (current[ATTRIBUTE_SYNTAX]) {
-      let attr = <AttributeSyntax>current;
-      attrs.append(attr);
-      current = reader.next();
-    }
-
-    reader.unput(current);
-
-    return attrs;
-  }
-
-  private tagContents(reader: SyntaxReader): Slice<StatementSyntax> {
-    let nesting = 1;
-    let list = new LinkedList<StatementSyntax>();
-
-    while (true) {
-      let current = reader.next();
-      if (current instanceof CloseElement && --nesting === 0) {
-        break;
-      }
-
-      list.append(current);
-
-      if (current instanceof OpenElement || current instanceof OpenPrimitiveElement) {
-        nesting++;
-      }
-    }
-
-    return list;
+  private buildStatements({ statements }: SerializedBlock, blocks: InlineBlock[]): ScanResults {
+    if (statements.length === 0) return EMPTY_PROGRAM;
+    return new BlockScanner(statements, blocks, this.env).scan();
   }
 }
 
-class SyntaxReader {
+interface ScanResults {
+  program: Program;
+  children: InlineBlock[];
+}
+
+const EMPTY_PROGRAM = {
+  program: EMPTY_SLICE,
+  children: []
+};
+
+export class BlockScanner {
+  public program = new LinkedList<StatementSyntax>();
+  public children: InlineBlock[] = [];
+  public env: Environment;
+  private reader: SyntaxReader;
+
+  constructor(statements: SerializedStatement[], blocks: InlineBlock[], env: Environment) {
+    this.reader = new SyntaxReader(statements, blocks);
+    this.env = env;
+  }
+
+  scan(): ScanResults {
+    let { reader, program } = this;
+    let statement: StatementSyntax;
+
+    while (statement = reader.next()) {
+      program.append(statement.scan(this));
+    }
+
+    return this;
+  }
+
+  addChild(block: InlineBlock) {
+    this.children.push(block);
+  }
+
+  next(): StatementSyntax {
+    return this.reader.next();
+  }
+
+  unput(statement: StatementSyntax) {
+    this.reader.unput(statement);
+  }
+}
+
+export class SyntaxReader {
   statements: SerializedStatement[];
   current: number = 0;
-  blocks: RawBlock[];
+  blocks: InlineBlock[];
   last: StatementSyntax = null;
 
-  constructor(statements: SerializedStatement[], blocks: RawBlock[]) {
+  constructor(statements: SerializedStatement[], blocks: InlineBlock[]) {
     this.statements = statements;
     this.blocks = blocks;
   }
@@ -150,14 +123,4 @@ class SyntaxReader {
     let sexp = this.statements[this.current++];
     return buildStatement(sexp, this.blocks);
   }
-}
-
-function initTemplate(template: RawTemplate, parent: SymbolTable) {
-  let { locals } = template;
-  let table = parent;
-
-  table = new SymbolTable(parent, template).initPositional(locals);
-
-  template.symbolTable = table;
-  template.children.forEach(t => initTemplate(t, table));
 }

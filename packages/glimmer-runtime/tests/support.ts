@@ -1,12 +1,13 @@
 import {
-  // Constants
-  ATTRIBUTE_SYNTAX,
+  // Brands
+  isAttribute,
 
-  CompileInto,
+  // Blocks
+  CompiledLayout,
 
   // Compiler
-  RawLayout,
   SymbolTable,
+  CompileInto,
 
   // Environment
   Environment,
@@ -232,7 +233,7 @@ class CurlyComponent extends StatementSyntax {
     super();
     this.args = args;
     this.definition = definition;
-    this.templates = templates;
+    this.templates = templates || Templates.empty();
   }
 
   compile(list: CompileInto, env: Environment) {
@@ -313,8 +314,8 @@ interface ComponentParts {
 }
 
 class GlimmerComponentDefinition extends ComponentDefinition {
-  compile({ template }: { template: RawLayout }): ComponentParts {
-    let { program } = template;
+  compile({ layout }: { layout: CompiledLayout }): ComponentParts {
+    let { program } = layout;
 
     let current = program.head();
 
@@ -332,7 +333,7 @@ class GlimmerComponentDefinition extends ComponentDefinition {
     let beginAttrs: AttributeSyntax = null;
     let endAttrs: AttributeSyntax = null;
 
-    while (current[ATTRIBUTE_SYNTAX]) {
+    while (isAttribute(current)) {
       beginAttrs = beginAttrs || <AttributeSyntax>current;
       endAttrs = <AttributeSyntax>current;
       current = current.next;
@@ -373,8 +374,8 @@ const EMBER_VIEW = new ValueSyntax('ember-view');
 let id = 1;
 
 class EmberishComponentDefinition extends ComponentDefinition {
-  compile({ template }: { template: RawLayout }): ComponentParts {
-    let { program } = template;
+  compile({ layout }: { layout: CompiledLayout }): ComponentParts {
+    let { program } = layout;
 
     let attrs = new LinkedList<AttributeSyntax>();
 
@@ -390,8 +391,8 @@ class EmberishComponentDefinition extends ComponentDefinition {
 }
 
 class EmberishGlimmerComponentDefinition extends GlimmerComponentDefinition {
-  compile({ template }: { template: RawLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
-    let { tag, attrs: _attrs, body } = super.compile({ template });
+  compile({ layout }: { layout: CompiledLayout, env: Environment, symbolTable: SymbolTable }): ComponentParts {
+    let { tag, attrs: _attrs, body } = super.compile({ layout });
 
     let attrs = LinkedList.fromSlice(_attrs);
     attrs.append(new AddClass({ value: EMBER_VIEW }));

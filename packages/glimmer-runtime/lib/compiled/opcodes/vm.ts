@@ -2,7 +2,7 @@ import { Opcode, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM } from '../../vm';
-import { RawTemplate, RawBlock } from '../../compiler';
+import { Layout as CompiledLayout, InlineBlock as CompiledInlineBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { ListSlice, Slice, Dict, dict, assign } from 'glimmer-util';
 import { ChainableReference } from 'glimmer-reference';
@@ -79,13 +79,13 @@ export class BindPositionalArgsOpcode extends Opcode {
 
   private positional: number[];
 
-  constructor({ template }: { template: RawTemplate }) {
+  constructor({ block }: { block: CompiledInlineBlock }) {
     super();
 
     let positional = this.positional = [];
 
-    template.locals.forEach((name) => {
-      positional.push(template.symbolTable.get(name));
+    block.locals.forEach((name) => {
+      positional.push(block.symbolTable.get(name));
     });
   }
 
@@ -99,9 +99,9 @@ export class BindNamedArgsOpcode extends Opcode {
 
   public named: Dict<number>;
 
-  static create(template: RawTemplate) {
-    let named = template.named.reduce(
-      (obj, name) => assign(obj, { [<string>name]: template.symbolTable.get(name) }),
+  static create(layout: CompiledLayout) {
+    let named = layout['named'].reduce(
+      (obj, name) => assign(obj, { [<string>name]: layout.symbolTable.get(name) }),
       dict<number>()
     );
 
@@ -124,8 +124,8 @@ export class BindBlocksOpcode extends Opcode {
 
   public blocks: number[];
 
-  static create(template: RawTemplate) {
-    let blocks = template.yields.map(name => template.symbolTable.getYield(name));
+  static create(template: CompiledLayout) {
+    let blocks = template['yields'].map(name => template.symbolTable.getYield(name));
     return new BindBlocksOpcode({ blocks });
   }
 
@@ -177,16 +177,16 @@ export class NoopOpcode extends Opcode {
 
 export class EvaluateOpcode extends Opcode {
   public type = "evaluate";
-  private template: RawBlock;
+  private block: CompiledInlineBlock;
 
-  constructor({ template }: { template: RawBlock }) {
+  constructor({ template }: { template: CompiledInlineBlock }) {
     super();
-    this.template = template;
+    this.block = template;
   }
 
   evaluate(vm: VM) {
-    this.template.compile(vm.env);
-    vm.pushFrame(this.template.ops, vm.frame.getArgs());
+    this.block.compile(vm.env);
+    vm.pushFrame(this.block.ops, vm.frame.getArgs());
   }
 }
 

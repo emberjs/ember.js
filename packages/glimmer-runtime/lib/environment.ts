@@ -1,10 +1,4 @@
-import {
-  Helper as HelperSyntax,
-  Unknown,
-  Append,
-} from "./syntax/core";
-
-import { StatementSyntax } from './syntax';
+import { Statement as StatementSyntax } from './syntax';
 
 import { NULL_REFERENCE } from './references';
 
@@ -27,11 +21,11 @@ import {
   installGuid
 } from 'glimmer-util';
 
-import { RawBlock } from './compiler';
+import { InlineBlock } from './compiled/blocks';
 
 import { Dict } from 'glimmer-util';
 
-type ScopeSlot = PathReference | RawBlock;
+type ScopeSlot = PathReference | InlineBlock;
 
 export class Scope {
   static root(parent: Scope, size = 0) {
@@ -67,15 +61,15 @@ export class Scope {
     return this.slots[symbol] as PathReference;
   }
 
-  getBlock(symbol: number): RawBlock {
-    return this.slots[symbol] as RawBlock;
+  getBlock(symbol: number): InlineBlock {
+    return this.slots[symbol] as InlineBlock;
   }
 
   bindSymbol(symbol: number, value: PathReference) {
     this.slots[symbol] = value;
   }
 
-  bindBlock(symbol: number, value: RawBlock) {
+  bindBlock(symbol: number, value: InlineBlock) {
     this.slots[symbol] = value;
   }
 
@@ -110,20 +104,6 @@ export abstract class Environment {
   }
 
   statement(statement: StatementSyntax): StatementSyntax {
-    let type = statement.type;
-
-    if (type === 'append') {
-      let append = <Append>statement;
-      let unknown = append.value.type === 'unknown' ? <Unknown>append.value : null;
-      let helper = append.value.type === 'helper' ? <HelperSyntax>append.value : null;
-
-      if (unknown && unknown.simplePath() === 'yield') {
-        return new YieldSyntax({ args: null });
-      } else if (helper && helper.ref.simplePath() === 'yield') {
-        return new YieldSyntax({ args: helper.args });
-      }
-    }
-
     return statement;
   }
 

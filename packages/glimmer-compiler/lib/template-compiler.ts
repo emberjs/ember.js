@@ -2,7 +2,7 @@ import TemplateVisitor from "./template-visitor";
 import JavaScriptCompiler from "./javascript-compiler";
 import { getAttrNamespace } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
-import { assert } from "./utils";
+import { assert } from "glimmer-util";
 
 export default class TemplateCompiler {
   static compile(options, ast) {
@@ -33,13 +33,21 @@ export default class TemplateCompiler {
   }
 
   startProgram(program) {
-    this.templateId++;
     this.opcode('startProgram', program, program);
   }
 
   endProgram() {
-    this.templateIds.push(this.templateId - 1);
     this.opcode('endProgram', null);
+  }
+
+  startBlock(program) {
+    this.templateId++;
+    this.opcode('startBlock', program, program);
+  }
+
+  endBlock() {
+    this.templateIds.push(this.templateId - 1);
+    this.opcode('endBlock', null);
   }
 
   text([action]) {

@@ -16,8 +16,8 @@ type Path = Core.Path;
 type StackValue = Expression | Params | Hash | str;
 
 export class Block {
-  statements: Statement[];
-  positionals: string[];
+  statements: Statement[] = [];
+  positionals: string[] = [];
 
   toJSON(): SerializedBlock {
     return {
@@ -32,11 +32,9 @@ export class Block {
 }
 
 export class Template extends Block {
-  public statements: Statement[] = null;
   public meta: Object = null;
 
   public yields = new DictSet();
-  public positionals: string[] = null;
   public named = new DictSet();
   public blocks: Block[] = [];
 
@@ -58,14 +56,14 @@ export default class JavaScriptCompiler {
     return compiler.process();
   }
 
-  private template: Template = new Template();
+  private template: Template = null;
   private blocks = new Stack<Block>();
   private opcodes: any[];
   private values: StackValue[] = [];
 
   constructor(opcodes) {
     this.opcodes = opcodes;
-    this.blocks.push(new Template());
+    this.template = new Template();
   }
 
   process() {
@@ -79,20 +77,23 @@ export default class JavaScriptCompiler {
 
   /// Nesting
 
-  startProgram([program]) {
-    this.template.positionals = program.blockParams;
-    this.blocks.push(new Block());
+  startBlock([program]) {
+    let block: Block = new Block();
+    block.positionals = program.blockParams;
+    this.blocks.push(block);
+  }
+
+  endBlock() {
+    let { template, blocks } = this;
+    template.blocks.push(blocks.pop());
+  }
+
+  startProgram() {
+    this.blocks.push(this.template);
   }
 
   endProgram() {
-    let { template, blocks } = this;
-    let block = blocks.pop();
 
-    if (!this.blocks.isEmpty()) {
-      template.blocks.push(block);
-    } else {
-      // top level
-    }
   }
 
   /// Statements
