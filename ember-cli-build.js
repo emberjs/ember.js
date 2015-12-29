@@ -14,6 +14,8 @@ module.exports = function() {
     return transpileES6(tree, label, { resolveModuleSource: null, sourceMaps: 'inline' });
   }
 
+  var packages = 'packages/node_modules';
+
   var bower = 'bower_components';
   var demoHTML = new Funnel('demos', {
     include: ['*.html'],
@@ -24,8 +26,8 @@ module.exports = function() {
     new Funnel('demos', {
       include: ['**/*.ts']
     }),
-    moveFile('packages/glimmer-runtime/tests', {
-      srcFile: 'support.ts',
+    moveFile(packages + '/glimmer-test-helpers/lib', {
+      srcFile: 'environment.ts',
       destFile: 'glimmer-demos/index.ts'
     })
   ]);
@@ -50,15 +52,7 @@ module.exports = function() {
 
   var HTMLTokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 
-  var DTSTree = new Funnel('packages', {
-    include: ['*/index.d.ts'],
-
-    getDestinationPath: function(relativePath) {
-      return relativePath.replace(/\.d\.ts$/, '.js');
-    }
-  });
-
-  var tsTree = new Funnel('packages', {
+  var tsTree = new Funnel(packages, {
     include: ["**/*.ts"],
     exclude: ["**/*.d.ts"]
   });
@@ -66,10 +60,10 @@ module.exports = function() {
   var jsTree = typescript(tsTree);
 
   var libTree = new Funnel(jsTree, {
-    include: ["*/lib/**/*.js"]
+    include: ["*/index.js", "*/lib/**/*.js"]
   });
 
-  var packagesTree = mergeTrees([DTSTree, libTree, HTMLTokenizer]);
+  var packagesTree = mergeTrees([libTree, HTMLTokenizer]);
 
   var runtimeTree = new Funnel(packagesTree, {
     include: ['glimmer-runtime/**/*']

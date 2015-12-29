@@ -1,11 +1,10 @@
 {
     "compilerOptions": {
-        "target": "ES6",
+        "target": "es2015",
         "inlineSourceMap": true,
         "inlineSources": true,
         "moduleResolution": "node",
-        "rootDir": "packages",
-        "mapRoot": "packages",
+        "rootDir": "packages/node_modules",
         "noEmit": true
     },
     "exclude": [

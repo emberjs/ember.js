@@ -10,6 +10,8 @@
     "test": "ember test",
     "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json",
     "start": "ember serve",
+    "tsc": "tsc -p . --noEmit",
+    "tslint": "tslint ./packages/**/*.ts",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect"
   },
@@ -37,7 +39,7 @@
     "broccoli-merge-trees": "0.2.1",
     "broccoli-sourcemap-concat": "^2.0.1",
     "broccoli-string-replace": "~0.0.2",
-    "broccoli-typescript-compiler": "~0.1.2",
+    "broccoli-typescript-compiler": "^0.2.1",
     "broccoli-uglify-js": "~0.1.3",
     "chalk": "~0.4.0",
     "ember-cli": "ember-cli/ember-cli",
@@ -49,6 +51,6 @@
     "qunit": "^0.7.2",
     "rsvp": "~3.0.6",
     "tslint": "^3.1.0-dev.1",
-    "typescript": "^1.8.0-dev.20151223"
+    "typescript": "next"
   }
 }

@@ -19,7 +19,6 @@
     "triple-equals": true,
     "class-name": true,
     "comment-format": { "check-space": true },
-    "no-null-keyword": true,
     "no-require-imports": true
   }
 }
