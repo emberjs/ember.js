@@ -349,7 +349,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @method isActive
     @param routeName
     @return {Boolean}
-    @private
+    @public
   */
   isActive(routeName) {
     var router = this.router;
