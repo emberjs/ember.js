@@ -157,7 +157,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     If no value is found `/` will be used.
 
     @method startRouting
-    @private
+    @public
   */
   startRouting() {
     var initialURL = get(this, 'initialURL');
