@@ -376,7 +376,7 @@ if (isEnabled('ember-application-visit')) {
     Internal, experimental or otherwise unstable flags are marked as private.
 
     @class BootOptions
-    @namespace @Ember.ApplicationInstance
+    @namespace Ember.ApplicationInstance
     @public
   */
   BootOptions = function BootOptions(options = {}) {
