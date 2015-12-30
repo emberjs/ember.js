@@ -366,7 +366,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @param models
     @param queryParams
     @return {Boolean}
-    @private
+    @public
     @since 1.7.0
   */
   isActiveIntent(routeName, models, queryParams) {
