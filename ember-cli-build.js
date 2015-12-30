@@ -1,7 +1,6 @@
 var Funnel = require('broccoli-funnel');
 var concat = require('broccoli-concat');
 var merge = require('broccoli-merge-trees');
-var replace = require('broccoli-string-replace');
 var typescript = require('broccoli-typescript-compiler');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
