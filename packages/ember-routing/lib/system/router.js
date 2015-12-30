@@ -131,7 +131,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     @method url
     @return {String} The current URL.
-    @private
+    @public
   */
   url: computed(function() {
     return get(this, 'location').getURL();
