@@ -392,7 +392,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     Resets the state of the router by clearing the current route
     handlers and deactivating them.
 
-    @private
+    @public
     @method reset
    */
   reset() {
