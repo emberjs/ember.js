@@ -382,7 +382,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     @method hasRoute
     @return {Boolean}
-    @private
+    @public
   */
   hasRoute(route) {
     return this.router.hasRoute(route);
