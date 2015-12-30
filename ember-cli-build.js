@@ -1,13 +1,13 @@
 var Funnel = require('broccoli-funnel');
-var concatFiles = require('broccoli-sourcemap-concat');
-var mergeTrees = require('broccoli-merge-trees');
-var moveFile = require('broccoli-file-mover');
+var concat = require('broccoli-concat');
+var merge = require('broccoli-merge-trees');
 var replace = require('broccoli-string-replace');
-var removeFile = require('broccoli-file-remover');
 var typescript = require('broccoli-typescript-compiler');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var getVersion = require('git-repo-version');
+var stew = require('broccoli-stew');
+var mv = stew.mv;
 
 module.exports = function() {
   function transpile(tree, label) {
@@ -22,20 +22,17 @@ module.exports = function() {
     destDir: '/demos'
   });
 
-  var demoTS = mergeTrees([
+  var demoTS = merge([
     new Funnel('demos', {
       include: ['**/*.ts']
     }),
-    moveFile(packages + '/glimmer-test-helpers/lib', {
-      srcFile: 'environment.ts',
-      destFile: 'glimmer-demos/index.ts'
-    })
+    mv(packages + '/glimmer-test-helpers/lib/environment.ts', 'glimmer-demos/index.ts')
   ]);
 
   var demoES6 = typescript(demoTS);
   var demoES5 = transpile(demoES6);
 
-  var demoConcat = concatFiles(demoES5, {
+  var demoConcat = concat(demoES5, {
     inputFiles: ['**/*.js'],
     outputFile: '/demos/demos.amd.js',
     sourceMapConfig: { enabled: true }
@@ -44,13 +41,17 @@ module.exports = function() {
   var benchmarkjs = new Funnel('node_modules/benchmark', { files: ['benchmark.js'] });
   var benchHarness = 'bench';
   var bench = new Funnel(
-    mergeTrees([benchmarkjs, benchHarness]),
+    merge([benchmarkjs, benchHarness]),
     { destDir: '/demos' }
   );
 
-  var demos = mergeTrees([ demoHTML, demoConcat, bench ]);
+  var demos = merge([
+    demoHTML,
+    demoConcat,
+    bench
+  ]);
 
-  var HTMLTokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
+  var HTMLTokenizer = new Funnel(bower + '/simple-html-tokenizer/lib/');
 
   var tsTree = new Funnel(packages, {
     include: ["**/*.ts"],
@@ -63,15 +64,24 @@ module.exports = function() {
     include: ["*/index.js", "*/lib/**/*.js"]
   });
 
-  var packagesTree = mergeTrees([libTree, HTMLTokenizer]);
+  var packagesTree = merge([
+      libTree,
+      HTMLTokenizer
+  ]);
 
   var runtimeTree = new Funnel(packagesTree, {
     include: ['glimmer-runtime/**/*']
   });
 
-  runtimeTree = mergeTrees([runtimeTree, handlebarsInlinedTrees.runtime]);
+  runtimeTree = merge([
+    runtimeTree,
+    handlebarsInlinedTrees.runtime
+  ]);
 
-  var compilerTree = mergeTrees([packagesTree, handlebarsInlinedTrees.compiler]);
+  var compilerTree = merge([
+    packagesTree,
+    handlebarsInlinedTrees.compiler
+  ]);
 
   var testTree = new Funnel(jsTree, {
     include: ["*/tests/**/*.js"]
@@ -81,32 +91,35 @@ module.exports = function() {
 
   var testHarness = new Funnel('tests', {
     srcDir: '/',
-    files: [ 'index.html', 'packages-config.js' ],
+    files: [ 'index.html' ],
     destDir: '/tests'
   });
 
-  testHarness = mergeTrees([testHarness, new Funnel(bower, {
-    srcDir: '/qunit/qunit',
-    destDir: '/tests'
-  })]);
+  testHarness = merge([
+    testHarness,
+    new Funnel(bower, {
+      srcDir: '/qunit/qunit',
+      destDir: '/tests'
+    })
+  ]);
 
   var transpiledCompiler = transpile(compilerTree, 'transpiledLibs');
   var transpiledRuntime = transpile(runtimeTree, 'transpiledRuntime');
   var transpiledTests = transpile(testTree, 'transpiledTests');
 
-  var concatenatedCompiler = concatFiles(transpiledCompiler, {
+  var concatenatedCompiler = concat(transpiledCompiler, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-compiler.amd.js',
     sourceMapConfig: { enabled: true }
   });
 
-  var concatenatedRuntime = concatFiles(transpiledRuntime, {
+  var concatenatedRuntime = concat(transpiledRuntime, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-runtime.amd.js',
     sourceMapConfig: { enabled: true }
   });
 
-  var concatenatedTests = concatFiles(transpiledTests, {
+  var concatenatedTests = concat(transpiledTests, {
     inputFiles: ['**/*.js'],
     outputFile: '/tests.js',
     sourceMapConfig: { enabled: true }
@@ -122,5 +135,13 @@ module.exports = function() {
     destDir: 'es6'
   });
 
-  return mergeTrees([es6Tree, demos, concatenatedCompiler, concatenatedRuntime, loader, testHarness, concatenatedTests]);
+  return merge([
+    es6Tree,
+    demos,
+    concatenatedCompiler,
+    concatenatedRuntime,
+    loader,
+    testHarness,
+    concatenatedTests
+  ]);
 }
