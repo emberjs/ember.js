@@ -8,10 +8,10 @@
         "noEmit": true
     },
     "exclude": [
-        "node_modules",
         "dist",
         "demos",
         "tmp",
+        "node_modules",
         "bower_components",
         ".vscode"
     ]
