@@ -1,4 +1,3 @@
-var Funnel = require('broccoli-funnel');
 var concat = require('broccoli-concat');
 var merge = require('broccoli-merge-trees');
 var typescript = require('broccoli-typescript-compiler');
@@ -7,24 +6,19 @@ var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var getVersion = require('git-repo-version');
 var stew = require('broccoli-stew');
 var mv = stew.mv;
+var find = stew.find;
+
+function transpile(tree, label) {
+  return transpileES6(tree, label, { resolveModuleSource: null, sourceMaps: 'inline' });
+}
 
 module.exports = function() {
-  function transpile(tree, label) {
-    return transpileES6(tree, label, { resolveModuleSource: null, sourceMaps: 'inline' });
-  }
-
   var packages = 'packages/node_modules';
 
   var bower = 'bower_components';
-  var demoHTML = new Funnel('demos', {
-    include: ['*.html'],
-    destDir: '/demos'
-  });
 
   var demoTS = merge([
-    new Funnel('demos', {
-      include: ['**/*.ts']
-    }),
+    find('demos/**/*.ts'),
     mv(packages + '/glimmer-test-helpers/lib/environment.ts', 'glimmer-demos/index.ts')
   ]);
 
@@ -37,29 +31,33 @@ module.exports = function() {
     sourceMapConfig: { enabled: true }
   });
 
-  var benchmarkjs = new Funnel('node_modules/benchmark', { files: ['benchmark.js'] });
+  var benchmarkjs = find('node_modules/benchmark/{benchmark.js}');
   var benchHarness = 'bench';
-  var bench = new Funnel(
-    merge([benchmarkjs, benchHarness]),
+  var bench = find(
+    merge([
+      benchmarkjs,
+      benchHarness
+    ]),
     { destDir: '/demos' }
   );
 
   var demos = merge([
-    demoHTML,
+    find('demos', '*.html'),
     demoConcat,
     bench
   ]);
 
-  var HTMLTokenizer = new Funnel(bower + '/simple-html-tokenizer/lib/');
+  // TODO: WAT, why does { } change the output so much....
+  var HTMLTokenizer = find(bower + '/simple-html-tokenizer/lib/', { });
 
-  var tsTree = new Funnel(packages, {
+  var tsTree = find(packages, {
     include: ["**/*.ts"],
     exclude: ["**/*.d.ts"]
   });
 
   var jsTree = typescript(tsTree);
 
-  var libTree = new Funnel(jsTree, {
+  var libTree = find(jsTree, {
     include: ["*/index.js", "*/lib/**/*.js"]
   });
 
@@ -68,7 +66,7 @@ module.exports = function() {
       HTMLTokenizer
   ]);
 
-  var runtimeTree = new Funnel(packagesTree, {
+  var runtimeTree = find(packagesTree, {
     include: ['glimmer-runtime/**/*']
   });
 
@@ -82,13 +80,13 @@ module.exports = function() {
     handlebarsInlinedTrees.compiler
   ]);
 
-  var testTree = new Funnel(jsTree, {
+  var testTree = find(jsTree, {
     include: ["*/tests/**/*.js"]
   });
 
   // Test Assets
 
-  var testHarness = new Funnel('tests', {
+  var testHarness = find('tests', {
     srcDir: '/',
     files: [ 'index.html' ],
     destDir: '/tests'
@@ -96,7 +94,7 @@ module.exports = function() {
 
   testHarness = merge([
     testHarness,
-    new Funnel(bower, {
+    find(bower, {
       srcDir: '/qunit/qunit',
       destDir: '/tests'
     })
@@ -124,13 +122,13 @@ module.exports = function() {
     sourceMapConfig: { enabled: true }
   });
 
-  var loader = new Funnel(bower, {
+  var loader = find(bower, {
     srcDir: '/loader.js',
     files: [ 'loader.js' ],
     destDir: '/assets'
   });
 
-  var es6Tree = new Funnel(packagesTree, {
+  var es6Tree = find(packagesTree, {
     destDir: 'es6'
   });
 
@@ -144,3 +142,6 @@ module.exports = function() {
     concatenatedTests
   ]);
 }
+
+
+
