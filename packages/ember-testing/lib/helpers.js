@@ -14,15 +14,15 @@ var helper = Test.registerHelper;
 var asyncHelper = Test.registerAsyncHelper;
 
 function currentRouteName(app) {
-  var appController = app.__container__.lookup('controller:application');
+  var routingService = app.__container__.lookup('service:-routing');
 
-  return get(appController, 'currentRouteName');
+  return get(routingService, 'currentRouteName');
 }
 
 function currentPath(app) {
-  var appController = app.__container__.lookup('controller:application');
+  var routingService = app.__container__.lookup('service:-routing');
 
-  return get(appController, 'currentPath');
+  return get(routingService, 'currentPath');
 }
 
 function currentURL(app) {
