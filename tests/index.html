@@ -14,7 +14,7 @@
   <script>loader.noConflict({ define: 'enifed' });</script>
   <!--<script src="export-test-results.js"></script>-->
   <script src="/amd/glimmer-compiler.amd.js"></script>
-  <script src="/tests.js"></script>
+  <script src="/amd/tests.amd.js"></script>
 
   <style>
     #qunit-tests.hidepass li.skipped {
@@ -24,22 +24,6 @@
 
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
-
-    function injectScript(url) {
-      document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
-    }
-
-    function injectTests(packageName) {
-      injectScript(packageName + "-tests.amd.js");
-    }
-
-    function keys(o) {
-      var arr = [];
-      for (var k in o) {
-        arr.push(k);
-      }
-      return arr;
-    }
 
     function getPackagesToTest() {
       if (QUnit.urlParams.packages) {
