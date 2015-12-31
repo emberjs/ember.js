@@ -1,5 +1,5 @@
 // ref http://dev.w3.org/html5/spec-LC/namespaces.html
-var defaultNamespaces = {
+let defaultNamespaces = {
   html: 'http://www.w3.org/1999/xhtml',
   mathml: 'http://www.w3.org/1998/Math/MathML',
   svg: 'http://www.w3.org/2000/svg',
@@ -8,11 +8,11 @@ var defaultNamespaces = {
 };
 
 export function getAttrNamespace(attrName) {
-  var namespace;
+  let namespace;
 
-  var colonIndex = attrName.indexOf(':');
+  let colonIndex = attrName.indexOf(':');
   if (colonIndex !== -1) {
-    var prefix = attrName.slice(0, colonIndex);
+    let prefix = attrName.slice(0, colonIndex);
     namespace = defaultNamespaces[prefix];
   }
 

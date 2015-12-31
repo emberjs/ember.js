@@ -201,7 +201,7 @@ function assembleConcatenatedValue(parts) {
 }
 
 function validateEndTag(tag, element, selfClosing) {
-  var error;
+  let error;
 
   if (voidMap[tag.name] && !selfClosing) {
     // EngTag is also called by StartTag for void and self-closing tags (i.e.

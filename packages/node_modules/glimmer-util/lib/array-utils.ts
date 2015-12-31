@@ -1,5 +1,5 @@
 export function forEach<T>(array: T[], callback: (e?: T, i?: number, c?: T[]) => void, binding: any=undefined) {
-  var i, l;
+  let i, l;
   if (binding === undefined) {
     for (i = 0, l = array.length; i < l; i++) {
       callback(array[i], i, array);
@@ -12,8 +12,8 @@ export function forEach<T>(array: T[], callback: (e?: T, i?: number, c?: T[]) =>
 }
 
 export function map(array, callback) {
-  var output = [];
-  var i, l;
+  let output = [];
+  let i, l;
 
   for (i = 0, l = array.length; i < l; i++) {
     output.push(callback(array[i], i, array));
@@ -22,7 +22,7 @@ export function map(array, callback) {
   return output;
 }
 
-var getIdx;
+let getIdx;
 if (Array.prototype.indexOf) {
   getIdx = function(array, obj, from){
     return array.indexOf(obj, from);
@@ -34,7 +34,7 @@ if (Array.prototype.indexOf) {
     } else if (from < 0) {
       from = Math.max(0, array.length + from);
     }
-    for (var i = from, l= array.length; i < l; i++) {
+    for (let i = from, l= array.length; i < l; i++) {
       if (array[i] === obj) {
         return i;
       }
@@ -43,8 +43,8 @@ if (Array.prototype.indexOf) {
   };
 }
 
-export var isArray = (Array.isArray || function(array) {
+export let isArray = (Array.isArray || function(array) {
   return Object.prototype.toString.call(array) === '[object Array]';
 });
 
-export var indexOfArray = getIdx;
+export let indexOfArray = getIdx;
