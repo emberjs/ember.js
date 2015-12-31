@@ -18,7 +18,7 @@ module.exports = function() {
   var bower = 'bower_components';
 
   var demoTS = merge([
-    find('demos/**/*.ts'),
+    find('demos', { include: ['**/*.ts']}),
     mv(packages + '/glimmer-test-helpers/lib/environment.ts', 'glimmer-demos/index.ts')
   ]);
 
