@@ -2,6 +2,7 @@
   "rules": {
     "curly": false,
     "no-unused-variable": true,
+    "no-var-keyword": true,
     "indent": [true, "spaces"],
     "label-position": true,
     "label-undefined": true,

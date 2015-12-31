@@ -24,7 +24,7 @@ export function hash(pairs) {
 }
 
 export function repeat(chars, times) {
-  var str = "";
+  let str = "";
   while (times--) {
     str += chars;
   }

@@ -23,15 +23,15 @@ Walker.prototype.visit = function(node, callback) {
   this.stack.pop();
 };
 
-var visitors = {
+let visitors = {
   Program: function(walker, node, callback) {
-    for (var i = 0; i < node.body.length; i++) {
+    for (let i = 0; i < node.body.length; i++) {
       walker.visit(node.body[i], callback);
     }
   },
 
   ElementNode: function(walker, node, callback) {
-    for (var i = 0; i < node.children.length; i++) {
+    for (let i = 0; i < node.children.length; i++) {
       walker.visit(node.children[i], callback);
     }
   },
@@ -47,7 +47,7 @@ var visitors = {
 };
 
 Walker.prototype.children = function(node, callback) {
-  var visitor = visitors[node.type];
+  let visitor = visitors[node.type];
   if (visitor) {
     visitor(this, node, callback);
   }
