@@ -107,19 +107,28 @@ module.exports = function() {
   var concatenatedCompiler = concat(transpiledCompiler, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-compiler.amd.js',
-    sourceMapConfig: { enabled: true }
+    sourceMapConfig: {
+      enabled: true,
+      sourceRoot: '/'
+    }
   });
 
   var concatenatedRuntime = concat(transpiledRuntime, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-runtime.amd.js',
-    sourceMapConfig: { enabled: true }
+    sourceMapConfig: {
+      enabled: true,
+      sourceRoot: '/'
+    }
   });
 
   var concatenatedTests = concat(transpiledTests, {
     inputFiles: ['**/*.js'],
-    outputFile: '/tests.js',
-    sourceMapConfig: { enabled: true }
+    outputFile: '/amd/tests.amd.js',
+    sourceMapConfig: {
+      enabled: true,
+      sourceRoot: '/'
+    }
   });
 
   var loader = find(bower, {

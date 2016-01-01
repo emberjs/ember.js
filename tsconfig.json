@@ -5,8 +5,7 @@
         "inlineSources": true,
         "moduleResolution": "node",
         "rootDir": "packages/node_modules",
-        "noEmit": true,
-        "mapRoot": "packages"
+        "noEmit": false
     },
     "exclude": [
         "dist",
