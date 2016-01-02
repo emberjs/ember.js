@@ -1,18 +1,17 @@
 {
     "compilerOptions": {
-        "target": "ES6",
+        "target": "es2015",
         "inlineSourceMap": true,
         "inlineSources": true,
         "moduleResolution": "node",
-        "rootDir": "packages",
-        "mapRoot": "packages",
-        "noEmit": true
+        "rootDir": "packages/node_modules",
+        "noEmit": false
     },
     "exclude": [
-        "node_modules",
         "dist",
         "demos",
         "tmp",
+        "node_modules",
         "bower_components",
         ".vscode"
     ]

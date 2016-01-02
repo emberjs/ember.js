@@ -1,5 +1,14 @@
 import EmberObject, { computed } from 'glimmer-object';
-import { EmberComponent, DemoEnvironment, compile } from 'glimmer-demos/index';
+import { TestEnvironment, compile } from 'glimmer-demos/index';
+
+class EmberComponent extends EmberObject {
+  public attrs: Object;
+
+  constructor(attrs: Object) {
+    super();
+    this.attrs = attrs;
+  }
+}
 
 let ServerUptime = <any>EmberComponent.extend({
   upDays: computed(function() {
@@ -34,28 +43,28 @@ let UptimeDay = <any>EmberComponent.extend({
 
 });
 
-let env = new DemoEnvironment();
+let env = new TestEnvironment();
 
-env.registerComponent('server-uptime', ServerUptime, compile(`
+env.registerGlimmerComponent('server-uptime', ServerUptime, `
   <server-uptime>
-  <h1>{{attrs.name}}</h1>
+  <h1>{{@name}}</h1>
   <h2>{{upDays}} Days Up</h2>
   <h2>Biggest Streak: {{streak}}</h2>
 
   <div class="days">
-    {{#each attrs.days key="day.number" as |day|}}
+    {{#each @days key="day.number" as |day|}}
       <uptime-day day={{day}} />
     {{/each}}
   </div>
   </server-uptime>
-`));
+`);
 
-env.registerComponent('uptime-day', UptimeDay, compile(`
+env.registerGlimmerComponent('uptime-day', UptimeDay, `
   <uptime-day>
     <span class="uptime-day" style="background-color: {{color}}" />
-    <span class="hover">{{attrs.day.number}}: {{memo}}</span>
+    <span class="hover">{{@day.number}}: {{memo}}</span>
   </uptime-day>
-`));
+`);
 
 
 let app = compile(`

@@ -5,7 +5,7 @@ Note that if your data is too large, there _will_ be overflow.
 
 function asc(a, b) { return a-b; }
 
-var config_params = {
+let config_params = {
 	bucket_precision: function(o, s) {
 		if(typeof s != "number" || s <= 0) {
 			throw new Error("bucket_precision must be a positive number");
@@ -51,7 +51,7 @@ export default function Stats(c) {
 	this._config = { store_data:  true };
 
 	if(c) {
-		for(var k in config_params) {
+		for(let k in config_params) {
 			if(c.hasOwnProperty(k)) {
 				config_params[k](this, c[k]);
 			}
@@ -91,7 +91,7 @@ Stats.prototype = {
 	},
 
 	_find_bucket: function(a) {
-		var b=0, e, l;
+		let b=0, e, l;
 		if(this._config.buckets) {
 			l = this._config.buckets.length;
 			if(this._config.bucket_extension_interval && a >= this._config.buckets[l-1]) {
@@ -116,7 +116,7 @@ Stats.prototype = {
 	},
 
 	_add_cache: function(a) {
-		var tuple=[1], i;
+		let tuple=[1], i;
 		if(a instanceof Array) {
 			tuple = a;
 			a = tuple.shift();
@@ -141,7 +141,7 @@ Stats.prototype = {
 		}
 
 		if(this.buckets) {
-			var b = this._find_bucket(a);
+			let b = this._find_bucket(a);
 			if(!this.buckets[b])
 				this.buckets[b] = [0];
 			this.buckets[b][0] += tuple.shift();
@@ -154,7 +154,7 @@ Stats.prototype = {
 	},
 
 	_del_cache: function(a) {
-		var tuple=[1], i;
+		let tuple=[1], i;
 		if(a instanceof Array) {
 			tuple = a;
 			a = tuple.shift();
@@ -179,7 +179,7 @@ Stats.prototype = {
 				this.max = this.min = this.data[0];
 			}
 			else if(tuple[0] > 0 && (this.max === a || this.min === a)) {
-				var i = this.length-1;
+				let i = this.length-1;
 				if(i>=0) {
 					this.max = this.min = this.data[i--];
 					while(i-- >= 0) {
@@ -193,7 +193,7 @@ Stats.prototype = {
 		}
 
 		if(this.buckets) {
-			var b=this._find_bucket(a);
+			let b=this._find_bucket(a);
 			if(this.buckets[b]) {
 				this.buckets[b][0] -= tuple.shift();
 
@@ -209,7 +209,7 @@ Stats.prototype = {
 	},
 
 	push: function() {
-		var i, a, args=Array.prototype.slice.call(arguments, 0);
+		let i, a, args=Array.prototype.slice.call(arguments, 0);
 		if(args.length && args[0] instanceof Array)
 			args = args[0];
 		for(i=0; i<args.length; i++) {
@@ -233,7 +233,7 @@ Stats.prototype = {
 		if(this.length === 0 || this._config.store_data === false)
 			return undefined;
 
-		var a = this.data.pop();
+		let a = this.data.pop();
 		this._del_cache(a);
 
 		return a;
@@ -247,7 +247,7 @@ Stats.prototype = {
 	},
 
 	reset_tuples: function(tuple) {
-		var b, l, t, ts=tuple.length;
+		let b, l, t, ts=tuple.length;
 		if(!this.buckets) {
 			throw new Error("reset_tuple is only valid when using buckets");
 		}
@@ -265,7 +265,7 @@ Stats.prototype = {
 	},
 
 	unshift: function() {
-		var i, a, args=Array.prototype.slice.call(arguments, 0);
+		let i, a, args=Array.prototype.slice.call(arguments, 0);
 		if(args.length && args[0] instanceof Array)
 			args = args[0];
 		i=args.length;
@@ -283,7 +283,7 @@ Stats.prototype = {
 		if(this.length === 0 || this._config.store_data === false)
 			return undefined;
 
-		var a = this.data.shift();
+		let a = this.data.shift();
 		this._del_cache(a);
 
 		return a;
@@ -306,7 +306,7 @@ Stats.prototype = {
 	stddev: function() {
 		if(this.length === 0)
 			return NaN;
-		var n=this.length;
+		let n=this.length;
 		if(this._config.sampling)
 			n--;
 		if(this._stddev === null)
@@ -320,7 +320,7 @@ Stats.prototype = {
 			return NaN;
 		if(this.zeroes > 0)
 			return NaN;
-		var n=this.length;
+		let n=this.length;
 		if(this._config.sampling)
 			n--;
 		return Math.exp(Math.sqrt((this.length * this.sum_of_square_of_logs - this.sum_of_logs*this.sum_of_logs)/(this.length*n)));
@@ -345,7 +345,7 @@ Stats.prototype = {
 		if(!this.buckets)
 			throw new Error("bucket_precision or buckets not configured.");
 
-		var d=[], i, j, k, l;
+		let d=[], i, j, k, l;
 
 		if(this._config.buckets) {
 			j=this.min;
@@ -402,7 +402,7 @@ Stats.prototype = {
 
 		// If we come here, we either have sorted data or sorted buckets
 
-		var v;
+		let v;
 
 		if(p <=  0)
 			v=0;
@@ -432,7 +432,7 @@ Stats.prototype = {
 				return (this._data_sorted[v[0]] + this._data_sorted[v[1]])/2;
 		}
 		else {
-			var j;
+			let j;
 			if(typeof v != 'number')
 				v = (v[0]+v[1])/2;
 
@@ -455,7 +455,7 @@ Stats.prototype = {
 	},
 
 	_get_nth_in_bucket: function(n, b) {
-		var range = [];
+		let range = [];
 		if(this._config.buckets) {
 			range[0] = (b>0?this._config.buckets[b-1]:this.min);
 			range[1] = (b<this._config.buckets.length?this._config.buckets[b]:this.max);
@@ -472,7 +472,7 @@ Stats.prototype = {
 	},
 
 	iqr: function() {
-		var q1, q3, fw;
+		let q1, q3, fw;
 
 		q1 = this.percentile(25);
 		q3 = this.percentile(75);
@@ -483,7 +483,7 @@ Stats.prototype = {
 	},
 
 	band_pass: function(low, high, open, config) {
-		var i, j, b, b_val, i_val;
+		let i, j, b, b_val, i_val;
 
 		if(!config)
 			config = this._config;
@@ -533,7 +533,7 @@ Stats.prototype = {
 			b.max = Math.min(high, b.max);
 		}
 		else if(this._config.bucket_precision) {
-			var low_i = Math.floor(low/this._config.bucket_precision),
+			let low_i = Math.floor(low/this._config.bucket_precision),
 			    high_i = Math.floor(high/this._config.bucket_precision)+1;
 
 			for(i=low_i; i<Math.min(this.buckets.length, high_i); i++) {
@@ -555,7 +555,7 @@ Stats.prototype = {
 	},
 
 	copy: function(config) {
-		var b = Stats.prototype.band_pass.call(this, this.min, this.max, false, config);
+		let b = Stats.prototype.band_pass.call(this, this.min, this.max, false, config);
 
 		b.sum = this.sum;
 		b.sum_of_squares = this.sum_of_squares;

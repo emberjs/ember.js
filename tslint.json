@@ -2,6 +2,7 @@
   "rules": {
     "curly": false,
     "no-unused-variable": true,
+    "no-var-keyword": true,
     "indent": [true, "spaces"],
     "label-position": true,
     "label-undefined": true,
@@ -19,7 +20,6 @@
     "triple-equals": true,
     "class-name": true,
     "comment-format": { "check-space": true },
-    "no-null-keyword": true,
     "no-require-imports": true
   }
 }

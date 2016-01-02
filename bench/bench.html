@@ -63,7 +63,7 @@
       var Stats = requireModule('glimmer-demos/stats').default;
 
       function compile(template) {
-        return compileTemplate(template, { disableComponentGeneration: true });
+        return compileTemplate(template);
       }
 
       // Init
@@ -190,7 +190,6 @@
           fn: function() {
             frag = document.createDocumentFragment();
             env.begin();
-            debugger;
             template.render(context, env, { appendTo: frag });
             env.commit();
           },
