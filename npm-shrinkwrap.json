@@ -576,7 +576,8 @@
           "dependencies": {
             "async": {
               "version": "0.2.10",
-              "from": "async@>=0.2.6 <0.3.0"
+              "from": "async@0.2.10",
+              "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz"
             },
             "source-map": {
               "version": "0.5.3",
@@ -739,11 +740,13 @@
           "dependencies": {
             "inflight": {
               "version": "1.0.4",
-              "from": "inflight@>=1.0.4 <2.0.0"
+              "from": "inflight@1.0.4",
+              "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.4.tgz"
             },
             "path-is-absolute": {
               "version": "1.0.0",
-              "from": "path-is-absolute@>=1.0.0 <2.0.0"
+              "from": "path-is-absolute@1.0.0",
+              "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.0.tgz"
             }
           }
         },
@@ -906,11 +909,13 @@
           "dependencies": {
             "inflight": {
               "version": "1.0.4",
-              "from": "inflight@>=1.0.4 <2.0.0"
+              "from": "inflight@1.0.4",
+              "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.4.tgz"
             },
             "path-is-absolute": {
               "version": "1.0.0",
-              "from": "path-is-absolute@>=1.0.0 <2.0.0"
+              "from": "path-is-absolute@1.0.0",
+              "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.0.tgz"
             }
           }
         },
@@ -943,11 +948,13 @@
           "dependencies": {
             "inflight": {
               "version": "1.0.4",
-              "from": "inflight@>=1.0.4 <2.0.0"
+              "from": "inflight@1.0.4",
+              "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.4.tgz"
             },
             "path-is-absolute": {
               "version": "1.0.0",
-              "from": "path-is-absolute@>=1.0.0 <2.0.0"
+              "from": "path-is-absolute@1.0.0",
+              "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.0.tgz"
             }
           }
         },
@@ -990,7 +997,8 @@
           "dependencies": {
             "walk-sync": {
               "version": "0.2.6",
-              "from": "walk-sync@>=0.2.6 <0.3.0"
+              "from": "walk-sync@0.2.6",
+              "resolved": "https://registry.npmjs.org/walk-sync/-/walk-sync-0.2.6.tgz"
             }
           }
         },
@@ -1001,7 +1009,8 @@
           "dependencies": {
             "walk-sync": {
               "version": "0.2.6",
-              "from": "walk-sync@>=0.2.6 <0.3.0"
+              "from": "walk-sync@0.2.6",
+              "resolved": "https://registry.npmjs.org/walk-sync/-/walk-sync-0.2.6.tgz"
             }
           }
         },
@@ -1091,11 +1100,13 @@
           "dependencies": {
             "inflight": {
               "version": "1.0.4",
-              "from": "inflight@>=1.0.4 <2.0.0"
+              "from": "inflight@1.0.4",
+              "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.4.tgz"
             },
             "path-is-absolute": {
               "version": "1.0.0",
-              "from": "path-is-absolute@>=1.0.0 <2.0.0"
+              "from": "path-is-absolute@1.0.0",
+              "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.0.tgz"
             }
           }
         },
@@ -1829,7 +1840,8 @@
             },
             "lodash": {
               "version": "2.4.2",
-              "from": "lodash@>=2.4.1 <2.5.0"
+              "from": "lodash@2.4.2",
+              "resolved": "https://registry.npmjs.org/lodash/-/lodash-2.4.2.tgz"
             },
             "strip-ansi": {
               "version": "0.1.1",
@@ -5441,7 +5453,8 @@
       "dependencies": {
         "esprima-fb": {
           "version": "15001.1001.0-dev-harmony-fb",
-          "from": "esprima-fb@>=15001.1001.0-dev-harmony-fb <15001.1002.0"
+          "from": "esprima-fb@15001.1001.0-dev-harmony-fb",
+          "resolved": "https://registry.npmjs.org/esprima-fb/-/esprima-fb-15001.1001.0-dev-harmony-fb.tgz"
         },
         "source-map": {
           "version": "0.5.3",
