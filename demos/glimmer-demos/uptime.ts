@@ -1,5 +1,5 @@
 import EmberObject, { computed } from 'glimmer-object';
-import { TestEnvironment, compile } from 'glimmer-demos/index';
+import { TestEnvironment } from 'glimmer-demos';
 
 class EmberComponent extends EmberObject {
   public attrs: Object;
@@ -67,7 +67,7 @@ env.registerGlimmerComponent('uptime-day', UptimeDay, `
 `);
 
 
-let app = compile(`
+let app = env.compile(`
   {{#each servers key="name" as |server|}}
     <server-uptime name={{server.name}} days={{server.days}} />
   {{/each}}
@@ -100,7 +100,7 @@ function start() {
   console.timeEnd('rendering');
 
   clear = setInterval(function() {
-    result.scope.updateSelf({ servers: servers() });
+    result.self.update({ servers: servers() });
     console.time('updating');
     result.rerender();
     console.timeEnd('updating');
