@@ -45,7 +45,7 @@ function babelConfigFor(environment) {
 function glimmerPackage(name, _options) {
   var options = _options || {};
 
-  options.libPath = 'node_modules/glimmer/dist/es6/';
+  options.libPath = 'node_modules/glimmer-engine/dist/es6/';
   options.ignoreMain = true;
 
   return htmlbarsPackage(name, options);
@@ -75,12 +75,16 @@ module.exports = function() {
       'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
       'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
       'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
-      'glimmer-runtime':       glimmerPackage('htmlbars-runtime'),
-      'glimmer-compiler':      glimmerPackage('htmlbars-compiler'),
-      'glimmer-syntax':        glimmerPackage('htmlbars-syntax'),
-      'glimmer-test-helpers':  glimmerPackage('htmlbars-test-helpers', { singleFile: true }),
-      'glimmer-util':          glimmerPackage('htmlbars-util')
-
+      'glimmer-compiler':      glimmerPackage('glimmer-compiler'),
+      'glimmer-object':        glimmerPackage('glimmer-object'),
+      'glimmer-reference':     glimmerPackage('glimmer-reference'),
+      'glimmer-runtime':       glimmerPackage('glimmer-runtime'),
+      'glimmer-syntax':        glimmerPackage('glimmer-syntax'),
+      'glimmer-test-helpers':  glimmerPackage('glimmer-test-helpers'),
+      'glimmer-util':          glimmerPackage('glimmer-util'),
+      'glimmer-wire-format':   glimmerPackage('glimmer-wire-format'),
+      'glimmer':               glimmerPackage('glimmer'),
+      'simple-html-tokenizer': glimmerPackage('simple-html-tokenizer')
     }
   });
 
