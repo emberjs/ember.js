@@ -2101,6 +2101,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   var LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
   var into = options && options.into && options.into.replace(/\//g, '.');
   var outlet = (options && options.outlet) || 'main';
+  let owner = getOwner(route);
 
   if (name) {
     name = name.replace(/\//g, '.');
@@ -2112,15 +2113,15 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
 
   if (!controller) {
     if (namePassed) {
-      controller = getOwner(route).lookup(`controller:${name}`) || route.controllerName || route.routeName;
+      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
     } else {
-      controller = route.controllerName || getOwner(route).lookup(`controller:${name}`);
+      controller = route.controllerName || owner.lookup(`controller:${name}`);
     }
   }
 
   if (typeof controller === 'string') {
     var controllerName = controller;
-    controller = getOwner(route).lookup(`controller:${controllerName}`);
+    controller = owner.lookup(`controller:${controllerName}`);
     if (!controller) {
       throw new EmberError(`You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`);
     }
@@ -2134,7 +2135,6 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     controller.set('model', options.model);
   }
 
-  let owner = getOwner(route);
   viewName = options && options.view || namePassed && name || route.viewName || name;
   ViewClass = owner._lookupFactory(`view:${viewName}`);
   template = owner.lookup(`template:${templateName}`);
@@ -2145,12 +2145,12 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   }
 
   var renderOptions = {
-    into: into,
-    outlet: outlet,
-    name: name,
-    controller: controller,
-    ViewClass: ViewClass,
-    template: template
+    into,
+    outlet,
+    name,
+    controller,
+    ViewClass,
+    template
   };
 
   let Component;
