@@ -2145,6 +2145,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   }
 
   var renderOptions = {
+    owner,
     into,
     outlet,
     name,
