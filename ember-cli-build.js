@@ -13,9 +13,8 @@ function transpile(tree, label) {
 }
 
 module.exports = function() {
-  var packages = 'packages/node_modules';
-
-  var bower = 'bower_components';
+  var packages = __dirname + '/packages/node_modules';
+  var bower = __dirname + '/bower_components';
 
   var tsOptions = {
     tsconfig: {
@@ -33,7 +32,7 @@ module.exports = function() {
   };
 
   var demoTS = merge([
-    find('demos', { include: ['**/*.ts']}),
+    find(__dirname + '/demos', { include: ['**/*.ts']}),
     mv(packages + '/glimmer-test-helpers/lib/environment.ts', 'glimmer-demos/lib/environment.ts'),
     mv(packages + '/glimmer-test-helpers/lib/helpers.ts', 'glimmer-demos/lib/helpers.ts'),
     mv(packages + '/glimmer-test-helpers/index.ts', 'glimmer-demos/index.ts')
@@ -52,7 +51,7 @@ module.exports = function() {
   });
 
   var benchmarkjs = find('node_modules/benchmark/{benchmark.js}');
-  var benchHarness = 'bench';
+  var benchHarness = __dirname + '/bench';
   var bench = find(
     merge([
       benchmarkjs,
@@ -62,7 +61,10 @@ module.exports = function() {
   );
 
   var demos = merge([
-    find('demos', '*.html'),
+    find(__dirname + '/demos', {
+      include: ['*.html'],
+      destDir: 'demos'
+    }),
     demoConcat,
     bench
   ]);
@@ -106,7 +108,7 @@ module.exports = function() {
 
   // Test Assets
 
-  var testHarness = find('tests', {
+  var testHarness = find(__dirname + '/tests', {
     srcDir: '/',
     files: [ 'index.html' ],
     destDir: '/tests'
@@ -171,6 +173,3 @@ module.exports = function() {
     concatenatedTests
   ]);
 }
-
-
-
