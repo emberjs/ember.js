@@ -16,6 +16,7 @@ var filterImports = require('babel-plugin-filter-imports');
 var vendoredPackage    = require('emberjs-build/lib/vendored-package');
 var htmlbarsPackage    = require('emberjs-build/lib/htmlbars-package');
 var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
+var transpileES6       = require('emberjs-build/lib/utils/transpile-es6');
 
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
@@ -44,12 +45,13 @@ function babelConfigFor(environment) {
 
 var glimmerEngine = require('glimmer-engine/ember-cli-build')();
 var find = require('broccoli-stew').find;
+var log = require('broccoli-stew').log;
 
 function glimmerPackage(name) {
-  return find(glimmerEngine, {
+  return transpileES6(find(glimmerEngine, {
     srcDir: 'es6/' + name,
     destDir: name
-  });
+  }));
 }
 
 module.exports = function() {
