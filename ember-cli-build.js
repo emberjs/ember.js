@@ -42,13 +42,14 @@ function babelConfigFor(environment) {
   return { plugins: plugins };
 }
 
-function glimmerPackage(name, _options) {
-  var options = _options || {};
+var glimmerEngine = require('glimmer-engine/ember-cli-build')();
+var find = require('broccoli-stew').find;
 
-  options.libPath = 'node_modules/glimmer-engine/dist/es6/';
-  options.ignoreMain = true;
-
-  return htmlbarsPackage(name, options);
+function glimmerPackage(name) {
+  return find(glimmerEngine, {
+    srcDir: 'es6/' + name,
+    destDir: name
+  });
 }
 
 module.exports = function() {
