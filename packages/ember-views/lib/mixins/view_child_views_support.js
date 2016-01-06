@@ -8,7 +8,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { getOwner, setOwner } from 'container/owner';
+import { getOwner, setOwner, OWNER } from 'container/owner';
 
 var EMPTY_ARRAY = [];
 
@@ -128,7 +128,10 @@ export default Mixin.create({
   },
 
   linkChild(instance) {
-    setOwner(instance, getOwner(this));
+    if (!instance[OWNER]) {
+      setOwner(instance, getOwner(this));
+    }
+
     instance.parentView = this;
     instance.ownerView = this.ownerView;
   },
