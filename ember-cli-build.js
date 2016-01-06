@@ -159,7 +159,10 @@ module.exports = function() {
     destDir: '/assets'
   });
 
-  var es6Tree = find(packagesTree, {
+  var es6Tree = find(merge([
+    packagesTree,
+    testTree
+  ]), {
     destDir: 'es6'
   });
 
