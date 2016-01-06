@@ -282,10 +282,14 @@ QUnit.test('knownForType returns each item for a given type found', function() {
 
   let found = registry.resolver.knownForType('helper');
 
-  deepEqual(found, {
-    'helper:foo-bar': true,
-    'helper:baz-qux': true
-  });
+  // using `Object.keys` and manually confirming values over using `deepEqual`
+  // due to an issue in QUnit (through at least 1.20.0) that are unable to properly compare
+  // objects with an `undefined` constructor (like ember-metal/empty_object)
+  let foundKeys = Object.keys(found);
+
+  deepEqual(foundKeys, ['helper:foo-bar', 'helper:baz-qux']);
+  ok(found['helper:foo-bar']);
+  ok(found['helper:baz-qux']);
 });
 
 QUnit.test('knownForType is not required to be present on the resolver', function() {
