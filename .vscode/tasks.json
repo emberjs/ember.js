@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+
+  // The command is tsc. Assumes that tsc has been installed using npm install -g typescript
+  "command": "npm",
+
+  // The command is a shell script
+  "isShellCommand": true,
+
+  // Show the output window only if unrecognized errors occur.
+  "showOutput": "always",
+
+  "args": ["run-script", "-s"],
+
+  "tasks": [{
+    "taskName": "tsc",
+    "isBuildCommand": true,
+    "showOutput": "silent",
+    "problemMatcher": "$tsc"
+  }, {
+    "taskName": "tslint",
+    "problemMatcher": "$tsc"
+  }]
+}
