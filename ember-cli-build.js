@@ -9,7 +9,7 @@ var mv = stew.mv;
 var find = stew.find;
 
 function transpile(tree, label) {
-  return transpileES6(tree, label, { resolveModuleSource: null, sourceMaps: 'inline' });
+  return transpileES6(tree, label, { sourceMaps: 'inline' });
 }
 
 module.exports = function() {
