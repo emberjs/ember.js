@@ -28,7 +28,10 @@ module.exports = function() {
   var demoConcat = concat(demoES5, {
     inputFiles: ['**/*.js'],
     outputFile: '/demos/demos.amd.js',
-    sourceMapConfig: { enabled: true }
+    sourceMapConfig: {
+      enabled: true,
+      sourceRoot: '/'
+    }
   });
 
   var benchmarkjs = find('node_modules/benchmark/{benchmark.js}');

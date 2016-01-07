@@ -609,9 +609,9 @@
       "resolved": "https://registry.npmjs.org/broccoli-clean-css/-/broccoli-clean-css-0.2.0.tgz"
     },
     "broccoli-concat": {
-      "version": "2.0.4",
-      "from": "broccoli-concat@>=2.0.4 <3.0.0",
-      "resolved": "https://registry.npmjs.org/broccoli-concat/-/broccoli-concat-2.0.4.tgz",
+      "version": "2.1.0",
+      "from": "broccoli-concat@>=2.1.0 <3.0.0",
+      "resolved": "https://registry.npmjs.org/broccoli-concat/-/broccoli-concat-2.1.0.tgz",
       "dependencies": {
         "minimatch": {
           "version": "2.0.10",
@@ -3249,6 +3249,11 @@
       "from": "lodash._arrayeach@>=3.0.0 <4.0.0",
       "resolved": "https://registry.npmjs.org/lodash._arrayeach/-/lodash._arrayeach-3.0.0.tgz"
     },
+    "lodash._arraymap": {
+      "version": "3.0.0",
+      "from": "lodash._arraymap@>=3.0.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/lodash._arraymap/-/lodash._arraymap-3.0.0.tgz"
+    },
     "lodash._baseassign": {
       "version": "3.2.0",
       "from": "lodash._baseassign@>=3.0.0 <4.0.0",
@@ -3268,6 +3273,11 @@
       "version": "3.0.1",
       "from": "lodash._basecopy@>=3.0.0 <4.0.0",
       "resolved": "https://registry.npmjs.org/lodash._basecopy/-/lodash._basecopy-3.0.1.tgz"
+    },
+    "lodash._basedifference": {
+      "version": "3.0.3",
+      "from": "lodash._basedifference@>=3.0.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/lodash._basedifference/-/lodash._basedifference-3.0.3.tgz"
     },
     "lodash._baseflatten": {
       "version": "3.1.4",
@@ -3344,6 +3354,16 @@
       "from": "lodash._objecttypes@>=2.4.1 <2.5.0",
       "resolved": "https://registry.npmjs.org/lodash._objecttypes/-/lodash._objecttypes-2.4.1.tgz"
     },
+    "lodash._pickbyarray": {
+      "version": "3.0.2",
+      "from": "lodash._pickbyarray@>=3.0.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/lodash._pickbyarray/-/lodash._pickbyarray-3.0.2.tgz"
+    },
+    "lodash._pickbycallback": {
+      "version": "3.0.0",
+      "from": "lodash._pickbycallback@>=3.0.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/lodash._pickbycallback/-/lodash._pickbycallback-3.0.0.tgz"
+    },
     "lodash.assign": {
       "version": "3.2.0",
       "from": "lodash.assign@>=3.2.0 <4.0.0",
@@ -3413,6 +3433,11 @@
       "version": "2.4.1",
       "from": "lodash.now@>=2.4.1 <2.5.0",
       "resolved": "https://registry.npmjs.org/lodash.now/-/lodash.now-2.4.1.tgz"
+    },
+    "lodash.omit": {
+      "version": "3.1.0",
+      "from": "lodash.omit@>=3.1.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/lodash.omit/-/lodash.omit-3.1.0.tgz"
     },
     "lodash.pad": {
       "version": "3.1.1",
