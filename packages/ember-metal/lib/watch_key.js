@@ -37,6 +37,14 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
+  // It is true, the following code looks quite WAT. But have no fear, It
+  // exists purely to improve development ergonomics and is removed from
+  // ember.min.js and ember.prod.js builds.
+  //
+  // Some further context: Once a property is watched by ember, bypassing `set`
+  // for mutation, will bypass observation. This code exists to assert when
+  // that occurs, and attempt to provide more helpful feedback. The alternative
+  // is tricky to debug partially observable properties.
   lookupDescriptor = function lookupDescriptor(obj, keyName) {
     let current = obj;
     while (current) {
@@ -90,6 +98,14 @@ export function unwatchKey(obj, keyName, meta) {
     }
 
     if (isEnabled('mandatory-setter')) {
+      // It is true, the following code looks quite WAT. But have no fear, It
+      // exists purely to improve development ergonomics and is removed from
+      // ember.min.js and ember.prod.js builds.
+      //
+      // Some further context: Once a property is watched by ember, bypassing `set`
+      // for mutation, will bypass observation. This code exists to assert when
+      // that occurs, and attempt to provide more helpful feedback. The alternative
+      // is tricky to debug partially observable properties.
       if (!desc && keyName in obj) {
         Object.defineProperty(obj, keyName, {
           configurable: true,
