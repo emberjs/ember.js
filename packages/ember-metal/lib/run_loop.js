@@ -467,7 +467,7 @@ run.next = function(...args) {
 
 /**
   Cancels a scheduled item. Must be a value returned by `run.later()`,
-  `run.once()`, `run.next()`, `run.debounce()`, or
+  `run.once()`, `run.scheduleOnce()`, `run.next()`, `run.debounce()`, or
   `run.throttle()`.
 
   ```javascript
@@ -482,6 +482,12 @@ run.next = function(...args) {
   }, 500);
 
   run.cancel(runLater);
+
+  var runScheduleOnce = run.scheduleOnce('afterRender', myContext, function() {
+    // will not be executed
+  });
+
+  run.cancel(runScheduleOnce);
 
   var runOnce = run.once(myContext, function() {
     // will not be executed
