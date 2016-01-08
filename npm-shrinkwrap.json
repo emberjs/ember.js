@@ -1081,9 +1081,8 @@
       }
     },
     "broccoli-typescript-compiler": {
-      "version": "0.3.0",
-      "from": "broccoli-typescript-compiler@>=0.3.0 <0.4.0",
-      "resolved": "https://registry.npmjs.org/broccoli-typescript-compiler/-/broccoli-typescript-compiler-0.3.0.tgz",
+      "version": "0.4.1",
+      "from": "broccoli-typescript-compiler@>=0.4.1 <0.5.0",
       "dependencies": {
         "broccoli-funnel": {
           "version": "0.2.15",
@@ -1098,19 +1097,7 @@
         "glob": {
           "version": "6.0.3",
           "from": "glob@>=6.0.1 <7.0.0",
-          "resolved": "https://registry.npmjs.org/glob/-/glob-6.0.3.tgz",
-          "dependencies": {
-            "inflight": {
-              "version": "1.0.4",
-              "from": "inflight@1.0.4",
-              "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.4.tgz"
-            },
-            "path-is-absolute": {
-              "version": "1.0.0",
-              "from": "path-is-absolute@1.0.0",
-              "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.0.tgz"
-            }
-          }
+          "resolved": "https://registry.npmjs.org/glob/-/glob-6.0.3.tgz"
         },
         "minimatch": {
           "version": "2.0.10",

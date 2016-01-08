@@ -17,12 +17,27 @@ module.exports = function() {
 
   var bower = 'bower_components';
 
+  var tsOptions = {
+    tsconfig: {
+      compilerOptions: {
+        target: "es2015",
+        inlineSourceMap: true,
+        inlineSources: true,
+        moduleResolution: "node",
+
+        /* needed to get typescript to emit the desired sourcemaps */
+        rootDir: '.',
+        mapRoot: '/'
+      }
+    }
+  };
+
   var demoTS = merge([
     find('demos', { include: ['**/*.ts']}),
     mv(packages + '/glimmer-test-helpers/lib/environment.ts', 'glimmer-demos/index.ts')
   ]);
 
-  var demoES6 = typescript(demoTS);
+  var demoES6 = typescript(demoTS, tsOptions);
   var demoES5 = transpile(demoES6);
 
   var demoConcat = concat(demoES5, {
@@ -58,7 +73,7 @@ module.exports = function() {
     exclude: ["**/*.d.ts"]
   });
 
-  var jsTree = typescript(tsTree);
+  var jsTree = typescript(tsTree, tsOptions);
 
   var libTree = find(jsTree, {
     include: ["*/index.js", "*/lib/**/*.js"]
