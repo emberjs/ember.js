@@ -1,20 +1,26 @@
 import Ember from 'ember-metal/core';
+import RSVP from 'ember-runtime/ext/rsvp';
+import Route from 'ember-routing/system/route';
+import run from 'ember-metal/run_loop';
+import { set } from 'ember-metal/property_set';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, registry, container;
-var set = Ember.set;
 
 var aboutDefer, otherDefer;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 var updateCount, replaceCount;
 
 function sharedSetup() {
-  App = Ember.Application.create({
+  App = Application.create({
     name: 'App',
     rootElement: '#qunit-fixture'
   });
@@ -23,7 +29,7 @@ function sharedSetup() {
 
   updateCount = replaceCount = 0;
   App.Router.reopen({
-    location: Ember.NoneLocation.create({
+    location: NoneLocation.create({
       setURL(path) {
         updateCount++;
         set(this, 'path', path);
@@ -42,13 +48,13 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() { App.destroy(); });
+  run(function() { App.destroy(); });
   Ember.TEMPLATES = {};
 }
 
 QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
   setup() {
-    Ember.run(function() {
+    run(function() {
       sharedSetup();
 
       registry.unregister('router:main');
@@ -59,16 +65,16 @@ QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS c
         this.route('other');
       });
 
-      App.AboutRoute = Ember.Route.extend({
+      App.AboutRoute = Route.extend({
         model() {
-          aboutDefer = Ember.RSVP.defer();
+          aboutDefer = RSVP.defer();
           return aboutDefer.promise;
         }
       });
 
-      App.OtherRoute = Ember.Route.extend({
+      App.OtherRoute = Route.extend({
         model() {
-          otherDefer = Ember.RSVP.defer();
+          otherDefer = RSVP.defer();
           return otherDefer.promise;
         }
       });
@@ -98,17 +104,17 @@ QUnit.test('while a transition is underway', function() {
     }
   }
 
-  var $index = Ember.$('#index-link');
-  var $about = Ember.$('#about-link');
-  var $other = Ember.$('#other-link');
+  var $index = jQuery('#index-link');
+  var $about = jQuery('#about-link');
+  var $other = jQuery('#other-link');
 
-  Ember.run($about, 'click');
+  run($about, 'click');
 
   assertHasClass('active', $index, true, $about, false, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
 
-  Ember.run(aboutDefer, 'resolve');
+  run(aboutDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
@@ -125,16 +131,16 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
     });
   });
 
-  App.ParentRouteAboutRoute = Ember.Route.extend({
+  App.ParentRouteAboutRoute = Route.extend({
     model() {
-      aboutDefer = Ember.RSVP.defer();
+      aboutDefer = RSVP.defer();
       return aboutDefer.promise;
     }
   });
 
-  App.ParentRouteOtherRoute = Ember.Route.extend({
+  App.ParentRouteOtherRoute = Route.extend({
     model() {
-      otherDefer = Ember.RSVP.defer();
+      otherDefer = RSVP.defer();
       return otherDefer.promise;
     }
   });
@@ -164,41 +170,41 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
     }
   }
 
-  var $index = Ember.$('#index-link');
-  var $about = Ember.$('#about-link');
-  var $other = Ember.$('#other-link');
+  var $index = jQuery('#index-link');
+  var $about = jQuery('#about-link');
+  var $other = jQuery('#other-link');
 
-  Ember.run($about, 'click');
+  run($about, 'click');
 
   assertHasClass('active', $index, true, $about, false, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
 
-  Ember.run(aboutDefer, 'resolve');
+  run(aboutDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 
-  Ember.run($other, 'click');
+  run($other, 'click');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, true);
   assertHasClass('ember-transitioning-out', $index, false, $about, true, $other, false);
 
-  Ember.run(otherDefer, 'resolve');
+  run(otherDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, false, $other, true);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 
-  Ember.run($about, 'click');
+  run($about, 'click');
 
   assertHasClass('active', $index, false, $about, false, $other, true);
   assertHasClass('ember-transitioning-in', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, true);
 
-  Ember.run(aboutDefer, 'resolve');
+  run(aboutDefer, 'resolve');
 
   assertHasClass('active', $index, false, $about, true, $other, false);
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);

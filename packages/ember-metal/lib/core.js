@@ -1,5 +1,7 @@
 /*globals Ember:true,ENV,EmberENV */
 
+import require from 'require';
+
 /**
 @module ember
 @submodule ember-metal
@@ -47,7 +49,7 @@ Ember.toString = function() { return 'Ember'; };
 
 // The debug functions are exported to globals with `require` to
 // prevent babel-plugin-filter-imports from removing them.
-let debugModule = Ember.__loader.require('ember-metal/debug');
+let debugModule = require('ember-metal/debug');
 Ember.assert = debugModule.assert;
 Ember.warn = debugModule.warn;
 Ember.debug = debugModule.debug;
@@ -89,12 +91,12 @@ if (Ember.ENV) {
   Ember.ENV = {};
 }
 
-Ember.config = Ember.config || {};
-
-// We disable the RANGE API by default for performance reasons
-if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
-  Ember.ENV.DISABLE_RANGE_API = true;
+// ENABLE_ALL_FEATURES was documented, but you can't actually enable non optional features.
+if (Ember.ENV.ENABLE_ALL_FEATURES) {
+  Ember.ENV.ENABLE_OPTIONAL_FEATURES = Ember.ENV.ENABLE_ALL_FEATURES;
 }
+
+Ember.config = Ember.config || {};
 
 // ..........................................................
 // BOOTSTRAP
@@ -135,17 +137,6 @@ if (typeof Ember.EXTEND_PROTOTYPES === 'undefined') {
   @public
 */
 Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !== false);
-
-/**
-  The `SHIM_ES5` property, when true, tells Ember to add ECMAScript 5 Array
-  shims to older browsers.
-
-  @property SHIM_ES5
-  @type Boolean
-  @default Ember.EXTEND_PROTOTYPES
-  @public
-*/
-Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
 /**
   The `LOG_VERSION` property, when true, tells Ember to log versions of all

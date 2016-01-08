@@ -3,8 +3,11 @@
 @submodule ember-templates
 */
 
-import { symbol } from 'ember-metal/utils';
+import { assert } from 'ember-metal/debug';
+import isNone from 'ember-metal/is_none';
+import symbol from 'ember-metal/symbol';
 import BasicStream from 'ember-metal/streams/stream';
+import EmptyObject from 'ember-metal/empty_object';
 import { read } from 'ember-metal/streams/utils';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import assign from 'ember-metal/assign';
@@ -27,7 +30,7 @@ let ClosureComponentStream = BasicStream.extend({
     this[COMPONENT_REFERENCE] = true;
   },
   compute() {
-    return createClosureComponentCell(this._env, this._path, this._params, this._hash);
+    return createClosureComponentCell(this._env, this._path, this._params, this._hash, this.label);
   }
 });
 
@@ -46,14 +49,27 @@ export default function closureComponent(env, [path, ...params], hash) {
   return s;
 }
 
-function createClosureComponentCell(env, originalComponentPath, params, hash) {
+function createClosureComponentCell(env, originalComponentPath, params, hash, label) {
   let componentPath = read(originalComponentPath);
 
+  assert(`Component path cannot be null in ${label}`,
+         !isNone(componentPath));
+
+  let newHash = assign(new EmptyObject(), hash);
+
   if (isComponentCell(componentPath)) {
-    return createNestedClosureComponentCell(componentPath, params, hash);
+    return createNestedClosureComponentCell(componentPath, params, newHash);
   } else {
-    return createNewClosureComponentCell(env, componentPath, params, hash);
+    assert(`The component helper cannot be used without a valid component name. You used "${componentPath}" via ${label}`,
+          isValidComponentPath(env, componentPath));
+    return createNewClosureComponentCell(env, componentPath, params, newHash);
   }
+}
+
+function isValidComponentPath(env, path) {
+  let result = lookupComponent(env.owner, path);
+
+  return !!(result.component || result.layout);
 }
 
 export function isComponentCell(component) {
@@ -61,21 +77,25 @@ export function isComponentCell(component) {
 }
 
 function createNestedClosureComponentCell(componentCell, params, hash) {
-  let positionalParams = componentCell[COMPONENT_POSITIONAL_PARAMS];
-
   // This needs to be done in each nesting level to avoid raising assertions
-  processPositionalParams(null, positionalParams, params, hash);
+  processPositionalParamsFromCell(componentCell, params, hash);
 
   return {
     [COMPONENT_PATH]: componentCell[COMPONENT_PATH],
-    [COMPONENT_HASH]: mergeHash(componentCell[COMPONENT_HASH], hash),
-    [COMPONENT_POSITIONAL_PARAMS]: positionalParams,
+    [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH], hash),
+    [COMPONENT_POSITIONAL_PARAMS]: componentCell[COMPONENT_POSITIONAL_PARAMS],
     [COMPONENT_CELL]: true
   };
 }
 
+export function processPositionalParamsFromCell(componentCell, params, hash) {
+  let positionalParams = componentCell[COMPONENT_POSITIONAL_PARAMS];
+
+  processPositionalParams(null, positionalParams, params, hash);
+}
+
 function createNewClosureComponentCell(env, componentPath, params, hash) {
-  let positionalParams = getPositionalParams(env.container, componentPath);
+  let positionalParams = getPositionalParams(env.owner, componentPath);
 
   // This needs to be done in each nesting level to avoid raising assertions
   processPositionalParams(null, positionalParams, params, hash);
@@ -104,6 +124,6 @@ function getPositionalParams(container, componentPath) {
   }
 }
 
-export function mergeHash(original, updates) {
-  return assign(original, updates);
+export function mergeInNewHash(original, updates) {
+  return assign({}, original, updates);
 }

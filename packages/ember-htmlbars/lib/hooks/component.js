@@ -1,19 +1,55 @@
+import isEnabled from 'ember-metal/features';
 import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import assign from 'ember-metal/assign';
+import EmptyObject from 'ember-metal/empty_object';
 import Cache from 'ember-metal/cache';
+import {
+  CONTAINS_DASH_CACHE,
+  CONTAINS_DOT_CACHE
+} from 'ember-htmlbars/system/lookup-helper';
+import {
+  COMPONENT_PATH,
+  COMPONENT_HASH,
+  isComponentCell,
+  mergeInNewHash,
+  processPositionalParamsFromCell,
+} from 'ember-htmlbars/keywords/closure-component';
 
 var IS_ANGLE_CACHE = new Cache(1000, function(key) {
   return key.match(/^(@?)<(.*)>$/);
 });
 
-var CONTAINS_DASH = new Cache(1000, function(key) {
-  return key.indexOf('-') !== -1;
-});
-
 export default function componentHook(renderNode, env, scope, _tagName, params, attrs, templates, visitor) {
   var state = renderNode.getState();
+
+  let tagName = _tagName;
+  if (CONTAINS_DOT_CACHE.get(tagName)) {
+    let stream = env.hooks.get(env, scope, tagName);
+    let componentCell = stream.value();
+    if (isComponentCell(componentCell)) {
+      tagName = componentCell[COMPONENT_PATH];
+
+      /*
+       * Processing positional params before merging into a hash must be done
+       * here to avoid problems with rest positional parameters rendered using
+       * the dot notation.
+       *
+       * Closure components (for the contextual component feature) do not
+       * actually keep the positional params, but process them at each level.
+       * Therefore, when rendering a closure component with the component
+       * helper we process the parameters and attributes and then merge those
+       * on top of the closure component attributes.
+       *
+       */
+      let newAttrs = assign(new EmptyObject(), attrs);
+      processPositionalParamsFromCell(componentCell, params, newAttrs);
+      params = [];
+      attrs = mergeInNewHash(componentCell[COMPONENT_HASH], newAttrs);
+    }
+  }
 
   // Determine if this is an initial render or a re-render
   if (state.manager) {
@@ -21,7 +57,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     return;
   }
 
-  let tagName = _tagName;
+
   let isAngleBracket = false;
   let isTopLevel = false;
   let isDasherized = false;
@@ -34,7 +70,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     isTopLevel = !!angles[1];
   }
 
-  if (CONTAINS_DASH.get(tagName)) {
+  if (CONTAINS_DASH_CACHE.get(tagName)) {
     isDasherized = true;
   }
 
@@ -66,7 +102,17 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   let component, layout;
   if (isDasherized || !isAngleBracket) {
-    let result = lookupComponent(env.container, tagName);
+    let options = { };
+    if (isEnabled('ember-htmlbars-local-lookup')) {
+      let moduleName = env.meta && env.meta.moduleName;
+
+      if (moduleName) {
+        options.source = `template:${moduleName}`;
+      }
+    }
+
+    let result = lookupComponent(env.owner, tagName, options);
+
     component = result.component;
     layout = result.layout;
 

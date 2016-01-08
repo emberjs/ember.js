@@ -3,24 +3,24 @@ import { set } from 'ember-metal/property_set';
 import View from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
-import Registry from 'container/registry';
 import ComponentLookup from 'ember-views/component_lookup';
 import TextField from 'ember-views/views/text_field';
 import Checkbox from 'ember-views/views/checkbox';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 var view;
-var controller, registry, container;
+var controller, owner;
 
 function commonSetup() {
-  registry = new Registry();
-  registry.register('component:-text-field', TextField);
-  registry.register('component:-checkbox', Checkbox);
-  registry.register('component-lookup:main', ComponentLookup);
-  registry.register('event_dispatcher:main', EventDispatcher);
-  container = registry.container();
+  owner = buildOwner();
+  owner.register('component:-text-field', TextField);
+  owner.register('component:-checkbox', Checkbox);
+  owner.register('component-lookup:main', ComponentLookup);
+  owner.register('event_dispatcher:main', EventDispatcher);
 
-  var dispatcher = container.lookup('event_dispatcher:main');
+  var dispatcher = owner.lookup('event_dispatcher:main');
   dispatcher.setup({}, '#qunit-fixture');
 }
 
@@ -38,8 +38,8 @@ QUnit.module('{{input type=\'text\'}}', {
     };
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}')
     }).create();
 
@@ -48,7 +48,7 @@ QUnit.module('{{input type=\'text\'}}', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -156,7 +156,7 @@ QUnit.module('{{input type=\'text\'}} - static values', {
     controller = {};
 
     view = View.extend({
-      container: container,
+      [OWNER]: owner,
       controller: controller,
       template: compile('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}')
     }).create();
@@ -166,7 +166,7 @@ QUnit.module('{{input type=\'text\'}} - static values', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -214,9 +214,8 @@ QUnit.test('specifying `on="someevent" action="foo"` triggers the action', funct
   };
 
   view = View.create({
-    container,
+    [OWNER]: owner,
     controller,
-
     template: compile('{{input type="text" on="focus-in" action="doFoo"}}', { moduleName: 'foo.hbs' })
   });
 
@@ -237,8 +236,8 @@ QUnit.module('{{input type=\'text\'}} - dynamic type', {
     };
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input type=someProperty}}')
     }).create();
 
@@ -247,7 +246,7 @@ QUnit.module('{{input type=\'text\'}} - dynamic type', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -272,8 +271,8 @@ QUnit.module('{{input}} - default type', {
     controller = {};
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input}}')
     }).create();
 
@@ -282,7 +281,7 @@ QUnit.module('{{input}} - default type', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -301,8 +300,8 @@ QUnit.module('{{input type=\'checkbox\'}}', {
     };
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name checked=val}}')
     }).create();
 
@@ -311,7 +310,7 @@ QUnit.module('{{input type=\'checkbox\'}}', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -348,15 +347,15 @@ QUnit.module('{{input type=\'checkbox\'}} - prevent value= usage', {
     commonSetup();
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name value=val}}')
     }).create();
   },
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -376,8 +375,8 @@ QUnit.module('{{input type=boundType}}', {
     };
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input type=inputType checked=isChecked}}')
     }).create();
 
@@ -386,7 +385,7 @@ QUnit.module('{{input type=boundType}}', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -411,8 +410,8 @@ QUnit.module('{{input type=\'checkbox\'}} - static values', {
     };
 
     view = View.extend({
-      container: container,
-      controller: controller,
+      [OWNER]: owner,
+      controller,
       template: compile('{{input type="checkbox" disabled=true tabindex=6 name="hello" checked=false}}')
     }).create();
 
@@ -421,7 +420,7 @@ QUnit.module('{{input type=\'checkbox\'}} - static values', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
@@ -448,13 +447,13 @@ QUnit.module('{{input type=\'text\'}} - null/undefined values', {
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
+    runDestroy(owner);
   }
 });
 
 QUnit.test('placeholder attribute bound to undefined is not present', function() {
   view = View.extend({
-    container: container,
+    [OWNER]: owner,
     controller: {},
     template: compile('{{input placeholder=someThingNotThere}}')
   }).create();
@@ -470,7 +469,7 @@ QUnit.test('placeholder attribute bound to undefined is not present', function()
 
 QUnit.test('placeholder attribute bound to null is not present', function() {
   view = View.extend({
-    container: container,
+    [OWNER]: owner,
     controller: {
       someNullProperty: null
     },

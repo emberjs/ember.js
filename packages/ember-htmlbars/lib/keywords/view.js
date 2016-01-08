@@ -191,7 +191,7 @@ export default {
     var targetObject = read(scope.getSelf());
     var viewClassOrInstance = state.viewClassOrInstance;
     if (!viewClassOrInstance) {
-      viewClassOrInstance = getView(read(params[0]), env.container);
+      viewClassOrInstance = getView(read(params[0]), env.owner);
     }
 
     // if parentView exists, use its controller (the default
@@ -258,17 +258,17 @@ export default {
   }
 };
 
-function getView(viewPath, container) {
+function getView(viewPath, owner) {
   var viewClassOrInstance;
 
   if (!viewPath) {
-    if (container) {
-      viewClassOrInstance = container.lookupFactory('view:toplevel');
+    if (owner) {
+      viewClassOrInstance = owner._lookupFactory('view:toplevel');
     } else {
       viewClassOrInstance = EmberView;
     }
   } else {
-    viewClassOrInstance = readViewFactory(viewPath, container);
+    viewClassOrInstance = readViewFactory(viewPath, owner);
   }
 
   return viewClassOrInstance;

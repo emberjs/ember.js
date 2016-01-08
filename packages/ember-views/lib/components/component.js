@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
@@ -7,10 +6,12 @@ import View from 'ember-views/views/view';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import isNone from 'ember-metal/is_none';
-
+import { inspect } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+
+import { getOwner } from 'container/owner';
 
 function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {
@@ -136,7 +137,7 @@ var Component = View.extend(TargetActionSupport, {
     set(this, 'controller', this);
     set(this, 'context', this);
 
-    if (!this.layout && this.layoutName && this.container) {
+    if (!this.layout && this.layoutName && getOwner(this)) {
       let layoutName = get(this, 'layoutName');
 
       this.layout = this.templateForName(layoutName);
@@ -149,11 +150,32 @@ var Component = View.extend(TargetActionSupport, {
       deprecate(
         `Specifying \`defaultLayout\` to ${this} is deprecated. Please use \`layout\` instead.`,
         false,
-        { id: 'ember-views.component.defaultLayout', until: '3.0.0' }
+        {
+          id: 'ember-views.component.defaultLayout',
+          until: '3.0.0',
+          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
+        }
       );
 
       this.layout = this.defaultLayout;
     }
+
+    // If in a tagless component, assert that no event handlers are defined
+    assert(
+      `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
+      this.tagName !== '' || !(() => {
+        let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
+        let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+
+        for (let key in events) {
+          let methodName = events[key];
+
+          if (typeof this[methodName]  === 'function') {
+            return true; // indicate that the assertion should be triggered
+          }
+        }
+      }
+    )());
   },
 
   template: null,
@@ -263,14 +285,14 @@ var Component = View.extend(TargetActionSupport, {
     if (action === undefined) {
       action = 'action';
     }
-    actionName = get(this, 'attrs.' + action) || get(this, action);
+    actionName = get(this, `attrs.${action}`) || get(this, action);
     actionName = validateAction(this, actionName);
 
     // If no action name for that action could be found, just abort.
     if (actionName === undefined) { return; }
 
     if (typeof actionName === 'function') {
-      actionName.apply(null, contexts);
+      actionName(...contexts);
     } else {
       this.triggerAction({
         action: actionName,
@@ -281,10 +303,10 @@ var Component = View.extend(TargetActionSupport, {
 
   send(actionName, ...args) {
     var target;
-    var hasAction = this.actions && this.actions[actionName];
+    var action = this.actions && this.actions[actionName];
 
-    if (hasAction) {
-      var shouldBubble = this.actions[actionName].apply(this, args) === true;
+    if (action) {
+      var shouldBubble = action.apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
@@ -296,8 +318,8 @@ var Component = View.extend(TargetActionSupport, {
       );
       target.send(...arguments);
     } else {
-      if (!hasAction) {
-        throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);
+      if (!action) {
+        throw new Error(inspect(this) + ' had no action handler for: ' + actionName);
       }
     }
   }
@@ -312,7 +334,7 @@ var Component = View.extend(TargetActionSupport, {
 
     {{foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will not be printed, because no block was provided
     {{/if}}
@@ -327,16 +349,39 @@ var Component = View.extend(TargetActionSupport, {
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlock}}
       This will be printed because a block was provided
       {{yield}}
     {{/if}}
     ```
 
+    This helper accepts an argument with the name of the block we want to check the presence of.
+    This is useful for checking for the presence of the optional inverse block in components.
+
+    ```hbs
+    {{! templates/application.hbs }}
+
+    {{#foo-bar}}
+      Hi!
+    {{else}}
+      What's up?
+    {{/foo-bar}}
+
+    {{! templates/components/foo-bar.hbs }}
+    {{yield}}
+    {{#if (hasBlock "inverse")}}
+      {{yield to="inverse"}}
+    {{else}}
+      How are you?
+    {{/if}}
+    ```
+
     @public
     @property hasBlock
+    @param {String} [blockName="default"] The name of the block to check presence of.
     @returns Boolean
+    @since 1.13.0
   */
 
   /**
@@ -352,7 +397,7 @@ var Component = View.extend(TargetActionSupport, {
       No block parameter.
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
       This will not be printed, because no block was provided
       {{yield this}}
@@ -368,7 +413,7 @@ var Component = View.extend(TargetActionSupport, {
       Hi!
     {{/foo-bar}}
 
-    {{! templates/components/foo-bar.js }}
+    {{! templates/components/foo-bar.hbs }}
     {{#if hasBlockParams}}
       This will be printed because a block was provided
       {{yield this}}
@@ -377,6 +422,7 @@ var Component = View.extend(TargetActionSupport, {
     @public
     @property hasBlockParams
     @returns Boolean
+    @since 1.13.0
   */
 
   /**
@@ -429,6 +475,7 @@ var Component = View.extend(TargetActionSupport, {
     @static
     @public
     @property positionalParams
+    @since 1.13.0
   */
 });
 

@@ -1,9 +1,9 @@
-import Ember from 'ember-metal/core';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
-import {addObserver}  from 'ember-metal/observer';
+import { addObserver }  from 'ember-metal/observer';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -28,7 +28,7 @@ QUnit.test('chained observers on enumerable properties are triggered when the ob
   var child4 = EmberObject.create({ name: 'Nancy' });
 
   set(family, 'momma', momma);
-  set(momma, 'children', Ember.A([child1, child2, child3]));
+  set(momma, 'children', emberA([child1, child2, child3]));
 
   var observerFiredCount = 0;
   addObserver(family, 'momma.children.@each.name', this, function() {

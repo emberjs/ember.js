@@ -4,6 +4,8 @@ import { finishChains } from 'ember-metal/chains';
 import { defineProperty } from 'ember-metal/properties';
 import computed from 'ember-metal/computed';
 import { propertyDidChange } from 'ember-metal/property_events';
+import { peekMeta } from 'ember-metal/meta';
+
 QUnit.module('Chains');
 
 QUnit.test('finishChains should properly copy chains from prototypes to instances', function() {
@@ -14,7 +16,7 @@ QUnit.test('finishChains should properly copy chains from prototypes to instance
 
   var childObj = Object.create(obj);
   finishChains(childObj);
-  ok(obj['__ember_meta__'].readableChains() !== childObj['__ember_meta__'].readableChains(), 'The chains object is copied');
+  ok(peekMeta(obj) !== peekMeta(childObj).readableChains(), 'The chains object is copied');
 });
 
 

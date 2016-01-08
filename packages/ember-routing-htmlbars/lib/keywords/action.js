@@ -58,7 +58,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   ```js
   export default Ember.Component.extend({
     actions: {
-      save(/* event *\/) {
+      save() {
         this.get('model').save();
       }
     }

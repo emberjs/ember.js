@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // Ember.A
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { addObserver } from 'ember-metal/observer';
@@ -8,6 +7,7 @@ import { testBoth } from 'ember-metal/tests/props_helper';
 import { ArrayTests } from 'ember-runtime/tests/suites/array';
 import EmberObject from 'ember-runtime/system/object';
 import EmberArray from 'ember-runtime/mixins/array';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -395,7 +395,7 @@ testBoth('should be clear caches for computed properties that have dependent key
   var obj = EmberObject.extend({
     init() {
       this._super(...arguments);
-      set(this, 'resources', Ember.A());
+      set(this, 'resources', emberA());
     },
 
     common: computed('resources.@each.common', function() {
@@ -417,7 +417,7 @@ testBoth('observers that contain @each in the path should fire only once the fir
     init() {
       this._super(...arguments);
       // Observer does not fire on init
-      set(this, 'resources', Ember.A());
+      set(this, 'resources', emberA());
     },
 
     commonDidChange: emberObserver('resources.@each.common', function() {

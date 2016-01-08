@@ -1,5 +1,5 @@
 import { Mixin } from 'ember-metal/mixin';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 
 export function deprecation(key) {

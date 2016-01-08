@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import assign from 'ember-metal/assign';
 import { debugSeal, assert } from 'ember-metal/debug';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
@@ -7,7 +6,8 @@ import { isStream } from 'ember-metal/streams/utils';
 import EmptyObject from 'ember-metal/empty_object';
 import Subscriber from 'ember-metal/streams/subscriber';
 import Dependency from 'ember-metal/streams/dependency';
-
+import { GUID_KEY } from 'ember-metal/utils';
+import require from 'require';
 /**
   @module ember-metal
 */
@@ -40,10 +40,12 @@ BasicStream.prototype = {
     this.dependencyHead = null;
     this.dependencyTail = null;
     this.observedProxy = null;
+    this.__ember_meta__ = null;
+    this[GUID_KEY] = null;
   },
 
   _makeChildStream(key) {
-    KeyStream = KeyStream || Ember.__loader.require('ember-metal/streams/key-stream').default;
+    KeyStream = KeyStream || require('ember-metal/streams/key-stream').default;
     return new KeyStream(this, key);
   },
 
@@ -183,7 +185,7 @@ BasicStream.prototype = {
     if (value !== this.observedProxy) {
       this._clearObservedProxy();
 
-      ProxyMixin = ProxyMixin || Ember.__loader.require('ember-runtime/mixins/-proxy').default;
+      ProxyMixin = ProxyMixin || require('ember-runtime/mixins/-proxy').default;
 
       if (ProxyMixin.detect(value)) {
         addObserver(value, 'content', this, this.notify);

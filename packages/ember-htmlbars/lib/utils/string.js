@@ -24,10 +24,8 @@ import { SafeString, escapeExpression } from 'htmlbars-util';
 */
 function htmlSafe(str) {
   if (str === null || str === undefined) {
-    return '';
-  }
-
-  if (typeof str !== 'string') {
+    str = '';
+  } else if (typeof str !== 'string') {
     str = '' + str;
   }
   return new SafeString(str);

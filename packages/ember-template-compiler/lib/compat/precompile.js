@@ -2,14 +2,14 @@
 @module ember
 @submodule ember-template-compiler
 */
-import Ember from 'ember-metal/core';
+import require, { has } from 'require';
 import compileOptions from 'ember-template-compiler/system/compile_options';
 
 var compile, compileSpec;
 
 export default function(string) {
-  if ((!compile || !compileSpec) && Ember.__loader.registry['htmlbars-compiler/compiler']) {
-    var Compiler = requireModule('htmlbars-compiler/compiler');
+  if ((!compile || !compileSpec) && has('htmlbars-compiler/compiler')) {
+    var Compiler = require('htmlbars-compiler/compiler');
 
     compile = Compiler.compile;
     compileSpec = Compiler.compileSpec;

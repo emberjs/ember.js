@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // A, FEATURES, assert
+import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -6,6 +6,7 @@ import ActionManager from 'ember-views/system/action_manager';
 
 import EmberObject from 'ember-runtime/system/object';
 import EmberController from 'ember-runtime/controllers/controller';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';
@@ -16,13 +17,16 @@ import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import ComponentLookup from 'ember-views/component_lookup';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 import {
   runAppend,
   runDestroy
 } from 'ember-runtime/tests/utils';
 
-var dispatcher, view, originalViewKeyword;
+var dispatcher, view, originalViewKeyword, owner;
 var originalRegisterAction = ActionHelper.registerAction;
 
 QUnit.module('ember-routing-htmlbars: action helper', {
@@ -255,6 +259,76 @@ QUnit.test('handles whitelisted modifier keys', function() {
   ok(shortcutHandlerWasCalled, 'The "any" shortcut\'s event handler was called');
 });
 
+QUnit.test('handles whitelisted bound modifier keys', function() {
+  var eventHandlerWasCalled = false;
+  var shortcutHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    altKey: 'alt',
+    anyKey: 'any',
+    actions: {
+      edit() { eventHandlerWasCalled = true; },
+      shortcut() { shortcutHandlerWasCalled = true; }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile('<a href="#" {{action "edit" allowedKeys=altKey}}>click me</a> <div {{action "shortcut" allowedKeys=anyKey}}>click me too</div>')
+  });
+
+  runAppend(view);
+
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(ActionManager.registeredActions[actionId], 'The action was registered');
+
+  var e = jQuery.Event('click');
+  e.altKey = true;
+  view.$('a').trigger(e);
+
+  ok(eventHandlerWasCalled, 'The event handler was called');
+
+  e = jQuery.Event('click');
+  e.ctrlKey = true;
+  view.$('div').trigger(e);
+
+  ok(shortcutHandlerWasCalled, 'The "any" shortcut\'s event handler was called');
+});
+
+QUnit.test('handles whitelisted bound modifier keys with current value', function(assert) {
+  var editHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    acceptedKeys: 'alt',
+    actions: {
+      edit() { editHandlerWasCalled = true; }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile('<a href="#" {{action "edit" allowedKeys=acceptedKeys}}>click me</a>')
+  });
+
+  runAppend(view);
+
+  var e = jQuery.Event('click');
+  e.altKey = true;
+  view.$('a').trigger(e);
+
+  ok(editHandlerWasCalled, 'event handler was called');
+
+  editHandlerWasCalled = false;
+  run(() => {
+    controller.set('acceptedKeys', '');
+  });
+
+  view.$('a').trigger(e);
+
+  ok(!editHandlerWasCalled, 'event handler was not called');
+});
+
 QUnit.test('should be able to use action more than once for the same event within a view', function() {
   var editWasCalled = false;
   var deleteWasCalled = false;
@@ -342,6 +416,90 @@ QUnit.test('the event should not bubble if `bubbles=false` is passed', function(
   equal(originalEventHandlerWasCalled, true, 'The original event handler was called');
 });
 
+QUnit.test('the event should not bubble if `bubbles=false` is passed bound', function() {
+  var editWasCalled = false;
+  var deleteWasCalled = false;
+  var originalEventHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    isFalse: false,
+    actions: {
+      edit() { editWasCalled = true; },
+      'delete'() { deleteWasCalled = true; }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile(
+      '<a id="edit" href="#" {{action "edit" bubbles=isFalse}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=isFalse}}>delete</a>'
+    ),
+    click() { originalEventHandlerWasCalled = true; }
+  });
+
+  runAppend(view);
+
+  view.$('#edit').trigger('click');
+
+  equal(editWasCalled, true, 'The edit action was called');
+  equal(deleteWasCalled, false, 'The delete action was not called');
+  equal(originalEventHandlerWasCalled, false, 'The original event handler was not called');
+
+  editWasCalled = deleteWasCalled = originalEventHandlerWasCalled = false;
+
+  view.$('#delete').trigger('click');
+
+  equal(editWasCalled, false, 'The edit action was not called');
+  equal(deleteWasCalled, true, 'The delete action was called');
+  equal(originalEventHandlerWasCalled, false, 'The original event handler was not called');
+
+  editWasCalled = deleteWasCalled = originalEventHandlerWasCalled = false;
+
+  view.$().trigger('click');
+
+  equal(editWasCalled, false, 'The edit action was not called');
+  equal(deleteWasCalled, false, 'The delete action was not called');
+  equal(originalEventHandlerWasCalled, true, 'The original event handler was called');
+});
+
+QUnit.test('the event bubbling depend on the bound parameter', function() {
+  var editWasCalled = false;
+  var originalEventHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    shouldBubble: false,
+    actions: {
+      edit() { editWasCalled = true; }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile(
+      '<a id="edit" href="#" {{action "edit" bubbles=shouldBubble}}>edit</a>'
+    ),
+    click() { originalEventHandlerWasCalled = true; }
+  });
+
+  runAppend(view);
+
+  view.$('#edit').trigger('click');
+
+  equal(editWasCalled, true, 'The edit action was called');
+  equal(originalEventHandlerWasCalled, false, 'The original event handler was not called');
+
+  editWasCalled = originalEventHandlerWasCalled = false;
+
+  run(() => {
+    controller.set('shouldBubble', true);
+  });
+
+  view.$('#edit').trigger('click');
+
+  equal(editWasCalled, true, 'The edit action was not called');
+  equal(originalEventHandlerWasCalled, true, 'The original event handler was called');
+});
+
 QUnit.test('should work properly in an #each block', function() {
   var eventHandlerWasCalled = false;
 
@@ -351,7 +509,7 @@ QUnit.test('should work properly in an #each block', function() {
 
   view = EmberView.create({
     controller: controller,
-    items: Ember.A([1, 2, 3, 4]),
+    items: emberA([1, 2, 3, 4]),
     template: compile('{{#each view.items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
@@ -411,7 +569,7 @@ QUnit.test('should unregister event handlers on rerender', function() {
 });
 
 QUnit.test('should unregister event handlers on inside virtual views', function() {
-  var things = Ember.A([
+  var things = emberA([
     {
       name: 'Thingy'
     }
@@ -788,7 +946,7 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{ title: 'Biggity Boom', name: 'biggityBoom' },
+    allactions: emberA([{ title: 'Biggity Boom', name: 'biggityBoom' },
                          { title: 'Whomp Whomp', name: 'whompWhomp' },
                          { title: 'Sloopy Dookie', name: 'sloopyDookie' }]),
     actions: {
@@ -837,7 +995,7 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
   });
 
   var controller = EmberController.extend({
-    allactions: Ember.A([{ title: 'Biggity Boom', name: 'biggityBoom' },
+    allactions: emberA([{ title: 'Biggity Boom', name: 'biggityBoom' },
                          { title: 'Whomp Whomp', name: 'whompWhomp' },
                          { title: 'Sloopy Dookie', name: 'sloopyDookie' }]),
     actions: {
@@ -996,4 +1154,105 @@ QUnit.test('should respect preventDefault=false option if provided', function() 
   view.$('a').trigger(event);
 
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+});
+
+QUnit.test('should respect preventDefault option if provided bound', function() {
+  view = EmberView.create({
+    template: compile('<a {{action \'show\' preventDefault=shouldPreventDefault}}>Hi</a>')
+  });
+
+  var controller = EmberController.extend({
+    shouldPreventDefault: false,
+    actions: {
+      show() { }
+    }
+  }).create();
+
+  run(function() {
+    view.set('controller', controller);
+    runAppend(view);
+  });
+
+  var event = jQuery.Event('click');
+  view.$('a').trigger(event);
+
+  equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+
+  run(() => {
+    controller.set('shouldPreventDefault', true);
+  });
+
+  event = jQuery.Event('click');
+  view.$('a').trigger(event);
+
+  equal(event.isDefaultPrevented(), true, 'should preventDefault');
+});
+
+QUnit.module('ember-routing-htmlbars: action helper - action target without `controller`', {
+  setup() {
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.register('component-lookup:main', ComponentLookup);
+    owner.register('event_dispatcher:main', EventDispatcher);
+
+    dispatcher = owner.lookup('event_dispatcher:main');
+    dispatcher.setup();
+
+    this.originalLegacyControllerSupport = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
+    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
+
+    this.originalLegacyViewSupport = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+  },
+
+  teardown() {
+    runDestroy(view);
+    runDestroy(dispatcher);
+    runDestroy(owner);
+
+    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = this.originalLegacyControllerSupport;
+    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = this.originalLegacyViewSupport;
+  }
+});
+
+QUnit.test('should target the proper component when `action` is in yielded block [GH #12409]', function(assert) {
+  assert.expect(2);
+
+  owner.register('template:components/x-outer', compile(`
+    {{#x-middle}}
+      {{x-inner action="hey" }}
+    {{/x-middle}}
+  `));
+
+  owner.register('template:components/x-middle', compile('{{yield}}'));
+  owner.register('template:components/x-inner', compile(`
+    <button>Click Me</button>
+    {{yield}}
+  `));
+
+  owner.register('component:x-inner', EmberComponent.extend({
+    click() {
+      assert.ok(true, 'click was triggered');
+      this.sendAction();
+    }
+  }));
+
+  owner.register('component:x-outer', EmberComponent.extend({
+    actions: {
+      hey: function() {
+        assert.ok(true, 'action fired on proper target');
+      }
+    }
+  }));
+
+  view = EmberComponent.create({
+    [OWNER]: owner,
+    layout: compile('{{x-outer}}')
+  });
+
+  runAppend(view);
+
+  var event = jQuery.Event('click');
+  view.$('button').trigger(event);
 });

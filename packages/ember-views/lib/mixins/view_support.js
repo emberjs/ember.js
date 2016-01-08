@@ -7,6 +7,11 @@ import { guidFor } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
 import { Mixin } from 'ember-metal/mixin';
 import { POST_INIT } from 'ember-runtime/system/core_object';
+import isEnabled from 'ember-metal/features';
+import symbol from 'ember-metal/symbol';
+import { getOwner } from 'container/owner';
+
+const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
 
 import jQuery from 'ember-views/system/jquery';
 
@@ -113,13 +118,15 @@ export default Mixin.create({
     if (!name) { return; }
     assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
 
-    if (!this.container) {
+    let owner = getOwner(this);
+
+    if (!owner) {
       throw new EmberError('Container was not found when looking up a views template. ' +
                  'This is most likely due to manually instantiating an Ember.View. ' +
                  'See: http://git.io/EKPpnA');
     }
 
-    return this.container.lookup('template:' + name);
+    return owner.lookup('template:' + name);
   },
 
   /**
@@ -251,12 +258,32 @@ export default Mixin.create({
     @private
   */
   appendTo(selector) {
-    var target = jQuery(selector);
+    if (isEnabled('ember-application-visit')) {
+      let $ = this._environment ? this._environment.options.jQuery : jQuery;
 
-    assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-    assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+      if ($) {
+        let target = $(selector);
 
-    this.renderer.appendTo(this, target[0]);
+        assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+        assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+        this.renderer.appendTo(this, target[0]);
+      } else {
+        let target = selector;
+
+        assert('You tried to append to a selector string (' + selector + ') in an environment without jQuery', typeof target !== 'string');
+        assert('You tried to append to a non-Element (' + selector + ') in an environment without jQuery', typeof selector.appendChild === 'function');
+
+        this.renderer.appendTo(this, target);
+      }
+    } else {
+      let target = jQuery(selector);
+
+      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
+      assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+      this.renderer.appendTo(this, target[0]);
+    }
 
     return this;
   },
@@ -603,13 +630,15 @@ export default Mixin.create({
     @private
   */
   init() {
+    this._super(...arguments);
+
     if (!this.elementId) {
       this.elementId = guidFor(this);
     }
 
     this.scheduledRevalidation = false;
 
-    this._super(...arguments);
+    this[INIT_WAS_CALLED] = true;
 
     assert(
       'Using a custom `.render` function is no longer supported.',
@@ -628,6 +657,12 @@ export default Mixin.create({
    */
   [POST_INIT]: function() {
     this._super(...arguments);
+
+    assert(
+      `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
+      this[INIT_WAS_CALLED]
+    );
+
     this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
@@ -644,13 +679,13 @@ export default Mixin.create({
     if (node && !this._dispatching && this.env.renderedNodes.has(node)) {
       if (manualRerender) {
         deprecate(
-          `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 2.0`,
+          `You manually rerendered ${label} (a parent component) from a child component during the rendering process. This rarely worked in Ember 1.x and will be removed in Ember 3.0`,
           false,
           { id: 'ember-views.manual-parent-rerender', until: '3.0.0' }
         );
       } else {
         deprecate(
-          `You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 2.0`,
+          `You modified ${label} twice in a single render. This was unreliable in Ember 1.x and will be removed in Ember 3.0`,
           false,
           { id: 'ember-views.render-double-modify', until: '3.0.0' }
         );

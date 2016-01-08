@@ -1,30 +1,29 @@
 import run from 'ember-metal/run_loop';
-import { Registry } from 'ember-runtime/system/container';
 import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import { helper as makeHelper } from 'ember-htmlbars/helper';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var component, registry, container;
+var component, owner;
 
 QUnit.module('ember-htmlbars: {{concat}} helper', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('helper', { instantiate: false });
+    owner = buildOwner();
+    owner.registerOptionsForType('helper', { instantiate: false });
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(component);
   }
 });
 
 QUnit.test('concats provided params', function() {
   component = Component.create({
-    container,
-
+    [OWNER]: owner,
     layout: compile(`{{concat "foo" " " "bar" " " "baz"}}`)
   });
 
@@ -35,11 +34,9 @@ QUnit.test('concats provided params', function() {
 
 QUnit.test('updates for bound params', function() {
   component = Component.create({
-    container,
-
+    [OWNER]: owner,
     firstParam: 'one',
     secondParam: 'two',
-
     layout: compile(`{{concat firstParam secondParam}}`)
   });
 
@@ -64,11 +61,10 @@ QUnit.test('can be used as a sub-expression', function() {
   function eq([ actual, expected ]) {
     return actual === expected;
   }
-  registry.register('helper:x-eq', makeHelper(eq));
+  owner.register('helper:x-eq', makeHelper(eq));
 
   component = Component.create({
-    container,
-
+    [OWNER]: owner,
     firstParam: 'one',
     secondParam: 'two',
 

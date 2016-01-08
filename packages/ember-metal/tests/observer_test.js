@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember, { K } from 'ember-metal/core';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   addObserver,
@@ -1096,4 +1096,73 @@ testBoth('observers added/removed during changeProperties should do the right th
   equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
   equal(removedAfterLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called after the last change still sees 1');
   equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
+});
+
+
+QUnit.module('Keys behavior with observers');
+
+
+testBoth('should not leak properties on the prototype', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', K);
+  deepEqual(Object.keys(beer), []);
+  removeObserver(beer, 'type', K);
+});
+
+testBoth('observing a non existent property', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'brand', K);
+
+  deepEqual(Object.keys(beer), []);
+
+  set(beer, 'brand', 'Corona');
+  deepEqual(Object.keys(beer), ['brand']);
+
+  removeObserver(beer, 'brand', K);
+});
+
+testBoth('with observers switched on and off', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', K);
+  removeObserver(beer, 'type', K);
+
+  deepEqual(Object.keys(beer), []);
+});
+
+testBoth('observers switched on and off with setter in between', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', K);
+  set(beer, 'type', 'ale');
+  removeObserver(beer, 'type', K);
+
+  deepEqual(Object.keys(beer), ['type']);
+});
+
+testBoth('observer switched on and off and then setter', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', K);
+  removeObserver(beer, 'type', K);
+  set(beer, 'type', 'ale');
+
+  deepEqual(Object.keys(beer), ['type']);
 });

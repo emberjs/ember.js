@@ -1,5 +1,6 @@
 import { warn, debugSeal } from 'ember-metal/debug';
 import DOMHelper from 'dom-helper';
+import isNone from 'ember-metal/is_none';
 
 var HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
 
@@ -22,7 +23,7 @@ function deprecateEscapedStyle(morph, value) {
     styleWarning,
     (function(name, value, escaped) {
       // SafeString
-      if (value && value.toHTML) {
+      if (isNone(value) || (value && value.toHTML)) {
         return true;
       }
 

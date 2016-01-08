@@ -1,4 +1,3 @@
-/*jshint newcap:false*/
 import { deprecate } from 'ember-metal/debug';
 import View from 'ember-views/views/view';
 import { Mixin } from 'ember-metal/mixin';
@@ -23,7 +22,7 @@ export var _Metamorph = Mixin.create({
   instrumentName: 'metamorph',
 
   init() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     deprecate(
       'Supplying a tagName to Metamorph views is unreliable and is deprecated. ' +
       'You may be setting the tagName on a Handlebars helper that creates a Metamorph.',

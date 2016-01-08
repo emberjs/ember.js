@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { computed } from 'ember-metal/computed';
 import {
   empty,
@@ -16,12 +15,17 @@ import {
   deprecatingAlias,
   and,
   or,
-  collect
 } from 'ember-metal/computed_macros';
+
+import {
+  collect
+} from 'ember-runtime/computed/reduce_computed_macros';
+
 import alias from 'ember-metal/alias';
 import { defineProperty } from 'ember-metal/properties';
 import EmberObject from 'ember-runtime/system/object';
 import { testBoth } from 'ember-metal/tests/props_helper';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 QUnit.module('CP macros');
 
@@ -33,7 +37,7 @@ testBoth('Ember.computed.empty', function (get, set) {
     bestLannisterUnspecified: empty('bestLannister'),
     noLannistersKnown: empty('lannisters')
   }).create({
-    lannisters: Ember.A([])
+    lannisters: emberA()
   });
 
   equal(get(obj, 'bestLannisterUnspecified'), true, 'bestLannister initially empty');
@@ -54,7 +58,7 @@ testBoth('Ember.computed.notEmpty', function(get, set) {
     bestLannisterSpecified: notEmpty('bestLannister'),
     LannistersKnown: notEmpty('lannisters')
   }).create({
-    lannisters: Ember.A([])
+    lannisters: emberA()
   });
 
   equal(get(obj, 'bestLannisterSpecified'), false, 'bestLannister initially empty');

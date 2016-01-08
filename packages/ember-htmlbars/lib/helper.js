@@ -43,6 +43,7 @@ import Object from 'ember-runtime/system/object';
 
   @class Ember.Helper
   @public
+  @since 1.13.0
 */
 var Helper = Object.extend({
   isHelperInstance: true,
@@ -69,6 +70,7 @@ var Helper = Object.extend({
 
     @method recompute
     @public
+    @since 1.13.0
   */
   recompute() {
     this._stream.notify();
@@ -81,6 +83,7 @@ var Helper = Object.extend({
     @param {Array} params The positional arguments to the helper
     @param {Object} hash The named arguments to the helper
     @public
+    @since 1.13.0
   */
 });
 
@@ -106,6 +109,7 @@ Helper.reopenClass({
   @param {Function} helper The helper function
   @method helper
   @public
+  @since 1.13.0
 */
 export function helper(helperFn) {
   return {

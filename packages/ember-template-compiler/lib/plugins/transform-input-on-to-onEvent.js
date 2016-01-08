@@ -36,10 +36,10 @@ function TransformInputOnToOnEvent(options) {
   @param {AST} ast The AST to be transformed.
 */
 TransformInputOnToOnEvent.prototype.transform = function TransformInputOnToOnEvent_transform(ast) {
-  const pluginContext = this;
-  const b = pluginContext.syntax.builders;
-  const walker = new pluginContext.syntax.Walker();
-  const moduleName = pluginContext.options.moduleName;
+  let pluginContext = this;
+  let b = pluginContext.syntax.builders;
+  let walker = new pluginContext.syntax.Walker();
+  let moduleName = pluginContext.options.moduleName;
 
   walker.visit(ast, function(node) {
     if (pluginContext.validate(node)) {

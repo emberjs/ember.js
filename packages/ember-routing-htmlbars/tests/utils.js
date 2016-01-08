@@ -1,12 +1,10 @@
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import {
   classify,
   decamelize
 } from 'ember-runtime/system/string';
 
-import Registry from 'container/registry';
 import Controller from 'ember-runtime/controllers/controller';
 
 import EmberView from 'ember-views/views/view';
@@ -17,35 +15,49 @@ import {
 } from 'ember-routing-views/views/outlet';
 
 import HashLocation from 'ember-routing/location/hash_location';
+import EmberObject from 'ember-runtime/system/object';
+import Registry from 'container/registry';
+import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 
 function resolverFor(namespace) {
-  return function(fullName) {
-    var nameParts = fullName.split(':');
-    var type = nameParts[0];
-    var name = nameParts[1];
+  return {
+    resolve(fullName) {
+      var nameParts = fullName.split(':');
+      var type = nameParts[0];
+      var name = nameParts[1];
 
-    if (type === 'template') {
-      var templateName = decamelize(name);
-      if (Ember.TEMPLATES[templateName]) {
-        return Ember.TEMPLATES[templateName];
+      if (type === 'template') {
+        var templateName = decamelize(name);
+        if (Ember.TEMPLATES[templateName]) {
+          return Ember.TEMPLATES[templateName];
+        }
       }
+
+      var className = classify(name) + classify(type);
+      var factory = get(namespace, className);
+
+      if (factory) { return factory; }
     }
-
-    var className = classify(name) + classify(type);
-    var factory = get(namespace, className);
-
-    if (factory) { return factory; }
   };
 }
 
-function buildRegistry(namespace) {
-  var registry = new Registry();
+function buildAppInstance() {
+  let registry;
+  let App = EmberObject.extend(RegistryProxy, ContainerProxy, {
+    init() {
+      this._super(...arguments);
+      registry = this.__registry__ = new Registry();
+      this.__container__ = registry.container({ owner: this });
+    }
+  });
+  let appInstance = App.create();
 
-  registry.set = set;
-  registry.resolver = resolverFor(namespace);
+  registry.resolver = resolverFor(App);
+
   registry.optionsForType('view', { singleton: false });
   registry.optionsForType('template', { instantiate: false });
-  registry.register('application:main', namespace, { instantiate: false });
+  registry.register('application:main', App, { instantiate: false });
   registry.injection('router:main', 'namespace', 'application:main');
 
   registry.register('location:hash', HashLocation);
@@ -59,10 +71,10 @@ function buildRegistry(namespace) {
 
   registry.typeInjection('route', 'router', 'router:main');
 
-  return registry;
+  return appInstance;
 }
 
 export {
   resolverFor,
-  buildRegistry
+  buildAppInstance
 };

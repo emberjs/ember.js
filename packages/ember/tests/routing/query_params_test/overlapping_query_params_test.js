@@ -1,22 +1,27 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
+import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, registry, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 var startingURL = '';
 var expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
-  Ember.run(obj, 'set', prop, value);
+  run(obj, 'set', prop, value);
 }
 
-var TestLocation = Ember.NoneLocation.extend({
+var TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -45,8 +50,8 @@ var TestLocation = Ember.NoneLocation.extend({
 });
 
 function sharedSetup() {
-  Ember.run(function() {
-    App = Ember.Application.create({
+  run(function() {
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });
@@ -66,7 +71,7 @@ function sharedSetup() {
 
     Router = App.Router;
 
-    App.LoadingRoute = Ember.Route.extend({
+    App.LoadingRoute = Route.extend({
     });
 
     Ember.TEMPLATES.application = compile('{{outlet}}');
@@ -75,7 +80,7 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() {
+  run(function() {
     App.destroy();
     App = null;
 
@@ -97,7 +102,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
       this.boot = function() {
         bootApplication();
-        Ember.run(router, 'transitionTo', 'parent.child');
+        run(router, 'transitionTo', 'parent.child');
       };
     },
 
@@ -107,7 +112,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('can remap same-named qp props', function() {
-    App.ParentRoute = Ember.Route.extend({
+    App.ParentRoute = Route.extend({
       queryParams: {
         page: {
           as: 'parentPage',
@@ -116,7 +121,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.ParentChildRoute = Ember.Route.extend({
+    App.ParentChildRoute = Route.extend({
       queryParams: {
         page: {
           as: 'childPage',
@@ -142,14 +147,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(parentChildController, 'page', 1);
     equal(router.get('location.path'), '/parent/child');
 
-    Ember.run(function() {
+    run(function() {
       parentController.set('page', 2);
       parentChildController.set('page', 2);
     });
 
     equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
 
-    Ember.run(function() {
+    run(function() {
       parentController.set('page', 1);
       parentChildController.set('page', 1);
     });
@@ -158,7 +163,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
-    App.ParentRoute = Ember.Route.extend({
+    App.ParentRoute = Route.extend({
       queryParams: {
         foo: {
           as: 'shared',
@@ -167,7 +172,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.ParentChildRoute = Ember.Route.extend({
+    App.ParentChildRoute = Route.extend({
       queryParams: {
         bar: {
           as: 'shared',
@@ -194,7 +199,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
       this.boot = function() {
         bootApplication();
-        Ember.run(router, 'transitionTo', 'parent.child');
+        run(router, 'transitionTo', 'parent.child');
       };
     },
 
@@ -204,12 +209,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('can remap same-named qp props', function() {
-    App.ParentController = Ember.Controller.extend({
+    App.ParentController = Controller.extend({
       queryParams: { page: 'parentPage' },
       page: 1
     });
 
-    App.ParentChildController = Ember.Controller.extend({
+    App.ParentChildController = Controller.extend({
       queryParams: { page: 'childPage' },
       page: 1
     });
@@ -231,14 +236,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(parentChildController, 'page', 1);
     equal(router.get('location.path'), '/parent/child');
 
-    Ember.run(function() {
+    run(function() {
       parentController.set('page', 2);
       parentChildController.set('page', 2);
     });
 
     equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
 
-    Ember.run(function() {
+    run(function() {
       parentController.set('page', 1);
       parentChildController.set('page', 1);
     });
@@ -247,12 +252,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('query params in the same route hierarchy with the same url key get auto-scoped', function() {
-    App.ParentController = Ember.Controller.extend({
+    App.ParentController = Controller.extend({
       queryParams: { foo: 'shared' },
       foo: 1
     });
 
-    App.ParentChildController = Ember.Controller.extend({
+    App.ParentChildController = Controller.extend({
       queryParams: { bar: 'shared' },
       bar: 1
     });
@@ -269,11 +274,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       page: 1
     });
 
-    App.ParentController = Ember.Controller.extend(HasPage, {
+    App.ParentController = Controller.extend(HasPage, {
       queryParams: { page: 'yespage' }
     });
 
-    App.ParentChildController = Ember.Controller.extend(HasPage);
+    App.ParentChildController = Controller.extend(HasPage);
 
     this.boot();
 

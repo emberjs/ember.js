@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
 
 MutableArrayTests.extend({
@@ -6,7 +6,7 @@ MutableArrayTests.extend({
   name: 'Native Array',
 
   newObject(ary) {
-    return Ember.A(ary ? ary.slice() : this.newFixture(3));
+    return emberA(ary ? ary.slice() : this.newFixture(3));
   },
 
   mutate(obj) {

@@ -9,7 +9,10 @@ function DSL(name, options) {
   this.parent = name;
   this.enableLoadingSubstates = options && options.enableLoadingSubstates;
   this.matches = [];
+  this.explicitIndex = undefined;
+  this.options = options;
 }
+
 export default DSL;
 
 DSL.prototype = {
@@ -46,9 +49,7 @@ DSL.prototype = {
 
     if (callback) {
       var fullName = getFullName(this, name, options.resetNamespace);
-      var dsl = new DSL(fullName, {
-        enableLoadingSubstates: this.enableLoadingSubstates
-      });
+      var dsl = new DSL(fullName, this.options);
 
       createRoute(dsl, 'loading');
       createRoute(dsl, 'error', { path: dummyErrorRoute });

@@ -71,7 +71,7 @@ Suite.reopenClass({
     var teardown = opts.teardown;
     this.reopen({
       run() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         var title = get(this, 'name') + ': ' + desc;
         var ctx = this;
         QUnit.module(title, {
@@ -94,7 +94,7 @@ Suite.reopenClass({
   test(name, func) {
     this.reopen({
       run() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         var ctx = this;
 
         if (!func) {

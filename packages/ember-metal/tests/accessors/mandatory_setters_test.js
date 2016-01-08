@@ -56,10 +56,95 @@ if (isEnabled('mandatory-setter')) {
     var obj = { someProp: null };
 
     Object.defineProperty(obj, 'someProp', {
+      get() {
+        return null;
+      },
+
       set(value) {
         equal(value, 'foo-bar', 'custom setter was called');
       }
     });
+
+    watch(obj, 'someProp');
+    ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
+
+    obj.someProp = 'foo-bar';
+  });
+
+  QUnit.test('should not setup mandatory-setter if setter is already setup on property in parent prototype', function() {
+    expect(2);
+
+    function Foo() { }
+
+    Object.defineProperty(Foo.prototype, 'someProp', {
+      get() {
+        return null;
+      },
+
+      set(value) {
+        equal(value, 'foo-bar', 'custom setter was called');
+      }
+    });
+
+    var obj = new Foo();
+
+    watch(obj, 'someProp');
+    ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
+
+    obj.someProp = 'foo-bar';
+  });
+
+  QUnit.test('should not setup mandatory-setter if setter is already setup on property in grandparent prototype', function() {
+    expect(2);
+
+    function Foo() { }
+
+    Object.defineProperty(Foo.prototype, 'someProp', {
+      get() {
+        return null;
+      },
+
+      set(value) {
+        equal(value, 'foo-bar', 'custom setter was called');
+      }
+    });
+
+    function Bar() { }
+    Bar.prototype = Object.create(Foo.prototype);
+    Bar.prototype.constructor = Bar;
+
+    var obj = new Bar();
+
+    watch(obj, 'someProp');
+    ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
+
+    obj.someProp = 'foo-bar';
+  });
+
+  QUnit.test('should not setup mandatory-setter if setter is already setup on property in great grandparent prototype', function() {
+    expect(2);
+
+    function Foo() { }
+
+    Object.defineProperty(Foo.prototype, 'someProp', {
+      get() {
+        return null;
+      },
+
+      set(value) {
+        equal(value, 'foo-bar', 'custom setter was called');
+      }
+    });
+
+    function Bar() { }
+    Bar.prototype = Object.create(Foo.prototype);
+    Bar.prototype.constructor = Bar;
+
+    function Qux() { }
+    Qux.prototype = Object.create(Bar.prototype);
+    Qux.prototype.constructor = Qux;
+
+    var obj = new Qux();
 
     watch(obj, 'someProp');
     ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');

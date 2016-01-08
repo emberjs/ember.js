@@ -100,7 +100,7 @@ QUnit.test('throws if you try to call _super in a method', function() {
   expectAssertion(function() {
     EmberObject.create({
       foo() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
   }, 'Ember.Object.create no longer supports defining methods that call _super.');

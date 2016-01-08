@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -9,9 +10,9 @@ QUnit.module('ember-htmlbars: {{#log}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
 
-    originalLog = Ember.Logger.log;
+    originalLog = Logger.log;
     logCalls = [];
-    Ember.Logger.log = function(arg) {
+    Logger.log = function(arg) {
       logCalls.push(arg);
     };
   },
@@ -21,7 +22,7 @@ QUnit.module('ember-htmlbars: {{#log}} helper', {
 
     view = null;
 
-    Ember.Logger.log = originalLog;
+    Logger.log = originalLog;
     Ember.lookup = originalLookup;
   }
 });

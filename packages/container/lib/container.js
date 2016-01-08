@@ -1,7 +1,12 @@
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
+import { setOwner, OWNER } from './owner';
+import { buildFakeContainerWithDeprecations } from 'ember-runtime/mixins/container_proxy';
+import symbol from 'ember-metal/symbol';
+
+const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
 /**
  A container used to instantiate and cache objects.
@@ -18,12 +23,25 @@ import isEnabled from 'ember-metal/features';
  */
 function Container(registry, options) {
   this.registry        = registry;
+  this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
+
+  if (isEnabled('ember-container-inject-owner')) {
+    this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
+    this[CONTAINER_OVERRIDE] = undefined;
+  }
 }
 
 Container.prototype = {
+  /**
+   @private
+   @property owner
+   @type Object
+   */
+  owner: null,
+
   /**
    @private
    @property registry
@@ -94,7 +112,8 @@ Container.prototype = {
    @private
    @method lookup
    @param {String} fullName
-   @param {Object} options
+   @param {Object} [options]
+   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
   lookup(fullName, options) {
@@ -108,11 +127,13 @@ Container.prototype = {
    @private
    @method lookupFactory
    @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  lookupFactory(fullName) {
+  lookupFactory(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
-    return factoryFor(this, this.registry.normalize(fullName));
+    return factoryFor(this, this.registry.normalize(fullName), options);
   },
 
   /**
@@ -145,6 +166,18 @@ Container.prototype = {
     } else {
       resetCache(this);
     }
+  },
+
+  /**
+   Returns an object that can be used to provide an owner to a
+   manually created instance.
+
+   @private
+   @method ownerInjection
+   @returns { Object }
+  */
+  ownerInjection() {
+    return { [OWNER]: this.owner };
   }
 };
 
@@ -152,8 +185,18 @@ function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function lookup(container, fullName, options) {
-  options = options || {};
+function lookup(container, _fullName, _options) {
+  let options = _options || {};
+  let fullName = _fullName;
+
+  if (isEnabled('ember-htmlbars-local-lookup')) {
+    if (options.source) {
+      fullName = container.registry.expandLocalLookup(fullName, options);
+
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!fullName) { return; }
+    }
+  }
 
   if (container.cache[fullName] && options.singleton !== false) {
     return container.cache[fullName];
@@ -178,17 +221,17 @@ function areInjectionsDynamic(injections) {
   return !!injections._dynamic;
 }
 
-function buildInjections(container) {
+function buildInjections(/* container, ...injections */) {
   var hash = {};
 
   if (arguments.length > 1) {
-    var injectionArgs = Array.prototype.slice.call(arguments, 1);
+    var container = arguments[0];
     var injections = [];
     var injection;
 
-    for (var i = 0, l = injectionArgs.length; i < l; i++) {
-      if (injectionArgs[i]) {
-        injections = injections.concat(injectionArgs[i]);
+    for (var i = 1, l = arguments.length; i < l; i++) {
+      if (arguments[i]) {
+        injections = injections.concat(arguments[i]);
       }
     }
 
@@ -206,12 +249,24 @@ function buildInjections(container) {
   return hash;
 }
 
-function factoryFor(container, fullName) {
+function factoryFor(container, _fullName, _options) {
+  let options = _options || {};
+  let registry = container.registry;
+  let fullName = _fullName;
+
+  if (isEnabled('ember-htmlbars-local-lookup')) {
+    if (options.source) {
+      fullName = registry.expandLocalLookup(fullName, options);
+
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!fullName) { return; }
+    }
+  }
+
   var cache = container.factoryCache;
   if (cache[fullName]) {
     return cache[fullName];
   }
-  var registry = container.registry;
   var factory = registry.resolve(fullName);
   if (factory === undefined) { return; }
 
@@ -233,6 +288,14 @@ function factoryFor(container, fullName) {
     factoryInjections._toString = registry.makeToString(factory, fullName);
 
     var injectedFactory = factory.extend(injections);
+
+    // TODO - remove all `container` injections when Ember reaches v3.0.0
+    if (isEnabled('ember-container-inject-owner')) {
+      injectDeprecatedContainer(injectedFactory.prototype, container);
+    } else {
+      injectedFactory.prototype.container = container;
+    }
+
     injectedFactory.reopenClass(factoryInjections);
 
     if (factory && typeof factory._onLookup === 'function') {
@@ -256,7 +319,8 @@ function injectionsFor(container, fullName) {
                                    registry.getTypeInjections(type),
                                    registry.getInjections(fullName));
   injections._debugContainerKey = fullName;
-  injections.container = container;
+
+  setOwner(injections, container.owner);
 
   return injections;
 }
@@ -300,16 +364,65 @@ function instantiate(container, fullName) {
 
     validationCache[fullName] = true;
 
+    let obj;
+
     if (typeof factory.extend === 'function') {
       // assume the factory was extendable and is already injected
-      return factory.create();
+      obj = factory.create();
     } else {
       // assume the factory was extendable
       // to create time injections
       // TODO: support new'ing for instantiation and merge injections for pure JS Functions
-      return factory.create(injectionsFor(container, fullName));
+      let injections = injectionsFor(container, fullName);
+
+      // Ensure that a container is available to an object during instantiation.
+      // TODO - remove when Ember reaches v3.0.0
+      if (isEnabled('ember-container-inject-owner')) {
+        // This "fake" container will be replaced after instantiation with a
+        // property that raises deprecations every time it is accessed.
+        injections.container = container._fakeContainerToInject;
+      } else {
+        injections.container = container;
+      }
+
+      obj = factory.create(injections);
+
+      // TODO - remove when Ember reaches v3.0.0
+      if (isEnabled('ember-container-inject-owner')) {
+        if (!Object.isFrozen(obj) && 'container' in obj) {
+          injectDeprecatedContainer(obj, container);
+        }
+      }
     }
+
+    return obj;
   }
+}
+
+// TODO - remove when Ember reaches v3.0.0
+function injectDeprecatedContainer(object, container) {
+  Object.defineProperty(object, 'container', {
+    configurable: true,
+    enumerable: false,
+    get() {
+      deprecate('Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.',
+                false,
+                { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' });
+      return this[CONTAINER_OVERRIDE] || container;
+    },
+
+    set(value) {
+      deprecate(
+        `Providing the \`container\` property to ${this} is deprecated. Please use \`Ember.setOwner\` or \`owner.ownerInjection()\` instead to provide an owner to the instance being created.`,
+        false,
+        { id: 'ember-application.injected-container', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_injected-container-access' }
+      );
+
+      this[CONTAINER_OVERRIDE] = value;
+
+      return value;
+    }
+  });
 }
 
 function eachDestroyable(container, callback) {
@@ -349,18 +462,6 @@ function resetMember(container, fullName) {
       member.destroy();
     }
   }
-}
-
-// Once registry / container reform is enabled, we no longer need to expose
-// Container#_registry, since Container itself will be fully private.
-if (!isEnabled('ember-registry-container-reform')) {
-  Object.defineProperty(Container.prototype, '_registry', {
-    configurable: true,
-    enumerable: false,
-    get() {
-      return this.registry;
-    }
-  });
 }
 
 export default Container;

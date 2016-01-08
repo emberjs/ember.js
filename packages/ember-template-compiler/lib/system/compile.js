@@ -3,7 +3,7 @@
 @submodule ember-template-compiler
 */
 
-import Ember from 'ember-metal/core';
+import require, { has } from 'require';
 import compileOptions from 'ember-template-compiler/system/compile_options';
 import template from 'ember-template-compiler/system/template';
 
@@ -20,8 +20,8 @@ var compile;
   @param {Object} options This is an options hash to augment the compiler options.
 */
 export default function(templateString, options) {
-  if (!compile && Ember.__loader.registry['htmlbars-compiler/compiler']) {
-    compile = requireModule('htmlbars-compiler/compiler').compile;
+  if (!compile && has('htmlbars-compiler/compiler')) {
+    compile = require('htmlbars-compiler/compiler').compile;
   }
 
   if (!compile) {

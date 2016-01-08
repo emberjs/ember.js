@@ -1,5 +1,5 @@
-import Ember from 'ember-metal/core';
-import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -42,7 +42,7 @@ suite.test('any should stop invoking when you return true', function() {
 
 
 suite.test('any should return true if any object matches the callback', function() {
-  var obj = Ember.A([0, 1, 2]);
+  var obj = emberA([0, 1, 2]);
   var result;
 
   result = obj.any(function(i) { return !!i; });
@@ -51,7 +51,7 @@ suite.test('any should return true if any object matches the callback', function
 
 
 suite.test('any should return false if no object matches the callback', function() {
-  var obj = Ember.A([0, null, false]);
+  var obj = emberA([0, null, false]);
   var result;
 
   result = obj.any(function(i) { return !!i; });
@@ -60,7 +60,7 @@ suite.test('any should return false if no object matches the callback', function
 
 
 suite.test('any should produce correct results even if the matching element is undefined', function() {
-  var obj = Ember.A([undefined]);
+  var obj = emberA([undefined]);
   var result;
 
   result = obj.any(function(i) { return true; });

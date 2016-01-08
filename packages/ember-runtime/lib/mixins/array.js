@@ -343,7 +343,7 @@ export default Mixin.create(Enumerable, {
       called just after the array is modified.
 
     Both callbacks will be passed the observed object, starting index of the
-    change as well a a count of the items to be removed and added. You can use
+    change as well as a count of the items to be removed and added. You can use
     these callbacks to optionally inspect the array during the change, clear
     caches, or do any other bookkeeping necessary.
 

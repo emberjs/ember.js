@@ -11,7 +11,7 @@ import {
   apply,
   applyStr
 } from 'ember-metal/utils';
-import { meta as metaFor } from 'ember-metal/meta';
+import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 
 import { ONCE, SUSPENDED } from 'ember-metal/meta_listeners';
 
@@ -49,7 +49,7 @@ function indexOf(array, target, method) {
 }
 
 export function accumulateListeners(obj, eventName, otherActions) {
-  var meta = obj['__ember_meta__'];
+  var meta = peekMeta(obj);
   if (!meta) { return; }
   var actions = meta.matchingListeners(eventName);
   var newActions = [];
@@ -201,7 +201,7 @@ export function watchedEvents(obj) {
 */
 export function sendEvent(obj, eventName, params, actions) {
   if (!actions) {
-    var meta = obj['__ember_meta__'];
+    var meta = peekMeta(obj);
     actions = meta && meta.matchingListeners(eventName);
   }
 
@@ -241,7 +241,7 @@ export function sendEvent(obj, eventName, params, actions) {
   @param {String} eventName
 */
 export function hasListeners(obj, eventName) {
-  var meta = obj['__ember_meta__'];
+  var meta = peekMeta(obj);
   if (!meta) { return false; }
   return meta.matchingListeners(eventName).length > 0;
 }
@@ -255,7 +255,7 @@ export function hasListeners(obj, eventName) {
 */
 export function listenersFor(obj, eventName) {
   var ret = [];
-  var meta = obj['__ember_meta__'];
+  var meta = peekMeta(obj);
   var actions = meta && meta.matchingListeners(eventName);
 
   if (!actions) { return ret; }

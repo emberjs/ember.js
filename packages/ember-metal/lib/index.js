@@ -4,6 +4,7 @@
 */
 
 // BEGIN IMPORTS
+import require, { has } from 'require';
 import Ember from 'ember-metal/core';
 import { deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
@@ -30,7 +31,6 @@ import {
   wrap
 } from 'ember-metal/utils';
 import {
-  EMPTY_META,
   META_DESC,
   meta
 } from 'ember-metal/meta';
@@ -131,8 +131,7 @@ import {
   deprecatingAlias,
   and,
   or,
-  any,
-  collect
+  any
 } from 'ember-metal/computed_macros';
 
 computed.empty = empty;
@@ -155,7 +154,6 @@ computed.deprecatingAlias = deprecatingAlias;
 computed.and = and;
 computed.or = or;
 computed.any = any;
-computed.collect = collect;
 
 import {
   _suspendObserver,
@@ -210,9 +208,9 @@ Ember.platform        = {
 Ember.Error           = EmberError;
 Ember.guidFor         = guidFor;
 Ember.META_DESC       = META_DESC;
-Ember.EMPTY_META      = EMPTY_META;
 Ember.meta            = meta;
 Ember.inspect         = inspect;
+
 Ember.tryCatchFinally = deprecatedTryCatchFinally;
 Ember.makeArray       = makeArray;
 Ember.canInvoke       = canInvoke;
@@ -359,8 +357,8 @@ Ember.onerror = null;
 // do this for side-effects of updating Ember.assert, warn, etc when
 // ember-debug is present
 // This needs to be called before any deprecateFunc
-if (Ember.__loader.registry['ember-debug']) {
-  requireModule('ember-debug');
+if (has('ember-debug')) {
+  require('ember-debug');
 } else {
   Ember.Debug = { };
 

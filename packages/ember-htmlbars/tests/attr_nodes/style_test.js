@@ -71,3 +71,24 @@ QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a S
 
   deepEqual(warnings, [ ]);
 });
+
+QUnit.test('null value do not generate htmlsafe warning', function() {
+  view = EmberView.create({
+    userValue: null,
+    template: compile('<div style={{view.userValue}}></div>')
+  });
+
+  runAppend(view);
+
+  deepEqual(warnings, [ ]);
+});
+
+QUnit.test('undefined value do not generate htmlsafe warning', function() {
+  view = EmberView.create({
+    template: compile('<div style={{view.userValue}}></div>')
+  });
+
+  runAppend(view);
+
+  deepEqual(warnings, [ ]);
+});

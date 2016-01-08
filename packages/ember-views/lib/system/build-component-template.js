@@ -294,8 +294,8 @@ function normalizeClasses(classes, output, streamBasePath) {
 }
 
 function validateTaglessComponent(component) {
-  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), function() {
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), () => {
     var classNameBindings = component.classNameBindings;
     return !classNameBindings || classNameBindings.length === 0;
-  });
+  }());
 }

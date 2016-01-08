@@ -3,7 +3,6 @@
 @submodule ember-application
 */
 
-import Ember from 'ember-metal/core';
 import { assert, info } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {
@@ -17,8 +16,11 @@ import Namespace from 'ember-runtime/system/namespace';
 import helpers from 'ember-htmlbars/helpers';
 import validateType from 'ember-application/utils/validate-type';
 import dictionary from 'ember-metal/dictionary';
+import {
+  get as getTemplate
+} from 'ember-htmlbars/template_registry';
 
-export var Resolver = EmberObject.extend({
+export const Resolver = EmberObject.extend({
   /*
     This will be set to the Application instance when it is
     created.
@@ -219,8 +221,10 @@ export default EmberObject.extend({
     var name = fullNameWithoutType;
     var namespace = get(this, 'namespace');
     var root = namespace;
+    let lastSlashIndex = name.lastIndexOf('/');
+    let dirname = lastSlashIndex !== -1 ? name.slice(0, lastSlashIndex) : null;
 
-    if (type !== 'template' && name.indexOf('/') !== -1) {
+    if (type !== 'template' && lastSlashIndex !== -1) {
       var parts = name.split('/');
       name = parts[parts.length - 1];
       var namespaceName = capitalize(parts.slice(0, -1).join('.'));
@@ -243,6 +247,7 @@ export default EmberObject.extend({
       fullName: fullName,
       type: type,
       fullNameWithoutType: fullNameWithoutType,
+      dirname,
       name: name,
       root: root,
       resolveMethodName: 'resolve' + resolveMethodName
@@ -309,14 +314,7 @@ export default EmberObject.extend({
   resolveTemplate(parsedName) {
     var templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
-    if (Ember.TEMPLATES.hasOwnProperty(templateName)) {
-      return Ember.TEMPLATES[templateName];
-    }
-
-    templateName = decamelize(templateName);
-    if (Ember.TEMPLATES.hasOwnProperty(templateName)) {
-      return Ember.TEMPLATES[templateName];
-    }
+    return getTemplate(templateName) || getTemplate(decamelize(templateName));
   },
 
   /**

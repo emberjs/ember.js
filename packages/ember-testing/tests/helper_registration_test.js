@@ -53,15 +53,18 @@ QUnit.test('Helper gets registered', function() {
   ok(helperContainer.boot);
 });
 
-QUnit.test('Helper is ran when called', function() {
-  expect(1);
+QUnit.test('Helper is ran when called', function(assert) {
+  let done = assert.async();
+  assert.expect(1);
 
   registerHelper();
   setupApp();
 
-  App.testHelpers.boot().then(function() {
-    ok(appBooted);
-  });
+  App.testHelpers.boot()
+    .then(function() {
+      assert.ok(appBooted);
+    })
+    .finally(done);
 });
 
 QUnit.test('Helper can be unregistered', function() {
@@ -80,4 +83,3 @@ QUnit.test('Helper can be unregistered', function() {
   ok(!App.testHelpers.boot, 'once unregistered the helper is not added to App.testHelpers');
   ok(!helperContainer.boot, 'once unregistered the helper is not added to the helperContainer');
 });
-

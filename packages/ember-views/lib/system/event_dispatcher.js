@@ -13,6 +13,7 @@ import jQuery from 'ember-views/system/jquery';
 import ActionManager from 'ember-views/system/action_manager';
 import View from 'ember-views/views/view';
 import assign from 'ember-metal/assign';
+import { getOwner } from 'container/owner';
 
 let ROOT_ELEMENT_CLASS = 'ember-application';
 let ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
@@ -149,7 +150,7 @@ export default EmberObject.extend({
   */
   setup(addedEvents, rootElement) {
     var event;
-    var events = assign({}, get(this, 'events'), addedEvents);
+    var events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
@@ -188,7 +189,9 @@ export default EmberObject.extend({
   */
   setupHandler(rootElement, event, eventName) {
     var self = this;
-    var viewRegistry = this.container && this.container.lookup('-view-registry:main') || View.views;
+
+    let owner = getOwner(this);
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || View.views;
 
     if (eventName === null) {
       return;

@@ -121,14 +121,14 @@ export default {
     var name = params[0];
     var context = params[1];
 
-    var container = env.container;
+    var owner = env.owner;
 
     // The render keyword presumes it can work without a router. This is really
     // only to satisfy the test:
     //
     //     {{view}} should not override class bindings defined on a child view"
     //
-    var router = container.lookup('router:main');
+    var router = owner.lookup('router:main');
 
     assert(
       'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.',
@@ -150,16 +150,16 @@ export default {
     assert(
       'You used `{{render \'' + name + '\'}}`, but \'' + name + '\' can not be ' +
       'found as either a template or a view.',
-      container.registry.has('view:' + name) || container.registry.has(templateName) || !!template
+      owner.hasRegistration('view:' + name) || owner.hasRegistration(templateName) || !!template
     );
 
-    var view = container.lookup('view:' + name);
+    var view = owner.lookup('view:' + name);
     if (!view) {
-      view = container.lookup('view:default');
+      view = owner.lookup('view:default');
     }
     var viewHasTemplateSpecified = view && !!get(view, 'template');
     if (!template && !viewHasTemplateSpecified) {
-      template = container.lookup(templateName);
+      template = owner.lookup(templateName);
     }
 
     if (view) {
@@ -178,7 +178,7 @@ export default {
       assert(
         'The controller name you supplied \'' + controllerName + '\' ' +
         'did not resolve to a controller.',
-        container.registry.has(controllerFullName)
+        owner.hasRegistration(controllerFullName)
       );
     } else {
       controllerName = name;
@@ -190,8 +190,8 @@ export default {
 
     // choose name
     if (params.length > 1) {
-      var factory = container.lookupFactory(controllerFullName) ||
-                    generateControllerFactory(container, controllerName);
+      var factory = owner._lookupFactory(controllerFullName) ||
+                    generateControllerFactory(owner, controllerName);
 
       controller = factory.create({
         model: read(context),
@@ -201,8 +201,8 @@ export default {
 
       node.addDestruction(controller);
     } else {
-      controller = container.lookup(controllerFullName) ||
-                   generateController(container, controllerName);
+      controller = owner.lookup(controllerFullName) ||
+                   generateController(owner, controllerName);
 
       controller.setProperties({
         target: parentController,

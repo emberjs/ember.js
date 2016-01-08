@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import { testBoth } from 'ember-metal/tests/props_helper';
 
 QUnit.module('Function.prototype.observes() helper');
@@ -84,7 +85,7 @@ testBoth('sets up a ComputedProperty', function(get, set) {
     return;
   }
 
-  var MyClass = Ember.Object.extend({
+  var MyClass = EmberObject.extend({
     firstName: null,
     lastName: null,
     fullName: function() {

@@ -11,6 +11,9 @@ import {
   isPath,
   hasThis as pathHasThis
 } from 'ember-metal/path_cache';
+import {
+  peekMeta
+} from 'ember-metal/meta';
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -57,9 +60,9 @@ export function get(obj, keyName) {
     return obj;
   }
 
-  var meta = obj['__ember_meta__'];
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  var meta = peekMeta(obj);
+  var value = obj[keyName];
+  var desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
   var ret;
 
   if (desc === undefined && isPath(keyName)) {
@@ -73,10 +76,10 @@ export function get(obj, keyName) {
       if (meta && meta.peekWatching(keyName) > 0) {
         ret = meta.peekValues(keyName);
       } else {
-        ret = obj[keyName];
+        ret = value;
       }
     } else {
-      ret = obj[keyName];
+      ret = value;
     }
 
     if (ret === undefined &&
@@ -159,6 +162,22 @@ export function _getPath(root, path) {
   return root;
 }
 
+/**
+  Retrieves the value of a property from an Object, or a default value in the
+  case that the property returns `undefined`.
+
+  ```javascript
+  Ember.getWithDefault(person, 'lastName', 'Doe');
+  ```
+
+  @method getWithDefault
+  @for Ember
+  @param {Object} obj The object to retrieve from.
+  @param {String} keyName The name of the property to retrieve
+  @param {Object} defaultValue The value to return if the property value is undefined
+  @return {Object} The property value or the defaultValue.
+  @public
+*/
 export function getWithDefault(root, key, defaultValue) {
   var value = get(root, key);
 

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import get from 'ember-metal/property_get';
 import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
 var suite = SuiteModuleBuilder.create();
@@ -23,7 +23,7 @@ suite.test('[].unshiftObjects([A,B,C]) => [A,B,C] + notify', function() {
   obj.unshiftObjects(items);
 
   deepEqual(this.toArray(obj), items, 'post item results');
-  equal(Ember.get(obj, 'length'), items.length, 'length');
+  equal(get(obj, 'length'), items.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
@@ -45,7 +45,7 @@ suite.test('[A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify', function() {
   obj.unshiftObjects(items);
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
@@ -68,7 +68,7 @@ suite.test('[A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify', function() {
   obj.unshiftObjects(items);
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');

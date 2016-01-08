@@ -63,7 +63,7 @@ QUnit.test('HistoryLocation initState does not get fired on init', function() {
   HistoryTestLocation.reopen({
     init() {
       ok(true, 'init was called');
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     },
     initState() {
       ok(false, 'initState() should not be called automatically');
@@ -78,7 +78,7 @@ QUnit.test('webkit doesn\'t fire popstate on page load', function() {
 
   HistoryTestLocation.reopen({
     initState() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       // these two should be equal to be able
       // to successfully detect webkit initial popstate
       equal(this._previousURL, this.getURL());
@@ -94,14 +94,14 @@ QUnit.test('base URL is removed when retrieving the current pathname', function(
 
   HistoryTestLocation.reopen({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'baseURL', '/base/');
     },
 
     initState() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
 
       equal(this.getURL(), '/foo/bar');
     }
@@ -116,7 +116,7 @@ QUnit.test('base URL is preserved when moving around', function() {
 
   HistoryTestLocation.reopen({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'baseURL', '/base/');
@@ -159,7 +159,7 @@ QUnit.test('HistoryLocation.getURL() returns the current url, excluding both roo
 
   HistoryTestLocation.reopen({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
 
       set(this, 'location', mockBrowserLocation('/base/foo/bar'));
       set(this, 'rootURL', '/app/');
@@ -177,7 +177,7 @@ QUnit.test('HistoryLocation.getURL() includes location.search', function() {
 
   HistoryTestLocation.reopen({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
     }
   });
@@ -192,7 +192,7 @@ QUnit.test('HistoryLocation.getURL() includes location.hash', function() {
 
   HistoryTestLocation.reopen({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
     }
   });
@@ -207,7 +207,7 @@ QUnit.test('HistoryLocation.getURL() includes location.hash and location.search'
 
   HistoryTestLocation.reopen({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
     }
   });

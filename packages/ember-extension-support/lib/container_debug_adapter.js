@@ -50,17 +50,6 @@ import EmberObject from 'ember-runtime/system/object';
 */
 export default EmberObject.extend({
   /**
-    The container of the application being debugged.
-    This property will be injected
-    on creation.
-
-    @property container
-    @default null
-    @public
-  */
-  container: null,
-
-  /**
     The resolver instance of the application
     being debugged. This property will be injected
     on creation.

@@ -1,4 +1,3 @@
-import Registry from 'container/registry';
 import run from 'ember-metal/run_loop';
 import ComponentLookup from 'ember-views/component_lookup';
 import View from 'ember-views/views/view';
@@ -6,28 +5,29 @@ import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
-var registry, container, view;
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
+
+var owner, view;
 
 QUnit.module('ember-htmlbars: block params', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('component', { singleton: false });
-    registry.optionsForType('view', { singleton: false });
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('component-lookup:main', ComponentLookup);
+    owner = buildOwner();
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.registerOptionsForType('view', { singleton: false });
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
     runDestroy(view);
-    runDestroy(container);
-    registry = container = view = null;
+    runDestroy(owner);
+    owner = view = null;
   }
 });
 
 QUnit.test('should raise error if helper not available', function() {
   view = View.create({
-    container: container,
     template: compile('{{#shouldfail}}{{/shouldfail}}')
   });
 
@@ -85,10 +85,10 @@ QUnit.test('nested block params shadow correctly', function() {
 });
 
 QUnit.test('components can yield values', function() {
-  registry.register('template:components/x-alias', compile('{{yield attrs.param.name}}'));
+  owner.register('template:components/x-alias', compile('{{yield attrs.param.name}}'));
 
   view = View.create({
-    container: container,
+    [OWNER]: owner,
     context: { name: 'ebryn' },
     committer1: { name: 'trek' },
     committer2: { name: 'machty' },
@@ -127,10 +127,10 @@ QUnit.test('components can yield values', function() {
 QUnit.test('#11519 - block param infinite loop', function(assert) {
   // To trigger this case, a component must 1) consume a KeyStream and then yield that KeyStream
   // into a parent light scope.
-  registry.register('template:components/block-with-yield', compile('{{danger}} {{yield danger}}'));
+  owner.register('template:components/block-with-yield', compile('{{danger}} {{yield danger}}'));
 
   var component;
-  registry.register('component:block-with-yield', Component.extend({
+  owner.register('component:block-with-yield', Component.extend({
     init() {
       component = this;
       return this._super(...arguments);
@@ -140,7 +140,7 @@ QUnit.test('#11519 - block param infinite loop', function(assert) {
   }));
 
   view = View.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{#block-with-yield as |dangerBlockParam|}} {{/block-with-yield}}')
   });
 

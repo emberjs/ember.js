@@ -2,14 +2,18 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Service from 'ember-runtime/system/service';
-import { Registry } from 'ember-runtime/system/container';
 import inject from 'ember-runtime/inject';
 import { get } from 'ember-metal/property_get';
+import Application from 'ember-application/system/application';
+import ApplicationInstance from 'ember-application/system/application-instance';
+import isEnabled from 'ember-metal/features';
 
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 var a_slice = Array.prototype.slice;
 
@@ -25,6 +29,16 @@ QUnit.module('Ember.Component', {
       if (controller) { controller.destroy(); }
     });
   }
+});
+
+QUnit.test('throws an error if `this._super` is not called from `init`', function() {
+  let TestComponent = Component.extend({
+    init() { }
+  });
+
+  expectAssertion(function() {
+    TestComponent.create();
+  }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
 });
 
 QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
@@ -218,17 +232,16 @@ QUnit.test('Calling sendAction on a component with multiple parameters', functio
 QUnit.module('Ember.Component - injected properties');
 
 QUnit.test('services can be injected into components', function() {
-  var registry = new Registry();
-  var container = registry.container();
+  let owner = buildOwner();
 
-  registry.register('component:application', Component.extend({
+  owner.register('component:application', Component.extend({
     profilerService: inject.service('profiler')
   }));
 
-  registry.register('service:profiler', Service.extend());
+  owner.register('service:profiler', Service.extend());
 
-  var appComponent = container.lookup('component:application');
-  var profilerService = container.lookup('service:profiler');
+  var appComponent = owner.lookup('component:application');
+  var profilerService = owner.lookup('service:profiler');
 
   equal(profilerService, appComponent.get('profilerService'), 'service.profiler is injected');
 });
@@ -268,4 +281,98 @@ QUnit.test('component with target', function() {
   });
 
   appComponent.send('foo', 'baz');
+});
+
+let app, appInstance;
+
+QUnit.module('Ember.Component - tagless components assertions', {
+  teardown() {
+    if (appInstance) {
+      run(appInstance, 'destroy');
+    }
+
+    if (app) {
+      run(app, 'destroy');
+    }
+  }
+});
+
+
+QUnit.test('throws an error if an event function is defined in a tagless component', function() {
+  app = run(Application, 'create', { rootElement: '#qunit-fixture', autoboot: false });
+  if (!isEnabled('ember-application-visit')) {
+    run(app.__deprecatedInstance__, 'destroy');
+  }
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+    appInstance.setupEventDispatcher();
+  });
+
+  let TestComponent = Component.extend({
+    tagName: '',
+    [OWNER]: appInstance,
+    click() { }
+  });
+
+  expectAssertion(function() {
+    TestComponent.create();
+  }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
+});
+
+QUnit.test('throws an error if an Application custom event handler is defined in a tagless component', function() {
+  app = run(Application, 'create', {
+    rootElement: '#qunit-fixture',
+    autoboot: false,
+    customEvents: {
+      awesome: 'sauce'
+    }
+  });
+
+  if (!isEnabled('ember-application-visit')) {
+    run(app.__deprecatedInstance__, 'destroy');
+  }
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+    appInstance.setupEventDispatcher();
+  });
+
+  let TestComponent = Component.extend({
+    tagName: '',
+    [OWNER]: appInstance,
+    sauce() { }
+  });
+
+  expectAssertion(function() {
+    TestComponent.create();
+  }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
+});
+
+QUnit.test('throws an error if an ApplicationInstance custom event handler is defined in a tagless component', function() {
+  app = run(Application, 'create', { rootElement: '#qunit-fixture', autoboot: false });
+
+  if (!isEnabled('ember-application-visit')) {
+    run(app.__deprecatedInstance__, 'destroy');
+  }
+
+  run(function() {
+    appInstance = ApplicationInstance.create({
+      application: app,
+      customEvents: {
+        love: 'hurts'
+      }
+    });
+    appInstance.setupEventDispatcher();
+  });
+
+  let TestComponent = Component.extend({
+    tagName: '',
+    [OWNER]: appInstance,
+    hurts() { }
+  });
+
+  expectAssertion(function() {
+    TestComponent.create();
+  }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
 });

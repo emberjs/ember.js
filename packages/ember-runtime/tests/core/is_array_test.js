@@ -1,5 +1,5 @@
-import Ember from 'ember-metal/core';
 import { isArray } from 'ember-runtime/utils';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 
 QUnit.module('Ember Type Checking');
@@ -14,7 +14,7 @@ QUnit.test('Ember.isArray', function() {
   var object        = {};
   var length        = { length: 12 };
   var fn            = function() {};
-  var arrayProxy = ArrayProxy.create({ content: Ember.A() });
+  var arrayProxy = ArrayProxy.create({ content: emberA() });
 
   equal(isArray(numarray), true, '[1,2,3]');
   equal(isArray(number), false, '23');

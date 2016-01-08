@@ -1,18 +1,26 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
+import run from 'ember-metal/run_loop';
+import get from 'ember-metal/property_get';
+import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, container;
-var get = Ember.get;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 function handleURL(path) {
-  return Ember.run(function() {
+  return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -27,10 +35,10 @@ var startingURL = '';
 var expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
-  Ember.run(obj, 'set', prop, value);
+  run(obj, 'set', prop, value);
 }
 
-var TestLocation = Ember.NoneLocation.extend({
+var TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -59,8 +67,8 @@ var TestLocation = Ember.NoneLocation.extend({
 });
 
 function sharedSetup() {
-  Ember.run(function() {
-    App = Ember.Application.create({
+  run(function() {
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });
@@ -79,7 +87,7 @@ function sharedSetup() {
 
     Router = App.Router;
 
-    App.LoadingRoute = Ember.Route.extend({
+    App.LoadingRoute = Route.extend({
     });
 
     Ember.TEMPLATES.application = compile('{{outlet}}');
@@ -88,12 +96,14 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() {
-    App.destroy();
-    App = null;
-
+  try {
+    run(function() {
+      App.destroy();
+      App = null;
+    });
+  } finally {
     Ember.TEMPLATES = {};
-  });
+  }
 }
 
 QUnit.module('Routing with Query Params', {
@@ -112,7 +122,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -137,7 +147,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         page: {
           defaultValue: null,
@@ -150,12 +160,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    Ember.run(router, 'transitionTo', 'home', { queryParams: { page: '4' } });
+    run(router, 'transitionTo', 'home', { queryParams: { page: '4' } });
     equal(controller.get('page'), 4);
   });
 
   QUnit.test('Query params can map to different url keys configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: { as: 'other_foo', defaultValue: 'FOO' },
         bar: { as: 'other_bar', defaultValue: 'BAR' }
@@ -173,15 +183,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(controller, 'foo', 'WOO');
     equal(router.get('location.path'), '/?other_foo=WOO');
 
-    Ember.run(router, 'transitionTo', '/?other_foo=NAW');
+    run(router, 'transitionTo', '/?other_foo=NAW');
     equal(controller.get('foo'), 'NAW');
 
     setAndFlush(controller, 'bar', 'NERK');
-    Ember.run(router, 'transitionTo', '/?other_bar=NERK&other_foo=NAW');
+    run(router, 'transitionTo', '/?other_bar=NERK&other_foo=NAW');
   });
 
   QUnit.test('Routes have overridable serializeQueryParamKey hook and it works with route-configured query params', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         funTimes: {
           defaultValue: ''
@@ -202,7 +212,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('No replaceURL occurs on startup when configured via Route because default values don\'t show up in URL', function() {
     expect(0);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -216,7 +226,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hooks receives query params when configred on Route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -233,7 +243,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hooks receives query params (overridden by incoming url value) when configured on route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -257,7 +267,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('index', { path: '/:something' });
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'fooapp'
@@ -275,7 +285,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Route#paramsFor fetches falsy query params when they\'re configured on the route', function() {
     expect(1);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: true
@@ -291,7 +301,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hook can query prefix-less application params when they\'re configured on the route', function() {
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         appomg: {
           defaultValue: 'applol'
@@ -302,7 +312,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -323,7 +333,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     expect(6);
 
     var appModelCount = 0;
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         'appomg': {
           defaultValue: 'applol'
@@ -335,7 +345,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           refreshModel: true,
@@ -369,7 +379,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     expect(4);
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol',
@@ -401,7 +411,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can opt into a replace query by specifying replace:true in the Router config hash when all configuration lives on route', function() {
     expect(2);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         alex: {
           defaultValue: 'matchneer',
@@ -422,7 +432,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Route query params config can be configured using property name instead of URL key when configured on the route', function() {
     expect(2);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         commitBy: {
           as: 'commit_by',
@@ -443,7 +453,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('An explicit replace:false on a changed QP always wins and causes a pushState even when configuration is all on the route', function() {
     expect(3);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         alex: {
           replace: true,
@@ -460,13 +470,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var appController = container.lookup('controller:application');
     expectedPushURL = '/?alex=wallace&steely=jan';
-    Ember.run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
+    run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
 
     expectedPushURL = '/?alex=wallace&steely=fran';
-    Ember.run(appController, 'setProperties', { steely: 'fran' });
+    run(appController, 'setProperties', { steely: 'fran' });
 
     expectedReplaceURL = '/?alex=sriracha&steely=fran';
-    Ember.run(appController, 'setProperties', { alex: 'sriracha' });
+    run(appController, 'setProperties', { alex: 'sriracha' });
   });
 
   QUnit.test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent when all configuration is on route', function() {
@@ -480,7 +490,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     var parentModelCount = 0;
-    App.ParentRoute = Ember.Route.extend({
+    App.ParentRoute = Route.extend({
       model() {
         parentModelCount++;
       },
@@ -499,7 +509,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     container.lookup('controller:parent');
 
-    Ember.run(Ember.$('#parent-link'), 'click');
+    run(jQuery('#parent-link'), 'click');
 
     equal(parentModelCount, 2);
   });
@@ -507,7 +517,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('URL transitions that remove QPs still register as QP changes when configuration lives on the route', function() {
     expect(2);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -520,7 +530,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'borf');
-    Ember.run(router, 'transitionTo', '/');
+    run(router, 'transitionTo', '/');
     equal(indexController.get('omg'), 'lol');
   });
 
@@ -533,13 +543,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.TEMPLATES.application = compile('{{link-to \'A\' \'abc.def\' (query-params foo=\'123\') id=\'one\'}}{{link-to \'B\' \'abc.def.zoo\' (query-params foo=\'123\' bar=\'456\') id=\'two\'}}{{outlet}}');
 
-    App.AbcDefRoute = Ember.Route.extend({
+    App.AbcDefRoute = Route.extend({
       queryParams: {
         foo: 'lol'
       }
     });
 
-    App.AbcDefZooRoute = Ember.Route.extend({
+    App.AbcDefZooRoute = Route.extend({
       queryParams: {
         bar: {
           defaultValue: 'haha'
@@ -549,17 +559,17 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
     equal(router.get('location.path'), '');
-    equal(Ember.$('#one').attr('href'), '/abcdef?foo=123');
-    equal(Ember.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+    equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
+    equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-    Ember.run(Ember.$('#one'), 'click');
+    run(jQuery('#one'), 'click');
     equal(router.get('location.path'), '/abcdef?foo=123');
-    Ember.run(Ember.$('#two'), 'click');
+    run(jQuery('#two'), 'click');
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
   QUnit.test('transitionTo supports query params when configuration occurs on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'lol'
@@ -571,18 +581,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
+    run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
     equal(router.get('location.path'), '/?foo=borf', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
     equal(router.get('location.path'), '/?foo=blaf', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
+    run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
   QUnit.test('transitionTo supports query params (multiple) when configuration occurs on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'lol'
@@ -597,18 +607,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
+    run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
     equal(router.get('location.path'), '/?foo=borf', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
     equal(router.get('location.path'), '/?foo=blaf', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
+    run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
   QUnit.test('A default boolean value deserializes QPs as booleans rather than strings when configuration occurs on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: false
@@ -630,7 +640,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Query param without value are empty string when configuration occurs on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: ''
@@ -650,7 +660,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: []
@@ -671,7 +681,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('(de)serialization: arrays when configuration occurs on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: [1]
@@ -683,16 +693,16 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
+    run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
     equal(router.get('location.path'), '/?foo=%5B2%2C3%5D', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
     equal(router.get('location.path'), '/?foo=%5B4%2C5%5D', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
+    run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
   });
 
   QUnit.test('Url with array query param sets controller property to array when configuration occurs on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: ''
@@ -708,9 +718,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Url with array query param sets controller property to array when configuration occurs on the route and there is still a controller', function() {
-    App.IndexController = Ember.Controller.extend();
+    App.IndexController = Controller.extend();
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: ''
@@ -730,11 +740,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeController = Ember.Controller.extend({
-      foo: Ember.A([])
+    App.HomeController = Controller.extend({
+      foo: emberA()
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {}
       }
@@ -746,28 +756,28 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/');
     deepEqual(controller.foo, []);
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/');
     deepEqual(controller.foo, []);
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'pushObject', 2);
+    run(controller.foo, 'pushObject', 2);
     equal(router.get('location.path'), '/?foo=%5B1%2C2%5D');
     deepEqual(controller.foo, [1, 2]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'unshiftObject', 'lol');
+    run(controller.foo, 'unshiftObject', 'lol');
     equal(router.get('location.path'), '/?foo=%5B%22lol%22%2C1%5D');
     deepEqual(controller.foo, ['lol', 1]);
   });
@@ -780,7 +790,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {}
       },
@@ -789,15 +799,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.HomeController = Ember.Controller.extend({
-      foo: Ember.A([1])
+    App.HomeController = Controller.extend({
+      foo: emberA([1])
     });
 
     bootApplication();
 
     equal(modelCount, 1);
     var controller = container.lookup('controller:home');
-    setAndFlush(controller, 'model', Ember.A([1]));
+    setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
   });
@@ -805,19 +815,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param when configuration occurs on the router', function() {
     expect(1);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         woot: {}
       }
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(p, trans) {
         return { woot: true };
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       setupController(controller, model) {
         deepEqual(model, { woot: true }, 'index route inherited model route from parent route');
       }
@@ -839,7 +849,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('bar');
     });
 
-    App.BarRoute = Ember.Route.extend({
+    App.BarRoute = Route.extend({
       queryParams: {
         raytiley: {
           replace: true,
@@ -852,19 +862,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
-    Ember.run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar';
-    Ember.run(Ember.$('#bar-no-qp-link'), 'click');
+    run(jQuery('#bar-no-qp-link'), 'click');
 
     expectedReplaceURL = '/bar?raytiley=woot';
     setAndFlush(controller, 'raytiley', 'woot');
 
     expectedPushURL = '/foo';
-    Ember.run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar?raytiley=isthebest';
-    Ember.run(Ember.$('#bar-link'), 'click');
+    run(jQuery('#bar-link'), 'click');
   });
 
   QUnit.test('Undefined isn\'t deserialized into a string when configuration occurs on the route', function() {
@@ -875,7 +885,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.TEMPLATES.application = compile('{{link-to \'Example\' \'example\' id=\'the-link\'}}');
 
-    App.ExampleRoute = Ember.Route.extend({
+    App.ExampleRoute = Route.extend({
       queryParams: {
         // uncommon to not support default value, but should assume undefined.
         foo: {
@@ -889,9 +899,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = Ember.$('#the-link');
+    var $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
-    Ember.run($link, 'click');
+    run($link, 'click');
 
     var controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
@@ -900,7 +910,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('query params have been set by the time setupController is called when configuration occurs on the router', function() {
     expect(1);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'wat'
@@ -918,9 +928,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('query params have been set by the time setupController is called when configuration occurs on the router and there is still a controller', function() {
     expect(1);
 
-    App.ApplicationController = Ember.Controller.extend();
+    App.ApplicationController = Controller.extend();
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'wat'
@@ -936,7 +946,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hooks receives query params when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -953,7 +963,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Routes have overridable serializeQueryParamKey hook when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         funTimes: {
           defaultValue: ''
@@ -974,7 +984,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('No replaceURL occurs on startup because default values don\'t show up in URL when configured on the route', function() {
     expect(0);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1005,7 +1015,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var aboutShouldBeCreated = false;
     var catsIndexShouldBeCreated = false;
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1013,18 +1023,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         homeShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(homeShouldBeCreated, 'HomeController should be created at this time');
       }
     });
 
-    App.AboutRoute = Ember.Route.extend({
+    App.AboutRoute = Route.extend({
       queryParams: {
         lol: {
           defaultValue: 'haha'
@@ -1032,18 +1042,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         aboutShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
-    App.AboutController = Ember.Controller.extend({
+    App.AboutController = Controller.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(aboutShouldBeCreated, 'AboutController should be created at this time');
       }
     });
 
-    App.CatsIndexRoute = Ember.Route.extend({
+    App.CatsIndexRoute = Route.extend({
       queryParams: {
         breed: {
           defaultValue: 'Golden'
@@ -1057,16 +1067,16 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       },
       setup() {
         catsIndexShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       },
       setupController(controller, context) {
         controller.set('model', context);
       }
     });
 
-    App.CatsIndexController = Ember.Controller.extend({
+    App.CatsIndexController = Controller.extend({
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(catsIndexShouldBeCreated, 'CatsIndexController should be created at this time');
       }
     });
@@ -1077,23 +1087,23 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:home');
     setAndFlush(controller, 'foo', '456');
     equal(router.get('location.path'), '/?foo=456', 'url is correct');
-    equal(Ember.$('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
+    equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
 
-    Ember.run(router, 'transitionTo', 'about');
+    run(router, 'transitionTo', 'about');
     equal(router.get('location.path'), '/about', 'url is correct');
 
-    Ember.run(router, 'transitionTo', 'cats');
+    run(router, 'transitionTo', 'cats');
 
     equal(router.get('location.path'), '/cats', 'url is correct');
-    equal(Ember.$('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
-    Ember.run(Ember.$('#cats-link'), 'click');
+    equal(jQuery('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
+    run(jQuery('#cats-link'), 'click');
     equal(router.get('location.path'), '/cats?name=domino', 'url is correct');
   });
 
   QUnit.test('query params have been set by the time setupController is called when configured on the route', function() {
     expect(1);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'wat'
@@ -1109,7 +1119,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hooks receives query params (overridden by incoming url value) when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -1133,7 +1143,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('index', { path: '/:something' });
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'fooapp'
@@ -1149,7 +1159,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hook can query prefix-less application params (overridden by incoming url value) when they\'re configured on the route', function() {
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         appomg: {
           defaultValue: 'applol'
@@ -1160,7 +1170,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -1181,7 +1191,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Route#paramsFor fetches falsy query params when configured on the route', function() {
     expect(1);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: true
@@ -1197,7 +1207,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hook can query prefix-less application params when configured on the route', function() {
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         appomg: {
           defaultValue: 'applol'
@@ -1208,7 +1218,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -1229,7 +1239,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     expect(6);
 
     var appModelCount = 0;
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         'appomg': {
           defaultValue: 'applol'
@@ -1241,7 +1251,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol',
@@ -1276,7 +1286,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     expect(4);
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           refreshModel: true,
@@ -1308,7 +1318,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can opt into a replace query by specifying replace:true in the Router config hash when configured on the route', function() {
     expect(2);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         alex: {
           defaultValue: 'matchneer',
@@ -1329,7 +1339,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Route query params config can be configured using property name instead of URL key when configured on the route', function() {
     expect(2);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         commitBy: {
           as: 'commit_by',
@@ -1350,7 +1360,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('An explicit replace:false on a changed QP always wins and causes a pushState when configured on the route', function() {
     expect(3);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         alex: {
           replace: true,
@@ -1367,13 +1377,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var appController = container.lookup('controller:application');
     expectedPushURL = '/?alex=wallace&steely=jan';
-    Ember.run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
+    run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
 
     expectedPushURL = '/?alex=wallace&steely=fran';
-    Ember.run(appController, 'setProperties', { steely: 'fran' });
+    run(appController, 'setProperties', { steely: 'fran' });
 
     expectedReplaceURL = '/?alex=sriracha&steely=fran';
-    Ember.run(appController, 'setProperties', { alex: 'sriracha' });
+    run(appController, 'setProperties', { alex: 'sriracha' });
   });
 
   QUnit.test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent when configured on the route', function() {
@@ -1387,7 +1397,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     var parentModelCount = 0;
-    App.ParentRoute = Ember.Route.extend({
+    App.ParentRoute = Route.extend({
       model() {
         parentModelCount++;
       },
@@ -1406,7 +1416,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     container.lookup('controller:parent');
 
-    Ember.run(Ember.$('#parent-link'), 'click');
+    run(jQuery('#parent-link'), 'click');
 
     equal(parentModelCount, 2);
   });
@@ -1418,7 +1428,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('about');
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -1438,7 +1448,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/about';
     bootApplication();
     equal(router.get('location.path'), '/about');
-    Ember.run(router, 'transitionTo', 'index');
+    run(router, 'transitionTo', 'index');
     equal(router.get('location.path'), '/?omg=OVERRIDE');
   });
 
@@ -1449,7 +1459,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('about');
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: ['lol']
@@ -1469,14 +1479,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/about';
     bootApplication();
     equal(router.get('location.path'), '/about');
-    Ember.run(router, 'transitionTo', 'index');
+    run(router, 'transitionTo', 'index');
     equal(router.get('location.path'), '/?omg=' + encodeURIComponent(JSON.stringify(['OVERRIDE'])));
   });
 
   QUnit.test('URL transitions that remove QPs still register as QP changes when configured on the route', function() {
     expect(2);
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           defaultValue: 'lol'
@@ -1489,7 +1499,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'borf');
-    Ember.run(router, 'transitionTo', '/');
+    run(router, 'transitionTo', '/');
     equal(indexController.get('omg'), 'lol');
   });
 
@@ -1502,7 +1512,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.TEMPLATES.application = compile('{{link-to \'A\' \'abc.def\' (query-params foo=\'123\') id=\'one\'}}{{link-to \'B\' \'abc.def.zoo\' (query-params foo=\'123\' bar=\'456\') id=\'two\'}}{{outlet}}');
 
-    App.AbcDefRoute = Ember.Route.extend({
+    App.AbcDefRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'lol'
@@ -1510,7 +1520,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.AbcDefZooRoute = Ember.Route.extend({
+    App.AbcDefZooRoute = Route.extend({
       queryParams: {
         bar: {
           defaultValue: 'haha'
@@ -1520,17 +1530,17 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
     equal(router.get('location.path'), '');
-    equal(Ember.$('#one').attr('href'), '/abcdef?foo=123');
-    equal(Ember.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+    equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
+    equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-    Ember.run(Ember.$('#one'), 'click');
+    run(jQuery('#one'), 'click');
     equal(router.get('location.path'), '/abcdef?foo=123');
-    Ember.run(Ember.$('#two'), 'click');
+    run(jQuery('#two'), 'click');
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
   QUnit.test('transitionTo supports query params when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'lol'
@@ -1542,18 +1552,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
+    run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
     equal(router.get('location.path'), '/?foo=borf', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
     equal(router.get('location.path'), '/?foo=blaf', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
+    run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
   QUnit.test('transitionTo supports query params (multiple) when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: 'lol'
@@ -1568,19 +1578,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
+    run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
     equal(router.get('location.path'), '/?foo=borf', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
     equal(router.get('location.path'), '/?foo=blaf', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
+    run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
   QUnit.test('setting controller QP to empty string doesn\'t generate null in URL when configured on the route', function() {
     expect(1);
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1597,7 +1607,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('setting QP to empty string doesn\'t generate null in URL when configured on the route', function() {
     expect(1);
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -1613,7 +1623,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('A default boolean value deserializes QPs as booleans rather than strings when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: false
@@ -1635,7 +1645,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Query param without value are empty string when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: ''
@@ -1655,7 +1665,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: []
@@ -1676,7 +1686,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('(de)serialization: arrays when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: [1]
@@ -1688,16 +1698,16 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
+    run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
     equal(router.get('location.path'), '/?foo=%5B2%2C3%5D', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
     equal(router.get('location.path'), '/?foo=%5B4%2C5%5D', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
+    run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
   });
 
   QUnit.test('Url with array query param sets controller property to array when configured on the route', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: ''
@@ -1717,10 +1727,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {
-          defaultValue: Ember.A([])
+          defaultValue: emberA()
         }
       }
     });
@@ -1731,28 +1741,28 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/');
     deepEqual(controller.foo, []);
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/');
     deepEqual(controller.foo, []);
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'pushObject', 2);
+    run(controller.foo, 'pushObject', 2);
     equal(router.get('location.path'), '/?foo=%5B1%2C2%5D');
     deepEqual(controller.foo, [1, 2]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'unshiftObject', 'lol');
+    run(controller.foo, 'unshiftObject', 'lol');
     equal(router.get('location.path'), '/?foo=%5B%22lol%22%2C1%5D');
     deepEqual(controller.foo, ['lol', 1]);
   });
@@ -1765,10 +1775,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       queryParams: {
         foo: {
-          defaultValue: Ember.A([1])
+          defaultValue: emberA([1])
         }
       },
       model() {
@@ -1780,7 +1790,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(modelCount, 1);
     var controller = container.lookup('controller:home');
-    setAndFlush(controller, 'model', Ember.A([1]));
+    setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
   });
@@ -1796,7 +1806,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     // model if no other model could be resolved given the provided
     // params (and no custom model hook was defined), to be watched,
     // unless we return a copy of the params hash.
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         woot: {
           defaultValue: 'wat'
@@ -1804,7 +1814,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.OtherRoute = Ember.Route.extend({
+    App.OtherRoute = Route.extend({
       model(p, trans) {
         var m = Ember.meta(trans.params.application);
         ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
@@ -1813,19 +1823,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    Ember.run(router, 'transitionTo', 'other');
+    run(router, 'transitionTo', 'other');
   });
 
   QUnit.test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param when configured on the route', function() {
     expect(1);
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(p, trans) {
         return { woot: true };
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         woot: {
           defaultValue: undefined
@@ -1852,7 +1862,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('bar');
     });
 
-    App.BarRoute = Ember.Route.extend({
+    App.BarRoute = Route.extend({
       queryParams: {
         raytiley: {
           defaultValue: 'israd',
@@ -1865,19 +1875,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
-    Ember.run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar';
-    Ember.run(Ember.$('#bar-no-qp-link'), 'click');
+    run(jQuery('#bar-no-qp-link'), 'click');
 
     expectedReplaceURL = '/bar?raytiley=woot';
     setAndFlush(controller, 'raytiley', 'woot');
 
     expectedPushURL = '/foo';
-    Ember.run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar?raytiley=isthebest';
-    Ember.run(Ember.$('#bar-link'), 'click');
+    run(jQuery('#bar-link'), 'click');
   });
 
   QUnit.test('Undefined isn\'t deserialized into a string when configured on the route', function() {
@@ -1888,7 +1898,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.TEMPLATES.application = compile('{{link-to \'Example\' \'example\' id=\'the-link\'}}');
 
-    App.ExampleRoute = Ember.Route.extend({
+    App.ExampleRoute = Route.extend({
       queryParams: {
         // uncommon to not support default value, but should assume undefined.
         foo: {}
@@ -1900,9 +1910,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = Ember.$('#the-link');
+    var $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
-    Ember.run($link, 'click');
+    run($link, 'click');
 
     var controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
@@ -1919,7 +1929,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       '{{link-to \'Example\' \'example\' (query-params bar=\'123\' foo=\'456\') id=\'the-link2\'}}'
     );
 
-    App.ExampleRoute = Ember.Route.extend({
+    App.ExampleRoute = Route.extend({
       queryParams: {
         foo: { defaultValue: 'foo' },
         bar: { defaultValue: 'bar' }
@@ -1930,18 +1940,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:example');
 
-    var $link1 = Ember.$('#the-link1');
-    var $link2 = Ember.$('#the-link2');
+    var $link1 = jQuery('#the-link1');
+    var $link2 = jQuery('#the-link2');
     equal($link1.attr('href'), '/example?bar=abc&foo=def');
     equal($link2.attr('href'), '/example?bar=123&foo=456');
 
     expectedPushURL = '/example?bar=abc&foo=def';
-    Ember.run($link1, 'click');
+    run($link1, 'click');
     equal(get(controller, 'bar'), 'abc');
     equal(get(controller, 'foo'), 'def');
 
     expectedPushURL = '/example?bar=123&foo=456';
-    Ember.run($link2, 'click');
+    run($link2, 'click');
     equal(get(controller, 'bar'), '123');
     equal(get(controller, 'foo'), '456');
 
@@ -1956,7 +1966,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       queryParams: ['foo'],
       foo: '123'
     });
@@ -1978,7 +1988,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       queryParams: ['foo'],
       foo: '123'
     });
@@ -1996,7 +2006,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Query params can map to different url keys configured on the controller [DEPRECATED]', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: [{ foo: 'other_foo', bar: { as: 'other_bar' } }],
       foo: 'FOO',
       bar: 'BAR'
@@ -2012,19 +2022,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(controller, 'foo', 'WOO');
     equal(router.get('location.path'), '/?other_foo=WOO');
 
-    Ember.run(router, 'transitionTo', '/?other_foo=NAW');
+    run(router, 'transitionTo', '/?other_foo=NAW');
     equal(controller.get('foo'), 'NAW');
 
     setAndFlush(controller, 'bar', 'NERK');
-    Ember.run(router, 'transitionTo', '/?other_bar=NERK&other_foo=NAW');
+    run(router, 'transitionTo', '/?other_bar=NERK&other_foo=NAW');
   });
 
   QUnit.test('Routes have overridable serializeQueryParamKey hook', function() {
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       serializeQueryParamKey: Ember.String.dasherize
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: 'funTimes',
       funTimes: ''
     });
@@ -2041,7 +2051,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('No replaceURL occurs on startup because default values don\'t show up in URL', function() {
     expect(0);
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: '123'
     });
@@ -2058,7 +2068,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       a: 0
     });
 
-    App.IndexController = Ember.Controller.extend(SharedMixin, {
+    App.IndexController = Controller.extend(SharedMixin, {
       queryParams: computed(function() {
         return ['c'];
       }),
@@ -2069,16 +2079,16 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var indexController = container.lookup('controller:index');
 
     expectedReplaceURL = 'not gonna happen';
-    Ember.run(indexController, 'set', 'a', 1);
+    run(indexController, 'set', 'a', 1);
   });
 
   QUnit.test('model hooks receives query params', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params) {
         deepEqual(params, { omg: 'lol' });
       }
@@ -2107,57 +2117,57 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var aboutShouldBeCreated = false;
     var catsIndexShouldBeCreated = false;
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       setup() {
         homeShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       queryParams: ['foo'],
       foo: '123',
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(homeShouldBeCreated, 'HomeController should be created at this time');
       }
     });
 
-    App.AboutRoute = Ember.Route.extend({
+    App.AboutRoute = Route.extend({
       setup() {
         aboutShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     });
 
-    App.AboutController = Ember.Controller.extend({
+    App.AboutController = Controller.extend({
       queryParams: ['lol'],
       lol: 'haha',
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(aboutShouldBeCreated, 'AboutController should be created at this time');
       }
     });
 
-    App.CatsIndexRoute = Ember.Route.extend({
+    App.CatsIndexRoute = Route.extend({
       model() {
         return [];
       },
       setup() {
         catsIndexShouldBeCreated = true;
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       },
       setupController(controller, context) {
         controller.set('model', context);
       }
     });
 
-    App.CatsIndexController = Ember.Controller.extend({
+    App.CatsIndexController = Controller.extend({
       queryParams: ['breed', 'name'],
       breed: 'Golden',
       name: null,
       init() {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
         ok(catsIndexShouldBeCreated, 'CatsIndexController should be created at this time');
       }
     });
@@ -2168,28 +2178,28 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:home');
     setAndFlush(controller, 'foo', '456');
     equal(router.get('location.path'), '/?foo=456', 'url is correct');
-    equal(Ember.$('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
+    equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
 
-    Ember.run(router, 'transitionTo', 'about');
+    run(router, 'transitionTo', 'about');
     equal(router.get('location.path'), '/about', 'url is correct');
 
-    Ember.run(router, 'transitionTo', 'cats');
+    run(router, 'transitionTo', 'cats');
 
     equal(router.get('location.path'), '/cats', 'url is correct');
-    equal(Ember.$('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
-    Ember.run(Ember.$('#cats-link'), 'click');
+    equal(jQuery('#cats-link').attr('href'), '/cats?name=domino', 'link to cats is correct');
+    run(jQuery('#cats-link'), 'click');
     equal(router.get('location.path'), '/cats?name=domino', 'url is correct');
   });
 
   QUnit.test('query params have been set by the time setupController is called', function() {
     expect(1);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['foo'],
       foo: 'wat'
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       setupController(controller) {
         equal(controller.get('foo'), 'YEAH', 'controller\'s foo QP property set before setupController called');
       }
@@ -2200,12 +2210,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hooks receives query params (overridden by incoming url value)', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params) {
         deepEqual(params, { omg: 'yes' });
       }
@@ -2224,12 +2234,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('index', { path: '/:something' });
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: 'fooapp'
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params, transition) {
         deepEqual(this.paramsFor('index'), { something: 'omg', foo: 'fooapp' }, 'could retrieve params for index');
       }
@@ -2240,23 +2250,23 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hook can query prefix-less application params (overridden by incoming url value)', function() {
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
       appomg: 'applol'
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(params) {
         deepEqual(params, { appomg: 'appyes' });
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params) {
         deepEqual(params, { omg: 'yes' });
         deepEqual(this.paramsFor('application'), { appomg: 'appyes' });
@@ -2273,12 +2283,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('Route#paramsFor fetches falsy query params', function() {
     expect(1);
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: true
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params, transition) {
         equal(params.foo, false);
       }
@@ -2289,23 +2299,23 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('model hook can query prefix-less application params', function() {
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
       appomg: 'applol'
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(params) {
         deepEqual(params, { appomg: 'applol' });
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params) {
         deepEqual(params, { omg: 'lol' });
         deepEqual(this.paramsFor('application'), { appomg: 'applol' });
@@ -2319,25 +2329,25 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('can opt into full transition by setting refreshModel in route queryParams', function() {
     expect(6);
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
       appomg: 'applol'
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
     var appModelCount = 0;
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(params) {
         appModelCount++;
       }
     });
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           refreshModel: true
@@ -2368,26 +2378,26 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
     expect(6);
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
       appomg: 'applol'
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
     var appModelCount = 0;
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(params) {
         appModelCount++;
       }
     });
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
-      queryParams: Ember.Object.create({
+    App.IndexRoute = Route.extend({
+      queryParams: EmberObject.create({
         unknownProperty(keyName) {
           return { refreshModel: true };
         }
@@ -2418,13 +2428,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar', function() {
     expect(4);
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
     var indexModelCount = 0;
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
           refreshModel: true
@@ -2454,12 +2464,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('can opt into a replace query by specifying replace:true in the Router config hash', function() {
     expect(2);
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['alex'],
       alex: 'matchneer'
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         alex: {
           replace: true
@@ -2478,13 +2488,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Route query params config can be configured using property name instead of URL key', function() {
     expect(2);
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: [
         { commitBy: 'commit_by' }
       ]
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         commitBy: {
           replace: true
@@ -2504,13 +2514,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('An explicit replace:false on a changed QP always wins and causes a pushState', function() {
     expect(3);
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['alex', 'steely'],
       alex: 'matchneer',
       steely: 'dan'
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       queryParams: {
         alex: {
           replace: true
@@ -2525,13 +2535,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var appController = container.lookup('controller:application');
     expectedPushURL = '/?alex=wallace&steely=jan';
-    Ember.run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
+    run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
 
     expectedPushURL = '/?alex=wallace&steely=fran';
-    Ember.run(appController, 'setProperties', { steely: 'fran' });
+    run(appController, 'setProperties', { steely: 'fran' });
 
     expectedReplaceURL = '/?alex=sriracha&steely=fran';
-    Ember.run(appController, 'setProperties', { alex: 'sriracha' });
+    run(appController, 'setProperties', { alex: 'sriracha' });
   });
 
   QUnit.test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent', function() {
@@ -2545,7 +2555,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     var parentModelCount = 0;
-    App.ParentRoute = Ember.Route.extend({
+    App.ParentRoute = Route.extend({
       model() {
         parentModelCount++;
       },
@@ -2556,7 +2566,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    App.ParentController = Ember.Controller.extend({
+    App.ParentController = Controller.extend({
       queryParams: ['foo'],
       foo: 'abc'
     });
@@ -2568,20 +2578,20 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     container.lookup('controller:parent');
 
-    Ember.run(Ember.$('#parent-link'), 'click');
+    run(jQuery('#parent-link'), 'click');
 
     equal(parentModelCount, 2);
   });
 
   QUnit.test('Use Ember.get to retrieve query params \'replace\' configuration', function() {
     expect(2);
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['alex'],
       alex: 'matchneer'
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
-      queryParams: Ember.Object.create({
+    App.ApplicationRoute = Route.extend({
+      queryParams: EmberObject.create({
         unknownProperty(keyName) {
           // We are simulating all qps requiring refresh
           return { replace: true };
@@ -2605,12 +2615,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('about');
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       setupController(controller) {
         ok(true, 'setupController called');
         controller.set('omg', 'OVERRIDE');
@@ -2625,7 +2635,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/about';
     bootApplication();
     equal(router.get('location.path'), '/about');
-    Ember.run(router, 'transitionTo', 'index');
+    run(router, 'transitionTo', 'index');
     equal(router.get('location.path'), '/?omg=OVERRIDE');
   });
 
@@ -2636,12 +2646,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('about');
     });
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: ['lol']
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       setupController(controller) {
         ok(true, 'setupController called');
         controller.set('omg', ['OVERRIDE']);
@@ -2656,14 +2666,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/about';
     bootApplication();
     equal(router.get('location.path'), '/about');
-    Ember.run(router, 'transitionTo', 'index');
+    run(router, 'transitionTo', 'index');
     equal(router.get('location.path'), '/?omg=' + encodeURIComponent(JSON.stringify(['OVERRIDE'])));
   });
 
   QUnit.test('URL transitions that remove QPs still register as QP changes', function() {
     expect(2);
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
     });
@@ -2673,7 +2683,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'borf');
-    Ember.run(router, 'transitionTo', '/');
+    run(router, 'transitionTo', '/');
     equal(indexController.get('omg'), 'lol');
   });
 
@@ -2686,29 +2696,29 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.TEMPLATES.application = compile('{{link-to \'A\' \'abc.def\' (query-params foo=\'123\') id=\'one\'}}{{link-to \'B\' \'abc.def.zoo\' (query-params foo=\'123\' bar=\'456\') id=\'two\'}}{{outlet}}');
 
-    App.AbcDefController = Ember.Controller.extend({
+    App.AbcDefController = Controller.extend({
       queryParams: ['foo'],
       foo: 'lol'
     });
 
-    App.AbcDefZooController = Ember.Controller.extend({
+    App.AbcDefZooController = Controller.extend({
       queryParams: ['bar'],
       bar: 'haha'
     });
 
     bootApplication();
     equal(router.get('location.path'), '');
-    equal(Ember.$('#one').attr('href'), '/abcdef?foo=123');
-    equal(Ember.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+    equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
+    equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-    Ember.run(Ember.$('#one'), 'click');
+    run(jQuery('#one'), 'click');
     equal(router.get('location.path'), '/abcdef?foo=123');
-    Ember.run(Ember.$('#two'), 'click');
+    run(jQuery('#two'), 'click');
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
   QUnit.test('transitionTo supports query params', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: 'lol'
     });
@@ -2717,18 +2727,18 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
+    run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
     equal(router.get('location.path'), '/?foo=borf', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
     equal(router.get('location.path'), '/?foo=blaf', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
+    run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
   QUnit.test('transitionTo supports query params (multiple)', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo', 'bar'],
       foo: 'lol',
       bar: 'wat'
@@ -2738,19 +2748,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
+    run(router, 'transitionTo', { queryParams: { foo: 'borf' } });
     equal(router.get('location.path'), '/?foo=borf', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': 'blaf' } });
     equal(router.get('location.path'), '/?foo=blaf', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': false } });
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
+    run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
   QUnit.test('setting controller QP to empty string doesn\'t generate null in URL', function() {
     expect(1);
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: '123'
     });
@@ -2764,7 +2774,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('setting QP to empty string doesn\'t generate null in URL', function() {
     expect(1);
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
           defaultValue: '123'
@@ -2780,12 +2790,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('A default boolean value deserializes QPs as booleans rather than strings', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: false
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       model(params) {
         equal(params.foo, true, 'model hook received foo as boolean true');
       }
@@ -2802,7 +2812,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('Query param without value are empty string', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: ''
     });
@@ -2819,7 +2829,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       queryParams: ['foo'],
       foo: []
     });
@@ -2837,7 +2847,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('(de)serialization: arrays', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: [1]
     });
@@ -2846,16 +2856,16 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
+    run(router, 'transitionTo', { queryParams: { foo: [2, 3] } });
     equal(router.get('location.path'), '/?foo=%5B2%2C3%5D', 'shorthand supported');
-    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
+    run(router, 'transitionTo', { queryParams: { 'index:foo': [4, 5] } });
     equal(router.get('location.path'), '/?foo=%5B4%2C5%5D', 'longform supported');
-    Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
+    run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
   });
 
   QUnit.test('Url with array query param sets controller property to array', function() {
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: ''
     });
@@ -2872,9 +2882,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       queryParams: ['foo'],
-      foo: Ember.A([])
+      foo: emberA()
     });
 
     bootApplication();
@@ -2883,28 +2893,28 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     var controller = container.lookup('controller:home');
 
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/');
     deepEqual(controller.foo, []);
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/');
     deepEqual(controller.foo, []);
-    Ember.run(controller.foo, 'pushObject', 1);
+    run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'pushObject', 2);
+    run(controller.foo, 'pushObject', 2);
     equal(router.get('location.path'), '/?foo=%5B1%2C2%5D');
     deepEqual(controller.foo, [1, 2]);
-    Ember.run(controller.foo, 'popObject');
+    run(controller.foo, 'popObject');
     equal(router.get('location.path'), '/?foo=%5B1%5D');
     deepEqual(controller.foo, [1]);
-    Ember.run(controller.foo, 'unshiftObject', 'lol');
+    run(controller.foo, 'unshiftObject', 'lol');
     equal(router.get('location.path'), '/?foo=%5B%22lol%22%2C1%5D');
     deepEqual(controller.foo, ['lol', 1]);
   });
@@ -2917,22 +2927,22 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('home', { path: '/' });
     });
 
-    App.HomeRoute = Ember.Route.extend({
+    App.HomeRoute = Route.extend({
       model() {
         modelCount++;
       }
     });
 
-    App.HomeController = Ember.Controller.extend({
+    App.HomeController = Controller.extend({
       queryParams: ['foo'],
-      foo: Ember.A([1])
+      foo: emberA([1])
     });
 
     bootApplication();
 
     equal(modelCount, 1);
     var controller = container.lookup('controller:home');
-    setAndFlush(controller, 'model', Ember.A([1]));
+    setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
   });
@@ -2948,12 +2958,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     // model if no other model could be resolved given the provided
     // params (and no custom model hook was defined), to be watched,
     // unless we return a copy of the params hash.
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       queryParams: ['woot'],
       woot: 'wat'
     });
 
-    App.OtherRoute = Ember.Route.extend({
+    App.OtherRoute = Route.extend({
       model(p, trans) {
         var m = Ember.meta(trans.params.application);
         ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
@@ -2962,23 +2972,23 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    Ember.run(router, 'transitionTo', 'other');
+    run(router, 'transitionTo', 'other');
   });
 
   QUnit.test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param', function() {
     expect(1);
 
-    App.IndexController = Ember.Controller.extend({
+    App.IndexController = Controller.extend({
       queryParams: ['woot']
     });
 
-    App.ApplicationRoute = Ember.Route.extend({
+    App.ApplicationRoute = Route.extend({
       model(p, trans) {
         return { woot: true };
       }
     });
 
-    App.IndexRoute = Ember.Route.extend({
+    App.IndexRoute = Route.extend({
       setupController(controller, model) {
         deepEqual(model, { woot: true }, 'index route inherited model route from parent route');
       }
@@ -3000,12 +3010,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('bar');
     });
 
-    App.BarController = Ember.Controller.extend({
+    App.BarController = Controller.extend({
       queryParams: ['raytiley'],
       raytiley: 'israd'
     });
 
-    App.BarRoute = Ember.Route.extend({
+    App.BarRoute = Route.extend({
       queryParams: {
         raytiley: {
           replace: true
@@ -3017,19 +3027,19 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
-    Ember.run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar';
-    Ember.run(Ember.$('#bar-no-qp-link'), 'click');
+    run(jQuery('#bar-no-qp-link'), 'click');
 
     expectedReplaceURL = '/bar?raytiley=woot';
     setAndFlush(controller, 'raytiley', 'woot');
 
     expectedPushURL = '/foo';
-    Ember.run(Ember.$('#foo-link'), 'click');
+    run(jQuery('#foo-link'), 'click');
 
     expectedPushURL = '/bar?raytiley=isthebest';
-    Ember.run(Ember.$('#bar-link'), 'click');
+    run(jQuery('#bar-link'), 'click');
   });
 
   QUnit.test('Undefined isn\'t deserialized into a string', function() {
@@ -3040,12 +3050,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     Ember.TEMPLATES.application = compile('{{link-to \'Example\' \'example\' id=\'the-link\'}}');
 
-    App.ExampleController = Ember.Controller.extend({
+    App.ExampleController = Controller.extend({
       queryParams: ['foo']
       // uncommon to not support default value, but should assume undefined.
     });
 
-    App.ExampleRoute = Ember.Route.extend({
+    App.ExampleRoute = Route.extend({
       model(params) {
         deepEqual(params, { foo: undefined });
       }
@@ -3053,9 +3063,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = Ember.$('#the-link');
+    var $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
-    Ember.run($link, 'click');
+    run($link, 'click');
 
     var controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
@@ -3065,7 +3075,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 QUnit.test('warn user that routes query params configuration must be an Object, not an Array', function() {
   expect(1);
 
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     queryParams: [
       { commitBy: { replace: true } }
     ]
@@ -3083,7 +3093,7 @@ QUnit.test('handle routes names that clash with Object.prototype properties', fu
     this.route('constructor');
   });
 
-  App.ConstructorRoute = Ember.Route.extend({
+  App.ConstructorRoute = Route.extend({
     queryParams: {
       foo: {
         defaultValue: '123'
@@ -3093,7 +3103,7 @@ QUnit.test('handle routes names that clash with Object.prototype properties', fu
 
   bootApplication();
 
-  Ember.run(router, 'transitionTo', 'constructor', { queryParams: { foo: '999' } });
+  run(router, 'transitionTo', 'constructor', { queryParams: { foo: '999' } });
 
   var controller = container.lookup('controller:constructor');
   equal(get(controller, 'foo'), '999');

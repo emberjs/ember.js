@@ -6,19 +6,20 @@
 @module ember
 @submodule ember-metal
 */
-
 import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
-import { assert, deprecate, runInDebug } from 'ember-metal/debug';
+import EmberError from 'ember-metal/error';
+import { debugSeal, assert, deprecate, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { set, trySet } from 'ember-metal/property_set';
 import {
   guidFor,
+  GUID_KEY,
   wrap,
   makeArray
 } from 'ember-metal/utils';
-import { meta as metaFor } from 'ember-metal/meta';
+import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 import expandProperties from 'ember-metal/expand_properties';
 import {
   Descriptor,
@@ -377,7 +378,7 @@ function applyMixin(obj, mixins, partial) {
   // * Set up _super wrapping if necessary
   // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
-  mergeMixins(mixins, metaFor(obj), descs, values, obj, keys);
+  mergeMixins(mixins, m, descs, values, obj, keys);
 
   for (var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
@@ -466,7 +467,7 @@ export function mixin(obj, ...args) {
   //filters will be created as a separate array during the object's initialization
   App.Filterable = Ember.Mixin.create({
     init: function() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       this.set("filters", Ember.A());
     }
   });
@@ -498,6 +499,10 @@ export default function Mixin(args, properties) {
     this.mixins = undefined;
   }
   this.ownerConstructor = undefined;
+  this._without = undefined;
+  this[GUID_KEY] = null;
+  this[GUID_KEY + '_name'] = null;
+  debugSeal(this);
 }
 
 Mixin._apply = applyMixin;
@@ -526,6 +531,7 @@ Mixin.create = function(...args) {
 };
 
 var MixinPrototype = Mixin.prototype;
+
 
 /**
   @method reopen
@@ -579,6 +585,10 @@ MixinPrototype.applyPartial = function(obj) {
   return applyMixin(obj, [this], true);
 };
 
+MixinPrototype.toString = function Mixin_toString() {
+  return '(unknown mixin)';
+};
+
 function _detect(curMixin, targetMixin, seen) {
   var guid = guidFor(curMixin);
 
@@ -603,7 +613,7 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = obj.__ember_meta__;
+  var m = peekMeta(obj);
   if (!m) { return false; }
   return !!m.peekMixins(guidFor(this));
 };
@@ -641,10 +651,12 @@ MixinPrototype.keys = function() {
   return ret;
 };
 
+debugSeal(MixinPrototype);
+
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var m = obj['__ember_meta__'];
+  var m = peekMeta(obj);
   var ret = [];
   if (!m) { return ret; }
 
@@ -731,7 +743,7 @@ export function aliasMethod(methodName) {
   @param {String} propertyNames*
   @param {Function} func
   @return func
-  @private
+  @public
 */
 export function observer(...args) {
   var func  = args.slice(-1)[0];
@@ -763,7 +775,7 @@ export function observer(...args) {
   }
 
   if (typeof func !== 'function') {
-    throw new Ember.Error('Ember.observer called without a function');
+    throw new EmberError('Ember.observer called without a function');
   }
 
   func.__ember_observes__ = paths;

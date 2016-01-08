@@ -101,10 +101,9 @@ function processNamespace(paths, root, seen) {
     paths[idx] = key;
 
     // If we have found an unprocessed class
-    if (obj && obj.toString === classToString) {
+    if (obj && obj.toString === classToString && !obj[NAME_KEY]) {
       // Replace the class' `toString` with the dot-separated path
       // and set its `NAME_KEY`
-      obj.toString = makeToString(paths.join('.'));
       obj[NAME_KEY] = paths.join('.');
 
     // Support nested namespaces

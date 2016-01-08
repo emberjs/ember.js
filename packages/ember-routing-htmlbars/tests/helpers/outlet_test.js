@@ -1,33 +1,26 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
-
-import Namespace from 'ember-runtime/system/namespace';
 import Controller from 'ember-runtime/controllers/controller';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
-
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import { buildRegistry } from 'ember-routing-htmlbars/tests/utils';
+import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
 
 var trim = jQuery.trim;
 
-var registry, container, top;
+var appInstance, top;
 
 QUnit.module('ember-routing-htmlbars: {{outlet}} helper', {
   setup() {
-    var namespace = Namespace.create();
-    registry = buildRegistry(namespace);
-    container = registry.container();
-
-    var CoreOutlet = container.lookupFactory('view:core-outlet');
+    appInstance = buildAppInstance();
+    var CoreOutlet = appInstance._lookupFactory('view:core-outlet');
     top = CoreOutlet.create();
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(appInstance);
     runDestroy(top);
-    registry = container = top = null;
+    appInstance = top = null;
   }
 });
 
@@ -49,7 +42,7 @@ QUnit.test('view should render the outlet when set after dom insertion', functio
 });
 
 QUnit.test('a top-level outlet should always be a view', function() {
-  registry.register('view:toplevel', EmberView.extend({
+  appInstance.register('view:toplevel', EmberView.extend({
     elementId: 'top-level'
   }));
   var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
@@ -176,7 +169,7 @@ QUnit.test('should not throw deprecations if {{outlet}} is used with a quoted na
 QUnit.test('{{outlet}} should work with an unquoted name', function() {
   var routerState = {
     render: {
-      controller: Ember.Controller.create({
+      controller: Controller.create({
         outletName: 'magical'
       }),
       template: compile('{{outlet outletName}}')
@@ -195,7 +188,7 @@ QUnit.test('{{outlet}} should work with an unquoted name', function() {
 QUnit.test('{{outlet}} should rerender when bound name changes', function() {
   var routerState = {
     render: {
-      controller: Ember.Controller.create({
+      controller: Controller.create({
         outletName: 'magical'
       }),
       template: compile('{{outlet outletName}}')

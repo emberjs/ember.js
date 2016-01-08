@@ -31,7 +31,7 @@ function getKey(scope, key) {
   }
 
   let attrs = scope.getAttrs();
-  if (key in attrs) {
+  if (attrs && key in attrs) {
     // TODO: attrs
     // deprecate("You accessed the `" + key + "` attribute directly. Please use `attrs." + key + "` instead.");
     return attrs[key];

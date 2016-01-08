@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
@@ -7,6 +6,7 @@ import {
   removeObserver
 } from 'ember-metal/observer';
 import EmberObject from 'ember-runtime/system/object';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import EmberDataAdapter from 'ember-extension-support/data_adapter';
 import EmberApplication from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
@@ -43,7 +43,7 @@ QUnit.test('Model types added with DefaultResolver', function() {
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords() {
-      return Ember.A([1, 2, 3]);
+      return emberA([1, 2, 3]);
     },
     columnsForType() {
       return [{ name: 'title', desc: 'Title' }];
@@ -71,7 +71,7 @@ QUnit.test('getRecords gets a model name as second argument', function() {
   adapter.reopen({
     getRecords(klass, name) {
       equal(name, 'post');
-      return Ember.A([]);
+      return emberA();
     }
   });
 
@@ -93,7 +93,7 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords() {
-      return Ember.A([1, 2, 3]);
+      return emberA([1, 2, 3]);
     },
     columnsForType() {
       return [{ name: 'title', desc: 'Title' }];
@@ -119,7 +119,7 @@ QUnit.test('Model Types Updated', function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
-  var records = Ember.A([1, 2, 3]);
+  var records = emberA([1, 2, 3]);
   adapter.reopen({
     getRecords() {
       return records;
@@ -149,7 +149,7 @@ QUnit.test('Records Added', function() {
   App.Post = Model.extend();
 
   var post = App.Post.create();
-  var recordList = Ember.A([post]);
+  var recordList = emberA([post]);
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
@@ -186,7 +186,7 @@ QUnit.test('Observes and releases a record correctly', function() {
   App.Post = Model.extend();
 
   var post = App.Post.create({ title: 'Post' });
-  var recordList = Ember.A([post]);
+  var recordList = emberA([post]);
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({

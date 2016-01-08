@@ -13,7 +13,6 @@ import EmberRoute from 'ember-routing/system/route';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import { _loaded } from 'ember-runtime/system/lazy_load';
-import isEnabled from 'ember-metal/features';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 
 var trim = jQuery.trim;
@@ -100,21 +99,19 @@ QUnit.test('acts like a namespace', function() {
   equal(app.Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
 });
 
-if (isEnabled('ember-registry-container-reform')) {
-  QUnit.test('includes deprecated access to `application.registry`', function() {
-    expect(3);
+QUnit.test('includes deprecated access to `application.registry`', function() {
+  expect(3);
 
-    ok(typeof application.registry.register === 'function', '#registry.register is available as a function');
+  ok(typeof application.registry.register === 'function', '#registry.register is available as a function');
 
-    application.__registry__.register = function() {
-      ok(true, '#register alias is called correctly');
-    };
+  application.__registry__.register = function() {
+    ok(true, '#register alias is called correctly');
+  };
 
-    expectDeprecation(function() {
-      application.registry.register();
-    }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
-  });
-}
+  expectDeprecation(function() {
+    application.registry.register();
+  }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
+});
 
 QUnit.module('Ember.Application initialization', {
   teardown() {

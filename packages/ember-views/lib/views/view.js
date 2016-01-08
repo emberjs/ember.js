@@ -2,7 +2,7 @@
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
-import { deprecate, warn } from 'ember-metal/debug';
+import { deprecate } from 'ember-metal/debug';
 
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
@@ -23,31 +23,10 @@ import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import ViewMixin from 'ember-views/mixins/view_support';
 import { deprecateProperty } from 'ember-metal/deprecate_property';
-
 /**
 @module ember
 @submodule ember-views
 */
-
-warn(
-  'The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.',
-  Ember.ENV.VIEW_PRESERVES_CONTEXT !== false,
-  {
-    id: 'ember-views.view-preserves-context-flag',
-    until: '2.0.0'
-  });
-
-/**
-  Global hash of shared templates. This will automatically be populated
-  by the build tools so that you can store your Handlebars templates in
-  separate files that get loaded into JavaScript at buildtime.
-
-  @property TEMPLATES
-  @for Ember
-  @type Object
-  @private
-*/
-Ember.TEMPLATES = {};
 
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
@@ -226,7 +205,7 @@ Ember.TEMPLATES = {};
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
-  Updates to the the value of a class name binding will result in automatic
+  Updates to the value of a class name binding will result in automatic
   update of the  HTML `class` attribute in the view's rendered HTML
   representation. If the value becomes `false` or `undefined` the class name
   will be removed.
@@ -323,7 +302,7 @@ Ember.TEMPLATES = {};
   });
   ```
 
-  Updates to the the property of an attribute binding will result in automatic
+  Updates to the property of an attribute binding will result in automatic
   update of the  HTML attribute in the view's rendered HTML representation.
 
   `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
@@ -507,7 +486,7 @@ Ember.TEMPLATES = {};
   ```javascript
   AView = Ember.View.extend({
     click: function(event) {
-      // will be called when when an instance's
+      // will be called when an instance's
       // rendered element is clicked
     }
   });
@@ -528,7 +507,7 @@ Ember.TEMPLATES = {};
   AView = Ember.View.extend({
     eventManager: Ember.Object.create({
       doubleClick: function(event, view) {
-        // will be called when when an instance's
+        // will be called when an instance's
         // rendered element or any rendering
         // of this view's descendant
         // elements is clicked
@@ -702,7 +681,8 @@ var View = CoreView.extend(
 
 deprecateProperty(View.prototype, 'currentState', '_currentState', {
   id: 'ember-view.current-state',
-  until: '2.3.0'
+  until: '2.3.0',
+  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-currentstate'
 });
 
 // jscs:enable validateIndentation

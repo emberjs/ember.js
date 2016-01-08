@@ -9,6 +9,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import { takeLegacySnapshot } from 'ember-htmlbars/node-managers/component-node-manager';
+import { setOwner } from 'container/owner';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -27,13 +28,13 @@ function ViewNodeManager(component, scope, renderNode, block, expectElement) {
 export default ViewNodeManager;
 
 ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
-  assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', function() {
+  assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', !!(function() {
     if (path) {
       return found.component || found.layout;
     } else {
       return found.component || found.layout || contentTemplate;
     }
-  });
+  }()));
 
   var component;
   var componentInfo = { layout: found.layout };
@@ -87,6 +88,10 @@ ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, v
     var newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
+    } else {
+      let meta = this.block && this.block.template.meta;
+
+      newEnv = env.childWithMeta(meta);
     }
 
     if (component) {
@@ -137,7 +142,12 @@ ViewNodeManager.prototype.rerender = function ViewNodeManager_rerender(env, attr
       env.renderer.willRender(component);
 
       env.renderedViews.push(component.elementId);
+    } else {
+      let meta = this.block && this.block.template.meta;
+
+      newEnv = env.childWithMeta(meta);
     }
+
     if (this.block) {
       this.block.invoke(newEnv, [], undefined, this.renderNode, this.scope, visitor);
     }
@@ -180,9 +190,12 @@ export function createOrUpdateComponent(component, options, createOptions, rende
     }
 
     mergeBindings(props, snapshot);
-    props.container = options.parentView ? options.parentView.container : env.container;
-    props.renderer = options.parentView ? options.parentView.renderer : props.container && props.container.lookup('renderer:-dom');
-    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : props.container && props.container.lookup('-view-registry:main');
+
+    let owner = env.owner;
+
+    setOwner(props, owner);
+    props.renderer = options.parentView ? options.parentView.renderer : owner && owner.lookup('renderer:-dom');
+    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : owner && owner.lookup('-view-registry:main');
 
     if (proto.controller !== defaultController || hasSuppliedController) {
       delete props._context;

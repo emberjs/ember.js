@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
@@ -8,6 +7,7 @@ import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
 import compile from 'ember-template-compiler/system/compile';
 import Controller from 'ember-runtime/controllers/controller';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 import 'ember-application';
 
@@ -44,7 +44,7 @@ QUnit.module('ember-testing Integration', {
 
       App.Person.reopenClass({
         find() {
-          return Ember.A();
+          return emberA();
         }
       });
 
@@ -76,7 +76,7 @@ QUnit.module('ember-testing Integration', {
 
 QUnit.test('template is bound to empty array of people', function() {
   App.Person.find = function() {
-    return Ember.A();
+    return emberA();
   };
   run(App, 'advanceReadiness');
   visit('/').then(function() {
@@ -87,7 +87,7 @@ QUnit.test('template is bound to empty array of people', function() {
 
 QUnit.test('template is bound to array of 2 people', function() {
   App.Person.find = function() {
-    var people = Ember.A();
+    var people = emberA();
     var first = App.Person.create({ firstName: 'x' });
     var last = App.Person.create({ firstName: 'y' });
     run(people, people.pushObject, first);
@@ -103,7 +103,7 @@ QUnit.test('template is bound to array of 2 people', function() {
 
 QUnit.test('template is again bound to empty array of people', function() {
   App.Person.find = function() {
-    return Ember.A();
+    return emberA();
   };
   run(App, 'advanceReadiness');
   visit('/').then(function() {
@@ -114,7 +114,7 @@ QUnit.test('template is again bound to empty array of people', function() {
 
 QUnit.test('`visit` can be called without advancedReadiness.', function() {
   App.Person.find = function() {
-    return Ember.A();
+    return emberA();
   };
 
   visit('/').then(function() {

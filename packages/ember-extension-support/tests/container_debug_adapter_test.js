@@ -3,7 +3,7 @@ import EmberController from 'ember-runtime/controllers/controller';
 import 'ember-extension-support'; // Must be required to export Ember.ContainerDebugAdapter
 import Application from 'ember-application/system/application';
 
-var adapter, App;
+var adapter, App, appInstance;
 
 
 function boot() {
@@ -19,14 +19,16 @@ QUnit.module('Container Debug Adapter', {
     });
     boot();
     run(function() {
-      adapter = App.__container__.lookup('container-debug-adapter:main');
+      appInstance = App.__deprecatedInstance__;
+      adapter = appInstance.lookup('container-debug-adapter:main');
     });
   },
   teardown() {
     run(function() {
       adapter.destroy();
+      appInstance.destroy();
       App.destroy();
-      App = null;
+      App = appInstance = adapter = null;
     });
   }
 });

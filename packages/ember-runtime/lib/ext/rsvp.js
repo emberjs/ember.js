@@ -1,6 +1,7 @@
 /* globals RSVP:true */
 
 import Ember from 'ember-metal/core';
+import require, { has } from 'require';
 import { assert } from 'ember-metal/debug';
 import Logger from 'ember-metal/logger';
 import run from 'ember-metal/run_loop';
@@ -57,8 +58,8 @@ export function onerrorDefault(reason) {
   if (error && error.name !== 'TransitionAborted') {
     if (Ember.testing) {
       // ES6TODO: remove when possible
-      if (!Test && Ember.__loader.registry[testModuleName]) {
-        Test = requireModule(testModuleName)['default'];
+      if (!Test && has(testModuleName)) {
+        Test = require(testModuleName)['default'];
       }
 
       if (Test && Test.adapter) {
@@ -76,7 +77,7 @@ export function onerrorDefault(reason) {
 }
 
 export function after (cb) {
-  Ember.run.schedule(Ember.run.queues[Ember.run.queues.length - 1], cb);
+  run.schedule(run.queues[run.queues.length - 1], cb);
 }
 
 RSVP.on('error', onerrorDefault);

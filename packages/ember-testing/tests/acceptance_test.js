@@ -10,7 +10,6 @@ import compile from 'ember-template-compiler/system/compile';
 import RSVP from 'ember-runtime/ext/rsvp';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
-import 'ember-routing'; //ES6TODO: fixme?
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
@@ -43,7 +42,7 @@ QUnit.module('ember-testing Acceptance', {
       App.PostsRoute = EmberRoute.extend({
         renderTemplate() {
           currentRoute = 'posts';
-          this._super.apply(this, arguments);
+          this._super(...arguments);
         }
       });
 
@@ -55,7 +54,7 @@ QUnit.module('ember-testing Acceptance', {
       App.CommentsRoute = EmberRoute.extend({
         renderTemplate() {
           currentRoute = 'comments';
-          this._super.apply(this, arguments);
+          this._super(...arguments);
         }
       });
 
@@ -361,6 +360,16 @@ QUnit.test('test must not finish while asyncHelpers are pending', function () {
       Test.adapter.asyncEnd();
     });
   }
+});
+
+QUnit.test('visiting a URL that causes another transition should yield the correct URL', function () {
+  expect(1);
+
+  visit('/redirect');
+
+  andThen(function () {
+    equal(currentURL(), '/comments', 'Redirected to Comments URL');
+  });
 });
 
 QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {

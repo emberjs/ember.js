@@ -138,7 +138,7 @@ export default {
 
     return assign({}, state, {
       parentView: env.view,
-      viewClassOrInstance: getView(read(params[0]), env.container)
+      viewClassOrInstance: getView(read(params[0]), env.owner)
     });
   },
 

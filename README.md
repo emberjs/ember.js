@@ -1,4 +1,4 @@
-# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.svg)](https://codeclimate.com/github/emberjs/ember.js)
+# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.svg)](https://codeclimate.com/github/emberjs/ember.js) [![Slack](https://ember-community-slackin.herokuapp.com/badge.svg)](https://ember-community-slackin.herokuapp.com)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/ember-ci.svg)](https://saucelabs.com/u/ember-ci)
 
 
@@ -8,7 +8,7 @@ to every web app; Ember.js does those things for you, so you can focus
 on building killer features and UI.
 
 - [Website](http://emberjs.com)
-- [Guides](http://emberjs.com/guides)
+- [Guides](http://guides.emberjs.com)
 - [API](http://emberjs.com/api)
 - [Community](http://emberjs.com/community)
 - [Blog](http://emberjs.com/blog)
@@ -19,6 +19,22 @@ on building killer features and UI.
 1. Ensure that [Node.js](http://nodejs.org/) is installed.
 2. Run `npm install` to ensure the required dependencies are installed.
 3. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
+
+## npm install troubleshooting
+
+If you encounter a problem with downloading dependencies like:
+
+```
+npm ERR! registry error parsing json
+```
+
+consider upgrading `npm` with:
+
+```
+npm install -g npm@latest
+```
+
+You can find more information in [Upgrading on *nix (OSX, Linux, etc.)](https://github.com/npm/npm/wiki/Troubleshooting#upgrading-on-nix-osx-linux-etc) npm wiki page.
 
 # Contribution
 

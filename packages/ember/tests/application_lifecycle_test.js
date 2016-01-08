@@ -1,12 +1,16 @@
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
+import Application from 'ember-application/system/application';
+import Route from 'ember-routing/system/route';
+import run from 'ember-metal/run_loop';
+import Component from 'ember-views/components/component';
+import jQuery from 'ember-views/system/jquery';
 
 var compile = Ember.HTMLBars.compile;
 
-var App, container, router;
+var App, appInstance, router;
 
 function setupApp(klass) {
-  Ember.run(function() {
+  run(function() {
     App = klass.create({
       rootElement: '#qunit-fixture'
     });
@@ -17,25 +21,25 @@ function setupApp(klass) {
 
     App.deferReadiness();
 
-    container = App.__container__;
+    appInstance = App.__deprecatedInstance__;
   });
 }
 
 QUnit.module('Application Lifecycle', {
   setup() {
-    setupApp(Ember.Application.extend());
+    setupApp(Application.extend());
   },
 
   teardown() {
     router = null;
-    Ember.run(App, 'destroy');
+    run(App, 'destroy');
     Ember.TEMPLATES = {};
   }
 });
 
 function handleURL(path) {
-  router = container.lookup('router:main');
-  return Ember.run(function() {
+  router = appInstance.lookup('router:main');
+  return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -46,13 +50,12 @@ function handleURL(path) {
   });
 }
 
-
 QUnit.test('Resetting the application allows controller properties to be set when a route deactivates', function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
@@ -60,7 +63,7 @@ QUnit.test('Resetting the application allows controller properties to be set whe
       this.controllerFor('home').set('selectedMenuItem', null);
     }
   });
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     setupController() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },
@@ -69,27 +72,27 @@ QUnit.test('Resetting the application allows controller properties to be set whe
     }
   });
 
-  container.lookup('router:main');
+  appInstance.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   handleURL('/');
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   App.reset();
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
-QUnit.test('Destroying the application resets the router before the container is destroyed', function() {
+QUnit.test('Destroying the application resets the router before the appInstance is destroyed', function() {
   App.Router.map(function() {
     this.route('home', { path: '/' });
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.HomeRoute = Route.extend({
     setupController() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
@@ -97,7 +100,7 @@ QUnit.test('Destroying the application resets the router before the container is
       this.controllerFor('home').set('selectedMenuItem', null);
     }
   });
-  App.ApplicationRoute = Ember.Route.extend({
+  App.ApplicationRoute = Route.extend({
     setupController() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },
@@ -106,51 +109,40 @@ QUnit.test('Destroying the application resets the router before the container is
     }
   });
 
-  container.lookup('router:main');
+  appInstance.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   handleURL('/');
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
-  Ember.run(App, 'destroy');
+  run(App, 'destroy');
 
-  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
   assert.expect(1);
 
-  Ember.run(App, 'destroy');
+  run(App, 'destroy');
 
-  var ApplicationSubclass = Ember.Application.extend();
+  var ApplicationSubclass = Application.extend();
 
-  if (isEnabled('ember-registry-container-reform')) {
-    ApplicationSubclass.initializer({
-      name: 'customize-things',
-      initialize(application) {
-        application.customEvents = {
-          wowza: 'wowza'
-        };
-      }
-    });
-  } else {
-    ApplicationSubclass.initializer({
-      name: 'customize-things',
-      initialize(registry, application) {
-        application.customEvents = {
-          wowza: 'wowza'
-        };
-      }
-    });
-  }
+  ApplicationSubclass.initializer({
+    name: 'customize-things',
+    initialize(application) {
+      application.customEvents = {
+        wowza: 'wowza'
+      };
+    }
+  });
 
   setupApp(ApplicationSubclass);
 
-  App.FooBarComponent = Ember.Component.extend({
+  App.FooBarComponent = Component.extend({
     wowza() {
       assert.ok(true, 'fired the event!');
     }
@@ -159,19 +151,19 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
   Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
   Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='wowza-thingy'></div>`);
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
-  Ember.run(function() {
-    Ember.$('#wowza-thingy').trigger('wowza');
+  run(function() {
+    jQuery('#wowza-thingy').trigger('wowza');
   });
 });
 
 QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
   assert.expect(1);
 
-  Ember.run(App, 'destroy');
+  run(App, 'destroy');
 
-  var ApplicationSubclass = Ember.Application.extend();
+  var ApplicationSubclass = Application.extend();
 
   ApplicationSubclass.instanceInitializer({
     name: 'customize-things',
@@ -184,7 +176,7 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
 
   setupApp(ApplicationSubclass);
 
-  App.FooBarComponent = Ember.Component.extend({
+  App.FooBarComponent = Component.extend({
     jerky() {
       assert.ok(true, 'fired the event!');
     }
@@ -193,9 +185,9 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
   Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
   Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='herky-thingy'></div>`);
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
-  Ember.run(function() {
-    Ember.$('#herky-thingy').trigger('herky');
+  run(function() {
+    jQuery('#herky-thingy').trigger('herky');
   });
 });

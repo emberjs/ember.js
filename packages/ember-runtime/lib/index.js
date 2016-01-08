@@ -12,7 +12,7 @@ import inject from 'ember-runtime/inject';
 
 import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
-import { Container, Registry } from 'ember-runtime/system/container';
+import { Container, Registry, getOwner, setOwner } from 'ember-runtime/system/container';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import CoreObject from 'ember-runtime/system/core_object';
@@ -54,7 +54,8 @@ import {
   filterBy,
   uniq,
   union,
-  intersect
+  intersect,
+  collect
 } from 'ember-runtime/computed/reduce_computed_macros';
 
 import Controller from 'ember-runtime/controllers/controller';
@@ -67,6 +68,12 @@ import 'ember-runtime/ext/string';   // just for side effect of extending String
 import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
 
 import { isArray, typeOf } from 'ember-runtime/utils';
+
+import isEnabled from 'ember-metal/features';
+
+import RegistryProxyMixin from 'ember-runtime/mixins/registry_proxy';
+import ContainerProxyMixin from 'ember-runtime/mixins/container_proxy';
+
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -112,11 +119,21 @@ EmComputed.filterBy = filterBy;
 EmComputed.uniq = uniq;
 EmComputed.union = union;
 EmComputed.intersect = intersect;
+EmComputed.collect = collect;
 
 Ember.String = EmberStringUtils;
 Ember.Object = EmberObject;
 Ember.Container = Container;
 Ember.Registry = Registry;
+
+if (isEnabled('ember-container-inject-owner')) {
+  Ember.getOwner = getOwner;
+  Ember.setOwner = setOwner;
+
+  Ember._RegistryProxyMixin = RegistryProxyMixin;
+  Ember._ContainerProxyMixin = ContainerProxyMixin;
+}
+
 Ember.Namespace = Namespace;
 Ember.Enumerable = Enumerable;
 Ember.ArrayProxy = ArrayProxy;
@@ -138,5 +155,24 @@ Ember._ProxyMixin = _ProxyMixin;
 
 Ember.RSVP = RSVP;
 // END EXPORTS
+import {
+  getStrings,
+  setStrings
+} from 'ember-runtime/string_registry';
+/**
+  Defines the hash of localized strings for the current language. Used by
+  the `Ember.String.loc()` helper. To localize, add string values to this
+  hash.
+
+  @property STRINGS
+  @for Ember
+  @type Object
+  @private
+*/
+Object.defineProperty(Ember, 'STRINGS', {
+  configurable: false,
+  get: getStrings,
+  set: setStrings
+});
 
 export default Ember;

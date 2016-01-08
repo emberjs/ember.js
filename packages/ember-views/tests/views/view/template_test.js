@@ -1,30 +1,32 @@
-import Registry from 'container/registry';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var registry, container, view;
+var owner, view;
 
 QUnit.module('EmberView - Template Functionality', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('template', { instantiate: false });
+    owner = buildOwner();
+    owner.registerOptionsForType('template', { instantiate: false });
   },
   teardown() {
     run(function() {
       if (view) { view.destroy(); }
-      container.destroy();
-      registry = container = view = null;
+      owner.destroy();
+      owner = view = null;
     });
   }
 });
 
 QUnit.test('Template views return throw if their template cannot be found', function() {
   view = EmberView.create({
-    templateName: 'cantBeFound',
-    container: { lookup() { } }
+    [OWNER]: {
+      lookup() {}
+    },
+    templateName: 'cantBeFound'
   });
 
   expectAssertion(function() {
@@ -33,12 +35,12 @@ QUnit.test('Template views return throw if their template cannot be found', func
 });
 
 QUnit.test('should call the function of the associated template', function() {
-  registry.register('template:testTemplate', compile(
+  owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called</h1>'
   ));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'testTemplate'
   });
 
@@ -50,14 +52,13 @@ QUnit.test('should call the function of the associated template', function() {
 });
 
 QUnit.test('should call the function of the associated template with itself as the context', function() {
-  registry.register('template:testTemplate', compile(
+  owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called for {{personName}}</h1>'
   ));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     templateName: 'testTemplate',
-
     context: {
       personName: 'Tom DAAAALE'
     }
@@ -111,17 +112,19 @@ QUnit.test('should not use defaultTemplate if template is provided', function() 
 });
 
 QUnit.test('should not use defaultTemplate if template is provided', function() {
-  registry.register('template:foobar', compile('foo'));
+  owner.register('template:foobar', compile('foo'));
 
   var View = EmberView.extend({
-    container: container,
     templateName: 'foobar',
     defaultTemplate: compile(
       '<h1 id=\'twas-called\'>template was called for {{personName}}</h1>'
     )
   });
 
-  view = View.create();
+  view = View.create({
+    [OWNER]: owner
+  });
+
   run(function() {
     view.createElement();
   });

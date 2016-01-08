@@ -60,7 +60,7 @@ function tap(proxy, promise) {
   proxy.get('isFulfilled') //=> false
   ```
 
-  When the the $.getJSON completes, and the promise is fulfilled
+  When the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
 
   ```javascript

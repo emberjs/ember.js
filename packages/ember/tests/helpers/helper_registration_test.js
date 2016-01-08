@@ -1,24 +1,29 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
+import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import inject from 'ember-runtime/inject';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var App, registry, container, originalViewKeyword;
+var App, appInstance, originalViewKeyword;
 
 QUnit.module('Application Lifecycle - Helper Registration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
-    Ember.run(function() {
+    run(function() {
       if (App) {
         App.destroy();
       }
 
-      App = null;
+      App = appInstance = null;
       Ember.TEMPLATES = {};
     });
     delete helpers['foo-bar-baz-widget'];
@@ -27,8 +32,8 @@ QUnit.module('Application Lifecycle - Helper Registration', {
 });
 
 var boot = function(callback) {
-  Ember.run(function() {
-    App = Ember.Application.create({
+  run(function() {
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });
@@ -39,16 +44,15 @@ var boot = function(callback) {
       location: 'none'
     });
 
-    registry = App.__registry__;
-    container = App.__container__;
+    appInstance = App.__deprecatedInstance__;
 
     if (callback) { callback(); }
   });
 
-  var router = container.lookup('router:main');
+  var router = appInstance.lookup('router:main');
 
-  Ember.run(App, 'advanceReadiness');
-  Ember.run(function() {
+  run(App, 'advanceReadiness');
+  run(function() {
     router.handleURL('/');
   });
 };
@@ -60,10 +64,10 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
   });
 
   boot(() => {
-    registry.register('helper:x-borf', myHelper);
+    App.register('helper:x-borf', myHelper);
   });
 
-  equal(Ember.$('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
+  equal(jQuery('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
   ok(!helpers['x-borf'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
@@ -71,16 +75,16 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>');
 
   boot(function() {
-    registry.register('controller:application', Ember.Controller.extend({
+    appInstance.register('controller:application', Controller.extend({
       foo: 'alex'
     }));
 
-    registry.register('helper:x-reverse', helper(function([ value ]) {
+    appInstance.register('helper:x-reverse', helper(function([ value ]) {
       return value ? value.split('').reverse().join('') : '--';
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
+  equal(jQuery('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
   ok(!helpers['x-reverse'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
@@ -88,16 +92,16 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>');
 
   boot(function() {
-    registry.register('helper:omg', helper(function() {
+    appInstance.register('helper:omg', helper(function() {
       return 'OMG';
     }));
 
-    registry.register('helper:yorp', helper(function([ value ]) {
+    appInstance.register('helper:yorp', helper(function([ value ]) {
       return value;
     }));
   });
 
-  equal(Ember.$('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
+  equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
 });
 
 QUnit.test('Helpers can receive injections', function() {
@@ -105,13 +109,13 @@ QUnit.test('Helpers can receive injections', function() {
 
   var serviceCalled = false;
   boot(function() {
-    registry.register('service:name-builder', Ember.Service.extend({
+    appInstance.register('service:name-builder', Ember.Service.extend({
       build() {
         serviceCalled = true;
       }
     }));
-    registry.register('helper:full-name', Helper.extend({
-      nameBuilder: Ember.inject.service('name-builder'),
+    appInstance.register('helper:full-name', Helper.extend({
+      nameBuilder: inject.service('name-builder'),
       compute() {
         this.get('nameBuilder').build();
       }

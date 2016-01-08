@@ -2,12 +2,14 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core'; // Ember.STRINGS
 import { deprecate } from 'ember-metal/debug';
 import {
   inspect as emberInspect
 } from 'ember-metal/utils';
 import { isArray } from 'ember-runtime/utils';
+import {
+  get as getString
+} from 'ember-runtime/string_registry';
 
 import Cache from 'ember-metal/cache';
 
@@ -28,13 +30,25 @@ var CAMELIZE_CACHE = new Cache(1000, function(key) {
   });
 });
 
-var STRING_CLASSIFY_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
-var STRING_CLASSIFY_REGEXP_2 = (/(^|\/|\.)([a-z])/g);
+var STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
+var STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
+var STRING_CLASSIFY_REGEXP_3 = (/(^|\/|\.)([a-z])/g);
 
 var CLASSIFY_CACHE = new Cache(1000, function(str) {
-  return str.replace(STRING_CLASSIFY_REGEXP_1, function(match, separator, chr) {
-    return chr ? chr.toUpperCase() : '';
-  }).replace(STRING_CLASSIFY_REGEXP_2, function(match, separator, chr) {
+  var replace1 = function(match, separator, chr) {
+    return chr ? ('_' + chr.toUpperCase()) : '';
+  };
+  var replace2 = function(match, initialChar, separator, chr) {
+    return initialChar + (chr ? chr.toUpperCase() : '');
+  };
+  var parts = str.split('/');
+  for (var i = 0, len = parts.length; i < len; i++) {
+    parts[i] = parts[i]
+      .replace(STRING_CLASSIFY_REGEXP_1, replace1)
+      .replace(STRING_CLASSIFY_REGEXP_2, replace2);
+  }
+  return parts.join('/')
+  .replace(STRING_CLASSIFY_REGEXP_3, function(match, separator, chr) {
     return match.toUpperCase();
   });
 });
@@ -85,7 +99,7 @@ function fmt(str, formats) {
   deprecate(
     'Ember.String.fmt is deprecated, use ES6 template strings instead.',
     false,
-    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'https://babeljs.io/docs/learn-es6/#template-strings' }
+    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'http://babeljs.io/docs/learn-es2015/#template-strings' }
   );
   return _fmt(...arguments);
 }
@@ -95,7 +109,7 @@ function loc(str, formats) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
 
-  str = Ember.STRINGS[str] || str;
+  str = getString(str) || str;
   return _fmt(str, formats);
 }
 
@@ -128,18 +142,6 @@ function capitalize(str) {
 }
 
 /**
-  Defines the hash of localized strings for the current language. Used by
-  the `Ember.String.loc()` helper. To localize, add string values to this
-  hash.
-
-  @property STRINGS
-  @for Ember
-  @type Object
-  @private
-*/
-Ember.STRINGS = {};
-
-/**
   Defines string helper methods including string formatting and localization.
   Unless `Ember.EXTEND_PROTOTYPES.String` is `false` these methods will also be
   added to the `String.prototype` as well.
@@ -170,7 +172,7 @@ export default {
     @param {Array} formats An array of parameters to interpolate into string.
     @return {String} formatted string
     @public
-    @deprecated Use ES6 template strings instead: https://babeljs.io/docs/learn-es6/#template-strings');
+    @deprecated Use ES6 template strings instead: http://babeljs.io/docs/learn-es2015/#template-strings
   */
   fmt,
 
@@ -322,7 +324,7 @@ export default {
     'action_name'.capitalize()       // 'Action_name'
     'css-class-name'.capitalize()    // 'Css-class-name'
     'my favorite items'.capitalize() // 'My favorite items'
-    'privateDocs/ownerInvoice'.capitalize(); // 'PrivateDocs/OwnerInvoice'
+    'privateDocs/ownerInvoice'.capitalize(); // 'PrivateDocs/ownerInvoice'
     ```
 
     @method capitalize

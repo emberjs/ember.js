@@ -3,13 +3,13 @@ import { get } from 'ember-metal/property_get';
 import { read, isStream } from 'ember-metal/streams/utils';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
-export function readViewFactory(object, container) {
+export function readViewFactory(object, owner) {
   var value = read(object);
   var viewClass;
 
   if (typeof value === 'string') {
-    assert('View requires a container to resolve views not passed in through the context', !!container);
-    viewClass = container.lookupFactory('view:' + value);
+    assert('View requires an owner to resolve views not passed in through the context', !!owner);
+    viewClass = owner._lookupFactory('view:' + value);
   } else {
     viewClass = value;
   }
@@ -21,16 +21,16 @@ export function readViewFactory(object, container) {
   return viewClass;
 }
 
-export function readComponentFactory(nameOrStream, container) {
+export function readComponentFactory(nameOrStream, owner) {
   var name = read(nameOrStream);
-  var componentLookup = container.lookup('component-lookup:main');
+  var componentLookup = owner.lookup('component-lookup:main');
   assert(
     'Could not find \'component-lookup:main\' on the provided container, ' +
     'which is necessary for performing component lookups',
     componentLookup
   );
 
-  return componentLookup.lookupFactory(name, container);
+  return componentLookup.lookupFactory(name, owner);
 }
 
 export function readUnwrappedModel(object) {

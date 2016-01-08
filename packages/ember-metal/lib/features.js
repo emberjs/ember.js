@@ -22,7 +22,6 @@ export var FEATURES = assign(DEFAULT_FEATURES, Ember.ENV.FEATURES); // jshint ig
 
   You can define the following configuration options:
 
-  * `EmberENV.ENABLE_ALL_FEATURES` - force all features to be enabled.
   * `EmberENV.ENABLE_OPTIONAL_FEATURES` - enable any features that have not been explicitly
     enabled/disabled.
 
@@ -36,9 +35,7 @@ export var FEATURES = assign(DEFAULT_FEATURES, Ember.ENV.FEATURES); // jshint ig
 export default function isEnabled(feature) {
   var featureValue = FEATURES[feature];
 
-  if (Ember.ENV.ENABLE_ALL_FEATURES) {
-    return true;
-  } else if (featureValue === true || featureValue === false || featureValue === undefined) {
+  if (featureValue === true || featureValue === false || featureValue === undefined) {
     return featureValue;
   } else if (Ember.ENV.ENABLE_OPTIONAL_FEATURES) {
     return true;

@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 
@@ -10,6 +9,7 @@ import { typeOf } from 'ember-runtime/utils';
 import Renderer from 'ember-metal-views/renderer';
 import { cloneStates, states } from 'ember-views/views/states';
 import { internal } from 'htmlbars-runtime';
+import require from 'require';
 
 function K() { return this; }
 
@@ -36,13 +36,13 @@ var renderer;
   @uses Ember.ActionHandler
   @private
 */
-var CoreView = EmberObject.extend(Evented, ActionHandler, {
+const CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
 
   _states: cloneStates(states),
 
   init() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
     this._isVisible = get(this, 'isVisible');
@@ -89,7 +89,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @private
   */
   trigger() {
-    this._super.apply(this, arguments);
+    this._super(...arguments);
     var name = arguments[0];
     var method = this[name];
     if (method) {
@@ -142,13 +142,13 @@ export var DeprecatedCoreView = CoreView.extend({
       'Ember.CoreView is deprecated. Please use Ember.View.',
       false, { id: 'ember-views.core-view', until: '2.4.0' }
     );
-    this._super.apply(this, arguments);
+    this._super(...arguments);
   }
 });
 
 var _domHelper;
 function domHelper() {
-  return _domHelper = _domHelper || Ember.__loader.require('ember-htmlbars/system/dom-helper')['default'];
+  return _domHelper = _domHelper || require('ember-htmlbars/system/dom-helper').default;
 }
 
 export default CoreView;

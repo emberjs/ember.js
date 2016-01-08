@@ -14,6 +14,7 @@ import { computed } from 'ember-metal/computed';
 import { observer } from 'ember-metal/mixin';
 import { readViewFactory } from 'ember-views/streams/utils';
 import EmptyViewSupport from 'ember-views/mixins/empty_view_support';
+import { getOwner } from 'container/owner';
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -311,7 +312,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
       itemViewProps = this._itemViewProps || {};
       itemViewClass = this.getAttr('itemViewClass') || get(this, 'itemViewClass');
 
-      itemViewClass = readViewFactory(itemViewClass, this.container);
+      itemViewClass = readViewFactory(itemViewClass, getOwner(this));
 
       for (idx = start; idx < start + added; idx++) {
         item = content.objectAt(idx);

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import EmberObject from 'ember-runtime/system/object';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   ComputedProperty,
@@ -557,7 +557,7 @@ testBoth('chained dependent keys should evaluate computed properties lazily', fu
 QUnit.module('computed - improved cp syntax');
 
 QUnit.test('setter and getters are passed using an object', function() {
-  var testObj = Ember.Object.extend({
+  var testObj = EmberObject.extend({
     a: '1',
     b: '2',
     aInt: computed('a', {
@@ -582,7 +582,7 @@ QUnit.test('setter and getters are passed using an object', function() {
 });
 
 QUnit.test('setter can be omited', function() {
-  var testObj = Ember.Object.extend({
+  var testObj = EmberObject.extend({
     a: '1',
     b: '2',
     aInt: computed('a', {
@@ -600,7 +600,7 @@ QUnit.test('setter can be omited', function() {
 });
 
 QUnit.test('the return value of the setter gets cached', function() {
-  var testObj = Ember.Object.extend({
+  var testObj = EmberObject.extend({
     a: '1',
     sampleCP: computed('a', {
       get(keyName) {

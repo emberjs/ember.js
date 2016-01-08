@@ -30,15 +30,15 @@ QUnit.test('overriding public methods', function() {
   });
 
   MixinB = Mixin.create(MixinA, {
-    publicMethod() { return this._super.apply(this, arguments) + 'B'; }
+    publicMethod() { return this._super(...arguments) + 'B'; }
   });
 
   MixinD = Mixin.create(MixinA, {
-    publicMethod() { return this._super.apply(this, arguments) + 'D'; }
+    publicMethod() { return this._super(...arguments) + 'D'; }
   });
 
   MixinF = Mixin.create({
-    publicMethod() { return this._super.apply(this, arguments) + 'F'; }
+    publicMethod() { return this._super(...arguments) + 'F'; }
   });
 
   obj = {};
@@ -68,7 +68,7 @@ QUnit.test('overriding inherited objects', function() {
 
   var MixinB = Mixin.create({
     foo() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       cnt++;
     }
   });
@@ -95,15 +95,15 @@ QUnit.test('Including the same mixin more than once will only run once', functio
   });
 
   var MixinB = Mixin.create(MixinA, {
-    foo() { this._super.apply(this, arguments); }
+    foo() { this._super(...arguments); }
   });
 
   var MixinC = Mixin.create(MixinA, {
-    foo() { this._super.apply(this, arguments); }
+    foo() { this._super(...arguments); }
   });
 
   var MixinD = Mixin.create(MixinB, MixinC, MixinA, {
-    foo() { this._super.apply(this, arguments); }
+    foo() { this._super(...arguments); }
   });
 
   var obj = {};
@@ -119,7 +119,7 @@ QUnit.test('Including the same mixin more than once will only run once', functio
 QUnit.test('_super from a single mixin with no superclass does not error', function() {
   var MixinA = Mixin.create({
     foo() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
     }
   });
 
@@ -137,13 +137,13 @@ QUnit.test('_super from a first-of-two mixins with no superclass function does n
   var MixinA = Mixin.create({
     foo() {
       if (remaining-- > 0) {
-        this._super.apply(this, arguments);
+        this._super(...arguments);
       }
     }
   });
 
   var MixinB = Mixin.create({
-    foo() { this._super.apply(this, arguments); }
+    foo() { this._super(...arguments); }
   });
 
   var obj = {};
@@ -189,14 +189,14 @@ QUnit.test('applying several mixins at once with sup already defined causes infi
 
   var MixinB = Mixin.create({
     foo() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       cnt++;
     }
   });
 
   var MixinC = Mixin.create({
     foo() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       cnt++;
     }
   });

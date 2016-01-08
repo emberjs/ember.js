@@ -16,6 +16,7 @@ import _warn, {
   registerHandler as registerWarnHandler
 } from 'ember-debug/warn';
 import isPlainFunction from 'ember-debug/is-plain-function';
+import { generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
 
 /**
 @module ember
@@ -44,15 +45,20 @@ import isPlainFunction from 'ember-debug/is-plain-function';
   @method assert
   @param {String} desc A description of the assertion. This will become
     the text of the Error thrown if the assertion fails.
-  @param {Boolean|Function} test Must be truthy for the assertion to pass. If
-    falsy, an exception will be thrown. If this is a function, it will be executed and
-    its return value will be used as condition.
+  @param {Boolean} test Must be truthy for the assertion to pass. If
+    falsy, an exception will be thrown.
   @public
 */
 setDebugFunction('assert', function assert(desc, test) {
-  var throwAssertion;
+  let throwAssertion;
 
   if (isPlainFunction(test)) {
+    deprecate(
+      generateTestAsFunctionDeprecation('Ember.assert'),
+      false,
+      { id: 'ember-debug.deprecate-test-as-function', until: '2.5.0' }
+    );
+
     throwAssertion = !test();
   } else {
     throwAssertion = !test;
@@ -154,9 +160,11 @@ setDebugFunction('debugSeal', function debugSeal(obj) {
 });
 
 setDebugFunction('deprecate', _deprecate);
+
 setDebugFunction('warn', _warn);
+
 /**
-  Will call `Ember.warn()` if ENABLE_ALL_FEATURES, ENABLE_OPTIONAL_FEATURES, or
+  Will call `Ember.warn()` if ENABLE_OPTIONAL_FEATURES or
   any specific FEATURES flag is truthy.
 
   This method is called automatically in debug canary builds.
@@ -167,7 +175,6 @@ setDebugFunction('warn', _warn);
 */
 export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped) {
   if (featuresWereStripped) {
-    warn('Ember.ENV.ENABLE_ALL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_ALL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
     warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
 
     for (var key in FEATURES) {
@@ -210,11 +217,77 @@ if (!Ember.testing) {
     }, false);
   }
 }
-
+/**
+  @public
+  @class Ember.Debug
+*/
 Ember.Debug = { };
 
 if (isEnabled('ember-debug-handlers')) {
+  /**
+    Allows for runtime registration of handler functions that override the default deprecation behavior.
+    Deprecations are invoked by calls to [Ember.deprecate](http://emberjs.com/api/classes/Ember.html#method_deprecate).
+    The following example demonstrates its usage by registering a handler that throws an error if the
+    message contains the word "should", otherwise defers to the default handler.
+
+    ```javascript
+    Ember.Debug.registerDeprecationHandler((message, options, next) => {
+      if (message.indexOf('should') !== -1) {
+        throw new Error(`Deprecation message with should: ${message}`);
+      } else {
+        // defer to whatever handler was registered before this one
+        next(message, options);
+      }
+    }
+    ```
+
+    The handler function takes the following arguments:
+
+    <ul>
+      <li> <code>message</code> - The message received from the deprecation call. </li>
+      <li> <code>options</code> - An object passed in with the deprecation call containing additional information including:</li>
+        <ul>
+          <li> <code>id</code> - an id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
+          <li> <code>until</code> - is the version number Ember the feature and deprecation will be removed in.</li>
+        </ul>
+      <li> <code>next</code> - a function that calls into the previously registered handler.</li>
+    </ul>
+
+    @public
+    @static
+    @method registerDeprecationHandler
+    @param handler {Function} a function to handle deprecation calls
+    @since 2.1.0
+  */
   Ember.Debug.registerDeprecationHandler = registerDeprecationHandler;
+  /**
+    Allows for runtime registration of handler functions that override the default warning behavior.
+    Warnings are invoked by calls made to [Ember.warn](http://emberjs.com/api/classes/Ember.html#method_warn).
+    The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
+    default warning behavior.
+
+    ```javascript
+    // next is not called, so no warnings get the default behavior
+    Ember.Debug.registerWarnHandler(() => {});
+    ```
+
+    The handler function takes the following arguments:
+
+    <ul>
+      <li> <code>message</code> - The message received from the warn call. </li>
+      <li> <code>options</code> - An object passed in with the warn call containing additional information including:</li>
+        <ul>
+          <li> <code>id</code> - an id of the warning in the form of <code>package-name.specific-warning</code>.</li>
+        </ul>
+      <li> <code>next</code> - a function that calls into the previously registered handler.</li>
+    </ul>
+
+    @public
+    @static
+    @method registerWarnHandler
+    @param handler {Function} a function to handle warnings
+    @since 2.1.0
+  */
   Ember.Debug.registerWarnHandler = registerWarnHandler;
 }
 /*

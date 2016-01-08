@@ -2,11 +2,14 @@ import {
   guidFor
 } from 'ember-metal/utils';
 import {
+  peekMeta
+} from 'ember-metal/meta';
+import {
   sendEvent,
   accumulateListeners
 } from 'ember-metal/events';
 import ObserverSet from 'ember-metal/observer_set';
-import { symbol } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
@@ -35,7 +38,7 @@ var deferred = 0;
   @private
 */
 function propertyWillChange(obj, keyName) {
-  var m = obj['__ember_meta__'];
+  var m = peekMeta(obj);
   var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
   var possibleDesc = obj[keyName];
@@ -75,7 +78,7 @@ function propertyWillChange(obj, keyName) {
   @private
 */
 function propertyDidChange(obj, keyName) {
-  var m = obj['__ember_meta__'];
+  var m = peekMeta(obj);
   var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
   var possibleDesc = obj[keyName];

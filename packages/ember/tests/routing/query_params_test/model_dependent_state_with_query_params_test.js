@@ -1,16 +1,24 @@
 import Ember from 'ember-metal/core';
+import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
+import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
+import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
+import Application from 'ember-application/system/application';
+import jQuery from 'ember-views/system/jquery';
+import { A as emberA } from 'ember-runtime/system/native_array';
+import NoneLocation from 'ember-routing/location/none_location';
 
 var Router, App, router, registry, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 function handleURL(path) {
-  return Ember.run(function() {
+  return run(function() {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -25,10 +33,10 @@ var startingURL = '';
 var expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
-  Ember.run(obj, 'set', prop, value);
+  run(obj, 'set', prop, value);
 }
 
-var TestLocation = Ember.NoneLocation.extend({
+var TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -57,8 +65,8 @@ var TestLocation = Ember.NoneLocation.extend({
 });
 
 function sharedSetup() {
-  Ember.run(function() {
-    App = Ember.Application.create({
+  run(function() {
+    App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
     });
@@ -78,7 +86,7 @@ function sharedSetup() {
 
     Router = App.Router;
 
-    App.LoadingRoute = Ember.Route.extend({
+    App.LoadingRoute = Route.extend({
     });
 
     Ember.TEMPLATES.application = compile('{{outlet}}');
@@ -87,7 +95,7 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  Ember.run(function() {
+  run(function() {
     App.destroy();
     App = null;
 
@@ -99,7 +107,7 @@ function queryParamsStickyTest1(urlPrefix) {
   return function() {
     this.boot();
 
-    Ember.run(this.$link1, 'click');
+    run(this.$link1, 'click');
     equal(router.get('location.path'), `${urlPrefix}/a-1`);
 
     setAndFlush(this.controller, 'q', 'lol');
@@ -108,7 +116,7 @@ function queryParamsStickyTest1(urlPrefix) {
     equal(this.$link2.attr('href'), `${urlPrefix}/a-2`);
     equal(this.$link3.attr('href'), `${urlPrefix}/a-3`);
 
-    Ember.run(this.$link2, 'click');
+    run(this.$link2, 'click');
 
     equal(this.controller.get('q'), 'wat');
     equal(this.controller.get('z'), 0);
@@ -161,7 +169,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
     this.boot();
 
     this.expectedModelHookParams = { id: 'a-1', q: 'wat', z: 0 };
-    Ember.run(router, 'transitionTo', articleLookup, 'a-1');
+    run(router, 'transitionTo', articleLookup, 'a-1');
 
     deepEqual(this.controller.get('model'), { id: 'a-1' });
     equal(this.controller.get('q'), 'wat');
@@ -171,7 +179,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
     equal(this.$link3.attr('href'), `${urlPrefix}/a-3`);
 
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
-    Ember.run(router, 'transitionTo', articleLookup, 'a-2', { queryParams: { q: 'lol' } });
+    run(router, 'transitionTo', articleLookup, 'a-2', { queryParams: { q: 'lol' } });
 
     deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.controller.get('q'), 'lol');
@@ -181,7 +189,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
     equal(this.$link3.attr('href'), `${urlPrefix}/a-3`);
 
     this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
-    Ember.run(router, 'transitionTo', articleLookup, 'a-3', { queryParams: { q: 'hay' } });
+    run(router, 'transitionTo', articleLookup, 'a-3', { queryParams: { q: 'hay' } });
 
     deepEqual(this.controller.get('model'), { id: 'a-3' });
     equal(this.controller.get('q'), 'hay');
@@ -191,7 +199,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
     equal(this.$link3.attr('href'), `${urlPrefix}/a-3?q=hay`);
 
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
-    Ember.run(router, 'transitionTo', articleLookup, 'a-2', { queryParams: { z: 1 } });
+    run(router, 'transitionTo', articleLookup, 'a-2', { queryParams: { z: 1 } });
 
     deepEqual(this.controller.get('model'), { id: 'a-2' });
     equal(this.controller.get('q'), 'lol');
@@ -218,7 +226,7 @@ function queryParamsStickyTest4(urlPrefix, articleLookup) {
 
     this.boot();
 
-    Ember.run(this.$link1, 'click');
+    run(this.$link1, 'click');
     equal(router.get('location.path'), `${urlPrefix}/a-1`);
 
     setAndFlush(this.controller, 'q', 'lol');
@@ -227,7 +235,7 @@ function queryParamsStickyTest4(urlPrefix, articleLookup) {
     equal(this.$link2.attr('href'), `${urlPrefix}/a-2?q=lol`);
     equal(this.$link3.attr('href'), `${urlPrefix}/a-3?q=lol`);
 
-    Ember.run(this.$link2, 'click');
+    run(this.$link2, 'click');
 
     equal(this.controller.get('q'), 'lol');
     equal(this.controller.get('z'), 0);
@@ -260,7 +268,7 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
   return function() {
     this.boot();
 
-    Ember.run(router, 'transitionTo', commentsLookupKey, 'a-1');
+    run(router, 'transitionTo', commentsLookupKey, 'a-1');
 
     var commentsCtrl = container.lookup(`controller:${commentsLookupKey}`);
     equal(commentsCtrl.get('page'), 1);
@@ -272,11 +280,11 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
     setAndFlush(commentsCtrl, 'page', 3);
     equal(router.get('location.path'), `${urlPrefix}/a-1/comments?page=3`);
 
-    Ember.run(router, 'transitionTo', commentsLookupKey, 'a-2');
+    run(router, 'transitionTo', commentsLookupKey, 'a-2');
     equal(commentsCtrl.get('page'), 1);
     equal(router.get('location.path'), `${urlPrefix}/a-2/comments`);
 
-    Ember.run(router, 'transitionTo', commentsLookupKey, 'a-1');
+    run(router, 'transitionTo', commentsLookupKey, 'a-1');
     equal(commentsCtrl.get('page'), 3);
     equal(router.get('location.path'), `${urlPrefix}/a-1/comments?page=3`);
   };
@@ -299,7 +307,7 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
 
     this.boot();
 
-    Ember.run(router, 'transitionTo', commentsLookup, 'a-1');
+    run(router, 'transitionTo', commentsLookup, 'a-1');
 
     var commentsCtrl = container.lookup(`controller:${commentsLookup}`);
     equal(commentsCtrl.get('page'), 1);
@@ -308,19 +316,19 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
     setAndFlush(commentsCtrl, 'page', 2);
     equal(router.get('location.path'), `${urlPrefix}/a-1/comments?page=2`);
 
-    Ember.run(router, 'transitionTo', commentsLookup, 'a-2');
+    run(router, 'transitionTo', commentsLookup, 'a-2');
     equal(commentsCtrl.get('page'), 1);
     equal(this.controller.get('q'), 'wat');
 
-    Ember.run(router, 'transitionTo', commentsLookup, 'a-1');
+    run(router, 'transitionTo', commentsLookup, 'a-1');
 
     equal(router.get('location.path'), `${urlPrefix}/a-1/comments`);
     equal(commentsCtrl.get('page'), 1);
 
-    Ember.run(router, 'transitionTo', 'about');
+    run(router, 'transitionTo', 'about');
 
-    equal(Ember.$('#one').attr('href'), `${urlPrefix}/a-1/comments?q=imdone`);
-    equal(Ember.$('#two').attr('href'), `${urlPrefix}/a-2/comments`);
+    equal(jQuery('#one').attr('href'), `${urlPrefix}/a-1/comments?q=imdone`);
+    equal(jQuery('#two').attr('href'), `${urlPrefix}/a-2/comments`);
   };
 }
 
@@ -335,14 +343,14 @@ QUnit.module('Model Dep Query Params', {
       this.route('about');
     });
 
-    var articles = this.articles = Ember.A([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    var articles = this.articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       articles: this.articles
     });
 
     var self = this;
-    App.ArticleRoute = Ember.Route.extend({
+    App.ArticleRoute = Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
           deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -360,19 +368,19 @@ QUnit.module('Model Dep Query Params', {
         }
       });
 
-      App.CommentsRoute = Ember.Route.extend({
+      App.CommentsRoute = Route.extend({
         queryParams: {
           page: { defaultValue: 1 }
         }
       });
     } else {
-      App.ArticleController = Ember.Controller.extend({
+      App.ArticleController = Controller.extend({
         queryParams: ['q', 'z'],
         q: 'wat',
         z: 0
       });
 
-      App.CommentsController = Ember.Controller.extend({
+      App.CommentsController = Controller.extend({
         queryParams: 'page',
         page: 1
       });
@@ -383,9 +391,9 @@ QUnit.module('Model Dep Query Params', {
     this.boot = function() {
       bootApplication();
 
-      self.$link1 = Ember.$('#a-1');
-      self.$link2 = Ember.$('#a-2');
-      self.$link3 = Ember.$('#a-3');
+      self.$link1 = jQuery('#a-1');
+      self.$link2 = jQuery('#a-2');
+      self.$link3 = jQuery('#a-3');
 
       equal(self.$link1.attr('href'), '/a/a-1');
       equal(self.$link2.attr('href'), '/a/a-2');
@@ -426,14 +434,14 @@ QUnit.module('Model Dep Query Params (nested)', {
       this.route('about');
     });
 
-    var site_articles = this.site_articles = Ember.A([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       articles: this.site_articles
     });
 
     var self = this;
-    App.SiteArticleRoute = Ember.Route.extend({
+    App.SiteArticleRoute = Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
           deepEqual(params, self.expectedModelHookParams, 'the ArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -451,19 +459,19 @@ QUnit.module('Model Dep Query Params (nested)', {
         }
       });
 
-      App.SiteArticleCommentsRoute = Ember.Route.extend({
+      App.SiteArticleCommentsRoute = Route.extend({
         queryParams: {
           page: { defaultValue: 1 }
         }
       });
     } else {
-      App.SiteArticleController = Ember.Controller.extend({
+      App.SiteArticleController = Controller.extend({
         queryParams: ['q', 'z'],
         q: 'wat',
         z: 0
       });
 
-      App.SiteArticleCommentsController = Ember.Controller.extend({
+      App.SiteArticleCommentsController = Controller.extend({
         queryParams: 'page',
         page: 1
       });
@@ -473,9 +481,9 @@ QUnit.module('Model Dep Query Params (nested)', {
     this.boot = function() {
       bootApplication();
 
-      self.$link1 = Ember.$('#a-1');
-      self.$link2 = Ember.$('#a-2');
-      self.$link3 = Ember.$('#a-3');
+      self.$link1 = jQuery('#a-1');
+      self.$link2 = jQuery('#a-2');
+      self.$link3 = jQuery('#a-3');
 
       equal(self.$link1.attr('href'), '/site/a/a-1');
       equal(self.$link2.attr('href'), '/site/a/a-2');
@@ -515,13 +523,13 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       });
     });
 
-    var sites = this.sites = Ember.A([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
-    var site_articles = this.site_articles = Ember.A([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    var sites = this.sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
+    var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       siteArticles: this.site_articles,
       sites: this.sites,
-      allSitesAllArticles: Ember.computed({
+      allSitesAllArticles: computed({
         get: function() {
           var ret = [];
           var siteArticles = this.siteArticles;
@@ -537,7 +545,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
     });
 
     var self = this;
-    App.SiteRoute = Ember.Route.extend({
+    App.SiteRoute = Route.extend({
       model(params) {
         if (self.expectedSiteModelHookParams) {
           deepEqual(params, self.expectedSiteModelHookParams, 'the SiteRoute model hook received the expected merged dynamic segment + query params hash');
@@ -546,7 +554,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
         return sites.findBy('id', params.site_id);
       }
     });
-    App.SiteArticleRoute = Ember.Route.extend({
+    App.SiteArticleRoute = Route.extend({
       model(params) {
         if (self.expectedArticleModelHookParams) {
           deepEqual(params, self.expectedArticleModelHookParams, 'the SiteArticleRoute model hook received the expected merged dynamic segment + query params hash');
@@ -570,24 +578,24 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
         }
       });
 
-      App.SiteArticleCommentsRoute = Ember.Route.extend({
+      App.SiteArticleCommentsRoute = Route.extend({
         queryParams: {
           page: { defaultValue: 1 }
         }
       });
     } else {
-      App.SiteController = Ember.Controller.extend({
+      App.SiteController = Controller.extend({
         queryParams: ['country'],
         country: 'au'
       });
 
-      App.SiteArticleController = Ember.Controller.extend({
+      App.SiteArticleController = Controller.extend({
         queryParams: ['q', 'z'],
         q: 'wat',
         z: 0
       });
 
-      App.SiteArticleCommentsController = Ember.Controller.extend({
+      App.SiteArticleCommentsController = Controller.extend({
         queryParams: ['page'],
         page: 1
       });
@@ -598,15 +606,15 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
     this.boot = function() {
       bootApplication();
       self.links = {};
-      self.links['s-1-a-1'] = Ember.$('#s-1-a-1');
-      self.links['s-1-a-2'] = Ember.$('#s-1-a-2');
-      self.links['s-1-a-3'] = Ember.$('#s-1-a-3');
-      self.links['s-2-a-1'] = Ember.$('#s-2-a-1');
-      self.links['s-2-a-2'] = Ember.$('#s-2-a-2');
-      self.links['s-2-a-3'] = Ember.$('#s-2-a-3');
-      self.links['s-3-a-1'] = Ember.$('#s-3-a-1');
-      self.links['s-3-a-2'] = Ember.$('#s-3-a-2');
-      self.links['s-3-a-3'] = Ember.$('#s-3-a-3');
+      self.links['s-1-a-1'] = jQuery('#s-1-a-1');
+      self.links['s-1-a-2'] = jQuery('#s-1-a-2');
+      self.links['s-1-a-3'] = jQuery('#s-1-a-3');
+      self.links['s-2-a-1'] = jQuery('#s-2-a-1');
+      self.links['s-2-a-2'] = jQuery('#s-2-a-2');
+      self.links['s-2-a-3'] = jQuery('#s-2-a-3');
+      self.links['s-3-a-1'] = jQuery('#s-3-a-1');
+      self.links['s-3-a-2'] = jQuery('#s-3-a-2');
+      self.links['s-3-a-3'] = jQuery('#s-3-a-3');
 
       equal(self.links['s-1-a-1'].attr('href'), '/site/s-1/a/a-1');
       equal(self.links['s-1-a-2'].attr('href'), '/site/s-1/a/a-2');
@@ -632,7 +640,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
 QUnit.test('query params have \'model\' stickiness by default', function() {
   this.boot();
 
-  Ember.run(this.links['s-1-a-1'], 'click');
+  run(this.links['s-1-a-1'], 'click');
   deepEqual(this.site_controller.get('model'), { id: 's-1' });
   deepEqual(this.article_controller.get('model'), { id: 'a-1' });
   equal(router.get('location.path'), '/site/s-1/a/a-1');
@@ -661,7 +669,7 @@ QUnit.test('query params have \'model\' stickiness by default', function() {
   equal(this.links['s-3-a-2'].attr('href'), '/site/s-3/a/a-2');
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3');
 
-  Ember.run(this.links['s-1-a-2'], 'click');
+  run(this.links['s-1-a-2'], 'click');
 
   equal(this.site_controller.get('country'), 'us');
   equal(this.article_controller.get('q'), 'wat');
@@ -678,7 +686,7 @@ QUnit.test('query params have \'model\' stickiness by default', function() {
   equal(this.links['s-3-a-2'].attr('href'), '/site/s-3/a/a-2');
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3');
 
-  Ember.run(this.links['s-2-a-2'], 'click');
+  run(this.links['s-2-a-2'], 'click');
 
   equal(this.site_controller.get('country'), 'au');
   equal(this.article_controller.get('q'), 'wat');
@@ -800,7 +808,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
   this.expectedArticleModelHookParams = { article_id: 'a-1', q: 'wat', z: 0 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-1', 'a-1');
+  run(router, 'transitionTo', 'site.article', 's-1', 'a-1');
 
   deepEqual(this.site_controller.get('model'), { id: 's-1' });
   deepEqual(this.article_controller.get('model'), { id: 'a-1' });
@@ -819,7 +827,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
   this.expectedArticleModelHookParams = { article_id: 'a-2', q: 'lol', z: 0 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-1', 'a-2', { queryParams: { q: 'lol' } });
+  run(router, 'transitionTo', 'site.article', 's-1', 'a-2', { queryParams: { q: 'lol' } });
 
   deepEqual(this.site_controller.get('model'), { id: 's-1' });
   deepEqual(this.article_controller.get('model'), { id: 'a-2' });
@@ -838,7 +846,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
   this.expectedArticleModelHookParams = { article_id: 'a-3', q: 'hay', z: 0 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-1', 'a-3', { queryParams: { q: 'hay' } });
+  run(router, 'transitionTo', 'site.article', 's-1', 'a-3', { queryParams: { q: 'hay' } });
 
   deepEqual(this.site_controller.get('model'), { id: 's-1' });
   deepEqual(this.article_controller.get('model'), { id: 'a-3' });
@@ -857,7 +865,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
   this.expectedArticleModelHookParams = { article_id: 'a-2', q: 'lol', z: 1 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-1', 'a-2', { queryParams: { z: 1 } });
+  run(router, 'transitionTo', 'site.article', 's-1', 'a-2', { queryParams: { z: 1 } });
 
   deepEqual(this.site_controller.get('model'), { id: 's-1' });
   deepEqual(this.article_controller.get('model'), { id: 'a-2' });
@@ -876,7 +884,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
   this.expectedArticleModelHookParams = { article_id: 'a-2', q: 'lol', z: 1 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-2', 'a-2', { queryParams: { country: 'us' } });
+  run(router, 'transitionTo', 'site.article', 's-2', 'a-2', { queryParams: { country: 'us' } });
 
   deepEqual(this.site_controller.get('model'), { id: 's-2' });
   deepEqual(this.article_controller.get('model'), { id: 'a-2' });
@@ -895,7 +903,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
   this.expectedArticleModelHookParams = { article_id: 'a-1', q: 'yeah', z: 0 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-2', 'a-1', { queryParams: { q: 'yeah' } });
+  run(router, 'transitionTo', 'site.article', 's-2', 'a-1', { queryParams: { q: 'yeah' } });
 
   deepEqual(this.site_controller.get('model'), { id: 's-2' });
   deepEqual(this.article_controller.get('model'), { id: 'a-1' });
@@ -914,7 +922,7 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
 
   this.expectedSiteModelHookParams = { site_id: 's-3', country: 'nz' };
   this.expectedArticleModelHookParams = { article_id: 'a-3', q: 'hay', z: 3 };
-  Ember.run(router, 'transitionTo', 'site.article', 's-3', 'a-3', { queryParams: { country: 'nz', z: 3 } });
+  run(router, 'transitionTo', 'site.article', 's-3', 'a-3', { queryParams: { country: 'nz', z: 3 } });
 
   deepEqual(this.site_controller.get('model'), { id: 's-3' });
   deepEqual(this.article_controller.get('model'), { id: 'a-3' });

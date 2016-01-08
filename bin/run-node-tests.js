@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-require('qunitjs');
+global.QUnit = require('qunitjs');
 
 // adds test reporting
 var qe = require('qunit-extras');

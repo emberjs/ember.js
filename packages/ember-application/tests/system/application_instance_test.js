@@ -2,7 +2,7 @@ import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
-import isEnabled from 'ember-metal/features';
+import factory from 'container/tests/test-helpers/factory';
 
 let app, appInstance;
 
@@ -37,6 +37,8 @@ QUnit.test('an application instance can be created based upon an application', f
 });
 
 QUnit.test('properties (and aliases) are correctly assigned for accessing the container and registry', function() {
+  expect(9);
+
   run(function() {
     appInstance = ApplicationInstance.create({ application: app });
   });
@@ -45,35 +47,26 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
   ok(appInstance.__container__, '#__container__ is accessible');
   ok(appInstance.__registry__, '#__registry__ is accessible');
 
-  if (isEnabled('ember-registry-container-reform')) {
-    expect(9);
+  ok(typeof appInstance.container.lookup === 'function', '#container.lookup is available as a function');
 
-    ok(typeof appInstance.container.lookup === 'function', '#container.lookup is available as a function');
+  // stub with a no-op to keep deprecation test simple
+  appInstance.__container__.lookup = function() {
+    ok(true, '#loookup alias is called correctly');
+  };
 
-    // stub with a no-op to keep deprecation test simple
-    appInstance.__container__.lookup = function() {
-      ok(true, '#loookup alias is called correctly');
-    };
-
-    expectDeprecation(function() {
-      appInstance.container.lookup();
-    }, /Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead./);
+  expectDeprecation(function() {
+    appInstance.container.lookup();
+  }, /Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead./);
 
 
-    ok(typeof appInstance.registry.register === 'function', '#registry.register is available as a function');
-    appInstance.__registry__.register = function() {
-      ok(true, '#register alias is called correctly');
-    };
+  ok(typeof appInstance.registry.register === 'function', '#registry.register is available as a function');
+  appInstance.__registry__.register = function() {
+    ok(true, '#register alias is called correctly');
+  };
 
-    expectDeprecation(function() {
-      appInstance.registry.register();
-    }, /Using `ApplicationInstance.registry.register` is deprecated. Please use `ApplicationInstance.register` instead./);
-  } else {
-    expect(5);
-
-    strictEqual(appInstance.container, appInstance.__container__, '#container alias should be assigned');
-    strictEqual(appInstance.registry, appInstance.__registry__, '#registry alias should be assigned');
-  }
+  expectDeprecation(function() {
+    appInstance.registry.register();
+  }, /Using `ApplicationInstance.registry.register` is deprecated. Please use `ApplicationInstance.register` instead./);
 });
 
 QUnit.test('customEvents added to the application before setupEventDispatcher', function(assert) {
@@ -131,4 +124,27 @@ QUnit.test('customEvents added to the application instance before setupEventDisp
   };
 
   appInstance.setupEventDispatcher();
+});
+
+QUnit.test('unregistering a factory clears all cached instances of that factory', function(assert) {
+  assert.expect(3);
+
+  run(function() {
+    appInstance = ApplicationInstance.create({ application: app });
+  });
+
+  let PostController = factory();
+
+  appInstance.register('controller:post', PostController);
+
+  let postController1 = appInstance.lookup('controller:post');
+  assert.ok(postController1, 'lookup creates instance');
+
+  appInstance.unregister('controller:post');
+  appInstance.register('controller:post', PostController);
+
+  let postController2 = appInstance.lookup('controller:post');
+  assert.ok(postController2, 'lookup creates instance');
+
+  assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because previous one was reset');
 });

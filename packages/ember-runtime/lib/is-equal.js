@@ -1,14 +1,32 @@
 /**
-  Compares two objects, returning true if they are logically equal. This is
-  a deeper comparison than a simple triple equal. For sets it will compare the
-  internal objects. For any other object that implements `isEqual()` it will
-  respect that method.
+  Compares two objects, returning true if they are equal.
 
   ```javascript
   Ember.isEqual('hello', 'hello');                   // true
   Ember.isEqual(1, 2);                               // false
+  ```
+
+  `isEqual` is a more specific comparison than a triple equal comparison.
+  It will call the `isEqual` instance method on the objects being
+  compared, allowing finer control over when objects should be considered
+  equal to each other.
+
+  ```javascript
+  let Person = Ember.Object.extend({
+    isEqual(other) { return this.ssn == other.ssn; }
+  });
+
+  let personA = Person.create({name: 'Muhammad Ali', ssn: '123-45-6789'});
+  let personB = Person.create({name: 'Cassius Clay', ssn: '123-45-6789'});
+
+  Ember.isEqual(personA, personB); // true
+  ```
+
+  Due to the expense of array comparisons, collections will never be equal to
+  each other even if each of their items are equal to each other.
+
+  ```javascript
   Ember.isEqual([4, 2], [4, 2]);                     // false
-  Ember.isEqual({ isEqual() { return true;} }, null) // true
   ```
 
   @method isEqual

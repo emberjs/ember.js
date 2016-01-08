@@ -47,7 +47,7 @@ testWithDefault('complex depndent keys', function(get, set) {
   var MyClass = EmberObject.extend({
 
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       set(this, 'bar', { baz: 'BIFF' });
     },
 
@@ -84,7 +84,7 @@ testWithDefault('complex depndent keys', function(get, set) {
 testWithDefault('complex dependent keys changing complex dependent keys', function(get, set) {
   var MyClass = EmberObject.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       set(this, 'bar', { baz: 'BIFF' });
     },
 
@@ -98,7 +98,7 @@ testWithDefault('complex dependent keys changing complex dependent keys', functi
 
   var Subclass = MyClass.extend({
     init() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       set(this, 'bar2', { baz: 'BIFF2' });
     },
 

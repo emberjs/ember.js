@@ -10,6 +10,10 @@ export var CONTAINS_DASH_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') !== -1;
 });
 
+export var CONTAINS_DOT_CACHE = new Cache(1000, function(key) {
+  return key.indexOf('.') !== -1;
+});
+
 export function validateLazyHelperName(helperName, container, keywords) {
   return container && !(helperName in keywords);
 }
@@ -28,21 +32,39 @@ export function validateLazyHelperName(helperName, container, keywords) {
   @param {String} name the name of the helper to lookup
   @return {Helper}
 */
-export function findHelper(name, view, env) {
+function _findHelper(name, view, env, options) {
   var helper = env.helpers[name];
 
   if (!helper) {
-    var container = env.container;
-    if (validateLazyHelperName(name, container, env.hooks.keywords)) {
+    let owner = env.owner;
+    if (validateLazyHelperName(name, owner, env.hooks.keywords)) {
       var helperName = 'helper:' + name;
-      if (container.registry.has(helperName)) {
-        helper = container.lookupFactory(helperName);
+      if (owner.hasRegistration(helperName, options)) {
+        helper = owner._lookupFactory(helperName, options);
         assert(`Expected to find an Ember.Helper with the name ${helperName}, but found an object of type ${typeof helper} instead.`, helper.isHelperFactory || helper.isHelperInstance);
       }
     }
   }
 
   return helper;
+}
+
+export function findHelper(name, view, env) {
+  let options = {};
+  let moduleName = env.meta && env.meta.moduleName;
+  if (moduleName) {
+    options.source = `template:${moduleName}`;
+  }
+
+  let localHelper = _findHelper(name, view, env, options);
+
+  // local match found, use it
+  if (localHelper) {
+    return localHelper;
+  }
+
+  // fallback to global
+  return _findHelper(name, view, env);
 }
 
 export default function lookupHelper(name, view, env) {

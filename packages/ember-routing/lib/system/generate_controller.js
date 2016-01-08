@@ -14,10 +14,10 @@ import { get } from 'ember-metal/property_get';
   @private
 */
 
-export function generateControllerFactory(container, controllerName, context) {
+export function generateControllerFactory(owner, controllerName, context) {
   var Factory, fullName;
 
-  Factory = container.lookupFactory('controller:basic').extend({
+  Factory = owner._lookupFactory('controller:basic').extend({
     isGenerated: true,
     toString() {
       return `(generated ${controllerName} controller)`;
@@ -26,7 +26,7 @@ export function generateControllerFactory(container, controllerName, context) {
 
   fullName = `controller:${controllerName}`;
 
-  container.registry.register(fullName, Factory);
+  owner.register(fullName, Factory);
 
   return Factory;
 }
@@ -44,11 +44,11 @@ export function generateControllerFactory(container, controllerName, context) {
   @private
   @since 1.3.0
 */
-export default function generateController(container, controllerName, context) {
-  generateControllerFactory(container, controllerName, context);
+export default function generateController(owner, controllerName, context) {
+  generateControllerFactory(owner, controllerName, context);
 
   var fullName = `controller:${controllerName}`;
-  var instance = container.lookup(fullName);
+  var instance = owner.lookup(fullName);
 
   if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
     info(`generated -> ${fullName}`, { fullName: fullName });

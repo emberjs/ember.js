@@ -9,7 +9,7 @@
   Ember.isNone(undefined);     // true
   Ember.isNone('');            // false
   Ember.isNone([]);            // false
-  Ember.isNone(function() {});  // false
+  Ember.isNone(function() {}); // false
   ```
 
   @method isNone

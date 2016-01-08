@@ -1,12 +1,12 @@
-import Ember from 'ember-metal/core';
 import { generateGuid } from 'ember-metal/utils';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import CopyableTests from 'ember-runtime/tests/suites/copyable';
 
 CopyableTests.extend({
   name: 'NativeArray Copyable',
 
   newObject() {
-    return Ember.A([generateGuid()]);
+    return emberA([generateGuid()]);
   },
 
   isEqual(a, b) {
@@ -31,7 +31,7 @@ CopyableTests.extend({
 QUnit.module('NativeArray Copyable');
 
 QUnit.test('deep copy is respected', function() {
-  var array = Ember.A([{ id: 1 }, { id: 2 }, { id: 3 }]);
+  var array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }]);
 
   var copiedArray = array.copy(true);
 

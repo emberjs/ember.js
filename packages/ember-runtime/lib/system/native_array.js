@@ -120,7 +120,7 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
     classNames: ['pagination'],
 
     init: function() {
-      this._super.apply(this, arguments);
+      this._super(...arguments);
       if (!this.get('content')) {
         this.set('content', Ember.A());
       }
@@ -133,39 +133,16 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
   @return {Ember.NativeArray}
   @public
 */
-var A = function(arr) {
-  if (arr === undefined) { arr = []; }
-  return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
-};
-
-/**
-  Activates the mixin on the Array.prototype if not already applied. Calling
-  this method more than once is safe. This will be called when ember is loaded
-  unless you have `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Array`
-  set to `false`.
-
-  Example
-
-  ```js
-  if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
-    Ember.NativeArray.activate();
-  }
-  ```
-
-  @method activate
-  @for Ember.NativeArray
-  @static
-  @return {void}
-  @private
-*/
-NativeArray.activate = function() {
-  NativeArray.apply(Array.prototype);
-
-  A = function(arr) { return arr || []; };
-};
+var A;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
-  NativeArray.activate();
+  NativeArray.apply(Array.prototype);
+  A = function (arr) { return arr || []; };
+} else {
+  A = function (arr) {
+    if (arr === undefined) { arr = []; }
+    return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
+  };
 }
 
 Ember.A = A; // ES6TODO: Setting A onto the object returned by ember-metal/core to avoid circles

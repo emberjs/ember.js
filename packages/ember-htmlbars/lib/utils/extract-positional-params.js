@@ -11,9 +11,9 @@ export default function extractPositionalParams(renderNode, component, params, a
 }
 
 export function processPositionalParams(renderNode, positionalParams, params, attrs) {
-  const isNamed = typeof positionalParams === 'string';
+  let isRest = typeof positionalParams === 'string';
 
-  if (isNamed) {
+  if (isRest) {
     processRestPositionalParameters(renderNode, positionalParams, params, attrs);
   } else {
     processNamedPositionalParameters(renderNode, positionalParams, params, attrs);
@@ -34,9 +34,16 @@ function processNamedPositionalParameters(renderNode, positionalParams, params, 
 }
 
 function processRestPositionalParameters(renderNode, positionalParamsName, params, attrs) {
+  let nameInAttrs = positionalParamsName in attrs;
+
+  // when no params are used, do not override the specified `attrs.stringParamName` value
+  if (params.length === 0 && nameInAttrs) {
+    return;
+  }
+
   // If there is already an attribute for that variable, do nothing
   assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsName}\`.`,
-         !(positionalParamsName in attrs));
+         !nameInAttrs);
 
   let paramsStream = new Stream(() => {
     return readArray(params.slice(0));

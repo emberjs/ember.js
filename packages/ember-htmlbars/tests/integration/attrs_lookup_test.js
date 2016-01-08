@@ -1,4 +1,3 @@
-import Registry from 'container/registry';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
@@ -6,31 +5,33 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 
-var registry, container, view;
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
+
+var owner, view;
 
 QUnit.module('component - attrs lookup', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('component', { singleton: false });
-    registry.optionsForType('view', { singleton: false });
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('component-lookup:main', ComponentLookup);
+    owner = buildOwner();
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.registerOptionsForType('view', { singleton: false });
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(view);
-    registry = container = view = null;
+    owner = view = null;
   }
 });
 
 QUnit.test('should be able to lookup attrs without `attrs.` - template access', function() {
-  registry.register('template:components/foo-bar', compile('{{first}}'));
+  owner.register('template:components/foo-bar', compile('{{first}}'));
 
   view = EmberView.extend({
-    template: compile('{{foo-bar first="first attr"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{foo-bar first="first attr"}}')
   }).create();
 
   runAppend(view);
@@ -41,7 +42,7 @@ QUnit.test('should be able to lookup attrs without `attrs.` - template access', 
 QUnit.test('should be able to lookup attrs without `attrs.` - component access', function() {
   var component;
 
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     init() {
       this._super(...arguments);
       component = this;
@@ -49,8 +50,8 @@ QUnit.test('should be able to lookup attrs without `attrs.` - component access',
   }));
 
   view = EmberView.extend({
-    template: compile('{{foo-bar first="first attr"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{foo-bar first="first attr"}}')
   }).create();
 
   runAppend(view);
@@ -61,7 +62,7 @@ QUnit.test('should be able to lookup attrs without `attrs.` - component access',
 QUnit.test('should be able to modify a provided attr into local state #11571 / #11559', function() {
   var component;
 
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     init() {
       this._super(...arguments);
       component = this;
@@ -71,11 +72,11 @@ QUnit.test('should be able to modify a provided attr into local state #11571 / #
       this.set('first', this.getAttr('first').toUpperCase());
     }
   }));
-  registry.register('template:components/foo-bar', compile('{{first}}'));
+  owner.register('template:components/foo-bar', compile('{{first}}'));
 
   view = EmberView.extend({
-    template: compile('{{foo-bar first="first attr"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{foo-bar first="first attr"}}')
   }).create();
 
   runAppend(view);
@@ -87,7 +88,7 @@ QUnit.test('should be able to modify a provided attr into local state #11571 / #
 QUnit.test('should be able to access unspecified attr #12035', function() {
   var component;
 
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     init() {
       this._super(...arguments);
       component = this;
@@ -97,11 +98,11 @@ QUnit.test('should be able to access unspecified attr #12035', function() {
       equal(this.get('woot'), 'yes', 'found attr in didReceiveAttrs');
     }
   }));
-  // registry.register('template:components/foo-bar', compile('{{first}}'));
+  // owner.register('template:components/foo-bar', compile('{{first}}'));
 
   view = EmberView.extend({
-    template: compile('{{foo-bar woot="yes"}}'),
-    container: container
+    [OWNER]: owner,
+    template: compile('{{foo-bar woot="yes"}}')
   }).create();
 
   runAppend(view);
@@ -115,7 +116,7 @@ QUnit.test('should not need to call _super in `didReceiveAttrs` (GH #11992)', fu
   var firstValue = 'first';
   var secondValue = 'second';
 
-  registry.register('component:foo-bar', Component.extend({
+  owner.register('component:foo-bar', Component.extend({
     didReceiveAttrs() {
       let rootFirst = this.get('first');
       let rootSecond = this.get('second');
@@ -131,10 +132,10 @@ QUnit.test('should not need to call _super in `didReceiveAttrs` (GH #11992)', fu
   }));
 
   view = EmberView.extend({
+    [OWNER]: owner,
     first: firstValue,
     second: secondValue,
-    template: compile('{{foo-bar first=view.first second=view.second}}'),
-    container: container
+    template: compile('{{foo-bar first=view.first second=view.second}}')
   }).create();
 
   runAppend(view);

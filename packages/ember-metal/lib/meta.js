@@ -42,6 +42,7 @@ let members = {
 };
 
 let memberNames = Object.keys(members);
+const META_FIELD = '__ember_meta__';
 
 function Meta(obj, parentMeta) {
   this._cache = undefined;
@@ -292,12 +293,24 @@ export var META_DESC = {
 };
 
 var EMBER_META_PROPERTY = {
-  name: '__ember_meta__',
+  name: META_FIELD,
   descriptor: META_DESC
 };
 
-// Placeholder for non-writable metas.
-export var EMPTY_META = new Meta(null);
+// choose the one appropriate for given platform
+let setMeta = function(obj, meta) {
+  // if `null` already, just set it to the new value
+  // otherwise define property first
+  if (obj[META_FIELD] !== null) {
+    if (obj.__defineNonEnumerable) {
+      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+    } else {
+      Object.defineProperty(obj, META_FIELD, META_DESC);
+    }
+  }
+
+  obj[META_FIELD] = meta;
+};
 
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
@@ -317,28 +330,30 @@ export var EMPTY_META = new Meta(null);
     the meta hash, allowing the method to avoid making an unnecessary copy.
   @return {Object} the meta hash for an object
 */
-export function meta(obj, writable) {
-  var ret = obj.__ember_meta__;
-  if (writable === false) {
-    return ret || EMPTY_META;
+export function meta(obj) {
+  let maybeMeta = peekMeta(obj);
+  let parent;
+
+  // remove this code, in-favor of explicit parent
+  if (maybeMeta) {
+    if (maybeMeta.source === obj) {
+      return maybeMeta;
+    }
+    parent = maybeMeta;
   }
 
-  if (ret && ret.source === obj) {
-    return ret;
-  }
+  let newMeta = new Meta(obj, parent);
+  setMeta(obj, newMeta);
+  return newMeta;
+}
 
-  if (!ret) {
-    ret = new Meta(obj);
-  } else {
-    ret = new Meta(obj, ret);
-  }
+export function peekMeta(obj) {
+  return obj[META_FIELD];
+}
 
-  if (obj.__defineNonEnumerable) {
-    obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-  } else {
-    Object.defineProperty(obj, '__ember_meta__', META_DESC);
+export function deleteMeta(obj) {
+  if (typeof obj[META_FIELD] !== 'object') {
+    return;
   }
-  obj.__ember_meta__ = ret;
-
-  return ret;
+  obj[META_FIELD] = null;
 }

@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
-import Registry from 'container/registry';
 import isEnabled from 'ember-metal/features';
 
 var app;
@@ -34,44 +33,59 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
   });
 });
 
-if (isEnabled('ember-registry-container-reform')) {
-  QUnit.test('initializers are passed an App', function() {
+if (isEnabled('ember-application-visit')) {
+  QUnit.test('initializers that thorws causes the boot promise to reject with the error', function() {
+    QUnit.expect(2);
+    QUnit.stop();
+
     var MyApplication = Application.extend();
 
     MyApplication.initializer({
       name: 'initializer',
-      initialize(App) {
-        ok(App instanceof Application, 'initialize is passed an Application');
-      }
+      initialize() { throw new Error('boot failure'); }
     });
 
-    run(function() {
-      app = MyApplication.create({
-        router: false,
-        rootElement: '#qunit-fixture'
-      });
-    });
-  });
-} else {
-  QUnit.test('initializers are passed a registry and App', function() {
-    var MyApplication = Application.extend();
-
-    MyApplication.initializer({
-      name: 'initializer',
-      initialize(registry, App) {
-        ok(registry instanceof Registry, 'initialize is passed a registry');
-        ok(App instanceof Application, 'initialize is passed an Application');
-      }
+    var app = MyApplication.create({
+      autoboot: false
     });
 
-    run(function() {
-      app = MyApplication.create({
-        router: false,
-        rootElement: '#qunit-fixture'
-      });
-    });
+    try {
+      app.boot().then(
+        (app) => {
+          QUnit.start();
+          ok(false, 'The boot promise should not resolve when there is a boot error');
+        },
+        (err) => {
+          QUnit.start();
+          ok(err instanceof Error, 'The boot promise should reject with an error');
+          equal(err.message, 'boot failure');
+        }
+      );
+    } catch(e) {
+      QUnit.start();
+      ok(false, 'The boot method should not throw');
+      throw e;
+    }
   });
 }
+
+QUnit.test('initializers are passed an App', function() {
+  var MyApplication = Application.extend();
+
+  MyApplication.initializer({
+    name: 'initializer',
+    initialize(App) {
+      ok(App instanceof Application, 'initialize is passed an Application');
+    }
+  });
+
+  run(function() {
+    app = MyApplication.create({
+      router: false,
+      rootElement: '#qunit-fixture'
+    });
+  });
+});
 
 QUnit.test('initializers can be registered in a specified order', function() {
   var order = [];
@@ -373,25 +387,23 @@ QUnit.test('initializers should be executed in their own context', function() {
   });
 });
 
-if (isEnabled('ember-registry-container-reform')) {
-  QUnit.test('initializers should throw a deprecation warning when receiving a second argument', function() {
-    expect(1);
+QUnit.test('initializers should throw a deprecation warning when receiving a second argument', function() {
+  expect(1);
 
-    var MyApplication = Application.extend();
+  var MyApplication = Application.extend();
 
-    MyApplication.initializer({
-      name: 'deprecated',
-      initialize(registry, application) {
-      }
-    });
-
-    expectDeprecation(function() {
-      run(function() {
-        app = MyApplication.create({
-          router: false,
-          rootElement: '#qunit-fixture'
-        });
-      });
-    }, /The `initialize` method for Application initializer 'deprecated' should take only one argument - `App`, an instance of an `Application`./);
+  MyApplication.initializer({
+    name: 'deprecated',
+    initialize(registry, application) {
+    }
   });
-}
+
+  expectDeprecation(function() {
+    run(function() {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  }, /The `initialize` method for Application initializer 'deprecated' should take only one argument - `App`, an instance of an `Application`./);
+});

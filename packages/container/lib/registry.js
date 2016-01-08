@@ -1,5 +1,7 @@
-import { assert } from 'ember-metal/debug';
+import isEnabled from 'ember-metal/features';
+import { assert, deprecate } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
+import EmptyObject from 'ember-metal/empty_object';
 import assign from 'ember-metal/assign';
 import Container from './container';
 
@@ -21,7 +23,13 @@ var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
 function Registry(options) {
   this.fallback = options && options.fallback ? options.fallback : null;
 
-  this.resolver = options && options.resolver ? options.resolver : function() {};
+  if (options && options.resolver) {
+    this.resolver = options.resolver;
+
+    if (typeof this.resolver === 'function') {
+      deprecateResolverFunction(this);
+    }
+  }
 
   this.registrations  = dictionary(options && options.registrations ? options.registrations : null);
 
@@ -30,6 +38,7 @@ function Registry(options) {
   this._factoryTypeInjections = dictionary(null);
   this._factoryInjections     = dictionary(null);
 
+  this._localLookupCache      = new EmptyObject();
   this._normalizeCache        = dictionary(null);
   this._resolveCache          = dictionary(null);
   this._failCache             = dictionary(null);
@@ -49,9 +58,11 @@ Registry.prototype = {
   fallback: null,
 
   /**
+   An object that has a `resolve` method that resolves a name.
+
    @private
    @property resolver
-   @type function
+   @type Resolver
    */
   resolver: null,
 
@@ -197,6 +208,8 @@ Registry.prototype = {
 
     var normalizedName = this.normalize(fullName);
 
+    this._localLookupCache = new EmptyObject();
+
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
     delete this._failCache[normalizedName];
@@ -234,13 +247,15 @@ Registry.prototype = {
    @private
    @method resolve
    @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Function} fullName's factory
    */
-  resolve(fullName) {
+  resolve(fullName, options) {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
-    var factory = resolve(this, this.normalize(fullName));
+    let factory = resolve(this, this.normalize(fullName), options);
     if (factory === undefined && this.fallback) {
-      factory = this.fallback.resolve(fullName);
+      factory = this.fallback.resolve(...arguments);
     }
     return factory;
   },
@@ -259,7 +274,13 @@ Registry.prototype = {
    @return {string} described fullName
    */
   describe(fullName) {
-    return fullName;
+    if (this.resolver && this.resolver.lookupDescription) {
+      return this.resolver.lookupDescription(fullName);
+    } else if (this.fallback) {
+      return this.fallback.describe(fullName);
+    } else {
+      return fullName;
+    }
   },
 
   /**
@@ -271,7 +292,13 @@ Registry.prototype = {
    @return {string} normalized fullName
    */
   normalizeFullName(fullName) {
-    return fullName;
+    if (this.resolver && this.resolver.normalize) {
+      return this.resolver.normalize(fullName);
+    } else if (this.fallback) {
+      return this.fallback.normalizeFullName(fullName);
+    } else {
+      return fullName;
+    }
   },
 
   /**
@@ -297,7 +324,13 @@ Registry.prototype = {
    @return {function} toString function
    */
   makeToString(factory, fullName) {
-    return factory.toString();
+    if (this.resolver && this.resolver.makeToString) {
+      return this.resolver.makeToString(factory, fullName);
+    } else if (this.fallback) {
+      return this.fallback.makeToString(factory, fullName);
+    } else {
+      return factory.toString();
+    }
   },
 
   /**
@@ -307,11 +340,19 @@ Registry.prototype = {
    @private
    @method has
    @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName) {
+  has(fullName, options) {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
-    return has(this, this.normalize(fullName));
+
+    let source;
+    if (isEnabled('ember-htmlbars-local-lookup')) {
+      source = options && options.source && this.normalize(options.source);
+    }
+
+    return has(this, this.normalize(fullName), source);
   },
 
   /**
@@ -361,8 +402,8 @@ Registry.prototype = {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName, options) {
-    options = options || {};
+  options(fullName, _options) {
+    let options = _options || {};
     var normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   },
@@ -645,7 +686,7 @@ Registry.prototype = {
       fallbackKnown = this.fallback.knownForType(type);
     }
 
-    if (this.resolver.knownForType) {
+    if (this.resolver && this.resolver.knownForType) {
       resolverKnown = this.resolver.knownForType(type);
     }
 
@@ -723,12 +764,92 @@ Registry.prototype = {
   }
 };
 
-function resolve(registry, normalizedName) {
+function deprecateResolverFunction(registry) {
+  deprecate('Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.',
+            false,
+            { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
+  registry.resolver = {
+    resolve: registry.resolver
+  };
+}
+
+if (isEnabled('ember-htmlbars-local-lookup')) {
+  /**
+    Given a fullName and a source fullName returns the fully resolved
+    fullName. Used to allow for local lookup.
+
+    ```javascript
+    var registry = new Registry();
+
+    // the twitter factory is added to the module system
+    registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
+    ```
+
+    @private
+    @method expandLocalLookup
+    @param {String} fullName
+    @param {Object} [options]
+    @param {String} [options.source] the fullname of the request source (used for local lookups)
+    @return {String} fullName
+  */
+  Registry.prototype.expandLocalLookup = function Registry_expandLocalLookup(fullName, options) {
+    if (this.resolver && this.resolver.expandLocalLookup) {
+      assert('fullName must be a proper full name', this.validateFullName(fullName));
+      assert('options.source must be provided to expandLocalLookup', options && options.source);
+      assert('options.source must be a proper full name', this.validateFullName(options.source));
+
+      let normalizedFullName = this.normalize(fullName);
+      let normalizedSource = this.normalize(options.source);
+
+      return expandLocalLookup(this, normalizedFullName, normalizedSource);
+    } else if (this.fallback) {
+      return this.fallback.expandLocalLookup(fullName, options);
+    } else {
+      return null;
+    }
+  };
+}
+
+function expandLocalLookup(registry, normalizedName, normalizedSource) {
+  let cache = registry._localLookupCache;
+  let normalizedNameCache = cache[normalizedName];
+
+  if (!normalizedNameCache) {
+    normalizedNameCache = cache[normalizedName] = new EmptyObject();
+  }
+
+  let cached = normalizedNameCache[normalizedSource];
+
+  if (cached !== undefined) { return cached; }
+
+  let expanded = registry.resolver.expandLocalLookup(normalizedName, normalizedSource);
+
+  return normalizedNameCache[normalizedSource] = expanded;
+}
+
+function resolve(registry, normalizedName, options) {
+  if (isEnabled('ember-htmlbars-local-lookup')) {
+    if (options && options.source) {
+      // when `source` is provided expand normalizedName
+      // and source into the full normalizedName
+      normalizedName = registry.expandLocalLookup(normalizedName, options);
+
+      // if expandLocalLookup returns falsey, we do not support local lookup
+      if (!normalizedName) { return; }
+    }
+  }
+
   var cached = registry._resolveCache[normalizedName];
   if (cached) { return cached; }
   if (registry._failCache[normalizedName]) { return; }
 
-  var resolved = registry.resolver(normalizedName) || registry.registrations[normalizedName];
+  let resolved;
+
+  if (registry.resolver) {
+    resolved = registry.resolver.resolve(normalizedName);
+  }
+
+  resolved = resolved || registry.registrations[normalizedName];
 
   if (resolved) {
     registry._resolveCache[normalizedName] = resolved;
@@ -739,8 +860,8 @@ function resolve(registry, normalizedName) {
   return resolved;
 }
 
-function has(registry, fullName) {
-  return registry.resolve(fullName) !== undefined;
+function has(registry, fullName, source) {
+  return registry.resolve(fullName, { source }) !== undefined;
 }
 
 export default Registry;

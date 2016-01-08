@@ -1,6 +1,5 @@
 import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
-import Registry from 'container/registry';
 //import jQuery from "ember-views/system/jquery";
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
@@ -9,23 +8,24 @@ import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
-var registry, container, view;
+var owner, view;
 
 QUnit.module('component - mutable bindings', {
   setup() {
-    registry = new Registry();
-    container = registry.container();
-    registry.optionsForType('component', { singleton: false });
-    registry.optionsForType('view', { singleton: false });
-    registry.optionsForType('template', { instantiate: false });
-    registry.register('component-lookup:main', ComponentLookup);
+    owner = buildOwner();
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.registerOptionsForType('view', { singleton: false });
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('component-lookup:main', ComponentLookup);
   },
 
   teardown() {
-    runDestroy(container);
+    runDestroy(owner);
     runDestroy(view);
-    registry = container = view = null;
+    owner = view = null;
   }
 });
 
@@ -35,18 +35,18 @@ QUnit.test('a simple mutable binding propagates properly [DEPRECATED]', function
 
   var bottom;
 
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     layout: compile('{{bottom-mut setMe=value}}')
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     didInsertElement() {
       bottom = this;
     }
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut value=view.val}}'),
     val: 12
   });
@@ -64,18 +64,18 @@ QUnit.test('a simple mutable binding propagates properly [DEPRECATED]', function
 QUnit.test('a simple mutable binding using `mut` propagates properly', function(assert) {
   var bottom;
 
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     layout: compile('{{bottom-mut setMe=(mut attrs.value)}}')
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     didInsertElement() {
       bottom = this;
     }
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut value=(mut view.val)}}'),
     val: 12
   });
@@ -93,11 +93,11 @@ QUnit.test('a simple mutable binding using `mut` propagates properly', function(
 QUnit.test('using a string value through middle tier does not trigger assertion', function(assert) {
   var bottom;
 
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     layout: compile('{{bottom-mut stuff=attrs.value}}')
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     layout: compile('<p class="bottom">{{attrs.stuff}}</p>'),
     didInsertElement() {
       bottom = this;
@@ -105,7 +105,7 @@ QUnit.test('using a string value through middle tier does not trigger assertion'
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut value="foo"}}'),
     val: 12
   });
@@ -119,11 +119,11 @@ QUnit.test('using a string value through middle tier does not trigger assertion'
 QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function(assert) {
   var bottom;
 
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     layout: compile('{{bottom-mut setMe=(mut attrs.value)}}')
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     layout: compile('<p class="bottom">{{attrs.setMe}}</p>'),
     didInsertElement() {
       bottom = this;
@@ -131,7 +131,7 @@ QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut value=(mut view.val)}}'),
     val: 12
   });
@@ -150,7 +150,7 @@ QUnit.test('a simple mutable binding using `mut` inserts into the DOM', function
 QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding', function(assert) {
   var middle, bottom;
 
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     // no longer mutable
     layout: compile('{{bottom-mut setMe=(readonly attrs.value)}}'),
 
@@ -159,7 +159,7 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
     }
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     layout: compile('<p class="bottom">{{attrs.setMe}}</p>'),
 
     didInsertElement() {
@@ -168,7 +168,7 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut value=(mut view.val)}}'),
     val: 12
   });
@@ -186,16 +186,16 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
 });
 
 QUnit.test('mutable bindings work inside of yielded content', function(assert) {
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     layout: compile('{{#bottom-mut}}{{attrs.model.name}}{{/bottom-mut}}')
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     layout: compile('<p class="bottom">{{yield}}</p>')
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut model=(mut view.model)}}'),
     model: { name: 'Matthew Beale' }
   });
@@ -210,11 +210,11 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
   var willRender = [];
   var didInsert = [];
 
-  registry.register('component:middle-mut', Component.extend({
+  owner.register('component:middle-mut', Component.extend({
     layout: compile('{{bottom-mut setMe=(mut attrs.value)}}')
   }));
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     willRender() {
       willRender.push(this.attrs.setMe.value);
     },
@@ -225,7 +225,7 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{middle-mut value=(mut view.val)}}'),
     val: 12
   });
@@ -246,7 +246,7 @@ QUnit.test('a simple mutable binding using `mut` is available in hooks', functio
 QUnit.test('a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023', function(assert) {
   var bottom;
 
-  registry.register('component:bottom-mut', Component.extend({
+  owner.register('component:bottom-mut', Component.extend({
     thingy: null,
 
     didInsertElement() {
@@ -255,7 +255,7 @@ QUnit.test('a mutable binding with a backing computed property and attribute pre
   }));
 
   view = EmberView.extend({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{bottom-mut thingy=(mut view.val)}}'),
     baseValue: 12,
     val: computed('baseValue', function() {
@@ -275,11 +275,11 @@ QUnit.test('a mutable binding with a backing computed property and attribute pre
 });
 
 QUnit.test('automatic mutable bindings tolerate undefined non-stream inputs', function(assert) {
-  registry.register('template:components/x-outer', compile('{{x-inner model=attrs.nonexistent}}'));
-  registry.register('template:components/x-inner', compile('hello'));
+  owner.register('template:components/x-outer', compile('{{x-inner model=attrs.nonexistent}}'));
+  owner.register('template:components/x-inner', compile('hello'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{x-outer}}')
   });
 
@@ -288,11 +288,11 @@ QUnit.test('automatic mutable bindings tolerate undefined non-stream inputs', fu
 });
 
 QUnit.test('automatic mutable bindings tolerate constant non-stream inputs', function(assert) {
-  registry.register('template:components/x-outer', compile('{{x-inner model="foo"}}'));
-  registry.register('template:components/x-inner', compile('hello{{attrs.model}}'));
+  owner.register('template:components/x-outer', compile('{{x-inner model="foo"}}'));
+  owner.register('template:components/x-inner', compile('hello{{attrs.model}}'));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{x-outer}}')
   });
 
@@ -303,15 +303,15 @@ QUnit.test('automatic mutable bindings tolerate constant non-stream inputs', fun
 QUnit.test('automatic mutable bindings to undefined non-streams tolerate attempts to set them', function(assert) {
   var inner;
 
-  registry.register('template:components/x-outer', compile('{{x-inner model=attrs.nonexistent}}'));
-  registry.register('component:x-inner', Component.extend({
+  owner.register('template:components/x-outer', compile('{{x-inner model=attrs.nonexistent}}'));
+  owner.register('component:x-inner', Component.extend({
     didInsertElement() {
       inner = this;
     }
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{x-outer}}')
   });
 
@@ -323,15 +323,15 @@ QUnit.test('automatic mutable bindings to undefined non-streams tolerate attempt
 QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts to set them', function(assert) {
   var inner;
 
-  registry.register('template:components/x-outer', compile('{{x-inner model=attrs.x}}'));
-  registry.register('component:x-inner', Component.extend({
+  owner.register('template:components/x-outer', compile('{{x-inner model=attrs.x}}'));
+  owner.register('component:x-inner', Component.extend({
     didInsertElement() {
       inner = this;
     }
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('{{x-outer x="foo"}}')
   });
 
@@ -346,7 +346,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
   var middle;
 
-  registry.register('component:middle-mut', GlimmerComponent.extend({
+  owner.register('component:middle-mut', GlimmerComponent.extend({
     // no longer mutable
     layout: compile('<bottom-mut setMe={{attrs.value}} />'),
 
@@ -355,12 +355,12 @@ QUnit.test('mutable bindings work as angle-bracket component attributes', functi
     }
   }));
 
-  registry.register('component:bottom-mut', GlimmerComponent.extend({
+  owner.register('component:bottom-mut', GlimmerComponent.extend({
     layout: compile('<p class="bottom">{{attrs.setMe}}</p>')
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('<middle-mut value={{mut view.val}} />'),
     val: 12
   });
@@ -379,7 +379,7 @@ QUnit.test('mutable bindings work as angle-bracket component attributes', functi
 QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
   var middle, bottom;
 
-  registry.register('component:middle-mut', GlimmerComponent.extend({
+  owner.register('component:middle-mut', GlimmerComponent.extend({
     // no longer mutable
     layout: compile('<bottom-mut setMe={{attrs.value}} />'),
 
@@ -388,7 +388,7 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
     }
   }));
 
-  registry.register('component:bottom-mut', GlimmerComponent.extend({
+  owner.register('component:bottom-mut', GlimmerComponent.extend({
     layout: compile('<p class="bottom">{{attrs.setMe}}</p>'),
 
     didInsertElement() {
@@ -397,7 +397,7 @@ QUnit.test('a simple mutable binding using `mut` can be converted into an immuta
   }));
 
   view = EmberView.create({
-    container: container,
+    [OWNER]: owner,
     template: compile('<middle-mut value={{mut view.val}} />'),
     val: 12
   });
