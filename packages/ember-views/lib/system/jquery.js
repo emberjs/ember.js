@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import { assert } from 'ember-metal/debug';
 
 // ES6TODO: the functions on EnumerableUtils need their own exports
 import environment from 'ember-metal/environment';
@@ -12,11 +11,6 @@ if (environment.hasDOM) {
   if (!jQuery && typeof require === 'function') {
     jQuery = require('jquery');
   }
-
-  assert(
-    'Ember Views require jQuery between 1.7 and 2.1',
-    jQuery && (jQuery().jquery.match(/^((1\.(7|8|9|10|11))|(2\.(0|1)))(\.\d+)?(pre|rc\d?)?/) || Ember.ENV.FORCE_JQUERY)
-  );
 
   if (jQuery) {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dndevents
