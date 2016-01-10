@@ -269,7 +269,16 @@ QUnit.test('Injecting a falsy value does not raise an error', function() {
   registry.register('user:current', null, { instantiate: false });
   registry.injection('controller:application', 'currentUser', 'user:current');
 
-  equal(container.lookup('controller:application').currentUser, null);
+  deepEqual(container.lookup('controller:application').currentUser, null);
+});
+
+QUnit.test('The container returns same value each time even if the value is falsy', function() {
+  var registry = new Registry();
+  var container = registry.container();
+
+  registry.register('falsy:value', null, { instantiate: false });
+
+  deepEqual(container.lookup('falsy:value'), container.lookup('falsy:value'));
 });
 
 QUnit.test('Destroying the container destroys any cached singletons', function() {

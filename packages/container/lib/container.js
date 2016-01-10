@@ -198,7 +198,7 @@ function lookup(container, _fullName, _options) {
     }
   }
 
-  if (container.cache[fullName] && options.singleton !== false) {
+  if (container.cache[fullName] !== undefined && options.singleton !== false) {
     return container.cache[fullName];
   }
 

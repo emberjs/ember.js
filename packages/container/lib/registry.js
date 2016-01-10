@@ -840,7 +840,7 @@ function resolve(registry, normalizedName, options) {
   }
 
   var cached = registry._resolveCache[normalizedName];
-  if (cached) { return cached; }
+  if (cached !== undefined) { return cached; }
   if (registry._failCache[normalizedName]) { return; }
 
   let resolved;
@@ -849,12 +849,14 @@ function resolve(registry, normalizedName, options) {
     resolved = registry.resolver.resolve(normalizedName);
   }
 
-  resolved = resolved || registry.registrations[normalizedName];
+  if (resolved === undefined) {
+    resolved = registry.registrations[normalizedName];
+  }
 
-  if (resolved) {
-    registry._resolveCache[normalizedName] = resolved;
-  } else {
+  if (resolved === undefined) {
     registry._failCache[normalizedName] = true;
+  } else {
+    registry._resolveCache[normalizedName] = resolved;
   }
 
   return resolved;
