@@ -1,4 +1,5 @@
 import { assert, deprecate } from 'ember-metal/debug';
+import { meta } from 'ember-metal/meta';
 import { get } from 'ember-metal/property_get';
 import assign from 'ember-metal/assign';
 import { internal, render } from 'htmlbars-runtime';
@@ -134,10 +135,10 @@ function createElementBlock(template, yieldTo, component) {
 }
 
 function tagNameFor(view) {
-  var tagName = view.tagName;
+  let desc = meta(view).peekDescs('tagName');
+  let tagName = view.tagName;
 
-  if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
-    tagName = get(view, 'tagName');
+  if (desc) {
     deprecate(
       'In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.',
       !tagName,

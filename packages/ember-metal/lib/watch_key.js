@@ -11,20 +11,17 @@ import { lookupDescriptor } from 'ember-metal/utils';
 
 let handleMandatorySetter;
 
-export function watchKey(obj, keyName, meta) {
+export function watchKey(obj, keyName/*_meta*/) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && Array.isArray(obj)) { return; }
 
-  var m = meta || metaFor(obj);
+  let meta = arguments.length > 1 && arguments[2] || metaFor(obj);
 
   // activate watching first time
-  if (!m.peekWatching(keyName)) {
-    m.writeWatching(keyName, 1);
+  if (!meta.peekWatching(keyName)) {
+    meta.writeWatching(keyName, 1);
 
-    var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let desc = meta.peekDescs(keyName);
     if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
@@ -33,10 +30,10 @@ export function watchKey(obj, keyName, meta) {
 
     if (isEnabled('mandatory-setter')) {
       // NOTE: this is dropped for prod + minified builds
-      handleMandatorySetter(m, obj, keyName);
+      handleMandatorySetter(meta, obj, keyName);
     }
   } else {
-    m.writeWatching(keyName, (m.peekWatching(keyName) || 0) + 1);
+    meta.writeWatching(keyName, (meta.peekWatching(keyName) || 0) + 1);
   }
 }
 
@@ -50,6 +47,8 @@ if (isEnabled('mandatory-setter')) {
     var configurable = descriptor ? descriptor.configurable : true;
     var isWritable = descriptor ? descriptor.writable : true;
     var hasValue = descriptor ? 'value' in descriptor : true;
+
+    // TODO: explore...
     var possibleDesc = descriptor && descriptor.value;
     var isDescriptor = possibleDesc !== null &&
                        typeof possibleDesc === 'object' &&
@@ -78,17 +77,13 @@ if (isEnabled('mandatory-setter')) {
   };
 }
 
-export function unwatchKey(obj, keyName, meta) {
-  var m = meta || metaFor(obj);
-  let count = m.peekWatching(keyName);
+export function unwatchKey(obj, keyName/*, meta*/) {
+  let meta = arguments.length > 1 && arguments[2] || metaFor(obj);
+  let count = meta.peekWatching(keyName);
   if (count === 1) {
-    m.writeWatching(keyName, 0);
+    meta.writeWatching(keyName, 0);
 
-    var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
+    var desc = meta.peekDescs(keyName);
     if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
@@ -115,14 +110,14 @@ export function unwatchKey(obj, keyName, meta) {
               configurable: true,
               enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
               writable: true,
-              value: m.peekValues(keyName)
+              value: meta.peekValues(keyName)
             });
-            m.deleteFromValues(keyName);
+            meta.deleteFromValues(keyName);
           }
         }
       }
     }
   } else if (count > 1) {
-    m.writeWatching(keyName, count - 1);
+    meta.writeWatching(keyName, count - 1);
   }
 }

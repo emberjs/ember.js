@@ -107,8 +107,8 @@ function makeCtor() {
             m.writeBindings(keyName, value);
           }
 
-          var possibleDesc = this[keyName];
-          var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+          // will soon go away, as just instance.propertyName = will work
+          var desc = m.peekDescs(keyName);
 
           assert(
             'Ember.Object.create no longer supports defining computed ' +
@@ -842,8 +842,7 @@ var ClassMixinProps = {
   */
   metaForProperty(key) {
     var proto = this.proto();
-    var possibleDesc = proto[key];
-    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    var desc = meta(proto).peekDescs(key);
 
     assert(
       'metaForProperty() could not find a computed property ' +
@@ -855,20 +854,18 @@ var ClassMixinProps = {
 
   _computedProperties: computed(function() {
     hasCachedComputedProperties = true;
-    var proto = this.proto();
-    var property;
+    let m = meta(this.proto());
     var properties = [];
 
-    for (var name in proto) {
-      property = proto[name];
+    m.forEachDescs((name, desc) => {
+      if (desc === undefined) { return; }
+      properties.push({
+        name,
+        meta: desc._meta,
+        desc
+      });
+    });
 
-      if (property && property.isDescriptor) {
-        properties.push({
-          name: name,
-          meta: property._meta
-        });
-      }
-    }
     return properties;
   }).readOnly(),
 
@@ -890,7 +887,9 @@ var ClassMixinProps = {
 
     for (var i = 0, length = properties.length; i < length; i++) {
       property = properties[i];
-      callback.call(binding || this, property.name, property.meta || empty);
+      if (property.desc) {
+        callback.call(binding || this, property.name, property.meta || empty);
+      }
     }
   }
 };
@@ -918,16 +917,16 @@ runInDebug(function() {
   @private
 */
 ClassMixinProps._lazyInjections = function() {
-  var injections = {};
-  var proto = this.proto();
-  var key, desc;
+  let injections = {};
 
-  for (key in proto) {
-    desc = proto[key];
+  let m = meta(this.proto());
+
+  m.forEachDescs((name, desc) => {
+    if (desc === undefined) { return; }
     if (desc instanceof InjectedProperty) {
-      injections[key] = desc.type + ':' + (desc.name || key);
+      injections[name] = desc.type + ':' + (desc.name || name);
     }
-  }
+  });
 
   return injections;
 };

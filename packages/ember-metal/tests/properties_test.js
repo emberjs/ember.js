@@ -10,52 +10,152 @@ QUnit.test('toString', function() {
   equal(obj.toString(), 'FOO', 'should replace toString');
 });
 
-QUnit.test('for data properties, didDefineProperty hook should be called if implemented', function() {
-  expect(2);
+// QUnit.test('for data properties, didDefineProperty hook should be called if implemented', function() {
+//   expect(2);
 
-  var obj = {
-    didDefineProperty(obj, keyName, value) {
-      equal(keyName, 'foo', 'key name should be foo');
-      equal(value, 'bar', 'value should be bar');
-    }
-  };
+//   var obj = {
+//     didDefineProperty(obj, keyName, value) {
+//       equal(keyName, 'foo', 'key name should be foo');
+//       equal(value, 'bar', 'value should be bar');
+//     }
+//   };
 
-  defineProperty(obj, 'foo', undefined, 'bar');
+//   defineProperty(obj, 'foo', undefined, 'bar');
+// });
+
+// QUnit.test('for computed properties, didDefineProperty hook should be called if implemented', function() {
+//   expect(2);
+
+//   var computedProperty = computed(function() { return this; });
+
+//   var obj = {
+//     didDefineProperty(obj, keyName, value) {
+//       equal(keyName, 'foo', 'key name should be foo');
+//       strictEqual(value, computedProperty, 'value should be passed as computed property');
+//     }
+//   };
+
+//   defineProperty(obj, 'foo', computedProperty);
+// });
+
+// QUnit.test('for descriptor properties, didDefineProperty hook should be called if implemented', function() {
+//   expect(2);
+
+//   var descriptor = {
+//     writable: true,
+//     configurable: false,
+//     enumerable: true,
+//     value: 42
+//   };
+
+//   var obj = {
+//     didDefineProperty(obj, keyName, value) {
+//       equal(keyName, 'answer', 'key name should be answer');
+//       strictEqual(value, descriptor, 'value should be passed as descriptor');
+//     }
+//   };
+
+//   defineProperty(obj, 'answer', descriptor);
+// });
+
+QUnit.test("on pojo, new simple value", function() {
+  let obj = {};
+
+  defineProperty(obj, 'foo', {
+    value: 1
+  });
+
+  let descriptor = Object.getOwnPropertyDescriptor(obj, 'foo');
+
+  equal(obj.foo, 1);
+  deepEqual(descriptor, {
+    value: 1,
+    writable: false,
+    enumerable: false,
+    configurable: false
+  });
+
+  // TODO: this should be made to pass
+  // equal(obj.__ember_meta__, undefined, 'should not have created an ember meta');
 });
 
-QUnit.test('for computed properties, didDefineProperty hook should be called if implemented', function() {
-  expect(2);
+QUnit.test("on pojo, new simple value with writable/config/enum", function() {
+  let obj = {};
 
-  var computedProperty = computed(function() { return this; });
-
-  var obj = {
-    didDefineProperty(obj, keyName, value) {
-      equal(keyName, 'foo', 'key name should be foo');
-      strictEqual(value, computedProperty, 'value should be passed as computed property');
-    }
-  };
-
-  defineProperty(obj, 'foo', computedProperty);
-});
-
-QUnit.test('for descriptor properties, didDefineProperty hook should be called if implemented', function() {
-  expect(2);
-
-  var descriptor = {
+  defineProperty(obj, 'foo', {
+    value: 1,
     writable: true,
-    configurable: false,
     enumerable: true,
-    value: 42
-  };
+    configurable: true
+  });
 
-  var obj = {
-    didDefineProperty(obj, keyName, value) {
-      equal(keyName, 'answer', 'key name should be answer');
-      strictEqual(value, descriptor, 'value should be passed as descriptor');
-    }
-  };
+  let descriptor = Object.getOwnPropertyDescriptor(obj, 'foo');
 
-  defineProperty(obj, 'answer', descriptor);
+  equal(obj.foo, 1);
+  deepEqual(descriptor, {
+    value: 1,
+    writable: true,
+    enumerable: true,
+    configurable: true
+  });
+
+  // TODO: this should be made to pass
+  // equal(obj.__ember_meta__, undefined, 'should not have created an ember meta');
+});
+
+
+QUnit.test("on pojo, new get/set descriptor", function() {
+  let obj = {};
+
+  function get() { return 1; }
+  function set() { }
+
+  defineProperty(obj, 'foo', {
+    get,
+    set
+  });
+
+  let descriptor = Object.getOwnPropertyDescriptor(obj, 'foo');
+
+  equal(obj.foo, 1);
+  // TODO: test setter
+
+  deepEqual(descriptor.get, get);
+  deepEqual(descriptor.set, set);
+
+  ok(!('value' in descriptor));
+  ok(!descriptor.configurable);
+  ok(!descriptor.enumerable);
+
+  // TODO: this should be made to pass
+  // equal(obj.__ember_meta__, undefined, 'should not have created an ember meta');
+});
+
+QUnit.test('computed property descriptor', function() {
+  let obj = {};
+  let callCount = 0;
+
+  defineProperty(obj, 'foo', computed(function() {
+    callCount++;
+    return 1;
+  }));
+
+  equal(callCount, 0);
+  equal(obj.foo, 1);
+  equal(callCount, 1);
+
+  // ensure idempotence
+  equal(obj.foo, 1);
+  equal(callCount, 1);
+
+  let descriptor = Object.getOwnPropertyDescriptor(obj, 'foo');
+
+  ok(!('value' in descriptor));
+  ok(!descriptor.configurable);
+  ok(!descriptor.enumerable);
+
+  // TODO: this should be made to pass
+  // equal(obj.__ember_meta__, undefined, 'should not have created an ember meta');
 });
 
 QUnit.module('Ember.deprecateProperty');

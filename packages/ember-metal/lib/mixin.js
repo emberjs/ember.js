@@ -96,10 +96,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // If we didn't find the original descriptor in a parent mixin, find
   // it on the original object.
   if (!superProperty) {
-    var possibleDesc = base[key];
-    var superDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-    superProperty = superDesc;
+    superProperty = meta.peekDescs(key);
   }
 
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
@@ -235,7 +232,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
     currentMixin = mixins[i];
     assert(
       `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-      typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]'
+      typeof currentMixin === 'object' && currentMixin !== null && !Array.isArray(currentMixin)
     );
 
     props = mixinProperties(m, currentMixin);
@@ -329,7 +326,7 @@ function followAlias(obj, desc, m, descs, values) {
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
     desc  = descs[altKey];
-  } else if ((possibleDesc = obj[altKey]) && possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
+  } else if (possibleDesc = m.peekDescs(altKey)) {
     desc  = possibleDesc;
     value = undefined;
   } else {
@@ -351,7 +348,8 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
 }
 
 function replaceObserversAndListeners(obj, key, observerOrListener) {
-  var prev = obj[key];
+  var desc = Object.getOwnPropertyDescriptor(obj, key);
+  var prev = desc && desc.value;
 
   if ('function' === typeof prev) {
     updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
@@ -386,6 +384,7 @@ function applyMixin(obj, mixins, partial) {
 
   for (var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
+
     if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
 
     desc = descs[key];
@@ -400,7 +399,6 @@ function applyMixin(obj, mixins, partial) {
     }
 
     if (desc === undefined && value === undefined) { continue; }
-
     replaceObserversAndListeners(obj, key, value);
     detectBinding(obj, key, value, m);
     defineProperty(obj, key, desc, value, m);

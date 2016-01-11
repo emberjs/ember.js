@@ -112,40 +112,54 @@ export function INHERITING_GETTER_FUNCTION(name) {
   @param {*} [data] something other than a descriptor, that will
     become the explicit value of this property.
 */
-export function defineProperty(obj, keyName, desc, data, meta) {
-  var possibleDesc, existingDesc, watching, value;
+export function defineProperty(obj, keyName, desc, data/*, meta*/) {
+  let meta = arguments[4] || metaFor(obj);
+  let watchEntry = meta.peekWatching(keyName);
+  let existingDesc = meta.peekDescs(keyName);
 
-  if (!meta) {
-    meta = metaFor(obj);
-  }
-  var watchEntry = meta.peekWatching(keyName);
-  possibleDesc = obj[keyName];
-  existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-  watching = watchEntry !== undefined && watchEntry > 0;
+  let watching = watchEntry !== undefined && watchEntry > 0;
 
   if (existingDesc) {
     existingDesc.teardown(obj, keyName);
   }
 
+  let value;
+
+  // is this instanceof needed?
   if (desc instanceof Descriptor) {
-    value = desc;
-    if (isEnabled('mandatory-setter')) {
-      if (watching) {
-        Object.defineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: true,
-          writable: true,
-          value: value
-        });
-      } else {
+    meta.writeDescs(keyName, desc);
+
+    Object.defineProperty(obj, keyName, {
+      configurable: true,
+      enumerable: true,
+      get() {
+        return metaFor(this).peekDescs(keyName).get(this, keyName);
+      },
+      set(value) {
+        // throw TypeError('Sorry this isnt supported "right now"');
+        delete obj[keyName];
         obj[keyName] = value;
       }
-    } else {
-      obj[keyName] = value;
-    }
+    });
+
+    // if (isEnabled('mandatory-setter')) {
+    //   if (watching) {
+    //     Object.defineProperty(obj, keyName, {
+    //       configurable: true,
+    //       enumerable: true,
+    //       writable: true,
+    //       value: value
+    //     });
+    //   } else {
+    //     obj[keyName] = value;
+    //   }
+    // } else {
+    //   obj[keyName] = value;
+    // }
     if (desc.setup) { desc.setup(obj, keyName); }
   } else {
+    // add insert undefined subroutine, to do this more efficiently
+    meta.writeDescs(keyName, false);
     if (desc == null) {
       value = data;
 
@@ -169,11 +183,13 @@ export function defineProperty(obj, keyName, desc, data, meta) {
           obj[keyName] = data;
         }
       } else {
-        obj[keyName] = data;
+        Object.defineProperty(obj, keyName, {
+          configurable: true,
+          writable: true,
+          value: data
+        });
       }
     } else {
-      value = desc;
-
       // fallback to ES5
       Object.defineProperty(obj, keyName, desc);
     }

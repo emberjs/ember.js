@@ -48,16 +48,14 @@ export function set(obj, keyName, value, tolerant) {
   assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, !pathHasThis(keyName));
 
-  let meta, possibleDesc, desc;
-
+  let meta, desc;
   if (obj) {
     meta = peekMeta(obj);
-    possibleDesc = obj[keyName];
-    desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    desc = meta && meta.peekDescs(keyName);
     markObjectAsDirty(meta);
   }
 
-  var isUnknown, currentValue;
+  let isUnknown, currentValue;
   if (desc === undefined && isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);
   }
@@ -65,6 +63,8 @@ export function set(obj, keyName, value, tolerant) {
   assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
          !obj.isDestroyed);
 
+
+  // soon this will be just obj[keyName] = value, as it shouldn be...
   if (desc) {
     desc.set(obj, keyName, value);
   } else {
