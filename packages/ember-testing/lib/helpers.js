@@ -13,21 +13,26 @@ import RSVP from 'ember-runtime/ext/rsvp';
 var helper = Test.registerHelper;
 var asyncHelper = Test.registerAsyncHelper;
 
-function currentRouteName(app) {
-  var routingService = app.__container__.lookup('service:-routing');
+function lookup(app, path) {
+  if (app.isApplicationInstance) {
+    return app.lookup(path);
+  } else {
+    return app.__container__.lookup(path);
+  }
+}
 
+function currentRouteName(app) {
+  var routingService = lookup(app, 'service:-routing');
   return get(routingService, 'currentRouteName');
 }
 
 function currentPath(app) {
-  var routingService = app.__container__.lookup('service:-routing');
-
+  var routingService = lookup(app, 'service:-routing');
   return get(routingService, 'currentPath');
 }
 
 function currentURL(app) {
-  var router = app.__container__.lookup('router:main');
-
+  var router = lookup(app, 'router:main');
   return get(router, 'location').getURL();
 }
 
@@ -54,7 +59,19 @@ function focus(el) {
   }
 }
 
+function _visitAppInstance(instance, url) {
+  var visitPromise = instance.boot({ location: 'none' }).then((instance) => {
+    return instance.visit(url);
+  });
+
+  return instance.testHelpers.wait(visitPromise);
+}
+
 function visit(app, url) {
+  if (app.isApplicationInstance) {
+    return _visitAppInstance(app, url);
+  }
+
   var router = app.__container__.lookup('router:main');
   var shouldHandleURL = false;
 
@@ -168,11 +185,8 @@ function findWithAssert(app, selector, context) {
 }
 
 function find(app, selector, context) {
-  var $el;
   context = context || get(app, 'rootElement');
-  $el = app.$(selector, context);
-
-  return $el;
+  return jQuery(selector, context);
 }
 
 function andThen(app, callback) {
@@ -183,7 +197,7 @@ function wait(app, value) {
   return new RSVP.Promise(function(resolve) {
     // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
-      var router = app.__container__.lookup('router:main');
+      var router = lookup(app, 'router:main');
 
       // 1. If the router is loading, keep polling
       var routerIsLoading = router.router && !!router.router.activeTransition;

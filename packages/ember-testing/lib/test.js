@@ -1,8 +1,10 @@
 import emberRun from 'ember-metal/run_loop';
+import isEnabled from 'ember-metal/features';
 import RSVP from 'ember-runtime/ext/rsvp';
 import setupForTesting from 'ember-testing/setup_for_testing';
 import EmberApplication from 'ember-application/system/application';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import EmberApplicationInstance from 'ember-application/system/application-instance';
 
 /**
   @module ember
@@ -443,7 +445,7 @@ EmberApplication.reopen({
   },
 
   /**
-    This removes all helpers that have been registered, and resets and functions
+    This removes all helpers that have been registered, and resets any functions
     that were overridden by the helpers.
 
     Example:
@@ -466,6 +468,107 @@ EmberApplication.reopen({
     }
   }
 });
+
+if (isEnabled('ember-testing-instances')) {
+  EmberApplication.reopen({
+    /**
+      Builds a new instance of the application and registers test helpers on it.
+
+      Example:
+
+      ```javascript
+      var instance = run(App, 'buildTestInstance');
+      ```
+
+      @method buildTestInstance
+      @public
+    */
+    buildTestInstance() {
+      setupForTesting();
+
+      var instance = this.buildInstance();
+      instance.injectTestHelpers();
+
+      return instance;
+    }
+  });
+
+  EmberApplicationInstance.reopen({
+    /**
+      This property is a flag to easily determine if the object in question is
+      an ApplicationInstance or something else (e.g., an Application).
+
+      @property isApplicationInstance
+      @type {Boolean}
+      @default true
+      @public
+    */
+    isApplicationInstance: true,
+
+    /**
+      This property contains the testing helpers for the current instance. These
+      are created once `injectTestHelpers` has been called.
+
+      @property testHelpers
+      @type {Object}
+      @default null
+      @public
+    */
+    testHelpers: null,
+
+    /**
+      This injects test helpers into the `testHelpers` property bound to the
+      current context. Any callbacks registered with `onInjectHelpers` will be
+      called once the helpers have been injected.
+
+      In most cases, you shouldn't need to call this method directly, as using
+      `App.buildTestInstance` will create an instance and call this method on
+      it, and is the preferred way of testing with instances.
+
+      Example:
+      ```
+      instance.injectTestHelpers();
+      ```
+
+      @method injectTestHelpers
+      @public
+    */
+    injectTestHelpers() {
+      this.reopen({
+        willDestroy() {
+          this._super(...arguments);
+          this.removeTestHelpers();
+        }
+      });
+
+      this.testHelpers = {};
+      for (var name in helpers) {
+        this.testHelpers[name] = helper(this, name);
+      }
+
+      for (var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
+        injectHelpersCallbacks[i](this);
+      }
+    },
+
+    /**
+      This removes all helpers that have been registered by setting the
+      `testHelpers` property to null again.
+
+      Example:
+
+      ```javascript
+      instance.removeTestHelpers();
+      ```
+
+      @method removeTestHelpers
+      @public
+    */
+    removeTestHelpers() {
+      this.testHelpers = null;
+    }
+  });
+}
 
 // This method is no longer needed
 // But still here for backwards compatibility
