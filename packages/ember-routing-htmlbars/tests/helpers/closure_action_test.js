@@ -349,6 +349,99 @@ QUnit.test('provides a helpful error if actions hash is not present', function(a
   }, /An action named 'doesNotExist' was not found in /);
 });
 
+QUnit.test('provides a helpful error if action passed from attrs is undefined', function(assert) {
+  assert.expect(1);
+
+  var otherComponent = EmberComponent.create();
+
+  innerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view otherComponent submit=(action attrs.undefinedValue)}}
+      `),
+    otherComponent,
+    toString() {
+      return '<InnerComponent>';
+    }
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view innerComponent}}
+      `),
+    innerComponent
+  }).create();
+
+  throws(function() {
+    runAppend(outerComponent);
+  }, /<InnerComponent> .* If passing an action via `attrs\.someAction`, confirm that `someAction` is either a string or a function./,
+  'Provides enough context to aid in troubleshooting.');
+
+  // Clean up
+  runDestroy(otherComponent);
+});
+
+QUnit.test('provides a helpful error if action passed from attrs is null', function(assert) {
+  assert.expect(1);
+
+  var otherComponent = EmberComponent.create();
+
+  innerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view otherComponent submit=(action attrs.nullValue)}}
+      `),
+    otherComponent,
+    toString() {
+      return '<InnerComponent>';
+    }
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view innerComponent nullValue=null}}
+      `),
+    innerComponent
+  }).create();
+
+  throws(function() {
+    runAppend(outerComponent);
+  }, /<InnerComponent> .* If passing an action via `attrs\.someAction`, confirm that `someAction` is either a string or a function./,
+  'Provides enough context to aid in troubleshooting.');
+
+  // Clean up
+  runDestroy(otherComponent);
+});
+
+QUnit.test('provides a helpful error if action passed from attrs is empty string', function(assert) {
+  assert.expect(1);
+
+  var otherComponent = EmberComponent.create();
+
+  innerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view otherComponent submit=(action attrs.emptyString)}}
+      `),
+    otherComponent,
+    toString() {
+      return '<InnerComponent>';
+    }
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile(`
+        {{view innerComponent emptyString=""}}
+      `),
+    innerComponent
+  }).create();
+
+  throws(function() {
+    runAppend(outerComponent);
+  }, /<InnerComponent> .* If passing an action via `attrs\.someAction`, confirm that `someAction` is either a string or a function./,
+  'Provides enough context to aid in troubleshooting.');
+
+  // Clean up
+  runDestroy(otherComponent);
+});
+
 QUnit.test('action can create closures over actions with target', function(assert) {
   assert.expect(1);
 
@@ -523,6 +616,30 @@ QUnit.test('action closure does not get auto-mut wrapped', function(assert) {
   run(function() {
     innerComponent.fireAction();
   });
+});
+
+QUnit.test('action should be called within a run loop', function(assert) {
+  assert.expect(1);
+
+  innerComponent = EmberComponent.extend({
+    fireAction() {
+      this.attrs.submit();
+    }
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile(`{{view innerComponent submit=(action 'submit')}}`),
+    innerComponent,
+    actions: {
+      submit(newValue) {
+        assert.ok(run.currentRunLoop, 'action is called within a run loop');
+      }
+    }
+  }).create();
+
+  runAppend(outerComponent);
+
+  innerComponent.fireAction();
 });
 
 QUnit.test('action should be called within a run loop', function(assert) {

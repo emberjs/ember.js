@@ -14,7 +14,7 @@ export const ACTION = symbol('ACTION');
 
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {
   let s = new Stream(function() {
-    var rawAction = params[0];
+    var rawAction = extractRawAction(params, scope);
     var actionArguments = readArray(params.slice(1, params.length));
 
     var target, action, valuePath;
@@ -65,6 +65,22 @@ export default function closureAction(morph, env, scope, params, hash, template,
   Object.keys(hash).forEach(item => s.addDependency(item));
 
   return s;
+}
+
+
+function extractRawAction(params, scope) {
+  var [value] = params;
+  if (value) {
+    return value;
+  }
+
+  /* Emit a more descriptive error when `(action attrs.foo)` and `foo` is falsy
+   *
+   * If accessing properties of `attrs` could yield a stream (?), this might not
+   * even be necessary
+   */
+  var target = read(scope.getSelf());
+  throw new EmberError(`${target} is using action closure helper with an action of value \`${value}\`. If passing an action via \`attrs.someAction\`, confirm that \`someAction\` is either a string or a function.`);
 }
 
 function createClosureAction(target, action, valuePath, actionArguments) {
