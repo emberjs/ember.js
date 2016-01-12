@@ -38,19 +38,20 @@ QUnit.module('Data Adapter', {
 });
 
 QUnit.test('Model types added with DefaultResolver', function() {
-  App.Post = Model.extend();
-
-  adapter = App.__container__.lookup('data-adapter:main');
-  adapter.reopen({
-    getRecords() {
-      return emberA([1, 2, 3]);
-    },
-    columnsForType() {
-      return [{ name: 'title', desc: 'Title' }];
-    }
-  });
-
   run(App, 'advanceReadiness');
+
+  run(function() {
+    App.Post = Model.extend();
+    adapter = App.__container__.lookup('data-adapter:main');
+    adapter.reopen({
+      getRecords() {
+        return emberA([1, 2, 3]);
+      },
+      columnsForType() {
+        return [{ name: 'title', desc: 'Title' }];
+      }
+    });
+  });
 
   var modelTypesAdded = function(types) {
     equal(types.length, 1);
@@ -88,19 +89,21 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
       return [PostClass];
     }
   });
-  App.register('container-debug-adapter:main', StubContainerDebugAdapter);
-
-  adapter = App.__container__.lookup('data-adapter:main');
-  adapter.reopen({
-    getRecords() {
-      return emberA([1, 2, 3]);
-    },
-    columnsForType() {
-      return [{ name: 'title', desc: 'Title' }];
-    }
-  });
 
   run(App, 'advanceReadiness');
+
+  run(function() {
+    App.register('container-debug-adapter:main', StubContainerDebugAdapter);
+    adapter = App.__container__.lookup('data-adapter:main');
+    adapter.reopen({
+      getRecords() {
+        return emberA([1, 2, 3]);
+      },
+      columnsForType() {
+        return [{ name: 'title', desc: 'Title' }];
+      }
+    });
+  });
 
   var modelTypesAdded = function(types) {
     equal(types.length, 1);
@@ -116,17 +119,19 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
 });
 
 QUnit.test('Model Types Updated', function() {
-  App.Post = Model.extend();
-
-  adapter = App.__container__.lookup('data-adapter:main');
   var records = emberA([1, 2, 3]);
-  adapter.reopen({
-    getRecords() {
-      return records;
-    }
-  });
 
   run(App, 'advanceReadiness');
+
+  run(function() {
+    App.Post = Model.extend();
+    adapter = App.__container__.lookup('data-adapter:main');
+    adapter.reopen({
+      getRecords() {
+        return records;
+      }
+    });
+  });
 
   var modelTypesAdded = function() {
     run(function() {
