@@ -43,6 +43,19 @@ QUnit.test('The registered value returned from resolve is the same value each ti
   strictEqual(registry.resolve('falsy:value'), registry.resolve('falsy:value'), 'The return of resolve is always the same');
 });
 
+QUnit.test('The value returned from resolver is the same value as the original value even if the value is falsy', function() {
+  let resolver = {
+    resolve(fullName) {
+      if (fullName === 'falsy:value') {
+        return null;
+      }
+    }
+  };
+  let registry = new Registry({ resolver });
+
+  strictEqual(registry.resolve('falsy:value'), null);
+});
+
 QUnit.test('A registered factory returns true for `has` if an item is registered', function() {
   var registry = new Registry();
   var PostController = factory();
