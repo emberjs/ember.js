@@ -40,7 +40,7 @@ QUnit.test('The registered value returned from resolve is the same value each ti
 
   registry.register('falsy:value', null, { instantiate: false });
 
-  deepEqual(registry.resolve('falsy:value'), registry.resolve('falsy:value'), 'The return of resolve is always the same');
+  strictEqual(registry.resolve('falsy:value'), registry.resolve('falsy:value'), 'The return of resolve is always the same');
 });
 
 QUnit.test('A registered factory returns true for `has` if an item is registered', function() {
