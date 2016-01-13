@@ -232,7 +232,7 @@ QUnit.test('dashed helper usable in subexpressions', function() {
     'Who overcomes by force hath overcome but half his foe');
 });
 
-QUnit.test('dashed helper not usable with a block', function() {
+QUnit.test('dashed shorthand helper not usable with a block', function() {
   var SomeHelper = makeHelper(function() {});
   owner.register('helper:some-helper', SomeHelper);
   component = Component.extend({
@@ -245,8 +245,34 @@ QUnit.test('dashed helper not usable with a block', function() {
   }, /Helpers may not be used in the block form/);
 });
 
-QUnit.test('dashed helper not usable within element', function() {
+QUnit.test('dashed helper not usable with a block', function() {
+  var SomeHelper = Helper.extend({ compute() { } });
+  owner.register('helper:some-helper', SomeHelper);
+  component = Component.extend({
+    [OWNER]: owner,
+    layout: compile(`{{#some-helper}}{{/some-helper}}`)
+  }).create();
+
+  expectAssertion(function() {
+    runAppend(component);
+  }, /Helpers may not be used in the block form/);
+});
+
+QUnit.test('dashed shorthand helper not usable within element', function() {
   var SomeHelper = makeHelper(function() {});
+  owner.register('helper:some-helper', SomeHelper);
+  component = Component.extend({
+    [OWNER]: owner,
+    layout: compile(`<div {{some-helper}}></div>`)
+  }).create();
+
+  expectAssertion(function() {
+    runAppend(component);
+  }, /Helpers may not be used in the element form/);
+});
+
+QUnit.test('dashed helper not usable within element', function() {
+  var SomeHelper = Helper.extend({ compute() { } });
   owner.register('helper:some-helper', SomeHelper);
   component = Component.extend({
     [OWNER]: owner,
