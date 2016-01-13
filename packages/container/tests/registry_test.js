@@ -36,7 +36,7 @@ QUnit.test('The registered factory returned from resolve is the same factory eac
 });
 
 QUnit.test('The registered value returned from resolve is the same value each time even if the value is falsy', function() {
-  var registry = new Registry();
+  let registry = new Registry();
 
   registry.register('falsy:value', null, { instantiate: false });
 

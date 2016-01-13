@@ -273,8 +273,8 @@ QUnit.test('Injecting a falsy value does not raise an error', function() {
 });
 
 QUnit.test('The container returns same value each time even if the value is falsy', function() {
-  var registry = new Registry();
-  var container = registry.container();
+  let registry = new Registry();
+  let container = registry.container();
 
   registry.register('falsy:value', null, { instantiate: false });
 
