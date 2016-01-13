@@ -1,14 +1,5 @@
 import EmberObject, { computed } from 'glimmer-object';
-import { TestEnvironment } from 'glimmer-demos';
-
-class EmberComponent extends EmberObject {
-  public attrs: Object;
-
-  constructor(attrs: Object) {
-    super();
-    this.attrs = attrs;
-  }
-}
+import { TestEnvironment, EmberishGlimmerComponent as EmberComponent } from 'glimmer-demos';
 
 let ServerUptime = <any>EmberComponent.extend({
   upDays: computed(function() {
@@ -45,7 +36,7 @@ let UptimeDay = <any>EmberComponent.extend({
 
 let env = new TestEnvironment();
 
-env.registerGlimmerComponent('server-uptime', ServerUptime, `
+env.registerEmberishGlimmerComponent('server-uptime', ServerUptime, `
   <server-uptime>
   <h1>{{@name}}</h1>
   <h2>{{upDays}} Days Up</h2>
@@ -59,7 +50,7 @@ env.registerGlimmerComponent('server-uptime', ServerUptime, `
   </server-uptime>
 `);
 
-env.registerGlimmerComponent('uptime-day', UptimeDay, `
+env.registerEmberishGlimmerComponent('uptime-day', UptimeDay, `
   <uptime-day>
     <span class="uptime-day" style="background-color: {{color}}" />
     <span class="hover">{{@day.number}}: {{memo}}</span>
