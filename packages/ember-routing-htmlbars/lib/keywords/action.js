@@ -7,7 +7,7 @@ import { keyword } from 'htmlbars-runtime/hooks';
 import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
 /**
-  The `{{action}}` helper provides a way to pass triggers for behavior (usually
+  The `{{action` helper provides a way to pass triggers for behavior (usually
   just a function) between components, and into components from controllers.
 
   ### Passing functions with the action helper
@@ -24,13 +24,13 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   ```
 
   In these contexts,
-  the helper is called a "closure action" helper. It's behavior is simple:
+  the helper is called a "closure action" helper. Its behavior is simple:
   If passed a function name, read that function off the `actions` property
   of the current context. Once that function is read (or if a function was
   passed), create a closure over that function and any arguments.
 
   The resulting value of an action helper used this way is simply a function.
-  For example with this attribute context example:
+  For example, in the attribute context:
 
   ```handlebars
   {{! An example of attribute context }}
@@ -51,7 +51,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   Thus when the div is clicked, the action on that context is called.
   Because the `actionFunction` is just a function, closure actions can be
-  passed between components the still execute in the correct context.
+  passed between components and still execute in the correct context.
 
   Here is an example action handler on a component:
 
@@ -99,7 +99,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   ```
 
   The first argument (`model`) was curried over, and the run-time argument (`event`)
-  becomes a second argument. Action calls be nested this way because each simply
+  becomes a second argument. Action calls can be nested this way because each simply
   returns a function. Any function can be passed to the `{{action` helper, including
   other actions.
 
@@ -130,9 +130,9 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   });
   ```
 
-  ### Attaching actions to DOM
+  ### Attaching actions to DOM elements
 
-  The third context the `{{action` helper can be used in we call "element space".
+  The third context of the `{{action` helper can be called "element space".
   For example:
 
   ```handlebars
@@ -140,8 +140,8 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   <div {{action "save"}}></div>
   ```
 
-  Used this way, the `{{action}}` helper provides a useful shortcut for
-  registering an HTML element within a template for a single DOM event and
+  Used this way, the `{{action` helper provides a useful shortcut for
+  registering an HTML element in a template for a single DOM event and
   forwarding that interaction to the template's context (controller or component).
 
   If the context of a template is a controller, actions used this way will
@@ -155,7 +155,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   Events triggered through the action helper will automatically have
   `.preventDefault()` called on them. You do not need to do so in your event
   handlers. If you need to allow event propagation (to handle file inputs for
-  example) you can supply the `preventDefault=false` option to the `{{action}}` helper:
+  example) you can supply the `preventDefault=false` option to the `{{action` helper:
 
   ```handlebars
   <div {{action "sayHello" preventDefault=false}}>
@@ -171,14 +171,15 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   ```
 
   If you need the default handler to trigger you should either register your
-  own event handler, or use event methods on your view class. See [Ember.View](/api/classes/Ember.View.html)
-  'Responding to Browser Events' for more information.
+  own event handler, or use event methods on your view class. See
+  ["Responding to Browser Events"](/api/classes/Ember.View.html#toc_responding-to-browser-events)
+  in the documentation for Ember.View for more information.
 
   ### Specifying DOM event type
 
   `{{action` helpers called in element space can specify an event type.
 
-  By default the `{{action}}` helper registers for DOM `click` events. You can
+  By default the `{{action` helper registers for DOM `click` events. You can
   supply an `on` option to the helper to specify a different DOM event name:
 
   ```handlebars
@@ -187,14 +188,14 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   </div>
   ```
 
-  See [Event Names](/api/classes/Ember.View.html#toc_event-names) for a list of
+  See ["Event Names"](/api/classes/Ember.View.html#toc_event-names) for a list of
   acceptable DOM event names.
 
   ### Specifying whitelisted modifier keys
 
   `{{action` helpers called in element space can specify modifier keys.
 
-  By default the `{{action}}` helper will ignore click event with pressed modifier
+  By default the `{{action` helper will ignore click events with pressed modifier
   keys. You can supply an `allowedKeys` option to specify which keys should not be ignored.
 
   ```handlebars
@@ -203,7 +204,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   </div>
   ```
 
-  This way the `{{action}}` will fire when clicking with the alt key pressed down.
+  This way the action will fire when clicking with the alt key pressed down.
 
   Alternatively, supply "any" to the `allowedKeys` option to accept any combination of modifier keys.
 
