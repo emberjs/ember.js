@@ -1,3 +1,5 @@
+/* globals __dirname */
+
 var path = require('path');
 var Funnel = require('broccoli-funnel');
 
@@ -15,13 +17,6 @@ module.exports = {
       'handlebars/compiler/parser.js',
       'handlebars/compiler/visitor.js',
       'handlebars/compiler/whitespace-control.js'
-    ]
-  }),
-
-  runtime: new Funnel(root, {
-    files: [
-      'handlebars/utils.js',
-      'handlebars/safe-string.js'
     ]
   })
 }

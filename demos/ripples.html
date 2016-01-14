@@ -26,7 +26,9 @@
 
     <script src="../assets/loader.js"></script>
     <script>loader.noConflict({ define: 'enifed' });</script>
+    <script src="../amd/glimmer-common.amd.js"></script>
     <script src="../amd/glimmer-compiler.amd.js"></script>
+    <script src="../amd/glimmer-runtime.amd.js"></script>
     <script src="./demos.amd.js"></script>
 
     <script>
@@ -116,16 +118,10 @@
       });
 
       var baseOffset = Date.now() - window.performance.now();
-      var timestamp  = window.performance.now();
 
       function tick() {
-        var _timestamp = window.performance.now()
+        var timestamp = window.performance.now()
 
-        var delta = _timestamp - timestamp;
-
-        timestamp = _timestamp;
-
-        //data.fps   = (1000 / delta).toPrecision(4);
         data.count = 0;
 
         var walltime = baseOffset + timestamp;

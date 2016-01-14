@@ -1,3 +1,5 @@
+/* globals __dirname */
+
 var concat = require('broccoli-concat');
 var merge = require('broccoli-merge-trees');
 var typescript = require('broccoli-typescript-compiler');
@@ -75,38 +77,45 @@ module.exports = function() {
   var HTMLTokenizer = find(bower + '/simple-html-tokenizer/lib/', { });
 
   var tsTree = find(packages, {
-    include: ["**/*.ts"],
-    exclude: ["**/*.d.ts"]
+    include: ['**/*.ts'],
+    exclude: ['**/*.d.ts']
   });
 
   var jsTree = typescript(tsTree, tsOptions);
 
   var libTree = find(jsTree, {
-    include: ["*/index.js", "*/lib/**/*.js"]
+    include: ['*/index.js', '*/lib/**/*.js']
   });
 
-  var packagesTree = merge([
-      libTree,
-      HTMLTokenizer
-  ]);
+  var glimmerCommon = find(libTree, {
+    include: [
+      'glimmer/**/*.js',
+      'glimmer-object/**/*.js',
+      'glimmer-reference/**/*.js',
+      'glimmer-util/**/*.js',
+      'glimmer-wire-format/**/*.js'
+    ]
+  });
 
-  var runtimeTree = find(packagesTree, {
+  var glimmerRuntime = find(libTree, {
     include: ['glimmer-runtime/**/*']
   });
 
-  runtimeTree = merge([
-    runtimeTree,
-    handlebarsInlinedTrees.runtime
-  ]);
-
-  var compilerTree = merge([
-    packagesTree,
+  var glimmerCompiler = merge([
+    find(libTree, {
+      include: [
+        'glimmer-syntax/**/*.js',
+        'glimmer-compiler/**/*.js'
+      ]
+    }),
+    HTMLTokenizer,
     handlebarsInlinedTrees.compiler
   ]);
 
-  var testTree = find(jsTree, {
-    include: ["*/tests/**/*.js"]
-  });
+  var glimmerTests = merge([
+    find(jsTree, { include: ['*/tests/**/*.js'] }),
+    find(jsTree, { include: ['glimmer-test-helpers/**/*.js'] })
+  ]);
 
   // Test Assets
 
@@ -124,11 +133,21 @@ module.exports = function() {
     })
   ]);
 
-  var transpiledCompiler = transpile(compilerTree, 'transpiledLibs');
-  var transpiledRuntime = transpile(runtimeTree, 'transpiledRuntime');
-  var transpiledTests = transpile(testTree, 'transpiledTests');
+  glimmerCommon = transpile(glimmerCommon, 'glimmer-common');
+  glimmerCompiler = transpile(glimmerCompiler, 'glimmer-compiler');
+  glimmerRuntime = transpile(glimmerRuntime, 'glimmer-runtime');
+  glimmerTests = transpile(glimmerTests, 'glimmer-tests');
 
-  var concatenatedCompiler = concat(transpiledCompiler, {
+  glimmerCommon = concat(glimmerCommon, {
+    inputFiles: ['**/*.js'],
+    outputFile: '/amd/glimmer-common.amd.js',
+    sourceMapConfig: {
+      enabled: true,
+      sourceRoot: '/'
+    }
+  });
+
+  glimmerCompiler = concat(glimmerCompiler, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-compiler.amd.js',
     sourceMapConfig: {
@@ -137,7 +156,7 @@ module.exports = function() {
     }
   });
 
-  var concatenatedRuntime = concat(transpiledRuntime, {
+  glimmerRuntime = concat(glimmerRuntime, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-runtime.amd.js',
     sourceMapConfig: {
@@ -146,9 +165,9 @@ module.exports = function() {
     }
   });
 
-  var concatenatedTests = concat(transpiledTests, {
+  glimmerTests = concat(glimmerTests, {
     inputFiles: ['**/*.js'],
-    outputFile: '/amd/tests.amd.js',
+    outputFile: '/amd/glimmer-tests.amd.js',
     sourceMapConfig: {
       enabled: true,
       sourceRoot: '/'
@@ -162,11 +181,12 @@ module.exports = function() {
   });
 
   return merge([
-    demos,
-    concatenatedCompiler,
-    concatenatedRuntime,
     loader,
     testHarness,
-    concatenatedTests
+    demos,
+    glimmerCommon,
+    glimmerCompiler,
+    glimmerRuntime,
+    glimmerTests
   ]);
 }
