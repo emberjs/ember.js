@@ -328,3 +328,71 @@ QUnit.test('dashless components should not be found', function() {
     runAppend(view);
   }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
 });
+
+QUnit.test('positional parameters does not clash when rendering different components', function(assert) {
+  owner.register('component:normal-message', Component.extend({
+    something: null
+  }).reopenClass({
+    positionalParams: ['something']
+  }));
+
+  owner.register('component:alternative-message', Component.extend({
+    something: null
+  }).reopenClass({
+    positionalParams: ['something']
+  }));
+
+  owner.register('template:components/normal-message', compile('Say: {{something}}!'));
+  owner.register('template:components/alternative-message', compile('---: {{something}}!'));
+
+  view = EmberView.create({
+    [OWNER]: owner,
+    messageType: 'normal-message',
+    message: 'Hello',
+    template: compile('{{component view.messageType view.message}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Say: Hello!');
+
+  run(function() {
+    set(view, 'messageType', 'alternative-message');
+  });
+
+  equal(view.$().text(), '---: Hello!');
+});
+
+QUnit.test('positional parameters does not pollute the attributes when changing components', function(assert) {
+  owner.register('component:normal-message', Component.extend({
+    something: null
+  }).reopenClass({
+    positionalParams: ['something']
+  }));
+
+  owner.register('component:alternative-message', Component.extend({
+    something: 'Another'
+  }).reopenClass({
+    positionalParams: ['somethingElse']
+  }));
+
+  owner.register('template:components/normal-message', compile('Say: {{something}}!'));
+  owner.register('template:components/alternative-message', compile('---: {{something}} {{somethingElse}}!'));
+
+  view = EmberView.create({
+    [OWNER]: owner,
+    messageType: 'normal-message',
+    message: 'Hello',
+    template: compile('{{component view.messageType view.message}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'Say: Hello!');
+
+  run(function() {
+    set(view, 'messageType', 'alternative-message');
+  });
+
+  equal(view.$().text(), '---: Another Hello!');
+});
