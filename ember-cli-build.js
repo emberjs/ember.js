@@ -33,9 +33,11 @@ module.exports = function() {
 
   var demoTS = merge([
     find(__dirname + '/demos', { include: ['**/*.ts']}),
-    mv(packages + '/glimmer-test-helpers/lib/environment.ts', 'glimmer-demos/lib/environment.ts'),
-    mv(packages + '/glimmer-test-helpers/lib/helpers.ts', 'glimmer-demos/lib/helpers.ts'),
-    mv(packages + '/glimmer-test-helpers/index.ts', 'glimmer-demos/index.ts')
+    find(packages + '/glimmer-test-helpers', {
+      include: ['**/*.ts'],
+      exclude: ['tests/**'],
+      destDir: 'glimmer-demos'
+    })
   ]);
 
   var demoES6 = typescript(demoTS, tsOptions);
