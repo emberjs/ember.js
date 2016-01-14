@@ -54,23 +54,23 @@ module.exports = function() {
     }
   });
 
-  var benchmarkjs = find('node_modules/benchmark/{benchmark.js}');
-  var benchHarness = __dirname + '/bench';
-  var bench = find(
-    merge([
-      benchmarkjs,
-      benchHarness
-    ]),
-    { destDir: '/demos' }
-  );
+
+  var benchHarness = find(__dirname + '/bench', '*', { destDir: '/demos' });
 
   var demos = merge([
+    demoConcat,
     find(__dirname + '/demos', {
       include: ['*.html'],
       destDir: 'demos'
     }),
-    demoConcat,
-    bench
+    find(__dirname + '/bench', {
+      include: ['*.html'],
+      destDir: 'demos'
+    }),
+    find(__dirname + '/node_modules/benchmark', {
+      include: ['benchmark.js'],
+      destDir: 'demos'
+    })
   ]);
 
   // TODO: WAT, why does { } change the output so much....

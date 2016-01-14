@@ -41,12 +41,7 @@
       singleComponent.addEventListener('click', function() { runBenchmark('single-component') });
 
       var singleBare = document.getElementById('run-single-bare');
-      singleBare.addEventListener('click', function() {
-        console.time('single-bare');
-        benchmarks.bare.setup.call({ name: 'bare' });
-        benchmarks.bare.fn();
-        console.timeEnd('single-bare');
-      });
+      singleBare.addEventListener('click', function() { runBenchmark('single-bare') });
 
       var logPre = document.getElementById('benchmark-log');
       function log(message) { logPre.innerHTML += message; }
@@ -64,16 +59,16 @@
 
       var Stats = requireModule('glimmer-demos/stats').default;
 
-      function compile(template) {
-        return compileTemplate(template);
-      }
-
       // Init
       var env = new DemoEnvironment();
       var templates = {};
       var context;
       var frag;
       var t;
+
+      function compile(template) {
+        return compileTemplate(template, { env: env });
+      }
 
       env.registerHelper('if', function(params, hash, blocks) {
         if (!!params[0]) {
@@ -133,9 +128,10 @@
         b.run({ async: true });
       }
 
-      var MyItem = function(options) {
-        this.attrs = options.attrs;
-      }
+      var subItemLayout =
+        '<p>{{@id}}</p>';
+
+      env.registerBasicComponent('sub-item', null, subItemLayout);
 
       var itemLayout =
         '<div>{{@item.id}}: ' +
@@ -145,16 +141,7 @@
           '{{/each}}' +
         '{{/if}}</div>';
 
-      env.registerGlimmerComponent('my-item', MyItem, itemLayout);
-
-      var SubItem = function(options) {
-        this.attrs = options.attrs;
-      }
-
-      var subItemLayout =
-        '<p>{{@id}}</p>';
-
-      env.registerGlimmerComponent('sub-item', SubItem, subItemLayout);
+      env.registerBasicComponent('my-item', null, itemLayout);
 
       function benchmark(name, template) {
         templates[name] = compile(template);
@@ -185,7 +172,8 @@
             }
 
             context = {
-              items: items
+              items: items,
+              single: items[0].subitems[0]
             };
           },
 
@@ -202,13 +190,17 @@
 
       var benchmarks = {
         'single-component': benchmark('single-component',
-          '<sub-item id={{items.0.subitems.0.id}} />'
+          '<sub-item id={{single.id}} />'
         ),
 
         'with-components': benchmark('with-components',
           '{{#each items key="id" as |item|}}' +
             '<my-item item={{item}} />' +
           '{{/each}}'
+        ),
+
+        'single-bare': benchmark('single-bare',
+          '<p>{{single.id}}</p>'
         ),
 
         'bare': benchmark('bare',

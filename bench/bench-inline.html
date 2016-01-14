@@ -50,10 +50,6 @@
 
       var Stats = requireModule('glimmer-demos/stats').default;
 
-      function compile(template) {
-        return compileTemplate(template);
-      }
-
       // Init
       var env = new DemoEnvironment();
       var templates = {};
@@ -61,20 +57,15 @@
       var frag;
       var t;
 
-      env.registerHelper('if', function(params, hash, blocks) {
-        if (!!params[0]) {
-          blocks.template.yield();
-        } else {
-          blocks.inverse.yield();
-        }
-      });
+      function compile(template) {
+        return compileTemplate(template, { env: env });
+      }
 
-
-      env.registerHelper('inline-if', function(params, hash, blocks) {
-        if (!!params[0]) {
-          return params[1];
+      env.registerHelper('inline-if', function(args) {
+        if (!!args[0]) {
+          return args[1];
         } else {
-          return params[2];
+          return args[2];
         }
       });
 
@@ -183,7 +174,7 @@
         ),
 
         'block-if': benchmark('block-if',
-          '{{#if truthy}}\n  {{value}}\n{{else}}\n  empty{{/if}}'
+          '{{#if truthy}}{{value}}{{else}}empty{{/if}}'
         ),
       };
 
