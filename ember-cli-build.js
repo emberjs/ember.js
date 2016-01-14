@@ -161,15 +161,7 @@ module.exports = function() {
     destDir: '/assets'
   });
 
-  var es6Tree = find(merge([
-    packagesTree,
-    testTree
-  ]), {
-    destDir: 'es6'
-  });
-
   return merge([
-    es6Tree,
     demos,
     concatenatedCompiler,
     concatenatedRuntime,
