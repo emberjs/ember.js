@@ -50,6 +50,7 @@ module.exports = function() {
     outputFile: '/demos/demos.amd.js',
     sourceMapConfig: {
       enabled: true,
+      cache: null,
       sourceRoot: '/'
     }
   });
@@ -143,6 +144,7 @@ module.exports = function() {
     outputFile: '/amd/glimmer-common.amd.js',
     sourceMapConfig: {
       enabled: true,
+      cache: null,
       sourceRoot: '/'
     }
   });
@@ -152,6 +154,7 @@ module.exports = function() {
     outputFile: '/amd/glimmer-compiler.amd.js',
     sourceMapConfig: {
       enabled: true,
+      cache: null,
       sourceRoot: '/'
     }
   });
@@ -161,6 +164,7 @@ module.exports = function() {
     outputFile: '/amd/glimmer-runtime.amd.js',
     sourceMapConfig: {
       enabled: true,
+      cache: null,
       sourceRoot: '/'
     }
   });
@@ -170,6 +174,7 @@ module.exports = function() {
     outputFile: '/amd/glimmer-tests.amd.js',
     sourceMapConfig: {
       enabled: true,
+      cache: null,
       sourceRoot: '/'
     }
   });
