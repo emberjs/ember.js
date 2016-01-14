@@ -641,27 +641,3 @@ QUnit.test('action should be called within a run loop', function(assert) {
 
   innerComponent.fireAction();
 });
-
-QUnit.test('action should be called within a run loop', function(assert) {
-  assert.expect(1);
-
-  innerComponent = EmberComponent.extend({
-    fireAction() {
-      this.attrs.submit();
-    }
-  }).create();
-
-  outerComponent = EmberComponent.extend({
-    layout: compile(`{{view innerComponent submit=(action 'submit')}}`),
-    innerComponent,
-    actions: {
-      submit(newValue) {
-        assert.ok(run.currentRunLoop, 'action is called within a run loop');
-      }
-    }
-  }).create();
-
-  runAppend(outerComponent);
-
-  innerComponent.fireAction();
-});
