@@ -55,9 +55,6 @@ module.exports = function() {
     }
   });
 
-
-  var benchHarness = find(__dirname + '/bench', '*', { destDir: '/demos' });
-
   var demos = merge([
     demoConcat,
     find(__dirname + '/demos', {
