@@ -1243,7 +1243,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     This hook is the first of the route entry validation hooks
     called when an attempt is made to transition into a route
-    or one of its children. It is called before `model` and
+    or one of its children. It is called `beforeModel` and
     `afterModel`, and is appropriate for cases when:
 
     1) A decision can be made to redirect elsewhere without
