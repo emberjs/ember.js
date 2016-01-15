@@ -6,6 +6,8 @@
 import { keyword } from 'htmlbars-runtime/hooks';
 import closureComponent from 'ember-htmlbars/keywords/closure-component';
 import isEnabled from 'ember-metal/features';
+import EmptyObject from 'ember-metal/empty_object';
+import assign from 'ember-metal/assign';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -79,13 +81,13 @@ import isEnabled from 'ember-metal/features';
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
   if (isEnabled('ember-contextual-components')) {
-    if (morph) {
-      keyword('@element_component', morph, env, scope, params, hash, template, inverse, visitor);
-      return true;
+    if (!morph) {
+      return closureComponent(env, params, hash);
     }
-    return closureComponent(env, params, hash);
-  } else {
-    keyword('@element_component', morph, env, scope, params, hash, template, inverse, visitor);
-    return true;
   }
+
+  let newHash = assign(new EmptyObject(), hash);
+
+  keyword('@element_component', morph, env, scope, params, newHash, template, inverse, visitor);
+  return true;
 }

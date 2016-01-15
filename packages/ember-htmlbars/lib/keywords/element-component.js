@@ -6,6 +6,8 @@ import {
   mergeInNewHash,
   processPositionalParamsFromCell,
 } from  './closure-component';
+import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 
 export default {
   setupState(lastState, env, scope, params, hash) {
@@ -42,7 +44,7 @@ function getComponentPath(param, env) {
   return path;
 }
 
-function render(morph, env, scope, [path, ...params], hash, template, inverse, visitor) {
+function render(morph, env, scope, [path, ...params], hash, template, inverse, visitor, isRerender=false) {
   let {
     componentPath
   } = morph.getState();
@@ -54,6 +56,13 @@ function render(morph, env, scope, [path, ...params], hash, template, inverse, v
   }
 
   path = env.hooks.getValue(path);
+
+  if (isRerender) {
+    let result = lookupComponent(env.owner, componentPath);
+    let component = result.component;
+
+    extractPositionalParams(null, component, params, hash);
+  }
 
   if (isComponentCell(path)) {
     let closureComponent = env.hooks.getValue(path);
