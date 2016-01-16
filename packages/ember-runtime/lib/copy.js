@@ -64,19 +64,21 @@ function _copy(obj, deep, seen, copies) {
 }
 
 /**
-  Creates a clone of the passed object. This function can take just about
-  any type of object and create a clone of it, including primitive values
-  (which are not actually cloned because they are immutable).
+  Creates a shallow copy of the passed object. A deep copy of the object is
+  returned if the optional `deep` argument is `true`.
 
-  If the passed object implements the `copy()` method, then this function
-  will simply call that method and return the result. Please see
-  `Ember.Copyable` for further details.
+  If the passed object implements the `Ember.Copyable` interface, then this
+  function will delegate to the object's `copy()` method and return the
+  result. See `Ember.Copyable` for further details.
+
+  For primitive values (which are immutable in JavaScript), the passed object
+  is simply returned.
 
   @method copy
   @for Ember
   @param {Object} obj The object to clone
-  @param {Boolean} deep If true, a deep copy of the object is made
-  @return {Object} The cloned object
+  @param {Boolean} [deep=false] If true, a deep copy of the object is made.
+  @return {Object} The copied object
   @public
 */
 export default function copy(obj, deep) {
