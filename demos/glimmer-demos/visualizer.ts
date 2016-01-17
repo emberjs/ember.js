@@ -104,12 +104,12 @@ const UI =
 
   <div class="input-group">
     <label for="top-level-template">Top-Level Template</label>
-    <textarea id="top-level-template" wrap="off" readonly={{if rendered true false}}>{{template.source}}</textarea>
+    <textarea id="top-level-template" wrap="off" readOnly={{if rendered true false}}>{{template.source}}</textarea>
   </div>
 
   <div class="input-group">
     <label for="component-layout">&lt;h-card&gt; Layout</label>
-    <textarea id="component-layout" wrap="off" readonly={{if rendered true false}}>{{layout.source}}</textarea>
+    <textarea id="component-layout" wrap="off" readOnly={{if rendered true false}}>{{layout.source}}</textarea>
   </div>
 
   <button id="btn-render" class="primary" style="display: {{if rendered 'none' 'block'}}">Render</button>
