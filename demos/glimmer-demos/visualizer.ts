@@ -28,6 +28,14 @@ const DEFAULT_DATA =
         {
           "type": "Office",
           "number": "1 (800) MYAPPLE"
+        },
+        {
+          "type": "Home",
+          "number": "(555) 123 4567"
+        },
+        {
+          "type": "Mobile",
+          "number": "(555) 555 5555"
         }
       ]
     }
@@ -82,7 +90,7 @@ const DEFAULT_LAYOUT =
       <span class="country-name">{{address.country}}</span>
     </div>
   {{/with}}
-  {{#each @person.phones key="number" as |phone|}}
+  {{#each @person.phones key="type" as |phone|}}
     <div class="tel">
       <span class="type">{{phone.type}}</span>:
       <span class="value">{{phone.number}}</span>
@@ -250,7 +258,6 @@ function renderUI() {
     let output = opcode.type.toUpperCase();
 
     if (opcode.args || opcode.details) {
-      debugger;
       output += "(";
 
       if (opcode.args && opcode.args.length) {
@@ -265,7 +272,7 @@ function renderUI() {
             output += ", ";
           }
 
-          output += keys.map(key => `${key}=${opcode.details[key]}`);
+          output += keys.map(key => `${key}=${opcode.details[key]}`).join(", ");;
         }
       }
 
