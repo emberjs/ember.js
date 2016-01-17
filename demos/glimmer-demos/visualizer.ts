@@ -90,6 +90,62 @@ const DEFAULT_LAYOUT =
   {{/each}}
 </div>`;
 
+const UI =
+`<div id="inputs" class="{{if rendered '' 'full-width'}}">
+  <h1>
+    <span style="font-size: 48px; color: rgb(238, 89, 57);">Glimmer</span>
+    <span style="font-size: 40px; color: rgb(161, 63, 43);">Visualizer</span>
+  </h1>
+
+  <div class="input-group">
+    <label for="data">Data</label>
+    <textarea id="data" wrap="off">{{data}}</textarea>
+  </div>
+
+  <div class="input-group">
+    <label for="top-level-template">Top-Level Template</label>
+    <textarea id="top-level-template" wrap="off" readonly={{if rendered true false}}>{{template.source}}</textarea>
+  </div>
+
+  <div class="input-group">
+    <label for="component-layout">&lt;h-card&gt; Layout</label>
+    <textarea id="component-layout" wrap="off" readonly={{if rendered true false}}>{{layout.source}}</textarea>
+  </div>
+
+  <button id="btn-render" class="primary" style="display: {{if rendered 'none' 'block'}}">Render</button>
+  <button id="btn-update" class="primary" style="display: {{if rendered 'block' 'none'}}">Update</button>
+  <button id="btn-clear" style="display: {{if rendered 'block' 'none'}}">Clear</button>
+</div>
+{{#if rendered}}
+  <div id="output">
+    <div id="wire-format">
+      <div class="header">Wire Format (Top-Level)</div>
+      <wire-format-inspector class="content" spec={{template.wireFormat}} />
+      <div class="header secondary">Wire Format (&lt;h-card&gt;)</div>
+      <wire-format-inspector class="content" spec={{layout.wireFormat}} />
+    </div>
+    <div id="initial">
+      <div class="header">Opcodes (Top-Level)</div>
+      <opcodes-inspector class="content" block={{template.opcodes}} />
+      <div class="header secondary">Opcodes (&lt;h-card&gt;)</div>
+      <opcodes-inspector class="content" block={{layout.opcodes}} />
+    </div>
+    <div id="updating">
+      <div class="header">Updating Opcodes</div>
+      <div class="content full-height">
+        <h3>Opcodes</h3>
+        <updating-opcodes-inspector opcodes={{updatingOpcodes}} />
+      </div>
+    </div>
+    <div id="dom">
+      <div class="header">DOM</div>
+      <div class="content rendered">{{{html}}}</div>
+      <div class="header secondary">HTML</div>
+      <pre class="content secondary source">{{html}}</pre>
+    </div>
+  </div>
+{{/if}}`;
+
 function $(selector) {
   return document.querySelectorAll(selector);
 }
@@ -103,79 +159,35 @@ let $inputs:   HTMLDivElement,
     $clear:    HTMLButtonElement,
     $output:   HTMLDivElement;
 
+let ui = {
+  rendered: false,
+  data: DEFAULT_DATA,
+  template: {
+    source: DEFAULT_TEMPLATE,
+    wireFormat: null,
+    opcodes: null
+  },
+  layout: {
+    source: DEFAULT_LAYOUT,
+    wireFormat: null,
+    opcodes: null
+  },
+  updatingOpcodes: null,
+  html: ""
+};
+
 export function init() {
+  renderUI();
   bindUI();
-  resetUI();
   wireUI();
 }
 
-function bindUI() {
-  $inputs   = $("#inputs")[0] as HTMLDivElement;
-  $data     = $("#data")[0] as HTMLTextAreaElement;
-  $template = $("#top-level-template")[0] as HTMLTextAreaElement;
-  $layout   = $("#component-layout")[0] as HTMLTextAreaElement;
-  $render   = $("#btn-render")[0] as HTMLButtonElement;
-  $update   = $("#btn-update")[0] as HTMLButtonElement;
-  $clear    = $("#btn-clear")[0] as HTMLButtonElement;
-  $output   = $("#output")[0] as HTMLDivElement;
-}
+let rerenderUI;
 
-function resetUI() {
-  $output.innerHTML = "";
-  $inputs.className = "full-width";
-  $template.readOnly = false;
-  $layout.readOnly = false;
-  $render.style.display = "";
-  $update.style.display = "none";
-  $clear.style.display = "none";
-}
-
-function wireUI() {
-  $data.value = DEFAULT_DATA;
-  $template.value = DEFAULT_TEMPLATE;
-  $layout.value = DEFAULT_LAYOUT;
-  $render.addEventListener("click", render, false);
-  $update.addEventListener("click", update, false);
-  $clear.addEventListener("click", clear, false);
-}
-
-let _update = null;
-
-function render() {
-  let context = JSON.parse($data.value);
-
+function renderUI() {
   let env = new TestEnvironment();
 
-  env.registerEmberishGlimmerComponent("h-card", null, $layout.value);
-
-  let ViewSource = CurlyComponent.extend({
-    didInsertElement() {
-      this.$rendered = $(`#vsr${this._guid}`)[0];
-      this.$source = $(`#vss${this._guid}`)[0];
-    },
-
-    didRender() {
-      if (this.attrs.unwrap) {
-        this.$source.innerText = this.$rendered.children[0].innerHTML;
-      } else {
-        this.$source.innerText = this.$rendered.innerHTML;
-      }
-    }
-  });
-
-  env.registerEmberishCurlyComponent("view-source", ViewSource,
-`<div class="header">DOM</div>
-<div id="vsr{{_guid}}" class="content rendered">{{yield}}</div>
-<div class="header secondary">HTML</div>
-<pre id="vss{{_guid}}" class="content secondary source"></pre>`);
-
-  let TopLevel = CurlyComponent.extend({
-    willRender() {
-      this.setProperties(this.attrs.context);
-    }
-  });
-
-  env.registerEmberishCurlyComponent("top-level", TopLevel, $template.value);
+  env.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
 
   env.registerHelper("json", ([value]) => JSON.stringify(value));
 
@@ -254,31 +266,39 @@ function render() {
   {{/each}}
 </ol>`);
 
-  let app = env.compile(
-`<div id="wire-format">
-  <div class="header">Wire Format (Top-Level)</div>
-  <wire-format-inspector class="content" spec={{template.wireFormat}} />
-  <div class="header secondary">Wire Format (&lt;h-card&gt;)</div>
-  <wire-format-inspector class="content" spec={{layout.wireFormat}} />
-</div>
-<div id="initial">
-  <div class="header">Opcodes (Top-Level)</div>
-  <opcodes-inspector class="content" block={{template.opcodes}} />
-  <div class="header secondary">Opcodes (&lt;h-card&gt;)</div>
-  <opcodes-inspector class="content" block={{layout.opcodes}} />
-</div>
-<div id="updating">
-  <div class="header">Updating Opcodes</div>
-  {{#if updating}}
-    <div class="content full-height">
-      <h3>Opcodes</h3>
-      <updating-opcodes-inspector opcodes={{updating}} />
-    </div>
-  {{/if}}
-</div>
-<div id="dom">
-  {{#view-source unwrap=true}}{{top-level context=context}}{{/view-source}}
-</div>`);
+  env.begin();
+  let res = env.compile(UI).render(ui, env, { appendTo: document.body });
+  env.commit();
+
+  rerenderUI = res.rerender.bind(res);
+}
+
+function bindUI() {
+  $inputs   = $("#inputs")[0] as HTMLDivElement;
+  $data     = $("#data")[0] as HTMLTextAreaElement;
+  $template = $("#top-level-template")[0] as HTMLTextAreaElement;
+  $layout   = $("#component-layout")[0] as HTMLTextAreaElement;
+  $render   = $("#btn-render")[0] as HTMLButtonElement;
+  $update   = $("#btn-update")[0] as HTMLButtonElement;
+  $clear    = $("#btn-clear")[0] as HTMLButtonElement;
+}
+
+function wireUI() {
+  $render.addEventListener("click", renderContent, false);
+  $update.addEventListener("click", updateContent, false);
+  $clear.addEventListener("click", clearContent, false);
+}
+
+let _updateContent = null;
+
+function renderContent() {
+  let data = JSON.parse($data.value);
+
+  let env = new TestEnvironment();
+
+  env.registerEmberishGlimmerComponent("h-card", null, $layout.value);
+
+  let app = env.compile($template.value);
 
   function compileLayout(component) {
     let def = env.getComponentDefinition([component]);
@@ -315,46 +335,42 @@ function render() {
     });
   }
 
-  let template = {};
-
-  template["wireFormat"] = JSON.parse(compileSpec($template.value));
-  template["opcodes"] = processOpcodes(compileLayout("top-level"));
-
-  let layout = {};
-
-  layout["wireFormat"] = JSON.parse(compileSpec($layout.value));
-  layout["opcodes"] = processOpcodes(compileLayout("h-card"));
-
-  let self = { context, template, layout, updating: null };
+  let div = document.createElement('div');
 
   env.begin();
-  let res = app.render(self, env, { appendTo: $output });
+  let res = app.render(data, env, { appendTo: div });
   env.commit();
 
-  self.updating = processUpdatingOpcodes(res.updating);
-  res.rerender();
+  ui.rendered = true;
 
-  _update = () => {
-    let context = JSON.parse($data.value);
-    self.context = context;
-    res.rerender();
-    self.updating = processUpdatingOpcodes(res.updating);
-    res.rerender();
+  ui.template.source = $template.value;
+  ui.template.wireFormat = JSON.parse(compileSpec($template.value));
+  ui.template.opcodes = processOpcodes(app.raw);
+
+  ui.layout.source = $layout.value;
+  ui.layout.wireFormat = JSON.parse(compileSpec($layout.value));
+  ui.layout.opcodes = processOpcodes(compileLayout("h-card"));
+
+  ui.updatingOpcodes = processUpdatingOpcodes(res.updating);
+
+  ui.html = div.innerHTML;
+
+  _updateContent = () => {
+    res.rerender(JSON.parse($data.value));
+    ui.updatingOpcodes = processUpdatingOpcodes(res.updating);
+    ui.html = div.innerHTML;
+    rerenderUI();
   };
 
-  $inputs.className = "";
-  $template.readOnly = true;
-  $layout.readOnly = true;
-  $render.style.display = "none";
-  $update.style.display = "";
-  $clear.style.display = "";
+  rerenderUI();
 }
 
-function update() {
-  _update();
+function updateContent() {
+  _updateContent();
 }
 
-function clear() {
-  _update = null;
-  resetUI();
+function clearContent() {
+  _updateContent = null;
+  ui.rendered = false;
+  rerenderUI();
 }
