@@ -74,7 +74,7 @@ QUnit.test('Throw exception when trying to inject `type:thing` on all type(s)', 
 
   throws(function() {
     registry.typeInjection('controller', 'injected', 'controller:post');
-  }, 'Cannot inject a `controller:post` on other controller(s).');
+  }, /Cannot inject a `controller:post` on other controller\(s\)\./);
 });
 
 QUnit.test('The registry can take a hook to resolve factories lazily', function() {
@@ -144,7 +144,7 @@ QUnit.test('validateFullName throws an error if name is incorrect', function() {
   registry.register('controller:post', PostController);
   throws(function() {
     registry.resolve('post');
-  }, 'TypeError: Invalid Fullname, expected: `type:name` got: post');
+  }, /TypeError: Invalid Fullname, expected: `type:name` got: post/);
 });
 
 QUnit.test('The registry normalizes names when injecting', function() {
@@ -192,7 +192,7 @@ QUnit.test('cannot re-register a factory if it has been resolved', function() {
 
   throws(function() {
     registry.register('controller:apple', SecondApple);
-  }, 'Cannot re-register: `controller:apple`, as it has already been resolved.');
+  }, /Cannot re-register: `controller:apple`, as it has already been resolved\./);
 
   strictEqual(registry.resolve('controller:apple'), FirstApple);
 });
