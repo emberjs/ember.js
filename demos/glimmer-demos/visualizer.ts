@@ -450,4 +450,5 @@ function resetContent() {
   $layout.value = DEFAULT_LAYOUT;
 
   storeContent();
+  clearContent();
 }
