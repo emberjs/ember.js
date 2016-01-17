@@ -126,15 +126,19 @@ const UI =
     </div>
     <div id="initial">
       <div class="header">Opcodes (Top-Level)</div>
-      <opcodes-inspector class="content" block={{template.opcodes}} />
+      <block-inspector class="content" block={{template.opcodes}} />
       <div class="header secondary">Opcodes (&lt;h-card&gt;)</div>
-      <opcodes-inspector class="content" block={{layout.opcodes}} />
+      <block-inspector class="content" block={{layout.opcodes}} />
     </div>
     <div id="updating">
       <div class="header">Updating Opcodes</div>
       <div class="content full-height">
         <h3>Opcodes</h3>
-        <updating-opcodes-inspector opcodes={{updatingOpcodes}} />
+        <ol>
+          {{#each updatingOpcodes as |opcode|}}
+            <opcode-inspector opcode={{opcode}} />
+          {{/each}}
+        </ol>
       </div>
     </div>
     <div id="dom">
@@ -240,31 +244,60 @@ function renderUI() {
   {{/if}}
 </div>`);
 
-  env.registerEmberishGlimmerComponent("opcodes-inspector", null,
+  env.registerHelper("pp-opcode", ([opcode]) => {
+    let output = opcode.type.toUpperCase();
+
+    if (opcode.args || opcode.details) {
+      debugger;
+      output += "(";
+
+      if (opcode.args && opcode.args.length) {
+        output += opcode.args.join(", ");
+      }
+
+      if (opcode.details) {
+        let keys = Object.keys(opcode.details);
+
+        if (keys.length) {
+          if (opcode.args && opcode.args.length) {
+            output += ", ";
+          }
+
+          output += keys.map(key => `${key}=${opcode.details[key]}`);
+        }
+      }
+
+      output += ")";
+    }
+
+    return output;
+  });
+
+  env.registerEmberishGlimmerComponent("opcode-inspector", null,
+`<li>
+  <span class="pre">{{pp-opcode @opcode}}</span>
+  {{#if @opcode.children}}
+    <ol>
+      {{#each @opcode.children as |opcode|}}
+        {{opcode-inspector opcode=opcode}}
+      {{/each}}
+    </ol>
+  {{/if}}
+</li>`);
+
+  env.registerEmberishGlimmerComponent("block-inspector", null,
 `<div>
   <h3>Opcodes</h3>
   <ol>
     {{#each @block.opcodes as |opcode|}}
-      <li><span class="pre">{{opcode.type}}</span></li>
+      <opcode-inspector opcode={{opcode}} />
     {{/each}}
   </ol>
   <hr />
   {{#each @block.children as |inner|}}
-    <div class="indent">{{opcodes-inspector block=inner}}</div>
+    <div class="indent">{{block-inspector block=inner}}</div>
   {{/each}}
 </div>`);
-
-  env.registerEmberishGlimmerComponent("updating-opcodes-inspector", null,
-`<ol>
-  {{#each @opcodes as |opcode|}}
-    <li>
-      <span class="pre">{{opcode.type}}</span>
-      {{#if opcode.children}}
-        {{updating-opcodes-inspector opcodes=opcode.children}}
-      {{/if}}
-    </li>
-  {{/each}}
-</ol>`);
 
   env.begin();
   let res = env.compile(UI).render(ui, env, { appendTo: document.body });
@@ -315,24 +348,13 @@ function renderContent() {
 
   function processOpcodes(block) {
     return {
-      opcodes: block.ops.toArray(),
+      opcodes: block.ops.toArray().map(op => op.toJSON()),
       children: block.children.map(processOpcodes)
     };
   }
 
   function processUpdatingOpcodes(list) {
-    return list.toArray().map(opcode => {
-      let rtn = {
-        type: opcode.type,
-        children: null
-      };
-
-      if (opcode.updating) {
-        rtn.children = processUpdatingOpcodes(opcode.updating);
-      }
-
-      return rtn;
-    });
+    return res.updating.toArray().map(op => op.toJSON());
   }
 
   let div = document.createElement('div');
