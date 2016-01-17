@@ -115,6 +115,7 @@ const UI =
   <button id="btn-render" class="primary" style="display: {{if rendered 'none' 'block'}}">Render</button>
   <button id="btn-update" class="primary" style="display: {{if rendered 'block' 'none'}}">Update</button>
   <button id="btn-clear" style="display: {{if rendered 'block' 'none'}}">Clear</button>
+  <button id="btn-reset">Reset to example</button>
 </div>
 {{#if rendered}}
   <div id="output">
@@ -161,6 +162,7 @@ let $inputs:   HTMLDivElement,
     $render:   HTMLButtonElement,
     $update:   HTMLButtonElement,
     $clear:    HTMLButtonElement,
+    $reset:    HTMLButtonElement,
     $output:   HTMLDivElement;
 
 let ui = {
@@ -314,12 +316,27 @@ function bindUI() {
   $render   = $("#btn-render")[0] as HTMLButtonElement;
   $update   = $("#btn-update")[0] as HTMLButtonElement;
   $clear    = $("#btn-clear")[0] as HTMLButtonElement;
+  $reset    = $("#btn-reset")[0] as HTMLButtonElement;
 }
 
 function wireUI() {
   $render.addEventListener("click", renderContent, false);
   $update.addEventListener("click", updateContent, false);
   $clear.addEventListener("click", clearContent, false);
+  $reset.addEventListener("click", resetContent, false);
+
+  $data.addEventListener("input", storeContent);
+  $template.addEventListener("input", storeContent);
+  $layout.addEventListener("input", storeContent);
+
+  initContent();
+}
+
+function initContent() {
+  let { data, template, layout } = getInitialContent();
+  $data.value = data;
+  $template.value = template;
+  $layout.value = layout;
 }
 
 let _updateContent = null;
@@ -395,4 +412,35 @@ function clearContent() {
   _updateContent = null;
   ui.rendered = false;
   rerenderUI();
+}
+
+function getInitialContent() {
+  return getStoredContent() || {
+    data: DEFAULT_DATA,
+    template: DEFAULT_TEMPLATE,
+    layout: DEFAULT_LAYOUT
+  };
+}
+
+function getStoredContent() {
+  let content = localStorage.getItem('glimmer-visualizer:content');
+  if (content) {
+    return JSON.parse(content);
+  }
+}
+
+function storeContent() {
+  localStorage.setItem('glimmer-visualizer:content', JSON.stringify({
+    data: $data.value,
+    template: $template.value,
+    layout: $layout.value
+  }));
+}
+
+function resetContent() {
+  $data.value = DEFAULT_DATA;
+  $template.value = DEFAULT_TEMPLATE;
+  $layout.value = DEFAULT_LAYOUT;
+
+  storeContent();
 }
