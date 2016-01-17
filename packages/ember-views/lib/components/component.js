@@ -1,4 +1,5 @@
 import { assert, deprecate } from 'ember-metal/debug';
+import environment from 'ember-metal/environment';
 
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';
@@ -163,7 +164,7 @@ var Component = View.extend(TargetActionSupport, {
     // If in a tagless component, assert that no event handlers are defined
     assert(
       `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
-      this.tagName !== '' || !(() => {
+      this.tagName !== '' || !environment.hasDOM || !(() => {
         let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
         let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 

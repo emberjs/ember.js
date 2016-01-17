@@ -301,4 +301,21 @@ if (appModule.canRunTests) {
       assert.strictEqual(xFooInstances, 0, 'it should not create any x-foo components');
     });
   });
+
+  QUnit.test('FastBoot: tagless components can render', function(assert) {
+    this.template('application', "<div class='my-context'>{{my-component}}</div>");
+    this.component('my-component', { tagName: '' });
+    this.template('components/my-component', '<h1>hello world</h1>');
+
+    var App = this.createApplication();
+
+    return RSVP.all([
+      fastbootVisit(App, '/').then(
+        assertFastbootResult(assert, { url: '/', body: /<div class="my-context"><h1>hello world<\/h1><\/div>/ }),
+        handleError(assert)
+      )
+    ]);
+  });
+
+
 }

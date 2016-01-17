@@ -14,6 +14,7 @@ import ActionManager from 'ember-views/system/action_manager';
 import View from 'ember-views/views/view';
 import assign from 'ember-metal/assign';
 import { getOwner } from 'container/owner';
+import environment from 'ember-metal/environment';
 
 let ROOT_ELEMENT_CLASS = 'ember-application';
 let ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
@@ -135,6 +136,11 @@ export default EmberObject.extend({
     @private
   */
   canDispatchToEventManager: true,
+
+  init() {
+    this._super();
+    assert('EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.', environment.hasDOM);
+  },
 
   /**
     Sets up event listeners for standard browser events.
