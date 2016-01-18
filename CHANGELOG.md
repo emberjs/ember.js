@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 2.2.2 (January 17, 2016)
+
+- [#12793](https://github.com/emberjs/ember.js/pull/12793) [BUGFIX release-1-13] Remove jQuery version assertion.
+
+### 2.2.1 (January 14, 2016)
+
+-[CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html)
+
 ### 2.2.0 (November 16, 2015)
 
 - [#12600](https://github.com/emberjs/ember.js/pull/12600) [BUGFIX beta] Guard against `null` `attrs` in `getRoot` hook.
