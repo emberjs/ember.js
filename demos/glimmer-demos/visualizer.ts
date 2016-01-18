@@ -371,6 +371,8 @@ function renderContent() {
   }
 
   function processOpcodes(block) {
+    compileInner(block);
+
     return {
       opcodes: block.ops.toArray().map(op => op.toJSON()),
       children: block.children.map(processOpcodes)
