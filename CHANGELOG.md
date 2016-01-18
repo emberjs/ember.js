@@ -1,7 +1,12 @@
 # Ember Changelog
 
-### v2.3.0-beta.3 (December 19, 2015)
+### v2.3.0 (January 19, 2016)
 
+- [#12712](https://github.com/emberjs/ember.js/pull/12712) [BUGFIX] Create a new hash parameter when creating a component cell
+- [#12746](https://github.com/emberjs/ember.js/pull/12746) [BUGFIX] Update htmlbars to 0.14.11 to fix [CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html).
+- [#12752](https://github.com/emberjs/ember.js/pull/12752) [BUGFIX] Do not re-raise on errors handled in route error action.
+- [#12764](https://github.com/emberjs/ember.js/pull/12764) [BUGFIX] Read values of `action` helper parameters
+- [#12793](https://github.com/emberjs/ember.js/pull/12793) [BUGFIX] Remove jQuery version assertion.
 - [#12659](https://github.com/emberjs/ember.js/pull/12659) [BUGFIX] Update HTMLBars to 0.14.7.
 - [#12666](https://github.com/emberjs/ember.js/pull/12666) [BUGFIX] Prevent triggering V8 memory leak bug through registry / resolver access.
 - [#12677](https://github.com/emberjs/ember.js/pull/12677) [BUGFIX] Remove FastBoot monkeypatches.
@@ -12,9 +17,6 @@
 - [#12705](https://github.com/emberjs/ember.js/pull/12705) [BUGFIX] Fix FastBoot URL parsing crash.
 - [#12728](https://github.com/emberjs/ember.js/pull/12728) [BUGFIX] Fix incorrect export for `Ember.computed.collect`.
 - [#12731](https://github.com/emberjs/ember.js/pull/12731) [BUGFIX] Ensure `container` can still be provided to `.create` (prevents an error and provides a helpful deprecation).
-
-### v2.3.0-beta.2 (November 29, 2015)
-
 - [#12626](https://github.com/emberjs/ember.js/pull/12626) [BUGFIX] Fix "rest" style positional params in contextual components when using dot syntax.
 - [#12627](https://github.com/emberjs/ember.js/pull/12627) [CLEANUP] Remove unused `ENV` flags.
   * `Ember.ENV.ENABLE_ALL_FEATURES` is removed (wasn't functionally different than `Ember.ENV.ENABLE_OPTIONAL_FEATURES`).
@@ -23,9 +25,6 @@
 - [#12628](https://github.com/emberjs/ember.js/pull/12628) [BUGFIX] Fix processing arguments in rerender for contextual components.
 - [#12629](https://github.com/emberjs/ember.js/pull/12629) [BUGFIX] Expose `ownerInjection` method on `ContainerProxy`.
 - [#12636](https://github.com/emberjs/ember.js/pull/12636) [BUGFIX] Ensure `Ember.Mixin.prototype.toString` is defined (prevents issues with `Object.seal(Ember.Mixin.prototype)` in debug builds.
-
-### v2.3.0-beta.1 (November 16, 2015)
-
 - [#12532](https://github.com/emberjs/ember.js/pull/12532) Bump RSVP dependency from 3.0.6 to 3.1.0.
 - [#12422](https://github.com/emberjs/ember.js/pull/12422) / [#12495](https://github.com/emberjs/ember.js/pull/12495) / [#12517](https://github.com/emberjs/ember.js/pull/12517) / [#12561](https://github.com/emberjs/ember.js/pull/12561) / [#12542](https://github.com/emberjs/ember.js/pull/12542) / [#12570](https://github.com/emberjs/ember.js/pull/12570) [FEATURE ember-contextual-components]
 - [#11874](https://github.com/emberjs/ember.js/pull/11874) / [#12562](https://github.com/emberjs/ember.js/pull/12562) / [#12557](https://github.com/emberjs/ember.js/pull/12557) / [#12578](https://github.com/emberjs/ember.js/pull/12578) / [#12599](https://github.com/emberjs/ember.js/pull/12599) / [#12570](https://github.com/emberjs/ember.js/pull/12570) / [#12604](https://github.com/emberjs/ember.js/pull/12604) / [#12609](https://github.com/emberjs/ember.js/pull/12609) [FEATURE ember-container-inject-owner]
