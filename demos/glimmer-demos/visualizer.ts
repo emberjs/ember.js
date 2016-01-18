@@ -53,31 +53,37 @@ const DEFAULT_TEMPLATE =
 const DEFAULT_LAYOUT =
 `<div class="vcard">
   {{#if @person.url}}
-    <a class="url fn n" href="{{@person.url}}">
-    {{#with @person.name as |name|}}
-      <span class="given-name">{{name.first}}</span>
-      {{#if name.middle}}
-      <span class="additional-name">{{name.middle}}</span>
-      {{/if}}
-      <span class="family-name">{{name.last}}</span>
-    {{/with}}
-    </a>
+    <div>
+      <a class="url fn n" href="{{@person.url}}">
+      {{#with @person.name as |name|}}
+        <span class="given-name">{{name.first}}</span>
+        {{#if name.middle}}
+        <span class="additional-name">{{name.middle}}</span>
+        {{/if}}
+        <span class="family-name">{{name.last}}</span>
+      {{/with}}
+      </a>
+    </div>
   {{else}}
-    {{#with @person.name as |name|}}
-      <span class="given-name">{{name.first}}</span>
-      {{#if name.additional}}
-      <span class="additional-name">{{name.middle}}</span>
-      {{/if}}
-      <span class="family-name">{{name.last}}</span>
-    {{/with}}
+    <div>
+      {{#with @person.name as |name|}}
+        <span class="given-name">{{name.first}}</span>
+        {{#if name.additional}}
+        <span class="additional-name">{{name.middle}}</span>
+        {{/if}}
+        <span class="family-name">{{name.last}}</span>
+      {{/with}}
+    </div>
   {{/if}}
   {{#if @person.org}}
     <div class="org">{{@person.org}}</div>
   {{/if}}
   {{#if @person.email}}
-    <a class="email" href="mailto:{{@person.email}}">
-      {{@person.email}}
-    </a>
+    <div>
+      <a class="email" href="mailto:{{@person.email}}">
+        {{@person.email}}
+      </a>
+    </div>
   {{/if}}
   {{#with @person.address as |address|}}
     <div class="adr">
@@ -287,7 +293,7 @@ function renderUI() {
   <span class="pre">{{pp-opcode @opcode}}</span>
   {{#if @opcode.children}}
     <ol>
-      {{#each @opcode.children as |opcode|}}
+      {{#each @opcode.children key="guid" as |opcode|}}
         {{opcode-inspector opcode=opcode}}
       {{/each}}
     </ol>
@@ -298,7 +304,7 @@ function renderUI() {
 `<div>
   <h3>Opcodes</h3>
   <ol>
-    {{#each @block.opcodes as |opcode|}}
+    {{#each @block.opcodes key="guid" as |opcode|}}
       <opcode-inspector opcode={{opcode}} />
     {{/each}}
   </ol>
@@ -402,6 +408,9 @@ function renderContent() {
   ui.updatingOpcodes = processUpdatingOpcodes(res.updating);
 
   ui.html = div.innerHTML;
+
+  window.$UI = ui;
+  window.$DIV = div;
 
   _updateContent = () => {
     res.rerender(JSON.parse($data.value));
