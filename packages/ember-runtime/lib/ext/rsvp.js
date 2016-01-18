@@ -1,5 +1,3 @@
-/* globals RSVP:true */
-
 import Ember from 'ember-metal/core';
 import require, { has } from 'require';
 import { assert } from 'ember-metal/debug';
