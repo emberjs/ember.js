@@ -15,6 +15,7 @@ before_install:
   - "npm config set spin false"
   - "npm --version"
   - "phantomjs --version"
+  - "npm install -g npm"
 
 install:
   - "npm install"
