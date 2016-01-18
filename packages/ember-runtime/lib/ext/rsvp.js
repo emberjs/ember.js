@@ -1,5 +1,3 @@
-/* globals RSVP:true */
-
 import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import Logger from 'ember-metal/logger';
