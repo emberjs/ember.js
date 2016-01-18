@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 2.4.0-beta.1
+
+- [#12348](https://github.com/emberjs/ember.js/pull/12348) Route#disconnectOutlet should not be private
+- [#12648](https://github.com/emberjs/ember.js/pull/12648) Move `packages/**/lib/main.js` to `packages/**/lib/index.js`.
+- [#12647](https://github.com/emberjs/ember.js/pull/12647) update cli
+- [#12638](https://github.com/emberjs/ember.js/pull/12638) Update references to find methods
+- [#12757](https://github.com/emberjs/ember.js/pull/12757) Update build related deps.
+- [#12662](https://github.com/emberjs/ember.js/pull/12662) correction for Ember.String.capitalize docs
+- [#12674](https://github.com/emberjs/ember.js/pull/12674) removed unused `name` prop
+- [#12664](https://github.com/emberjs/ember.js/pull/12664) Include NaN as a falsey value in the `with` helper's docstring
+- [#12698](https://github.com/emberjs/ember.js/pull/12698) convert all this._super.apply(this, arguments) to this._super(...arguments)
+
 ### v2.3.0-beta.3 (December 19, 2015)
 
 - [#12659](https://github.com/emberjs/ember.js/pull/12659) [BUGFIX] Update HTMLBars to 0.14.7.
