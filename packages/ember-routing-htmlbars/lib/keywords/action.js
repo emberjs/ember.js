@@ -7,7 +7,7 @@ import { keyword } from 'htmlbars-runtime/hooks';
 import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
 /**
-  The `{{action` helper provides a way to pass triggers for behavior (usually
+  The `{{action}}` helper provides a way to pass triggers for behavior (usually
   just a function) between components, and into components from controllers.
 
   ### Passing functions with the action helper
@@ -100,7 +100,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   The first argument (`model`) was curried over, and the run-time argument (`event`)
   becomes a second argument. Action calls can be nested this way because each simply
-  returns a function. Any function can be passed to the `{{action` helper, including
+  returns a function. Any function can be passed to the `{{action}}` helper, including
   other actions.
 
   Actions invoked with `sendAction` have the same currying behavior as demonstrated
@@ -132,7 +132,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Attaching actions to DOM elements
 
-  The third context of the `{{action` helper can be called "element space".
+  The third context of the `{{action}}` helper can be called "element space".
   For example:
 
   ```handlebars
@@ -140,7 +140,7 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
   <div {{action "save"}}></div>
   ```
 
-  Used this way, the `{{action` helper provides a useful shortcut for
+  Used this way, the `{{action}}` helper provides a useful shortcut for
   registering an HTML element in a template for a single DOM event and
   forwarding that interaction to the template's context (controller or component).
 
@@ -150,12 +150,12 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Event Propagation
 
-  `{{action` helpers called in element space can control event bubbling.
+  `{{action}}` helpers called in element space can control event bubbling.
 
   Events triggered through the action helper will automatically have
   `.preventDefault()` called on them. You do not need to do so in your event
   handlers. If you need to allow event propagation (to handle file inputs for
-  example) you can supply the `preventDefault=false` option to the `{{action` helper:
+  example) you can supply the `preventDefault=false` option to the `{{action}}` helper:
 
   ```handlebars
   <div {{action "sayHello" preventDefault=false}}>
@@ -177,9 +177,9 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Specifying DOM event type
 
-  `{{action` helpers called in element space can specify an event type.
+  `{{action}}` helpers called in element space can specify an event type.
 
-  By default the `{{action` helper registers for DOM `click` events. You can
+  By default the `{{action}}` helper registers for DOM `click` events. You can
   supply an `on` option to the helper to specify a different DOM event name:
 
   ```handlebars
@@ -193,9 +193,9 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Specifying whitelisted modifier keys
 
-  `{{action` helpers called in element space can specify modifier keys.
+  `{{action}}` helpers called in element space can specify modifier keys.
 
-  By default the `{{action` helper will ignore click events with pressed modifier
+  By default the `{{action}}` helper will ignore click events with pressed modifier
   keys. You can supply an `allowedKeys` option to specify which keys should not be ignored.
 
   ```handlebars
