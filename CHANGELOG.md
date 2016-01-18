@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 1.13.12 (January 14, 2016)
+
+- [CVE-2015-7565](http://emberjs.com/blog/2016/01/14/security-releases-ember-1-11-4-1-12-2-1-13-12-2-0-3-2-1-2-2-2-1.html)
+
 ### 1.13.11 (November 16, 2015)
 
 - [#12334](https://github.com/emberjs/ember.js/pull/12334) [BUGFIX] Fix for Array.prototype.filter polyfill on IE8.
