@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>Conway's Game of Life</title>
+    <style type="text/css">
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+
+      organism-cell {
+        display: block;
+        position: absolute;
+        height: 10px;
+        width: 10px;
+        background: black;
+        /* transition: background-color 0.5s; */
+        border-radius: 2;
+      }
+
+      organism-cell.alive {
+        background: white;
+      }
+    </style>
+    <script src="http://static.iamstef.net/conways.js"></script>
+    <script>loader.noConflict({ define: 'enifed' });</script>
+    <script src="../amd/glimmer-common.amd.js"></script>
+    <script src="../amd/glimmer-compiler.amd.js"></script>
+    <script src="../amd/glimmer-runtime.amd.js"></script>
+    <script src="./demos.amd.js"></script>
+  </head>
+  <body>
+    <script type="application/javascript">
+      require("glimmer-demos/conways");
+    </script>
+  </body>
+</html>
