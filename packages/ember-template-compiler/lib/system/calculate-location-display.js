@@ -1,5 +1,4 @@
-export default function calculateLocationDisplay(moduleName, _loc) {
-  let loc = _loc || {};
+export default function calculateLocationDisplay(moduleName, loc = {}) {
   let { column, line } = loc.start || {};
   let moduleInfo = '';
   if (moduleName) {

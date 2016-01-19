@@ -12,8 +12,8 @@ var TestMutableArray = EmberObject.extend(MutableArray, {
 
   _content: null,
 
-  init(ary) {
-    this._content = emberA(ary || []);
+  init(ary = []) {
+    this._content = emberA(ary);
   },
 
   replace(idx, amt, objects) {

@@ -40,9 +40,7 @@ if (isEnabled('ember-htmlbars-component-generation')) {
 }
 
 function renderComponent(tag, component) {
-  let { params, hash, yielded, implementation } = component;
-  params = params || [];
-  hash = hash || {};
+  let { params = [], hash = {}, yielded, implementation } = component;
   let stringParams = params.join(' ');
   let stringHash = Object.keys(hash)
     .map(key => `${key}=${hash[key]}`)

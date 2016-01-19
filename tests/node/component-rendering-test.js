@@ -44,11 +44,11 @@ QUnit.test("Component with dynamic value", function(assert) {
   assert.ok(html.match(/<h1>Hello World<\/h1>/));
 });
 
-function buildComponent(template, props) {
+function buildComponent(template, props = {}) {
   var Component = Ember.Component.extend({
     renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
     layout: compile(template)
-  }, props || {});
+  }, props);
 
   return Component.create({
     _domHelper: new DOMHelper(new SimpleDOM.Document()),

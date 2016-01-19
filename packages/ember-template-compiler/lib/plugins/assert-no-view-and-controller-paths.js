@@ -2,10 +2,10 @@ import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
-function AssertNoViewAndControllerPaths(options) {
+function AssertNoViewAndControllerPaths(options = {}) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
-  this.options = options || {};
+  this.options = options;
 }
 
 /**

@@ -3,10 +3,10 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
-function buildView(template, context) {
+function buildView(template, context = {}) {
   return EmberView.create({
     template: compile(template),
-    context: (context || {})
+    context
   });
 }
 

@@ -18,8 +18,8 @@ var TestEnumerable = EmberObject.extend(Enumerable, {
 
   _content: null,
 
-  init(ary) {
-    this._content = ary || [];
+  init(ary = []) {
+    this._content = ary;
   },
 
   addObject(obj) {
@@ -347,4 +347,3 @@ QUnit.test('removing enumerable observer should disable', function() {
   obj.enumerableContentDidChange();
   deepEqual(observer._after, null);
 });
-

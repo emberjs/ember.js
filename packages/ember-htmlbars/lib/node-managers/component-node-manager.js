@@ -35,15 +35,13 @@ export default ComponentNodeManager;
 ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, env, options) {
   let { tagName,
         params,
-        attrs,
+        attrs = {},
         parentView,
         parentScope,
         isAngleBracket,
         component,
         layout,
         templates } = options;
-
-  attrs = attrs || {};
 
   component = component || (isAngleBracket ? GlimmerComponent : LegacyEmberComponent);
 

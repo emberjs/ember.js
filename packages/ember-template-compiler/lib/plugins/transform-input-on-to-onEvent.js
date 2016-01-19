@@ -24,10 +24,10 @@ import calculateLocationDisplay from 'ember-template-compiler/system/calculate-l
   @private
   @class TransformInputOnToOnEvent
 */
-function TransformInputOnToOnEvent(options) {
+function TransformInputOnToOnEvent(options = {}) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
-  this.options = options || {};
+  this.options = options;
 }
 
 /**
