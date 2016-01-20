@@ -6,7 +6,6 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { addObserver } from 'ember-metal/observer';
 import { observer } from 'ember-metal/mixin';
-import { computed } from 'ember-metal/computed';
 import {
   sum,
   min,
