@@ -194,10 +194,15 @@ QUnit.test('upon content change with Array-like content, the DOM should reflect 
   var tom = { id: 4, name: 'Tom' };
   var sylvain = { id: 5, name: 'Sylvain' };
 
-  var proxy = ArrayProxy.create({
-    content: emberA(),
-    selectedOption: sylvain
-  });
+  var proxy;
+
+  expectDeprecation(function() {
+    proxy = ArrayProxy.create({
+      content: emberA(),
+      selectedOption: sylvain
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
+
 
   view = EmberView.create({
     proxy: proxy,

@@ -7,9 +7,19 @@ import { A as a } from 'ember-runtime/system/native_array';
 QUnit.module('Ember.ArrayProxy - content change (length)');
 
 QUnit.test('array proxy + aliasedProperty complex test', function() {
-  var aCalled, bCalled, cCalled, dCalled, eCalled;
+  var aCalled, bCalled, cCalled, dCalled, eCalled, arrayProxy;
 
   aCalled = bCalled = cCalled = dCalled = eCalled = 0;
+
+  expectDeprecation(function() {
+    arrayProxy = ArrayProxy.create({
+      content: a([
+        'red',
+        'yellow',
+        'blue'
+      ])
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
 
   var obj = Object.extend({
     colors: computed.reads('model'),
@@ -36,14 +46,7 @@ QUnit.test('array proxy + aliasedProperty complex test', function() {
     })
   }).create();
 
-  obj.set('model', ArrayProxy.create({
-    content: a([
-      'red',
-      'yellow',
-      'blue'
-    ])
-  })
-  );
+  obj.set('model', arrayProxy);
 
   equal(obj.get('colors.content.length'), 3);
   equal(obj.get('colors.length'), 3);

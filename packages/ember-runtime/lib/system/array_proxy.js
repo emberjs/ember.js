@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import {
   isArray
@@ -63,9 +63,9 @@ function K() { return this; }
   @extends Ember.Object
   @uses Ember.MutableArray
   @public
+  @deprecated
 */
 var ArrayProxy = EmberObject.extend(MutableArray, {
-
   /**
     The content array. Must be an object that implements `Ember.Array` and/or
     `Ember.MutableArray.`
@@ -373,6 +373,17 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this._super(...arguments);
     this._setupContent();
     this._setupArrangedContent();
+
+    if (!this._LEGACY_EMBER_DATA_SUPPORT) {
+      deprecate(
+        '`Ember.ArrayProxy` is deprecated and will be removed in a future release.',
+        false, {
+          id: 'ember-runtime.array-proxy',
+          until: '3.0.0',
+          url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-runtimearray-proxy'
+        }
+      );
+    }
   },
 
   willDestroy() {

@@ -8,18 +8,20 @@ var array;
 QUnit.module('ArrayProxy - arrangedContent', {
   setup() {
     run(function() {
-      array = ArrayProxy.extend({
-        arrangedContent: computed('content.[]', function() {
-          var content = this.get('content');
-          return content && emberA(content.slice().sort(function(a, b) {
-            if (a == null) { a = -1; }
-            if (b == null) { b = -1; }
-            return b - a;
-          }));
-        })
-      }).create({
-        content: emberA([1, 2, 4, 5])
-      });
+      expectDeprecation(function() {
+        array = ArrayProxy.extend({
+          arrangedContent: computed('content.[]', function() {
+            var content = this.get('content');
+            return content && emberA(content.slice().sort(function(a, b) {
+              if (a == null) { a = -1; }
+              if (b == null) { b = -1; }
+              return b - a;
+            }));
+          })
+        }).create({
+          content: emberA([1, 2, 4, 5])
+        });
+      }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
     });
   },
   teardown() {
@@ -176,9 +178,11 @@ QUnit.test('firstObject - returns first arranged object', function() {
 QUnit.module('ArrayProxy - arrangedContent matching content', {
   setup() {
     run(function() {
-      array = ArrayProxy.create({
-        content: emberA([1, 2, 4, 5])
-      });
+      expectDeprecation(function() {
+        array = ArrayProxy.create({
+          content: emberA([1, 2, 4, 5])
+        });
+      }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
     });
   },
   teardown() {
@@ -206,23 +210,25 @@ QUnit.test('reverseObjects - reverses content', function() {
 QUnit.module('ArrayProxy - arrangedContent with transforms', {
   setup() {
     run(function() {
-      array = ArrayProxy.extend({
-        arrangedContent: computed(function() {
-          var content = this.get('content');
-          return content && emberA(content.slice().sort(function(a, b) {
-            if (a == null) { a = -1; }
-            if (b == null) { b = -1; }
-            return b - a;
-          }));
-        }).property('content.[]'),
+      expectDeprecation(function() {
+        array = ArrayProxy.extend({
+          arrangedContent: computed(function() {
+            var content = this.get('content');
+            return content && emberA(content.slice().sort(function(a, b) {
+              if (a == null) { a = -1; }
+              if (b == null) { b = -1; }
+              return b - a;
+            }));
+          }).property('content.[]'),
 
-        objectAtContent(idx) {
-          var obj = this.get('arrangedContent').objectAt(idx);
-          return obj && obj.toString();
-        }
-      }).create({
-        content: emberA([1, 2, 4, 5])
-      });
+          objectAtContent(idx) {
+            var obj = this.get('arrangedContent').objectAt(idx);
+            return obj && obj.toString();
+          }
+        }).create({
+          content: emberA([1, 2, 4, 5])
+        });
+      }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
     });
   },
   teardown() {

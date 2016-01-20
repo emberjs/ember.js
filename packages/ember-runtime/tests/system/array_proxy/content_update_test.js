@@ -8,18 +8,20 @@ QUnit.test('The `contentArrayDidChange` method is invoked after `content` is upd
   var proxy;
   var observerCalled = false;
 
-  proxy = ArrayProxy.extend({
-    arrangedContent: computed('content', function(key) {
-      return emberA(this.get('content').slice());
-    }),
+  expectDeprecation(function() {
+    proxy = ArrayProxy.extend({
+      arrangedContent: computed('content', function(key) {
+        return emberA(this.get('content').slice());
+      }),
 
-    contentArrayDidChange(array, idx, removedCount, addedCount) {
-      observerCalled = true;
-      return this._super(array, idx, removedCount, addedCount);
-    }
-  }).create({
-    content: emberA()
-  });
+      contentArrayDidChange(array, idx, removedCount, addedCount) {
+        observerCalled = true;
+        return this._super(array, idx, removedCount, addedCount);
+      }
+    }).create({
+      content: emberA()
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
 
   proxy.pushObject(1);
 
