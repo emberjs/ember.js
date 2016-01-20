@@ -78,14 +78,14 @@ QUnit.test('defining computed property should invoke property on set', function(
   equal(get(obj, 'foo'), 'computed bar', 'should return new value');
 });
 
-QUnit.test('defining a computed property with a dependent key ending with @each is deprecated', function() {
-  expectAssertion(function() {
-    computed('blazo.@each', function() { });
-  }, `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. Please refactor from \`Ember.computed('blazo.@each', function() {});\` to \`Ember.computed('blazo.[]', function() {})\`.`);
+QUnit.test('defining a computed property with a dependent key ending with @each is expanded to []', function() {
+  var cp = computed('blazo.@each', function() { });
 
-  expectAssertion(function() {
-    computed('qux', 'zoopa.@each', function() { });
-  }, `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. Please refactor from \`Ember.computed('zoopa.@each', function() {});\` to \`Ember.computed('zoopa.[]', function() {})\`.`);
+  deepEqual(cp._dependentKeys, ['blazo.[]']);
+
+  cp = computed('qux', 'zoopa.@each', function() { });
+
+  deepEqual(cp._dependentKeys, ['qux', 'zoopa.[]']);
 });
 
 var objA, objB;

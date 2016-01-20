@@ -7,6 +7,8 @@ import EmberError from 'ember-metal/error';
 
 var SPLIT_REGEX = /\{|\}/;
 
+var END_WITH_EACH_REGEX = /\.@each$/;
+
 /**
   Expands `pattern`, invoking `callback` for each expansion.
 
@@ -50,10 +52,10 @@ export default function expandProperties(pattern, callback) {
     });
 
     properties.forEach((property) => {
-      callback(property.join(''));
+      callback(property.join('').replace(END_WITH_EACH_REGEX, '.[]'));
     });
   } else {
-    callback(pattern);
+    callback(pattern.replace(END_WITH_EACH_REGEX, '.[]'));
   }
 }
 
