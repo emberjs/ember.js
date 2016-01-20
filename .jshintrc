@@ -21,6 +21,8 @@
         "expectAssertion",
         "expectDeprecation",
         "expectNoDeprecation",
+        "expectWarning",
+        "expectNoWarning",
         "ignoreAssertion",
         "ignoreDeprecation",
 
