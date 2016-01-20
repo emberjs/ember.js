@@ -1,4 +1,4 @@
-import { assert } from 'ember-metal/debug';
+import { assert, warn } from 'ember-metal/debug';
 import { set } from 'ember-metal/property_set';
 import { inspect } from 'ember-metal/utils';
 import { meta as metaFor, peekMeta } from 'ember-metal/meta';
@@ -24,6 +24,8 @@ import {
 
 
 function UNDEFINED() { }
+
+const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
 // ..........................................................
 // COMPUTED PROPERTY
@@ -252,6 +254,13 @@ ComputedPropertyPrototype.property = function() {
   var args;
 
   var addArg = function(property) {
+    warn(
+      `Dependent keys containing @each only work one level deep. ` +
+        `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
+          `Please create an intermediary computed property.`,
+      DEEP_EACH_REGEX.test(property) === false,
+      { id: 'ember-metal.computed-deep-each' }
+    );
     args.push(property);
   };
 
