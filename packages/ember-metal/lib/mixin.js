@@ -750,12 +750,6 @@ export function observer(...args) {
   var paths;
 
   var addWatchedProperty = function(path) {
-    assert(
-      `Depending on arrays using a dependent key ending with \`@each\` is no longer supported. ` +
-      `Please refactor from \`Ember.observer('${path}', function() {});\` to \`Ember.observer('${path.slice(0, -6)}.[]', function() {})\`.`,
-      path.slice(-5) !== '@each'
-    );
-
     paths.push(path);
   };
   var _paths = args.slice(0, -1);
