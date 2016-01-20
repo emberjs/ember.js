@@ -61,14 +61,6 @@
         return compileTemplate(template, { env: env });
       }
 
-      env.registerHelper('inline-if', function(args) {
-        if (!!args[0]) {
-          return args[1];
-        } else {
-          return args[2];
-        }
-      });
-
       var count = 0;
       var template;
 

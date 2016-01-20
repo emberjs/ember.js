@@ -70,14 +70,6 @@
         return compileTemplate(template, { env: env });
       }
 
-      env.registerHelper('if', function(params, hash, blocks) {
-        if (!!params[0]) {
-          blocks.template.yield();
-        } else {
-          blocks.inverse.yield();
-        }
-      });
-
       var count = 0;
       var template;
 

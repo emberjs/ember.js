@@ -207,8 +207,6 @@ let rerenderUI;
 function renderUI() {
   let env = new TestEnvironment();
 
-  env.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
-
   env.registerHelper("json", ([value]) => JSON.stringify(value));
 
   env.registerEmberishGlimmerComponent("wire-format-inspector", null,

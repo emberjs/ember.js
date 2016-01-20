@@ -226,14 +226,6 @@
 
       var env = new DemoEnvironment();
 
-      env.registerHelper('if', function(params, hash, blocks) {
-        if (!!params[0]) {
-          blocks.template.yield();
-        } else if (blocks && blocks.inverse) {
-          blocks.inverse.yield();
-        }
-      });
-
       env.registerHelper('is-empty', function(params) {
         return params[0].length === 0;
       });

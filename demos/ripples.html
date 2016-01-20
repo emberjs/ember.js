@@ -89,14 +89,6 @@
         TEMPLATES[name] = env.compile(source);
       });
 
-      env.registerHelper('if', function(params, hash, blocks) {
-        if (!!params[0]) {
-          blocks.template.yield();
-        } else {
-          blocks.inverse.yield();
-        }
-      });
-
       var data = {
         width:  window.innerWidth,
         height: window.innerHeight,
