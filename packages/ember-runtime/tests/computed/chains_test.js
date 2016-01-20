@@ -66,7 +66,7 @@ QUnit.test('responds to change of property value on element after replacing arra
   deepEqual(get(obj, 'a'), 3, 'value is correct initially');
   set(a1, 'foo', false);
   deepEqual(get(obj, 'a'), 2, 'responds to change of property on element');
-  set(obj, 'array', [a1, a2, a3]);
+  set(obj, 'array', emberA([a1, a2, a3]));
   deepEqual(get(obj, 'a'), 6, 'responds to content array change');
   set(a1, 'foo', true);
   deepEqual(get(obj, 'a'), 7, 'still responds to change of property on element');
