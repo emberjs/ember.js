@@ -716,7 +716,7 @@ let LinkComponent = EmberComponent.extend({
   }),
 
   _modelsAreLoaded: computed('models', function computeLinkToComponentModelsAreLoaded() {
-    let models = get(this, 'models');
+    let models = get(this, 'models') | [];
     for (let i = 0, l = models.length; i < l; i++) {
       if (models[i] == null) { return false; }
     }
