@@ -113,8 +113,7 @@ var TargetActionSupport = Mixin.create({
   @return {Boolean} true if the action was sent successfully and did not return false
   @private
   */
-  triggerAction(opts) {
-    opts = opts || {};
+  triggerAction(opts = {}) {
     var action = opts.action || get(this, 'action');
     var target = opts.target || get(this, 'targetObject');
     var actionContext = opts.actionContext;

@@ -81,7 +81,7 @@ export default Mixin.create({
     @return {Ember.View} new instance
     @private
   */
-  createChildView(maybeViewClass, _attrs) {
+  createChildView(maybeViewClass, attrs = {}) {
     if (!maybeViewClass) {
       throw new TypeError('createChildViews first argument must exist');
     }
@@ -92,7 +92,6 @@ export default Mixin.create({
       return maybeViewClass;
     }
 
-    var attrs = _attrs || {};
     var view;
 
     attrs.parentView = this;

@@ -185,10 +185,7 @@ function isSingleton(container, fullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function lookup(container, _fullName, _options) {
-  let options = _options || {};
-  let fullName = _fullName;
-
+function lookup(container, fullName, options = {}) {
   if (isEnabled('ember-htmlbars-local-lookup')) {
     if (options.source) {
       fullName = container.registry.expandLocalLookup(fullName, options);
@@ -249,10 +246,8 @@ function buildInjections(/* container, ...injections */) {
   return hash;
 }
 
-function factoryFor(container, _fullName, _options) {
-  let options = _options || {};
+function factoryFor(container, fullName, options = {}) {
   let registry = container.registry;
-  let fullName = _fullName;
 
   if (isEnabled('ember-htmlbars-local-lookup')) {
     if (options.source) {

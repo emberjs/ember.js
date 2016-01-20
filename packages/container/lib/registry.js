@@ -168,7 +168,7 @@ Registry.prototype = {
    @param {Function} factory
    @param {Object} options
    */
-  register(fullName, factory, options) {
+  register(fullName, factory, options = {}) {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     if (factory === undefined) {
@@ -183,7 +183,7 @@ Registry.prototype = {
 
     delete this._failCache[normalizedName];
     this.registrations[normalizedName] = factory;
-    this._options[normalizedName] = (options || {});
+    this._options[normalizedName] = options;
   },
 
   /**
@@ -402,8 +402,7 @@ Registry.prototype = {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName, _options) {
-    let options = _options || {};
+  options(fullName, options = {}) {
     var normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   },

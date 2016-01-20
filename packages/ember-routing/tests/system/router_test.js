@@ -9,9 +9,7 @@ import { setOwner } from 'container/owner';
 
 var owner;
 
-function createRouter(settings, options) {
-  options = options || {};
-
+function createRouter(settings, options = {}) {
   var CustomRouter = Router.extend();
   var router = CustomRouter.create(settings);
 

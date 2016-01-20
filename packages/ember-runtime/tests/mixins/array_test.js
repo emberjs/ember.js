@@ -17,8 +17,8 @@ var TestArray = EmberObject.extend(EmberArray, {
 
   _content: null,
 
-  init(ary) {
-    this._content = ary || [];
+  init(ary = []) {
+    this._content = ary;
   },
 
   // some methods to modify the array so we can test changes.  Note that

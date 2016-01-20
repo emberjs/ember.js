@@ -22,10 +22,10 @@
   @class TransformEachInToHash
   @private
 */
-function TransformEachInToHash(options) {
+function TransformEachInToHash(options = {}) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
-  this.options = options || {};
+  this.options = options;
 }
 
 /**
