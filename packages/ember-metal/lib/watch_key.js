@@ -4,10 +4,12 @@ import {
 } from 'ember-metal/meta';
 import {
   MANDATORY_SETTER_FUNCTION,
-  DEFAULT_GETTER_FUNCTION
+  DEFAULT_GETTER_FUNCTION,
+  INHERITING_GETTER_FUNCTION
 } from 'ember-metal/properties';
+import { lookupDescriptor } from 'ember-metal/utils';
 
-let handleMandatorySetter, lookupDescriptor;
+let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
@@ -20,7 +22,9 @@ export function watchKey(obj, keyName, meta) {
     m.writeWatching(keyName, 1);
 
     var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    var desc = (possibleDesc !== null &&
+                typeof possibleDesc === 'object' &&
+                possibleDesc.isDescriptor) ? possibleDesc : undefined;
     if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
@@ -28,6 +32,7 @@ export function watchKey(obj, keyName, meta) {
     }
 
     if (isEnabled('mandatory-setter')) {
+      // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(m, obj, keyName);
     }
   } else {
@@ -37,48 +42,38 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
-  // It is true, the following code looks quite WAT. But have no fear, It
-  // exists purely to improve development ergonomics and is removed from
-  // ember.min.js and ember.prod.js builds.
-  //
-  // Some further context: Once a property is watched by ember, bypassing `set`
-  // for mutation, will bypass observation. This code exists to assert when
-  // that occurs, and attempt to provide more helpful feedback. The alternative
-  // is tricky to debug partially observable properties.
-  lookupDescriptor = function lookupDescriptor(obj, keyName) {
-    let current = obj;
-    while (current) {
-      let descriptor = Object.getOwnPropertyDescriptor(current, keyName);
-
-      if (descriptor) {
-        return descriptor;
-      }
-
-      current = Object.getPrototypeOf(current);
-    }
-
-    return null;
-  };
-
+  // Future traveler, although this code looks scary. It merely exists in
+  // development to aid in development asertions. Production builds of
+  // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
     var configurable = descriptor ? descriptor.configurable : true;
     var isWritable = descriptor ? descriptor.writable : true;
     var hasValue = descriptor ? 'value' in descriptor : true;
     var possibleDesc = descriptor && descriptor.value;
-    var isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    var isDescriptor = possibleDesc !== null &&
+                       typeof possibleDesc === 'object' &&
+                       possibleDesc.isDescriptor;
 
     if (isDescriptor) { return; }
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
-      m.writeValues(keyName, obj[keyName]);
-      Object.defineProperty(obj, keyName, {
+      let desc = {
         configurable: true,
         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
         set: MANDATORY_SETTER_FUNCTION(keyName),
-        get: DEFAULT_GETTER_FUNCTION(keyName)
-      });
+        get: undefined
+      };
+
+      if (Object.prototype.hasOwnProperty.call(obj, keyName)) {
+        m.writeValues(keyName, obj[keyName]);
+        desc.get = DEFAULT_GETTER_FUNCTION(keyName);
+      } else {
+        desc.get = INHERITING_GETTER_FUNCTION(keyName);
+      }
+
+      Object.defineProperty(obj, keyName, desc);
     }
   };
 }
@@ -90,7 +85,10 @@ export function unwatchKey(obj, keyName, meta) {
     m.writeWatching(keyName, 0);
 
     var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    var desc = (possibleDesc !== null &&
+                typeof possibleDesc === 'object' &&
+                possibleDesc.isDescriptor) ? possibleDesc : undefined;
+
     if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
@@ -107,21 +105,21 @@ export function unwatchKey(obj, keyName, meta) {
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
       if (!desc && keyName in obj) {
-        Object.defineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-          set(val) {
-            // redefine to set as enumerable
+        let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
+
+        if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
+          if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
+            delete obj[keyName];
+          } else {
             Object.defineProperty(obj, keyName, {
               configurable: true,
+              enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
               writable: true,
-              enumerable: true,
-              value: val
+              value: m.peekValues(keyName)
             });
             m.deleteFromValues(keyName);
-          },
-          get: DEFAULT_GETTER_FUNCTION(keyName)
-        });
+          }
+        }
       }
     }
   } else if (count > 1) {

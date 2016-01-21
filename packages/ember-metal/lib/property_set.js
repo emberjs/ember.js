@@ -16,6 +16,10 @@ import {
   peekMeta
 } from 'ember-metal/meta';
 
+import {
+  lookupDescriptor
+} from 'ember-metal/utils';
+
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change. If the
@@ -69,23 +73,25 @@ export function set(obj, keyName, value, tolerant) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.peekWatching(keyName) > 0) {
       if (meta.proto !== obj) {
-        if (isEnabled('mandatory-setter')) {
-          currentValue = meta.peekValues(keyName);
-        } else {
-          currentValue = obj[keyName];
-        }
+        currentValue = obj[keyName];
       }
       // only trigger a change if the value has changed
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
+
         if (isEnabled('mandatory-setter')) {
-          if (
-            (currentValue === undefined && !(keyName in obj)) ||
+          if ((currentValue === undefined && !(keyName in obj)) ||
             !Object.prototype.propertyIsEnumerable.call(obj, keyName)
           ) {
             defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
-            meta.writeValues(keyName, value);
+            let descriptor = lookupDescriptor(obj, keyName);
+            let isMandatorySetter = descriptor && descriptor.set && descriptor.set.isMandatorySetter;
+            if (isMandatorySetter) {
+              meta.writeValues(keyName, value);
+            } else {
+              obj[keyName] = value;
+            }
           }
         } else {
           obj[keyName] = value;
