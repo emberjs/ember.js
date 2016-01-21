@@ -6,6 +6,12 @@ import { isWatching } from 'ember-metal/watching';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
+import RSVP from 'ember-runtime/ext/rsvp';
+import run from 'ember-metal/run_loop';
+
+const ArrayPromiseProxy = ArrayProxy.reopen(PromiseProxyMixin);
+const ObjectPromiseProxy = ObjectProxy.reopen(PromiseProxyMixin);
 
 let a1, a2, a3, a4, obj;
 
@@ -56,75 +62,88 @@ QUnit.test('replace array (overlap)', function() {
   ok(isWatching(a4, 'foo'), 'AFTER: a4.foo is watched');
 });
 
+let a1Remote, a2Remote, a3Remote;
+
+QUnit.module('chain watching (filter)', {
+  setup() {
+    a1 = { foo: true,  id: 1 };
+    a2 = { foo: true,  id: 2 };
+
+    a3 = { foo: false, id: 3 };
+    a4 = { foo: false, id: 4 };
+
+    run(_ => {
+      // pre-settle the promises;
+      a1Remote = ObjectPromiseProxy.create({
+        promise: RSVP.Promise.resolve(a1)
+      });
+
+      a2Remote = ObjectPromiseProxy.create({
+        promise: RSVP.Promise.resolve(a2)
+      });
+
+      a3Remote = ObjectPromiseProxy.create({
+        promise: RSVP.Promise.resolve(a3)
+      });
+    });
+
+    obj = { };
+
+    defineProperty(obj, 'a', computed('array.@each.foo', function() {
+      return this.array.filter(elt => get(elt, 'foo')).reduce((a, b) => a + get(b, 'id'), 0);
+    }));
+  }
+});
+
 QUnit.test('responds to change of property value on element after replacing array', function() {
-  let obj = { };
-
-  defineProperty(obj, 'a', computed('array.@each.foo', function() {
-    return this.array.filter(elt => elt.foo).reduce((a, b) => a + b.id, 0);
-  }));
-
   set(obj, 'array', emberA([a1, a2]));
 
-  deepEqual(get(obj, 'a'), 3, 'value is correct initially');
+  equal(get(obj, 'a'), 3, 'value is correct initially');
 
   set(a1, 'foo', false);
 
-  deepEqual(get(obj, 'a'), 2, 'responds to change of property on element');
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
 
   set(obj, 'array', emberA([a1, a2, a3]));
 
-  deepEqual(get(obj, 'a'), 2, 'responds to content array change');
+  equal(get(obj, 'a'), 2, 'responds to content array change');
 
   set(a1, 'foo', true);
 
-  deepEqual(get(obj, 'a'), 3, 'still responds to change of property on element');
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
   set(a3, 'foo', true);
 
-  deepEqual(get(obj, 'a'), 6, 'still responds to change of property on element');
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
 });
 
-
 QUnit.test('responds to change of property value on element after replacing array (object proxy)', function() {
-  let obj = { };
-
-  defineProperty(obj, 'a', computed('array.@each.foo', function() {
-    return get(this, 'array').filter(elt => get(elt, 'foo')).reduce((a, b) => a + get(b, 'id'), 0);
-  }));
-
   set(obj, 'array', emberA([
     ObjectProxy.create({ content: a1 }),
     ObjectProxy.create({ content: a2 })
   ]));
 
-  deepEqual(get(obj, 'a'), 3, 'value is correct initially');
+  equal(get(obj, 'a'), 3, 'value is correct initially');
 
   set(a1, 'foo', false);
 
-  deepEqual(get(obj, 'a'), 2, 'responds to change of property on element');
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
   set(obj, 'array', emberA([
     ObjectProxy.create({ content: a1 }),
     ObjectProxy.create({ content: a2 }),
     ObjectProxy.create({ content: a3 })
   ]));
 
-  deepEqual(get(obj, 'a'), 2, 'responds to content array change');
+  equal(get(obj, 'a'), 2, 'responds to content array change');
 
   set(a1, 'foo', true);
 
-  deepEqual(get(obj, 'a'), 3, 'still responds to change of property on element');
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
   set(a3, 'foo', true);
 
-  deepEqual(get(obj, 'a'), 6, 'still responds to change of property on element');
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
 });
 
-
 QUnit.test('responds to change of property value on element after replacing array (array proxy)', function() {
-  let obj = { };
-
-  defineProperty(obj, 'a', computed('array.@each.foo', function() {
-    return get(this, 'array').filter(elt => get(elt, 'foo')).reduce((a, b) => a + get(b, 'id'), 0);
-  }));
-
   set(obj, 'array', ArrayProxy.create({
     content: emberA([
       ObjectProxy.create({ content: a1 }),
@@ -132,11 +151,11 @@ QUnit.test('responds to change of property value on element after replacing arra
     ])
   }));
 
-  deepEqual(get(obj, 'a'), 3, 'value is correct initially');
+  equal(get(obj, 'a'), 3, 'value is correct initially');
 
   set(a1, 'foo', false);
 
-  deepEqual(get(obj, 'a'), 2, 'responds to change of property on element');
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
   set(obj, 'array', ArrayProxy.create({
     content: emberA([
       ObjectProxy.create({ content: a1 }),
@@ -145,12 +164,138 @@ QUnit.test('responds to change of property value on element after replacing arra
     ])
   }));
 
-  deepEqual(get(obj, 'a'), 2, 'responds to content array change');
+  equal(get(obj, 'a'), 2, 'responds to content array change');
 
   set(a1, 'foo', true);
 
-  deepEqual(get(obj, 'a'), 3, 'still responds to change of property on element');
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
+
   set(a3, 'foo', true);
 
-  deepEqual(get(obj, 'a'), 6, 'still responds to change of property on element');
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
+});
+
+QUnit.test('responds to change of property value on element after replacing array (object promise proxy-settled)', function() {
+  run(_ => {
+    set(obj, 'array', ArrayProxy.create({
+      content: emberA([a1Remote, a2Remote, a3Remote])
+    }));
+  });
+
+  equal(get(obj, 'a'), 3, 'value is correct initially');
+
+  set(a1, 'foo', false);
+
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
+  run(_ => {
+    set(obj, 'array', ArrayProxy.create({
+      content: emberA([a1Remote, a2Remote, a3Remote])
+    }));
+  });
+
+  equal(get(obj, 'a'), 2, 'responds to content array change');
+
+  set(a1, 'foo', true);
+
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
+
+  set(a3, 'foo', true);
+
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
+});
+
+QUnit.test('responds to change of property value on element after replacing array (object promise proxy-un-settled)', function() {
+  run(_ => {
+    set(obj, 'array', emberA([
+          ObjectProxy.create({ promise: RSVP.Promise.resolve(a1) }),
+          ObjectProxy.create({ promise: RSVP.Promise.resolve(a2) }),
+          ObjectProxy.create({ promise: RSVP.Promise.resolve(a3) })
+    ]));
+
+    equal(get(obj, 'a'), 0, 'value is correct initially');
+    set(a1, 'foo', false);
+    equal(get(obj, 'a'), 0, 'value is correct initially');
+  });
+
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
+
+  run(_ => {
+    set(obj, 'array', emberA([
+          ObjectProxy.create({ promise: RSVP.Promise.resolve(a1) }),
+          ObjectProxy.create({ promise: RSVP.Promise.resolve(a2) }),
+          ObjectProxy.create({ promise: RSVP.Promise.resolve(a3) })
+    ]));
+
+    equal(get(obj, 'a'), 2, 'expected no change');
+    set(a1, 'foo', true);
+    equal(get(obj, 'a'), 2, 'expected no change');
+    set(a3, 'foo', true);
+    equal(get(obj, 'a'), 2, 'expected no change');
+  });
+
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
+
+  set(a3, 'foo', true);
+
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
+});
+
+QUnit.test('responds to change of property value on element after replacing array (array promise proxy)', function() {
+  run(_ => {
+    set(obj, 'array', ArrayPromiseProxy.create({
+      promise: RSVP.Promise.resolve(emberA([a1, a2]))
+    }));
+  });
+
+  equal(get(obj, 'a'), 3, 'value is correct initially');
+
+  set(a1, 'foo', false);
+
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
+
+  run(_ => {
+    set(obj, 'array', ArrayPromiseProxy.create({
+      promise: RSVP.Promise.resolve(emberA([a1, a2, a3]))
+    }));
+  });
+
+  equal(get(obj, 'a'), 2, 'responds to content array change');
+
+  set(a1, 'foo', true);
+
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
+
+  set(a3, 'foo', true);
+
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
+});
+
+QUnit.test('responds to change of property value on element after replacing array (array & object promise proxy)', function() {
+  run(_ => {
+    set(obj, 'array', ArrayPromiseProxy.create({
+      promise: RSVP.Promise.resolve(emberA([a1, a2]))
+    }));
+  });
+
+  equal(get(obj, 'a'), 3, 'value is correct initially');
+
+  set(a1, 'foo', false);
+
+  equal(get(obj, 'a'), 2, 'responds to change of property on element');
+
+  run(_ => {
+    set(obj, 'array', ArrayPromiseProxy.create({
+      promise: RSVP.Promise.resolve(emberA([a1, a2, a3]))
+    }));
+  });
+
+  equal(get(obj, 'a'), 2, 'responds to content array change');
+
+  set(a1, 'foo', true);
+
+  equal(get(obj, 'a'), 3, 'still responds to change of property on element');
+
+  set(a3, 'foo', true);
+
+  equal(get(obj, 'a'), 6, 'still responds to change of property on element');
 });
