@@ -62,6 +62,44 @@ QUnit.test('replace array (overlap)', function() {
   ok(isWatching(a4, 'foo'), 'AFTER: a4.foo is watched');
 });
 
+QUnit.test('splice array (no overlap)', function() {
+  let array = emberA([a1, a2]);
+
+  set(obj, 'array', array);
+  get(obj, 'a'); // kick CP;
+
+  ok(isWatching(a1, 'foo'), 'BEFORE: a1.foo is watched');
+  ok(isWatching(a2, 'foo'), 'BEFORE: a2.foo is watched');
+  ok(!isWatching(a3, 'foo'), 'BEFORE: a3.foo is NOT watched');
+  ok(!isWatching(a4, 'foo'), 'BEFORE: a4.foo is NOT watched');
+
+  array.replace(0, 2, [a3, a4]);
+
+  ok(!isWatching(a1, 'foo'), 'AFTER: a1.foo is NOT watched');
+  ok(!isWatching(a2, 'foo'), 'AFTER: a2.foo is NOT watched');
+  ok(isWatching(a3, 'foo'), 'AFTER: a3.foo is watched');
+  ok(isWatching(a4, 'foo'), 'AFTER: a4.foo is watched');
+});
+
+QUnit.test('splice array (overlap)', function() {
+  let array = emberA([a1, a2, a3]);
+
+  set(obj, 'array', array);
+  get(obj, 'a'); // kick CP;
+
+  ok(isWatching(a1, 'foo'), 'BEFORE: a1.foo is watched');
+  ok(isWatching(a2, 'foo'), 'BEFORE: a2.foo is watched');
+  ok(isWatching(a3, 'foo'), 'BEFORE: a3.foo is watched');
+  ok(!isWatching(a4, 'foo'), 'BEFORE: a4.foo is NOT watched');
+
+  array.replace(0, 3, [a2, a3, a4]);
+
+  ok(!isWatching(a1, 'foo'), 'AFTER: a1.foo is NOT watched');
+  ok(isWatching(a2, 'foo'), 'AFTER: a2.foo is watched');
+  ok(isWatching(a3, 'foo'), 'AFTER: a3.foo is watched');
+  ok(isWatching(a4, 'foo'), 'AFTER: a4.foo is watched');
+});
+
 let a1Remote, a2Remote, a3Remote;
 
 QUnit.module('chain watching (filter)', {
