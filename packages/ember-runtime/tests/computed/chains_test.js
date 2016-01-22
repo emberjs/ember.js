@@ -207,8 +207,8 @@ QUnit.test('responds to change of property value on element after replacing arra
 QUnit.test('responds to change of property value on element after replacing array (object promise proxy-un-settled)', function() {
   run(_ => {
     set(obj, 'array', emberA([
-          ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a1) }),
-          ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a2) }),
+      ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a1) }),
+      ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a2) })
     ]));
 
     equal(get(obj, 'a'), 0, 'value is correct initially');
@@ -220,8 +220,8 @@ QUnit.test('responds to change of property value on element after replacing arra
 
   run(_ => {
     set(obj, 'array', emberA([
-          ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a2) }),
-          ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a3) })
+      ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a2) }),
+      ObjectPromiseProxy.create({ promise: RSVP.Promise.resolve(a3) })
     ]));
 
     equal(get(obj, 'a'), 0, 'expected no change');
