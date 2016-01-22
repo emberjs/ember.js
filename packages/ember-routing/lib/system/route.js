@@ -568,6 +568,11 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     transition, you must first explicitly call
     `transition.abort()`.
 
+    To allow the `willTransition` event to continue bubbling to the parent
+    route, use `return true;`. When the `willTransition` method has a
+    return value of `true` then the parent route's `willTransition` method
+    will be fired, enabling "bubbling" behavior for the event.
+
     @event willTransition
     @param {Transition} transition
     @public
