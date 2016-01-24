@@ -47,6 +47,37 @@ var find = require('broccoli-stew').find;
 var log = require('broccoli-stew').log;
 
 module.exports = function() {
+  var features = JSON.parse(featuresJson).features;
+
+  var vendorPackages = {
+    'loader':                vendoredPackage('loader'),
+    'rsvp':                  vendoredES6Package('rsvp'),
+    'backburner':            vendoredES6Package('backburner'),
+    'router':                vendoredES6Package('router.js'),
+    'dag-map':               vendoredES6Package('dag-map'),
+    'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
+    'dom-helper':            htmlbarsPackage('dom-helper'),
+    'morph-range':           htmlbarsPackage('morph-range'),
+    'morph-attr':            htmlbarsPackage('morph-attr'),
+    'htmlbars-runtime':      htmlbarsPackage('htmlbars-runtime'),
+    'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
+    'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
+    'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
+    'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
+    'htmlbars-util':         htmlbarsPackage('htmlbars-util')
+  };
+
+  var glimmerStatus = features['ember-glimmer'];
+  if (glimmerStatus === null || glimmerStatus === true) {
+    vendorPackages['glimmer-engine'] = find(glimmerEngine, {
+      include: [
+        'amd/glimmer-compiler.amd.js',
+        /*'amd/glimmer-runtime.amd.js', */
+        'amd/tests.amd.js'
+      ]
+    });
+  }
+
   var emberBuild = new EmberBuild({
     babel: {
       development: babelConfigFor('development'),
@@ -54,39 +85,7 @@ module.exports = function() {
     },
     htmlbars: require('htmlbars'),
     packages: packages,
-    vendoredPackages: {
-      'loader':                vendoredPackage('loader'),
-      'rsvp':                  vendoredES6Package('rsvp'),
-      'backburner':            vendoredES6Package('backburner'),
-      'router':                vendoredES6Package('router.js'),
-      'dag-map':               vendoredES6Package('dag-map'),
-      'route-recognizer':      htmlbarsPackage('route-recognizer', { libPath: 'node_modules/route-recognizer/dist/es6/' }),
-      'dom-helper':            htmlbarsPackage('dom-helper'),
-      'morph-range':           htmlbarsPackage('morph-range'),
-      'morph-attr':            htmlbarsPackage('morph-attr'),
-      'htmlbars-runtime':      htmlbarsPackage('htmlbars-runtime'),
-      'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
-      'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
-      'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
-      'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true }),
-      'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
-      'glimmer-engine':        find(glimmerEngine, {
-        include: [
-          'amd/glimmer-compiler.amd.js',
-          /*'amd/glimmer-runtime.amd.js', */
-          'amd/tests.amd.js'
-        ]
-      }),
-      // 'glimmer-compiler':      glimmerPackage('glimmer-compiler'),
-      // 'glimmer-object':        glimmerPackage('glimmer-object'),
-      // 'glimmer-reference':     glimmerPackage('glimmer-reference'),
-      // 'glimmer-runtime':       glimmerPackage('glimmer-runtime'),
-      // 'glimmer-syntax':        glimmerPackage('glimmer-syntax'),
-      // 'glimmer-test-helpers':  glimmerPackage('glimmer-test-helpers'),
-      // 'glimmer-util':          glimmerPackage('glimmer-util'),
-      // 'glimmer-wire-format':   glimmerPackage('glimmer-wire-format'),
-      // 'glimmer':               glimmerPackage('glimmer'),
-    }
+    vendoredPackages: vendorPackages
   });
 
   return emberBuild.getDistTrees();
