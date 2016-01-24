@@ -36,28 +36,6 @@ QUnit.test('should update length for null content when there is a computed prope
   equal(proxy.get('length'), 0, 'length updates');
 });
 
-QUnit.test('The `arrangedContentWillChange` method is invoked before `content` is changed.', function() {
-  var callCount = 0;
-  var expectedLength;
-
-  var proxy = ArrayProxy.extend({
-    arrangedContentWillChange() {
-      equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked before array has changed');
-      callCount++;
-    }
-  }).create({ content: emberA([1, 2, 3]) });
-
-  proxy.pushObject(4);
-  equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 5;
-  proxy.set('content', emberA(['a', 'b']));
-  equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
 QUnit.test('The `arrangedContentDidChange` method is invoked after `content` is changed.', function() {
   var callCount = 0;
   var expectedLength;

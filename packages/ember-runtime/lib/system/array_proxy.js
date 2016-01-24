@@ -74,23 +74,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @type Ember.Array
     @private
   */
-  content: computed({
-    get() {
-      return this._content;
-    },
-    set(k, v) {
-      if (this._didInitArrayProxy) {
-        var oldContent = this._content;
-        var len = oldContent ? get(oldContent, 'length') : 0;
-        this.arrangedContentArrayWillChange(this, 0, len, undefined);
-        this.arrangedContentWillChange(this);
-      }
-      this._content = v;
-      return v;
-    }
-  }),
-
-
+  content: null,
 
   /**
    The array that the proxy pretends to be. In the default `ArrayProxy`
@@ -179,12 +163,16 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @method _contentDidChange
   */
   _contentDidChange: observer('content', function() {
-    var content = get(this, 'content');
-    this._teardownContent(this._prevContent);
+    let prevContent = this._prevContent;
+    let content = get(this, 'content');
 
-    assert('Can\'t set ArrayProxy\'s content to itself', content !== this);
+    if (content !== prevContent) {
+      this._teardownContent(prevContent);
 
-    this._setupContent();
+      assert('Can\'t set ArrayProxy\'s content to itself', content !== this);
+
+      this._setupContent();
+    }
   }),
 
   _setupContent() {
@@ -369,7 +357,6 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   init() {
-    this._didInitArrayProxy = true;
     this._super(...arguments);
     this._setupContent();
     this._setupArrangedContent();
