@@ -71,8 +71,10 @@ module.exports = function() {
     })
   ]);
 
+
+  var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', 'lib');
   // TODO: WAT, why does { } change the output so much....
-  var HTMLTokenizer = find(bower + '/simple-html-tokenizer/lib/', { });
+  var HTMLTokenizer = find(tokenizerPath, { });
 
   var tsTree = find(packages, {
     include: ['**/*.ts'],
