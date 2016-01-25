@@ -1082,7 +1082,8 @@
     },
     "broccoli-typescript-compiler": {
       "version": "0.4.1",
-      "from": "broccoli-typescript-compiler@>=0.4.1 <0.5.0",
+      "from": "broccoli-typescript-compiler@0.4.1",
+      "resolved": "https://registry.npmjs.org/broccoli-typescript-compiler/-/broccoli-typescript-compiler-0.4.1.tgz",
       "dependencies": {
         "broccoli-funnel": {
           "version": "0.2.15",
@@ -4439,11 +4440,6 @@
                   "resolved": "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz"
                 }
               }
-            },
-            "npmlog": {
-              "version": "2.0.0",
-              "from": "npmlog@latest",
-              "resolved": "https://registry.npmjs.org/npmlog/-/npmlog-2.0.0.tgz"
             }
           }
         },
@@ -5847,6 +5843,11 @@
       "from": "simple-fmt@>=0.1.0 <0.2.0",
       "resolved": "https://registry.npmjs.org/simple-fmt/-/simple-fmt-0.1.0.tgz"
     },
+    "simple-html-tokenizer": {
+      "version": "0.2.1",
+      "from": "simple-html-tokenizer@>=0.2.1 <0.3.0",
+      "resolved": "https://registry.npmjs.org/simple-html-tokenizer/-/simple-html-tokenizer-0.2.1.tgz"
+    },
     "simple-is": {
       "version": "0.2.0",
       "from": "simple-is@>=0.2.0 <0.3.0",
@@ -6286,9 +6287,9 @@
       }
     },
     "typescript": {
-      "version": "1.8.0-dev.20160107",
+      "version": "1.8.0-dev.20160125",
       "from": "typescript@next",
-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-1.8.0-dev.20160107.tgz"
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-1.8.0-dev.20160125.tgz"
     },
     "uc.micro": {
       "version": "1.0.0",

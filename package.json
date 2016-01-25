@@ -36,11 +36,12 @@
     "typescript": "next"
   },
   "devDependencies": {
+    "benchmark": "^1.0.0",
+    "bower": "~1.3.3",
     "ember-cli": "ember-cli/ember-cli",
     "ember-cli-release": "^0.2.2",
     "ember-cli-sauce": "^1.3.0",
     "tslint": "next",
-    "bower": "~1.3.3",
-    "benchmark": "^1.0.0"
+    "typescript": "^1.8.0-dev.20160125"
   }
 }
