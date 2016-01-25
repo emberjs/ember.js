@@ -1,5 +1,7 @@
 /* globals __dirname */
 
+var path = require('path');
+var existsSync = require('exists-sync');
 var concat = require('broccoli-concat');
 var merge = require('broccoli-merge-trees');
 var typescript = require('broccoli-typescript-compiler');
@@ -17,6 +19,7 @@ function transpile(tree, label) {
 module.exports = function() {
   var packages = __dirname + '/packages/node_modules';
   var bower = __dirname + '/bower_components';
+  var hasBower = existsSync(bower);
 
   var tsOptions = {
     tsconfig: {
@@ -55,7 +58,7 @@ module.exports = function() {
     }
   });
 
-  var demos = merge([
+  var demoTrees = [
     demoConcat,
     find(__dirname + '/demos', {
       include: ['*.html'],
@@ -64,15 +67,22 @@ module.exports = function() {
     find(__dirname + '/bench', {
       include: ['*.html'],
       destDir: 'demos'
-    }),
-    find(__dirname + '/node_modules/benchmark', {
+    })
+  ];
+
+  var benchmarkPath = __dirname + '/node_modules/benchmark';
+  if (existsSync(benchmarkPath)) {
+    demoTrees.push(find(benchmarkPath, {
       include: ['benchmark.js'],
       destDir: 'demos'
-    })
-  ]);
+    }));
+  }
+  var demos = merge(demoTrees);
 
+
+  var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', '..', 'lib');
   // TODO: WAT, why does { } change the output so much....
-  var HTMLTokenizer = find(bower + '/simple-html-tokenizer/lib/', { });
+  var HTMLTokenizer = find(tokenizerPath, { });
 
   var tsTree = find(packages, {
     include: ['**/*.ts'],
@@ -117,19 +127,22 @@ module.exports = function() {
 
   // Test Assets
 
-  var testHarness = find(__dirname + '/tests', {
-    srcDir: '/',
-    files: [ 'index.html' ],
-    destDir: '/tests'
-  });
-
-  testHarness = merge([
-    testHarness,
-    find(bower, {
-      srcDir: '/qunit/qunit',
+  var testHarnessTrees = [
+    find(__dirname + '/tests', {
+      srcDir: '/',
+      files: [ 'index.html' ],
       destDir: '/tests'
     })
-  ]);
+  ];
+
+  if (hasBower) {
+    testHarnessTrees.push(find(bower, {
+      srcDir: '/qunit/qunit',
+      destDir: '/tests'
+    }));
+  }
+
+  var testHarness = merge(testHarnessTrees);
 
   glimmerCommon = transpile(glimmerCommon, 'glimmer-common');
   glimmerCompiler = transpile(glimmerCompiler, 'glimmer-compiler');
@@ -176,19 +189,24 @@ module.exports = function() {
     }
   });
 
-  var loader = find(bower, {
-    srcDir: '/loader.js',
-    files: [ 'loader.js' ],
-    destDir: '/assets'
-  });
-
-  return merge([
-    loader,
+  var finalTrees = [
     testHarness,
     demos,
     glimmerCommon,
     glimmerCompiler,
     glimmerRuntime,
     glimmerTests
-  ]);
+  ];
+
+  if (hasBower) {
+    var loader = find(bower, {
+      srcDir: '/loader.js',
+      files: [ 'loader.js' ],
+      destDir: '/assets'
+    });
+
+    finalTrees.push(loader);
+  }
+
+  return merge(finalTrees);
 }
