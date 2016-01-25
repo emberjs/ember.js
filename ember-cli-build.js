@@ -71,9 +71,10 @@ module.exports = function() {
   if (glimmerStatus === null || glimmerStatus === true) {
     vendorPackages['glimmer-engine'] = find(glimmerEngine, {
       include: [
+        'amd/glimmer-common.amd.js',
         'amd/glimmer-compiler.amd.js',
-        /*'amd/glimmer-runtime.amd.js', */
-        'amd/tests.amd.js'
+        'amd/glimmer-runtime.amd.js',
+        'amd/glimmer-tests.amd.js'
       ]
     });
   }
