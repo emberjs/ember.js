@@ -12,14 +12,14 @@
         box-sizing: border-box;
       }
 
-      server-uptime {
+      .server-uptime {
         display: block;
         overflow: hidden;
         margin: 0 auto;
         width: 50%;
       }
 
-      server-uptime + server-uptime {
+      .server-uptime + .server-uptime {
         margin: 20px auto 0 auto;
         border-top: 1px solid #999;
       }
@@ -30,11 +30,11 @@
         flex-flow: wrap;
       }
 
-      uptime-day {
+      .uptime-day {
         display: flex;
       }
 
-      span.uptime-day {
+      span.uptime-day-status {
         width: 10px;
         height: 10px;
         margin: 1px;
@@ -44,7 +44,7 @@
         display: none;
       }
 
-      .uptime-day:hover + .hover {
+      .uptime-day-status:hover + .hover {
         display: flex;
         position: absolute;
         margin-top: -35px;

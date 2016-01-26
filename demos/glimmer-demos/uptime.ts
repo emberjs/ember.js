@@ -37,14 +37,14 @@ let UptimeDay = <any>EmberComponent.extend({
 let env = new TestEnvironment();
 
 env.registerEmberishGlimmerComponent('uptime-day', UptimeDay, `
-  <uptime-day>
-    <span class="uptime-day" style="background-color: {{color}}" />
+  <div class="uptime-day">
+    <span class="uptime-day-status" style="background-color: {{color}}" />
     <span class="hover">{{@day.number}}: {{memo}}</span>
-  </uptime-day>
+  </div>
 `);
 
 env.registerEmberishGlimmerComponent('server-uptime', ServerUptime, `
-  <server-uptime>
+  <div class="server-uptime">
   <h1>{{@name}}</h1>
   <h2>{{upDays}} Days Up</h2>
   <h2>Biggest Streak: {{streak}}</h2>
@@ -54,7 +54,7 @@ env.registerEmberishGlimmerComponent('server-uptime', ServerUptime, `
       <uptime-day day={{day}} />
     {{/each}}
   </div>
-  </server-uptime>
+  </div>
 `);
 
 let app = env.compile(`
