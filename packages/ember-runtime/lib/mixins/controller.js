@@ -20,13 +20,10 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
     it will attempt to send the action to the view's controller's `target`.
 
     By default, the value of the target property is set to the router, and
-    is injected when a controller is instantiated. This injection is defined
-    in Ember.Application#buildContainer, and is applied as part of the
-    applications initialization process. It can also be set after a controller
-    has been instantiated, for instance when using the render helper in a
-    template, or when a controller is used as an `itemController`. In most
-    cases the `target` property will automatically be set to the logical
-    consumer of actions for the controller.
+    is injected when a controller is instantiated. This injection is applied
+    as part of the application's initialization process. In most cases the
+    `target` property will automatically be set to the logical consumer of
+    actions for the controller.
 
     @property target
     @default null
