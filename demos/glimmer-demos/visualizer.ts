@@ -363,7 +363,7 @@ function renderContent() {
 
   function compileLayout(component) {
     let def = env.getComponentDefinition([component]);
-    let layout = def.layout;
+    let layout = def.getLayout(env);
     layout.compile(def, env);
     layout.children.forEach(compileInner);
     return layout;
