@@ -4,6 +4,11 @@
     <meta charset="utf-8">
     <title>Ember</title>
     <link rel="stylesheet" href="../qunit/qunit.css">
+    <style type="text/css">
+      #qunit-tests.hideskipped li.skipped {
+        display: none;
+      }
+    </style>
     <script src="../qunit/qunit.js"></script>
     <script src="/testem.js"></script>
 
@@ -142,6 +147,8 @@
 
         // Tests should time out after 15 seconds
         QUnit.config.testTimeout = 15000;
+        // Hide skipped tests
+        QUnit.config.urlConfig.push({ id: 'hideskipped', label: "Hide skipped tests"});
         // Handle testing feature flags
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes
@@ -151,6 +158,12 @@
         // Handle JSHint
         QUnit.config.urlConfig.push('nojshint');
         QUnit.config.urlConfig.push('forceskip');
+
+        QUnit.begin(function() {
+          if (QUnit.urlParams.hideskipped) {
+            $('#qunit-tests').addClass('hideskipped');
+          }
+        });
       })();
     </script>
 
