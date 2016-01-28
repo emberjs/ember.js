@@ -1,14 +1,14 @@
 import Ember from 'ember-metal/core';
 
 /*
-Public api for the container is still in flux.
-The public api, specified on the application namespace should be considered the stable api.
+Public API for the container is still in flux.
+The public API, specified on the application namespace should be considered the stable API.
 // @module container
   @private
 */
 
 /*
- Flag to enable/disable model factory injections (disabled by default)
+ Flag to enable/disable model factory injections (disabled by default).
  If model factory injections are enabled, models should not be
  accessed globally (only through `container.lookupFactory('model:modelName'))`);
 */

@@ -10,17 +10,17 @@ var finalhandler = require('finalhandler')
 var http = require('http')
 var serveStatic = require('serve-static')
 
-// Serve up public/ftp folder
+// Serve up public/ftp folder.
 var serve = serveStatic('./dist/', {'index': ['index.html', 'index.htm']})
 
-// Create server
+// Create server.
 var server = http.createServer(function(req, res){
   var done = finalhandler(req, res)
   serve(req, res, done)
 })
 
 var PORT = 13141;
-// Listen
+// Listen.
 server.listen(PORT);
 
 function run(queryString) {
@@ -107,8 +107,8 @@ function generateEachPackageTests() {
 }
 
 function generateBuiltTests() {
-  // container isn't publicly available
-  // ember-testing/ember-debug are stripped from prod/min
+  // Container isn't publicly available.
+  // ember-testing/ember-debug are stripped from prod/min.
   var common = 'skipPackage=container,ember-testing,ember-debug';
   testFunctions.push(function() {
     return run(common + '&nojshint=true');

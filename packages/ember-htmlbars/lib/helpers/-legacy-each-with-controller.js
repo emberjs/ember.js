@@ -7,7 +7,7 @@ export default function legacyEachWithControllerHelper(params, hash, blocks) {
   var list = params[0];
   var keyPath = hash.key;
 
-  // TODO: Correct falsy semantics
+  // TODO: Correct falsy semantics.
   if (!list || get(list, 'length') === 0) {
     if (blocks.inverse.yield) { blocks.inverse.yield(); }
     return;

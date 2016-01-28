@@ -46,7 +46,7 @@ QUnit.test('Ember.deprecate does not throw if RAISE_ON_DEPRECATION is false', fu
   }
 });
 
-QUnit.test('Ember.deprecate re-sets deprecation level to RAISE if ENV.RAISE_ON_DEPRECATION is set', function(assert) {
+QUnit.test('Ember.deprecate resets deprecation level to RAISE if ENV.RAISE_ON_DEPRECATION is set', function(assert) {
   assert.expect(2);
 
   Ember.ENV.RAISE_ON_DEPRECATION = false;
@@ -153,7 +153,7 @@ QUnit.test('Ember.assert throws if second argument is falsy', function() {
 QUnit.test('Ember.assert does not throw if second argument is a function and it returns true', function(assert) {
   assert.expect(1);
 
-  // shouldn't trigger an assertion, but deprecation from using function as test is expected
+  // Shouldn't trigger an assertion, but deprecation from using function as test is expected.
   expectDeprecation(
     () => Ember.assert('Assertion is thrown', () => true),
     generateTestAsFunctionDeprecation('Ember.assert')

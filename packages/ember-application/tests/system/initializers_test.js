@@ -34,7 +34,7 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
 });
 
 if (isEnabled('ember-application-visit')) {
-  QUnit.test('initializers that thorws causes the boot promise to reject with the error', function() {
+  QUnit.test('initializers that throw errors cause the boot promise to reject with the error', function() {
     QUnit.expect(2);
     QUnit.stop();
 
@@ -267,7 +267,7 @@ QUnit.test('initializers can have multiple dependencies', function () {
   ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
 });
 
-QUnit.test('initializers set on Application subclasses should not be shared between apps', function() {
+QUnit.test('initializers set on Application subclasses are not shared between apps', function() {
   var firstInitializerRunCount = 0;
   var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
@@ -367,7 +367,7 @@ QUnit.test('initializers are per-app', function() {
   });
 });
 
-QUnit.test('initializers should be executed in their own context', function() {
+QUnit.test('initializers are executed in their own context', function() {
   expect(1);
   var MyApplication = Application.extend();
 
@@ -387,7 +387,7 @@ QUnit.test('initializers should be executed in their own context', function() {
   });
 });
 
-QUnit.test('initializers should throw a deprecation warning when receiving a second argument', function() {
+QUnit.test('initializers throw a deprecation warning when receiving a second argument', function() {
   expect(1);
 
   var MyApplication = Application.extend();

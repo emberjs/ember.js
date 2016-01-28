@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberController from 'ember-runtime/controllers/controller';
-import 'ember-extension-support'; // Must be required to export Ember.ContainerDebugAdapter
+import 'ember-extension-support'; // Must be required to export Ember.ContainerDebugAdapter.
 import Application from 'ember-application/system/application';
 
 var adapter, App, appInstance;
@@ -13,7 +13,7 @@ function boot() {
 QUnit.module('Container Debug Adapter', {
   setup() {
     run(function() {
-      App = Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
+      App = Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime.
       App.toString = function() { return 'App'; };
       App.deferReadiness();
     });

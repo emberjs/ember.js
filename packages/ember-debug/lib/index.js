@@ -112,7 +112,7 @@ setDebugFunction('info', function info() {
   @param {String} message A description of the deprecation.
   @param {Object} [options] The options object for Ember.deprecate.
   @param {Function} func The new function called to replace its deprecated counterpart.
-  @return {Function} a new function that wrapped the original function with a deprecation warning
+  @return {Function} A new function that wraps the original function with a deprecation warning
   @private
 */
 setDebugFunction('deprecateFunc', function deprecateFunc(...args) {
@@ -244,19 +244,19 @@ if (isEnabled('ember-debug-handlers')) {
     The handler function takes the following arguments:
 
     <ul>
-      <li> <code>message</code> - The message received from the deprecation call. </li>
+      <li> <code>message</code> - The message received from the deprecation call.</li>
       <li> <code>options</code> - An object passed in with the deprecation call containing additional information including:</li>
         <ul>
-          <li> <code>id</code> - an id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
-          <li> <code>until</code> - is the version number Ember the feature and deprecation will be removed in.</li>
+          <li> <code>id</code> - An id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
+          <li> <code>until</code> - The Ember version number the feature and deprecation will be removed in.</li>
         </ul>
-      <li> <code>next</code> - a function that calls into the previously registered handler.</li>
+      <li> <code>next</code> - A function that calls into the previously registered handler.</li>
     </ul>
 
     @public
     @static
     @method registerDeprecationHandler
-    @param handler {Function} a function to handle deprecation calls
+    @param handler {Function} A function to handle deprecation calls.
     @since 2.1.0
   */
   Ember.Debug.registerDeprecationHandler = registerDeprecationHandler;
@@ -277,15 +277,15 @@ if (isEnabled('ember-debug-handlers')) {
       <li> <code>message</code> - The message received from the warn call. </li>
       <li> <code>options</code> - An object passed in with the warn call containing additional information including:</li>
         <ul>
-          <li> <code>id</code> - an id of the warning in the form of <code>package-name.specific-warning</code>.</li>
+          <li> <code>id</code> - An id of the warning in the form of <code>package-name.specific-warning</code>.</li>
         </ul>
-      <li> <code>next</code> - a function that calls into the previously registered handler.</li>
+      <li> <code>next</code> - A function that calls into the previously registered handler.</li>
     </ul>
 
     @public
     @static
     @method registerWarnHandler
-    @param handler {Function} a function to handle warnings
+    @param handler {Function} A function to handle warnings.
     @since 2.1.0
   */
   Ember.Debug.registerWarnHandler = registerWarnHandler;

@@ -23,13 +23,13 @@ export function validateLazyHelperName(helperName, container, keywords) {
 
   * Look for a registered helper
   * If a dash exists in the name:
-    * Look for a helper registed in the container
+    * Look for a helper registed in the container.
     * Use Ember.ComponentLookup to find an Ember.Component that resolves
-      to the given name
+      to the given name.
 
   @private
   @method resolveHelper
-  @param {String} name the name of the helper to lookup
+  @param {String} name The name of the helper to lookup.
   @return {Helper}
 */
 function _findHelper(name, view, env, options) {
@@ -58,12 +58,12 @@ export function findHelper(name, view, env) {
 
   let localHelper = _findHelper(name, view, env, options);
 
-  // local match found, use it
+  // Local match found, use it.
   if (localHelper) {
     return localHelper;
   }
 
-  // fallback to global
+  // Fall back to global.
   return _findHelper(name, view, env);
 }
 

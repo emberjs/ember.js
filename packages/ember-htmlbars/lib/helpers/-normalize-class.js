@@ -15,7 +15,7 @@ export default function normalizeClass(params, hash) {
   var { activeClass, inactiveClass } = hash;
 
   // When using the colon syntax, evaluate the truthiness or falsiness
-  // of the value to determine which className to return
+  // of the value to determine which className to return.
   if (activeClass || inactiveClass) {
     if (!!value) {
       return activeClass;
@@ -26,7 +26,7 @@ export default function normalizeClass(params, hash) {
   // If value is a Boolean and true, return the dasherized property
   // name.
   } else if (value === true) {
-    // Only apply to last segment in the path
+    // Only apply to last segment in the path.
     if (propName && isPath(propName)) {
       var segments = propName.split('.');
       propName = segments[segments.length - 1];

@@ -1,5 +1,5 @@
 /*
-  this private helper is used to join and compact a list of class names
+  This private helper is used to join and compact a list of class names.
 
   @private
 */

@@ -52,5 +52,5 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   let postController2 = engineInstance.lookup('controller:post');
   assert.ok(postController2, 'lookup creates instance');
 
-  assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because previous one was reset');
+  assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance because previous one was reset');
 });

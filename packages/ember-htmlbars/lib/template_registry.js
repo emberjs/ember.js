@@ -1,6 +1,6 @@
 // STATE within a module is frowned apon, this exists
 // to support Ember.TEMPLATES but shield ember internals from this legacy
-// global API
+// global API.
 let TEMPLATES = {};
 
 export function setTemplates(templates) {

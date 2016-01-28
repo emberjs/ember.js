@@ -99,7 +99,7 @@ Binding.prototype = {
     `get()` - see that method for more information.
 
     @method from
-    @param {String} path the property path to connect to
+    @param {String} path The property path to connect to.
     @return {Ember.Binding} `this`
     @public
   */
@@ -118,7 +118,7 @@ Binding.prototype = {
     `get()` - see that method for more information.
 
     @method to
-    @param {String|Tuple} path A property path or tuple
+    @param {String|Tuple} path A property path or tuple.
     @return {Ember.Binding} `this`
     @public
   */
@@ -173,10 +173,10 @@ Binding.prototype = {
     var toPath = this._to;
     trySet(obj, toPath, getWithGlobals(obj, fromPath));
 
-    // add an observer on the object to be notified when the binding should be updated
+    // Add an observer on the object to be notified when the binding should be updated.
     addObserver(obj, fromPath, this, this.fromDidChange);
 
-    // if the binding is a two-way binding, also set up an observer on the target
+    // If the binding is a two-way binding, also set up an observer on the target.
     if (!this._oneWay) {
       addObserver(obj, toPath, this, this.toDidChange);
     }
@@ -200,16 +200,16 @@ Binding.prototype = {
 
     var twoWay = !this._oneWay;
 
-    // remove an observer on the object so we're no longer notified of
+    // Remove an observer on the object so we're no longer notified of
     // changes that should update bindings.
     removeObserver(obj, this._from, this, this.fromDidChange);
 
-    // if the binding is two-way, remove the observer from the target as well
+    // If the binding is two-way, remove the observer from the target as well.
     if (twoWay) {
       removeObserver(obj, this._to, this, this.toDidChange);
     }
 
-    this._readyToSync = false; // disable scheduled syncs...
+    this._readyToSync = false; // Disable scheduled syncs...
     return this;
   },
 
@@ -217,12 +217,12 @@ Binding.prototype = {
   // PRIVATE
   //
 
-  /* called when the from side changes */
+  /* Called when the from side changes. */
   fromDidChange(target) {
     this._scheduleSync(target, 'fwd');
   },
 
-  /* called when the to side changes */
+  /* Called when the to side changes. */
   toDidChange(target) {
     this._scheduleSync(target, 'back');
   },
@@ -230,7 +230,7 @@ Binding.prototype = {
   _scheduleSync(obj, dir) {
     var existingDir = this._direction;
 
-    // if we haven't scheduled the binding yet, schedule it
+    // If we haven't scheduled the binding yet, schedule it.
     if (existingDir === undefined) {
       run.schedule('sync', this, this._sync, obj);
       this._direction  = dir;
@@ -246,11 +246,11 @@ Binding.prototype = {
   _sync(obj) {
     var log = Ember.LOG_BINDINGS;
 
-    // don't synchronize destroyed objects or disconnected bindings
+    // Don't synchronize destroyed objects or disconnected bindings.
     if (obj.isDestroyed || !this._readyToSync) { return; }
 
-    // get the direction of the binding for the object we are
-    // synchronizing from
+    // Get the direction of the binding for the object we are
+    // synchronizing from.
     var direction = this._direction;
 
     var fromPath = this._from;
@@ -258,7 +258,7 @@ Binding.prototype = {
 
     this._direction = undefined;
 
-    // if we're synchronizing from the remote object...
+    // If we're synchronizing from the remote object...
     if (direction === 'fwd') {
       var fromValue = getWithGlobals(obj, this._from);
       if (log) {
@@ -271,7 +271,7 @@ Binding.prototype = {
           trySet(obj, toPath, fromValue);
         });
       }
-    // if we're synchronizing *to* the remote object
+    // If we're synchronizing *to* the remote object.
     } else if (direction === 'back') {
       var toValue = get(obj, this._to);
       if (log) {
@@ -321,7 +321,7 @@ mixinProperties(Binding, {
   An `Ember.Binding` connects the properties of two objects so that whenever
   the value of one property changes, the other property will be changed also.
 
-  ## Automatic Creation of Bindings with `/^*Binding/`-named Properties
+  ## Automatic Creation of Bindings with `/^*Binding/`-named Properties.
 
   You do not usually create Binding objects directly but instead describe
   bindings in your class or object definition using automatic binding
@@ -370,7 +370,7 @@ mixinProperties(Binding, {
   All of the examples above show you how to configure a custom binding, but the
   result of these customizations will be a binding template, not a fully active
   Binding instance. The binding will actually become active only when you
-  instantiate the object the binding belongs to. It is useful however, to
+  instantiate the object the binding belongs to. It is useful, however, to
   understand what actually happens when the binding is activated.
 
   For a binding to function it must have at least a `from` property and a `to`

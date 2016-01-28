@@ -45,7 +45,7 @@ Renderer.prototype.prerenderTopLevelView =
 
 Renderer.prototype.renderTopLevelView =
   function Renderer_renderTopLevelView(view, renderNode) {
-    // Check to see if insertion has been canceled
+    // Check to see if insertion has been canceled.
     if (view._willInsert) {
       view._willInsert = false;
       this.prerenderTopLevelView(view, renderNode);
@@ -126,7 +126,7 @@ Renderer.prototype.clearRenderedViews =
     env.renderedViews.length = 0;
   };
 
-// This entry point is called from top-level `view.appendTo`
+// This entry point is called from top-level `view.appendTo`.
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
     var morph = this._dom.appendMorph(target);
@@ -162,16 +162,16 @@ Renderer.prototype.didCreateElement = function (view, element) {
 
 Renderer.prototype.willInsertElement = function (view) {
   if (view.trigger) { view.trigger('willInsertElement'); }
-}; // will place into DOM
+}; // Will place into DOM.
 
 Renderer.prototype.setAttrs = function (view, attrs) {
   set(view, 'attrs', attrs);
-}; // set attrs the first time
+}; // Set attrs the first time.
 
 Renderer.prototype.componentInitAttrs = function (component, attrs) {
   component.trigger('didInitAttrs', { attrs });
   component.trigger('didReceiveAttrs', { newAttrs: attrs });
-}; // set attrs the first time
+}; // Set attrs the first time.
 
 Renderer.prototype.didInsertElement = function (view) {
   if (view._transitionTo) {
@@ -179,7 +179,7 @@ Renderer.prototype.didInsertElement = function (view) {
   }
 
   if (view.trigger) { view.trigger('didInsertElement'); }
-}; // inDOM // placed into DOM
+}; // inDOM // Placed into DOM.
 
 Renderer.prototype.didUpdate = function (view) {
   if (view.trigger) { view.trigger('didUpdate'); }
@@ -191,7 +191,7 @@ Renderer.prototype.didRender = function (view) {
 
 Renderer.prototype.updateAttrs = function (view, attrs) {
   this.setAttrs(view, attrs);
-}; // setting new attrs
+}; // Setting new attrs.
 
 Renderer.prototype.componentUpdateAttrs = function (component, newAttrs) {
   let oldAttrs = null;
@@ -279,4 +279,6 @@ Renderer.prototype.didDestroyElement = function (view) {
   if (view.trigger) {
     view.trigger('didDestroyElement');
   }
-}; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
+}; // Element destroyed so view.destroy shouldn't try to remove it removedFromDOM
+
+export default Renderer;

@@ -37,7 +37,7 @@ QUnit.test('Brings its own run-loop if not provided', function() {
   application.reset();
 });
 
-QUnit.test('does not bring its own run loop if one is already provided', function() {
+QUnit.test('Does not bring its own run loop if one is already provided', function() {
   expect(3);
 
   var didBecomeReady = false;
@@ -273,7 +273,7 @@ QUnit.test('Ensure that the hashchange event listener is removed', function() {
   });
 
   listeners = jQuery._data(jQuery(window)[0], 'events');
-  equal(listeners['hashchange'].length, 1, 'hashchange event listener was setup');
+  equal(listeners['hashchange'].length, 1, 'hashchange event listener was set up');
 
   application.reset();
 

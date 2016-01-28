@@ -360,7 +360,7 @@ QUnit.test('initializers are run before ready hook', function() {
   });
 });
 
-QUnit.test('initializers should be executed in their own context', function() {
+QUnit.test('initializers are executed in their own context', function() {
   expect(1);
 
   var MyApplication = Application.extend();
@@ -381,7 +381,7 @@ QUnit.test('initializers should be executed in their own context', function() {
   });
 });
 
-QUnit.test('Initializers get an instance on app reset', function() {
+QUnit.test('initializers get an instance on app reset', function() {
   expect(2);
 
   var MyApplication = Application.extend();

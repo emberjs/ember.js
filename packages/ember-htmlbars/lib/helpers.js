@@ -21,7 +21,7 @@ var helpers = new EmptyObject();
   @method _registerHelper
   @for Ember.HTMLBars
   @param {String} name
-  @param {Object|Function} helperFunc the helper function to add
+  @param {Object|Function} helperFunc The helper function to add.
 */
 export function registerHelper(name, helperFunc) {
   helpers[name] = helperFunc;

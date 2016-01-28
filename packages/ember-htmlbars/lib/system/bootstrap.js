@@ -42,7 +42,7 @@ function bootstrap(ctx) {
 
   jQuery(selectors, ctx)
     .each(function() {
-    // Get a reference to the script tag
+    // Get a reference to the script tag.
     var script = jQuery(this);
 
     // Get the name of the script, used by Ember.View's templateName property.
@@ -60,15 +60,15 @@ function bootstrap(ctx) {
       });
     }
 
-    // Check if template of same name already exists
+    // Check if template of same name already exists.
     if (hasTemplate(templateName)) {
       throw new EmberError('Template named "' + templateName  + '" already exists.');
     }
 
-    // For templates which have a name, we save them and then remove them from the DOM
+    // For templates which have a name, we save them and then remove them from the DOM.
     registerTemplate(templateName, template);
 
-    // Remove script tag from DOM
+    // Remove script tag from DOM.
     script.remove();
   });
 }

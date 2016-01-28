@@ -2,7 +2,7 @@
 
 global.QUnit = require('qunitjs');
 
-// adds test reporting
+// Adds test reporting.
 var qe = require('qunit-extras');
 qe.runInContext(global);
 

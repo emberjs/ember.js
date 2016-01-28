@@ -43,7 +43,7 @@ import { internal } from 'htmlbars-runtime';
 
   @method partial
   @for Ember.Templates.helpers
-  @param {String} partialName the name of the template to render minus the leading underscore
+  @param {String} partialName The name of the template to render minus the leading underscore.
   @public
 */
 

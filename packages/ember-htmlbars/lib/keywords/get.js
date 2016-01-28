@@ -22,7 +22,7 @@ function labelFor(source, key) {
 
 let DynamicKeyStream = BasicStream.extend({
   init(source, keySource) {
-    // used to get the original path for debugging purposes
+    // Used to get the original path for debugging purposes.
     var label = labelFor(source, keySource);
 
     this.label = label;

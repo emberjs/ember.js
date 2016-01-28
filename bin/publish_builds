@@ -9,7 +9,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     DISABLE_JSCS=true DISABLE_JSHINT=true ember build --environment=production
   fi
 
-  npm run docs # generate documentation to be published
+  npm run docs # Generate documentation to be published.
   ./bin/publish_to_s3.js
   ./bin/bower_ember_build
 fi

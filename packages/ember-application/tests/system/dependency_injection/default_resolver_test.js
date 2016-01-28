@@ -63,7 +63,7 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
 });
 
 QUnit.test('the default resolver looks up basic name as no prefix', function() {
-  ok(Controller.detect(locator.lookup('controller:basic')), 'locator looksup correct controller');
+  ok(Controller.detect(locator.lookup('controller:basic')), 'locator looks up correct controller');
 });
 
 function detectEqual(first, second, message) {
@@ -126,7 +126,7 @@ QUnit.test('the default resolver resolves helpers on the namespace', function() 
 
   expectDeprecation(function() {
     LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
-  }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to using `Ember.Helper` or `Ember.Helper.helper`.');
+  }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
 
   application.ShorthandHelper = ShorthandHelper;
   application.CompleteHelper = CompleteHelper;
@@ -141,7 +141,7 @@ QUnit.test('the default resolver resolves helpers on the namespace', function() 
   equal(resolvedLegacyHTMLBars, LegacyHTMLBarsBoundHelper, 'resolves legacy HTMLBars bound helper');
 });
 
-QUnit.test('the default resolver resolves to the same instance no matter the notation ', function() {
+QUnit.test('the default resolver resolves to the same instance, no matter the notation ', function() {
   application.NestedPostController = Controller.extend({});
 
   equal(locator.lookup('controller:nested-post'), locator.lookup('controller:nested_post'), 'looks up NestedPost controller on application');

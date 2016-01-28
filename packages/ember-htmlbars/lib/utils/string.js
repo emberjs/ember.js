@@ -19,7 +19,7 @@ import { SafeString, escapeExpression } from 'htmlbars-util';
   @method htmlSafe
   @for Ember.String
   @static
-  @return {Handlebars.SafeString} a string that will not be html escaped by Handlebars
+  @return {Handlebars.SafeString} A string that will not be HTML escaped by Handlebars.
   @public
 */
 function htmlSafe(str) {

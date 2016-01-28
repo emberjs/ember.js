@@ -118,7 +118,7 @@ if (isEnabled('ember-application-visit')) {
     });
   });
 
-  QUnit.test('calling visit() on app without first calling boot() should boot the app', function(assert) {
+  QUnit.test('calling visit() on an app without first calling boot() should boot the app', function(assert) {
     let appBooted = 0;
     let instanceBooted = 0;
 
