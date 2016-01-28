@@ -61,9 +61,9 @@ targeting a minority of users, consider writing an add-on library for Ember.
 
 3. If the feature is complex, consider writing an Ember RFC document. If we do
 end up accepting the feature, the RFC provides the needed documentation for
-contributors to develop the feature according the specifcaiton accepted by the core team.
+contributors to develop the feature according the specification accepted by the core team.
 
-4. After disussing the feature you may choose to attempt a Pull Request. If
+4. After discussing the feature you may choose to attempt a Pull Request. If
 you're at all able, start writing some code. We always have more work to do
 than time to do it. If you can write some code then that will speed the process
 along.
