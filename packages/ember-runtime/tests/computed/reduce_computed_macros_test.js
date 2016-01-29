@@ -2,6 +2,7 @@ import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import setProperties from 'ember-metal/set_properties';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
+import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { addObserver } from 'ember-metal/observer';
@@ -18,6 +19,7 @@ import {
   filter,
   filterBy,
   uniq,
+  uniqBy,
   union,
   intersect
 } from 'ember-runtime/computed/reduce_computed_macros';
@@ -492,6 +494,79 @@ QUnit.test('properties values can be replaced', function() {
     deepEqual(obj.get('union').sort((x, y) => x - y), [1, 4, 5, 6, 7, 8, 9, 10], 'objects are removed when they are no longer in any dependent array');
   });
 });
+
+if (isEnabled('ember-runtime-computed-uniq-by')) {
+  QUnit.module('computed.uniqBy', {
+    setup() {
+      obj = EmberObject.extend({
+        list: null,
+        uniqueById: uniqBy('list', 'id')
+      }).create({
+        list: emberA([
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 1, value: 'one' }
+        ])
+      });
+    },
+    teardown() {
+      run(obj, 'destroy');
+    }
+  });
+
+  QUnit.test('uniqBy is readOnly', function() {
+    QUnit.throws(function() {
+      obj.set('uniqueById', 1);
+    }, /Cannot set read-only property "uniqueById" on object:/);
+  });
+  QUnit.test('does not include duplicates', function() {
+    deepEqual(obj.get('uniqueById'), [
+      { id: 1, value: 'one' },
+      { id: 2, value: 'two' }
+    ]);
+  });
+
+  QUnit.test('it does not share state among instances', function() {
+    let MyObject = EmberObject.extend({
+      list: [],
+      uniqueByName: uniqBy('list', 'name')
+    });
+    let a = MyObject.create({ list: [{ name: 'bob' }, { name: 'mitch' }, { name: 'mitch' }] });
+    let b = MyObject.create({ list: [{ name: 'warren' }, { name: 'mitch' }] });
+
+    deepEqual(a.get('uniqueByName'), [{ name: 'bob' }, { name: 'mitch' }]);
+    // Making sure that 'mitch' appears
+    deepEqual(b.get('uniqueByName'), [{ name: 'warren' }, { name: 'mitch' }]);
+  });
+
+  QUnit.test('it handles changes to the dependent array', function() {
+    obj.get('list').pushObject({ id: 3, value: 'three' });
+
+    deepEqual(obj.get('uniqueById'), [
+      { id: 1, value: 'one' },
+      { id: 2, value: 'two' },
+      { id: 3, value: 'three' }
+    ], 'The list includes three');
+
+    obj.get('list').pushObject({ id: 3, value: 'three' });
+
+    deepEqual(obj.get('uniqueById'), [
+      { id: 1, value: 'one' },
+      { id: 2, value: 'two' },
+      { id: 3, value: 'three' }
+    ], 'The list does not include a duplicate three');
+  });
+
+  QUnit.test('it returns an empty array when computed on a non-array', function() {
+    var MyObject = EmberObject.extend({
+      list: null,
+      uniq: uniqBy('list', 'name')
+    });
+    let a = MyObject.create({ list: 'not an array' });
+
+    deepEqual(a.get('uniq'), []);
+  });
+}
 
 QUnit.module('computed.intersect', {
   setup() {

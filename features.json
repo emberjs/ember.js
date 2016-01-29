@@ -8,6 +8,7 @@
     "ember-metal-ember-assign": true,
     "ember-htmlbars-local-lookup": true,
     "ember-application-engines": null,
-    "ember-glimmer": null
+    "ember-glimmer": null,
+    "ember-runtime-computed-uniq-by": null
   }
 }

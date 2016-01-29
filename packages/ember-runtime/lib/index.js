@@ -42,6 +42,8 @@ import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import Evented from 'ember-runtime/mixins/evented';
 import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
 
+import isEnabled from 'ember-metal/features';
+
 import {
   sum,
   min,
@@ -53,6 +55,7 @@ import {
   filter,
   filterBy,
   uniq,
+  uniqBy,
   union,
   intersect,
   collect
@@ -115,6 +118,11 @@ EmComputed.mapBy = mapBy;
 EmComputed.filter = filter;
 EmComputed.filterBy = filterBy;
 EmComputed.uniq = uniq;
+
+if (isEnabled('ember-runtime-computed-uniq-by')) {
+  EmComputed.uniqBy = uniqBy;
+}
+
 EmComputed.union = union;
 EmComputed.intersect = intersect;
 EmComputed.collect = collect;

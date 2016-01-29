@@ -13,7 +13,10 @@ import {
   Mixin,
   aliasMethod
 } from 'ember-metal/mixin';
+import { guidFor } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
+import EmptyObject from 'ember-metal/empty_object';
+import isEnabled from 'ember-metal/features';
 import {
   propertyWillChange,
   propertyDidChange
@@ -93,7 +96,7 @@ function iter(key, value) {
   @since Ember 0.9
   @private
 */
-export default Mixin.create({
+var Enumerable = Mixin.create({
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -1078,3 +1081,39 @@ export default Mixin.create({
     });
   }
 });
+
+
+if (isEnabled('ember-runtime-computed-uniq-by')) {
+  Enumerable.reopen({
+    /**
+      Returns a new enumerable that contains only items containing a unique property value.
+      The default implementation returns an array regardless of the receiver type.
+
+      ```javascript
+      var arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
+      arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
+      ```
+
+      @method uniqBy
+      @return {Ember.Enumerable}
+      @public
+    */
+
+    uniqBy(key) {
+      var ret = emberA();
+      var seen = new EmptyObject();
+
+      this.forEach((item) => {
+        var guid = guidFor(get(item, key));
+        if (!(guid in seen)) {
+          seen[guid] = true;
+          ret.push(item);
+        }
+      });
+
+      return ret;
+    }
+  });
+}
+
+export default Enumerable;
