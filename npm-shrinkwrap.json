@@ -1448,9 +1448,16 @@
       "resolved": "https://registry.npmjs.org/console-browserify/-/console-browserify-1.1.0.tgz"
     },
     "consolidate": {
-      "version": "0.13.1",
-      "from": "consolidate@>=0.13.1 <0.14.0",
-      "resolved": "https://registry.npmjs.org/consolidate/-/consolidate-0.13.1.tgz"
+      "version": "0.14.0",
+      "from": "consolidate@>=0.14.0 <0.15.0",
+      "resolved": "https://registry.npmjs.org/consolidate/-/consolidate-0.14.0.tgz",
+      "dependencies": {
+        "bluebird": {
+          "version": "3.1.5",
+          "from": "bluebird@>=3.1.1 <4.0.0",
+          "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.1.5.tgz"
+        }
+      }
     },
     "content-disposition": {
       "version": "0.5.0",
@@ -5128,9 +5135,26 @@
       "resolved": "https://registry.npmjs.org/npmconf/-/npmconf-2.1.2.tgz"
     },
     "npmlog": {
-      "version": "2.0.1",
+      "version": "2.0.2",
       "from": "npmlog@>=2.0.0 <3.0.0",
-      "resolved": "https://registry.npmjs.org/npmlog/-/npmlog-2.0.1.tgz"
+      "resolved": "https://registry.npmjs.org/npmlog/-/npmlog-2.0.2.tgz",
+      "dependencies": {
+        "are-we-there-yet": {
+          "version": "1.0.6",
+          "from": "are-we-there-yet@>=1.0.6 <1.1.0",
+          "resolved": "https://registry.npmjs.org/are-we-there-yet/-/are-we-there-yet-1.0.6.tgz"
+        },
+        "delegates": {
+          "version": "1.0.0",
+          "from": "delegates@>=1.0.0 <2.0.0",
+          "resolved": "https://registry.npmjs.org/delegates/-/delegates-1.0.0.tgz"
+        },
+        "readable-stream": {
+          "version": "2.0.5",
+          "from": "readable-stream@>=2.0.0 <3.0.0||>=1.1.13 <2.0.0",
+          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.0.5.tgz"
+        }
+      }
     },
     "number-is-nan": {
       "version": "1.0.0",
@@ -6101,9 +6125,9 @@
       "resolved": "https://registry.npmjs.org/temp/-/temp-0.8.3.tgz"
     },
     "testem": {
-      "version": "1.0.1",
-      "from": "testem@1.0.1",
-      "resolved": "https://registry.npmjs.org/testem/-/testem-1.0.1.tgz",
+      "version": "1.1.3",
+      "from": "testem@latest",
+      "resolved": "https://registry.npmjs.org/testem/-/testem-1.1.3.tgz",
       "dependencies": {
         "async": {
           "version": "1.5.2",
