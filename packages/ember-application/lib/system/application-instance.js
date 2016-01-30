@@ -11,7 +11,7 @@ import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import { Renderer } from 'ember-metal-views';
+import Renderer from 'ember-metal-views/renderer';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
@@ -147,7 +147,7 @@ const ApplicationInstance = EngineInstance.extend({
 
       registry.register('renderer:-dom', {
         create() {
-          return new Renderer(new DOMHelper(options.document), { destinedForDOM: options.isInteractive });
+          return new Renderer(new DOMHelper(options.document), options.isInteractive);
         }
       });
 

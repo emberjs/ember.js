@@ -6,7 +6,7 @@ import setProperties from 'ember-metal/set_properties';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import environment from 'ember-metal/environment';
 
-export function Renderer(domHelper, { destinedForDOM } = {}) {
+function Renderer(domHelper, destinedForDOM) {
   this._dom = domHelper;
 
   // This flag indicates whether the resulting rendered element will be
@@ -280,3 +280,5 @@ Renderer.prototype.didDestroyElement = function (view) {
     view.trigger('didDestroyElement');
   }
 }; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
+
+export default Renderer;
