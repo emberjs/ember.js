@@ -4,6 +4,7 @@ import { compile, DOMHelper, Renderer } from './helpers';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
+import assign from 'ember-metal/assign';
 
 const packageTag = `${packageName.toUpperCase()}: `;
 
@@ -55,7 +56,7 @@ export class RenderingTest extends TestCase {
   render(templateStr, context = {}) {
     let { env, renderer } = this;
 
-    let attrs = Object.assign({}, context, {
+    let attrs = assign({}, context, {
       renderer,
       template: compile(templateStr, { env })
     });
