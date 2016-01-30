@@ -6310,9 +6310,9 @@
       }
     },
     "typescript": {
-      "version": "1.8.0-dev.20160125",
-      "from": "typescript@1.8.0-dev.20160125",
-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-1.8.0-dev.20160125.tgz"
+      "version": "1.8.0",
+      "from": "typescript@1.8.0",
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-1.8.0.tgz"
     },
     "uc.micro": {
       "version": "1.0.0",

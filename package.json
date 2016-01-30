@@ -33,7 +33,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.7.2",
     "simple-html-tokenizer": "^0.2.1",
-    "typescript": "1.8.0-dev.20160125"
+    "typescript": "~1.8.0"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
@@ -41,7 +41,6 @@
     "ember-cli": "ember-cli/ember-cli",
     "ember-cli-release": "^0.2.2",
     "ember-cli-sauce": "^1.3.0",
-    "tslint": "next",
-    "typescript": "^1.8.0-dev.20160125"
+    "tslint": "next"
   }
 }
