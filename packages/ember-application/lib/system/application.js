@@ -9,7 +9,7 @@ import { get } from 'ember-metal/property_get';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
-import Renderer from 'ember-metal-views/renderer';
+import { Renderer } from 'ember-metal-views';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import SelectView from 'ember-views/views/select';
 import { OutletView } from 'ember-routing-views/views/outlet';
