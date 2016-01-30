@@ -17,7 +17,7 @@ import {
   states
 } from 'ember-views/views/states';
 
-import Renderer from 'ember-metal-views/renderer';
+import { Renderer } from 'ember-metal-views';
 import { DeprecatedCoreView } from 'ember-views/views/core_view';
 import { DeprecatedView } from 'ember-views/views/view';
 import { DeprecatedContainerView } from 'ember-views/views/container_view';

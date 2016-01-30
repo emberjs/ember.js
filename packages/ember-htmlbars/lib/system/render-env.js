@@ -1,5 +1,5 @@
 import defaultEnv from 'ember-htmlbars/env';
-import { MorphSet } from 'ember-metal-views/renderer';
+import { MorphSet } from 'ember-metal-views';
 import { getOwner } from 'container/owner';
 
 export default function RenderEnv(options) {
