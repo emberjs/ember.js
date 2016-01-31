@@ -141,7 +141,7 @@
         setupQUnit(testHelpers);
 
         // Tests should time out after 15 seconds
-        QUnit.config.testTimeout = 15000;
+        QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
         // Handle testing feature flags
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes
