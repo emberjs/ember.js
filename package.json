@@ -34,7 +34,7 @@
     "github": "^0.2.3",
     "glimmer-engine": "tildeio/glimmer#master",
     "glob": "~4.3.2",
-    "htmlbars": "0.14.13",
+    "htmlbars": "0.14.14",
     "qunit-extras": "^1.4.0",
     "qunitjs": "^1.20.0",
     "route-recognizer": "0.1.5",
