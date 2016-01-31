@@ -1,6 +1,6 @@
 {
   "framework": "qunit",
-  "test_page": "dist/tests/index.html?hidepassed&hideskipped",
+  "test_page": "dist/tests/index.html?hidepassed&hideskipped&timeout=60000",
   "timeout": 540,
   "parallel": 4,
   "disable_watching": true,
@@ -35,10 +35,6 @@
     },
     "SL_IE_9": {
       "command": "npm run sauce:launch  -- -b 'internet explorer' -v 9 --no-ct -u <url>",
-      "protocol": "tap"
-    },
-    "SL_IE_8": {
-      "command": "npm run sauce:launch -- -b 'internet explorer' -v 8 --no-ct -u <url>",
       "protocol": "tap"
     }
   },

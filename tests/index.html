@@ -146,7 +146,7 @@
         setupQUnit(testHelpers);
 
         // Tests should time out after 15 seconds
-        QUnit.config.testTimeout = 15000;
+        QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
         // Hide skipped tests
         QUnit.config.urlConfig.push({ id: 'hideskipped', label: "Hide skipped tests"});
         // Handle testing feature flags
