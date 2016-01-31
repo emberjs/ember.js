@@ -30,7 +30,7 @@ install:
 after_success:
   - "./bin/publish_builds"
 
-after_failure:
+after_script:
   - "cd ./phantomjs/phantomjs-`phantomjs --version`-linux-x86_64-symbols"
   - >
     for i in /tmp/*.dmp; do
