@@ -1,4 +1,4 @@
-import EmberError from 'ember-metal/error';
+import { assert } from 'ember-metal/debug';
 
 /**
 @module ember
@@ -6,7 +6,6 @@ import EmberError from 'ember-metal/error';
 */
 
 var SPLIT_REGEX = /\{|\}/;
-
 var END_WITH_EACH_REGEX = /\.@each$/;
 
 /**
@@ -37,25 +36,24 @@ var END_WITH_EACH_REGEX = /\.@each$/;
   expansion, and is passed the expansion.
 */
 export default function expandProperties(pattern, callback) {
-  if (pattern.indexOf(' ') > -1) {
-    throw new EmberError(`Brace expanded properties cannot contain spaces, e.g. 'user.{firstName, lastName}' should be 'user.{firstName,lastName}'`);
+  assert('A computed property key must be a string', typeof pattern === 'string');
+  assert(
+    'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
+    pattern.indexOf(' ') === -1
+  );
+
+  var parts = pattern.split(SPLIT_REGEX);
+  var properties = [parts];
+
+  for (let i = 0; i < parts.length; i++) {
+    let part = parts[i];
+    if (part.indexOf(',') >= 0) {
+      properties = duplicateAndReplace(properties, part.split(','), i);
+    }
   }
 
-  if ('string' === typeof pattern) {
-    var parts = pattern.split(SPLIT_REGEX);
-    var properties = [parts];
-
-    parts.forEach((part, index) => {
-      if (part.indexOf(',') >= 0) {
-        properties = duplicateAndReplace(properties, part.split(','), index);
-      }
-    });
-
-    properties.forEach((property) => {
-      callback(property.join('').replace(END_WITH_EACH_REGEX, '.[]'));
-    });
-  } else {
-    callback(pattern.replace(END_WITH_EACH_REGEX, '.[]'));
+  for (let i = 0; i < properties.length; i++) {
+    callback(properties[i].join('').replace(END_WITH_EACH_REGEX, '.[]'));
   }
 }
 
