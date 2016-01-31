@@ -23,6 +23,7 @@ before_install:
       wget -O /tmp/phantomjs-`phantomjs --version`-linux-x86_64-symbols.tar.bz2 https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-`phantomjs --version`-linux-x86_64-symbols.tar.bz2 &&
       tar -xjvf /tmp/phantomjs-`phantomjs --version`-linux-x86_64-symbols.tar.bz2 -C ./phantomjs;
     fi
+  - "rm -rf node_modules/glimmer-engine"
 
 install:
   - "npm install"
