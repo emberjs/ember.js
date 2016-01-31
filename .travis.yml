@@ -10,18 +10,33 @@ cache:
     - node_modules
     - bower_components
     - persistent-filter-caches
+    - phantomjs
 
 before_install:
   - "npm config set spin false"
-  - "npm --version"
   - "phantomjs --version"
   - "npm install -g npm"
+  - "npm --version"
+  - "rm -f /tmp/*.dmp"
+  - "mkdir -p phantomjs"
+  - >
+    if [ ! -d ./phantomjs/`phantomjs --version`-linux-x86_64-symbols ]; then
+      wget -O /tmp/phantomjs-`phantomjs --version`-linux-x86_64-symbols.tar.bz2 https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-`phantomjs --version`-linux-x86_64-symbols.tar.bz2 &&
+      tar -xjvf /tmp/phantomjs-`phantomjs --version`-linux-x86_64-symbols.tar.bz2 -C ./phantomjs;
+    fi
 
 install:
   - "npm install"
 
 after_success:
   - "./bin/publish_builds"
+
+after_failure:
+  - "cd ./phantomjs/phantomjs-`phantomjs --version`-linux-x86_64-symbols"
+  - >
+    for i in /tmp/*.dmp; do
+      ./minidump_stackwalk $i . 2>/dev/null;
+    done
 
 script:
   - npm test
