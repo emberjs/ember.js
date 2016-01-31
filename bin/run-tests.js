@@ -6,21 +6,6 @@ var chalk = require('chalk');
 var packages = require('../lib/packages');
 var runInSequence = require('../lib/run-in-sequence');
 
-function shouldPrint(inputString) {
-  var skipStrings = [
-    "*** WARNING: Method userSpaceScaleFactor",
-    "CoreText performance note:",
-  ];
-
-  for (var i = 0; i < skipStrings.length; i++) {
-    if (inputString.indexOf(skipStrings[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 var finalhandler = require('finalhandler')
 var http = require('http')
 var serveStatic = require('serve-static')
@@ -40,48 +25,69 @@ server.listen(PORT);
 
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
-    var args = [
-      'bower_components/qunit-phantom-runner/runner.js',
-      'http://localhost:' + PORT + '/tests/?' + queryString
-    ];
+    var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
+    runInPhantom(url, 3, resolve, reject);
+  });
+}
 
-    console.log('Running: phantomjs ' + args.join(' '));
+function runInPhantom(url, retries, resolve, reject) {
+  var args = ['bower_components/qunit-phantom-runner/runner.js', url];
 
-    var child = spawn('phantomjs', args);
-    var result = {output: [], errors: [], code: null};
+  console.log('Running: phantomjs ' + args.join(' '));
 
-    child.stdout.on('data', function (data) {
-      var string = data.toString();
-      var lines = string.split('\n');
+  var crashed = false;
+  var child = spawn('phantomjs', args);
+  var result = {output: [], errors: [], code: null};
 
-      lines.forEach(function(line) {
-        if (line.indexOf('0 failed.') > -1) {
-          console.log(chalk.green(line));
-        } else {
-          console.log(line);
-        }
-      });
-      result.output.push(string);
-    });
+  child.stdout.on('data', function (data) {
+    var string = data.toString();
+    var lines = string.split('\n');
 
-    child.stderr.on('data', function (data) {
-      var string = data.toString();
-
-      if (shouldPrint(string)) {
-        result.errors.push(string);
-        console.error(chalk.red(string));
-      }
-    });
-
-    child.on('close', function (code) {
-      result.code = code;
-
-      if (code === 0) {
-        resolve(result);
+    lines.forEach(function(line) {
+      if (line.indexOf('0 failed.') > -1) {
+        console.log(chalk.green(line));
       } else {
-        reject(result);
+        console.log(line);
       }
     });
+    result.output.push(string);
+  });
+
+  child.stderr.on('data', function (data) {
+    var string = data.toString();
+
+    if (string.indexOf('PhantomJS has crashed.') > -1) {
+      crashed = true;
+    }
+
+    result.errors.push(string);
+    console.error(chalk.red(string));
+  });
+
+  child.on('close', function (code) {
+    result.code = code;
+
+    if (!crashed && code === 0) {
+      resolve(result);
+    } else if (crashed) {
+      console.log(chalk.red('Phantom crashed with exit code ' + code));
+
+      if (retries > 1) {
+        console.log(chalk.yellow('Retrying... ¯\_(ツ)_/¯'));
+        runInPhantom(url, retries - 1, resolve, reject);
+      } else {
+        console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
+
+        if (url.indexOf('ember-extension-support') > -1) {
+          console.log(chalk.yellow('This might be a known issue with PhantomJS 1.9.8, skipping for now'));
+          resolve(result);
+        } else {
+          reject(result);
+        }
+      }
+    } else {
+      reject(result);
+    }
   });
 }
 
