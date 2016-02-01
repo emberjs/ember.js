@@ -482,7 +482,7 @@ testBoth('can watch multiple dependent keys specified declaratively via brace ex
 });
 
 testBoth('throws assertion if brace expansion notation has spaces', function (get, set) {
-  throws(function () {
+  expectAssertion(function () {
     defineProperty(obj, 'roo', computed(function (key) {
       count++;
       return 'roo ' + count;
