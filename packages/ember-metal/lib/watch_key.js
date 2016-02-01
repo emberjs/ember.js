@@ -1,7 +1,6 @@
 import isEnabled from 'ember-metal/features';
-import {
-  meta as metaFor
-} from 'ember-metal/meta';
+import { assert } from 'ember-metal/debug';
+import { meta as metaFor } from 'ember-metal/meta';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION,
@@ -81,6 +80,9 @@ if (isEnabled('mandatory-setter')) {
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
   let count = m.peekWatching(keyName);
+
+  assert(`Tried to unwatch '${keyName}' on object but no one was watching`, count > 0);
+
   if (count === 1) {
     m.writeWatching(keyName, 0);
 
