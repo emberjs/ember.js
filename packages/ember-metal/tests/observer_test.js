@@ -1166,3 +1166,29 @@ testBoth('observer switched on and off and then setter', function (get, set) {
 
   deepEqual(Object.keys(beer), ['type']);
 });
+
+testBoth('adding the same observer multiple times throws an error', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  let beer = new Beer();
+
+  addObserver(beer, 'type', K);
+
+  throws(() => {
+    addObserver(beer, 'type', K);
+  }, /Tried to add.*type/);
+});
+
+testBoth('removing a non-existant observer throws an error', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  let beer = new Beer();
+
+  addObserver(beer, 'type', function() {});
+
+  throws(() => {
+    removeObserver(beer, 'type', K);
+  }, /Tried to remove.*type/);
+});
