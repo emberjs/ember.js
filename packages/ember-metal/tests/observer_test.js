@@ -1166,3 +1166,52 @@ testBoth('observer switched on and off and then setter', function (get, set) {
 
   deepEqual(Object.keys(beer), ['type']);
 });
+
+testBoth('observers switched on and off with setter in between (observed property is not shadowing)', function (get, set) {
+  function Beer() { }
+
+  var beer = new Beer();
+  set(beer, 'type', 'ale');
+  deepEqual(Object.keys(beer), ['type'], 'only set');
+
+  var otherBeer = new Beer();
+  addObserver(otherBeer, 'type', K);
+  set(otherBeer, 'type', 'ale');
+  deepEqual(Object.keys(otherBeer), ['type'], 'addObserver -> set');
+
+  var yetAnotherBeer = new Beer();
+  addObserver(yetAnotherBeer, 'type', K);
+  set(yetAnotherBeer, 'type', 'ale');
+  removeObserver(beer, 'type', K);
+  deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeOjbserver');
+
+  var itsMyLastBeer = new Beer();
+  set(itsMyLastBeer, 'type', 'ale');
+  removeObserver(beer, 'type', K);
+  deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+});
+
+testBoth('observers switched on and off with setter in between (observed property is shadowing one on the prototype)', function (get, set) {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+  set(beer, 'type', 'ale');
+  deepEqual(Object.keys(beer), ['type'], 'after set');
+
+  var otherBeer = new Beer();
+  addObserver(otherBeer, 'type', K);
+  set(otherBeer, 'type', 'ale');
+  deepEqual(Object.keys(otherBeer), ['type'], 'addObserver -> set');
+
+  var yetAnotherBeer = new Beer();
+  addObserver(yetAnotherBeer, 'type', K);
+  set(yetAnotherBeer, 'type', 'ale');
+  removeObserver(beer, 'type', K);
+  deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
+
+  var itsMyLastBeer = new Beer();
+  set(itsMyLastBeer, 'type', 'ale');
+  removeObserver(beer, 'type', K);
+  deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+});
