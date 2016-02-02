@@ -1183,7 +1183,7 @@ testBoth('observers switched on and off with setter in between (observed propert
   addObserver(yetAnotherBeer, 'type', K);
   set(yetAnotherBeer, 'type', 'ale');
   removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeOjbserver');
+  deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
 
   var itsMyLastBeer = new Beer();
   set(itsMyLastBeer, 'type', 'ale');
