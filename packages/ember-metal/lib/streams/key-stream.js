@@ -63,7 +63,7 @@ export default BasicStream.extend({
     if (object !== this.observedObject) {
       this._clearObservedObject();
 
-      if (object && typeof object === 'object') {
+      if (typeof object === 'object' && object !== null && !object.isDestroyed) {
         addObserver(object, this.key, this, this.notify);
         this.observedObject = object;
       }
@@ -73,10 +73,11 @@ export default BasicStream.extend({
   _super$deactivate: BasicStream.prototype.deactivate,
 
   _clearObservedObject() {
-    if (this.observedObject) {
-      removeObserver(this.observedObject, this.key, this, this.notify);
-      this.observedObject = null;
+    let observedObject = this.observedObject;
+    if (observedObject !== null && !observedObject.isDestroyed) {
+      removeObserver(observedObject, this.key, this, this.notify);
     }
+    this.observedObject = null;
   },
 
   deactivate() {
