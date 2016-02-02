@@ -5,6 +5,7 @@ import assign from 'ember-metal/assign';
 import setProperties from 'ember-metal/set_properties';
 import buildComponentTemplate from 'ember-views/system/build-component-template';
 import environment from 'ember-metal/environment';
+import { internal } from 'htmlbars-runtime';
 
 export function Renderer(domHelper, { destinedForDOM } = {}) {
   this._dom = domHelper;
@@ -225,6 +226,20 @@ Renderer.prototype.willRender = function (view) {
 
 Renderer.prototype.componentWillRender = function (component) {
   component.trigger('willRender');
+};
+
+Renderer.prototype.rerender = function (view) {
+  var renderNode = view._renderNode;
+
+  renderNode.isDirty = true;
+  internal.visitChildren(renderNode.childNodes, function(node) {
+    if (node.getState().manager) {
+      node.shouldReceiveAttrs = true;
+    }
+    node.isDirty = true;
+  });
+
+  renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), 'rerendering');
 };
 
 Renderer.prototype.remove = function (view, shouldDestroy) {

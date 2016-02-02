@@ -9,7 +9,6 @@ import run from 'ember-metal/run_loop';
 */
 
 import { get } from 'ember-metal/property_get';
-import { internal } from 'htmlbars-runtime';
 
 var hasElement = Object.create(_default);
 
@@ -30,18 +29,7 @@ assign(hasElement, {
   // deferred to allow bindings to synchronize.
   rerender(view) {
     view.renderer.ensureViewNotRendering(view);
-
-    var renderNode = view._renderNode;
-
-    renderNode.isDirty = true;
-    internal.visitChildren(renderNode.childNodes, function(node) {
-      if (node.getState().manager) {
-        node.shouldReceiveAttrs = true;
-      }
-      node.isDirty = true;
-    });
-
-    renderNode.ownerNode.emberView.scheduleRevalidate(renderNode, view.toString(), 'rerendering');
+    view.renderer.rerender(view);
   },
 
   cleanup(view) {
