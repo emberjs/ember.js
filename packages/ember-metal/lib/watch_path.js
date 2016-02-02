@@ -28,6 +28,9 @@ export function watchPath(obj, keyPath, meta) {
 }
 
 export function unwatchPath(obj, keyPath, meta) {
+  // can't unwatch length on Array - it is special...
+  if (keyPath === 'length' && Array.isArray(obj)) { return; }
+
   var m = meta || metaFor(obj);
   let counter = m.peekWatching(keyPath) || 0;
 

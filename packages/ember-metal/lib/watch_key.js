@@ -78,6 +78,9 @@ if (isEnabled('mandatory-setter')) {
 }
 
 export function unwatchKey(obj, keyName, meta) {
+  // can't unwatch length on Array - it is special...
+  if (keyName === 'length' && Array.isArray(obj)) { return; }
+
   var m = meta || metaFor(obj);
   let count = m.peekWatching(keyName);
 
