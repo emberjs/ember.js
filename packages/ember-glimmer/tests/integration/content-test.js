@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
-  ['TEST: it can render a static text node']() {
+  ['@test it can render a static text node']() {
     this.render('hello');
     let text1 = this.assertTextNode(this.firstChild, 'hello');
 
@@ -13,7 +13,7 @@ moduleFor('Static content tests', class extends RenderingTest {
     this.assertSameNode(text1, text2);
   }
 
-  ['TEST: it can render a static element']() {
+  ['@test it can render a static element']() {
     this.render('<p>hello</p>');
     let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
@@ -26,7 +26,7 @@ moduleFor('Static content tests', class extends RenderingTest {
     this.assertSameNode(text1, text2);
   }
 
-  ['TEST: it can render a static template']() {
+  ['@test it can render a static template']() {
     let template = `
       <div class="header">
         <h1>Welcome to Ember.js</h1>
@@ -55,7 +55,7 @@ moduleFor('Static content tests', class extends RenderingTest {
 
 moduleFor('Dynamic content tests', class extends RenderingTest {
 
-  ['TEST: it can render a dynamic text node']() {
+  ['@test it can render a dynamic text node']() {
     this.render('{{message}}', {
       message: 'hello'
     });
@@ -81,7 +81,7 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     this.assertSameNode(text1, text4);
   }
 
-  ['TEST: it can render a dynamic element']() {
+  ['@test it can render a dynamic element']() {
     this.render('<p>{{message}}</p>', {
       message: 'hello'
     });
@@ -114,7 +114,7 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     this.assertSameNode(text1, text4);
   }
 
-  ['TEST: it can render a dynamic template']() {
+  ['@test it can render a dynamic template']() {
     let template = `
       <div class="header">
         <h1>Welcome to {{framework}}</h1>

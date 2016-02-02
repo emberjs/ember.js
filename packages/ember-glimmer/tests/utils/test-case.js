@@ -7,7 +7,7 @@ import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
 
-const packageTag = `${packageName.toUpperCase()}: `;
+const packageTag = `@${packageName} `;
 
 export function moduleFor(description, TestClass) {
   let context;
@@ -23,9 +23,9 @@ export function moduleFor(description, TestClass) {
   });
 
   Object.keys(TestClass.prototype).forEach(name => {
-    if (name.indexOf('TEST: ') === 0) {
+    if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
-    } else if (name.indexOf('SKIP: ') === 0) {
+    } else if (name.indexOf('@skip ') === 0) {
       QUnit.skip(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf(packageTag) === 0) {
       QUnit.test(name.slice(packageTag.length), assert => context[name](assert));
