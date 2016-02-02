@@ -66,12 +66,19 @@ QUnit.test('meta.listeners inheritance', function(assert) {
   assert.equal(matching.length, 3);
 });
 
-QUnit.test('meta.listeners deduplication', function(assert) {
+QUnit.test('meta.listeners adding an existing listener throws an error', function(assert) {
   let t = {};
   let m = meta({});
   m.addToListeners('hello', t, 'm', 0);
-  m.addToListeners('hello', t, 'm', 0);
-  let matching = m.matchingListeners('hello');
-  assert.equal(matching.length, 3);
-  assert.equal(matching[0], t);
+  throws(() => {
+    m.addToListeners('hello', t, 'm', 0);
+  }, /Tried to add a duplicate listener for hello/);
+});
+
+QUnit.test('meta.listeners removing a non-existing listener throws an error', function(assert) {
+  let t = {};
+  let m = meta({});
+  throws(() => {
+    m.removeFromListeners('hello', t, 'm');
+  }, /Tried to remove a non-existant listener for hello/);
 });

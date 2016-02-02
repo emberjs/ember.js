@@ -1,6 +1,5 @@
-import {
-  meta as metaFor
-} from 'ember-metal/meta';
+import { assert } from 'ember-metal/debug';
+import { meta as metaFor } from 'ember-metal/meta';
 import { ChainNode } from 'ember-metal/chains';
 
 // get the chains for the current object. If the current object has
@@ -29,8 +28,13 @@ export function watchPath(obj, keyPath, meta) {
 }
 
 export function unwatchPath(obj, keyPath, meta) {
+  // can't unwatch length on Array - it is special...
+  if (keyPath === 'length' && Array.isArray(obj)) { return; }
+
   var m = meta || metaFor(obj);
   let counter = m.peekWatching(keyPath) || 0;
+
+  assert(`Tried to unwatch '${keyPath}' on object but no one was watching`, counter > 0);
 
   if (counter === 1) {
     m.writeWatching(keyPath, 0);

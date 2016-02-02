@@ -107,13 +107,8 @@ QUnit.test('observers switched on and off with setter in between (observed prope
   var yetAnotherBeer = new Beer();
   addObserver(yetAnotherBeer, 'type', K);
   set(yetAnotherBeer, 'type', 'ale');
-  removeObserver(beer, 'type', K);
+  removeObserver(yetAnotherBeer, 'type', K);
   deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeOjbserver');
-
-  var itsMyLastBeer = new Beer();
-  set(itsMyLastBeer, 'type', 'ale');
-  removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
 });
 
 QUnit.test('observers switched on and off with setter in between (observed property is shadowing one on the prototype)', function () {
@@ -132,13 +127,8 @@ QUnit.test('observers switched on and off with setter in between (observed prope
   var yetAnotherBeer = new Beer();
   addObserver(yetAnotherBeer, 'type', K);
   set(yetAnotherBeer, 'type', 'ale');
-  removeObserver(beer, 'type', K);
+  removeObserver(yetAnotherBeer, 'type', K);
   deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
-
-  var itsMyLastBeer = new Beer();
-  set(itsMyLastBeer, 'type', 'ale');
-  removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
 });
 
 QUnit.test('observers switched on and off with setter in between', function () {

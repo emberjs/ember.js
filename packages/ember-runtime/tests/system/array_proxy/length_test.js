@@ -4,7 +4,7 @@ import { observer } from 'ember-metal/mixin';
 import { computed } from 'ember-metal/computed';
 import { A as a } from 'ember-runtime/system/native_array';
 
-QUnit.module('Ember.ArrayProxy - content change (length)');
+QUnit.module('ArrayProxy - content change (length)');
 
 QUnit.test('array proxy + aliasedProperty complex test', function() {
   var aCalled, bCalled, cCalled, dCalled, eCalled;
