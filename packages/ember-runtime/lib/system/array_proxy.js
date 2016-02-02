@@ -23,6 +23,11 @@ import alias from 'ember-metal/alias';
 var OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 var EMPTY = [];
 
+const ARRANGED_CONTENT_ARRAY_OBSERVER_EVENTS = {
+  willChange: 'arrangedContentArrayWillChange',
+  didChange: 'arrangedContentArrayDidChange'
+};
+
 function K() { return this; }
 
 /**
@@ -192,7 +197,10 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     this._prevContent = content;
 
     if (content) {
-      assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof content}`, isArray(content) || content.isDestroyed);
+      assert(
+        `ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof content}`,
+        isArray(content) || content.isDestroyed
+      );
 
       content.addArrayObserver(this, {
         willChange: 'contentArrayWillChange',
@@ -202,41 +210,34 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   _arrangedContentDidChange: observer('arrangedContent', function() {
-    this._teardownArrangedContent(this._prevArrangedContent);
-    var arrangedContent = get(this, 'arrangedContent');
+    let arrangedContent = get(this, 'arrangedContent');
+
+    this._updateArrangedContent(arrangedContent);
+
     var len = arrangedContent ? get(arrangedContent, 'length') : 0;
-
-    assert('Can\'t set ArrayProxy\'s content to itself', arrangedContent !== this);
-
-    this._setupArrangedContent();
-
     this.arrangedContentDidChange(this);
     this.arrangedContentArrayDidChange(this, 0, undefined, len);
   }),
 
-  _setupArrangedContent() {
-    var arrangedContent = get(this, 'arrangedContent');
-    this._prevArrangedContent = arrangedContent;
+  _updateArrangedContent(newArrangedContent) {
+    let observedArrangedContent = this._observedArrangedContent;
+    if (observedArrangedContent !== newArrangedContent) {
+      if (observedArrangedContent) {
+        observedArrangedContent.removeArrayObserver(this, ARRANGED_CONTENT_ARRAY_OBSERVER_EVENTS);
+      }
 
-    if (arrangedContent) {
-      assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof arrangedContent}`,
-        isArray(arrangedContent) || arrangedContent.isDestroyed);
+      if (newArrangedContent) {
+        assert(`Can't set ArrayProxy's content to itself`, newArrangedContent !== this);
 
-      arrangedContent.addArrayObserver(this, {
-        willChange: 'arrangedContentArrayWillChange',
-        didChange: 'arrangedContentArrayDidChange'
-      });
-    }
-  },
+        assert(
+          `ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof newArrangedContent}`,
+          isArray(newArrangedContent) || newArrangedContent.isDestroyed
+        );
 
-  _teardownArrangedContent() {
-    var arrangedContent = get(this, 'arrangedContent');
+        newArrangedContent.addArrayObserver(this, ARRANGED_CONTENT_ARRAY_OBSERVER_EVENTS);
+      }
 
-    if (arrangedContent) {
-      arrangedContent.removeArrayObserver(this, {
-        willChange: 'arrangedContentArrayWillChange',
-        didChange: 'arrangedContentArrayDidChange'
-      });
+      this._observedArrangedContent = newArrangedContent;
     }
   },
 
@@ -369,14 +370,19 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   init() {
+    this.__each = undefined;
     this._didInitArrayProxy = true;
+    this._content = undefined;
+    this._prevContent = undefined;
+    this._observedArrangedContent = undefined;
     this._super(...arguments);
     this._setupContent();
-    this._setupArrangedContent();
+
+    this._updateArrangedContent(get(this, 'arrangedContent'));
   },
 
   willDestroy() {
-    this._teardownArrangedContent();
+    this._updateArrangedContent(undefined);
     this._teardownContent(this.get('content'));
   }
 });
