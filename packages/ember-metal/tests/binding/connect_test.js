@@ -90,7 +90,7 @@ testBoth('Connecting a binding to path', function(get, set) {
   equal(get(a, 'foo'), 'BIFF', 'a should have changed');
 });
 
-testBoth('Calling connect more than once', function(get, set) {
+testBoth('Calling connect more than once throws an error', function(get, set) {
   var b = { bar: 'BAR' };
   var a = { foo: 'FOO', b: b };
 
@@ -100,7 +100,9 @@ testBoth('Calling connect more than once', function(get, set) {
   performTest(binding, a, b, get, set, function () {
     binding.connect(a);
 
-    binding.connect(a);
+    throws(() => {
+      binding.connect(a);
+    }, /Tried to add.*b.bar/);
   });
 });
 

@@ -56,15 +56,15 @@ QUnit.test('listeners should be inherited', function() {
 });
 
 
-QUnit.test('adding a listener more than once should only invoke once', function() {
+QUnit.test('adding a listener more than once throws an error', function() {
   var obj = {};
   var count = 0;
   var F = function() { count++; };
   addListener(obj, 'event!', F);
-  addListener(obj, 'event!', F);
 
-  sendEvent(obj, 'event!');
-  equal(count, 1, 'should only invoke once');
+  throws(function() {
+    addListener(obj, 'event!', F);
+  }, /Tried to add a duplicate listener for event!/);
 });
 
 QUnit.test('adding a listener with a target should invoke with target', function() {
@@ -196,7 +196,9 @@ QUnit.test('while suspended, it should not be possible to add a duplicate listen
   addListener(obj, 'event!', target, target.method);
 
   function callback() {
-    addListener(obj, 'event!', target, target.method);
+    throws(function() {
+      addListener(obj, 'event!', target, target.method);
+    }, /Tried to add a duplicate listener for event!/);
   }
 
   sendEvent(obj, 'event!');
