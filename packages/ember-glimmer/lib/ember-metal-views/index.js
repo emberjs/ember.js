@@ -8,11 +8,31 @@ export class Renderer {
     let env = this._env;
 
     env.begin();
-    view.template.render({ view }, env, { appendTo: target });
+    let result = view.template.render(view, env, { appendTo: target });
     env.commit();
+
+    // FIXME: Store this somewhere else
+    view['_renderResult'] = result;
+
+    // FIXME: This should happen inside `env.commit()`
+    view._transitionTo('inDOM');
+  }
+
+  rerender(view) {
+    view['_renderResult'].rerender();
+  }
+
+  remove(view) {
+    view._transitionTo('destroying');
+    view.destroy();
   }
 
   componentInitAttrs() {
     // TODO: Remove me
+  }
+
+  ensureViewNotRendering() {
+    // TODO: Implement this
+    // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
   }
 }
