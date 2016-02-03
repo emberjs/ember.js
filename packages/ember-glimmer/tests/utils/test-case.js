@@ -2,17 +2,20 @@ import packageName from './package-name';
 import Environment from './environment';
 import { compile, DOMHelper, Renderer } from './helpers';
 import { equalTokens } from 'glimmer-test-helpers';
+import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
 const packageTag = `@${packageName} `;
 
 export function moduleFor(description, TestClass) {
   let context;
 
-  QUnit.module(description, {
+  QUnit.module(`[${packageName}] ${description}`, {
     setup() {
       context = new TestClass();
     },
@@ -37,9 +40,22 @@ let assert = QUnit.assert;
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
+const Comment = window.Comment;
 
 export class TestCase {
   teardown() {}
+}
+
+function isMarker(node) {
+  if (node instanceof Comment && node.textContent === '') {
+    return true;
+  }
+
+  if (node instanceof TextNode && node.textContent === '') {
+    return true;
+  }
+
+  return false;
 }
 
 export class RenderingTest extends TestCase {
@@ -50,6 +66,7 @@ export class RenderingTest extends TestCase {
     this.renderer = new Renderer(dom, { destinedForDOM: true, env });
     this.component = null;
     this.element = jQuery('#qunit-fixture')[0];
+    this.owner = buildOwner();
   }
 
   teardown() {
@@ -63,13 +80,21 @@ export class RenderingTest extends TestCase {
   }
 
   get firstChild() {
-    return this.element.firstChild;
+    let node = this.element.firstChild;
+
+    while (node && isMarker(node)) {
+      node = node.nextSibling;
+    }
+
+    return node;
   }
 
   render(templateStr, context = {}) {
-    let { env, renderer } = this;
+    let { env, renderer, owner } = this;
 
     let attrs = assign({}, context, {
+      tagName: '',
+      [OWNER]: owner,
       renderer,
       template: compile(templateStr, { env })
     });
@@ -81,6 +106,18 @@ export class RenderingTest extends TestCase {
 
   rerender() {
     this.component.rerender();
+  }
+
+  // The callback represents user code called by the browser, known as a "zone". It is
+  // equivalent to the concept of an Ember "run loop".
+  //
+  // For (a lot) more information, see the TC39 proposal:
+  // https://docs.google.com/presentation/d/1H3E2ToJ8VHgZS8eS6bRv-vg5OksObj5wv6gyzJJwOK0
+  inZone(callback) {
+    run(() => {
+      callback();
+      this.component.rerender();
+    });
   }
 
   assertText(text) {
@@ -96,7 +133,7 @@ export class RenderingTest extends TestCase {
       throw new Error(`Expecting a text node, but got ${node}`);
     }
 
-    assert.strictEqual(text, node.textContent, 'node.textContent');
+    assert.strictEqual(node.textContent, text, 'node.textContent');
   }
 
   assertElement(node, { ElementType = HTMLElement, tagName }) {
@@ -104,7 +141,7 @@ export class RenderingTest extends TestCase {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
 
-    assert.strictEqual(tagName.toUpperCase(), node.tagName, 'node.tagName');
+    assert.strictEqual(node.tagName, tagName.toUpperCase(), 'node.tagName');
   }
 
   assertSameNode(node1, node2) {
