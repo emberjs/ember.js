@@ -16,6 +16,7 @@ import TransformEachIntoCollection from 'ember-template-compiler/plugins/transfo
 import TransformUnescapedInlineLinkTo from 'ember-template-compiler/plugins/transform-unescaped-inline-link-to';
 import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-helper';
+import AssertNoEachIn from 'ember-template-compiler/plugins/assert-no-each-in';
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import 'ember-template-compiler/compat';
@@ -29,6 +30,7 @@ registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
 registerPlugin('ast', TransformTopLevelComponents);
 registerPlugin('ast', TransformUnescapedInlineLinkTo);
+registerPlugin('ast', AssertNoEachIn);
 
 if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerPlugin('ast', TransformEachIntoCollection);
