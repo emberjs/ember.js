@@ -303,7 +303,8 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _doURLTransition(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
-    return didBeginTransition(transition, this);
+    didBeginTransition(transition, this);
+    return transition;
   },
 
   transitionTo(...args) {
