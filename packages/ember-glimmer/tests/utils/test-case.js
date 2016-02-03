@@ -113,7 +113,7 @@ export class RenderingTest extends TestCase {
       throw new Error(`Expecting a text node, but got ${node}`);
     }
 
-    assert.strictEqual(text, node.textContent, 'node.textContent');
+    assert.strictEqual(node.textContent, text, 'node.textContent');
   }
 
   assertElement(node, { ElementType = HTMLElement, tagName }) {
@@ -121,7 +121,7 @@ export class RenderingTest extends TestCase {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
 
-    assert.strictEqual(tagName.toUpperCase(), node.tagName, 'node.tagName');
+    assert.strictEqual(node.tagName, tagName.toUpperCase(), 'node.tagName');
   }
 
   assertSameNode(node1, node2) {
