@@ -8,17 +8,13 @@
   "isShellCommand": true,
 
   // Show the output window only if unrecognized errors occur.
-  "showOutput": "always",
+  "showOutput": "silent",
 
   "args": ["run-script", "-s"],
 
   "tasks": [{
-    "taskName": "tsc",
+    "taskName": "vscode-build",
     "isBuildCommand": true,
-    "showOutput": "silent",
-    "problemMatcher": "$tsc"
-  }, {
-    "taskName": "tslint",
     "problemMatcher": "$tsc"
   }]
 }
