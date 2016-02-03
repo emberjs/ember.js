@@ -53,6 +53,11 @@ export function isWatching(obj, key) {
   return (meta && meta.peekWatching(key)) > 0;
 }
 
+export function watcherCount(obj, key) {
+  var meta = peekMeta(obj);
+  return (meta && meta.peekWatching(key)) || 0;
+}
+
 watch.flushPending = flushPendingChains;
 
 export function unwatch(obj, _keyPath, m) {
