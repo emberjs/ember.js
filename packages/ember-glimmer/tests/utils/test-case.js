@@ -2,6 +2,7 @@ import packageName from './package-name';
 import Environment from './environment';
 import { compile, DOMHelper, Renderer } from './helpers';
 import { equalTokens } from 'glimmer-test-helpers';
+import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
@@ -81,6 +82,18 @@ export class RenderingTest extends TestCase {
 
   rerender() {
     this.component.rerender();
+  }
+
+  // The callback represents user code called by the browser, known as a "zone". It is
+  // equivalent to the concept of an Ember "run loop".
+  //
+  // For (a lot) more information, see the TC39 proposal:
+  // https://docs.google.com/presentation/d/1H3E2ToJ8VHgZS8eS6bRv-vg5OksObj5wv6gyzJJwOK0
+  inZone(callback) {
+    run(() => {
+      callback();
+      this.component.rerender();
+    });
   }
 
   assertText(text) {
