@@ -40,9 +40,22 @@ let assert = QUnit.assert;
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
+const Comment = window.Comment;
 
 export class TestCase {
   teardown() {}
+}
+
+function isMarker(node) {
+  if (node instanceof Comment && node.textContent === '') {
+    return true;
+  }
+
+  if (node instanceof TextNode && node.textContent === '') {
+    return true;
+  }
+
+  return false;
 }
 
 export class RenderingTest extends TestCase {
@@ -67,13 +80,20 @@ export class RenderingTest extends TestCase {
   }
 
   get firstChild() {
-    return this.element.firstChild;
+    let node = this.element.firstChild;
+
+    while (node && isMarker(node)) {
+      node = node.nextSibling;
+    }
+
+    return node;
   }
 
   render(templateStr, context = {}) {
     let { env, renderer, owner } = this;
 
     let attrs = assign({}, context, {
+      tagName: '',
       [OWNER]: owner,
       renderer,
       template: compile(templateStr, { env })
