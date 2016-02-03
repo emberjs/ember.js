@@ -7,6 +7,8 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
+import { OWNER } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
 
 const packageTag = `@${packageName} `;
 
@@ -51,6 +53,7 @@ export class RenderingTest extends TestCase {
     this.renderer = new Renderer(dom, { destinedForDOM: true, env });
     this.component = null;
     this.element = jQuery('#qunit-fixture')[0];
+    this.owner = buildOwner();
   }
 
   teardown() {
@@ -68,9 +71,10 @@ export class RenderingTest extends TestCase {
   }
 
   render(templateStr, context = {}) {
-    let { env, renderer } = this;
+    let { env, renderer, owner } = this;
 
     let attrs = assign({}, context, {
+      [OWNER]: owner,
       renderer,
       template: compile(templateStr, { env })
     });
