@@ -1,3 +1,5 @@
+import { RootReference } from '../environment';
+
 export class Renderer {
   constructor(domHelper, { destinedForDOM, env } = {}) {
     this._dom = domHelper;
@@ -6,9 +8,10 @@ export class Renderer {
 
   appendTo(view, target) {
     let env = this._env;
+    let self = new RootReference(view);
 
     env.begin();
-    let result = view.template.render(view, env, { appendTo: target });
+    let result = view.template.render(self, env, { appendTo: target });
     env.commit();
 
     // FIXME: Store this somewhere else

@@ -1,5 +1,7 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { set } from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
+import EmberObject from 'ember-runtime/system/object';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
@@ -77,6 +79,65 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
 
     this.rerender();
     let text4 = this.assertTextNode(this.firstChild, 'hello');
+
+    this.assertSameNode(text1, text4);
+  }
+
+  ['@test it can render a dynamic text node with deeply nested paths']() {
+    this.render('{{a.b.c.d.e.f}}', {
+      a: { b: { c: { d: { e: { f: 'hello' } } } } }
+    });
+    let text1 = this.assertTextNode(this.firstChild, 'hello');
+
+    this.rerender();
+    let text2 = this.assertTextNode(this.firstChild, 'hello');
+
+    this.assertSameNode(text1, text2);
+
+    set(this.context, 'a.b.c.d.e.f', 'goodbye');
+
+    this.rerender();
+    let text3 = this.assertTextNode(this.firstChild, 'goodbye');
+
+    this.assertSameNode(text1, text3);
+
+    set(this.context, 'a.b.c.d.e.f', 'hello');
+
+    this.rerender();
+    let text4 = this.assertTextNode(this.firstChild, 'hello');
+
+    this.assertSameNode(text1, text4);
+  }
+
+  ['@test it can render a dynamic text node where the value is a computed property']() {
+    let Formatter = EmberObject.extend({
+      formattedMessage: computed('message', function() {
+        return this.get('message').toUpperCase();
+      })
+    });
+
+    let m = Formatter.create({ message: 'hello' });
+
+    this.render('{{m.formattedMessage}}', { m });
+
+    let text1 = this.assertTextNode(this.firstChild, 'HELLO');
+
+    this.rerender();
+    let text2 = this.assertTextNode(this.firstChild, 'HELLO');
+
+    this.assertSameNode(text1, text2);
+
+    set(m, 'message', 'goodbye');
+
+    this.rerender();
+    let text3 = this.assertTextNode(this.firstChild, 'GOODBYE');
+
+    this.assertSameNode(text1, text3);
+
+    set(m, 'message', 'hello');
+
+    this.rerender();
+    let text4 = this.assertTextNode(this.firstChild, 'HELLO');
 
     this.assertSameNode(text1, text4);
   }
