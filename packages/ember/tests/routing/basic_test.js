@@ -968,7 +968,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
 
   var menuItem;
 
-  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
