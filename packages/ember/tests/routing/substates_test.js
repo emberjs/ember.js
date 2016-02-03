@@ -1029,3 +1029,20 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
+
+QUnit.test('transitionTo returns the transition', function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route('child');
+  });
+
+  App.IndexRoute = Route.extend({
+    beforeModel: function() {
+      let transition = this.transitionTo('child');
+      equal(transition.targetName, 'child');
+    }
+  });
+
+  bootApplication('/');
+});
