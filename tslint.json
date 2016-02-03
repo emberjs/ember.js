@@ -6,7 +6,6 @@
     "indent": [true, "spaces"],
     "label-position": true,
     "label-undefined": true,
-    "max-line-length": [ true, 150 ],
     "no-consecutive-blank-lines": true,
     "no-construct": true,
     "no-debugger": true,
@@ -19,7 +18,6 @@
     "semicolon": true,
     "triple-equals": true,
     "class-name": true,
-    "comment-format": { "check-space": true },
     "no-require-imports": true
   }
 }
