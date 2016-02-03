@@ -15,7 +15,7 @@ const packageTag = `@${packageName} `;
 export function moduleFor(description, TestClass) {
   let context;
 
-  QUnit.module(description, {
+  QUnit.module(`[${packageName}] ${description}`, {
     setup() {
       context = new TestClass();
     },
