@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 
 moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
-  ['@test htmlbars it concats static arguments']() {
+  ['@test it concats static arguments']() {
     this.render(`{{concat "foo" " " "bar" " " "baz"}}`);
     this.assertText('foo bar baz');
   }
@@ -13,6 +13,10 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
       first: 'one',
       second: 'two'
     });
+
+    this.assertText('onetwo');
+
+    this.inZone(() => this.rerender());
 
     this.assertText('onetwo');
 
@@ -35,6 +39,10 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
     this.assertText('onetwothreefour');
 
+    this.inZone(() => this.rerender());
+
+    this.assertText('onetwothreefour');
+
     this.inZone(() => {
       set(this.context, 'first', 'five');
       set(this.context, 'third', 'six');
@@ -50,6 +58,10 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
       first: 'one',
       second: 'two'
     });
+
+    this.assertText('Truthy!');
+
+    this.inZone(() => this.rerender());
 
     this.assertText('Truthy!');
 
