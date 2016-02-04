@@ -18,8 +18,10 @@ import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import isEnabled from 'ember-metal/features';
 
 var App;
+var instance;
 var originalAdapter = Test.adapter;
 var originalViewKeyword;
 
@@ -36,6 +38,11 @@ function cleanup() {
 
   // Other cleanup
 
+  if (instance) {
+    run(instance, 'destroy');
+    instance = null;
+  }
+
   if (App) {
     run(App, App.destroy);
     App.removeTestHelpers();
@@ -50,10 +57,12 @@ function assertHelpers(application, helperContainer, expected) {
   if (expected === undefined) { expected = true; }
 
   function checkHelperPresent(helper, expected) {
-    var presentInHelperContainer = !!helperContainer[helper];
-    var presentInTestHelpers = !!application.testHelpers[helper];
+    if (!application.isApplicationInstance) {
+      var presentInHelperContainer = !!helperContainer[helper];
+      ok(presentInHelperContainer === expected, 'Expected \'' + helper + '\' to be present in the helper container (defaults to window).');
+    }
 
-    ok(presentInHelperContainer === expected, 'Expected \'' + helper + '\' to be present in the helper container (defaults to window).');
+    var presentInTestHelpers = !!(application.testHelpers && application.testHelpers[helper]);
     ok(presentInTestHelpers === expected, 'Expected \'' + helper + '\' to be present in App.testHelpers.');
   }
 
@@ -116,6 +125,48 @@ QUnit.test('Ember.Application#injectTestHelpers/#removeTestHelpers', function() 
   equal(Ember.Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
 });
 
+if (isEnabled('ember-testing-instances')) {
+  QUnit.test('Ember.ApplicationInstance#injectTestHelpers/#removeTestHelpers', function() {
+    App = run(EmberApplication, EmberApplication.create);
+    instance = run(App, 'buildInstance');
+    assertNoHelpers(instance);
+    assertNoHelpers(App);
+
+    registerHelper();
+
+    instance.injectTestHelpers();
+    assertHelpers(instance);
+    assertNoHelpers(App);
+    ok(instance.testHelpers.LeakyMcLeakLeak, 'helper in question SHOULD be present');
+
+    instance.removeTestHelpers();
+    assertNoHelpers(instance);
+    ok(!instance.LeakyMcLeakLeak, 'helper in question SHOULD NOT be present');
+  });
+
+  QUnit.test('Ember.Application#buildTestInstance', function() {
+    var MyApplication = EmberApplication.extend();
+
+    run(function() {
+      App = MyApplication.create({ autoboot: false });
+      App.Router = EmberRouter.extend();
+    });
+
+    registerHelper();
+
+    // Should register helpers on build
+    instance = run(App, 'buildTestInstance');
+    assertHelpers(instance);
+    ok(instance.testHelpers.LeakyMcLeakLeak, 'helper in question SHOULD be present');
+
+    // Should remove helpers on destroy
+    run(instance, 'destroy');
+    assertNoHelpers(instance);
+    ok(!instance.testHelpers, 'helpers SHOULD NOT be present');
+
+    instance = null;
+  });
+}
 
 QUnit.test('Ember.Application#setupForTesting', function() {
   run(function() {
@@ -221,6 +272,27 @@ QUnit.test('Ember.Application#injectTestHelpers calls callbacks registered with 
 
   equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
 });
+
+if (isEnabled('ember-testing-instances')) {
+  QUnit.test('Ember.ApplicationInstance#injectTestHelpers calls callbacks registered with onInjectHelpers', function() {
+    var injected = 0;
+
+    Test.onInjectHelpers(function() {
+      injected++;
+    });
+
+    run(function() {
+      App = EmberApplication.create();
+      instance = App.buildInstance();
+    });
+
+    equal(injected, 0, 'onInjectHelpers are not called before injectTestHelpers');
+
+    instance.injectTestHelpers();
+
+    equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
+  });
+}
 
 QUnit.test('Ember.Application#injectTestHelpers adds helpers to provided object.', function() {
   var helpers = {};
@@ -758,6 +830,59 @@ QUnit.test('currentRouteName for \'/posts/new\'', function() {
     equal(App.testHelpers.currentURL(), '/posts/new', 'should equal \'/posts/new\'.');
   });
 });
+
+if (isEnabled('ember-testing-instances')) {
+  QUnit.module('ember-testing routing helpers - instance', {
+    setup() {
+      run(function() {
+        App = EmberApplication.create({ autoboot: false });
+
+        App.Router = EmberRouter.extend();
+        App.Router.map(function() {
+          this.route('posts', { resetNamespace: true }, function() {
+            this.route('new');
+          });
+        });
+
+        instance = App.buildTestInstance();
+      });
+    },
+
+    teardown() {
+      cleanup();
+    }
+  });
+
+  QUnit.test('currentRouteName for \'/\'', function() {
+    expect(3);
+
+    instance.testHelpers.visit('/').then(function() {
+      equal(instance.testHelpers.currentRouteName(), 'index', 'should equal \'index\'.');
+      equal(instance.testHelpers.currentPath(), 'index', 'should equal \'index\'.');
+      equal(instance.testHelpers.currentURL(), '/', 'should equal \'/\'.');
+    });
+  });
+
+  QUnit.test('currentRouteName for \'/posts\'', function() {
+    expect(3);
+
+    instance.testHelpers.visit('/posts').then(function() {
+      equal(instance.testHelpers.currentRouteName(), 'posts.index', 'should equal \'posts.index\'.');
+      equal(instance.testHelpers.currentPath(), 'posts.index', 'should equal \'posts.index\'.');
+      equal(instance.testHelpers.currentURL(), '/posts', 'should equal \'/posts\'.');
+    });
+  });
+
+  QUnit.test('currentRouteName for \'/posts/new\'', function() {
+    expect(3);
+
+    instance.testHelpers.visit('/posts/new').then(function() {
+      equal(instance.testHelpers.currentRouteName(), 'posts.new', 'should equal \'posts.new\'.');
+      equal(instance.testHelpers.currentPath(), 'posts.new', 'should equal \'posts.new\'.');
+      equal(instance.testHelpers.currentURL(), '/posts/new', 'should equal \'/posts/new\'.');
+    });
+  });
+}
 
 QUnit.module('ember-testing pendingAjaxRequests', {
   setup() {

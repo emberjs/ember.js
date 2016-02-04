@@ -18,6 +18,33 @@ for a detailed explanation.
   serially and call `reset()` each time), as well as being critical to
   for FastBoot.
 
+* `ember-testing-instances`
+
+  Adds support for using ApplicationInstances in test helpers. Specifically,
+  adds `Application#buildTestInstance` to create an instance and bind test
+  helpers to it.
+
+  Example:
+
+  ```javascript
+  var app = Ember.Application.create({ autoboot: false });
+
+  // ...
+
+  beforeEach() {
+    this.instance = app.buildTestInstance();
+  }
+
+  // ...
+
+  test('some test', function() {
+    this.instance.testHelpers.visit('/url');
+    this.instance.testHelpers.andThen(() => {
+      // some assertion
+    });
+  });
+  ```
+
 * `ember-htmlbars-component-generation`
 
   Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
