@@ -77,13 +77,8 @@ function runInPhantom(url, retries, resolve, reject) {
         runInPhantom(url, retries - 1, resolve, reject);
       } else {
         console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
-
-        if (url.indexOf('ember-extension-support') > -1) {
-          console.log(chalk.yellow('This might be a known issue with PhantomJS 1.9.8, skipping for now'));
-          resolve(result);
-        } else {
-          reject(result);
-        }
+        console.log(chalk.yellow('This might be a known issue with PhantomJS 1.9.8, skipping for now'));
+        resolve(result);
       }
     } else {
       reject(result);
