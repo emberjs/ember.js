@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 
 moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
-  ['@test htmlbars it concats static arguments']() {
+  ['@test it concats static arguments']() {
     this.render(`{{concat "foo" " " "bar" " " "baz"}}`);
     this.assertText('foo bar baz');
   }
