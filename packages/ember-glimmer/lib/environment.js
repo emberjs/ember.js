@@ -46,13 +46,24 @@ class PropertyReference {
   }
 }
 
+import { default as concat } from './helpers/concat';
+
+const helpers = {
+  concat
+};
+
+
 export default class extends Environment {
   hasComponentDefinition() {
     return false;
   }
 
-  hasHelper() {
-    return false;
+  hasHelper(name) {
+    return typeof helpers[name[0]] === 'function';
+  }
+
+  lookupHelper(name) {
+    return helpers[name[0]];
   }
 
   rootReferenceFor(value) {

@@ -1,6 +1,6 @@
 import packageName from './package-name';
 import Environment from './environment';
-import { compile, DOMHelper, Renderer } from './helpers';
+import { compile, helper, DOMHelper, Renderer } from './helpers';
 import { equalTokens } from 'glimmer-test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -66,12 +66,14 @@ export class RenderingTest extends TestCase {
     this.renderer = new Renderer(dom, { destinedForDOM: true, env });
     this.component = null;
     this.element = jQuery('#qunit-fixture')[0];
-    this.owner = buildOwner();
+    let owner = this.owner = buildOwner();
+    owner.registerOptionsForType('helper', { instantiate: false });
   }
 
   teardown() {
     if (this.component) {
       runDestroy(this.component);
+      runDestroy(this.owner);
     }
   }
 
@@ -118,6 +120,10 @@ export class RenderingTest extends TestCase {
       callback();
       this.component.rerender();
     });
+  }
+
+  registerHelper(name, func) {
+    this.owner.register(`helper:${name}`, helper(func));
   }
 
   assertText(text) {
