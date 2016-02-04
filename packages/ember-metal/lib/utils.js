@@ -324,6 +324,7 @@ function _wrap(func, superFunc) {
 
   superWrapper.wrappedFunction = func;
   superWrapper.__ember_observes__ = func.__ember_observes__;
+  superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
   superWrapper.__ember_listens__ = func.__ember_listens__;
 
   return superWrapper;
