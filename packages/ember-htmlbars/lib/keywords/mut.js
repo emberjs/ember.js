@@ -62,7 +62,7 @@ let MutStream = ProxyStream.extend({
   ```javascript
   // my-child.js
   export default Component.extend({
-    click: function() {
+    click() {
       this.attrs.childClickCount.update(this.attrs.childClickCount.value + 1);
     }
   });

@@ -31,7 +31,7 @@ export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must pro
   @param {String} message A warning to display.
   @param {Boolean} test An optional boolean. If falsy, the warning
     will be displayed.
-  @param {Object} options An ojbect that can be used to pass a unique
+  @param {Object} options An object that can be used to pass a unique
     `id` for this warning.  The `id` can be used by Ember debugging tools
     to change the behavior (raise, log, or silence) for that specific warning.
     The `id` should be namespaced by dots, e.g. "ember-debug.feature-flag-with-features-stripped"

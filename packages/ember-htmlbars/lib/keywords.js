@@ -21,7 +21,7 @@ var keywords = Object.create(hooks.keywords);
   @method _registerHelper
   @for Ember.HTMLBars
   @param {String} name
-  @param {Object|Function} keyword the keyword to add
+  @param {Object|Function} keyword The keyword to add.
 */
 export function registerKeyword(name, keyword) {
   keywords[name] = keyword;

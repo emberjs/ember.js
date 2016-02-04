@@ -76,6 +76,6 @@ function AliasedProperty_oneWaySet(obj, keyName, value) {
   return set(obj, keyName, value);
 }
 
-// Backwards compatibility with Ember Data
+// Backwards compatibility with Ember Data.
 AliasedProperty.prototype._meta = undefined;
 AliasedProperty.prototype.meta = ComputedProperty.prototype.meta;

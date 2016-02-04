@@ -2,13 +2,13 @@ import { assert } from 'ember-metal/debug';
 import BasicStream, { Stream } from './stream';
 
 /*
- Check whether an object is a stream or not
+ Check whether an object is a stream or not.
 
  @private
  @for Ember.stream
  @function isStream
- @param {Object|Stream} object object to check whether it is a stream
- @return {Boolean} `true` if the object is a stream, `false` otherwise
+ @param {Object|Stream} object Object to check whether it is a stream.
+ @return {Boolean} `true` if the object is a stream, `false` otherwise.
 */
 export function isStream(object) {
   return object && object.isStream;
@@ -21,10 +21,10 @@ export function isStream(object) {
  @public
  @for Ember.stream
  @function subscribe
- @param {Object|Stream} object object or stream to potentially subscribe to
- @param {Function} callback function to run when stream value changes
+ @param {Object|Stream} object Object or stream to potentially subscribe to.
+ @param {Function} callback Function to run when stream value changes.
  @param {Object} [context] the callback will be executed with this context if it
-                           is provided
+                           is provided.
  */
 export function subscribe(object, callback, context) {
   if (object && object.isStream) {
@@ -39,9 +39,9 @@ export function subscribe(object, callback, context) {
  @private
  @for Ember.stream
  @function unsubscribe
- @param {Object|Stream} object object or stream to potentially unsubscribe from
- @param {Function} callback function originally passed to `subscribe()`
- @param {Object} [context] object originally passed to `subscribe()`
+ @param {Object|Stream} object Object or stream to potentially unsubscribe from.
+ @param {Function} callback Function originally passed to `subscribe()`.
+ @param {Object} [context] Object originally passed to `subscribe()`.
  */
 export function unsubscribe(object, callback, context) {
   if (object && object.isStream) {
@@ -50,14 +50,14 @@ export function unsubscribe(object, callback, context) {
 }
 
 /*
- Retrieve the value of a stream, or in the case a non-stream object is passed,
+ Retrieve the value of a stream, or in the case where a non-stream object is passed,
  return the object itself.
 
  @private
  @for Ember.stream
  @function read
- @param {Object|Stream} object object to return the value of
- @return the stream's current value, or the non-stream object itself
+ @param {Object|Stream} object Object to return the value of.
+ @return The stream's current value, or the non-stream object itself.
  */
 export function read(object) {
   if (object && object.isStream) {
@@ -74,7 +74,7 @@ export function read(object) {
  @for Ember.stream
  @function readArray
  @param {Array} array The array to read values from
- @return {Array} a new array of the same length with the values of non-stream
+ @return {Array} A new array of the same length with the values of non-stream
                  objects mapped from their original positions untouched, and
                  the values of stream objects retaining their original position
                  and replaced with the stream's current value.
@@ -95,8 +95,8 @@ export function readArray(array) {
  @private
  @for Ember.stream
  @function readHash
- @param {Object} object The hash to read keys and values from
- @return {Object} a new object with the same keys as the passed object. The
+ @param {Object} object The hash to read keys and values from.
+ @return {Object} A new object with the same keys as the passed object. The
                   property values in the new object are the original values in
                   the case of non-stream objects, and the streams' current
                   values in the case of stream objects.
@@ -110,14 +110,14 @@ export function readHash(object) {
 }
 
 /*
- Check whether an array contains any stream values
+ Check whether an array contains any stream values.
 
  @private
  @for Ember.stream
  @function scanArray
- @param {Array} array array given to a handlebars helper
+ @param {Array} array Array given to a handlebars helper.
  @return {Boolean} `true` if the array contains a stream/bound value, `false`
-                   otherwise
+                   otherwise.
 */
 export function scanArray(array) {
   var length = array.length;
@@ -134,14 +134,14 @@ export function scanArray(array) {
 }
 
 /*
- Check whether a hash has any stream property values
+ Check whether a hash has any stream property values.
 
  @private
  @for Ember.stream
  @function scanHash
- @param {Object} hash "hash" argument given to a handlebars helper
+ @param {Object} hash "hash" argument given to a handlebars helper.
  @return {Boolean} `true` if the object contains a stream/bound value, `false`
-                   otherwise
+                   otherwise.
  */
 export function scanHash(hash) {
   var containsStream = false;
@@ -161,8 +161,8 @@ let ConcatStream = BasicStream.extend({
     this.array = array;
     this.separator = separator;
 
-    // used by angle bracket components to detect an attribute was provided
-    // as a string literal
+    // Used by angle bracket components to detect an attribute was provided
+    // as a string literal.
     this.isConcat = true;
   },
 
@@ -177,17 +177,17 @@ let ConcatStream = BasicStream.extend({
 });
 
 /*
- Join an array, with any streams replaced by their current values
+ Join an array, with any streams replaced by their current values.
 
  @private
  @for Ember.stream
  @function concat
  @param {Array} array An array containing zero or more stream objects and
-                      zero or more non-stream objects
- @param {String} separator string to be used to join array elements
+                      zero or more non-stream objects.
+ @param {String} separator String to be used to join array elements.
  @return {String} String with array elements concatenated and joined by the
                   provided separator, and any stream array members having been
-                  replaced by the current value of the stream
+                  replaced by the current value of the stream.
  */
 export function concat(array, separator) {
   // TODO: Create subclass ConcatStream < Stream. Defer
@@ -322,9 +322,9 @@ export function zipHash(object, callback, label) {
  @private
  @for Ember.stream
  @function chain
- @param {Object|Stream} value A stream or non-stream object
- @param {Function} fn function to be run when the stream value changes, or to
-                      be run once in the case of a non-stream object
+ @param {Object|Stream} value A stream or non-stream object.
+ @param {Function} fn Function to be run when the stream value changes, or to
+                      be run once in the case of a non-stream object.
  @return {Object|Stream} In the case of a stream `value` parameter, a new
                          stream that will be updated with the return value of
                          the provided function `fn`. In the case of a

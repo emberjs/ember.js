@@ -22,7 +22,6 @@ export default function appendTemplatedView(parentView, morph, viewClassOrInstan
 
   // We only want to override the `_context` computed property if there is
   // no specified controller. See View#_context for more information.
-
   var noControllerInProto = !viewProto.controller;
   if (viewProto.controller && viewProto.controller.isDescriptor) { noControllerInProto = true; }
   if (noControllerInProto &&

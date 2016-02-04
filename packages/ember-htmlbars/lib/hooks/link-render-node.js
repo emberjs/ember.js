@@ -30,7 +30,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
     }
   }
 
-  // If has a dot in the path, we need to subscribe to the arguments in the
+  // If there is a dot in the path, we need to subscribe to the arguments in the
   // closure component as well.
 
   if (CONTAINS_DOT_CACHE.get(path)) {
@@ -58,7 +58,7 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
     }
   }
 
-  // The params and hash can be reused; they don't need to be
+  // The params and hash can be reused. They don't need to be
   // recomputed on subsequent re-renders because they are
   // streams.
   return true;

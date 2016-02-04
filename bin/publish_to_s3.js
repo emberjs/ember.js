@@ -9,7 +9,7 @@
 // S3_SECRET_ACCESS_KEY
 // S3_ACCESS_KEY_ID
 //
-// Once you have those you execute with the following:
+// Once you have those, you execute with the following:
 //
 // ```sh
 // ./bin/publish_to_s3.js

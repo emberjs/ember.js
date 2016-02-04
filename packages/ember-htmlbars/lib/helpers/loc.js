@@ -33,7 +33,7 @@ import { loc } from 'ember-runtime/system/string';
 
   @method loc
   @for Ember.Templates.helpers
-  @param {String} str The string to format
+  @param {String} str The string to format.
   @see {Ember.String#loc}
   @public
 */

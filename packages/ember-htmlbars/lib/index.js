@@ -133,12 +133,12 @@ import {
   setTemplates
 } from 'ember-htmlbars/template_registry';
 
-// importing adds template bootstrapping
-// initializer to enable embedded templates
+// Importing adds template bootstrapping
+// initializer to enable embedded templates.
 import 'ember-htmlbars/system/bootstrap';
 
-// importing ember-htmlbars/compat updates the
-// Ember.Handlebars global if htmlbars is enabled
+// Importing ember-htmlbars/compat updates the
+// Ember.Handlebars global if htmlbars is enabled.
 import 'ember-htmlbars/compat';
 
 registerHelper('if', ifHelper);

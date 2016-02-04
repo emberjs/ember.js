@@ -13,7 +13,7 @@ import Object from 'ember-runtime/system/object';
   <div>{{format-currency cents currency="$"}}</div>
   ```
 
-  Additionally a helper can be called as a nested helper (sometimes called a
+  Additionally, a helper can be called as a nested helper (sometimes called a
   subexpression). In this example, the computed value of a helper is passed
   to a component named `show-money`:
 

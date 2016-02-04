@@ -63,7 +63,7 @@ QUnit.test('you cannot make a new application that is a parent of an existing ap
   });
 });
 
-QUnit.test('you cannot make a new application that is a descendent of an existing application', function() {
+QUnit.test('you cannot make a new application that is a descendant of an existing application', function() {
   expectAssertion(function() {
     run(function() {
       Application.create({ rootElement: '#one-child' });
@@ -122,7 +122,7 @@ QUnit.module('Ember.Application initialization', {
   }
 });
 
-QUnit.test('initialized application go to initial route', function() {
+QUnit.test('initialized application goes to initial route', function() {
   run(function() {
     app = Application.create({
       rootElement: '#qunit-fixture'
@@ -159,7 +159,7 @@ QUnit.test('ready hook is called before routing begins', function() {
     var MyApplication = Application.extend({
       ready() {
         registerRoute(this, 'index', function() {
-          ok(true, 'last-minite route is activated');
+          ok(true, 'last-minute route is activated');
         });
       }
     });

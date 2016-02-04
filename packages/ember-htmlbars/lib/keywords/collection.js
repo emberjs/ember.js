@@ -35,7 +35,7 @@ import assign from 'ember-metal/assign';
   ```javascript
   App = Ember.Application.create();
   App.ApplicationRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
     }
   });
@@ -53,8 +53,8 @@ import assign from 'ember-metal/assign';
 
   ### Non-block version of collection
 
-  If you provide an `itemViewClass` option that has its own `template` you may
-  omit the block.
+  If you provide an `itemViewClass` option that has its own `template`,
+  then you may omit the block.
 
   The following template:
 
@@ -68,7 +68,7 @@ import assign from 'ember-metal/assign';
   ```javascript
   App = Ember.Application.create();
   App.ApplicationRoute = Ember.Route.extend({
-    model: function() {
+    model() {
       return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
     }
   });

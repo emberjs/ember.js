@@ -12,7 +12,7 @@ import isEnabled from 'ember-metal/features';
 topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 /**
-  The `{{outlet}}` helper lets you specify where a child routes will render in
+  The `{{outlet}}` helper lets you specify where a child route will render in
   your template. An important use of the `{{outlet}}` helper is in your
   application's `application.hbs` file:
 
@@ -176,7 +176,7 @@ function isStable(a, b) {
   b = b.render;
   for (var key in a) {
     if (a.hasOwnProperty(key)) {
-      // name is only here for logging & debugging. If two different
+      // Name is only here for logging & debugging. If two different
       // names result in otherwise identical states, they're still
       // identical.
       if (a[key] !== b[key] && key !== 'name') {

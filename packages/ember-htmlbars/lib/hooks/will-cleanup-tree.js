@@ -3,7 +3,7 @@ export default function willCleanupTree(env) {
 
   // When we go to clean up the render node and all of its children, we may
   // encounter views/components associated with those nodes along the way. In
-  // those cases, we need to make sure we need to sever the link between the
+  // those cases, we need to sever the link between the
   // existing view hierarchy and those views.
   //
   // However, we do *not* need to remove the child views of child views, since

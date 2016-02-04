@@ -42,7 +42,7 @@ export default function isComponent(env, scope, path) {
         let moduleName = env.meta && env.meta.moduleName;
 
         if (!moduleName) {
-          // without a source moduleName we can not perform local lookups
+          // Without a source moduleName, we can not perform local lookups.
           return false;
         }
 

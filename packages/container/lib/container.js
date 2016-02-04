@@ -95,7 +95,7 @@ Container.prototype = {
    twitter === twitter2; //=> true
    ```
 
-   If singletons are not wanted an optional flag can be provided at lookup.
+   If singletons are not wanted, an optional flag can be provided at lookup.
 
    ```javascript
    var registry = new Registry();
@@ -122,7 +122,7 @@ Container.prototype = {
   },
 
   /**
-   Given a fullName return the corresponding factory.
+   Given a fullName, return the corresponding factory.
 
    @private
    @method lookupFactory

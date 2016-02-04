@@ -6,10 +6,10 @@ git config --global user.name "Tomster"
 # This specifies the repository we are going to work with.  This will most likely be set to 'ember'
 COMPONENTS_EMBER_REPO_SLUG="components/ember"
 
-# This specifies the user who is associated to the GH_TOKEN
+# This specifies the user who is associated to the GH_TOKEN.
 USER="rwjblue"
 
-# This ensure that no directories within dist will be copied when script is run.
+# This ensures that no directories within dist will be copied when script is run.
 INCLUDED_FILES=`find dist -maxdepth 1 -type f`
 
 echo -e "COMPONENTS_EMBER_REPO_SLUG: ${COMPONENTS_EMBER_REPO_SLUG}\n"
@@ -27,7 +27,7 @@ if [[ -z $GH_TOKEN ]]; then
   exit 0
 fi
 
-# Set channel to publish to.  If no suitable branch is found exit successfully.
+# Set channel to publish to.  If no suitable branch is found, exit successfully.
 case $TRAVIS_BRANCH in
   "master" )
     CHANNEL="canary" ;;
@@ -47,18 +47,18 @@ case $TRAVIS_BRANCH in
 esac
 echo -e "CHANNEL: ${CHANNEL}\n"
 
-# sending output to /dev/null to prevent GH_TOKEN leak on error
+# Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git clone --branch ${CHANNEL} https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git bower_ember &> /dev/null
 rm -rf bower_ember/*
 cp -r ${INCLUDED_FILES} bower_ember/
 cd bower_ember
 git remote rm origin
 
-# sending output to /dev/null to prevent GH_TOKEN leak on error
+# Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git &> /dev/null
 git add -A
 git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commits/${TRAVIS_COMMIT}."
 
-# sending output to /dev/null to prevent GH_TOKEN leak on error
+# Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git push -fq origin ${CHANNEL} &> /dev/null
 echo -e "Done\n"

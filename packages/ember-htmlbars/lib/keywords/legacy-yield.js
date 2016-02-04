@@ -5,7 +5,7 @@ export default function legacyYield(morph, env, _scope, params, hash, template, 
   let block = scope.getBlock('default');
 
   if (block.arity === 0) {
-    // Typically, the `controller` local is persists through lexical scope.
+    // Typically, the `controller` local persists through lexical scope.
     // However, in this case, the `{{legacy-yield}}` in the legacy each view
     // needs to override the controller local for the template it is yielding.
     // This megahaxx allows us to override the controller, and most importantly,

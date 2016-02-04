@@ -51,7 +51,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     }
   }
 
-  // Determine if this is an initial render or a re-render
+  // Determine if this is an initial render or a re-render.
   if (state.manager) {
     state.manager.rerender(env, attrs, visitor);
     return;
@@ -91,13 +91,13 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   let isInvokedWithAngles = currentComponent && currentComponent._isAngleBracket;
   let isInvokedWithCurlies = currentComponent && !currentComponent._isAngleBracket;
 
-  // <div> at the top level of a <foo-bar> invocation
+  // <div> at the top level of a <foo-bar> invocation.
   let isComponentHTMLElement = isAngleBracket && !isDasherized && isInvokedWithAngles;
 
-  // <foo-bar> at the top level of a <foo-bar> invocation
+  // <foo-bar> at the top level of a <foo-bar> invocation.
   let isComponentIdentityElement = isAngleBracket && isTopLevel && tagName === env.view.tagName;
 
-  // <div> at the top level of a {{foo-bar}} invocation
+  // <div> at the top level of a {{foo-bar}} invocation.
   let isNormalHTMLElement = isAngleBracket && !isDasherized && isInvokedWithCurlies;
 
   let component, layout;

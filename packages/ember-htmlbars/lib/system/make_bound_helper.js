@@ -7,7 +7,7 @@ import { helper } from 'ember-htmlbars/helper';
 
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
-  from the template. If a bound property was provided in the template it will be resolved to its
+  from the template. If a bound property was provided in the template, it will be resolved to its
   value and any changes to the bound property cause the helper function to be re-run with the updated
   values.
 
@@ -50,7 +50,7 @@ import { helper } from 'ember-htmlbars/helper';
 */
 export default function makeBoundHelper(fn) {
   deprecate(
-    'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to using `Ember.Helper` or `Ember.Helper.helper`.',
+    'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.',
     false,
     { id: 'ember-htmlbars.make-bound-helper', until: '3.0.0' }
   );

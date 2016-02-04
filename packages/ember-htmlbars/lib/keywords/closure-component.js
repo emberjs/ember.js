@@ -40,9 +40,9 @@ export default function closureComponent(env, [path, ...params], hash) {
   s.addDependency(path);
 
   // FIXME: If the stream invalidates on every params or hash change, then
-  // the {{component helper will be forces to rerender the whole component
+  // the {{component helper will be forced to re-render the whole component
   // each time. Instead, these dependencies should not be required and the
-  // element component keyword should add the params and hash as dependencies
+  // element component keyword should add the params and hash as dependencies.
   params.forEach(item => s.addDependency(item));
   Object.keys(hash).forEach(key => s.addDependency(hash[key]));
 
@@ -77,7 +77,7 @@ export function isComponentCell(component) {
 }
 
 function createNestedClosureComponentCell(componentCell, params, hash) {
-  // This needs to be done in each nesting level to avoid raising assertions
+  // This needs to be done in each nesting level to avoid raising assertions.
   processPositionalParamsFromCell(componentCell, params, hash);
 
   return {
@@ -97,7 +97,7 @@ export function processPositionalParamsFromCell(componentCell, params, hash) {
 function createNewClosureComponentCell(env, componentPath, params, hash) {
   let positionalParams = getPositionalParams(env.owner, componentPath);
 
-  // This needs to be done in each nesting level to avoid raising assertions
+  // This needs to be done in each nesting level to avoid raising assertions.
   processPositionalParams(null, positionalParams, params, hash);
 
   return {

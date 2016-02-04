@@ -6,7 +6,7 @@ export let HANDLERS = { };
 export function generateTestAsFunctionDeprecation(source) {
   return `Calling \`${source}\` with a function argument is deprecated. Please ` +
     `use \`!!Constructor\` for constructors, or an \`IIFE\` to compute the test for deprecation. ` +
-    `In a future version functions will be treated as truthy values instead of being executed.`;
+    `In a future version, functions will be treated as truthy values instead of being executed.`;
 }
 
 function normalizeTest(test, source) {

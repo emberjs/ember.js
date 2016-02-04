@@ -42,8 +42,8 @@ export const OWNER = symbol('OWNER');
   ```
 
   @method getOwner
-  @param {Object} object A object with an owner.
-  @return {Object} an owner object.
+  @param {Object} object An object with an owner.
+  @return {Object} An owner object.
   @for Ember
   @public
 */
@@ -56,8 +56,8 @@ export function getOwner(object) {
   useful in some testing cases.
 
   @method setOwner
-  @param {Object} object A object with an owner.
-  @return {Object} an owner object.
+  @param {Object} object An object with an owner.
+  @return {Object} An owner object.
   @for Ember
   @public
 */
