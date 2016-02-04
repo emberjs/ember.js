@@ -4,7 +4,7 @@
 */
 
 /**
-  Concatenates input params together.
+  Concatenates the given arguments into a string.
 
   Example:
 
@@ -19,6 +19,6 @@
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-export default function concat(params) {
-  return params.join('');
+export default function concat(args) {
+  return args.join('');
 }

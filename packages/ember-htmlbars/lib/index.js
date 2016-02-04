@@ -119,7 +119,7 @@ import logHelper from 'ember-htmlbars/helpers/log';
 import eachHelper from 'ember-htmlbars/helpers/each';
 import eachInHelper from 'ember-htmlbars/helpers/each-in';
 import normalizeClassHelper from 'ember-htmlbars/helpers/-normalize-class';
-import concatHelper from 'ember-htmlbars/helpers/-concat';
+import concatHelper from 'ember-htmlbars/helpers/concat';
 import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
 import legacyEachWithControllerHelper from 'ember-htmlbars/helpers/-legacy-each-with-controller';
 import legacyEachWithKeywordHelper from 'ember-htmlbars/helpers/-legacy-each-with-keyword';
