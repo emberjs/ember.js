@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v2.3.1 (February 4, 2016)
+
+- [#12829](https://github.com/emberjs/ember.js/pull/12829) [BUGFIX] Support tagless components in fastboot.
+- [#12848](https://github.com/emberjs/ember.js/pull/12848) Make dependencies that end in `@each` expand to `[]`.
+- [#12877](https://github.com/emberjs/ember.js/pull/12877) [BUGFIX] Upgrade htmlbars to 0.14.14. Fixes bug with lost cursor position with `<input oninput={{action 'foo'}}>`.
+- [#12908](https://github.com/emberjs/ember.js/pull/12908) [BUGFIX] Fix issue that prevented recomputation of `ArrayProxy` values under certain circumstances.
+
 ### v2.3.0 (January 19, 2016)
 
 - [#12712](https://github.com/emberjs/ember.js/pull/12712) [BUGFIX] Create a new hash parameter when creating a component cell
