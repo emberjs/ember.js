@@ -1,5 +1,6 @@
-import { Environment } from 'glimmer-runtime';
+import { Environment, ConditionalReference } from 'glimmer-runtime';
 import { get } from 'ember-metal/property_get';
+import { toBool as emberToBool } from './helpers/if-unless';
 
 // @implements PathReference
 export class RootReference {
@@ -52,6 +53,11 @@ const helpers = {
   concat
 };
 
+class EmberConditionalReference extends ConditionalReference {
+  toBool(predicate) {
+    return emberToBool(predicate);
+  }
+}
 
 export default class extends Environment {
   hasComponentDefinition() {
@@ -68,5 +74,9 @@ export default class extends Environment {
 
   rootReferenceFor(value) {
     return new RootReference(value);
+  }
+
+  toConditionalReference(reference) {
+    return new EmberConditionalReference(reference);
   }
 }

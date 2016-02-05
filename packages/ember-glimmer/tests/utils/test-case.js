@@ -9,10 +9,11 @@ import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
+import ComponentLookup from 'ember-views/component_lookup';
 
 const packageTag = `@${packageName} `;
 
-export function moduleFor(description, TestClass) {
+export function moduleFor(description, TestClass, ...generators) {
   let context;
 
   QUnit.module(`[${packageName}] ${description}`, {
@@ -25,7 +26,20 @@ export function moduleFor(description, TestClass) {
     }
   });
 
-  Object.keys(TestClass.prototype).forEach(name => {
+  generators.forEach(generator => {
+    generator.cases.forEach(value => {
+      assign(TestClass.prototype, generator.generate(value));
+    });
+  });
+
+  let proto = TestClass.prototype;
+
+  while (proto !== Object.prototype) {
+    Object.keys(proto).forEach(generateTest);
+    proto = Object.getPrototypeOf(proto);
+  }
+
+  function generateTest(name) {
     if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
@@ -33,7 +47,7 @@ export function moduleFor(description, TestClass) {
     } else if (name.indexOf(packageTag) === 0) {
       QUnit.test(name.slice(packageTag.length), assert => context[name](assert));
     }
-  });
+  }
 }
 
 let assert = QUnit.assert;
@@ -63,11 +77,15 @@ export class RenderingTest extends TestCase {
     super();
     let dom = new DOMHelper(document);
     let env = this.env = new Environment(dom);
-    this.renderer = new Renderer(dom, { destinedForDOM: true, env });
-    this.component = null;
-    this.element = jQuery('#qunit-fixture')[0];
     let owner = this.owner = buildOwner();
+    this.renderer = new Renderer(dom, { destinedForDOM: true, env });
+    this.element = jQuery('#qunit-fixture')[0];
+    this.component = null;
+    this.snapshot = null;
+
+    owner.register('component-lookup:main', ComponentLookup);
     owner.registerOptionsForType('helper', { instantiate: false });
+    owner.registerOptionsForType('component', { singleton: false });
   }
 
   teardown() {
@@ -89,6 +107,22 @@ export class RenderingTest extends TestCase {
     }
 
     return node;
+  }
+
+  takeSnapshot() {
+    let snapshot = this.snapshot = [];
+
+    let node = this.element.firstChild;
+
+    while (node) {
+      if (!isMarker(node)) {
+        snapshot.push(node);
+      }
+
+      node = node.nextSibling;
+    }
+
+    return snapshot;
   }
 
   render(templateStr, context = {}) {
@@ -126,6 +160,18 @@ export class RenderingTest extends TestCase {
     this.owner.register(`helper:${name}`, helper(func));
   }
 
+  registerComponent(name, { ComponentClass, template }) {
+    let { owner, env } = this;
+
+    if (ComponentClass) {
+      owner.register(`component:${name}`, ComponentClass);
+    }
+
+    if (typeof template === 'string') {
+      owner.register(`template:components/${name}`, compile(template, { env }));
+    }
+  }
+
   assertText(text) {
     assert.strictEqual(jQuery(this.element).text(), text, '#qunit-fixture content');
   }
@@ -152,5 +198,16 @@ export class RenderingTest extends TestCase {
 
   assertSameNode(node1, node2) {
     assert.strictEqual(node1, node2, 'DOM node stability');
+  }
+
+  assertInvariants() {
+    let oldSnapshot = this.snapshot;
+    let newSnapshot = this.takeSnapshot();
+
+    assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
+
+    for (let i = 0; i < oldSnapshot.length; i++) {
+      this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
+    }
   }
 }
