@@ -395,8 +395,6 @@ QUnit.test('`click` triggers appropriate events in order', function() {
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on contenteditable');
   }).then(function() {
-    // In IE (< 8), the change event only fires when the value changes before element focused.
-    jQuery('.index-view input[type=checkbox]').focus();
     events = [];
     return click('.index-view input[type=checkbox]');
   }).then(function() {
@@ -404,6 +402,44 @@ QUnit.test('`click` triggers appropriate events in order', function() {
     // Firefox differs so we can't assert the exact ordering here.
     // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
     equal(events.length, 5, 'fires click and change on checkboxes');
+  });
+});
+
+QUnit.test('`click` triggers native events with simulated X/Y coordinates', function() {
+  expect(15);
+
+  var click, wait, events;
+
+  App.IndexView = EmberView.extend({
+    classNames: 'index-view',
+
+    didInsertElement() {
+      let pushEvent  = e => events.push(e);
+      this.element.addEventListener('mousedown', pushEvent);
+      this.element.addEventListener('mouseup', pushEvent);
+      this.element.addEventListener('click', pushEvent);
+    }
+  });
+
+
+  Ember.TEMPLATES.index = compile('some text');
+
+  run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  return wait().then(function() {
+    events = [];
+    return click('.index-view');
+  }).then(function() {
+    events.forEach(e => {
+      ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
+      ok(typeof e.screenX === 'number' && e.screenX > 0, 'screenX is correct');
+      ok(typeof e.screenY === 'number' && e.screenY > 0, 'screenY is correct');
+      ok(typeof e.clientX === 'number' && e.clientX > 0, 'clientX is correct');
+      ok(typeof e.clientY === 'number' && e.clientY > 0, 'clientY is correct');
+    });
   });
 });
 
@@ -422,7 +458,6 @@ QUnit.test('`wait` waits for outstanding timers', function() {
     equal(wait_done, true, 'should wait for the timer to be fired.');
   });
 });
-
 
 QUnit.test('`wait` respects registerWaiters with optional context', function() {
   expect(3);
@@ -470,7 +505,7 @@ QUnit.test('`triggerEvent accepts an optional options hash without context', fun
     template: compile('{{input type="text" id="scope" class="input"}}'),
 
     didInsertElement() {
-      this.$('.input').on('blur change', function(e) {
+      this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
@@ -482,10 +517,10 @@ QUnit.test('`triggerEvent accepts an optional options hash without context', fun
   wait         = App.testHelpers.wait;
 
   return wait().then(function() {
-    return triggerEvent('.input', 'blur', { keyCode: 13 });
+    return triggerEvent('.input', 'keydown', { keyCode: 13 });
   }).then(function() {
     equal(event.keyCode, 13, 'options were passed');
-    equal(event.type, 'blur', 'correct event was triggered');
+    equal(event.type, 'keydown', 'correct event was triggered');
     equal(event.target.getAttribute('id'), 'scope', 'triggered on the correct element');
   });
 });
@@ -650,7 +685,7 @@ QUnit.test('`triggerEvent accepts an optional options hash and context', functio
     template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
 
     didInsertElement() {
-      this.$('.input').on('blur change', function(e) {
+      this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
@@ -663,11 +698,11 @@ QUnit.test('`triggerEvent accepts an optional options hash and context', functio
 
   return wait()
     .then(function() {
-      return triggerEvent('.input', '#limited', 'blur', { keyCode: 13 });
+      return triggerEvent('.input', '#limited', 'keydown', { keyCode: 13 });
     })
     .then(function() {
       equal(event.keyCode, 13, 'options were passed');
-      equal(event.type, 'blur', 'correct event was triggered');
+      equal(event.type, 'keydown', 'correct event was triggered');
       equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
     });
 });
