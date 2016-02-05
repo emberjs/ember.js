@@ -152,13 +152,27 @@ QUnit.test('The `if` helper updates if an array is empty or not', function() {
 });
 
 QUnit.test('The `if` helper updates if an array-like object is empty or not', function() {
-  testIfArray(ArrayProxy.create({ content: emberA() }));
+  var arrayProxy;
+
+  expectDeprecation(function() {
+    arrayProxy = ArrayProxy.create({
+      content: emberA()
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
+  testIfArray(arrayProxy);
 });
 
 QUnit.test('The `unless` helper updates if an array-like object is empty or not', function() {
-  view = EmberView.create({
-    array: ArrayProxy.create({ content: emberA() }),
+  var arrayProxy;
 
+  expectDeprecation(function() {
+    arrayProxy = ArrayProxy.create({
+      content: emberA()
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
+
+  view = EmberView.create({
+    array: arrayProxy,
     template: compile('{{#unless view.array}}Yep{{/unless}}')
   });
 

@@ -9,7 +9,15 @@ MutableArrayTests.extend({
 
   newObject(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
-    return ArrayProxy.create({ content: emberA(ret) });
+    var arrayProxy;
+
+    expectDeprecation(function() {
+      arrayProxy = ArrayProxy.create({
+        content: emberA(ret)
+      });
+    }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
+
+    return arrayProxy;
   },
 
   mutate(obj) {

@@ -86,13 +86,19 @@ QUnit.test('itemViewClass works in the #collection helper with a property', func
   });
 
   var ExampleCollectionView = CollectionView;
+  var arrayProxy;
+
+  expectDeprecation(function() {
+    arrayProxy = ArrayProxy.create({
+      content: emberA(['alpha'])
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
+
 
   view = EmberView.create({
     possibleItemView: ExampleItemView,
     exampleCollectionView: ExampleCollectionView,
-    exampleController: ArrayProxy.create({
-      content: emberA(['alpha'])
-    }),
+    exampleController: arrayProxy,
     template: compile('{{#collection view.exampleCollectionView content=view.exampleController itemViewClass=view.possibleItemView}}beta{{/collection}}')
   });
 
@@ -106,12 +112,19 @@ QUnit.test('itemViewClass works in the #collection via container', function() {
     isAlsoCustom: true
   }));
 
+  var arrayProxy;
+
+  expectDeprecation(function() {
+    arrayProxy = ArrayProxy.create({
+      content: emberA(['alpha'])
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
+
+
   view = EmberView.create({
     [OWNER]: owner,
     exampleCollectionView: CollectionView.extend(),
-    exampleController: ArrayProxy.create({
-      content: emberA(['alpha'])
-    }),
+    exampleController: arrayProxy,
     template: compile('{{#collection view.exampleCollectionView content=view.exampleController itemViewClass="example-item"}}beta{{/collection}}')
   });
 
@@ -178,9 +191,13 @@ QUnit.test('empty views should be removed when content is added to the collectio
     emptyView: EmptyView
   });
 
-  var listController = ArrayProxy.create({
-    content : emberA()
-  });
+  var listController;
+
+  expectDeprecation(function() {
+    listController = ArrayProxy.create({
+      content: emberA()
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
 
   view = EmberView.create({
     _viewRegistry: {},
@@ -532,9 +549,11 @@ QUnit.test('should render multiple, bound nested collections (#68)', function() 
   var view;
 
   run(function() {
-    TemplateTests.contentController = ArrayProxy.create({
-      content: emberA(['foo', 'bar'])
-    });
+    expectDeprecation(function() {
+      TemplateTests.contentController = ArrayProxy.create({
+        content: emberA(['foo', 'bar'])
+      });
+    }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
 
     var InnerList = CollectionView.extend({
       tagName: 'ul',

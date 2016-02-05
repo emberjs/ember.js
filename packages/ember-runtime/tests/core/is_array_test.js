@@ -14,7 +14,13 @@ QUnit.test('Ember.isArray', function() {
   var object        = {};
   var length        = { length: 12 };
   var fn            = function() {};
-  var arrayProxy = ArrayProxy.create({ content: emberA() });
+  var arrayProxy;
+
+  expectDeprecation(function() {
+    arrayProxy = ArrayProxy.create({
+      content: emberA()
+    });
+  }, '`Ember.ArrayProxy` is deprecated and will be removed in a future release.');
 
   equal(isArray(numarray), true, '[1,2,3]');
   equal(isArray(number), false, '23');
