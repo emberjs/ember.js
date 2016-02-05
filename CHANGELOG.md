@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 2.4.0-beta.2
+
+- [#12491](https://github.com/emberjs/ember.js/pull/12491) [BUGFIX] allow watching of ES5+ Getter
+- [#12829](https://github.com/emberjs/ember.js/pull/12829) [BUGFIX] Support tagless components in fastboot
+- [#12847](https://github.com/emberjs/ember.js/pull/12847) [BUGFIX] Add warning for “deep @each” usage in dependent keys.
+- [#12848](https://github.com/emberjs/ember.js/pull/12848) Make dependencies that end in `@each` expand to `[]`.
+- [#12877](https://github.com/emberjs/ember.js/pull/12877) [BUGFIX] Upgrade htmlbars to 0.14.14. Fixes bug with lost cursor position with `<input oninput={{action 'foo'}}>`.
+- [#12908](https://github.com/emberjs/ember.js/pull/12908) [BUGFIX] Fix issue that prevented recomputation of `ArrayProxy` values under certain circumstances.
+
 ### 2.4.0-beta.1
 
 - [#12348](https://github.com/emberjs/ember.js/pull/12348) Route#disconnectOutlet should not be private
