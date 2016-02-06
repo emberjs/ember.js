@@ -60,16 +60,37 @@ class EmberConditionalReference extends ConditionalReference {
 }
 
 export default class extends Environment {
+  constructor({ dom, owner }) {
+    super(dom);
+    this.owner = owner;
+  }
+
   hasComponentDefinition() {
     return false;
   }
 
   hasHelper(name) {
-    return typeof helpers[name[0]] === 'function';
+    if (typeof helpers[name[0]] === 'function') {
+      return true;
+    } else {
+      return this.owner.hasRegistration(`helper:${name}`);
+    }
   }
 
   lookupHelper(name) {
-    return helpers[name[0]];
+    if (typeof helpers[name[0]] === 'function') {
+      return helpers[name[0]];
+    } else {
+      let helper = this.owner.lookup(`helper:${name}`);
+
+      if (helper && helper.isHelperInstance) {
+        return helper.compute;
+      } else if (helper && helper.isHelperFactory) {
+        throw new Error(`Not implemented: ${name} is a class-based helpers`);
+      } else {
+        throw new Error(`${name} is not a helper`);
+      }
+    }
   }
 
   rootReferenceFor(value) {

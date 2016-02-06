@@ -23,36 +23,6 @@ QUnit.module('ember-htmlbars: custom app helpers', {
   }
 });
 
-QUnit.test('dashed shorthand helper is resolved from container', function() {
-  var HelloWorld = makeHelper(function() {
-    return 'hello world';
-  });
-  owner.register('helper:hello-world', HelloWorld);
-  component = Component.extend({
-    [OWNER]: owner,
-    layout: compile('{{hello-world}}')
-  }).create();
-
-  runAppend(component);
-  equal(component.$().text(), 'hello world');
-});
-
-QUnit.test('dashed helper is resolved from container', function() {
-  var HelloWorld = Helper.extend({
-    compute() {
-      return 'hello world';
-    }
-  });
-  owner.register('helper:hello-world', HelloWorld);
-  component = Component.extend({
-    [OWNER]: owner,
-    layout: compile('{{hello-world}}')
-  }).create();
-
-  runAppend(component);
-  equal(component.$().text(), 'hello world');
-});
-
 QUnit.test('dashed helper can recompute a new value', function() {
   var destroyCount = 0;
   var count = 0;
