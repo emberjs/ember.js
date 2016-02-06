@@ -78,6 +78,7 @@
       };
 
       var DemoEnvironment = requireModule('glimmer-demos').TestEnvironment;
+      var UpdatableReference = require("glimmer-reference").UpdatableReference;
       var env = new DemoEnvironment();
 
       TEMPLATES = {};
@@ -98,7 +99,8 @@
       };
 
       var output = document.getElementById('output');
-      var result = TEMPLATES['application'].render(data, env, { appendTo: output });
+      var self = new UpdatableReference(data);
+      var result = TEMPLATES['application'].render(self, env, { appendTo: output });
 
       window.addEventListener("resize", function() {
         data.width  = window.innerWidth;
@@ -130,7 +132,8 @@
           }
         });
 
-        result.rerender(data);
+        self.update(data);
+        result.rerender();
 
         window.requestAnimationFrame(tick);
       }
