@@ -3,6 +3,7 @@ import {
   EmberishCurlyComponent as CurlyComponent,
   EmberishGlimmerComponent as GlimmerComponent
 } from 'glimmer-demos';
+import { UpdatableReference } from 'glimmer-reference';
 
 import { compileSpec } from 'glimmer-compiler';
 
@@ -313,10 +314,14 @@ function renderUI() {
 </div>`);
 
   env.begin();
-  let res = env.compile(UI).render(ui, env, { appendTo: document.body });
+  let self = new UpdatableReference(ui);
+  let res = env.compile(UI).render(self, env, { appendTo: document.body });
   env.commit();
 
-  rerenderUI = res.rerender.bind(res);
+  rerenderUI = () => {
+    self.update(ui);
+    res.rerender();
+  };
 }
 
 function bindUI() {
@@ -390,7 +395,8 @@ function renderContent() {
   let div = document.createElement('div');
 
   env.begin();
-  let res = app.render(data, env, { appendTo: div });
+  let self = new UpdatableReference(data);
+  let res = app.render(self, env, { appendTo: div });
   env.commit();
 
   ui.rendered = true;
@@ -411,7 +417,8 @@ function renderContent() {
   window.$DIV = div;
 
   _updateContent = () => {
-    res.rerender(JSON.parse($data.value));
+    self.update(JSON.parse($data.value));
+    res.rerender();
     ui.updatingOpcodes = processUpdatingOpcodes(res.updating);
     ui.html = div.innerHTML;
     rerenderUI();
