@@ -51,7 +51,7 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
     this.assertText('fivetwosixfour');
   }
 
-  ['@htmlbars it can be used as input for other helpers']() {
+  ['@test it can be used as input for other helpers']() {
     this.registerHelper('x-eq', ([ actual, expected]) => actual === expected);
 
     this.render(`{{#if (x-eq (concat first second) "onetwo")}}Truthy!{{else}}False{{/if}}`, {

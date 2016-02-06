@@ -1,6 +1,6 @@
 import packageName from './package-name';
 import Environment from './environment';
-import { compile, helper, DOMHelper, Renderer } from './helpers';
+import { compile, helper, Helper, DOMHelper, Renderer } from './helpers';
 import { equalTokens } from 'glimmer-test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -76,8 +76,8 @@ export class RenderingTest extends TestCase {
   constructor() {
     super();
     let dom = new DOMHelper(document);
-    let env = this.env = new Environment(dom);
     let owner = this.owner = buildOwner();
+    let env = this.env = new Environment({ dom, owner });
     this.renderer = new Renderer(dom, { destinedForDOM: true, env });
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
@@ -148,8 +148,16 @@ export class RenderingTest extends TestCase {
     run(callback);
   }
 
-  registerHelper(name, func) {
-    this.owner.register(`helper:${name}`, helper(func));
+  registerHelper(name, funcOrClassBody) {
+    let type = typeof funcOrClassBody;
+
+    if (type === 'function') {
+      this.owner.register(`helper:${name}`, helper(funcOrClassBody));
+    } else if (type === 'object' && type !== null) {
+      this.owner.register(`helper:${name}`, Helper.extend(funcOrClassBody));
+    } else {
+      throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
+    }
   }
 
   registerComponent(name, { ComponentClass, template }) {
