@@ -1,4 +1,5 @@
 import EmberObject, { computed } from 'glimmer-object';
+import { UpdatableReference } from 'glimmer-reference';
 import { TestEnvironment, EmberishGlimmerComponent as EmberComponent } from 'glimmer-demos';
 
 let ServerUptime = <any>EmberComponent.extend({
@@ -83,14 +84,15 @@ function start() {
   console.time('rendering');
   env.begin();
 
-  let result = app.render({ servers: servers() }, env, { appendTo: output });
+  let self = new UpdatableReference({ servers: servers() });
+  let result = app.render(self, env, { appendTo: output });
 
   console.log(env['createdComponents'].length);
   env.commit();
   console.timeEnd('rendering');
 
   clear = setInterval(function() {
-    result.self.update({ servers: servers() });
+    self.update({ servers: servers() });
     console.time('updating');
     result.rerender();
     console.timeEnd('updating');
