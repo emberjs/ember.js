@@ -9,7 +9,7 @@ moduleFor('Static content tests', class extends RenderingTest {
     this.render('hello');
     let text1 = this.assertTextNode(this.firstChild, 'hello');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     let text2 = this.assertTextNode(this.firstChild, 'hello');
 
@@ -21,7 +21,7 @@ moduleFor('Static content tests', class extends RenderingTest {
     let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     let p2 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text2 = this.assertTextNode(this.firstChild.firstChild, 'hello');
@@ -51,7 +51,7 @@ moduleFor('Static content tests', class extends RenderingTest {
     this.render(template);
     this.assertHTML(template);
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertHTML(template);
   }
@@ -66,19 +66,19 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     });
     let text1 = this.assertTextNode(this.firstChild, 'hello');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     let text2 = this.assertTextNode(this.firstChild, 'hello');
 
     this.assertSameNode(text1, text2);
 
-    this.inZone(() => set(this.context, 'message', 'goodbye'));
+    this.runTask(() => set(this.context, 'message', 'goodbye'));
 
     let text3 = this.assertTextNode(this.firstChild, 'goodbye');
 
     this.assertSameNode(text1, text3);
 
-    this.inZone(() => set(this.context, 'message', 'hello'));
+    this.runTask(() => set(this.context, 'message', 'hello'));
 
     let text4 = this.assertTextNode(this.firstChild, 'hello');
 
@@ -91,19 +91,19 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     });
     let text1 = this.assertTextNode(this.firstChild, 'hello');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     let text2 = this.assertTextNode(this.firstChild, 'hello');
 
     this.assertSameNode(text1, text2);
 
-    this.inZone(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
+    this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
 
     let text3 = this.assertTextNode(this.firstChild, 'goodbye');
 
     this.assertSameNode(text1, text3);
 
-    this.inZone(() => set(this.context, 'a.b.c.d.e.f', 'hello'));
+    this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'hello'));
 
     let text4 = this.assertTextNode(this.firstChild, 'hello');
 
@@ -123,19 +123,19 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
 
     let text1 = this.assertTextNode(this.firstChild, 'HELLO');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     let text2 = this.assertTextNode(this.firstChild, 'HELLO');
 
     this.assertSameNode(text1, text2);
 
-    this.inZone(() => set(m, 'message', 'goodbye'));
+    this.runTask(() => set(m, 'message', 'goodbye'));
 
     let text3 = this.assertTextNode(this.firstChild, 'GOODBYE');
 
     this.assertSameNode(text1, text3);
 
-    this.inZone(() => set(m, 'message', 'hello'));
+    this.runTask(() => set(m, 'message', 'hello'));
 
     let text4 = this.assertTextNode(this.firstChild, 'HELLO');
 
@@ -149,7 +149,7 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     let p2 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text2 = this.assertTextNode(this.firstChild.firstChild, 'hello');
@@ -157,7 +157,7 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     this.assertSameNode(p1, p2);
     this.assertSameNode(text1, text2);
 
-    this.inZone(() => set(this.context, 'message', 'goodbye'));
+    this.runTask(() => set(this.context, 'message', 'goodbye'));
 
     let p3 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text3 = this.assertTextNode(this.firstChild.firstChild, 'goodbye');
@@ -165,7 +165,7 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     this.assertSameNode(p1, p3);
     this.assertSameNode(text1, text3);
 
-    this.inZone(() => set(this.context, 'message', 'hello'));
+    this.runTask(() => set(this.context, 'message', 'hello'));
 
     let p4 = this.assertElement(this.firstChild, { tagName: 'p' });
     let text4 = this.assertTextNode(this.firstChild.firstChild, 'hello');
@@ -231,15 +231,15 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
     });
     this.assertHTML(ember);
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertHTML(ember);
 
-    this.inZone(() => set(this.context, 'framework', 'React'));
+    this.runTask(() => set(this.context, 'framework', 'React'));
 
     this.assertHTML(react);
 
-    this.inZone(() => set(this.context, 'framework', 'Ember.js'));
+    this.runTask(() => set(this.context, 'framework', 'Ember.js'));
 
     this.assertHTML(ember);
   }
