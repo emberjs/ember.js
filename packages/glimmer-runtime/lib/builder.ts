@@ -264,13 +264,11 @@ export class ElementStack {
   insertHTMLBefore(nextSibling: Node, html: string): Fragment {
     let element = this.element;
 
-    if (!canInsertHTML(element)) {
-      throw new Error(`You cannot insert HTML (using triple-curlies or htmlSafe) into an SVG context: ${element.tagName}`);
-    } else {
-      let bounds = new Fragment(this.dom.insertHTMLBefore(element, nextSibling, html));
-      this.blockStack.current.newBounds(bounds);
-      return bounds;
-    }
+    let concreteBounds = this.dom.insertHTMLBefore(element, nextSibling, html);
+    let fragmentBounds = new Fragment(concreteBounds);
+    this.blockStack.current.newBounds(fragmentBounds);
+
+    return fragmentBounds;
   }
 
   // setAttribute(name: InternedString, value: any) {
@@ -302,10 +300,6 @@ export class ElementStack {
   appendHTML(html: string): Bounds {
     return this.dom.insertHTMLBefore(<HTMLElement>this.element, this.nextSibling, html);
   }
-}
-
-function canInsertHTML(node: Node): node is HTMLElement {
-  return node instanceof HTMLElement;
 }
 
 export interface Tracker extends Bounds, Destroyable {

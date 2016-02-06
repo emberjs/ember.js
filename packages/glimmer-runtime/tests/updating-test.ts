@@ -4,6 +4,7 @@ import { UpdatableReference, PathReference } from "glimmer-reference";
 import { Opaque } from "glimmer-util";
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 /*
@@ -1087,3 +1088,252 @@ test("elements nested inside <foreignObject> have an XHTML namespace", function(
   equal(getDiv().namespaceURI, XHTML_NAMESPACE);
 });
 
+test("Namespaced attribute with a quoted expression", function() {
+  let title = 'svg-title';
+  let context = { title };
+  let getSvg = () => root.firstChild;
+  let getXlinkAttr = () => getSvg().attributes[0];
+  let template = compile('<svg xlink:title="{{title}}">content</svg>');
+  render(template, context);
+
+  equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+
+  context.title = 'mmun';
+  rerender();
+
+  equalTokens(root, `<svg xlink:title="${context.title}">content</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+
+  rerender({ title });
+
+  equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
+});
+
+test("<svg> tag and expression as sibling" function() {
+  let name = 'svg-title';
+  let context = { name };
+  let getSvg = () => root.firstChild;
+  let template = compile('<svg></svg>{{name}}');
+  render(template, context);
+
+  equalTokens(root, `<svg></svg>${name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<svg></svg>${name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  context.name = null;
+  rerender();
+
+  equalTokens(root, `<svg></svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender({name});
+
+  equalTokens(root, `<svg></svg>${name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+});
+
+test("<svg> tag and unsafe expression as sibling" function() {
+  let name = '<i>Biff</i>';
+  let context = { name };
+  let getSvg = () => root.firstChild;
+  let getItalic = () => root.lastChild;
+  let template = compile('<svg></svg>{{{name}}}');
+  render(template, context);
+
+  equalTokens(root, `<svg></svg>${name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getItalic().namespaceURI, XHTML_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<svg></svg>${name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getItalic().namespaceURI, XHTML_NAMESPACE);
+
+  context.name = 'ef4';
+  rerender();
+
+  equalTokens(root, `<svg></svg>${context.name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender({name});
+
+  equalTokens(root, `<svg></svg>${name}`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getItalic().namespaceURI, XHTML_NAMESPACE);
+});
+
+test("unsafe expression nested inside a namespace" function() {
+  let content = '<path></path>';
+  let context = { content };
+  let getSvg = () => root.firstChild;
+  let getPath = () => getSvg().firstChild;
+  let getDiv = () => root.lastChild;
+  let template = compile('<svg>{{{content}}}</svg><div></div>');
+  render(template, context);
+
+  equalTokens(root, `<svg>${content}</svg><div></div>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getPath().namespaceURI, SVG_NAMESPACE, 'initial render path has SVG namespace');
+
+  rerender();
+
+  equalTokens(root, `<svg>${content}</svg><div></div>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getPath().namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
+
+  context.content = '<foreignObject><span></span></foreignObject>';
+  rerender();
+
+  equalTokens(root, `<svg>${context.content}</svg><div></div>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE, 'foreignObject has SVG NS');
+  equal(getSvg().firstChild.firstChild.namespaceURI, XHTML_NAMESPACE, 'span has XHTML NS');
+
+  rerender({content});
+
+  equalTokens(root, `<svg>${content}</svg><div></div>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getPath().namespaceURI, SVG_NAMESPACE);
+});
+
+test("expression nested inside a namespace" function() {
+  let content = 'Milly';
+  let context = { content };
+  let getDiv = () => root.firstChild;
+  let getSvg = () => getDiv().firstChild;
+  let template = compile('<div><svg>{{content}}</svg></div>');
+  render(template, context);
+
+  equalTokens(root, `<div><svg>${content}</svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<div><svg>${content}</svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  context.content = 'Moe';
+  rerender();
+
+  equalTokens(root, `<div><svg>${context.content}</svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender({content});
+
+  equalTokens(root, `<div><svg>${content}</svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+});
+
+test("expression nested inside a namespaced root element" function() {
+  let content = 'Maurice';
+  let context = { content };
+  let getSvg = () => root.firstChild;
+  let template = compile('<svg>{{content}}</svg>');
+  render(template, context);
+
+  equalTokens(root, `<svg>${content}</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<svg>${content}</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  context.content = null;
+  rerender();
+
+  equal(getSvg().tagName, 'svg');
+  ok(getSvg().firstChild.textContent === '');
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender({content});
+
+  equalTokens(root, `<svg>${content}</svg>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+});
+
+test("HTML namespace is created in child templates" function() {
+  let isTrue = true;
+  let context = { isTrue };
+  let template = compile('{{#if isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}');
+  render(template, context);
+
+  equalTokens(root, `<svg></svg>`);
+  equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<svg></svg>`);
+  equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+
+  context.isTrue = false;
+  rerender();
+
+  equalTokens(root, `<div><svg></svg></div>`);
+  equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
+  equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+
+  rerender({isTrue});
+
+  equalTokens(root, `<svg></svg>`);
+  equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+});
+
+test("HTML namespace is continued to child templates" function() {
+  let isTrue = true;
+  let context = { isTrue };
+  let getDiv = () => root.firstChild;
+  let getSvg = () => getDiv().firstChild;
+  let template = compile('<div><svg>{{#if isTrue}}<circle />{{/if}}</svg></div>');
+  render(template, context);
+
+  equalTokens(root, `<div><svg><circle /></svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+
+  rerender();
+
+  equalTokens(root, `<div><svg><circle /></svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+
+  context.isTrue = false;
+  rerender();
+
+  equalTokens(root, `<div><svg><!----></svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+
+  rerender({isTrue});
+
+  equalTokens(root, `<div><svg><circle /></svg></div>`);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+});

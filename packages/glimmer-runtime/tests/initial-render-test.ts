@@ -721,8 +721,6 @@ test("error line numbers include multiple mustache lines", function() {
   }, /Closing tag `div` \(on line 3\) did not match last open tag `p` \(on line 2\)\./);
 });
 
-if (document.createElement('div').namespaceURI) {
-
 module("Initial render of namespaced HTML");
 
 test("Namespaced attribute", function() {
@@ -730,23 +728,6 @@ test("Namespaced attribute", function() {
   let svg = root.firstChild;
   equal(svg.namespaceURI, SVG_NAMESPACE);
   equal(svg.attributes[0].namespaceURI, XLINK_NAMESPACE);
-});
-
-test("Namespaced attribute with a quoted expression", function() {
-  compilesTo(
-    "<svg xlink:title='{{title}}'>content</svg>",
-    "<svg xlink:title='svg-title'>content</svg>",
-    {title: 'svg-title'}
-  );
-  let svg = root.firstChild;
-  equal(svg.namespaceURI, SVG_NAMESPACE);
-  equal(svg.attributes[0].namespaceURI, XLINK_NAMESPACE);
-});
-
-test("Namespaced attribute with unquoted expression throws", function() {
-  QUnit.throws(function() {
-    compile("<svg xlink:title={{title}}>content</svg>");
-  }, /Namespaced attributes cannot be set as props. Perhaps you meant xlink:title="{{title}}"/);
 });
 
 test("<svg> tag with case-sensitive attribute", function() {
@@ -767,8 +748,6 @@ test("nested element in the SVG namespace", function() {
         "creates the path element with a namespace");
   equal(path.getAttribute('d'), d);
 });
-
-}
 
 test("<foreignObject> tag has an SVG namespace", function() {
   compilesTo('<svg><foreignObject>Hi</foreignObject></svg>');
@@ -806,105 +785,8 @@ test("Case-sensitive tag has capitalization preserved", function() {
   compilesTo('<svg><linearGradient id="gradient"></linearGradient></svg>');
 });
 
-// QUnit.skip("svg can live with hydration", function() {
-//   let template = compile('<svg></svg>{{name}}');
-
-//   let fragment = render(template, { name: 'Milly' }, env, { contextualElement: document.body }).fragment;
-
-//   equal(
-//     fragment.childNodes[0].namespaceURI, svgNamespace,
-//     "svg namespace inside a block is present" );
-// });
-
-// QUnit.skip("top-level unsafe morph uses the correct namespace", function() {
-//   let template = compile('<svg></svg>{{{foo}}}');
-//   let fragment = render(template, { foo: '<span>FOO</span>' }).fragment;
-
-//   equal(getTextContent(fragment), 'FOO', 'element from unsafe morph is displayed');
-//   equal(fragment.childNodes[1].namespaceURI, xhtmlNamespace, 'element from unsafe morph has correct namespace');
-// });
-
-// QUnit.skip("nested unsafe morph uses the correct namespace", function() {
-//   let template = compile('<svg>{{{foo}}}</svg><div></div>');
-//   let fragment = render(template, { foo: '<path></path>' }).fragment;
-
-//   equal(fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
-//         'element from unsafe morph has correct namespace');
-// });
-
-// QUnit.skip("svg can take some hydration", function() {
-//   let template = compile('<div><svg>{{name}}</svg></div>');
-
-//   let fragment = render(template, { name: 'Milly' }).fragment;
-//   equal(
-//     fragment.firstChild.childNodes[0].namespaceURI, svgNamespace,
-//     "svg namespace inside a block is present" );
-//   equalTokens( fragment.firstChild, '<div><svg>Milly</svg></div>',
-//              "html is valid" );
-// });
-
-// QUnit.skip("root svg can take some hydration", function() {
-//   let template = compile('<svg>{{name}}</svg>');
-//   let fragment = render(template, { name: 'Milly' }, env).fragment;
-//   let svgNode = fragment.firstChild;
-
-//   equal(
-//     svgNode.namespaceURI, svgNamespace,
-//     "svg namespace inside a block is present" );
-//   equalTokens( svgNode, '<svg>Milly</svg>',
-//              "html is valid" );
-// });
-
-// QUnit.skip("Block helper allows interior namespace", function() {
-//   let isTrue = true;
-
-//   env.registerHelper('testing', function(params, hash, blocks) {
-//     if (isTrue) {
-//       return blocks.template.yield();
-//     } else {
-//       return blocks.inverse.yield();
-//     }
-//   });
-
-//   let template = compile('{{#testing}}<svg></svg>{{else}}<div><svg></svg></div>{{/testing}}');
-
-//   let fragment = render(template, { isTrue: true }, env, { contextualElement: document.body }).fragment;
-//   equal(
-//     firstChild(fragment).namespaceURI, svgNamespace,
-//     "svg namespace inside a block is present" );
-
-//   isTrue = false;
-//   fragment = render(template, { isTrue: false }, env, { contextualElement: document.body }).fragment;
-//   equal(
-//     firstChild(fragment).namespaceURI, xhtmlNamespace,
-//     "inverse block path has a normal namespace");
-//   equal(
-//     firstChild(fragment).firstChild.namespaceURI, svgNamespace,
-//     "svg namespace inside an element inside a block is present" );
-// });
-
-// QUnit.skip("Block helper allows namespace to bleed through", function() {
-//   registerYieldingHelper('testing');
-
-//   let template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
-
-//   let fragment = render(template, { isTrue: true }, env).fragment;
-//   let svgNode = fragment.firstChild.firstChild;
-//   equal( svgNode.namespaceURI, svgNamespace,
-//          "svg tag has an svg namespace" );
-//   equal( svgNode.childNodes[0].namespaceURI, svgNamespace,
-//          "circle tag inside block inside svg has an svg namespace" );
-// });
-
-// QUnit.skip("Block helper with root svg allows namespace to bleed through", function() {
-//   registerYieldingHelper('testing');
-
-//   let template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
-
-//   let fragment = render(template, { isTrue: true }, env).fragment;
-//   let svgNode = fragment.firstChild;
-//   equal( svgNode.namespaceURI, svgNamespace,
-//          "svg tag has an svg namespace" );
-//   equal( svgNode.childNodes[0].namespaceURI, svgNamespace,
-//          "circle tag inside block inside svg has an svg namespace" );
-// });
+test("Namespaced attribute with unquoted expression throws", function() {
+  QUnit.throws(function() {
+    compile("<svg xlink:title={{title}}>content</svg>");
+  }, /Namespaced attributes cannot be set as props. Perhaps you meant xlink:title="{{title}}"/);
+});
