@@ -25,7 +25,7 @@ The Ember.js framework enables developers to build scalable, single-page web app
 
 * **Extensive addon collection:** Ember has a large selection of available addons and plugins (over 1,500 at the time of this writing)
 
-Ember is perfect for larger-scale, functionality-intensive web applications of any size or type. The standardization makes it easy for developers to become acquainted with the architecture and setup of both large and small code bases; additionally, by keeping your tech stack consistent and coherent, Ember can help make your organization more agile and adaptable, making Ember ideal for any kind size or type of project.
+Ember is perfect for larger-scale, functionality-intensive web applications of any size or type. The standardization makes it easy for developers to become acquainted with the architecture and setup of both large and small code bases; additionally, by keeping your tech stack consistent and coherent, Ember can help make your organization more agile and adaptable, making Ember ideal for any kind of project.
 
 # Building Ember.js
 
