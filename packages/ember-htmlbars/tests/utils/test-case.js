@@ -1,1 +1,1 @@
-../../../ember-glimmer/tests/utils/test-case.js
+export * from './abstract-test-case';

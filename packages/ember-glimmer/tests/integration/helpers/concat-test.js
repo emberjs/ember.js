@@ -16,15 +16,15 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
     this.assertText('onetwo');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('onetwo');
 
-    this.inZone(() => set(this.context, 'first', 'three'));
+    this.runTask(() => set(this.context, 'first', 'three'));
 
     this.assertText('threetwo');
 
-    this.inZone(() => set(this.context, 'second', 'four'));
+    this.runTask(() => set(this.context, 'second', 'four'));
 
     this.assertText('threefour');
   }
@@ -39,11 +39,11 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
     this.assertText('onetwothreefour');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('onetwothreefour');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'first', 'five');
       set(this.context, 'third', 'six');
     });
@@ -61,11 +61,11 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
     this.assertText('Truthy!');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('Truthy!');
 
-    this.inZone(() => set(this.context, 'first', 'three'));
+    this.runTask(() => set(this.context, 'first', 'three'));
 
     this.assertText('False');
   }

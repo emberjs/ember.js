@@ -72,15 +72,15 @@ const BASIC_TRUTHY_TESTS = {
 
         this.assertText('T1');
 
-        this.inZone(() => this.rerender());
+        this.runTask(() => this.rerender());
 
         this.assertText('T1');
 
-        this.inZone(() => set(this.context, 'cond1', false));
+        this.runTask(() => set(this.context, 'cond1', false));
 
         this.assertText('F1');
 
-        this.inZone(() => set(this.context, 'cond1', value));
+        this.runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('T1');
       }
@@ -110,15 +110,15 @@ const BASIC_FALSY_TESTS = {
 
         this.assertText('F1');
 
-        this.inZone(() => this.rerender());
+        this.runTask(() => this.rerender());
 
         this.assertText('F1');
 
-        this.inZone(() => set(this.context, 'cond1', true));
+        this.runTask(() => set(this.context, 'cond1', true));
 
         this.assertText('T1');
 
-        this.inZone(() => set(this.context, 'cond1', value));
+        this.runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('F1');
       }
@@ -133,15 +133,15 @@ const BASIC_FALSY_TESTS = {
 
         this.assertText('T1');
 
-        this.inZone(() => this.rerender());
+        this.runTask(() => this.rerender());
 
         this.assertText('T1');
 
-        this.inZone(() => set(this.context, 'cond1.isTruthy', false));
+        this.runTask(() => set(this.context, 'cond1.isTruthy', false));
 
         this.assertText('F1');
 
-        this.inZone(() => set(this.context, 'cond1', { isTruthy: value }));
+        this.runTask(() => set(this.context, 'cond1', { isTruthy: value }));
 
         this.assertText('T1');
       };
@@ -157,22 +157,22 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => set(this.context, 'cond1', false));
+    this.runTask(() => set(this.context, 'cond1', false));
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', true);
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', false);
     });
@@ -185,22 +185,22 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => set(this.context, 'cond1.isTruthy', false));
+    this.runTask(() => set(this.context, 'cond1.isTruthy', false));
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1.isTruthy', true);
       set(this.context, 'cond2.isTruthy', true);
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', { isTruthy: true });
       set(this.context, 'cond2', { isTruthy: false });
     });
@@ -216,22 +216,22 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => set(this.context, 'cond1.isTruthy', false));
+    this.runTask(() => set(this.context, 'cond1.isTruthy', false));
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1.isTruthy', true);
       set(this.context, 'cond2.isTruthy', true);
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', EmberObject.create({ isTruthy: true }));
       set(this.context, 'cond2', EmberObject.create({ isTruthy: false }));
     });
@@ -247,22 +247,22 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => get(this.context, 'cond1').removeAt(0));
+    this.runTask(() => get(this.context, 'cond1').removeAt(0));
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       get(this.context, 'cond1').pushObject('hello');
       get(this.context, 'cond2').pushObjects([1, 2, 3]);
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', emberA(['hello']));
       set(this.context, 'cond2', emberA());
     });
@@ -279,18 +279,18 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1T2F3');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1T2F3');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1.content', null);
       set(this.context, 'cond2.content', null);
     });
 
     this.assertText('F1F2F3');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1.content', EmberObject.create());
       set(this.context, 'cond2.content', {});
       set(this.context, 'cond3.content', { foo: 'bar' });
@@ -298,7 +298,7 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1T2T3');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
       set(this.context, 'cond2', ObjectProxy.create({ content: EmberObject.create() }));
       set(this.context, 'cond3', ObjectProxy.create({ content: null }));
@@ -315,25 +315,25 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1.content', null);
       set(this.context, 'cond2.content', null);
     });
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1.content', emberA(['hello']));
       set(this.context, 'cond2.content', emberA([1, 2, 3]));
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
       set(this.context, 'cond2', ArrayProxy.create({ content: null }));
     });
@@ -349,22 +349,22 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => get(this.context, 'cond1.content').removeAt(0));
+    this.runTask(() => get(this.context, 'cond1.content').removeAt(0));
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       get(this.context, 'cond1.content').pushObject('hello');
       get(this.context, 'cond2.content').pushObjects([1, 2, 3]);
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
       set(this.context, 'cond2', ArrayProxy.create({ content: emberA() }));
     });
@@ -383,22 +383,22 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.inZone(() => set(this.context, 'cond1', false));
+    this.runTask(() => set(this.context, 'cond1', false));
 
     this.assertText('T1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', true);
     });
 
     this.assertText('T1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', false);
     });
@@ -413,7 +413,7 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.takeSnapshot();
 
-    this.inZone(() => set(this.context, 'cond1', 'hello'));
+    this.runTask(() => set(this.context, 'cond1', 'hello'));
 
     this.assertText('T1');
 
@@ -427,7 +427,7 @@ class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.takeSnapshot();
 
-    this.inZone(() => set(this.context, 'cond1', ''));
+    this.runTask(() => set(this.context, 'cond1', ''));
 
     this.assertText('F1');
 
@@ -447,22 +447,22 @@ moduleFor('Syntax test: {{#if}}', class extends SharedConditionalsTest {
 
     this.assertText('T1');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('T1');
 
-    this.inZone(() => set(this.context, 'cond1', false));
+    this.runTask(() => set(this.context, 'cond1', false));
 
     this.assertText('');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', true);
     });
 
     this.assertText('T1T2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', false);
     });
@@ -486,22 +486,22 @@ moduleFor('Syntax test: {{#unless}}', class extends SharedConditionalsTest {
 
     this.assertText('F2');
 
-    this.inZone(() => this.rerender());
+    this.runTask(() => this.rerender());
 
     this.assertText('F2');
 
-    this.inZone(() => set(this.context, 'cond2', true));
+    this.runTask(() => set(this.context, 'cond2', true));
 
     this.assertText('');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', false);
       set(this.context, 'cond2', false);
     });
 
     this.assertText('F1F2');
 
-    this.inZone(() => {
+    this.runTask(() => {
       set(this.context, 'cond1', true);
       set(this.context, 'cond2', false);
     });
