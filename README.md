@@ -2,10 +2,12 @@
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/ember-ci.svg)](https://saucelabs.com/u/ember-ci)
 
 
-Ember.js is a Javascript framework that greatly reduces the effort and resources needed
-to build any web application. These projects often involve common, repetitive tasks which 
-Ember.js does for you - all you need to think about are your web app's awesome features 
-and slick design.
+Ember.js is a Javascript framework that greatly reduces the time, effort and resources needed
+to build any web application. It is focused on making you (the developer) as productive as possible by doing all the common, repetitive tasks involved in most web projects. 
+
+Ember.js also provides access to the most advanced features of Javascript, HTML and the Browser giving you everything you need to create your next killer web app.
+
+
 
 - [Website](http://emberjs.com)
 - [Guides](http://guides.emberjs.com)
