@@ -15,7 +15,7 @@ on building killer features and UI.
 - [Builds](http://emberjs.com/builds)
 
 ###What to Use Ember.js for and When to Use It
-*A javascript "framework", or "library", is a collection of javascript files comprising features and functionality that can be incorporated into a web-development project, thereby enhancing the project's capabilities and feature set. The best frameworks are modular, creating flexibility by allowing the developer to use as little or as much of the library as the project requires.*
+A javascript "framework", or "library", is a collection of javascript files comprising features and functionality that can be incorporated into a web-development project, thereby enhancing the project's capabilities and feature set. The best frameworks are modular, creating flexibility by allowing the developer to use as little or as much of the library as the project requires.
 
 The Ember.js framework enables developers to build scalable, single-page web applications gracefully and efficiently; it does so by providing a set of useful and easily incorporated functionality, functionality commonly found on dynamic, feature-rich web pages. Useful features and benefits of Ember include:
 
