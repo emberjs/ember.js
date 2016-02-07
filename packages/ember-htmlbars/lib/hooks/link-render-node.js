@@ -25,8 +25,9 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
     switch (path) {
       case 'unbound': return true;
       case 'unless':
-      case 'if': params[0] = shouldDisplay(params[0]); break;
+      case 'if': params[0] = shouldDisplay(params[0], toBool); break;
       case 'each': params[0] = eachParam(params[0]); break;
+      case 'with': params[0] = shouldDisplay(params[0], identity); break;
     }
   }
 
@@ -76,7 +77,7 @@ function eachParam(list) {
   return stream;
 }
 
-function shouldDisplay(predicate) {
+function shouldDisplay(predicate, coercer) {
   let length = getKey(predicate, 'length');
   let isTruthy = getKey(predicate, 'isTruthy');
 
@@ -93,13 +94,21 @@ function shouldDisplay(predicate) {
       return isTruthyVal;
     }
 
-    return !!predicateVal;
+    return coercer(predicateVal);
   }, 'ShouldDisplay');
 
   addDependency(stream, length);
   addDependency(stream, isTruthy);
 
   return stream;
+}
+
+function toBool(value) {
+  return !!value;
+}
+
+function identity(value) {
+  return value;
 }
 
 function getKey(obj, key) {
