@@ -3,18 +3,18 @@ import { set } from 'ember-metal/property_set';
 import {
   BASIC_TRUTHY_TESTS,
   BASIC_FALSY_TESTS,
-  SharedConditionalsTest
+  SharedSyntaxConditionalsTest
 } from '../../utils/shared-conditional-tests';
 import { RenderingTest } from '../../utils/test-case';
 
-moduleFor('Syntax test: {{#with}}', class extends SharedConditionalsTest {
+moduleFor('Syntax test: {{#with}}', class extends SharedSyntaxConditionalsTest {
   templateFor({ cond, truthy, falsy }) {
     return `{{#with ${cond}}}${truthy}{{else}}${falsy}{{/with}}`;
   }
 
 }, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
 
-moduleFor('Syntax test: {{#with as}}', class extends SharedConditionalsTest{
+moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTest {
   templateFor({ cond, truthy, falsy }) {
     return `{{#with ${cond} as |test|}}${truthy}{{else}}${falsy}{{/with}}`;
   }
