@@ -99,6 +99,79 @@ QUnit.test('re-using the same variable with different #with blocks does not over
   equal(view.$().text(), 'Admin: Tom Dale User: Yehuda Katz', 'should be properly scoped');
 });
 
+QUnit.test('should respect `isTruthy` field on a view', function() {
+  view = EmberView.create({
+    template: compile('{{#with view}}True{{else}}False{{/with}}'),
+    isTruthy: true
+  });
+  runAppend(view);
+
+  equal(view.$().text(), 'True');
+
+  run(function() {
+    set(view, 'isTruthy', false);
+  });
+
+  equal(view.$().text(), 'False');
+
+  run(function() {
+    set(view, 'isTruthy', true);
+  });
+
+  equal(view.$().text(), 'True');
+});
+
+QUnit.test('should respect `isTruthy` field on an object', function() {
+  view = EmberView.create({
+    template: compile('{{#with view.foo}}True{{else}}False{{/with}}'),
+    foo: {
+      isTruthy: true
+    }
+  });
+  runAppend(view);
+
+  equal(view.$().text(), 'True');
+
+  run(function() {
+    set(view, 'foo.isTruthy', false);
+  });
+
+  equal(view.$().text(), 'False');
+
+  run(function() {
+    set(view, 'foo.isTruthy', true);
+  });
+
+  equal(view.$().text(), 'True');
+});
+
+QUnit.test('should respect `isTruthy` field on the context object', function() {
+  view = EmberView.create({
+    template: compile('{{#with foo}}True{{else}}False{{/with}}'),
+    context: {
+      foo: {
+        isTruthy: true
+      }
+    }
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'True');
+
+  run(function() {
+    set(view, 'context.foo.isTruthy', false);
+  });
+
+  equal(view.$().text(), 'False');
+
+  run(function() {
+    set(view, 'context.foo.isTruthy', true);
+  });
+
+  equal(view.$().text(), 'True');
+});
+
 QUnit.test('the scoped variable is not available outside the {{with}} block.', function() {
   view = EmberView.create({
     template: compile('{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}'),
