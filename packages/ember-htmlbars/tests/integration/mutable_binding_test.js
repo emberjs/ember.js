@@ -1,10 +1,8 @@
-import isEnabled from 'ember-metal/features';
 import EmberView from 'ember-views/views/view';
 //import jQuery from "ember-views/system/jquery";
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
-import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
@@ -339,79 +337,3 @@ QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts
   run(() => inner.attrs.model.update(42));
   assert.equal(inner.attrs.model.value, 42);
 });
-
-
-// jscs:disable validateIndentation
-if (isEnabled('ember-htmlbars-component-generation')) {
-QUnit.test('mutable bindings work as angle-bracket component attributes', function(assert) {
-  var middle;
-
-  owner.register('component:middle-mut', GlimmerComponent.extend({
-    // no longer mutable
-    layout: compile('<bottom-mut setMe={{attrs.value}} />'),
-
-    didInsertElement() {
-      middle = this;
-    }
-  }));
-
-  owner.register('component:bottom-mut', GlimmerComponent.extend({
-    layout: compile('<p class="bottom">{{attrs.setMe}}</p>')
-  }));
-
-  view = EmberView.create({
-    [OWNER]: owner,
-    template: compile('<middle-mut value={{mut view.val}} />'),
-    val: 12
-  });
-
-  runAppend(view);
-
-  assert.strictEqual(view.$('p.bottom').text(), '12');
-
-  run(() => middle.attrs.value.update(13));
-
-  assert.strictEqual(middle.attrs.value.value, 13, 'precond - the set took effect');
-  assert.strictEqual(view.$('p.bottom').text(), '13');
-  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
-});
-
-QUnit.test('a simple mutable binding using `mut` can be converted into an immutable binding with angle-bracket components', function(assert) {
-  var middle, bottom;
-
-  owner.register('component:middle-mut', GlimmerComponent.extend({
-    // no longer mutable
-    layout: compile('<bottom-mut setMe={{attrs.value}} />'),
-
-    didInsertElement() {
-      middle = this;
-    }
-  }));
-
-  owner.register('component:bottom-mut', GlimmerComponent.extend({
-    layout: compile('<p class="bottom">{{attrs.setMe}}</p>'),
-
-    didInsertElement() {
-      bottom = this;
-    }
-  }));
-
-  view = EmberView.create({
-    [OWNER]: owner,
-    template: compile('<middle-mut value={{mut view.val}} />'),
-    val: 12
-  });
-
-  runAppend(view);
-
-  assert.strictEqual(view.$('p.bottom').text(), '12');
-
-  run(() => middle.attrs.value.update(13));
-
-  assert.strictEqual(middle.attrs.value.value, 13, 'precond - the set took effect');
-  assert.strictEqual(bottom.attrs.setMe, 13, 'the mutable binding has been converted to an immutable cell');
-  assert.strictEqual(view.$('p.bottom').text(), '13');
-  assert.strictEqual(view.get('val'), 13, 'the set propagated back up');
-});
-}
-// jscs:enable validateIndentation

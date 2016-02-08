@@ -127,7 +127,6 @@ import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
 import hashHelper from 'ember-htmlbars/helpers/hash';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
-import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import {
   getTemplates,
   setTemplates
@@ -171,10 +170,6 @@ Ember.HTMLBars = {
   DOMHelper
 };
 
-if (isEnabled('ember-htmlbars-component-generation')) {
-  Ember.GlimmerComponent = GlimmerComponent;
-}
-
 Helper.helper = makeHelper;
 Ember.Helper = Helper;
 
@@ -193,4 +188,3 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   get: getTemplates,
   set: setTemplates
 });
-

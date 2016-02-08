@@ -2,11 +2,9 @@ import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
-import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import isEnabled from 'ember-metal/features';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
@@ -17,13 +15,6 @@ let styles = [{
   name: 'curly',
   class: Component
 }];
-
-if (isEnabled('ember-htmlbars-component-generation')) {
-  styles.push({
-    name: 'angle',
-    class: GlimmerComponent
-  });
-}
 
 styles.forEach(style => {
   function invoke(name, hash = {}) {

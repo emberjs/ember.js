@@ -1,5 +1,3 @@
-import isEnabled from 'ember-metal/features';
-
 function TransformTopLevelComponents() {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
@@ -62,9 +60,6 @@ function hasSingleComponentNode(program, componentCallback, elementCallback) {
 
   if (lastComponentNode.type === 'ComponentNode') {
     componentCallback(lastComponentNode);
-  } else if (isEnabled('ember-htmlbars-component-generation')) {
-    let component = elementCallback(lastComponentNode);
-    body.splice(lastIndex, 1, component);
   }
 }
 
