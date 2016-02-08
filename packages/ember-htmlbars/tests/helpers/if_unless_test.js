@@ -470,6 +470,23 @@ QUnit.test('`if` helper with inline form: respects length test when list itself'
   equal(view.$().text(), 'falsy');
 });
 
+QUnit.test('`if` helper with inline form: respects array size truthiness when within another helper', function() {
+  view = EmberView.create({
+    items: Ember.A([]),
+    template: compile('{{concat (if view.items "Some" "None")}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'None');
+
+  run(function() {
+    view.get('items').pushObject('item');
+  });
+
+  equal(view.$().text(), 'Some');
+});
+
 QUnit.test('`if` helper with inline form: updates when given a falsey second argument', function() {
   view = EmberView.create({
     conditional: false,
