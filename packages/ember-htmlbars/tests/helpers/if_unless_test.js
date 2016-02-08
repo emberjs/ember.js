@@ -470,10 +470,11 @@ QUnit.test('`if` helper with inline form: respects length test when list itself'
   equal(view.$().text(), 'falsy');
 });
 
-QUnit.test('`if` helper with inline form: respects array size truthiness when within another helper', function() {
+QUnit.test('`if` helper with inline form: respects array size truthiness when in a sub expression', function() {
   view = EmberView.create({
+    conditional: true,
     items: Ember.A([]),
-    template: compile('{{concat (if view.items "Some" "None")}}')
+    template: compile('{{if view.conditional (if view.items "Some" "None")}}')
   });
 
   runAppend(view);
