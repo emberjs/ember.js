@@ -17,9 +17,7 @@ function isVolatile(obj) {
   return !(isObject(obj) && obj.isDescriptor && obj._volatile === false);
 }
 
-function ChainWatchers(obj) {
-  // this obj would be the referencing chain node's parent node's value
-  this.obj = obj;
+function ChainWatchers() {
   // chain nodes that reference a key in this obj by key
   // we only create ChainWatchers when we are going to add them
   // so create this upfront
@@ -104,31 +102,8 @@ ChainWatchers.prototype = {
   }
 };
 
-var pendingQueue = [];
-
-// attempts to add the pendingQueue chains again. If some of them end up
-// back in the queue and reschedule is true, schedules a timeout to try
-// again.
-export function flushPendingChains() {
-  if (pendingQueue.length === 0) {
-    return;
-  }
-
-  var queue = pendingQueue;
-  pendingQueue = [];
-
-  queue.forEach((q) => q[0].add(q[1]));
-
-  warn(
-    'Watching an undefined global, Ember expects watched globals to be ' +
-    'setup by the time the run loop is flushed, check for typos',
-    pendingQueue.length === 0,
-    { id: 'ember-metal.chains-flush-pending-chains' }
-  );
-}
-
-function makeChainWatcher(obj) {
-  return new ChainWatchers(obj);
+function makeChainWatcher() {
+  return new ChainWatchers();
 }
 
 function addChainWatcher(obj, keyName, node) {
@@ -340,23 +315,19 @@ ChainNode.prototype = {
     }
 
     if (affected && this._parent) {
-      this._parent.populateAffected(this, this._key, 1, affected);
+      this._parent.populateAffected(this._key, 1, affected);
     }
   },
 
-  populateAffected(chain, path, depth, affected) {
+  populateAffected(path, depth, affected) {
     if (this._key) {
       path = this._key + '.' + path;
     }
 
     if (this._parent) {
-      this._parent.populateAffected(this, path, depth + 1, affected);
+      this._parent.populateAffected(path, depth + 1, affected);
     } else {
       if (depth > 1) {
-        affected.push(this.value(), path);
-      }
-      path = 'this.' + path;
-      if (this._paths[path] > 0) {
         affected.push(this.value(), path);
       }
     }

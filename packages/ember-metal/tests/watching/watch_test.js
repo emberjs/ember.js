@@ -13,7 +13,7 @@ import {
 
 var willCount, didCount,
     willKeys, didKeys,
-    originalLookup, lookup, Global;
+    originalLookup, lookup;
 
 QUnit.module('watch', {
   setup() {
@@ -168,35 +168,6 @@ testBoth('watching an object value then unwatching should restore old value', fu
 
   unwatch(obj, 'foo.bar.baz.biff');
   equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
-});
-
-testBoth('watching a global object that does not yet exist should queue', function(get, set) {
-  lookup['Global'] = Global = null;
-
-  var obj = {};
-  addListeners(obj, 'Global.foo');
-
-  watch(obj, 'Global.foo'); // only works on global chained props
-
-  equal(willCount, 0, 'should not have fired yet');
-  equal(didCount, 0, 'should not have fired yet');
-
-  lookup['Global'] = Global = { foo: 'bar' };
-  addListeners(Global, 'foo');
-
-  watch.flushPending(); // this will also be invoked automatically on ready
-
-  equal(willCount, 0, 'should not have fired yet');
-  equal(didCount, 0, 'should not have fired yet');
-
-  set(Global, 'foo', 'baz');
-
-  // should fire twice because this is a chained property (once on key, once
-  // on path)
-  equal(willCount, 2, 'should be watching');
-  equal(didCount, 2, 'should be watching');
-
-  lookup['Global'] = Global = null; // reset
 });
 
 QUnit.test('when watching another object, destroy should remove chain watchers from the other object', function() {

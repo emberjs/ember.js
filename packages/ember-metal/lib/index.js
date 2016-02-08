@@ -90,7 +90,6 @@ import {
 import {
   ChainNode,
   finishChains,
-  flushPendingChains,
   removeChainWatcher
 } from 'ember-metal/chains';
 import {
@@ -263,7 +262,6 @@ Ember.setProperties = setProperties;
 Ember.watchKey   = watchKey;
 Ember.unwatchKey = unwatchKey;
 
-Ember.flushPendingChains = flushPendingChains;
 Ember.removeChainWatcher = removeChainWatcher;
 Ember._ChainNode = ChainNode;
 Ember.finishChains = finishChains;
