@@ -4,7 +4,7 @@ import {
   BASIC_TRUTHY_TESTS,
   BASIC_FALSY_TESTS,
   SharedConditionalsTest
-} from './shared-conditional-tests';
+} from '../../utils/shared-conditional-tests';
 
 moduleFor('Syntax test: {{#with}}', class extends SharedConditionalsTest {
   templateFor({ cond, truthy, falsy }) {

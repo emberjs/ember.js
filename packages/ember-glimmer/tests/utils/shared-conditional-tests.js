@@ -1,4 +1,4 @@
-import { RenderingTest } from '../../utils/test-case';
+import { RenderingTest } from './test-case';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import assign from 'ember-metal/assign';
