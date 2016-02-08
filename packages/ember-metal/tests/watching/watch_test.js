@@ -199,27 +199,6 @@ testBoth('watching a global object that does not yet exist should queue', functi
   lookup['Global'] = Global = null; // reset
 });
 
-QUnit.test('when watching a global object, destroy should remove chain watchers from the global object', function() {
-  lookup['Global'] = Global = { foo: 'bar' };
-  var obj = {};
-  addListeners(obj, 'Global.foo');
-
-  watch(obj, 'Global.foo');
-
-  var meta_Global = Ember.meta(Global);
-  var chainNode = Ember.meta(obj).readableChains()._chains.Global._chains.foo;
-
-  equal(meta_Global.peekWatching('foo'), 1, 'should be watching foo');
-  equal(meta_Global.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
-
-  destroy(obj);
-
-  equal(meta_Global.peekWatching('foo'), 0, 'should not be watching foo');
-  equal(meta_Global.readableChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
-
-  lookup['Global'] = Global = null; // reset
-});
-
 QUnit.test('when watching another object, destroy should remove chain watchers from the other object', function() {
   var objA = {};
   var objB = { foo: 'bar' };

@@ -41,8 +41,7 @@ import Logger from 'ember-metal/logger';
 import {
   _getPath,
   get,
-  getWithDefault,
-  normalizeTuple
+  getWithDefault
 } from 'ember-metal/property_get';
 
 import {
@@ -227,7 +226,6 @@ Ember.Logger = Logger;
 
 Ember.get            = get;
 Ember.getWithDefault = getWithDefault;
-Ember.normalizeTuple = normalizeTuple;
 Ember._getPath       = _getPath;
 
 Ember.on                  = on;

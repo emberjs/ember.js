@@ -784,8 +784,7 @@ testBoth('_addBeforeObserver should respect targets with methods', function(get,
 // CHAINED OBSERVERS
 //
 
-var obj, count, lookup;
-var originalLookup = Ember.lookup;
+var obj, count;
 
 QUnit.module('addObserver - dependentkey with chained properties', {
   setup() {
@@ -796,11 +795,8 @@ QUnit.module('addObserver - dependentkey with chained properties', {
             biff: 'BIFF'
           }
         }
-      }
-    };
-
-    Ember.lookup = lookup = {
-      Global: {
+      },
+      Capital: {
         foo: {
           bar: {
             baz: {
@@ -816,7 +812,6 @@ QUnit.module('addObserver - dependentkey with chained properties', {
 
   teardown() {
     obj = count = null;
-    Ember.lookup = originalLookup;
   }
 });
 
@@ -875,38 +870,37 @@ testBoth('depending on a simple chain', function(get, set) {
   equal(count, 6, 'should be not have invoked observer');
 });
 
-testBoth('depending on a Global chain', function(get, set) {
-  var Global = lookup.Global;
+testBoth('depending on a chain with a capitalized first key', function(get, set) {
   var val;
 
-  addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key) {
-    val = get(lookup, key);
+  addObserver(obj, 'Capital.foo.bar.baz.biff', function(target, key) {
+    val = get(obj, key);
     count++;
   });
 
-  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(get(obj, 'Capital.foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 1);
 
-  set(get(Global, 'foo.bar'), 'baz', { biff: 'BLARG' });
+  set(get(obj, 'Capital.foo.bar'), 'baz', { biff: 'BLARG' });
   equal(val, 'BLARG');
   equal(count, 2);
 
-  set(get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
+  set(get(obj, 'Capital.foo'), 'bar', { baz: { biff: 'BOOM' } });
   equal(val, 'BOOM');
   equal(count, 3);
 
-  set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
+  set(obj, 'Capital.foo', { bar: { baz: { biff: 'BLARG' } } });
   equal(val, 'BLARG');
   equal(count, 4);
 
-  set(get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(get(obj, 'Capital.foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 5);
 
   var foo = get(obj, 'foo');
 
-  set(Global, 'foo', 'BOO');
+  set(obj, 'Capital.foo', 'BOO');
   equal(val, undefined);
   equal(count, 6);
 

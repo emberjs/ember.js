@@ -730,7 +730,7 @@ QUnit.test('ContainerView is observable [DEPRECATED]', function() {
   container = ContainerView.create();
   var observerFired = false;
   expectDeprecation(function() {
-    container.addObserver('this.[]', function() {
+    container.addObserver('[]', function() {
       observerFired = true;
     });
   }, /ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView./);
