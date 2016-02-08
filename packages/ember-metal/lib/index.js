@@ -173,9 +173,12 @@ import {
 } from 'ember-metal/mixin';
 import {
   Binding,
-  bind,
-  isGlobalPath
+  bind
 } from 'ember-metal/binding';
+import {
+  isGlobalPath
+} from 'ember-metal/path_cache';
+
 import run from 'ember-metal/run_loop';
 import Libraries from 'ember-metal/libraries';
 import isNone from 'ember-metal/is_none';

@@ -1,17 +1,20 @@
 import Ember from 'ember-metal/core'; // Ember.LOG_BINDINGS
 import Logger from 'ember-metal/logger';
+import run from 'ember-metal/run_loop';
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { trySet } from 'ember-metal/property_set';
 import { guidFor } from 'ember-metal/utils';
+import { addListener } from 'ember-metal/events';
 import {
   addObserver,
   removeObserver,
   _suspendObserver
 } from 'ember-metal/observer';
-import run from 'ember-metal/run_loop';
 import {
-  isGlobal as isGlobalPath
+  isGlobalPath,
+  getFirstKey,
+  getTailPath
 } from 'ember-metal/path_cache';
 
 
@@ -38,31 +41,22 @@ import {
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
-/**
-  Returns true if the provided path is global (e.g., `MyApp.fooController.bar`)
-  instead of local (`foo.bar.baz`).
-
-  @method isGlobalPath
-  @for Ember
-  @private
-  @param {String} path
-  @return Boolean
-*/
-
-function getWithGlobals(obj, path) {
-  return get(isGlobalPath(path) ? Ember.lookup : obj, path);
-}
-
 // ..........................................................
 // BINDING
 //
 
 function Binding(toPath, fromPath) {
-  this._direction = undefined;
+  // Configuration
   this._from = fromPath;
-  this._to   = toPath;
-  this._readyToSync = undefined;
+  this._to = toPath;
   this._oneWay = undefined;
+
+  // State
+  this._direction = undefined;
+  this._readyToSync = undefined;
+  this._fromObj = undefined;
+  this._fromPath = undefined;
+  this._toObj = undefined;
 }
 
 /**
@@ -169,19 +163,41 @@ Binding.prototype = {
   connect(obj) {
     assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    var fromPath = this._from;
-    var toPath = this._to;
-    trySet(obj, toPath, getWithGlobals(obj, fromPath));
+    let fromObj, fromPath;
+
+    // If the binding's "from" path could be interpreted as a global, verify
+    // whether the path refers to a global or not by consulting `Ember.lookup`.
+    if (isGlobalPath(this._from)) {
+      let name = getFirstKey(this._from);
+      let possibleGlobal = Ember.lookup[name];
+
+      if (possibleGlobal) {
+        fromObj = possibleGlobal;
+        fromPath = getTailPath(this._from);
+      }
+    }
+
+    if (fromObj === undefined) {
+      fromObj = obj;
+      fromPath = this._from;
+    }
+
+    trySet(obj, this._to, get(fromObj, fromPath));
 
     // Add an observer on the object to be notified when the binding should be updated.
-    addObserver(obj, fromPath, this, this.fromDidChange);
+    addObserver(fromObj, fromPath, this, 'fromDidChange');
 
     // If the binding is a two-way binding, also set up an observer on the target.
     if (!this._oneWay) {
-      addObserver(obj, toPath, this, this.toDidChange);
+      addObserver(obj, this._to, this, 'toDidChange');
     }
 
+    addListener(obj, 'willDestroy', this, 'disconnect');
+
     this._readyToSync = true;
+    this._fromObj = fromObj;
+    this._fromPath = fromPath;
+    this._toObj = obj;
 
     return this;
   },
@@ -191,22 +207,19 @@ Binding.prototype = {
     will not usually need to call this method.
 
     @method disconnect
-    @param {Object} obj The root object you passed when connecting the binding.
     @return {Ember.Binding} `this`
     @public
   */
-  disconnect(obj) {
-    assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
-
-    var twoWay = !this._oneWay;
+  disconnect() {
+    assert('Must pass a valid object to Ember.Binding.disconnect()', !!this._toObj);
 
     // Remove an observer on the object so we're no longer notified of
     // changes that should update bindings.
-    removeObserver(obj, this._from, this, this.fromDidChange);
+    removeObserver(this._fromObj, this._fromPath, this, 'fromDidChange');
 
     // If the binding is two-way, remove the observer from the target as well.
-    if (twoWay) {
-      removeObserver(obj, this._to, this, this.toDidChange);
+    if (!this._oneWay) {
+      removeObserver(this._toObj, this._to, this, 'toDidChange');
     }
 
     this._readyToSync = false; // Disable scheduled syncs...
@@ -219,20 +232,20 @@ Binding.prototype = {
 
   /* Called when the from side changes. */
   fromDidChange(target) {
-    this._scheduleSync(target, 'fwd');
+    this._scheduleSync('fwd');
   },
 
   /* Called when the to side changes. */
   toDidChange(target) {
-    this._scheduleSync(target, 'back');
+    this._scheduleSync('back');
   },
 
-  _scheduleSync(obj, dir) {
+  _scheduleSync(dir) {
     var existingDir = this._direction;
 
     // If we haven't scheduled the binding yet, schedule it.
     if (existingDir === undefined) {
-      run.schedule('sync', this, this._sync, obj);
+      run.schedule('sync', this, '_sync');
       this._direction  = dir;
     }
 
@@ -243,42 +256,44 @@ Binding.prototype = {
     }
   },
 
-  _sync(obj) {
+  _sync() {
     var log = Ember.LOG_BINDINGS;
 
+    let toObj = this._toObj;
+
     // Don't synchronize destroyed objects or disconnected bindings.
-    if (obj.isDestroyed || !this._readyToSync) { return; }
+    if (toObj.isDestroyed || !this._readyToSync) { return; }
 
     // Get the direction of the binding for the object we are
     // synchronizing from.
     var direction = this._direction;
 
-    var fromPath = this._from;
-    var toPath = this._to;
+    var fromObj = this._fromObj;
+    var fromPath = this._fromPath;
 
     this._direction = undefined;
 
     // If we're synchronizing from the remote object...
     if (direction === 'fwd') {
-      var fromValue = getWithGlobals(obj, this._from);
+      var fromValue = get(fromObj, fromPath);
       if (log) {
-        Logger.log(' ', this.toString(), '->', fromValue, obj);
+        Logger.log(' ', this.toString(), '->', fromValue, fromObj);
       }
       if (this._oneWay) {
-        trySet(obj, toPath, fromValue);
+        trySet(toObj, this._to, fromValue);
       } else {
-        _suspendObserver(obj, toPath, this, this.toDidChange, function () {
-          trySet(obj, toPath, fromValue);
+        _suspendObserver(toObj, this._to, this, 'toDidChange', function() {
+          trySet(toObj, this._to, fromValue);
         });
       }
     // If we're synchronizing *to* the remote object.
     } else if (direction === 'back') {
-      var toValue = get(obj, this._to);
+      var toValue = get(toObj, this._to);
       if (log) {
-        Logger.log(' ', this.toString(), '<-', toValue, obj);
+        Logger.log(' ', this.toString(), '<-', toValue, toObj);
       }
-      _suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
-        trySet(isGlobalPath(fromPath) ? Ember.lookup : obj, fromPath, toValue);
+      _suspendObserver(fromObj, fromPath, this, 'fromDidChange', function() {
+        trySet(fromObj, fromPath, toValue);
       });
     }
   }
@@ -469,6 +484,5 @@ export function bind(obj, to, from) {
 }
 
 export {
-  Binding,
-  isGlobalPath
+  Binding
 };
