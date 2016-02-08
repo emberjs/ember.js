@@ -435,4 +435,25 @@ export class SharedConditionalsTest extends AbstractConditionalsTest {
 
     this.assertInvariants();
   }
+
+  ['@test it tests for `isTruthy` on the context if available']() {
+    let template = this.templateFor({ cond: 'this', truthy: 'T1', falsy: 'F1' });
+
+    this.render(template, { isTruthy: true });
+
+    this.assertText('T1');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('T1');
+
+    this.runTask(() => set(this.context, 'isTruthy', false));
+
+    this.assertText('F1');
+
+    this.runTask(() => set(this.context, 'isTruthy', true));
+
+    this.assertText('T1');
+  }
+
 }
