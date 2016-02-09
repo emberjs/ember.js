@@ -126,7 +126,7 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['clear' + capitalized] = function() {
-    this[key] = new EmptyObject();
+    this[key] = undefined;
   };
 
   Meta.prototype['deleteFrom' + capitalized] = function(subkey) {

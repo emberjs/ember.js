@@ -1,7 +1,8 @@
 import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
-import {computed} from 'ember-metal/computed';
-import {Mixin, observer} from 'ember-metal/mixin';
+import { meta } from 'ember-metal/meta';
+import { computed } from 'ember-metal/computed';
+import { Mixin, observer } from 'ember-metal/mixin';
 import EmberObject from 'ember-runtime/system/object';
 
 var moduleOptions, originalLookup;
@@ -150,4 +151,10 @@ QUnit.test('EmberObject.create can take undefined as a parameter', function() {
 QUnit.test('EmberObject.create can take null as a parameter', function() {
   var o = EmberObject.create(null);
   deepEqual(EmberObject.create(), o);
+});
+
+QUnit.test('EmberObject.create avoids allocating a binding map when not necessary', function() {
+  let o = EmberObject.create();
+  let m = meta(o);
+  ok(!m.peekBindings(), 'A binding map is not allocated');
 });
