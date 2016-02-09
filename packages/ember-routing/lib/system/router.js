@@ -321,7 +321,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
-    @private
+    @public
   */
   transitionTo(...args) {
     var queryParams;
