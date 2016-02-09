@@ -1,5 +1,4 @@
-import { warn } from 'ember-metal/debug';
-import { get, normalizeTuple } from 'ember-metal/property_get';
+import { get } from 'ember-metal/property_get';
 import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
 import EmptyObject from 'ember-metal/empty_object';
@@ -18,9 +17,7 @@ function isVolatile(obj) {
   return !(isObject(obj) && obj.isDescriptor && obj._volatile === false);
 }
 
-function ChainWatchers(obj) {
-  // this obj would be the referencing chain node's parent node's value
-  this.obj = obj;
+function ChainWatchers() {
   // chain nodes that reference a key in this obj by key
   // we only create ChainWatchers when we are going to add them
   // so create this upfront
@@ -105,31 +102,8 @@ ChainWatchers.prototype = {
   }
 };
 
-var pendingQueue = [];
-
-// attempts to add the pendingQueue chains again. If some of them end up
-// back in the queue and reschedule is true, schedules a timeout to try
-// again.
-export function flushPendingChains() {
-  if (pendingQueue.length === 0) {
-    return;
-  }
-
-  var queue = pendingQueue;
-  pendingQueue = [];
-
-  queue.forEach((q) => q[0].add(q[1]));
-
-  warn(
-    'Watching an undefined global, Ember expects watched globals to be ' +
-    'setup by the time the run loop is flushed, check for typos',
-    pendingQueue.length === 0,
-    { id: 'ember-metal.chains-flush-pending-chains' }
-  );
-}
-
-function makeChainWatcher(obj) {
-  return new ChainWatchers(obj);
+function makeChainWatcher() {
+  return new ChainWatchers();
 }
 
 function addChainWatcher(obj, keyName, node) {
@@ -252,65 +226,30 @@ ChainNode.prototype = {
   // called on the root node of a chain to setup watchers on the specified
   // path.
   add(path) {
-    var obj, tuple, key, src, paths;
-
-    paths = this._paths;
+    let paths = this._paths;
     paths[path] = (paths[path] || 0) + 1;
 
-    obj = this.value();
-    tuple = normalizeTuple(obj, path);
+    let key = firstKey(path);
+    let tail = path.slice(key.length + 1);
 
-    // the path was a local path
-    if (tuple[0] && tuple[0] === obj) {
-      path = tuple[1];
-      key  = firstKey(path);
-      path = path.slice(key.length + 1);
-
-    // global path, but object does not exist yet.
-    // put into a queue and try to connect later.
-    } else if (!tuple[0]) {
-      pendingQueue.push([this, path]);
-      tuple.length = 0;
-      return;
-
-    // global path, and object already exists
-    } else {
-      src  = tuple[0];
-      key  = path.slice(0, 0 - (tuple[1].length + 1));
-      path = tuple[1];
-    }
-
-    tuple.length = 0;
-    this.chain(key, path, src);
+    this.chain(key, tail);
   },
 
   // called on the root node of a chain to teardown watcher on the specified
   // path
   remove(path) {
-    var obj, tuple, key, src, paths;
-
-    paths = this._paths;
+    let paths = this._paths;
     if (paths[path] > 0) {
       paths[path]--;
     }
 
-    obj = this.value();
-    tuple = normalizeTuple(obj, path);
-    if (tuple[0] === obj) {
-      path = tuple[1];
-      key  = firstKey(path);
-      path = path.slice(key.length + 1);
-    } else {
-      src  = tuple[0];
-      key  = path.slice(0, 0 - (tuple[1].length + 1));
-      path = tuple[1];
-    }
+    let key = firstKey(path);
+    let tail = path.slice(key.length + 1);
 
-    tuple.length = 0;
-    this.unchain(key, path);
+    this.unchain(key, tail);
   },
 
-  chain(key, path, src) {
+  chain(key, path) {
     var chains = this._chains;
     var node;
     if (chains === undefined) {
@@ -320,7 +259,7 @@ ChainNode.prototype = {
     }
 
     if (node === undefined) {
-      node = chains[key] = new ChainNode(this, key, src);
+      node = chains[key] = new ChainNode(this, key, undefined);
     }
 
     node.count++; // count chains...
@@ -329,7 +268,7 @@ ChainNode.prototype = {
     if (path) {
       key = firstKey(path);
       path = path.slice(key.length + 1);
-      node.chain(key, path); // NOTE: no src means it will observe changes...
+      node.chain(key, path);
     }
   },
 
@@ -376,23 +315,19 @@ ChainNode.prototype = {
     }
 
     if (affected && this._parent) {
-      this._parent.populateAffected(this, this._key, 1, affected);
+      this._parent.populateAffected(this._key, 1, affected);
     }
   },
 
-  populateAffected(chain, path, depth, affected) {
+  populateAffected(path, depth, affected) {
     if (this._key) {
       path = this._key + '.' + path;
     }
 
     if (this._parent) {
-      this._parent.populateAffected(this, path, depth + 1, affected);
+      this._parent.populateAffected(path, depth + 1, affected);
     } else {
       if (depth > 1) {
-        affected.push(this.value(), path);
-      }
-      path = 'this.' + path;
-      if (this._paths[path] > 0) {
         affected.push(this.value(), path);
       }
     }

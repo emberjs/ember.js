@@ -3,8 +3,7 @@
 */
 
 import {
-  removeChainWatcher,
-  flushPendingChains
+  removeChainWatcher
 } from 'ember-metal/chains';
 import {
   watchKey,
@@ -57,8 +56,6 @@ export function watcherCount(obj, key) {
   var meta = peekMeta(obj);
   return (meta && meta.peekWatching(key)) || 0;
 }
-
-watch.flushPending = flushPendingChains;
 
 export function unwatch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...

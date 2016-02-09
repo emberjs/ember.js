@@ -41,8 +41,7 @@ import Logger from 'ember-metal/logger';
 import {
   _getPath,
   get,
-  getWithDefault,
-  normalizeTuple
+  getWithDefault
 } from 'ember-metal/property_get';
 
 import {
@@ -91,7 +90,6 @@ import {
 import {
   ChainNode,
   finishChains,
-  flushPendingChains,
   removeChainWatcher
 } from 'ember-metal/chains';
 import {
@@ -173,9 +171,12 @@ import {
 } from 'ember-metal/mixin';
 import {
   Binding,
-  bind,
-  isGlobalPath
+  bind
 } from 'ember-metal/binding';
+import {
+  isGlobalPath
+} from 'ember-metal/path_cache';
+
 import run from 'ember-metal/run_loop';
 import Libraries from 'ember-metal/libraries';
 import isNone from 'ember-metal/is_none';
@@ -224,7 +225,6 @@ Ember.Logger = Logger;
 
 Ember.get            = get;
 Ember.getWithDefault = getWithDefault;
-Ember.normalizeTuple = normalizeTuple;
 Ember._getPath       = _getPath;
 
 Ember.on                  = on;
@@ -262,7 +262,6 @@ Ember.setProperties = setProperties;
 Ember.watchKey   = watchKey;
 Ember.unwatchKey = unwatchKey;
 
-Ember.flushPendingChains = flushPendingChains;
 Ember.removeChainWatcher = removeChainWatcher;
 Ember._ChainNode = ChainNode;
 Ember.finishChains = finishChains;

@@ -13,7 +13,7 @@ import {
 
 var willCount, didCount,
     willKeys, didKeys,
-    originalLookup, lookup, Global;
+    originalLookup, lookup;
 
 QUnit.module('watch', {
   setup() {
@@ -168,56 +168,6 @@ testBoth('watching an object value then unwatching should restore old value', fu
 
   unwatch(obj, 'foo.bar.baz.biff');
   equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
-});
-
-testBoth('watching a global object that does not yet exist should queue', function(get, set) {
-  lookup['Global'] = Global = null;
-
-  var obj = {};
-  addListeners(obj, 'Global.foo');
-
-  watch(obj, 'Global.foo'); // only works on global chained props
-
-  equal(willCount, 0, 'should not have fired yet');
-  equal(didCount, 0, 'should not have fired yet');
-
-  lookup['Global'] = Global = { foo: 'bar' };
-  addListeners(Global, 'foo');
-
-  watch.flushPending(); // this will also be invoked automatically on ready
-
-  equal(willCount, 0, 'should not have fired yet');
-  equal(didCount, 0, 'should not have fired yet');
-
-  set(Global, 'foo', 'baz');
-
-  // should fire twice because this is a chained property (once on key, once
-  // on path)
-  equal(willCount, 2, 'should be watching');
-  equal(didCount, 2, 'should be watching');
-
-  lookup['Global'] = Global = null; // reset
-});
-
-QUnit.test('when watching a global object, destroy should remove chain watchers from the global object', function() {
-  lookup['Global'] = Global = { foo: 'bar' };
-  var obj = {};
-  addListeners(obj, 'Global.foo');
-
-  watch(obj, 'Global.foo');
-
-  var meta_Global = Ember.meta(Global);
-  var chainNode = Ember.meta(obj).readableChains()._chains.Global._chains.foo;
-
-  equal(meta_Global.peekWatching('foo'), 1, 'should be watching foo');
-  equal(meta_Global.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
-
-  destroy(obj);
-
-  equal(meta_Global.peekWatching('foo'), 0, 'should not be watching foo');
-  equal(meta_Global.readableChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
-
-  lookup['Global'] = Global = null; // reset
 });
 
 QUnit.test('when watching another object, destroy should remove chain watchers from the other object', function() {

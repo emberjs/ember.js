@@ -2,7 +2,6 @@ import Ember from 'ember-metal/core';
 import {get} from 'ember-metal/property_get';
 import {set} from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-import {destroy} from 'ember-metal/watching';
 import EmberObject from 'ember-runtime/system/object';
 
 /*
@@ -160,7 +159,9 @@ QUnit.test('fooBinding: should disconnect bindings when destroyed', function () 
 
   equal(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
 
-  destroy(testObject);
+  run(() => {
+    testObject.destroy();
+  });
 
   run(function() {
     set(TestNamespace.fromObject, 'bar', 'BIFF');

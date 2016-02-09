@@ -2,16 +2,8 @@
 @module ember-metal
 */
 
-import Ember from 'ember-metal/core';
 import { assert } from 'ember-metal/debug';
-import EmberError from 'ember-metal/error';
-import {
-  isGlobal as detectIsGlobal,
-  isPath,
-  hasThis as pathHasThis
-} from 'ember-metal/path_cache';
-
-var FIRST_KEY = /^([^\.]+)/;
+import { isPath, hasThis } from 'ember-metal/path_cache';
 
 // ..........................................................
 // GET AND SET
@@ -49,7 +41,7 @@ export function get(obj, keyName) {
   assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
   assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+  assert(`'this' in paths is not supported`, !hasThis(keyName));
 
   // Helpers that operate with 'this' within an #each
   if (keyName === '') {
@@ -78,75 +70,24 @@ export function get(obj, keyName) {
   }
 }
 
-/**
-  Normalizes a target/path pair to reflect that actual target/path that should
-  be observed, etc. This takes into account passing in global property
-  paths (i.e. a path beginning with a capital letter not defined on the
-  target).
-
-  @private
-  @method normalizeTuple
-  @for Ember
-  @param {Object} target The current target. May be `null`.
-  @param {String} path A path on the target or a global property path.
-  @return {Array} a temporary array with the normalized target/path pair.
-*/
-export function normalizeTuple(target, path) {
-  var hasThis  = pathHasThis(path);
-  var isGlobal = !hasThis && detectIsGlobal(path);
-  var key;
-
-  if (!target && !isGlobal) {
-    return [undefined, ''];
-  }
-
-  if (hasThis) {
-    path = path.slice(5);
-  }
-
-  if (!target || isGlobal) {
-    target = Ember.lookup;
-  }
-
-  if (isGlobal && isPath(path)) {
-    key = path.match(FIRST_KEY)[0];
-    target = get(target, key);
-    path   = path.slice(key.length + 1);
-  }
-
-  // must return some kind of path to be valid else other things will break.
-  validateIsPath(path);
-
-  return [target, path];
-}
-
-
-function validateIsPath(path) {
-  if (!path || path.length === 0) {
-    throw new EmberError(`Object in path ${path} could not be found or was destroyed.`);
-  }
-}
-
 export function _getPath(root, path) {
-  var hasThis, parts, tuple, idx, len;
+  let obj = root;
+  let parts = path.split('.');
+  let len = parts.length;
 
-  // detect complicated paths and normalize them
-  hasThis = pathHasThis(path);
+  for (let i = 0; i < len; i++) {
+    if (obj == null) {
+      return obj;
+    }
 
-  if (!root || hasThis) {
-    tuple = normalizeTuple(root, path);
-    root = tuple[0];
-    path = tuple[1];
-    tuple.length = 0;
+    obj = get(obj, parts[i]);
+
+    if (obj && obj.isDestroyed) {
+      return undefined;
+    }
   }
 
-  parts = path.split('.');
-  len = parts.length;
-  for (idx = 0; root != null && idx < len; idx++) {
-    root = get(root, parts[idx]);
-    if (root && root.isDestroyed) { return undefined; }
-  }
-  return root;
+  return obj;
 }
 
 /**
