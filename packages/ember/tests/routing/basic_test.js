@@ -19,6 +19,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
 import { getOwner } from 'container/owner';
+import { Transition } from 'router/transition';
 
 var trim = jQuery.trim;
 
@@ -3018,6 +3019,44 @@ QUnit.test('Actions can be handled by inherited action handlers', function() {
   router.send('foo');
   router.send('bar', 'HELLO');
   router.send('baz');
+});
+
+QUnit.test('transitionTo returns Transition when passed a route name', function() {
+  expect(1);
+  Router.map(function() {
+    this.route('root', { path: '/' });
+    this.route('bar');
+  });
+
+  var transition = null;
+
+  bootApplication();
+
+  run(function() {
+    transition = router.transitionTo('bar');
+  });
+
+  equal(transition instanceof Transition, true);
+});
+
+QUnit.test('transitionTo returns Transition when passed a url', function() {
+  expect(1);
+  Router.map(function() {
+    this.route('root', { path: '/' });
+    this.route('bar', function() {
+      this.route('baz');
+    });
+  });
+
+  var transition = null;
+
+  bootApplication();
+
+  run(function() {
+    transition = router.transitionTo('/bar/baz');
+  });
+
+  equal(transition instanceof Transition, true);
 });
 
 QUnit.test('currentRouteName is a property installed on ApplicationController that can be used in transitionTo', function() {
