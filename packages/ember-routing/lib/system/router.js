@@ -303,9 +303,26 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _doURLTransition(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
-    return didBeginTransition(transition, this);
+    didBeginTransition(transition, this);
+    return transition;
   },
 
+  /**
+    Transition the application into another route. The route may
+    be either a single route or route path:
+
+    See [Route.transitionTo](http://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
+
+    @method transitionTo
+    @param {String} name the name of the route or a URL
+    @param {...Object} models the model(s) or identifier(s) to be used while
+      transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
+    @return {Transition} the transition object associated with this
+      attempted transition
+    @private
+  */
   transitionTo(...args) {
     var queryParams;
     if (resemblesURL(args[0])) {
@@ -618,11 +635,11 @@ var EmberRouter = EmberObject.extend(Evented, {
     this._prepareQueryParams(targetRouteName, models, queryParams);
 
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
-    var transitionPromise = this.router.transitionTo.apply(this.router, transitionArgs);
+    var transition = this.router.transitionTo.apply(this.router, transitionArgs);
 
-    didBeginTransition(transitionPromise, this);
+    didBeginTransition(transition, this);
 
-    return transitionPromise;
+    return transition;
   },
 
   _prepareQueryParams(targetRouteName, models, queryParams) {
@@ -1070,7 +1087,7 @@ function didBeginTransition(transition, router) {
   }
   router.set('targetState', routerState);
 
-  return transition.catch(function(error) {
+  transition.promise = transition.catch(function(error) {
     var errorId = guidFor(error);
 
     if (router._isErrorHandled(errorId)) {
