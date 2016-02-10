@@ -18,6 +18,8 @@ import htmlbarsTemplate from 'ember-htmlbars/templates/select';
 import selectOptionDefaultTemplate from 'ember-htmlbars/templates/select-option';
 import selectOptgroupDefaultTemplate from 'ember-htmlbars/templates/select-optgroup';
 
+import { objectAt } from 'ember-runtime/mixins/array';
+
 var defaultTemplate = htmlbarsTemplate;
 
 var SelectOption = View.extend({
@@ -565,7 +567,7 @@ var Select = View.extend({
     }
 
     if (prompt) { selectedIndex -= 1; }
-    set(this, 'selection', content.objectAt(selectedIndex));
+    set(this, 'selection', objectAt(content, selectedIndex));
   },
 
   _selectedIndex(value, defaultIndex = 0) {

@@ -21,7 +21,7 @@ var EMPTY = [];
 import { get } from 'ember-metal/property_get';
 import EmberError from 'ember-metal/error';
 import { Mixin } from 'ember-metal/mixin';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, { objectAt } from 'ember-runtime/mixins/array';
 import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 
@@ -221,7 +221,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       return null;
     }
 
-    var ret = this.objectAt(len - 1);
+    var ret = objectAt(this, len - 1);
     this.removeAt(len - 1, 1);
     return ret;
   },
@@ -246,7 +246,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       return null;
     }
 
-    var ret = this.objectAt(0);
+    var ret = objectAt(this, 0);
     this.removeAt(0);
     return ret;
   },
@@ -362,7 +362,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   removeObject(obj) {
     var loc = get(this, 'length') || 0;
     while (--loc >= 0) {
-      var curObject = this.objectAt(loc);
+      var curObject = objectAt(this, loc);
 
       if (curObject === obj) {
         this.removeAt(loc);
