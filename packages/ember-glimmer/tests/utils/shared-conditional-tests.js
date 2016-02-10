@@ -146,6 +146,8 @@ export const BASIC_FALSY_TESTS = {
         this.assertText('T1');
       };
     }
+
+    return tests;
   }
 
 };
