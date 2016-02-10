@@ -6,7 +6,11 @@ import { computed } from 'ember-metal/computed';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { ArrayTests } from 'ember-runtime/tests/suites/array';
 import EmberObject from 'ember-runtime/system/object';
-import EmberArray, { objectAt } from 'ember-runtime/mixins/array';
+import EmberArray, {
+  addArrayObserver,
+  removeArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
 /*
@@ -199,7 +203,7 @@ QUnit.module('notify array observers', {
       _after: null
     });
 
-    obj.addArrayObserver(observer);
+    addArrayObserver(obj, observer);
   },
 
   teardown() {
@@ -233,7 +237,7 @@ QUnit.test('should notify when called with diff length items', function() {
 });
 
 QUnit.test('removing enumerable observer should disable', function() {
-  obj.removeArrayObserver(observer);
+  removeArrayObserver(obj, observer);
   obj.arrayContentWillChange();
   deepEqual(observer._before, null);
 
