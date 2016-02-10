@@ -17,6 +17,7 @@ import EmberObject from 'ember-runtime/system/object';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import alias from 'ember-metal/alias';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 /**
 @module ember
@@ -102,7 +103,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     @private
   */
   objectAtContent(idx) {
-    return get(this, 'arrangedContent').objectAt(idx);
+    return objectAt(get(this, 'arrangedContent'), idx);
   },
 
   /**
@@ -312,7 +313,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
       // Get a list of indices in original content to remove
       for (i = start; i < start + len; i++) {
         // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
-        indices.push(content.indexOf(arrangedContent.objectAt(i)));
+        indices.push(content.indexOf(objectAt(arrangedContent, i)));
       }
 
       // Replace in reverse order since indices will change

@@ -6,6 +6,7 @@ import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Application from 'ember-application/system/application';
 import { getOwner } from 'container/owner';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 /**
 @module ember
@@ -206,7 +207,7 @@ export default EmberObject.extend({
 
     var contentDidChange = (array, idx, removedCount, addedCount) => {
       for (var i = idx; i < idx + addedCount; i++) {
-        var record = array.objectAt(i);
+        var record = objectAt(array, i);
         var wrapped = this.wrapRecord(record);
         releaseMethods.push(this.observeRecord(record, recordUpdated));
         recordsAdded([wrapped]);

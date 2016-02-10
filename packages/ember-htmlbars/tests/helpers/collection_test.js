@@ -19,6 +19,8 @@ import { OWNER } from 'container/owner';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
+import { objectAt } from 'ember-runtime/mixins/array';
+
 var trim = jQuery.trim;
 
 var view;
@@ -28,13 +30,13 @@ var TemplateTests, owner, lookup, originalViewKeyword;
 
 
 function nthChild(view, nth) {
-  return get(view, 'childViews').objectAt(nth || 0);
+  return objectAt(get(view, 'childViews'), nth || 0);
 }
 
 var firstChild = nthChild;
 
 function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+  return objectAt(get(objectAt(get(view, 'childViews'), 0), 'childViews'), 0);
 }
 
 QUnit.module('collection helper [LEGACY]', {

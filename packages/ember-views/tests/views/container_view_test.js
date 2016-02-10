@@ -14,6 +14,8 @@ import { getOwner, OWNER } from 'container/owner';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
+import { objectAt } from 'ember-runtime/mixins/array';
+
 var trim = jQuery.trim;
 var container, view, otherContainer, originalViewKeyword;
 
@@ -295,7 +297,7 @@ QUnit.test('if a ContainerView starts with a currentView, it is rendered as a ch
 
   equal(trim(container.$().text()), 'This is the main view.', 'should render its child');
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), mainView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), mainView, 'should have the currentView as the only child view');
   equal(mainView.get('parentView'), container, 'parentView is setup');
 });
 
@@ -317,7 +319,7 @@ QUnit.test('if a ContainerView is created with a currentView, it is rendered as 
 
   equal(container.$().text(), 'This is the main view.', 'should render its child');
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), mainView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), mainView, 'should have the currentView as the only child view');
   equal(mainView.get('parentView'), container, 'parentView is setup');
 });
 
@@ -347,7 +349,7 @@ QUnit.test('if a ContainerView starts with no currentView and then one is set, t
 
   equal(container.$().text(), 'This is the main view.', 'should render its child');
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), mainView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), mainView, 'should have the currentView as the only child view');
   equal(mainView.get('parentView'), container, 'parentView is setup');
 });
 
@@ -370,7 +372,7 @@ QUnit.test('if a ContainerView starts with a currentView and then is set to null
 
   equal(container.$().text(), 'This is the main view.', 'should render its child');
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), mainView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), mainView, 'should have the currentView as the only child view');
   equal(mainView.get('parentView'), container, 'parentView is setup');
 
   run(function() {
@@ -400,7 +402,7 @@ QUnit.test('if a ContainerView starts with a currentView and then is set to null
 
   equal(container.$().text(), 'This is the main view.', 'should render its child');
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), mainView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), mainView, 'should have the currentView as the only child view');
   equal(mainView.get('parentView'), container, 'parentView is setup');
 
   run(function() {
@@ -435,14 +437,14 @@ QUnit.test('if a ContainerView starts with a currentView and then a different cu
 
   equal(container.$().text(), 'This is the main view.', 'should render its child');
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), mainView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), mainView, 'should have the currentView as the only child view');
 
   run(function() {
     set(container, 'currentView', secondaryView);
   });
 
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), secondaryView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), secondaryView, 'should have the currentView as the only child view');
   equal(mainView.isDestroyed, true, 'should destroy the previous currentView: mainView.');
 
   equal(trim(container.$().text()), 'This is the secondary view.', 'should render its child');
@@ -452,7 +454,7 @@ QUnit.test('if a ContainerView starts with a currentView and then a different cu
   });
 
   equal(get(container, 'length'), 1, 'should have one child view');
-  equal(container.objectAt(0), tertiaryView, 'should have the currentView as the only child view');
+  equal(objectAt(container, 0), tertiaryView, 'should have the currentView as the only child view');
   equal(secondaryView.isDestroyed, true, 'should destroy the previous currentView: secondaryView.');
 
   equal(trim(container.$().text()), 'This is the tertiary view.', 'should render its child');
