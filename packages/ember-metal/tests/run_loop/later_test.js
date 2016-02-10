@@ -3,6 +3,7 @@ import run from 'ember-metal/run_loop';
 
 var originalSetTimeout = window.setTimeout;
 var originalDateValueOf = Date.prototype.valueOf;
+const originalPlatform = run.backburner._platform;
 
 function wait(callback, maxWaitCount) {
   maxWaitCount = isNone(maxWaitCount) ? 100 : maxWaitCount;
@@ -33,6 +34,7 @@ function pauseUntil(time) {
 
 QUnit.module('run.later', {
   teardown() {
+    run.backburner._platform = originalPlatform;
     window.setTimeout = originalSetTimeout;
     Date.prototype.valueOf = originalDateValueOf;
   }
@@ -197,13 +199,14 @@ asyncTest('setTimeout should never run with a negative wait', function() {
   // happens when an expired timer callback takes a while to run,
   // which is what we simulate here.
   var newSetTimeoutUsed;
-  window.setTimeout = function() {
-    var wait = arguments[arguments.length - 1];
-    newSetTimeoutUsed = true;
-    ok(!isNaN(wait) && wait >= 0, 'wait is a non-negative number');
-    // In IE8, `setTimeout.apply` is `undefined`.
-    var apply = Function.prototype.apply;
-    return apply.apply(originalSetTimeout, [this, arguments]);
+  run.backburner._platform = {
+    setTimeout() {
+      var wait = arguments[arguments.length - 1];
+      newSetTimeoutUsed = true;
+      ok(!isNaN(wait) && wait >= 0, 'wait is a non-negative number');
+
+      return originalPlatform.setTimeout.apply(originalPlatform, arguments);
+    }
   };
 
   var count = 0;
@@ -226,7 +229,6 @@ asyncTest('setTimeout should never run with a negative wait', function() {
   });
 
   wait(function() {
-    window.setTimeout = originalSetTimeout;
     QUnit.start();
     ok(newSetTimeoutUsed, 'stub setTimeout was used');
   });
