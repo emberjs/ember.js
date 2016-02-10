@@ -1,4 +1,5 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -11,7 +12,7 @@ suite.test('should return object at specified index', function() {
   var idx;
 
   for (idx = 0;idx < len;idx++) {
-    equal(obj.objectAt(idx), expected[idx], `obj.objectAt(${idx}) should match`);
+    equal(objectAt(obj, idx), expected[idx], `obj.objectAt(${idx}) should match`);
   }
 });
 
@@ -19,10 +20,10 @@ suite.test('should return undefined when requesting objects beyond index', funct
   var obj;
 
   obj = this.newObject(this.newFixture(3));
-  equal(obj.objectAt(5), undefined, 'should return undefined for obj.objectAt(5) when len = 3');
+  equal(objectAt(obj, 5), undefined, 'should return undefined for obj.objectAt(5) when len = 3');
 
   obj = this.newObject([]);
-  equal(obj.objectAt(0), undefined, 'should return undefined for obj.objectAt(0) when len = 0');
+  equal(objectAt(obj, 0), undefined, 'should return undefined for obj.objectAt(0) when len = 0');
 });
 
 export default suite;

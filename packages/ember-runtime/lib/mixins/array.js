@@ -47,6 +47,14 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   return obj;
 }
 
+export function objectAt(content, idx) {
+  if (content.objectAt) {
+    return content.objectAt(idx);
+  }
+
+  return content[idx];
+}
+
 // ..........................................................
 // ARRAY
 //
@@ -148,16 +156,12 @@ export default Mixin.create(Enumerable, {
     @public
    */
   objectsAt(indexes) {
-    var self = this;
-
-    return indexes.map(function(idx) {
-      return self.objectAt(idx);
-    });
+    return indexes.map(idx => objectAt(this, idx));
   },
 
   // overrides Ember.Enumerable version
   nextObject(idx) {
-    return this.objectAt(idx);
+    return objectAt(this, idx);
   },
 
   /**
@@ -182,11 +186,11 @@ export default Mixin.create(Enumerable, {
   }),
 
   firstObject: computed(function() {
-    return this.objectAt(0);
+    return objectAt(this, 0);
   }),
 
   lastObject: computed(function() {
-    return this.objectAt(get(this, 'length') - 1);
+    return objectAt(this, get(this, 'length') - 1);
   }),
 
   // optimized version from Enumerable
@@ -235,7 +239,7 @@ export default Mixin.create(Enumerable, {
     }
 
     while (beginIndex < endIndex) {
-      ret[ret.length] = this.objectAt(beginIndex++);
+      ret[ret.length] = objectAt(this, beginIndex++);
     }
 
     return ret;
@@ -277,7 +281,7 @@ export default Mixin.create(Enumerable, {
     }
 
     for (idx = startAt; idx < len; idx++) {
-      if (this.objectAt(idx) === object) {
+      if (objectAt(this, idx) === object) {
         return idx;
       }
     }
@@ -321,7 +325,7 @@ export default Mixin.create(Enumerable, {
     }
 
     for (idx = startAt; idx >= 0; idx--) {
-      if (this.objectAt(idx) === object) {
+      if (objectAt(this, idx) === object) {
         return idx;
       }
     }
@@ -434,7 +438,7 @@ export default Mixin.create(Enumerable, {
       lim = startIdx + removeAmt;
 
       for (var idx = startIdx; idx < lim; idx++) {
-        removing.push(this.objectAt(idx));
+        removing.push(objectAt(this, idx));
       }
     } else {
       removing = removeAmt;
@@ -482,7 +486,7 @@ export default Mixin.create(Enumerable, {
       lim = startIdx + addAmt;
 
       for (var idx = startIdx; idx < lim; idx++) {
-        adding.push(this.objectAt(idx));
+        adding.push(objectAt(this, idx));
       }
     } else {
       adding = addAmt;
@@ -500,12 +504,12 @@ export default Mixin.create(Enumerable, {
     var cachedFirst = cacheFor(this, 'firstObject');
     var cachedLast = cacheFor(this, 'lastObject');
 
-    if (this.objectAt(0) !== cachedFirst) {
+    if (objectAt(this, 0) !== cachedFirst) {
       propertyWillChange(this, 'firstObject');
       propertyDidChange(this, 'firstObject');
     }
 
-    if (this.objectAt(length - 1) !== cachedLast) {
+    if (objectAt(this, length - 1) !== cachedLast) {
       propertyWillChange(this, 'lastObject');
       propertyDidChange(this, 'lastObject');
     }

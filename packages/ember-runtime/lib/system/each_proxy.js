@@ -11,6 +11,7 @@ import {
   propertyWillChange
 } from 'ember-metal/property_events';
 import EmptyObject from 'ember-metal/empty_object';
+import { objectAt } from 'ember-runtime/mixins/array';
 
 /**
   This is the object instance returned when you get the `@each` property on an
@@ -110,7 +111,7 @@ EachProxy.prototype = {
 
 function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
-    let item = content.objectAt(loc);
+    let item = objectAt(content, loc);
     if (item) {
       assert('When using @each to observe the array ' + content + ', the array must return an object', typeof item === 'object');
       _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
@@ -121,7 +122,7 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
 
 function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
-    let item = content.objectAt(loc);
+    let item = objectAt(content, loc);
     if (item) {
       _removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       removeObserver(item, keyName, proxy, 'contentKeyDidChange');

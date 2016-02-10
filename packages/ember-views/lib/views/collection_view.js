@@ -7,7 +7,7 @@ import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import ContainerView from 'ember-views/views/container_view';
 import View from 'ember-views/views/view';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, { objectAt } from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -315,7 +315,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
       itemViewClass = readViewFactory(itemViewClass, getOwner(this));
 
       for (idx = start; idx < start + added; idx++) {
-        item = content.objectAt(idx);
+        item = objectAt(content, idx);
         itemViewProps._context = this.keyword ? this.get('context') : item;
         itemViewProps.content = item;
         itemViewProps.contentIndex = idx;
