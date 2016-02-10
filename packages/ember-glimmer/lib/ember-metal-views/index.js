@@ -11,7 +11,7 @@ export class Renderer {
     let self = new RootReference(view);
 
     env.begin();
-    let result = view.template.render(self, env, { appendTo: target });
+    let result = view.template.asEntryPoint().render(self, env, { appendTo: target });
     env.commit();
 
     // FIXME: Store this somewhere else
