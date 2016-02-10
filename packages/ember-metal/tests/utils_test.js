@@ -1,5 +1,9 @@
-import { inspect, checkHasSuper } from 'ember-metal/utils';
 import environment from 'ember-metal/environment';
+import {
+  inspect,
+  checkHasSuper,
+  toString
+} from 'ember-metal/utils';
 
 QUnit.module('Ember Metal Utils');
 
@@ -24,3 +28,20 @@ if (environment.isPhantom || environment.isChrome || environment.isFirefox) {
     assert.notOk(checkHasSuper(function() {}), 'empty function does not have super');
   });
 }
+
+QUnit.test("toString uses an object's toString method when available", function() {
+  let obj = {
+    toString() {
+      return "bob";
+    }
+  };
+
+  strictEqual(toString(obj), 'bob');
+});
+
+
+QUnit.test("toString falls back to Object.prototype.toString", function() {
+  let obj = Object.create(null);
+
+  strictEqual(toString(obj), {}.toString());
+});
