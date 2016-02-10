@@ -390,6 +390,11 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   equal(count, 1, '@each.isDone should have notified');
 });
 
+QUnit.test('`objectAt` returns correct object', function() {
+  let arr = ['first', 'second', 'third', 'fourth'];
+  equal(objectAt(arr, 2), 'third');
+  equal(objectAt(arr, 4), undefined);
+});
 
 testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set) {
   var obj = EmberObject.extend({
