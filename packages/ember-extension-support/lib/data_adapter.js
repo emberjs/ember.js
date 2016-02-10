@@ -6,7 +6,11 @@ import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import Application from 'ember-application/system/application';
 import { getOwner } from 'container/owner';
-import { objectAt } from 'ember-runtime/mixins/array';
+import {
+  addArrayObserver,
+  removeArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 
 /**
 @module ember
@@ -219,11 +223,11 @@ export default EmberObject.extend({
     };
 
     var observer = { didChange: contentDidChange, willChange() { return this; } };
-    records.addArrayObserver(this, observer);
+    addArrayObserver(records, this, observer);
 
     release = () => {
       releaseMethods.forEach(function(fn) { fn(); });
-      records.removeArrayObserver(this, observer);
+      removeArrayObserver(records, this, observer);
       this.releaseMethods.removeObject(release);
     };
 
@@ -298,10 +302,10 @@ export default EmberObject.extend({
       willChange() { return this; }
     };
 
-    records.addArrayObserver(this, observer);
+    addArrayObserver(records, this, observer);
 
     var release = () => {
-      records.removeArrayObserver(this, observer);
+      removeArrayObserver(records, this, observer);
     };
 
     return release;

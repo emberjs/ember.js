@@ -5,16 +5,20 @@ import {
 import indexOfTests from 'ember-runtime/tests/suites/array/indexOf';
 import lastIndexOfTests from 'ember-runtime/tests/suites/array/lastIndexOf';
 import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
+import {
+  addArrayObserver,
+  removeArrayObserver
+} from 'ember-runtime/mixins/array';
 
 var ObserverClass = EnumerableTestsObserverClass.extend({
 
   observeArray(obj) {
-    obj.addArrayObserver(this);
+    addArrayObserver(obj, this);
     return this;
   },
 
   stopObserveArray(obj) {
-    obj.removeArrayObserver(this);
+    removeArrayObserver(obj, this);
     return this;
   },
 
