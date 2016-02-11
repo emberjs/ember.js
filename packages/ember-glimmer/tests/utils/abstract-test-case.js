@@ -1,7 +1,7 @@
 import packageName from './package-name';
 import Environment from './environment';
 import { compile, helper, Helper, DOMHelper, Renderer } from './helpers';
-import { equalTokens } from 'glimmer-test-helpers';
+import { equalsElement, equalTokens, regex, classes } from 'glimmer-test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
@@ -9,7 +9,6 @@ import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
-import ComponentLookup from 'ember-views/component_lookup';
 
 const packageTag = `@${packageName} `;
 
@@ -82,10 +81,6 @@ export class RenderingTest extends TestCase {
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
     this.snapshot = null;
-
-    owner.register('component-lookup:main', ComponentLookup);
-    owner.registerOptionsForType('helper', { instantiate: false });
-    owner.registerOptionsForType('component', { singleton: false });
   }
 
   teardown() {
@@ -126,13 +121,15 @@ export class RenderingTest extends TestCase {
   }
 
   render(templateStr, context = {}) {
-    let { env, renderer, owner } = this;
+    let { renderer, owner } = this;
+
+    owner.register('template:-top-level', compile(templateStr));
 
     let attrs = assign({}, context, {
       tagName: '',
       [OWNER]: owner,
       renderer,
-      template: compile(templateStr, { env })
+      template: owner.lookup('template:-top-level')
     });
 
     this.component = Component.create(attrs);
@@ -160,7 +157,7 @@ export class RenderingTest extends TestCase {
     }
   }
 
-  registerComponent(name, { ComponentClass, template }) {
+  registerComponent(name, { ComponentClass = null, template = null }) {
     let { owner, env } = this;
 
     if (ComponentClass) {
@@ -188,12 +185,17 @@ export class RenderingTest extends TestCase {
     assert.strictEqual(node.textContent, text, 'node.textContent');
   }
 
-  assertElement(node, { ElementType = HTMLElement, tagName }) {
+  assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
     if (!(node instanceof ElementType)) {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
 
-    assert.strictEqual(node.tagName, tagName.toUpperCase(), 'node.tagName');
+    equalsElement(node, tagName, attrs, content);
+  }
+
+  assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {
+    attrs = assign({}, { id: regex(/^ember\d*$/), class: classes('ember-view') }, attrs || {});
+    this.assertElement(node, { ElementType, tagName, attrs, content });
   }
 
   assertSameNode(node1, node2) {

@@ -1,6 +1,9 @@
 import { Environment, ConditionalReference } from 'glimmer-runtime';
 import { get } from 'ember-metal/property_get';
+import Dict from 'ember-metal/empty_object';
 import { toBool as emberToBool } from './helpers/if-unless';
+import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
+import lookupComponent from './utils/lookup-component';
 
 // @implements PathReference
 export class RootReference {
@@ -63,10 +66,47 @@ export default class extends Environment {
   constructor({ dom, owner }) {
     super(dom);
     this.owner = owner;
+    this._components = new Dict();
+  }
+
+  refineStatement(statement) {
+    let {
+      isSimple,
+      isInline,
+      isBlock,
+      key,
+      path,
+      args,
+      templates
+    } = statement;
+
+    if (isSimple && (isInline || isBlock) && key.indexOf('-') >= 0) {
+      let definition = this.getComponentDefinition(path);
+
+      if (definition) {
+        return new CurlyComponentSyntax({ args, definition, templates });
+      }
+    }
+
+    return super.refineStatement(statement);
   }
 
   hasComponentDefinition() {
     return false;
+  }
+
+  getComponentDefinition(name) {
+    let definition = this._components[name];
+
+    if (!definition) {
+      let { component: ComponentClass, layout } = lookupComponent(this.owner, name[0]);
+
+      if (ComponentClass || layout) {
+        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
+      }
+    }
+
+    return definition;
   }
 
   hasHelper(name) {
