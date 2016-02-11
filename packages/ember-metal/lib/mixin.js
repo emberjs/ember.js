@@ -633,9 +633,10 @@ function _keys(ret, mixin, seen) {
   seen[guidFor(mixin)] = true;
 
   if (mixin.properties) {
-    var props = mixin.properties;
-    for (var key in props) {
-      if (props.hasOwnProperty(key)) { ret[key] = true; }
+    var props = Object.keys(mixin.properties);
+    for (var i = 0; i < props.length; i++) {
+      var key = props[i];
+      ret[key] = true;
     }
   } else if (mixin.mixins) {
     mixin.mixins.forEach((x) => _keys(ret, x, seen));
@@ -645,13 +646,9 @@ function _keys(ret, mixin, seen) {
 MixinPrototype.keys = function() {
   var keys = {};
   var seen = {};
-  var ret = [];
+
   _keys(keys, this, seen);
-  for (var key in keys) {
-    if (keys.hasOwnProperty(key)) {
-      ret.push(key);
-    }
-  }
+  var ret = Object.keys(keys);
   return ret;
 };
 
