@@ -24,7 +24,7 @@ var SimpleDOM = require('simple-dom');
  * to register a component:
  *
  *     this.component('component-name', {
- *       componetProperty: true
+ *       componentProperty: true
  *     });
  *
  * Or a template:
