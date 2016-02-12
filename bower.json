@@ -5,7 +5,7 @@
     "url": "https://github.com/emberjs/ember.js.git"
   },
   "dependencies": {
-    "jquery": "~1.11.1",
+    "jquery": "~2.2.0",
     "qunit": "~1.20.0",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
   },
