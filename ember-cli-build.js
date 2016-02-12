@@ -95,6 +95,8 @@ module.exports = function() {
     include: ['*/index.js', '*/lib/**/*.js']
   });
 
+  var libOutputTree = mv(libTree, 'es6');
+
   var glimmerCommon = find(libTree, {
     include: [
       'glimmer/**/*.js',
@@ -195,7 +197,8 @@ module.exports = function() {
     glimmerCommon,
     glimmerCompiler,
     glimmerRuntime,
-    glimmerTests
+    glimmerTests,
+    libOutputTree
   ];
 
   if (hasBower) {
