@@ -44,7 +44,12 @@ function babelConfigFor(environment) {
 
 var glimmerEngine = require('glimmer-engine/ember-cli-build')();
 var find = require('broccoli-stew').find;
+var mv = require('broccoli-stew').mv;
 var log = require('broccoli-stew').log;
+
+function addGlimmerPackage(vendoredPackages, name) {
+  vendoredPackages[name] = find(glimmerEngine, 'named-amd/' + name + '/**/*.js');
+}
 
 module.exports = function() {
   var features = JSON.parse(featuresJson).features;
@@ -69,16 +74,16 @@ module.exports = function() {
 
   var glimmerStatus = features['ember-glimmer'];
   if (glimmerStatus === null || glimmerStatus === true) {
-    vendorPackages['glimmer-engine'] = find(glimmerEngine, {
-      include: [
-        'amd/glimmer-common.amd.js',
-        'amd/glimmer-common.amd.map',
-        'amd/glimmer-compiler.amd.js',
-        'amd/glimmer-compiler.amd.map',
-        'amd/glimmer-runtime.amd.js',
-        'amd/glimmer-runtime.amd.map',
-      ]
-    });
+    addGlimmerPackage(vendorPackages, 'glimmer');
+    addGlimmerPackage(vendorPackages, 'glimmer-compiler');
+    addGlimmerPackage(vendorPackages, 'glimmer-object');
+    addGlimmerPackage(vendorPackages, 'glimmer-reference');
+    addGlimmerPackage(vendorPackages, 'glimmer-runtime');
+    addGlimmerPackage(vendorPackages, 'glimmer-syntax');
+    addGlimmerPackage(vendorPackages, 'glimmer-test-helpers');
+    addGlimmerPackage(vendorPackages, 'glimmer-util');
+    addGlimmerPackage(vendorPackages, 'glimmer-wire-format');
+    addGlimmerPackage(vendorPackages, 'handlebars'); // inlined parser and whatnot
 
     vendorPackages['glimmer-engine-tests'] = find(glimmerEngine, {
       include: [
