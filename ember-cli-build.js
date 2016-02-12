@@ -95,7 +95,9 @@ module.exports = function() {
     include: ['*/index.js', '*/lib/**/*.js']
   });
 
-  var libOutputTree = mv(libTree, 'es6');
+  var es6LibTree = mv(libTree, 'es6');
+  libTree = transpile(libTree, 'ES5 Lib Tree');
+  var es5LibTree = mv(libTree, 'named-amd');
 
   var glimmerCommon = find(libTree, {
     include: [
@@ -127,6 +129,8 @@ module.exports = function() {
     find(jsTree, { include: ['glimmer-test-helpers/**/*.js'] })
   ]);
 
+  glimmerTests = transpile(glimmerTests, 'glimmer-tests');
+
   // Test Assets
 
   var testHarnessTrees = [
@@ -145,11 +149,6 @@ module.exports = function() {
   }
 
   var testHarness = merge(testHarnessTrees);
-
-  glimmerCommon = transpile(glimmerCommon, 'glimmer-common');
-  glimmerCompiler = transpile(glimmerCompiler, 'glimmer-compiler');
-  glimmerRuntime = transpile(glimmerRuntime, 'glimmer-runtime');
-  glimmerTests = transpile(glimmerTests, 'glimmer-tests');
 
   glimmerCommon = concat(glimmerCommon, {
     inputFiles: ['**/*.js'],
@@ -198,7 +197,8 @@ module.exports = function() {
     glimmerCompiler,
     glimmerRuntime,
     glimmerTests,
-    libOutputTree
+    es5LibTree,
+    es6LibTree
   ];
 
   if (hasBower) {
