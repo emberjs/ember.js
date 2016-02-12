@@ -45,3 +45,43 @@ Ember CLI is a CI tool, so it will run tests as you change files.
 
 1. Run `npm start`.
 2. Visit <http://localhost:4200/tests/>.
+
+# TypeScript Notes
+
+## "Friend" Properties and Methods
+
+In TypeScript, `private` and `protected` refer to the class itself
+(and its subclasses).
+
+Sometimes, you want to add a property or method that shouldn't be
+considered part of the external API (for other packages or Ember)
+but is expected to be used as part of an internal protocol.
+
+In that case, it's ok to mark the property as `private` or
+`protected` and use `['property']` syntax to access the property
+inside of the same package.
+
+```js
+class Layout {
+  private template: Template;
+}
+
+function compile(layout: Layout, environment: Environment): CompiledBlock {
+  return layout['template'].compile(environment);
+}
+```
+
+The idea is that the `compile` function might as well be a private method
+on the class, but because the function leaks into untyped code, we want
+to be more careful and avoid exporting it.
+
+Other use-cases might include protocols where a cluster of classes is
+intended to work together internally, but it's difficult to describe
+as a single class hierarchy.
+
+This is a semi-blessed workflow according to the TypeScript team, and
+Visual Studio Code (and tsc) correctly type check uses of indexed
+properties, and provide autocompletion, etc.
+
+**You should not treat use of `['foo']` syntax as license to access
+private properties outside of the package.**
