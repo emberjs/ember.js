@@ -94,6 +94,7 @@ module.exports = function() {
   var libTree = find(jsTree, {
     include: ['*/index.js', '*/lib/**/*.js']
   });
+  libTree = merge([libTree, HTMLTokenizer, handlebarsInlinedTrees.compiler]);
 
   var es6LibTree = mv(libTree, 'es6');
   libTree = transpile(libTree, 'ES5 Lib Tree');
@@ -117,11 +118,11 @@ module.exports = function() {
     find(libTree, {
       include: [
         'glimmer-syntax/**/*.js',
-        'glimmer-compiler/**/*.js'
+        'glimmer-compiler/**/*.js',
+        'simple-html-tokenizer/**/*.js',
+        'handlebars/**/*.js'
       ]
-    }),
-    HTMLTokenizer,
-    handlebarsInlinedTrees.compiler
+    })
   ]);
 
   var glimmerTests = merge([
