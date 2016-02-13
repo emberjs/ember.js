@@ -77,9 +77,9 @@ export class CurlyComponentDefinition extends ComponentDefinition {
   }
 
   compile(builder) {
-    builder.tag('div');
-    builder.attrs.dynamic({ name: 'id', value: elementId });
-    builder.attrs.static({ name: 'class', value: 'ember-view' });
-    builder.body.fromLayout(this.getLayout());
+    builder.wrapLayout(this.getLayout());
+    builder.tag.static('div');
+    builder.attrs.dynamic('id', elementId);
+    builder.attrs.static('class', 'ember-view');
   }
 }
