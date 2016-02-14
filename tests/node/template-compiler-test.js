@@ -30,19 +30,3 @@ test('can be required', function(assert) {
   assert.ok(typeof templateCompiler.compile === 'function', 'compile function is present');
   assert.ok(typeof templateCompiler.template === 'function', 'template function is present');
 });
-
-test('allows enabling of features', function(assert) {
-  var templateOutput;
-  var templateCompiler = require(path.join(distPath, 'ember-template-compiler'));
-
-  var featureValue = templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'];
-
-  if (featureValue || featureValue === null) {
-    templateCompiler._Ember.FEATURES['ember-htmlbars-component-generation'] = true;
-
-    templateOutput = templateCompiler.precompile('<some-thing></some-thing>');
-    assert.ok(templateOutput.indexOf('["component","@<some-thing>",[],0]') > -1, 'component generation can be enabled');
-  } else {
-    assert.ok(true, 'cannot test features in feature stripped build');
-  }
-});

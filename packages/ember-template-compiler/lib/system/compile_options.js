@@ -3,7 +3,6 @@
 @submodule ember-template-compiler
 */
 
-import isEnabled from 'ember-metal/features';
 import assign from 'ember-metal/assign';
 import defaultPlugins from 'ember-template-compiler/plugins';
 
@@ -13,9 +12,6 @@ import defaultPlugins from 'ember-template-compiler/plugins';
 */
 export default function(_options) {
   var disableComponentGeneration = true;
-  if (isEnabled('ember-htmlbars-component-generation')) {
-    disableComponentGeneration = false;
-  }
 
   let options;
   // When calling `Ember.Handlebars.compile()` a second argument of `true`

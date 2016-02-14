@@ -18,11 +18,6 @@ for a detailed explanation.
   serially and call `reset()` each time), as well as being critical to
   for FastBoot.
 
-* `ember-htmlbars-component-generation`
-
-  Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
-  invocation (instead of a standard HTML5 style element).
-
 * `ember-debug-handlers`
 
   Implements RFC https://github.com/emberjs/rfcs/pull/65, adding support for
