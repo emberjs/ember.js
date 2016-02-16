@@ -57,7 +57,7 @@ function multiArrayMacro(dependentKeys, callback) {
 }
 
 /**
-  A computed property that returns the sum of the value
+  A computed property that returns the sum of the values
   in the dependent array.
 
   @method sum
