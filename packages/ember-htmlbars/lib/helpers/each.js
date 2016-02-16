@@ -14,7 +14,7 @@ import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
   item in an array passing the item as the first block parameter.
 
   ```javascript
-  var developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
+  var developers = [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
   ```
 
   ```handlebars

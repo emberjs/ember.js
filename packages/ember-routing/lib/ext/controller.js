@@ -92,11 +92,11 @@ ControllerMixin.reopen({
 
     ```javascript
     aController.transitionToRoute('blogPost', 1, {
-      queryParams: {showComments: 'true'}
+      queryParams: { showComments: 'true' }
     });
 
     // if you just want to transition the query parameters without changing the route
-    aController.transitionToRoute({queryParams: {sort: 'date'}});
+    aController.transitionToRoute({ queryParams: { sort: 'date' } });
     ```
 
     See also [replaceRoute](/api/classes/Ember.ControllerMixin.html#method_replaceRoute).
