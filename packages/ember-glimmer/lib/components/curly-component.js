@@ -29,9 +29,20 @@ class CurlyComponentManager {
     return component;
   }
 
+  getSelf(component) {
+    return component;
+  }
+
+  didCreateElement(component, element) {
+    component.element = element;
+    // component._transitionTo('hasElement');
+  }
+
+
   didCreate(component) {
     // component.didInsertElement();
     // component.didRender();
+    // component._transitionTo('inDOM');
   }
 
   update(component, args) {
@@ -49,10 +60,6 @@ class CurlyComponentManager {
   didUpdate(component) {
     // component.didUpdate();
     // component.didRender();
-  }
-
-  getSelf(component) {
-    return component;
   }
 }
 

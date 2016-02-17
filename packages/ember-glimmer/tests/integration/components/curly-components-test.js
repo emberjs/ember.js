@@ -16,6 +16,87 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
+  ['@test it has an element']() {
+    let instance;
+
+    let FooBarComponent = Component.extend({
+      init() {
+        instance = this;
+        this._super();
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar}}');
+
+    let element1 = instance.element;
+
+    this.assertComponentElement(element1, { content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    let element2 = instance.element;
+
+    this.assertComponentElement(element2, { content: 'hello' });
+
+    this.assertSameNode(element2, element1);
+  }
+
+  ['@htmlbars it has a jQuery proxy to the element'](assert) {
+    let instance;
+
+    let FooBarComponent = Component.extend({
+      init() {
+        instance = this;
+        this._super();
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar}}');
+
+    let element1 = instance.$()[0];
+
+    this.assertComponentElement(element1, { content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    let element2 = instance.$()[0];
+
+    this.assertComponentElement(element2, { content: 'hello' });
+
+    this.assertSameNode(element2, element1);
+  }
+
+  ['@htmlbars it scopes the jQuery proxy to the component element'](assert) {
+    let instance;
+
+    let FooBarComponent = Component.extend({
+      init() {
+        instance = this;
+        this._super();
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
+
+    this.render('<span class="outer">outer</span>{{foo-bar}}');
+
+    let $span = instance.$('span');
+
+    assert.equal($span.length, 1);
+    assert.equal($span.attr('class'), 'inner');
+
+    this.runTask(() => this.rerender());
+
+    $span = instance.$('span');
+
+    assert.equal($span.length, 1);
+    assert.equal($span.attr('class'), 'inner');
+  }
+
   ['@test it can render a basic component with a block']() {
     this.registerComponent('foo-bar', { template: '{{yield}}' });
 
