@@ -198,8 +198,8 @@ export class RenderingTest extends TestCase {
     this.assertElement(node, { ElementType, tagName, attrs, content });
   }
 
-  assertSameNode(node1, node2) {
-    assert.strictEqual(node1, node2, 'DOM node stability');
+  assertSameNode(actual, expected) {
+    assert.strictEqual(actual, expected, 'DOM node stability');
   }
 
   assertInvariants() {
