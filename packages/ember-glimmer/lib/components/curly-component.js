@@ -15,11 +15,13 @@ export class CurlyComponentSyntax extends StatementSyntax {
 import assign from 'ember-metal/assign';
 
 class CurlyComponentManager {
-  create(definition, args) {
+  create(definition, args, keywords) {
     let klass = definition.ComponentClass;
     let attrs = args.value();
     let merged = assign({}, attrs, { attrs });
     let component = klass.create(merged);
+
+    keywords.get('view').value().appendChild(component);
 
     // component.didInitAttrs({ attrs });
     // component.didReceiveAttrs({ oldAttrs: null, newAttrs: attrs });
@@ -45,7 +47,7 @@ class CurlyComponentManager {
     // component._transitionTo('inDOM');
   }
 
-  update(component, args) {
+  update(component, args, keywords) {
     // let oldAttrs = component.attrs;
     let newAttrs = args.value();
     let merged = assign({}, newAttrs, { attrs: newAttrs });
@@ -69,8 +71,14 @@ import { ComponentDefinition, ValueReference } from 'glimmer-runtime';
 import Component from 'ember-views/components/component';
 
 function elementId(vm) {
-  let component = vm.getSelf().value();
-  return new ValueReference(component.elementId);
+  return new ValueReference(getCurrentComponentReference(vm).value().elementId);
+}
+
+// This code assumes that `self` is always the current component, which isn't
+// true in the case of a defined `view.context`. The information is available
+// inside the VM but not yet exposed to Ember.
+function getCurrentComponentReference(vm) {
+  return vm.getSelf();
 }
 
 export class CurlyComponentDefinition extends ComponentDefinition {
@@ -84,6 +92,7 @@ export class CurlyComponentDefinition extends ComponentDefinition {
   }
 
   compile(builder) {
+    builder.bindKeywords({ view: getCurrentComponentReference });
     builder.wrapLayout(this.getLayout());
     builder.tag.static('div');
     builder.attrs.dynamic('id', elementId);

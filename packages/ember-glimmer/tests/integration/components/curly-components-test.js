@@ -21,8 +21,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let FooBarComponent = Component.extend({
       init() {
-        instance = this;
         this._super();
+        instance = this;
       }
     });
 
@@ -48,8 +48,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let FooBarComponent = Component.extend({
       init() {
-        instance = this;
         this._super();
+        instance = this;
       }
     });
 
@@ -75,8 +75,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let FooBarComponent = Component.extend({
       init() {
-        instance = this;
         this._super();
+        instance = this;
       }
     });
 
@@ -97,6 +97,45 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal($span.attr('class'), 'inner');
   }
 
+  ['@test it has the right parentView and childViews'](assert) {
+    let fooBarInstance, fooBarBazInstance;
+
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super();
+        fooBarInstance = this;
+      }
+    });
+
+    let FooBarBazComponent = Component.extend({
+      init() {
+        this._super();
+        fooBarBazInstance = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'foo-bar {{foo-bar-baz}}' });
+    this.registerComponent('foo-bar-baz', { ComponentClass: FooBarBazComponent, template: 'foo-bar-baz' });
+
+    this.render('{{foo-bar}}');
+    this.assertText('foo-bar foo-bar-baz');
+
+    assert.equal(fooBarInstance.parentView, this.component);
+    assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+    assert.deepEqual(this.component.childViews, [fooBarInstance]);
+    assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
+
+    this.runTask(() => this.rerender());
+    this.assertText('foo-bar foo-bar-baz');
+
+    assert.equal(fooBarInstance.parentView, this.component);
+    assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+    assert.deepEqual(this.component.childViews, [fooBarInstance]);
+    assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
+  }
+
   ['@test it can render a basic component with a block']() {
     this.registerComponent('foo-bar', { template: '{{yield}}' });
 
@@ -114,8 +153,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let FooBarComponent = Component.extend({
       init() {
-        instance = this;
         this._super();
+        instance = this;
         this.set('message', 'hello');
       }
     });

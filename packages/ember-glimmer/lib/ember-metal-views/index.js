@@ -9,9 +9,10 @@ export class Renderer {
   appendTo(view, target) {
     let env = this._env;
     let self = new RootReference(view);
+    let viewRef = new RootReference(view);
 
     env.begin();
-    let result = view.template.asEntryPoint().render(self, env, { appendTo: target });
+    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, keywords: { view: viewRef } });
     env.commit();
 
     // FIXME: Store this somewhere else
