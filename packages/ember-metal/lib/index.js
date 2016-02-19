@@ -6,7 +6,7 @@
 // BEGIN IMPORTS
 import require, { has } from 'require';
 import Ember from 'ember-metal/core';
-import { deprecateFunc } from 'ember-metal/debug';
+import { deprecate, deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import assign from 'ember-metal/assign';
 import merge from 'ember-metal/merge';
@@ -306,9 +306,25 @@ Ember.run = run;
 @for Ember
 @private
 */
-Ember.Backburner = Backburner;
-// this is the new go forward, once Ember Data updates to using `_Backburner` we
-// can remove the non-underscored version.
+Ember.Backburner = function() {
+  deprecate(
+    'Usage of Ember.Backburner is deprecated.',
+    false,
+    {
+      id: 'ember-metal.ember-backburner',
+      until: '2.8.0',
+      url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-backburner'
+    }
+  );
+
+  function BackburnerAlias(args) {
+    return Backburner.apply(this, args);
+  }
+
+  BackburnerAlias.prototype = Backburner.prototype;
+
+  return new BackburnerAlias(arguments);
+};
 Ember._Backburner = Backburner;
 
 Ember.libraries = new Libraries();
