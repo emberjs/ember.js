@@ -57,8 +57,9 @@ import isNone from 'ember-metal/is_none';
 
   ## Observing Property Changes
 
-  You typically observe property changes simply by adding the `observes`
-  call to the end of your method declarations in classes that you write.
+  You typically observe property changes simply by using the `Ember.observer`
+  function in classes that you write.
+
   For example:
 
   ```javascript
