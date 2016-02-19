@@ -1,7 +1,7 @@
 {
   "name": "ember",
   "license": "MIT",
-  "version": "2.5.0-canary",
+  "version": "Number.MAX_VALUE.0.0",
   "scripts": {
     "build": "ember build --environment production",
     "postinstall": "bower install",
