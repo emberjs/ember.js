@@ -7,7 +7,11 @@ import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import ContainerView from 'ember-views/views/container_view';
 import View from 'ember-views/views/view';
-import EmberArray, { objectAt } from 'ember-runtime/mixins/array';
+import EmberArray, {
+  addArrayObserver,
+  removeArrayObserver,
+  objectAt
+} from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -224,7 +228,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
   */
   _contentDidChange: observer('content', function() {
     var prevContent = this._prevContent;
-    if (prevContent) { prevContent.removeArrayObserver(this); }
+    if (prevContent) { removeArrayObserver(prevContent, this); }
     var len = prevContent ? get(prevContent, 'length') : 0;
     this.arrayWillChange(prevContent, 0, len);
 
@@ -233,7 +237,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     if (content) {
       this._prevContent = content;
       this._assertArrayLike(content);
-      content.addArrayObserver(this);
+      addArrayObserver(content, this);
     }
 
     len = content ? get(content, 'length') : 0;
@@ -260,7 +264,7 @@ var CollectionView = ContainerView.extend(EmptyViewSupport, {
     if (!this._super(...arguments)) { return; }
 
     var content = get(this, 'content');
-    if (content) { content.removeArrayObserver(this); }
+    if (content) { removeArrayObserver(content, this); }
 
     if (this._createdEmptyView) {
       this._createdEmptyView.destroy();

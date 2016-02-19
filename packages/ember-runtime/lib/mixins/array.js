@@ -47,6 +47,14 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   return obj;
 }
 
+export function addArrayObserver(array, target, opts) {
+  return arrayObserversHelper(array, target, opts, addListener, false);
+}
+
+export function removeArrayObserver(array, target, opts) {
+  return arrayObserversHelper(array, target, opts, removeListener, true);
+}
+
 export function objectAt(content, idx) {
   if (content.objectAt) {
     return content.objectAt(idx);
@@ -364,7 +372,7 @@ export default Mixin.create(Enumerable, {
   */
 
   addArrayObserver(target, opts) {
-    return arrayObserversHelper(this, target, opts, addListener, false);
+    return addArrayObserver(this, target, opts);
   },
 
   /**
@@ -380,7 +388,7 @@ export default Mixin.create(Enumerable, {
     @public
   */
   removeArrayObserver(target, opts) {
-    return arrayObserversHelper(this, target, opts, removeListener, true);
+    return removeArrayObserver(this, target, opts);
   },
 
   /**
