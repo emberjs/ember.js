@@ -3,6 +3,7 @@ import {
   EmberishCurlyComponent as CurlyComponent,
   EmberishGlimmerComponent as GlimmerComponent
 } from 'glimmer-demos';
+import { layoutFor } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-reference';
 
 import { compileSpec } from 'glimmer-compiler';
@@ -367,11 +368,12 @@ function renderContent() {
   let app = env.compile($template.value);
 
   function compileLayout(component) {
-    let def = env.getComponentDefinition([component]);
-    let layout = def.getLayout(env);
-    layout.compile(def, env);
-    layout.children.forEach(compileInner);
-    return layout;
+    let definition = env.getComponentDefinition([component]);
+    let compiled = layoutFor(definition, { env });
+    let children = definition.compileLayout(env).children;
+
+    // Fake a Block
+    return { compiled, children, compile() {} };
   }
 
   function compileInner(block) {
@@ -383,7 +385,7 @@ function renderContent() {
     compileInner(block);
 
     return {
-      opcodes: block.ops.toArray().map(op => op.toJSON()),
+      opcodes: block.compiled.ops.toArray().map(op => op.toJSON()),
       children: block.children.map(processOpcodes)
     };
   }
