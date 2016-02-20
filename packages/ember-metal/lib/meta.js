@@ -32,6 +32,7 @@ import EmptyObject from 'ember-metal/empty_object';
 */
 let members = {
   cache: ownMap,
+  weak: ownMap,
   watching: inheritedMap,
   mixins: inheritedMap,
   bindings: inheritedMap,
@@ -46,6 +47,7 @@ const META_FIELD = '__ember_meta__';
 
 function Meta(obj, parentMeta) {
   this._cache = undefined;
+  this._weak = undefined;
   this._watching = undefined;
   this._mixins = undefined;
   this._bindings = undefined;
