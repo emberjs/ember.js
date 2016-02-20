@@ -3,52 +3,58 @@ import WeakMap from 'ember-metal/weak_map';
 QUnit.module('Ember.WeakMap');
 
 QUnit.test('has weakMap like qualities', function(assert) {
-  var map = new WeakMap();
-  var map2 = new WeakMap();
+  let map = new WeakMap();
+  let map2 = new WeakMap();
 
-  var a = {};
-  var b = {};
-  var c = {};
+  let a = {};
+  let b = {};
+  let c = {};
 
-  equal(map.get(a), undefined);
-  equal(map.get(b), undefined);
-  equal(map.get(c), undefined);
+  assert.strictEqual(map.get(a), undefined);
+  assert.strictEqual(map.get(b), undefined);
+  assert.strictEqual(map.get(c), undefined);
 
-  equal(map2.get(a), undefined);
-  equal(map2.get(b), undefined);
-  equal(map2.get(c), undefined);
+  assert.strictEqual(map2.get(a), undefined);
+  assert.strictEqual(map2.get(b), undefined);
+  assert.strictEqual(map2.get(c), undefined);
 
-  equal(map.set(a,  1), map, 'map.set should return itself');
-  equal(map.get(a), 1);
-  equal(map.set(b,  undefined), map);
-  equal(map.set(a, 2), map);
-  equal(map.get(a), 2);
-  equal(map.set(b,  undefined), map);
+  assert.strictEqual(map.set(a,  1), map, 'map.set should return itself');
+  assert.strictEqual(map.get(a), 1);
+  assert.strictEqual(map.set(b,  undefined), map);
+  assert.strictEqual(map.set(a, 2), map);
+  assert.strictEqual(map.get(a), 2);
+  assert.strictEqual(map.set(b,  undefined), map);
 
-  equal(map2.get(a), undefined);
-  equal(map2.get(b), undefined);
-  equal(map2.get(c), undefined);
+  assert.strictEqual(map2.get(a), undefined);
+  assert.strictEqual(map2.get(b), undefined);
+  assert.strictEqual(map2.get(c), undefined);
 
-  equal(map.set(c, 1), map);
-  equal(map.get(c), 1);
-  equal(map.get(a), 2);
-  equal(map.get(b), undefined);
+  assert.strictEqual(map.set(c, 1), map);
+  assert.strictEqual(map.get(c), 1);
+  assert.strictEqual(map.get(a), 2);
+  assert.strictEqual(map.get(b), undefined);
 
-  equal(map2.set(a, 3), map2);
-  equal(map2.set(b, 4), map2);
-  equal(map2.set(c, 5), map2);
+  assert.strictEqual(map2.set(a, 3), map2);
+  assert.strictEqual(map2.set(b, 4), map2);
+  assert.strictEqual(map2.set(c, 5), map2);
 
-  equal(map2.get(a), 3);
-  equal(map2.get(b), 4);
-  equal(map2.get(c), 5);
+  assert.strictEqual(map2.get(a), 3);
+  assert.strictEqual(map2.get(b), 4);
+  assert.strictEqual(map2.get(c), 5);
 
-  equal(map.get(c), 1);
-  equal(map.get(a), 2);
-  equal(map.get(b), undefined);
+  assert.strictEqual(map.get(c), 1);
+  assert.strictEqual(map.get(a), 2);
+  assert.strictEqual(map.get(b), undefined);
+});
+
+QUnit.test('invoking the WeakMap constructor with arguments is not supported at this time', function(assert) {
+  expectAssertion(function() {
+    new WeakMap([[{}, 1]]);
+  }, /Invoking the WeakMap constructor with arguments is not supported at this time/);
 });
 
 QUnit.test('that error is thrown when using a primitive key', function(assert) {
-  var map = new WeakMap();
+  let map = new WeakMap();
 
   expectAssertion(function() {
     map.set('a', 1);
@@ -72,19 +78,21 @@ QUnit.test('that error is thrown when using a primitive key', function(assert) {
 });
 
 QUnit.test('that .has and .delete work as expected', function(assert) {
-  var map = new WeakMap();
-  var a = {};
-  var b = {};
-  var foo = { id: 1, name: 'My file', progress: 0 };
+  let map = new WeakMap();
+  let a = {};
+  let b = {};
+  let foo = { id: 1, name: 'My file', progress: 0 };
 
-  deepEqual(map.set(a, foo), map);
-  deepEqual(map.get(a), foo);
-  ok(map.has(a));
-  ok(!map.has(b));
-
-  deepEqual(map.delete(a), map);
-  ok(!map.has(a));
-
-  map.set(a, undefined);
-  ok(map.has(a));
+  assert.strictEqual(map.set(a, foo), map);
+  assert.strictEqual(map.get(a), foo);
+  assert.strictEqual(map.has(a), true);
+  assert.strictEqual(map.has(b), false);
+  assert.strictEqual(map.delete(a), true);
+  assert.strictEqual(map.has(a), false);
+  assert.strictEqual(map.delete(a), false);
+  assert.strictEqual(map.set(a, undefined), map);
+  assert.strictEqual(map.has(a), true);
+  assert.strictEqual(map.delete(a), true);
+  assert.strictEqual(map.delete(a), false);
+  assert.strictEqual(map.has(a), false);
 });
