@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### 2.4.0-beta.3
+
+- [#12922](https://github.com/emberjs/ember.js/pull/12922) [BUGFIX] Special case `{{#with}}` for `isTruthy`
+- [#12934](https://github.com/emberjs/ember.js/pull/12934) [BUGFIX] Ensure `Route#transitionTo` returns a `Transition` object.
+- [#12941](https://github.com/emberjs/ember.js/pull/12941) [BUGFIX] Update Backburner to latest ([compare view](https://github.com/ebryn/backburner.js/compare/22a4df33f23c40257bc49972e5833038452ded2e...325a969dbc7eae42dc1edfbf0ae9fb83923df5a6)).
+- [#12939](https://github.com/emberjs/ember.js/pull/12939) [BUGFIX] Avoid allocating a binding map in meta when possible.
+- [#12947](https://github.com/emberjs/ember.js/pull/12947) [BUGFIX] Avoid using prototype extensions if possible ({add,remove}ArrayObserver).
+- [#12942](https://github.com/emberjs/ember.js/pull/12942) [BUGFIX] Do not rely prototype extensions (objectAt).
+- [#12991](https://github.com/emberjs/ember.js/pull/12991) [BUGFIX] Fix a regression in `Ember.computed.sort`.
+
 ### 2.4.0-beta.2
 
 - [#12491](https://github.com/emberjs/ember.js/pull/12491) [BUGFIX] allow watching of ES5+ Getter
