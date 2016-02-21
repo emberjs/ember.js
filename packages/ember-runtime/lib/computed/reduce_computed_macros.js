@@ -13,6 +13,7 @@ import { isArray } from 'ember-runtime/utils';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import isNone from 'ember-metal/is_none';
 import getProperties from 'ember-metal/get_properties';
+import WeakMap from 'ember-metal/weak_map';
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
@@ -608,53 +609,74 @@ function customSort(itemsKey, comparator) {
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  var cp = new ComputedProperty(function(key) {
-    function didChange() {
+  let cp = new ComputedProperty(function(key) {
+    let itemsKeyIsAtThis = (itemsKey === '@this');
+    let sortProperties = get(this, sortPropertiesKey);
+
+    assert(
+      `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
+      isArray(sortProperties) && sortProperties.every(s => typeof s === 'string')
+    );
+
+    let normalizedSortProperties = normalizeSortProperties(sortProperties);
+
+    // Add/remove property observers as required.
+    let activeObserversMap = cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
+    let activeObservers = activeObserversMap.get(this);
+
+    if (activeObservers) {
+      activeObservers.forEach(args => {
+        removeObserver.apply(null, args);
+      });
+    }
+
+    function sortPropertyDidChange() {
       this.notifyPropertyChange(key);
     }
 
-    var items = itemsKey === '@this' ? this : get(this, itemsKey);
-    var sortProperties = get(this, sortPropertiesKey);
-
-    if (items === null || typeof items !== 'object') { return emberA(); }
-
-    // TODO: Ideally we'd only do this if things have changed
-    if (cp._sortPropObservers) {
-      cp._sortPropObservers.forEach(args => removeObserver.apply(null, args));
-    }
-
-    cp._sortPropObservers = [];
-
-    if (!isArray(sortProperties)) { return items; }
-
-    // Normalize properties
-    var normalizedSort = sortProperties.map(p => {
-      let [prop, direction] = p.split(':');
-      direction = direction || 'asc';
-
-      return [prop, direction];
-    });
-
-    // TODO: Ideally we'd only do this if things have changed
-    // Add observers
-    normalizedSort.forEach(prop => {
-      var args = [this, `${itemsKey}.@each.${prop[0]}`, didChange];
-      cp._sortPropObservers.push(args);
+    activeObservers = normalizedSortProperties.map(([prop]) => {
+      let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
+      let args = [this, path, sortPropertyDidChange];
       addObserver.apply(null, args);
+      return args;
     });
 
-    return emberA(items.slice().sort((itemA, itemB) => {
-      for (var i = 0; i < normalizedSort.length; ++i) {
-        var [prop, direction] = normalizedSort[i];
-        var result = compare(get(itemA, prop), get(itemB, prop));
-        if (result !== 0) {
-          return (direction === 'desc') ? (-1 * result) : result;
-        }
-      }
+    activeObserversMap.set(this, activeObservers);
 
-      return 0;
-    }));
+    // Sort and return the array.
+    let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
+
+    if (isArray(items)) {
+      return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    } else {
+      return emberA();
+    }
   });
 
-  return cp.property(`${itemsKey}.[]`, `${sortPropertiesKey}.[]`).readOnly();
+  cp._activeObserverMap = undefined;
+
+  return cp.property(`${sortPropertiesKey}.[]`).readOnly();
+}
+
+function normalizeSortProperties(sortProperties) {
+  return sortProperties.map(p => {
+    let [prop, direction] = p.split(':');
+    direction = direction || 'asc';
+
+    return [prop, direction];
+  });
+}
+
+function sortByNormalizedSortProperties(items, normalizedSortProperties) {
+  return emberA(items.slice().sort((itemA, itemB) => {
+    for (let i = 0; i < normalizedSortProperties.length; i++) {
+      let [prop, direction] = normalizedSortProperties[i];
+      let result = compare(get(itemA, prop), get(itemB, prop));
+      if (result !== 0) {
+        return (direction === 'desc') ? (-1 * result) : result;
+      }
+    }
+
+    return 0;
+  }));
 }
