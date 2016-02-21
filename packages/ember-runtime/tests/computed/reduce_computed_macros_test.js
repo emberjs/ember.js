@@ -5,6 +5,7 @@ import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { addObserver } from 'ember-metal/observer';
+import { computed } from 'ember-metal/computed';
 import { observer } from 'ember-metal/mixin';
 import {
   sum,
@@ -1203,10 +1204,10 @@ QUnit.module('sort - stability', {
       sortedItems: sort('items', 'sortProps')
     }).create({
       items: [
-        { name: 'A', count: 1 },
-        { name: 'B', count: 1 },
-        { name: 'C', count: 1 },
-        { name: 'D', count: 1 }
+        { name: 'A', count: 1, thing: 4 },
+        { name: 'B', count: 1, thing: 3 },
+        { name: 'C', count: 1, thing: 2 },
+        { name: 'D', count: 1, thing: 4 }
       ]
     });
   },
@@ -1223,7 +1224,6 @@ QUnit.test('sorts correctly as only one property changes', function() {
   deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'final');
 });
 
-
 var klass;
 QUnit.module('sort - concurrency', {
   setup() {
@@ -1234,10 +1234,10 @@ QUnit.module('sort - concurrency', {
     });
     obj = klass.create({
       items: emberA([
-        { name: 'A', count: 1 },
-        { name: 'B', count: 2 },
-        { name: 'C', count: 3 },
-        { name: 'D', count: 4 }
+        { name: 'A', count: 1, thing: 4, id: 1 },
+        { name: 'B', count: 2, thing: 3, id: 2 },
+        { name: 'C', count: 3, thing: 2, id: 3 },
+        { name: 'D', count: 4, thing: 1, id: 4 }
       ])
     });
   },
@@ -1270,16 +1270,16 @@ QUnit.test('sort correctly after mutation to the sort', function() {
 
 QUnit.test('sort correctly on multiple instances of the same class', function() {
   var obj2 = klass.create({
-    items: Ember.A([
-      { name: 'W', count: 23 },
-      { name: 'X', count: 24 },
-      { name: 'Y', count: 25 },
-      { name: 'Z', count: 26 }
+    items: emberA([
+      { name: 'W', count: 23, thing: 4 },
+      { name: 'X', count: 24, thing: 3 },
+      { name: 'Y', count: 25, thing: 2 },
+      { name: 'Z', count: 26, thing: 1 }
     ])
   });
 
-  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
   deepEqual(obj2.get('sortedItems').mapBy('name'), ['W', 'X', 'Y', 'Z'], 'initial');
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'initial');
 
   set(obj.get('items')[1], 'count', 5);
   set(obj.get('items')[2], 'count', 6);
@@ -1288,6 +1288,62 @@ QUnit.test('sort correctly on multiple instances of the same class', function() 
 
   deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'final');
   deepEqual(obj2.get('sortedItems').mapBy('name'), ['W', 'Z', 'X', 'Y'], 'final');
+
+  obj.set('sortProps', ['thing']);
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['D', 'C', 'B', 'A'], 'final');
+
+  obj2.notifyPropertyChange('sortedItems'); // invalidate to flush, to get DK refreshed
+  obj2.get('sortedItems'); // flush to get updated DK
+
+  obj2.set('items.firstObject.count', 9999);
+
+  deepEqual(obj2.get('sortedItems').mapBy('name'), ['Z', 'X', 'Y', 'W'], 'final');
+});
+
+
+QUnit.test('sort correctly when multiple sorts are chained on the same instance of a class', function() {
+  var obj2 = klass.extend({
+    items: computed('sibling.sortedItems.[]', function() {
+      return this.get('sibling.sortedItems');
+    }),
+    asdf: observer('sibling.sortedItems.[]', function() {
+      this.get('sibling.sortedItems');
+    })
+  }).create({
+    sibling: obj
+  });
+
+  /*
+                                         ┌───────────┐                              ┌────────────┐
+                                         │sortedProps│                              │sortedProps2│
+                                         └───────────┘                              └────────────┘
+                                               ▲                                           ▲
+                                               │               ╔═══════════╗               │
+                                               │─ ─ ─ ─ ─ ─ ─ ▶║ CP (sort) ║◀─ ─ ─ ─ ─ ─ ─ ┤
+                                               │               ╚═══════════╝               │
+                                               │                                           │
+┌───────────┐                            ┏━━━━━━━━━━━┓                              ┏━━━━━━━━━━━━┓
+│           │   ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─    ┃           ┃    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─     ┃            ┃
+│   items   │◀──  items.@each.count  │◀──┃sortedItems┃◀───  items.@each.count  │◀───┃sortedItems2┃
+│           │   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─    ┃           ┃    └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─     ┃            ┃
+└───────────┘                            ┗━━━━━━━━━━━┛                              ┗━━━━━━━━━━━━┛
+   */
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'obj.sortedItems.name should be sorted alpha');
+  deepEqual(obj2.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'obj2.sortedItems.name should be sorted alpha');
+
+  set(obj.get('items')[1], 'count', 5);
+  set(obj.get('items')[2], 'count', 6);
+
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'obj.sortedItems.name should now have changed');
+  deepEqual(obj2.get('sortedItems').mapBy('name'), ['A', 'D', 'B', 'C'], 'obj2.sortedItems.name should still mirror sortedItems2');
+
+  obj.set('sortProps', ['thing']);
+  obj2.set('sortProps', ['id']);
+
+  deepEqual(obj2.get('sortedItems').mapBy('name'), ['A', 'B', 'C', 'D'], 'we now sort obj2 by id, so we expect a b c d');
+  deepEqual(obj.get('sortedItems').mapBy('name'), ['D', 'C', 'B', 'A'], 'we now sort obj by thing');
 });
 
 QUnit.module('max', {
