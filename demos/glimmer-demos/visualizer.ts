@@ -369,7 +369,7 @@ function renderContent() {
 
   function compileLayout(component) {
     let definition = env.getComponentDefinition([component]);
-    let compiled = layoutFor(definition, { env });
+    let compiled = layoutFor(definition, env);
     let children = definition.compileLayout(env).children;
 
     // Fake a Block
