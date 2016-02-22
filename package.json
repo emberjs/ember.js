@@ -4,7 +4,6 @@
   "version": "2.5.0-canary",
   "scripts": {
     "build": "ember build --environment production",
-    "postinstall": "bower install",
     "pretest": "ember build",
     "test": "bin/run-tests.js",
     "test:sauce": "bin/run-sauce-tests.js",
