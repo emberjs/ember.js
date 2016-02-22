@@ -87,7 +87,7 @@ function shouldDisplay(predicate, coercer) {
     let isTruthyVal = read(isTruthy);
 
     if (isArray(predicateVal)) {
-      return lengthVal > 0;
+      return lengthVal > 0 ? predicateVal : false;
     }
 
     if (typeof isTruthyVal === 'boolean') {
