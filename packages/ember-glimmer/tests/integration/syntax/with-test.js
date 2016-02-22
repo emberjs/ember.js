@@ -122,6 +122,29 @@ moduleFor('Syntax test: {{#with as}}', class extends SharedConditionalsTest{
     this.assertText('No Thing bar');
   }
 
+  ['@test can access alias of an array']() {
+    this.render(`{{#with arrayThing as |thing|}}{{#each thing as |value|}}{{value}}{{/each}}{{/with}}`, {
+      arrayThing: ['a', 'b', 'c', 'd']
+    });
+
+    this.assertText('abcd');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('abcd');
+  }
+
+  ['@test empty arrays yield inverse']() {
+    this.render(`{{#with arrayThing as |thing|}}{{thing}}{{else}}Empty Array{{/with}}`, {
+      arrayThing: []
+    });
+
+    this.assertText('Empty Array');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Empty Array');
+  }
 }, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
 
 moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingTest {
