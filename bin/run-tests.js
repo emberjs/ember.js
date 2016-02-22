@@ -158,6 +158,11 @@ switch (process.env.TEST_SUITE) {
     console.log('suite: node');
     require('./run-node-tests');
     return;
+  case 'blueprints':
+    console.log('suite: blueprints');
+    require('../node-tests/nodetest-runner');
+    server.close();
+    return;
   case 'sauce':
     console.log('suite: sauce');
     require('./run-sauce-tests');
