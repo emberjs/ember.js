@@ -64,13 +64,22 @@ let app = env.compile(`
   {{/each}}
 `)
 
+let serversRef;
+let result;
 let clear;
 let playing = false;
+let initialized = false;
 
 export function toggle() {
+  if (!initialized) {
+    init();
+    initialized = true;
+  }
+
   if (playing) {
     window['playpause'].innerHTML = "Play";
     clearInterval(clear);
+    playing = false;
   } else {
     window['playpause'].innerHTML = "Pause";
     start();
@@ -78,21 +87,23 @@ export function toggle() {
   }
 }
 
-function start() {
+function init() {
   let output = document.getElementById('output');
 
   console.time('rendering');
   env.begin();
 
-  let self = new UpdatableReference({ servers: servers() });
-  let result = app.render(self, env, { appendTo: output });
+  serversRef = new UpdatableReference({ servers: servers() });
+  result = app.render(serversRef, env, { appendTo: output });
 
   console.log(env['createdComponents'].length);
   env.commit();
   console.timeEnd('rendering');
+}
 
+function start() {
   clear = setInterval(function() {
-    self.update({ servers: servers() });
+    serversRef.update({ servers: servers() });
     console.time('updating');
     result.rerender();
     console.timeEnd('updating');
