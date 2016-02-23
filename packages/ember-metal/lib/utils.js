@@ -382,7 +382,7 @@ export function tryInvoke(obj, methodName, args) {
 // TYPING & ARRAY MESSAGING
 //
 
-var toString = Object.prototype.toString;
+var objectToString = Object.prototype.toString;
 
 /**
   Forces the passed object to be part of an array. If the object is already
@@ -442,7 +442,7 @@ export function inspect(obj) {
     return '' + obj;
   }
   // overridden toString
-  if (typeof obj.toString === 'function' && obj.toString !== toString) {
+  if (typeof obj.toString === 'function' && obj.toString !== objectToString) {
     return obj.toString();
   }
 
@@ -456,7 +456,7 @@ export function inspect(obj) {
       if (typeof v === 'function') { v = 'function() { ... }'; }
 
       if (v && typeof v.toString !== 'function') {
-        ret.push(key + ': ' + toString.call(v));
+        ret.push(key + ': ' + objectToString.call(v));
       } else {
         ret.push(key + ': ' + v);
       }
@@ -518,6 +518,16 @@ export function lookupDescriptor(obj, keyName) {
   }
 
   return null;
+}
+
+// A `toString` util function that supports objects without a `toString`
+// method, e.g. an object created with `Object.create(null)`.
+export function toString(obj) {
+  if (obj && obj.toString) {
+    return obj.toString();
+  } else {
+    return objectToString.call(obj);
+  }
 }
 
 export {

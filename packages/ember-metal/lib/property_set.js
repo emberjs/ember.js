@@ -17,7 +17,8 @@ import {
 } from 'ember-metal/meta';
 
 import {
-  lookupDescriptor
+  lookupDescriptor,
+  toString
 } from 'ember-metal/utils';
 
 /**
@@ -55,7 +56,7 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  assert(`calling set on destroyed object: ${obj.toString ? obj.toString() : ''}.${keyName} = ${value}`,
+  assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
          !obj.isDestroyed);
 
   if (desc) {
