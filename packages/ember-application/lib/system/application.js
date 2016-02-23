@@ -997,7 +997,6 @@ if (isEnabled('ember-application-visit')) {
       @param url {String} The initial URL to navigate to
       @param options {Ember.ApplicationInstance.BootOptions}
       @return {Promise<Ember.ApplicationInstance, Error>}
-      @private
     */
     visit(url, options) {
       return this.boot().then(() => {
