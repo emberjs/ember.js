@@ -77,3 +77,11 @@ QUnit.test('warn on attempts to use set with an unsupported property path', func
     set(obj, 42, 42);
   }, /The key provided to set must be a string, you passed 42/);
 });
+
+QUnit.test('warn on attempts of calling set on a destroyed object', function() {
+  let obj = { isDestroyed: true };
+
+  expectAssertion(function() {
+    set(obj, 'favoriteFood', 'hot dogs');
+  }, 'calling set on destroyed object: [object Object].favoriteFood = hot dogs');
+});
