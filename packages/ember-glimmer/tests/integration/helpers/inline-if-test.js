@@ -55,6 +55,22 @@ moduleFor('Helpers test: inline {{if}}', class extends SharedHelperConditionalsT
 
 }, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
 
+moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning truthy values)', class extends SharedHelperConditionalsTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{if (if ${cond} ${cond} false) ${truthy} ${falsy}}}`;
+  }
+
+}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+
+moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning falsy values)', class extends SharedHelperConditionalsTest {
+
+  templateFor({ cond, truthy, falsy }) {
+    return `{{if (if ${cond} true ${cond}) ${truthy} ${falsy}}}`;
+  }
+
+}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+
 moduleFor('@glimmer Helpers test: {{if}} used with another helper', class extends SharedHelperConditionalsTest {
 
   wrapperFor(templates) {
