@@ -78,7 +78,7 @@ moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class exte
   }
 
   textValue() {
-    return this.$('div', this.element).attr('data-foo');
+    return this.$('div').attr('data-foo');
   }
 
 });

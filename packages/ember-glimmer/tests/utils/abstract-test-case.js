@@ -86,7 +86,6 @@ export class RenderingTest extends TestCase {
     let owner = this.owner = buildOwner();
     let env = this.env = new Environment({ dom, owner });
     this.renderer = new Renderer(dom, { destinedForDOM: true, env });
-    this.$ = jQuery;
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
     this.snapshot = null;
@@ -111,6 +110,10 @@ export class RenderingTest extends TestCase {
     }
 
     return node;
+  }
+
+  $(sel) {
+    return sel ? jQuery(sel, this.element) : jQuery(this.element);
   }
 
   takeSnapshot() {
@@ -179,7 +182,7 @@ export class RenderingTest extends TestCase {
   }
 
   textValue() {
-    return jQuery(this.element).text();
+    return this.$().text();
   }
 
   assertText(text) {
