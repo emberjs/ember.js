@@ -109,7 +109,18 @@ export default function compare(v, w) {
       return spaceship(v, w);
 
     case 'string':
-      return spaceship(v.localeCompare(w), 0);
+      // We are comparing Strings using operators instead of `String#localeCompare`
+      // because of unexpected behavior for certain edge cases.
+      // For example `'Z'.localeCompare('a')` returns `1`.
+      //
+      // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare#Description
+      if (v < w) {
+        return -1;
+      } else if (v === w) {
+        return 0;
+      }
+
+      return 1;
 
     case 'array':
       var vLen = v.length;
