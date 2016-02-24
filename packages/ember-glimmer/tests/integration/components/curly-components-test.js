@@ -44,7 +44,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@htmlbars it has a jQuery proxy to the element'](assert) {
+  ['@test it has a jQuery proxy to the element'](assert) {
     let instance;
 
     let FooBarComponent = Component.extend({
@@ -71,7 +71,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@htmlbars it scopes the jQuery proxy to the component element'](assert) {
+  ['@test it scopes the jQuery proxy to the component element'](assert) {
     let instance;
 
     let FooBarComponent = Component.extend({
