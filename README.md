@@ -17,7 +17,7 @@ on building killer features and UI.
 # Building Ember.js
 
 1. Ensure that [Node.js](http://nodejs.org/) is installed.
-2. Run `npm install` to ensure the required dependencies are installed.
+2. Run `npm install -g ember-cli` to ensure the required dependencies are installed.
 3. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
 
 ## npm install troubleshooting
