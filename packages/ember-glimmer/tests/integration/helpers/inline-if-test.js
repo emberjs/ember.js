@@ -65,7 +65,7 @@ moduleFor('@glimmer Helpers test: {{if}} used with another helper', class extend
     return `(if ${cond} ${truthy} ${falsy})`;
   }
 
-});
+}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
 
 moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class extends SharedHelperConditionalsTest {
 
@@ -81,4 +81,4 @@ moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class exte
     return this.$('div').attr('data-foo');
   }
 
-});
+}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
