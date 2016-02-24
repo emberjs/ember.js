@@ -13,6 +13,10 @@ class AbstractConditionalsTest extends RenderingTest {
     return templates.join('');
   }
 
+  wrappedTemplateFor(options) {
+    return this.wrapperFor([this.templateFor(options)]);
+  }
+
   /* abstract */
   templateFor({ cond, truthy, falsy }) {
     // e.g. `{{#if ${cond}}}${truthy}{{else}}${falsy}{{/if}}`
@@ -422,9 +426,9 @@ export class SharedHelperConditionalsTest extends SharedConditionalsTest {
 
   ['@htmlbars it does not update when the unbound helper is used']() {
     let template = `${
-      this.templateFor({ cond: '(unbound cond1)', truthy: '"T1"', falsy: '"F1"' })
+      this.wrappedTemplateFor({ cond: '(unbound cond1)', truthy: '"T1"', falsy: '"F1"' })
     }${
-      this.templateFor({ cond: '(unbound cond2)', truthy: '"T2"', falsy: '"F2"' })
+      this.wrappedTemplateFor({ cond: '(unbound cond2)', truthy: '"T2"', falsy: '"F2"' })
     }`;
 
     this.render(template, { cond1: true, cond2: false });
@@ -452,6 +456,26 @@ export class SharedHelperConditionalsTest extends SharedConditionalsTest {
     });
 
     this.assertText('T1F2');
+  }
+
+  ['@test it tests for `isTruthy` on the context if available']() {
+    let template = this.wrappedTemplateFor({ cond: 'this', truthy: '"T1"', falsy: '"F1"' });
+
+    this.render(template, { isTruthy: true });
+
+    this.assertText('T1');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('T1');
+
+    this.runTask(() => set(this.context, 'isTruthy', false));
+
+    this.assertText('F1');
+
+    this.runTask(() => set(this.context, 'isTruthy', true));
+
+    this.assertText('T1');
   }
 
 }
