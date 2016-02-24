@@ -60,7 +60,7 @@ import assign from 'ember-metal/assign';
 
   ```handlebars
   {{yield (hash
-      nameInput=(component "input" value=model.name placeholder="First Name"))}}
+      nameInput=(component "my-input-component" value=model.name placeholder="First Name"))}}
   ```
 
   The following snippet:
