@@ -15,7 +15,11 @@ const packageTag = `@${packageName} `;
 export function moduleFor(description, TestClass, ...generators) {
   let context;
 
-  QUnit.module(`[${packageName}] ${description}`, {
+  let modulePackagePrefixMatch = description.match(/^@(\w*)/); //eg '@glimmer' or '@htmlbars'
+  let modulePackagePrefix = modulePackagePrefixMatch ? modulePackagePrefixMatch[1] : '';
+  let descriptionWithoutPackagePrefix = description.replace(/^@\w* /, '');
+
+  QUnit.module(`[${packageName}] ${descriptionWithoutPackagePrefix}`, {
     setup() {
       context = new TestClass();
     },
@@ -39,6 +43,10 @@ export function moduleFor(description, TestClass, ...generators) {
   }
 
   function generateTest(name) {
+    if (modulePackagePrefix && packageName !== modulePackagePrefix) {
+      return;
+    }
+
     if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
@@ -102,6 +110,10 @@ export class RenderingTest extends TestCase {
     }
 
     return node;
+  }
+
+  $(sel) {
+    return sel ? jQuery(sel, this.element) : jQuery(this.element);
   }
 
   takeSnapshot() {
@@ -169,8 +181,12 @@ export class RenderingTest extends TestCase {
     }
   }
 
+  textValue() {
+    return this.$().text();
+  }
+
   assertText(text) {
-    assert.strictEqual(jQuery(this.element).text(), text, '#qunit-fixture content');
+    assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
   }
 
   assertHTML(html) {

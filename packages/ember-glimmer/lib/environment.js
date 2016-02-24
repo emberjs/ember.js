@@ -51,9 +51,11 @@ class PropertyReference {
 }
 
 import { default as concat } from './helpers/concat';
+import { default as inlineIf } from './helpers/inline-if';
 
 const helpers = {
-  concat
+  concat,
+  if: inlineIf
 };
 
 class EmberConditionalReference extends ConditionalReference {

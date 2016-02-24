@@ -3,10 +3,10 @@ import { set } from 'ember-metal/property_set';
 import {
   BASIC_TRUTHY_TESTS,
   BASIC_FALSY_TESTS,
-  SharedConditionalsTest
+  SharedSyntaxConditionalsTest
 } from '../../utils/shared-conditional-tests';
 
-moduleFor('Syntax test: {{#if}}', class extends SharedConditionalsTest {
+moduleFor('Syntax test: {{#if}}', class extends SharedSyntaxConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#if ${cond}}}${truthy}{{else}}${falsy}{{/if}}`;
@@ -42,7 +42,7 @@ moduleFor('Syntax test: {{#if}}', class extends SharedConditionalsTest {
 
 }, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
 
-moduleFor('Syntax test: {{#unless}}', class extends SharedConditionalsTest {
+moduleFor('Syntax test: {{#unless}}', class extends SharedSyntaxConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#unless ${cond}}}${falsy}{{else}}${truthy}{{/unless}}`;

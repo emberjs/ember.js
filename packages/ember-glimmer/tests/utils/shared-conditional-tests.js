@@ -9,22 +9,23 @@ import ArrayProxy from 'ember-runtime/system/array_proxy';
 
 class AbstractConditionalsTest extends RenderingTest {
 
+  wrapperFor(templates) {
+    return templates.join('');
+  }
+
+  wrappedTemplateFor(options) {
+    return this.wrapperFor([this.templateFor(options)]);
+  }
+
   /* abstract */
   templateFor({ cond, truthy, falsy }) {
     // e.g. `{{#if ${cond}}}${truthy}{{else}}${falsy}{{/if}}`
     throw new Error('Not implemented: `templateFor`');
   }
 
+  /* abstract */
   renderValues(...values) {
-    let templates = [];
-    let context = {};
-
-    for (let i = 1; i <= values.length; i++) {
-      templates.push(this.templateFor({ cond: `cond${i}`, truthy: `{{t}}${i}`, falsy: `{{f}}${i}` }));
-      context[`cond${i}`] = values[i - 1];
-    }
-
-    this.render(templates.join(''), assign({ t: 'T', f: 'F' }, context));
+    throw new Error('Not implemented: `renderValues`');
   }
 
 }
@@ -55,6 +56,7 @@ export const BASIC_TRUTHY_TESTS = {
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
+    EmberObject.create({ isTruthy: true }),
     /*jshint -W053 */
     new String('hello'),
     new String(''),
@@ -99,7 +101,8 @@ export const BASIC_FALSY_TESTS = {
     '',
     0,
     [],
-    emberA()
+    emberA(),
+    EmberObject.create({ isTruthy: false })
   ],
 
   generate(value) {
@@ -374,6 +377,124 @@ export class SharedConditionalsTest extends AbstractConditionalsTest {
     this.assertText('T1F2');
   }
 
+  ['@test it maintains DOM stability when condition changes from a truthy to a different truthy value']() {
+    this.renderValues(true);
+
+    this.assertText('T1');
+
+    this.takeSnapshot();
+
+    this.runTask(() => set(this.context, 'cond1', 'hello'));
+
+    this.assertText('T1');
+
+    this.assertInvariants();
+  }
+
+  ['@test it maintains DOM stability when condition changes from a falsy to a different falsy value']() {
+    this.renderValues(false);
+
+    this.assertText('F1');
+
+    this.takeSnapshot();
+
+    this.runTask(() => set(this.context, 'cond1', ''));
+
+    this.assertText('F1');
+
+    this.assertInvariants();
+  }
+
+}
+
+export class SharedHelperConditionalsTest extends SharedConditionalsTest {
+
+  renderValues(...values) {
+    let templates = [];
+    let context = {};
+
+    for (let i = 1; i <= values.length; i++) {
+      templates.push(this.templateFor({ cond: `cond${i}`, truthy: `t${i}`, falsy: `f${i}` }));
+      context[`t${i}`] = `T${i}`;
+      context[`f${i}`] = `F${i}`;
+      context[`cond${i}`] = values[i - 1];
+    }
+
+    let wrappedTemplate = this.wrapperFor(templates);
+    this.render(wrappedTemplate, context);
+  }
+
+  ['@htmlbars it does not update when the unbound helper is used']() {
+    let template = `${
+      this.wrappedTemplateFor({ cond: '(unbound cond1)', truthy: '"T1"', falsy: '"F1"' })
+    }${
+      this.wrappedTemplateFor({ cond: '(unbound cond2)', truthy: '"T2"', falsy: '"F2"' })
+    }`;
+
+    this.render(template, { cond1: true, cond2: false });
+
+    this.assertText('T1F2');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('T1F2');
+
+    this.runTask(() => set(this.context, 'cond1', false));
+
+    this.assertText('T1F2');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', true);
+      set(this.context, 'cond2', true);
+    });
+
+    this.assertText('T1F2');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', true);
+      set(this.context, 'cond2', false);
+    });
+
+    this.assertText('T1F2');
+  }
+
+  ['@test it tests for `isTruthy` on the context if available']() {
+    let template = this.wrappedTemplateFor({ cond: 'this', truthy: '"T1"', falsy: '"F1"' });
+
+    this.render(template, { isTruthy: true });
+
+    this.assertText('T1');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('T1');
+
+    this.runTask(() => set(this.context, 'isTruthy', false));
+
+    this.assertText('F1');
+
+    this.runTask(() => set(this.context, 'isTruthy', true));
+
+    this.assertText('T1');
+  }
+
+}
+
+export class SharedSyntaxConditionalsTest extends SharedConditionalsTest {
+
+  renderValues(...values) {
+    let templates = [];
+    let context = {};
+
+    for (let i = 1; i <= values.length; i++) {
+      templates.push(this.templateFor({ cond: `cond${i}`, truthy: `{{t}}${i}`, falsy: `{{f}}${i}` }));
+      context[`cond${i}`] = values[i - 1];
+    }
+
+    let wrappedTemplate = this.wrapperFor(templates);
+    this.render(wrappedTemplate, assign({ t: 'T', f: 'F' }, context));
+  }
+
   ['@htmlbars it does not update when the unbound helper is used']() {
     let template = `${
       this.templateFor({ cond: '(unbound cond1)', truthy: 'T1', falsy: 'F1' })
@@ -406,34 +527,6 @@ export class SharedConditionalsTest extends AbstractConditionalsTest {
     });
 
     this.assertText('T1F2');
-  }
-
-  ['@test it maintains DOM stability when condition changes from a truthy to a different truthy value']() {
-    this.renderValues(true);
-
-    this.assertText('T1');
-
-    this.takeSnapshot();
-
-    this.runTask(() => set(this.context, 'cond1', 'hello'));
-
-    this.assertText('T1');
-
-    this.assertInvariants();
-  }
-
-  ['@test it maintains DOM stability when condition changes from a falsy to a different falsy value']() {
-    this.renderValues(false);
-
-    this.assertText('F1');
-
-    this.takeSnapshot();
-
-    this.runTask(() => set(this.context, 'cond1', ''));
-
-    this.assertText('F1');
-
-    this.assertInvariants();
   }
 
   ['@test it tests for `isTruthy` on the context if available']() {
