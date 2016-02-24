@@ -37,14 +37,14 @@ class CurlyComponentManager {
 
   didCreateElement(component, element) {
     component.element = element;
-    // component._transitionTo('hasElement');
+    component._transitionTo('hasElement');
   }
 
 
   didCreate(component) {
     // component.didInsertElement();
     // component.didRender();
-    // component._transitionTo('inDOM');
+    component._transitionTo('inDOM');
   }
 
   update(component, args, keywords) {
@@ -62,6 +62,10 @@ class CurlyComponentManager {
   didUpdate(component) {
     // component.didUpdate();
     // component.didRender();
+  }
+
+  getDestructor(component) {
+    return component;
   }
 }
 
