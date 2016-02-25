@@ -221,6 +221,7 @@ QUnit.test('{{render}} helper should raise an error when a given controller name
 QUnit.test('{{render}} helper should render with given controller', function() {
   var template = '{{render "home" controller="posts"}}';
   var Controller = EmberController.extend();
+  let model = {};
   let controller = Controller.create({
     [OWNER]: appInstance
   });
@@ -230,6 +231,7 @@ QUnit.test('{{render}} helper should render with given controller', function() {
     init() {
       this._super(...arguments);
       this.uniqueId = id++;
+      this.set('model', model);
     }
   }));
 
@@ -243,9 +245,51 @@ QUnit.test('{{render}} helper should render with given controller', function() {
 
   runAppend(view);
 
-  var uniqueId = appInstance.lookup('controller:posts').get('uniqueId');
+  let renderedController = appInstance.lookup('controller:posts');
+  let uniqueId = renderedController.get('uniqueId');
+  let renderedModel = renderedController.get('model');
   equal(uniqueId, 0, 'precond - first uniqueId is used for singleton');
   equal(uniqueId, view.$().html(), 'rendered with singleton controller');
+  equal(renderedModel, model, 'rendered with model on controller');
+});
+
+QUnit.test('{{render}} helper should rerender with given controller', function() {
+  let template = '{{render "home" controller="posts"}}';
+  let Controller = EmberController.extend();
+  let model = {};
+  let controller = Controller.create({
+    [OWNER]: appInstance
+  });
+  var id = 0;
+
+  appInstance.register('controller:posts', EmberController.extend({
+    init() {
+      this._super(...arguments);
+      this.uniqueId = id++;
+      this.set('model', model);
+    }
+  }));
+
+  view = EmberView.create({
+    [OWNER]: appInstance,
+    controller,
+    template: compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile('{{uniqueId}}');
+
+  runAppend(view);
+  run(() => {
+    view.rerender();
+  });
+
+  let renderedController = appInstance.lookup('controller:posts');
+  let uniqueId = renderedController.get('uniqueId');
+  let renderedModel = renderedController.get('model');
+
+  equal(uniqueId, 0, 'precond - first uniqueId is used for singleton');
+  equal(uniqueId, view.$().html(), 'rendered with singleton controller');
+  equal(renderedModel, model, 'rendered with model on controller');
 });
 
 QUnit.test('{{render}} helper should render a template without a model only once', function() {
