@@ -1022,6 +1022,7 @@ if (isEnabled('ember-application-visit')) {
       }
       ```
 
+      @public
       @method visit
       @param url {String} The initial URL to navigate to
       @param options {Ember.ApplicationInstance.BootOptions}
