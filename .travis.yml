@@ -26,6 +26,7 @@ before_install:
 
 install:
   - "npm install"
+  - bower install
 
 after_success:
   - "./bin/publish_builds"

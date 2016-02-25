@@ -2,9 +2,11 @@
   "name": "ember",
   "license": "MIT",
   "version": "2.5.0-canary",
+  "keywords": [
+    "ember-addon"
+  ],
   "scripts": {
     "build": "ember build --environment production",
-    "postinstall": "bower install",
     "pretest": "ember build",
     "test": "bin/run-tests.js",
     "test:sauce": "bin/run-sauce-tests.js",
