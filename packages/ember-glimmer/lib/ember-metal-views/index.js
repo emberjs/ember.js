@@ -28,6 +28,7 @@ export class Renderer {
 
   remove(view) {
     view._transitionTo('destroying');
+    view['_renderResult'].destroy();
     view.destroy();
   }
 

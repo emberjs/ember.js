@@ -229,3 +229,7 @@ export class RenderingTest extends TestCase {
     }
   }
 }
+
+export function strip(str) {
+  return str.split('\n').map(s => s.trim()).join('');
+}
