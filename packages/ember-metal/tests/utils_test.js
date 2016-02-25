@@ -29,10 +29,10 @@ if (environment.isPhantom || environment.isChrome || environment.isFirefox) {
   });
 }
 
-QUnit.test("toString uses an object's toString method when available", function() {
+QUnit.test('toString uses an object\'s toString method when available', function() {
   let obj = {
     toString() {
-      return "bob";
+      return 'bob';
     }
   };
 
@@ -40,7 +40,7 @@ QUnit.test("toString uses an object's toString method when available", function(
 });
 
 
-QUnit.test("toString falls back to Object.prototype.toString", function() {
+QUnit.test('toString falls back to Object.prototype.toString', function() {
   let obj = Object.create(null);
 
   strictEqual(toString(obj), {}.toString());
