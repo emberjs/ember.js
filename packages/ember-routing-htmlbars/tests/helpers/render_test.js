@@ -226,6 +226,7 @@ QUnit.test("{{render}} helper should render with given controller", function() {
     init() {
       this._super.apply(this, arguments);
       this.uniqueId = id++;
+      this.set('model', model);
     }
   }));
   view = EmberView.create({
@@ -238,9 +239,51 @@ QUnit.test("{{render}} helper should render with given controller", function() {
 
   runAppend(view);
 
-  var uniqueId = container.lookup('controller:posts').get('uniqueId');
+  let renderedController = container.lookup('controller:posts');
+  let uniqueId = renderedController.get('uniqueId');
+  let renderedModel = renderedController.get('model');
   equal(uniqueId, 0, 'precond - first uniqueId is used for singleton');
   equal(uniqueId, view.$().html(), 'rendered with singleton controller');
+  equal(renderedModel, model, 'rendered with model on controller');
+});
+
+QUnit.test('{{render}} helper should rerender with given controller', function() {
+  let template = '{{render "home" controller="posts"}}';
+  let Controller = EmberController.extend();
+  let model = {};
+  let controller = Controller.create({
+    container: container
+  });
+  var id = 0;
+
+  registry.register('controller:posts', EmberController.extend({
+    init() {
+      this._super(...arguments);
+      this.uniqueId = id++;
+      this.set('model', model);
+    }
+  }));
+
+  view = EmberView.create({
+    container,
+    controller,
+    template: compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile('{{uniqueId}}');
+
+  runAppend(view);
+  run(() => {
+    view.rerender();
+  });
+
+  let renderedController = container.lookup('controller:posts');
+  let uniqueId = renderedController.get('uniqueId');
+  let renderedModel = renderedController.get('model');
+
+  equal(uniqueId, 0, 'precond - first uniqueId is used for singleton');
+  equal(uniqueId, view.$().html(), 'rendered with singleton controller');
+  equal(renderedModel, model, 'rendered with model on controller');
 });
 
 QUnit.test("{{render}} helper should render a template without a model only once", function() {
