@@ -13,11 +13,15 @@ import {
 } from './utils/references';
 
 import { default as concat } from './helpers/concat';
-import { default as inlineIf } from './helpers/inline-if';
+import {
+  inlineIf,
+  inlineUnless
+} from './helpers/if-unless';
 
 const builtInHelpers = {
   concat,
-  if: inlineIf
+  if: inlineIf,
+  unless: inlineUnless
 };
 
 export default class extends Environment {
