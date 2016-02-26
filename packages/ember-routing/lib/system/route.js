@@ -31,9 +31,40 @@ import {
 } from 'ember-routing/utils';
 import { getOwner } from 'container/owner';
 import isEmpty from 'ember-metal/is_empty';
+import symbol from 'ember-metal/symbol';
 var slice = Array.prototype.slice;
 
 function K() { return this; }
+
+function defaultSerialize(model, params) {
+  if (params.length < 1) { return; }
+  if (!model) { return; }
+
+  var name = params[0];
+  var object = {};
+
+  if (params.length === 1) {
+    if (name in model) {
+      object[name] = get(model, name);
+    } else if (/_id$/.test(name)) {
+      object[name] = get(model, 'id');
+    }
+  } else {
+    object = getProperties(model, params);
+  }
+
+  return object;
+}
+
+const DEFAULT_SERIALIZE = symbol('DEFAULT_SERIALIZE');
+
+if (isEnabled('ember-route-serializers')) {
+  defaultSerialize[DEFAULT_SERIALIZE] = true;
+}
+
+export function hasDefaultSerialize(route) {
+  return !!route.serialize[DEFAULT_SERIALIZE];
+}
 
 /**
 @module ember
@@ -1583,25 +1614,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @return {Object} the serialized parameters
     @public
   */
-  serialize(model, params) {
-    if (params.length < 1) { return; }
-    if (!model) { return; }
-
-    var name = params[0];
-    var object = {};
-
-    if (params.length === 1) {
-      if (name in model) {
-        object[name] = get(model, name);
-      } else if (/_id$/.test(name)) {
-        object[name] = get(model, 'id');
-      }
-    } else {
-      object = getProperties(model, params);
-    }
-
-    return object;
-  },
+  serialize: defaultSerialize,
 
   /**
     A hook you can use to setup the controller for the current route.
