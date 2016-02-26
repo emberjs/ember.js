@@ -6,11 +6,15 @@ import createIterable from './utils/iterable';
 import { RootReference, ConditionalReference } from './utils/references';
 
 import { default as concat } from './helpers/concat';
-import { default as inlineIf } from './helpers/inline-if';
+import {
+  inlineIf,
+  inlineUnless
+} from './helpers/inline-if-unless';
 
 const helpers = {
   concat,
-  if: inlineIf
+  if: inlineIf,
+  unless: inlineUnless
 };
 
 const VIEW_KEYWORD = 'view'; // legacy ? 'view' : symbol('view');
