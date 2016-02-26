@@ -95,7 +95,7 @@ function createClosureAction(stream, target, action, valuePath, actionArguments)
 
       let payload = { target, args, label: labelFor(stream) };
       return flaggedInstrument('interaction.ember-action', payload, () => {
-        return action.apply(target, args);
+        return run.join(target, action, ...args);
       });
     };
   }

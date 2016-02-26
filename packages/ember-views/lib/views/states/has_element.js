@@ -52,7 +52,7 @@ assign(hasElement, {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
       return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
-        return run.join(view, view.trigger, eventName, evt);
+        return run.join(view, view.trigger, eventName, event);
       });
     } else {
       return true; // continue event propagation
