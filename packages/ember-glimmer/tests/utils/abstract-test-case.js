@@ -1,7 +1,7 @@
 import packageName from './package-name';
 import Environment from './environment';
 import { compile, helper, Helper, DOMHelper, Renderer } from './helpers';
-import { equalsElement, equalTokens, regex, classes } from 'glimmer-test-helpers';
+import { equalsElement, equalTokens, regex, classes } from './test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
