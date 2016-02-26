@@ -75,7 +75,7 @@ class CurlyComponentManager {
 const MANAGER = new CurlyComponentManager();
 
 import { ComponentDefinition, ValueReference } from 'glimmer-runtime';
-import Component from 'ember-views/components/component';
+import Component from '../ember-views/component';
 
 function elementId(vm) {
   let component = vm.dynamicScope().view;
