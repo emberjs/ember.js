@@ -153,24 +153,39 @@ var EmberRouter = EmberObject.extend(Evented, {
     Initializes the current router instance and sets up the change handling
     event listeners used by the instances `location` implementation.
 
-    A property named `initialURL` will be used to determine the initial URL.
-    If no value is found `/` will be used.
-
     @method startRouting
     @private
   */
   startRouting() {
+    if (this.setupRouter()) {
+      this._initialTransition();
+    }
+  },
+
+  /**
+    Handles the initial transition in the application.
+
+    A property named `initialURL` will be used to determine the initial URL.
+    If no value is found `/` will be used.
+
+    @method _initialTransition
+    @return {Transition} the transition object associated with this
+      attempted transition
+    @private
+  */
+
+  _initialTransition() {
     var initialURL = get(this, 'initialURL');
 
-    if (this.setupRouter()) {
-      if (typeof initialURL === 'undefined') {
-        initialURL = get(this, 'location').getURL();
-      }
-      var initialTransition = this.handleURL(initialURL);
-      if (initialTransition && initialTransition.error) {
-        throw initialTransition.error;
-      }
+    if (typeof initialURL === 'undefined') {
+      initialURL = get(this, 'location').getURL();
     }
+    var initialTransition = this.handleURL(initialURL);
+    if (initialTransition && initialTransition.error) {
+      throw initialTransition.error;
+    }
+
+    return initialTransition;
   },
 
   setupRouter() {
