@@ -1,5 +1,5 @@
 {
-  "name": "ember",
+  "name": "ember-source",
   "license": "MIT",
   "version": "2.7.0-canary",
   "keywords": [
@@ -49,7 +49,6 @@
     "route-recognizer": "0.1.10",
     "rsvp": "~3.2.1",
     "serve-static": "^1.10.0",
-    "simple-dom": "^0.3.0",
     "testem": "^1.5.0"
   },
   "dependencies": {
@@ -58,6 +57,8 @@
     "ember-cli-path-utils": "^1.0.0",
     "ember-cli-string-utils": "^1.0.0",
     "ember-cli-test-info": "^1.0.0",
-    "ember-cli-valid-component-name": "^1.0.0"
+    "ember-cli-valid-component-name": "^1.0.0",
+    "simple-dom": "^0.3.0",
+    "broccoli-stew": "^1.2.0"
   }
 }
