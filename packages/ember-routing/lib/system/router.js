@@ -742,7 +742,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       callback = asyncInstrument('routing.transition.url', () => { return { url }; });
     } else {
       let name = intent.name;
-      callback = asyncInstrument('routing.transition.named', () => { return { name }; });
+      callback = () => ({ name });
     }
 
     this._instrumentationCallback = callback;
