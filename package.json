@@ -1,5 +1,5 @@
 {
-  "name": "ember",
+  "name": "ember-source",
   "license": "MIT",
   "version": "2.10.0",
   "keywords": [
@@ -61,6 +61,8 @@
     "ember-cli-path-utils": "^1.0.0",
     "ember-cli-string-utils": "^1.0.0",
     "ember-cli-test-info": "^1.0.0",
-    "ember-cli-valid-component-name": "^1.0.0"
+    "ember-cli-valid-component-name": "^1.0.0",
+    "simple-dom": "^0.3.0",
+    "broccoli-stew": "^1.2.0"
   }
 }
