@@ -19,6 +19,12 @@ add(paths, 'shims', 'vendor/ember/shims.js');
 add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compiler.js');
 
 module.exports = {
+  init: function() {
+    if ('ember' in this.project.bowerDependencies()) {
+      throw new TypeError('Ember.js is now provided by node_module `ember-source`, please remove it from bower');
+    }
+  },
+
   name: 'ember-source',
   paths: paths,
   absolutePaths: absolutePaths,
