@@ -20,7 +20,6 @@ import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
 import { getOwner } from 'container/owner';
 import { Transition } from 'router/transition';
-import { subscribe } from 'ember-metal/instrumentation';
 
 var trim = jQuery.trim;
 
@@ -4077,83 +4076,3 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
     run(function() { router.send('hideModal'); });
   }, /You passed undefined as the outlet name/);
 });
-
-if (isEnabled('ember-improved-instrumentation')) {
-  QUnit.test('Should fire routing.transition.url event when the url changes', function() {
-    expect(5);
-
-    let urls = [];
-
-    subscribe('routing.transition.url', {
-      before(eventName, ts, path) {
-        ok(true, 'instrumentation called for url change');
-        urls.push(path.url);
-      },
-      after() {}
-    });
-
-    App.Router.map(function() {
-      this.route('nork');
-    });
-
-    App.Router.reopen({
-      init() {
-        this._super();
-        this.on('willTransition', this.testWillTransitionHook);
-      },
-      testWillTransitionHook(transition, url) {
-        ok(true, 'transition occured');
-        transition.abort();
-      }
-    });
-
-    App.NorkRoute = Route.extend();
-
-    bootApplication();
-
-    run(router, 'handleURL', '/nork');
-
-    run(() => {
-      deepEqual(urls, ['/', '/nork']);
-    });
-  });
-
-  QUnit.test('Should fire routing.transition.named event when the current route name changes', function() {
-    expect(4);
-
-    let names = [];
-
-    subscribe('routing.transition.named', {
-      before(eventName, ts, path) {
-        ok(true, 'instrumentation called for url change');
-        names.push(path.name);
-      },
-      after() {}
-    });
-
-    App.Router.map(function() {
-      this.route('nork');
-    });
-
-    App.Router.reopen({
-      init() {
-        this._super();
-        this.on('willTransition', this.testWillTransitionHook);
-      },
-      testWillTransitionHook(transition, url) {
-        ok(true, 'transition occured');
-        transition.abort();
-      }
-    });
-
-    App.NorkRoute = Route.extend();
-
-    bootApplication();
-
-    run(router, 'transitionTo', 'nork');
-
-    run(() => {
-      deepEqual(names, ['nork']);
-    });
-  });
-}
