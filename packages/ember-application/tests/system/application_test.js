@@ -1,8 +1,9 @@
 /*globals EmberDev */
 
 import Ember from 'ember-metal/core';
+import assign from 'ember-metal/assign';
 import run from 'ember-metal/run_loop';
-import Application from 'ember-application/system/application';
+import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
 import Router from 'ember-routing/system/router';
 import View from 'ember-views/views/view';
@@ -353,4 +354,73 @@ QUnit.test('does not leak itself in onLoad._loaded', function() {
   equal(_loaded.application, app);
   run(app, 'destroy');
   equal(_loaded.application, undefined);
+});
+
+let originalEmberENV;
+
+QUnit.module('Ember.Application - legacy addon deprecation warnings', {
+  setup() {
+    originalEmberENV = Ember.ENV;
+
+    Ember.ENV = assign({}, originalEmberENV, {
+      _ENABLE_LEGACY_VIEW_SUPPORT: false,
+      _ENABLE_LEGACY_CONTROLLER_SUPPORT: false
+    });
+
+    _resetLegacyAddonWarnings();
+  },
+
+  teardown() {
+    Ember.ENV = originalEmberENV;
+
+    if (app) {
+      run(app, 'destroy');
+    }
+  }
+});
+
+QUnit.test('it does not warn about the ember-legacy-views addon on first boot when not installed', function() {
+  expectNoDeprecation();
+
+  Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+
+  app = run(Application, 'create');
+});
+
+QUnit.test('it warns about the ember-legacy-views addon on first boot when installed', function() {
+  Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
+
+  expectDeprecation(() => {
+    app = run(Application, 'create');
+  }, 'Support for the `ember-legacy-views` addon will end soon, please remove it from your application.');
+
+  run(app, 'destroy');
+
+  // It should not warn again on second boot
+  expectNoDeprecation(() => {
+    app = run(Application, 'create');
+  });
+});
+
+QUnit.test('it does not warn about the ember-legacy-controllers addon on first boot when not installed', function() {
+  expectNoDeprecation();
+
+  Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
+
+  app = run(Application, 'create');
+});
+
+QUnit.test('it warns about the ember-legacy-controllers addon on first boot when installed', function() {
+  Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = true;
+
+  expectDeprecation(() => {
+    app = run(Application, 'create');
+  }, 'Support for the `ember-legacy-controllers` addon will end soon, please remove it from your application.');
+
+  run(app, 'destroy');
+
+  // It should not warn again on second boot
+  expectNoDeprecation(() => {
+    app = run(Application, 'create');
+  });
 });
