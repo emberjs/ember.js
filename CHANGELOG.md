@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.4.1
+
+- [#13030](https://github.com/emberjs/ember.js/pull/13030) [BUGFIX] Fix invalid legacy addon deprecations.
+
 ### 2.4.0
 
 - [#12996](https://github.com/emberjs/ember.js/pull/12996) [BUGFIX] Fixes 12995 #with array yields true
