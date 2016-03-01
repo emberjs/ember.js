@@ -6,7 +6,7 @@
 // BEGIN IMPORTS
 import require, { has } from 'require';
 import Ember from 'ember-metal/core';
-import { deprecate, deprecateFunc } from 'ember-metal/debug';
+import { deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import assign from 'ember-metal/assign';
 import merge from 'ember-metal/merge';
@@ -366,16 +366,6 @@ if (has('ember-debug')) {
     Ember.Debug.registerWarnHandler = function() { };
   }
 }
-
-deprecate(
-  'Support for the `ember-legacy-views` addon will end soon, please remove it from your application.',
-  !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
-  { id: 'ember-legacy-views', until: '2.6.0', url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' });
-
-deprecate(
-  'Support for the `ember-legacy-controllers` addon will end soon, please remove it from your application.',
-  !!Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT,
-  { id: 'ember-legacy-controllers', until: '2.6.0', url: 'http://emberjs.com/deprecations/v1.x/#toc_objectcontroller' });
 
 Ember.create = deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);
 Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', { id: 'ember-metal.ember.keys', until: '3.0.0' }, Object.keys);
