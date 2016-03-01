@@ -116,6 +116,16 @@
           }
         }
 
+        Ember.Debug.registerDeprecationHandler(function (message, options, next) {
+          var id = options && options.id;
+
+          if (id === 'ember-legacy-views' || id === 'ember-legacy-controllers') {
+            // Our test suite relies on the legacy semantics... to test the legacy semantics
+          } else {
+            next(message, options);
+          }
+        });
+
         window.EmberDev = window.EmberDev || {};
         EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
 
