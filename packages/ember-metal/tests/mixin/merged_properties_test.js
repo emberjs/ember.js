@@ -105,6 +105,29 @@ QUnit.test('mergedProperties should exist even if not explicitly set on create',
   equal(get(obj, 'options').b.c, 'ccc');
 });
 
+QUnit.test('defining mergedProperties at create time should not modify the prototype', function() {
+  var AnObj = EmberObject.extend({
+    mergedProperties: ['options'],
+    options: {
+      a: 1
+    }
+  });
+
+  var objA = AnObj.create({
+    options: {
+      a: 2
+    }
+  });
+  var objB = AnObj.create({
+    options: {
+      a: 3
+    }
+  });
+
+  equal(get(objA, 'options').a, 2);
+  equal(get(objB, 'options').a, 3);
+});
+
 QUnit.test('mergedProperties\' overwriting methods can call _super', function() {
   expect(4);
 
