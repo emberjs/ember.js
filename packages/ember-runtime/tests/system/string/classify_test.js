@@ -33,3 +33,4 @@ test('-foo/_bar',                  '_Foo/_Bar',                'classify dash-pr
 test('-foo/-bar',                  '_Foo/_Bar',                'classify dash-prefixed-namespaced dash-prefixed string');
 test('InnerHTML',                  'InnerHTML',                'does nothing with classified string');
 test('_FooBar',                    '_FooBar',                  'does nothing with classified prefixed string');
+test('be a teacher',               'BeATeacher',               'classify spaced string');
