@@ -530,7 +530,7 @@ export class SharedSyntaxConditionalsTest extends SharedConditionalsTest {
   }
 
   ['@test it tests for `isTruthy` on the context if available']() {
-    let template = this.templateFor({ cond: 'this', truthy: 'T1', falsy: 'F1' });
+    let template = this.wrappedTemplateFor({ cond: 'this', truthy: 'T1', falsy: 'F1' });
 
     this.render(template, { isTruthy: true });
 
@@ -547,6 +547,93 @@ export class SharedSyntaxConditionalsTest extends SharedConditionalsTest {
     this.runTask(() => set(this.context, 'isTruthy', true));
 
     this.assertText('T1');
+  }
+
+  ['@htmlbars it updates correctly when enclosing another conditional']() {
+    // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
+    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#if inner}}T-inner{{else}}F-inner{{/if}}', falsy: 'F-outer' });
+
+    this.render(template, { outer: true, inner: true });
+
+    this.assertText('T-inner');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('T-inner');
+
+    // Changes the inner bounds
+    this.runTask(() => set(this.context, 'inner', false));
+
+    this.assertText('F-inner');
+
+    // Now rerender the outer conditional, which require first clearing its bounds
+    this.runTask(() => set(this.context, 'outer', false));
+
+    this.assertText('F-outer');
+  }
+
+  ['@htmlbars it updates correctly when enclosing #each']() {
+    // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
+    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#each inner as |text|}}{{text}}{{/each}}', falsy: 'F-outer' });
+
+    this.render(template, { outer: true, inner: ['inner', '-', 'before'] });
+
+    this.assertText('inner-before');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('inner-before');
+
+    // Changes the inner bounds
+    this.runTask(() => set(this.context, 'inner', ['inner-after']));
+
+    this.assertText('inner-after');
+
+    // Now rerender the outer conditional, which require first clearing its bounds
+    this.runTask(() => set(this.context, 'outer', false));
+
+    this.assertText('F-outer');
+
+    // Reset
+    this.runTask(() => {
+      set(this.context, 'inner', ['inner-again']);
+      set(this.context, 'outer', true);
+    });
+
+    this.assertText('inner-again');
+
+    // Now clear the inner bounds
+    this.runTask(() => set(this.context, 'inner', []));
+
+    this.assertText('');
+
+    // Now rerender the outer conditional, which require first clearing its bounds
+    this.runTask(() => set(this.context, 'outer', false));
+
+    this.assertText('F-outer');
+  }
+
+  ['@htmlbars it updates correctly when enclosing triple-curlies']() {
+    // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
+    let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{{inner}}}', falsy: 'F-outer' });
+
+    this.render(template, { outer: true, inner: '<b>inner</b>-<b>before</b>' });
+
+    this.assertText('inner-before');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('inner-before');
+
+    // Changes the inner bounds
+    this.runTask(() => set(this.context, 'inner', '<p>inner-after</p>'));
+
+    this.assertText('inner-after');
+
+    // Now rerender the outer conditional, which require first clearing its bounds
+    this.runTask(() => set(this.context, 'outer', false));
+
+    this.assertText('F-outer');
   }
 
 }
