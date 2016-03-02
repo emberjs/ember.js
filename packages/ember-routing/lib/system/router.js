@@ -212,9 +212,9 @@ var EmberRouter = EmberObject.extend(Evented, {
         this._super(...arguments);
 
         return ga('send', 'pageview', {
-            'page': this.get('url'),
-            'title': this.get('url')
-          });
+          'page': this.get('url'),
+          'title': this.get('url')
+        });
       }
     });
     ```
