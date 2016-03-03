@@ -59,14 +59,6 @@ ViewNodeManager.create = function(renderNode, env, attrs, found, parentView, pat
     let layout = get(component, 'layout');
     if (layout) {
       componentInfo.layout = layout;
-      if (!contentTemplate) {
-        let template = getTemplate(component);
-
-        if (template) {
-          Ember.deprecate("Using deprecated `template` property on a " + (component.isView ? 'View' : 'Component') + ".");
-          contentTemplate = template.raw;
-        }
-      }
     } else {
       componentInfo.layout = getTemplate(component) || componentInfo.layout;
     }
@@ -155,6 +147,8 @@ ViewNodeManager.prototype.destroy = function() {
 };
 
 function getTemplate(componentOrView) {
+  Ember.deprecate("Using deprecated `template` property on a " + (componentOrView.isView ? 'View' : 'Component') + ".");
+
   return componentOrView.isComponent ? get(componentOrView, '_template') : get(componentOrView, 'template');
 }
 
