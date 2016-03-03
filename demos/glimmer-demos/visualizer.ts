@@ -152,7 +152,7 @@ const UI =
       <div class="content full-height">
         <h3>Opcodes</h3>
         <ol>
-          {{#each updatingOpcodes as |opcode|}}
+          {{#each updatingOpcodes key="@index" as |opcode|}}
             <opcode-inspector opcode={{opcode}} />
           {{/each}}
         </ol>
@@ -215,7 +215,7 @@ function renderUI() {
 `<div>
   <h3>Statements</h3>
   <ol>
-    {{#each @spec.statements as |statement|}}
+    {{#each @spec.statements key="@index" as |statement|}}
       <li><span class="pre">{{json statement}}</span></li>
     {{/each}}
   </ol>
@@ -223,7 +223,7 @@ function renderUI() {
   {{#if @spec.locals}}
     <h3>Locals</h3>
     <ol>
-      {{#each @spec.locals as |local|}}
+      {{#each @spec.locals key="@index" as |local|}}
         <li><span class="pre">{{json local}}</span></li>
       {{/each}}
     </ol>
@@ -232,7 +232,7 @@ function renderUI() {
   {{#if @spec.named}}
     <h3>Named</h3>
     <ol>
-      {{#each @spec.named as |name|}}
+      {{#each @spec.named key="@index" as |name|}}
         <li><span class="pre">{{json name}}</span></li>
       {{/each}}
     </ol>
@@ -241,7 +241,7 @@ function renderUI() {
   {{#if @spec.yields}}
     <h3>Yields</h3>
     <ol>
-      {{#each @spec.yields as |yield|}}
+      {{#each @spec.yields key="@index" as |yield|}}
         <li><span class="pre">{{json yield}}</span></li>
       {{/each}}
     </ol>
@@ -250,7 +250,7 @@ function renderUI() {
   {{#if @spec.blocks}}
     <h3>Blocks</h3>
     <ol>
-      {{#each @spec.blocks as |block|}}
+      {{#each @spec.blocks key="@index" as |block|}}
         <li>
           <h3>Block</h3>
           {{wire-format-inspector spec=block}}
@@ -309,7 +309,7 @@ function renderUI() {
     {{/each}}
   </ol>
   <hr />
-  {{#each @block.children as |inner|}}
+  {{#each @block.children key="@index" as |inner|}}
     <div class="indent">{{block-inspector block=inner}}</div>
   {{/each}}
 </div>`);
