@@ -8,6 +8,7 @@
 //
 import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
 
+import symbol from 'ember-metal/symbol';
 import { get } from 'ember-metal/property_get';
 import {
   computed,
@@ -63,6 +64,12 @@ export function objectAt(content, idx) {
   return content[idx];
 }
 
+const EMBER_ARRAY = symbol('EMBER_ARRAY');
+
+export function isEmberArray(obj) {
+  return obj && !!obj[EMBER_ARRAY];
+}
+
 // ..........................................................
 // ARRAY
 //
@@ -104,6 +111,8 @@ export function objectAt(content, idx) {
   @public
 */
 export default Mixin.create(Enumerable, {
+
+  [EMBER_ARRAY]: true,
 
   /**
     __Required.__ You must implement this method to apply this mixin.

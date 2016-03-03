@@ -1,54 +1,9 @@
-import { Environment, ConditionalReference } from 'glimmer-runtime';
-import { get } from 'ember-metal/property_get';
+import { Environment } from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
-import { toBool as emberToBool } from './helpers/if-unless';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
 import lookupComponent from './utils/lookup-component';
-
-// @implements PathReference
-export class RootReference {
-  constructor(value) {
-    this._value = value;
-  }
-
-  value() {
-    return this._value;
-  }
-
-  isDirty() {
-    return true;
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
-  }
-
-  destroy() {
-  }
-}
-
-// @implements PathReference
-class PropertyReference {
-  constructor(parentReference, propertyKey) {
-    this._parentReference = parentReference;
-    this._propertyKey = propertyKey;
-  }
-
-  value() {
-    return get(this._parentReference.value(), this._propertyKey);
-  }
-
-  isDirty() {
-    return true;
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
-  }
-
-  destroy() {
-  }
-}
+import createIterable from './utils/iterable';
+import { RootReference, ConditionalReference } from './utils/references';
 
 import { default as concat } from './helpers/concat';
 import { default as inlineIf } from './helpers/inline-if';
@@ -57,12 +12,6 @@ const helpers = {
   concat,
   if: inlineIf
 };
-
-class EmberConditionalReference extends ConditionalReference {
-  toBool(predicate) {
-    return emberToBool(predicate);
-  }
-}
 
 const VIEW_KEYWORD = 'view'; // legacy ? 'view' : symbol('view');
 const KEYWORDS = [VIEW_KEYWORD];
@@ -147,6 +96,11 @@ export default class extends Environment {
   }
 
   toConditionalReference(reference) {
-    return new EmberConditionalReference(reference);
+    return new ConditionalReference(reference);
+  }
+
+  iterableFor(ref, args) {
+    let keyPath = args.named.get('key').value();
+    return createIterable(ref, keyPath);
   }
 }
