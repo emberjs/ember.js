@@ -9,6 +9,7 @@ import Checkbox from 'ember-views/views/checkbox';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
+import isEnabled from 'ember-metal/features';
 
 var view;
 var controller, owner;
@@ -484,3 +485,57 @@ QUnit.test('placeholder attribute bound to null is not present', function() {
 
   equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', 'attribute is present');
 });
+
+if (isEnabled('ember-contextual-components')) {
+  QUnit.module('{{input type=\'text\'}} - closure input', {
+    setup() {
+      commonSetup();
+    },
+
+    teardown() {
+      runDestroy(view);
+      runDestroy(owner);
+    }
+  });
+
+  QUnit.test('input can close over itself', function() {
+    let template = compile(
+      `{{#with (hash input=(input type="text")) as |f|}}
+         {{f.input}}
+       {{/with}}`
+    );
+
+    view = View.extend({
+      [OWNER]: owner,
+      template
+    }).create();
+
+    runAppend(view);
+
+    equal(view.$(`input`).length, 1, 'there is one input');
+  });
+
+  QUnit.test('input closure updates when type updates', function() {
+    let template = compile(
+      `{{#with (hash input=(input type=type)) as |f|}}
+         {{f.input}}
+       {{/with}}`
+    );
+
+    view = View.extend({
+      [OWNER]: owner,
+      template,
+      controller: {
+        type: 'text'
+      }
+    }).create();
+
+    runAppend(view);
+
+    equal(view.$('input').attr('type'), 'text', 'there is one text input');
+
+    run(null, set, view, 'controller.type', 'checkbox');
+
+    equal(view.$('input').attr('type'), 'checkbox', 'there is one checkbox input');
+  });
+}
