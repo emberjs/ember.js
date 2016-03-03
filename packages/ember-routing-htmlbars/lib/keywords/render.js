@@ -180,7 +180,7 @@ export default {
   rerender(node, env, scope, params, hash, template, inverse, visitor) {
     if (params.length > 1) {
       var model = read(params[1]);
-      node.getState().controller.set('model', model);
+      node.state.controller.set('model', model);
     }
   }
 };
