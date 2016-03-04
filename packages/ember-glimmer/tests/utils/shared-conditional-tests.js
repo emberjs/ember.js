@@ -681,7 +681,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1');
   }
 
-  ['@htmlbars it updates correctly when enclosing another conditional']() {
+  ['@test it updates correctly when enclosing another conditional']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#if inner}}T-inner{{else}}F-inner{{/if}}', falsy: 'F-outer' });
 
@@ -704,7 +704,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('F-outer');
   }
 
-  ['@htmlbars it updates correctly when enclosing #each']() {
+  ['@test it updates correctly when enclosing #each']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{#each inner as |text|}}{{text}}{{/each}}', falsy: 'F-outer' });
 
@@ -745,7 +745,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('F-outer');
   }
 
-  ['@htmlbars it updates correctly when enclosing triple-curlies']() {
+  ['@test it updates correctly when enclosing triple-curlies']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({ cond: 'outer', truthy: '{{{inner}}}', falsy: 'F-outer' });
 
