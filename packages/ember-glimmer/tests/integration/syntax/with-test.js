@@ -122,6 +122,34 @@ moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTes
     this.assertText('No Thing bar');
   }
 
+  ['@test can access alias of a proxy']() {
+    this.render(`{{#with proxyThing as |person|}}{{person.name}}{{/with}}`, {
+      proxyThing: { isTruthy: true, name: 'Tom Dale' }
+    });
+
+    this.assertText('Tom Dale');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Tom Dale');
+
+    this.runTask(() => set(this.context, 'proxyThing.name', 'Yehuda Katz'));
+
+    this.assertText('Yehuda Katz');
+
+    this.runTask(() => set(this.context, 'proxyThing.isTruthy', false));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'proxyThing.name', 'Godfrey Chan'));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'proxyThing', { isTruthy: true, name: 'Tom Dale' }));
+
+    this.assertText('Tom Dale');
+  }
+
   ['@test can access alias of an array']() {
     this.render(`{{#with arrayThing as |thing|}}{{#each thing as |value|}}{{value}}{{/each}}{{/with}}`, {
       arrayThing: ['a', 'b', 'c', 'd']
