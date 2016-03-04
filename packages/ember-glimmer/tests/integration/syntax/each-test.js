@@ -1,6 +1,7 @@
-import { applyMixins } from '../../utils/abstract-test-case';
-import { moduleFor } from '../../utils/test-case';
+import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import { applyMixins } from '../../utils/abstract-test-case';
+import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import {
   BasicConditionalsTest,
@@ -9,7 +10,6 @@ import {
   FalsyGenerator,
   ArrayTestCases
 } from '../../utils/shared-conditional-tests';
-// import { RenderingTest } from '../../utils/test-case';
 
 class EachTest extends BasicConditionalsTest {
 
@@ -37,7 +37,7 @@ applyMixins(EachTest,
 
 );
 
-moduleFor('@glimmer Syntax test: {{#each}}', class extends EachTest {
+moduleFor('Syntax test: {{#each}}', class extends EachTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond}}}${truthy}{{else}}${falsy}{{/each}}`;
@@ -45,7 +45,7 @@ moduleFor('@glimmer Syntax test: {{#each}}', class extends EachTest {
 
 });
 
-moduleFor('@glimmer Syntax test: {{#each as}}', class extends EachTest {
+moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{#each ${cond} as |test|}}${truthy}{{else}}${falsy}{{/each}}`;
@@ -111,268 +111,188 @@ moduleFor('@glimmer Syntax test: {{#each as}}', class extends EachTest {
     this.assertInvariants();
   }
 
-  // TODO: these tests are copied from with-test.js, probably good to port them here
+  ['@test can access the item and the original scope']() {
+    this.render(`{{#each people key="name" as |person|}}[{{title}}: {{person.name}}]{{/each}}`, {
+      title: 'Señor Engineer',
+      people: emberA([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }])
+    });
 
-  // ['@test can access alias and original scope']() {
-  //   this.render(`{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}`, {
-  //     title: 'Señor Engineer',
-  //     person: { name: 'Tom Dale' }
-  //   });
+    this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
 
-  //   this.assertText('Señor Engineer: Tom Dale');
+    this.runTask(() => this.rerender());
 
-  //   this.runTask(() => this.rerender());
+    this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
 
-  //   this.assertText('Señor Engineer: Tom Dale');
+    this.runTask(() => {
+      let people = get(this.context, 'people');
+      set(people.objectAt(1), 'name', 'Stefan Penner');
+      people.removeAt(0);
+      people.pushObject({ name: 'Tom Dale' });
+      people.insertAt(1, { name: 'Chad Hietala' });
+      set(this.context, 'title', 'Principal Engineer');
+    });
 
-  //   this.runTask(() => {
-  //     set(this.context, 'person.name', 'Yehuda Katz');
-  //     set(this.context, 'title', 'Principal Engineer');
-  //   });
+    this.assertText('[Principal Engineer: Stefan Penner][Principal Engineer: Chad Hietala][Principal Engineer: Godfrey Chan][Principal Engineer: Tom Dale]');
 
-  //   this.assertText('Principal Engineer: Yehuda Katz');
+    this.runTask(() => {
+      set(this.context, 'people', [{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
+      set(this.context, 'title', 'Señor Engineer');
+    });
 
-  //   this.runTask(() => {
-  //     set(this.context, 'person', { name: 'Tom Dale' });
-  //     set(this.context, 'title', 'Señor Engineer');
-  //   });
+    this.assertText('[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]');
+  }
 
-  //   this.assertText('Señor Engineer: Tom Dale');
-  // }
+  ['@test the scoped variable is not available outside the {{#each}} block.']() {
+    this.render(`{{name}}-{{#each other as |name|}}{{name}}{{/each}}-{{name}}`, {
+      name: 'Stef',
+      other: emberA(['Yehuda'])
+    });
 
-  // ['@test the scoped variable is not available outside the {{with}} block.']() {
-  //   this.render(`{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}`, {
-  //     name: 'Stef',
-  //     other: 'Yehuda'
-  //   });
+    this.assertText('Stef-Yehuda-Stef');
 
-  //   this.assertText('Stef-Yehuda-Stef');
+    this.runTask(() => this.rerender());
 
-  //   this.runTask(() => this.rerender());
+    this.assertText('Stef-Yehuda-Stef');
 
-  //   this.assertText('Stef-Yehuda-Stef');
+    this.runTask(() => get(this.context, 'other').pushObjects([' ', 'Katz']));
 
-  //   this.runTask(() => set(this.context, 'other', 'Chad'));
+    this.assertText('Stef-Yehuda Katz-Stef');
 
-  //   this.assertText('Stef-Chad-Stef');
+    this.runTask(() => set(this.context, 'name', 'Tom'));
 
-  //   this.runTask(() => set(this.context, 'name', 'Tom'));
+    this.assertText('Tom-Yehuda Katz-Tom');
 
-  //   this.assertText('Tom-Chad-Tom');
+    this.runTask(() => {
+      set(this.context, 'name', 'Stef');
+      set(this.context, 'other', ['Yehuda']);
+    });
 
-  //   this.runTask(() => {
-  //     set(this.context, 'name', 'Stef');
-  //     set(this.context, 'other', 'Yehuda');
-  //   });
+    this.assertText('Stef-Yehuda-Stef');
+  }
 
-  //   this.assertText('Stef-Yehuda-Stef');
-  // }
+  ['@test inverse template is displayed with context']() {
+    this.render(`{{#each falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/each}}`, {
+      falsyThing: [],
+      otherThing: 'bar'
+    });
 
-  // ['@test inverse template is displayed with context']() {
-  //   this.render(`{{#with falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/with}}`, {
-  //     falsyThing: null,
-  //     otherThing: 'bar'
-  //   });
+    this.assertText('No Thing bar');
 
-  //   this.assertText('No Thing bar');
+    this.runTask(() => this.rerender());
 
-  //   this.runTask(() => this.rerender());
+    this.assertText('No Thing bar');
 
-  //   this.assertText('No Thing bar');
+    this.runTask(() => set(this.context, 'otherThing', 'biz'));
 
-  //   this.runTask(() => set(this.context, 'falsyThing', true));
+    this.assertText('No Thing biz');
 
-  //   this.assertText('Has Thing');
+    this.runTask(() => set(this.context, 'falsyThing', ['non-empty']));
 
-  //   this.runTask(() => set(this.context, 'otherThing', 'biz'));
+    this.assertText('Has Thing');
 
-  //   this.assertText('Has Thing');
+    this.runTask(() => set(this.context, 'otherThing', 'baz'));
 
-  //   this.runTask(() => {
-  //     set(this.context, 'otherThing', 'bar');
-  //     set(this.context, 'falsyThing', null);
-  //   });
+    this.assertText('Has Thing');
 
-  //   this.assertText('No Thing bar');
-  // }
+    this.runTask(() => {
+      set(this.context, 'otherThing', 'bar');
+      set(this.context, 'falsyThing', null);
+    });
 
-  // ['@test can access alias of an array']() {
-  //   this.render(`{{#with arrayThing as |thing|}}{{#each thing as |value|}}{{value}}{{/each}}{{/with}}`, {
-  //     arrayThing: ['a', 'b', 'c', 'd']
-  //   });
-
-  //   this.assertText('abcd');
-
-  //   this.runTask(() => this.rerender());
-
-  //   this.assertText('abcd');
-  // }
-
-  // ['@test empty arrays yield inverse']() {
-  //   this.render(`{{#with arrayThing as |thing|}}{{thing}}{{else}}Empty Array{{/with}}`, {
-  //     arrayThing: []
-  //   });
-
-  //   this.assertText('Empty Array');
-
-  //   this.runTask(() => this.rerender());
-
-  //   this.assertText('Empty Array');
-  // }
+    this.assertText('No Thing bar');
+  }
 
 });
 
-// moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends EachTest {
-//   ['@test re-using the same variable with different #with blocks does not override each other']() {
-//     this.render(`Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`, {
-//       admin: { name: 'Tom Dale' },
-//       user: { name: 'Yehuda Katz' }
-//     });
+moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingTest {
 
-//     this.assertText('Admin: Tom Dale User: Yehuda Katz');
+  ['@test re-using the same variable with different {{#each}} blocks does not override each other']() {
+    this.render(`Admin: {{#each admins key="name" as |person|}}[{{person.name}}]{{/each}} User: {{#each users key="name" as |person|}}[{{person.name}}]{{/each}}`, {
+      admins: emberA([{ name: 'Tom Dale' }]),
+      users: emberA([{ name: 'Yehuda Katz' }])
+    });
 
-//     this.runTask(() => this.rerender());
+    this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
 
-//     this.assertText('Admin: Tom Dale User: Yehuda Katz');
+    this.runTask(() => this.rerender());
 
-//     this.runTask(() => {
-//       set(this.context, 'admin.name', 'Godfrey Chan');
-//       set(this.context, 'user.name', 'Stefan Penner');
-//     });
+    this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
 
-//     this.assertText('Admin: Godfrey Chan User: Stefan Penner');
+    this.runTask(() => {
+      get(this.context, 'admins').pushObject({ name: 'Godfrey Chan' });
+      set(get(this.context, 'users').objectAt(0), 'name', 'Stefan Penner');
+    });
 
-//     this.runTask(() => {
-//       set(this.context, 'admin', { name: 'Tom Dale' });
-//       set(this.context, 'user', { name: 'Yehuda Katz' });
-//     });
+    this.assertText('Admin: [Tom Dale][Godfrey Chan] User: [Stefan Penner]');
 
-//     this.assertText('Admin: Tom Dale User: Yehuda Katz');
-//   }
+    this.runTask(() => {
+      set(this.context, 'admins', [{ name: 'Tom Dale' }]);
+      set(this.context, 'users', [{ name: 'Yehuda Katz' }]);
+    });
 
-//   ['@test re-using the same variable with different #with blocks does not override each other']() {
-//     this.render(`Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`, {
-//       admin: { name: 'Tom Dale' },
-//       user: { name: 'Yehuda Katz' }
-//     });
+    this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
+  }
 
-//     this.assertText('Admin: Tom Dale User: Yehuda Katz');
+  ['@test the scoped variable is not available outside the {{#each}} block']() {
+    this.render(`{{ring}}-{{#each first as |ring|}}{{ring}}-{{#each fifth as |ring|}}{{ring}}-{{#each ninth as |ring|}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}`, {
+      ring: 'Greed',
+      first: emberA(['Limbo']),
+      fifth: emberA(['Wrath']),
+      ninth: emberA(['Treachery'])
+    });
 
-//     this.runTask(() => this.rerender());
+    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
-//     this.assertText('Admin: Tom Dale User: Yehuda Katz');
+    this.runTask(() => this.rerender());
 
-//     this.runTask(() => {
-//       set(this.context, 'admin.name', 'Erik Bryn');
-//       set(this.context, 'user.name', 'Chad Hietala');
-//     });
+    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
-//     this.assertText('Admin: Erik Bryn User: Chad Hietala');
+    this.runTask(() => {
+      set(this.context, 'ring', 'O');
+      get(this.context, 'fifth').insertAt(0, 'D');
+    });
 
-//     this.runTask(() => {
-//       set(this.context, 'admin', { name: 'Tom Dale' });
-//       set(this.context, 'user', { name: 'Yehuda Katz' });
-//     });
+    this.assertText('O-Limbo-D-Treachery-D-Wrath-Treachery-Wrath-Limbo-O');
 
-//     this.assertText('Admin: Tom Dale User: Yehuda Katz');
-//   }
+    this.runTask(() => {
+      get(this.context, 'first').pushObject('I');
+      get(this.context, 'ninth').replace(0, 1, 'K');
+    });
 
-//   ['@test the scoped variable is not available outside the {{with}} block.']() {
-//     this.render(`{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}`, {
-//       first: 'Limbo',
-//       fifth: 'Wrath',
-//       ninth: 'Treachery'
-//     });
+    this.assertText('O-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-O');
 
-//     this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
+    this.runTask(() => {
+      set(this.context, 'ring', 'Greed');
+      set(this.context, 'first', ['Limbo']);
+      set(this.context, 'fifth', ['Wrath']);
+      set(this.context, 'ninth', ['Treachery']);
+    });
 
-//     this.runTask(() => this.rerender());
+    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+  }
 
-//     this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
+  ['@test it should support {{#each name as |foo|}}, then {{#each foo as |bar|}}']() {
+    this.render(`{{#each name key="@index" as |foo|}}{{#each foo as |bar|}}{{bar}}{{/each}}{{/each}}`, {
+      name: emberA([emberA(['caterpillar'])])
+    });
 
-//     this.runTask(() => {
-//       set(this.context, 'first', 'I');
-//       set(this.context, 'fifth', 'D');
-//       set(this.context, 'ninth', 'K');
-//     });
+    this.assertText('caterpillar');
 
-//     this.assertText('I-D-K-D-I');
+    this.runTask(() => this.rerender());
 
-//     this.runTask(() => {
-//       set(this.context, 'first', 'Limbo');
-//       set(this.context, 'fifth', 'Wrath');
-//       set(this.context, 'ninth', 'Treachery');
-//     });
+    this.assertText('caterpillar');
 
-//     this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
-//   }
+    this.runTask(() => {
+      let name = get(this.context, 'name');
+      name.objectAt(0).replace(0, 1, 'lady');
+      name.pushObject(['bird']);
+    });
 
-//   ['@test it should support #with name as |foo|, then #with foo as |bar|']() {
-//     this.render(`{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}`, {
-//       name: 'caterpillar'
-//     });
+    this.assertText('ladybird');
 
-//     this.assertText('caterpillar');
+    this.runTask(() => set(this.context, 'name', [['caterpillar']]));
 
-//     this.runTask(() => this.rerender());
+    this.assertText('caterpillar');
+  }
 
-//     this.assertText('caterpillar');
-
-//     this.runTask(() => set(this.context, 'name', 'butterfly'));
-
-//     this.assertText('butterfly');
-
-//     this.runTask(() => set(this.context, 'name', 'caterpillar'));
-
-//     this.assertText('caterpillar');
-//   }
-
-//   ['@test nested {{with}} blocks shadow the outer scoped variable properly.']() {
-//     this.render(`{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}`, {
-//       first: 'Limbo',
-//       fifth: 'Wrath',
-//       ninth: 'Treachery'
-//     });
-
-//     this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
-
-//     this.runTask(() => this.rerender());
-
-//     this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
-
-//     this.runTask(() => {
-//       set(this.context, 'first', 'I');
-//       set(this.context, 'ninth', 'K');
-//     });
-
-//     this.assertText('I-Wrath-K-Wrath-I');
-
-//     this.runTask(() => {
-//       set(this.context, 'first', 'Limbo');
-//       set(this.context, 'fifth', 'Wrath');
-//       set(this.context, 'ninth', 'Treachery');
-//     });
-
-//     this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
-//   }
-
-//   ['@test updating the context should update the alias']() {
-//     this.render(`{{#with this as |person|}}{{person.name}}{{/with}}`, {
-//       name: 'Los Pivots'
-//     });
-
-//     this.assertText('Los Pivots');
-
-//     this.runTask(() => this.rerender());
-
-//     this.assertText('Los Pivots');
-
-//     this.runTask(() => set(this.context, 'name', 'l\'Pivots'));
-
-//     this.assertText('l\'Pivots');
-
-//     this.runTask(() => set(this.context, 'name', 'Los Pivots'));
-
-//     this.assertText('Los Pivots');
-//   }
-// });
+});
