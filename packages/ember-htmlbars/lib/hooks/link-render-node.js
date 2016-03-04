@@ -91,7 +91,7 @@ function shouldDisplay(predicate, coercer) {
     }
 
     if (typeof isTruthyVal === 'boolean') {
-      return isTruthyVal;
+      return isTruthyVal ? coercer(predicateVal) : false;
     }
 
     return coercer(predicateVal);
