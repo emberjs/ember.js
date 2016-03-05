@@ -1,3 +1,3 @@
 /*jshint node:true*/
 
-module.exports = require('ember-cli/blueprints/addon-import');
+module.exports = require('../-addon-import');
