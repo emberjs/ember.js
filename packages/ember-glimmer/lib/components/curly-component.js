@@ -1,14 +1,16 @@
 import { StatementSyntax } from 'glimmer-runtime';
 
 export class CurlyComponentSyntax extends StatementSyntax {
-  constructor(options) {
+  constructor({ args, definition, templates }) {
     super();
-    this.options = options;
+    this.args = args;
+    this.definition = definition;
+    this.templates = templates;
+    this.shadow = null;
   }
 
   compile(builder) {
-    builder.openComponent(this.options);
-    builder.closeComponent();
+    builder.component.static(this);
   }
 }
 

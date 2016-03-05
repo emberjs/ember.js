@@ -1,6 +1,7 @@
 import { Environment } from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
+import { DynamicComponentSyntax } from './components/dynamic-component';
 import lookupComponent from './utils/lookup-component';
 import createIterable from './utils/iterable';
 import { RootReference, ConditionalReference } from './utils/references';
@@ -34,11 +35,15 @@ export default class extends Environment {
       templates
     } = statement;
 
-    if (isSimple && (isInline || isBlock) && key.indexOf('-') >= 0) {
-      let definition = this.getComponentDefinition(path);
+    if (isSimple && (isInline || isBlock)) {
+      if (key === 'component') {
+        return new DynamicComponentSyntax({ args, templates });
+      } else if (key.indexOf('-') >= 0) {
+        let definition = this.getComponentDefinition(path);
 
-      if (definition) {
-        return new CurlyComponentSyntax({ args, definition, templates });
+        if (definition) {
+          return new CurlyComponentSyntax({ args, definition, templates });
+        }
       }
     }
 
