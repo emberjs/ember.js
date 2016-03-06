@@ -2,8 +2,8 @@
 
 var fs                 = require('fs-extra');
 var path               = require('path');
-var Promise            = require('ember-cli/lib/ext/promise');
-var remove             = Promise.denodeify(fs.remove);
+var RSVP               = require('rsvp');
+var remove             = RSVP.denodeify(fs.remove);
 var setupTestHooks     = require('ember-cli-blueprint-test-helpers/lib/helpers/setup');
 var initProject        = require('ember-cli-blueprint-test-helpers/lib/helpers/project-init');
 var BlueprintHelpers   = require('ember-cli-blueprint-test-helpers/lib/helpers/blueprint-helper');
