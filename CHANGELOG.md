@@ -20,6 +20,10 @@
 - [#13024](https://github.com/emberjs/ember.js/pull/13024) [BUGFIX] Change internal async acceptance test helpers to be somewhat more efficient in determining router transition status.
 - [FEATURE] Add helper method named `Ember.assign` to roughly emulate `Object.assign`.
 
+### 2.4.1 (February 29, 2016)
+
+- [#13030](https://github.com/emberjs/ember.js/pull/13030) [BUGFIX] Fix legacy addon deprecations
+
 ### 2.4.0 (February 29, 2016)
 
 - [#12996](https://github.com/emberjs/ember.js/pull/12996) [BUGFIX] Fixes 12995 #with array yields true
