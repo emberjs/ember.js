@@ -1,6 +1,13 @@
 # Ember Changelog
 
-### v2.5.0-beta.1
+### 2.5.0-beta.2 (March 7, 2016)
+
+- [#13030](https://github.com/emberjs/ember.js/pull/13030) [BUGFIX] Fix legacy addon deprecations
+- [#13031](https://github.com/emberjs/ember.js/pull/13031) [BUGFIX] Fix mergedProperties at create time modifying proto
+- [#13036](https://github.com/emberjs/ember.js/pull/13036) [BUGFIX] Revert "Update Ember.compare to use operators"
+- [#13049](https://github.com/emberjs/ember.js/pull/13049) [BUGFIX] Fixes `{{#with proxy as |foo|}}`
+
+### 2.5.0-beta.1 (February 29, 2016)
 
 - [#12829](https://github.com/emberjs/ember.js/pull/12829) [BUGFIX] Support tagless components in fastboot
 - [#12575](https://github.com/emberjs/ember.js/pull/12575) Make acceptance helpers fire native evets instead of jQuery ones.
@@ -13,7 +20,7 @@
 - [#13024](https://github.com/emberjs/ember.js/pull/13024) [BUGFIX] Change internal async acceptance test helpers to be somewhat more efficient in determining router transition status.
 - [FEATURE] Add helper method named `Ember.assign` to roughly emulate `Object.assign`.
 
-### 2.4.0
+### 2.4.0 (February 29, 2016)
 
 - [#12996](https://github.com/emberjs/ember.js/pull/12996) [BUGFIX] Fixes 12995 #with array yields true
 - [#13013](https://github.com/emberjs/ember.js/pull/13013) [BUGFIX] Do not set model on `{{render}}` rerender when only a single argument was provided.
