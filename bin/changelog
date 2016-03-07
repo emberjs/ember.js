@@ -20,7 +20,7 @@ var execSync  = require('child_process').execSync;
 var github         = new GitHubApi({version: '3.0.0'});
 var compareCommits = RSVP.denodeify(github.repos.compareCommits);
 var currentVersion = process.env.PRIOR_VERSION;
-var head = process.env.HEAD || 'master';
+var head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
 
 compareCommits({
   user: 'emberjs',
