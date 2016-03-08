@@ -1,7 +1,7 @@
 import packageName from './package-name';
 import Environment from './environment';
 import { compile, helper, Helper, DOMHelper, Renderer } from './helpers';
-import { equalsElement, equalTokens, regex, classes } from 'glimmer-test-helpers';
+import { equalsElement, equalTokens, regex, classes } from './test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
@@ -12,7 +12,32 @@ import buildOwner from 'container/tests/test-helpers/build-owner';
 
 const packageTag = `@${packageName} `;
 
-export function moduleFor(description, TestClass, ...generators) {
+function isGenerator(mixin) {
+  return Array.isArray(mixin.cases) && (typeof mixin.generate === 'function');
+}
+
+export function applyMixins(TestClass, ...mixins) {
+  mixins.forEach(mixinOrGenerator => {
+    let mixin;
+
+    if (isGenerator(mixinOrGenerator)) {
+      let generator = mixinOrGenerator;
+      mixin = {};
+
+      generator.cases.forEach(value => {
+        assign(mixin, generator.generate(value));
+      });
+    } else {
+      mixin = mixinOrGenerator;
+    }
+
+    assign(TestClass.prototype, mixin);
+  });
+
+  return TestClass;
+}
+
+export function moduleFor(description, TestClass, ...mixins) {
   let context;
 
   let modulePackagePrefixMatch = description.match(/^@(\w*)/); //eg '@glimmer' or '@htmlbars'
@@ -29,11 +54,7 @@ export function moduleFor(description, TestClass, ...generators) {
     }
   });
 
-  generators.forEach(generator => {
-    generator.cases.forEach(value => {
-      assign(TestClass.prototype, generator.generate(value));
-    });
-  });
+  applyMixins(TestClass, mixins);
 
   let proto = TestClass.prototype;
 

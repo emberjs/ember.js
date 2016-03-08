@@ -1,20 +1,19 @@
-import { moduleFor } from '../../utils/test-case';
+import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import {
-  BASIC_TRUTHY_TESTS,
-  BASIC_FALSY_TESTS,
-  SharedSyntaxConditionalsTest
-} from '../../utils/shared-conditional-tests';
-import { RenderingTest } from '../../utils/test-case';
+import { A as emberA } from 'ember-runtime/system/native_array';
+import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { TogglingSyntaxConditionalsTest } from '../../utils/shared-conditional-tests';
 
-moduleFor('Syntax test: {{#with}}', class extends SharedSyntaxConditionalsTest {
+moduleFor('Syntax test: {{#with}}', class extends TogglingSyntaxConditionalsTest {
+
   templateFor({ cond, truthy, falsy }) {
     return `{{#with ${cond}}}${truthy}{{else}}${falsy}{{/with}}`;
   }
 
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+});
 
-moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTest {
+moduleFor('Syntax test: {{#with as}}', class extends TogglingSyntaxConditionalsTest {
+
   templateFor({ cond, truthy, falsy }) {
     return `{{#with ${cond} as |test|}}${truthy}{{else}}${falsy}{{/with}}`;
   }
@@ -30,13 +29,17 @@ moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTes
 
     this.assertText('Hello');
 
+    this.runTask(() => set(this.context, 'cond1.greeting', 'Hello world'));
+
+    this.assertText('Hello world');
+
     this.runTask(() => set(this.context, 'cond1', false));
 
     this.assertText('False');
 
-    this.runTask(() => this.rerender());
+    this.runTask(() => set(this.context, 'cond1', { greeting: 'Hello' }));
 
-    this.assertText('False');
+    this.assertText('Hello');
   }
 
   ['@test can access alias and original scope']() {
@@ -66,7 +69,7 @@ moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTes
     this.assertText('Señor Engineer: Tom Dale');
   }
 
-  ['@test the scoped variable is not available outside the {{with}} block.']() {
+  ['@test the scoped variable is not available outside the {{#with}} block.']() {
     this.render(`{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}`, {
       name: 'Stef',
       other: 'Yehuda'
@@ -106,11 +109,15 @@ moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTes
 
     this.assertText('No Thing bar');
 
+    this.runTask(() => set(this.context, 'otherThing', 'biz'));
+
+    this.assertText('No Thing biz');
+
     this.runTask(() => set(this.context, 'falsyThing', true));
 
     this.assertText('Has Thing');
 
-    this.runTask(() => set(this.context, 'otherThing', 'biz'));
+    this.runTask(() => set(this.context, 'otherThing', 'baz'));
 
     this.assertText('Has Thing');
 
@@ -122,33 +129,65 @@ moduleFor('Syntax test: {{#with as}}', class extends SharedSyntaxConditionalsTes
     this.assertText('No Thing bar');
   }
 
+  ['@test can access alias of a proxy']() {
+    this.render(`{{#with proxyThing as |person|}}{{person.name}}{{/with}}`, {
+      proxyThing: { isTruthy: true, name: 'Tom Dale' }
+    });
+
+    this.assertText('Tom Dale');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Tom Dale');
+
+    this.runTask(() => set(this.context, 'proxyThing.name', 'Yehuda Katz'));
+
+    this.assertText('Yehuda Katz');
+
+    this.runTask(() => set(this.context, 'proxyThing.isTruthy', false));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'proxyThing.name', 'Godfrey Chan'));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'proxyThing', { isTruthy: true, name: 'Tom Dale' }));
+
+    this.assertText('Tom Dale');
+  }
+
   ['@test can access alias of an array']() {
-    this.render(`{{#with arrayThing as |thing|}}{{#each thing as |value|}}{{value}}{{/each}}{{/with}}`, {
-      arrayThing: ['a', 'b', 'c', 'd']
+    this.render(`{{#with arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/with}}`, {
+      arrayThing: emberA(['Hello', ' ', 'world'])
     });
 
-    this.assertText('abcd');
+    this.assertText('Hello world');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('abcd');
-  }
+    this.assertText('Hello world');
 
-  ['@test empty arrays yield inverse']() {
-    this.render(`{{#with arrayThing as |thing|}}{{thing}}{{else}}Empty Array{{/with}}`, {
-      arrayThing: []
+    this.runTask(() => {
+      let array = get(this.context, 'arrayThing');
+      array.replace(0, 1, 'Goodbye');
+      array.removeAt(1);
+      array.insertAt(1, ', ');
+      array.pushObject('!');
     });
 
-    this.assertText('Empty Array');
+    this.assertText('Goodbye, world!');
 
-    this.runTask(() => this.rerender());
+    this.runTask(() => set(this.context, 'arrayThing', ['Hello', ' ', 'world']));
 
-    this.assertText('Empty Array');
+    this.assertText('Hello world');
   }
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+
+});
 
 moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingTest {
-  ['@test re-using the same variable with different #with blocks does not override each other']() {
+
+  ['@test re-using the same variable with different {{#with}} blocks does not override each other']() {
     this.render(`Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`, {
       admin: { name: 'Tom Dale' },
       user: { name: 'Yehuda Katz' }
@@ -175,64 +214,45 @@ moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingT
     this.assertText('Admin: Tom Dale User: Yehuda Katz');
   }
 
-  ['@test re-using the same variable with different #with blocks does not override each other']() {
-    this.render(`Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`, {
-      admin: { name: 'Tom Dale' },
-      user: { name: 'Yehuda Katz' }
-    });
-
-    this.assertText('Admin: Tom Dale User: Yehuda Katz');
-
-    this.runTask(() => this.rerender());
-
-    this.assertText('Admin: Tom Dale User: Yehuda Katz');
-
-    this.runTask(() => {
-      set(this.context, 'admin.name', 'Erik Bryn');
-      set(this.context, 'user.name', 'Chad Hietala');
-    });
-
-    this.assertText('Admin: Erik Bryn User: Chad Hietala');
-
-    this.runTask(() => {
-      set(this.context, 'admin', { name: 'Tom Dale' });
-      set(this.context, 'user', { name: 'Yehuda Katz' });
-    });
-
-    this.assertText('Admin: Tom Dale User: Yehuda Katz');
-  }
-
-  ['@test the scoped variable is not available outside the {{with}} block.']() {
-    this.render(`{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}`, {
+  ['@test the scoped variable is not available outside the {{#with}} block']() {
+    this.render(`{{ring}}-{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}`, {
+      ring: 'Greed',
       first: 'Limbo',
       fifth: 'Wrath',
       ninth: 'Treachery'
     });
 
-    this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
+    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
+    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+
+    this.runTask(() => {
+      set(this.context, 'ring', 'O');
+      set(this.context, 'fifth', 'D');
+    });
+
+    this.assertText('O-Limbo-D-Treachery-D-Limbo-O');
 
     this.runTask(() => {
       set(this.context, 'first', 'I');
-      set(this.context, 'fifth', 'D');
       set(this.context, 'ninth', 'K');
     });
 
-    this.assertText('I-D-K-D-I');
+    this.assertText('O-I-D-K-D-I-O');
 
     this.runTask(() => {
+      set(this.context, 'ring', 'Greed');
       set(this.context, 'first', 'Limbo');
       set(this.context, 'fifth', 'Wrath');
       set(this.context, 'ninth', 'Treachery');
     });
 
-    this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
+    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
   }
 
-  ['@test it should support #with name as |foo|, then #with foo as |bar|']() {
+  ['@test it should support {{#with name as |foo|}}, then {{#with foo as |bar|}}']() {
     this.render(`{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}`, {
       name: 'caterpillar'
     });
@@ -250,35 +270,6 @@ moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingT
     this.runTask(() => set(this.context, 'name', 'caterpillar'));
 
     this.assertText('caterpillar');
-  }
-
-  ['@test nested {{with}} blocks shadow the outer scoped variable properly.']() {
-    this.render(`{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}`, {
-      first: 'Limbo',
-      fifth: 'Wrath',
-      ninth: 'Treachery'
-    });
-
-    this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
-
-    this.runTask(() => this.rerender());
-
-    this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
-
-    this.runTask(() => {
-      set(this.context, 'first', 'I');
-      set(this.context, 'ninth', 'K');
-    });
-
-    this.assertText('I-Wrath-K-Wrath-I');
-
-    this.runTask(() => {
-      set(this.context, 'first', 'Limbo');
-      set(this.context, 'fifth', 'Wrath');
-      set(this.context, 'ninth', 'Treachery');
-    });
-
-    this.assertText('Limbo-Wrath-Treachery-Wrath-Limbo');
   }
 
   ['@test updating the context should update the alias']() {
@@ -300,4 +291,5 @@ moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingT
 
     this.assertText('Los Pivots');
   }
+
 });

@@ -301,10 +301,10 @@ function andThen(app, callback) {
 
 function wait(app, value) {
   return new RSVP.Promise(function(resolve) {
+    var router = app.__container__.lookup('router:main');
+
     // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
-      var router = app.__container__.lookup('router:main');
-
       // 1. If the router is loading, keep polling
       var routerIsLoading = router.router && !!router.router.activeTransition;
       if (routerIsLoading) { return; }

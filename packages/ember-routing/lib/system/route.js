@@ -1923,7 +1923,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     //
     this.render('post', {  // the template name associated with 'post' Route
       into: 'application', // the parent route to 'post' Route
-      outlet: 'main',      // {{outlet}} and {{outlet 'main' are synonymous}},
+      outlet: 'main',      // {{outlet}} and {{outlet 'main'}} are synonymous,
       view: 'post',        // the view associated with the 'post' Route
       controller: 'post',  // the controller associated with the 'post' Route
     })

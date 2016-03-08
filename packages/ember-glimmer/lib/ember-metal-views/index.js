@@ -1,4 +1,4 @@
-import { RootReference } from '../environment';
+import { RootReference } from '../utils/references';
 
 export class Renderer {
   constructor(domHelper, { destinedForDOM, env } = {}) {
