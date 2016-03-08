@@ -2,6 +2,7 @@ import Ember from "ember-metal/core"; // assert
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/utils";
+import { read } from 'ember-metal/streams/utils';
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
 
@@ -14,7 +15,6 @@ function assert(message, test) {
 export default {
   setupState: function(state, env, scope, params, hash) {
     var getStream = env.hooks.get;
-    var read = env.hooks.getValue;
 
     var actionName = read(params[0]);
 
@@ -62,7 +62,6 @@ export default {
       eventName: hash.on || "click",
       bubbles: hash.bubbles,
       preventDefault: hash.preventDefault,
-      withKeyCode: hash.withKeyCode,
       allowedKeys: hash.allowedKeys
     });
 
@@ -88,17 +87,17 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
   }
 
   actions.push({
-    eventName,
+    eventName: read(eventName),
     handler(event) {
-      if (!isAllowedEvent(event, allowedKeys)) {
+      if (!isAllowedEvent(event, read(allowedKeys))) {
         return true;
       }
 
-      if (preventDefault !== false) {
+      if (read(preventDefault) !== false) {
         event.preventDefault();
       }
 
-      if (bubbles === false) {
+      if (read(bubbles) === false) {
         event.stopPropagation();
       }
 

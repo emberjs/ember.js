@@ -16,6 +16,7 @@ import jQuery from "ember-views/system/jquery";
 
 import { ActionHelper } from "ember-routing-htmlbars/keywords/element-action";
 import { deprecation as eachDeprecation } from "ember-htmlbars/helpers/each";
+import { computed } from 'ember-metal/computed';
 
 import {
   runAppend,
@@ -65,20 +66,51 @@ QUnit.test("should by default register a click event", function() {
   equal(registeredEventName, 'click', "The click event was properly registered");
 });
 
-QUnit.test("should allow alternative events to be handled", function() {
-  var registeredEventName;
+QUnit.test("should allow alternative events to be handled when literal passed as `on` property", function() {
+  var reachedAction = false;
 
-  ActionHelper.registerAction = function({ eventName }) {
-    registeredEventName = eventName;
-  };
-
-  view = EmberView.create({
+  view = EmberView.extend({
+    controller: Ember.Controller.extend({
+      actions: {
+        edit: function() {
+          reachedAction = true;
+        }
+      }
+    }).create(),
     template: compile('<a href="#" {{action "edit" on="mouseUp"}}>edit</a>')
-  });
+  }).create();
 
   runAppend(view);
 
-  equal(registeredEventName, 'mouseUp', "The alternative mouseUp event was properly registered");
+  run(() => {
+    view.$('a').mouseup();
+  });
+
+  equal(true, true, "The alternative mouseUp event was properly registered");
+});
+
+QUnit.test("allows alternative events to be handled when computed property passed as `on` property", function() {
+  var reachedAction;
+
+  view = EmberView.extend({
+    controller: Ember.Controller.extend({
+      onAction: 'mouseUp',
+      actions: {
+        edit: function() {
+          reachedAction = true;
+        }
+      }
+    }).create(),
+    template: compile('<a href="#" {{action "edit" on=onAction}}>edit</a>')
+  }).create();
+
+  runAppend(view);
+
+  run(() => {
+    view.$('a').mouseup();
+  });
+
+  equal(reachedAction, true, "The alternative mouseUp event was properly registered");
 });
 
 QUnit.test("should by default target the view's controller", function() {
@@ -322,7 +354,7 @@ QUnit.test("should register an event handler", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-QUnit.test("handles whitelisted modifier keys", function() {
+QUnit.test("handles whitelisted modifier keys - with literal `allowedKeys` property", function() {
   var eventHandlerWasCalled = false;
   var shortcutHandlerWasCalled = false;
 
@@ -336,6 +368,44 @@ QUnit.test("handles whitelisted modifier keys", function() {
   view = EmberView.create({
     controller: controller,
     template: compile('<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>')
+  });
+
+  runAppend(view);
+
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(ActionManager.registeredActions[actionId], "The action was registered");
+
+  var e = jQuery.Event('click');
+  e.altKey = true;
+  view.$('a').trigger(e);
+
+  ok(eventHandlerWasCalled, "The event handler was called");
+
+  e = jQuery.Event('click');
+  e.ctrlKey = true;
+  view.$('div').trigger(e);
+
+  ok(shortcutHandlerWasCalled, "The \"any\" shortcut's event handler was called");
+});
+
+QUnit.test("handles whitelisted modifier keys - with computed `allowedKeys` property", function() {
+  var eventHandlerWasCalled = false;
+  var shortcutHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    allowedKeys: computed(function() {
+      return "alt";
+    }),
+    actions: {
+      edit() { eventHandlerWasCalled = true; },
+      shortcut() { shortcutHandlerWasCalled = true; }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile('<a href="#" {{action "edit" allowedKeys=allowedKeys}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>')
   });
 
   runAppend(view);
@@ -405,6 +475,9 @@ QUnit.test("the event should not bubble if `bubbles=false` is passed", function(
   var originalEventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
+    shouldBubble: computed(function() {
+      return false;
+    }),
     actions: {
       edit() { editWasCalled = true; },
       "delete"() { deleteWasCalled = true; }
@@ -414,7 +487,7 @@ QUnit.test("the event should not bubble if `bubbles=false` is passed", function(
   view = EmberView.create({
     controller: controller,
     template: compile(
-      '<a id="edit" href="#" {{action "edit" bubbles=false}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=false}}>delete</a>'
+      '<a id="edit" href="#" {{action "edit" bubbles=shouldBubble}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=false}}>delete</a>'
     ),
     click() { originalEventHandlerWasCalled = true; }
   });
@@ -1130,3 +1203,29 @@ QUnit.test("should respect preventDefault=false option if provided", function() 
 
   equal(event.isDefaultPrevented(), false, "should not preventDefault");
 });
+
+QUnit.test("should respect preventDefault=false option if provided, and option is a computed property", function() {
+  view = EmberView.create({
+    template: compile("<a {{action 'show' preventDefault=shouldPreventDefault}}>Hi</a>")
+  });
+
+  var controller = EmberController.extend({
+    shouldPreventDefault: computed(function() {
+      return false;
+    }),
+    actions: {
+      show() { }
+    }
+  }).create();
+
+  run(function() {
+    view.set('controller', controller);
+    runAppend(view);
+  });
+
+  var event = jQuery.Event("click");
+  view.$('a').trigger(event);
+
+  equal(event.isDefaultPrevented(), false, "should not preventDefault");
+});
+

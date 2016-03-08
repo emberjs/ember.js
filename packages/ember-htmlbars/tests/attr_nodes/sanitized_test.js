@@ -58,6 +58,7 @@ var badTags = [
     multipartTemplate: compile("<iframe src='{{protocol}}{{path}}'></iframe>") }
 ];
 
+/*jshint loopfunc: true */
 for (var i=0, l=badTags.length; i<l; i++) {
   (function() {
     var subject = badTags[i];
