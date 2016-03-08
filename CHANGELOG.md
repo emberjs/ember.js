@@ -1,10 +1,10 @@
 # Ember Changelog
 
-### 2.4.1
+### 2.4.1 (February 29, 2016)
 
 - [#13030](https://github.com/emberjs/ember.js/pull/13030) [BUGFIX] Fix invalid legacy addon deprecations.
 
-### 2.4.0
+### 2.4.0 (February 29, 2016)
 
 - [#12996](https://github.com/emberjs/ember.js/pull/12996) [BUGFIX] Fixes 12995 #with array yields true
 - [#13013](https://github.com/emberjs/ember.js/pull/13013) [BUGFIX] Do not set model on `{{render}}` rerender when only a single argument was provided.
