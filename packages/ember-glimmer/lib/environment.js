@@ -14,9 +14,6 @@ const helpers = {
   if: inlineIf
 };
 
-const VIEW_KEYWORD = 'view'; // legacy ? 'view' : symbol('view');
-const KEYWORDS = [VIEW_KEYWORD];
-
 export default class extends Environment {
   constructor({ dom, owner }) {
     super(dom);
@@ -66,10 +63,6 @@ export default class extends Environment {
     }
 
     return definition;
-  }
-
-  getKeywords() {
-    return KEYWORDS;
   }
 
   hasHelper(name) {
