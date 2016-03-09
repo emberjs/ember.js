@@ -19,6 +19,23 @@ export class Renderer {
     this._env = env;
   }
 
+  appendOutletView(view, target) {
+    let env = this._env;
+    let self = new RootReference(view);
+    let dynamicScope = new DynamicScope({
+      view,
+      controller: view.outletState.render.controller,
+      outletState: view.toReference(),
+      isTopLevel: true
+    });
+
+    env.begin();
+    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
+    env.commit();
+
+    return result;
+  }
+
   appendTo(view, target) {
     let env = this._env;
     let self = new RootReference(view);

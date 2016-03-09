@@ -7,6 +7,8 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
+import Application from 'ember-application/system/application';
+import Router from 'ember-routing/system/router';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
@@ -85,43 +87,14 @@ const HTMLElement = window.HTMLElement;
 const Comment = window.Comment;
 
 export class TestCase {
-  teardown() {}
-}
-
-function isMarker(node) {
-  if (node instanceof Comment && node.textContent === '') {
-    return true;
-  }
-
-  if (node instanceof TextNode && node.textContent === '') {
-    return true;
-  }
-
-  return false;
-}
-
-export class RenderingTest extends TestCase {
   constructor() {
-    super();
-    let dom = new DOMHelper(document);
-    let owner = this.owner = buildOwner();
-    let env = this.env = new Environment({ dom, owner });
-    this.renderer = new Renderer(dom, { destinedForDOM: true, env });
-    this.element = jQuery('#qunit-fixture')[0];
-    this.component = null;
+    this.element = null;
     this.snapshot = null;
   }
 
-  teardown() {
-    if (this.component) {
-      runDestroy(this.component);
-      runDestroy(this.owner);
-    }
-  }
+  teardown() {}
 
-  get context() {
-    return this.component;
-  }
+  // The following methods require `this.element` to work
 
   get firstChild() {
     let node = this.element.firstChild;
@@ -135,6 +108,10 @@ export class RenderingTest extends TestCase {
 
   $(sel) {
     return sel ? jQuery(sel, this.element) : jQuery(this.element);
+  }
+
+  textValue() {
+    return this.$().text();
   }
 
   takeSnapshot() {
@@ -151,6 +128,129 @@ export class RenderingTest extends TestCase {
     }
 
     return snapshot;
+  }
+
+  assertText(text) {
+    assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
+  }
+
+  assertHTML(html) {
+    equalTokens(this.element, html, '#qunit-fixture content');
+  }
+
+  assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
+    if (!(node instanceof ElementType)) {
+      throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
+    }
+
+    equalsElement(node, tagName, attrs, content);
+  }
+
+  assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {
+    attrs = assign({}, { id: regex(/^ember\d*$/), class: classes('ember-view') }, attrs || {});
+    this.assertElement(node, { ElementType, tagName, attrs, content });
+  }
+
+  assertSameNode(actual, expected) {
+    assert.strictEqual(actual, expected, 'DOM node stability');
+  }
+
+  assertInvariants() {
+    let oldSnapshot = this.snapshot;
+    let newSnapshot = this.takeSnapshot();
+
+    assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
+
+    for (let i = 0; i < oldSnapshot.length; i++) {
+      this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
+    }
+  }
+}
+
+function isMarker(node) {
+  if (node instanceof Comment && node.textContent === '') {
+    return true;
+  }
+
+  if (node instanceof TextNode && node.textContent === '') {
+    return true;
+  }
+
+  return false;
+}
+
+export class ApplicationTest extends TestCase {
+  constructor() {
+    super();
+
+    this.element = jQuery('#qunit-fixture')[0];
+
+    this.application = run(Application, 'create', {
+      rootElement: '#qunit-fixture',
+      autoboot: false
+    });
+
+    this.router = this.application.Router = Router.extend({
+      location: 'none'
+    });
+
+    this.applicationInstance = null;
+    this.bootOptions = undefined;
+  }
+
+  teardown() {
+    if (this.applicationInstance) {
+      runDestroy(this.applicationInstance);
+    }
+
+    runDestroy(this.application);
+  }
+
+  visit(url) {
+    let { applicationInstance, bootOptions } = this;
+
+    if (applicationInstance) {
+      return run(applicationInstance, 'visit', url, bootOptions);
+    } else {
+      return run(this.application, 'visit', url, bootOptions).then(instance => {
+        this.applicationInstance = instance;
+      });
+    }
+  }
+
+  registerRoute(name, route) {
+    this.application.register(`route:${name}`, route);
+  }
+
+  registerTemplate(name, template) {
+    this.application.register(`template:${name}`, compile(template));
+  }
+
+  registerController(name, controller) {
+    this.application.register(`controller:${name}`, controller);
+  }
+}
+
+export class RenderingTest extends TestCase {
+  constructor() {
+    super();
+    let dom = new DOMHelper(document);
+    let owner = this.owner = buildOwner();
+    let env = this.env = new Environment({ dom, owner });
+    this.renderer = new Renderer(dom, { destinedForDOM: true, env });
+    this.element = jQuery('#qunit-fixture')[0];
+    this.component = null;
+  }
+
+  teardown() {
+    if (this.component) {
+      runDestroy(this.component);
+      runDestroy(this.owner);
+    }
+  }
+
+  get context() {
+    return this.component;
   }
 
   render(templateStr, context = {}) {
@@ -191,27 +291,15 @@ export class RenderingTest extends TestCase {
   }
 
   registerComponent(name, { ComponentClass = null, template = null }) {
-    let { owner, env } = this;
+    let { owner } = this;
 
     if (ComponentClass) {
       owner.register(`component:${name}`, ComponentClass);
     }
 
     if (typeof template === 'string') {
-      owner.register(`template:components/${name}`, compile(template, { env }));
+      owner.register(`template:components/${name}`, compile(template));
     }
-  }
-
-  textValue() {
-    return this.$().text();
-  }
-
-  assertText(text) {
-    assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
-  }
-
-  assertHTML(html) {
-    equalTokens(this.element, html, '#qunit-fixture content');
   }
 
   assertTextNode(node, text) {
@@ -220,34 +308,6 @@ export class RenderingTest extends TestCase {
     }
 
     assert.strictEqual(node.textContent, text, 'node.textContent');
-  }
-
-  assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
-    if (!(node instanceof ElementType)) {
-      throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
-    }
-
-    equalsElement(node, tagName, attrs, content);
-  }
-
-  assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {
-    attrs = assign({}, { id: regex(/^ember\d*$/), class: classes('ember-view') }, attrs || {});
-    this.assertElement(node, { ElementType, tagName, attrs, content });
-  }
-
-  assertSameNode(actual, expected) {
-    assert.strictEqual(actual, expected, 'DOM node stability');
-  }
-
-  assertInvariants() {
-    let oldSnapshot = this.snapshot;
-    let newSnapshot = this.takeSnapshot();
-
-    assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
-
-    for (let i = 0; i < oldSnapshot.length; i++) {
-      this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
-    }
   }
 }
 
