@@ -2156,7 +2156,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     name,
     controller,
     ViewClass,
-    template
+    template: template || route._topLevelViewTemplate
   };
 
   let Component;
