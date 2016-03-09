@@ -23,7 +23,6 @@
   "disallowEmptyBlocks": true,
   "requireSpacesInsideObjectBrackets": "all",
   "requireCurlyBraces": [
-    "if",
     "else",
     "for",
     "while",
