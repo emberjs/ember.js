@@ -12,7 +12,7 @@
     "start": "ember serve",
     "tsc": "tsc -p . --noEmit",
     "tslint": "tslint ./packages/**/*.ts",
-    "vscode-build": "tsc -p . --noEmit; tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**/*.ts",
+    "vscode-build": "tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**/*.ts; tsc -p . --noEmit",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect"
   },
