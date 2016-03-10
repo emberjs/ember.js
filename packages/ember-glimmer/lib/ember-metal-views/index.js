@@ -1,18 +1,48 @@
 import { RootReference } from '../utils/references';
 
+class DynamicScope {
+  constructor({ view, controller, outletState, isTopLevel }) {
+    this.view = view;
+    this.controller = controller;
+    this.outletState = outletState;
+    this.isTopLevel = isTopLevel;
+  }
+
+  child() {
+    return new DynamicScope(this);
+  }
+}
+
 export class Renderer {
   constructor(domHelper, { destinedForDOM, env } = {}) {
     this._dom = domHelper;
     this._env = env;
   }
 
+  appendOutletView(view, target) {
+    let env = this._env;
+    let self = new RootReference(view);
+    let dynamicScope = new DynamicScope({
+      view,
+      controller: view.outletState.render.controller,
+      outletState: view.toReference(),
+      isTopLevel: true
+    });
+
+    env.begin();
+    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
+    env.commit();
+
+    return result;
+  }
+
   appendTo(view, target) {
     let env = this._env;
     let self = new RootReference(view);
-    let viewRef = new RootReference(view);
+    let dynamicScope = new DynamicScope({ view });
 
     env.begin();
-    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, keywords: { view: viewRef } });
+    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
 
     // FIXME: Store this somewhere else

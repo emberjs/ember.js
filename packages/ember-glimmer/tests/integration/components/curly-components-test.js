@@ -212,7 +212,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       })
     });
 
-    this.render(strip(`
+    this.render(strip`
       {{#if cond1}}
         {{#foo-bar id=1}}
           {{#if cond2}}
@@ -233,7 +233,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
             {{/if}}
           {{/if}}
         {{/foo-bar}}
-      {{/if}}`),
+      {{/if}}`,
       {
         cond1: true,
         cond2: true,

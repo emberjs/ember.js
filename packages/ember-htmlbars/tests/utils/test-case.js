@@ -1,6 +1,12 @@
 export { TestCase, moduleFor } from './abstract-test-case';
-import { RenderingTest as AbstractRenderingTest } from './abstract-test-case';
+import {
+  ApplicationTest as AbstractApplicationTest,
+  RenderingTest as AbstractRenderingTest
+} from './abstract-test-case';
 import ComponentLookup from 'ember-views/component_lookup';
+
+export class ApplicationTest extends AbstractApplicationTest {
+}
 
 export class RenderingTest extends AbstractRenderingTest {
   constructor() {

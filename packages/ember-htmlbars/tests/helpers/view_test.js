@@ -1340,6 +1340,6 @@ QUnit.test('Throw an `Unsupported Content` error when attempting to bind to a fu
   try {
     runAppend(view);
   } catch(error) {
-    equal(error.message, 'Unsupported Content: Cannot bind to function');
+    ok(error.message.indexOf('Unsupported Content: Cannot bind to function') > -1);
   }
 });
