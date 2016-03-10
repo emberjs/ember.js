@@ -14,8 +14,9 @@ export class DynamicComponentSyntax extends StatementSyntax {
   }
 }
 
-function dynamicComponentFor(args, env) {
+function dynamicComponentFor(args, vm) {
   let nameRef = args.positional.at(0);
+  let env = vm.env;
   return new DynamicComponentReference({ nameRef, env });
 }
 

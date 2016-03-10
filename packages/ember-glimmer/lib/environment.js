@@ -2,6 +2,7 @@ import { Environment } from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
 import { DynamicComponentSyntax } from './components/dynamic-component';
+import { OutletSyntax } from './components/outlet';
 import lookupComponent from './utils/lookup-component';
 import createIterable from './utils/iterable';
 import { RootReference, ConditionalReference } from './utils/references';
@@ -13,9 +14,6 @@ const helpers = {
   concat,
   if: inlineIf
 };
-
-const VIEW_KEYWORD = 'view'; // legacy ? 'view' : symbol('view');
-const KEYWORDS = [VIEW_KEYWORD];
 
 export default class extends Environment {
   constructor({ dom, owner }) {
@@ -38,6 +36,8 @@ export default class extends Environment {
     if (isSimple && (isInline || isBlock)) {
       if (key === 'component') {
         return new DynamicComponentSyntax({ args, templates });
+      } else if (key === 'outlet') {
+        return new OutletSyntax({ args });
       } else if (key.indexOf('-') >= 0) {
         let definition = this.getComponentDefinition(path);
 
@@ -66,10 +66,6 @@ export default class extends Environment {
     }
 
     return definition;
-  }
-
-  getKeywords() {
-    return KEYWORDS;
   }
 
   hasHelper(name) {

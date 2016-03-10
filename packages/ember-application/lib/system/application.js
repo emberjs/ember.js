@@ -11,6 +11,7 @@ import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import { Renderer } from 'ember-metal-views';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
+import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import SelectView from 'ember-views/views/select';
 import { OutletView } from 'ember-routing-views/views/outlet';
 import EmberView from 'ember-views/views/view';
@@ -36,6 +37,8 @@ import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine from './engine';
+
+topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
 var librariesRegistered = false;
 
@@ -1089,6 +1092,8 @@ Application.reopenClass({
     registry.injection('view', '_viewRegistry', '-view-registry:main');
 
     registry.register('view:toplevel', EmberView.extend());
+    registry.register('template:-outlet', topLevelViewTemplate);
+    registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
     registry.register('route:basic', Route, { instantiate: false });
     registry.register('event_dispatcher:main', EventDispatcher);
