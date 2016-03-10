@@ -7,6 +7,7 @@ import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import symbol from 'ember-metal/symbol';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
@@ -18,6 +19,7 @@ import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
 import EngineInstance from './engine-instance';
 
+export const INTERNAL_BOOT_OPTIONS = symbol('INTERNAL_BOOT_OPTIONS');
 
 let BootOptions;
 
@@ -145,11 +147,7 @@ const ApplicationInstance = EngineInstance.extend({
       registry.injection('view', '_environment', '-environment:main');
       registry.injection('route', '_environment', '-environment:main');
 
-      registry.register('renderer:-dom', {
-        create() {
-          return new Renderer(new DOMHelper(options.document), { destinedForDOM: options.isInteractive });
-        }
-      });
+      registry.register('renderer:-dom', options.renderer);
 
       if (options.rootElement) {
         this.rootElement = options.rootElement;
@@ -343,6 +341,10 @@ if (isEnabled('ember-application-visit')) {
     @public
   */
   BootOptions = function BootOptions(options = {}) {
+    let internalOptions = options[INTERNAL_BOOT_OPTIONS] || {};
+
+    this.renderer = null;
+
     /**
       Provide a specific instance of jQuery. This is useful in conjunction with
       the `document` option, as it allows you to use a copy of `jQuery` that is
@@ -499,6 +501,17 @@ if (isEnabled('ember-application-visit')) {
 
     if (options.isInteractive !== undefined) {
       this.isInteractive = !!options.isInteractive;
+    }
+
+
+    if (internalOptions.renderer) {
+      this.renderer = internalOptions.renderer;
+    } else {
+      this.renderer = {
+        create() {
+          return new Renderer(new DOMHelper(options.document), { destinedForDOM: options.isInteractive });
+        }
+      };
     }
   };
 

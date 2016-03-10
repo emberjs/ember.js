@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 import Ember from 'ember-metal'; // Ember.libraries, LOG_VERSION, Namespace, BOOTED
-import { assert, debug } from 'ember-metal/debug';
+import { assert, debug, deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
@@ -11,6 +11,7 @@ import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import { Renderer } from 'ember-metal-views';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
+import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import SelectView from 'ember-views/views/select';
 import { OutletView } from 'ember-routing-views/views/outlet';
 import EmberView from 'ember-views/views/view';
@@ -37,7 +38,18 @@ import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine from './engine';
 
+topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+
 var librariesRegistered = false;
+
+let warnedAboutLegacyViewAddon = false;
+let warnedAboutLegacyControllerAddon = false;
+
+// For testing
+export function _resetLegacyAddonWarnings() {
+  warnedAboutLegacyViewAddon = false;
+  warnedAboutLegacyControllerAddon = false;
+}
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -594,6 +606,26 @@ const Application = Engine.extend({
   _bootSync() {
     if (this._booted) { return; }
 
+    if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT && !warnedAboutLegacyViewAddon) {
+      deprecate(
+        'Support for the `ember-legacy-views` addon will end soon, please remove it from your application.',
+        false,
+        { id: 'ember-legacy-views', until: '2.6.0', url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' }
+      );
+
+      warnedAboutLegacyViewAddon = true;
+    }
+
+    if (Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT && !warnedAboutLegacyControllerAddon) {
+      deprecate(
+        'Support for the `ember-legacy-controllers` addon will end soon, please remove it from your application.',
+        false,
+        { id: 'ember-legacy-controllers', until: '2.6.0', url: 'http://emberjs.com/deprecations/v1.x/#toc_objectcontroller' }
+      );
+
+      warnedAboutLegacyControllerAddon = true;
+    }
+
     // Even though this returns synchronously, we still need to make sure the
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
@@ -1060,6 +1092,8 @@ Application.reopenClass({
     registry.injection('view', '_viewRegistry', '-view-registry:main');
 
     registry.register('view:toplevel', EmberView.extend());
+    registry.register('template:-outlet', topLevelViewTemplate);
+    registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
     registry.register('route:basic', Route, { instantiate: false });
     registry.register('event_dispatcher:main', EventDispatcher);

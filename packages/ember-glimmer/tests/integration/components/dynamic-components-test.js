@@ -3,18 +3,39 @@ import Component from 'ember-views/components/component';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 
-moduleFor('Components test: curly components', class extends RenderingTest {
+moduleFor('Components test: dynamic components', class extends RenderingTest {
 
-  ['@test it can render a basic component']() {
+  ['@test it can render a basic component with a static argument']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
-    this.render('{{foo-bar}}');
+    this.render('{{component "foo-bar"}}');
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
 
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
+  }
+
+  ['@test it can render a basic component with a dynamic argument']() {
+    this.registerComponent('foo-bar', { template: 'hello from foo-bar' });
+    this.registerComponent('foo-bar-baz', { template: 'hello from foo-bar-baz' });
+
+    this.render('{{component componentName}}', { componentName: 'foo-bar' });
+
+    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar' });
+
+    this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar-baz' });
+
+    this.runTask(() => set(this.context, 'componentName', 'foo-bar'));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar' });
   }
 
   ['@test it has an element']() {
@@ -29,7 +50,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
-    this.render('{{foo-bar}}');
+    this.render('{{component "foo-bar"}}');
 
     let element1 = instance.element;
 
@@ -56,7 +77,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
-    this.render('{{foo-bar}}');
+    this.render('{{component "foo-bar"}}');
 
     let element1 = instance.$()[0];
 
@@ -83,7 +104,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
 
-    this.render('<span class="outer">outer</span>{{foo-bar}}');
+    this.render('<span class="outer">outer</span>{{component "foo-bar"}}');
 
     let $span = instance.$('span');
 
@@ -118,7 +139,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'foo-bar {{foo-bar-baz}}' });
     this.registerComponent('foo-bar-baz', { ComponentClass: FooBarBazComponent, template: 'foo-bar-baz' });
 
-    this.render('{{foo-bar}}');
+    this.render('{{component "foo-bar"}}');
     this.assertText('foo-bar foo-bar-baz');
 
     assert.equal(fooBarInstance.parentView, this.component);
@@ -140,7 +161,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   ['@test it can render a basic component with a block']() {
     this.registerComponent('foo-bar', { template: '{{yield}}' });
 
-    this.render('{{#foo-bar}}hello{{/foo-bar}}');
+    this.render('{{#component "foo-bar"}}hello{{/component}}');
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
 
@@ -162,7 +183,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{message}}' });
 
-    this.render('{{foo-bar}}');
+    this.render('{{component "foo-bar"}}');
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
 
@@ -182,7 +203,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   ['@test it preserves the outer context when yielding']() {
     this.registerComponent('foo-bar', { template: '{{yield}}' });
 
-    this.render('{{#foo-bar}}{{message}}{{/foo-bar}}', { message: 'hello' });
+    this.render('{{#component "foo-bar"}}{{message}}{{/component}}', { message: 'hello' });
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
 
@@ -214,25 +235,25 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.render(strip`
       {{#if cond1}}
-        {{#foo-bar id=1}}
+        {{#component "foo-bar" id=1}}
           {{#if cond2}}
-            {{#foo-bar id=2}}{{/foo-bar}}
+            {{#component "foo-bar" id=2}}{{/component}}
             {{#if cond3}}
-              {{#foo-bar id=3}}
+              {{#component "foo-bar" id=3}}
                 {{#if cond4}}
-                  {{#foo-bar id=4}}
+                  {{#component "foo-bar" id=4}}
                     {{#if cond5}}
-                      {{#foo-bar id=5}}{{/foo-bar}}
-                      {{#foo-bar id=6}}{{/foo-bar}}
-                      {{#foo-bar id=7}}{{/foo-bar}}
+                      {{#component "foo-bar" id=5}}{{/component}}
+                      {{#component "foo-bar" id=6}}{{/component}}
+                      {{#component "foo-bar" id=7}}{{/component}}
                     {{/if}}
-                    {{#foo-bar id=8}}{{/foo-bar}}
-                  {{/foo-bar}}
+                    {{#component "foo-bar" id=8}}{{/component}}
+                  {{/component}}
                 {{/if}}
-              {{/foo-bar}}
+              {{/component}}
             {{/if}}
           {{/if}}
-        {{/foo-bar}}
+        {{/component}}
       {{/if}}`,
       {
         cond1: true,

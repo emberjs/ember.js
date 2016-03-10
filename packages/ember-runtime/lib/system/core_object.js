@@ -147,7 +147,7 @@ function makeCtor() {
               mergedProperties.indexOf(keyName) >= 0) {
             var originalValue = this[keyName];
 
-            value = assign(originalValue, value);
+            value = assign({}, originalValue, value);
           }
 
           if (desc) {

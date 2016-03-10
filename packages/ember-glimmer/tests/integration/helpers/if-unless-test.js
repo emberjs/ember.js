@@ -1,13 +1,9 @@
 import { moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal/property_set';
 
-import {
-  BASIC_TRUTHY_TESTS,
-  BASIC_FALSY_TESTS,
-  SharedHelperConditionalsTest
-} from '../../utils/shared-conditional-tests';
+import { TogglingHelperConditionalsTest } from '../../utils/shared-conditional-tests';
 
-moduleFor('Helpers test: inline {{if}}', class extends SharedHelperConditionalsTest {
+moduleFor('Helpers test: inline {{if}}', class extends TogglingHelperConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if ${cond} ${truthy} ${falsy}}}`;
@@ -53,25 +49,25 @@ moduleFor('Helpers test: inline {{if}}', class extends SharedHelperConditionalsT
     }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
   }
 
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+});
 
-moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning truthy values)', class extends SharedHelperConditionalsTest {
+moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning truthy values)', class extends TogglingHelperConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if (if ${cond} ${cond} false) ${truthy} ${falsy}}}`;
   }
 
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+});
 
-moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning falsy values)', class extends SharedHelperConditionalsTest {
+moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning falsy values)', class extends TogglingHelperConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if (if ${cond} true ${cond}) ${truthy} ${falsy}}}`;
   }
 
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+});
 
-moduleFor('@glimmer Helpers test: {{if}} used with another helper', class extends SharedHelperConditionalsTest {
+moduleFor('@glimmer Helpers test: {{if}} used with another helper', class extends TogglingHelperConditionalsTest {
 
   wrapperFor(templates) {
     return `{{concat ${templates.join(' ')}}}`;
@@ -81,9 +77,9 @@ moduleFor('@glimmer Helpers test: {{if}} used with another helper', class extend
     return `(if ${cond} ${truthy} ${falsy})`;
   }
 
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+});
 
-moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class extends SharedHelperConditionalsTest {
+moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class extends TogglingHelperConditionalsTest {
 
   wrapperFor(templates) {
     return `<div data-foo="${templates.join('')}" />`;
@@ -97,4 +93,4 @@ moduleFor('@glimmer Helpers test: {{if}} used in attribute position', class exte
     return this.$('div').attr('data-foo');
   }
 
-}, BASIC_TRUTHY_TESTS, BASIC_FALSY_TESTS);
+});
