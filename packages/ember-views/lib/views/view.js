@@ -10,9 +10,6 @@ import CoreView from 'ember-views/views/core_view';
 import ViewContextSupport from 'ember-views/mixins/view_context_support';
 import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
 import ViewLegacyChildViewsSupport from 'ember-views/mixins/legacy_child_views_support';
-import {
-  childViewsProperty
-} from 'ember-views/mixins/view_child_views_support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import TemplateRenderingSupport from 'ember-views/mixins/template_rendering_support';
 import ClassNamesSupport from 'ember-views/mixins/class_names_support';
@@ -723,14 +720,7 @@ View.reopenClass({
     @type Object
     @private
   */
-  views: {},
-
-  // If someone overrides the child views computed property when
-  // defining their class, we want to be able to process the user's
-  // supplied childViews and then restore the original computed property
-  // at view initialization time. This happens in Ember.ContainerView's init
-  // method.
-  childViewsProperty
+  views: {}
 });
 
 function viewDeprecationMessage() {

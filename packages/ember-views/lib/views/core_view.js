@@ -11,8 +11,6 @@ import { cloneStates, states } from 'ember-views/views/states';
 import { internal } from 'htmlbars-runtime';
 import require from 'require';
 
-function K() { return this; }
-
 // Normally, the renderer is injected by the container when the view is looked
 // up. However, if someone creates a view without looking it up via the
 // container (e.g. `Ember.View.create().append()`) then we create a fallback
@@ -70,8 +68,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
   */
   parentView: null,
 
-  _state: null,
-
   instrumentName: 'core_view',
 
   instrumentDetails(hash) {
@@ -123,11 +119,7 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
 
     return this;
-  },
-
-  clearRenderedChildren: K,
-  _transitionTo: K,
-  destroyElement: K
+  }
 });
 
 deprecateUnderscoreActions(CoreView);
