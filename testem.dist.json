@@ -6,11 +6,11 @@
   "disable_watching": true,
   "launchers": {
     "SL_Chrome_Current": {
-      "command": "npm run sauce:launch -- -b chrome --no-ct -u <url>",
+      "command": "npm run sauce:launch -- -b chrome -v latest --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_Firefox_Current": {
-      "command": "npm run sauce:launch -- -b firefox -v 34 --no-ct -u <url>",
+      "command": "npm run sauce:launch -- -b firefox -v latest --no-ct -u <url>",
       "protocol": "tap"
     },
     "SL_Safari_Current": {
