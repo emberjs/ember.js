@@ -630,6 +630,7 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
   @namespace Ember
   @extends Ember.CoreView
   @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-view
+  @uses Ember.ViewSupport
   @uses Ember.ViewContextSupport
   @uses Ember.ViewChildViewsSupport
   @uses Ember.TemplateRenderingSupport
