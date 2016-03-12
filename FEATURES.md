@@ -18,11 +18,6 @@ for a detailed explanation.
   serially and call `reset()` each time), as well as being critical to
   for FastBoot.
 
-* `ember-debug-handlers`
-
-  Implements RFC https://github.com/emberjs/rfcs/pull/65, adding support for
-  custom deprecation and warning handlers.
-
 * `ember-routing-routable-components`
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
