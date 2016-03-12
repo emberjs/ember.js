@@ -10,7 +10,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('hello world');
   }
 
-  ['@htmlbars it can resolve custom class-based helpers']() {
+  ['@test it can resolve custom class-based helpers']() {
     this.registerHelper('hello-world', {
       compute() {
         return 'hello world';

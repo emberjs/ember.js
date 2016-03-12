@@ -1,7 +1,7 @@
 import { isArray } from 'ember-runtime/utils';
 import { get } from 'ember-metal/property_get';
 
-export function toBool(predicate) {
+export default function toBool(predicate) {
   if (!predicate) {
     return false;
   }
