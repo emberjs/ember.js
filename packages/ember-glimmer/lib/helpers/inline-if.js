@@ -3,8 +3,9 @@
 @submodule ember-templates
 */
 
-import { toBool as emberToBool } from './if-unless';
 import { assert } from 'ember-metal/debug';
+import emberToBool from '../utils/to-bool';
+import { InternalHelperReference } from '../utils/references';
 
 /**
   The inline `if` helper conditionally renders a single property or string.
@@ -22,18 +23,38 @@ import { assert } from 'ember-metal/debug';
   @for Ember.Templates.helpers
   @public
 */
-export default function inlineIf(args) {
-  assert(
-   'The inline form of the `if` and `unless` helpers expect two or ' +
-   'three arguments, e.g. `{{if trialExpired \'Expired\' expiryDate}}` ',
-   args.length === 2 || args.length === 3
- );
+function inlineIf({ positional }) {
+  let condition = positional.at(0).value();
 
-  if (emberToBool(args[0])) {
-    return args[1];
+  if (emberToBool(condition)) {
+    return positional.at(1).value();
   } else {
-    //TODO: always return `args[2]` post glimmer2: https://github.com/emberjs/ember.js/pull/12920#discussion_r53213383
-    let falsyArgument = args[2];
-    return falsyArgument === undefined ? '' : falsyArgument;
+    return positional.at(2).value();
   }
 }
+
+function simpleInlineIf({ positional }) {
+  let condition = positional.at(0).value();
+
+  if (emberToBool(condition)) {
+    return positional.at(1).value();
+  } else {
+    // TODO: this should probably be `undefined`: https://github.com/emberjs/ember.js/pull/12920#discussion_r53213383
+    return '';
+  }
+}
+
+export default {
+  isInternalHelper: true,
+  toReference(args) {
+    switch (args.positional.length) {
+      case 2: return new InternalHelperReference(simpleInlineIf, args);
+      case 3: return new InternalHelperReference(inlineIf, args);
+      default:
+        assert(
+          'The inline form of the `if` and `unless` helpers expect two or ' +
+          'three arguments, e.g. `{{if trialExpired \'Expired\' expiryDate}}`'
+        );
+    }
+  }
+};
