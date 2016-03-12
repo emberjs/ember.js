@@ -12,10 +12,6 @@ import { get } from 'ember-metal/property_get';
   @private
 */
 var LegacyViewSupport = Mixin.create({
-  beforeRender(buffer) {},
-
-  afterRender(buffer) {},
-
   mutateChildViews(callback) {
     var childViews = get(this, 'childViews');
     var idx = childViews.length;
