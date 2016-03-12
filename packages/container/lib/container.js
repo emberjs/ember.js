@@ -27,11 +27,6 @@ function Container(registry, options) {
   this.cache           = dictionary(options && options.cache ? options.cache : null);
   this.factoryCache    = dictionary(options && options.factoryCache ? options.factoryCache : null);
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
-
-  if (isEnabled('ember-container-inject-owner')) {
-    this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
-    this[CONTAINER_OVERRIDE] = undefined;
-  }
 }
 
 Container.prototype = {
@@ -284,13 +279,6 @@ function factoryFor(container, fullName, options = {}) {
 
     var injectedFactory = factory.extend(injections);
 
-    // TODO - remove all `container` injections when Ember reaches v3.0.0
-    if (isEnabled('ember-container-inject-owner')) {
-      injectDeprecatedContainer(injectedFactory.prototype, container);
-    } else {
-      injectedFactory.prototype.container = container;
-    }
-
     injectedFactory.reopenClass(factoryInjections);
 
     if (factory && typeof factory._onLookup === 'function') {
@@ -370,24 +358,7 @@ function instantiate(container, fullName) {
       // TODO: support new'ing for instantiation and merge injections for pure JS Functions
       let injections = injectionsFor(container, fullName);
 
-      // Ensure that a container is available to an object during instantiation.
-      // TODO - remove when Ember reaches v3.0.0
-      if (isEnabled('ember-container-inject-owner')) {
-        // This "fake" container will be replaced after instantiation with a
-        // property that raises deprecations every time it is accessed.
-        injections.container = container._fakeContainerToInject;
-      } else {
-        injections.container = container;
-      }
-
       obj = factory.create(injections);
-
-      // TODO - remove when Ember reaches v3.0.0
-      if (isEnabled('ember-container-inject-owner')) {
-        if (!Object.isFrozen(obj) && 'container' in obj) {
-          injectDeprecatedContainer(obj, container);
-        }
-      }
     }
 
     return obj;
