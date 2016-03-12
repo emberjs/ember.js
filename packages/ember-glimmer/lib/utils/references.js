@@ -1,6 +1,6 @@
 import { get } from 'ember-metal/property_get';
 import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-runtime';
-import { toBool as emberToBool } from '../helpers/if-unless';
+import emberToBool from './to-bool';
 
 // @implements PathReference
 export class RootReference {
@@ -20,8 +20,7 @@ export class RootReference {
     return new PropertyReference(this, propertyKey);
   }
 
-  destroy() {
-  }
+  destroy() {}
 }
 
 // @implements PathReference
@@ -43,8 +42,7 @@ class PropertyReference {
     return new PropertyReference(this, propertyKey);
   }
 
-  destroy() {
-  }
+  destroy() {}
 }
 
 // @implements PathReference
@@ -58,4 +56,70 @@ export class ConditionalReference extends GlimmerConditionalReference {
   toBool(predicate) {
     return emberToBool(predicate);
   }
+}
+
+// @implements PathReference
+export class SimpleHelperReference {
+  constructor(helper, args) {
+    this.helper = helper;
+    this.args = args;
+  }
+
+  isDirty() { return true; }
+
+  value() {
+    let { helper, args: { positional, named } } = this;
+
+    return helper(positional.value(), named.value());
+  }
+
+  get(propertyKey) {
+    return new PropertyReference(this, propertyKey);
+  }
+
+  destroy() {}
+}
+
+// @implements PathReference
+export class ClassBasedHelperReference {
+  constructor(instance, args) {
+    this.instance = instance;
+    this.args = args;
+  }
+
+  isDirty() { return true; }
+
+  value() {
+    let { instance, args: { positional, named } } = this;
+
+    return instance.compute(positional.value(), named.value());
+  }
+
+  get(propertyKey) {
+    return new PropertyReference(this, propertyKey);
+  }
+
+  destroy() {}
+}
+
+// @implements PathReference
+export class InternalHelperReference {
+  constructor(helper, args) {
+    this.helper = helper;
+    this.args = args;
+  }
+
+  isDirty() { return true; }
+
+  value() {
+    let { helper, args } = this;
+
+    return helper(args);
+  }
+
+  get(propertyKey) {
+    return new PropertyReference(this, propertyKey);
+  }
+
+  destroy() {}
 }

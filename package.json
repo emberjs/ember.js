@@ -38,7 +38,7 @@
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "github": "^0.2.3",
-    "glimmer-engine": "tildeio/glimmer#a1d0a23",
+    "glimmer-engine": "tildeio/glimmer#d6ae47a",
     "glob": "^5.0.13",
     "htmlbars": "0.14.14",
     "mocha": "^2.4.5",

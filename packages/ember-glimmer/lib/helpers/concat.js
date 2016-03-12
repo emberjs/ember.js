@@ -1,3 +1,5 @@
+import { helper } from '../helper';
+
 /**
 @module ember
 @submodule ember-templates
@@ -19,6 +21,8 @@
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-export default function concat(args) {
+function concat(args) {
   return args.join('');
 }
+
+export default helper(concat);

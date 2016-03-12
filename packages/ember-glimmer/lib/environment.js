@@ -5,14 +5,23 @@ import { DynamicComponentSyntax } from './components/dynamic-component';
 import { OutletSyntax } from './components/outlet';
 import lookupComponent from './utils/lookup-component';
 import createIterable from './utils/iterable';
-import { RootReference, ConditionalReference } from './utils/references';
+import {
+  RootReference,
+  ConditionalReference,
+  SimpleHelperReference,
+  ClassBasedHelperReference
+} from './utils/references';
 
 import { default as concat } from './helpers/concat';
-import { default as inlineIf } from './helpers/inline-if';
+import {
+  inlineIf,
+  inlineUnless
+} from './helpers/if-unless';
 
-const helpers = {
+const builtInHelpers = {
   concat,
-  if: inlineIf
+  if: inlineIf,
+  unless: inlineUnless
 };
 
 export default class extends Environment {
@@ -69,26 +78,21 @@ export default class extends Environment {
   }
 
   hasHelper(name) {
-    if (typeof helpers[name[0]] === 'function') {
-      return true;
-    } else {
-      return this.owner.hasRegistration(`helper:${name}`);
-    }
+    return !!builtInHelpers[name[0]] || this.owner.hasRegistration(`helper:${name}`);
   }
 
   lookupHelper(name) {
-    if (typeof helpers[name[0]] === 'function') {
-      return helpers[name[0]];
-    } else {
-      let helper = this.owner.lookup(`helper:${name}`);
+    let helper = builtInHelpers[name[0]] || this.owner.lookup(`helper:${name}`);
 
-      if (helper && helper.isHelperInstance) {
-        return helper.compute;
-      } else if (helper && helper.isHelperFactory) {
-        throw new Error(`Not implemented: ${name} is a class-based helpers`);
-      } else {
-        throw new Error(`${name} is not a helper`);
-      }
+    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+    if (helper.isInternalHelper) {
+      return (args) => helper.toReference(args);
+    } else if (helper.isHelperInstance) {
+      return (args) => new SimpleHelperReference(helper.compute, args);
+    } else if (helper.isHelperFactory) {
+      return (args) => new ClassBasedHelperReference(helper.create(), args);
+    } else {
+      throw new Error(`${name} is not a helper`);
     }
   }
 
