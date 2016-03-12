@@ -126,14 +126,6 @@ Ember.Object = EmberObject;
 Ember.Container = Container;
 Ember.Registry = Registry;
 
-if (isEnabled('ember-container-inject-owner')) {
-  Ember.getOwner = getOwner;
-  Ember.setOwner = setOwner;
-
-  Ember._RegistryProxyMixin = RegistryProxyMixin;
-  Ember._ContainerProxyMixin = ContainerProxyMixin;
-}
-
 Ember.Namespace = Namespace;
 Ember.Enumerable = Enumerable;
 Ember.ArrayProxy = ArrayProxy;
