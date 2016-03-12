@@ -18,10 +18,13 @@ import {
   inlineUnless
 } from './helpers/if-unless';
 
+import { default as hash } from './helpers/hash';
+
 const builtInHelpers = {
   concat,
   if: inlineIf,
-  unless: inlineUnless
+  unless: inlineUnless,
+  hash
 };
 
 export default class extends Environment {
