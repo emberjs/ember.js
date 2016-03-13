@@ -21,7 +21,7 @@ __Note :__ If you are not in a performance sensitive area feel free to use these
 
 Most of the time using array methods e.g. `forEach`, `map`, `filter`, is fine, but in hot paths these methods can become very costly. One would think that these methods would almost be like macros that would compile into more efficient code, but that is not the case. In hot paths these methods can be up to 10X slower than just writing a `for`-loop.
 
-The reason behind the slowness is largely do to the fact that these methods take a closure which allocates memory. In turn this creates GC pressure and potentially creates a polymorphic call site.
+One of the reasons behind the slowness is largely do to the fact that these methods take a closure which allocates memory. In turn this creates GC pressure and potentially creates a polymorphic call site. For a more in depth explanation please see the following [explainer](https://gist.github.com/stefanpenner/376efb906388954146a8).
 
 ## Closures
 
