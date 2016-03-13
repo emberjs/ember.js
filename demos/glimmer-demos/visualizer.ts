@@ -1,5 +1,6 @@
 import {
   TestEnvironment,
+  TestDynamicScope,
   EmberishCurlyComponent as CurlyComponent,
   EmberishGlimmerComponent as GlimmerComponent
 } from 'glimmer-demos';
@@ -316,7 +317,7 @@ function renderUI() {
 
   env.begin();
   let self = new UpdatableReference(ui);
-  let res = env.compile(UI).render(self, env, { appendTo: document.body });
+  let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
   env.commit();
 
   rerenderUI = () => {

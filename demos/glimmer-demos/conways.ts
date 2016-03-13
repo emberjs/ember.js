@@ -1,5 +1,5 @@
 import world from 'worlds/one';
-import { TestEnvironment, EmberishGlimmerComponent as EmberComponent } from 'glimmer-demos';
+import { TestEnvironment, TestDynamicScope, EmberishGlimmerComponent as EmberComponent } from 'glimmer-demos';
 import { UpdatableReference } from 'glimmer-reference';
 
 // // Bare version
@@ -18,7 +18,7 @@ let self;
 function startGlimmer() {
   env.begin();
   self = new UpdatableReference({ world })
-  res = env.compile(app).render(self, env, { appendTo: document.body });
+  res = env.compile(app).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
   env.commit();
 
   requestAnimationFrame(rerenderGlimmer);
