@@ -1,10 +1,8 @@
----
 language: node_js
+
 node_js:
   - "5"
-
-sudo: false
-
+  
 cache:
   directories:
     - node_modules
@@ -26,7 +24,7 @@ before_install:
 
 install:
   - "npm install"
-  - bower install
+  - "bower install"
 
 after_success:
   - "./bin/publish_builds"
@@ -37,9 +35,6 @@ after_script:
     for i in /tmp/*.dmp; do
       ./minidump_stackwalk $i . 2>/dev/null;
     done
-
-script:
-  - npm test
 
 branches:
   only:
