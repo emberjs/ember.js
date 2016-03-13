@@ -19,6 +19,8 @@
       "bower_components/rsvp/lib"
     ],
     "exclude": "vendor",
-    "outdir":   "docs"
+    "outdir":   "docs",
+    "preprocessor": "yuidoc-filters",
+    "yuidoc-filters-exclude": ["private", "deprecated"]
   }
 }
