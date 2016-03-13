@@ -36,10 +36,6 @@ The reason behind why closures are slower is that contrary to popular belief, cl
 
 Calling `fn()` may be fast or slow depending whether the `fn` variable is polymorphic (changes over time) or monomorphic (stable). The difference can be 4x in speed. Monomorphic sites can be inlined, where as polymorphic sites prevent inline and may even cause de-optimization of your code. In general stick to classes with instance method, and avoid polymorphism for code sensitive paths such as change-detection and dependency injection.
 
-## Named argument
-
-Named arguments are slower than positional arguments because they require creation of intermediary object. In addition this object creates GC pressure. For internal hot code paths we should stay away from named arguments. We should reserved named arguments for external user facing API (or non hot code path code only).
-
 ## Default arguments
 
 ```
@@ -51,8 +47,7 @@ gets transpiled into:
 
 ```
 someMethod: function() {
-  var arg1 = arguments[0] !== (void 0) ? arguments[0] : 'hey';
-  ...
+ arguments.length <= 0 || arguments[0] === undefined ? 'hey' : arguments[0];  ...
 }
 ```
 
