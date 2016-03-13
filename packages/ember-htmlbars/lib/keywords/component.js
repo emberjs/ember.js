@@ -5,7 +5,6 @@
 */
 import { keyword } from 'htmlbars-runtime/hooks';
 import closureComponent from 'ember-htmlbars/keywords/closure-component';
-import isEnabled from 'ember-metal/features';
 import EmptyObject from 'ember-metal/empty_object';
 import assign from 'ember-metal/assign';
 
@@ -80,10 +79,8 @@ import assign from 'ember-metal/assign';
   @public
 */
 export default function(morph, env, scope, params, hash, template, inverse, visitor) {
-  if (isEnabled('ember-contextual-components')) {
-    if (!morph) {
-      return closureComponent(env, params, hash);
-    }
+  if (!morph) {
+    return closureComponent(env, params, hash);
   }
 
   let newHash = assign(new EmptyObject(), hash);
