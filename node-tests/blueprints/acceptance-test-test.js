@@ -85,11 +85,11 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
           contains: [
             "import { describe, it, beforeEach, afterEach } from 'mocha';",
             "import { expect } from 'chai';",
-            "describe('Acceptance: Foo', function() {",
+            "describe('Acceptance | foo', function() {",
             "it('can visit /foo', function() {",
             "visit('/foo');",
             "andThen(function() {",
-            "expect(currentPath()).to.equal('foo');"
+            "expect(currentURL()).to.equal('/foo');"
           ]
         }
       ]

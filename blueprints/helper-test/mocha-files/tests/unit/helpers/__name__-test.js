@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { <%= camelizedModuleName %> } from '<%= dasherizedPackageName %>/helpers/<%= dasherizedModuleName %>';
 
-describe('<%= classifiedModuleName %>Helper', function() {
+describe('<%= friendlyTestName %>', function() {
   // Replace this with your real tests.
   it('works', function() {
     let result = <%= camelizedModuleName %>(42);

@@ -3,9 +3,7 @@ import { expect } from 'chai';
 import { describeComponent, it } from 'ember-mocha';<% if (testType === 'integration') { %>
 import hbs from 'htmlbars-inline-precompile';<% } %>
 
-describeComponent(
-  '<%= dasherizedModuleName %>',
-  '<% if (testType === "integration") { %>Integration: <% } %><%= classifiedModuleName %>Component',
+describeComponent('<%= componentPathName %>', '<%= friendlyTestDescription %>',
   {
     <% if (testType === 'integration' ) { %>integration: true<% } else if(testType === 'unit') { %>// Specify the other units that are required for this test
     // needs: ['component:foo', 'helper:bar'],

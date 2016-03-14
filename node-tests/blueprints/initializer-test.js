@@ -339,7 +339,7 @@ describe('Acceptance: ember generate and destroy initializer', function() {
           file: 'tests/unit/initializers/foo-test.js',
           contains: [
             "import FooInitializer from 'my-app/initializers/foo';",
-            "describe('FooInitializer', function() {",
+            "describe('Unit | Initializer | foo', function() {",
             "application = Ember.Application.create();",
             "FooInitializer.initialize(application);"
           ]

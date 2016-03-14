@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import startApp from '../helpers/start-app';
 <% if (destroyAppExists) { %>import destroyApp from '../helpers/destroy-app';<% } else { %>import Ember from 'ember';<% } %>
 
-describe('Acceptance: <%= classifiedModuleName %>', function() {
+describe('<%= friendlyTestName %>', function() {
   let application;
 
   beforeEach(function() {
@@ -19,7 +19,7 @@ describe('Acceptance: <%= classifiedModuleName %>', function() {
     visit('/<%= dasherizedModuleName %>');
 
     andThen(function() {
-      expect(currentPath()).to.equal('<%= dasherizedModuleName %>');
+      expect(currentURL()).to.equal('/<%= dasherizedModuleName %>');
     });
   });
 });

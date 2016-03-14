@@ -337,7 +337,7 @@ describe('Acceptance: ember generate and destroy controller', function() {
           file: 'tests/unit/controllers/foo-test.js',
           contains: [
             "import { describeModule, it } from 'ember-mocha';",
-            "describeModule(\n  'controller:foo'"
+            "describeModule('controller:foo', 'Unit | Controller | foo'"
           ]
         }
       ]

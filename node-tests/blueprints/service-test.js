@@ -238,7 +238,7 @@ describe('Acceptance: ember generate and destroy service', function() {
           file: 'tests/unit/services/foo-test.js',
           contains: [
             "import { describeModule, it } from 'ember-mocha';",
-            "describeModule(\n  'service:foo'"
+            "describeModule('service:foo', 'Unit | Service | foo'"
           ]
         }
       ]

@@ -326,7 +326,8 @@ describe('Acceptance: ember generate and destroy mixin', function() {
           file: 'tests/unit/mixins/foo-test.js',
           contains: [
             "import { describe, it } from 'mocha';",
-            "import FooMixin from 'my-app/mixins/foo';"
+            "import FooMixin from 'my-app/mixins/foo';",
+            "describe('Unit | Mixin | foo', function() {"
           ]
         }
       ]

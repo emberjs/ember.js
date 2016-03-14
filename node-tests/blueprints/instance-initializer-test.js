@@ -341,7 +341,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
           file: 'tests/unit/instance-initializers/foo-test.js',
           contains: [
             "import { initialize } from 'my-app/instance-initializers/foo';",
-            "describe('FooInstanceInitializer', function() {",
+            "describe('Unit | Instance Initializer | foo', function() {",
             "application = Ember.Application.create();",
             "appInstance = application.buildInstance();",
             "initialize(appInstance);"

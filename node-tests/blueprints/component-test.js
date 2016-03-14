@@ -1046,7 +1046,7 @@ describe('Acceptance: ember generate component', function() {
           contains: [
             "import { describeComponent, it } from 'ember-mocha';",
             "import hbs from 'htmlbars-inline-precompile';",
-            "describeComponent(\n  'x-foo'",
+            "describeComponent('x-foo', 'Integration | Component | x foo'",
             "integration: true",
             "{{x-foo}}",
             "{{#x-foo}}"
@@ -1067,7 +1067,7 @@ describe('Acceptance: ember generate component', function() {
           file: 'tests/unit/components/x-foo-test.js',
           contains: [
             "import { describeComponent, it } from 'ember-mocha';",
-            "describeComponent(\n  'x-foo'",
+            "describeComponent('x-foo', 'Unit | Component | x foo",
             "unit: true"
           ]
         }

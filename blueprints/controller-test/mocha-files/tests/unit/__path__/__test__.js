@@ -2,9 +2,7 @@
 import { expect } from 'chai';
 import { describeModule, it } from 'ember-mocha';
 
-describeModule(
-  'controller:<%= dasherizedModuleName %>',
-  '<%= classifiedModuleName %>Controller',
+describeModule('controller:<%= dasherizedModuleName %>', '<%= friendlyTestDescription %>',
   {
     // Specify the other units that are required for this test.
     // needs: ['controller:foo']

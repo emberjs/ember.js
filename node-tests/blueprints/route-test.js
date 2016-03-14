@@ -665,7 +665,7 @@ describe('Acceptance: ember generate and destroy route', function() {
           file: 'tests/unit/routes/foo-test.js',
           contains: [
             "import { describeModule, it } from 'ember-mocha';",
-            "describeModule(\n  'route:foo'"
+            "describeModule('route:foo', 'Unit | Route | foo'"
           ]
         }
       ]

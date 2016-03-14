@@ -5,7 +5,7 @@ import Ember from 'ember';
 import { initialize } from '<%= dasherizedModulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import destroyApp from '../../helpers/destroy-app';
 
-describe('<%= classifiedModuleName %>InstanceInitializer', function() {
+describe('<%= friendlyTestName %>', function() {
   let application, appInstance;
 
   beforeEach(function() {

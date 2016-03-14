@@ -294,7 +294,8 @@ describe('Acceptance: ember generate and destroy helper', function() {
           file: 'tests/unit/helpers/foo/bar-baz-test.js',
           contains: [
             "import { describe, it } from 'mocha';",
-            "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
+            "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';",
+            "describe('Unit | Helper | foo/bar baz', function() {"
           ]
         }
       ]

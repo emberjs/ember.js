@@ -197,7 +197,8 @@ describe('Acceptance: ember generate and destroy util', function() {
           file: 'tests/unit/utils/foo-bar-test.js',
           contains: [
             "import { describe, it } from 'mocha';",
-            "import fooBar from 'my-app/utils/foo-bar';"
+            "import fooBar from 'my-app/utils/foo-bar';",
+            "describe('Unit | Utility | foo bar', function() {"
           ]
         }
       ]
