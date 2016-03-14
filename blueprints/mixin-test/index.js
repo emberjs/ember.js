@@ -1,8 +1,9 @@
 /*jshint node:true*/
 
 var testInfo = require('ember-cli-test-info');
+var useTestFrameworkDetector = require('../test-framework-detector');
 
-module.exports = {
+module.exports = useTestFrameworkDetector({
   description: 'Generates a mixin unit test.',
   locals: function(options) {
     return {
@@ -10,4 +11,4 @@ module.exports = {
       friendlyTestName: testInfo.name(options.entity.name, 'Unit', 'Mixin')
     };
   }
-};
+});

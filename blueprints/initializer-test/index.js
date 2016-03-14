@@ -2,8 +2,9 @@
 
 var testInfo = require('ember-cli-test-info');
 var stringUtils = require('ember-cli-string-utils');
+var useTestFrameworkDetector = require('../test-framework-detector');
 
-module.exports = {
+module.exports = useTestFrameworkDetector({
   description: 'Generates an initializer unit test.',
   locals: function(options) {
     return {
@@ -11,4 +12,4 @@ module.exports = {
       dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix)
     };
   }
-};
+});

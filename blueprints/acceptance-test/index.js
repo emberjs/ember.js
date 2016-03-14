@@ -3,8 +3,9 @@
 var testInfo    = require('ember-cli-test-info');
 var pathUtil    = require('ember-cli-path-utils');
 var stringUtils = require('ember-cli-string-utils');
+var useTestFrameworkDetector = require('../test-framework-detector');
 
-module.exports = {
+module.exports = useTestFrameworkDetector({
   description: 'Generates an acceptance test for a feature.',
   locals: function(options) {
     var testFolderRoot = stringUtils.dasherize(options.project.name());
@@ -17,4 +18,4 @@ module.exports = {
       friendlyTestName: testInfo.name(options.entity.name, 'Acceptance', null)
     };
   }
-};
+});

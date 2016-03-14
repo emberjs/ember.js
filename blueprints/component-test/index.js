@@ -5,8 +5,9 @@ var testInfo      = require('ember-cli-test-info');
 var stringUtil    = require('ember-cli-string-utils');
 var isPackageMissing = require('ember-cli-is-package-missing');
 var getPathOption = require('ember-cli-get-component-path-option');
+var useTestFrameworkDetector = require('../test-framework-detector');
 
-module.exports = {
+module.exports = useTestFrameworkDetector({
   description: 'Generates a component integration or unit test.',
 
   availableOptions: [
@@ -64,4 +65,4 @@ module.exports = {
       ]);
     }
   }
-};
+});
