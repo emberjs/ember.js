@@ -7,7 +7,6 @@ cache:
   directories:
     - node_modules
     - bower_components
-    - persistent-filter-caches
 
 before_install:
   - "npm config set spin false"
@@ -34,9 +33,7 @@ env:
     - SAUCE_ACCESS_KEY=b5cff982-069f-4a0d-ac34-b77e57c2e295
     - DISABLE_SOURCE_MAPS=true
     - BROCCOLI_ENV=production
-    - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
     - S3_BUCKET_NAME=builds.emberjs.com
-    - BROCCOLI_PERSISTENT_FILTER_CACHE_ROOT=persistent-filter-caches
     - secure: "SHnuJ4A3QbSc3LV2fYynDPbbSbhVl0ZWnCiKPuRgwnddDnoSaMQUY2RqyHdtsQGdUZCOeNaMvYUhYx6hzxBVHn0yuN3KA20aSwvYdwaMgZXfJi+lyxgsEI8iYdksWXvVbCAyKM8zjTWXUtNcMBGtsGYOfdD41wfZgI8GsI0YYJc="
     - secure: ! 'KXJmcGLpnxnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGp
 
