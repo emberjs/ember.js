@@ -17,7 +17,7 @@ function transpile(tree, label) {
 }
 
 module.exports = function() {
-  var packages = __dirname + '/packages/node_modules';
+  var packages = __dirname + '/packages';
   var bower = __dirname + '/bower_components';
   var hasBower = existsSync(bower);
 

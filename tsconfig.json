@@ -4,7 +4,14 @@
         "inlineSourceMap": true,
         "inlineSources": true,
         "moduleResolution": "node",
-        "rootDir": "packages/node_modules"
+        "rootDir": "packages",
+        "baseUrl" : "./",
+        "paths": {
+            "*": [
+                "packages/*",
+                "node_modules/*"
+            ]
+        }
     },
     "exclude": [
         "dist",
