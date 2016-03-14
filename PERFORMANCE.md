@@ -34,7 +34,38 @@ The reason behind why closures are slower is that contrary to popular belief, cl
 
 ## Polymorphic vs Monomorphic Call Sites
 
-Calling `fn()` may be fast or slow depending whether the `fn` variable is polymorphic (changes over time) or monomorphic (stable). The difference can be 4x in speed. Monomorphic sites can be inlined, where as polymorphic sites prevent inline and may even cause de-optimization of your code. In general stick to classes with instance method, and avoid polymorphism for code sensitive paths such as change-detection and dependency injection.
+Calling `fn()` may be fast or slow depending whether the `fn` variable is polymorphic (changes over time) or monomorphic (stable). The difference can be 4x in speed. Monomorphic sites can be inlined, where as polymorphic sites prevent inline and may even cause de-optimization of your code. In general stick to classes with instance method, and avoid polymorphism for code sensitive paths such as change-detection and dependency injection. For more information about how VMs handle optimizations please read [this article](http://mrale.ph/blog/2015/01/11/whats-up-with-monomorphism.html).
+
+## Object Shaping And Type Stability
+
+VMs optimize JS objects by creating hidden classes for each property of that object or context. Because of this you should avoid mutating the shape of an object once it is created.
+
+```
+class Point { // Hidden class 0
+  constructor(x) {
+    this.x = x; // Hidden class 1
+  }
+}
+
+let p1 = new P(10);
+let p2 = new P(11); // Shares hidden class 1
+let p3 = new P(12);
+p3.y = 20; // Creates hidden class 2 :(
+```
+
+The same rules apply for types.
+
+```
+class Point { // Hidden class 0
+  constructor(x) {
+    this.x = x; // Hidden class 1
+  }
+}
+
+let p1 = new P(10);
+let p2 = new P(11); // Shares hidden class 1
+let p3 = new P('12'); // Creates hidden class 2 :(
+```
 
 ## Default arguments
 
