@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.5.0-beta.3 (March 14, 2016)
+
+- [#13083](https://github.com/emberjs/ember.js/issues/13083) [BUGFIX] Fix issue with feature flagging infrastructure in beta 2
+
 ### 2.5.0-beta.2 (March 7, 2016)
 
 - [#13030](https://github.com/emberjs/ember.js/pull/13030) [BUGFIX] Fix legacy addon deprecations
