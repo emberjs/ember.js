@@ -34,7 +34,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.7.2",
     "simple-html-tokenizer": "^0.2.1",
-    "typescript": "~1.8.0"
+    "typescript": "next"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
