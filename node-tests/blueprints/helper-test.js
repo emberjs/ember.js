@@ -283,4 +283,21 @@ describe('Acceptance: ember generate and destroy helper', function() {
     });
   });
 
+  it('helper-test foo/bar-baz for mocha', function() {
+    return generateAndDestroy(['helper-test', 'foo/bar-baz'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/helpers/foo/bar-baz-test.js',
+          contains: [
+            "import { describe, it } from 'mocha';",
+            "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
+          ]
+        }
+      ]
+    });
+  });
 });

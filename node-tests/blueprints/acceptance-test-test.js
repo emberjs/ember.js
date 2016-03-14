@@ -72,4 +72,27 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
     });
   });
 
+  it('acceptance-test foo for mocha', function() {
+    // pass any additional command line options in the arguments array
+    return generateAndDestroy(['acceptance-test', 'foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/acceptance/foo-test.js',
+          contains: [
+            "import { describe, it, beforeEach, afterEach } from 'mocha';",
+            "import { expect } from 'chai';",
+            "describe('Acceptance: Foo', function() {",
+            "it('can visit /foo', function() {",
+            "visit('/foo');",
+            "andThen(function() {",
+            "expect(currentPath()).to.equal('foo');"
+          ]
+        }
+      ]
+    });
+  });
 });

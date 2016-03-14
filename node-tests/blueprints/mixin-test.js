@@ -314,4 +314,22 @@ describe('Acceptance: ember generate and destroy mixin', function() {
       ]
     });
   });
+
+  it('mixin-test foo for mocha', function() {
+    return generateAndDestroy(['mixin-test', 'foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/mixins/foo-test.js',
+          contains: [
+            "import { describe, it } from 'mocha';",
+            "import FooMixin from 'my-app/mixins/foo';"
+          ]
+        }
+      ]
+    });
+  });
 });

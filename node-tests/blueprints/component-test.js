@@ -1034,4 +1034,44 @@ describe('Acceptance: ember generate component', function() {
     });
   });
 
+  it('component-test x-foo for mocha', function() {
+    return generateAndDestroy(['component-test', 'x-foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/integration/components/x-foo-test.js',
+          contains: [
+            "import { describeComponent, it } from 'ember-mocha';",
+            "import hbs from 'htmlbars-inline-precompile';",
+            "describeComponent(\n  'x-foo'",
+            "integration: true",
+            "{{x-foo}}",
+            "{{#x-foo}}"
+          ]
+        }
+      ]
+    });
+  });
+
+  it('component-test x-foo --unit for mocha', function() {
+    return generateAndDestroy(['component-test', 'x-foo', '--unit'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/components/x-foo-test.js',
+          contains: [
+            "import { describeComponent, it } from 'ember-mocha';",
+            "describeComponent(\n  'x-foo'",
+            "unit: true"
+          ]
+        }
+      ]
+    });
+  });
 });

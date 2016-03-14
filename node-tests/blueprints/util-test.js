@@ -186,4 +186,21 @@ describe('Acceptance: ember generate and destroy util', function() {
     });
   });
 
+  it('util-test foo-bar for mocha', function() {
+    return generateAndDestroy(['util-test', 'foo-bar'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/utils/foo-bar-test.js',
+          contains: [
+            "import { describe, it } from 'mocha';",
+            "import fooBar from 'my-app/utils/foo-bar';"
+          ]
+        }
+      ]
+    });
+  });
 });

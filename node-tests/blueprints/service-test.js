@@ -227,4 +227,21 @@ describe('Acceptance: ember generate and destroy service', function() {
     });
   });
 
+  it('service-test foo for mocha', function() {
+    return generateAndDestroy(['service-test', 'foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/services/foo-test.js',
+          contains: [
+            "import { describeModule, it } from 'ember-mocha';",
+            "describeModule(\n  'service:foo'"
+          ]
+        }
+      ]
+    });
+  });
 });

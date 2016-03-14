@@ -328,4 +328,23 @@ describe('Acceptance: ember generate and destroy initializer', function() {
     });
   });
 
+  it('initializer-test foo for mocha', function() {
+    return generateAndDestroy(['initializer-test', 'foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/initializers/foo-test.js',
+          contains: [
+            "import FooInitializer from 'my-app/initializers/foo';",
+            "describe('FooInitializer', function() {",
+            "application = Ember.Application.create();",
+            "FooInitializer.initialize(application);"
+          ]
+        }
+      ]
+    });
+  });
 });

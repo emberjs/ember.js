@@ -326,4 +326,21 @@ describe('Acceptance: ember generate and destroy controller', function() {
     });
   });
 
+  it('controller-test foo for mocha', function() {
+    return generateAndDestroy(['controller-test', 'foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/controllers/foo-test.js',
+          contains: [
+            "import { describeModule, it } from 'ember-mocha';",
+            "describeModule(\n  'controller:foo'"
+          ]
+        }
+      ]
+    });
+  });
 });

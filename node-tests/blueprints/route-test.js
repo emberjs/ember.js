@@ -654,4 +654,21 @@ describe('Acceptance: ember generate and destroy route', function() {
     });
   });
 
+  it('route-test foo for mocha', function() {
+    return generateAndDestroy(['route-test', 'foo'], {
+      packages: [
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
+      ],
+      files: [
+        {
+          file: 'tests/unit/routes/foo-test.js',
+          contains: [
+            "import { describeModule, it } from 'ember-mocha';",
+            "describeModule(\n  'route:foo'"
+          ]
+        }
+      ]
+    });
+  });
 });
