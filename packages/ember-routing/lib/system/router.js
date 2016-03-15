@@ -998,14 +998,14 @@ EmberRouter.reopenClass({
     path name as well.
 
     The second parameter is the optional options hash. Available options are:
+    
       * `path`: allows you to provide your own path as well as mark dynamic
         segments.
       * `resetNamespace`: false by default; when nesting routes, ember will
         combine the route names to form the fully-qualified route name, which is
         used with `{{link-to}}` or manually transitioning to routes. Setting
         `resetNamespace: true` will cause the route not to inherit from its
-        parent route's names. This is handy for resources which can be accessed
-        in multiple places as well as preventing extremely long route names.
+        parent route's names. This is handy for preventing extremely long route names.
         Keep in mind that the actual URL path behavior is still retained.
 
     The third parameter is a function, which can be used to nest routes.
