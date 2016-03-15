@@ -20,6 +20,7 @@
       "bower_components/router.js/lib/router"
     ],
     "exclude": "vendor,bower_components/router.js/lib/router/handler-info,bower_components/router.js/lib/router/transition-intent,bower_components/router.js/lib/router/router.js,bower_components/router.js/lib/router/transition-intent.js,bower_components/router.js/lib/router/transition-state.js,bower_components/router.js/lib/router/unrecognized-url-error.js,bower_components/router.js/lib/router/utils.js",
-    "outdir":   "docs"
+    "outdir":   "docs",
+    "preprocessor": "bin/feature-flag-yuidoc-filter"
   }
 }
