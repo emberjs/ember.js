@@ -21,11 +21,11 @@ add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compile
 module.exports = {
   init: function() {
     if ('ember' in this.project.bowerDependencies()) {
-      throw new TypeError('Ember.js is now provided by node_module `ember-source`, please remove it from bower');
+      throw new TypeError('Ember.js is now provided by node_module `ember-core`, please remove it from bower');
     }
   },
 
-  name: 'ember-source',
+  name: 'ember-core',
   paths: paths,
   absolutePaths: absolutePaths,
   treeForVendor: function() {
