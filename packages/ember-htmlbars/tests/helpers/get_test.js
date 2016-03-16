@@ -493,3 +493,19 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - sta
   equal(view.$('#get-input').val(), 'some value');
   equal(view.get('context.source.banana'), 'some value');
 });
+
+QUnit.test('get helper provides a meaningful error message when the key path is shitty', function() {
+  var context = {
+    responses: {
+      'Favourite colour?': 'red',
+      'Tell me more.': 'yellow is also cool'
+    }
+  };
+
+  view = EmberView.create({
+    context: context,
+    template: compile('[{{get colors \'Tell me more.\'}}]')
+  });
+
+  runAppend(view);
+});
