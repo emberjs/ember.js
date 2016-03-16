@@ -9,9 +9,7 @@ import { set } from 'ember-metal/property_set';
 import symbol from 'ember-metal/symbol';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
-import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
-import { Renderer } from 'ember-metal-views';
 import assign from 'ember-metal/assign';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
@@ -139,7 +137,13 @@ const ApplicationInstance = EngineInstance.extend({
     registry.injection('view', '_environment', '-environment:main');
     registry.injection('route', '_environment', '-environment:main');
 
-    registry.register('renderer:-dom', options.renderer);
+    registry.register('service:-document', options.document, { instantiate: false });
+
+    if (options.isInteractive) {
+      registry.injection('view', 'renderer', 'renderer:-dom');
+    } else {
+      registry.injection('view', 'renderer', 'renderer:-inert');
+    }
 
     if (options.rootElement) {
       this.rootElement = options.rootElement;
@@ -323,10 +327,6 @@ const ApplicationInstance = EngineInstance.extend({
   @public
 */
 BootOptions = function BootOptions(options = {}) {
-  let internalOptions = options[INTERNAL_BOOT_OPTIONS] || {};
-
-  this.renderer = null;
-
   /**
     Provide a specific instance of jQuery. This is useful in conjunction with
     the `document` option, as it allows you to use a copy of `jQuery` that is
@@ -483,17 +483,6 @@ BootOptions = function BootOptions(options = {}) {
 
   if (options.isInteractive !== undefined) {
     this.isInteractive = !!options.isInteractive;
-  }
-
-
-  if (internalOptions.renderer) {
-    this.renderer = internalOptions.renderer;
-  } else {
-    this.renderer = {
-      create() {
-        return new Renderer(new DOMHelper(options.document), { destinedForDOM: options.isInteractive });
-      }
-    };
   }
 };
 

@@ -1,4 +1,5 @@
-import { wrap } from 'htmlbars-runtime/hooks';
+import isEnabled from 'ember-metal/features';
+import require from 'require';
 
 /**
 @module ember
@@ -14,13 +15,64 @@ import { wrap } from 'htmlbars-runtime/hooks';
   @param {Function} templateSpec This is the compiled HTMLBars template spec.
 */
 
-export default function(templateSpec) {
-  if (!templateSpec.render) {
-    templateSpec = wrap(templateSpec);
+let template;
+
+if (isEnabled('ember-glimmer')) {
+  let { Template } = require('glimmer-runtime');
+
+  class Wrapper {
+    static create(options) {
+      return new this(options);
+    }
+
+    constructor({ env }) {
+      this._entryPoint = null;
+      this._layout = null;
+      this.env = env;
+    }
+
+    asEntryPoint() {
+      if (!this._entryPoint) {
+        let { spec, env } = this;
+        this._entryPoint = Template.fromSpec(spec, env);
+      }
+
+      return this._entryPoint;
+    }
+
+    asLayout() {
+      if (!this._layout) {
+        let { spec, env } = this;
+        this._layout = Template.layoutFromSpec(spec, env);
+      }
+
+      return this._layout;
+    }
   }
 
-  templateSpec.isTop = true;
-  templateSpec.isMethod = false;
+  template = function(json) {
+    let spec = JSON.parse(json);
 
-  return templateSpec;
+    return class extends Wrapper {
+      constructor(options) {
+        super(options);
+        this.spec = spec;
+      }
+    };
+  };
+} else {
+  let { wrap } = require('htmlbars-runtime/hooks');
+
+  template = function(templateSpec) {
+    if (!templateSpec.render) {
+      templateSpec = wrap(templateSpec);
+    }
+
+    templateSpec.isTop = true;
+    templateSpec.isMethod = false;
+
+    return templateSpec;
+  };
 }
+
+export default template;

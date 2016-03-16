@@ -6,7 +6,7 @@ import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import { typeOf } from 'ember-runtime/utils';
 
-import { Renderer } from 'ember-metal-views';
+import { InteractiveRenderer } from 'ember-metal-views';
 import { cloneStates, states } from 'ember-views/views/states';
 import { internal } from 'htmlbars-runtime';
 import require from 'require';
@@ -49,7 +49,7 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     // via `create()` instead of going through the container.
     if (!this.renderer) {
       var DOMHelper = domHelper();
-      renderer = renderer || new Renderer(new DOMHelper());
+      renderer = renderer || InteractiveRenderer.create({ dom: new DOMHelper() });
       this.renderer = renderer;
     }
 

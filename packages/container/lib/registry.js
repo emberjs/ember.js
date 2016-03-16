@@ -865,4 +865,19 @@ function has(registry, fullName, source) {
   return registry.resolve(fullName, { source }) !== undefined;
 }
 
+import { intern } from 'ember-metal/utils';
+import dict from 'ember-metal/dictionary';
+
+const privateNames = dict(null);
+const privateSuffix = Math.floor(Math.random() * new Date()) + '';
+
+export function privatize([fullName]) {
+  let name = privateNames[fullName];
+  if (name) { return name; }
+
+  let [type, rawName] = fullName.split(':');
+  return privateNames[fullName] = intern(`${type}:${rawName}-${privateSuffix}`);
+}
+
+
 export default Registry;

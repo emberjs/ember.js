@@ -8,10 +8,10 @@ import { get } from 'ember-metal/property_get';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
-import { Renderer } from 'ember-metal-views';
-import DOMHelper from 'ember-htmlbars/system/dom-helper';
+import HTMLBarsDOMHelper from 'ember-htmlbars/system/dom-helper';
+import * as HTMLBarsRenderer from 'ember-metal-views';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-import { OutletView } from 'ember-routing-views/views/outlet';
+import { OutletView as HTMLBarsOutletView } from 'ember-routing-views/views/outlet';
 import EmberView from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import jQuery from 'ember-views/system/jquery';
@@ -31,11 +31,11 @@ import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
+import { privatize as P } from 'container/registry';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine from './engine';
-
-topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+import require from 'require';
 
 var librariesRegistered = false;
 
@@ -345,7 +345,7 @@ const Application = Engine.extend({
   */
   _globalsMode: true,
 
-  init() {
+  init(options) {
     this._super(...arguments);
 
     if (!this.$) {
@@ -1044,72 +1044,120 @@ Application.reopenClass({
     @return {Ember.Registry} the built registry
     @public
   */
-  buildRegistry(namespace) {
+  buildRegistry(application, isGlimmer) {
     let registry = this._super(...arguments);
+    registry.register('application:main', application, { instantiate: false });
 
-    registry.optionsForType('component', { singleton: false });
-    registry.optionsForType('view', { singleton: false });
-    registry.optionsForType('template', { instantiate: false });
-
-    registry.register('application:main', namespace, { instantiate: false });
-
-    registry.register('controller:basic', Controller, { instantiate: false });
-
-    registry.register('renderer:-dom', { create() { return new Renderer(new DOMHelper()); } });
-
-    registry.injection('view', 'renderer', 'renderer:-dom');
-    registry.register('view:-outlet', OutletView);
-
-    registry.register('-view-registry:main', { create() { return {}; } });
-
-    registry.injection('view', '_viewRegistry', '-view-registry:main');
-
-    registry.register('view:toplevel', EmberView.extend());
-    registry.register('template:-outlet', topLevelViewTemplate);
-    registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
-
-    registry.register('route:basic', Route, { instantiate: false });
-    registry.register('event_dispatcher:main', EventDispatcher);
-
-    registry.injection('router:main', 'namespace', 'application:main');
-    registry.injection('view:-outlet', 'namespace', 'application:main');
-
-    registry.register('location:auto', AutoLocation);
-    registry.register('location:hash', HashLocation);
-    registry.register('location:history', HistoryLocation);
-    registry.register('location:none', NoneLocation);
-
-    registry.injection('controller', 'target', 'router:main');
-    registry.injection('controller', 'namespace', 'application:main');
-
-    registry.register('-bucket-cache:main', BucketCache);
-    registry.injection('router', '_bucketCache', '-bucket-cache:main');
-    registry.injection('route', '_bucketCache', '-bucket-cache:main');
-    registry.injection('controller', '_bucketCache', '-bucket-cache:main');
-
-    registry.injection('route', 'router', 'router:main');
-
-    registry.register('component:-text-field', TextField);
-    registry.register('component:-text-area', TextArea);
-    registry.register('component:-checkbox', Checkbox);
-    registry.register('component:link-to', LinkToComponent);
-
-    // Register the routing service...
-    registry.register('service:-routing', RoutingService);
-    // Then inject the app router into it
-    registry.injection('service:-routing', 'router', 'router:main');
-
-    // DEBUGGING
-    registry.register('resolver-for-debugging:main', registry.resolver, { instantiate: false });
-    registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-    registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
-    // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
-
-    registry.register('container-debug-adapter:main', ContainerDebugAdapter);
+    if (isGlimmer) {
+      glimmerSetupRegistry(registry);
+    } else {
+      htmlbarsSetupRegistry(registry);
+    }
 
     return registry;
   }
 });
+
+function commonSetupRegistry(registry) {
+  registry.optionsForType('component', { singleton: false });
+  registry.optionsForType('view', { singleton: false });
+  registry.injection('renderer', 'dom', 'service:-dom-helper');
+
+  registry.register('controller:basic', Controller);
+
+  registry.injection('service:-dom-helper', 'document', 'service:-document');
+
+  registry.register('-view-registry:main', { create() { return {}; } });
+
+  registry.injection('view', '_viewRegistry', '-view-registry:main');
+
+  registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
+
+  registry.register('route:basic', Route);
+  registry.register('event_dispatcher:main', EventDispatcher);
+
+  registry.injection('router:main', 'namespace', 'application:main');
+  registry.injection('view:-outlet', 'namespace', 'application:main');
+
+  registry.register('location:auto', AutoLocation);
+  registry.register('location:hash', HashLocation);
+  registry.register('location:history', HistoryLocation);
+  registry.register('location:none', NoneLocation);
+
+  registry.injection('controller', 'target', 'router:main');
+  registry.injection('controller', 'namespace', 'application:main');
+
+  registry.register(P`-bucket-cache:main`, BucketCache);
+  registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
+  registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
+  registry.injection('controller', '_bucketCache', P`-bucket-cache:main`);
+
+  registry.injection('route', 'router', 'router:main');
+
+  registry.register('component:-text-field', TextField);
+  registry.register('component:-text-area', TextArea);
+  registry.register('component:-checkbox', Checkbox);
+  registry.register('component:link-to', LinkToComponent);
+
+  // Register the routing service...
+  registry.register('service:-routing', RoutingService);
+  // Then inject the app router into it
+  registry.injection('service:-routing', 'router', 'router:main');
+
+  // DEBUGGING
+  registry.register('resolver-for-debugging:main', registry.resolver, { instantiate: false });
+  registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+  // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
+
+  registry.register('container-debug-adapter:main', ContainerDebugAdapter);
+}
+
+function glimmerSetupRegistry(registry) {
+  commonSetupRegistry(registry);
+
+  let Environment = require('ember-glimmer/environment').default;
+  registry.register('service:-glimmer-environment', Environment);
+  registry.injection('service:-glimmer-environment', 'dom', 'service:-dom-helper');
+  registry.injection('renderer', 'env', 'service:-glimmer-environment');
+
+  let OutletView = require('ember-glimmer/ember-routing-view').OutletView;
+  registry.register('view:-outlet', OutletView);
+
+  let { InteractiveRenderer, InertRenderer } = require('ember-glimmer/ember-metal-views');
+  registry.register('renderer:-dom', InteractiveRenderer);
+  registry.register('renderer:-inert', InertRenderer);
+
+  let DOMHelper = require('ember-glimmer/dom').default;
+
+  registry.register('service:-dom-helper', {
+    create({ document }) { return new DOMHelper(document); }
+  });
+
+  let glimmerOutletTemplate = require('ember-glimmer/templates/outlet').default;
+  registry.register('template:-outlet', glimmerOutletTemplate);
+  registry.injection('view:-outlet', 'template', 'template:-outlet');
+  registry.injection('template', 'env', 'service:-glimmer-environment');
+}
+
+function htmlbarsSetupRegistry(registry) {
+  commonSetupRegistry(registry);
+
+  registry.optionsForType('template', { instantiate: false });
+  registry.register('view:-outlet', HTMLBarsOutletView);
+
+  let { InteractiveRenderer, InertRenderer } = HTMLBarsRenderer;
+  registry.register('renderer:-dom', InteractiveRenderer);
+  registry.register('renderer:-inert', InertRenderer);
+
+  registry.register('service:-dom-helper', {
+    create({ document }) { return new HTMLBarsDOMHelper(document); }
+  });
+
+  registry.register('template:-outlet', topLevelViewTemplate);
+  registry.register('view:toplevel', EmberView.extend());
+}
+
 
 function registerLibraries() {
   if (!librariesRegistered) {

@@ -13,6 +13,10 @@ import { canInvoke } from 'ember-metal/utils';
 import EmptyObject from 'ember-metal/empty_object';
 import DefaultResolver from 'ember-application/system/resolver';
 import EngineInstance from './engine-instance';
+import isEnabled from 'ember-metal/features';
+import symbol from 'ember-metal/symbol';
+
+export const GLIMMER = symbol('GLIMMER');
 
 function props(obj) {
   var properties = [];
@@ -42,10 +46,17 @@ function props(obj) {
   @public
 */
 const Engine = Namespace.extend(RegistryProxy, {
-  init() {
+  init(options) {
     this._super(...arguments);
 
-    this.buildRegistry();
+    let isGlimmer = false;
+    if (isEnabled('ember-glimmer')) {
+      isGlimmer = (options && options[GLIMMER]) !== undefined ? options[GLIMMER] : true;
+    } else {
+      isGlimmer = (options && options[GLIMMER]) !== undefined ? options[GLIMMER] : false;
+    }
+
+    this.buildRegistry(isGlimmer);
   },
 
   /**
@@ -67,8 +78,8 @@ const Engine = Namespace.extend(RegistryProxy, {
     @method buildRegistry
     @return {Ember.Registry} the configured registry
   */
-  buildRegistry() {
-    var registry = this.__registry__ = this.constructor.buildRegistry(this);
+  buildRegistry(isGlimmer) {
+    var registry = this.__registry__ = this.constructor.buildRegistry(this, isGlimmer);
 
     return registry;
   },

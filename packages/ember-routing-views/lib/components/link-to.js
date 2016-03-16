@@ -311,6 +311,7 @@
 @submodule ember-routing-views
 */
 
+import isEnabled from 'ember-metal/features';
 import Logger from 'ember-metal/logger';
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
@@ -324,8 +325,10 @@ import ControllerMixin from 'ember-runtime/mixins/controller';
 import { HAS_BLOCK } from 'ember-htmlbars/node-managers/component-node-manager';
 
 import linkToTemplate from 'ember-htmlbars/templates/link-to';
-linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
 
+if (!isEnabled('ember-glimmer')) {
+  linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+}
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
