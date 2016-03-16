@@ -78,3 +78,21 @@ someMethod: function() {
 ```
 
 This prevents Chrome from optimizing the method and shows up in the CPU profile as non optimized method with the mark "Not optimized: Optimized too many times".
+
+## Pre-allocate arrays
+
+When looping over a data set to create a new resulting array the result array should pre-allocate the size and slot in the result.
+
+```
+function mapByTwo(data) {
+  let ret = new Array(data.length);
+
+  for (let i = 0; i < data.length; i++) {
+    ret[i] = data[i] * 2;
+  }
+
+  return ret;
+}
+```
+
+By doing so we avoid allocating memory by using `push`, `pop`, slotting, etc. V8 specifically will pre-allocate the required memory for the array and maintain/set the arrays hidden class to a compact SMI (Small integer, 31 bits unassigned) array. For arrays over 64K elements, items should be added one at a time.
