@@ -42,7 +42,9 @@ export default Mixin.create({
    @method ownerInjection
    @return {Object}
   */
-  ownerInjection: containerAlias('ownerInjection'),
+  ownerInjection() {
+    return this.__container__.ownerInjection();
+  },
 
   /**
    Given a fullName return a corresponding instance.
@@ -88,7 +90,9 @@ export default Mixin.create({
    @param {Object} options
    @return {any}
    */
-  lookup: containerAlias('lookup'),
+  lookup(fullName, options) {
+    return this.__container__.lookup(fullName, options);
+  },
 
   /**
    Given a fullName return the corresponding factory.
@@ -98,7 +102,9 @@ export default Mixin.create({
    @param {String} fullName
    @return {any}
    */
-  _lookupFactory: containerAlias('lookupFactory'),
+  _lookupFactory(fullName, options) {
+    return this.__container__.lookupFactory(fullName, options);
+  },
 
   /**
    @private
@@ -111,12 +117,6 @@ export default Mixin.create({
     }
   }
 });
-
-function containerAlias(name) {
-  return function () {
-    return this.__container__[name](...arguments);
-  };
-}
 
 export function buildFakeContainerWithDeprecations(container) {
   let fakeContainer = {};
