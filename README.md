@@ -16,9 +16,10 @@ on building killer features and UI.
 
 # Building Ember.js
 
-1. Ensure that [Node.js](http://nodejs.org/) is installed.
+1. Ensure that [Node.js](http://nodejs.org/) and [bower](http://bower.io/) are installed.
 2. Run `npm install` to ensure the required dependencies are installed.
-3. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
+3. Run `bower install` to ensure required web dependencies are installed.
+4. Run `npm run build` to build Ember.js. The builds will be placed in the `dist/` directory.
 
 ## npm install troubleshooting
 
