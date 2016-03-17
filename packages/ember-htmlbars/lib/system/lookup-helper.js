@@ -39,7 +39,10 @@ export function findHelper(name, view, env) {
     let owner = env.owner;
     if (validateLazyHelperName(name, owner, env.hooks.keywords)) {
       var helperName = 'helper:' + name;
-      if (owner.hasRegistration(helperName)) {
+      // See https://github.com/emberjs/ember.js/issues/13071
+      // See https://bugs.chromium.org/p/v8/issues/detail?id=4839
+      var registered = owner.hasRegistration(helperName);
+      if (registered) {
         helper = owner._lookupFactory(helperName);
         assert(`Expected to find an Ember.Helper with the name ${helperName}, but found an object of type ${typeof helper} instead.`, helper.isHelperFactory || helper.isHelperInstance);
       }
