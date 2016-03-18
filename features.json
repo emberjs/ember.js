@@ -7,7 +7,6 @@
     "ember-libraries-isregistered": null,
     "ember-routing-routable-components": null,
     "ember-metal-ember-assign": true,
-    "ember-container-inject-owner": true,
     "ember-htmlbars-local-lookup": true,
     "ember-application-engines": null,
     "ember-glimmer": null
