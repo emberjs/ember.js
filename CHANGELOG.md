@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v2.3.2 (March 17, 2016)
+
+- [#13118](https://github.com/emberjs/ember.js/pull/13118) [BUGFIX] Work around Chrome 49/50 optimization bug affecting helper usage.
+
 ### v2.3.1 (February 4, 2016)
 
 - [#12829](https://github.com/emberjs/ember.js/pull/12829) [BUGFIX] Support tagless components in fastboot.
