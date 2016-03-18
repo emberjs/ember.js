@@ -578,7 +578,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
       this.lastName = 'Jones';
     },
 
-    fullName: Ember.computed({
+    fullName: Ember.computed('firstName', 'lastName', {
       get(key) {
         return `${this.get('firstName')} ${this.get('lastName')}`;
       },
