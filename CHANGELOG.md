@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 2.4.3 (March 17, 2016)
+
+- [#13118](https://github.com/emberjs/ember.js/pull/13118) [BUGFIX] Work around Chrome 49/50 optimization bug affecting helper usage.
+
+
 ### 2.4.2 (March 8, 2016)
 
 - [#13031](https://github.com/emberjs/ember.js/pull/13031) [BUGFIX] Fix mergedProperties at create time modifying proto
