@@ -879,6 +879,20 @@ QUnit.test('updating sort properties invalidates the sorted array', function() {
   ], 'after updating sort properties array is updated');
 });
 
+QUnit.test('sorted array should not be changed if sort properties array is empty', function () {
+  // issue doesn't appear with small arrays (about 10 items), so 20 items are used
+  var o = EmberObject.extend({
+    sortedItems: sort('items', 'itemSorting')
+  }).create({
+    itemSorting: emberA([]),
+    items: emberA([
+      { p: 1 }, { p: 2 }, { p: 3 }, { p: 4 }, { p: 5 }, { p: 6 }, { p: 7 }, { p: 8 }, { p: 9 }, { p: 10 },
+      { p: 11 }, { p: 12 }, { p: 13 }, { p: 14 }, { p: 15 }, { p: 16 }, { p: 17 }, { p: 18 }, { p: 19 }, { p: 20 }
+    ])
+  });
+  deepEqual(o.get('sortedItems').mapBy('p'), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], 'array is not changed');
+});
+
 QUnit.test('updating new sort properties invalidates the sorted array', function() {
   deepEqual(obj.get('sortedItems').mapBy('fname'), [
     'Cersei',

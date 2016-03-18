@@ -668,6 +668,9 @@ function normalizeSortProperties(sortProperties) {
 }
 
 function sortByNormalizedSortProperties(items, normalizedSortProperties) {
+  if (normalizedSortProperties.length === 0) {
+    return emberA(items.slice());
+  }
   return emberA(items.slice().sort((itemA, itemB) => {
     for (let i = 0; i < normalizedSortProperties.length; i++) {
       let [prop, direction] = normalizedSortProperties[i];
