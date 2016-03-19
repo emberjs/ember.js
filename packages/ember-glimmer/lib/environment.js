@@ -19,12 +19,14 @@ import {
 } from './helpers/if-unless';
 
 import { default as hash } from './helpers/hash';
+import { default as loc } from './helpers/loc';
 
 const builtInHelpers = {
   concat,
   if: inlineIf,
   unless: inlineUnless,
-  hash
+  hash,
+  loc
 };
 
 export default class extends Environment {
