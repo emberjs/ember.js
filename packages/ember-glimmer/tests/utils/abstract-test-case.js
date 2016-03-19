@@ -80,8 +80,6 @@ export function moduleFor(description, TestClass, ...mixins) {
   }
 }
 
-let assert = QUnit.assert;
-
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
 const Comment = window.Comment;
@@ -90,6 +88,7 @@ export class TestCase {
   constructor() {
     this.element = null;
     this.snapshot = null;
+    this.assert = QUnit.config.current.assert;
   }
 
   teardown() {}
@@ -131,7 +130,7 @@ export class TestCase {
   }
 
   assertText(text) {
-    assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
+    this.assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
   }
 
   assertHTML(html) {
@@ -152,14 +151,14 @@ export class TestCase {
   }
 
   assertSameNode(actual, expected) {
-    assert.strictEqual(actual, expected, 'DOM node stability');
+    this.assert.strictEqual(actual, expected, 'DOM node stability');
   }
 
   assertInvariants() {
     let oldSnapshot = this.snapshot;
     let newSnapshot = this.takeSnapshot();
 
-    assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
+    this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
 
     for (let i = 0; i < oldSnapshot.length; i++) {
       this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
@@ -307,7 +306,7 @@ export class RenderingTest extends TestCase {
       throw new Error(`Expecting a text node, but got ${node}`);
     }
 
-    assert.strictEqual(node.textContent, text, 'node.textContent');
+    this.assert.strictEqual(node.textContent, text, 'node.textContent');
   }
 }
 
