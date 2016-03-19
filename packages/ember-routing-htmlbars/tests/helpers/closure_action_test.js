@@ -2,6 +2,8 @@ import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import EmberComponent from 'ember-views/components/component';
 import { computed } from 'ember-metal/computed';
+import { subscribe } from 'ember-metal/instrumentation';
+import isEnabled from 'ember-metal/features';
 
 import {
   runAppend,
@@ -548,3 +550,38 @@ QUnit.test('action should be called within a run loop', function(assert) {
 
   innerComponent.fireAction();
 });
+
+if (isEnabled('ember-improved-instrumentation')) {
+  QUnit.test('action should fire interaction event', function(assert) {
+    assert.expect(2);
+
+    subscribe('interaction.ember-action', {
+      before() {
+        console.log(arguments);
+        assert.ok(true, 'instrumentation subscriber was called');
+      },
+      after() {
+      }
+    });
+
+    innerComponent = EmberComponent.extend({
+      fireAction() {
+        this.attrs.submit();
+      }
+    }).create();
+
+    outerComponent = EmberComponent.extend({
+      layout: compile('{{view innerComponent submit=(action outerSubmit)}}'),
+      innerComponent,
+      outerSubmit() {
+        assert.ok(true, 'closure action called');
+      }
+    }).create();
+
+    runAppend(outerComponent);
+
+    run(function() {
+      innerComponent.fireAction();
+    });
+  });
+}

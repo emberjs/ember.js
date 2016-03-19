@@ -37,4 +37,12 @@ for a detailed explanation.
 * `ember-test-helpers-fire-native-events`
 
   Makes ember test helpers (`fillIn`, `click`, `triggerEvent` ...) fire native javascript events instead
-  of `jQuery.Event`s, maching more closely app's real usage.
+
+* `ember-improved-instrumentation`
+
+  Adds additional instrumentation to Ember:
+
+  - `interaction.<event-name>` for events handled by a component.
+  - `interaction.ember-action` for closure actions.
+  - `routing.transition.url` for transitions to a URL.
+  - `routing.transition.named` for transitions to a named route.
