@@ -1,4 +1,4 @@
-import { InternalHelperReference } from '../utils/references';
+import { HashHelperReference } from '../utils/references';
 /**
 @module ember
 @submodule ember-templates
@@ -31,13 +31,9 @@ import { InternalHelperReference } from '../utils/references';
    @public
  */
 
-function hash({ named }) {
-  return named.value();
-}
-
 export default {
   isInternalHelper: true,
   toReference(args) {
-    return new InternalHelperReference(hash, args);
+    return new HashHelperReference(args);
   }
 };
