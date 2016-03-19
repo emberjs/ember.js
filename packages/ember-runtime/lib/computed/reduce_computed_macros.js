@@ -12,6 +12,7 @@ import compare from 'ember-runtime/compare';
 import { isArray } from 'ember-runtime/utils';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import isNone from 'ember-metal/is_none';
+import isEmpty from 'ember-metal/is_empty';
 import getProperties from 'ember-metal/get_properties';
 import WeakMap from 'ember-metal/weak_map';
 
@@ -667,11 +668,12 @@ function normalizeSortProperties(sortProperties) {
   });
 }
 
-function sortByNormalizedSortProperties(items, normalizedSortProperties) {
-  if (normalizedSortProperties.length === 0) {
-    return emberA(items.slice());
+function sortByNormalizedSortProperties(_items, normalizedSortProperties) {
+  let items = _items.slice();
+  if (isEmpty(normalizedSortProperties)) {
+    return emberA(items);
   }
-  return emberA(items.slice().sort((itemA, itemB) => {
+  return emberA(items.sort((itemA, itemB) => {
     for (let i = 0; i < normalizedSortProperties.length; i++) {
       let [prop, direction] = normalizedSortProperties[i];
       let result = compare(get(itemA, prop), get(itemB, prop));
