@@ -20,13 +20,15 @@ import {
 
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
+import { default as log } from './helpers/log';
 
 const builtInHelpers = {
   concat,
   if: inlineIf,
   unless: inlineUnless,
   hash,
-  loc
+  loc,
+  log
 };
 
 export default class extends Environment {
