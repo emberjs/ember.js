@@ -10,14 +10,6 @@ for a detailed explanation.
   Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
   a library is registered with Ember or not.
 
-* `ember-application-visit`
-
-  Provides an API for creating an application instance and specifying
-  an initial URL that it should route to. This is useful for testing
-  (you can have multiple instances of an app without having to run
-  serially and call `reset()` each time), as well as being critical to
-  for FastBoot.
-
 * `ember-routing-routable-components`
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for

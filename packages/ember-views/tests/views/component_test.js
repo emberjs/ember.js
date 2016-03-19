@@ -6,7 +6,6 @@ import inject from 'ember-runtime/inject';
 import { get } from 'ember-metal/property_get';
 import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
-import isEnabled from 'ember-metal/features';
 
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
@@ -300,9 +299,6 @@ QUnit.module('Ember.Component - tagless components assertions', {
 
 QUnit.test('throws an error if an event function is defined in a tagless component', function() {
   app = run(Application, 'create', { rootElement: '#qunit-fixture', autoboot: false });
-  if (!isEnabled('ember-application-visit')) {
-    run(app.__deprecatedInstance__, 'destroy');
-  }
 
   run(function() {
     appInstance = ApplicationInstance.create({ application: app });
@@ -329,10 +325,6 @@ QUnit.test('throws an error if an Application custom event handler is defined in
     }
   });
 
-  if (!isEnabled('ember-application-visit')) {
-    run(app.__deprecatedInstance__, 'destroy');
-  }
-
   run(function() {
     appInstance = ApplicationInstance.create({ application: app });
     appInstance.setupEventDispatcher();
@@ -351,10 +343,6 @@ QUnit.test('throws an error if an Application custom event handler is defined in
 
 QUnit.test('throws an error if an ApplicationInstance custom event handler is defined in a tagless component', function() {
   app = run(Application, 'create', { rootElement: '#qunit-fixture', autoboot: false });
-
-  if (!isEnabled('ember-application-visit')) {
-    run(app.__deprecatedInstance__, 'destroy');
-  }
 
   run(function() {
     appInstance = ApplicationInstance.create({
