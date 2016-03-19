@@ -163,6 +163,12 @@ export class TestCase {
       this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
     }
   }
+
+  assertStableRerender() {
+    this.takeSnapshot();
+    this.runTask(() => this.rerender());
+    this.assertInvariants();
+  }
 }
 
 function isMarker(node) {
