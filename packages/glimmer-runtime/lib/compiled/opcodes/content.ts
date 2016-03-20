@@ -5,6 +5,14 @@ import { dict } from 'glimmer-util';
 import { clear } from '../../bounds';
 import { Fragment } from '../../builder';
 
+function normalizeTextValue(value: any): string {
+  if (value === null || value === undefined || typeof value.toString !== 'function') {
+    return '';
+  } else {
+    return String(value);
+  }
+}
+
 abstract class UpdatingContentOpcode extends UpdatingOpcode {
   public type: string;
   public next = null;
@@ -18,7 +26,7 @@ export class AppendOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
-    let value = reference.value();
+    let value = normalizeTextValue(reference.value());
     let node = vm.stack().appendText(value);
     vm.updateWith(new UpdateAppendOpcode(reference, value, node));
   }
@@ -47,7 +55,7 @@ export class UpdateAppendOpcode extends UpdatingContentOpcode {
   }
 
   evaluate() {
-    let val = this.reference.value();
+    let val = normalizeTextValue(this.reference.value());
 
     if (val !== this.lastValue) {
       this.lastValue = this.textNode.nodeValue = val;
@@ -70,7 +78,7 @@ export class TrustingAppendOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
-    let value = reference.value();
+    let value = normalizeTextValue(reference.value());
 
     let bounds = vm.stack().insertHTMLBefore(null, value);
     vm.updateWith(new UpdateTrustingAppendOpcode(reference, value, bounds));
@@ -92,7 +100,7 @@ export class UpdateTrustingAppendOpcode extends UpdatingContentOpcode {
   }
 
   evaluate(vm: UpdatingVM) {
-    let val = this.reference.value();
+    let val = normalizeTextValue(this.reference.value());
 
     if (val !== this.lastValue) {
       this.lastValue = val;
