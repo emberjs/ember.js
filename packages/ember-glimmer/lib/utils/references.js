@@ -52,6 +52,24 @@ export class UpdatableReference extends RootReference {
   }
 }
 
+export class HashHelperReference {
+  constructor(args) {
+    this.namedArgs = args.named;
+  }
+
+  isDirty() { return true; }
+
+  value() {
+    return this.namedArgs.value();
+  }
+
+  get(propertyKey) {
+    return this.namedArgs.get(propertyKey);
+  }
+
+  destroy() {}
+}
+
 export class ConditionalReference extends GlimmerConditionalReference {
   toBool(predicate) {
     return emberToBool(predicate);
