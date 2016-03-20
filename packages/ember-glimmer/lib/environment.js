@@ -23,6 +23,7 @@ import {
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
+import { default as unbound } from './helpers/unbound';
 
 const builtInHelpers = {
   concat,
@@ -30,7 +31,8 @@ const builtInHelpers = {
   unless: inlineUnless,
   hash,
   loc,
-  log
+  log,
+  unbound
 };
 
 export default class extends Environment {

@@ -254,3 +254,32 @@ function propertyPathToClassName(propertyPath) {
 
   return dasherize(last);
 }
+
+const EMPTY_OBJECT = {};
+
+// @implements PathReference
+export class UnboundReference {
+  constructor(sourceRef, key = null) {
+    this.sourceRef = sourceRef;
+    this.key = key;
+    this.cache = EMPTY_OBJECT;
+  }
+
+  value() {
+    let { cache } = this;
+
+    if (cache === EMPTY_OBJECT) {
+      let { key, sourceRef } = this;
+      let sourceVal = sourceRef.value();
+      cache = this.cache = key ? get(sourceVal, key) : sourceVal;
+    }
+
+    return cache;
+  }
+
+  get(key) {
+    return new UnboundReference(this, key);
+  }
+
+  destroy() {}
+}
