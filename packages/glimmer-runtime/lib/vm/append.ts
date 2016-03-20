@@ -314,7 +314,7 @@ export default class VM implements PublicVM {
     scope.bindCallerScope(callerScope);
 
     Object.keys(entries).forEach(name => {
-      scope.bindBlock(entries[name], (blocks && blocks[name]) || MISSING_BLOCK);
+      scope.bindBlock(entries[name], (blocks && blocks[name]) || null);
     });
   }
 
@@ -324,8 +324,6 @@ export default class VM implements PublicVM {
 }
 
 export type BindDynamicScopeCallback = (vm: PublicVM, dynamicScope: DynamicScope) => void;
-
-function MISSING_BLOCK() {}
 
 interface ExceptionHandler {
   handleException(initialize?: (vm: VM) => void);
