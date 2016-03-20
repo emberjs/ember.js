@@ -1159,7 +1159,7 @@ test("Namespaced attribute with a quoted expression", function() {
   equal(getXlinkAttr().namespaceURI, XLINK_NAMESPACE);
 });
 
-test("<svg> tag and expression as sibling" function() {
+test("<svg> tag and expression as sibling", function() {
   let name = 'svg-title';
   let context = { name };
   let getSvg = () => root.firstChild;
@@ -1186,7 +1186,7 @@ test("<svg> tag and expression as sibling" function() {
   equal(getSvg().namespaceURI, SVG_NAMESPACE);
 });
 
-test("<svg> tag and unsafe expression as sibling" function() {
+test("<svg> tag and unsafe expression as sibling", function() {
   let name = '<i>Biff</i>';
   let context = { name };
   let getSvg = () => root.firstChild;
@@ -1217,7 +1217,7 @@ test("<svg> tag and unsafe expression as sibling" function() {
   equal(getItalic().namespaceURI, XHTML_NAMESPACE);
 });
 
-test("unsafe expression nested inside a namespace" function() {
+test("unsafe expression nested inside a namespace", function() {
   let content = '<path></path>';
   let context = { content };
   let getSvg = () => root.firstChild;
@@ -1255,7 +1255,7 @@ test("unsafe expression nested inside a namespace" function() {
   equal(getPath().namespaceURI, SVG_NAMESPACE);
 });
 
-test("expression nested inside a namespace" function() {
+test("expression nested inside a namespace", function() {
   let content = 'Milly';
   let context = { content };
   let getDiv = () => root.firstChild;
@@ -1287,7 +1287,7 @@ test("expression nested inside a namespace" function() {
   equal(getSvg().namespaceURI, SVG_NAMESPACE);
 });
 
-test("expression nested inside a namespaced root element" function() {
+test("expression nested inside a namespaced root element", function() {
   let content = 'Maurice';
   let context = { content };
   let getSvg = () => root.firstChild;
@@ -1315,7 +1315,7 @@ test("expression nested inside a namespaced root element" function() {
   equal(getSvg().namespaceURI, SVG_NAMESPACE);
 });
 
-test("HTML namespace is created in child templates" function() {
+test("HTML namespace is created in child templates", function() {
   let isTrue = true;
   let context = { isTrue };
   let template = compile('{{#if isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}');
@@ -1342,7 +1342,7 @@ test("HTML namespace is created in child templates" function() {
   equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
 });
 
-test("HTML namespace is continued to child templates" function() {
+test("HTML namespace is continued to child templates", function() {
   let isTrue = true;
   let context = { isTrue };
   let getDiv = () => root.firstChild;
