@@ -3,31 +3,31 @@ import { DOMHelper } from '../dom';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
-// Patch:    insertAdjacentHTML, innerHTML on SVG Fix
-// Browsers: Safari, IE9 - Edge, Firefox ~33-34
-// Reason:   insertAdjacentHTML does not exist on SVG elements in Safari and MS
-//           browsers. Additionally, innerHTML does not work on SVG elements in
-//           MS browsers. Additionally, innerHTML sets the wrong namespace on
-//           olf Firefox versions.
-// Fix:      Wrap the innerHTML we are about to set in its parents, apply the
-//           wrapped innerHTML on a div, then move the unwrapped nodes into the
-//           target position.
+// Patch:    insertAdjacentHTML on SVG Fix
+// Browsers: Safari, IE, Edge, Firefox ~33-34
+// Reason:   insertAdjacentHTML does not exist on SVG elements in Safari. It is
+//           present but throws an exception on IE and Edge. Old versions of
+//           Firefox create nodes in the incorrect namespace.
+// Fix:      Since IE and Edge silently fail to create SVG nodes using
+//           innerHTML, and because Firefox may create nodes in the incorrect
+//           namespace using innerHTML on SVG elements, an HTML-string wrapping
+//           approach is used. A pre/post SVG tag is added to the string, then
+//           that whole string is added to a div. The created nodes are plucked
+//           out and applied to the target location on DOM.
 export default function applyInnerHTMLFix(document: Document, DOMHelperClass: typeof DOMHelper, svgNamespace: String): typeof DOMHelper {
   if (!document) return DOMHelperClass;
 
   let svg = document.createElementNS(svgNamespace, 'svg');
 
   try {
-    // This will throw if insertAdjacentHTML is unavailable (Safari)
-    svg.insertAdjacentHTML('beforeEnd', 'throws if insertAdjacentHTML on SVG is unsupported');
-    // If it doesn't throw, then test `innerHTML`
-    svg.innerHTML = '<circle></circle>';
+    svg.insertAdjacentHTML('beforeEnd', '<circle></circle>');
   } catch (e) {
+    // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
+    // Safari: Will throw, insertAdjacentHTML is not present on SVG
   } finally {
-    // IE will not have populated children
-    // Old FF will have the wrong namespace
+    // FF: Old versions will create a node in the wrong namespace
     if (svg.childNodes.length === 1 && svg.firstChild.namespaceURI === SVG_NAMESPACE) {
-      // It worked as expected, no fix required
+      // The test worked as expected, no fix required
       return DOMHelperClass;
     }
   }
@@ -44,6 +44,8 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
 
+      // IE, Edge: also do not correctly support using `innerHTML` on SVG
+      // namespaced elements. So here a wrapper is used.
       let wrappedHtml = '<svg>' + html + '</svg>';
 
       div.innerHTML = wrappedHtml;
