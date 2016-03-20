@@ -28,9 +28,6 @@ function makeConditionalHelper(toBool) {
 
     if (toBool(condition)) {
       return positional.at(1).value();
-    } else {
-      // TODO: this should probably be `undefined`: https://github.com/emberjs/ember.js/pull/12920#discussion_r53213383
-      return '';
     }
   }
 
