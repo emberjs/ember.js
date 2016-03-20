@@ -1,5 +1,6 @@
 import { ConcreteBounds, Bounds } from './bounds';
-import applyDOMHelperFix from './compat/inner-html-fix';
+import applyTableElementFix from './compat/inner-html-fix';
+import applySVGElementFix from './compat/svg-inner-html-fix';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -82,7 +83,7 @@ class DOMHelper {
   }
 
   insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
-    let prev = nextSibling && nextSibling.previousSibling;
+    let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
     let last;
 
     if (html === null || html === '') {
@@ -116,7 +117,8 @@ class DOMHelper {
 let helper = DOMHelper;
 let doc = typeof document === 'undefined' ? undefined : document;
 
-helper = applyDOMHelperFix(doc, DOMHelper);
+helper = applyTableElementFix(doc, DOMHelper);
+helper = applySVGElementFix(doc, helper, SVG_NAMESPACE);
 
 export default helper;
 export { DOMHelper };
