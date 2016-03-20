@@ -74,6 +74,45 @@ test("updating a single curly", () => {
   strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 });
 
+test("null and undefined produces empty text nodes", () => {
+  let object = { v1: null, v2: undefined };
+  let template = compile('<div><p>{{v1}}</p><p>{{v2}}</p></div>');
+  render(template, object);
+  let valueNode1 = root.firstChild.firstChild.firstChild;
+  let valueNode2 = root.firstChild.lastChild.firstChild;
+
+  equalTokens(root, '<div><p></p><p></p></div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div><p></p><p></p></div>', "no change");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
+  strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+
+  object.v1 = 'hello';
+  rerender();
+
+  equalTokens(root, '<div><p>hello</p><p></p></div>', "After updating and dirtying");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
+  strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+  object.v2 = 'world';
+  rerender();
+
+  equalTokens(root, '<div><p>hello</p><p>world</p></div>', "After updating and dirtying");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
+  strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+
+  object.v1 = null;
+  object.v2 = undefined;
+  rerender();
+
+  equalTokens(root, '<div><p></p><p></p></div>', "Reset");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
+  strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
+});
+
 test("updating a single trusting curly", () => {
   let object = { value: '<p>hello world</p>' };
   let template = compile('<div>{{{value}}}</div>');
