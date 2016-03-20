@@ -711,12 +711,18 @@ class OpenBlockOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let block = vm.scope().getBlock(this.to);
-    let args = this.args.evaluate(vm);
+    let args;
 
-    if (!block) throw new Error(`Yielded to ${this.label} but it was not passed`);
+    if (block) {
+      args = this.args.evaluate(vm);
+    }
 
+    // FIXME: can we avoid doing this when we don't have a block?
     vm.pushCallerScope();
-    vm.invokeBlock(block, args);
+
+    if (block) {
+      vm.invokeBlock(block, args);
+    }
   }
 }
 
