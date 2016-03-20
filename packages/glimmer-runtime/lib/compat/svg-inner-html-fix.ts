@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { DOMHelper } from '../dom';
+import { moveNodesBefore, DOMHelper } from '../dom';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -30,6 +30,7 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
       // The test worked as expected, no fix required
       return DOMHelperClass;
     }
+    svg = null;
   }
 
   let div = document.createElement('div');
@@ -50,15 +51,7 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
 
       div.innerHTML = wrappedHtml;
 
-      let first: Node, last: Node, current: Node;
-      first = current = div.firstChild.firstChild;
-
-      while (current) {
-        last = current;
-        parent.insertBefore(current, nextSibling);
-        current = current.nextSibling;
-      }
-
+      let [first, last] = moveNodesBefore(div.firstChild, parent, nextSibling);
       return new ConcreteBounds(parent, first, last);
     }
   };

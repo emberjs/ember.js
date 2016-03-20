@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { DOMHelper } from '../dom';
+import { moveNodesBefore, DOMHelper } from '../dom';
 
 // Patch:    innerHTML Fix
 // Browsers: IE9
@@ -22,6 +22,8 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
       return DOMHelperClass;
     }
   }
+
+  table = null;
 
   let innerHTMLWrapper = {
     colgroup: { depth: 2, before: '<table><colgroup>', after: '</colgroup></table>' },
@@ -57,15 +59,7 @@ export default function applyInnerHTMLFix(document: Document, DOMHelperClass: ty
         parentNode = parentNode.childNodes[0];
       }
 
-      let first: Node, last: Node, current: Node;
-      first = current = parentNode.childNodes[0];
-
-      while (current) {
-        last = current;
-        parent.insertBefore(current, nextSibling);
-        current = current.nextSibling;
-      }
-
+      let [first, last] = moveNodesBefore(parentNode, parent, nextSibling);
       return new ConcreteBounds(parent, first, last);
     }
   };
