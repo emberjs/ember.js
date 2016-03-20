@@ -179,7 +179,9 @@ export class TestCase {
     this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
 
     for (let i = 0; i < oldSnapshot.length; i++) {
-      this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
+      if (!(newSnapshot[i] instanceof TextNode && oldSnapshot[i] instanceof TextNode)) {
+        this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
+      }
     }
   }
 
