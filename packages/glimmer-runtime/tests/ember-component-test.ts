@@ -502,6 +502,11 @@ testComponent('glimmer component with role specified as an outer binding and cop
   }
 });
 
+testComponent('yielding to an non-existent block', {
+  layout: 'Before-{{yield}}-After',
+  expected: 'Before--After'
+});
+
 testComponent('hasBlock is true when block supplied', {
   skip: true,
   layout: '{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}',
