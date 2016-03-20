@@ -506,14 +506,19 @@ test("class attribute w/ concat follow the normal dirtying rules", function() {
 
   equalTokens(root, "<div class='hello world'>hello</div>");
 
+  rerender();
+
+  equalTokens(root, "<div class='hello world'>hello</div>");
+
   object.value = "universe";
-  rerender(); // without setting the node to dirty
-
-  equalTokens(root, "<div class='hello universe'>hello</div>");
-
   rerender();
 
   equalTokens(root, "<div class='hello universe'>hello</div>");
+
+  object.value = null;
+  rerender();
+
+  equalTokens(root, "<div class='hello '>hello</div>");
 
   object.value = "world";
   rerender();
@@ -551,14 +556,19 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
 
   equalTokens(root, "<div data-value='hello world'>hello</div>");
 
+  rerender();
+
+  equalTokens(root, "<div data-value='hello world'>hello</div>");
+
   object.value = "universe";
-  rerender(); // without setting the node to dirty
-
-  equalTokens(root, "<div data-value='hello universe'>hello</div>");
-
   rerender();
 
   equalTokens(root, "<div data-value='hello universe'>hello</div>");
+
+  object.value = null;
+  rerender();
+
+  equalTokens(root, "<div data-value='hello '>hello</div>");
 
   object.value = "world";
   rerender();
@@ -593,14 +603,24 @@ test("namespaced attribute nodes w/ concat follow the normal dirtying rules", fu
 
   equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
+  rerender();
+
+  equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
+
   object.locale = "uk";
   rerender();
 
-  equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
+  equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
 
+  object.locale = null;
   rerender();
 
-  equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
+
+  object.locale = "us";
+  rerender();
+
+  equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
 });
 }
 
@@ -630,14 +650,24 @@ test("non-standard namespaced attribute nodes w/ concat follow the normal dirtyi
 
   equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", "Initial render");
 
+  rerender();
+
+  equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", "No-op rerender");
+
   object.type = "index";
   rerender();
 
-  equalTokens(root, "<div epub:type='dedication index'>hello</div>", "Revalidating without dirtying");
+  equalTokens(root, "<div epub:type='dedication index'>hello</div>", "After update");
 
+  object.type = null;
   rerender();
 
-  equalTokens(root, "<div epub:type='dedication index'>hello</div>", "Revalidating after dirtying");
+  equalTokens(root, "<div epub:type='dedication '>hello</div>", "After updating to null");
+
+  object.type = "backmatter";
+  rerender();
+
+  equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", "After reset");
 });
 
 test("property nodes follow the normal dirtying rules", function() {

@@ -1,12 +1,12 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { PathReference } from 'glimmer-reference';
-import { dict } from 'glimmer-util';
+import { Opaque, dict } from 'glimmer-util';
 import { clear } from '../../bounds';
 import { Fragment } from '../../builder';
 
-function normalizeTextValue(value: any): string {
-  if (value === null || value === undefined || typeof value.toString !== 'function') {
+export function normalizeTextValue(value: Opaque): string {
+  if (value === null || value === undefined || typeof value['toString'] !== 'function') {
     return '';
   } else {
     return String(value);

@@ -96,6 +96,10 @@ export {
 } from './lib/compiled/opcodes/dom';
 
 export {
+  normalizeTextValue
+} from './lib/compiled/opcodes/content';
+
+export {
   CompiledExpression
 } from './lib/compiled/expressions';
 

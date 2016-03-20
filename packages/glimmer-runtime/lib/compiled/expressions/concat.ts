@@ -1,7 +1,8 @@
 import { CompiledExpression } from '../expressions';
+import { normalizeTextValue } from '../opcodes/content';
 import VM from '../../vm/append';
 import { PathReference, Reference } from 'glimmer-reference';
-import { Opaque, FIXME } from 'glimmer-util';
+import { Opaque } from 'glimmer-util';
 
 export default class CompiledConcat {
   public type = "concat";
@@ -38,7 +39,7 @@ class ConcatReference implements Reference<string> {
   value(): string {
     let parts = new Array<string>(this.parts.length);
     for (let i = 0; i < this.parts.length; i++) {
-      parts[i] = this.parts[i].value() as FIXME<'convert opaque to str'>;
+      parts[i] = normalizeTextValue(this.parts[i].value());
     }
     return parts.join('');
   }
