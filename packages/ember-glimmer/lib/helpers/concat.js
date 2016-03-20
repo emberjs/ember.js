@@ -1,4 +1,5 @@
 import { helper } from '../helper';
+import { normalizeTextValue } from 'glimmer-runtime';
 
 /**
 @module ember
@@ -22,7 +23,7 @@ import { helper } from '../helper';
   @since 1.13.0
 */
 function concat(args) {
-  return args.join('');
+  return args.map(normalizeTextValue).join('');
 }
 
 export default helper(concat);

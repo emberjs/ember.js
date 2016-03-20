@@ -21,7 +21,6 @@ import Logger from 'ember-metal/logger';
 */
 function log(params) {
   Logger.log.apply(null, params);
-  return ''; // FIXME: Helper will currently return and render 'undefined', remove when fixed
 }
 
 export default helper(log);
