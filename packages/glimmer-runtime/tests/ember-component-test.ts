@@ -611,7 +611,7 @@ testComponent('hasBlock keyword when block not supplied', {
   expected: 'No'
 });
 
-module("Components - curlies - dynamic tagName");
+module("Components - curlies - dynamic customizations");
 
 QUnit.test('dynamic tagName', assert => {
   class FooBar extends EmberishCurlyComponent {
@@ -622,6 +622,44 @@ QUnit.test('dynamic tagName', assert => {
 
   appendViewFor(`{{foo-bar}}`);
   assertEmberishElement('aside', {}, `Hello. It's me.`);
+
+  rerender();
+
+  assertEmberishElement('aside', {}, `Hello. It's me.`);
+});
+
+QUnit.test('dynamic attribute bindings', assert => {
+  let fooBarInstance: FooBar = null;
+
+  class FooBar extends EmberishCurlyComponent {
+    attributeBindings = ['style'];
+    style: string = null;
+
+    constructor() {
+      super();
+      this.style = 'color: red;';
+      fooBarInstance = this;
+    }
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `Hello. It's me.`);
+
+  appendViewFor(`{{foo-bar}}`);
+  assertEmberishElement('div', { 'style': 'color: red;' }, `Hello. It's me.`);
+
+  rerender();
+
+  assertEmberishElement('div', { 'style': 'color: red;' }, `Hello. It's me.`);
+
+  fooBarInstance.style = 'color: green;';
+  rerender();
+
+  assertEmberishElement('div', { 'style': 'color: green;' }, `Hello. It's me.`);
+
+  fooBarInstance.style = 'color: red;';
+  rerender();
+
+  assertEmberishElement('div', { 'style': 'color: red;' }, `Hello. It's me.`);
 });
 
 module("Components - generic - attrs");
