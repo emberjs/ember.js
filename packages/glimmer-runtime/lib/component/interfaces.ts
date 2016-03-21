@@ -53,6 +53,7 @@ export interface ComponentLayoutBuilder {
 
 export interface ComponentTagBuilder {
   static(tagName: string);
+  dynamic(tagName: FunctionExpression<string>);
 }
 
 export interface ComponentAttrsBuilder {
