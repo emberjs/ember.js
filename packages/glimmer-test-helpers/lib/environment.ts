@@ -42,7 +42,10 @@ import {
 
   // References
   ValueReference,
-  ConditionalReference
+  ConditionalReference,
+
+  // Misc
+  ElementOperations,
 } from "glimmer-runtime";
 
 import { compile as rawCompile, compileLayout as rawCompileLayout } from "./helpers";
@@ -156,6 +159,8 @@ export class BasicComponent {
 }
 
 export class EmberishCurlyComponent extends GlimmerObject {
+  public tagName: string = null;
+  public attributeBindings: string[] = null;
   public attrs: Attrs;
   public element: Element;
   public parentView: Component = null;
@@ -297,8 +302,20 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component;
   }
 
-  didCreateElement(component: EmberishCurlyComponent, element: Element) {
+  didCreateElement(component: EmberishCurlyComponent, element: Element, operations: ElementOperations) {
     component.element = element;
+
+    let bindings = component.attributeBindings;
+    let rootRef = new UpdatableReference(component);
+
+    if (bindings) {
+      for (let i=0; i<bindings.length; i++) {
+        let attribute = bindings[i] as InternedString;
+        let reference = rootRef.get(attribute) as PathReference<string>;
+
+        operations.addAttribute(attribute, reference);
+      }
+    }
   }
 
   didCreate(component: EmberishCurlyComponent) {

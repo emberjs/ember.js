@@ -65,7 +65,13 @@ class BlockStackElement {
   public lastNode: Node = null;
 }
 
-class GroupedElementOperations {
+export interface ElementOperations {
+  addAttribute(name: InternedString, value: PathReference<string>);
+  addAttributeNS(name: InternedString, value: PathReference<string>, namespace: InternedString);
+  addProperty(name: InternedString, value: PathReference<any>);
+}
+
+class GroupedElementOperations implements ElementOperations {
   groups: ElementOperation[][];
   group: ElementOperation[];
 
