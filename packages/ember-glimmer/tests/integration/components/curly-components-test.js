@@ -17,6 +17,53 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
+  ['@test it can have a custom tagName']() {
+    let FooBarComponent = Component.extend({
+      tagName: 'foo-bar'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+  }
+
+  ['@test it can have a custom tagName set in the constructor']() {
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super();
+        this.tagName = 'foo-bar';
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+  }
+
+  ['@test it can have a custom tagName from the invocation']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar tagName="foo-bar"}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+  }
+
   ['@test it has an element']() {
     let instance;
 

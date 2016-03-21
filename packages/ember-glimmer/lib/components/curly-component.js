@@ -77,6 +77,16 @@ const MANAGER = new CurlyComponentManager();
 import { ComponentDefinition, ValueReference } from 'glimmer-runtime';
 import Component from '../ember-views/component';
 
+function tagName(vm) {
+  let { tagName } = vm.dynamicScope().view;
+
+  if (tagName === '') {
+    throw new Error('Not implemented: fragments (`tagName: ""`)');
+  }
+
+  return new ValueReference(tagName || 'div');
+}
+
 function elementId(vm) {
   let component = vm.dynamicScope().view;
   return new ValueReference(component.elementId);
@@ -90,7 +100,7 @@ export class CurlyComponentDefinition extends ComponentDefinition {
 
   compile(builder) {
     builder.wrapLayout(this.template.asLayout());
-    builder.tag.static('div');
+    builder.tag.dynamic(tagName);
     builder.attrs.dynamic('id', elementId);
     builder.attrs.static('class', 'ember-view');
   }
