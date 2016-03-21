@@ -147,4 +147,4 @@ export {
 } from './lib/component/interfaces';
 
 export { default as DOMHelper, DOMHelper as IDOMHelper, isWhitespace } from './lib/dom';
-export { ElementStack } from './lib/builder';
+export { ElementStack, ElementOperations } from './lib/builder';

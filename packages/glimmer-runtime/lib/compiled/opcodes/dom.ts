@@ -60,7 +60,6 @@ export class OpenPrimitiveElementOpcode extends Opcode {
 export class OpenDynamicPrimitiveElementOpcode extends Opcode {
   public type = "open-dynamic-primitive-element";
 
-
   evaluate(vm: VM) {
     let tagName = vm.frame.getOperand().value() as FIXME<'user string to InternedString'>;
     vm.stack().openElement(tagName);
