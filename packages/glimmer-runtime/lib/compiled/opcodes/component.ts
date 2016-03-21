@@ -191,7 +191,7 @@ export class DidCreateElementOpcode extends Opcode {
     let manager = definition.manager;
     let component: Component = internal['component'];
 
-    manager.didCreateElement(component, vm.stack().element);
+    manager.didCreateElement(component, vm.stack().element, vm.stack().elementOperations);
   }
 
   toJSON(): OpcodeJSON {
