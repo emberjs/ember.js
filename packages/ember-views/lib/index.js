@@ -32,11 +32,6 @@ import TextSupport from 'ember-views/mixins/text_support';
 import TextField from 'ember-views/views/text_field';
 import TextArea from 'ember-views/views/text_area';
 
-import {
-  Select,
-  SelectOption,
-  SelectOptgroup
-} from 'ember-views/views/select';
 import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
 import LegacyEachView from 'ember-views/views/legacy_each_view';
 
@@ -75,13 +70,6 @@ Ember._Renderer = Renderer;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
-
-if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember.Select = Select;
-}
-
-Ember.SelectOption = SelectOption;
-Ember.SelectOptgroup = SelectOptgroup;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;

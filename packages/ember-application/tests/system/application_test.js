@@ -338,16 +338,6 @@ QUnit.test('can specify custom router', function() {
   ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
 });
 
-QUnit.test('registers controls onto to container', function() {
-  run(function() {
-    app = Application.create({
-      rootElement: '#qunit-fixture'
-    });
-  });
-
-  ok(app.__container__.lookup('view:select'), 'Select control is registered into views');
-});
-
 QUnit.test('does not leak itself in onLoad._loaded', function() {
   equal(_loaded.application, undefined);
   var app = run(Application, 'create');
