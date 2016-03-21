@@ -11,7 +11,6 @@ import Controller from 'ember-runtime/controllers/controller';
 import { Renderer } from 'ember-metal-views';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-import SelectView from 'ember-views/views/select';
 import { OutletView } from 'ember-routing-views/views/outlet';
 import EmberView from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -1060,9 +1059,6 @@ Application.reopenClass({
     registry.register('renderer:-dom', { create() { return new Renderer(new DOMHelper()); } });
 
     registry.injection('view', 'renderer', 'renderer:-dom');
-    if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-      registry.register('view:select', SelectView);
-    }
     registry.register('view:-outlet', OutletView);
 
     registry.register('-view-registry:main', { create() { return {}; } });
