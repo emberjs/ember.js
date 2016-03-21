@@ -1,6 +1,10 @@
 import { FIXME, Opaque, Slice, LinkedList, InternedString } from 'glimmer-util';
 import { OpSeq, Opcode } from './opcodes';
-import { OpenPrimitiveElementOpcode, CloseElementOpcode } from './compiled/opcodes/dom';
+import {
+  OpenPrimitiveElementOpcode,
+  OpenDynamicPrimitiveElementOpcode,
+  CloseElementOpcode
+} from './compiled/opcodes/dom';
 import {
   DidCreateElementOpcode,
   PutComponentDefinitionOpcode,
@@ -14,7 +18,8 @@ import {
   EnterOpcode,
   ExitOpcode,
   LabelOpcode,
-  PutArgsOpcode
+  PutArgsOpcode,
+  PutValueOpcode
 } from './compiled/opcodes/vm';
 
 import * as Syntax from './syntax/core';
@@ -246,9 +251,14 @@ class WrappedBuilder {
       list.append(BindBlocksOpcode.create(layout));
     }
 
-    let tag = this.tag['tagName'];
-
-    list.append(new OpenPrimitiveElementOpcode({ tag }));
+    if (this.tag.isDynamic) {
+      let tag = makeFunctionExpression(this.tag.dynamicTagName);
+      list.append(new PutValueOpcode({ expression: tag.compile(list, env) }));
+      list.append(new OpenDynamicPrimitiveElementOpcode());
+    } else {
+      let tag = this.tag.staticTagName;
+      list.append(new OpenPrimitiveElementOpcode({ tag }));
+    }
 
     list.append(new DidCreateElementOpcode());
 
@@ -315,10 +325,18 @@ function isOpenElement(syntax: StatementSyntax): syntax is OpenElement {
 }
 
 class ComponentTagBuilder implements Component.ComponentTagBuilder {
-  private tagName: InternedString = null;
+  public isDynamic = null;
+  public staticTagName: InternedString = null;
+  public dynamicTagName: FunctionExpression<string> = null;
 
   static(tagName: InternedString) {
-    this.tagName = tagName;
+    this.isDynamic = false;
+    this.staticTagName = tagName;
+  }
+
+  dynamic(tagName: FunctionExpression<string>) {
+    this.isDynamic = true;
+    this.dynamicTagName = tagName;
   }
 }
 

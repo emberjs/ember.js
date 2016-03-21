@@ -611,6 +611,19 @@ testComponent('hasBlock keyword when block not supplied', {
   expected: 'No'
 });
 
+module("Components - curlies - dynamic tagName");
+
+QUnit.test('dynamic tagName', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    tagName = 'aside';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `Hello. It's me.`);
+
+  appendViewFor(`{{foo-bar}}`);
+  assertEmberishElement('aside', {}, `Hello. It's me.`);
+});
+
 module("Components - generic - attrs");
 
 module("Components - integration - scope");
