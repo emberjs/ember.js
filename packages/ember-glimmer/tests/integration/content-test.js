@@ -75,10 +75,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertText('hello');
 
-    // FIXME: use @mmun's assertStableRerender
-    this.takeSnapshot();
-    this.runTask(() => this.rerender());
-    this.assertInvariants();
+    this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'message', 'goodbye'));
 
@@ -98,10 +95,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertText('hello');
 
-    // FIXME: use @mmun's assertStableRerender
-    this.takeSnapshot();
-    this.runTask(() => this.rerender());
-    this.assertInvariants();
+    this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
 
@@ -136,10 +130,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertText('HELLO');
 
-    // FIXME: use @mmun's assertStableRerender
-    this.takeSnapshot();
-    this.runTask(() => this.rerender());
-    this.assertInvariants();
+    this.assertStableRerender();
 
     this.runTask(() => set(m, 'message', 'goodbye'));
 
@@ -192,10 +183,7 @@ class ContentTestGenerator {
 
           this.assertText(expected);
 
-          // FIXME: use @mmun's assertStableRerender
-          this.takeSnapshot();
-          this.runTask(() => this.rerender());
-          this.assertInvariants();
+          this.assertStableRerender();
 
           this.runTask(() => set(this.context, 'value', 'hello'));
 
