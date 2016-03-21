@@ -679,6 +679,11 @@ interface EmberishCurlyComponentFactory {
   create(options: { attrs: Attrs }): EmberishCurlyComponent;
 }
 
+function EmberTagName(vm: VM): PathReference<string> {
+  let self = vm.getSelf().value();
+  return new ValueReference(self['tagName'] || 'div');
+}
+
 function EmberID(vm: VM): PathReference<string> {
   let self = vm.getSelf().value() as { _guid: string };
   return new ValueReference(`ember${self._guid}`);
@@ -689,7 +694,7 @@ class EmberishCurlyComponentDefinition extends GenericComponentDefinition<Emberi
 
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
-    builder.tag.static('div');
+    builder.tag.dynamic(EmberTagName);
     builder.attrs.static('class', 'ember-view');
     builder.attrs.dynamic('id', EmberID);
   }
