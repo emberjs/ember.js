@@ -266,21 +266,20 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
   ```
 
   If the return value of an `attributeBindings` monitored property is a boolean
-  the property will follow HTML's pattern of repeating the attribute's name as
-  its value:
+  the property's value will be set as a coerced string:
 
   ```javascript
   MyTextInput = Ember.View.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
-    disabled: true
+    disabled: false
   });
   ```
 
-  Will result in view instances with an HTML representation of:
+  Will result in a view instance with an HTML representation of:
 
   ```html
-  <input id="ember1" class="ember-view" disabled="disabled" />
+  <input id="ember1" class="ember-view" disabled="false" />
   ```
 
   `attributeBindings` can refer to computed properties:
@@ -296,6 +295,17 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
         return false;
       }
     })
+  });
+  ```
+
+  To prevent setting an attribute altogether, use `null` or `undefined` as the
+  return value of the `attributeBindings` monitored property:
+
+  ```javascript
+  MyTextInput = Ember.View.extend({
+    tagName: 'form',
+    attributeBindings: ['novalidate'],
+    novalidate: null
   });
   ```
 
