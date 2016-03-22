@@ -90,9 +90,10 @@ class ClassList implements Reference<string> {
 
   value(): string {
     if (this.list.length === 0) return null;
-    let ret = new Array(this.list.length);
+    let ret = [];
     for (let i = 0; i < this.list.length; i++) {
-      ret[i] = this.list[i].value();
+      let value = this.list[i].value();
+      if (value !== null) ret.push(String(value));
     }
     return ret.join(' ');
   }
@@ -211,10 +212,13 @@ export class NamespacedAttribute implements ElementPatchOperation {
       value: reference,
       namespace
     } = this;
+
     let value = reference.value();
 
     if (value === lastValue) {
       return lastValue;
+    } else if (value === null) {
+      dom.removeAttributeNS(element, name, namespace);
     } else {
       dom.setAttributeNS(element, name, value, namespace);
       return value;
@@ -246,6 +250,8 @@ export class NonNamespacedAttribute implements ElementPatchOperation {
 
     if (value === lastValue) {
       return lastValue;
+    } else if (value === null) {
+      dom.removeAttribute(element, name);
     } else {
       dom.setAttribute(element, name, value);
       return value;
