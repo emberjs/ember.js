@@ -21,7 +21,6 @@ import { Renderer } from 'ember-metal-views';
 import { DeprecatedCoreView } from 'ember-views/views/core_view';
 import { DeprecatedView } from 'ember-views/views/view';
 import { DeprecatedContainerView } from 'ember-views/views/container_view';
-import CollectionView from 'ember-views/views/collection_view';
 import Component from 'ember-views/components/component';
 
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -33,7 +32,6 @@ import TextField from 'ember-views/views/text_field';
 import TextArea from 'ember-views/views/text_area';
 
 import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
-import LegacyEachView from 'ember-views/views/legacy_each_view';
 
 // END IMPORTS
 
@@ -62,7 +60,6 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   Ember.View.cloneStates = cloneStates;
   Ember.View._Renderer = Renderer;
   Ember.ContainerView = DeprecatedContainerView;
-  Ember.CollectionView = CollectionView;
 }
 
 Ember._Renderer = Renderer;
@@ -80,7 +77,6 @@ Ember.EventDispatcher = EventDispatcher;
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   Ember._Metamorph = _Metamorph;
   Ember._MetamorphView = _MetamorphView;
-  Ember._LegacyEachView = LegacyEachView;
 }
 
 // END EXPORTS

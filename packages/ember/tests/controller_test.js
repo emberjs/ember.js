@@ -7,10 +7,6 @@ import Application from 'ember-application/system/application';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
-import { A as emberA } from 'ember-runtime/system/native_array';
-
-import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
-import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -22,13 +18,8 @@ import TransformEachIntoCollection from 'ember-template-compiler/plugins/transfo
 
 var App, $fixture, templates;
 
-let originalAstPlugins;
-
 QUnit.module('Template scoping examples', {
   setup() {
-    originalAstPlugins = plugins['ast'].slice(0);
-    registerPlugin('ast', TransformEachIntoCollection);
-
     run(function() {
       templates = Ember.TEMPLATES;
       App = Application.create({
@@ -55,8 +46,6 @@ QUnit.module('Template scoping examples', {
     App = null;
 
     Ember.TEMPLATES = {};
-
-    plugins['ast'] = originalAstPlugins;
   }
 });
 
@@ -105,29 +94,6 @@ QUnit.test('the controller property is provided to route driven views', function
   bootApp();
 
   equal(applicationViewController, applicationController, 'application view should get its controller set properly');
-});
-
-// This test caught a regression where {{#each}}s used directly in a template
-// (i.e., not inside a view or component) did not have access to a container and
-// would raise an exception.
-QUnit.test('{{#each}} inside outlet can have an itemController', function(assert) {
-  expectDeprecation(function() {
-    templates.index = compile(`
-      {{#each model itemController='thing'}}
-        <p>hi</p>
-      {{/each}}
-    `);
-  }, `Using 'itemController' with '{{each}}' (L2:C20) is deprecated.  Please refactor to a component.`);
-
-  App.IndexController = Controller.extend({
-    model: emberA([1, 2, 3])
-  });
-
-  App.ThingController = Controller.extend();
-
-  bootApp();
-
-  assert.equal($fixture.find('p').length, 3, 'the {{#each}} rendered without raising an exception');
 });
 
 function bootApp() {

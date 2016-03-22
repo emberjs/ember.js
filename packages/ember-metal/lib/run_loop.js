@@ -423,17 +423,21 @@ run.scheduleOnce = function(/*queue, target, method*/) {
   after all DOM element operations have completed within the current
   run loop, you can make use of the `afterRender` run loop queue (added
   by the `ember-views` package, along with the preceding `render` queue
-  where all the DOM element operations happen). Example:
+  where all the DOM element operations happen).
+
+  Example:
 
   ```javascript
-  App.MyCollectionView = Ember.CollectionView.extend({
-    didInsertElement: function() {
+  export default Ember.Component.extend({
+    didInsertElement() {
+      this._super(...arguments);
       run.scheduleOnce('afterRender', this, 'processChildElements');
     },
-    processChildElements: function() {
-      // ... do something with collectionView's child view
+
+    processChildElements() {
+      // ... do something with component's child component
       // elements after they've finished rendering, which
-      // can't be done within the CollectionView's
+      // can't be done within this component's
       // `didInsertElement` hook because that gets run
       // before the child elements have been added to the DOM.
     }
