@@ -1,4 +1,4 @@
-import { assert, deprecate, warn } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 
 /**
 @module ember
@@ -34,12 +34,6 @@ DSL.prototype = {
 
         return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
       })()
-    );
-
-    warn(
-      `Using a route named 'select' (and defining a App.SelectView) will prevent you from using {{view 'select'}}`,
-      name !== 'select',
-      { id: 'ember-routing.dsl-select-route' }
     );
 
     if (this.enableLoadingSubstates) {

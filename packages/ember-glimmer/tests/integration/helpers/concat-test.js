@@ -27,6 +27,13 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
     this.runTask(() => set(this.context, 'second', 'four'));
 
     this.assertText('threefour');
+
+    this.runTask(() => {
+      set(this.context, 'first', 'one');
+      set(this.context, 'second', 'two');
+    });
+
+    this.assertText('onetwo');
   }
 
   ['@test it can be used as a sub-expression']() {
@@ -43,12 +50,24 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
     this.assertText('onetwothreefour');
 
+    this.runTask(() => set(this.context, 'first', 'five'));
+
+    this.assertText('fivetwothreefour');
+
     this.runTask(() => {
-      set(this.context, 'first', 'five');
-      set(this.context, 'third', 'six');
+      set(this.context, 'second', 'six');
+      set(this.context, 'third', 'seven');
     });
 
-    this.assertText('fivetwosixfour');
+    this.assertText('fivesixsevenfour');
+
+    this.runTask(() => {
+      set(this.context, 'first', 'one');
+      set(this.context, 'second', 'two');
+      set(this.context, 'third', 'three');
+    });
+
+    this.assertText('onetwothreefour');
   }
 
   ['@test it can be used as input for other helpers']() {
@@ -68,6 +87,10 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
     this.runTask(() => set(this.context, 'first', 'three'));
 
     this.assertText('False');
+
+    this.runTask(() => set(this.context, 'first', 'one'));
+
+    this.assertText('Truthy!');
   }
 
 });

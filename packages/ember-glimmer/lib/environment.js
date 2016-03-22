@@ -1,69 +1,35 @@
-import { Environment, ConditionalReference } from 'glimmer-runtime';
-import { get } from 'ember-metal/property_get';
+import { Environment } from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
-import { toBool as emberToBool } from './helpers/if-unless';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
+import { DynamicComponentSyntax } from './components/dynamic-component';
+import { OutletSyntax } from './components/outlet';
 import lookupComponent from './utils/lookup-component';
-
-// @implements PathReference
-export class RootReference {
-  constructor(value) {
-    this._value = value;
-  }
-
-  value() {
-    return this._value;
-  }
-
-  isDirty() {
-    return true;
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
-  }
-
-  destroy() {
-  }
-}
-
-// @implements PathReference
-class PropertyReference {
-  constructor(parentReference, propertyKey) {
-    this._parentReference = parentReference;
-    this._propertyKey = propertyKey;
-  }
-
-  value() {
-    return get(this._parentReference.value(), this._propertyKey);
-  }
-
-  isDirty() {
-    return true;
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
-  }
-
-  destroy() {
-  }
-}
+import createIterable from './utils/iterable';
+import {
+  RootReference,
+  ConditionalReference,
+  SimpleHelperReference,
+  ClassBasedHelperReference
+} from './utils/references';
 
 import { default as concat } from './helpers/concat';
+import {
+  inlineIf,
+  inlineUnless
+} from './helpers/if-unless';
 
-const helpers = {
-  concat
+import { default as hash } from './helpers/hash';
+import { default as loc } from './helpers/loc';
+import { default as log } from './helpers/log';
+
+const builtInHelpers = {
+  concat,
+  if: inlineIf,
+  unless: inlineUnless,
+  hash,
+  loc,
+  log
 };
-
-class EmberConditionalReference extends ConditionalReference {
-  toBool(predicate) {
-    return emberToBool(predicate);
-  }
-}
-
-const VIEW_KEYWORD = 'view'; // legacy ? 'view' : symbol('view');
-const KEYWORDS = [VIEW_KEYWORD];
 
 export default class extends Environment {
   constructor({ dom, owner }) {
@@ -83,11 +49,17 @@ export default class extends Environment {
       templates
     } = statement;
 
-    if (isSimple && (isInline || isBlock) && key.indexOf('-') >= 0) {
-      let definition = this.getComponentDefinition(path);
+    if (isSimple && (isInline || isBlock)) {
+      if (key === 'component') {
+        return new DynamicComponentSyntax({ args, templates });
+      } else if (key === 'outlet') {
+        return new OutletSyntax({ args });
+      } else if (key.indexOf('-') >= 0) {
+        let definition = this.getComponentDefinition(path);
 
-      if (definition) {
-        return new CurlyComponentSyntax({ args, definition, templates });
+        if (definition) {
+          return new CurlyComponentSyntax({ args, definition, templates });
+        }
       }
     }
 
@@ -112,31 +84,22 @@ export default class extends Environment {
     return definition;
   }
 
-  getKeywords() {
-    return KEYWORDS;
-  }
-
   hasHelper(name) {
-    if (typeof helpers[name[0]] === 'function') {
-      return true;
-    } else {
-      return this.owner.hasRegistration(`helper:${name}`);
-    }
+    return !!builtInHelpers[name[0]] || this.owner.hasRegistration(`helper:${name}`);
   }
 
   lookupHelper(name) {
-    if (typeof helpers[name[0]] === 'function') {
-      return helpers[name[0]];
-    } else {
-      let helper = this.owner.lookup(`helper:${name}`);
+    let helper = builtInHelpers[name[0]] || this.owner.lookup(`helper:${name}`);
 
-      if (helper && helper.isHelperInstance) {
-        return helper.compute;
-      } else if (helper && helper.isHelperFactory) {
-        throw new Error(`Not implemented: ${name} is a class-based helpers`);
-      } else {
-        throw new Error(`${name} is not a helper`);
-      }
+    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
+    if (helper.isInternalHelper) {
+      return (args) => helper.toReference(args);
+    } else if (helper.isHelperInstance) {
+      return (args) => new SimpleHelperReference(helper.compute, args);
+    } else if (helper.isHelperFactory) {
+      return (args) => new ClassBasedHelperReference(helper.create(), args);
+    } else {
+      throw new Error(`${name} is not a helper`);
     }
   }
 
@@ -145,6 +108,11 @@ export default class extends Environment {
   }
 
   toConditionalReference(reference) {
-    return new EmberConditionalReference(reference);
+    return new ConditionalReference(reference);
+  }
+
+  iterableFor(ref, args) {
+    let keyPath = args.named.get('key').value();
+    return createIterable(ref, keyPath);
   }
 }

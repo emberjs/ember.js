@@ -1,4 +1,5 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
+import { applyMixins } from '../utils/abstract-test-case';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import EmberObject from 'ember-runtime/system/object';
@@ -58,59 +59,65 @@ moduleFor('Static content tests', class extends RenderingTest {
 
 });
 
-moduleFor('Dynamic content tests', class extends RenderingTest {
+class DynamicContentTest extends RenderingTest {
 
-  ['@test it can render a dynamic text node']() {
-    this.render('{{message}}', {
-      message: 'hello'
-    });
-    let text1 = this.assertTextNode(this.firstChild, 'hello');
+  /* abstract */
+  renderPath(path, context = {}) {
+    throw new Error('Not implemented: `renderValues`');
+  }
 
-    this.runTask(() => this.rerender());
+  assertIsEmpty() {
+    this.assertText('');
+  }
 
-    let text2 = this.assertTextNode(this.firstChild, 'hello');
+  ['@test it can render a dynamic path']() {
+    this.renderPath('message', { message: 'hello' });
 
-    this.assertSameNode(text1, text2);
+    this.assertText('hello');
+
+    this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'message', 'goodbye'));
 
-    let text3 = this.assertTextNode(this.firstChild, 'goodbye');
-
-    this.assertSameNode(text1, text3);
+    this.assertText('goodbye');
+    this.assertInvariants();
 
     this.runTask(() => set(this.context, 'message', 'hello'));
 
-    let text4 = this.assertTextNode(this.firstChild, 'hello');
-
-    this.assertSameNode(text1, text4);
+    this.assertText('hello');
+    this.assertInvariants();
   }
 
-  ['@test it can render a dynamic text node with deeply nested paths']() {
-    this.render('{{a.b.c.d.e.f}}', {
+  ['@test it can render a deeply nested dynamic path']() {
+    this.renderPath('a.b.c.d.e.f', {
       a: { b: { c: { d: { e: { f: 'hello' } } } } }
     });
-    let text1 = this.assertTextNode(this.firstChild, 'hello');
 
-    this.runTask(() => this.rerender());
+    this.assertText('hello');
 
-    let text2 = this.assertTextNode(this.firstChild, 'hello');
-
-    this.assertSameNode(text1, text2);
+    this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
 
-    let text3 = this.assertTextNode(this.firstChild, 'goodbye');
+    this.assertText('goodbye');
+    this.assertInvariants();
 
-    this.assertSameNode(text1, text3);
+    this.runTask(() => set(this.context, 'a.b.c.d', { e: { f: 'aloha' } }));
 
-    this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'hello'));
+    this.assertText('aloha');
+    this.assertInvariants();
 
-    let text4 = this.assertTextNode(this.firstChild, 'hello');
+    this.runTask(() => {
+      set(this.context, 'a',
+        { b: { c: { d: { e: { f: 'hello' } } } } }
+      );
+    });
 
-    this.assertSameNode(text1, text4);
+    this.assertText('hello');
+    this.assertInvariants();
   }
 
-  ['@test it can render a dynamic text node where the value is a computed property']() {
+  ['@test it can render a computed property']() {
     let Formatter = EmberObject.extend({
       formattedMessage: computed('message', function() {
         return this.get('message').toUpperCase();
@@ -119,60 +126,153 @@ moduleFor('Dynamic content tests', class extends RenderingTest {
 
     let m = Formatter.create({ message: 'hello' });
 
-    this.render('{{m.formattedMessage}}', { m });
+    this.renderPath('m.formattedMessage', { m });
 
-    let text1 = this.assertTextNode(this.firstChild, 'HELLO');
+    this.assertText('HELLO');
 
-    this.runTask(() => this.rerender());
-
-    let text2 = this.assertTextNode(this.firstChild, 'HELLO');
-
-    this.assertSameNode(text1, text2);
+    this.assertStableRerender();
 
     this.runTask(() => set(m, 'message', 'goodbye'));
 
-    let text3 = this.assertTextNode(this.firstChild, 'GOODBYE');
+    this.assertText('GOODBYE');
+    this.assertInvariants();
 
-    this.assertSameNode(text1, text3);
+    this.runTask(() => set(this.context, 'm', Formatter.create({ message: 'hello' })));
 
-    this.runTask(() => set(m, 'message', 'hello'));
-
-    let text4 = this.assertTextNode(this.firstChild, 'HELLO');
-
-    this.assertSameNode(text1, text4);
+    this.assertText('HELLO');
+    this.assertInvariants();
   }
 
-  ['@test it can render a dynamic element']() {
-    this.render('<p>{{message}}</p>', {
-      message: 'hello'
-    });
-    let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
-    let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
+}
 
-    this.runTask(() => this.rerender());
+const EMPTY = {};
 
-    let p2 = this.assertElement(this.firstChild, { tagName: 'p' });
-    let text2 = this.assertTextNode(this.firstChild.firstChild, 'hello');
-
-    this.assertSameNode(p1, p2);
-    this.assertSameNode(text1, text2);
-
-    this.runTask(() => set(this.context, 'message', 'goodbye'));
-
-    let p3 = this.assertElement(this.firstChild, { tagName: 'p' });
-    let text3 = this.assertTextNode(this.firstChild.firstChild, 'goodbye');
-
-    this.assertSameNode(p1, p3);
-    this.assertSameNode(text1, text3);
-
-    this.runTask(() => set(this.context, 'message', 'hello'));
-
-    let p4 = this.assertElement(this.firstChild, { tagName: 'p' });
-    let text4 = this.assertTextNode(this.firstChild.firstChild, 'hello');
-
-    this.assertSameNode(p1, p4);
-    this.assertSameNode(text1, text4);
+class ContentTestGenerator {
+  constructor(cases, tag = '@test') {
+    this.cases = cases;
+    this.tag = tag;
   }
+
+  generate([ value, expected, label ]) {
+    let tag = this.tag;
+    label = label || value;
+
+    if (expected === EMPTY) {
+      return {
+
+        [`${tag} rendering ${label}`]() {
+          this.renderPath('value', { value });
+
+          this.assertIsEmpty();
+
+          this.runTask(() => set(this.context, 'value', 'hello'));
+
+          this.assertText('hello');
+
+          this.runTask(() => set(this.context, 'value', value));
+
+          this.assertIsEmpty();
+        }
+
+      };
+    } else {
+      return {
+
+        [`${tag} rendering ${label}`]() {
+          this.renderPath('value', { value });
+
+          this.assertText(expected);
+
+          this.assertStableRerender();
+
+          this.runTask(() => set(this.context, 'value', 'hello'));
+
+          this.assertText('hello');
+          this.assertInvariants();
+
+          this.runTask(() => set(this.context, 'value', value));
+
+          this.assertText(expected);
+          this.assertInvariants();
+        }
+
+      };
+    }
+  }
+}
+
+const SharedContentTestCases = new ContentTestGenerator([
+
+  ['foo', 'foo'],
+  [0, '0'],
+  [-0, '0', '-0'],
+  [1, '1'],
+  [-1, '-1'],
+  [0.0, '0', '0.0'],
+  [0.5, '0.5'],
+  [undefined, EMPTY],
+  [null, EMPTY],
+  [true, 'true'],
+  [false, 'false'],
+  [NaN, 'NaN'],
+  [new Date(2000, 0, 1), String(new Date(2000, 0, 1)), 'a Date object'],
+  [Infinity, 'Infinity'],
+  [(1 / -0), '-Infinity'],
+  [{ foo: 'bar' }, '[object Object]', `{ foo: 'bar' }`],
+  [{ toString() { return 'foo'; } }, 'foo', 'an object with a custom toString function'],
+  [{ valueOf() { return 1; } }, '[object Object]', 'an object with a custom valueOf function']
+
+]);
+
+let GlimmerContentTestCases = new ContentTestGenerator([
+
+  [Object.create(null), EMPTY, 'an object with no toString']
+
+], '@glimmer');
+
+if (typeof Symbol !== 'undefined') {
+  GlimmerContentTestCases.cases.push([Symbol('debug'), 'Symbol(debug)', 'a symbol']);
+}
+
+applyMixins(DynamicContentTest, SharedContentTestCases, GlimmerContentTestCases);
+
+moduleFor('Dynamic content tests (content position)', class extends DynamicContentTest {
+
+  renderPath(path, context = {}) {
+    this.render(`{{${path}}}`, context);
+  }
+
+});
+
+moduleFor('Dynamic content tests (content concat)', class extends DynamicContentTest {
+
+  renderPath(path, context = {}) {
+    this.render(`{{concat "" ${path} ""}}`, context);
+  }
+
+});
+
+moduleFor('Dynamic content tests (inside an element)', class extends DynamicContentTest {
+
+  renderPath(path, context = {}) {
+    this.render(`<p>{{${path}}}</p>`, context);
+  }
+
+});
+
+moduleFor('Dynamic content tests (attribute position)', class extends DynamicContentTest {
+
+  renderPath(path, context = {}) {
+    this.render(`<div data-foo="{{${path}}}"></div>`, context);
+  }
+
+  textValue() {
+    return this.$('div').attr('data-foo');
+  }
+
+});
+
+moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
 
   ['@test it can render a dynamic template']() {
     let template = `

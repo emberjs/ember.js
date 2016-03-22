@@ -1220,11 +1220,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
     this.setupController(controller, context, transition);
 
-    if (isEnabled('ember-application-visit')) {
-      if (!this._environment || this._environment.options.shouldRender) {
-        this.renderTemplate(controller, context);
-      }
-    } else {
+    if (!this._environment || this._environment.options.shouldRender) {
       this.renderTemplate(controller, context);
     }
   },
@@ -1923,7 +1919,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     //
     this.render('post', {  // the template name associated with 'post' Route
       into: 'application', // the parent route to 'post' Route
-      outlet: 'main',      // {{outlet}} and {{outlet 'main' are synonymous}},
+      outlet: 'main',      // {{outlet}} and {{outlet 'main'}} are synonymous,
       view: 'post',        // the view associated with the 'post' Route
       controller: 'post',  // the controller associated with the 'post' Route
     })
@@ -2156,7 +2152,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     name,
     controller,
     ViewClass,
-    template
+    template: template || route._topLevelViewTemplate
   };
 
   let Component;

@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core';
 import EmberComponent from 'ember-views/components/component';
 import EmberView from 'ember-views/views/view';
-import EmberSelectView from 'ember-views/views/select';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 import { OWNER } from 'container/owner';
@@ -100,19 +99,4 @@ QUnit.test('using the view helper with a string (block form) fails assertion [LE
   });
 
   assert.equal(component.$().text(), 'Foo says: I am foo', 'view helper is still rendered');
-});
-
-QUnit.test('using the view helper with string "select" fails assertion [LEGACY]', function(assert) {
-  owner.register('view:select', EmberSelectView);
-
-  ignoreAssertion(function() {
-    component = EmberComponent.extend({
-      [OWNER]: owner,
-      layout: compile('{{view \'select\'}}')
-    }).create();
-
-    runAppend(component);
-  });
-
-  assert.ok(!!component.$('select').length, 'still renders select');
 });

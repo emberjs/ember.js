@@ -77,10 +77,17 @@ discussion at [discuss.emberjs.com](http://discuss.emberjs.com)
 Building Ember is quite simple.
 
 ```sh
-cd ember.js
-npm install
-bower install
-npm run-script build
+clone the latest ember.js directory from github
+ - git clone https://github.com/emberjs/ember.js.git
+
+cd to the cloned ember.js directory
+ - cd ember.js
+
+ensure Node.js, npm, and bower are installed
+
+follow these commands to build ember.js
+ - bower install
+ - npm run-script build
 ```
 
 # Pull Requests

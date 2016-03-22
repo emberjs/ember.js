@@ -78,11 +78,6 @@ export default {
     var outletName = read(params[0]) || 'main';
     var selectedOutletState = outletState[outletName];
 
-    var toRender = selectedOutletState && selectedOutletState.render;
-    if (toRender && !toRender.template && !toRender.ViewClass) {
-      toRender.template = topLevelViewTemplate;
-    }
-
     return {
       outletState: selectedOutletState,
       hasParentOutlet: env.hasParentOutlet,

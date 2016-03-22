@@ -212,9 +212,9 @@ var EmberRouter = EmberObject.extend(Evented, {
         this._super(...arguments);
 
         return ga('send', 'pageview', {
-            'page': this.get('url'),
-            'title': this.get('url')
-          });
+          'page': this.get('url'),
+          'title': this.get('url')
+        });
       }
     });
     ```
@@ -270,10 +270,12 @@ var EmberRouter = EmberObject.extend(Evented, {
       let owner = getOwner(this);
       var OutletView = owner._lookupFactory('view:-outlet');
       this._toplevelView = OutletView.create();
+      this._toplevelView.setOutletState(liveRoutes);
       var instance = owner.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
+    } else {
+      this._toplevelView.setOutletState(liveRoutes);
     }
-    this._toplevelView.setOutletState(liveRoutes);
   },
 
   /**

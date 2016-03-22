@@ -10,19 +10,6 @@ for a detailed explanation.
   Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
   a library is registered with Ember or not.
 
-* `ember-application-visit`
-
-  Provides an API for creating an application instance and specifying
-  an initial URL that it should route to. This is useful for testing
-  (you can have multiple instances of an app without having to run
-  serially and call `reset()` each time), as well as being critical to
-  for FastBoot.
-
-* `ember-debug-handlers`
-
-  Implements RFC https://github.com/emberjs/rfcs/pull/65, adding support for
-  custom deprecation and warning handlers.
-
 * `ember-routing-routable-components`
 
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
@@ -31,22 +18,6 @@ for a detailed explanation.
 * `ember-metal-ember-assign`
 
   Add `Ember.assign` that is polyfill for `Object.assign`.
-
-* `ember-contextual-components`
-
-  Introduce a helper that creates closures over attrs and its own path, then
-  allow the closed over cell to be invoked via the `{{component` helper or
-  any reference with a dot in the path.
-
-  For example:
-
-  ```js
-  {{#with (hash profile=(component "user-profile")) as |userComponents|}}
-    {{userComponents.profile}}
-  {{/with}}
-  ```
-
-  Implements RFC [#64](https://github.com/emberjs/rfcs/blob/master/text/0064-contextual-component-lookup.md)
 
 * `ember-htmlbars-local-lookup`
 

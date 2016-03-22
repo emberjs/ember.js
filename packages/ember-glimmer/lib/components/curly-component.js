@@ -1,27 +1,31 @@
 import { StatementSyntax } from 'glimmer-runtime';
 
 export class CurlyComponentSyntax extends StatementSyntax {
-  constructor(options) {
+  constructor({ args, definition, templates }) {
     super();
-    this.options = options;
+    this.args = args;
+    this.definition = definition;
+    this.templates = templates;
+    this.shadow = null;
   }
 
   compile(builder) {
-    builder.openComponent(this.options);
-    builder.closeComponent();
+    builder.component.static(this);
   }
 }
 
 import assign from 'ember-metal/assign';
 
 class CurlyComponentManager {
-  create(definition, args, keywords) {
+  create(definition, args, dynamicScope) {
     let klass = definition.ComponentClass;
-    let attrs = args.value();
+    let attrs = args.named.value();
     let merged = assign({}, attrs, { attrs });
     let component = klass.create(merged);
+    let parentView = dynamicScope.view;
 
-    keywords.get('view').value().appendChild(component);
+    dynamicScope.view = component;
+    parentView.appendChild(component);
 
     // component.didInitAttrs({ attrs });
     // component.didReceiveAttrs({ oldAttrs: null, newAttrs: attrs });
@@ -37,19 +41,18 @@ class CurlyComponentManager {
 
   didCreateElement(component, element) {
     component.element = element;
-    // component._transitionTo('hasElement');
+    component._transitionTo('hasElement');
   }
-
 
   didCreate(component) {
     // component.didInsertElement();
     // component.didRender();
-    // component._transitionTo('inDOM');
+    component._transitionTo('inDOM');
   }
 
-  update(component, args, keywords) {
+  update(component, args, dynamicScope) {
     // let oldAttrs = component.attrs;
-    let newAttrs = args.value();
+    let newAttrs = args.named.value();
     let merged = assign({}, newAttrs, { attrs: newAttrs });
 
     component.setProperties(merged);
@@ -63,22 +66,30 @@ class CurlyComponentManager {
     // component.didUpdate();
     // component.didRender();
   }
+
+  getDestructor(component) {
+    return component;
+  }
 }
 
 const MANAGER = new CurlyComponentManager();
 
 import { ComponentDefinition, ValueReference } from 'glimmer-runtime';
-import Component from 'ember-views/components/component';
+import Component from '../ember-views/component';
 
-function elementId(vm) {
-  return new ValueReference(getCurrentComponentReference(vm).value().elementId);
+function tagName(vm) {
+  let { tagName } = vm.dynamicScope().view;
+
+  if (tagName === '') {
+    throw new Error('Not implemented: fragments (`tagName: ""`)');
+  }
+
+  return new ValueReference(tagName || 'div');
 }
 
-// This code assumes that `self` is always the current component, which isn't
-// true in the case of a defined `view.context`. The information is available
-// inside the VM but not yet exposed to Ember.
-function getCurrentComponentReference(vm) {
-  return vm.getSelf();
+function elementId(vm) {
+  let component = vm.dynamicScope().view;
+  return new ValueReference(component.elementId);
 }
 
 export class CurlyComponentDefinition extends ComponentDefinition {
@@ -87,14 +98,9 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     this.template = template;
   }
 
-  getLayout() {
-    return this.template.asLayout();
-  }
-
   compile(builder) {
-    builder.bindKeywords({ view: getCurrentComponentReference });
-    builder.wrapLayout(this.getLayout());
-    builder.tag.static('div');
+    builder.wrapLayout(this.template.asLayout());
+    builder.tag.dynamic(tagName);
     builder.attrs.dynamic('id', elementId);
     builder.attrs.static('class', 'ember-view');
   }

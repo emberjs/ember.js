@@ -360,11 +360,8 @@ if (has('ember-debug')) {
   require('ember-debug');
 } else {
   Ember.Debug = { };
-
-  if (isEnabled('ember-debug-handlers')) {
-    Ember.Debug.registerDeprecationHandler = function() { };
-    Ember.Debug.registerWarnHandler = function() { };
-  }
+  Ember.Debug.registerDeprecationHandler = function() { };
+  Ember.Debug.registerWarnHandler = function() { };
 }
 
 Ember.create = deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);

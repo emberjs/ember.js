@@ -1,5 +1,6 @@
 import { set } from 'ember-metal/property_set';
 import Component from 'ember-views/components/component';
+import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
@@ -14,6 +15,53 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
+  }
+
+  ['@test it can have a custom tagName']() {
+    let FooBarComponent = Component.extend({
+      tagName: 'foo-bar'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+  }
+
+  ['@test it can have a custom tagName set in the constructor']() {
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super();
+        this.tagName = 'foo-bar';
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+  }
+
+  ['@test it can have a custom tagName from the invocation']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar tagName="foo-bar"}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
   ['@test it has an element']() {
@@ -43,7 +91,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@htmlbars it has a jQuery proxy to the element'](assert) {
+  ['@test it has a jQuery proxy to the element'](assert) {
     let instance;
 
     let FooBarComponent = Component.extend({
@@ -70,7 +118,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@htmlbars it scopes the jQuery proxy to the component element'](assert) {
+  ['@test it scopes the jQuery proxy to the component element'](assert) {
     let instance;
 
     let FooBarComponent = Component.extend({
@@ -196,6 +244,78 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => set(this.context, 'message', 'hello'));
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
+  }
+
+  ['@test the component and its child components are destroyed'](assert) {
+    let destroyed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+
+    this.registerComponent('foo-bar', {
+      template: '{{id}} {{yield}}',
+      ComponentClass: Component.extend({
+        willDestroy() {
+          this._super();
+          destroyed[this.get('id')]++;
+        }
+      })
+    });
+
+    this.render(strip`
+      {{#if cond1}}
+        {{#foo-bar id=1}}
+          {{#if cond2}}
+            {{#foo-bar id=2}}{{/foo-bar}}
+            {{#if cond3}}
+              {{#foo-bar id=3}}
+                {{#if cond4}}
+                  {{#foo-bar id=4}}
+                    {{#if cond5}}
+                      {{#foo-bar id=5}}{{/foo-bar}}
+                      {{#foo-bar id=6}}{{/foo-bar}}
+                      {{#foo-bar id=7}}{{/foo-bar}}
+                    {{/if}}
+                    {{#foo-bar id=8}}{{/foo-bar}}
+                  {{/foo-bar}}
+                {{/if}}
+              {{/foo-bar}}
+            {{/if}}
+          {{/if}}
+        {{/foo-bar}}
+      {{/if}}`,
+      {
+        cond1: true,
+        cond2: true,
+        cond3: true,
+        cond4: true,
+        cond5: true
+      }
+    );
+
+    this.assertText('1 2 3 4 5 6 7 8 ');
+
+    this.runTask(() => this.rerender());
+
+    assert.deepEqual(destroyed, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 });
+
+    this.runTask(() => set(this.context, 'cond5', false));
+
+    this.assertText('1 2 3 4 8 ');
+
+    assert.deepEqual(destroyed, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 1, 6: 1, 7: 1, 8: 0 });
+
+    this.runTask(() => {
+      set(this.context, 'cond3', false);
+      set(this.context, 'cond5', true);
+      set(this.context, 'cond4', false);
+    });
+
+    assert.deepEqual(destroyed, { 1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 });
+
+    this.runTask(() => {
+      set(this.context, 'cond2', false);
+      set(this.context, 'cond1', false);
+    });
+
+    assert.deepEqual(destroyed, { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 });
   }
 
 });

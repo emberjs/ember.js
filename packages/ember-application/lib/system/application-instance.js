@@ -4,9 +4,9 @@
 */
 
 import { deprecate } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
+import symbol from 'ember-metal/symbol';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
@@ -18,6 +18,7 @@ import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
 import EngineInstance from './engine-instance';
 
+export const INTERNAL_BOOT_OPTIONS = symbol('INTERNAL_BOOT_OPTIONS');
 
 let BootOptions;
 
@@ -81,12 +82,6 @@ const ApplicationInstance = EngineInstance.extend({
   init() {
     this._super(...arguments);
 
-    let application = this.application;
-
-    if (!isEnabled('ember-application-visit')) {
-      set(this, 'rootElement', get(application, 'rootElement'));
-    }
-
     // Register this instance in the per-instance registry.
     //
     // Why do we need to register the instance in the first place?
@@ -136,43 +131,31 @@ const ApplicationInstance = EngineInstance.extend({
   _bootSync(options) {
     if (this._booted) { return this; }
 
-    if (isEnabled('ember-application-visit')) {
-      options = new BootOptions(options);
+    options = new BootOptions(options);
 
-      let registry = this.__registry__;
+    let registry = this.__registry__;
 
-      registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
-      registry.injection('view', '_environment', '-environment:main');
-      registry.injection('route', '_environment', '-environment:main');
+    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
+    registry.injection('view', '_environment', '-environment:main');
+    registry.injection('route', '_environment', '-environment:main');
 
-      registry.register('renderer:-dom', {
-        create() {
-          return new Renderer(new DOMHelper(options.document), { destinedForDOM: options.isInteractive });
-        }
-      });
+    registry.register('renderer:-dom', options.renderer);
 
-      if (options.rootElement) {
-        this.rootElement = options.rootElement;
-      } else {
-        this.rootElement = this.application.rootElement;
-      }
-
-      if (options.location) {
-        let router = get(this, 'router');
-        set(router, 'location', options.location);
-      }
-
-      this.application.runInstanceInitializers(this);
-
-      if (options.isInteractive) {
-        this.setupEventDispatcher();
-      }
+    if (options.rootElement) {
+      this.rootElement = options.rootElement;
     } else {
-      this.application.runInstanceInitializers(this);
+      this.rootElement = this.application.rootElement;
+    }
 
-      if (environment.hasDOM) {
-        this.setupEventDispatcher();
-      }
+    if (options.location) {
+      let router = get(this, 'router');
+      set(router, 'location', options.location);
+    }
+
+    this.application.runInstanceInitializers(this);
+
+    if (options.isInteractive) {
+      this.setupEventDispatcher();
     }
 
     this._booted = true;
@@ -256,260 +239,271 @@ const ApplicationInstance = EngineInstance.extend({
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
+  },
+
+  /**
+    Returns the current URL of the app instance. This is useful when your
+    app does not update the browsers URL bar (i.e. it uses the `'none'`
+    location adapter).
+
+    @public
+    @return {String} the current URL
+  */
+  getURL() {
+    let router = get(this, 'router');
+    return get(router, 'url');
+  },
+
+  // `instance.visit(url)` should eventually replace `instance.handleURL()`;
+  // the test helpers can probably be switched to use this implementation too
+
+  /**
+    Navigate the instance to a particular URL. This is useful in tests, for
+    example, or to tell the app to start at a particular URL. This method
+    returns a promise that resolves with the app instance when the transition
+    is complete, or rejects if the transion was aborted due to an error.
+
+    @public
+    @param url {String} the destination URL
+    @return {Promise}
+  */
+  visit(url) {
+    this.setupRouter();
+
+    let router = get(this, 'router');
+
+    let handleResolve = () => {
+      // Resolve only after rendering is complete
+      return new RSVP.Promise((resolve) => {
+        // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
+        // Also, aren't proimses supposed to be async anyway?
+        run.next(null, resolve, this);
+      });
+    };
+
+    let handleReject = (error) => {
+      if (error.error) {
+        throw error.error;
+      } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
+        return router.router.activeTransition.then(handleResolve, handleReject);
+      } else if (error.name === 'TransitionAborted') {
+        throw new Error(error.message);
+      } else {
+        throw error;
+      }
+    };
+
+    // Keeps the location adapter's internal URL in-sync
+    get(router, 'location').setURL(url);
+
+    return router.handleURL(url).then(handleResolve, handleReject);
   }
 });
 
-if (isEnabled('ember-application-visit')) {
-  ApplicationInstance.reopen({
-    /**
-      Returns the current URL of the app instance. This is useful when your
-      app does not update the browsers URL bar (i.e. it uses the `'none'`
-      location adapter).
+/**
+  A list of boot-time configuration options for customizing the behavior of
+  an `Ember.ApplicationInstance`.
 
-      @public
-      @return {String} the current URL
-    */
-    getURL() {
-      let router = get(this, 'router');
-      return get(router, 'url');
-    },
+  This is an interface class that exists purely to document the available
+  options; you do not need to construct it manually. Simply pass a regular
+  JavaScript object containing the desired options into methods that require
+  one of these options object:
 
-    // `instance.visit(url)` should eventually replace `instance.handleURL()`;
-    // the test helpers can probably be switched to use this implementation too
+  ```javascript
+  MyApp.visit("/", { location: "none", rootElement: "#container" });
+  ```
 
-    /**
-      Navigate the instance to a particular URL. This is useful in tests, for
-      example, or to tell the app to start at a particular URL. This method
-      returns a promise that resolves with the app instance when the transition
-      is complete, or rejects if the transion was aborted due to an error.
+  Not all combinations of the supported options are valid. See the documentation
+  on `Ember.Application#visit` for the supported configurations.
 
-      @public
-      @param url {String} the destination URL
-      @return {Promise}
-    */
-    visit(url) {
-      this.setupRouter();
+  Internal, experimental or otherwise unstable flags are marked as private.
 
-      let router = get(this, 'router');
+  @class BootOptions
+  @namespace Ember.ApplicationInstance
+  @public
+*/
+BootOptions = function BootOptions(options = {}) {
+  let internalOptions = options[INTERNAL_BOOT_OPTIONS] || {};
 
-      let handleResolve = () => {
-        // Resolve only after rendering is complete
-        return new RSVP.Promise((resolve) => {
-          // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
-          // Also, aren't proimses supposed to be async anyway?
-          run.next(null, resolve, this);
-        });
-      };
-
-      let handleReject = (error) => {
-        if (error.error) {
-          throw error.error;
-        } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
-          return router.router.activeTransition.then(handleResolve, handleReject);
-        } else if (error.name === 'TransitionAborted') {
-          throw new Error(error.message);
-        } else {
-          throw error;
-        }
-      };
-
-      // Keeps the location adapter's internal URL in-sync
-      get(router, 'location').setURL(url);
-
-      return router.handleURL(url).then(handleResolve, handleReject);
-    }
-  });
+  this.renderer = null;
 
   /**
-    A list of boot-time configuration options for customizing the behavior of
-    an `Ember.ApplicationInstance`.
+    Provide a specific instance of jQuery. This is useful in conjunction with
+    the `document` option, as it allows you to use a copy of `jQuery` that is
+    appropriately bound to the foreign `document` (e.g. a jsdom).
 
-    This is an interface class that exists purely to document the available
-    options; you do not need to construct it manually. Simply pass a regular
-    JavaScript object containing the desired options into methods that require
-    one of these options object:
+    This is highly experimental and support very incomplete at the moment.
 
-    ```javascript
-    MyApp.visit("/", { location: "none", rootElement: "#container" });
-    ```
+    @property jQuery
+    @type Object
+    @default auto-detected
+    @private
+  */
+  this.jQuery = jQuery; // This default is overridable below
 
-    Not all combinations of the supported options are valid. See the documentation
-    on `Ember.Application#visit` for the supported configurations.
+  /**
+    Interactive mode: whether we need to set up event delegation and invoke
+    lifecycle callbacks on Components.
 
-    Internal, experimental or otherwise unstable flags are marked as private.
+    @property isInteractive
+    @type boolean
+    @default auto-detected
+    @private
+  */
+  this.isInteractive = environment.hasDOM; // This default is overridable below
 
-    @class BootOptions
-    @namespace Ember.ApplicationInstance
+  /**
+    Run in a full browser environment.
+
+    When this flag is set to `false`, it will disable most browser-specific
+    and interactive features. Specifically:
+
+    * It does not use `jQuery` to append the root view; the `rootElement`
+      (either specified as a subsequent option or on the application itself)
+      must already be an `Element` in the given `document` (as opposed to a
+      string selector).
+
+    * It does not set up an `EventDispatcher`.
+
+    * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
+
+    * It sets the `location` option to `"none"`. (If you would like to use
+      the location adapter specified in the app's router instead, you can also
+      specify `{ location: null }` to specifically opt-out.)
+
+    @property isBrowser
+    @type boolean
+    @default auto-detected
     @public
   */
-  BootOptions = function BootOptions(options = {}) {
-    /**
-      Provide a specific instance of jQuery. This is useful in conjunction with
-      the `document` option, as it allows you to use a copy of `jQuery` that is
-      appropriately bound to the foreign `document` (e.g. a jsdom).
+  if (options.isBrowser !== undefined) {
+    this.isBrowser = !!options.isBrowser;
+  } else {
+    this.isBrowser = environment.hasDOM;
+  }
 
-      This is highly experimental and support very incomplete at the moment.
+  if (!this.isBrowser) {
+    this.jQuery = null;
+    this.isInteractive = false;
+    this.location = 'none';
+  }
 
-      @property jQuery
-      @type Object
-      @default auto-detected
-      @private
-    */
-    this.jQuery = jQuery; // This default is overridable below
+  /**
+    Disable rendering completely.
 
-    /**
-      Interactive mode: whether we need to set up event delegation and invoke
-      lifecycle callbacks on Components.
+    When this flag is set to `true`, it will disable the entire rendering
+    pipeline. Essentially, this puts the app into "routing-only" mode. No
+    templates will be rendered, and no Components will be created.
 
-      @property isInteractive
-      @type boolean
-      @default auto-detected
-      @private
-    */
-    this.isInteractive = environment.hasDOM; // This default is overridable below
+    @property shouldRender
+    @type boolean
+    @default true
+    @public
+  */
+  if (options.shouldRender !== undefined) {
+    this.shouldRender = !!options.shouldRender;
+  } else {
+    this.shouldRender = true;
+  }
 
-    /**
-      Run in a full browser environment.
+  if (!this.shouldRender) {
+    this.jQuery = null;
+    this.isInteractive = false;
+  }
 
-      When this flag is set to `false`, it will disable most browser-specific
-      and interactive features. Specifically:
+  /**
+    If present, render into the given `Document` object instead of the
+    global `window.document` object.
 
-      * It does not use `jQuery` to append the root view; the `rootElement`
-        (either specified as a subsequent option or on the application itself)
-        must already be an `Element` in the given `document` (as opposed to a
-        string selector).
+    In practice, this is only useful in non-browser environment or in
+    non-interactive mode, because Ember's `jQuery` dependency is
+    implicitly bound to the current document, causing event delegation
+    to not work properly when the app is rendered into a foreign
+    document object (such as an iframe's `contentDocument`).
 
-      * It does not set up an `EventDispatcher`.
+    In non-browser mode, this could be a "`Document`-like" object as
+    Ember only interact with a small subset of the DOM API in non-
+    interactive mode. While the exact requirements have not yet been
+    formalized, the `SimpleDOM` library's implementation is known to
+    work.
 
-      * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
+    @property document
+    @type Document
+    @default the global `document` object
+    @public
+  */
+  if (options.document) {
+    this.document = options.document;
+  } else {
+    this.document = (typeof document !== 'undefined') ? document : null;
+  }
 
-      * It sets the `location` option to `"none"`. (If you would like to use
-        the location adapter specified in the app's router instead, you can also
-        specify `{ location: null }` to specifically opt-out.)
+  /**
+    If present, overrides the application's `rootElement` property on
+    the instance. This is useful for testing environment, where you
+    might want to append the root view to a fixture area.
 
-      @property isBrowser
-      @type boolean
-      @default auto-detected
-      @public
-    */
-    if (options.isBrowser !== undefined) {
-      this.isBrowser = !!options.isBrowser;
-    } else {
-      this.isBrowser = environment.hasDOM;
-    }
+    In non-browser mode, because Ember does not have access to jQuery,
+    this options must be specified as a DOM `Element` object instead of
+    a selector string.
 
-    if (!this.isBrowser) {
-      this.jQuery = null;
-      this.isInteractive = false;
-      this.location = 'none';
-    }
+    See the documentation on `Ember.Applications`'s `rootElement` for
+    details.
 
-    /**
-      Disable rendering completely.
+    @property rootElement
+    @type String|Element
+    @default null
+    @public
+   */
+  if (options.rootElement) {
+    this.rootElement = options.rootElement;
+  }
 
-      When this flag is set to `true`, it will disable the entire rendering
-      pipeline. Essentially, this puts the app into "routing-only" mode. No
-      templates will be rendered, and no Components will be created.
+  // Set these options last to give the user a chance to override the
+  // defaults from the "combo" options like `isBrowser` (although in
+  // practice, the resulting combination is probably invalid)
 
-      @property shouldRender
-      @type boolean
-      @default true
-      @public
-    */
-    if (options.shouldRender !== undefined) {
-      this.shouldRender = !!options.shouldRender;
-    } else {
-      this.shouldRender = true;
-    }
+  /**
+    If present, overrides the router's `location` property with this
+    value. This is useful for environments where trying to modify the
+    URL would be inappropriate.
 
-    if (!this.shouldRender) {
-      this.jQuery = null;
-      this.isInteractive = false;
-    }
+    @property location
+    @type string
+    @default null
+    @public
+  */
+  if (options.location !== undefined) {
+    this.location = options.location;
+  }
 
-    /**
-      If present, render into the given `Document` object instead of the
-      global `window.document` object.
+  if (options.jQuery !== undefined) {
+    this.jQuery = options.jQuery;
+  }
 
-      In practice, this is only useful in non-browser environment or in
-      non-interactive mode, because Ember's `jQuery` dependency is
-      implicitly bound to the current document, causing event delegation
-      to not work properly when the app is rendered into a foreign
-      document object (such as an iframe's `contentDocument`).
+  if (options.isInteractive !== undefined) {
+    this.isInteractive = !!options.isInteractive;
+  }
 
-      In non-browser mode, this could be a "`Document`-like" object as
-      Ember only interact with a small subset of the DOM API in non-
-      interactive mode. While the exact requirements have not yet been
-      formalized, the `SimpleDOM` library's implementation is known to
-      work.
 
-      @property document
-      @type Document
-      @default the global `document` object
-      @public
-    */
-    if (options.document) {
-      this.document = options.document;
-    } else {
-      this.document = (typeof document !== 'undefined') ? document : null;
-    }
+  if (internalOptions.renderer) {
+    this.renderer = internalOptions.renderer;
+  } else {
+    this.renderer = {
+      create() {
+        return new Renderer(new DOMHelper(options.document), { destinedForDOM: options.isInteractive });
+      }
+    };
+  }
+};
 
-    /**
-      If present, overrides the application's `rootElement` property on
-      the instance. This is useful for testing environment, where you
-      might want to append the root view to a fixture area.
-
-      In non-browser mode, because Ember does not have access to jQuery,
-      this options must be specified as a DOM `Element` object instead of
-      a selector string.
-
-      See the documentation on `Ember.Applications`'s `rootElement` for
-      details.
-
-      @property rootElement
-      @type String|Element
-      @default null
-      @public
-     */
-    if (options.rootElement) {
-      this.rootElement = options.rootElement;
-    }
-
-    // Set these options last to give the user a chance to override the
-    // defaults from the "combo" options like `isBrowser` (although in
-    // practice, the resulting combination is probably invalid)
-
-    /**
-      If present, overrides the router's `location` property with this
-      value. This is useful for environments where trying to modify the
-      URL would be inappropriate.
-
-      @property location
-      @type string
-      @default null
-      @public
-    */
-    if (options.location !== undefined) {
-      this.location = options.location;
-    }
-
-    if (options.jQuery !== undefined) {
-      this.jQuery = options.jQuery;
-    }
-
-    if (options.isInteractive !== undefined) {
-      this.isInteractive = !!options.isInteractive;
-    }
-  };
-
-  BootOptions.prototype.toEnvironment = function() {
-    let env = assign({}, environment);
-    // For compatibility with existing code
-    env.hasDOM = this.isBrowser;
-    env.options = this;
-    return env;
-  };
-}
+BootOptions.prototype.toEnvironment = function() {
+  let env = assign({}, environment);
+  // For compatibility with existing code
+  env.hasDOM = this.isBrowser;
+  env.options = this;
+  return env;
+};
 
 Object.defineProperty(ApplicationInstance.prototype, 'container', {
   configurable: true,

@@ -95,7 +95,6 @@
   @public
 */
 import Ember from 'ember-metal/core';
-import isEnabled from 'ember-metal/features';
 
 import {
   precompile,
@@ -151,10 +150,7 @@ registerHelper('-normalize-class', normalizeClassHelper);
 registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-html-safe', htmlSafeHelper);
-
-if (isEnabled('ember-contextual-components')) {
-  registerHelper('hash', hashHelper);
-}
+registerHelper('hash', hashHelper);
 
 if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerHelper('-legacy-each-with-controller', legacyEachWithControllerHelper);

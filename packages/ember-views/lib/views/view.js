@@ -10,9 +10,6 @@ import CoreView from 'ember-views/views/core_view';
 import ViewContextSupport from 'ember-views/mixins/view_context_support';
 import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
 import ViewLegacyChildViewsSupport from 'ember-views/mixins/legacy_child_views_support';
-import {
-  childViewsProperty
-} from 'ember-views/mixins/view_child_views_support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import TemplateRenderingSupport from 'ember-views/mixins/template_rendering_support';
 import ClassNamesSupport from 'ember-views/mixins/class_names_support';
@@ -269,21 +266,20 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
   ```
 
   If the return value of an `attributeBindings` monitored property is a boolean
-  the property will follow HTML's pattern of repeating the attribute's name as
-  its value:
+  the property's value will be set as a coerced string:
 
   ```javascript
   MyTextInput = Ember.View.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
-    disabled: true
+    disabled: false
   });
   ```
 
-  Will result in view instances with an HTML representation of:
+  Will result in a view instance with an HTML representation of:
 
   ```html
-  <input id="ember1" class="ember-view" disabled="disabled" />
+  <input id="ember1" class="ember-view" disabled="false" />
   ```
 
   `attributeBindings` can refer to computed properties:
@@ -299,6 +295,17 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
         return false;
       }
     })
+  });
+  ```
+
+  To prevent setting an attribute altogether, use `null` or `undefined` as the
+  return value of the `attributeBindings` monitored property:
+
+  ```javascript
+  MyTextInput = Ember.View.extend({
+    tagName: 'form',
+    attributeBindings: ['novalidate'],
+    novalidate: null
   });
   ```
 
@@ -630,6 +637,7 @@ import { deprecateProperty } from 'ember-metal/deprecate_property';
   @namespace Ember
   @extends Ember.CoreView
   @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-view
+  @uses Ember.ViewSupport
   @uses Ember.ViewContextSupport
   @uses Ember.ViewChildViewsSupport
   @uses Ember.TemplateRenderingSupport
@@ -723,14 +731,7 @@ View.reopenClass({
     @type Object
     @private
   */
-  views: {},
-
-  // If someone overrides the child views computed property when
-  // defining their class, we want to be able to process the user's
-  // supplied childViews and then restore the original computed property
-  // at view initialization time. This happens in Ember.ContainerView's init
-  // method.
-  childViewsProperty
+  views: {}
 });
 
 function viewDeprecationMessage() {

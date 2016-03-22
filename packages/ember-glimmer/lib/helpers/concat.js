@@ -1,3 +1,6 @@
+import { helper } from '../helper';
+import { normalizeTextValue } from 'glimmer-runtime';
+
 /**
 @module ember
 @submodule ember-templates
@@ -19,6 +22,8 @@
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-export default function concat(args) {
-  return args.join('');
+function concat(args) {
+  return args.map(normalizeTextValue).join('');
 }
+
+export default helper(concat);

@@ -241,8 +241,10 @@ export default {
   },
 
   rerender(node, env, scope, params, hash, template, inverse, visitor) {
-    var model = read(params[1]);
-    node.getState().controller.set('model', model);
+    if (params.length > 1) {
+      var model = read(params[1]);
+      node.getState().controller.set('model', model);
+    }
   }
 };
 
