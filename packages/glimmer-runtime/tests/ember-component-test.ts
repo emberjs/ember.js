@@ -656,6 +656,11 @@ QUnit.test('dynamic attribute bindings', assert => {
 
   assertEmberishElement('div', { 'style': 'color: green;' }, `Hello. It's me.`);
 
+  fooBarInstance.style = null;
+  rerender();
+
+  assertEmberishElement('div', { }, `Hello. It's me.`);
+
   fooBarInstance.style = 'color: red;';
   rerender();
 
