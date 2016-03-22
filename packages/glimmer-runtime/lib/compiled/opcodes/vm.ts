@@ -400,4 +400,15 @@ export class Assert extends VMUpdatingOpcode {
       vm.throw();
     }
   }
+
+  toJSON(): OpcodeJSON {
+    let { type, _guid, expected } = this;
+
+    return {
+      guid: _guid,
+      type,
+      args: [],
+      details: { expected: JSON.stringify(expected) }
+    };
+  }
 }

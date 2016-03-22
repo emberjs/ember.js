@@ -398,6 +398,21 @@ export class PatchElementOpcode extends DOMUpdatingOpcode {
   evaluate(vm: UpdatingVM) {
     this.lastValue = this.attribute.apply(vm.env.getDOM(), this.element, this.lastValue);
   }
+
+  toJSON(): OpcodeJSON {
+    let { _guid: guid, type, element, attribute, lastValue } = this;
+
+    let details = dict<string>();
+
+    let [attributeType, attributeName] = attribute.toJSON();
+
+    details["element"] = JSON.stringify(`<${element.tagName.toLowerCase()} />`);
+    details["type"] = JSON.stringify(attributeType);
+    details["name"] = JSON.stringify(attributeName);
+    details["lastValue"] = JSON.stringify(lastValue);
+
+    return { guid, type, details };
+  }
 }
 
 export class CommentOpcode extends Opcode {
