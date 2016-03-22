@@ -7,7 +7,7 @@ import { Templates } from '../../syntax/core';
 import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
 import { InternedString, Opaque, dict } from 'glimmer-util';
-import { Reference } from 'glimmer-reference';
+import { Reference, isConst } from 'glimmer-reference';
 
 export type DynamicComponentFactory<T> = (args: EvaluatedArgs, vm: PublicVM) => Reference<ComponentDefinition<T>>;
 
@@ -73,7 +73,10 @@ export class OpenDynamicComponentOpcode extends Opcode {
     vm.invokeLayout({ templates, args, shadow, layout, callerScope });
     vm.env.didCreate(component, manager);
 
-    vm.updateWith(new Assert(definitionRef, definition));
+    if (!isConst(definitionRef)) {
+      vm.updateWith(new Assert(definitionRef, definition));
+    }
+
     vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));
   }
 

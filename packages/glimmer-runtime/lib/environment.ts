@@ -109,7 +109,7 @@ export abstract class Environment {
     this.dom = dom;
   }
 
-  toConditionalReference(reference: Reference<Opaque>): ConditionalReference {
+  toConditionalReference(reference: Reference<Opaque>): Reference<boolean> {
     return new ConditionalReference(reference);
   }
 

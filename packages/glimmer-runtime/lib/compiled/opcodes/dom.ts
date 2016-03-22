@@ -1,8 +1,9 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { FIXME, InternedString, dict } from 'glimmer-util';
-import { PathReference, Reference } from 'glimmer-reference';
+import { PathReference, Reference, isConst as isConstReference } from 'glimmer-reference';
 import { DOMHelper } from '../../dom';
+import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 
 abstract class DOMUpdatingOpcode extends UpdatingOpcode {
@@ -74,29 +75,55 @@ export class OpenDynamicPrimitiveElementOpcode extends Opcode {
   }
 }
 
-class ClassList implements Reference<string> {
-  private list: PathReference<string>[] = [];
+class ClassList {
+  private list: Reference<string>[] = null;
+  private isConst = true;
 
-  isEmpty() {
-    return this.list.length === 0;
+  append(reference: Reference<string>) {
+    let { list, isConst } = this;
+
+    if (list === null) list = this.list = [];
+
+    list.push(reference);
+    this.isConst = isConst && isConstReference(reference);
   }
 
-  destroy() {}
-  isDirty() { return true; }
+  toReference(): Reference<string> {
+    let { list, isConst } = this;
 
-  append(reference: PathReference<string>) {
-    this.list.push(reference);
+    if (!list) return NULL_REFERENCE;
+
+    if (isConst) return new ValueReference(toClassName(list));
+
+    return new ClassListReference(list);
+  }
+
+}
+
+class ClassListReference implements Reference<string> {
+  private list: Reference<string>[] = [];
+
+  constructor(list: Reference<string>[]) {
+    this.list = list;
   }
 
   value(): string {
-    if (this.list.length === 0) return null;
-    let ret = [];
-    for (let i = 0; i < this.list.length; i++) {
-      let value = this.list[i].value();
-      if (value !== null) ret.push(String(value));
-    }
-    return ret.join(' ');
+    return toClassName(this.list);
   }
+
+  isDirty() { return true; }
+  destroy() {}
+}
+
+function toClassName(list: Reference<string>[]) {
+  let ret = [];
+
+  for (let i = 0; i < list.length; i++) {
+    let value = list[i].value();
+    if (value !== null) ret.push(value);
+  }
+
+  return (ret.length === 0) ? null : ret.join(' ');
 }
 
 export class CloseElementOpcode extends Opcode {
@@ -107,7 +134,7 @@ export class CloseElementOpcode extends Opcode {
     let stack = vm.stack();
     let { element, elementOperations: { groups } } = stack;
 
-    let classes = new ClassList();
+    let classList = new ClassList();
     let flattened = dict<ElementOperation>();
     let flattenedKeys = [];
 
@@ -120,9 +147,9 @@ export class CloseElementOpcode extends Opcode {
       for (let j = 0; j < groups[i].length; j++) {
         let op = groups[i][j];
         let name = op['name'] as FIXME<string>;
-        let value = op['value'] as FIXME<PathReference<string>>;
+        let reference = op['reference'] as FIXME<Reference<string>>;
         if (name === 'class') {
-          classes.append(value);
+          classList.append(reference);
         } else if (!flattened[name]) {
           flattenedKeys.push(name);
           flattened[name] = op;
@@ -130,12 +157,18 @@ export class CloseElementOpcode extends Opcode {
       }
     }
 
-    if (!classes.isEmpty()) {
-      vm.updateWith(new NonNamespacedAttribute('class' as InternedString, classes).flush(dom, element));
+    let className = classList.toReference();
+
+    if (isConstReference(className)) {
+      let value = className.value();
+      if (value !== null) dom.setAttribute(element, 'class', value);
+    } else {
+      vm.updateWith(new NonNamespacedAttribute('class' as InternedString, className).flush(dom, element));
     }
 
     for (let k = 0; k < flattenedKeys.length; k++) {
-      vm.updateWith(flattened[flattenedKeys[k]].flush(dom, element));
+      let opcode = flattened[flattenedKeys[k]].flush(dom, element);
+      if (opcode) vm.updateWith(opcode);
     }
 
     stack.closeElement();
@@ -171,7 +204,7 @@ export class StaticAttrOpcode extends Opcode {
     let details = dict<string>();
 
     details["name"] = JSON.stringify(name);
-    details["value"] = JSON.stringify(value);
+    details["value"] = JSON.stringify(value.value());
 
     if (namespace) {
       details["namespace"] = JSON.stringify(namespace);
@@ -192,24 +225,28 @@ interface ElementPatchOperation extends ElementOperation {
 
 export class NamespacedAttribute implements ElementPatchOperation {
   name: InternedString;
-  value: PathReference<string>;
+  reference: Reference<string>;
   namespace: InternedString;
 
-  constructor(name: InternedString, value: PathReference<string>, namespace: InternedString) {
+  constructor(name: InternedString, reference: Reference<string>, namespace: InternedString) {
     this.name = name;
-    this.value = value;
+    this.reference = reference;
     this.namespace = namespace;
   }
 
   flush(dom: DOMHelper, element: Element): PatchElementOpcode {
+    let { reference } = this;
     let value = this.apply(dom, element);
-    return new PatchElementOpcode(element, this, value);
+
+    if (!isConstReference(reference)) {
+      return new PatchElementOpcode(element, this, value);
+    }
   }
 
   apply(dom: DOMHelper, element: Element, lastValue: string = null): any {
     let {
       name,
-      value: reference,
+      reference,
       namespace
     } = this;
 
@@ -232,20 +269,24 @@ export class NamespacedAttribute implements ElementPatchOperation {
 
 export class NonNamespacedAttribute implements ElementPatchOperation {
   name: InternedString;
-  value: Reference<string>;
+  reference: Reference<string>;
 
   constructor(name: InternedString, value: Reference<string>) {
     this.name = name;
-    this.value = value;
+    this.reference = value;
   }
 
   flush(dom: DOMHelper, element: Element): PatchElementOpcode {
+    let { reference } = this;
     let value = this.apply(dom, element);
-    return new PatchElementOpcode(element, this, value);
+
+    if (!isConstReference(reference)) {
+      return new PatchElementOpcode(element, this, value);
+    }
   }
 
   apply(dom: DOMHelper, element: Element, lastValue: any = null): any {
-    let { name, value: reference } = this;
+    let { name, reference } = this;
     let value = reference.value();
 
     if (value === lastValue) {
@@ -265,20 +306,24 @@ export class NonNamespacedAttribute implements ElementPatchOperation {
 
 export class Property implements ElementPatchOperation {
   name: InternedString;
-  value: PathReference<any>;
+  reference: PathReference<any>;
 
   constructor(name: InternedString, value: PathReference<any>) {
     this.name = name;
-    this.value = value;
+    this.reference = value;
   }
 
   flush(dom: DOMHelper, element: Element): PatchElementOpcode {
+    let { reference } = this;
     let value = this.apply(dom, element);
-    return new PatchElementOpcode(element, this, value);
+
+    if (!isConstReference(reference)) {
+      return new PatchElementOpcode(element, this, value);
+    }
   }
 
   apply(dom: DOMHelper, element: Element, lastValue: any = null): any {
-    let { name, value: reference } = this;
+    let { name, reference } = this;
     let value = reference.value();
 
     if (value === lastValue) {
