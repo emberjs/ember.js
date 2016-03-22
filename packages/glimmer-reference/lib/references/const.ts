@@ -1,7 +1,12 @@
 import { Reference } from '../types';
+import { Opaque } from 'glimmer-util';
+
+export const CONST = "29c7034c-f1e1-4cf4-a843-1783dda9b744";
 
 export class ConstReference<T> implements Reference<T> {
   protected inner: T;
+
+  public "29c7034c-f1e1-4cf4-a843-1783dda9b744" = true;
 
   constructor(inner: T) {
     this.inner = inner;
@@ -13,6 +18,9 @@ export class ConstReference<T> implements Reference<T> {
 
   isDirty() { return false; }
   value(): T { return this.inner; }
-  chain() { return null; }
   destroy() {}
+}
+
+export function isConst(reference: Reference<Opaque>): boolean {
+  return !!reference[CONST];
 }

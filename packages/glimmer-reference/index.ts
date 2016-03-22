@@ -6,7 +6,7 @@ export { PushPullReference } from './lib/references/push-pull';
 export * from './lib/types';
 export { default as ObjectReference } from './lib/references/path';
 export { default as UpdatableReference, referenceFromParts } from './lib/references/root';
-export { ConstReference } from './lib/references/const';
+export { ConstReference, isConst } from './lib/references/const';
 export {
   IterationItem,
   Iterator,
