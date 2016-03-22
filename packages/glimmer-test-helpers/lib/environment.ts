@@ -69,7 +69,8 @@ import {
   OpaqueIterator,
   OpaqueIterable,
   AbstractIterable,
-  IterationItem
+  IterationItem,
+  isConst
 } from "glimmer-reference";
 
 type KeyFor = (item: Opaque, index: number) => string;
@@ -347,13 +348,17 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
 
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
 
+function emberToBool(value: any): boolean {
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  } else {
+    return !!value;
+  }
+}
+
 class EmberishConditionalReference extends ConditionalReference {
   protected toBool(value: any): boolean {
-    if (Array.isArray(value)) {
-      return value.length > 0;
-    } else {
-      return super.toBool(value);
-    }
+    return emberToBool(value);
   }
 }
 
@@ -442,7 +447,11 @@ export class TestEnvironment extends Environment {
     return new UpdatableReference(object);
   }
 
-  toConditionalReference(reference: Reference<any>): ConditionalReference {
+  toConditionalReference(reference: Reference<any>): Reference<boolean> {
+    if (isConst(reference)) {
+      return new ValueReference(emberToBool(reference.value()));
+    }
+
     return new EmberishConditionalReference(reference);
   }
 

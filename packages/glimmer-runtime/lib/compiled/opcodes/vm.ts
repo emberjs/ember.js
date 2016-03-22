@@ -6,7 +6,7 @@ import { Layout, InlineBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
 import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
-import { Reference } from 'glimmer-reference';
+import { Reference, isConst } from 'glimmer-reference';
 
 abstract class VMUpdatingOpcode extends UpdatingOpcode {
   public type: string;
@@ -362,7 +362,9 @@ export class JumpIfOpcode extends JumpOpcode {
       super.evaluate(vm);
     }
 
-    vm.updateWith(new Assert(reference, value));
+    if (!isConst(reference)) {
+      vm.updateWith(new Assert(reference, value));
+    }
   }
 }
 
@@ -377,7 +379,9 @@ export class JumpUnlessOpcode extends JumpOpcode {
       super.evaluate(vm);
     }
 
-    vm.updateWith(new Assert(reference, value));
+    if (!isConst(reference)) {
+      vm.updateWith(new Assert(reference, value));
+    }
   }
 }
 
@@ -399,5 +403,16 @@ export class Assert extends VMUpdatingOpcode {
     if (reference.value() !== expected) {
       vm.throw();
     }
+  }
+
+  toJSON(): OpcodeJSON {
+    let { type, _guid, expected } = this;
+
+    return {
+      guid: _guid,
+      type,
+      args: [],
+      details: { expected: JSON.stringify(expected) }
+    };
   }
 }
