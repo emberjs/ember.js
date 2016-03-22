@@ -90,7 +90,6 @@ test("null and undefined produces empty text nodes", () => {
   strictEqual(root.firstChild.firstChild.firstChild, valueNode1, "The text node was not blown away");
   strictEqual(root.firstChild.lastChild.firstChild, valueNode2, "The text node was not blown away");
 
-
   object.v1 = 'hello';
   rerender();
 
@@ -1320,7 +1319,7 @@ test("expression nested inside a namespace", function() {
 test("expression nested inside a namespaced root element", function() {
   let content = 'Maurice';
   let context = { content };
-  let getSvg = () => root.firstChild;
+  let getSvg = () => root.firstChild as Element;
   let template = compile('<svg>{{content}}</svg>');
   render(template, context);
 
