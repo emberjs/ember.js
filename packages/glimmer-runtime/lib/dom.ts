@@ -56,6 +56,10 @@ class DOMHelper {
     element.removeAttribute(name);
   }
 
+  removeAttributeNS(element: Element, name: string, namespace: string) {
+    element.removeAttributeNS(namespace, name);
+  }
+
   createTextNode(text: string): Text {
     return this.document.createTextNode(text);
   }
