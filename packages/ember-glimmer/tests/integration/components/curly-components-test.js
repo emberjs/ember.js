@@ -1,6 +1,8 @@
 /* globals EmberDev */
+import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
-import { Component } from '../../utils/helpers';
+import { Component, compile } from '../../utils/helpers';
+import { A as emberA } from 'ember-runtime/system/native_array';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
@@ -601,15 +603,15 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test it can render a basic component with a block']() {
-    this.registerComponent('foo-bar', { template: '{{yield}}' });
+    this.registerComponent('foo-bar', { template: '{{yield}} - In component' });
 
     this.render('{{#foo-bar}}hello{{/foo-bar}}');
 
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
+    this.assertComponentElement(this.firstChild, { content: 'hello - In component' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
+    this.assertComponentElement(this.firstChild, { content: 'hello - In component' });
   }
 
   ['@test it renders the layout with the component instance as the context']() {
@@ -956,4 +958,1069 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { content: 'true' });
   }
+  ['@test lookup of component takes priority over property']() {
+    this.registerComponent('some-component', {
+      template: 'some-component'
+    });
+
+    this.render(
+      '{{some-prop}} {{some-component}}',
+      {
+        'some-component': 'not-some-component',
+        'some-prop': 'some-prop'
+      }
+    );
+
+    this.assertText('some-prop some-component');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('some-prop some-component');
+  }
+
+  ['@test component without dash is not looked up']() {
+    this.registerComponent('somecomponent', {
+      template: 'somecomponent'
+    });
+
+    this.render(
+      '{{somecomponent}}',
+      {
+        'somecomponent': 'notsomecomponent'
+      }
+    );
+
+    this.assertText('notsomecomponent');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('notsomecomponent');
+
+    this.runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
+
+    this.assertText('not not notsomecomponent');
+
+    this.runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
+
+    this.assertText('notsomecomponent');
+  }
+
+  ['@test non-block with properties on attrs']() {
+    this.registerComponent('non-block', {
+      template: 'In layout - someProp: {{attrs.someProp}}'
+    });
+
+    this.render('{{non-block someProp=prop}}', {
+      prop: 'something here'
+    });
+
+    this.assertText('In layout - someProp: something here');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: something here');
+
+    this.runTask(() => this.context.set('prop', 'other thing there'));
+
+    this.assertText('In layout - someProp: other thing there');
+
+    this.runTask(() => this.context.set('prop', 'something here'));
+
+    this.assertText('In layout - someProp: something here');
+  }
+
+  ['@skip non-block with properties overridden in init']() {
+    let instance;
+    this.registerComponent('non-block', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          instance = this;
+          this.someProp = 'value set in instance';
+        }
+      }),
+      template: 'In layout - someProp: {{someProp}}'
+    });
+
+    this.render('{{non-block someProp=prop}}', {
+      prop: 'something passed when invoked'
+    });
+
+    this.assertText('In layout - someProp: value set in instance');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: value set in instance');
+
+    this.runTask(() => this.context.set('prop', 'updated something passed when invoked'));
+
+    this.assertText('In layout - someProp: updated something passed when invoked');
+
+    this.runTask(() => instance.set('someProp', 'update value set in instance'));
+
+    this.assertText('In layout - someProp: update value set in instance');
+
+    this.runTask(() => this.context.set('prop', 'something passed when invoked'));
+    this.runTask(() => instance.set('someProp', 'value set in instance'));
+
+    this.assertText('In layout - someProp: value set in instance');
+  }
+
+  ['@htmlbars rerendering component with attrs from parent'](assert) {
+    let willUpdate = 0;
+    let didReceiveAttrs = 0;
+
+    this.registerComponent('non-block', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs() {
+          didReceiveAttrs++;
+        },
+
+        willUpdate() {
+          willUpdate++;
+        }
+      }),
+      template: 'In layout - someProp: {{someProp}}'
+    });
+
+    this.render('{{non-block someProp=someProp}}', {
+      someProp: 'wycats'
+    });
+
+    assert.equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
+    this.assertText('In layout - someProp: wycats');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: wycats');
+    assert.equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
+    assert.equal(willUpdate, 1, 'The willUpdate hook fired once');
+
+    this.runTask(() => this.context.set('someProp', 'tomdale'));
+
+    this.assertText('In layout - someProp: tomdale');
+    assert.equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again');
+    assert.equal(willUpdate, 2, 'The willUpdate hook fired again');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: tomdale');
+    assert.equal(didReceiveAttrs, 4, 'The didReceiveAttrs hook fired again');
+    assert.equal(willUpdate, 3, 'The willUpdate hook fired again');
+
+    this.runTask(() => this.context.set('someProp', 'wycats'));
+
+    this.assertText('In layout - someProp: wycats');
+    assert.equal(didReceiveAttrs, 5, 'The didReceiveAttrs hook fired again in the R step');
+    assert.equal(willUpdate, 4, 'The willUpdate hook fired again in the R step');
+  }
+
+  ['@test non-block with properties on self']() {
+    this.registerComponent('non-block', {
+      template: 'In layout - someProp: {{someProp}}'
+    });
+
+    this.render('{{non-block someProp=prop}}', {
+      prop: 'something here'
+    });
+
+    this.assertText('In layout - someProp: something here');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: something here');
+
+    this.runTask(() => this.context.set('prop', 'something else'));
+
+    this.assertText('In layout - someProp: something else');
+
+    this.runTask(() => this.context.set('prop', 'something here'));
+
+    this.assertText('In layout - someProp: something here');
+  }
+
+  ['@test block with properties on self']() {
+    this.registerComponent('with-block', {
+      template: 'In layout - someProp: {{someProp}} - {{yield}}'
+    });
+
+    this.render(strip`
+      {{#with-block someProp=prop}}
+        In template
+      {{/with-block}}`, {
+        prop: 'something here'
+      }
+    );
+
+    this.assertText('In layout - someProp: something here - In template');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: something here - In template');
+
+    this.runTask(() => this.context.set('prop', 'something else'));
+
+    this.assertText('In layout - someProp: something else - In template');
+
+    this.runTask(() => this.context.set('prop', 'something here'));
+
+    this.assertText('In layout - someProp: something here - In template');
+  }
+
+  ['@test block with properties on attrs']() {
+    this.registerComponent('with-block', {
+      template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}'
+    });
+
+    this.render(strip`
+      {{#with-block someProp=prop}}
+        In template
+      {{/with-block}}`, {
+        prop: 'something here'
+      }
+    );
+
+    this.assertText('In layout - someProp: something here - In template');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: something here - In template');
+
+    this.runTask(() => this.context.set('prop', 'something else'));
+
+    this.assertText('In layout - someProp: something else - In template');
+
+    this.runTask(() => this.context.set('prop', 'something here'));
+
+    this.assertText('In layout - someProp: something here - In template');
+  }
+
+  ['@htmlbars static arbitrary number of positional parameters'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'names'
+      }),
+      template: strip`
+        {{#each names as |name|}}
+          {{name}}
+        {{/each}}`
+    });
+
+    this.render(strip`
+      {{sample-component "Foo" 4 "Bar" id="args-3"}}
+      {{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}
+      {{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}`
+    );
+
+    assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+    assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+    assert.equal(this.$('#helper').text(), 'Foo4Bar5Baz');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#args-3').text(), 'Foo4Bar');
+    assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+    assert.equal(this.$('#helper').text(), 'Foo4Bar5Baz');
+  }
+
+  ['@htmlbars arbitrary positional parameter conflict with hash parameter is reported']() {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'names'
+      }),
+      template: strip`
+        {{#each names as |name|}}
+          {{name}}
+        {{/each}}`
+    });
+
+    expectAssertion(() => {
+      this.render(`{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}`, {
+        numbers: [1, 2, 3]
+      });
+    }, 'You cannot specify positional parameters and the hash argument `names`.');
+  }
+
+  ['@test can use hash parameter instead of arbitrary positional param [GH #12444]'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'names'
+      }),
+      template: strip`
+        {{#each names as |name|}}
+          {{name}}
+        {{/each}}`
+    });
+
+    this.render('{{sample-component names=things}}', {
+      things: emberA(['Foo', 4, 'Bar'])
+    });
+
+    this.assertText('Foo4Bar');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Foo4Bar');
+
+    this.runTask(() => this.context.get('things').pushObject(5));
+
+    this.assertText('Foo4Bar5');
+
+    this.runTask(() => this.context.get('things').shiftObject());
+
+    this.assertText('4Bar5');
+
+    this.runTask(() => this.context.get('things').clear());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
+
+    this.assertText('Foo4Bar');
+  }
+
+  ['@htmlbars can use hash parameter instead of positional param'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['first', 'second']
+      }),
+      template: '{{first}} - {{second}}'
+    });
+
+    this.render(strip`
+      {{sample-component "one" "two" id="two-positional"}}
+      {{sample-component "one" second="two" id="one-positional"}}
+      {{sample-component first="one" second="two" id="no-positional"}}`);
+
+    assert.equal(this.$('#two-positional').text(), 'one - two');
+    assert.equal(this.$('#one-positional').text(), 'one - two');
+    assert.equal(this.$('#no-positional').text(), 'one - two');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#two-positional').text(), 'one - two');
+    assert.equal(this.$('#one-positional').text(), 'one - two');
+    assert.equal(this.$('#no-positional').text(), 'one - two');
+  }
+
+  ['@htmlbars dynamic arbitrary number of positional parameters'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'n'
+      }),
+      template: strip`
+        {{#each n as |name|}}
+          {{name}}
+        {{/each}}`
+    });
+
+    this.render(strip`
+      {{sample-component user1 user2 id="direct"}}
+      {{component "sample-component" user1 user2 id="helper"}}`,
+      {
+        user1: 'Foo',
+        user2: 4
+      }
+    );
+
+    assert.equal(this.$('#direct').text(), 'Foo4', 'direct');
+    assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#direct').text(), 'Foo4', 'direct');
+    assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
+
+    this.runTask(() => this.context.set('user1', 'Bar'));
+
+    assert.equal(this.$('#direct').text(), 'Bar4', 'direct');
+    //assert.equal(this.$('#helper').text(), 'Bar4', 'helper');
+
+    this.runTask(() => this.context.set('user2', '5'));
+
+    assert.equal(this.$('#direct').text(), 'Bar5', 'direct');
+    //assert.equal(this.$('#helper').text(), 'Bar5', 'helper');
+
+    this.runTask(() => {
+      this.context.set('user1', 'Foo');
+      this.context.set('user2', 4);
+    });
+
+    assert.equal(this.$('#direct').text(), 'Foo4', 'direct');
+    assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
+  }
+
+  ['@htmlbars with ariaRole specified']() {
+    this.registerComponent('aria-test', {
+      template: 'Here!'
+    });
+
+    this.render('{{aria-test ariaRole=role}}', {
+      role: 'main'
+    });
+
+    this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
+
+    this.runTask(() => this.context.set('role', 'input'));
+
+    this.assertComponentElement(this.firstChild, { attrs: { role: 'input' } });
+
+    this.runTask(() => this.context.set('role', 'main'));
+
+    this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
+  }
+
+  ['@htmlbars `template` specified in component is overriden by block']() {
+    this.registerComponent('with-template', {
+      ComponentClass: Component.extend({
+        template: compile('Should not be used')
+      }),
+      template: '[In layout - {{name}}] {{yield}}'
+    });
+
+    this.render(strip`
+      {{#with-template name="with-block"}}
+        [In block - {{name}}]
+      {{/with-template}}
+      {{with-template name="without-block"}}`, {
+        name: 'Whoop, whoop!'
+      }
+    );
+
+    this.assertText('[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] ');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] ');
+
+    this.runTask(() => this.context.set('name', 'Ole, ole'));
+
+    this.assertText('[In layout - with-block] [In block - Ole, ole][In layout - without-block] ');
+
+    this.runTask(() => this.context.set('name', 'Whoop, whoop!'));
+
+    this.assertText('[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] ');
+  }
+
+  ['@htmlbars hasBlock is true when block supplied']() {
+    this.registerComponent('with-block', {
+      template: strip`
+        {{#if hasBlock}}
+          {{yield}}
+        {{else}}
+          No Block!
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#with-block}}
+        In template
+      {{/with-block}}`
+    );
+
+    this.assertText('In template');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In template');
+  }
+
+  ['@test hasBlock is false when no block supplied']() {
+    this.registerComponent('with-block', {
+      template: strip`
+        {{#if hasBlock}}
+          {{yield}}
+        {{else}}
+          No Block!
+        {{/if}}`
+    });
+
+    this.render('{{with-block}}');
+
+    this.assertText('No Block!');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('No Block!');
+  }
+
+  ['@htmlbars hasBlockParams is true when block param supplied']() {
+    this.registerComponent('with-block', {
+      template: strip`
+        {{#if hasBlockParams}}
+          {{yield this}} - In Component
+        {{else}}
+          {{yield}} No Block!
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#with-block as |something|}}
+        In template
+      {{/with-block}}`
+    );
+
+    this.assertText('In template - In Component');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In template - In Component');
+  }
+
+  ['@test hasBlockParams is false when no block param supplied']() {
+    this.registerComponent('with-block', {
+      template: strip`
+        {{#if hasBlockParams}}
+          {{yield this}}
+        {{else}}
+          {{yield}} No Block Param!
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#with-block}}
+        In block
+      {{/with-block}}`
+    );
+
+    this.assertText('In block No Block Param!');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In block No Block Param!');
+  }
+
+  ['@htmlbars static named positional parameters']() {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['name', 'age']
+      }),
+      template: '{{name}}{{age}}'
+    });
+
+    this.render('{{sample-component "Quint" 4}}');
+
+    this.assertText('Quint4');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Quint4');
+  }
+
+  ['@htmlbars dynamic named positional parameters']() {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['name', 'age']
+      }),
+      template: '{{name}}{{age}}'
+    });
+
+    this.render('{{sample-component myName myAge}}', {
+      myName: 'Quint',
+      myAge: 4
+    });
+
+    this.assertText('Quint4');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Quint4');
+
+    this.runTask(() => this.context.set('myName', 'Sergio'));
+
+    this.assertText('Sergio4');
+
+    this.runTask(() => this.context.set('myAge', 2));
+
+    this.assertText('Sergio2');
+
+    this.runTask(() => {
+      this.context.set('myName', 'Quint');
+      this.context.set('myAge', 4);
+    });
+
+    this.assertText('Quint4');
+  }
+
+  ['@htmlbars if a value is passed as a non-positional parameter, it raises an assertion']() {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['name']
+      }),
+      template: '{{name}}'
+    });
+
+    expectAssertion(() => {
+      this.render('{{sample-component notMyName name=myName}}', {
+        myName: 'Quint',
+        notMyName: 'Sergio'
+      });
+    }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
+  }
+
+  ['@test yield to inverse']() {
+    this.registerComponent('my-if', {
+      template: strip`
+        {{#if predicate}}
+          Yes:{{yield someValue}}
+        {{else}}
+          No:{{yield to="inverse"}}
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#my-if predicate=activated someValue=42 as |result|}}
+        Hello{{result}}
+      {{else}}
+        Goodbye
+      {{/my-if}}`,
+      {
+        activated: true
+      });
+
+    this.assertText('Yes:Hello42');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Yes:Hello42');
+
+    this.runTask(() => this.context.set('activated', false));
+
+    this.assertText('No:Goodbye');
+
+    this.runTask(() => this.context.set('activated', true));
+
+    this.assertText('Yes:Hello42');
+  }
+
+  ['@htmlbars expression hasBlock inverse'](assert) {
+    this.registerComponent('check-inverse', {
+      template: strip`
+        {{#if (hasBlock "inverse")}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-inverse id="expect-no"}}{{/check-inverse}}
+      {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}`);
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+  }
+
+  ['@htmlbars expression hasBlock default'](assert) {
+    this.registerComponent('check-block', {
+      template: strip`
+        {{#if (hasBlock)}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{check-block id="expect-no"}}
+      {{#check-block id="expect-yes"}}{{/check-block}}`);
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+  }
+
+  ['@htmlbars non-expression hasBlock'](assert) {
+    this.registerComponent('check-block', {
+      template: strip`
+        {{#if hasBlock}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{check-block id="expect-no"}}
+      {{#check-block id="expect-yes"}}{{/check-block}}`);
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+  }
+
+  ['@htmlbars expression hasBlockParams'](assert) {
+    this.registerComponent('check-params', {
+      template: strip`
+        {{#if (hasBlockParams)}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-params id="expect-no"}}{{/check-params}}
+      {{#check-params id="expect-yes" as |foo|}}{{/check-params}}`);
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+  }
+
+  ['@htmlbars non-expression hasBlockParams'](assert) {
+    this.registerComponent('check-params', {
+      template: strip`
+        {{#if hasBlockParams}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-params id="expect-no"}}{{/check-params}}
+      {{#check-params id="expect-yes" as |foo|}}{{/check-params}}`);
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#expect-no').text(), 'No');
+    assert.equal(this.$('#expect-yes').text(), 'Yes');
+  }
+
+  ['@htmlbars component in template of a yielding component should have the proper parentView'](assert) {
+    let outer, innerTemplate, innerLayout;
+
+    this.registerComponent('x-outer', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          outer = this;
+        }
+      }),
+      template: '{{x-inner-in-layout}}{{yield}}'
+    });
+
+    this.registerComponent('x-inner-in-template', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          innerTemplate = this;
+        }
+      })
+    });
+
+    this.registerComponent('x-inner-in-layout', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          innerLayout = this;
+        }
+      })
+    });
+
+    this.render('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}');
+
+    assert.equal(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+    assert.equal(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
+    assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(innerTemplate.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+    assert.equal(innerLayout.parentView, outer, 'receives the wrapping component as its parentView in layout');
+    assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
+  }
+
+  ['@htmlbars newly-added sub-components get correct parentView'](assert) {
+    let outer, inner;
+
+    this.registerComponent('x-outer', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          outer = this;
+        }
+      })
+    });
+
+    this.registerComponent('x-inner', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          inner = this;
+        }
+      })
+    });
+
+    this.render(strip`
+      {{#x-outer}}
+        {{#if showInner}}
+          {{x-inner}}
+        {{/if}}
+      {{/x-outer}}`,
+      {
+        showInner: false
+      }
+    );
+
+    assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView (after rerender)');
+
+    this.runTask(() => this.context.set('showInner', true));
+
+    assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
+    assert.equal(inner.parentView, outer, 'receives the wrapping component as its parentView in template blocks');
+
+    this.runTask(() => this.context.set('showInner', false));
+
+    assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
+  }
+
+  ['@htmlbars component should receive the viewRegistry from the parentView'](assert) {
+    let outer, innerTemplate, innerLayout;
+
+    let viewRegistry = {};
+
+    this.registerComponent('x-outer', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          outer = this;
+        }
+      }),
+      template: '{{x-inner-in-layout}}{{yield}}'
+    });
+
+    this.registerComponent('x-inner-in-template', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          innerTemplate = this;
+        }
+      })
+    });
+
+    this.registerComponent('x-inner-in-layout', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          innerLayout = this;
+        }
+      })
+    });
+
+    this.render('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}', {
+      _viewRegistry: viewRegistry
+    });
+
+    assert.equal(innerTemplate._viewRegistry, viewRegistry);
+    assert.equal(innerLayout._viewRegistry, viewRegistry);
+    assert.equal(outer._viewRegistry, viewRegistry);
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(innerTemplate._viewRegistry, viewRegistry);
+    assert.equal(innerLayout._viewRegistry, viewRegistry);
+    assert.equal(outer._viewRegistry, viewRegistry);
+  }
+
+  ['@htmlbars component should rerender when a property is changed during children\'s rendering'](assert) {
+    expectDeprecation(/modified value twice in a single render/);
+
+    let outer, middle;
+
+    this.registerComponent('x-outer', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          outer = this;
+        },
+        value: 1
+      }),
+      template: '{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'
+    });
+
+    this.registerComponent('x-middle', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          middle = this;
+        },
+        value: null
+      }),
+      template: '<div id="middle-value">{{value}}</div>{{yield}}'
+    });
+
+    this.registerComponent('x-inner', {
+      ComponentClass: Component.extend({
+        value: null,
+        pushDataUp: Ember.observer('value', function() {
+          middle.set('value', this.get('value'));
+        })
+      }),
+      template: '<div id="inner-value">{{value}}</div>'
+    });
+
+    this.render('{{x-outer}}');
+
+    assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
+    assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
+    assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
+
+    this.runTask(() => outer.set('value', 2));
+
+    assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
+    assert.equal(this.$('#middle-value').text(), '2', 'second render of middle');
+
+    this.runTask(() => outer.set('value', 3));
+
+    assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
+    assert.equal(this.$('#middle-value').text(), '3', 'third render of middle');
+
+    this.runTask(() => outer.set('value', 1));
+
+    assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
+    assert.equal(this.$('#middle-value').text(), '1', 'reset render of middle');
+  }
+
+  ['@test non-block with each rendering child components']() {
+    this.registerComponent('non-block', {
+      template: strip`
+        In layout. {{#each items as |item|}}
+          [{{child-non-block item=item}}]
+        {{/each}}`
+    });
+
+    this.registerComponent('child-non-block', {
+      template: 'Child: {{item}}.'
+    });
+
+    let items = emberA(['Tom', 'Dick', 'Harry']);
+
+    this.render('{{non-block items=items}}', { items });
+
+    this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
+
+    this.runTask(() => this.context.get('items').pushObject('Sergio'));
+
+    this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
+
+    this.runTask(() => this.context.get('items').shiftObject());
+
+    this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
+
+    this.runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
+
+    this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
+  }
+
+  ['@test specifying classNames results in correct class'](assert) {
+    let clickyThing;
+
+    this.registerComponent('some-clicky-thing', {
+      ComponentClass: Component.extend({
+        tagName: 'button',
+        classNames: ['foo', 'bar'],
+        init() {
+          this._super(...arguments);
+          clickyThing = this;
+        }
+      }),
+      // I am getting a `Cannot read property 'asLayout' of undefined` in
+      // Glimmer if I do not specify a template here :(
+      template: '{{yield}}'
+    });
+
+    this.render(strip`
+      {{#some-clicky-thing classNames="baz"}}
+        Click Me
+      {{/some-clicky-thing}}`
+    );
+
+    // TODO: ember-view is no longer viewable in the classNames array. Bug or
+    // feature?
+    let expectedClassNames = ['ember-view', 'foo', 'bar', 'baz'];
+
+    assert.ok(this.$('button').is('.foo.bar.baz.ember-view'), `the element has the correct classes: ${this.$('button').attr('class')}`);
+    // `ember-view` is no longer in classNames.
+    // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined');
+    this.assertComponentElement(this.firstChild, { tagName: 'button', attrs: { 'class': classes(expectedClassNames.join(' ')) } });
+
+    this.runTask(() => this.rerender());
+
+    assert.ok(this.$('button').is('.foo.bar.baz.ember-view'), `the element has the correct classes: ${this.$('button').attr('class')} (rerender)`);
+    // `ember-view` is no longer in classNames.
+    // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined (rerender)');
+    this.assertComponentElement(this.firstChild, { tagName: 'button', attrs: { 'class': classes(expectedClassNames.join(' ')) } });
+  }
+
+  ['@test specifying custom concatenatedProperties avoids clobbering'](assert) {
+    let clickyThing;
+    this.registerComponent('some-clicky-thing', {
+      ComponentClass: Component.extend({
+        concatenatedProperties: ['blahzz'],
+        blahzz: ['blark', 'pory'],
+        init() {
+          this._super(...arguments);
+          clickyThing = this;
+        }
+      }),
+      template: strip`
+        {{#each blahzz as |p|}}
+          {{p}}
+        {{/each}}
+        - {{yield}}`
+    });
+
+    this.render(strip`
+      {{#some-clicky-thing blahzz="baz"}}
+        Click Me
+      {{/some-clicky-thing}}`
+    );
+
+    this.assertText('blarkporybaz- Click Me');
+
+    // Errors here cause `blahzz` has become just `baz` and `Don't know how to
+    // {{#each baz}}`
+    // this.runTask(() => this.rerender());
+
+    // this.assertText('blarkporybaz- Click Me');
+  }
 });
+
