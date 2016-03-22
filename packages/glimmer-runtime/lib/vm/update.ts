@@ -180,10 +180,9 @@ export class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
   private marker: Comment;
 
   constructor(opcode: ListBlockOpcode, marker: Comment) {
-    let { map, updating } = opcode;
     this.opcode = opcode;
-    this.map = map;
-    this.updating = updating;
+    this.map = opcode.map;
+    this.updating = opcode['updating'];
     this.marker = marker;
   }
 

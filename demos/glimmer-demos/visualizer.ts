@@ -399,7 +399,7 @@ function renderContent() {
 
   env.begin();
   let self = new UpdatableReference(data);
-  let res = app.render(self, env, { appendTo: div });
+  let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope() });
   env.commit();
 
   ui.rendered = true;

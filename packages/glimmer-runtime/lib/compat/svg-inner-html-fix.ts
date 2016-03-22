@@ -14,13 +14,13 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export default function applyInnerHTMLFix(document: Document, DOMHelperClass: typeof DOMHelper, svgNamespace: String): typeof DOMHelper {
+export default function applyInnerHTMLFix(document: Document, DOMHelperClass: typeof DOMHelper, svgNamespace: string): typeof DOMHelper {
   if (!document) return DOMHelperClass;
 
   let svg = document.createElementNS(svgNamespace, 'svg');
 
   try {
-    svg.insertAdjacentHTML('beforeEnd', '<circle></circle>');
+    svg['insertAdjacentHTML']('beforeEnd', '<circle></circle>');
   } catch (e) {
     // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
     // Safari: Will throw, insertAdjacentHTML is not present on SVG
