@@ -1,6 +1,6 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { PathReference } from 'glimmer-reference';
+import { PathReference, isConst } from 'glimmer-reference';
 import { Opaque, dict } from 'glimmer-util';
 import { clear } from '../../bounds';
 import { Fragment } from '../../builder';
@@ -28,7 +28,10 @@ export class AppendOpcode extends Opcode {
     let reference = vm.frame.getOperand();
     let value = normalizeTextValue(reference.value());
     let node = vm.stack().appendText(value);
-    vm.updateWith(new UpdateAppendOpcode(reference, value, node));
+
+    if (!isConst(reference)) {
+      vm.updateWith(new UpdateAppendOpcode(reference, value, node));
+    }
   }
 
   toJSON(): OpcodeJSON {
@@ -79,9 +82,11 @@ export class TrustingAppendOpcode extends Opcode {
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
     let value = normalizeTextValue(reference.value());
-
     let bounds = vm.stack().insertHTMLBefore(null, value);
-    vm.updateWith(new UpdateTrustingAppendOpcode(reference, value, bounds));
+
+    if (!isConst(reference)) {
+      vm.updateWith(new UpdateTrustingAppendOpcode(reference, value, bounds));
+    }
   }
 }
 
