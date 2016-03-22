@@ -86,7 +86,13 @@ class DOMHelper {
     return this.document.createElement(tag);
   }
 
-  insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
+  insertHTMLBefore(_parent: Element, nextSibling: Node, html: string): Bounds {
+    // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
+    // only exists on `HTMLElement` but not on `Element`. We actually work with the
+    // newer version of the DOM API here (and monkey-patch this method in `./compat`
+    // when we detect older browsers). This is a hack to work around this limitation.
+    let parent = _parent as HTMLElement;
+
     let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
     let last;
 
