@@ -171,7 +171,7 @@ ControllerMixin.reopen({
     while transitioning to the route.
     @for Ember.ControllerMixin
     @method replaceRoute
-    @private
+    @public
   */
   replaceRoute() {
     // target may be either another controller or a router
