@@ -100,7 +100,7 @@ class CurlyComponentManager {
   }
 
   didCreate({ component }) {
-    // component.trigger('didInsertElement');
+    component.trigger('didInsertElement');
     // component.trigger('didRender');
     component._transitionTo('inDOM');
   }

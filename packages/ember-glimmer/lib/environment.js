@@ -162,4 +162,8 @@ export default class Environment extends GlimmerEnvironment {
     let keyPath = args.named.get('key').value();
     return createIterable(ref, keyPath);
   }
+
+  didDestroy(destroyable) {
+    destroyable.destroy();
+  }
 }

@@ -3,7 +3,7 @@ import Component from 'ember-views/components/component';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 
 moduleFor('Component willDestroyElement hook', class extends RenderingTest {
-  ['@htmlbars it calls willDestroyElement when removed by if'](assert) {
+  ['@test it calls willDestroyElement when removed by if'](assert) {
     let didInsertElementCount = 0;
     let willDestroyElementCount = 0;
     let FooBarComponent = Component.extend({
