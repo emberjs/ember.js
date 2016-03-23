@@ -4,7 +4,7 @@ import EmberObject from 'ember-runtime/system/object';
 
 moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
-  ['@htmlbars should be able to get an object value with a static key']() {
+  ['@test should be able to get an object value with a static key']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
       colors: { apple: 'red', banana: 'yellow' }
     });
@@ -22,7 +22,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[green] [green]');
   }
 
-  ['@htmlbars should be able to get an object value with nested static key']() {
+  ['@test should be able to get an object value with nested static key']() {
     this.render(`[{{get colors "apple.gala"}}] [{{if true (get colors "apple.gala")}}]`, {
       colors: { apple: { gala: 'red and yellow' }, banana: 'yellow' }
     });
@@ -44,7 +44,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow-redish] [yellow-redish]');
   }
 
-  ['@htmlbars should be able to get an object value with a bound/dynamic key']() {
+  ['@test should be able to get an object value with a bound/dynamic key']() {
     this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
       colors: { apple: 'red', banana: 'yellow' },
       key: 'apple'
@@ -67,7 +67,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[red] [red]');
   }
 
-  ['@htmlbars should be able to get an object value with nested dynamic key']() {
+  ['@test should be able to get an object value with nested dynamic key']() {
     this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
       colors: {
         apple: {
@@ -87,7 +87,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow] [yellow]');
   }
 
-  ['@htmlbars should be able to get an object value with subexpression returning nested key']() {
+  ['@test should be able to get an object value with subexpression returning nested key']() {
     this.render(`[{{get colors (concat 'apple' '.' 'gala')}}] [{{if true (get colors (concat 'apple' '.' 'gala'))}}]`, {
       colors: {
         apple: {
@@ -107,7 +107,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow-redish] [yellow-redish]');
   }
 
-  ['@htmlbars should be able to get an object value with a GetStream key']() {
+  ['@test should be able to get an object value with a GetStream key']() {
     this.render(`[{{get colors (get possibleKeys key)}}] [{{if true (get colors (get possibleKeys key))}}]`, {
       colors: { apple: 'red', banana: 'yellow' },
       key: 'key1',
@@ -128,7 +128,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[red] [red]');
   }
 
-  ['@htmlbars should be able to get an object value with a GetStream value and bound/dynamic key']() {
+  ['@test should be able to get an object value with a GetStream value and bound/dynamic key']() {
     this.render(`[{{get (get possibleValues objectKey) key}}] [{{if true (get (get possibleValues objectKey) key)}}]`, {
       possibleValues: {
         colors1: { apple: 'red', banana: 'yellow' },
@@ -155,7 +155,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow] [yellow]');
   }
 
-  ['@htmlbars should be able to get an object value with a GetStream value and GetStream key']() {
+  ['@test should be able to get an object value with a GetStream value and GetStream key']() {
     this.render(`[{{get (get possibleValues objectKey) (get possibleKeys key)}}] [{{if true (get (get possibleValues objectKey) (get possibleKeys key))}}]`, {
       possibleValues: {
         colors1: { apple: 'red', banana: 'yellow' },
@@ -186,7 +186,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow] [yellow]');
   }
 
-  ['@htmlbars should handle object values as nulls']() {
+  ['@test should handle object values as nulls']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
       colors: null
     });
@@ -199,7 +199,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   };
 
-  ['@htmlbars should handle object values and keys as nulls']() {
+  ['@test should handle object values and keys as nulls']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors key)}}]`, {
       colors: null,
       key: null
@@ -207,7 +207,8 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   };
 
-  // I'm not sure if this applicatble for Glimmer?
+  // Looks like some misconfiguration here.
+  //
   // Htmlbars: Error: Assertion Failed: HTMLBars error: Could not find component named "-text-field" (no component or template with that name was found)
   // Glimmer: Compile Error: input is not a helper
   ['@skip get helper value should be updatable using {{input}} and (mut) - dynamic key']() {
