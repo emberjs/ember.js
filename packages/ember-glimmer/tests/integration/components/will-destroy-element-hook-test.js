@@ -4,9 +4,11 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 
 moduleFor('Component willDestroyElement hook', class extends RenderingTest {
   ['@htmlbars it calls willDestroyElement when removed by if'](assert) {
+    let didInsertElementCount = 0;
     let willDestroyElementCount = 0;
     let FooBarComponent = Component.extend({
       didInsertElement() {
+        didInsertElementCount++;
         assert.notEqual(this.element.parentNode, null, 'precond component is in DOM');
       },
       willDestroyElement() {
@@ -18,6 +20,8 @@ moduleFor('Component willDestroyElement hook', class extends RenderingTest {
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
     this.render('{{#if switch}}{{foo-bar}}{{/if}}', { switch: true });
+
+    assert.equal(didInsertElementCount, 1, 'didInsertElement was called once');
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
 
