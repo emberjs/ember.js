@@ -9,7 +9,7 @@
     "pretest": "ember build",
     "test": "ember test",
     "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.json",
-    "start": "ember serve",
+    "start": "ember serve --port=7357",
     "tsc": "tsc -p . --noEmit",
     "tslint": "tslint ./packages/**/*.ts",
     "vscode-build": "tslint -s ./.vscode/tslint-formatters -t vscode ./packages/**/*.ts; tsc -p . --noEmit",

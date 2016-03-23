@@ -7,8 +7,8 @@
 			"request": "launch",
 			"url": "http://localhost:7357/tests/index.html",
 			"sourceMaps": true,
-			"userDataDir": "tmp/chrome-user-data",
-			"webRoot": "packages/node_modules"
+			"userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
+			"webRoot": "${workspaceRoot}/packages/node_modules"
 		},
 		{
 			"name": "glimmer-runtime",
@@ -16,8 +16,8 @@
 			"request": "launch",
 			"url": "http://localhost:7357/tests/index.html?packages=glimmer-runtime",
 			"sourceMaps": true,
-			"userDataDir": "tmp/chrome-user-data",
-			"webRoot": "packages/node_modules"
+			"userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
+			"webRoot": "${workspaceRoot}/packages/node_modules"
 		},
 		{
 			"name": "focused",
@@ -25,8 +25,8 @@
 			"request": "launch",
 			"url": "http://localhost:7357/tests/index.html?packages=glimmer-runtime&testId=8b1252f6",
 			"sourceMaps": true,
-			"userDataDir": "tmp/chrome-user-data",
-			"webRoot": "packages/node_modules"
+			"userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
+			"webRoot": "${workspaceRoot}/packages/node_modules"
 		}
 	]
 }
