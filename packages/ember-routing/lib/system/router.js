@@ -725,6 +725,11 @@ var EmberRouter = EmberObject.extend(Evented, {
   currentState: null,
   targetState: null,
 
+  _resetTargetState() {
+    let currentState = this.get('currentState');
+    this.set('targetState', currentState);
+  },
+
   _handleSlowTransition(transition, originRoute) {
     if (!this.router.activeTransition) {
       // Don't fire an event if we've since moved on from
@@ -1095,6 +1100,7 @@ function didBeginTransition(transition, router) {
     if (router._isErrorHandled(errorId)) {
       router._clearHandledError(errorId);
     } else {
+      router._resetTargetState();
       throw error;
     }
   });
