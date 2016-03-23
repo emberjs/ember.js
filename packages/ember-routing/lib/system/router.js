@@ -1095,6 +1095,7 @@ function didBeginTransition(transition, router) {
     if (router._isErrorHandled(errorId)) {
       router._clearHandledError(errorId);
     } else {
+      router.set('targetState', router.get('currentState'));
       throw error;
     }
   });
