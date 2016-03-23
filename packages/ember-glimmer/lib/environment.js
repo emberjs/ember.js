@@ -26,8 +26,9 @@ import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
-import { default as classHelper } from './helpers/-class';
+import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
+import { default as classHelper } from './helpers/-class';
 import { OWNER } from 'container/owner';
 
 const builtInHelpers = {
@@ -38,6 +39,7 @@ const builtInHelpers = {
   hash,
   loc,
   log,
+  readonly,
   unbound,
   '-class': classHelper
 };
@@ -161,6 +163,11 @@ export default class Environment extends GlimmerEnvironment {
   iterableFor(ref, args) {
     let keyPath = args.named.get('key').value();
     return createIterable(ref, keyPath);
+  }
+
+  didCreate(component, manager) {
+    this.createdComponents.unshift(component);
+    this.createdManagers.unshift(manager);
   }
 
   didDestroy(destroyable) {

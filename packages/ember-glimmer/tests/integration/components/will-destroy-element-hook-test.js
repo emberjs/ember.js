@@ -1,5 +1,5 @@
 import { set } from 'ember-metal/property_set';
-import Component from 'ember-views/components/component';
+import { Component } from '../../utils/helpers';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 
 moduleFor('Component willDestroyElement hook', class extends RenderingTest {

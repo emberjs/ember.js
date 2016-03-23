@@ -316,7 +316,6 @@ styles.forEach(style => {
     // Because the `twitter` attr is used by the all of the components,
     // the lifecycle hooks are invoked for all components.
 
-
     topAttrs = { oldAttrs: { twitter: '@tomdale' }, newAttrs: { twitter: '@hipstertomdale' } };
     middleAttrs = { oldAttrs: { twitterTop: '@tomdale' }, newAttrs: { twitterTop: '@hipstertomdale' } };
     bottomAttrs = { oldAttrs: { twitterMiddle: '@tomdale' }, newAttrs: { twitterMiddle: '@hipstertomdale' } };

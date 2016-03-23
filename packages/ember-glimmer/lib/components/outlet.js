@@ -100,6 +100,10 @@ class AbstractOutletComponentManager {
     return new RootReference(state.render.controller);
   }
 
+  getTag(state) {
+    return null;
+  }
+
   getDestructor(state) {
     return null;
   }
