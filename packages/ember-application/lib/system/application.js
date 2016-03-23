@@ -1063,7 +1063,7 @@ function commonSetupRegistry(registry) {
   registry.optionsForType('view', { singleton: false });
   registry.injection('renderer', 'dom', 'service:-dom-helper');
 
-  registry.register('controller:basic', Controller);
+  registry.register('controller:basic', Controller, { instantiate: false });
 
   registry.injection('service:-dom-helper', 'document', 'service:-document');
 
