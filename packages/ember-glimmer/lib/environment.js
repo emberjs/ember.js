@@ -1,4 +1,5 @@
 import { Environment } from 'glimmer-runtime';
+import { isConst } from 'glimmer-reference';
 import Dict from 'ember-metal/empty_object';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
 import { DynamicComponentSyntax } from './components/dynamic-component';
@@ -8,6 +9,7 @@ import createIterable from './utils/iterable';
 import {
   RootReference,
   ConditionalReference,
+  ConstConditionalReference,
   SimpleHelperReference,
   ClassBasedHelperReference
 } from './utils/references';
@@ -108,7 +110,11 @@ export default class extends Environment {
   }
 
   toConditionalReference(reference) {
-    return new ConditionalReference(reference);
+    if (isConst(reference)) {
+      return new ConstConditionalReference(reference);
+    } else {
+      return new ConditionalReference(reference);
+    }
   }
 
   iterableFor(ref, args) {

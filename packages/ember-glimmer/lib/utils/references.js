@@ -1,4 +1,5 @@
 import { get } from 'ember-metal/property_get';
+import { ConstReference } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 
@@ -73,6 +74,12 @@ export class HashHelperReference {
 export class ConditionalReference extends GlimmerConditionalReference {
   toBool(predicate) {
     return emberToBool(predicate);
+  }
+}
+
+export class ConstConditionalReference extends ConstReference {
+  constructor(reference) {
+    super(emberToBool(reference.value()));
   }
 }
 
