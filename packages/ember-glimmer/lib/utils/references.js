@@ -148,3 +148,109 @@ export class InternalHelperReference {
 
   destroy() {}
 }
+
+import { assert } from 'ember-metal/debug';
+import { dasherize } from 'ember-runtime/system/string';
+
+export class AttributeBindingReference {
+  static apply(component, microsyntax, operations) {
+    let reference = this.parse(component, microsyntax);
+    operations.addAttribute(reference.attributeName, reference);
+  }
+
+  static parse(component, microsyntax) {
+    let colonIndex = microsyntax.indexOf(':');
+
+    if (colonIndex === -1) {
+      assert('You cannot use class as an attributeBinding, use classNameBindings instead.', microsyntax !== 'class');
+      return new this(component, microsyntax);
+    } else {
+      let prop = microsyntax.substring(0, colonIndex);
+      let attr = microsyntax.substring(colonIndex + 1);
+
+      assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attr !== 'class');
+
+      return new this(component, prop, attr);
+    }
+  }
+
+  constructor(component, propertyName, attributeName=propertyName) {
+    this.component = component;
+    this.propertyName = propertyName;
+    this.attributeName = attributeName;
+  }
+
+  value() {
+    let value = get(this.component, this.propertyName);
+
+    if (value === null || value === undefined) {
+      return null;
+    } else {
+      return value;
+    }
+  }
+
+  isDirty() { return true; }
+  destroy() {}
+}
+
+export function applyClassNameBinding(component, microsyntax, operations) {
+  let [ prop, truthy, falsy ] = microsyntax.split(':');
+  let ref;
+
+  if (truthy !== undefined) {
+    ref = new ColonClassNameBindingReference(component, prop, truthy, falsy);
+  } else {
+    ref = new SimpleClassNameBindingReference(component, prop);
+  }
+
+  operations.addAttribute('class', ref);
+}
+
+// @implements Reference
+class SimpleClassNameBindingReference {
+  constructor(component, propertyPath) {
+    this.component = component;
+    this.propertyPath = propertyPath;
+  }
+
+  value() {
+    let value = get(this.component, this.propertyPath);
+
+    if (value === true) {
+      return propertyPathToClassName(this.propertyPath);
+    } else if (value || value === 0) {
+      return value;
+    } else {
+      return null;
+    }
+  }
+
+  isDirty() { return true; }
+  destroy() {}
+}
+
+// @implements Reference
+class ColonClassNameBindingReference {
+  constructor(component, propertyPath, truthy, falsy) {
+    this.component = component;
+    this.propertyPath = propertyPath;
+    this.truthy = truthy || null;
+    this.falsy = falsy || null;
+  }
+
+  value() {
+    let value = get(this.component, this.propertyPath);
+    return !!value ? this.truthy : this.falsy;
+  }
+
+  isDirty() { return true; }
+  destroy() {}
+}
+
+function propertyPathToClassName(propertyPath) {
+  let parts = propertyPath.split('.');
+  let last = parts[parts.length - 1];
+
+  return dasherize(last);
+}

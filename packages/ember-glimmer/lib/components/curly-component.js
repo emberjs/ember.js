@@ -1,4 +1,5 @@
-import { StatementSyntax } from 'glimmer-runtime';
+import { StatementSyntax, ValueReference } from 'glimmer-runtime';
+import { AttributeBindingReference, applyClassNameBinding } from '../utils/references';
 
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
@@ -14,14 +15,31 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
-import assign from 'ember-metal/assign';
+function argsToProps(args) {
+  let attrs = args.named.value();
+  let attrKeys = Object.keys(attrs);
+  let merged = { attrs: {} };
+
+  for (let i = 0, l = attrKeys.length; i < l; i++) {
+    let name = attrKeys[i];
+    let value = attrs[name];
+
+    // Do we have to support passing both class /and/ classNames...?
+    if (name === 'class') {
+      name = 'classNames';
+    }
+
+    merged[name] = value;
+    merged.attrs[name] = value;
+  }
+
+  return merged;
+}
 
 class CurlyComponentManager {
   create(definition, args, dynamicScope) {
     let klass = definition.ComponentClass;
-    let attrs = args.named.value();
-    let merged = assign({}, attrs, { attrs });
-    let component = klass.create(merged);
+    let component = klass.create(argsToProps(args));
     let parentView = dynamicScope.view;
 
     dynamicScope.view = component;
@@ -39,8 +57,29 @@ class CurlyComponentManager {
     return component;
   }
 
-  didCreateElement(component, element) {
+  didCreateElement(component, element, operations) {
     component.element = element;
+
+    let { attributeBindings, classNames, classNameBindings } = component;
+
+    if (attributeBindings) {
+      attributeBindings.forEach(binding => {
+        AttributeBindingReference.apply(component, binding, operations);
+      });
+    }
+
+    if (classNames) {
+      classNames.forEach(name => {
+        operations.addAttribute('class', new ValueReference(name));
+      });
+    }
+
+    if (classNameBindings) {
+      classNameBindings.forEach(binding => {
+        applyClassNameBinding(component, binding, operations);
+      });
+    }
+
     component._transitionTo('hasElement');
   }
 
@@ -51,11 +90,11 @@ class CurlyComponentManager {
   }
 
   update(component, args, dynamicScope) {
-    // let oldAttrs = component.attrs;
-    let newAttrs = args.named.value();
-    let merged = assign({}, newAttrs, { attrs: newAttrs });
+    component.setProperties(argsToProps(args));
 
-    component.setProperties(merged);
+    // let oldAttrs = component.attrs;
+    // let newAttrs = args.named.value();
+    //
     // component.didUpdateAttrs({ oldAttrs, newAttrs });
     // component.didReceiveAttrs({ oldAttrs, newAttrs });
     // component.willUpdate();
@@ -74,7 +113,7 @@ class CurlyComponentManager {
 
 const MANAGER = new CurlyComponentManager();
 
-import { ComponentDefinition, ValueReference } from 'glimmer-runtime';
+import { ComponentDefinition } from 'glimmer-runtime';
 import Component from '../ember-views/component';
 
 function tagName(vm) {

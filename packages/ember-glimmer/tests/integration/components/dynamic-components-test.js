@@ -1,5 +1,5 @@
 import { set } from 'ember-metal/property_set';
-import Component from 'ember-views/components/component';
+import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 

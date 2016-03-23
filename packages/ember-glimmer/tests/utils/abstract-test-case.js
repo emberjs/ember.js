@@ -95,10 +95,23 @@ export class TestCase {
   // The following methods require `this.element` to work
 
   get firstChild() {
+    return this.nthChild(0);
+  }
+
+  nthChild(n) {
+    let i = 0;
     let node = this.element.firstChild;
 
-    while (node && isMarker(node)) {
-      node = node.nextSibling;
+    while (node) {
+      if (!isMarker(node)) {
+        i++;
+      }
+
+      if (i > n) {
+        break;
+      } else {
+        node = node.nextSibling;
+      }
     }
 
     return node;
