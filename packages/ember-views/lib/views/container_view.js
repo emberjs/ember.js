@@ -249,7 +249,7 @@ var ContainerView = View.extend(MutableArray, {
     let childViews = get(this, 'childViews');
 
     assert('You can\'t add a child to a container - the child is already a child of another view', () => {
-      for (let i = 0, l = addedViews.length; i < l; i++) {
+      for (let i = 0; i < addedViews.length; i++) {
         let item = addedViews[i];
         if (item.parentView && item.parentView !== this) { return false; }
       }

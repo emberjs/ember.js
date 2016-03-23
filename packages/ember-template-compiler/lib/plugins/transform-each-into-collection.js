@@ -57,7 +57,7 @@ function validate(node) {
 }
 
 function any(list, predicate) {
-  for (var i = 0, l = list.length; i < l; i++) {
+  for (var i = 0; i < list.length; i++) {
     if (predicate(list[i])) { return list[i]; }
   }
 

@@ -113,7 +113,7 @@ TransformInputOnToOnEvent.prototype.validate = function TransformWithAsToHash_va
 };
 
 function hashPairForKey(hash, key) {
-  for (let i = 0, l = hash.pairs.length; i < l; i++) {
+  for (let i = 0; i < hash.pairs.length; i++) {
     let pair = hash.pairs[i];
     if (pair.key === key) {
       return pair;
@@ -125,7 +125,7 @@ function hashPairForKey(hash, key) {
 
 function removeFromHash(hash, pairToRemove) {
   var newPairs = [];
-  for (let i = 0, l = hash.pairs.length; i < l; i++) {
+  for (let i = 0; i < hash.pairs.length; i++) {
     let pair = hash.pairs[i];
 
     if (pair !== pairToRemove) {

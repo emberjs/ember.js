@@ -137,7 +137,7 @@ QUnit.test('destroyed objects should not see each others changes during teardown
 
   run(function () {
     var keys = Object.keys(objs);
-    for (var i = 0, l = keys.length; i < l; i++) {
+    for (var i = 0; i < keys.length; i++) {
       objs[keys[i]].destroy();
     }
   });

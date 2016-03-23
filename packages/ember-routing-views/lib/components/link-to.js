@@ -559,7 +559,7 @@ let LinkComponent = EmberComponent.extend({
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');
 
-    for (let i = 0, len = currentWhen.length; i < len; i++) {
+    for (let i = 0; i < currentWhen.length; i++) {
       if (routing.isActiveForRoute(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
         return get(this, 'activeClass');
       }
@@ -717,7 +717,7 @@ let LinkComponent = EmberComponent.extend({
 
   _modelsAreLoaded: computed('models', function computeLinkToComponentModelsAreLoaded() {
     let models = get(this, 'models');
-    for (let i = 0, l = models.length; i < l; i++) {
+    for (let i = 0; i < models.length; i++) {
       if (models[i] == null) { return false; }
     }
 

@@ -224,10 +224,9 @@ export default Mixin.create({
 
     if (!childViews) { return this; }
 
-    var len = childViews.length;
     var view, idx;
 
-    for (idx = 0; idx < len; idx++) {
+    for (idx = 0; idx < childViews.length; idx++) {
       view = childViews[idx];
       callback(view);
     }

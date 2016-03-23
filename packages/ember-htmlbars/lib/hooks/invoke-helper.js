@@ -12,7 +12,7 @@ export default function invokeHelper(morph, env, scope, visitor, params, hash, h
       // We subscribe the morph to the helperStream here, and also subscribe
       // the helperStream to any params.
       let addedDependency = false;
-      for (var i = 0, l = params.length; i < l; i++) {
+      for (var i = 0; i < params.length; i++) {
         addedDependency = true;
         helperStream.addDependency(params[i]);
       }

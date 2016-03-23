@@ -445,7 +445,7 @@ export default EmberObject.extend({
 
     let known = dictionary(null);
     let knownKeys = Object.keys(namespace);
-    for (let index = 0, length = knownKeys.length; index < length; index++) {
+    for (let index = 0; index < knownKeys.length; index++) {
       let name = knownKeys[index];
 
       if (typeRegexp.test(name)) {

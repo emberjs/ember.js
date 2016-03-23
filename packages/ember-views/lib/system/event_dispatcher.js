@@ -229,7 +229,7 @@ export default EmberObject.extend({
         return;
       }
 
-      for (let index = 0, length = actions.length; index < length; index++) {
+      for (let index = 0; index < actions.length; index++) {
         let action = actions[index];
 
         if (action && action.eventName === eventName) {

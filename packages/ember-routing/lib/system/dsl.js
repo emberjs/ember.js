@@ -86,7 +86,7 @@ DSL.prototype = {
     }
 
     return function(match) {
-      for (var i = 0, l = dslMatches.length; i < l; i++) {
+      for (var i = 0; i < dslMatches.length; i++) {
         var dslMatch = dslMatches[i];
         match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
       }

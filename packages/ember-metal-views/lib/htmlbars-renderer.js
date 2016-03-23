@@ -114,7 +114,7 @@ MorphSet.prototype.has = function(morph) {
 
 MorphSet.prototype.clear = function() {
   let morphs = this.morphs;
-  for (let i = 0, l = morphs.length; i < l; i++) {
+  for (let i = 0; i < morphs.length; i++) {
     morphs[i].seen = false;
   }
 

@@ -1136,7 +1136,7 @@ function logLibraryVersions() {
     var maxNameLength = Math.max.apply(this, nameLengths);
 
     debug('-------------------------------');
-    for (var i = 0, l = libs.length; i < l; i++) {
+    for (var i = 0; i < libs.length; i++) {
       var lib = libs[i];
       var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
       debug([lib.name, spaces, ' : ', lib.version].join(''));
