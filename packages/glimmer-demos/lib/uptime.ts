@@ -1,6 +1,6 @@
-import EmberObject, { computed } from 'glimmer-object';
+import { computed } from 'glimmer-object';
 import { UpdatableReference } from 'glimmer-reference';
-import { TestEnvironment, TestDynamicScope, EmberishGlimmerComponent as EmberComponent } from 'glimmer-demos';
+import { TestEnvironment, TestDynamicScope, EmberishGlimmerComponent as EmberComponent } from 'glimmer-test-helpers';
 
 let ServerUptime = <any>EmberComponent.extend({
   upDays: computed(function() {
@@ -62,7 +62,7 @@ let app = env.compile(`
   {{#each servers key="name" as |server|}}
     <server-uptime name={{server.name}} days={{server.days}} />
   {{/each}}
-`)
+`);
 
 let serversRef;
 let result;
@@ -94,7 +94,7 @@ function init() {
   env.begin();
 
   serversRef = new UpdatableReference({ servers: servers() });
-  result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope() });
+  result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope(null) });
 
   console.log(env['createdComponents'].length);
   env.commit();

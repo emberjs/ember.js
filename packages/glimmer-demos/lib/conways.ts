@@ -1,5 +1,4 @@
-import world from 'worlds/one';
-import { TestEnvironment, TestDynamicScope, EmberishGlimmerComponent as EmberComponent } from 'glimmer-demos';
+import { TestEnvironment, TestDynamicScope } from 'glimmer-test-helpers';
 import { UpdatableReference } from 'glimmer-reference';
 
 // // Bare version
@@ -13,27 +12,46 @@ let env = new TestEnvironment();
 env.registerEmberishGlimmerComponent('organism-cell-component', null,
   `<organism-cell class="{{if @cell.isAlive "alive" ""}}" style="top: {{@cell.y}}px; left: {{@cell.x}}px" />`);
 
+function getWorld(): World {
+  /* tslint:disable: no-require-imports */
+  return <World>require("worlds/one").default;
+  /* tslint:enable: no-require-imports */
+}
+
 let res;
 let self;
-function startGlimmer() {
+export function startGlimmer() {
+  let world = getWorld();
   env.begin();
-  self = new UpdatableReference({ world })
-  res = env.compile(app).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
+  self = new UpdatableReference({ world });
+  res = env.compile(app).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope(null) });
   env.commit();
 
   requestAnimationFrame(rerenderGlimmer);
 }
 
 function rerenderGlimmer() {
+  let world = getWorld();
   world.advance();
   self.update({world});
   res.rerender();
   requestAnimationFrame(rerenderGlimmer);
 }
 
-window['startGlimmer'] = startGlimmer;
+export interface Cell {
+  isAlive: boolean;
+  x: number;
+  y: number;
+}
+export interface World {
+  advance(): void;
+  forEach(callback: (cell: Cell, i: number) => void): void;
+}
 
-function startDOM() {
+declare function require(id: string): any;
+
+export function startDOM() {
+  let world = getWorld();
   let state: {
     isAlive: boolean[];
     elements: HTMLElement[];

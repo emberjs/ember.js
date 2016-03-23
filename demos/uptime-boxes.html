@@ -58,7 +58,7 @@
     </style>
   </head>
   <body>
-    <button id="playpause" onclick='require("glimmer-demos/uptime").toggle()'>Play</button>
+    <button id="playpause" onclick='UptimeDemo.toggle()'>Play</button>
     <div id="output"></div>
 
     <script src="../assets/loader.js"></script>
@@ -66,6 +66,7 @@
     <script src="../amd/glimmer-common.amd.js"></script>
     <script src="../amd/glimmer-compiler.amd.js"></script>
     <script src="../amd/glimmer-runtime.amd.js"></script>
-    <script src="./demos.amd.js"></script>
+    <script src="../amd/glimmer-demos.amd.js"></script>
+    <script>var UptimeDemo = require("glimmer-demos").UptimeDemo</script>
   </body>
 </html>
