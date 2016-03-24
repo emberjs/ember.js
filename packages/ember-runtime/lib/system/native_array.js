@@ -114,8 +114,6 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
 
   Example
 
-  TODO: Update example to not use CollectionView
-
   ```js
   export default Ember.Component.extend({
     tagName: 'ul',
