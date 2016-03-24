@@ -1,5 +1,4 @@
 // jQuery, Ember.lookup,
-// Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
 import { deprecate } from 'ember-metal/debug';

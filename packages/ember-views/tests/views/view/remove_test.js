@@ -2,7 +2,6 @@ import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
-import ContainerView from 'ember-views/views/container_view';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -10,44 +9,8 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 import { objectAt } from 'ember-runtime/mixins/array';
 
 
-// .......................................................
-// removeChild()
-//
-
 var parentView, child;
 var originalViewKeyword;
-QUnit.module('View#removeChild', {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-    expectDeprecation('Setting `childViews` on a Container is deprecated.');
-
-    parentView = ContainerView.create({ childViews: [View] });
-    child = objectAt(get(parentView, 'childViews'), 0);
-  },
-  teardown() {
-    run(function() {
-      parentView.destroy();
-      child.destroy();
-    });
-    resetKeyword('view', originalViewKeyword);
-  }
-});
-
-QUnit.test('returns receiver', function() {
-  equal(parentView.removeChild(child), parentView, 'receiver');
-});
-
-QUnit.test('removes child from parent.childViews array', function() {
-  ok(get(parentView, 'childViews').indexOf(child)>=0, 'precond - has child in childViews array before remove');
-  parentView.removeChild(child);
-  ok(get(parentView, 'childViews').indexOf(child) < 0, 'removed child');
-});
-
-QUnit.test('sets parentView property to null', function() {
-  ok(get(child, 'parentView'), 'precond - has parentView');
-  parentView.removeChild(child);
-  ok(!get(child, 'parentView'), 'parentView is now null');
-});
 
 // .......................................................
 // removeAllChildren()
