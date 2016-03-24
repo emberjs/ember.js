@@ -4,7 +4,6 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
 
 import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
-import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
 import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 
 let component;
@@ -38,14 +37,10 @@ QUnit.test('reading the controller keyword fails assertion', function() {
 
 QUnit.module('ember-htmlbars: compat - controller keyword (use as a path) [LEGACY]', {
   setup() {
-    registerAstPlugin(TransformEachIntoCollection);
-
     component = null;
   },
   teardown() {
     runDestroy(component);
-
-    removeAstPlugin(TransformEachIntoCollection);
   }
 });
 

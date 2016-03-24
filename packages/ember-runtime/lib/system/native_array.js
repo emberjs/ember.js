@@ -114,13 +114,16 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
 
   Example
 
+  TODO: Update example to not use CollectionView
+
   ```js
-  var Pagination = Ember.CollectionView.extend({
+  export default Ember.Component.extend({
     tagName: 'ul',
     classNames: ['pagination'],
 
-    init: function() {
+    init() {
       this._super(...arguments);
+
       if (!this.get('content')) {
         this.set('content', Ember.A());
       }

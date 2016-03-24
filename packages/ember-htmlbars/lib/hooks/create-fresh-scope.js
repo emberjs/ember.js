@@ -25,7 +25,7 @@ import EmptyObject from 'ember-metal/empty_object';
   * If `self` is a view, two special locals are created: `view` and
     `controller`. These locals are legacy semantics.
   * If self has a `hasBoundController` property, it is coming from
-    a legacy form of #with or #each
+    a legacy form of #with
     (`{{#with something controller=someController}}`). This has
     the special effect of giving the child scope the supplied
     `controller` keyword, with an unrelated `self`. This is
