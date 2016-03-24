@@ -20,7 +20,6 @@ import {
 import { Renderer } from 'ember-metal-views';
 import { DeprecatedCoreView } from 'ember-views/views/core_view';
 import { DeprecatedView } from 'ember-views/views/view';
-import { DeprecatedContainerView } from 'ember-views/views/container_view';
 import Component from 'ember-views/components/component';
 
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -59,7 +58,6 @@ if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   Ember.View.states = states;
   Ember.View.cloneStates = cloneStates;
   Ember.View._Renderer = Renderer;
-  Ember.ContainerView = DeprecatedContainerView;
 }
 
 Ember._Renderer = Renderer;

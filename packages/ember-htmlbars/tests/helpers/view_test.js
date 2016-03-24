@@ -8,7 +8,6 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import TextField from 'ember-views/views/text_field';
 import EmberObject from 'ember-runtime/system/object';
-import ContainerView from 'ember-views/views/container_view';
 import SafeString from 'htmlbars-util/safe-string';
 import precompile from 'ember-template-compiler/compat/precompile';
 import compile from 'ember-template-compiler/system/compile';
@@ -1015,32 +1014,6 @@ QUnit.test('should expose a controller that can be used in the view instance', f
   runAppend(view);
 
   equal(controller, childThingController, 'childThing should get the same controller as the outer scope');
-});
-
-QUnit.test('should expose a controller keyword that persists through Ember.ContainerView', function() {
-  var templateString = '{{view view.containerView}}';
-  view = EmberView.create({
-    [OWNER]: owner,
-    containerView: ContainerView,
-    controller: EmberObject.create({
-      foo: 'bar'
-    }),
-
-    template: compile(templateString)
-  });
-
-  runAppend(view);
-
-  var containerView = get(view, 'childViews.firstObject');
-  var viewInstanceToBeInserted = EmberView.create({
-    template: compile('{{controller.foo}}')
-  });
-
-  run(function() {
-    containerView.pushObject(viewInstanceToBeInserted);
-  });
-
-  equal(trim(viewInstanceToBeInserted.$().text()), 'bar', 'renders value from parent\'s controller');
 });
 
 QUnit.test('should work with precompiled templates', function() {
