@@ -34,7 +34,7 @@ import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry
 import { privatize as P } from 'container/registry';
 import environment from 'ember-metal/environment';
 import RSVP from 'ember-runtime/ext/rsvp';
-import Engine from './engine';
+import Engine, { GLIMMER } from './engine';
 import require from 'require';
 
 var librariesRegistered = false;
@@ -1044,11 +1044,11 @@ Application.reopenClass({
     @return {Ember.Registry} the built registry
     @public
   */
-  buildRegistry(application, isGlimmer) {
+  buildRegistry(application, options = {}) {
     let registry = this._super(...arguments);
     registry.register('application:main', application, { instantiate: false });
 
-    if (isGlimmer) {
+    if (options[GLIMMER]) {
       glimmerSetupRegistry(registry);
     } else {
       htmlbarsSetupRegistry(registry);

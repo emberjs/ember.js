@@ -46,17 +46,14 @@ function props(obj) {
   @public
 */
 const Engine = Namespace.extend(RegistryProxy, {
-  init(options) {
+  init() {
     this._super(...arguments);
 
-    let isGlimmer = false;
-    if (isEnabled('ember-glimmer')) {
-      isGlimmer = (options && options[GLIMMER]) !== undefined ? options[GLIMMER] : true;
-    } else {
-      isGlimmer = (options && options[GLIMMER]) !== undefined ? options[GLIMMER] : false;
+    if (this[GLIMMER] === undefined) {
+      this[GLIMMER] = isEnabled('ember-glimmer');
     }
 
-    this.buildRegistry(isGlimmer);
+    this.buildRegistry();
   },
 
   /**
@@ -78,8 +75,10 @@ const Engine = Namespace.extend(RegistryProxy, {
     @method buildRegistry
     @return {Ember.Registry} the configured registry
   */
-  buildRegistry(isGlimmer) {
-    var registry = this.__registry__ = this.constructor.buildRegistry(this, isGlimmer);
+  buildRegistry() {
+    var registry = this.__registry__ = this.constructor.buildRegistry(this, {
+      [GLIMMER]: this[GLIMMER]
+    });
 
     return registry;
   },
