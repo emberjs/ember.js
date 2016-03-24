@@ -36,30 +36,7 @@ module.exports = function() {
     }
   };
 
-  var demoTS = merge([
-    find(__dirname + '/demos', { include: ['**/*.ts']}),
-    find(packages + '/glimmer-test-helpers', {
-      include: ['**/*.ts'],
-      exclude: ['tests/**'],
-      destDir: 'glimmer-demos'
-    })
-  ]);
-
-  var demoES6 = typescript(demoTS, tsOptions);
-  var demoES5 = transpile(demoES6);
-
-  var demoConcat = concat(demoES5, {
-    inputFiles: ['**/*.js'],
-    outputFile: '/demos/demos.amd.js',
-    sourceMapConfig: {
-      enabled: true,
-      cache: null,
-      sourceRoot: '/'
-    }
-  });
-
   var demoTrees = [
-    demoConcat,
     find(__dirname + '/demos', {
       include: ['*.html'],
       destDir: 'demos'
@@ -78,7 +55,6 @@ module.exports = function() {
     }));
   }
   var demos = merge(demoTrees);
-
 
   var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', '..', 'lib');
   // TODO: WAT, why does { } change the output so much....
@@ -121,6 +97,15 @@ module.exports = function() {
         'glimmer-compiler/**/*.js',
         'simple-html-tokenizer/**/*.js',
         'handlebars/**/*.js'
+      ]
+    })
+  ]);
+
+  var glimmerDemos = merge([
+    find(libTree, {
+      include: [
+        'glimmer-test-helpers/**/*.js',
+        'glimmer-demos/**/*.js',
       ]
     })
   ]);
@@ -181,6 +166,16 @@ module.exports = function() {
     }
   });
 
+  glimmerDemos = concat(glimmerDemos, {
+    inputFiles: ['**/*.js'],
+    outputFile: '/amd/glimmer-demos.amd.js',
+    sourceMapConfig: {
+      enabled: true,
+      cache: null,
+      sourceRoot: '/'
+    }
+  });
+
   glimmerTests = concat(glimmerTests, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-tests.amd.js',
@@ -198,6 +193,7 @@ module.exports = function() {
     glimmerCompiler,
     glimmerRuntime,
     glimmerTests,
+    glimmerDemos,
     es5LibTree,
     es6LibTree
   ];

@@ -32,13 +32,13 @@
     <script src="../amd/glimmer-common.amd.js"></script>
     <script src="../amd/glimmer-compiler.amd.js"></script>
     <script src="../amd/glimmer-runtime.amd.js"></script>
-    <script src="./demos.amd.js"></script>
+    <script src="../amd/glimmer-demos.amd.js"></script>
   </head>
   <body>
     <script type="application/javascript">
-      require("glimmer-demos/conways");
+      var ConwaysDemo = require("glimmer-demos").ConwaysDemo;
     </script>
-    <button onclick="startGlimmer();">Start (Glimmer)</button>
-    <button onclick="startDOM();">Start (DOM)</button>
+    <button onclick="ConwaysDemo.startGlimmer();">Start (Glimmer)</button>
+    <button onclick="ConwaysDemo.startDOM();">Start (DOM)</button>
   </body>
 </html>

@@ -1,13 +1,11 @@
 import {
   TestEnvironment,
-  TestDynamicScope,
-  EmberishCurlyComponent as CurlyComponent,
-  EmberishGlimmerComponent as GlimmerComponent
-} from 'glimmer-demos';
-import { layoutFor } from 'glimmer-runtime';
+  TestDynamicScope
+} from 'glimmer-test-helpers';
 import { UpdatableReference } from 'glimmer-reference';
 
 import { compileSpec } from 'glimmer-compiler';
+import { layoutFor } from 'glimmer-runtime';
 
 const DEFAULT_DATA =
 `{
@@ -179,8 +177,7 @@ let $inputs:   HTMLDivElement,
     $render:   HTMLButtonElement,
     $update:   HTMLButtonElement,
     $clear:    HTMLButtonElement,
-    $reset:    HTMLButtonElement,
-    $output:   HTMLDivElement;
+    $reset:    HTMLButtonElement;
 
 let ui = {
   rendered: false,
@@ -317,7 +314,7 @@ function renderUI() {
 
   env.begin();
   let self = new UpdatableReference(ui);
-  let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope() });
+  let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope(null) });
   env.commit();
 
   rerenderUI = () => {
@@ -371,7 +368,7 @@ function renderContent() {
   function compileLayout(component) {
     let definition = env.getComponentDefinition([component]);
     let compiled = layoutFor(definition, env);
-    let children = definition.compileLayout(env).children;
+    let children = definition['compileLayout'](env).children;
 
     // Fake a Block
     return { compiled, children, compile() {} };
@@ -392,37 +389,37 @@ function renderContent() {
   }
 
   function processUpdatingOpcodes(list) {
-    return res.updating.toArray().map(op => op.toJSON());
+    return res['updating'].toArray().map(op => op.toJSON());
   }
 
   let div = document.createElement('div');
 
   env.begin();
   let self = new UpdatableReference(data);
-  let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope() });
+  let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope(null) });
   env.commit();
 
   ui.rendered = true;
 
   ui.template.source = $template.value;
-  ui.template.wireFormat = JSON.parse(compileSpec($template.value));
+  ui.template.wireFormat = JSON.parse(compileSpec($template.value, {}));
   ui.template.opcodes = processOpcodes(app.raw);
 
   ui.layout.source = $layout.value;
-  ui.layout.wireFormat = JSON.parse(compileSpec($layout.value));
-  ui.layout.opcodes = processOpcodes(compileLayout("h-card"));
+  ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
+  ui.layout.opcodes = processOpcodes(compileLayout("h-card", {env}));
 
-  ui.updatingOpcodes = processUpdatingOpcodes(res.updating);
+  ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
 
   ui.html = div.innerHTML;
 
-  window.$UI = ui;
-  window.$DIV = div;
+  window['$UI'] = ui;
+  window['$DIV'] = div;
 
   _updateContent = () => {
     self.update(JSON.parse($data.value));
     res.rerender();
-    ui.updatingOpcodes = processUpdatingOpcodes(res.updating);
+    ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
     ui.html = div.innerHTML;
     rerenderUI();
   };
