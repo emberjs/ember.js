@@ -2,40 +2,56 @@ import { set } from 'ember-metal/property_set';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import computed from 'ember-metal/computed';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 
-  ['@test it can render a basic component with a static argument']() {
-    this.registerComponent('foo-bar', { template: 'hello' });
+  ['@test it can render a basic component with a static component name argument']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
-    this.render('{{component "foo-bar"}}');
+    this.render('{{component "foo-bar" name=name}}', { name: 'Sarah' });
 
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+
+    this.runTask(() => set(this.context, 'name', 'Gavin'));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Gavin' });
+
+    this.runTask(() => set(this.context, 'name', 'Sarah'));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
   }
 
-  ['@test it can render a basic component with a dynamic argument']() {
-    this.registerComponent('foo-bar', { template: 'hello from foo-bar' });
-    this.registerComponent('foo-bar-baz', { template: 'hello from foo-bar-baz' });
+  ['@test it can render a basic component with a dynamic component name argument']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}} from foo-bar' });
+    this.registerComponent('foo-bar-baz', { template: 'hello {{name}} from foo-bar-baz' });
 
-    this.render('{{component componentName}}', { componentName: 'foo-bar' });
+    this.render('{{component componentName name=name}}', { componentName: 'foo-bar', name: 'Alex' });
 
-    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+
+    this.runTask(() => set(this.context, 'name', 'Ben'));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Ben from foo-bar' });
 
     this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
-    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar-baz' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Ben from foo-bar-baz' });
 
-    this.runTask(() => set(this.context, 'componentName', 'foo-bar'));
+    this.runTask(() => {
+      set(this.context, 'componentName', 'foo-bar');
+      set(this.context, 'name', 'Alex');
+    });
 
-    this.assertComponentElement(this.firstChild, { content: 'hello from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
   }
 
   ['@test it has an element']() {
@@ -290,6 +306,334 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     });
 
     assert.deepEqual(destroyed, { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 });
+  }
+
+  ['@test component helper destroys underlying component when it is swapped out'](assert) {
+    let destroyed = { 'foo-bar': 0, 'foo-bar-baz': 0 };
+
+    this.registerComponent('foo-bar', {
+      template: 'hello from foo-bar',
+      ComponentClass: Component.extend({
+        willDestroy() {
+          this._super();
+          destroyed['foo-bar']++;
+        }
+      })
+    });
+
+    this.registerComponent('foo-bar-baz', {
+      template: 'hello from foo-bar-baz',
+      ComponentClass: Component.extend({
+        willDestroy() {
+          this._super();
+          destroyed['foo-bar-baz']++;
+        }
+      })
+    });
+
+    this.render('{{component componentName name=name}}', { componentName: 'foo-bar' });
+
+    assert.deepEqual(destroyed, { 'foo-bar': 0, 'foo-bar-baz': 0 });
+
+    this.runTask(() => this.rerender());
+
+    assert.deepEqual(destroyed, { 'foo-bar': 0, 'foo-bar-baz': 0 });
+
+    this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+
+    assert.deepEqual(destroyed, { 'foo-bar': 1, 'foo-bar-baz': 0 });
+
+    this.runTask(() => set(this.context, 'componentName', 'foo-bar'));
+
+    assert.deepEqual(destroyed, { 'foo-bar': 1, 'foo-bar-baz': 1 });
+  }
+
+  ['@test component helper with bound properties are updating correctly in init of component'](assert) {
+    this.registerComponent('foo-bar', {
+      template: 'foo-bar {{location}} {{locationCopy}} {{yield}}',
+      ComponentClass: Component.extend({
+        init: function() {
+          this._super(...arguments);
+          this.set('locationCopy', this.get('location'));
+        }
+      })
+    });
+
+    this.registerComponent('foo-bar-baz', {
+      template: 'foo-bar-baz {{location}} {{locationCopy}} {{yield}}',
+      ComponentClass: Component.extend({
+        init: function() {
+          this._super(...arguments);
+          this.set('locationCopy', this.get('location'));
+        }
+      })
+    });
+
+    this.registerComponent('outer-component', {
+      template: '{{#component componentName location=location}}arepas!{{/component}}',
+      ComponentClass: Component.extend({
+        componentName: computed('location', function() {
+          if (this.get('location') === 'Caracas') {
+            return 'foo-bar';
+          } else {
+            return 'foo-bar-baz';
+          }
+        })
+      })
+    });
+
+    this.render('{{outer-component location=location}}', { location: 'Caracas' });
+
+    this.assertText('foo-bar Caracas Caracas arepas!');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('foo-bar Caracas Caracas arepas!');
+
+    this.runTask(() => set(this.context, 'location', 'Loisaida'));
+
+    this.assertText('foo-bar-baz Loisaida Loisaida arepas!');
+
+    this.runTask(() => set(this.context, 'location', 'Caracas'));
+
+    this.assertText('foo-bar Caracas Caracas arepas!');
+  }
+
+  ['@htmlbars component helper with actions'](assert) {
+    this.registerComponent('inner-component', {
+      template: 'inner-component {{yield}}',
+      ComponentClass: Component.extend({
+        classNames: 'inner-component',
+        didInsertElement() {
+          // trigger action on click in absence of app's EventDispatcher
+          this.$().on('click', () => {
+            this.sendAction('somethingClicked');
+          });
+        },
+        willDestroyElement() {
+          this.$().off('click');
+        }
+      })
+    });
+
+    let actionTriggered = 0;
+    this.registerComponent('outer-component', {
+      template: '{{#component componentName somethingClicked="mappedAction"}}arepas!{{/component}}',
+      ComponentClass: Component.extend({
+        classNames: 'outer-component',
+        componentName: 'inner-component',
+        actions: {
+          mappedAction() {
+            actionTriggered++;
+          }
+        }
+      })
+    });
+
+    this.render('{{outer-component}}');
+
+    assert.equal(actionTriggered, 0, 'action was not triggered');
+
+    this.runTask(() => {
+      this.$('.inner-component').trigger('click');
+    });
+
+    assert.equal(actionTriggered, 1, 'action was triggered');
+  }
+
+  ['@test nested component helpers'](assert) {
+    this.registerComponent('foo-bar', { template: 'yippie! {{attrs.location}} {{yield}}' });
+    this.registerComponent('baz-qux', { template: 'yummy {{attrs.location}} {{yield}}' });
+    this.registerComponent('corge-grault', { template: 'delicious {{attrs.location}} {{yield}}' });
+
+    this.render('{{#component componentName1 location=location}}{{#component componentName2 location=location}}arepas!{{/component}}{{/component}}', {
+      componentName1: 'foo-bar',
+      componentName2: 'baz-qux',
+      location: 'Caracas'
+    });
+
+    this.assertText('yippie! Caracas yummy Caracas arepas!');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yippie! Caracas yummy Caracas arepas!');
+
+    this.runTask(() => set(this.context, 'location', 'Loisaida'));
+
+    this.assertText('yippie! Loisaida yummy Loisaida arepas!');
+
+    this.runTask(() => set(this.context, 'componentName1', 'corge-grault'));
+
+    this.assertText('delicious Loisaida yummy Loisaida arepas!');
+
+    this.runTask(() => {
+      set(this.context, 'componentName1', 'foo-bar');
+      set(this.context, 'location', 'Caracas');
+    });
+
+    this.assertText('yippie! Caracas yummy Caracas arepas!');
+  }
+
+  ['@htmlbars component with dynamic name argument resolving to non-existent component'](assert) {
+    expectAssertion(() => {
+      this.render('{{component componentName}}', { componentName: 'does-not-exist' });
+    }, /Could not find component named "does-not-exist"/);
+  }
+
+  ['@htmlbars component with static name argument for non-existent component'](assert) {
+    expectAssertion(() => {
+      this.render('{{component "does-not-exist"}}');
+    }, /Could not find component named "does-not-exist"/);
+  }
+
+  ['@htmlbars component with unquoted param resolving to a component, then non-existent component'](assert) {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component componentName name=name}}', { componentName: 'foo-bar', name: 'Alex' });
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => set(this.context, 'componentName', undefined));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+  }
+
+  ['@htmlbars component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
+    this.registerComponent('foo-bar', {
+      template: '[{{internalName}} - {{attrs.name}}]',
+      ComponentClass: Component.extend({
+        willRender() {
+          // store internally available name to ensure that the name available in `this.attrs.name`
+          // matches the template lookup name
+          set(this, 'internalName', this.attrs.name);
+        }
+      })
+    });
+
+    this.render('{{#each items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}', {
+      items: [
+        { name: 'Robert' },
+        { name: 'Jacquie' }
+      ]
+    });
+
+    this.assertText('[Robert - Robert][Jacquie - Jacquie]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[Robert - Robert][Jacquie - Jacquie]');
+
+    this.runTask(() => set(this.context, 'items', [
+      { name: 'Max' },
+      { name: 'James' }
+    ]));
+
+    this.assertText('[Max - Max][James - James]');
+
+    this.runTask(() => set(this.context, 'items', [
+      { name: 'Robert' },
+      { name: 'Jacquie' }
+    ]));
+
+    this.assertText('[Robert - Robert][Jacquie - Jacquie]');
+  }
+
+  ['@test dashless components should not be found'](assert) {
+    this.registerComponent('dashless2', { template: 'Do not render me!' });
+
+    expectAssertion(() => {
+      this.render('{{component "dashless"}}');
+    }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
+  }
+
+  ['@htmlbars positional parameters does not clash when rendering different components'](assert) {
+    this.registerComponent('foo-bar', {
+      template: 'hello {{name}} from foo-bar',
+      ComponentClass: Component.reopenClass({
+        positionalParams: ['name']
+      })
+    });
+
+    this.registerComponent('foo-bar-baz', {
+      template: 'hello {{name}} from foo-bar-baz',
+      ComponentClass: Component.reopenClass({
+        positionalParams: ['name']
+      })
+    });
+
+    this.render('{{component componentName name}}', { componentName: 'foo-bar', name: 'Alex' });
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+
+    this.runTask(() => set(this.context, 'name', 'Ben'));
+
+    // TODO: this fails in htmlbars - https://github.com/emberjs/ember.js/issues/13158
+    // this.assertComponentElement(this.firstChild, { content: 'hello Ben from foo-bar' });
+
+    this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Ben from foo-bar-baz' });
+
+    this.runTask(() => {
+      set(this.context, 'componentName', 'foo-bar');
+      set(this.context, 'name', 'Alex');
+    });
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+  }
+
+  ['@htmlbars positional parameters does not pollute the attributes when changing components'](assert) {
+    this.registerComponent('normal-message', {
+      template: 'Normal: {{something}}!',
+      ComponentClass: Component.reopenClass({
+        positionalParams: ['something']
+      })
+    });
+
+    this.registerComponent('alternative-message', {
+      template: 'Alternative: {{something}} {{somethingElse}}!',
+      ComponentClass: Component.extend({
+        something: 'Another'
+      }).reopenClass({
+        positionalParams: ['somethingElse']
+      })
+    });
+
+    this.render('{{component componentName message}}', { componentName: 'normal-message', message: 'Hello' });
+
+    this.assertComponentElement(this.firstChild, { content: 'Normal: Hello!' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'Normal: Hello!' });
+
+    this.runTask(() => set(this.context, 'componentName', 'alternative-message'));
+
+    this.assertComponentElement(this.firstChild, { content: 'Alternative: Another Hello!' });
+
+    this.runTask(() => set(this.context, 'message', 'Hi'));
+
+    // TODO: this fails in htmlbars - https://github.com/emberjs/ember.js/issues/13158
+    // this.assertComponentElement(this.firstChild, { content: 'Alternative: Another Hi!' });
+
+    this.runTask(() => {
+      set(this.context, 'componentName', 'normal-message');
+      set(this.context, 'message', 'Hello');
+    });
+
+    this.assertComponentElement(this.firstChild, { content: 'Normal: Hello!' });
   }
 
 });
