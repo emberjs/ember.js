@@ -6,24 +6,39 @@ let assert = QUnit.assert;
 
 moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
-  ['@test it can resolve custom simple helpers']() {
+  ['@test it can resolve custom simple helpers with or without dashes']() {
+    this.registerHelper('hello', () => 'hello');
     this.registerHelper('hello-world', () => 'hello world');
 
-    this.render('{{hello-world}}');
+    this.render('{{hello}} | {{hello-world}}');
 
-    this.assertText('hello world');
+    this.assertText('hello | hello world');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello | hello world');
   }
 
-  ['@test it can resolve custom class-based helpers']() {
+  ['@test it can resolve custom class-based helpers with or without dashes']() {
+    this.registerHelper('hello', {
+      compute() {
+        return 'hello';
+      }
+    });
+
     this.registerHelper('hello-world', {
       compute() {
         return 'hello world';
       }
     });
 
-    this.render('{{hello-world}}');
+    this.render('{{hello}} | {{hello-world}}');
 
-    this.assertText('hello world');
+    this.assertText('hello | hello world');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello | hello world');
   }
 
   ['@htmlbars class-based helper can recompute a new value']() {
