@@ -40,12 +40,14 @@ export namespace Expressions {
   export type Attr          = ['attr', Path];
   export type Get           = ['get', Path];
   export type Value         = str | number | boolean;
+  export type HasBlock      = ['hasBlock', str];
 
   export type Expression =
       Unknown
     | Attr
     | Get
     | Concat
+    | HasBlock
     | Helper
     | Value
     ;
@@ -67,6 +69,7 @@ export namespace Expressions {
   export const isGet          = is<Get>('get');
   export const isConcat       = is<Concat>('concat');
   export const isHelper       = is<Helper>('helper');
+  export const isHasBlock     = is<HasBlock>('hasBlock');
 
   export function isValue(value: any): value is Value {
     return value !== null && typeof value !== 'object';

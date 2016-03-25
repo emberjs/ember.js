@@ -3,6 +3,7 @@ import {
   GetNamedParameter as AttrSyntax,
   Concat as ConcatSyntax,
   Get as GetSyntax,
+  HasBlock as HasBlockSyntax,
   Helper as HelperSyntax,
   Unknown as UnknownSyntax
 } from './core';
@@ -16,6 +17,7 @@ const {
   isAttr,
   isConcat,
   isGet,
+  isHasBlock,
   isHelper,
   isUnknown,
   isValue
@@ -30,5 +32,6 @@ export default function(sexp: SerializedExpression): any {
     if (isGet(sexp)) return GetSyntax.fromSpec(sexp);
     if (isHelper(sexp)) return HelperSyntax.fromSpec(sexp);
     if (isUnknown(sexp)) return UnknownSyntax.fromSpec(sexp);
+    if (isHasBlock(sexp)) return HasBlockSyntax.fromSpec(sexp);
   }
 };
