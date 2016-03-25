@@ -21,6 +21,7 @@ function runSet(object, key, value) {
   });
 }
 
+const ORIGINAL_LEGACY_CONTROLLER_FLAG = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
 var view, appInstance;
 
 QUnit.module('ember-routing-htmlbars: {{render}} helper', {
@@ -29,6 +30,7 @@ QUnit.module('ember-routing-htmlbars: {{render}} helper', {
   },
 
   teardown() {
+    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = ORIGINAL_LEGACY_CONTROLLER_FLAG;
     runDestroy(appInstance);
     runDestroy(view);
 
@@ -686,4 +688,39 @@ QUnit.test('{{render}} helper should not require view to provide its own templat
   runAppend(view);
 
   equal(view.$().text(), 'Hello fish!');
+});
+
+QUnit.test('{{render}} helper should set router as target when parentController is not found', function() {
+  expect(2);
+
+  Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
+
+  let template = `{{render 'post' post1}}`;
+
+  view = EmberView.create({
+    [OWNER]: appInstance,
+    template: compile(template)
+  });
+
+  let postController;
+  let PostController = EmberController.extend({
+    init() {
+      this._super(...arguments);
+      postController = this;
+    }
+  });
+
+  let routerStub = {
+    send(actionName) {
+      equal(actionName, 'someAction');
+      ok(true, 'routerStub#send called');
+    }
+  };
+  appInstance.register('router:main', routerStub, { instantiate: false });
+  appInstance.register('controller:post', PostController);
+  appInstance.register('template:post', compile('post template'));
+
+  runAppend(view);
+
+  postController.send('someAction');
 });
