@@ -1466,6 +1466,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     var queryParams = get(this, '_qp.map');
 
     for (var prop in params) {
+      sawParams = true;
       if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
         continue;
       }
@@ -1474,7 +1475,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         name = match[1];
         value = params[prop];
       }
-      sawParams = true;
     }
 
     if (!name && sawParams) {
