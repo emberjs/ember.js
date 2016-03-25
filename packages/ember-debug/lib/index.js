@@ -32,7 +32,8 @@ import { generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
 /**
   Define an assertion that will throw an exception if the condition is not
   met. Ember build tools will remove any calls to `Ember.assert()` when
-  doing a production build. Example:
+  doing an Ember.js framework production build and will make the assertion a
+  no-op for an application production build. Example:
 
   ```javascript
   // Test for truthiness
