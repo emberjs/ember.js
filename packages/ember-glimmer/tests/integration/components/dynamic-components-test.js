@@ -486,7 +486,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@htmlbars component with unquoted param resolving to a component, then non-existent component'](assert) {
+  ['@htmlbars component with dynamic component name resolving to a component, then non-existent component'](assert) {
     this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
     this.render('{{component componentName name=name}}', { componentName: 'foo-bar', name: 'Alex' });
@@ -557,14 +557,14 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
   ['@htmlbars positional parameters does not clash when rendering different components'](assert) {
     this.registerComponent('foo-bar', {
       template: 'hello {{name}} from foo-bar',
-      ComponentClass: Component.reopenClass({
+      ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
       })
     });
 
     this.registerComponent('foo-bar-baz', {
       template: 'hello {{name}} from foo-bar-baz',
-      ComponentClass: Component.reopenClass({
+      ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
       })
     });
@@ -597,7 +597,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
   ['@htmlbars positional parameters does not pollute the attributes when changing components'](assert) {
     this.registerComponent('normal-message', {
       template: 'Normal: {{something}}!',
-      ComponentClass: Component.reopenClass({
+      ComponentClass: Component.extend().reopenClass({
         positionalParams: ['something']
       })
     });
