@@ -507,36 +507,6 @@ testComponent('yielding to an non-existent block', {
   expected: 'Before--After'
 });
 
-testComponent('hasBlock is true when block supplied', {
-  skip: true,
-  layout: '{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}',
-  invokeAs: { template: 'In template' },
-  expected: 'In template'
-});
-
-testComponent('hasBlock is false when block supplied', {
-  skip: true,
-  layout: '{{#if hasBlock}}{{yield}}{{else}}No Block!{{/if}}',
-  expected: 'No Block!'
-});
-
-testComponent('hasBlockParams is true when block param supplied', {
-  skip: true,
-  layout: '{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} No Block Param!{{/if}}',
-  invokeAs: {
-    blockParams: ['something'],
-    template: 'In template'
-  },
-  expected: 'In template - In Component'
-});
-
-testComponent('hasBlockParams is false when no block param supplied', {
-  skip: true,
-  layout: '{{#if hasBlockParams}}{{yield this}} - In Component{{else}}{{yield}} - No Block Param!{{/if}}',
-  invokeAs: { template: 'In template' },
-  expected: 'In template - No Block Param!'
-});
-
 testComponent('yield', {
   skip: 'glimmer',
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
@@ -567,10 +537,9 @@ testComponent('yield to inverse', {
   expected: 'No:Goodbyeouter'
 });
 
-testComponent('parameterized hasBlock (inverse) when inverse supplied', {
-  skip: true,
+testComponent('parameterized has-block (subexpr, inverse) when inverse supplied', {
   kind: 'curly',
-  layout: '{{#if (hasBlock "inverse")}}Yes{{else}}No{{/if}}',
+  layout: '{{#if (has-block "inverse")}}Yes{{else}}No{{/if}}',
   invokeAs: {
     template: 'block here',
     inverse: 'inverse here'
@@ -578,37 +547,142 @@ testComponent('parameterized hasBlock (inverse) when inverse supplied', {
   expected: 'Yes'
 });
 
-testComponent('parameterized hasBlock (inverse) when inverse not supplied', {
-  skip: true,
-  layout: '{{#if (hasBlock "inverse")}}Yes{{else}}No{{/if}}',
+testComponent('parameterized has-block (subexpr, inverse) when inverse not supplied', {
+  layout: '{{#if (has-block "inverse")}}Yes{{else}}No{{/if}}',
   invokeAs: { template: 'block here' },
   expected: 'No'
 });
 
-testComponent('parameterized hasBlock (default) when block supplied', {
-  skip: true,
-  layout: '{{#if (hasBlock)}}Yes{{else}}No{{/if}}',
+testComponent('parameterized has-block (subexpr, default) when block supplied', {
+  layout: '{{#if (has-block)}}Yes{{else}}No{{/if}}',
   invokeAs: { template: 'block here' },
   expected: 'Yes'
 });
 
-testComponent('parameterized hasBlock (default) when block not supplied', {
-  skip: true,
-  layout: '{{#if (hasBlock)}}Yes{{else}}No{{/if}}',
+testComponent('parameterized has-block (subexpr, default) when block not supplied', {
+  kind: 'curly',
+  layout: '{{#if (has-block)}}Yes{{else}}No{{/if}}',
   expected: 'No'
 });
 
-testComponent('hasBlock keyword when block supplied', {
-  skip: true,
-  layout: '{{#if hasBlock}}Yes{{else}}No{{/if}}',
+testComponent('parameterized has-block (content, inverse) when inverse supplied', {
+  kind: 'curly',
+  layout: '{{has-block "inverse"}}',
+  invokeAs: {
+    template: 'block here',
+    inverse: 'inverse here'
+  },
+  expected: 'true'
+});
+
+testComponent('parameterized has-block (content, inverse) when inverse not supplied', {
+  layout: '{{has-block "inverse"}}',
   invokeAs: { template: 'block here' },
-  expected: 'Yes'
+  expected: 'false'
 });
 
-testComponent('hasBlock keyword when block not supplied', {
+testComponent('parameterized has-block (content, default) when block supplied', {
+  layout: '{{has-block}}',
+  invokeAs: { template: 'block here' },
+  expected: 'true'
+});
+
+testComponent('parameterized has-block (content, default) when block not supplied', {
+  kind: 'curly',
+  layout: '{{has-block}}',
+  expected: 'false'
+});
+
+testComponent('parameterized has-block (prop, inverse) when inverse supplied', {
+  kind: 'curly',
+  layout: '<button name={{has-block "inverse"}}></button>',
+  invokeAs: {
+    template: 'block here',
+    inverse: 'inverse here'
+  },
+  expected: '<button name="true"></button>'
+});
+
+testComponent('parameterized has-block (prop, inverse) when inverse not supplied', {
+  layout: '<button name={{has-block "inverse"}}></button>',
+  invokeAs: { template: 'block here' },
+  expected: '<button name="false"></button>'
+});
+
+testComponent('parameterized has-block (prop, default) when block supplied', {
+  layout: '<button name={{has-block}}></button>',
+  invokeAs: { template: 'block here' },
+  expected: '<button name="true"></button>'
+});
+
+testComponent('parameterized has-block (prop, default) when block not supplied', {
+  kind: 'curly',
+  layout: '<button name={{has-block}}></button>',
+  expected: '<button name="false"></button>'
+});
+
+testComponent('parameterized has-block (attr, inverse) when inverse supplied', {
   skip: true,
-  layout: '{{#if hasBlock}}Yes{{else}}No{{/if}}',
-  expected: 'No'
+  kind: 'curly',
+  layout: '<button data-has-block="{{has-block "inverse"}}""></button>',
+  invokeAs: {
+    template: 'block here',
+    inverse: 'inverse here'
+  },
+  expected: '<button data-has-block="true"></button>'
+});
+
+testComponent('parameterized has-block (attr, inverse) when inverse not supplied', {
+  skip: true,
+  layout: '<button data-has-block="{{has-block "inverse"}}""></button>',
+  invokeAs: { template: 'block here' },
+  expected: '<button data-has-block="false"></button>'
+});
+
+testComponent('parameterized has-block (attr, default) when block supplied', {
+  skip: true,
+  layout: '<button data-has-block="{{has-block}}""></button>',
+  invokeAs: { template: 'block here' },
+  expected: '<button data-has-block="true"></button>'
+});
+
+testComponent('parameterized has-block (attr, default) when block not supplied', {
+  skip: true,
+  kind: 'curly',
+  layout: '<button data-has-block="{{has-block}}""></button>',
+  expected: '<button data-has-block="false"></button>'
+});
+
+testComponent('parameterized has-block (concatted attr, inverse) when inverse supplied', {
+  skip: true,
+  kind: 'curly',
+  layout: '<button data-has-block="is-{{has-block "inverse"}}""></button>',
+  invokeAs: {
+    template: 'block here',
+    inverse: 'inverse here'
+  },
+  expected: '<button data-has-block="is-true"></button>'
+});
+
+testComponent('parameterized has-block (concatted attr, inverse) when inverse not supplied', {
+  skip: true,
+  layout: '<button data-has-block="is-{{has-block "inverse"}}""></button>',
+  invokeAs: { template: 'block here' },
+  expected: '<button data-has-block="is-false"></button>'
+});
+
+testComponent('parameterized has-block (concatted attr, default) when block supplied', {
+  skip: true,
+  layout: '<button data-has-block="is-{{has-block}}""></button>',
+  invokeAs: { template: 'block here' },
+  expected: '<button data-has-block="is-true"></button>'
+});
+
+testComponent('parameterized has-block (concatted attr, default) when block not supplied', {
+  skip: true,
+  kind: 'curly',
+  layout: '<button data-has-block="is-{{has-block}}""></button>',
+  expected: '<button data-has-block="is-false"></button>'
 });
 
 module("Components - curlies - dynamic customizations");
