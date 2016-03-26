@@ -10,6 +10,10 @@ var trim = jQuery.trim;
 
 var appInstance, top;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-routing-htmlbars: {{outlet}} helper', {
   setup() {
     appInstance = buildAppInstance();
@@ -241,4 +245,6 @@ function withTemplate(string) {
     },
     outlets: {}
   };
+}
+
 }

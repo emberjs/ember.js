@@ -13,6 +13,10 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var innerComponent, outerComponent, originalViewKeyword;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-routing-htmlbars: action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -548,3 +552,5 @@ QUnit.test('action should be called within a run loop', function(assert) {
 
   innerComponent.fireAction();
 });
+
+}

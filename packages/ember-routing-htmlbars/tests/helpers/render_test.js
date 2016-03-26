@@ -24,6 +24,10 @@ function runSet(object, key, value) {
 const ORIGINAL_LEGACY_CONTROLLER_FLAG = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
 var view, appInstance;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-routing-htmlbars: {{render}} helper', {
   setup() {
     appInstance = buildAppInstance();
@@ -724,3 +728,5 @@ QUnit.test('{{render}} helper should set router as target when parentController 
 
   postController.send('someAction');
 });
+
+}
