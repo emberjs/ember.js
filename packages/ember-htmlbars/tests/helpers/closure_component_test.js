@@ -1,6 +1,7 @@
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-views/components/component';
+import EventDispatcher from 'ember-views/system/event_dispatcher';
 import compile from 'ember-template-compiler/system/compile';
 import run from 'ember-metal/run_loop';
 import isEmpty from 'ember-metal/is_empty';
@@ -613,4 +614,157 @@ QUnit.test('adding parameters to a closure component\'s instance does not add it
 
   runAppend(component);
   equal(component.$().text(), 'Foo', 'there is only one Foo');
+});
+
+QUnit.test('parameters in a closure are mutable when closure is a param', function(assert) {
+  let dispatcher = EventDispatcher.create();
+  dispatcher.setup();
+
+  let ChangeButton = Component.extend().reopenClass({
+    positionalParams: ['val']
+  });
+
+  owner.register(
+    'component:change-button',
+    ChangeButton
+  );
+  owner.register(
+    'template:components/change-button',
+    compile('<button {{action (action (mut val) 10)}} class="my-button">Change to 10</button>')
+  );
+
+  let template = compile('{{component (component "change-button" val2)}}<span class="value">{{val2}}</span>');
+
+  component = Component.extend({
+    [OWNER]: owner,
+    template
+  }).create({
+    val2: 8
+  });
+
+  runAppend(component);
+
+  assert.equal(component.$('.value').text(), '8', 'initial state is right');
+
+  run(() => component.$('.my-button').click());
+
+  assert.equal(component.$('.value').text(), '10', 'Value gets updated');
+
+  runDestroy(dispatcher);
+});
+
+QUnit.test('parameters in a closure are mutable when closure is in a nested param', function(assert) {
+  let dispatcher = EventDispatcher.create();
+  dispatcher.setup();
+
+  let ChangeButton = Component.extend().reopenClass({
+    positionalParams: ['val']
+  });
+
+  owner.register(
+    'component:change-button',
+    ChangeButton
+  );
+  owner.register(
+    'template:components/change-button',
+    compile('<button {{action (action (mut val) 10)}} class="my-button">Change to 10</button>')
+  );
+
+  owner.register(
+    'component:my-comp',
+    Component.extend().reopenClass({
+      positionalParams: ['components']
+    })
+  );
+  owner.register(
+    'template:components/my-comp',
+    compile('{{component components.comp}}')
+  );
+
+  let template = compile('{{my-comp (hash comp=(component "change-button" val2))}}<span class="value">{{val2}}</span>');
+
+  component = Component.extend({
+    [OWNER]: owner,
+    template
+  }).create({
+    val2: 8
+  });
+
+  runAppend(component);
+
+  assert.equal(component.$('.value').text(), '8', 'initial state is right');
+
+  run(() => component.$('.my-button').click());
+
+  assert.equal(component.$('.value').text(), '10', 'Value gets updated');
+
+  runDestroy(dispatcher);
+});
+
+QUnit.test('parameters in a closure are mutable when closure is a hash value', function(assert) {
+  let dispatcher = EventDispatcher.create();
+  dispatcher.setup();
+
+  owner.register(
+    'template:components/change-button',
+    compile('<button {{action (action (mut val) 10)}} class="my-button">Change to 10</button>')
+  );
+
+  owner.register(
+    'template:components/my-comp',
+    compile('{{component component}}')
+  );
+
+  let template = compile('{{my-comp component=(component "change-button" val=val2)}}<span class="value">{{val2}}</span>');
+
+  component = Component.extend({
+    [OWNER]: owner,
+    template
+  }).create({
+    val2: 8
+  });
+
+  runAppend(component);
+
+  assert.equal(component.$('.value').text(), '8', 'initial state is right');
+
+  run(() => component.$('.my-button').click());
+
+  assert.equal(component.$('.value').text(), '10', 'Value gets updated');
+
+  runDestroy(dispatcher);
+});
+
+QUnit.test('parameters in a closure are mutable when closure is a nested hash value', function(assert) {
+  let dispatcher = EventDispatcher.create();
+  dispatcher.setup();
+
+  owner.register(
+    'template:components/change-button',
+    compile('<button {{action (action (mut val) 10)}} class="my-button">Change to 10</button>')
+  );
+
+  owner.register(
+    'template:components/my-comp',
+    compile('{{component components.button}}')
+  );
+
+  let template = compile('{{my-comp components=(hash button=(component "change-button" val=val2))}}<span class="value">{{val2}}</span>');
+
+  component = Component.extend({
+    [OWNER]: owner,
+    template
+  }).create({
+    val2: 8
+  });
+
+  runAppend(component);
+
+  assert.equal(component.$('.value').text(), '8', 'initial state is right');
+
+  run(() => component.$('.my-button').click());
+
+  assert.equal(component.$('.value').text(), '10', 'Value gets updated');
+
+  runDestroy(dispatcher);
 });
