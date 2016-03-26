@@ -11,6 +11,10 @@ import { setOwner } from 'container/owner';
 var originalViewKeyword;
 var parentView, childView;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('tests/views/view/child_views_tests.js', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -168,3 +172,5 @@ QUnit.test('should remove childViews inside {{each}} on destroy', function() {
     outerView.destroy();
   });
 });
+
+}

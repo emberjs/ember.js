@@ -53,6 +53,10 @@ QUnit.test('should assert if `tagName` is an empty string and `classNameBindings
   view._renderNode = null;
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('calls render and turns resultant string into element', function() {
   view = EmberView.create({
     tagName: 'span',
@@ -138,3 +142,5 @@ QUnit.test('generated element include HTML from child views as well', function()
 
   ok(view.$('#foo').length, 'has element with child elementId');
 });
+
+}

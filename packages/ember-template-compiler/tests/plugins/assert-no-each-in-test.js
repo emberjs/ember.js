@@ -3,6 +3,10 @@ import { compile } from 'ember-template-compiler';
 
 let legacyViewSupportOriginalValue;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-template-compiler: assert-no-each-in-test without legacy view support', {
   setup() {
     legacyViewSupportOriginalValue = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
@@ -45,3 +49,5 @@ QUnit.test('{{#each foo in bar}} is allowed', function() {
 
   ok(true);
 });
+
+}

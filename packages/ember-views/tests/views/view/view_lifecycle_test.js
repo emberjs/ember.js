@@ -13,6 +13,11 @@ var originalLookup = Ember.lookup;
 var originalViewKeyword;
 var lookup, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
+
 QUnit.module('views/view/view_lifecycle_test - pre-render', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -373,3 +378,5 @@ QUnit.test('trigger rerender on a view in the inDOM state keeps its state as inD
     view.destroy();
   });
 });
+
+}

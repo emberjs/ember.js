@@ -237,6 +237,7 @@ QUnit.test('views created by {{outlet}} should get destroyed', function() {
   equal(destroyed, 1, 'expected to see view destroyed');
 });
 
+}
 
 function withTemplate(string) {
   return {
@@ -245,6 +246,4 @@ function withTemplate(string) {
     },
     outlets: {}
   };
-}
-
 }

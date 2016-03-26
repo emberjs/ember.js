@@ -34,6 +34,10 @@ QUnit.test('Template views return throw if their template cannot be found', func
   }, /cantBeFound/);
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('should call the function of the associated template', function() {
   owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called</h1>'
@@ -131,6 +135,8 @@ QUnit.test('should not use defaultTemplate if template is provided', function() 
 
   equal('foo', view.$().text(), 'default template was not printed');
 });
+
+}
 
 QUnit.test('should render an empty element if no template is specified', function() {
   view = EmberView.create();

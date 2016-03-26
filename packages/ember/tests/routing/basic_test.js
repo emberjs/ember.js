@@ -62,6 +62,9 @@ function handleURLRejectsWith(path, expectedReason) {
   });
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('Basic Routing', {
   setup() {
     run(function() {
@@ -1037,7 +1040,7 @@ QUnit.test('The Special page returning an error invokes SpecialRoute\'s error ha
   });
 });
 
-function testOverridableErrorHandler(handlersName) {
+let testOverridableErrorHandler = function(handlersName) {
   expect(2);
 
   Router.map(function() {
@@ -1080,7 +1083,7 @@ function testOverridableErrorHandler(handlersName) {
   run(function() {
     resolve(menuItem);
   });
-}
+};
 
 QUnit.test('ApplicationRoute\'s default error handler can be overridden', function() {
   testOverridableErrorHandler('actions');
@@ -4076,3 +4079,5 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
     run(function() { router.send('hideModal'); });
   }, /You passed undefined as the outlet name/);
 });
+
+}

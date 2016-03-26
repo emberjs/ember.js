@@ -36,6 +36,10 @@ QUnit.test('Layout views return throw if their layout cannot be found', function
   }, /cantBeFound/);
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('should use the template of the associated layout', function() {
   var templateCalled = 0;
   var layoutCalled = 0;
@@ -114,3 +118,5 @@ QUnit.test('should not use defaultLayout if layout is provided', function() {
 
   equal('used layout', view.$().text(), 'default layout was not printed');
 });
+
+}

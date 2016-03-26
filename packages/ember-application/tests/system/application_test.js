@@ -219,6 +219,10 @@ QUnit.test('initialize application with stateManager via initialize call from Ro
   equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('ApplicationView is inserted into the page', function() {
   run(function() {
     app = Application.create({
@@ -238,6 +242,8 @@ QUnit.test('ApplicationView is inserted into the page', function() {
 
   equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
 });
+
+}
 
 QUnit.test('Minimal Application initialized with just an application template', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');

@@ -35,6 +35,10 @@ QUnit.test('returns jQuery object selecting element if provided', function() {
   equal(jquery[0], get(view, 'element'), 'element should be element');
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('returns jQuery object selecting element inside element if provided', function() {
   ok(get(view, 'element'), 'precond - should have element');
 
@@ -42,6 +46,8 @@ QUnit.test('returns jQuery object selecting element inside element if provided',
   equal(jquery.length, 1, 'view.$() should have one element');
   equal(jquery[0].parentNode, get(view, 'element'), 'element should be in element');
 });
+
+}
 
 QUnit.test('returns empty jQuery object if filter passed that does not match item in parent', function() {
   ok(get(view, 'element'), 'precond - should have element');

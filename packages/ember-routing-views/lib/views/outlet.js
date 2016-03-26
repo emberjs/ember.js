@@ -3,13 +3,8 @@
 @submodule ember-routing-views
 */
 
-import isEnabled from 'ember-metal/features';
 import View from 'ember-views/views/view';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-
-if (!isEnabled('ember-glimmer')) {
-  topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
-}
 
 export var CoreOutletView = View.extend({
   defaultTemplate: topLevelViewTemplate,

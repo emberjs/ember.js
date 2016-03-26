@@ -6,6 +6,10 @@ import compile from 'ember-template-compiler/system/compile';
 
 var View, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('EmberView - renderToElement()', {
   setup() {
     View = EmberView.extend({
@@ -53,3 +57,5 @@ QUnit.test('should create and render into an element with a provided tagName', f
   equal(element.firstChild.firstChild.tagName, 'H1', 'renders the view div');
   equal(element.firstChild.firstChild.nextSibling.nodeValue, ' goodbye world', 'renders the text node');
 });
+
+}

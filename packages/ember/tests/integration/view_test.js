@@ -26,6 +26,10 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('View Integration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -79,3 +83,5 @@ QUnit.test('invoking `{{view}} from a non-view backed (aka only template) templa
 
   assert.strictEqual(controllerInMyFoo, indexController, 'controller is provided to `{{view}}`');
 });
+
+}

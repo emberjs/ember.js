@@ -56,6 +56,10 @@ QUnit.module('View Integration', {
   }
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('booting multiple applications can properly handle events', function(assert) {
   run(App1, 'advanceReadiness');
   run(App2, 'advanceReadiness');
@@ -68,3 +72,5 @@ QUnit.test('booting multiple applications can properly handle events', function(
 
   assert.deepEqual(actions, ['#app-2', '#app-1']);
 });
+
+}

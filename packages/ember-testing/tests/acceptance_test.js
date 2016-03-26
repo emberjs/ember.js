@@ -13,6 +13,10 @@ import RSVP from 'ember-runtime/ext/rsvp';
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-testing Acceptance', {
   setup() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
@@ -412,3 +416,5 @@ QUnit.test('that the setup/teardown happens correct', function() {
   Test.adapter = originalAdapter;
   indexHitCount = 0;
 });
+
+}
