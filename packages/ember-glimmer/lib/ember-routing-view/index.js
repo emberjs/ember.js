@@ -1,5 +1,5 @@
 import assign from 'ember-metal/assign';
-import EmptyObject from 'ember-metal/empty_object';
+import { DirtyableTag } from 'glimmer-reference';
 
 /**
 @module ember
@@ -9,7 +9,7 @@ import EmptyObject from 'ember-metal/empty_object';
 class OutletStateReference {
   constructor(outletView) {
     this.outletView = outletView;
-    this.children = new EmptyObject();
+    this.tag = outletView._tag;
   }
 
   get(key) {
@@ -23,20 +23,13 @@ class OutletStateReference {
   get isTopLevel() {
     return true;
   }
-
-  isDirty() {
-    return true;
-  }
-
-  destroy() {
-  }
 }
 
 class ChildOutletStateReference {
   constructor(parent, key) {
     this.parent = parent;
     this.key = key;
-    this.children = new EmptyObject();
+    this.tag = parent.tag;
   }
 
   get(key) {
@@ -49,13 +42,6 @@ class ChildOutletStateReference {
 
   get isTopLevel() {
     return false;
-  }
-
-  isDirty() {
-    return true;
-  }
-
-  destroy() {
   }
 }
 
@@ -86,6 +72,7 @@ export class OutletView {
     this.template = template;
     this.outletState = null;
     this._renderResult = null;
+    this._tag = new DirtyableTag();
   }
 
   appendTo(selector) {
@@ -106,6 +93,7 @@ export class OutletView {
 
   setOutletState(state) {
     this.outletState = state;
+    this._tag.dirty();
     this.rerender(); // FIXME
   }
 

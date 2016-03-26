@@ -21,6 +21,10 @@ import {
   toString
 } from 'ember-metal/utils';
 
+import {
+  markObjectAsDirty
+} from './tags';
+
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change. If the
@@ -44,11 +48,13 @@ export function set(obj, keyName, value, tolerant) {
   assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, !pathHasThis(keyName));
 
-  var meta, possibleDesc, desc;
+  let meta, possibleDesc, desc;
+
   if (obj) {
     meta = peekMeta(obj);
     possibleDesc = obj[keyName];
     desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    markObjectAsDirty(meta);
   }
 
   var isUnknown, currentValue;

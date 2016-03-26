@@ -3,7 +3,12 @@
 @submodule ember-templates
 */
 
+import symbol from 'ember-metal/symbol';
 import Object from 'ember-runtime/system/object';
+import { POST_INIT } from 'ember-runtime/system/core_object';
+import { DirtyableTag } from 'glimmer-reference';
+
+export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
 /**
   Ember Helpers are functions that can compute values, and are used in templates.
@@ -48,6 +53,10 @@ import Object from 'ember-runtime/system/object';
 var Helper = Object.extend({
   isHelperInstance: true,
 
+  [POST_INIT]() {
+    this[RECOMPUTE_TAG] = new DirtyableTag();
+  },
+
   /**
     On a class-based helper, it may be useful to force a recomputation of that
     helpers value. This is akin to `rerender` on a component.
@@ -72,7 +81,9 @@ var Helper = Object.extend({
     @public
     @since 1.13.0
   */
-  recompute() {}
+  recompute() {
+    this[RECOMPUTE_TAG].dirty();
+  }
 
   /**
     Override this function when writing a class-based helper.
