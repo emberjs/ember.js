@@ -622,6 +622,88 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
+  ['@test it can yield internal and external properties positionally']() {
+    let instance;
+
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        instance = this;
+      },
+      greeting: 'hello'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{yield greeting greetee.firstName}}' });
+
+    this.render('{{#foo-bar greetee=person as |greeting name|}}{{name}} {{person.lastName}}, {{greeting}}{{/foo-bar}}', {
+      person: {
+        firstName: 'Joel',
+        lastName: 'Kang'
+      }
+    });
+
+    this.assertComponentElement(this.firstChild, { content: 'Joel Kang, hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'Joel Kang, hello' });
+
+    this.runTask(() => set(this.context, 'person', { firstName: 'Dora', lastName: 'the Explorer' }));
+
+    this.assertComponentElement(this.firstChild, { content: 'Dora the Explorer, hello' });
+
+    this.runTask(() => set(instance, 'greeting', 'hola'));
+
+    this.assertComponentElement(this.firstChild, { content: 'Dora the Explorer, hola' });
+
+    this.runTask(() => {
+      set(instance, 'greeting', 'hello');
+      set(this.context, 'person', {
+        firstName: 'Joel',
+        lastName: 'Kang'
+      });
+    });
+
+    this.assertComponentElement(this.firstChild, { content: 'Joel Kang, hello' });
+  }
+
+  ['@test #11519 - block param infinite loop']() {
+    let instance;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        instance = this;
+      },
+      danger: 0
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{danger}}{{yield danger}}' });
+
+    // On initial render, create streams. The bug will not have manifested yet, but at this point
+    // we have created streams that create a circular invalidation.
+    this.render(`{{#foo-bar as |dangerBlockParam|}}{{/foo-bar}}`);
+
+    this.assertText('0');
+
+    // Trigger a non-revalidating re-render. The yielded block will not be dirtied
+    // nor will block param streams, and thus no infinite loop will occur.
+    this.runTask(() => this.rerender());
+
+    this.assertText('0');
+
+    // Trigger a revalidation, which will cause an infinite loop without the fix
+    // in place.  Note that we do not see the infinite loop is in testing mode,
+    // because a deprecation warning about re-renders is issued, which Ember
+    // treats as an exception.
+    this.runTask(() => set(instance, 'danger', 1));
+
+    this.assertText('1');
+
+    this.runTask(() => set(instance, 'danger', 0));
+
+    this.assertText('0');
+  }
+
   ['@test the component and its child components are destroyed'](assert) {
     let destroyed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
 
