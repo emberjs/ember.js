@@ -1,10 +1,8 @@
 import { EMPTY_CACHE } from '../utils';
 import { InternedString, DictSet, dict } from 'glimmer-util';
 import Meta from '../meta';
-import ForkedReference from './forked';
 import { PropertyReference } from './descriptors';
-import PushPullReference from './push-pull';
-import { PathReference as IPathReference, Reference, Destroyable } from 'glimmer-reference';
+import { VOLATILE_TAG, PathReference as IPathReference, Reference } from 'glimmer-reference';
 import { Dict, HasGuid } from 'glimmer-util';
 
 class UnchainFromPath {
@@ -21,26 +19,22 @@ class UnchainFromPath {
   }
 }
 
-export default class PathReference<T> extends PushPullReference<T> implements IPathReference<T>, HasGuid {
+export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private parent: IPathReference<any>;
   private property: InternedString;
   protected cache: any = EMPTY_CACHE;
   private inner: Reference<T> = null;
   private chains: Dict<PathReference<any>> = null;
-  private notifyChildren: DictSet<PathReference<any>> = null;
   private lastParentValue: any = EMPTY_CACHE;
   public _guid = null;
+  public tag = VOLATILE_TAG;
 
   constructor(parent: IPathReference<T>, property: InternedString) {
-    super();
     this.parent = parent;
     this.property = property;
   }
 
-  isDirty(): boolean { return this.cache === EMPTY_CACHE || (this.inner && this.inner.isDirty()); }
-
   value(): any {
-    if (!this.isDirty()) return this.cache;
     let { lastParentValue, property, inner } = this;
     let parentValue = this._parentValue();
 
@@ -62,34 +56,14 @@ export default class PathReference<T> extends PushPullReference<T> implements IP
     return (this.cache = inner.value());
   }
 
-  notify() {
-    // this._notify();
-    super.notify();
-  }
-
   get(prop: InternedString): IPathReference<any> {
     let chains = this._getChains();
     if (<string>prop in chains) return chains[<string>prop];
     return (chains[<string>prop] = new PathReference(this, prop));
   }
 
-  chain(child: PathReference<any>): Destroyable {
-    let notifySet = this._getNotifyChildren();
-    notifySet.add(child);
-    return new UnchainFromPath(notifySet, child);
-  }
-
-  fork(): Reference<T> {
-    return new ForkedReference(this);
-  }
-
   label(): string {
     return '[reference Direct]';
-  }
-
-  private _getNotifyChildren(): DictSet<PathReference<any>> {
-    if (this.notifyChildren) return this.notifyChildren;
-    return (this.notifyChildren = new DictSet<PathReference<any>>());
   }
 
   private _getChains(): Dict<PathReference<any>> {

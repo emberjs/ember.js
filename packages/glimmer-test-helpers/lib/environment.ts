@@ -52,6 +52,7 @@ import { compile as rawCompile, compileLayout as rawCompileLayout } from "./help
 
 import {
   FIXME,
+  Destroyable,
   Opaque,
   Dict,
   InternedString,
@@ -62,16 +63,20 @@ import {
 import GlimmerObject, { GlimmerObjectFactory } from "glimmer-object";
 
 import {
-  Destroyable,
+  VOLATILE_TAG,
+  RevisionTag,
   Reference,
   PathReference,
-  UpdatableReference,
   OpaqueIterator,
   OpaqueIterable,
   AbstractIterable,
   IterationItem,
   isConst
 } from "glimmer-reference";
+
+import {
+  UpdatableReference
+} from "glimmer-object-reference";
 
 type KeyFor = (item: Opaque, index: number) => string;
 
@@ -365,14 +370,12 @@ class EmberishConditionalReference extends ConditionalReference {
 export class SimplePathReference<T> implements PathReference<T> {
   private parent: Reference<T>;
   private property: InternedString;
+  public tag = VOLATILE_TAG;
 
   constructor(parent: Reference<T>, property: InternedString) {
     this.parent = parent;
     this.property = property;
   }
-
-  isDirty() { return true; }
-  destroy() {}
 
   value(): T {
     return this.parent.value()[<string>this.property];
@@ -388,14 +391,12 @@ type UserHelper = (args: any[], named: Dict<any>) => any;
 class HelperReference implements PathReference<Opaque> {
   private helper: UserHelper;
   private args: EvaluatedArgs;
+  public tag = VOLATILE_TAG;
 
   constructor(helper: UserHelper, args: EvaluatedArgs) {
     this.helper = helper;
     this.args = args;
   }
-
-  isDirty() { return true; }
-  destroy() {}
 
   value() {
     let { helper, args: { positional, named } } = this;
@@ -588,13 +589,13 @@ class CurlyComponentSyntax extends StatementSyntax {
 class DynamicComponentReference implements Reference<ComponentDefinition<Opaque>> {
   private nameRef: PathReference<Opaque>;
   private env: Environment;
+  public tag: RevisionTag;
 
   constructor({ nameRef, env }: { nameRef: PathReference<Opaque>, env: Environment }) {
     this.nameRef = nameRef;
     this.env = env;
+    this.tag = nameRef.tag;
   }
-
-  isDirty() { return true; }
 
   value(): ComponentDefinition<Opaque> {
     let { env, nameRef } = this;
@@ -607,8 +608,6 @@ class DynamicComponentReference implements Reference<ComponentDefinition<Opaque>
       throw new Error(`Cannot render ${name} as a component`);
     }
   }
-
-  destroy() {}
 }
 
 function dynamicComponentFactoryFor(args: EvaluatedArgs, vm: VM) {

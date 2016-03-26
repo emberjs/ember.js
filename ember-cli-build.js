@@ -80,6 +80,7 @@ module.exports = function() {
     include: [
       'glimmer/**/*.js',
       'glimmer-object/**/*.js',
+      'glimmer-object-reference/**/*.js',
       'glimmer-reference/**/*.js',
       'glimmer-util/**/*.js',
       'glimmer-wire-format/**/*.js'

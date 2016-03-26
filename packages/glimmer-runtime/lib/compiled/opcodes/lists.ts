@@ -3,7 +3,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { LabelOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
 import { FIXME, ListSlice, Slice } from 'glimmer-util';
-import { Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
+import { VOLATILE_TAG, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
 
 abstract class ListUpdatingOpcode extends UpdatingOpcode {
   public type: string;
@@ -15,6 +15,7 @@ abstract class ListUpdatingOpcode extends UpdatingOpcode {
 
 class IterablePresenceReference implements Reference<boolean> {
   private artifacts: IterationArtifacts;
+  public tag = VOLATILE_TAG as FIXME<'Can we do better than this?'>;
 
   constructor(artifacts: IterationArtifacts) {
     this.artifacts = artifacts;
@@ -23,12 +24,6 @@ class IterablePresenceReference implements Reference<boolean> {
   value(): boolean {
     return !this.artifacts.isEmpty();
   }
-
-  isDirty(): boolean {
-    return true;
-  }
-
-  destroy() {}
 }
 
 export class PutIteratorOpcode extends Opcode {

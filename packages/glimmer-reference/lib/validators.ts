@@ -1,0 +1,299 @@
+import Reference, { PathReference } from './reference';
+import { InternedString, Opaque } from 'glimmer-util';
+
+//////////
+
+export interface EntityTag<T> extends Reference<T> {
+  value(): T;
+  validate(snapshot: T);
+}
+
+export interface Tagged<T> {
+  tag: EntityTag<T>;
+}
+
+//////////
+
+export type Revision = number;
+
+export const CONSTANT: Revision = 0;
+export const INITIAL:  Revision = 1;
+export const VOLATILE: Revision = NaN;
+
+export abstract class RevisionTag implements RevisionTag {
+  abstract value(): Revision;
+
+  validate(snapshot: Revision): boolean {
+    return this.value() === snapshot;
+  }
+}
+
+let $REVISION = INITIAL;
+
+export class DirtyableTag extends RevisionTag {
+  private revision: Revision;
+
+  constructor(revision = $REVISION) {
+    super();
+    this.revision = revision;
+  }
+
+  value(): Revision {
+    return this.revision;
+  }
+
+  dirty() {
+    this.revision = ++$REVISION;
+  }
+}
+
+export function combineTagged(tagged: Tagged<Revision>[]): RevisionTag {
+  if (tagged.length === 0) {
+    return CONSTANT_TAG;
+  } else if (tagged.length === 1) {
+    return tagged[0].tag;
+  } else if (tagged.length === 2) {
+    return new TagsPair(tagged[0].tag, tagged[1].tag);
+  } else {
+    return new TagsCombinator(tagged.map(t => t.tag));
+  }
+}
+
+export function combine(tags: RevisionTag[]): RevisionTag {
+  if (tags.length === 0) {
+    return CONSTANT_TAG;
+  } else if (tags.length === 1) {
+    return tags[0];
+  } else if (tags.length === 2) {
+    return new TagsPair(tags[0], tags[1]);
+  } else {
+    return new TagsCombinator(tags);
+  }
+}
+
+export abstract class CachedTag extends RevisionTag {
+  private lastChecked: Revision = null;
+  private lastValue: Revision = null;
+
+  value(): Revision {
+    let { lastChecked, lastValue } = this;
+
+    if (lastChecked !== $REVISION) {
+      this.lastChecked = $REVISION;
+      this.lastValue = lastValue = this.compute();
+    }
+
+    return this.lastValue;
+  }
+
+  protected invalidate() {
+    this.lastChecked = null;
+  }
+
+  protected abstract compute(): Revision;
+}
+
+class TagsPair extends CachedTag {
+  private first: RevisionTag;
+  private second: RevisionTag;
+
+  constructor(first: RevisionTag, second: RevisionTag) {
+    super();
+    this.first = first;
+    this.second = second;
+  }
+
+  protected compute(): Revision {
+    return Math.max(this.first.value(), this.second.value());
+  }
+}
+
+class TagsCombinator extends CachedTag {
+  private tags: RevisionTag[];
+
+  constructor(tags: RevisionTag[]) {
+    super();
+    this.tags = tags;
+  }
+
+  protected compute(): Revision {
+    let { tags } = this;
+
+    let max = -1;
+
+    for (let i=0; i<tags.length; i++) {
+      let value = tags[i].value();
+      max = value > max ? value : max;
+    }
+
+    return max;
+  }
+}
+
+export class UpdatableTag extends CachedTag {
+  private tag: RevisionTag;
+  private lastUpdated: Revision;
+
+  constructor(tag: RevisionTag) {
+    super();
+    this.tag = tag;
+    this.lastUpdated = INITIAL;
+  }
+
+  protected compute(): Revision {
+    return Math.max(this.lastUpdated, this.tag.value());
+  }
+
+  update(tag: RevisionTag) {
+    if (tag !== this.tag) {
+      this.tag = tag;
+      this.lastUpdated = $REVISION;
+      this.invalidate();
+    }
+  }
+}
+
+//////////
+
+export const CONSTANT_TAG: RevisionTag = new (
+  class CleanTag extends RevisionTag {
+    value(): Revision {
+      return CONSTANT;
+    }
+  }
+);
+
+export const VOLATILE_TAG: RevisionTag = new (
+  class CleanTag extends RevisionTag {
+    value(): Revision {
+      return VOLATILE;
+    }
+  }
+);
+
+export const CURRENT_TAG: DirtyableTag = new (
+  class CurrentTag extends DirtyableTag {
+    value(): Revision {
+      return $REVISION;
+    }
+  }
+);
+
+//////////
+
+export interface VersionedReference<T> extends Reference<T>, Tagged<Revision> {}
+
+export interface VersionedPathReference<T> extends PathReference<T>, Tagged<Revision> {
+  get(property: InternedString): VersionedPathReference<Opaque>;
+}
+
+export abstract class CachedReference<T> implements VersionedReference<T> {
+  public tag: RevisionTag;
+
+  private lastRevision: Revision = null;
+  private lastValue: T = null;
+
+  value(): T {
+    let { tag, lastRevision, lastValue } = this;
+
+    if (!lastRevision || !tag.validate(lastRevision)) {
+      this.lastRevision = tag.value();
+      lastValue = this.lastValue = this.compute();
+    }
+
+    return lastValue;
+  }
+
+  protected abstract compute(): T;
+
+  protected invalidate() {
+    this.lastRevision = null;
+  }
+}
+
+//////////
+
+type Mapper<T, U> = (value: T) => U;
+
+class MapperReference<T, U> extends CachedReference<U> {
+  public tag: RevisionTag;
+
+  private reference: VersionedReference<T>;
+  private mapper: Mapper<T, U>;
+
+  constructor(reference: VersionedReference<T>, mapper: Mapper<T, U>) {
+    super();
+    this.tag = reference.tag;
+    this.reference = reference;
+    this.mapper = mapper;
+  }
+
+  protected compute(): U {
+    let { reference, mapper } = this;
+    return mapper(reference.value());
+  }
+}
+
+export function map<T, U>(reference: VersionedReference<T>, mapper: Mapper<T, U>) {
+  return new MapperReference(reference, mapper);
+}
+
+//////////
+
+export class ReferenceCache<T> {
+  private reference: VersionedReference<T>;
+  private lastValue: T = null;
+  private lastRevision: Revision = null;
+  private initialized: boolean = false;
+
+  constructor(reference: VersionedReference<T>) {
+    this.reference = reference;
+  }
+
+  peek(): T {
+    if (!this.initialized) {
+      return this.initialize();
+    }
+
+    return this.lastValue;
+  }
+
+  revalidate(): Validation<T> {
+    if (!this.initialized) {
+      return this.initialize();
+    }
+
+    let { reference, lastRevision } = this;
+    let tag = reference.tag;
+
+    if (tag.validate(lastRevision)) return NOT_MODIFIED;
+    this.lastRevision = tag.value();
+
+    let { lastValue } = this;
+    let value = reference.value();
+    if (value === lastValue) return NOT_MODIFIED;
+    this.lastValue = value;
+
+    return value;
+  }
+
+  private initialize(): T {
+    let { reference } = this;
+
+    let value = this.lastValue = reference.value();
+    this.lastRevision = reference.tag.value();
+    this.initialized = true;
+
+    return value;
+  }
+}
+
+export type Validation<T> = T | NotModified;
+
+type NotModified = "adb3b78e-3d22-4e4b-877a-6317c2c5c145";
+
+const NOT_MODIFIED: NotModified = "adb3b78e-3d22-4e4b-877a-6317c2c5c145";
+
+export function isModified<T>(value: Validation<T>): value is T {
+  return value !== NOT_MODIFIED;
+}

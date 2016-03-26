@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
-import { Dict, Stack, LinkedList, LOGGER, InternedString, Opaque } from 'glimmer-util';
-import { Destroyable, PathReference, ReferenceIterator } from 'glimmer-reference';
+import { Destroyable, Dict, Stack, LinkedList, LOGGER, InternedString, Opaque } from 'glimmer-util';
+import { PathReference, ReferenceIterator } from 'glimmer-reference';
 import Template from '../template';
 import { Templates } from '../syntax/core';
 import { InlineBlock, CompiledBlock } from '../compiled/blocks';

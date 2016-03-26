@@ -1,6 +1,6 @@
 import { Template, RenderResult } from "glimmer-runtime";
 import { BasicComponent, TestEnvironment, TestDynamicScope, equalTokens } from "glimmer-test-helpers";
-import { UpdatableReference } from "glimmer-reference";
+import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque, opaque } from 'glimmer-util';
 
 let env: TestEnvironment, root: Element, result: RenderResult, self: UpdatableReference<Opaque>;

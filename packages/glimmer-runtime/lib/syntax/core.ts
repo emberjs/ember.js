@@ -57,6 +57,7 @@ import {
 } from '../compiled/expressions';
 
 import {
+  RevisionTag,
   PathReference,
   Reference
 } from 'glimmer-reference';
@@ -231,17 +232,13 @@ export class Append extends StatementSyntax {
 class HelperInvocationReference implements Reference<Insertion> {
   private helper: EnvHelper;
   private args: EvaluatedArgs;
+  public tag: RevisionTag;
 
   constructor(helper: EnvHelper, args: EvaluatedArgs) {
     this.helper = helper;
     this.args = args;
+    this.tag = args.tag;
   }
-
-  isDirty() {
-    return true;
-  }
-
-  destroy() {}
 
   get(): PathReference<Opaque> {
     throw new Error("Unimplemented: Yielding the result of a helper call.");

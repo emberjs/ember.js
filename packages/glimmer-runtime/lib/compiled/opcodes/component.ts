@@ -7,7 +7,7 @@ import { Templates } from '../../syntax/core';
 import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
 import { InternedString, Opaque, dict } from 'glimmer-util';
-import { Reference, isConst } from 'glimmer-reference';
+import { Reference, ReferenceCache, isConst } from 'glimmer-reference';
 
 export type DynamicComponentFactory<T> = (args: EvaluatedArgs, vm: PublicVM) => Reference<ComponentDefinition<T>>;
 
@@ -49,7 +49,14 @@ export class OpenDynamicComponentOpcode extends Opcode {
     let args = vm.frame.getArgs();
     let dynamicScope = vm.dynamicScope();
     let definitionRef = vm.frame.getDynamicComponent();
-    let definition = definitionRef.value();
+    let cache, definition;
+
+    if (isConst(definitionRef)) {
+      definition = definitionRef.value();
+    } else {
+      cache = new ReferenceCache(definitionRef);
+      definition = cache.peek();
+    }
 
     let manager = definition.manager;
     let component = manager.create(definition, args, dynamicScope);
@@ -74,7 +81,7 @@ export class OpenDynamicComponentOpcode extends Opcode {
     vm.env.didCreate(component, manager);
 
     if (!isConst(definitionRef)) {
-      vm.updateWith(new Assert(definitionRef, definition));
+      vm.updateWith(new Assert(cache));
     }
 
     vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));

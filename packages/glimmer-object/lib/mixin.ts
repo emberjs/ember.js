@@ -1,4 +1,4 @@
-import { CLASS_META } from 'glimmer-reference';
+import { CLASS_META } from 'glimmer-object-reference';
 import { InternedString, Dict, dict, isArray, intern, assign } from 'glimmer-util';
 import GlimmerObject, {
   GlimmerObjectFactory,

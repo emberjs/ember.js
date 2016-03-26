@@ -1,5 +1,5 @@
 import GlimmerObject, { computed } from 'glimmer-object';
-import { UpdatableReference, metaFor, setProperty, fork } from 'glimmer-reference';
+import { UpdatableReference, metaFor, setProperty } from 'glimmer-object-reference';
 import { intern } from 'glimmer-util';
 
 let Wrapper = <any>GlimmerObject.extend({
@@ -134,10 +134,10 @@ QUnit.test('the simple object model allows you to derive references', function()
 
   function referencesFor(obj) {
     return [
-      root(obj).path('model.person.name.first').fork(),
-      root(obj.model).path('person.name.first').fork(),
-      root(obj.model.person).path('name.first').fork(),
-      root(obj.model.person.name).path('first').fork(),
+      root(obj).path('model.person.name.first'),
+      root(obj.model).path('person.name.first'),
+      root(obj.model.person).path('name.first'),
+      root(obj.model.person.name).path('first'),
     ];
   }
 });
@@ -149,7 +149,7 @@ function root<T>(obj: T): UpdatableReference<T> {
 QUnit.test("Simple computed properties", function() {
   let name = <any>new Name({ first: "Godfrey", last: "Chan" });
 
-  let ref = fork(metaFor(name).root().get(intern('fullName')));
+  let ref = metaFor(name).root().get(intern('fullName'));
 
   equal(name.fullName, "Godfrey Chan");
   equal(ref.value(), "Godfrey Chan");
@@ -173,7 +173,7 @@ QUnit.test("Computed properties", function() {
   });
 
   let originalPerson = obj1.model.person;
-  let ref = fork(metaFor(obj1).root().get(intern('fullName')));
+  let ref = metaFor(obj1).root().get(intern('fullName'));
 
   equal(obj1.fullName, "Yehuda Katz");
   equal(ref.value(), "Yehuda Katz");
@@ -205,7 +205,6 @@ QUnit.test("Computed properties", function() {
 });
 
 function isDirty(ref, newValue) {
-  ok(ref.isDirty(), ref.label() + " is dirty");
   ok(ref.value() === newValue, ref.label() + " has new value " + newValue);
 }
 
