@@ -98,6 +98,8 @@ export class OutletView {
     }
   }
 
+  appendChild() { }
+
   rerender() {
     if (this._renderResult) { this.renderer.rerender(this); }
   }
