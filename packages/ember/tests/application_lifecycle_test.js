@@ -4,6 +4,7 @@ import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
+import isEnabled from 'ember-metal/features';
 
 var compile = Ember.HTMLBars.compile;
 
@@ -124,6 +125,9 @@ QUnit.test('Destroying the application resets the router before the appInstance 
   equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
   assert.expect(1);
 
@@ -191,3 +195,5 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
     jQuery('#herky-thingy').trigger('herky');
   });
 });
+
+}
