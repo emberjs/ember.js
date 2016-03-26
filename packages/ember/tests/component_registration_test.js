@@ -9,6 +9,7 @@ import { OutletView } from 'ember-routing-views/views/outlet';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import isEnabled from 'ember-metal/features';
 
 var App, appInstance;
 var originalHelpers;
@@ -142,6 +143,9 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 
@@ -225,6 +229,8 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
+
+}
 
 QUnit.test('Using name of component that does not exist', function () {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>');
