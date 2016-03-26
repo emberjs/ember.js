@@ -1,6 +1,7 @@
 import { Template, RenderResult } from "glimmer-runtime";
 import { TestEnvironment, TestDynamicScope, equalTokens, stripTight } from "glimmer-test-helpers";
-import { UpdatableReference, PathReference } from "glimmer-reference";
+import { PathReference } from "glimmer-reference";
+import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';

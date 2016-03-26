@@ -2,7 +2,7 @@ import {
   Meta,
   InnerReferenceFactory,
   PropertyReference
-} from 'glimmer-reference';
+} from 'glimmer-object-reference';
 import { InternedString, Dict, dict, isArray, intern, assign, initializeGuid } from 'glimmer-util';
 import {
   Mixin,

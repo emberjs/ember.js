@@ -5,8 +5,7 @@ import { Layout, CompiledBlock } from '../compiled/blocks';
 import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
 
-import { Opaque } from 'glimmer-util';
-import { Destroyable } from 'glimmer-reference';
+import { Destroyable, Opaque } from 'glimmer-util';
 
 export type Component = Opaque;
 export type ComponentClass = any;

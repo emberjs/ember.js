@@ -1,5 +1,5 @@
 import { computed } from 'glimmer-object';
-import { UpdatableReference } from 'glimmer-reference';
+import { UpdatableReference } from 'glimmer-object-reference';
 import { TestEnvironment, TestDynamicScope, EmberishGlimmerComponent as EmberComponent } from 'glimmer-test-helpers';
 
 let ServerUptime = <any>EmberComponent.extend({

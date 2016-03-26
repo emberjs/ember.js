@@ -1,6 +1,7 @@
 import {
+  VOLATILE_TAG,
+  BasicReference,
   Reference,
-  UpdatableReference,
   AbstractIterable,
   Iterator,
   IterationItem,
@@ -9,15 +10,19 @@ import {
   IteratorSynchronizer,
   IteratorSynchronizerDelegate
 } from 'glimmer-reference';
+
+import { UpdatableReference } from 'glimmer-object-reference';
+
 import { Opaque, LinkedList, ListNode, dict } from 'glimmer-util';
 
 QUnit.module("Reference iterables");
 
 class Target implements IteratorSynchronizerDelegate {
-  private map = dict<ListNode<Reference<any>>>();
-  private list = new LinkedList<ListNode<Reference<any>>>();
+  private map = dict<ListNode<BasicReference<any>>>();
+  private list = new LinkedList<ListNode<BasicReference<any>>>();
+  public tag = VOLATILE_TAG;
 
-  retain(key: string, item: Reference<any>) {
+  retain(key: string, item: BasicReference<any>) {
     if (item !== this.map[key].value) {
       throw new Error("unstable reference");
     }
@@ -25,18 +30,18 @@ class Target implements IteratorSynchronizerDelegate {
 
   done() {}
 
-  append(key: string, item: Reference<any>) {
+  append(key: string, item: BasicReference<any>) {
     let node = this.map[key] = new ListNode(item);
     this.list.append(node);
   }
 
-  insert(key: string, item: Reference<any>, before: string) {
+  insert(key: string, item: BasicReference<any>, before: string) {
     let referenceNode = before ? this.map[before] : null;
     let node = this.map[key] = new ListNode(item);
     this.list.insertBefore(node, referenceNode);
   }
 
-  move(key: string, item: Reference<any>, before: string) {
+  move(key: string, item: BasicReference<any>, before: string) {
     let referenceNode = before ? this.map[before] : null;
     let node = this.map[key];
 
@@ -54,7 +59,7 @@ class Target implements IteratorSynchronizerDelegate {
     this.list.remove(node);
   }
 
-  toArray(): Reference<any>[] {
+  toArray(): BasicReference<any>[] {
     return this.list.toArray().map(node => node.value);
   }
 

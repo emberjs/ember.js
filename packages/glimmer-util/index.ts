@@ -1,5 +1,9 @@
 /*globals console*/
 
+export interface Destroyable {
+  destroy();
+}
+
 export { getAttrNamespace } from './lib/namespaces';
 export { LITERAL, InternedString, Opaque, opaque, symbol, intern, numberKey } from './lib/platform-utils';
 export { default as assert } from './lib/assert';

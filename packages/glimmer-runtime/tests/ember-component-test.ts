@@ -25,7 +25,7 @@ import { assign } from "glimmer-util";
 
 import { equalTokens, stripTight } from "glimmer-test-helpers";
 
-import { CLASS_META, UpdatableReference, setProperty as set } from 'glimmer-reference';
+import { CLASS_META, UpdatableReference, setProperty as set } from 'glimmer-object-reference';
 
 class EmberishRootView extends EmberObject {
   private parent: Element;

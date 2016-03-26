@@ -1,7 +1,8 @@
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { InternedString } from 'glimmer-util';
-import { PathReference, referenceFromParts } from 'glimmer-reference';
+import { PathReference } from 'glimmer-reference';
+import { referenceFromParts } from 'glimmer-reference';
 
 export abstract class CompiledSymbolRef extends CompiledExpression<any> {
   protected debug: string;

@@ -1,7 +1,15 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { FIXME, InternedString, dict } from 'glimmer-util';
-import { PathReference, Reference, isConst as isConstReference } from 'glimmer-reference';
+import { FIXME, InternedString, Opaque, Dict, dict } from 'glimmer-util';
+import {
+  CachedReference,
+  Reference,
+  ReferenceCache,
+  RevisionTag,
+  combineTagged,
+  isConst as isConstReference,
+  isModified
+} from 'glimmer-reference';
 import { DOMHelper } from '../../dom';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
@@ -100,19 +108,19 @@ class ClassList {
 
 }
 
-class ClassListReference implements Reference<string> {
+class ClassListReference extends CachedReference<string> {
+  public tag: RevisionTag;
   private list: Reference<string>[] = [];
 
   constructor(list: Reference<string>[]) {
+    super();
+    this.tag = combineTagged(list);
     this.list = list;
   }
 
-  value(): string {
+  protected compute(): string {
     return toClassName(this.list);
   }
-
-  isDirty() { return true; }
-  destroy() {}
 }
 
 function toClassName(list: Reference<string>[]) {
@@ -160,10 +168,9 @@ export class CloseElementOpcode extends Opcode {
     let className = classList.toReference();
 
     if (isConstReference(className)) {
-      let value = className.value();
-      if (value !== null) dom.setAttribute(element, 'class', value);
+      NonNamespacedAttribute.install(dom, element, 'class' as InternedString, className.value());
     } else {
-      vm.updateWith(new NonNamespacedAttribute('class' as InternedString, className).flush(dom, element));
+      vm.updateWith(new NonNamespacedAttribute(element, 'class' as InternedString, className).flush(dom));
     }
 
     for (let k = 0; k < flattenedKeys.length; k++) {
@@ -177,38 +184,38 @@ export class CloseElementOpcode extends Opcode {
 
 export class StaticAttrOpcode extends Opcode {
   public type = "static-attr";
+  public namespace: InternedString;
   public name: InternedString;
   public value: ValueReference<string>;
-  public namespace: InternedString;
 
-  constructor({ name, value, namespace }: { name: InternedString, value: InternedString, namespace: InternedString }) {
+  constructor({ namespace, name, value,  }: { namespace: InternedString, name: InternedString, value: InternedString }) {
     super();
+    this.namespace = namespace;
     this.name = name;
     this.value = new ValueReference(value);
-    this.namespace = namespace;
   }
 
   evaluate(vm: VM) {
     let { name, value, namespace } = this;
 
     if (namespace) {
-      vm.stack().setAttributeNS(name, value, namespace);
+      vm.stack().setAttributeNS(namespace, name, value);
     } else {
       vm.stack().setAttribute(name, value);
     }
   }
 
   toJSON(): OpcodeJSON {
-    let { _guid: guid, type, name, value, namespace } = this;
+    let { _guid: guid, type, namespace, name, value } = this;
 
     let details = dict<string>();
-
-    details["name"] = JSON.stringify(name);
-    details["value"] = JSON.stringify(value.value());
 
     if (namespace) {
       details["namespace"] = JSON.stringify(namespace);
     }
+
+    details["name"] = JSON.stringify(name);
+    details["value"] = JSON.stringify(value.value());
 
     return { guid, type, details };
   }
@@ -218,125 +225,174 @@ export interface ElementOperation {
   flush(dom: DOMHelper, element: Element): UpdatingOpcode;
 }
 
-interface ElementPatchOperation extends ElementOperation {
-  apply(dom: DOMHelper, element: Element, lastValue: any): any;
-  toJSON(): string[];
+abstract class ElementPatchOperation<V> implements ElementOperation {
+  protected element: Element;
+  protected reference: Reference<V>;
+  protected cache: ReferenceCache<V> = null;
+
+  constructor(element: Element, reference: Reference<V>) {
+    this.element = element;
+    this.reference = reference;
+  }
+
+  flush(dom: DOMHelper) {
+    let { reference, element } = this;
+
+    if (isConstReference(reference)) {
+      let value = reference.value();
+      this.install(dom, element, value);
+    } else {
+      let cache = this.cache = new ReferenceCache(reference);
+      let value = cache.peek();
+      this.install(dom, element, value);
+      return new PatchElementOpcode(this);
+    }
+  }
+
+  patch(dom: DOMHelper) {
+    let { element, cache } = this;
+
+    let value = cache.revalidate();
+
+    if (isModified(value)) {
+      this.update(dom, element, value);
+    }
+  }
+
+  protected abstract install(dom: DOMHelper, element: Element, value: V);
+  protected abstract update(dom: DOMHelper, element: Element, value: V);
+  abstract toJSON(): Dict<string>;
 }
 
-export class NamespacedAttribute implements ElementPatchOperation {
-  name: InternedString;
-  reference: Reference<string>;
-  namespace: InternedString;
+export class NamespacedAttribute extends ElementPatchOperation<string> {
+  private name: InternedString;
+  private namespace: InternedString;
 
-  constructor(name: InternedString, reference: Reference<string>, namespace: InternedString) {
+  static install(dom: DOMHelper, element: Element, namespace: InternedString, name: InternedString, value: string) {
+    if (value !== null) {
+      dom.setAttributeNS(element, namespace, name, value);
+    }
+  }
+
+  static update(dom: DOMHelper, element: Element, namespace: InternedString, name: InternedString, value: string) {
+    if (value === null) {
+      dom.removeAttributeNS(element, namespace, name);
+    } else {
+      dom.setAttributeNS(element, namespace, name, value);
+    }
+  }
+
+  constructor(element: Element, namespace: InternedString, name: InternedString, reference: Reference<string>) {
+    super(element, reference);
+    this.element = element;
+    this.namespace = namespace;
     this.name = name;
     this.reference = reference;
-    this.namespace = namespace;
   }
 
-  flush(dom: DOMHelper, element: Element): PatchElementOpcode {
-    let { reference } = this;
-    let value = this.apply(dom, element);
-
-    if (!isConstReference(reference)) {
-      return new PatchElementOpcode(element, this, value);
-    }
+  protected install(dom: DOMHelper, element: Element, value: string) {
+    let { namespace, name } = this;
+    NamespacedAttribute.install(dom, element, namespace, name, value);
   }
 
-  apply(dom: DOMHelper, element: Element, lastValue: string = null): any {
-    let {
+  protected update(dom: DOMHelper, element: Element, value: string) {
+    let { namespace, name } = this;
+    NamespacedAttribute.update(dom, element, namespace, name, value);
+  }
+
+  toJSON(): Dict<string> {
+    let { element, namespace, name, cache } = this;
+
+    return {
+      element: formatElement(element),
+      type: 'attribute',
+      namespace,
       name,
-      reference,
-      namespace
-    } = this;
-
-    let value = reference.value();
-
-    if (value === lastValue) {
-      return lastValue;
-    } else if (value === null) {
-      dom.removeAttributeNS(element, name, namespace);
-    } else {
-      dom.setAttributeNS(element, name, value, namespace);
-      return value;
-    }
-  }
-
-  toJSON(): string[] {
-    return ['AttributeNS', this.name];
+      lastValue: cache.peek()
+    };
   }
 }
 
-export class NonNamespacedAttribute implements ElementPatchOperation {
-  name: InternedString;
-  reference: Reference<string>;
+export class NonNamespacedAttribute extends ElementPatchOperation<string> {
+  private name: InternedString;
 
-  constructor(name: InternedString, value: Reference<string>) {
-    this.name = name;
-    this.reference = value;
-  }
-
-  flush(dom: DOMHelper, element: Element): PatchElementOpcode {
-    let { reference } = this;
-    let value = this.apply(dom, element);
-
-    if (!isConstReference(reference)) {
-      return new PatchElementOpcode(element, this, value);
+  static install(dom: DOMHelper, element: Element, name: InternedString, value: string) {
+    if (value !== null) {
+      dom.setAttribute(element, name, value);
     }
   }
 
-  apply(dom: DOMHelper, element: Element, lastValue: any = null): any {
-    let { name, reference } = this;
-    let value = reference.value();
-
-    if (value === lastValue) {
-      return lastValue;
-    } else if (value === null) {
+  static update(dom: DOMHelper, element: Element, name: InternedString, value: string) {
+    if (value === null) {
       dom.removeAttribute(element, name);
     } else {
       dom.setAttribute(element, name, value);
-      return value;
     }
   }
 
-  toJSON(): string[] {
-    return ['Attribute', this.name];
+  constructor(element: Element, name: InternedString, reference: Reference<string>) {
+    super(element, reference);
+    this.name = name;
+  }
+
+  protected install(dom: DOMHelper, element: Element, value: string) {
+    let { name } = this;
+    NonNamespacedAttribute.install(dom, element, name, value);
+  }
+
+  protected update(dom: DOMHelper, element: Element, value: string) {
+    let { name } = this;
+    NonNamespacedAttribute.update(dom, element, name, value);
+  }
+
+  toJSON(): Dict<string> {
+    let { element, name, cache } = this;
+
+    return {
+      element: formatElement(element),
+      type: 'attribute',
+      name,
+      lastValue: cache.peek()
+    };
   }
 }
 
-export class Property implements ElementPatchOperation {
+export class Property extends ElementPatchOperation<Opaque> {
+  static set(dom: DOMHelper, element: Element, name: InternedString, value: Opaque) {
+    dom.setProperty(element, name, value);
+  }
+
   name: InternedString;
-  reference: PathReference<any>;
 
-  constructor(name: InternedString, value: PathReference<any>) {
+  constructor(element: Element, name: InternedString, reference: Reference<Opaque>) {
+    super(element, reference);
     this.name = name;
-    this.reference = value;
   }
 
-  flush(dom: DOMHelper, element: Element): PatchElementOpcode {
-    let { reference } = this;
-    let value = this.apply(dom, element);
-
-    if (!isConstReference(reference)) {
-      return new PatchElementOpcode(element, this, value);
-    }
+  protected install(dom: DOMHelper, element: Element, value: Opaque) {
+    let { name } = this;
+    Property.set(dom, element, name, value);
   }
 
-  apply(dom: DOMHelper, element: Element, lastValue: any = null): any {
-    let { name, reference } = this;
-    let value = reference.value();
-
-    if (value === lastValue) {
-      return lastValue;
-    } else {
-      dom.setProperty(element, name, value);
-      return value;
-    }
+  protected update(dom: DOMHelper, element: Element, value: Opaque) {
+    let { name } = this;
+    Property.set(dom, element, name, value);
   }
 
-  toJSON(): string[] {
-    return ['Property', this.name];
+  toJSON(): Dict<string> {
+    let { element, name, cache } = this;
+
+    return {
+      element: formatElement(element),
+      type: 'property',
+      name,
+      lastValue: JSON.stringify(cache.peek())
+    };
   }
+}
+
+function formatElement(element: Element): string {
+  return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
 export class DynamicAttrNSOpcode extends Opcode {
@@ -353,7 +409,7 @@ export class DynamicAttrNSOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, namespace } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttributeNS(name, reference, namespace);
+    vm.stack().setAttributeNS(namespace, name, reference);
   }
 
   toJSON(): OpcodeJSON {
@@ -429,34 +485,25 @@ export class DynamicPropOpcode extends Opcode {
 export class PatchElementOpcode extends DOMUpdatingOpcode {
   public type = "patch-element";
 
-  private element: Element;
-  private attribute: ElementPatchOperation;
-  private lastValue: any;
+  private operation: ElementPatchOperation<Opaque>;
 
-  constructor(element: Element, attribute: ElementPatchOperation, lastValue: any) {
+  constructor(operation: ElementPatchOperation<Opaque>) {
     super();
-    this.element = element;
-    this.attribute = attribute;
-    this.lastValue = lastValue;
+    this.operation = operation;
   }
 
   evaluate(vm: UpdatingVM) {
-    this.lastValue = this.attribute.apply(vm.env.getDOM(), this.element, this.lastValue);
+    this.operation.patch(vm.env.getDOM());
   }
 
   toJSON(): OpcodeJSON {
-    let { _guid: guid, type, element, attribute, lastValue } = this;
+    let { _guid, type, operation } = this;
 
-    let details = dict<string>();
-
-    let [attributeType, attributeName] = attribute.toJSON();
-
-    details["element"] = JSON.stringify(`<${element.tagName.toLowerCase()} />`);
-    details["type"] = JSON.stringify(attributeType);
-    details["name"] = JSON.stringify(attributeName);
-    details["lastValue"] = JSON.stringify(lastValue);
-
-    return { guid, type, details };
+    return {
+      guid: _guid,
+      type,
+      details: operation.toJSON()
+    };
   }
 }
 

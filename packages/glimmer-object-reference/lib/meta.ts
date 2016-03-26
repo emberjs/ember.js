@@ -8,10 +8,11 @@ import { Dict, DictSet, HasGuid, Set, dict } from 'glimmer-util';
 import {
   RootReferenceFactory,
   PathReferenceFactory,
-  PathReference as IPathReference,
   Meta as IMeta,
   RootReference as IRootReference
 } from './types';
+
+import { PathReference as IPathReference, VOLATILE_TAG } from 'glimmer-reference';
 
 import { InnerReferenceFactory } from './references/descriptors';
 
@@ -20,14 +21,13 @@ const NOOP_DESTROY = { destroy() {} };
 class ConstPath implements IPathReference<any> {
   private parent: any;
   private property: InternedString;
+  public tag = VOLATILE_TAG;
 
   constructor(parent: any, property: InternedString) {
     this.parent = parent;
   }
 
   chain() { return NOOP_DESTROY; }
-  isDirty() { return false; }
-  destroy() {}
   notify() {}
 
   value() {
@@ -41,7 +41,7 @@ class ConstPath implements IPathReference<any> {
 
 class ConstRoot implements IRootReference<any> {
   private inner: any;
-  private dirty = false;
+  public tag = VOLATILE_TAG;
 
   constructor(value) {
     this.inner = value;
@@ -49,16 +49,12 @@ class ConstRoot implements IRootReference<any> {
 
   update(inner: any) {
     this.inner = inner;
-    this.dirty = true;
   }
 
   chain() { return NOOP_DESTROY; }
-  isDirty() { return this.dirty; }
-  destroy() {}
   notify() {}
 
   value(): any {
-    this.dirty = false;
     return this.inner;
   }
 

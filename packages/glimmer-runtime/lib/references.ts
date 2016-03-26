@@ -1,4 +1,5 @@
-import { ConstReference, PathReference, Reference } from 'glimmer-reference';
+import { RevisionTag, ConstReference, PathReference, Reference } from 'glimmer-reference';
+import { Opaque } from 'glimmer-util';
 
 type Primitive = string | number | boolean;
 
@@ -10,22 +11,20 @@ export class PrimitiveReference extends ConstReference<any> implements PathRefer
 
 export class ConditionalReference implements Reference<boolean> {
   private inner: Reference<any>;
+  public tag: RevisionTag;
 
-  constructor(inner: Reference<any>) {
+  constructor(inner: Reference<Opaque>) {
     this.inner = inner;
+    this.tag = inner.tag;
   }
 
   value(): boolean {
     return this.toBool(this.inner.value());
   }
 
-  protected toBool(value: any): boolean {
+  protected toBool(value: Opaque): boolean {
     return !!value;
   }
-
-  isDirty() { return this.inner.isDirty(); }
-
-  destroy() { return this.inner.destroy(); }
 }
 
 export const NULL_REFERENCE = new PrimitiveReference(null);

@@ -1,4 +1,4 @@
-import { UpdatableReference } from 'glimmer-reference';
+import { UpdatableReference } from 'glimmer-object-reference';
 import { TestEnvironment as DemoEnvironment } from 'glimmer-test-helpers';
 
 function RingBuffer(capacity) {

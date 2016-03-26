@@ -2,7 +2,7 @@ import { COMPILED_EMPTY_POSITIONAL_ARGS, EVALUATED_EMPTY_POSITIONAL_ARGS, Compil
 import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArgs, EvaluatedNamedArgs } from './named-args';
 import VM from '../../vm/append';
 import { Block  } from '../blocks';
-import { PathReference } from 'glimmer-reference';
+import { CONSTANT_TAG, RevisionTag, PathReference, combine } from 'glimmer-reference';
 
 interface CompiledArgOptions {
   positional: CompiledPositionalArgs;
@@ -62,6 +62,8 @@ interface EvaluatedArgsOptions {
 }
 
 export abstract class EvaluatedArgs {
+  public tag: RevisionTag;
+
   static empty(): EvaluatedArgs {
     return EMPTY_EVALUATED_ARGS;
   }
@@ -84,6 +86,7 @@ export abstract class EvaluatedArgs {
 class NonEmptyEvaluatedArgs extends EvaluatedArgs {
   constructor({ positional, named }: EvaluatedArgsOptions) {
     super();
+    this.tag = combine([positional.tag, named.tag]);
     this.positional = positional;
     this.named = named;
     this.internal = null;
@@ -91,6 +94,7 @@ class NonEmptyEvaluatedArgs extends EvaluatedArgs {
 }
 
 export const EMPTY_EVALUATED_ARGS = new (class extends EvaluatedArgs {
+  public tag = CONSTANT_TAG;
   public positional = EVALUATED_EMPTY_POSITIONAL_ARGS;
   public named = EVALUATED_EMPTY_NAMED_ARGS;
   public internal = null;
