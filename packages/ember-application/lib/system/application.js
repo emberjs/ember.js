@@ -1140,6 +1140,8 @@ function glimmerSetupRegistry(registry) {
   registry.register('template:-outlet', glimmerOutletTemplate);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
   registry.injection('template', 'env', 'service:-glimmer-environment');
+
+  registry.optionsForType('helper', { instantiate: false });
 }
 
 function htmlbarsSetupRegistry(registry) {
