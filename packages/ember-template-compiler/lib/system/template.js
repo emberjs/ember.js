@@ -51,12 +51,10 @@ if (isEnabled('ember-glimmer')) {
   }
 
   template = function(json) {
-    let spec = JSON.parse(json);
-
     return class extends Wrapper {
       constructor(options) {
         super(options);
-        this.spec = spec;
+        this.spec = JSON.parse(json);
       }
     };
   };
