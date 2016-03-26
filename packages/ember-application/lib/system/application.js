@@ -1135,6 +1135,8 @@ function glimmerSetupRegistry(registry) {
   });
 
   let glimmerOutletTemplate = require('ember-glimmer/templates/outlet').default;
+  let glimmerComponentTemplate = require('ember-glimmer/templates/component').default;
+  registry.register(P`template:components/-default`, glimmerComponentTemplate);
   registry.register('template:-outlet', glimmerOutletTemplate);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
   registry.injection('template', 'env', 'service:-glimmer-environment');
