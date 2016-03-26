@@ -10,6 +10,7 @@ import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
+import isEnabled from 'ember-metal/features';
 
 const packageTag = `@${packageName} `;
 
@@ -44,6 +45,11 @@ export function moduleFor(description, TestClass, ...mixins) {
   let modulePackagePrefixMatch = description.match(/^@(\w*)/); //eg '@glimmer' or '@htmlbars'
   let modulePackagePrefix = modulePackagePrefixMatch ? modulePackagePrefixMatch[1] : '';
   let descriptionWithoutPackagePrefix = description.replace(/^@\w* /, '');
+
+  if (isEnabled('ember-glimmer') && packageName === 'htmlbars') {
+    // disable htmlbars tests when running with the ember-glimmer feature enabled
+    return;
+  }
 
   QUnit.module(`[${packageName}] ${descriptionWithoutPackagePrefix}`, {
     setup() {
