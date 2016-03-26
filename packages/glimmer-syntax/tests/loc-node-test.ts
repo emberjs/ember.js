@@ -113,6 +113,31 @@ test("html elements with nested blocks", function() {
   locEqual(p, 9, 14, 9, 30, 'p');
 });
 
+test("block + newline + element ", function() {
+  var ast = parse(`
+    {{#if stuff}}
+    {{/if}}
+    <p>Hi!</p>
+  `);
+
+  let [,ifBlock,,p] = ast.body;
+
+  locEqual(ifBlock, 2, 4, 3, 11, 'if block');
+  locEqual(p, 4, 4, 4, 14, 'p element');
+});
+
+test("mustache + newline + element ", function() {
+  var ast = parse(`
+    {{foo}}
+    <p>Hi!</p>
+  `);
+
+  let [,fooMustache,,p] = ast.body;
+
+  locEqual(fooMustache, 2, 4, 2, 11, 'if block');
+  locEqual(p, 3, 4, 3, 14, 'p element');
+});
+
 test("blocks with nested html elements", function() {
   let ast = parse(`
     {{#foo-bar}}<div>Foo</div>{{/foo-bar}} <p>Hi!</p>
