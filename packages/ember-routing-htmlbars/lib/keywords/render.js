@@ -186,6 +186,7 @@ export default {
     }
 
     var parentController = read(scope.getLocal('controller'));
+    let target = parentController || router;
     var controller;
 
     // choose name
@@ -195,8 +196,8 @@ export default {
 
       controller = factory.create({
         model: read(context),
-        parentController: parentController,
-        target: parentController
+        parentController,
+        target
       });
 
       node.addDestruction(controller);
@@ -205,8 +206,8 @@ export default {
                    generateController(owner, controllerName);
 
       controller.setProperties({
-        target: parentController,
-        parentController: parentController
+        target,
+        parentController
       });
     }
 
