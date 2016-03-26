@@ -1,6 +1,10 @@
 import SafeString from 'htmlbars-util/safe-string';
 import { htmlSafe } from 'ember-htmlbars/utils/string';
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: SafeString');
 
 QUnit.test('htmlSafe should return an instance of SafeString', function() {
@@ -22,3 +26,5 @@ QUnit.test('htmlSafe should return an empty string for undefined', function() {
   equal(safeString instanceof SafeString, true, 'should be a SafeString');
   equal(safeString.toString(), '', 'should return an empty string');
 });
+
+}

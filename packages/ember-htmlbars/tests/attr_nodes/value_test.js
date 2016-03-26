@@ -8,6 +8,10 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: value attribute', {
   teardown() {
     if (view) {
@@ -51,3 +55,5 @@ QUnit.test('blank property is output', function() {
   equal(view.element.firstChild.value, '',
         'property is set true');
 });
+
+}

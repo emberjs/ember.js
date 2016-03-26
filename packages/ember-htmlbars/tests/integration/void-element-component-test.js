@@ -8,6 +8,10 @@ import { OWNER } from 'container/owner';
 
 var owner, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: components for void elements', {
   setup() {
     owner = buildOwner();
@@ -44,3 +48,5 @@ QUnit.test('a void element does not have childNodes', function() {
 
   deepEqual(component.element.childNodes.length, 0, 'no childNodes are added for `<input>`');
 });
+
+}

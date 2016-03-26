@@ -9,6 +9,9 @@ import { styleWarning } from 'ember-htmlbars/morphs/attr-morph';
 
 var view, originalWarn, warnings;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 QUnit.module('ember-htmlbars: style attribute', {
   setup() {
     warnings = [];
@@ -92,3 +95,5 @@ QUnit.test('undefined value do not generate htmlsafe warning', function() {
 
   deepEqual(warnings, [ ]);
 });
+
+}

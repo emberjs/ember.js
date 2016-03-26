@@ -11,6 +11,10 @@ import { OWNER } from 'container/owner';
 
 var view, owner;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: {{get}} helper', {
   setup() {
     owner = buildOwner();
@@ -493,3 +497,5 @@ QUnit.test('get helper value should be updatable using {{input}} and (mut) - sta
   equal(view.$('#get-input').val(), 'some value');
   equal(view.get('context.source.banana'), 'some value');
 });
+
+}

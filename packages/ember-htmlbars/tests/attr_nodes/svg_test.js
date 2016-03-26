@@ -9,6 +9,10 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: svg attribute', {
   teardown() {
     if (view) {
@@ -71,3 +75,5 @@ QUnit.test('class is output', function() {
 
   equalInnerHTML(view.element, '<svg class="red tall"></svg>', 'attribute is output');
 });
+
+}

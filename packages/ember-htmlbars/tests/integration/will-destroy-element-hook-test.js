@@ -10,6 +10,10 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var component, originalViewKeyword;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: destroy-element-hook tests', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -62,3 +66,5 @@ QUnit.test('willDestroyElement is only called once when a component leaves scope
     assert.equal(component.$().text(), '', 'truthy template is removed');
   });
 });
+
+}

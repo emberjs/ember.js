@@ -4,6 +4,10 @@ import { domHelper } from 'ember-htmlbars/env';
 import { equalHTML } from 'htmlbars-test-helpers';
 import assign from 'ember-metal/assign';
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: main');
 
 QUnit.test('HTMLBars is present and can be executed', function() {
@@ -14,3 +18,5 @@ QUnit.test('HTMLBars is present and can be executed', function() {
   var output = template.render({}, env, { contextualElement: document.body }).fragment;
   equalHTML(output, 'ohai');
 });
+
+}

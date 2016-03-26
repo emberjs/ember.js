@@ -19,6 +19,10 @@ var view, MyApp, originalLookup, lookup, originalViewKeyword;
 
 var trim = jQuery.trim;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: binding integration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -192,3 +196,5 @@ QUnit.test('should accept bindings as a string or an Ember.Binding', function() 
 
   equal(trim(view.$().text()), 'two way: down, string: down');
 });
+
+}

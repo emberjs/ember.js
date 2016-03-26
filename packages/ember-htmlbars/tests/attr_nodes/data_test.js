@@ -9,6 +9,10 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view, originalSetAttribute, setAttributeCalls, renderer;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: data attribute', {
   teardown() {
     runDestroy(view);
@@ -256,3 +260,5 @@ QUnit.test('does not call setAttribute if the same value is set', function() {
 
   deepEqual(setAttributeCalls, expected);
 });
+
+}

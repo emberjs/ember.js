@@ -29,6 +29,10 @@ function commonTeardown() {
   owner = view = null;
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
   setup() {
     commonSetup();
@@ -319,3 +323,5 @@ QUnit.test('view keyword works inside component yield', function () {
 
   equal(view.$('div > p').text(), 'hello', 'view keyword inside component yield block should refer to the correct view');
 });
+
+}

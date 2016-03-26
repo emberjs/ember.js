@@ -7,6 +7,10 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: Escaped Integration', {
   teardown() {
     runDestroy(view);
@@ -115,3 +119,5 @@ QUnit.test('should not escape HTML in primitive value contexts when using triple
 
   equal(view.$('i').length, 2, 'creates an element when value is updated');
 });
+
+}

@@ -8,6 +8,9 @@ import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/asse
 
 let component;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 QUnit.module('ember-htmlbars: compat - controller keyword (use as a path)', {
   setup() {
     Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
@@ -93,3 +96,5 @@ QUnit.test('reading the controller keyword for param with block fails assertion 
   }, /Using `{{controller}}` or any path based on it .*/);
   ok(true, 'access keyword');
 });
+
+}

@@ -23,6 +23,10 @@ function commonSetup() {
   dispatcher.setup({}, '#qunit-fixture');
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('<input>', {
   setup() {
     commonSetup();
@@ -159,3 +163,5 @@ QUnit.test('input can be updated multiple times', function(assert) {
   run(_ => set(controller, 'value', ''));
   assert.equal($input.val(), '', 'updates third time');
 });
+
+}

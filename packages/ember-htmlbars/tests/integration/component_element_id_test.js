@@ -8,6 +8,10 @@ import { OWNER } from 'container/owner';
 
 var owner, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: component elementId', {
   setup() {
     owner = buildOwner();
@@ -38,3 +42,5 @@ QUnit.test('passing undefined elementId results in a default elementId', functio
   var foundId = view.$('h1').attr('id');
   ok(/^ember/.test(foundId), 'Has a reasonable id attribute (found id=' + foundId + ').');
 });
+
+}

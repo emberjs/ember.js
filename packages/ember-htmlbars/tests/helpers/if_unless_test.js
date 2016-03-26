@@ -20,6 +20,10 @@ var originalLookup = Ember.lookup;
 
 var view, lookup, owner, TemplateTests, originalViewKeyword;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: {{#if}} and {{#unless}} helpers', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -258,3 +262,5 @@ QUnit.test('using `if` with an `{{each}}` destroys components when transitioning
 
   equal(destroyedChildrenCount, 10, 'the children were properly destroyed');
 });
+
+}

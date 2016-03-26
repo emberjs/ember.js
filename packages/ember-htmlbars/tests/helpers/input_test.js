@@ -24,6 +24,10 @@ function commonSetup() {
   dispatcher.setup({}, '#qunit-fixture');
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('{{input type=\'text\'}}', {
   setup() {
     commonSetup();
@@ -484,3 +488,5 @@ QUnit.test('placeholder attribute bound to null is not present', function() {
 
   equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', 'attribute is present');
 });
+
+}

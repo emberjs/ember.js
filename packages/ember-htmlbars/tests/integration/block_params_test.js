@@ -10,6 +10,10 @@ import { OWNER } from 'container/owner';
 
 var owner, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: block params', {
   setup() {
     owner = buildOwner();
@@ -156,3 +160,5 @@ QUnit.test('#11519 - block param infinite loop', function(assert) {
 
   assert.equal(view.$().text().trim(), '1');
 });
+
+}

@@ -8,6 +8,10 @@ import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/asse
 
 let component;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: compat - view keyword (use as a path)', {
   setup() {
     Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
@@ -33,3 +37,4 @@ QUnit.test('reading the view keyword fails assertion', function() {
   }, /Using `{{view}}` or any path based on it .*/);
 });
 
+}

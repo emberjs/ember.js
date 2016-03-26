@@ -12,6 +12,10 @@ var trim = jQuery.trim;
 var originalLookup = Ember.lookup;
 var lookup, App, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: bootstrap', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
@@ -164,4 +168,6 @@ if (Ember.component) {
     equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
     ok(view.get('isCorrect'), 'ensure a non-generated component');
   });
+}
+
 }
