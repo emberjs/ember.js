@@ -65,6 +65,9 @@ function sharedTeardown() {
   Ember.TEMPLATES = {};
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module('The {{link-to}} helper: invoking with query params when defined on a route', {
     setup() {
@@ -886,4 +889,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     jQuery('#app-link').click();
     equal(router.get('location.path'), '/parent');
   });
+}
+
 }

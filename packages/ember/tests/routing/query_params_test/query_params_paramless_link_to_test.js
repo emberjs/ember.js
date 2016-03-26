@@ -85,6 +85,9 @@ function sharedTeardown() {
   });
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('Routing with Query Params', {
   setup() {
     sharedSetup();
@@ -142,4 +145,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 } else {
   testParamlessLinks('application');
   testParamlessLinks('index');
+}
+
 }

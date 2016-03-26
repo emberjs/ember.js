@@ -323,12 +323,14 @@ import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { HAS_BLOCK } from 'ember-htmlbars/node-managers/component-node-manager';
+import htmlbarsTemplate from 'ember-htmlbars/templates/link-to';
+import require from 'require';
 
-import linkToTemplate from 'ember-htmlbars/templates/link-to';
-
-if (!isEnabled('ember-glimmer')) {
-  linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+let layout = htmlbarsTemplate;
+if (isEnabled('ember-glimmer')) {
+  layout = require('ember-glimmer/templates/link-to').default;
 }
+
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -346,7 +348,7 @@ if (!isEnabled('ember-glimmer')) {
   @private
 **/
 let LinkComponent = EmberComponent.extend({
-  layout: linkToTemplate,
+  layout,
 
   tagName: 'a',
 
