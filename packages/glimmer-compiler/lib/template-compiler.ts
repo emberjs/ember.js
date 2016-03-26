@@ -101,6 +101,9 @@ export default class TemplateCompiler {
     if (isYield(action)) {
       let to = assertValidYield(action);
       return this.yield(to, action);
+    } else if (isHasBlock(action)) {
+      let name = assertValidHasBlock(action);
+      this.hasBlock(name, action);
     } else if (action.path.data) {
       this.attr([action.path]);
     } else if (isHelper(action)) {
@@ -125,6 +128,9 @@ export default class TemplateCompiler {
     let { path } = action;
     if (path.data) {
       this.attr([action.path]);
+    } else if (isHasBlock(action)) {
+      let name = assertValidHasBlock(action);
+      this.hasBlock(name, action);
     } else if (isHelper(action)) {
       this.prepareHelper(action);
       this.opcode('helper', action, path.parts);
@@ -151,11 +157,20 @@ export default class TemplateCompiler {
     this.opcode('yield', action, to);
   }
 
+  hasBlock(name: string, action) {
+    this.opcode('hasBlock', action, name);
+  }
+
   /// Expressions, invoked recursively from prepareParams and prepareHash
 
   SubExpression(expr) {
-    this.prepareHelper(expr);
-    this.opcode('helper', expr, expr.path.parts);
+    if (isHasBlock(expr)) {
+      let name = assertValidHasBlock(expr);
+      this.hasBlock(name, expr);
+    } else {
+      this.prepareHelper(expr);
+      this.opcode('helper', expr, expr.path.parts);
+    }
   }
 
   PathExpression(expr) {
@@ -271,12 +286,16 @@ export default class TemplateCompiler {
   }
 }
 
-function isYield(mustache) {
-  return mustache.path.original === 'yield';
+function isYield({ path }) {
+  return path.original === 'yield';
 }
 
-function assertValidYield(mustache): string {
-  let pairs = mustache.hash.pairs;
+function isHasBlock({ path }) {
+  return path.original === 'has-block';
+}
+
+function assertValidYield({ hash }): string {
+  let pairs = hash.pairs;
 
   if ((pairs.length === 1 && pairs[0].key !== 'to') || pairs.length > 1) {
     throw new Error(`yield only takes a single named argument: 'to'`);
@@ -286,5 +305,19 @@ function assertValidYield(mustache): string {
     return 'default';
   } else {
     return pairs[0].value.value;
+  }
+}
+
+function assertValidHasBlock({ params }): string {
+  if (params.length === 0) {
+    return 'default';
+  } else if (params.length === 1) {
+    if (params[0].type === 'StringLiteral') {
+      return params[0].value;
+    } else {
+      throw new Error(`you can only yield to a literal value`);
+    }
+  } else {
+    throw new Error(`has-block only takes a single positional argument`);
   }
 }
