@@ -10,6 +10,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import LinkComponent from 'ember-routing-views/components/link-to';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
+import isEnabled from 'ember-metal/features';
 
 var owner, view;
 
@@ -41,6 +42,8 @@ QUnit.module('ember-routing-htmlbars: link-to helper', {
   }
 });
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 
 QUnit.test('should be able to be inserted in DOM when the router is not present', function() {
   var template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
@@ -157,3 +160,5 @@ QUnit.test('able to safely extend the built-in component and use the normal path
 
   equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
+
+}

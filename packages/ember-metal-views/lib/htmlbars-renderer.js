@@ -296,4 +296,14 @@ Renderer.prototype.didDestroyElement = function (view) {
   }
 }; // Element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 
-export default Renderer;
+export const InertRenderer = {
+  create({ dom }) {
+    return new Renderer(dom, { destinedForDOM: false });
+  }
+};
+
+export const InteractiveRenderer = {
+  create({ dom }) {
+    return new Renderer(dom, { destinedForDOM: true });
+  }
+};

@@ -341,6 +341,10 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
   });
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('Views created via visit() are not added to the global views hash', function(assert) {
   run(function() {
     createApplication();
@@ -371,6 +375,7 @@ QUnit.test('Views created via visit() are not added to the global views hash', f
     assert.ok(lookup('-view-registry:main')['child-view'] instanceof View, 'child view was registered on the instance\'s view registry');
   });
 });
+
 
 QUnit.module('Ember.Application - visit() Integration Tests', {
   teardown() {
@@ -522,3 +527,5 @@ QUnit.skip('Test setup', function(assert) {
 
 QUnit.skip('iframe setup', function(assert) {
 });
+
+}

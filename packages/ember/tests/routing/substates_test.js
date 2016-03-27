@@ -737,6 +737,10 @@ QUnit.test('Setting a query param during a slow transition should work', functio
   equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
   expect(2);
 
@@ -795,6 +799,8 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter application
   equal(jQuery('#toplevel-loading', '#qunit-fixture').length, 0, 'top-level loading View has been entirely removed from DOM');
   equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
+
+}
 
 QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
   expect(6);
@@ -1002,6 +1008,9 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
 });
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
   expect(3);
 
@@ -1029,3 +1038,5 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
+
+}

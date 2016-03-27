@@ -1,6 +1,6 @@
 import packageName from './package-name';
 import Environment from './environment';
-import { compile, helper, Helper, Component, DOMHelper, Renderer } from './helpers';
+import { compile, helper, Helper, Component, DOMHelper, InteractiveRenderer } from './helpers';
 import { equalsElement, equalTokens, regex, classes } from './test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -10,6 +10,7 @@ import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
+import isEnabled from 'ember-metal/features';
 
 const packageTag = `@${packageName} `;
 
@@ -44,6 +45,11 @@ export function moduleFor(description, TestClass, ...mixins) {
   let modulePackagePrefixMatch = description.match(/^@(\w*)/); //eg '@glimmer' or '@htmlbars'
   let modulePackagePrefix = modulePackagePrefixMatch ? modulePackagePrefixMatch[1] : '';
   let descriptionWithoutPackagePrefix = description.replace(/^@\w* /, '');
+
+  if (isEnabled('ember-glimmer') && packageName === 'htmlbars') {
+    // disable htmlbars tests when running with the ember-glimmer feature enabled
+    return;
+  }
 
   QUnit.module(`[${packageName}] ${descriptionWithoutPackagePrefix}`, {
     setup() {
@@ -202,17 +208,20 @@ export class ApplicationTest extends TestCase {
 
     this.element = jQuery('#qunit-fixture')[0];
 
-    this.application = run(Application, 'create', {
-      rootElement: '#qunit-fixture',
-      autoboot: false
-    });
+    this.application = run(Application, 'create', this.applicationOptions);
 
     this.router = this.application.Router = Router.extend({
       location: 'none'
     });
 
     this.applicationInstance = null;
-    this.bootOptions = undefined;
+  }
+
+  get applicationOptions() {
+    return {
+      rootElement: '#qunit-fixture',
+      autoboot: false
+    };
   }
 
   teardown() {
@@ -224,12 +233,12 @@ export class ApplicationTest extends TestCase {
   }
 
   visit(url) {
-    let { applicationInstance, bootOptions } = this;
+    let { applicationInstance } = this;
 
     if (applicationInstance) {
-      return run(applicationInstance, 'visit', url, bootOptions);
+      return run(applicationInstance, 'visit', url);
     } else {
-      return run(this.application, 'visit', url, bootOptions).then(instance => {
+      return run(this.application, 'visit', url).then(instance => {
         this.applicationInstance = instance;
       });
     }
@@ -253,8 +262,8 @@ export class RenderingTest extends TestCase {
     super();
     let dom = new DOMHelper(document);
     let owner = this.owner = buildOwner();
-    let env = this.env = new Environment({ dom, owner });
-    this.renderer = new Renderer(dom, { destinedForDOM: true, env });
+    let env = this.env = new Environment({ dom, owner, [OWNER]: owner });
+    this.renderer = InteractiveRenderer.create({ dom, env, [OWNER]: owner });
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
   }

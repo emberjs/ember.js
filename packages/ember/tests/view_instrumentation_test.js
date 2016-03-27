@@ -23,6 +23,10 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('View Instrumentation', {
   setup() {
     run(function() {
@@ -62,3 +66,5 @@ QUnit.test('Nodes without view instances are instrumented', function(assert) {
   assert.ok(called, 'instrumentation called on transition to non-view backed route');
   unsubscribe(subscriber);
 });
+
+}

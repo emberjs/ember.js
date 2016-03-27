@@ -15,6 +15,10 @@ function canSetFalsyMaxLength() {
   return input.maxLength === 0;
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: property', {
   teardown() {
     if (view) {
@@ -65,3 +69,5 @@ QUnit.test('array value can be set as property', function() {
   run(view, view.set, 'context.items', [4, 5]);
   ok(true, 'no legacy assertion prohibited setting an array');
 });
+
+}

@@ -334,6 +334,10 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
   });
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('`click` triggers appropriate events in order', function() {
   expect(5);
 
@@ -443,6 +447,8 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
   });
 });
 
+}
+
 QUnit.test('`wait` waits for outstanding timers', function() {
   expect(1);
 
@@ -495,6 +501,9 @@ QUnit.test('`wait` does not error if routing has not begun', function() {
     ok(true, 'should not error without `visit`');
   });
 });
+
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 
 QUnit.test('`triggerEvent accepts an optional options hash without context', function() {
   expect(3);
@@ -706,6 +715,8 @@ QUnit.test('`triggerEvent accepts an optional options hash and context', functio
       equal(event.target.getAttribute('id'), 'inside-scope', 'triggered on the correct element');
     });
 });
+
+}
 
 QUnit.module('ember-testing debugging helpers', {
   setup() {

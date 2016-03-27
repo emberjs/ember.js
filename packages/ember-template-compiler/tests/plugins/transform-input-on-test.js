@@ -1,5 +1,9 @@
 import { compile } from 'ember-template-compiler';
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-template-compiler: transform-input-on');
 
 QUnit.test('Using `action` without `on` provides a deprecation', function() {
@@ -41,3 +45,5 @@ QUnit.test('Using `on=\'foo\'` without `action=\'asdf\'` raises specific depreca
     });
   }, `Using '{{input on="asdf" ...}}' without specifying an action ('foo/bar/baz' @ L1:C0) will do nothing.`);
 });
+
+}

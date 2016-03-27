@@ -14,6 +14,10 @@ function set(object, key, value) {
   run(function() { o_set(object, key, value); });
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('{{textarea}}', {
   setup() {
     controller = {
@@ -53,3 +57,5 @@ QUnit.test('Should bind its contents to the specified value', function() {
   set(controller, 'val', 'sit amet');
   equal(textArea.$('textarea').val(), 'sit amet', 'The new contents are included');
 });
+
+}

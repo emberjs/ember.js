@@ -8,6 +8,10 @@ import environment from 'ember-metal/environment';
 
 var view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: sanitized attribute', {
   teardown() {
     runDestroy(view);
@@ -123,3 +127,5 @@ for (var i = 0, l = badTags.length; i < l; i++) {
   /* jshint +W083 */
 }
 // jscs:enable disallowTrailingWhitespace
+
+}

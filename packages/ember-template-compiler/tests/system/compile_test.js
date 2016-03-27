@@ -3,6 +3,10 @@ import {
   compile as htmlbarsCompile
 } from 'htmlbars-compiler/compiler';
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: compile');
 
 QUnit.test('compiles the provided template with htmlbars', function() {
@@ -39,3 +43,5 @@ QUnit.test('the template revision is different than the HTMLBars default revisio
 
   ok(actual.meta.revision !== expected.meta.revision, 'revision differs from default');
 });
+
+}

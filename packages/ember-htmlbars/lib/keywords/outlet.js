@@ -9,7 +9,9 @@ import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import isEnabled from 'ember-metal/features';
 
-topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+if (!isEnabled('ember-glimmer')) {
+  topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+}
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in

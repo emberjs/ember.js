@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import {classify} from 'ember-runtime/system/string';
+import { classify } from 'ember-runtime/system/string';
 
 QUnit.module('EmberStringUtils.classify');
 

@@ -9,6 +9,10 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: class attribute', {
   teardown() {
     if (view) {
@@ -138,3 +142,5 @@ QUnit.test('class attribute stays in order', function() {
 
   strictEqual(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
+
+}

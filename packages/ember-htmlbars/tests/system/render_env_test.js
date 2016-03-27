@@ -50,6 +50,10 @@ function extractEnv(component) {
   return component._renderNode.lastResult.env;
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: RenderEnv', {
   setup() {
     commonSetup();
@@ -115,3 +119,5 @@ QUnit.test('block component with child component test', function() {
   ok(extractEnv(components.block) instanceof RenderEnv, 'rerender: {{#block-component}} environment should be an instance of RenderEnv');
   ok(extractEnv(components.child) instanceof RenderEnv, 'rerender: {{child-component}} environment should be an instance of RenderEnv');
 });
+
+}

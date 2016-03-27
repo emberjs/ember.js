@@ -9,6 +9,7 @@ import { OutletView } from 'ember-routing-views/views/outlet';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import isEnabled from 'ember-metal/features';
 
 var App, appInstance;
 var originalHelpers;
@@ -82,6 +83,9 @@ QUnit.test('The helper becomes the body of the component', function() {
   equal(jQuery('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('If a component is registered, it is used', function() {
   boot(function() {
     appInstance.register('component:expand-it', Component.extend({
@@ -92,6 +96,7 @@ QUnit.test('If a component is registered, it is used', function() {
   equal(jQuery('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
+}
 
 QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
@@ -107,6 +112,9 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>');
 
@@ -118,6 +126,8 @@ QUnit.test('Late-registered components can be rendered with template registered 
   equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
   ok(!helpers['sally-rutherford'], 'Component wasn\'t saved to global helpers hash');
 });
+
+}
 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>');
@@ -141,6 +151,9 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
 
   equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
+
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
@@ -234,6 +247,8 @@ QUnit.test('Using name of component that does not exist', function () {
   }, /A helper named 'no-good' could not be found/);
 });
 
+}
+
 QUnit.module('Application Lifecycle - Component Context', {
   setup: prepare,
   teardown: cleanup
@@ -288,6 +303,9 @@ QUnit.test('Components without a block should have the proper content when a tem
 
   equal(jQuery('#wrapper').text(), 'inner', 'The component is composed correctly');
 });
+
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 
 QUnit.test('Components without a block should have the proper content', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
@@ -418,3 +436,5 @@ QUnit.test('Components receive the top-level view as their ownerView', function(
 
   assert.ok(ownerView._outlets, 'owner view has an internal array of outlets');
 });
+
+}

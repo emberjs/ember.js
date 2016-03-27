@@ -11,6 +11,10 @@ import { OWNER } from 'container/owner';
 
 var owner, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('component - mutable bindings', {
   setup() {
     owner = buildOwner();
@@ -337,3 +341,5 @@ QUnit.test('automatic mutable bindings to constant non-streams tolerate attempts
   run(() => inner.attrs.model.update(42));
   assert.equal(inner.attrs.model.value, 42);
 });
+
+}

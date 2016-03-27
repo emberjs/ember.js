@@ -332,6 +332,9 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
   };
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('Model Dep Query Params', {
   setup() {
     sharedSetup();
@@ -939,3 +942,5 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
   equal(this.links['s-3-a-2'].attr('href'), '/site/s-3/a/a-2?country=nz&q=lol&z=1');
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3?country=nz&q=hay&z=3');
 });
+
+}

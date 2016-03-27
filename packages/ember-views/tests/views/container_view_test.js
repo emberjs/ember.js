@@ -19,6 +19,10 @@ import { objectAt } from 'ember-runtime/mixins/array';
 var trim = jQuery.trim;
 var container, view, otherContainer, originalViewKeyword;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('Ember.ContainerView', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -872,3 +876,5 @@ QUnit.test('calling reopen on DeprecatedContainerView delegates to ContainerView
 
   ContainerView.reopen = originalReopen;
 });
+
+}

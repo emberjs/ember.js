@@ -7,6 +7,7 @@ import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
+import isEnabled from 'ember-metal/features';
 
 var Router, App, router, registry, container;
 
@@ -62,6 +63,8 @@ function sharedTeardown() {
   Ember.TEMPLATES = {};
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
   setup() {
     run(function() {
@@ -237,3 +240,5 @@ QUnit.test('with an aborted transition', function() {
   assertHasClass('ember-transitioning-in', $about, false);
   assertHasClass('ember-transitioning-out', $about, false);
 });
+
+}

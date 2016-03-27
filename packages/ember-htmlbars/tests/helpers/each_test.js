@@ -23,6 +23,10 @@ var originalViewKeyword;
 var originalLookup = Ember.lookup;
 var lookup;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('the #each helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
@@ -609,3 +613,5 @@ QUnit.test('pushing a new duplicate key will render properly with objects', func
 
   equal(view.$().text(), 'foobarquxfoo');
 });
+
+}

@@ -16,6 +16,10 @@ let styles = [{
   class: Component
 }];
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 styles.forEach(style => {
   function invoke(name, hash = {}) {
     if (style.name === 'curly') {
@@ -406,3 +410,5 @@ styles.forEach(style => {
 // TODO: Write a test that involves deep mutability: the component plucks something
 // from inside the attrs hash out into state and passes it as attrs into a child
 // component. The hooks should run correctly.
+
+}

@@ -10,6 +10,10 @@ var trim = jQuery.trim;
 
 var appInstance, top;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-routing-htmlbars: {{outlet}} helper', {
   setup() {
     appInstance = buildAppInstance();
@@ -233,6 +237,7 @@ QUnit.test('views created by {{outlet}} should get destroyed', function() {
   equal(destroyed, 1, 'expected to see view destroyed');
 });
 
+}
 
 function withTemplate(string) {
   return {

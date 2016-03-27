@@ -10,6 +10,10 @@ import buildOwner from 'container/tests/test-helpers/build-owner';
 
 let component, owner;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: closure component helper', {
   setup() {
     owner = buildOwner();
@@ -768,3 +772,5 @@ QUnit.test('parameters in a closure are mutable when closure is a nested hash va
 
   runDestroy(dispatcher);
 });
+
+}

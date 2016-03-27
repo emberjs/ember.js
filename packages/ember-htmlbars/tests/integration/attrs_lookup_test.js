@@ -10,6 +10,10 @@ import { OWNER } from 'container/owner';
 
 var owner, view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('component - attrs lookup', {
   setup() {
     owner = buildOwner();
@@ -146,3 +150,5 @@ QUnit.test('should not need to call _super in `didReceiveAttrs` (GH #11992)', fu
   secondValue = 'jkl;';
   run(view, 'set', 'second', secondValue);
 });
+
+}

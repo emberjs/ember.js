@@ -15,6 +15,10 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 var view, originalViewKeyword;
 var dispatcher;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('EventDispatcher', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -343,3 +347,5 @@ QUnit.test('default events can be disabled via `customEvents`', function () {
   jQuery('#leView').trigger('click');
   jQuery('#leView').trigger('dblclick');
 });
+
+}

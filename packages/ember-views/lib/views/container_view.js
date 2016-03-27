@@ -1,3 +1,4 @@
+import isEnabled from 'ember-metal/features';
 import Ember from 'ember-metal/core';
 import { assert, deprecate } from 'ember-metal/debug';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
@@ -10,7 +11,10 @@ import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
 
 import containerViewTemplate from 'ember-htmlbars/templates/container-view';
-containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+
+if (!isEnabled('ember-glimmer')) {
+  containerViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+}
 
 /**
 @module ember

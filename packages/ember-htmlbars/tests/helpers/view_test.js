@@ -48,6 +48,10 @@ function viewClass(options) {
 
 var firstChild = nthChild;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: {{#view}} helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -1343,3 +1347,5 @@ QUnit.test('Throw an `Unsupported Content` error when attempting to bind to a fu
     ok(error.message.indexOf('Unsupported Content: Cannot bind to function') > -1);
   }
 });
+
+}

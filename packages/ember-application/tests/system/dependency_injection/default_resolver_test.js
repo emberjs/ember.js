@@ -48,6 +48,10 @@ QUnit.test('the default resolver can look things up in other namespaces', functi
   ok(nav instanceof UserInterface.NavigationController, 'the result should be an instance of the specified class');
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', function() {
   function fooTemplate() {}
   function fooBarTemplate() {}
@@ -61,6 +65,8 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
   equal(locator.lookup('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');
   equal(locator.lookup('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
 });
+
+}
 
 QUnit.test('the default resolver looks up basic name as no prefix', function() {
   ok(Controller.detect(locator.lookup('controller:basic')), 'locator looks up correct controller');

@@ -14,6 +14,9 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 
 let component, owner, originalViewKeyword;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 QUnit.module('ember-htmlbars: compat - view helper', {
   setup() {
     Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
@@ -100,3 +103,5 @@ QUnit.test('using the view helper with a string (block form) fails assertion [LE
 
   assert.equal(component.$().text(), 'Foo says: I am foo', 'view helper is still rendered');
 });
+
+}

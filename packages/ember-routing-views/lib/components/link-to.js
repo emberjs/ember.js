@@ -311,6 +311,7 @@
 @submodule ember-routing-views
 */
 
+import isEnabled from 'ember-metal/features';
 import Logger from 'ember-metal/logger';
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
@@ -322,9 +323,13 @@ import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import { HAS_BLOCK } from 'ember-htmlbars/node-managers/component-node-manager';
+import htmlbarsTemplate from 'ember-htmlbars/templates/link-to';
+import require from 'require';
 
-import linkToTemplate from 'ember-htmlbars/templates/link-to';
-linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+let layout = htmlbarsTemplate;
+if (isEnabled('ember-glimmer')) {
+  layout = require('ember-glimmer/templates/link-to').default;
+}
 
 
 /**
@@ -343,7 +348,7 @@ linkToTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
   @private
 **/
 let LinkComponent = EmberComponent.extend({
-  layout: linkToTemplate,
+  layout,
 
   tagName: 'a',
 

@@ -9,6 +9,10 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var component, registry, container, warnings, originalWarn;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
   setup() {
     registry = new Registry();
@@ -55,4 +59,6 @@ if (!EmberDev.runningProdBuild) {
 
     deepEqual(warnings, [], 'no warnings were triggered');
   });
+}
+
 }

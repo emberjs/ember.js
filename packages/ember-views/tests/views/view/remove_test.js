@@ -100,6 +100,10 @@ QUnit.module('View#removeFromParent', {
   }
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('removes view from parent view', function() {
   expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
@@ -121,6 +125,8 @@ QUnit.test('removes view from parent view', function() {
   ok(get(parentView, 'childViews').indexOf(child) < 0, 'no longer in parent childViews');
   equal(parentView.$('div').length, 0, 'removes DOM element from parent');
 });
+
+}
 
 QUnit.test('returns receiver', function() {
   expectDeprecation('Setting `childViews` on a Container is deprecated.');
@@ -171,4 +177,3 @@ QUnit.test('the DOM element is gone after doing append and remove in a single ru
   var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
-

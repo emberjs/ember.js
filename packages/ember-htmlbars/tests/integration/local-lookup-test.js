@@ -76,6 +76,9 @@ function registerHelper(name, helper) {
   owner.register(`helper:${name}`, helper);
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('component - local lookup', {
   setup() {
     commonSetup();
@@ -171,4 +174,6 @@ QUnit.test('local lookup overrides global lookup', function() {
 
     equal(view.$().text(), 'Nested template says (from global): Hi! Nested template says (from global): Hi! Nested template says (from local): Hi!');
   });
+}
+
 }

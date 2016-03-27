@@ -9,6 +9,10 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: boolean attribute', {
   teardown() {
     if (view) {
@@ -90,3 +94,5 @@ QUnit.test('disabled attribute preserves a blank string value', function() {
   equal(view.element.firstChild.disabled, false,
         'boolean property is set false');
 });
+
+}

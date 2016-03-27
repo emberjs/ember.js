@@ -7,6 +7,10 @@ import { set } from 'ember-metal/property_set';
 
 var view;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: custom morph integration tests', {
   teardown() {
     runDestroy(view);
@@ -52,3 +56,5 @@ QUnit.test('can properly re-render an if/else with element morphs', function() {
 
   equal(view.$('.falsey').length, 1, 'inverse block rendered properly');
 });
+
+}

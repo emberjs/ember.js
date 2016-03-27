@@ -85,6 +85,10 @@ QUnit.test('template is bound to empty array of people', function() {
   });
 });
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('template is bound to array of 2 people', function() {
   App.Person.find = function() {
     var people = emberA();
@@ -100,6 +104,8 @@ QUnit.test('template is bound to array of 2 people', function() {
     equal(rows, 2, 'successfully stubbed a non empty array of people');
   });
 });
+
+}
 
 QUnit.test('template is again bound to empty array of people', function() {
   App.Person.find = function() {

@@ -7,6 +7,7 @@ import Application from 'ember-application/system/application';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
+import isEnabled from 'ember-metal/features';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -48,6 +49,9 @@ QUnit.module('Template scoping examples', {
     Ember.TEMPLATES = {};
   }
 });
+
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 
 QUnit.test('Actions inside an outlet go to the associated controller', function() {
   expect(1);
@@ -95,6 +99,8 @@ QUnit.test('the controller property is provided to route driven views', function
 
   equal(applicationViewController, applicationController, 'application view should get its controller set properly');
 });
+
+}
 
 function bootApp() {
   run(App, 'advanceReadiness');

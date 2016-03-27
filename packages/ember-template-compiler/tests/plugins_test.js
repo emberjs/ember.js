@@ -6,6 +6,10 @@ import compile from 'ember-template-compiler/system/compile';
 
 var originalASTPlugins;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: Ember.HTMLBars.registerASTPlugin', {
   setup() {
     originalASTPlugins = plugins.ast.slice();
@@ -39,3 +43,5 @@ QUnit.test('registering an unknown type throws an error', function() {
     registerPlugin('asdf', 'whatever');
   }, /Attempting to register "whatever" as "asdf" which is not a valid HTMLBars plugin type./);
 });
+
+}

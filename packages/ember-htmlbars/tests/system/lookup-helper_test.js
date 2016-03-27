@@ -21,6 +21,10 @@ function generateOwner() {
   return owner;
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: lookupHelper hook');
 
 QUnit.test('looks for helpers in the provided `env.helpers`', function() {
@@ -127,3 +131,5 @@ QUnit.test('fails with a useful error when resolving a function', function() {
     actual = lookupHelper('some-name', view, env);
   }, 'Expected to find an Ember.Helper with the name helper:some-name, but found an object of type function instead.');
 });
+
+}

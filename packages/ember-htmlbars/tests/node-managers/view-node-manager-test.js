@@ -1,5 +1,9 @@
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-htmlbars: node-managers - ViewNodeManager');
 
 QUnit.test('create method should assert if component hasn\'t been found', assert => {
@@ -61,3 +65,5 @@ QUnit.test('create method shouldn\'t assert if `path` is falsy and `contentTempl
 
   ViewNodeManager.create(null, null, null, found, null, path, null, contentTemplate);
 });
+
+}

@@ -12,18 +12,6 @@ var trim = jQuery.trim;
 var originalLookup = Ember.lookup;
 var lookup, App, view;
 
-QUnit.module('ember-htmlbars: bootstrap', {
-  setup() {
-    Ember.lookup = lookup = { Ember: Ember };
-  },
-  teardown() {
-    Ember.TEMPLATES = {};
-    Ember.lookup = originalLookup;
-    runDestroy(App);
-    runDestroy(view);
-  }
-});
-
 function checkTemplate(templateName) {
   run(function() {
     bootstrap(jQuery('#qunit-fixture'));
@@ -44,6 +32,22 @@ function checkTemplate(templateName) {
   equal(trim(view.$().text()), 'Tobias takes teamocil', 'template works');
   runDestroy(view);
 }
+
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
+QUnit.module('ember-htmlbars: bootstrap', {
+  setup() {
+    Ember.lookup = lookup = { Ember: Ember };
+  },
+  teardown() {
+    Ember.TEMPLATES = {};
+    Ember.lookup = originalLookup;
+    runDestroy(App);
+    runDestroy(view);
+  }
+});
 
 QUnit.test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">{{firstName}} takes {{drug}}</script>');
@@ -164,4 +168,6 @@ if (Ember.component) {
     equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
     ok(view.get('isCorrect'), 'ensure a non-generated component');
   });
+}
+
 }

@@ -12,6 +12,10 @@ import { OWNER } from 'container/owner';
 var MyApp, lookup, view, owner;
 var originalLookup = Ember.lookup;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('Support for {{partial}} helper', {
   setup() {
     Ember.lookup = lookup = { Ember: Ember };
@@ -97,3 +101,5 @@ QUnit.test('Quoteless parameters passed to {{template}} perform a bound property
 
   equal(trim(view.$().text()), 'This  is pretty great.');
 });
+
+}

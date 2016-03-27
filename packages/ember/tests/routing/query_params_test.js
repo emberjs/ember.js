@@ -106,6 +106,9 @@ function sharedTeardown() {
   }
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('Routing with Query Params', {
   setup() {
     sharedSetup();
@@ -3108,3 +3111,5 @@ QUnit.test('handle routes names that clash with Object.prototype properties', fu
   var controller = container.lookup('controller:constructor');
   equal(get(controller, 'foo'), '999');
 });
+
+}

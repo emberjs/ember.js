@@ -13,10 +13,11 @@ class DynamicScope {
   }
 }
 
-export class Renderer {
-  constructor(domHelper, { destinedForDOM, env } = {}) {
-    this._dom = domHelper;
+class Renderer {
+  constructor({ dom, env, destinedForDOM = false }) {
+    this._dom = dom;
     this._env = env;
+    this._destinedForDOM = destinedForDOM;
   }
 
   appendOutletView(view, target) {
@@ -71,3 +72,15 @@ export class Renderer {
     // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
   }
 }
+
+export const InertRenderer = {
+  create({ dom, env }) {
+    return new Renderer({ dom, env, destinedForDOM: false });
+  }
+};
+
+export const InteractiveRenderer = {
+  create({ dom, env }) {
+    return new Renderer({ dom, env, destinedForDOM: true });
+  }
+};

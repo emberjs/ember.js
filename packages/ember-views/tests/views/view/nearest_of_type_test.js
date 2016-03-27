@@ -13,6 +13,10 @@ var originalViewKeyword;
 
 var Mixin, Parent;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('View#nearest*', {
   setup() {
     removeAstPlugin(AssertNoViewAndControllerPaths);
@@ -85,3 +89,5 @@ QUnit.test('nearestChildOf should be deprecated', function() {
     child.nearestChildOf(Parent);
   }, 'nearestChildOf has been deprecated.');
 });
+
+}

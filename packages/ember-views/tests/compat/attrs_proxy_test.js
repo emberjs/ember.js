@@ -13,6 +13,10 @@ import { OWNER } from 'container/owner';
 
 var view, owner, originalViewKeyword;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-views: attrs-proxy', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -104,3 +108,5 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
 
   equal(view.$().text(), 'qux - 2', 'observer is fired on update');
 });
+
+}

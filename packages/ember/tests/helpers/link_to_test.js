@@ -78,6 +78,9 @@ function sharedTeardown() {
   Ember.TEMPLATES = {};
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('The {{link-to}} helper', {
   setup() {
     run(function() {
@@ -1711,3 +1714,5 @@ QUnit.test('The {{link-to}} helper can use dynamic params', function() {
 
   equal(link.attr('href'), '/bar/one/two/three');
 });
+
+}

@@ -29,6 +29,10 @@ import {
 var dispatcher, view, originalViewKeyword, owner;
 var originalRegisterAction = ActionHelper.registerAction;
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('ember-routing-htmlbars: action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -1256,3 +1260,5 @@ QUnit.test('should target the proper component when `action` is in yielded block
   var event = jQuery.Event('click');
   view.$('button').trigger(event);
 });
+
+}

@@ -2,12 +2,16 @@ import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import compile from 'ember-template-compiler/system/compile';
-import { Renderer } from 'ember-metal-views';
+import { InteractiveRenderer } from 'ember-metal-views';
 import { equalInnerHTML } from 'htmlbars-test-helpers';
 import { domHelper as dom } from 'ember-htmlbars/env';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var view, originalSetAttribute, setAttributeCalls, renderer;
+
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
 
 QUnit.module('ember-htmlbars: data attribute', {
   teardown() {
@@ -196,7 +200,7 @@ QUnit.test('updates fail silently after an element is destroyed', function() {
 
 QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {
   setup() {
-    renderer = new Renderer(dom);
+    renderer = InteractiveRenderer.create({ dom });
 
     originalSetAttribute = dom.setAttribute;
     dom.setAttribute = function(element, name, value) {
@@ -256,3 +260,5 @@ QUnit.test('does not call setAttribute if the same value is set', function() {
 
   deepEqual(setAttributeCalls, expected);
 });
+
+}

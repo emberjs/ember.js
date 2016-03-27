@@ -39,6 +39,10 @@ function appendViewFor(template, hash={}) {
   return view;
 }
 
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.module('component - invocation', {
   setup() {
     commonSetup();
@@ -953,3 +957,5 @@ QUnit.test('specifying custom concatenatedProperties avoids clobbering', functio
 
   assert.deepEqual(clickyThing.get('blahzz'),  ['blark', 'pory', 'baz'], 'property is properly combined');
 });
+
+}
