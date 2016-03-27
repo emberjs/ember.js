@@ -7,7 +7,7 @@ import buildComponentTemplate from 'ember-views/system/build-component-template'
 import environment from 'ember-metal/environment';
 import { internal } from 'htmlbars-runtime';
 
-function Renderer(domHelper, { destinedForDOM } = {}) {
+export function Renderer(domHelper, { destinedForDOM } = {}) {
   this._dom = domHelper;
 
   // This flag indicates whether the resulting rendered element will be
