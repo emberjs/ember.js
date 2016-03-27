@@ -7,7 +7,6 @@ import { OutletSyntax } from './components/outlet';
 import lookupComponent from './utils/lookup-component';
 import createIterable from './utils/iterable';
 import {
-  GetHelperReference,
   RootReference,
   ConditionalReference,
   ConstConditionalReference,
