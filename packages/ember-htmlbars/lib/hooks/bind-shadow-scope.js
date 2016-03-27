@@ -8,20 +8,9 @@ import ProxyStream from 'ember-metal/streams/proxy-stream';
 export default function bindShadowScope(env, parentScope, shadowScope, options) {
   if (!options) { return; }
 
-  let didOverrideController = false;
-
-  if (parentScope && parentScope.overrideController) {
-    didOverrideController = true;
-    shadowScope.bindLocal('controller', parentScope.getLocal('controller'));
-  }
-
   var view = options.view;
   if (view && !view.isComponent) {
     shadowScope.bindLocal('view', newStream(view, 'view'));
-
-    if (!didOverrideController) {
-      shadowScope.bindLocal('controller', newStream(shadowScope.getLocal('view').getKey('controller')));
-    }
 
     if (view.isView) {
       shadowScope.bindSelf(newStream(shadowScope.getLocal('view').getKey('context'), ''));

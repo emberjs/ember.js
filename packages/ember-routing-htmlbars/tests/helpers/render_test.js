@@ -2,14 +2,9 @@ import Ember from 'ember-metal/core'; // TEMPLATES
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
-
 import EmberController from 'ember-runtime/controllers/controller';
-
 import compile from 'ember-template-compiler/system/compile';
-
 import EmberView from 'ember-views/views/view';
-import jQuery from 'ember-views/system/jquery';
-import ActionManager from 'ember-views/system/action_manager';
 
 import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -488,45 +483,6 @@ QUnit.test('{{render}} helper should render templates both with and without mode
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
   deepEqual(postController2.get('model'), { title: 'Rails is unagi' });
-});
-
-QUnit.test('{{render}} helper should link child controllers to the parent controller', function() {
-  let parentTriggered = 0;
-  let template = '<h1>HI</h1>{{render "posts"}}';
-  let Controller = EmberController.extend({
-    actions: {
-      parentPlease() {
-        parentTriggered++;
-      }
-    },
-    role: 'Mom'
-  });
-  let controller = Controller.create({
-    [OWNER]: appInstance
-  });
-
-  appInstance.register('controller:posts', EmberController.extend());
-
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller,
-    template: compile(template)
-  });
-
-  Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to {{parentController.role}}</button>');
-
-  runAppend(view);
-
-  var button = jQuery('#parent-action');
-  var actionId = button.data('ember-action');
-  var [ action ] = ActionManager.registeredActions[actionId];
-  var handler = action.handler;
-
-  equal(button.text(), 'Go to Mom', 'The parentController property is set on the child controller');
-
-  run(null, handler, new jQuery.Event('click'));
-
-  equal(parentTriggered, 1, 'The event bubbled to the parent');
 });
 
 QUnit.test('{{render}} helper should be able to render a template again when it was removed', function() {

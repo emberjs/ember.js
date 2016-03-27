@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 import Ember from 'ember-metal'; // Ember.libraries, LOG_VERSION, Namespace, BOOTED
-import { assert, debug, deprecate } from 'ember-metal/debug';
+import { assert, debug, warn, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
@@ -605,10 +605,10 @@ const Application = Engine.extend({
     }
 
     if (Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT && !warnedAboutLegacyControllerAddon) {
-      deprecate(
-        'Support for the `ember-legacy-controllers` addon will end soon, please remove it from your application.',
+      warn(
+        'Support for the `ember-legacy-controllers` has been removed, please remove it from your application.',
         false,
-        { id: 'ember-legacy-controllers', until: '2.6.0', url: 'http://emberjs.com/deprecations/v1.x/#toc_objectcontroller' }
+        { id: 'ember-legacy-controllers', url: 'http://emberjs.com/deprecations/v1.x/#toc_objectcontroller' }
       );
 
       warnedAboutLegacyControllerAddon = true;

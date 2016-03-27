@@ -18,12 +18,13 @@ import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 
 var trim = jQuery.trim;
 
-var app, application, originalLookup, originalDebug;
+var app, application, originalLookup, originalDebug, originalWarn;
 
 QUnit.module('Ember.Application', {
   setup() {
     originalLookup = Ember.lookup;
     originalDebug = getDebugFunction('debug');
+    originalWarn = getDebugFunction('warn');
 
     jQuery('#qunit-fixture').html('<div id=\'one\'><div id=\'one-child\'>HI</div></div><div id=\'two\'>HI</div>');
     run(function() {
@@ -34,6 +35,7 @@ QUnit.module('Ember.Application', {
   teardown() {
     jQuery('#qunit-fixture').empty();
     setDebugFunction('debug', originalDebug);
+    setDebugFunction('warn', originalWarn);
 
     Ember.lookup = originalLookup;
 
@@ -363,11 +365,17 @@ QUnit.module('Ember.Application - legacy addon deprecation warnings', {
       _ENABLE_LEGACY_CONTROLLER_SUPPORT: false
     });
 
+    originalDebug = getDebugFunction('debug');
+    originalWarn = getDebugFunction('warn');
+
     _resetLegacyAddonWarnings();
   },
 
   teardown() {
     Ember.ENV = originalEmberENV;
+
+    setDebugFunction('debug', originalDebug);
+    setDebugFunction('warn', originalWarn);
 
     if (app) {
       run(app, 'destroy');
@@ -407,16 +415,28 @@ QUnit.test('it does not warn about the ember-legacy-controllers addon on first b
 });
 
 QUnit.test('it warns about the ember-legacy-controllers addon on first boot when installed', function() {
+  if (EmberDev.runningProdBuild) {
+    ok(true, 'warnings are disabled in prod builds');
+    return;
+  }
+
   Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = true;
 
-  expectDeprecation(() => {
-    app = run(Application, 'create');
-  }, 'Support for the `ember-legacy-controllers` addon will end soon, please remove it from your application.');
+  let warning;
+  setDebugFunction('warn', function(message, test) {
+    if (!test) {
+      warning = message;
+    }
+  });
+
+  app = run(Application, 'create');
+
+  equal(warning, 'Support for the `ember-legacy-controllers` has been removed, please remove it from your application.');
 
   run(app, 'destroy');
+  warning = null;
 
   // It should not warn again on second boot
-  expectNoDeprecation(() => {
-    app = run(Application, 'create');
-  });
+  app = run(Application, 'create');
+  equal(warning, null);
 });
