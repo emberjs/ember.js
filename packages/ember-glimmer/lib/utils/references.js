@@ -54,21 +54,19 @@ export class UpdatableReference extends RootReference {
 }
 
 export class GetHelperReference {
-  constructor(args) {
-    this.positionalArgs = args.positional;
+  constructor(sourceReference, pathReference) {
+    this.sourceReference = sourceReference;
+    this.pathReference = pathReference;
   }
 
   isDirty() { return true; }
 
   value() {
-    let objRef = this.positionalArgs.at(0).value(),
-      pathRef = this.positionalArgs.at(1).value();
-
-    return objRef ? get(objRef, pathRef) : objRef;
+    return this.sourceReference.get(this.pathReference.value()).value();
   }
 
   get(propertyKey) {
-    throw new Error("get() is not implemented");
+    return new PropertyReference(this, propertyKey);
   }
 
   destroy() {}

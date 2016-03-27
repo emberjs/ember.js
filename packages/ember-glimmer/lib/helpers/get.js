@@ -1,4 +1,6 @@
 import { GetHelperReference } from '../utils/references';
+import { isConst } from 'glimmer-reference';
+
 /**
 @module ember
 @submodule ember-templates
@@ -50,8 +52,19 @@ import { GetHelperReference } from '../utils/references';
 
 export default {
   isInternalHelper: true,
+  // toReference(args) {
+
   toReference(args) {
-    return new GetHelperReference(args);
+    let sourceReference = args.positional.at(0);
+    let propertyPathReference = args.positional.at(1); // bar in (get foo bar)
+
+    if (isConst(propertyPathReference)) {
+      return sourceReference.get(propertyPathReference.value());
+    } else {
+      return new GetHelperReference(sourceReference, propertyPathReference);
+    }
   }
+  //   return new GetHelperReference(args);
+  // }
 };
 

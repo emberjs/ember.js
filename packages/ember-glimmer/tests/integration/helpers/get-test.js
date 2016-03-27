@@ -1,9 +1,10 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
+import TextField from 'ember-views/views/text_field';
+import Component from 'ember-views/components/component';
 
 moduleFor('Helpers test: {{get}}', class extends RenderingTest {
-
   ['@test should be able to get an object value with a static key']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
       colors: { apple: 'red', banana: 'yellow' }
@@ -34,7 +35,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[red and yellow] [red and yellow]');
 
     this.runTask(() => set(this.context, 'colors', {
-       apple: { gala: 'yellow and red striped' }, banana: 'purple'
+      apple: { gala: 'yellow and red striped' }, banana: 'purple'
     }));
 
     this.assertText('[yellow and red striped] [yellow and red striped]');
@@ -186,7 +187,46 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[yellow] [yellow]');
   }
 
-  ['@test should handle object values as nulls']() {
+  ['@test should yield `get`']() {
+    let fooBarInstance;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super();
+        fooBarInstance = this;
+        this.mcintosh = 'red';
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: `{{yield (get colors mcintosh)}}`
+    });
+
+    this.render(`{{#foo-bar colors=colors as |value|}}{{value}}{{/foo-bar}}`, {
+      colors: {
+        red: 'banana'
+      },
+    });
+
+    this.assertText('banana');
+
+    this.runTask(() => this.rerender());
+    this.assertText('banana');
+
+    this.runTask(() => {
+      set(fooBarInstance, 'mcintosh', 'yellow');
+      set(this.context, 'colors', {yellow: 'bus'});
+    });
+    this.assertText('bus');
+
+    this.runTask(() => {
+      set(fooBarInstance, 'mcintosh', 'red');
+      set(this.context, 'colors', {red: 'banana'});
+    });
+    this.assertText('banana');
+  }
+
+  ['@htmlbars should handle object values as nulls']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
       colors: null
     });
@@ -197,21 +237,23 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
     this.runTask(() => set(this.context, 'colors', null));
     this.assertText('[] []');
-  };
+  }
 
-  ['@test should handle object values and keys as nulls']() {
+  ['@htmlbars should handle object values and keys as nulls']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors key)}}]`, {
       colors: null,
       key: null
     });
     this.assertText('[] []');
-  };
+  }
 
   // Looks like some misconfiguration here.
   //
   // Htmlbars: Error: Assertion Failed: HTMLBars error: Could not find component named "-text-field" (no component or template with that name was found)
   // Glimmer: Compile Error: input is not a helper
   ['@skip get helper value should be updatable using {{input}} and (mut) - dynamic key']() {
+    this.registerHelper('input', TextField);
+
     this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
       source: EmberObject.create({
         banana: 'banana'
@@ -220,5 +262,5 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     });
 
     this.assert.strictEqual(this.$('#get-input').val(), 'banana');
-  };
+  }
 });
