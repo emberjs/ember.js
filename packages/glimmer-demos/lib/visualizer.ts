@@ -2,7 +2,7 @@ import {
   TestEnvironment,
   TestDynamicScope
 } from 'glimmer-test-helpers';
-import { UpdatableReference } from 'glimmer-reference';
+import { UpdatableReference } from 'glimmer-object-reference';
 
 import { compileSpec } from 'glimmer-compiler';
 import { layoutFor } from 'glimmer-runtime';
@@ -407,7 +407,7 @@ function renderContent() {
 
   ui.layout.source = $layout.value;
   ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
-  ui.layout.opcodes = processOpcodes(compileLayout("h-card", {env}));
+  ui.layout.opcodes = processOpcodes(compileLayout("h-card"));
 
   ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
 

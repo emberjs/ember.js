@@ -1,7 +1,7 @@
 import { NULL_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { PathReference } from 'glimmer-reference';
+import { CONSTANT_TAG, PathReference, RevisionTag, combineTagged } from 'glimmer-reference';
 
 export abstract class CompiledPositionalArgs {
   static create({ values }: { values: CompiledExpression<any>[] }): CompiledPositionalArgs {
@@ -59,6 +59,8 @@ export const COMPILED_EMPTY_POSITIONAL_ARGS = new (class extends CompiledPositio
 });
 
 export abstract class EvaluatedPositionalArgs {
+  public tag: RevisionTag;
+
   static empty(): EvaluatedPositionalArgs {
     return EVALUATED_EMPTY_POSITIONAL_ARGS;
   }
@@ -87,6 +89,7 @@ class NonEmptyEvaluatedPositionalArgs extends EvaluatedPositionalArgs {
 
   constructor({ values }: { values: PathReference<any>[] }) {
     super();
+    this.tag = combineTagged(values);
     this.length = values.length;
     this.values = values;
   }
@@ -106,6 +109,7 @@ class NonEmptyEvaluatedPositionalArgs extends EvaluatedPositionalArgs {
 }
 
 export const EVALUATED_EMPTY_POSITIONAL_ARGS = new (class extends EvaluatedPositionalArgs {
+  public tag = CONSTANT_TAG;
   public length = 0;
   public values = [];
 

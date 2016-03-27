@@ -1,5 +1,5 @@
 import { InternedString, intern } from 'glimmer-util';
-import { ComputedReferenceBlueprint, Meta } from 'glimmer-reference';
+import { ComputedReferenceBlueprint, Meta } from 'glimmer-object-reference';
 import { EMPTY_CACHE, ClassMeta } from './object';
 import { Descriptor, Blueprint } from './mixin';
 

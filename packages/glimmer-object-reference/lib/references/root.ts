@@ -1,18 +1,16 @@
-import { InternedString, intern, dict } from 'glimmer-util';
+import { Opaque, InternedString, intern, dict } from 'glimmer-util';
 import { PathReference } from './path';
-import { RootReference as IRootReference, PathReference as IPathReference } from 'glimmer-reference';
-import PushPullReference from './push-pull';
+import { RootReference as IRootReference } from '../types';
+import { VOLATILE_TAG, PathReference as IPathReference } from 'glimmer-reference';
 
-export default class RootReference<T> extends PushPullReference<T> implements IRootReference<T>, IPathReference<T> {
+export default class RootReference<T> implements IRootReference<T>, IPathReference<T> {
   private object: T;
   private chains = dict<PathReference<any>>();
+  public tag = VOLATILE_TAG;
 
   constructor(object: T) {
-    super();
     this.object = object;
   }
-
-  isDirty() { return true; }
 
   value(): T { return this.object; }
 
@@ -37,15 +35,11 @@ export default class RootReference<T> extends PushPullReference<T> implements IR
     return string.split('.').reduce((ref, part) => ref.get(intern(part)), this);
   }
 
-  referenceFromParts(parts: InternedString[]): IPathReference<any> {
-    return parts.reduce((ref, part) => ref.get(part), <IPathReference<T>>this);
+  referenceFromParts(parts: InternedString[]): IPathReference<Opaque> {
+    return parts.reduce((ref, part) => ref.get(part) as IPathReference<Opaque>, this as IPathReference<Opaque>);
   }
 
   label() {
     return '[reference Root]';
   }
-}
-
-export function referenceFromParts<T>(path: IPathReference<T>, parts: InternedString[]): IPathReference<any> {
-  return parts.reduce((ref, part) => ref.get(part), path);
 }

@@ -2,12 +2,11 @@ import Bounds, { clear } from './bounds';
 
 import { DOMHelper } from './dom';
 
-import { InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
+import { Destroyable, InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
 import { Environment } from './environment';
 
 import {
-  Destroyable,
   PathReference
 } from 'glimmer-reference';
 
@@ -67,15 +66,18 @@ class BlockStackElement {
 
 export interface ElementOperations {
   addAttribute(name: InternedString, value: PathReference<string>);
-  addAttributeNS(name: InternedString, value: PathReference<string>, namespace: InternedString);
+  addAttributeNS(namespace: InternedString, name: InternedString, value: PathReference<string>);
   addProperty(name: InternedString, value: PathReference<any>);
 }
 
 class GroupedElementOperations implements ElementOperations {
-  groups: ElementOperation[][];
-  group: ElementOperation[];
+  public groups: ElementOperation[][];
+  public group: ElementOperation[];
 
-  constructor() {
+  private element: Element;
+
+  constructor(element: Element) {
+    this.element = element;
     let group = this.group = [];
     this.groups = [group];
   }
@@ -85,16 +87,16 @@ class GroupedElementOperations implements ElementOperations {
     this.groups.push(group);
   }
 
-  addAttribute(name: InternedString, value: PathReference<string>) {
-    this.group.push(new NonNamespacedAttribute(name, value));
+  addAttribute(name: InternedString, reference: PathReference<string>) {
+    this.group.push(new NonNamespacedAttribute(this.element, name, reference));
   }
 
-  addAttributeNS(name: InternedString, value: PathReference<string>, namespace: InternedString) {
-    this.group.push(new NamespacedAttribute(name, value, namespace));
+  addAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>) {
+    this.group.push(new NamespacedAttribute(this.element, namespace, name, reference));
   }
 
-  addProperty(name: InternedString, value: PathReference<any>) {
-    this.group.push(new Property(name, value));
+  addProperty(name: InternedString, reference: PathReference<any>) {
+    this.group.push(new Property(this.element, name, reference));
   }
 }
 
@@ -173,7 +175,7 @@ export class ElementStack {
 
   private pushElement(tag: InternedString): Element {
     let element = this.dom.createElement(tag, this.element);
-    let elementOperations = new GroupedElementOperations();
+    let elementOperations = new GroupedElementOperations(element);
 
     this.elementOperations = elementOperations;
     this.element = element;
@@ -281,20 +283,20 @@ export class ElementStack {
   //   this.dom.setAttribute(this.element, name, value);
   // }
 
-  // setAttributeNS(name: InternedString, value: any, namespace: InternedString) {
+  // setAttributeNS(namespace: InternedString, name: InternedString, value: any) {
   //   this.dom.setAttributeNS(this.element, name, value, namespace);
   // }
 
-  setAttribute(name: InternedString, value: PathReference<string>) {
-    this.elementOperations.addAttribute(name, value);
+  setAttribute(name: InternedString, reference: PathReference<string>) {
+    this.elementOperations.addAttribute(name, reference);
   }
 
-  setAttributeNS(name: InternedString, value: PathReference<string>, namespace: InternedString) {
-    this.elementOperations.addAttributeNS(name, value, namespace);
+  setAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>) {
+    this.elementOperations.addAttributeNS(namespace, name, reference);
   }
 
-  setProperty(name: InternedString, value: PathReference<any>) {
-    this.elementOperations.addProperty(name, value);
+  setProperty(name: InternedString, reference: PathReference<any>) {
+    this.elementOperations.addProperty(name, reference);
   }
 
   closeElement() {

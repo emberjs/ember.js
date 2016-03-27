@@ -1,5 +1,5 @@
 import { FIXME, LinkedList, ListNode, InternedString, Opaque, dict } from 'glimmer-util';
-import { PathReference } from '../types';
+import { VersionedPathReference as PathReference } from './validators';
 
 export interface IterationItem<T> {
   key: string;

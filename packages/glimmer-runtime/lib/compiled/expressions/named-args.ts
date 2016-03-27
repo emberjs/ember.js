@@ -1,7 +1,7 @@
 import { NULL_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
-import { PathReference } from 'glimmer-reference';
+import { CONSTANT_TAG, PathReference, RevisionTag, combine } from 'glimmer-reference';
 import { InternedString, Dict, dict } from 'glimmer-util';
 
 export abstract class CompiledNamedArgs {
@@ -63,6 +63,9 @@ export const COMPILED_EMPTY_NAMED_ARGS = new (class extends CompiledNamedArgs {
 });
 
 export abstract class EvaluatedNamedArgs {
+  public tag: RevisionTag;
+  public keys: InternedString[];
+
   static empty(): EvaluatedNamedArgs {
     return EVALUATED_EMPTY_NAMED_ARGS;
   }
@@ -91,13 +94,22 @@ export abstract class EvaluatedNamedArgs {
 
 class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
   public values: PathReference<any>[];
-  public keys: InternedString[];
   public map: Dict<PathReference<any>>;
 
   constructor({ map }: { map: Dict<PathReference<any>> }) {
     super();
 
+    let keys = this.keys = Object.keys(map) as InternedString[];
     this.map = map;
+
+    let tags = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      tags.push(map[key].tag);
+    }
+
+    this.tag = combine(tags);
   }
 
   get(key: InternedString): PathReference<any> {
@@ -109,13 +121,12 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
   }
 
   value(): Dict<any> {
-    let { map } = this;
+    let { map, keys } = this;
 
     let out = dict();
-    let mapKeys = Object.keys(map);
 
-    for (let i = 0; i < mapKeys.length; i++) {
-      let key = mapKeys[i];
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
       out[key] = map[key].value();
     }
 
@@ -124,6 +135,9 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
 }
 
 export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs {
+  public tag = CONSTANT_TAG;
+  public keys = [];
+
   get(): PathReference<any> {
     return NULL_REFERENCE;
   }

@@ -44,7 +44,7 @@ class DOMHelper {
     element.setAttribute(name, value);
   }
 
-  setAttributeNS(element: Element, name: string, value: string, namespace: string) {
+  setAttributeNS(element: Element, namespace: string, name: string, value: string) {
     element.setAttributeNS(namespace, name, value);
   }
 
@@ -56,7 +56,7 @@ class DOMHelper {
     element.removeAttribute(name);
   }
 
-  removeAttributeNS(element: Element, name: string, namespace: string) {
+  removeAttributeNS(element: Element, namespace: string, name: string) {
     element.removeAttributeNS(namespace, name);
   }
 

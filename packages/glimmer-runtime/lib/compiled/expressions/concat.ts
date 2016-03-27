@@ -1,7 +1,7 @@
 import { CompiledExpression } from '../expressions';
 import { normalizeTextValue } from '../opcodes/content';
 import VM from '../../vm/append';
-import { PathReference, Reference } from 'glimmer-reference';
+import { PathReference, CachedReference, RevisionTag, combineTagged } from 'glimmer-reference';
 import { Opaque } from 'glimmer-util';
 
 export default class CompiledConcat {
@@ -25,24 +25,21 @@ export default class CompiledConcat {
   }
 }
 
-class ConcatReference implements Reference<string> {
+class ConcatReference extends CachedReference<string> {
+  public tag: RevisionTag;
   private parts: PathReference<Opaque>[];
 
   constructor(parts: PathReference<Opaque>[]) {
+    super();
+    this.tag = combineTagged(parts);
     this.parts = parts;
   }
 
-  isDirty() {
-    return true;
-  }
-
-  value(): string {
+  protected compute(): string {
     let parts = new Array<string>(this.parts.length);
     for (let i = 0; i < this.parts.length; i++) {
       parts[i] = normalizeTextValue(this.parts[i].value());
     }
     return parts.join('');
   }
-
-  destroy() {}
 }
