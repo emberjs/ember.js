@@ -1,7 +1,7 @@
 import { Statement as StatementSyntax } from './syntax';
 
 import { DOMHelper } from './dom';
-import { Destroyable, Reference, OpaqueIterable } from 'glimmer-reference';
+import { Reference, OpaqueIterable } from 'glimmer-reference';
 import { NULL_REFERENCE, ConditionalReference } from './references';
 
 import {
@@ -25,7 +25,7 @@ import { EvaluatedArgs } from './compiled/expressions/args';
 
 import { InlineBlock } from './compiled/blocks';
 
-import { Dict, Opaque } from 'glimmer-util';
+import { Destroyable, Dict, Opaque } from 'glimmer-util';
 
 import * as Syntax from './syntax/core';
 

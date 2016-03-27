@@ -36,7 +36,5 @@ export class ValueReference<T> extends ConstReference<T> implements PathReferenc
     return child;
   }
 
-  isDirty() { return false; }
   value(): any { return this.inner; }
-  destroy() {}
 }

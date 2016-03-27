@@ -1,7 +1,7 @@
 import Meta from '../meta';
-import { Reference, NotifiableReference } from 'glimmer-reference';
+import { Reference, VOLATILE_TAG } from 'glimmer-reference';
+import { NotifiableReference } from '../types';
 import { InternedString } from 'glimmer-util';
-import PushPullReference from './push-pull';
 
 export interface InnerReferenceFactory<T> {
   new (object: any, property: InternedString, outer: NotifiableReference<any>): Reference<T>;
@@ -10,15 +10,14 @@ export interface InnerReferenceFactory<T> {
 export class PropertyReference<T> implements Reference<T> {
   private object: any;
   private property: InternedString;
+  public tag = VOLATILE_TAG;
 
   constructor(object: any, property: InternedString, outer: NotifiableReference<T>) {
     this.object = object;
     this.property = property;
   }
 
-  isDirty() { return true; }
   value() { return this.object[<string>this.property]; }
-  destroy() {}
 
   label() {
     return '[reference Property]';
@@ -26,25 +25,19 @@ export class PropertyReference<T> implements Reference<T> {
 }
 
 export function ComputedReferenceBlueprint(property, dependencies) {
-  return class ComputedReference<T> extends PushPullReference<T> implements Reference<T> {
+  return class ComputedReference<T> implements Reference<T> {
     private object: any;
     private property: InternedString;
     private dependencies: InternedString[][];
     private outer: NotifiableReference<T>;
     private installed = false;
+    public tag = VOLATILE_TAG;
 
     constructor(object: any, property: InternedString, outer: NotifiableReference<T>) {
-      super();
       this.object = object;
       this.property = property;
       this.dependencies = dependencies;
       this.outer = outer;
-    }
-
-    notify() {
-      this.dirty = true;
-      // this.outer.notify();
-      super.notify();
     }
 
     value() {
@@ -53,11 +46,9 @@ export function ComputedReferenceBlueprint(property, dependencies) {
 
         this.dependencies.forEach(dep => {
           let ref = root.referenceFromParts(dep);
-          this._addSource(ref);
           ref.value();
         });
 
-        this.dirty = false;
         this.installed = true;
       }
 

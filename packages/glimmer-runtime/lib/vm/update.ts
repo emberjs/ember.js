@@ -1,8 +1,8 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { Bounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker } from '../builder';
-import { Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
-import { ConstReference, Destroyable, PathReference, IterationArtifacts, IteratorSynchronizer, IteratorSynchronizerDelegate } from 'glimmer-reference';
+import { Destroyable, Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
+import { ConstReference, PathReference, IterationArtifacts, IteratorSynchronizer, IteratorSynchronizerDelegate } from 'glimmer-reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';

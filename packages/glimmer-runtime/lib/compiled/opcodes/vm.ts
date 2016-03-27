@@ -6,7 +6,7 @@ import { Layout, InlineBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
 import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
-import { Reference, isConst } from 'glimmer-reference';
+import { ReferenceCache, isConst, isModified } from 'glimmer-reference';
 
 abstract class VMUpdatingOpcode extends UpdatingOpcode {
   public type: string;
@@ -356,14 +356,19 @@ export class JumpIfOpcode extends JumpOpcode {
 
   evaluate(vm: VM) {
     let reference = vm.frame.getCondition();
-    let value = reference.value();
 
-    if (value) {
-      super.evaluate(vm);
-    }
+    if (isConst(reference)) {
+      if (reference.value()) {
+        super.evaluate(vm);
+      }
+    } else {
+      let cache = new ReferenceCache(reference);
 
-    if (!isConst(reference)) {
-      vm.updateWith(new Assert(reference, value));
+      if (cache.peek()) {
+        super.evaluate(vm);
+      }
+
+      vm.updateWith(new Assert(cache));
     }
   }
 }
@@ -373,14 +378,19 @@ export class JumpUnlessOpcode extends JumpOpcode {
 
   evaluate(vm: VM) {
     let reference = vm.frame.getCondition();
-    let value = reference.value();
 
-    if (!value) {
-      super.evaluate(vm);
-    }
+    if (isConst(reference)) {
+      if (!reference.value()) {
+        super.evaluate(vm);
+      }
+    } else {
+      let cache = new ReferenceCache(reference);
 
-    if (!isConst(reference)) {
-      vm.updateWith(new Assert(reference, value));
+      if (!cache.peek()) {
+        super.evaluate(vm);
+      }
+
+      vm.updateWith(new Assert(cache));
     }
   }
 }
@@ -388,31 +398,29 @@ export class JumpUnlessOpcode extends JumpOpcode {
 export class Assert extends VMUpdatingOpcode {
   public type = "assert";
 
-  private reference: Reference<Opaque>;
-  private expected: Opaque;
+  private cache: ReferenceCache<Opaque>;
 
-  constructor(reference: Reference<Opaque>, expected: Opaque) {
+  constructor(cache: ReferenceCache<Opaque>) {
     super();
-    this.reference = reference;
-    this.expected = expected;
+    this.cache = cache;
   }
 
   evaluate(vm: UpdatingVM) {
-    let { reference, expected } = this;
+    let { cache } = this;
 
-    if (reference.value() !== expected) {
+    if (isModified(cache.revalidate())) {
       vm.throw();
     }
   }
 
   toJSON(): OpcodeJSON {
-    let { type, _guid, expected } = this;
+    let { type, _guid, cache } = this;
 
     return {
       guid: _guid,
       type,
       args: [],
-      details: { expected: JSON.stringify(expected) }
+      details: { expected: JSON.stringify(cache.peek()) }
     };
   }
 }
