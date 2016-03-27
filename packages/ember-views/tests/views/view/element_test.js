@@ -6,8 +6,6 @@ import run from 'ember-metal/run_loop';
 
 import EmberView from 'ember-views/views/view';
 
-import { objectAt } from 'ember-runtime/mixins/array';
-
 var parentView, view;
 
 QUnit.module('Ember.View#element', {

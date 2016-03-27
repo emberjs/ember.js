@@ -5,8 +5,6 @@ import EmberView from 'ember-views/views/view';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-import { objectAt } from 'ember-runtime/mixins/array';
-
 var originalViewKeyword;
 var view;
 

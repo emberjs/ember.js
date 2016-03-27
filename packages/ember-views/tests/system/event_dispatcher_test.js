@@ -156,9 +156,10 @@ QUnit.test('should send change events up view hierarchy if view contains form el
 });
 
 QUnit.test('events should stop propagating if the view is destroyed', function() {
-  var parentViewReceived, receivedEvent;
+  var parentComponentReceived, receivedEvent;
 
   owner.register('component:x-foo', Component.extend({
+    layout: compile('<input id="is-done" type="checkbox" />'),
     change(evt) {
       receivedEvent = true;
       run(() => {
@@ -167,25 +168,21 @@ QUnit.test('events should stop propagating if the view is destroyed', function()
     }
   }));
 
-  owner.register('template:components/x-foo', compile('<input id="is-done" type="checkbox"'));
-
-  var parentView = Component.create({
+  let parentComponent = Component.extend({
     [OWNER]: owner,
-
     layout: compile('{{x-foo}}'),
-
     change(evt) {
-      parentViewReceived = true;
+      parentComponentReceived = true;
     }
-  });
+  }).create();
 
-  runAppend(parentView);
+  runAppend(parentComponent);
 
-  ok(jQuery('#is-done').length, 'precond - view is in the DOM');
+  ok(jQuery('#is-done').length, 'precond - component is in the DOM');
   jQuery('#is-done').trigger('change');
-  ok(!jQuery('#is-done').length, 'precond - view is not in the DOM');
+  ok(!jQuery('#is-done').length, 'precond - component is not in the DOM');
   ok(receivedEvent, 'calls change method when a child element is changed');
-  ok(!parentViewReceived, 'parent view does not receive the event');
+  ok(!parentComponentReceived, 'parent component does not receive the event');
 });
 
 QUnit.test('should dispatch events to nearest event manager', function() {

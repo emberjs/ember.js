@@ -2,15 +2,20 @@ import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
+import { compile } from 'ember-template-compiler';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
 import { objectAt } from 'ember-runtime/mixins/array';
-
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var parentView, child;
 var originalViewKeyword;
+
+import isEnabled from 'ember-metal/features';
+if (!isEnabled('ember-glimmer')) {
+// jscs:disable
 
 // .......................................................
 // removeAllChildren()
@@ -19,18 +24,24 @@ var view, childViews;
 QUnit.module('View#removeAllChildren', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
-    view = ContainerView.create({
-      childViews: [View, View, View]
-    });
-    childViews = view.get('childViews');
+    view = View.extend({
+      template: compile(`
+        {{view view.childView1}}
+        {{view view.childView2}}
+        {{view view.childView3}}
+      `),
+      childView1: View.extend(),
+      childView2: View.extend(),
+      childView3: View.extend()
+    }).create();
+    runAppend(view);
+
+    childViews = get(view, 'childViews');
   },
   teardown() {
-    run(function() {
-      childViews.forEach(function(v) { v.destroy(); });
-      view.destroy();
-    });
+    childViews.forEach((v) => runDestroy(v));
+    runDestroy(view);
     resetKeyword('view', originalViewKeyword);
   }
 });
@@ -63,20 +74,17 @@ QUnit.module('View#removeFromParent', {
   }
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
 QUnit.test('removes view from parent view', function() {
-  expectDeprecation('Setting `childViews` on a Container is deprecated.');
+  parentView = View.extend({
+    template: compile('{{view view.childView}}'),
+    childView: View.extend({
+      template: compile('child view template')
+    })
+  }).create();
+  run(parentView, parentView.append);
 
-  parentView = ContainerView.create({ childViews: [View] });
   child = objectAt(get(parentView, 'childViews'), 0);
   ok(get(child, 'parentView'), 'precond - has parentView');
-
-  run(function() {
-    parentView.createElement();
-  });
 
   ok(parentView.$('div').length, 'precond - has a child DOM element');
 
@@ -89,16 +97,18 @@ QUnit.test('removes view from parent view', function() {
   equal(parentView.$('div').length, 0, 'removes DOM element from parent');
 });
 
-}
-
 QUnit.test('returns receiver', function() {
-  expectDeprecation('Setting `childViews` on a Container is deprecated.');
+  parentView = View.extend({
+    template: compile('{{view view.childView}}'),
+    childView: View.extend({
+      template: compile('child view template')
+    })
+  }).create();
 
-  parentView = ContainerView.create({ childViews: [View] });
+  run(parentView, parentView.append);
   child = objectAt(get(parentView, 'childViews'), 0);
-  var removed = run(function() {
-    return child.removeFromParent();
-  });
+
+  let removed = run(() => child.removeFromParent());
 
   equal(removed, child, 'receiver');
 });
@@ -115,7 +125,6 @@ QUnit.test('does nothing if not in parentView', function() {
     child.destroy();
   });
 });
-
 
 QUnit.test('the DOM element is gone after doing append and remove in two separate runloops', function() {
   view = View.create();
@@ -140,3 +149,5 @@ QUnit.test('the DOM element is gone after doing append and remove in a single ru
   var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
+
+}

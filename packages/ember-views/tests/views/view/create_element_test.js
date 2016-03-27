@@ -1,7 +1,6 @@
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import { equalHTML } from 'ember-views/tests/test-helpers/equal-html';
 import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
