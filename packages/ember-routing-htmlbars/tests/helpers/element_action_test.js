@@ -742,30 +742,6 @@ QUnit.test('should unwrap controllers passed as a context', function() {
   equal(passedContext, model, 'the action was passed the unwrapped model');
 });
 
-QUnit.test('should not unwrap controllers passed as `controller`', function() {
-  var passedContext;
-  var model = EmberObject.create();
-  var controller = EmberController.extend({
-    model: model,
-    actions: {
-      edit(context) {
-        passedContext = context;
-      }
-    }
-  }).create();
-
-  view = EmberView.create({
-    controller: controller,
-    template: compile('<button {{action "edit" controller}}>edit</button>')
-  });
-
-  runAppend(view);
-
-  view.$('button').trigger('click');
-
-  equal(passedContext, controller, 'the action was passed the controller');
-});
-
 QUnit.test('should allow multiple contexts to be specified', function() {
   var passedContexts;
   var models = [EmberObject.create(), EmberObject.create()];
@@ -1203,9 +1179,6 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
     dispatcher = owner.lookup('event_dispatcher:main');
     dispatcher.setup();
 
-    this.originalLegacyControllerSupport = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
-    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
-
     this.originalLegacyViewSupport = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
     Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
   },
@@ -1215,7 +1188,6 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
     runDestroy(dispatcher);
     runDestroy(owner);
 
-    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = this.originalLegacyControllerSupport;
     Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = this.originalLegacyViewSupport;
   }
 });

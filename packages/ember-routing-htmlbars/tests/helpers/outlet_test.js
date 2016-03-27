@@ -58,33 +58,6 @@ QUnit.test('a top-level outlet should always be a view', function() {
   equal(trim(top.$('#top-level').text()), 'HIBYE');
 });
 
-QUnit.test('a top-level outlet should have access to `{{controller}}`', function() {
-  var routerState = withTemplate('<h1>{{controller.salutation}}</h1>{{outlet}}');
-  routerState.render.controller = Controller.create({
-    salutation: 'HI'
-  });
-  top.setOutletState(routerState);
-  routerState.outlets.main = withTemplate('<p>BYE</p>');
-  runAppend(top);
-
-  // Replace whitespace for older IE
-  equal(trim(top.$().text()), 'HIBYE');
-});
-
-QUnit.test('a non top-level outlet should have access to `{{controller}}`', function() {
-  var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
-  top.setOutletState(routerState);
-  routerState.outlets.main = withTemplate('<p>BYE</p>');
-  routerState.outlets.main.render.controller = Controller.create({
-    salutation: 'BYE'
-  });
-
-  runAppend(top);
-
-  // Replace whitespace for older IE
-  equal(trim(top.$().text()), 'HIBYE');
-});
-
 QUnit.test('view should render the outlet when set before dom insertion', function() {
   var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   routerState.outlets.main = withTemplate('<p>BYE</p>');
