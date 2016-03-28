@@ -630,6 +630,18 @@ export default Mixin.create({
 
     this[INIT_WAS_CALLED] = true;
 
+    if (typeof(this.didInitAttrs) === 'function') {
+      deprecate(
+        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+        false,
+        {
+          id: 'ember-views.did-init-attrs',
+          until: '3.0.0',
+          url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+        }
+      );
+    }
+
     assert(
       'Using a custom `.render` function is no longer supported.',
       !this.render

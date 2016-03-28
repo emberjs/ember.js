@@ -133,7 +133,9 @@ styles.forEach(style => {
       twitter: '@tomdale'
     }).create();
 
-    runAppend(view);
+    expectDeprecation(() => {
+      runAppend(view);
+    }, /\[DEPRECATED\] didInitAttrs called in <\(subclass of Ember.Component\)\:ember[\d+]+>\./);
 
     ok(component, 'The component was inserted');
     equal(jQuery('#qunit-fixture').text(), 'Twitter: @tomdale Name: Tom Dale Website: tomdale.net');
@@ -285,7 +287,9 @@ styles.forEach(style => {
       twitter: '@tomdale'
     }).create();
 
-    runAppend(view);
+    expectDeprecation(() => {
+      runAppend(view);
+    }, /\[DEPRECATED\] didInitAttrs called in <\(subclass of Ember.Component\)\:ember[\d+]+>\./);
 
     ok(component, 'The component was inserted');
     equal(jQuery('#qunit-fixture').text(), 'Top: Middle: Bottom: @tomdale');
@@ -361,7 +365,9 @@ styles.forEach(style => {
   });
 
   QUnit.test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
-    let component = style.class.extend({
+    let component;
+
+    component = style.class.extend({
       [OWNER]: owner,
       layout: compile('<div>{{handle}}</div>'),
       handle: '@wycats',
@@ -376,6 +382,28 @@ styles.forEach(style => {
     }, /modified inside the didInsertElement hook/);
 
     assert.strictEqual(component.$().text(), '@tomdale');
+
+    run(() => {
+      component.destroy();
+    });
+  });
+
+  QUnit.test('DEPRECATED: didInitAttrs is deprecated', function(assert) {
+    let component;
+
+    let componentClass = style.class.extend({
+      [OWNER]: owner,
+      layout: compile('<div>{{handle}}</div>'),
+      handle: '@wycats',
+
+      didInitAttrs() {
+        this._super(...arguments);
+      }
+    });
+
+    expectDeprecation(() => {
+      component = componentClass.create();
+    }, /\[DEPRECATED\] didInitAttrs called in <\(subclass of Ember.Component\)\:ember[\d+]+>\./);
 
     run(() => {
       component.destroy();
