@@ -36,11 +36,12 @@ export namespace Expressions {
   type Params = Core.Params;
   type Hash = Core.Hash;
 
-  export type Unknown       = ['unknown', Path];
-  export type Attr          = ['attr', Path];
-  export type Get           = ['get', Path];
-  export type Value         = str | number | boolean;
-  export type HasBlock      = ['hasBlock', str];
+  export type Unknown        = ['unknown', Path];
+  export type Attr           = ['attr', Path];
+  export type Get            = ['get', Path];
+  export type Value          = str | number | boolean;
+  export type HasBlock       = ['hasBlock', str];
+  export type HasBlockParams = ['hasBlockParams', str];
 
   export type Expression =
       Unknown
@@ -48,6 +49,7 @@ export namespace Expressions {
     | Get
     | Concat
     | HasBlock
+    | HasBlockParams
     | Helper
     | Value
     ;
@@ -64,12 +66,13 @@ export namespace Expressions {
     [3]: Hash;
   }
 
-  export const isUnknown      = is<Unknown>('unknown');
-  export const isAttr         = is<Attr>('attr');
-  export const isGet          = is<Get>('get');
-  export const isConcat       = is<Concat>('concat');
-  export const isHelper       = is<Helper>('helper');
-  export const isHasBlock     = is<HasBlock>('hasBlock');
+  export const isUnknown        = is<Unknown>('unknown');
+  export const isAttr           = is<Attr>('attr');
+  export const isGet            = is<Get>('get');
+  export const isConcat         = is<Concat>('concat');
+  export const isHelper         = is<Helper>('helper');
+  export const isHasBlock       = is<HasBlock>('hasBlock');
+  export const isHasBlockParams = is<HasBlockParams>('hasBlockParams');
 
   export function isValue(value: any): value is Value {
     return value !== null && typeof value !== 'object';

@@ -50,6 +50,8 @@ import {
 
 import CompiledHasBlock from '../compiled/expressions/has-block';
 
+import CompiledHasBlockParams from '../compiled/expressions/has-block-params';
+
 import CompiledHelper from '../compiled/expressions/helper';
 
 import CompiledConcat from '../compiled/expressions/concat';
@@ -951,6 +953,40 @@ export class HasBlock extends ExpressionSyntax<boolean> {
 
   compile(compiler: SymbolLookup, env: Environment): CompiledHasBlock {
     return new CompiledHasBlock({
+      blockName: this.blockName,
+      blockSymbol: compiler.getBlockSymbol(this.blockName)
+    });
+  }
+}
+
+export class HasBlockParams extends ExpressionSyntax<boolean> {
+  type = "has-block-params";
+
+  static fromSpec(sexp: SerializedExpressions.HasBlockParams): HasBlockParams {
+    let [, blockName] = sexp;
+
+    return new HasBlockParams({
+      blockName: blockName as InternedString
+    });
+  }
+
+  static build(blockName: InternedString): HasBlockParams {
+    return new this({ blockName });
+  }
+
+  blockName: InternedString;
+
+  constructor({ blockName }: { blockName: InternedString }) {
+    super();
+    this.blockName = blockName;
+  }
+
+  prettyPrint() {
+    return new PrettyPrint('expr', 'has-block-params', [this.blockName]);
+  }
+
+  compile(compiler: SymbolLookup, env: Environment): CompiledHasBlockParams {
+    return new CompiledHasBlockParams({
       blockName: this.blockName,
       blockSymbol: compiler.getBlockSymbol(this.blockName)
     });
