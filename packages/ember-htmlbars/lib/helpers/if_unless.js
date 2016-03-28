@@ -22,7 +22,7 @@ import shouldDisplay from 'ember-views/streams/should_display';
   the `else` helper.
 
   ```handlebars
-  {{!Is it raining outside?}}
+  {{! is it raining outside?}}
   {{#if isRaining}}
     Yes, grab an umbrella!
   {{else}}
