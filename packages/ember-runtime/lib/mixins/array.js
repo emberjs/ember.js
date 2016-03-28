@@ -531,8 +531,23 @@ export default Mixin.create(Enumerable, {
     return an enumerable that maps automatically to the named key on the
     member objects.
 
-    If you merely want to watch for any items being added or removed to the array,
-    use the `[]` property instead of `@each`.
+    @each should only be used in a non-terminal context, and is deprecated when
+    used as a leaf node. Example:
+
+    ```javascript
+    myMethod: computed('posts.@each.author', function(){
+      ...
+    });
+    ```
+
+    If you merely want to watch for the array being changed, like an object being
+    replaced, added or removed, use `[]` instead of `@each`.
+
+    ```javascript
+    myMethod: computed('posts.[]', function(){
+      ...
+    });
+    ```
 
     @property @each
     @public
