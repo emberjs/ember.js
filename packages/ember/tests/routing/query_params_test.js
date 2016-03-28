@@ -1963,7 +1963,66 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(get(controller, 'bar'), 'rab');
     equal(get(controller, 'foo'), '456');
   });
+
+  QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
+    expect(2);
+    App.Router.map(function() {
+      this.route('parent', function() {
+        this.route('child');
+        this.route('sibling');
+      });
+    });
+
+    App.ParentRoute = Route.extend({
+      queryParams: {foo: {defaultValue: 'bar'}}
+    });
+
+    App.ParentChildRoute = Route.extend({
+      afterModel: function() {
+        ok(true, 'The after model hook was called');
+        this.transitionTo('parent.sibling');
+      }
+    });
+
+    startingURL = '/parent/child?foo=lol';
+    bootApplication();
+
+    var parentController = container.lookup('controller:parent');
+
+    equal(parentController.get('foo'), 'lol');
+
+  });
 } else {
+  QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
+    expect(2);
+    App.Router.map(function() {
+      this.route('parent', function() {
+        this.route('child');
+        this.route('sibling');
+      });
+    });
+
+    App.ParentChildRoute = Route.extend({
+      afterModel: function() {
+        ok(true, 'The after model hook was called');
+        this.transitionTo('parent.sibling');
+      }
+    });
+
+    App.ParentController = Controller.extend({
+      queryParams: ['foo'],
+      foo: 'bar'
+    });
+
+    startingURL = '/parent/child?foo=lol';
+    bootApplication();
+
+    var parentController = container.lookup('controller:parent');
+
+    equal(parentController.get('foo'), 'lol');
+
+  });
+
   QUnit.test('Single query params can be set on the controller [DEPRECATED]', function() {
     Router.map(function() {
       this.route('home', { path: '/' });

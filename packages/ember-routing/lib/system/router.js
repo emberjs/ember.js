@@ -633,6 +633,12 @@ var EmberRouter = EmberObject.extend(Evented, {
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     var queryParams = {};
+    // merge in any queryParams from the active transition which could include
+    // queryparams from the url on initial load.
+    if (this.router.activeTransition) {
+      assign(queryParams, this.router.activeTransition.queryParams);
+    }
+
     assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams);
 
