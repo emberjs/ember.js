@@ -406,7 +406,7 @@ const Application = Engine.extend({
     be created at Application construction (not boot) time to expose
     App.__container__ and the global Ember.View.views registry. If
     autoboot sees that this instance exists, it will continue booting
-    it to avoid doing unncessary work (as opposed to building a new
+    it to avoid doing unnecessary work (as opposed to building a new
     instance at boot time), but they are otherwise unrelated.
 
     @private
@@ -801,7 +801,7 @@ const Application = Engine.extend({
     Boot a new instance of `Ember.ApplicationInstance` for the current
     application and navigate it to the given `url`. Returns a `Promise` that
     resolves with the instance when the initial routing and rendering is
-    complete, or rejects with any error that occured during the boot process.
+    complete, or rejects with any error that occurred during the boot process.
 
     When `autoboot` is disabled, calling `visit` would first cause the
     application to boot, which runs the application initializers.
@@ -826,7 +826,7 @@ const Application = Engine.extend({
     result in unexpected behavior.
 
     For example, booting the instance in the full browser environment
-    while specifying a foriegn `document` object (e.g. `{ isBrowser: true,
+    while specifying a foreign `document` object (e.g. `{ isBrowser: true,
     document: iframe.contentDocument }`) does not work correctly today,
     largely due to Ember's jQuery dependency.
 
@@ -841,7 +841,7 @@ const Application = Engine.extend({
     Ember will boot a default instance for your Application on "DOM ready".
     However, you can customize this behavior by disabling `autoboot`.
 
-    For example, this allows you to render a miniture demo of your application
+    For example, this allows you to render a miniature demo of your application
     into a specific area on your marketing website:
 
     ```javascript
@@ -929,7 +929,7 @@ const Application = Engine.extend({
 
     This setup allows you to run the routing layer of your Ember app in a server
     environment using Node.js and completely disable rendering. This allows you
-    to simulate and discover the resources (i.e. AJAX requests) needed to fufill
+    to simulate and discover the resources (i.e. AJAX requests) needed to fulfill
     a given request and eagerly "push" these resources to the client.
 
     ```app/initializers/network-service.js
@@ -937,7 +937,7 @@ const Application = Engine.extend({
     import NodeNetworkService from 'app/services/network/node';
 
     // Inject a (hypothetical) service for abstracting all AJAX calls and use
-    // the appropiate implementaion on the client/server. This also allows the
+    // the appropriate implementation on the client/server. This also allows the
     // server to log all the AJAX calls made during a particular request and use
     // that for resource-discovery purpose.
 

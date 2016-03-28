@@ -58,7 +58,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     * `history` - use the browser's history API to make the URLs look just like any standard URL
     * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
     * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
-    * `auto` - use the best option based on browser capabilites: `history` if possible, then `hash` if possible, otherwise `none`
+    * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
 
     Note: If using ember-cli, this value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
 
@@ -129,7 +129,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   /*
-    Resets all pending query paramter changes.
+    Resets all pending query parameter changes.
     Called after transitioning to a new route
     based on query parameter changes.
   */
@@ -1193,7 +1193,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
       // right here that the user tried to target a nonexistent
       // thing. But for now we still need to support the `render`
       // helper, and people are allowed to target templates rendered
-      // by the render helper. So instead we defer doing anyting with
+      // by the render helper. So instead we defer doing anything with
       // these orphan renders until afterRender.
       appendOrphan(liveRoutes, renderOptions.into, myState);
     } else {

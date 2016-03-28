@@ -252,7 +252,7 @@ Renderer.prototype.remove = function (view, shouldDestroy) {
 
 Renderer.prototype.renderElementRemoval =
   function Renderer_renderElementRemoval(view) {
-    // Use the _willRemoveElement flag to avoid mulitple removal attempts in
+    // Use the _willRemoveElement flag to avoid multiple removal attempts in
     // case many have been scheduled. This should be more performant than using
     // `scheduleOnce`.
     if (view._willRemoveElement) {

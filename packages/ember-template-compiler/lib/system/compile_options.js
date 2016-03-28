@@ -19,7 +19,7 @@ compileOptions = function(_options) {
 
   let options;
   // When calling `Ember.Handlebars.compile()` a second argument of `true`
-  // had a special meaning (long since lost), this just gaurds against
+  // had a special meaning (long since lost), this just guards against
   // `options` being true, and causing an error during compilation.
   if (_options === true) {
     options = {};
