@@ -77,6 +77,16 @@ QUnit.test('GlimmerComponent cannot be invoked with curly braces', function() {
   }, /cannot invoke the 'non-block' component with curly braces/);
 });
 
+QUnit.test('Component with no template cannot be override the layout property', function(assert) {
+  assert.expect(1);
+  owner.register('component:non-block', Component.extend({ layout: [] }));
+  
+  expectAssertion(function() {
+    view = appendViewFor('{{non-block}}');  
+  }, 'Meta key missing from layout. This usually happens when there is no template for a Component, and the Component has overrided the layout key. Please rename the property to something other than "layout".'
+  );
+});
+
 QUnit.test('block without properties', function() {
   expect(1);
 

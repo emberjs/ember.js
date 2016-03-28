@@ -86,7 +86,13 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
 
     if (!layout) { return; }
 
-    let fragmentReason = layout.meta.fragmentReason;
+    let fragmentReason;
+    if (layout.meta === undefined) {
+      assert('Meta key missing from layout. This usually happens when there is no template for a Component, and the Component has overrided the layout key. Please rename the property to something other than "layout".');
+    } else {
+      fragmentReason = layout.meta.fragmentReason;
+    }
+
     if (isAngleBracket && fragmentReason) {
       switch (fragmentReason.name) {
         case 'missing-wrapper':
