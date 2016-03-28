@@ -67,6 +67,46 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }
   }
 
+  ['@test passing undefined elementId results in a default elementId'](assert) {
+    let FooBarComponent = Component.extend({
+      tagName: 'h1'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'something' });
+
+    this.render('{{foo-bar id=somethingUndefined}}');
+
+    var foundId = this.$('h1').attr('id');
+    assert.ok(/^ember/.test(foundId), 'Has a reasonable id attribute (found id=' + foundId + ').');
+
+    this.runTask(() => this.rerender());
+
+    var newFoundId = this.$('h1').attr('id');
+    assert.ok(/^ember/.test(newFoundId), 'Has a reasonable id attribute (found id=' + newFoundId + ').');
+
+    assert.equal(foundId, newFoundId);
+  }
+
+  ['@htmlbars passing literal id is ignored and results in a default elementId'](assert) {
+    let FooBarComponent = Component.extend({
+      tagName: 'h1'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'something' });
+
+    this.render('{{foo-bar id="custom-id"}}');
+
+    var foundId = this.$('h1').attr('id');
+    assert.equal(foundId, 'custom-id');
+
+    this.runTask(() => this.rerender());
+
+    var newFoundId = this.$('h1').attr('id');
+    assert.equal(newFoundId, 'custom-id');
+
+    assert.equal(foundId, newFoundId);
+  }
+
   ['@test it can have a custom tagName']() {
     let FooBarComponent = Component.extend({
       tagName: 'foo-bar'
@@ -876,4 +916,5 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
   }
+
 });
