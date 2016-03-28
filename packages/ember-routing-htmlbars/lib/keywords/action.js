@@ -150,7 +150,8 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ### Event Propagation
 
-  `{{action}}` helpers called in element space can control event bubbling.
+  `{{action}}` helpers called in element space can control event bubbling. Note
+  that the closure style actions cannot.
 
   Events triggered through the action helper will automatically have
   `.preventDefault()` called on them. You do not need to do so in your event
@@ -168,6 +169,28 @@ import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
 
   ```handlebars
   <button {{action 'edit' post bubbles=false}}>Edit</button>
+  ```
+
+  To disable bubbling with closure style actions you must create your own
+  wrapper helper that makes use of `event.stopPropagation()`:
+
+  ```handlebars
+  <div onclick={{disable-bubbling (action "sayHello")}}>Hello</div>
+  ```
+
+  ```js
+  // app/helpers/disable-bubbling.js
+  import Ember from 'ember';
+
+  export function disableBubbling([action]) {
+    return function(event) {
+      event.stopPropagation();
+
+      return action(event);
+    };
+  }
+
+  export default Ember.Helper.helper(disableBubbling);
   ```
 
   If you need the default handler to trigger you should either register your
