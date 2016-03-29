@@ -1,5 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
 import EmberObject from 'ember-runtime/system/object';
 import TextField from 'ember-views/views/text_field';
 import Component from 'ember-views/components/component';
@@ -205,7 +206,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.render(`{{#foo-bar colors=colors as |value|}}{{value}}{{/foo-bar}}`, {
       colors: {
         red: 'banana'
-      },
+      }
     });
 
     this.assertText('banana');
@@ -215,13 +216,13 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
     this.runTask(() => {
       set(fooBarInstance, 'mcintosh', 'yellow');
-      set(this.context, 'colors', {yellow: 'bus'});
+      set(this.context, 'colors', { yellow: 'bus' });
     });
     this.assertText('bus');
 
     this.runTask(() => {
       set(fooBarInstance, 'mcintosh', 'red');
-      set(this.context, 'colors', {red: 'banana'});
+      set(this.context, 'colors', { red: 'banana' });
     });
     this.assertText('banana');
   }
@@ -247,12 +248,8 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   }
 
-  // Looks like some misconfiguration here.
-  //
-  // Htmlbars: Error: Assertion Failed: HTMLBars error: Could not find component named "-text-field" (no component or template with that name was found)
-  // Glimmer: Compile Error: input is not a helper
-  ['@skip get helper value should be updatable using {{input}} and (mut) - dynamic key']() {
-    this.registerHelper('input', TextField);
+  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - dynamic key']() {
+    this.registerComponent('-text-field', { ComponentClass: TextField });
 
     this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
       source: EmberObject.create({
@@ -262,5 +259,79 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     });
 
     this.assert.strictEqual(this.$('#get-input').val(), 'banana');
+
+    this.runTask(() => set(this.context, 'source.banana', 'yellow'));
+    this.assert.strictEqual(this.$('#get-input').val(), 'yellow');
+
+    this.runTask(() => {
+      this.$('#get-input').val('some value');
+
+      // have tried to fire _elementValueDidChange via events but no luck
+      // so looks like the only option is to call _elementValueDidChange manually
+      // which I suspect doesn't seem to work for glimmer once it's implemented
+      //
+      // this.$('#get-input').trigger('input');
+      // this.$('#get-input').trigger('paste');
+      // this.$('#get-input').trigger('change');
+      // this.$('#get-input').triggerHandler('input');
+      this.component.childViews[0]._elementValueDidChange();
+    });
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'some value');
+    this.assert.strictEqual(get(this.context, 'source.banana'), 'some value');
+  }
+
+  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - dynamic nested key']() {
+    this.registerComponent('-text-field', { ComponentClass: TextField });
+
+    this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
+      source: EmberObject.create({
+        apple: {
+          mcintosh: 'mcintosh'
+        }
+      }),
+      key: 'apple.mcintosh'
+    });
+
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
+
+    this.runTask(() => set(this.context, 'source.apple.mcintosh', 'red'));
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'red');
+
+    this.runTask(() => {
+      this.$('#get-input').val('some value');
+      this.component.childViews[0]._elementValueDidChange();
+    });
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'some value');
+    this.assert.strictEqual(get(this.context, 'source.apple.mcintosh'), 'some value');
+  }
+
+  ['@htmlbars get helper value should be updatable using {{input}} and (mut) - static key']() {
+    this.registerComponent('-text-field', { ComponentClass: TextField });
+
+    this.render(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`, {
+      source: EmberObject.create({
+        banana: 'banana'
+      }),
+      key: 'banana'
+    });
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'banana');
+
+    this.runTask(() => set(this.context, 'context.source.banana', 'yellow'));
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'yellow');
+
+    this.runTask(() => {
+      this.$('#get-input').val('some value');
+      this.component.childViews[0]._elementValueDidChange();
+    });
+
+    this.assert.strictEqual(this.$('#get-input').val(), 'some value');
+    this.assert.strictEqual(get(this.context, 'source.banana'), 'some value');
   }
 });
+
