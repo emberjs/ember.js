@@ -7,6 +7,7 @@ import EmberObject from 'ember-runtime/system/object';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
+import { Component } from './helpers';
 
 class AbstractConditionalsTest extends RenderingTest {
 
@@ -766,6 +767,49 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.runTask(() => set(this.context, 'outer', this.falsyValue));
 
     this.assertText('F-outer');
+  }
+
+  ['@test child conditional should not render children if parent conditional becomes false'](assert) {
+    let childCreated = false;
+
+    this.registerComponent('foo-bar', {
+      template: 'foo-bar',
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          childCreated = true;
+        }
+      })
+    });
+
+    let innerTemplate = this.templateFor({ cond: 'cond2', truthy: '{{foo-bar}}', falsy: '' });
+    let wrappedTemplate = this.wrappedTemplateFor({ cond: 'cond1', truthy: innerTemplate, falsy: '' });
+
+    this.render(wrappedTemplate, { cond1: this.truthyValue, cond2: this.falsyValue });
+
+    assert.ok(!childCreated);
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    assert.ok(!childCreated);
+    this.assertText('');
+
+    this.runTask(() => {
+      set(this.context, 'cond2', this.truthyValue);
+      set(this.context, 'cond1', this.falsyValue);
+    });
+
+    assert.ok(!childCreated);
+    this.assertText('');
+
+    this.runTask(() => {
+      set(this.context, 'cond2', this.falsyValue);
+      set(this.context, 'cond1', this.truthyValue);
+    });
+
+    assert.ok(!childCreated);
+    this.assertText('');
   }
 
 }
