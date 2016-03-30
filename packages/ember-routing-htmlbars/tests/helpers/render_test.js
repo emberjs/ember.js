@@ -221,6 +221,7 @@ QUnit.test("{{render}} helper should render with given controller", function() {
   expectDeprecation(arrayControllerDeprecation);
   var template = '{{render "home" controller="posts"}}';
   var controller = EmberController.extend({ container: container });
+  var model = Ember.A();
   var id = 0;
   container._registry.register('controller:posts', EmberArrayController.extend({
     init() {
@@ -256,7 +257,7 @@ QUnit.test('{{render}} helper should rerender with given controller', function()
   });
   var id = 0;
 
-  registry.register('controller:posts', EmberController.extend({
+  container._registry.register('controller:posts', EmberController.extend({
     init() {
       this._super(...arguments);
       this.uniqueId = id++;
