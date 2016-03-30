@@ -665,10 +665,10 @@ const CURRENT_TAG: RevisionTag = {
 ```
 
 Alternatively, without a collaborating object model, this tag can be used
-all the root references. The revision counter can be artifically incremented
-once just before entering the global render loop: this will ensure that each
-computation is only performed once inside each render loop. (This assumes the
-templates are side-effect-free.)
+in all root references that bridges the untracked objects into the system. The
+revision counter can be artifically incremented once just before entering the
+global render loop: this will ensure that each computation is only performed
+once inside each render loop. This assumes the templates are side-effects-free.
 
 Together, this sets of primitives allows us to implement a very efficient yet
 expressive dirty-tracking system without notifications and subscriptions within
