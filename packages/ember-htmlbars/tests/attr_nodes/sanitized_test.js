@@ -59,6 +59,7 @@ var badTags = [
 ];
 
 for (var i=0, l=badTags.length; i<l; i++) {
+  /* jshint -W083 */
   (function() {
     var subject = badTags[i];
 
@@ -123,6 +124,7 @@ for (var i=0, l=badTags.length; i<l; i++) {
     });
 
   })(); //jshint ignore:line
+  /* jshint +W083 */
 }
 
 }

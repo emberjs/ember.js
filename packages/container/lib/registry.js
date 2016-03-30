@@ -28,7 +28,13 @@ if (Ember.FEATURES.isEnabled('ember-application-instance-initializers')) {
 function Registry(options) {
   this.fallback = options && options.fallback ? options.fallback : null;
 
-  this.resolver = options && options.resolver ? options.resolver : function() {};
+  if (options && options.resolver) {
+    this.resolver = options.resolver;
+    if (typeof this.resolver === 'function') {
+      deprecateResolverFunction(this);
+    }
+
+  }
 
   this.registrations  = dictionary(options && options.registrations ? options.registrations : null);
 
@@ -58,7 +64,7 @@ Registry.prototype = {
   /**
    @private
    @property resolver
-   @type function
+   @type Resolver
    */
   resolver: null,
 
@@ -327,7 +333,13 @@ Registry.prototype = {
    @return {string} described fullName
    */
   describe(fullName) {
-    return fullName;
+    if (this.resolver && this.resolver.lookupDescription) {
+      return this.resolver.lookupDescription(fullName);
+    } else if (this.fallback) {
+      return this.fallback.describe(fullName);
+    } else {
+      return fullName;
+    }
   },
 
   /**
@@ -339,7 +351,13 @@ Registry.prototype = {
    @return {string} normalized fullName
    */
   normalizeFullName(fullName) {
-    return fullName;
+    if (this.resolver && this.resolver.normalize) {
+      return this.resolver.normalize(fullName);
+    } else if (this.fallback) {
+      return this.fallback.normalizeFullName(fullName);
+    } else {
+      return fullName;
+    }
   },
 
   /**
@@ -365,7 +383,13 @@ Registry.prototype = {
    @return {function} toString function
    */
   makeToString(factory, fullName) {
-    return factory.toString();
+    if (this.resolver && this.resolver.makeToString) {
+      return this.resolver.makeToString(factory, fullName);
+    } else if (this.fallback) {
+      return this.fallback.makeToString(factory, fullName);
+    } else {
+      return factory.toString();
+    }
   },
 
   /**
@@ -719,7 +743,7 @@ Registry.prototype = {
       fallbackKnown = this.fallback.knownForType(type);
     }
 
-    if (this.resolver.knownForType) {
+    if (this.resolver && this.resolver.knownForType) {
       resolverKnown = this.resolver.knownForType(type);
     }
 
@@ -797,12 +821,27 @@ Registry.prototype = {
   }
 };
 
+function deprecateResolverFunction(registry) {
+  Ember.deprecate('Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.',
+            false,
+            { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
+  registry.resolver = {
+    resolve: registry.resolver
+  };
+}
+
 function resolve(registry, normalizedName) {
   var cached = registry._resolveCache[normalizedName];
   if (cached) { return cached; }
   if (registry._failCache[normalizedName]) { return; }
 
-  var resolved = registry.resolver(normalizedName) || registry.registrations[normalizedName];
+  var resolved;
+
+  if (registry.resolver) {
+    resolved = registry.resolver.resolve(normalizedName);
+  }
+
+  resolved = resolved || registry.registrations[normalizedName];
 
   if (resolved) {
     registry._resolveCache[normalizedName] = resolved;

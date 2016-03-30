@@ -94,8 +94,6 @@ export default EmberObject.extend({
       fallback: this.applicationRegistry,
       resolver: this.applicationRegistry.resolver
     });
-    this.registry.normalizeFullName = this.applicationRegistry.normalizeFullName;
-    this.registry.makeToString = this.applicationRegistry.makeToString;
 
     // Create a per-instance container from the instance's registry
     this.container = this.registry.container();

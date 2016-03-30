@@ -33,18 +33,20 @@ var buildContainer = function(namespace) {
 };
 
 function resolverFor(namespace) {
-  return function(fullName) {
-    var nameParts = fullName.split(":");
-    var type = nameParts[0];
-    var name = nameParts[1];
+  return {
+    resolve(fullName) {
+      var nameParts = fullName.split(":");
+      var type = nameParts[0];
+      var name = nameParts[1];
 
-    if (name === 'basic') {
-      name = '';
+      if (name === 'basic') {
+        name = '';
+      }
+      var className = classify(name) + classify(type);
+      var factory = get(namespace, className);
+
+      if (factory) { return factory; }
     }
-    var className = classify(name) + classify(type);
-    var factory = get(namespace, className);
-
-    if (factory) { return factory; }
   };
 }
 

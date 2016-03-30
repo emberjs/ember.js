@@ -1082,13 +1082,11 @@ Application.reopenClass({
     @public
   */
   buildRegistry(namespace) {
-    var registry = new Registry();
+    var registry = new Registry({
+      resolver: resolverFor(namespace)
+    });
 
     registry.set = set;
-    registry.resolver = resolverFor(namespace);
-    registry.normalizeFullName = registry.resolver.normalize;
-    registry.describe = registry.resolver.describe;
-    registry.makeToString = registry.resolver.makeToString;
 
     registry.optionsForType('component', { singleton: false });
     registry.optionsForType('view', { singleton: false });
@@ -1145,7 +1143,7 @@ Application.reopenClass({
     registry.injection('service:-routing', 'router', 'router:main');
 
     // DEBUGGING
-    registry.register('resolver-for-debugging:main', registry.resolver.__resolver__, { instantiate: false });
+    registry.register('resolver-for-debugging:main', registry.resolver, { instantiate: false });
     registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
     registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
@@ -1175,43 +1173,10 @@ Application.reopenClass({
 function resolverFor(namespace) {
   Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
 
-  var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || DefaultResolver;
-  var resolver = ResolverClass.create({
+  var ResolverClass = namespace.get('Resolver') || DefaultResolver;
+  return ResolverClass.create({
     namespace: namespace
   });
-
-  function resolve(fullName) {
-    return resolver.resolve(fullName);
-  }
-
-  resolve.describe = function(fullName) {
-    return resolver.lookupDescription(fullName);
-  };
-
-  resolve.makeToString = function(factory, fullName) {
-    return resolver.makeToString(factory, fullName);
-  };
-
-  resolve.normalize = function(fullName) {
-    if (resolver.normalize) {
-      return resolver.normalize(fullName);
-    } else {
-      Ember.deprecate('The Resolver should now provide a \'normalize\' function', false);
-      return fullName;
-    }
-  };
-
-  resolve.knownForType = function knownForType(type) {
-    if (resolver.knownForType) {
-      return resolver.knownForType(type);
-    }
-  };
-
-  resolve.moduleBasedResolver = resolver.moduleBasedResolver;
-
-  resolve.__resolver__ = resolver;
-
-  return resolve;
 }
 
 function registerLibraries() {
