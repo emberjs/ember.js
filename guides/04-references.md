@@ -453,7 +453,7 @@ and convert it into a "hash" (or "dictionary") object:
 ```handlebars
 <user-profile user={{currentUser}} options={{hash compact=false me=true}} />
 
-{{#each currentUser.friends do |friend|}}
+{{#each currentUser.friends as |friend|}}
   <user-profile user={{friend}} options={{hash compact=true me=false}} />
 {{/each}}
 ```
@@ -467,7 +467,7 @@ property:
 
   {{#unless @options.me}}
     <mutual-friends user={{@user}} />
-  {{/if}}
+  {{/unless}}
 
   {{#unless @options.compact}}
     ...
