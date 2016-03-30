@@ -20,22 +20,24 @@ import {
 import HashLocation from "ember-routing/location/hash_location";
 
 function resolverFor(namespace) {
-  return function(fullName) {
-    var nameParts = fullName.split(":");
-    var type = nameParts[0];
-    var name = nameParts[1];
+  return {
+    resolve(fullName) {
+      var nameParts = fullName.split(":");
+      var type = nameParts[0];
+      var name = nameParts[1];
 
-    if (type === "template") {
-      var templateName = decamelize(name);
-      if (Ember.TEMPLATES[templateName]) {
-        return Ember.TEMPLATES[templateName];
+      if (type === "template") {
+        var templateName = decamelize(name);
+        if (Ember.TEMPLATES[templateName]) {
+          return Ember.TEMPLATES[templateName];
+        }
       }
+
+      var className = classify(name) + classify(type);
+      var factory = get(namespace, className);
+
+      if (factory) { return factory; }
     }
-
-    var className = classify(name) + classify(type);
-    var factory = get(namespace, className);
-
-    if (factory) { return factory; }
   };
 }
 

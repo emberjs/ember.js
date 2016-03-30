@@ -74,7 +74,7 @@ function detectEqual(first, second, message) {
 QUnit.test('the default resolver looks up arbitrary types on the namespace', function() {
   application.FooManager = EmberObject.extend({});
 
-  detectEqual(application.FooManager, registry.resolver('manager:foo'), "looks up FooManager on application");
+  detectEqual(application.FooManager, registry.resolve('manager:foo'), "looks up FooManager on application");
 });
 
 QUnit.test("the default resolver resolves models on the namespace", function() {
@@ -288,7 +288,7 @@ QUnit.test('knownForType returns each item for a given type found', function() {
 });
 
 QUnit.test('knownForType is not required to be present on the resolver', function() {
-  delete registry.resolver.__resolver__.knownForType;
+  delete registry.resolver.knownForType;
 
   registry.resolver.knownForType('helper', function() { });
 

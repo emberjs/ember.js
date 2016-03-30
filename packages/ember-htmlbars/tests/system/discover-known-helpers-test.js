@@ -9,7 +9,9 @@ var resolver, registry, container;
 
 QUnit.module('ember-htmlbars: discover-known-helpers', {
   setup() {
-    resolver = function() { };
+    resolver = {
+      resolve() {}
+    };
 
     registry = new Registry({ resolver });
     container = registry.container();

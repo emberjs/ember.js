@@ -60,27 +60,29 @@ QUnit.test("Throw exception when trying to inject `type:thing` on all type(s)", 
 });
 
 QUnit.test("The registry can take a hook to resolve factories lazily", function() {
-  var registry = new Registry();
   var PostController = factory();
-
-  registry.resolver = function(fullName) {
-    if (fullName === 'controller:post') {
-      return PostController;
+  var resolver = {
+    resolve(fullName) {
+      if (fullName === 'controller:post') {
+        return PostController;
+      }
     }
   };
+  var registry = new Registry({ resolver });
 
   strictEqual(registry.resolve('controller:post'), PostController, "The correct factory was provided");
 });
 
 QUnit.test("The registry respects the resolver hook for `has`", function() {
-  var registry = new Registry();
   var PostController = factory();
-
-  registry.resolver = function(fullName) {
-    if (fullName === 'controller:post') {
-      return PostController;
+  var resolver = {
+    resolve(fullName) {
+      if (fullName === 'controller:post') {
+        return PostController;
+      }
     }
   };
+  var registry = new Registry({ resolver });
 
   ok(registry.has('controller:post'), "the `has` method uses the resolver hook");
 });
@@ -200,14 +202,18 @@ QUnit.test('once resolved, always return the same result', function() {
 
   var registry = new Registry();
 
-  registry.resolver = function() {
-    return 'bar';
+  registry.resolver = {
+    resolve() {
+      return 'bar';
+    }
   };
 
   var Bar = registry.resolve('models:bar');
 
-  registry.resolver = function() {
-    return 'not bar';
+  registry.resolver = {
+    resolve() {
+      return 'not bar';
+    }
   };
 
   equal(registry.resolve('models:bar'), Bar);
@@ -217,9 +223,11 @@ QUnit.test("factory resolves are cached", function() {
   var registry = new Registry();
   var PostController = factory();
   var resolveWasCalled = [];
-  registry.resolver = function(fullName) {
-    resolveWasCalled.push(fullName);
-    return PostController;
+  registry.resolver = {
+    resolve(fullName) {
+      resolveWasCalled.push(fullName);
+      return PostController;
+    }
   };
 
   deepEqual(resolveWasCalled, []);
@@ -234,9 +242,11 @@ QUnit.test("factory for non extendables (MODEL) resolves are cached", function()
   var registry = new Registry();
   var PostController = factory();
   var resolveWasCalled = [];
-  registry.resolver = function(fullName) {
-    resolveWasCalled.push(fullName);
-    return PostController;
+  registry.resolver = {
+    resolve(fullName) {
+      resolveWasCalled.push(fullName);
+      return PostController;
+    }
   };
 
   deepEqual(resolveWasCalled, []);
@@ -251,9 +261,11 @@ QUnit.test("factory for non extendables resolves are cached", function() {
   var registry = new Registry();
   var PostController = {};
   var resolveWasCalled = [];
-  registry.resolver = function(fullName) {
-    resolveWasCalled.push(fullName);
-    return PostController;
+  registry.resolver = {
+    resolve(fullName) {
+      resolveWasCalled.push(fullName);
+      return PostController;
+    }
   };
 
   deepEqual(resolveWasCalled, []);
@@ -274,6 +286,84 @@ QUnit.test("registry.container creates an associated container", function() {
 
   ok(postController instanceof PostController, "The lookup is an instance of the registered factory");
   strictEqual(registry._defaultContainer, container, "_defaultContainer is set to the first created container and used for Ember 1.x Container compatibility");
+});
+
+QUnit.test('`describe` will be handled by the resolver, then by the fallback registry, if available', function() {
+  var fallback = {
+    describe(fullName) {
+      return `${fullName}-fallback`;
+    }
+  };
+
+  var resolver = {
+    lookupDescription(fullName) {
+      return `${fullName}-resolver`;
+    }
+  };
+
+  var registry = new Registry({ fallback, resolver });
+
+  equal(registry.describe('controller:post'), 'controller:post-resolver', '`describe` handled by the resolver first.');
+
+  registry.resolver = null;
+
+  equal(registry.describe('controller:post'), 'controller:post-fallback', '`describe` handled by fallback registry next.');
+
+  registry.fallback = null;
+
+  equal(registry.describe('controller:post'), 'controller:post', '`describe` by default returns argument.');
+});
+
+QUnit.test('`normalizeFullName` will be handled by the resolver, then by the fallback registry, if available', function() {
+  var fallback = {
+    normalizeFullName(fullName) {
+      return `${fullName}-fallback`;
+    }
+  };
+
+  var resolver = {
+    normalize(fullName) {
+      return `${fullName}-resolver`;
+    }
+  };
+
+  var registry = new Registry({ fallback, resolver });
+
+  equal(registry.normalizeFullName('controller:post'), 'controller:post-resolver', '`normalizeFullName` handled by the resolver first.');
+
+  registry.resolver = null;
+
+  equal(registry.normalizeFullName('controller:post'), 'controller:post-fallback', '`normalizeFullName` handled by fallback registry next.');
+
+  registry.fallback = null;
+
+  equal(registry.normalizeFullName('controller:post'), 'controller:post', '`normalizeFullName` by default returns argument.');
+});
+
+QUnit.test('`makeToString` will be handled by the resolver, then by the fallback registry, if available', function() {
+  var fallback = {
+    makeToString(fullName) {
+      return `${fullName}-fallback`;
+    }
+  };
+
+  var resolver = {
+    makeToString(fullName) {
+      return `${fullName}-resolver`;
+    }
+  };
+
+  var registry = new Registry({ fallback, resolver });
+
+  equal(registry.makeToString('controller:post'), 'controller:post-resolver', '`makeToString` handled by the resolver first.');
+
+  registry.resolver = null;
+
+  equal(registry.makeToString('controller:post'), 'controller:post-fallback', '`makeToString` handled by fallback registry next.');
+
+  registry.fallback = null;
+
+  equal(registry.makeToString('controller:post'), 'controller:post', '`makeToString` by default returns argument.');
 });
 
 QUnit.test("`resolve` can be handled by a fallback registry", function() {
@@ -380,12 +470,13 @@ QUnit.test("`knownForType` includes fallback registry results", function() {
 QUnit.test("`knownForType` is called on the resolver if present", function() {
   expect(3);
 
-  function resolver() { }
-  resolver.knownForType = function(type) {
-    ok(true, 'knownForType called on the resolver');
-    equal(type, 'foo', 'the type was passed through');
+  var resolver = {
+    knownForType(type) {
+      ok(true, 'knownForType called on the resolver');
+      equal(type, 'foo', 'the type was passed through');
 
-    return { 'foo:yorp': true };
+      return { 'foo:yorp': true };
+    }
   };
 
   var registry = new Registry({
@@ -399,4 +490,20 @@ QUnit.test("`knownForType` is called on the resolver if present", function() {
     'foo:yorp': true,
     'foo:bar-baz': true
   });
+});
+
+QUnit.test('A registry can be created with a deprecated `resolver` function instead of an object', function() {
+  expect(2);
+
+  let registry;
+
+  expectDeprecation(function() {
+    registry = new Registry({
+      resolver(fullName) {
+        return `${fullName}-resolved`;
+      }
+    });
+  }, 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.');
+
+  equal(registry.resolve('foo:bar'), 'foo:bar-resolved', '`resolve` still calls the deprecated function');
 });
