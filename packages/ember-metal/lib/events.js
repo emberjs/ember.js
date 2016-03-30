@@ -12,6 +12,7 @@ import {
   applyStr
 } from 'ember-metal/utils';
 import { meta as metaFor, peekMeta } from 'ember-metal/meta';
+import { deprecate } from 'ember-metal/debug';
 
 import { ONCE, SUSPENDED } from 'ember-metal/meta_listeners';
 
@@ -83,6 +84,18 @@ export function accumulateListeners(obj, eventName, otherActions) {
 */
 export function addListener(obj, eventName, target, method, once) {
   assert('You must pass at least an object and event name to Ember.addListener', !!obj && !!eventName);
+
+  if (eventName === 'didInitAttrs' && obj.isComponent) {
+    deprecate(
+      `[DEPRECATED] didInitAttrs called in ${obj.toString()}.`,
+      false,
+      {
+        id: 'ember-views.did-init-attrs',
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      }
+    );
+  }
 
   if (!method && 'function' === typeof target) {
     method = target;

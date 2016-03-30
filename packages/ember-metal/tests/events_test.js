@@ -1,5 +1,6 @@
 import { Mixin } from 'ember-metal/mixin';
 import { meta } from 'ember-metal/meta';
+import Component from 'ember-views/components/component';
 
 import {
   on,
@@ -257,4 +258,12 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
 
   sendEvent(obj, 'baz');
   equal(triggered, 1, 'should invoke from subclass property');
+});
+
+QUnit.test('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
+  var obj = Component.create();
+
+  expectDeprecation(() => {
+    addListener(obj, 'didInitAttrs');
+  }, /\[DEPRECATED\] didInitAttrs called in <\Ember.Component\:ember[\d+]+>\./);
 });
