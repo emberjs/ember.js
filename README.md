@@ -1,27 +1,13 @@
 # Status [![Build Status](https://travis-ci.org/tildeio/glimmer.svg?branch=master)](https://travis-ci.org/tildeio/glimmer) [![Sauce Test Status](https://saucelabs.com/buildstatus/htmlbars-ci)](https://saucelabs.com/u/htmlbars-ci)
 
-Glimmer is a layer built on top of the Handlebars template compiler.
+Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
+from [Handlebars][handlebars] templates that can subsequently be updated cheaply
+when data changes.
 
-# Goals
+It is written in [TypeScript][typescript].
 
-The goal of Glimmer is to have a compiler for Handlebars that
-builds a DOM rather than a String.
-
-This means that helpers can have special behavior based on their
-context (they know if they are inside an `<a>` tag, inside an
-attribute, etc.)
-
-Ultimately, the goal is to have a good data binding setup for
-Handlebars that can work directly against DOM nodes and doesn't
-need special tags in the String for the data binding code to work
-(a major limitation in Ember).
-
-There are also many performance gains in Glimmer' approach to building
-DOM vs the HTML-unaware string building approach of Handlebars.
-
-# Usage
-
-TODO: much change. This section will be updated shortly.
+The project is still going through rapid changes at the moment. For the time
+being, please refer the [architecture overview][guides] for more information.
 
 # Building Glimmer
 
@@ -85,3 +71,7 @@ properties, and provide autocompletion, etc.
 
 **You should not treat use of `['foo']` syntax as license to access
 private properties outside of the package.**
+
+[handlebars]: http://handlebarsjs.com
+[typescript]: http://www.typescriptlang.org
+[guides]: ./guides/01-introduction.md
