@@ -39,7 +39,9 @@ let members = {
   values: inheritedMap,
   deps: inheritedMapOfMaps,
   chainWatchers: ownCustomObject,
-  chains: inheritedCustomObject
+  chains: inheritedCustomObject,
+  injections: inheritedMap,
+  descs: inheritedMap
 };
 
 let memberNames = Object.keys(members);
@@ -55,7 +57,10 @@ function Meta(obj, parentMeta) {
   this._deps = undefined;
   this._chainWatchers = undefined;
   this._chains = undefined;
-  // used only internally
+  this._injections = undefined;
+  this._descs = undefined;
+
+  // used only internally (is own meta vs inherited)
   this.source = obj;
 
   // when meta(obj).proto === obj, the object is intended to be only a
