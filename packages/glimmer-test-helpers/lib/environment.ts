@@ -136,6 +136,12 @@ class Iterable implements AbstractIterable<Opaque, IterationItem<Opaque>, Updata
 
     if (Array.isArray(iterable)) {
       return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+    } else if (iterable.forEach !== undefined) {
+      let array = [];
+      iterable.forEach(function(item) {
+        array.push(item);
+      });
+      return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
     } else if (iterable === undefined || iterable === null) {
       return EMPTY_ITERATOR;
     } else {

@@ -76,21 +76,17 @@ export function start() {
   });
 
   document.addEventListener("mousemove", function(e) {
-    data.points.push( new Point(e.timeStamp, e.offsetX, e.offsetY) );
+    data.points.push( new Point(window.performance.now(), e.layerX, e.layerY) );
   });
-
-  let baseOffset = Date.now() - window.performance.now();
 
   function tick() {
     let timestamp = window.performance.now();
 
     data.count = 0;
 
-    let walltime = baseOffset + timestamp;
-
     data.points.forEach(function(point, i) {
       if (point) {
-        point.update(i, walltime);
+        point.update(i, timestamp);
 
         if (point.opacity > 0.001) {
           data.count++;
