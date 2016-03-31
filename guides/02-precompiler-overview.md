@@ -1,4 +1,4 @@
-### Table of Content
+### Table of Contents
 
 1. [Introduction](./01-introduction.md)
 2. [~~Precompiler Overview~~](./02-precompiler-overview.md)

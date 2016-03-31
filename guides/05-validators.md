@@ -1,4 +1,4 @@
-### Table of Content
+### Table of Contents
 
 1. [Introduction](./01-introduction.md)
 2. [~~Precompiler Overview~~](./02-precompiler-overview.md)
@@ -14,16 +14,16 @@
 # Validators
 
 Since the computation encapsulated in a reference can be arbitrarily expensive,
-it is usually a good idea to avoid recomputating its `value()` more often than
+it is usually a good idea to avoid recomputing its `value()` more often than
 necessary.
 
-In parciular, because references are modeling pure computations, there is no
+In particular, because references are modeling pure computations, there is no
 reason to recompute the `value()` of reference if its inputs has not changed.
 While it is not always possible to enumerate the inputs to a reference, it can
 be done in a lot of cases.
 
-For example, a Handlbars helper are required to be pure functions that operate
-solely on its inputs (arguments). If the inputs have not changed, the result of
+For example, Handlebars helpers are required to be pure functions that operate
+solely on their inputs (arguments). If the inputs have not changed, the result of
 the helper invocation will also remain unchanged.
 
 Consider this simple example:
@@ -35,7 +35,7 @@ Consider this simple example:
 The `concat` and `uppercase` helpers can be modeled as such:
 
 ```typescript
-class ConcatReference implemnts Reference<string> {
+class ConcatReference implements Reference<string> {
   private parts: Reference<string>[];
 
   constructor(...parts: Reference<string>[]) {
@@ -47,7 +47,7 @@ class ConcatReference implemnts Reference<string> {
   }
 }
 
-class UppercaseReference implemnts Reference<string> {
+class UppercaseReference implements Reference<string> {
   private str: Reference<string>[];
 
   constructor(str: Reference<string>) {
@@ -110,7 +110,7 @@ it only needs to be recomputed if and only if any of the input references have
 takes a single reference as input, so it should only be recomputed if and only
 if the input reference has "changed" (i.e. a "map" operation).
 
-This presents a recurssive problem – we know how to model the freshness of
+This presents a recursive problem – we know how to model the freshness of
 a `ConcatReference` and `UppercaseReference` as long as we also have a way to
 model the freshness of their input references. In other words, we need a system
 that allows us describe the freshness of a computation in terms of their
@@ -124,7 +124,7 @@ validators system.
 ## Entity Tags
 
 The core primitive of the validators system is called an `EntityTag`. An entity
-tag is a stable object that provides certain guarentees about the freshness of
+tag is a stable object that provides certain guarantees about the freshness of
 a computation result. It has the following interface:
 
 ```typescript
@@ -134,23 +134,23 @@ interface EntityTag<T> {
 }
 ```
 
-Speficially, each entity tag has a `value()` method that returns an *opaque
-validation ticket* that encodes the current state of the computation.
+Specifically, each entity tag has a `value()` method that returns an *opaque
+validation ticket* which encodes the current state of the computation.
 
 The validation ticket can later be passed back into the `validate` method on
 the same entity tag, which returns a boolean value indicating the whether the
 computation result might have changed since the validation was produced.
 
 Specifically, if `validate` returns `true` for the given validation ticket, it
-is guarenteed that the computation result have *not* changed since the
+is guaranteed that the computation result has *not* changed since the
 validation ticket was produced. In other words, if you have cached the result
 of the computation at the same time (more precisely – the same "time step" of
 the discrete system) when the validation ticket was produced, it is not
 necessary to rerun the same computation again since the result would be
-equivilant.
+equivalent.
 
 On the other hand, if `validate` returns `false`, the computation *might* have
-changed since the validation ticket was produced. Any cached results can no
+changed since the validation ticket was produced. Any cached result can no
 longer be relied on and a recomputation is necessary.
 
 However, a negative validation does not imply rerunning the computation would
@@ -161,7 +161,7 @@ expected from time to time.
 
 Aside: if you are paying close attention, you might notice that `EntityTag`
 happens to implement the `Reference` interface! While interesting, this does
-not have much pratical implications. However, it is helpful to remember that,
+not have much practical implications. However, it is helpful to remember that,
 just like references, entity tags are stable, long lived objects that a can be
 held on to by a consumer and queried repeatedly.
 
@@ -189,7 +189,7 @@ The `ETag` header here is an opaque validator chosen by the server that encodes
 information about this response. For example, a common implementation is an MD5
 hash (or any other hash functions) of the response body.
 
-The browser can then cache the respose alongside with the `ETag`. When the user
+The browser can then cache the response alongside with the `ETag`. When the user
 requests the same page again, it could send a "conditional GET" request to the
 server with the cached `ETag`:
 
@@ -199,10 +199,9 @@ If-None-Match: "0267aa812d66aafb7c4ffb790d8b5ffc"
 Host: example.com
 ```
 
-At this point, the server can do whatever it takes to revalidate determine the
-freshness of the cached content. For example, the server can re-apply the same
-hash function to the document and compare that against the `ETag` supplied by
-the client.
+At this point, the server can do whatever it takes to determine the freshness of
+the cached content. For example, the server can re-apply the same hash function
+to the document and compare that against the `ETag` supplied by the client.
 
 After this process, if the server determined that the cached content is still
 valid, it can then send an empty "Not Modified" response and avoid transmitting
@@ -246,7 +245,7 @@ While entity tags serves a slightly different purpose in Glimmer, the idea is
 similar.
 
 Let's define an extension to the `Reference` interface that requires each
-reference to have a corresponding tag that guarentees the freshness of its
+reference to have a corresponding tag that guarantees the freshness of its
 `value()` method:
 
 ```typescript
@@ -271,7 +270,7 @@ needs to be recomputed if and only if its input reference has changed.
 Therefore, we can simply reuse the input reference's entity tag:
 
 ```typescript
-class UppercaseReference implemnts TaggedReference<string> {
+class UppercaseReference implements TaggedReference<string> {
   public tag: EntityTag<any>;
   private str: Reference<string>[];
 
@@ -291,7 +290,7 @@ its input references has changed, so we need to combine the input tags into a
 composite tag:
 
 ```typescript
-class ConcatReference implemnts TaggedReference<string> {
+class ConcatReference implements TaggedReference<string> {
   public tag: EntityTag<any>;
   private parts: TaggedReference<string>[];
 
@@ -370,7 +369,7 @@ class SimpleRenderer {
 
 Although very basic, this renderer is smart enough to use the entity tags on
 the references to avoid unnecessary DOM updates. Fundamentally, this is very
-similar to how Glimmer renders a simple curlies (e.g. `{{foo}}`) into the DOM.
+similar to how Glimmer renders simple curlies (e.g. `{{foo}}`) into the DOM.
 
 ## Revision Tags
 
@@ -397,7 +396,7 @@ The global revision counter is a monotonically increasing sequence, which is
 just a fancy way of saying that it's a global number that only increases but
 never decreases.
 
-Conceptually, a descrete system (which is what Glimmer assumes) can be modeled
+Conceptually, a discrete system (which is what Glimmer assumes) can be modeled
 a series of state transitions. The global revision counter is incremented by
 one every time the system undergoes a state transition. In other words, the
 global revision counter is incremented every time a variable is changed in the
@@ -421,16 +420,16 @@ global and per-object revision counters.
 These primitives lay out the foundation for the revision tag system. If we can
 assume each observable object in the system has a `lastModified` counter, then
 it would be possible to construct an entity tag for each object where the
-validation ticket is the current value of the `lastModified` counter.This tag
-will guarentee the freshness of any first-level path lookups on that object.
+validation ticket is the current value of the `lastModified` counter. This tag
+will guarantee the freshness of any first-level path lookups on that object.
 In other words, all property lookups on an object will have the same result so
 long as the `lastModified` remain unchanged.
 
 The following is a simplified implementation of the system. The only departure
 from the description above is that the `lastModified` counter is tracked inside
-the tag for an object instead of being a seperate field on the object. (Besides
+the tag for an object instead of being a separate field on the object. (Besides
 simplifying the implementation, it also avoids keeping a pointer from the tag
-back to the object.)
+back to the object).
 
 ```typescript
 type Revision = number;
@@ -484,7 +483,7 @@ person.tag.value(); // => 2
 ```
 
 Having a tag on each object allows references to bridge the pure and impure
-parts of the system and propogate freshness information across the entire
+parts of the system and propagate freshness information across the entire
 reference chain.
 
 For example, this is the updated implementation of `UppercaseReference`:
@@ -494,7 +493,7 @@ interface VersionedReference<T> extends <T> {
   tag: RevisionTag;
 }
 
-class UppercaseReference implemnts VersionedReference<string> {
+class UppercaseReference implements VersionedReference<string> {
   public tag: RevisionTag;
   private str: Reference<string>[];
 
@@ -541,7 +540,7 @@ ticket. Here is the updated implementation of of `ConcatReference` (and
 `CompositeTag`):
 
 ```typescript
-class ConcatReference implemnts VersionedReference<string> {
+class ConcatReference implements VersionedReference<string> {
   public tag: RevisionTag;
   private parts: VersionedReference<string>[];
 
@@ -574,9 +573,9 @@ class CompositeTag implements RevisionTag {
 };
 ```
 
-Semantically, this is equivilant to saying a `ConcatReference` is last
+Semantically, this is equivalent to saying a `ConcatReference` is last
 modified when any of its input references was last modified, which is
-equivilant to saying a `ConcatReference` needs to be recomputed if and only if
+equivalent to saying a `ConcatReference` needs to be recomputed if and only if
 any of its input references needs to be recomputed.
 
 There revision tag system also has a few "special" tags.
@@ -666,7 +665,7 @@ const CURRENT_TAG: RevisionTag = {
 
 Alternatively, without a collaborating object model, this tag can be used
 in all root references that bridges the untracked objects into the system. The
-revision counter can be artifically incremented once just before entering the
+revision counter can be artificially incremented once just before entering the
 global render loop: this will ensure that each computation is only performed
 once inside each render loop. This assumes the templates are side-effects-free.
 

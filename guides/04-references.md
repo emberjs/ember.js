@@ -1,4 +1,4 @@
-### Table of Content
+### Table of Contents
 
 1. [Introduction](./01-introduction.md)
 2. [~~Precompiler Overview~~](./02-precompiler-overview.md)
@@ -104,7 +104,7 @@ bar = 3;
 fooPlusBarReference.value(); // => 5
 ```
 
-As you can see, `fooPlusBarReference` is *composes* `fooReference` and
+As you can see, `fooPlusBarReference` *composes* `fooReference` and
 `barReference` instead of accessing the variables directly. As `foo` and `bar`
 change over time, the `fooPlusBarReference` stays up-to-date and returns the
 correct result of `foo + bar`.
@@ -243,12 +243,12 @@ dayOfWeek = 'Saturday';
 result.value(); // => 'Relaxing... (v_v)'
 ```
 
-While this implementation works, it eagerly evalulates both the "consequent"
+While this implementation works, it eagerly evaluates both the "consequent"
 and "alternative" references, even though only one of the two values are used.
 This is not ideal, because the references might represent arbitrarily expensive
 computations.
 
-Instead, we can change the implementation to evalulate the references lazily
+Instead, we can change the implementation to evaluate the references lazily
 (also known as "short-circuit evaluation" in this case):
 
 ```typescript
@@ -267,8 +267,8 @@ class ConditionalExpressionReference<T> implements Reference<T> {
 }
 ```
 
-In this improved implementation, it is guarenteed that only one of the two
-clauses is evalulated, eliminating a wasteful and potentially expensive
+In this improved implementation, it is guaranteed that only one of the two
+clauses is evaluated, eliminating a wasteful and potentially expensive
 computation.
 
 * * *
@@ -287,7 +287,7 @@ most-current data, simply by pulling the latest `value()` out of each reference
 and updating the DOM nodes correspondingly (we will discuss the second part
 later).
 
-References also help bridges the gap between the "impure" (effectful) parts
+References also help bridge the gap between the "impure" (effectful) parts
 of the system from the "pure" (functional) part of the system.
 
 In Handlebars, a template is always rendered against a "context" (typically
@@ -304,7 +304,7 @@ Assuming `motd` is not a helper, both of the dynamic segments are describing a
 path lookup on the context (sometimes called a "self lookup" inside Glimmer).
 That is, `{{user.name.first}}` is referring the value of `this.user.name.first`
 where `this` is the context object. In fact, they can be rewritten as
-`{{this.user.name.first}}` and `{{this.motd}}` for clearity.
+`{{this.user.name.first}}` and `{{this.motd}}` for clarity.
 
 Since it is possible for the context to change from one object to a different
 object between re-renders, the context itself is modeled as a reference.
@@ -375,8 +375,8 @@ context.user.name = { first: 'Yehuda', last: 'Katz' };
 firstName.value(); // => 'Yehuda'
 ```
 
-While this implementation works, because it evalulates the context reference
-into a value, the "parent" and "child" references are not conneceted in any
+While this implementation works, because it evaluates the context reference
+into a value, the "parent" and "child" references are not connected in any
 meaningful way.
 
 Occasionally, there might be extra information on the context object that you
@@ -386,16 +386,16 @@ For example, the context object might be a simple primitive type like strings,
 numbers, or `undefined`, in which case all the subsequent path lookups will
 yield `undefined`.
 
-Altenatively, the context object might be an immutable data structure, in which
-case the all of downstream `value()`s does not need to be recomputed so long as
+Alternatively, the context object might be an immutable data structure, in which
+case all of downstream `value()`s do not need to be recomputed so long as
 the context object itself did not get replaced.
 
 In addition to the context objects, certain advanced features in Handlebars
-(and other extensions in host environments like Ember) inadvertly means that
+(and other extensions in host environments like Ember) inadvertently means that
 almost any references (such as the result returned by a helper) can be used in
 a path lookup position.
 
-For all of these reasons, Glimmer defines an extension to the base `Refernce`
+For all of these reasons, Glimmer defines an extension to the base `Reference`
 type called a `PathReference`:
 
 ```typescript
@@ -502,8 +502,8 @@ class HashReference implements PathReference<Dictionary<any>> {
 ```
 
 By implementing the `PathReference` interface, `HashReference` can avoid
-constructing the `Dictionary` object (and evalulating all the unused references
-in the process) to fufill a simple path lookups (e.g. `{{@options.me}}` in the
+constructing the `Dictionary` object (and evaluating all the unused references
+in the process) to fulfill a simple path lookup (e.g. `{{@options.me}}` in the
 example above).
 
 * * *
