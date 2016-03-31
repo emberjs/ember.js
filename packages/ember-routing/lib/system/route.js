@@ -759,7 +759,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       var totalChanged = Object.keys(changed).concat(Object.keys(removed));
       for (var i = 0, len = totalChanged.length; i < len; ++i) {
         var qp = qpMap[totalChanged[i]];
-        if (qp && get(this._optionsForQueryParam(qp), 'refreshModel')) {
+        if (qp && get(this._optionsForQueryParam(qp), 'refreshModel') && this.router.currentState) {
           this.refresh();
         }
       }
