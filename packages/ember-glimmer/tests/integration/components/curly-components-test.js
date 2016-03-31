@@ -413,7 +413,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal($span.attr('class'), 'inner');
   }
 
-  ['@test a void element does not have childNodes'](assert) {
+  ['@test an empty component does not have childNodes'](assert) {
     let fooBarInstance;
     let FooBarComponent = Component.extend({
       tagName: 'input',
@@ -427,13 +427,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.render('{{foo-bar}}');
 
-    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { 'class': classes('ember-view') } } );
+    this.assertComponentElement(this.firstChild, { tagName: 'input' });
 
     assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { 'class': classes('ember-view') } } );
+    this.assertComponentElement(this.firstChild, { tagName: 'input' });
 
     assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
   }
