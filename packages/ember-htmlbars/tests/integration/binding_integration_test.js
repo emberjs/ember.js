@@ -5,12 +5,9 @@ import EmberView from 'ember-views/views/view';
 import { Binding } from 'ember-metal/binding';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
-import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerHelper } from 'ember-htmlbars/helpers';
-
-import { set } from 'ember-metal/property_set';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -121,57 +118,6 @@ QUnit.test('should cleanup bound properties on rerender', function() {
   run(view, 'rerender');
 
   equal(view.$().text(), 'wycats', 'rendered binding');
-});
-
-QUnit.test('should update bound values after view\'s parent is removed and then re-appended', function() {
-  expectDeprecation('Setting `childViews` on a Container is deprecated.');
-
-  var controller = EmberObject.create();
-
-  var parentView = ContainerView.create({
-    childViews: ['testView'],
-
-    controller: controller,
-
-    testView: EmberView.create({
-      template: compile('{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}')
-    })
-  });
-
-  controller.setProperties({
-    showStuff: true,
-    boundValue: 'foo'
-  });
-
-  runAppend(parentView);
-  view = parentView.get('testView');
-
-  equal(trim(view.$().text()), 'foo');
-  run(function() {
-    set(controller, 'showStuff', false);
-  });
-  equal(trim(view.$().text()), 'Not true.');
-
-  run(function() {
-    set(controller, 'showStuff', true);
-  });
-  equal(trim(view.$().text()), 'foo');
-
-  run(function() {
-    parentView.remove();
-    set(controller, 'showStuff', false);
-  });
-  run(function() {
-    set(controller, 'showStuff', true);
-  });
-  runAppend(parentView);
-
-  run(function() {
-    set(controller, 'boundValue', 'bar');
-  });
-  equal(trim(view.$().text()), 'bar');
-
-  runDestroy(parentView);
 });
 
 QUnit.test('should accept bindings as a string or an Ember.Binding', function() {

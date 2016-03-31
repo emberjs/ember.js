@@ -6,13 +6,17 @@ import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
-import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
+import ComponentLookup from 'ember-views/component_lookup';
+import Component from 'ember-views/components/component';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var view, originalViewKeyword;
+var owner, view, originalViewKeyword;
 var dispatcher;
 
 import isEnabled from 'ember-metal/features';
@@ -22,17 +26,23 @@ if (!isEnabled('ember-glimmer')) {
 QUnit.module('EventDispatcher', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    run(function() {
-      dispatcher = EventDispatcher.create();
-      dispatcher.setup();
-    });
+
+    owner = buildOwner();
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.registerOptionsForType('view', { singleton: false });
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('component-lookup:main', ComponentLookup);
+    owner.register('event_dispatcher:main', EventDispatcher);
+
+    dispatcher = owner.lookup('event_dispatcher:main');
+
+    run(dispatcher, 'setup');
   },
 
   teardown() {
-    run(function() {
-      if (view) { view.destroy(); }
-      dispatcher.destroy();
-    });
+    runDestroy(view);
+    runDestroy(owner);
+
     resetKeyword('view', originalViewKeyword);
   }
 });
@@ -146,37 +156,33 @@ QUnit.test('should send change events up view hierarchy if view contains form el
 });
 
 QUnit.test('events should stop propagating if the view is destroyed', function() {
-  var parentViewReceived, receivedEvent;
+  var parentComponentReceived, receivedEvent;
 
-  var parentView = ContainerView.create({
-    change(evt) {
-      parentViewReceived = true;
-    }
-  });
-
-  view = parentView.createChildView(View, {
-    template: compile('<input id="is-done" type="checkbox">'),
-
+  owner.register('component:x-foo', Component.extend({
+    layout: compile('<input id="is-done" type="checkbox" />'),
     change(evt) {
       receivedEvent = true;
-      var self = this;
-      run(function() {
-        get(self, 'parentView').destroy();
+      run(() => {
+        get(this, 'parentView').destroy();
       });
     }
-  });
+  }));
 
-  parentView.pushObject(view);
+  let parentComponent = Component.extend({
+    [OWNER]: owner,
+    layout: compile('{{x-foo}}'),
+    change(evt) {
+      parentComponentReceived = true;
+    }
+  }).create();
 
-  run(function() {
-    parentView.append();
-  });
+  runAppend(parentComponent);
 
-  ok(jQuery('#is-done').length, 'precond - view is in the DOM');
+  ok(jQuery('#is-done').length, 'precond - component is in the DOM');
   jQuery('#is-done').trigger('change');
-  ok(!jQuery('#is-done').length, 'precond - view is not in the DOM');
+  ok(!jQuery('#is-done').length, 'precond - component is not in the DOM');
   ok(receivedEvent, 'calls change method when a child element is changed');
-  ok(!parentViewReceived, 'parent view does not receive the event');
+  ok(!parentComponentReceived, 'parent component does not receive the event');
 });
 
 QUnit.test('should dispatch events to nearest event manager', function() {
@@ -202,11 +208,17 @@ QUnit.test('should dispatch events to nearest event manager', function() {
 });
 
 QUnit.test('event manager should be able to re-dispatch events to view', function() {
-  expectDeprecation('Setting `childViews` on a Container is deprecated.');
-
   var receivedEvent = 0;
-  view = ContainerView.extend({
 
+  owner.register('component:x-foo', Component.extend({
+    elementId: 'nestedView',
+
+    mouseDown(evt) {
+      receivedEvent++;
+    }
+  }));
+
+  view = Component.extend({
     eventManager: EmberObject.extend({
       mouseDown(evt, view) {
         // Re-dispatch event when you get it.
@@ -221,23 +233,15 @@ QUnit.test('event manager should be able to re-dispatch events to view', functio
       }
     }).create(),
 
-    child: View.extend({
-      elementId: 'nestedView',
-
-      mouseDown(evt) {
-        receivedEvent++;
-      }
-    }),
-
     mouseDown(evt) {
       receivedEvent++;
     }
   }).create({
-    elementId: 'containerView',
-    childViews: ['child']
+    [OWNER]: owner,
+    layout: compile('{{x-foo}}')
   });
 
-  run(function() { view.append(); });
+  runAppend(view);
 
   jQuery('#nestedView').trigger('mousedown');
   equal(receivedEvent, 2, 'event should go to manager and not view');

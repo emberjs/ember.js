@@ -2,7 +2,7 @@ import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import ContainerView from 'ember-views/views/container_view';
+import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -91,11 +91,10 @@ if (!isEnabled('ember-glimmer')) {
 QUnit.module('EmberView - replaceIn() in a view hierarchy', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    expectDeprecation('Setting `childViews` on a Container is deprecated.');
 
-    View = ContainerView.extend({
-      childViews: ['child'],
-      child: EmberView.extend({
+    View = EmberView.extend({
+      template: compile('{{view view.childView}}'),
+      childView: EmberView.extend({
         elementId: 'child'
       })
     });

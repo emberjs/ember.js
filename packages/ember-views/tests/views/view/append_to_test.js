@@ -3,16 +3,26 @@ import run from 'ember-metal/run_loop';
 
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import ContainerView from 'ember-views/views/container_view';
 import compile from 'ember-template-compiler/system/compile';
-import { runDestroy } from 'ember-runtime/tests/utils';
+import ComponentLookup from 'ember-views/component_lookup';
+import Component from 'ember-views/components/component';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import isEnabled from 'ember-metal/features';
 
-var View, view, otherView, willDestroyCalled, childView, originalViewKeyword;
+var owner, View, view, otherView, willDestroyCalled, originalViewKeyword;
 
+function commonSetup() {
+  owner = buildOwner();
+  owner.registerOptionsForType('component', { singleton: false });
+  owner.registerOptionsForType('view', { singleton: false });
+  owner.registerOptionsForType('template', { instantiate: false });
+  owner.register('component-lookup:main', ComponentLookup);
+}
 
 QUnit.module('EmberView - append() and appendTo()', {
   setup() {
@@ -284,22 +294,20 @@ if (!isEnabled('ember-glimmer')) {
 
 QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-    expectDeprecation('Setting `childViews` on a Container is deprecated.');
+    commonSetup();
 
-    View = ContainerView.extend({
-      childViews: ['child'],
-      child: EmberView.extend({
-        elementId: 'child'
-      })
+    owner.register('component:x-foo', Component.extend({
+      elementId: 'child'
+    }));
+
+    View = Component.extend({
+      [OWNER]: owner,
+      layout: compile('{{x-foo}}')
     });
   },
 
   teardown() {
-    run(function() {
-      if (!view.isDestroyed) { view.destroy(); }
-    });
-    resetKeyword('view', originalViewKeyword);
+    runDestroy(view);
   }
 });
 
@@ -325,97 +333,10 @@ QUnit.test('should be added to the document body when calling append()', functio
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  run(function() {
-    view.append();
-  });
+  runAppend(view);
 
   var viewElem = jQuery('#child');
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
-});
-
-QUnit.module('EmberView - removing views in a view hierarchy', {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-    expectDeprecation('Setting `childViews` on a Container is deprecated.');
-
-    willDestroyCalled = 0;
-
-    view = ContainerView.create({
-      childViews: ['child'],
-      child: EmberView.create({
-        willDestroyElement() {
-          willDestroyCalled++;
-        }
-      })
-    });
-
-    childView = get(view, 'child');
-  },
-
-  teardown() {
-    run(function() {
-      if (!view.isDestroyed) { view.destroy(); }
-    });
-    resetKeyword('view', originalViewKeyword);
-  }
-});
-
-QUnit.test('remove removes child elements from the DOM', function() {
-  ok(!get(childView, 'element'), 'precond - should not have an element');
-
-  run(function() {
-    view.append();
-  });
-
-  ok(jQuery('#' + get(childView, 'elementId')).length === 1, 'precond - element was inserted');
-
-  // remove parent view
-  run(function() {
-    view.remove();
-  });
-
-  ok(jQuery('#' + get(childView, 'elementId')).length === 0, 'remove removes child elements the DOM');
-  ok(EmberView.views[get(childView, 'elementId')] === undefined, 'remove does not remove child views from the view hash');
-  ok(!get(childView, 'element'), 'remove nulls out child elements');
-  equal(willDestroyCalled, 1, 'the willDestroyElement hook was called once');
-});
-
-QUnit.test('destroy more forcibly removes child views', function() {
-  ok(!get(childView, 'element'), 'precond - should not have an element');
-
-  run(function() {
-    view.append();
-  });
-
-  ok(jQuery('#' + get(childView, 'elementId')).length === 1, 'precond - child element was inserted');
-
-  willDestroyCalled = 0;
-
-  run(function() {
-    view.destroy();
-  });
-
-  ok(jQuery('#' + get(childView, 'elementId')).length === 0, 'destroy removes child elements from the DOM');
-  ok(EmberView.views[get(childView, 'elementId')] === undefined, 'destroy removes a child views from the global views hash');
-  equal(get(childView, 'isDestroyed'), true, 'child views are marked as destroyed');
-  ok(!get(childView, 'element'), 'child views no longer have an element');
-  equal(willDestroyCalled, 1, 'the willDestroyElement hook was called once on children');
-});
-
-QUnit.test('destroy removes a child view from its parent', function() {
-  ok(!get(childView, 'element'), 'precond - should not have an element');
-
-  run(function() {
-    view.append();
-  });
-
-  ok(jQuery('#' + get(childView, 'elementId')).length === 1, 'precond - child element was inserted');
-
-  run(function() {
-    childView.destroy();
-  });
-
-  ok(get(view, 'childViews.length') === 0, 'Destroyed child views should be removed from their parent');
 });
 
 }

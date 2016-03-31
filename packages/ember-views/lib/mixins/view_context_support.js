@@ -43,7 +43,7 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
 
     1. Supplied context (usually by Handlebars)
     2. Specified controller
-    3. `parentView`'s context (for a child of a ContainerView)
+    3. `parentView`'s context
 
     The code in Handlebars that overrides the `_context` property first
     checks to see whether the view has a specified controller. This is

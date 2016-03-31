@@ -246,10 +246,9 @@ export default Mixin.create({
     finished synchronizing.
 
     This is not typically a function that you will need to call directly when
-    building your application. You might consider using `Ember.ContainerView`
-    instead. If you do need to use `appendTo`, be sure that the target element
-    you are providing is associated with an `Ember.Application` and does not
-    have an ancestor element that is associated with an Ember view.
+    building your application. If you do need to use `appendTo`, be sure that
+    the target element you are providing is associated with an `Ember.Application`
+    and does not have an ancestor element that is associated with an Ember view.
 
     @method appendTo
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
@@ -263,7 +262,7 @@ export default Mixin.create({
       let target = $(selector);
 
       assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-      assert('You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+      assert('You cannot append to an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
       this.renderer.appendTo(this, target[0]);
     } else {
@@ -349,7 +348,7 @@ export default Mixin.create({
     var target = jQuery(selector);
 
     assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-    assert('You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+    assert('You cannot replace an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
 
     this.renderer.replaceIn(this, target[0]);
 

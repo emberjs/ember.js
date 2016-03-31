@@ -5,9 +5,6 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 
 import EmberView from 'ember-views/views/view';
-import ContainerView from 'ember-views/views/container_view';
-
-import { objectAt } from 'ember-runtime/mixins/array';
 
 var parentView, view;
 
@@ -24,19 +21,6 @@ QUnit.test('returns null if the view has no element and no parent view', functio
   view = EmberView.create();
   equal(get(view, 'parentView'), null, 'precond - has no parentView');
   equal(get(view, 'element'), null, 'has no element');
-});
-
-QUnit.test('returns null if the view has no element and parent view has no element', function() {
-  expectDeprecation('Setting `childViews` on a Container is deprecated.');
-
-  parentView = ContainerView.create({
-    childViews: [EmberView.extend()]
-  });
-  view = objectAt(get(parentView, 'childViews'), 0);
-
-  equal(get(view, 'parentView'), parentView, 'precond - has parent view');
-  equal(get(parentView, 'element'), null, 'parentView has no element');
-  equal(get(view, 'element'), null, ' has no element');
 });
 
 QUnit.test('returns element if you set the value', function() {
