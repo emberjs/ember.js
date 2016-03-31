@@ -2,6 +2,7 @@ import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import EmberComponent from 'ember-views/components/component';
 import { computed } from 'ember-metal/computed';
+import { INVOKE } from 'ember-routing-htmlbars/keywords/closure-action';
 
 import {
   runAppend,
@@ -548,3 +549,33 @@ QUnit.test('action should be called within a run loop', function(assert) {
 
   innerComponent.fireAction();
 });
+
+QUnit.test('objects that define INVOKE can be casted to actions', function(assert) {
+  assert.expect(2);
+
+  innerComponent = EmberComponent.extend({
+    fireAction() {
+      assert.equal(this.attrs.submit(4,5,6), 123);
+    }
+  }).create();
+
+  outerComponent = EmberComponent.extend({
+    layout: compile(`{{view innerComponent submit=(action submitTask 1 2 3)}}`),
+    innerComponent,
+    foo: 123,
+    submitTask: computed(function() {
+      return {
+        [INVOKE]: (...args) => {
+          assert.deepEqual(args, [1,2,3,4,5,6]);
+          return this.foo;
+        }
+      };
+    })
+  }).create();
+
+  runAppend(outerComponent);
+
+  innerComponent.fireAction();
+});
+
+}
