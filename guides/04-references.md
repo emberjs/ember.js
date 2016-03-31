@@ -104,7 +104,7 @@ bar = 3;
 fooPlusBarReference.value(); // => 5
 ```
 
-As you can see, `fooPlusBarReference` is *composes* `fooReference` and
+As you can see, `fooPlusBarReference` *composes* `fooReference` and
 `barReference` instead of accessing the variables directly. As `foo` and `bar`
 change over time, the `fooPlusBarReference` stays up-to-date and returns the
 correct result of `foo + bar`.
