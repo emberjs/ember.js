@@ -17,7 +17,7 @@ Since the computation encapsulated in a reference can be arbitrarily expensive,
 it is usually a good idea to avoid recomputating its `value()` more often than
 necessary.
 
-In parciular, because references are modeling pure computations, there is no
+In particular, because references are modeling pure computations, there is no
 reason to recompute the `value()` of reference if its inputs has not changed.
 While it is not always possible to enumerate the inputs to a reference, it can
 be done in a lot of cases.
