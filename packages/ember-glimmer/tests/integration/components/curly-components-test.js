@@ -413,6 +413,31 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal($span.attr('class'), 'inner');
   }
 
+  ['@test a void element does not have childNodes'](assert) {
+    let fooBarInstance;
+    let FooBarComponent = Component.extend({
+      tagName: 'input',
+      init() {
+        this._super();
+        fooBarInstance = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { 'class': classes('ember-view') } } );
+
+    assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { 'class': classes('ember-view') } } );
+
+    assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
+  }
+
   ['@test it has the right parentView and childViews'](assert) {
     let fooBarInstance, fooBarBazInstance;
 
