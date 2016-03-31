@@ -1,4 +1,4 @@
-### Table of Content
+### Table of Contents
 
 1. [Introduction](./01-introduction.md)
 2. [~~Precompiler Overview~~](./02-precompiler-overview.md)
@@ -17,7 +17,7 @@ Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
 from [Handlebars][handlebars] templates that can subsequently be updated cheaply
 when data changes.
 
-In additional to the basic Handlebars features such as helpers and partials,
+In addition to the basic Handlebars features such as helpers and partials,
 Glimmer also comes with built-in support for a very flexible and powerful
 primitive called "Components" and a set of low-level hooks which the host
 environment can use to build other high-level, user-facing features.
