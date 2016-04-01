@@ -288,6 +288,12 @@ QUnit.test('the {{link-to}} applies a \'disabled\' class when disabled', functio
 
   equal(jQuery('#about-link-static.disabled', '#qunit-fixture').length, 1, 'The static link is disabled when its disabledWhen is true');
   equal(jQuery('#about-link-dynamic.disabled', '#qunit-fixture').length, 1, 'The dynamic link is disabled when its disabledWhen is true');
+
+  run(function() {
+    set(appInstance.lookup('controller:index'), 'dynamicDisabledWhen', false);
+  });
+
+  equal(jQuery('#about-link-dynamic.disabled', '#qunit-fixture').length, 0, 'The dynamic link is re-enabled when its disabledWhen becomes false');
 });
 
 QUnit.test('the {{link-to}} doesn\'t apply a \'disabled\' class if disabledWhen is not provided', function () {
@@ -362,7 +368,7 @@ QUnit.test('the {{link-to}} helper does not respond to clicks when disabled', fu
   equal(jQuery('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
 });
 
-QUnit.test('the {{link-to}} helper does not respond to clicks when disabled via a bound param', function () {
+QUnit.test('the {{link-to}} helper responds to clicks according to its disabledWhen bound param', function () {
   Ember.TEMPLATES.index = compile('{{#link-to "about" id="about-link" disabledWhen=disabledWhen}}About{{/link-to}}');
 
   Router.map(function() {
@@ -384,6 +390,15 @@ QUnit.test('the {{link-to}} helper does not respond to clicks when disabled via 
   });
 
   equal(jQuery('h3:contains(About)', '#qunit-fixture').length, 0, 'Transitioning did not occur');
+
+  run(function() {
+    set(appInstance.lookup('controller:index'), 'disabledWhen', false);
+  });
+  run(function() {
+    jQuery('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(jQuery('h3:contains(About)', '#qunit-fixture').length, 1, 'Transitioning did occur when disabledWhen became false');
 });
 
 QUnit.test('The {{link-to}} helper supports a custom activeClass', function() {

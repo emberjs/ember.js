@@ -772,7 +772,7 @@ let LinkComponent = EmberComponent.extend({
     assert('You must provide one or more parameters to the link-to component.', params.length);
 
     let disabledWhen = get(this, 'disabledWhen');
-    if (disabledWhen) {
+    if (disabledWhen !== undefined) {
       this.set('disabled', disabledWhen);
     }
 
