@@ -203,7 +203,7 @@ class ConditionalExpressionReference<T> implements Reference<T> {
     let consequent = this.consequent.value();
     let alternative = this.alternative.value();
 
-    return condition ? consequent : alternative;
+    return predicate ? consequent : alternative;
   }
 }
 
