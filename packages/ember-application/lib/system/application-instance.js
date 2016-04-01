@@ -12,6 +12,7 @@ import {
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
+import isEnabled from 'ember-metal/features';
 
 let BootOptions;
 
@@ -112,8 +113,12 @@ const ApplicationInstance = EngineInstance.extend({
       this.rootElement = this.application.rootElement;
     }
 
+    let router = get(this, 'router');
+    if (isEnabled('ember-routing-router-service')) {
+      registry.register('service:router', router, { instantiate: false });
+    }
+
     if (options.location) {
-      let router = get(this, 'router');
       set(router, 'location', options.location);
     }
 
