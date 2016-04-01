@@ -168,7 +168,7 @@ held on to by a consumer and queried repeatedly.
 ### Entity Tags in HTTP
 
 The entity tag system in Glimmer is inspired by a similar system in the HTTP
-protocol. Understanding its original might be helpful for understanding some of
+protocol. Understanding its origin might be helpful for understanding some of
 the operational details of the Glimmer validators system.
 
 In the HTTP protocol, entity tags (or "ETags") are used to handle revalidation

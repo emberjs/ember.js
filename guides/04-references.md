@@ -488,15 +488,15 @@ class HashReference implements PathReference<Dictionary<any>> {
   value(): Dictionary<any> {
     let dict = new Dictionary<any>();
 
-    this.args.forEach((name, reference) => {
-      dict[name] = reference.value();
+    Object.keys(this.args).forEach((name) => {
+      dict[name] = this.args[name].value();
     });
 
     return dict;
   }
 
   get(path: string): PathReference<any> {
-    return this.dict[path] || NULL_REFERENCE;
+    return this.args[path] || NULL_REFERENCE;
   }
 }
 ```
