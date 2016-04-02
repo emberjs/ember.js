@@ -30,7 +30,7 @@ Ember CLI is a CI tool, so it will run tests as you change files.
 ## In a browser
 
 1. Run `npm start`.
-2. Visit <http://localhost:4200/tests/>.
+2. Visit <http://localhost:7357/tests/>.
 
 # TypeScript Notes
 
