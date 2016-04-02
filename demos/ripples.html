@@ -12,7 +12,7 @@
       <svg width="{{width}}" height="{{height}}">
         <rect x="0" y="0" width="{{width}}" height="{{height}}" fill="#1B1B1B" />
 
-        {{#each points.items key="key" as |point|}}
+        {{#each points key="key" as |point|}}
           <circle cx="{{point.x}}" cy="{{point.y}}" r="{{point.size}}" stroke-width="1" stroke="lightblue" stroke-opacity="{{point.opacity}}" fill-opacity="0" />
         {{/each}}
 
