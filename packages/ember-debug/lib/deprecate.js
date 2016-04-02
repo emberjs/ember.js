@@ -30,13 +30,23 @@ registerHandler(function logDeprecationToConsole(message, options) {
   Logger.warn('DEPRECATION: ' + updatedMessage);
 });
 
+let captureErrorForStack;
+
+if (new Error().stack) {
+  captureErrorForStack = function() {
+    return new Error();
+  };
+} else {
+  captureErrorForStack = function() {
+    try { __fail__.fail(); } catch(e) { return e; }
+  };
+}
+
 registerHandler(function logDeprecationStackTrace(message, options, next) {
   if (Ember.LOG_STACKTRACE_ON_DEPRECATION) {
     let stackStr = '';
-    let error, stack;
-
-    // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
-    try { __fail__.fail(); } catch (e) { error = e; }
+    let error = captureErrorForStack();
+    let stack;
 
     if (error.stack) {
       if (error['arguments']) {
