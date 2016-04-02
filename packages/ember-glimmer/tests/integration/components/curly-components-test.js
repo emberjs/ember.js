@@ -700,25 +700,25 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
 
     this.runTask(() => this.rerender());
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
 
     this.runTask(() => set(component, 'output', 'you are so <i>super</i>'));
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super' });
 
     this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
   }
 
   ['@htmlbars should not escape HTML if string is a htmlSafe'](assert) {
@@ -737,24 +737,24 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
 
     this.runTask(() => this.rerender());
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
 
     this.runTask(() => set(component, 'output', htmlSafe('you are so <i>super</i>')));
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super' });
 
     this.runTask(() => set(component, 'output', htmlSafe('you need to be more <b>bold</b>')));
 
     assert.strictEqual(this.firstChild.childNodes.length, 4);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold'});
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
   }
 });
