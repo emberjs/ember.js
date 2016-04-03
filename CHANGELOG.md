@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 2.4.4 (April 3, 2016)
+
+- [#13177](https://github.com/emberjs/ember.js/pull/13177) [BUGFIX] Allow contextual component attributes are mutable (allowing for two way binding).
+- [#13185](https://github.com/emberjs/ember.js/pull/13185) [BUGFIX] Ensure `{{render}}` sets up target properly (fixes issues with `{{render}}`'ed templates using actions).
+- [#13202](https://github.com/emberjs/ember.js/pull/13202) [BUGFIX] Merge in active transition QPs when doing a transition.
+- [#13218](https://github.com/emberjs/ember.js/pull/13218) [BUGFIX] Do not refresh routes on initial transition.
+- [#13228](https://github.com/emberjs/ember.js/pull/13228) [BUGFIX] re-enable link-to when disabledWhen changes values.
+
 ### 2.4.3 (March 17, 2016)
 
 - [#13118](https://github.com/emberjs/ember.js/pull/13118) [BUGFIX] Work around Chrome 49/50 optimization bug affecting helper usage.
