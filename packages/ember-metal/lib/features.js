@@ -14,7 +14,8 @@ import assign from 'ember-metal/assign';
   @since 1.1.0
   @public
 */
-export var FEATURES = assign(DEFAULT_FEATURES, Ember.ENV.FEATURES); // jshint ignore:line
+export const KNOWN_FEATURES = DEFAULT_FEATURES; // jshint ignore:line
+export var FEATURES = assign(KNOWN_FEATURES, Ember.ENV.FEATURES);
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's

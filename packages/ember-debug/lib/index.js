@@ -5,7 +5,7 @@ import {
   debug,
   setDebugFunction
 } from 'ember-metal/debug';
-import isEnabled, { FEATURES } from 'ember-metal/features';
+import isEnabled, { FEATURES, KNOWN_FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
 import environment from 'ember-metal/environment';
@@ -174,14 +174,18 @@ setDebugFunction('warn', _warn);
   @method _warnIfUsingStrippedFeatureFlags
   @return {void}
 */
-export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped) {
+export function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featuresWereStripped) {
   if (featuresWereStripped) {
     warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
 
-    for (var key in FEATURES) {
-      if (FEATURES.hasOwnProperty(key) && key !== 'isEnabled') {
-        warn('FEATURE["' + key + '"] is set as enabled, but FEATURE flags are only available in canary builds.', !FEATURES[key], { id: 'ember-debug.feature-flag-with-features-stripped' });
+    let keys = Object.keys(FEATURES);
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      if (key === 'isEnabled' || !(key in knownFeatures)) {
+        continue;
       }
+
+      warn('FEATURE["' + key + '"] is set as enabled, but FEATURE flags are only available in canary builds.', !FEATURES[key], { id: 'ember-debug.feature-flag-with-features-stripped' });
     }
   }
 }
@@ -196,7 +200,7 @@ if (!Ember.testing) {
   }
 
   delete FEATURES['features-stripped-test'];
-  _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, featuresWereStripped);
+  _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, KNOWN_FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
   var isFirefox = environment.isFirefox;
