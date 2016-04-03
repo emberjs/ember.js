@@ -1,3 +1,4 @@
+/* globals EmberDev */
 import { set } from 'ember-metal/property_set';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
@@ -57,12 +58,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
 
-    // Note: Throws an `EmberError` that is not stripped from production builds
-    let willThrow = () => set(component, 'elementId', 'herpyderpy');
+    if (EmberDev && !EmberDev.runningProdBuild) {
+      let willThrow = () => set(component, 'elementId', 'herpyderpy');
 
-    assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
+      assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
+      this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
+    }
   }
 
   ['@test it can have a custom tagName']() {
@@ -133,11 +135,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.render('{{foo-bar classBinding=":foo"}}');
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: {'class': classes('foo  ember-view') } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: {'class': classes('foo  ember-view') } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
   }
 
   ['@htmlbars should not apply falsy class name']() {
