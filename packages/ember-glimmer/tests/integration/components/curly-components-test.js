@@ -19,7 +19,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
-  // Note this functionality seems weird
   ['@htmlbars it can have a custom id and it is not bound']() {
     this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
 
@@ -40,6 +39,30 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => set(this.context, 'customId', 'bizz'));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'bizz' }, content: 'bizz bizz' });
+  }
+
+  ['@htmlbars elementId cannot change'](assert) {
+    let component;
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{elementId}}' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
+
+    // Note: Throws an `EmberError` that is not stripped from production builds
+    let willThrow = () => set(component, 'elementId', 'herpyderpy');
+
+    assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
   }
 
   ['@test it can have a custom tagName']() {
