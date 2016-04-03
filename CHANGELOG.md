@@ -1,5 +1,6 @@
 # Ember Changelog
 
+<<<<<<< HEAD
 ### 2.5.0-beta.3 (March 14, 2016)
 
 - [#13083](https://github.com/emberjs/ember.js/issues/13083) [BUGFIX] Fix issue with feature flagging infrastructure in beta 2
@@ -23,6 +24,14 @@
 - [#13007](https://github.com/emberjs/ember.js/pull/13007) [BUGFIX] Update Ember.compare to use operators
 - [#13024](https://github.com/emberjs/ember.js/pull/13024) [BUGFIX] Change internal async acceptance test helpers to be somewhat more efficient in determining router transition status.
 - [FEATURE] Add helper method named `Ember.assign` to roughly emulate `Object.assign`.
+
+### 2.4.4 (April 3, 2016)
+
+- [#13177](https://github.com/emberjs/ember.js/pull/13177) [BUGFIX] Allow contextual component attributes are mutable (allowing for two way binding).
+- [#13185](https://github.com/emberjs/ember.js/pull/13185) [BUGFIX] Ensure `{{render}}` sets up target properly (fixes issues with `{{render}}`'ed templates using actions).
+- [#13202](https://github.com/emberjs/ember.js/pull/13202) [BUGFIX] Merge in active transition QPs when doing a transition.
+- [#13218](https://github.com/emberjs/ember.js/pull/13218) [BUGFIX] Do not refresh routes on initial transition.
+- [#13228](https://github.com/emberjs/ember.js/pull/13228) [BUGFIX] re-enable link-to when disabledWhen changes values.
 
 ### 2.4.3 (March 17, 2016)
 
