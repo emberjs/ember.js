@@ -319,13 +319,7 @@ class CompositeTag implements EntityTag<any[]> {
   validate(tickets: any[]): boolean {
     let { tags } = this;
 
-    tags.forEach((tag, i) => {
-      if (!tag.validate(tickets[i])) {
-        return false;
-      }
-    });
-
-    return true;
+    return tags.every((tag, i) => tag.validate(tickets[i]));
   }
 };
 ```
