@@ -60,6 +60,7 @@ if (isEnabled('ember-htmlbars-attribute-syntax')) {
   ];
 
   for (var i=0, l=badTags.length; i<l; i++) {
+    /* jshint -W083 */
     (function() {
     var subject = badTags[i];
 

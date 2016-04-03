@@ -1,4 +1,3 @@
-/* global Promise:true */
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
@@ -22,7 +21,6 @@ QUnit.test('Ensure that errors thrown from within a promise are sent to the cons
 
 var asyncStarted = 0;
 var asyncEnded = 0;
-var Promise = RSVP.Promise;
 
 var EmberTest;
 var EmberTesting;
@@ -64,7 +62,7 @@ QUnit.test('given `Ember.testing = true`, correctly informs the test suite about
   equal(asyncStarted, 0);
   equal(asyncEnded, 0);
 
-  var user = Promise.resolve({
+  var user = RSVP.Promise.resolve({
     name: 'tomster'
   });
 
@@ -77,7 +75,7 @@ QUnit.test('given `Ember.testing = true`, correctly informs the test suite about
 
     equal(user.name, 'tomster');
 
-    return Promise.resolve(1).then(function() {
+    return RSVP.Promise.resolve(1).then(function() {
       equal(asyncStarted, 1);
       equal(asyncEnded, 1);
     });
@@ -86,7 +84,7 @@ QUnit.test('given `Ember.testing = true`, correctly informs the test suite about
     equal(asyncStarted, 1);
     equal(asyncEnded, 1);
 
-    return new Promise(function(resolve) {
+    return new RSVP.Promise(function(resolve) {
       QUnit.stop(); // raw async, we must inform the test framework manually
       setTimeout(function() {
         QUnit.start(); // raw async, we must inform the test framework manually
@@ -247,7 +245,7 @@ QUnit.test('handled in the same microTask Queue flush do to data locality', func
   // it depends on the locality of `user#1`
   var store = {
     find() {
-      return Promise.resolve(1);
+      return RSVP.Promise.resolve(1);
     }
   };
 
