@@ -577,5 +577,3 @@ QUnit.test('objects that define INVOKE can be casted to actions', function(asser
 
   innerComponent.fireAction();
 });
-
-}
