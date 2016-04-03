@@ -559,7 +559,7 @@ QUnit.test('objects that define INVOKE can be casted to actions', function(asser
 
   innerComponent = EmberComponent.extend({
     fireAction() {
-      assert.equal(this.attrs.submit(4,5,6), 123);
+      assert.equal(this.attrs.submit(4, 5, 6), 123);
     }
   }).create();
 
@@ -570,7 +570,7 @@ QUnit.test('objects that define INVOKE can be casted to actions', function(asser
     submitTask: computed(function() {
       return {
         [INVOKE]: (...args) => {
-          assert.deepEqual(args, [1,2,3,4,5,6]);
+          assert.deepEqual(args, [1, 2, 3, 4, 5, 6]);
           return this.foo;
         }
       };
