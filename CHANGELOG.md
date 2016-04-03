@@ -1,6 +1,9 @@
 # Ember Changelog
 
-<<<<<<< HEAD
+### 2.5.0-beta.4 (April 3, 2016)
+
+- [#13169](https://github.com/emberjs/ember.js/pull/13169) [BUGFIX] Fixes {{link-to}} classes when transition is aborted
+
 ### 2.5.0-beta.3 (March 14, 2016)
 
 - [#13083](https://github.com/emberjs/ember.js/issues/13083) [BUGFIX] Fix issue with feature flagging infrastructure in beta 2
