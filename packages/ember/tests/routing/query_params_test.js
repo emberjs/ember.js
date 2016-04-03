@@ -2001,7 +2001,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     App.ParentRoute = Route.extend({
-      queryParams: {foo: {defaultValue: 'bar'}}
+      queryParams: { foo: { defaultValue: 'bar' } }
     });
 
     App.ParentChildRoute = Route.extend({
@@ -2017,7 +2017,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var parentController = container.lookup('controller:parent');
 
     equal(parentController.get('foo'), 'lol');
-
   });
 } else {
   QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
@@ -2047,7 +2046,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     var parentController = container.lookup('controller:parent');
 
     equal(parentController.get('foo'), 'lol');
-
   });
 
   QUnit.test('Single query params can be set on the controller [DEPRECATED]', function() {
