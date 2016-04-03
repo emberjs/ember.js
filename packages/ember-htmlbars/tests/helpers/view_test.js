@@ -366,19 +366,6 @@ QUnit.test('Should apply class without condition always', function() {
   ok(jQuery('#foo').hasClass('foo'), 'Always applies classbinding without condition');
 });
 
-QUnit.test('Should apply classes when bound controller.* property specified', function() {
-  view = EmberView.create({
-    controller: {
-      someProp: 'foo'
-    },
-    template: compile('{{#view id="foo" class=controller.someProp}} Foo{{/view}}')
-  });
-
-  runAppend(view);
-
-  ok(jQuery('#foo').hasClass('foo'), 'Always applies classbinding without condition');
-});
-
 QUnit.test('Should apply classes when bound property specified', function() {
   view = EmberView.create({
     controller: {
@@ -936,66 +923,6 @@ QUnit.test('a view helper\'s bindings are to the parent context', function() {
   equal(view.$('h1 .mauve').text(), 'foo bar', 'renders property bound in template from subview context');
 });
 
-QUnit.test('should expose a controller keyword when present on the view', function() {
-  var templateString = '{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}';
-  view = EmberView.create({
-    [OWNER]: owner,
-    controller: EmberObject.create({
-      foo: 'bar',
-      baz: 'bang'
-    }),
-
-    template: compile(templateString)
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'barbang', 'renders values from controller and parent controller');
-
-  var controller = get(view, 'controller');
-
-  run(function() {
-    controller.set('foo', 'BAR');
-    controller.set('baz', 'BLARGH');
-  });
-
-  equal(view.$().text(), 'BARBLARGH', 'updates the DOM when a bound value is updated');
-
-  runDestroy(view);
-
-  view = EmberView.create({
-    controller: 'aString',
-    template: compile('{{controller}}')
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'aString', 'renders the controller itself if no additional path is specified');
-});
-
-QUnit.test('should expose a controller keyword that can be used in conditionals', function() {
-  var templateString = '{{#view}}{{#if controller}}{{controller.foo}}{{/if}}{{/view}}';
-  view = EmberView.create({
-    [OWNER]: owner,
-
-    controller: EmberObject.create({
-      foo: 'bar'
-    }),
-
-    template: compile(templateString)
-  });
-
-  runAppend(view);
-
-  equal(view.$().text(), 'bar', 'renders values from controller and parent controller');
-
-  run(function() {
-    view.set('controller', null);
-  });
-
-  equal(view.$().text(), '', 'updates the DOM when the controller is changed');
-});
-
 QUnit.test('should expose a controller that can be used in the view instance', function() {
   var templateString = '{{#view view.childThing tagName="div"}}Stuff{{/view}}';
   var controller = {
@@ -1077,7 +1004,7 @@ QUnit.test('bindings should respect keywords [DEPRECATED]', function() {
       template: compile('Name: {{view.attrs.name}} Price: ${{view.attrs.dollars}}')
     }),
 
-    template: compile('{{#if view.museumOpen}}{{view view.museumView name=controller.museumDetails.name dollars=controller.museumDetails.price}}{{/if}}')
+    template: compile('{{#if view.museumOpen}}{{view view.museumView name=museumDetails.name dollars=museumDetails.price}}{{/if}}')
   });
 
   runAppend(view);
@@ -1101,7 +1028,7 @@ QUnit.test('should respect keywords', function() {
       template: compile('Name: {{view.attrs.name}} Price: ${{view.attrs.dollars}}')
     }),
 
-    template: compile('{{#if view.museumOpen}}{{view view.museumView name=controller.museumDetails.name dollars=controller.museumDetails.price}}{{/if}}')
+    template: compile('{{#if view.museumOpen}}{{view view.museumView name=museumDetails.name dollars=museumDetails.price}}{{/if}}')
   });
 
   runAppend(view);

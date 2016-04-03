@@ -56,11 +56,10 @@ function assertPath(moduleName, node, path) {
     `Using \`{{${path && path.type === 'PathExpression' && path.parts[0]}}}\` or any path based on it ${calculateLocationDisplay(moduleName, node.loc)}has been removed in Ember 2.0`, () => {
       let noAssertion = true;
 
+      // allow opt-out of the assertion when legacy addons are present
       let viewKeyword = path && path.type === 'PathExpression' && path.parts && path.parts[0];
       if (viewKeyword === 'view') {
         noAssertion = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
-      } else if (viewKeyword === 'controller') {
-        noAssertion = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
       }
 
       return noAssertion;

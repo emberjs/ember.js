@@ -4,6 +4,7 @@ import isEnabled from 'ember-metal/features';
 import Libraries from 'ember-metal/libraries';
 
 var libs, registry;
+let originalWarn = getDebugFunction('warn');
 
 QUnit.module('Libraries registry', {
   setup() {
@@ -14,6 +15,8 @@ QUnit.module('Libraries registry', {
   teardown() {
     libs = null;
     registry = null;
+
+    setDebugFunction('warn', originalWarn);
   }
 });
 
@@ -60,7 +63,6 @@ QUnit.test('attempting to register a library that is already registered warns yo
 
   expect(1);
 
-  let originalWarn = getDebugFunction('warn');
 
   libs.register('magic', 1.23);
 
@@ -72,8 +74,6 @@ QUnit.test('attempting to register a library that is already registered warns yo
 
   // Should warn us
   libs.register('magic', 2.23);
-
-  setDebugFunction('warn', originalWarn);
 });
 
 QUnit.test('libraries can be de-registered', function() {
