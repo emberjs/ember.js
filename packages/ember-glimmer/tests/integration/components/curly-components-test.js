@@ -1,8 +1,10 @@
+/* globals EmberDev */
 import { set } from 'ember-metal/property_set';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
+import { htmlSafe } from 'ember-htmlbars/utils/string';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -16,6 +18,53 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { content: 'hello' });
+  }
+
+  ['@htmlbars it can have a custom id and it is not bound']() {
+    this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
+
+    this.render('{{foo-bar id=customId}}', {
+      customId: 'bizz'
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'bizz' }, content: 'bizz bizz' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'bizz' }, content: 'bizz bizz' });
+
+    this.runTask(() => set(this.context, 'customId', 'bar'));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'bizz' }, content: 'bar bizz' });
+
+    this.runTask(() => set(this.context, 'customId', 'bizz'));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'bizz' }, content: 'bizz bizz' });
+  }
+
+  ['@htmlbars elementId cannot change'](assert) {
+    let component;
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{elementId}}' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
+
+    if (EmberDev && !EmberDev.runningProdBuild) {
+      let willThrow = () => set(component, 'elementId', 'herpyderpy');
+
+      assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
+
+      this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
+    }
   }
 
   ['@test it can have a custom tagName']() {
@@ -79,6 +128,32 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo bar') }, content: 'hello' });
+  }
+
+  ['@htmlbars it should apply classBinding without condition always']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar classBinding=":foo"}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
+  }
+
+  ['@htmlbars should not apply falsy class name']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar class=somethingFalsy}}', {
+      somethingFalsy: false
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: 'ember-view' }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: 'ember-view' }, content: 'hello' });
   }
 
   ['@test it can have custom classNames from constructor']() {
@@ -330,6 +405,14 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.nthChild(1), { tagName: 'div', attrs: { 'data-bar': 'bar' }, content: 'hello' });
     this.assertComponentElement(this.nthChild(2), { tagName: 'div', attrs: { 'data-foo': 'foo', 'data-bar': 'bar' }, content: 'hello' });
     this.assertComponentElement(this.nthChild(3), { tagName: 'div', attrs: { }, content: 'hello' });
+  }
+
+  ['@htmlbars it should not allow attributeBindings to be set']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar attributeBindings="one two"}}');
+    }, /Setting 'attributeBindings' via template helpers is not allowed/);
   }
 
   ['@test it has an element']() {
@@ -611,4 +694,104 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.deepEqual(destroyed, { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1 });
   }
 
+  ['@test should escape HTML in normal mustaches']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      },
+      output: 'you need to be more <b>bold</b>'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{output}}' });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('you need to be more <b>bold</b>');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('you need to be more <b>bold</b>');
+
+    this.runTask(() => set(component, 'output', 'you are so <i>super</i>'));
+
+    this.assertText('you are so <i>super</i>');
+
+    this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
+  }
+
+  ['@htmlbars should not escape HTML in triple mustaches'](assert) {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      },
+      output: 'you need to be more <b>bold</b>'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{{output}}}' });
+
+    this.render('{{foo-bar}}');
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+
+    this.runTask(() => this.rerender());
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+
+    this.runTask(() => set(component, 'output', 'you are so <i>super</i>'));
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super' });
+
+    this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+  }
+
+  ['@htmlbars should not escape HTML if string is a htmlSafe'](assert) {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      },
+      output: htmlSafe('you need to be more <b>bold</b>')
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{output}}' });
+
+    this.render('{{foo-bar}}');
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+
+    this.runTask(() => this.rerender());
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+
+    this.runTask(() => set(component, 'output', htmlSafe('you are so <i>super</i>')));
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super' });
+
+    this.runTask(() => set(component, 'output', htmlSafe('you need to be more <b>bold</b>')));
+
+    assert.strictEqual(this.firstChild.childNodes.length, 4);
+
+    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+  }
 });
