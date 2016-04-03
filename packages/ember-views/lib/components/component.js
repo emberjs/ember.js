@@ -115,6 +115,7 @@ function validateAction(component, actionName) {
   @class Component
   @namespace Ember
   @extends Ember.View
+  @uses Ember.ViewTargetActionSupport
   @public
 */
 var Component = View.extend(TargetActionSupport, {
