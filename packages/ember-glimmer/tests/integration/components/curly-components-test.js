@@ -128,6 +128,18 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo bar') }, content: 'hello' });
   }
 
+  ['@htmlbars it should apply classBinding without condition always']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar classBinding=":foo"}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: {'class': classes('foo  ember-view') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: {'class': classes('foo  ember-view') } });
+  }
+
   ['@htmlbars should not apply falsy class name']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
