@@ -48,26 +48,44 @@ export class DirtyableTag extends RevisionTag {
 }
 
 export function combineTagged(tagged: Tagged<Revision>[]): RevisionTag {
-  if (tagged.length === 0) {
+  let optimized = [];
+
+  for (let i=0, l=tagged.length; i<l; i++) {
+    let tag = tagged[i].tag;
+    if (tag === CONSTANT_TAG) continue;
+    if (tag === VOLATILE_TAG) return VOLATILE_TAG;
+    optimized.push(tag);
+  }
+
+  if (optimized.length === 0) {
     return CONSTANT_TAG;
-  } else if (tagged.length === 1) {
-    return tagged[0].tag;
-  } else if (tagged.length === 2) {
-    return new TagsPair(tagged[0].tag, tagged[1].tag);
+  } else if (optimized.length === 1) {
+    return optimized[0];
+  } else if (optimized.length === 2) {
+    return new TagsPair(optimized[0], optimized[1]);
   } else {
-    return new TagsCombinator(tagged.map(t => t.tag));
+    return new TagsCombinator(optimized);
   }
 }
 
 export function combine(tags: RevisionTag[]): RevisionTag {
-  if (tags.length === 0) {
+  let optimized = [];
+
+  for (let i=0, l=tags.length; i<l; i++) {
+    let tag = tags[i];
+    if (tag === CONSTANT_TAG) continue;
+    if (tag === VOLATILE_TAG) return VOLATILE_TAG;
+    optimized.push(tag);
+  }
+
+  if (optimized.length === 0) {
     return CONSTANT_TAG;
-  } else if (tags.length === 1) {
-    return tags[0];
-  } else if (tags.length === 2) {
-    return new TagsPair(tags[0], tags[1]);
+  } else if (optimized.length === 1) {
+    return optimized[0];
+  } else if (optimized.length === 2) {
+    return new TagsPair(optimized[0], optimized[1]);
   } else {
-    return new TagsCombinator(tags);
+    return new TagsCombinator(optimized);
   }
 }
 
