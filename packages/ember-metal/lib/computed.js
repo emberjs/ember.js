@@ -27,10 +27,6 @@ function UNDEFINED() { }
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
-// ..........................................................
-// COMPUTED PROPERTY
-//
-
 /**
   A computed property transforms an object literal with object's accessor function(s) into a property.
 
@@ -133,7 +129,6 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
   @class ComputedProperty
   @namespace Ember
-  @constructor
   @public
 */
 function ComputedProperty(config, opts) {
@@ -298,7 +293,6 @@ ComputedPropertyPrototype.property = function() {
   @chainable
   @public
 */
-
 ComputedPropertyPrototype.meta = function(meta) {
   if (arguments.length === 0) {
     return this._meta || {};
@@ -329,33 +323,6 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   }
 };
 
-/**
-  Access the value of the function backing the computed property.
-  If this property has already been cached, return the cached result.
-  Otherwise, call the function passing the property name as an argument.
-
-  ```javascript
-  let Person = Ember.Object.extend({
-    fullName: Ember.computed('firstName', 'lastName', function(keyName) {
-      // the keyName parameter is 'fullName' in this case.
-      return this.get('firstName') + ' ' + this.get('lastName');
-    })
-  });
-
-
-  let tom = Person.create({
-    firstName: 'Tom',
-    lastName: 'Dale'
-  });
-
-  tom.get('fullName') // 'Tom Dale'
-  ```
-
-  @method get
-  @param {String} keyName The key being accessed.
-  @return {Object} The return value of the function backing the CP.
-  @public
-*/
 ComputedPropertyPrototype.get = function(obj, keyName) {
   if (this._volatile) {
     return this._getter.call(obj, keyName);
@@ -387,54 +354,6 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   return ret;
 };
 
-/**
-  Set the value of a computed property. If the function that backs your
-  computed property does not accept arguments then the default action for
-  setting would be to define the property on the current object, and set
-  the value of the property to the value being set.
-
-  Generally speaking if you intend for your computed property to be set
-  you should pass `set(key, value)` function in hash as argument to `Ember.computed()` along with `get(key)` function.
-
-  ```javascript
-  let Person = Ember.Object.extend({
-    // these will be supplied by `create`
-    firstName: null,
-    lastName: null,
-
-    fullName: Ember.computed('firstName', 'lastName', {
-      // getter
-      get() {
-        let firstName = this.get('firstName');
-        let lastName = this.get('lastName');
-
-        return firstName + ' ' + lastName;
-      },
-      // setter
-      set(key, value) {
-        let [firstName, lastName] = value.split(' ');
-
-        this.set('firstName', firstName);
-        this.set('lastName', lastName);
-
-        return value;
-      }
-    })
-  });
-
-  let person = Person.create();
-
-  person.set('fullName', 'Peter Wagenet');
-  person.get('firstName'); // 'Peter'
-  person.get('lastName');  // 'Wagenet'
-  ```
-
-  @method set
-  @param {String} keyName The key being accessed.
-  @param {Object} newValue The new value being assigned.
-  @return {Object} The return value of the function backing the CP.
-  @public
-*/
 ComputedPropertyPrototype.set = function computedPropertySetEntry(obj, keyName, value) {
   if (this._readOnly) {
     this._throwReadOnlyError(obj, keyName);
