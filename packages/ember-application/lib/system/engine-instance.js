@@ -18,6 +18,7 @@ import run from 'ember-metal/run_loop';
   @extends Ember.Object
   @uses RegistryProxyMixin
   @uses ContainerProxyMixin
+  @category ember-application-engines
 */
 
 const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
