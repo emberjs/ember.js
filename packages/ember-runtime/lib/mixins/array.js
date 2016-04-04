@@ -540,7 +540,7 @@ export default Mixin.create(Enumerable, {
     return an enumerable that maps automatically to the named key on the
     member objects.
 
-    @each should only be used in a non-terminal context. Example:
+    `@each` should only be used in a non-terminal context. Example:
 
     ```javascript
     myMethod: computed('posts.@each.author', function(){
