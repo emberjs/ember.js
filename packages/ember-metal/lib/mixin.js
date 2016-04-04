@@ -141,9 +141,10 @@ function giveMethodSuper(obj, key, method, values, descs) {
   // the original object
   superMethod = superMethod || obj[key];
 
-  // Only wrap the new method if the original method was a function
+  // wrap the new method even if the original method undefined/not a function
+  // to ensure `_super` is present
   if (superMethod === undefined || 'function' !== typeof superMethod) {
-    return method;
+    superMethod = function() {};
   }
 
   return wrap(method, superMethod);

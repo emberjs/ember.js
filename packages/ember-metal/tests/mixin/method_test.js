@@ -130,6 +130,30 @@ QUnit.test('_super from a single mixin with no superclass does not error', funct
   ok(true);
 });
 
+QUnit.test('_super is not shared when invoking additional method with no superclass method [#13230]', function() {
+  let MixinA = Mixin.create({
+    foo() {
+      return this._super(...arguments) + '|MixinA-foo|';
+    }
+  });
+
+  let MixinB = Mixin.create(MixinA, {
+    bar() {
+      return this._super(...arguments) + '|MixinB-bar|';
+    },
+
+    foo() {
+      let superValue = this._super(...arguments);
+      return superValue + 'MixinB-foo|' + this.bar();
+    }
+  });
+
+  var obj = {};
+  MixinB.apply(obj);
+
+  equal(obj.foo(), 'undefined|MixinA-foo|MixinB-foo|undefined|MixinB-bar|');
+});
+
 QUnit.test('_super from a first-of-two mixins with no superclass function does not error', function() {
   // _super was previously calling itself in the second assertion.
   // Use remaining count of calls to ensure it doesn't loop indefinitely.
