@@ -479,6 +479,118 @@ var Component = View.extend(TargetActionSupport, {
     @property positionalParams
     @since 1.13.0
   */
+
+  /**
+    Called when the attributes passed into the component have been updated.
+    Called both during the initial render of a container and during a rerender.
+    Can be used in place of an observer; code placed here will be executed
+    every time any attribute updates.
+
+    @method didReceiveAttrs
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the attributes passed into the component have been updated.
+    Called both during the initial render of a container and during a rerender.
+    Can be used in place of an observer; code placed here will be executed
+    every time any attribute updates.
+
+    @event didReceiveAttrs
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called after a component has been rendered, both on initial render and
+    in subsequent rerenders.
+
+    @method didRender
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called after a component has been rendered, both on initial render and
+    in subsequent rerenders.
+
+    @event didRender
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called before a component has been rendered, both on initial render and
+    in subsequent rerenders.
+
+    @method willRender
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called before a component has been rendered, both on initial render and
+    in subsequent rerenders.
+
+    @event willRender
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the attributes passed into the component have been changed.
+    Called only during a rerender, not during an initial render.
+
+    @method didUpdateAttrs
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the attributes passed into the component have been changed.
+    Called only during a rerender, not during an initial render.
+
+    @event didUpdateAttrs
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the component is about to update and rerender itself.
+    Called only during a rerender, not during an initial render.
+
+    @method willUpdate
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the component is about to update and rerender itself.
+    Called only during a rerender, not during an initial render.
+
+    @event willUpdate
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the component has updated and rerendered itself.
+    Called only during a rerender, not during an initial render.
+
+    @event didUpdate
+    @public
+    @since 1.13.0
+  */
+
+  /**
+    Called when the component has updated and rerendered itself.
+    Called only during a rerender, not during an initial render.
+
+    @event didUpdate
+    @public
+    @since 1.13.0
+  */
 });
 
 Component.reopenClass({
