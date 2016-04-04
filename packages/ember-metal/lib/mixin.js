@@ -85,7 +85,7 @@ function concatenatedMixinProperties(concatProp, props, values, base) {
 }
 
 function giveDescriptorSuper(meta, key, property, values, descs, base) {
-  var superProperty;
+  let superProperty;
 
   // Computed properties override methods, and do not call super to them
   if (values[key] === undefined) {
@@ -102,8 +102,14 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
     superProperty = superDesc;
   }
 
+  // add a default `_super` to ensure proper wrapping if `_super` is used in `property`
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
-    return property;
+    superProperty = { _getter() {} };
+
+    // only provide a super setter if the property has one already
+    if (property._setter) {
+      superProperty._setter = function() {};
+    }
   }
 
   // Since multiple mixins may inherit from the same parent, we need
