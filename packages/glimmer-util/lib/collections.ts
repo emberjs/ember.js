@@ -15,11 +15,26 @@ export interface Set<T> {
   forEach(callback: (T) => void);
 }
 
+let proto = Object.create(null, {
+  // without this, we will always still end up with (new
+  // EmptyObject()).constructor === Object
+  constructor: {
+    value: undefined,
+    enumerable: false,
+    writable: true
+  }
+});
+
+function EmptyObject() {}
+EmptyObject.prototype = proto;
+
+
 export function dict<T>(): Dict<T> {
-  let d = Object.create(null);
-  d.x = 1;
-  delete d.x;
-  return d;
+  // let d = Object.create(null);
+  // d.x = 1;
+  // delete d.x;
+  // return d;
+  return new EmptyObject();
 }
 
 export type SetMember = HasGuid | InternedString | string;
