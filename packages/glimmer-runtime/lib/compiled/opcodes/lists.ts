@@ -1,17 +1,9 @@
-import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { VM, UpdatingVM } from '../../vm';
+import { Opcode, OpcodeJSON } from '../../opcodes';
+import { VM } from '../../vm';
 import { LabelOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
 import { FIXME, ListSlice, Slice } from 'glimmer-util';
 import { VOLATILE_TAG, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
-
-abstract class ListUpdatingOpcode extends UpdatingOpcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: UpdatingVM);
-}
 
 class IterablePresenceReference implements Reference<boolean> {
   private artifacts: IterationArtifacts;
