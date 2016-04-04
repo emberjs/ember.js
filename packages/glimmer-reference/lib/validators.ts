@@ -57,15 +57,7 @@ export function combineTagged(tagged: Tagged<Revision>[]): RevisionTag {
     optimized.push(tag);
   }
 
-  if (optimized.length === 0) {
-    return CONSTANT_TAG;
-  } else if (optimized.length === 1) {
-    return optimized[0];
-  } else if (optimized.length === 2) {
-    return new TagsPair(optimized[0], optimized[1]);
-  } else {
-    return new TagsCombinator(optimized);
-  }
+  return _combine(optimized);
 }
 
 export function combine(tags: RevisionTag[]): RevisionTag {
@@ -78,15 +70,20 @@ export function combine(tags: RevisionTag[]): RevisionTag {
     optimized.push(tag);
   }
 
-  if (optimized.length === 0) {
-    return CONSTANT_TAG;
-  } else if (optimized.length === 1) {
-    return optimized[0];
-  } else if (optimized.length === 2) {
-    return new TagsPair(optimized[0], optimized[1]);
-  } else {
-    return new TagsCombinator(optimized);
-  }
+  return _combine(optimized);
+}
+
+function _combine(tags: RevisionTag[]): RevisionTag {
+  switch (tags.length) {
+    case 0:
+      return CONSTANT_TAG;
+    case 1:
+      return tags[0];
+    case 2:
+      return new TagsPair(tags[0], tags[1]);
+    default:
+      return new TagsCombinator(tags);
+  };
 }
 
 export abstract class CachedTag extends RevisionTag {
