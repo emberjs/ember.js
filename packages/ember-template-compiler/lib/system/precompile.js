@@ -29,7 +29,7 @@ export default function(templateString, options) {
       throw new Error('Cannot call `compile` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compile`.');
     }
 
-    return JSON.stringify(compileSpec(templateString, options));
+    return JSON.stringify(compileSpec(templateString, compileOptions(options)));
   } else {
     if (!compileSpec && has('htmlbars-compiler/compiler')) {
       compileSpec = require('htmlbars-compiler/compiler').compileSpec;
