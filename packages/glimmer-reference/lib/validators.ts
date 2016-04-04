@@ -48,27 +48,42 @@ export class DirtyableTag extends RevisionTag {
 }
 
 export function combineTagged(tagged: Tagged<Revision>[]): RevisionTag {
-  if (tagged.length === 0) {
-    return CONSTANT_TAG;
-  } else if (tagged.length === 1) {
-    return tagged[0].tag;
-  } else if (tagged.length === 2) {
-    return new TagsPair(tagged[0].tag, tagged[1].tag);
-  } else {
-    return new TagsCombinator(tagged.map(t => t.tag));
+  let optimized = [];
+
+  for (let i=0, l=tagged.length; i<l; i++) {
+    let tag = tagged[i].tag;
+    if (tag === CONSTANT_TAG) continue;
+    if (tag === VOLATILE_TAG) return VOLATILE_TAG;
+    optimized.push(tag);
   }
+
+  return _combine(optimized);
 }
 
 export function combine(tags: RevisionTag[]): RevisionTag {
-  if (tags.length === 0) {
-    return CONSTANT_TAG;
-  } else if (tags.length === 1) {
-    return tags[0];
-  } else if (tags.length === 2) {
-    return new TagsPair(tags[0], tags[1]);
-  } else {
-    return new TagsCombinator(tags);
+  let optimized = [];
+
+  for (let i=0, l=tags.length; i<l; i++) {
+    let tag = tags[i];
+    if (tag === CONSTANT_TAG) continue;
+    if (tag === VOLATILE_TAG) return VOLATILE_TAG;
+    optimized.push(tag);
   }
+
+  return _combine(optimized);
+}
+
+function _combine(tags: RevisionTag[]): RevisionTag {
+  switch (tags.length) {
+    case 0:
+      return CONSTANT_TAG;
+    case 1:
+      return tags[0];
+    case 2:
+      return new TagsPair(tags[0], tags[1]);
+    default:
+      return new TagsCombinator(tags);
+  };
 }
 
 export abstract class CachedTag extends RevisionTag {

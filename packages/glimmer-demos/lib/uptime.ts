@@ -1,15 +1,42 @@
-import { computed } from 'glimmer-object';
 import { UpdatableReference } from 'glimmer-object-reference';
-import { TestEnvironment, TestDynamicScope, EmberishGlimmerComponent as EmberComponent } from 'glimmer-test-helpers';
+import { TestEnvironment, TestDynamicScope } from 'glimmer-test-helpers';
+import ExponentialMovingAverage from './ema'
 
-let ServerUptime = <any>EmberComponent.extend({
-  upDays: computed(function() {
+class Component {
+  public attrs: any;
+  public element: Element = null;
+
+  static create({ attrs }: { attrs: any }): Component {
+    return new this(attrs);
+  }
+
+  constructor(attrs: any) {
+    this.attrs = attrs;
+  }
+
+  set(key: string, value: any) {
+    this[key] = value;
+  }
+
+  didInitAttrs() {}
+  didUpdateAttrs() {}
+  didReceiveAttrs() {}
+  willInsertElement() {}
+  willUpdate() {}
+  willRender() {}
+  didInsertElement() {}
+  didUpdate() {}
+  didRender() {}
+}
+
+class ServerUptime extends Component {
+  get upDays() {
     return this.attrs.days.reduce((upDays, day) => {
       return upDays += (day.up ? 1 : 0);
     }, 0);
-  }).property('attrs.days'),
+  }
 
-  streak: computed(function() {
+  get streak() {
     let [max] = this.attrs.days.reduce(([max, streak], day) => {
       if (day.up && streak + 1 > max) {
         return [streak + 1, streak + 1];
@@ -21,44 +48,45 @@ let ServerUptime = <any>EmberComponent.extend({
     }, [0, 0]);
 
     return max;
-  }).property('attrs.days')
-});
+  }
+}
 
-let UptimeDay = <any>EmberComponent.extend({
-  color: computed(function() {
+class UptimeDay extends Component {
+  get color() {
     return this.attrs.day.up ? '#8cc665' : '#ccc';
-  }).property('attrs.day.up'),
+  }
 
-  memo: computed(function() {
+  get memo() {
     return this.attrs.day.up ? 'Servers operational!' : 'Red alert!';
-  }).property('attrs.day.up'),
-
-});
+  }
+}
 
 let env = new TestEnvironment();
 
-env.registerEmberishGlimmerComponent('uptime-day', UptimeDay, `
+env.registerEmberishGlimmerComponent('uptime-day', UptimeDay as any, `
   <div class="uptime-day">
     <span class="uptime-day-status" style="background-color: {{color}}" />
     <span class="hover">{{@day.number}}: {{memo}}</span>
   </div>
 `);
 
-env.registerEmberishGlimmerComponent('server-uptime', ServerUptime, `
+env.registerEmberishGlimmerComponent('server-uptime', ServerUptime as any, `
   <div class="server-uptime">
-  <h1>{{@name}}</h1>
-  <h2>{{upDays}} Days Up</h2>
-  <h2>Biggest Streak: {{streak}}</h2>
+    <h1>{{@name}}</h1>
+    <h2>{{upDays}} Days Up</h2>
+    <h2>Biggest Streak: {{streak}}</h2>
 
-  <div class="days">
-    {{#each @days key="day.number" as |day|}}
-      <uptime-day day={{day}} />
-    {{/each}}
-  </div>
+    <div class="days">
+      {{#each @days key="number" as |day|}}
+        <uptime-day day={{day}} />
+      {{/each}}
+    </div>
   </div>
 `);
 
 let app = env.compile(`
+  {{#if fps}}<div id="fps">{{fps}} FPS</div>{{/if}}
+
   {{#each servers key="name" as |server|}}
     <server-uptime name={{server.name}} days={{server.days}} />
   {{/each}}
@@ -67,18 +95,30 @@ let app = env.compile(`
 let serversRef;
 let result;
 let clear;
+let fps;
 let playing = false;
-let initialized = false;
+
+export function init() {
+  let output = document.getElementById('output');
+
+  console.time('initial render');
+  env.begin();
+
+  serversRef = new UpdatableReference({ servers: generateServers(), fps: null });
+  result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope(null) });
+
+  console.log(env['createdComponents'].length);
+  env.commit();
+  console.timeEnd('initial render');
+}
+
 
 export function toggle() {
-  if (!initialized) {
-    init();
-    initialized = true;
-  }
-
   if (playing) {
     window['playpause'].innerHTML = "Play";
-    clearInterval(clear);
+    cancelAnimationFrame(clear);
+    clear = null;
+    fps = null;
     playing = false;
   } else {
     window['playpause'].innerHTML = "Pause";
@@ -87,45 +127,37 @@ export function toggle() {
   }
 }
 
-function init() {
-  let output = document.getElementById('output');
-
-  console.time('rendering');
-  env.begin();
-
-  serversRef = new UpdatableReference({ servers: servers() });
-  result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope(null) });
-
-  console.log(env['createdComponents'].length);
-  env.commit();
-  console.timeEnd('rendering');
-}
-
 function start() {
-  clear = setInterval(function() {
-    serversRef.update({ servers: servers() });
-    console.time('updating');
+  playing = true;
+
+  let lastFrame = null;
+  let fpsMeter = new ExponentialMovingAverage(2/121);
+
+  let callback = () => {
+    let thisFrame = window.performance.now();
+
+    if (lastFrame) {
+      fps = Math.round(fpsMeter.push(1000 / (thisFrame - lastFrame)));
+    }
+
+    onFrame();
     result.rerender();
-    console.timeEnd('updating');
-  }, 50);
+
+    clear = requestAnimationFrame(callback);
+
+    lastFrame = thisFrame;
+  };
+
+  callback();
+
+  lastFrame = null;
 }
 
-function servers() {
-  return [
-    server("Stefan's Server"),
-    server("Godfrey's Server"),
-    server("Yehuda's Server"),
-    server("Chad's Server"),
-    server("Robert's Server 1"),
-    server("Robert's Server 2"),
-    server("Robert's Server 3"),
-    server("Robert's Server 4"),
-    server("Robert's Server 5"),
-    server("Robert's Server 6")
-  ];
+function onFrame() {
+  serversRef.update({ servers: generateServers(), fps });
 }
 
-function server(name: string) {
+function generateServer(name: string) {
   let days = [];
 
   for (let i=0; i<=364; i++) {
@@ -134,4 +166,12 @@ function server(name: string) {
   }
 
   return { name, days };
+}
+
+function generateServers() {
+  return [
+    generateServer("Stefan's Server"),
+    generateServer("Godfrey's Server"),
+    generateServer("Yehuda's Server")
+  ];
 }
