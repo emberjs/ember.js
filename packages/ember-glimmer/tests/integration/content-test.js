@@ -59,6 +59,54 @@ moduleFor('Static content tests', class extends RenderingTest {
 
 });
 
+moduleFor('Escaped content tests', class extends RenderingTest {
+
+  ['@test it renders HTML as escaped text in normal curlies']() {
+    this.render('{{htmlContent}}{{nested.htmlContent}}', {
+      htmlContent: '<b>Max</b>',
+      nested: { htmlContent: '<b>James</b>' }
+    });
+    this.assert.equal(this.$('b').length, 0);
+    this.assertText('<b>Max</b><b>James</b>');
+
+    this.runTask(() => this.rerender());
+    this.assert.equal(this.$('b').length, 0);
+    this.assertText('<b>Max</b><b>James</b>');
+
+    this.runTask(() => set(this.context, 'htmlContent', '<i>Max</i>'));
+    this.assert.equal(this.$('i,b').length, 0);
+    this.assertText('<i>Max</i><b>James</b>');
+
+    this.runTask(() => set(this.context, 'htmlContent', '<b>Max</b>'));
+    this.assert.equal(this.$('b').length, 0);
+    this.assertText('<b>Max</b><b>James</b>');
+
+    this.runTask(() => set(this.context, 'nested', { htmlContent: '<i>James</i>' }));
+    this.assert.equal(this.$('b,i').length, 0);
+    this.assertText('<b>Max</b><i>James</i>');
+  }
+
+  ['@test it renders HTML in "trusted" curlies']() {
+    this.render('{{{htmlContent}}}{{{nested.htmlContent}}}', {
+      htmlContent: '<b>Max</b>',
+      nested: { htmlContent: '<b>James</b>' }
+    });
+    this.assertHTML('<b>Max</b><b>James</b>');
+
+    this.runTask(() => this.rerender());
+    this.assertHTML('<b>Max</b><b>James</b>');
+
+    this.runTask(() => set(this.context, 'htmlContent', '<i>Max</i>'));
+    this.assertHTML('<i>Max</i><b>James</b>');
+
+    this.runTask(() => set(this.context, 'htmlContent', '<b>Max</b>'));
+    this.assertHTML('<b>Max</b><b>James</b>');
+
+    this.runTask(() => set(this.context, 'nested', { htmlContent: '<i>James</i>' }));
+    this.assertHTML('<b>Max</b><i>James</i>');
+  }
+});
+
 class DynamicContentTest extends RenderingTest {
 
   /* abstract */
@@ -85,6 +133,30 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() => set(this.context, 'message', 'hello'));
 
     this.assertText('hello');
+    this.assertInvariants();
+  }
+
+  ['@test it can render a capitalized path with no deprication']() {
+    this.renderPath('CaptializedPath', { CaptializedPath: 'noDeprication' });
+
+    expectNoDeprecation();
+
+    this.assertText('noDeprication');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'CaptializedPath', 'stillNoDeprication'));
+
+    expectNoDeprecation();
+
+    this.assertText('stillNoDeprication');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'CaptializedPath', 'noDeprication'));
+
+    expectNoDeprecation();
+
+    this.assertText('noDeprication');
     this.assertInvariants();
   }
 
@@ -140,6 +212,30 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() => set(this.context, 'm', Formatter.create({ message: 'hello' })));
 
     this.assertText('HELLO');
+    this.assertInvariants();
+  }
+
+  ['@test it can read from a null object']() {
+    let nullObject = Object.create(null);
+    nullObject['message'] = 'hello';
+
+    this.renderPath('nullObject.message', { nullObject });
+
+    this.assertText('hello');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(nullObject, 'message', 'goodbye'));
+
+    this.assertText('goodbye');
+    this.assertInvariants();
+
+    nullObject = Object.create(null);
+    nullObject['message'] = 'hello';
+
+    this.runTask(() => set(this.context, 'nullObject', nullObject));
+
+    this.assertText('hello');
     this.assertInvariants();
   }
 
@@ -240,6 +336,14 @@ moduleFor('Dynamic content tests (content position)', class extends DynamicConte
 
   renderPath(path, context = {}) {
     this.render(`{{${path}}}`, context);
+  }
+
+});
+
+moduleFor('@htmlbars Dynamic content tests ("trusted" curlies)', class extends DynamicContentTest {
+
+  renderPath(path, context = {}) {
+    this.render(`{{{${path}}}}`, context);
   }
 
 });
