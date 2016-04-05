@@ -158,6 +158,11 @@ export default class JavaScriptCompiler {
     this.template.yields.add(name);
   }
 
+  hasBlockParams(name: string) {
+    this.pushValue(['hasBlockParams', name]);
+    this.template.yields.add(name);
+  }
+
   /// Expressions
 
   literal(value: any) {

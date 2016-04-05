@@ -104,6 +104,9 @@ export default class TemplateCompiler {
     } else if (isHasBlock(action)) {
       let name = assertValidHasBlock(action);
       this.hasBlock(name, action);
+    } else if (isHasBlockParams(action)) {
+      let name = assertValidHasBlockParams(action);
+      this.hasBlockParams(name, action);
     } else if (action.path.data) {
       this.attr([action.path]);
     } else if (isHelper(action)) {
@@ -131,6 +134,9 @@ export default class TemplateCompiler {
     } else if (isHasBlock(action)) {
       let name = assertValidHasBlock(action);
       this.hasBlock(name, action);
+    } else if (isHasBlockParams(action)) {
+      let name = assertValidHasBlockParams(action);
+      this.hasBlockParams(name, action);
     } else if (isHelper(action)) {
       this.prepareHelper(action);
       this.opcode('helper', action, path.parts);
@@ -161,12 +167,19 @@ export default class TemplateCompiler {
     this.opcode('hasBlock', action, name);
   }
 
+  hasBlockParams(name: string, action) {
+    this.opcode('hasBlockParams', action, name);
+  }
+
   /// Expressions, invoked recursively from prepareParams and prepareHash
 
   SubExpression(expr) {
     if (isHasBlock(expr)) {
       let name = assertValidHasBlock(expr);
       this.hasBlock(name, expr);
+    } else if (isHasBlockParams(expr)) {
+      let name = assertValidHasBlockParams(expr);
+      this.hasBlockParams(name, expr);
     } else {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
@@ -294,6 +307,10 @@ function isHasBlock({ path }) {
   return path.original === 'has-block';
 }
 
+function isHasBlockParams({ path }) {
+  return path.original === 'has-block-params';
+}
+
 function assertValidYield({ hash }): string {
   let pairs = hash.pairs;
 
@@ -319,5 +336,19 @@ function assertValidHasBlock({ params }): string {
     }
   } else {
     throw new Error(`has-block only takes a single positional argument`);
+  }
+}
+
+function assertValidHasBlockParams({ params }): string {
+  if (params.length === 0) {
+    return 'default';
+  } else if (params.length === 1) {
+    if (params[0].type === 'StringLiteral') {
+      return params[0].value;
+    } else {
+      throw new Error(`you can only yield to a literal value`);
+    }
+  } else {
+    throw new Error(`has-block-params only takes a single positional argument`);
   }
 }
