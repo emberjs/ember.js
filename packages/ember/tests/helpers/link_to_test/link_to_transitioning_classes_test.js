@@ -204,41 +204,4 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 });
 
-QUnit.test('with an aborted transition', function() {
-  expect(6);
-
-  Router.map(function() {
-    this.route('about');
-  });
-
-  App.AboutRoute = Route.extend({
-    beforeModel(transition) {
-      aboutDefer = RSVP.defer();
-      return aboutDefer.promise.then(function() {
-        transition.abort();
-      });
-    }
-  });
-
-  Ember.TEMPLATES.application = compile(`
-    {{link-to 'About' 'about' id='about-link'}}
-  `);
-
-  bootApplication();
-
-  var $about = jQuery('#about-link');
-
-  run($about, 'click');
-
-  assertHasClass('active', $about, false);
-  assertHasClass('ember-transitioning-in', $about, true);
-  assertHasClass('ember-transitioning-out', $about, false);
-
-  run(aboutDefer, 'resolve');
-
-  assertHasClass('active', $about, false);
-  assertHasClass('ember-transitioning-in', $about, false);
-  assertHasClass('ember-transitioning-out', $about, false);
-});
-
 }
