@@ -123,6 +123,21 @@ export class TestCase {
     return node;
   }
 
+  get nodesCount() {
+    let count = 0;
+    let node = this.element.firstChild;
+
+    while (node) {
+      if (!isMarker(node)) {
+        count++;
+      }
+
+      node = node.nextSibling;
+    }
+
+    return count;
+  }
+
   $(sel) {
     return sel ? jQuery(sel, this.element) : jQuery(this.element);
   }
@@ -179,9 +194,7 @@ export class TestCase {
     this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
 
     for (let i = 0; i < oldSnapshot.length; i++) {
-      if (!(newSnapshot[i] instanceof TextNode && oldSnapshot[i] instanceof TextNode)) {
-        this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
-      }
+      this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
     }
   }
 
