@@ -93,23 +93,23 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
-  ['@test it can render a capitalized path with no deprication']() {
+  ['@test it can render a capitalized path with no deprecation']() {
     expectNoDeprecation();
 
-    this.renderPath('CaptializedPath', { CaptializedPath: 'noDeprication' });
+    this.renderPath('CaptializedPath', { CaptializedPath: 'no deprecation' });
 
-    this.assertContent('noDeprication');
+    this.assertContent('no deprecation');
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'CaptializedPath', 'stillNoDeprication'));
+    this.runTask(() => set(this.context, 'CaptializedPath', 'still no deprecation'));
 
-    this.assertContent('stillNoDeprication');
+    this.assertContent('still no deprecation');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'CaptializedPath', 'noDeprication'));
+    this.runTask(() => set(this.context, 'CaptializedPath', 'no deprecation'));
 
-    this.assertContent('noDeprication');
+    this.assertContent('no deprecation');
     this.assertInvariants();
   }
 
