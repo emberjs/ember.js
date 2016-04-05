@@ -241,4 +241,34 @@ QUnit.test('with an aborted transition', function() {
   assertHasClass('ember-transitioning-out', $about, false);
 });
 
+QUnit.test('with a parent root model hook which performs a `transitionTo`', function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route('about');
+    this.route('parent', function() {
+      this.route('child');
+    });
+  });
+
+  App.ParentRoute = Route.extend({
+    afterModel(transition) {
+      this.transitionTo('parent.child');
+    }
+  });
+
+  Ember.TEMPLATES.application = compile(`
+    {{link-to 'About' 'about' id='about-link'}}
+    {{link-to 'Parent' 'parent' id='parent-link'}}
+  `);
+
+  bootApplication();
+
+  var $parent = jQuery('#parent-link');
+
+  run($parent, 'click');
+
+  assertHasClass('active', $parent, true);
+});
+
 }
