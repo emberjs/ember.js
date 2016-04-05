@@ -4,6 +4,7 @@ import {
   Concat as ConcatSyntax,
   Get as GetSyntax,
   HasBlock as HasBlockSyntax,
+  HasBlockParams as HasBlockParamsSyntax,
   Helper as HelperSyntax,
   Unknown as UnknownSyntax
 } from './core';
@@ -18,6 +19,7 @@ const {
   isConcat,
   isGet,
   isHasBlock,
+  isHasBlockParams,
   isHelper,
   isUnknown,
   isValue
@@ -33,5 +35,6 @@ export default function(sexp: SerializedExpression): any {
     if (isHelper(sexp)) return HelperSyntax.fromSpec(sexp);
     if (isUnknown(sexp)) return UnknownSyntax.fromSpec(sexp);
     if (isHasBlock(sexp)) return HasBlockSyntax.fromSpec(sexp);
+    if (isHasBlockParams(sexp)) return HasBlockParamsSyntax.fromSpec(sexp);
   }
 };
