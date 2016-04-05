@@ -1730,4 +1730,30 @@ QUnit.test('The {{link-to}} helper can use dynamic params', function() {
   equal(link.attr('href'), '/bar/one/two/three');
 });
 
+QUnit.test('GJ: {{link-to}} to a parent root model hook which performs a `transitionTo` has correct active class #13256', function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route('parent', function() {
+      this.route('child');
+    });
+  });
+
+  App.ParentRoute = Route.extend({
+    afterModel(transition) {
+      this.transitionTo('parent.child');
+    }
+  });
+
+  Ember.TEMPLATES.application = compile(`
+    {{link-to 'Parent' 'parent' id='parent-link'}}
+  `);
+
+  bootApplication();
+
+  run(jQuery('#parent-link'), 'click');
+
+  shouldBeActive('#parent-link');
+});
+
 }
