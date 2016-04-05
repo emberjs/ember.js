@@ -21,4 +21,12 @@ suite.test('supports multiple propertyNames', function() {
   equal(get(sorted[1], 'b'), 2);
 });
 
+suite.test('supports descending columns', function() {
+  var obj = this.newObject([{ a: 1, b: 1 }, { a: 1, b: 2 }]);
+  var sorted = obj.sortBy('a', 'b:desc');
+
+  equal(get(sorted[0], 'b'), 2);
+  equal(get(sorted[1], 'b'), 1);
+});
+
 export default suite;
