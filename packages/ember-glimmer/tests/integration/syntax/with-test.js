@@ -3,6 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { TogglingSyntaxConditionalsTest } from '../../utils/shared-conditional-tests';
+import { strip } from '../../utils/abstract-test-case';
 
 moduleFor('Syntax test: {{#with}}', class extends TogglingSyntaxConditionalsTest {
 
@@ -290,6 +291,61 @@ moduleFor('Syntax test: Multiple {{#with as}} helpers', class extends RenderingT
     this.runTask(() => set(this.context, 'name', 'Los Pivots'));
 
     this.assertText('Los Pivots');
+  }
+
+  ['@test nested {{#with}} blocks should have access to root context']() {
+    this.render(strip`
+      {{name}}
+      {{#with committer1.name as |name|}}
+        [{{name}}
+        {{#with committer2.name as |name|}}
+          [{{name}}]
+        {{/with}}
+        {{name}}]
+      {{/with}}
+      {{name}}
+      {{#with committer2.name as |name|}}
+        [{{name}}
+        {{#with committer1.name as |name|}}
+          [{{name}}]
+        {{/with}}
+        {{name}}]
+      {{/with}}
+      {{name}}
+    `, {
+      name: 'ebryn',
+      committer1: { name: 'trek' },
+      committer2: { name: 'machty' }
+    });
+
+    this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+
+    this.runTask(() => set(this.context, 'name', 'chancancode'));
+
+    this.assertText('chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode');
+
+    this.runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
+
+    this.assertText('chancancode[krisselden[machty]krisselden]chancancode[machty[krisselden]machty]chancancode');
+
+    this.runTask(() => {
+      set(this.context, 'committer1.name', 'wycats');
+      set(this.context, 'committer2', { name: 'rwjblue' });
+    });
+
+    this.assertText('chancancode[wycats[rwjblue]wycats]chancancode[rwjblue[wycats]rwjblue]chancancode');
+
+    this.runTask(() => {
+      set(this.context, 'name', 'ebryn');
+      set(this.context, 'committer1', { name: 'trek' });
+      set(this.context, 'committer2', { name: 'machty' });
+    });
+
+    this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
   }
 
 });
