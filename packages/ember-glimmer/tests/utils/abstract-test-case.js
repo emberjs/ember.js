@@ -123,6 +123,21 @@ export class TestCase {
     return node;
   }
 
+  get nodesCount() {
+    let count = 0;
+    let node = this.element.firstChild;
+
+    while (node) {
+      if (!isMarker(node)) {
+        count++;
+      }
+
+      node = node.nextSibling;
+    }
+
+    return count;
+  }
+
   $(sel) {
     return sel ? jQuery(sel, this.element) : jQuery(this.element);
   }

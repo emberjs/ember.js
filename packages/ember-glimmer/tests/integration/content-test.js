@@ -67,24 +67,49 @@ class DynamicContentTest extends RenderingTest {
   }
 
   assertIsEmpty() {
-    this.assertText('');
+    this.assert.strictEqual(this.firstChild, null);
+  }
+
+  /* abstract */
+  assertContent(content) {
+    throw new Error('Not implemented: `assertContent`');
   }
 
   ['@test it can render a dynamic path']() {
     this.renderPath('message', { message: 'hello' });
 
-    this.assertText('hello');
+    this.assertContent('hello');
 
     this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'message', 'goodbye'));
 
-    this.assertText('goodbye');
+    this.assertContent('goodbye');
     this.assertInvariants();
 
     this.runTask(() => set(this.context, 'message', 'hello'));
 
-    this.assertText('hello');
+    this.assertContent('hello');
+    this.assertInvariants();
+  }
+
+  ['@test it can render a capitalized path with no deprication']() {
+    expectNoDeprecation();
+
+    this.renderPath('CaptializedPath', { CaptializedPath: 'noDeprication' });
+
+    this.assertContent('noDeprication');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'CaptializedPath', 'stillNoDeprication'));
+
+    this.assertContent('stillNoDeprication');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'CaptializedPath', 'noDeprication'));
+
+    this.assertContent('noDeprication');
     this.assertInvariants();
   }
 
@@ -93,18 +118,18 @@ class DynamicContentTest extends RenderingTest {
       a: { b: { c: { d: { e: { f: 'hello' } } } } }
     });
 
-    this.assertText('hello');
+    this.assertContent('hello');
 
     this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
 
-    this.assertText('goodbye');
+    this.assertContent('goodbye');
     this.assertInvariants();
 
     this.runTask(() => set(this.context, 'a.b.c.d', { e: { f: 'aloha' } }));
 
-    this.assertText('aloha');
+    this.assertContent('aloha');
     this.assertInvariants();
 
     this.runTask(() => {
@@ -113,7 +138,7 @@ class DynamicContentTest extends RenderingTest {
       );
     });
 
-    this.assertText('hello');
+    this.assertContent('hello');
     this.assertInvariants();
   }
 
@@ -128,18 +153,42 @@ class DynamicContentTest extends RenderingTest {
 
     this.renderPath('m.formattedMessage', { m });
 
-    this.assertText('HELLO');
+    this.assertContent('HELLO');
 
     this.assertStableRerender();
 
     this.runTask(() => set(m, 'message', 'goodbye'));
 
-    this.assertText('GOODBYE');
+    this.assertContent('GOODBYE');
     this.assertInvariants();
 
     this.runTask(() => set(this.context, 'm', Formatter.create({ message: 'hello' })));
 
-    this.assertText('HELLO');
+    this.assertContent('HELLO');
+    this.assertInvariants();
+  }
+
+  ['@test it can read from a null object']() {
+    let nullObject = Object.create(null);
+    nullObject['message'] = 'hello';
+
+    this.renderPath('nullObject.message', { nullObject });
+
+    this.assertContent('hello');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(nullObject, 'message', 'goodbye'));
+
+    this.assertContent('goodbye');
+    this.assertInvariants();
+
+    nullObject = Object.create(null);
+    nullObject['message'] = 'hello';
+
+    this.runTask(() => set(this.context, 'nullObject', nullObject));
+
+    this.assertContent('hello');
     this.assertInvariants();
   }
 
@@ -167,7 +216,7 @@ class ContentTestGenerator {
 
           this.runTask(() => set(this.context, 'value', 'hello'));
 
-          this.assertText('hello');
+          this.assertContent('hello');
 
           this.runTask(() => set(this.context, 'value', value));
 
@@ -181,18 +230,18 @@ class ContentTestGenerator {
         [`${tag} rendering ${label}`]() {
           this.renderPath('value', { value });
 
-          this.assertText(expected);
+          this.assertContent(expected);
 
           this.assertStableRerender();
 
           this.runTask(() => set(this.context, 'value', 'hello'));
 
-          this.assertText('hello');
+          this.assertContent('hello');
           this.assertInvariants();
 
           this.runTask(() => set(this.context, 'value', value));
 
-          this.assertText(expected);
+          this.assertContent(expected);
           this.assertInvariants();
         }
 
@@ -220,7 +269,10 @@ const SharedContentTestCases = new ContentTestGenerator([
   [(1 / -0), '-Infinity'],
   [{ foo: 'bar' }, '[object Object]', `{ foo: 'bar' }`],
   [{ toString() { return 'foo'; } }, 'foo', 'an object with a custom toString function'],
-  [{ valueOf() { return 1; } }, '[object Object]', 'an object with a custom valueOf function']
+  [{ valueOf() { return 1; } }, '[object Object]', 'an object with a custom valueOf function'],
+
+  // Escaping tests
+  ['<b>Max</b><b>James</b>', '<b>Max</b><b>James</b>']
 
 ]);
 
@@ -242,12 +294,22 @@ moduleFor('Dynamic content tests (content position)', class extends DynamicConte
     this.render(`{{${path}}}`, context);
   }
 
+  assertContent(content) {
+    this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one text node');
+    this.assertTextNode(this.firstChild, content);
+  }
+
 });
 
 moduleFor('Dynamic content tests (content concat)', class extends DynamicContentTest {
 
   renderPath(path, context = {}) {
     this.render(`{{concat "" ${path} ""}}`, context);
+  }
+
+  assertContent(content) {
+    this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one text node');
+    this.assertTextNode(this.firstChild, content);
   }
 
 });
@@ -258,6 +320,18 @@ moduleFor('Dynamic content tests (inside an element)', class extends DynamicCont
     this.render(`<p>{{${path}}}</p>`, context);
   }
 
+  assertIsEmpty() {
+    this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <p> tag');
+    this.assertElement(this.firstChild, { tagName: 'p' });
+    this.assertText('');
+  }
+
+  assertContent(content) {
+    this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <p> tag');
+    this.assertElement(this.firstChild, { tagName: 'p' });
+    this.assertText(content);
+  }
+
 });
 
 moduleFor('Dynamic content tests (attribute position)', class extends DynamicContentTest {
@@ -266,8 +340,73 @@ moduleFor('Dynamic content tests (attribute position)', class extends DynamicCon
     this.render(`<div data-foo="{{${path}}}"></div>`, context);
   }
 
-  textValue() {
-    return this.$('div').attr('data-foo');
+  assertIsEmpty() {
+    this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
+    this.assertElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': '' }, content: '' });
+  }
+
+  assertContent(content) {
+    this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
+    this.assertElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': content }, content: '' });
+  }
+
+});
+
+class TrustedContentTest extends DynamicContentTest {
+
+  assertIsEmpty() {
+    this.assert.strictEqual(this.firstChild, null);
+  }
+
+  assertContent(content) {
+    this.assertHTML(content);
+  }
+
+  assertStableRerender() {
+    this.takeSnapshot();
+    this.runTask(() => this.rerender());
+    super.assertInvariants();
+  }
+
+  assertInvariants() {
+    // If it's not stable, we will wipe out all the content and replace them,
+    // so there are no invariants
+  }
+
+}
+
+moduleFor('Dynamic content tests (trusted)', class extends TrustedContentTest {
+
+  renderPath(path, context = {}) {
+    this.render(`{{{${path}}}}`, context);
+  }
+
+  ['@test updating trusted curlies']() {
+    this.render('{{{htmlContent}}}{{{nested.htmlContent}}}', {
+      htmlContent: '<b>Max</b>',
+      nested: { htmlContent: '<b>James</b>' }
+    });
+
+    this.assertContent('<b>Max</b><b>James</b>');
+
+    this.runTask(() => this.rerender());
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'htmlContent', '<i>M</i><u>a</u><s>x</s>'));
+
+    this.assertContent('<i>M</i><u>a</u><s>x</s><b>James</b>');
+
+    this.runTask(() => set(this.context, 'nested.htmlContent', 'Jammie'));
+
+    this.assertContent('<i>M</i><u>a</u><s>x</s>Jammie');
+
+    this.runTask(() => {
+      set(this.context, 'htmlContent', '<b>Max</b>');
+      set(this.context, 'nested', { htmlContent: '<i>James</i>' });
+    });
+
+    this.assertContent('<b>Max</b><i>James</i>');
   }
 
 });
