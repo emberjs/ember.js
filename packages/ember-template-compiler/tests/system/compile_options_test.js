@@ -11,10 +11,6 @@ function comparePlugins(options) {
   deepEqual(results.plugins.ast, expectedPlugins);
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
 QUnit.module('ember-htmlbars: compile_options');
 
 QUnit.test('repeated function calls should be able to have separate plugins', function() {
@@ -50,5 +46,3 @@ QUnit.test('options.plugins.ast is not required', function() {
 
   deepEqual(results.plugins.ast, defaultPlugins.ast.slice());
 });
-
-}
