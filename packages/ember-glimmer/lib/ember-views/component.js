@@ -3,7 +3,7 @@ import ChildViewsSupport from './child-views-support';
 import ClassNamesSupport from './class-names-support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
-import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
+import AriaSupport from 'ember-views/mixins/aria_support';
 import ViewMixin from 'ember-views/mixins/view_support';
 import EmberView from 'ember-views/views/view';
 
@@ -12,7 +12,7 @@ export default CoreView.extend(
   ViewStateSupport,
   ClassNamesSupport,
   InstrumentationSupport,
-  AriaRoleSupport,
+  AriaSupport,
   ViewMixin, {
     isComponent: true,
     template: null,
