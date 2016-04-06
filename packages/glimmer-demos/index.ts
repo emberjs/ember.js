@@ -3,8 +3,11 @@ import * as conways from "./lib/conways";
 import * as ripples from "./lib/ripples";
 import * as visualizer from "./lib/visualizer";
 import * as stats from "./lib/stats";
+import * as benchInline from "./lib/bench-inline";
+
 export const UptimeDemo = uptime;
 export const RipplesDemo = ripples;
 export const ConwaysDemo = conways;
 export const Visualizer = visualizer;
+export const BenchInline = benchInline;
 export const Stats = stats; // TODO does this belong in demos?
