@@ -12,8 +12,6 @@ import require from 'require';
   Ember may overwrite this namespace and therefore, you should avoid adding any
   new properties.
 
-  You can also use the shorthand `Em` instead of `Ember`.
-
   At the heart of Ember is Ember-Runtime, a set of core functions that provide
   cross-platform compatibility and object property observing.  Ember-Runtime is
   small and performance-focused so you can use it alongside other
