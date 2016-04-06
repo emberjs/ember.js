@@ -143,11 +143,13 @@ QUnit.test('{{render}} helper should render given template with a supplied model
     [OWNER]: appInstance
   });
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller: controller,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      controller: controller,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   var postController;
   var PostController = EmberController.extend({
@@ -181,11 +183,13 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
     post: post
   });
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      controller,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   var PostController = EmberController.extend({
     modelDidChange: observer('model', function() {
@@ -336,11 +340,13 @@ QUnit.test('{{render}} helper should render templates with models multiple times
     [OWNER]: appInstance
   });
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller: controller,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      controller: controller,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   var postController1, postController2;
   var PostController = EmberController.extend({
@@ -383,11 +389,13 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
     [OWNER]: appInstance
   });
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller: controller,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      controller: controller,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   var postController;
   var PostController = EmberController.extend({
@@ -415,11 +423,13 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
     zero: false
   });
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      controller,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   var postController1, postController2;
   var PostController = EmberController.extend({
@@ -457,11 +467,13 @@ QUnit.test('{{render}} helper should render templates both with and without mode
     [OWNER]: appInstance
   });
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller: controller,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      controller: controller,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   var postController1, postController2;
   var PostController = EmberController.extend({
@@ -695,16 +707,18 @@ QUnit.test('{{render}} helper should not require view to provide its own templat
 });
 
 QUnit.test('{{render}} helper should set router as target when parentController is not found', function() {
-  expect(2);
+  expect(3);
 
   Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
 
   let template = `{{render 'post' post1}}`;
 
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    template: compile(template)
-  });
+  expectDeprecation(() => {
+    view = EmberView.create({
+      [OWNER]: appInstance,
+      template: compile(template)
+    });
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
 
   let postController;
   let PostController = EmberController.extend({
