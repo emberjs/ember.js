@@ -21,7 +21,7 @@ export default Mixin.create({
     }
 
     Object.keys(this).forEach(attr => {
-      if (attr.startsWith('aria-')) {
+      if (/^aria-/i.test(attr)) {
         this.attributeBindings.push(attr);
       }
     });
