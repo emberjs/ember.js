@@ -85,8 +85,10 @@ export let missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you 
 
 /**
   Display a deprecation warning with the provided message and a stack trace
-  (Chrome and Firefox only). Ember build tools will remove any calls to
-  `Ember.deprecate()` when doing a production build.
+  (Chrome and Firefox only).
+
+  * In a production build, this method is defined as an empty function (NOP).
+  Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
   @method deprecate
   @param {String} message A description of the deprecation.

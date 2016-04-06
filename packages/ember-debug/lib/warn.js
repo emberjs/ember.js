@@ -24,8 +24,10 @@ export let missingOptionsIdDeprecation = 'When calling `Ember.warn` you must pro
 */
 
 /**
-  Display a warning with the provided message. Ember build tools will
-  remove any calls to `Ember.warn()` when doing a production build.
+  Display a warning with the provided message.
+
+  * In a production build, this method is defined as an empty function (NOP).
+  Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
   @method warn
   @param {String} message A warning to display.
