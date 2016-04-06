@@ -128,6 +128,26 @@ export default {
   },
 
   PathExpression: function(path) {
+    let { original, loc } = path;
+
+    if (original[0] === '@') {
+      original = original.slice(1);
+    }
+
+    /**
+     * This detects if a [HandleBars context switch](http://handlebarsjs.com/#paths) has been declared.
+     * In Glimmer context switching in general is prohibited.
+     */
+    if (path.depth > 0) {
+      throw new Error(`Handlebars context switching (using "../" in paths) is not supported by Glimmer. You should remove the context switching of "${path.original}" on line ${loc.start.line}.`);
+    }
+
+    if (original.slice(0, 2) === './') {
+      throw new Error(`Using "./" in a path is not supported by Glimmer since there is no need to be explicit about the lookup context. You should change the lookup of "${path.original}" on line ${loc.start.line} to just "${original.slice(2)}".`);
+    }
+
+    path.parts = original.split('.');
+
     delete path.depth;
 
     return path;

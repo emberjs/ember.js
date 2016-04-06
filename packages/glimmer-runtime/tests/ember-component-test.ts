@@ -993,6 +993,39 @@ QUnit.test('correct scope - self', assert => {
   );
 });
 
+QUnit.test('component with slashed name', assert => {
+  let SampleComponent = EmberishCurlyComponent.extend();
+
+  env.registerEmberishCurlyComponent('fizz-bar/baz-bar', SampleComponent as any, '{{@hey}}');
+
+  appendViewFor('{{fizz-bar/baz-bar hey="hello"}}');
+
+  assert.equal(view.element.textContent, 'hello');
+});
+
+QUnit.test('context switching is not allowed', assert => {
+  let SampleComponent = EmberishCurlyComponent.extend({
+    hello: 'It twas me you were looking for.'
+  });
+
+  env.registerEmberishCurlyComponent('fizz-bar/baz-bar', SampleComponent as any, '{{../hello}}');
+
+  env.registerEmberishCurlyComponent('fizz-bar/bizz-bar', SampleComponent as any, '{{./hello}}');
+
+  let contextSwitch = () => {
+    appendViewFor('{{fizz-bar/baz-bar}}', {
+      hello: 'Is it me you are looking for?'
+    });
+  };
+
+  let localPropLookupUsingPath = () => {
+    appendViewFor('{{fizz-bar/bizz-bar}}');
+  }
+
+  assert.throws(contextSwitch, /Handlebars context switching \(using "..\/" in paths\) is not supported by Glimmer\. You should remove the context switching of "..\/hello" on line 1./);
+  assert.throws(localPropLookupUsingPath, /Using ".\/" in a path is not supported by Glimmer since there is no need to be explicit about the lookup context. You should change the lookup of ".\/hello" on line 1 to just "hello"\./);
+});
+
 QUnit.test('correct scope - simple', assert => {
   env.registerBasicComponent('sub-item', BasicComponent,
     `<p>{{@name}}</p>`
