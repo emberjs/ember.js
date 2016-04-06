@@ -52,7 +52,6 @@ import { isConst } from 'glimmer-reference';
 
 export default {
   isInternalHelper: true,
-  // toReference(args) {
 
   toReference(args) {
     let sourceReference = args.positional.at(0);
@@ -64,7 +63,4 @@ export default {
       return new GetHelperReference(sourceReference, propertyPathReference);
     }
   }
-  //   return new GetHelperReference(args);
-  // }
 };
-

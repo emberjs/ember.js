@@ -334,4 +334,3 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assert.strictEqual(get(this.context, 'source.banana'), 'some value');
   }
 });
-
