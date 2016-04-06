@@ -96,9 +96,9 @@ export function INHERITING_GETTER_FUNCTION(name) {
   Ember.defineProperty(contact, 'lastName', undefined, 'Jolley');
 
   // define a computed property
-  Ember.defineProperty(contact, 'fullName', Ember.computed(function() {
+  Ember.defineProperty(contact, 'fullName', Ember.computed('firstName', 'lastName', function() {
     return this.firstName+' '+this.lastName;
-  }).property('firstName', 'lastName'));
+  }));
   ```
 
   @private
