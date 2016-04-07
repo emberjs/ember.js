@@ -98,6 +98,9 @@ QUnit.test('If a component is registered, it is used', function() {
 
 }
 
+if (!isEnabled('ember-glimmer')) {
+  // jscs:disable
+
 QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
 
@@ -111,9 +114,6 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   equal(jQuery('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
   ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
-
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
 
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>');
@@ -247,8 +247,6 @@ QUnit.test('Using name of component that does not exist', function () {
   }, /A helper named 'no-good' could not be found/);
 });
 
-}
-
 QUnit.module('Application Lifecycle - Component Context', {
   setup: prepare,
   teardown: cleanup
@@ -303,9 +301,6 @@ QUnit.test('Components without a block should have the proper content when a tem
 
   equal(jQuery('#wrapper').text(), 'inner', 'The component is composed correctly');
 });
-
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
 
 QUnit.test('Components without a block should have the proper content', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');

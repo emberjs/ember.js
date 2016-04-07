@@ -106,6 +106,7 @@ export class UpdatableReference extends EmberPathReference {
 // @implements PathReference
 export class GetHelperReference extends CachedReference {
   constructor(sourceReference, pathReference) {
+    super();
     this.sourceReference = sourceReference;
     this.pathReference = pathReference;
     this.tag = combineTagged([sourceReference, pathReference]);

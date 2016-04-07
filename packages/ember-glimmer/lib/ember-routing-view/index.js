@@ -85,7 +85,10 @@ export class OutletView {
     }
   }
 
-  appendChild() { }
+  appendChild(instance) {
+    instance.parentView = this;
+    instance.ownerView = this;
+  }
 
   rerender() {
     if (this._renderResult) { this.renderer.rerender(this); }
