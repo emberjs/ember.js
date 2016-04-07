@@ -60,7 +60,7 @@ export class OpenDynamicComponentOpcode extends Opcode {
 
     let manager = definition.manager;
     let component = manager.create(definition, args, dynamicScope);
-    let selfRef = vm.env.rootReferenceFor(manager.getSelf(component));
+    let selfRef = manager.getSelf(component);
     let destructor = manager.getDestructor(component);
 
     let callerScope = vm.scope();
@@ -127,7 +127,7 @@ export class OpenComponentOpcode extends Opcode {
 
     let manager = definition.manager;
     let component = manager.create(definition, args, dynamicScope);
-    let selfRef = vm.env.rootReferenceFor(manager.getSelf(component));
+    let selfRef = manager.getSelf(component);
     let destructor = manager.getDestructor(component);
 
     let callerScope = vm.scope();

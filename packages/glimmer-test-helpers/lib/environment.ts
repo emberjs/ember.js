@@ -218,8 +218,8 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return new klass(args.named.value());
   }
 
-  getSelf(component: BasicComponent) {
-    return component;
+  getSelf(component: BasicComponent): PathReference<Opaque> {
+    return new UpdatableReference(component);
   }
 
   didCreateElement(component: BasicComponent, element: Element) {
@@ -257,8 +257,8 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return component;
   }
 
-  getSelf(component: EmberishGlimmerComponent) {
-    return component;
+  getSelf(component: EmberishGlimmerComponent): PathReference<Opaque> {
+    return new UpdatableReference(component);
   }
 
   didCreateElement(component: EmberishGlimmerComponent, element: Element) {
@@ -310,8 +310,8 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component;
   }
 
-  getSelf(component: EmberishCurlyComponent) {
-    return component;
+  getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
+    return new UpdatableReference(component);
   }
 
   didCreateElement(component: EmberishCurlyComponent, element: Element, operations: ElementOperations) {
@@ -448,10 +448,6 @@ export class TestEnvironment extends Environment {
   registerEmberishGlimmerComponent(name: string, Component: EmberishGlimmerComponentFactory, layout: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
     let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
-  }
-
-  rootReferenceFor(object: any): PathReference<any> {
-    return new UpdatableReference(object);
   }
 
   toConditionalReference(reference: Reference<any>): Reference<boolean> {

@@ -6,6 +6,7 @@ import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
 
 import { Destroyable, Opaque } from 'glimmer-util';
+import { PathReference } from 'glimmer-reference';
 
 export type Component = Opaque;
 export type ComponentClass = any;
@@ -16,9 +17,9 @@ export interface ComponentManager<T> {
   // an opaque token, but in practice it is probably a component object.
   create(definition: ComponentDefinition<T>, attrs: EvaluatedArgs, dynamicScope: DynamicScope): T;
 
-  // Next, Glimmer asks the manager for the `self` it should use in the
-  // layout. This will likely be the component itself, but may not be.
-  getSelf(component: T): any;
+  // Next, Glimmer asks the manager to create a reference for the `self`
+  // it should use in the layout.
+  getSelf(component: T): PathReference<Opaque>;
 
   // The `didCreateElement` hook is meant to be used by the host to save
   // off the element. Hosts should use `didCreate`, which runs asynchronously
