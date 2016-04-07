@@ -14,11 +14,15 @@ import expandProperties from 'ember-metal/expand_properties';
 
 function getProperties(self, propertyNames) {
   var ret = {};
-  for (var i = 0; i < propertyNames.length; i++) {
-    expandProperties(propertyNames[i], function (name) {
-      ret[name] = get(self, name);
-    });
+
+  function extractProperty(name) {
+    ret[name] = get(self, name);
   }
+
+  for (var i = 0; i < propertyNames.length; i++) {
+    expandProperties(propertyNames[i], extractProperty);
+  }
+
   return ret;
 }
 
