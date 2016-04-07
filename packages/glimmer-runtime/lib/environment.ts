@@ -192,7 +192,6 @@ export abstract class Environment {
     return false;
   }
 
-  abstract rootReferenceFor(obj: any): PathReference<Opaque>;
   abstract hasHelper(helperName: InternedString[]): boolean;
   abstract lookupHelper(helperName: InternedString[]): Helper;
   abstract hasComponentDefinition(tagName: InternedString[]): boolean;
