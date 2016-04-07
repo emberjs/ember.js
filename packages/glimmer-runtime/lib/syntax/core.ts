@@ -184,7 +184,7 @@ export class Unknown extends ExpressionSyntax<any> {
     let { ref } = this;
 
     if (env.hasHelper(ref.parts)) {
-      return new CompiledHelper({ helper: env.lookupHelper(ref.parts), args: CompiledArgs.empty() });
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts), args: CompiledArgs.empty() });
     } else {
       return this.ref.compile(compiler);
     }
@@ -914,7 +914,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
   compile(compiler: SymbolLookup, env: Environment): CompiledExpression<Opaque> {
     if (env.hasHelper(this.ref.parts)) {
       let { args, ref } = this;
-      return new CompiledHelper<Opaque>({ helper: env.lookupHelper(ref.parts), args: args.compile(compiler, env) });
+      return new CompiledHelper<Opaque>({ name: ref.parts, helper: env.lookupHelper(ref.parts), args: args.compile(compiler, env) });
     } else {
       throw new Error(`Compile Error: ${this.ref.prettyPrint()} is not a helper`);
     }
