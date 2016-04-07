@@ -53,6 +53,7 @@ export class UpdatableReference extends RootReference {
   }
 }
 
+// @implements PathReference
 export class GetHelperReference {
   constructor(sourceReference, pathReference) {
     this.sourceReference = sourceReference;
