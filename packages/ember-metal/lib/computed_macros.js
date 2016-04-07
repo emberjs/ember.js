@@ -5,6 +5,7 @@ import { computed } from 'ember-metal/computed';
 import isEmpty from 'ember-metal/is_empty';
 import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
+import expandProperties from 'ember-metal/expand_properties';
 
 /**
 @module ember
@@ -14,7 +15,9 @@ import alias from 'ember-metal/alias';
 function getProperties(self, propertyNames) {
   var ret = {};
   for (var i = 0; i < propertyNames.length; i++) {
-    ret[propertyNames[i]] = get(self, propertyNames[i]);
+    expandProperties(propertyNames[i], function (name) {
+      ret[name] = get(self, name);
+    });
   }
   return ret;
 }
