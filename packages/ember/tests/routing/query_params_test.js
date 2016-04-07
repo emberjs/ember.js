@@ -2490,6 +2490,43 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
+  QUnit.test('queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  ', function() {
+    Ember.TEMPLATES.application = compile(
+      '<button id="test-button" {{action \'increment\'}}>Increment</button>' +
+      '<span id="test-value">{{foo}}</span>' +
+      '{{outlet}}'
+    );
+    App.ApplicationController = Controller.extend({
+      queryParams: ['foo'],
+      foo: 1,
+      actions: {
+        increment: function() {
+          this.incrementProperty('foo');
+          this.send('refreshRoute');
+        }
+      }
+    });
+
+    App.ApplicationRoute = Route.extend({
+      actions: {
+        refreshRoute: function() {
+          this.refresh();
+        }
+      }
+    });
+
+    startingURL = '/';
+    bootApplication();
+    equal(jQuery('#test-value').text().trim(), '1');
+    equal(router.get('location.path'), '/', 'url is correct');
+    run(jQuery('#test-button'), 'click');
+    equal(jQuery('#test-value').text().trim(), '2');
+    equal(router.get('location.path'), '/?foo=2', 'url is correct');
+    run(jQuery('#test-button'), 'click');
+    equal(jQuery('#test-value').text().trim(), '3');
+    equal(router.get('location.path'), '/?foo=3', 'url is correct');
+  });
+
   QUnit.test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
     expect(6);
     App.ApplicationController = Controller.extend({
