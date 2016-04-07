@@ -184,6 +184,26 @@ test("dynamically scoped keywords can be passed to render, and used in curlies",
   equalTokens(root, 'Godfrey', "Reset with replacement");
 });
 
+test("updating a curly with this", () => {
+  let object = { value: 'hello world' };
+  let template = compile('<div><p>{{this.value}}</p></div>');
+  render(template, object);
+  let valueNode = root.firstChild.firstChild.firstChild;
+
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "no change");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+
+  object.value = 'goodbye world';
+  rerender();
+
+  equalTokens(root, '<div><p>goodbye world</p></div>', "After updating and dirtying");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+});
+
 test("changing dynamic scope", assert => {
   let template = compile("{{view.name}} {{#with-keywords view=innerView}}{{view.name}}{{/with-keywords}} {{view.name}}");
   let view = { name: 'Godfrey' };
