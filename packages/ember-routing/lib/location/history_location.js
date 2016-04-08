@@ -64,17 +64,20 @@ export default EmberObject.extend({
     @return url {String}
   */
   getURL() {
-    var rootURL = get(this, 'rootURL');
     var location = get(this, 'location');
     var path = location.pathname;
+
+    var rootURL = get(this, 'rootURL');
     var baseURL = get(this, 'baseURL');
 
+    // remove trailing slashes if they exists
     rootURL = rootURL.replace(/\/$/, '');
     baseURL = baseURL.replace(/\/$/, '');
 
+    // remove baseURL and rootURL from path
     var url = path.replace(baseURL, '').replace(rootURL, '');
-    var search = location.search || '';
 
+    var search = location.search || '';
     url += search;
     url += this.getHash();
 
@@ -201,9 +204,12 @@ export default EmberObject.extend({
     var baseURL = get(this, 'baseURL');
 
     if (url !== '') {
+      // remove trailing slashes if they exists
       rootURL = rootURL.replace(/\/$/, '');
       baseURL = baseURL.replace(/\/$/, '');
     } else if (baseURL.match(/^\//) && rootURL.match(/^\//)) {
+      // if baseURL and rootURL both start with a slash
+      // ... remove trailing slash from baseURL if it exists
       baseURL = baseURL.replace(/\/$/, '');
     }
 
