@@ -3,6 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { applyMixins } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import { strip } from '../../utils/abstract-test-case';
 import {
   BasicConditionalsTest,
   SyntaxCondtionalTestHelpers,
@@ -295,4 +296,27 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
     this.assertText('caterpillar');
   }
 
+});
+
+moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTest {
+  ['@test keying off of `undefined` does not render'](assert) {
+    this.render(strip`
+      {{#each foo.bar.baz as |thing|}}
+        {{thing}}
+      {{/each}}`, { foo: {} });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', { bar: { baz: ['Here!'] } }));
+
+    this.assertText('Here!');
+
+    this.runTask(() => set(this.context, 'foo', {}));
+
+    this.assertText('');
+  }
 });

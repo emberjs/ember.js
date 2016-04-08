@@ -1,7 +1,7 @@
 import { set } from 'ember-metal/property_set';
 import { strip } from '../../utils/abstract-test-case';
 import { applyMixins } from '../../utils/abstract-test-case';
-import { moduleFor } from '../../utils/test-case';
+import { moduleFor, RenderingTest } from '../../utils/test-case';
 import {
   BasicConditionalsTest,
   SyntaxCondtionalTestHelpers,
@@ -155,4 +155,27 @@ moduleFor('@htmlbars Syntax test: {{#each-in}}', class extends EachInTest {
     `);
   }
 
+});
+
+moduleFor('@htmlbars Syntax test: {{#each-in}} undefined path', class extends RenderingTest {
+  ['@test keying off of `undefined` does not render'](assert) {
+    this.render(strip`
+      {{#each-in foo.bar.baz as |thing|}}
+        {{thing}}
+      {{/each-in}}`, { foo: {} });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', { bar: { baz: { 'Here!': 1 } } }));
+
+    this.assertText('Here!');
+
+    this.runTask(() => set(this.context, 'foo', {}));
+
+    this.assertText('');
+  }
 });

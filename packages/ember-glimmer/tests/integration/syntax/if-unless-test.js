@@ -70,4 +70,27 @@ moduleFor('Syntax test: {{#if}}', class extends RenderingTest {
     this.assertText('123');
   }
 
+  ['@test looking up `undefined` property defaults to false'](assert) {
+    this.render(strip`
+      {{#if foo.bar.baz}}
+        Here!
+      {{else}}
+        Nothing Here!
+      {{/if}}`, { foo: {} });
+
+    this.assertText('Nothing Here!');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Nothing Here!');
+
+    this.runTask(() => set(this.context, 'foo', { bar: { baz: true } }));
+
+    this.assertText('Here!');
+
+    this.runTask(() => set(this.context, 'foo', {}));
+
+    this.assertText('Nothing Here!');
+  }
+
 });

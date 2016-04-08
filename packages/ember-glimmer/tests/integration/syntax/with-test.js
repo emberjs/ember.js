@@ -19,6 +19,27 @@ moduleFor('Syntax test: {{#with as}}', class extends TogglingSyntaxConditionalsT
     return `{{#with ${cond} as |test|}}${truthy}{{else}}${falsy}{{/with}}`;
   }
 
+  ['@test keying off of `undefined` does not render'](assert) {
+    this.render(strip`
+      {{#with foo.bar.baz as |thing|}}
+        {{thing}}
+      {{/with}}`, { foo: {} });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', { bar: { baz: 'Here!' } }));
+
+    this.assertText('Here!');
+
+    this.runTask(() => set(this.context, 'foo', {}));
+
+    this.assertText('');
+  }
+
   ['@test it renders and hides the given block based on the conditional']() {
     this.render(`{{#with cond1 as |cond|}}{{cond.greeting}}{{else}}False{{/with}}`, {
       cond1: { greeting: 'Hello' }
