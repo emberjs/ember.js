@@ -24,9 +24,8 @@ class DynamicComponentReference {
   constructor({ nameRef, env }) {
     this.nameRef = nameRef;
     this.env = env;
+    this.tag = nameRef.tag;
   }
-
-  isDirty() { return true; }
 
   value() {
     let { env, nameRef } = this;
@@ -39,6 +38,4 @@ class DynamicComponentReference {
       throw new Error(`Cannot render ${name} as a component`);
     }
   }
-
-  destroy() {}
 }

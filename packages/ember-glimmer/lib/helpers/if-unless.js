@@ -3,17 +3,25 @@
 @submodule ember-templates
 */
 
+import { VOLATILE_TAG } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import emberToBool from '../utils/to-bool';
 import { InternalHelperReference } from '../utils/references';
+
+class ConditionalHelperReference extends InternalHelperReference {
+  constructor(helper, args) {
+    super(helper, args);
+    this.tag = VOLATILE_TAG;
+  }
+}
 
 function makeConditionalHelper(toBool) {
   return {
     isInternalHelper: true,
     toReference(args) {
       switch (args.positional.length) {
-        case 2: return new InternalHelperReference(conditionalWithoutAlternative, args);
-        case 3: return new InternalHelperReference(conditionalWithAlternative, args);
+        case 2: return new ConditionalHelperReference(conditionalWithoutAlternative, args);
+        case 3: return new ConditionalHelperReference(conditionalWithAlternative, args);
         default:
           assert(
             'The inline form of the `if` and `unless` helpers expect two or ' +

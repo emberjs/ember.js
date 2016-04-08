@@ -27,7 +27,7 @@ import EmptyObject from 'ember-metal/empty_object';
  peekBindings, clearBindings, writeValues,
  peekValues, clearValues, writeDeps, forEachInDeps
  writableChainWatchers, readableChainWatchers, writableChains,
- readableChains
+ readableChains, writableTag, readableTag
 
 */
 let members = {
@@ -39,7 +39,8 @@ let members = {
   values: inheritedMap,
   deps: inheritedMapOfMaps,
   chainWatchers: ownCustomObject,
-  chains: inheritedCustomObject
+  chains: inheritedCustomObject,
+  tag: ownCustomObject
 };
 
 let memberNames = Object.keys(members);
@@ -55,6 +56,8 @@ function Meta(obj, parentMeta) {
   this._deps = undefined;
   this._chainWatchers = undefined;
   this._chains = undefined;
+  this._tag = undefined;
+
   // used only internally
   this.source = obj;
 

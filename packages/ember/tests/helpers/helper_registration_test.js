@@ -7,6 +7,7 @@ import Helper, { helper } from 'ember-htmlbars/helper';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
+import isEnabled from 'ember-metal/features';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -104,6 +105,10 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
   equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
 });
 
+if (!isEnabled('ember-glimmer')) {
+// jscs:disable
+
+// needs glimmer Helper
 QUnit.test('Helpers can receive injections', function() {
   Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{full-name}}</div>');
 
@@ -124,3 +129,5 @@ QUnit.test('Helpers can receive injections', function() {
 
   ok(serviceCalled, 'service was injected, method called');
 });
+
+}

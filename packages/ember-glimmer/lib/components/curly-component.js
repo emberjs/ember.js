@@ -1,5 +1,6 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
-import { AttributeBindingReference, applyClassNameBinding } from '../utils/references';
+import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
+import EmptyObject from 'ember-metal/empty_object';
 
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
@@ -15,13 +16,13 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
-function argsToProps(args) {
-  let attrs = args.named.value();
-  let attrKeys = Object.keys(attrs);
-  let merged = { attrs: {} };
+function attrsToProps(keys, attrs) {
+  let merged = new EmptyObject();
 
-  for (let i = 0, l = attrKeys.length; i < l; i++) {
-    let name = attrKeys[i];
+  merged.attrs = merged;
+
+  for (let i = 0, l = keys.length; i < l; i++) {
+    let name = keys[i];
     let value = attrs[name];
 
     // Do we have to support passing both class /and/ classNames...?
@@ -30,7 +31,6 @@ function argsToProps(args) {
     }
 
     merged[name] = value;
-    merged.attrs[name] = value;
   }
 
   return merged;
@@ -38,23 +38,27 @@ function argsToProps(args) {
 
 class CurlyComponentManager {
   create(definition, args, dynamicScope) {
-    let klass = definition.ComponentClass;
-    let component = klass.create(argsToProps(args));
     let parentView = dynamicScope.view;
+
+    let klass = definition.ComponentClass;
+    let attrs = args.named.value();
+    let props = attrsToProps(args.named.keys, attrs);
+
+    let component = klass.create(props);
 
     dynamicScope.view = component;
     parentView.appendChild(component);
 
-    // component.didInitAttrs({ attrs });
-    // component.didReceiveAttrs({ oldAttrs: null, newAttrs: attrs });
-    // component.willInsertElement();
-    // component.willRender();
+    // component.trigger('didInitAttrs', { attrs });
+    // component.trigger('didReceiveAttrs', { newAttrs: attrs });
+    // component.trigger('willInsertElement');
+    // component.trigger('willRender');
 
     return component;
   }
 
   getSelf(component) {
-    return component;
+    return new RootReference(component);
   }
 
   didCreateElement(component, element, operations) {
@@ -84,26 +88,29 @@ class CurlyComponentManager {
   }
 
   didCreate(component) {
-    // component.didInsertElement();
-    // component.didRender();
+    // component.trigger('didInsertElement');
+    // component.trigger('didRender');
     component._transitionTo('inDOM');
   }
 
   update(component, args, dynamicScope) {
-    component.setProperties(argsToProps(args));
+    let attrs = args.named.value();
+    let props = attrsToProps(args.named.keys, attrs);
 
     // let oldAttrs = component.attrs;
-    // let newAttrs = args.named.value();
-    //
-    // component.didUpdateAttrs({ oldAttrs, newAttrs });
-    // component.didReceiveAttrs({ oldAttrs, newAttrs });
-    // component.willUpdate();
-    // component.willRender();
+    // let newAttrs = attrs;
+
+    component.setProperties(props);
+
+    // component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
+    // component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
+    // component.trigger('willUpdate');
+    // component.trigger('willRender');
   }
 
   didUpdate(component) {
-    // component.didUpdate();
-    // component.didRender();
+    // component.trigger('didUpdate');
+    // component.trigger('didRender');
   }
 
   getDestructor(component) {

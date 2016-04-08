@@ -1,5 +1,7 @@
 import { StatementSyntax } from 'glimmer-runtime';
+import { ConstReference } from 'glimmer-reference';
 import { generateGuid, guidFor } from 'ember-metal/utils';
+import { RootReference, NULL_REFERENCE } from '../utils/references';
 
 export class OutletSyntax extends StatementSyntax {
   constructor({ args }) {
@@ -26,24 +28,13 @@ function outletComponentFor(args, vm) {
   }
 }
 
-class TopLevelOutletComponentReference {
+class TopLevelOutletComponentReference extends ConstReference {
   constructor(reference) {
-    this.reference = reference;
-    this.definition = null;
+    let outletState = reference.value();
+    let definition = new TopLevelOutletComponentDefinition(outletState.render.template);
+
+    super(definition);
   }
-
-  isDirty() { return true; }
-
-  value() {
-    if (!this.definition) {
-      let outletState = this.reference.value();
-      this.definition = new TopLevelOutletComponentDefinition(outletState.render.template);
-    }
-
-    return this.definition;
-  }
-
-  destroy() {}
 }
 
 const INVALIDATE = null;
@@ -54,9 +45,8 @@ class OutletComponentReference {
     this.reference = reference;
     this.definition = null;
     this.lastState = null;
+    this.tag = reference.tag;
   }
-
-  isDirty() { return true; }
 
   value() {
     let { outletName, reference, definition, lastState } = this;
@@ -100,7 +90,7 @@ class AbstractOutletComponentManager {
   }
 
   getSelf(state) {
-    return state.render.controller;
+    return new RootReference(state.render.controller);
   }
 
   getDestructor(state) {
@@ -138,7 +128,7 @@ class EmptyOutletComponentManager extends AbstractOutletComponentManager {
   }
 
   getSelf(state) {
-    return null;
+    return NULL_REFERENCE;
   }
 }
 

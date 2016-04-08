@@ -22,5 +22,9 @@ export default CoreView.extend(
     init() {
       this._super(...arguments);
       this._viewRegistry = this._viewRegistry || EmberView.views;
+    },
+
+    __defineNonEnumerable(property) {
+      this[property.name] = property.descriptor.value;
     }
   });

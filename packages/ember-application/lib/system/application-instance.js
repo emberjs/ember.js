@@ -141,8 +141,10 @@ const ApplicationInstance = EngineInstance.extend({
 
     if (options.isInteractive) {
       registry.injection('view', 'renderer', 'renderer:-dom');
+      registry.injection('component', 'renderer', 'renderer:-dom');
     } else {
       registry.injection('view', 'renderer', 'renderer:-inert');
+      registry.injection('component', 'renderer', 'renderer:-inert');
     }
 
     if (options.rootElement) {

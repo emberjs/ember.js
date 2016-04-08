@@ -20,6 +20,13 @@ import {
 import { computed } from 'ember-metal/computed';
 import { defineProperty } from 'ember-metal/properties';
 import { Mixin, observer } from 'ember-metal/mixin';
+import symbol from 'ember-metal/symbol';
+
+const IS_PROXY = symbol('IS_PROXY');
+
+export function isProxy(value) {
+  return value && value[IS_PROXY];
+}
 
 function contentPropertyWillChange(content, contentKey) {
   var key = contentKey.slice(8); // remove "content."
@@ -42,6 +49,8 @@ function contentPropertyDidChange(content, contentKey) {
   @private
 */
 export default Mixin.create({
+  [IS_PROXY]: true,
+
   /**
     The object whose properties will be forwarded.
 

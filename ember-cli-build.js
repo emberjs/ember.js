@@ -77,6 +77,7 @@ module.exports = function() {
     addGlimmerPackage(vendorPackages, 'glimmer');
     addGlimmerPackage(vendorPackages, 'glimmer-compiler');
     addGlimmerPackage(vendorPackages, 'glimmer-object');
+    addGlimmerPackage(vendorPackages, 'glimmer-object-reference');
     addGlimmerPackage(vendorPackages, 'glimmer-reference');
     addGlimmerPackage(vendorPackages, 'glimmer-runtime');
     addGlimmerPackage(vendorPackages, 'glimmer-syntax');
