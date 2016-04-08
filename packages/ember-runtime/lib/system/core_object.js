@@ -37,7 +37,6 @@ import ActionHandler from 'ember-runtime/mixins/action_handler';
 import { defineProperty } from 'ember-metal/properties';
 import { Binding } from 'ember-metal/binding';
 import { ComputedProperty, computed } from 'ember-metal/computed';
-import InjectedProperty from 'ember-metal/injected_property';
 import run from 'ember-metal/run_loop';
 import { destroy } from 'ember-metal/watching';
 import {
@@ -855,20 +854,15 @@ var ClassMixinProps = {
 
   _computedProperties: computed(function() {
     hasCachedComputedProperties = true;
-    var proto = this.proto();
-    var property;
-    var properties = [];
-
-    for (var name in proto) {
-      property = proto[name];
-
-      if (property && property.isDescriptor) {
-        properties.push({
-          name: name,
-          meta: property._meta
-        });
-      }
-    }
+    let proto = this.proto();
+    let m = meta(proto);
+    let properties = [];
+    m.forEachDescs((name, desc) => {
+      properties.push({
+        name: name,
+        meta: desc._meta
+      });
+    });
     return properties;
   }).readOnly(),
 
@@ -920,14 +914,11 @@ runInDebug(function() {
 ClassMixinProps._lazyInjections = function() {
   var injections = {};
   var proto = this.proto();
-  var key, desc;
+  var m = meta(proto);
 
-  for (key in proto) {
-    desc = proto[key];
-    if (desc instanceof InjectedProperty) {
-      injections[key] = desc.type + ':' + (desc.name || key);
-    }
-  }
+  m.forEachInjections((key, injection) => {
+    injections[key] = injection;
+  });
 
   return injections;
 };

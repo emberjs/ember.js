@@ -25,6 +25,7 @@ import {
   Descriptor,
   defineProperty
 } from 'ember-metal/properties';
+import InjectedProperty from 'ember-metal/injected_property';
 import { ComputedProperty } from 'ember-metal/computed';
 import { Binding } from 'ember-metal/binding';
 import {
@@ -203,6 +204,12 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     // _super() if needed
     if (value._getter) {
       value = giveDescriptorSuper(meta, key, value, values, descs, base);
+    }
+
+    meta.writeDescs(key, value);
+
+    if (value instanceof InjectedProperty) {
+      meta.writeInjections(key, value.type + ':' + (value.name || key));
     }
 
     descs[key]  = value;
