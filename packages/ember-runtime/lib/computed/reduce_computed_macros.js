@@ -13,7 +13,10 @@ import { isArray } from 'ember-runtime/utils';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import isNone from 'ember-metal/is_none';
 import getProperties from 'ember-metal/get_properties';
+import EmptyObject from 'ember-metal/empty_object';
+import { guidFor } from 'ember-metal/utils';
 import WeakMap from 'ember-metal/weak_map';
+
 
 function reduceMacro(dependentKey, callback, initialValue) {
   return computed(`${dependentKey}.[]`, function() {
@@ -361,6 +364,50 @@ export function uniq(...args) {
 
     return uniq;
   });
+}
+
+/**
+  A computed property which returns a new array with all the unique
+  elements from an array, with uniqueness determined by specific key.
+  Example
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    uniqueFruits: Ember.computed.uniqBy('fruits', 'id')
+  });
+  var hamster = Hamster.create({
+    fruits: [
+      { id: 1, 'banana' },
+      { id: 2, 'grape' },
+      { id: 3, 'peach' },
+      { id: 1, 'banana' }
+    ]
+  });
+  hamster.get('uniqueFruits'); // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
+  ```
+  @method uniqBy
+  @for Ember.computed
+  @param {String} dependentKey
+  @param {String} propertyKey
+  @return {Ember.ComputedProperty} computes a new array with all the
+  unique elements from the dependent array
+  @public
+*/
+export function uniqBy(dependentKey, propertyKey) {
+  return computed(`${dependentKey}.[]`, function() {
+    var uniq = emberA();
+    var seen = new EmptyObject();
+    var list = get(this, dependentKey);
+    if (isArray(list)) {
+      list.forEach(item => {
+        var guid = guidFor(get(item, propertyKey));
+        if (!(guid in seen)) {
+          seen[guid] = true;
+          uniq.push(item);
+        }
+      });
+    }
+    return uniq;
+  }).readOnly();
 }
 
 /**

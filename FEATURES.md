@@ -30,3 +30,18 @@ for a detailed explanation.
 
   Makes ember test helpers (`fillIn`, `click`, `triggerEvent` ...) fire native javascript events instead
   of `jQuery.Event`s, maching more closely app's real usage.
+
+ * `ember-runtime-computed-uniq-by`
+
+   Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.
+
+   Example:
+
+   ```
+   comments: [
+     {id: 1, comment: 'I\'m a duplicate comment!'},
+     {id: 2, comment: 'Then you should be fixed!'},
+     {id: 1, comment: 'I\'m a duplicate comment!'}
+   ],
+   dedupedComments: Ember.computed.uniqBy('comments', 'id')
+   ```

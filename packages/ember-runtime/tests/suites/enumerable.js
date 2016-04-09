@@ -4,6 +4,7 @@ import {guidFor, generateGuid} from 'ember-metal/utils';
 import {computed} from 'ember-metal/computed';
 import {get} from 'ember-metal/property_get';
 import { _addBeforeObserver } from 'ember-metal/observer';
+import isEnabled from 'ember-metal/features';
 
 var ObserverClass = EmberObject.extend({
 
@@ -298,6 +299,7 @@ import rejectTests      from 'ember-runtime/tests/suites/enumerable/reject';
 import sortByTests      from 'ember-runtime/tests/suites/enumerable/sortBy';
 import toArrayTests     from 'ember-runtime/tests/suites/enumerable/toArray';
 import uniqTests        from 'ember-runtime/tests/suites/enumerable/uniq';
+import uniqByTests      from 'ember-runtime/tests/suites/enumerable/uniqBy';
 import withoutTests     from 'ember-runtime/tests/suites/enumerable/without';
 
 EnumerableTests.importModuleTests(anyTests);
@@ -318,6 +320,11 @@ EnumerableTests.importModuleTests(rejectTests);
 EnumerableTests.importModuleTests(sortByTests);
 EnumerableTests.importModuleTests(toArrayTests);
 EnumerableTests.importModuleTests(uniqTests);
+
+if (isEnabled('ember-runtime-computed-uniq-by')) {
+  EnumerableTests.importModuleTests(uniqByTests);
+}
+
 EnumerableTests.importModuleTests(withoutTests);
 
 export default EnumerableTests;
