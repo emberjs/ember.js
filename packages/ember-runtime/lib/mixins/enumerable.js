@@ -153,6 +153,7 @@ export default Mixin.create({
 
     @property firstObject
     @return {Object} the object or undefined
+    @readOnly
     @public
   */
   firstObject: computed('[]', function() {
@@ -167,7 +168,7 @@ export default Mixin.create({
     pushCtx(context);
 
     return ret;
-  }),
+  }).readOnly(),
 
   /**
     Helper method returns the last object from a collection. If your enumerable
