@@ -14,25 +14,28 @@ import expandProperties from 'ember-metal/expand_properties';
 
 function getProperties(self, propertyNames) {
   var ret = {};
-
-  function extractProperty(name) {
-    ret[name] = get(self, name);
-  }
-
   for (var i = 0; i < propertyNames.length; i++) {
-    expandProperties(propertyNames[i], extractProperty);
+    ret[propertyNames[i]] = get(self, propertyNames[i]);
   }
-
   return ret;
 }
 
 function generateComputedWithProperties(macro) {
   return function(...properties) {
+    var expandedProperties = [];
     var computedFunc = computed(function() {
-      return macro.apply(this, [getProperties(this, properties)]);
+      return macro.apply(this, [getProperties(this, expandedProperties)]);
     });
 
-    return computedFunc.property.apply(computedFunc, properties);
+    function extractProperty(entry) {
+      expandedProperties.push(entry);
+    }
+
+    for (var i = 0; i < properties.length; i++) {
+      expandProperties(properties[i], extractProperty);
+    }
+
+    return computedFunc.property.apply(computedFunc, expandedProperties);
   };
 }
 
