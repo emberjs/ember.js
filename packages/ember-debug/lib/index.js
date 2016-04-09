@@ -30,10 +30,10 @@ import { generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
 
 
 /**
-  Define an assertion that will throw an exception if the condition is not
-  met. Ember build tools will remove any calls to `Ember.assert()` when
-  doing an Ember.js framework production build and will make the assertion a
-  no-op for an application production build. Example:
+  Define an assertion that will throw an exception if the condition is not met.
+
+  * In a production build, this method is defined as an empty function (NOP).
+  Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
   ```javascript
   // Test for truthiness
@@ -71,8 +71,10 @@ setDebugFunction('assert', function assert(desc, test) {
 });
 
 /**
-  Display a debug notice. Ember build tools will remove any calls to
-  `Ember.debug()` when doing a production build.
+  Display a debug notice.
+
+  * In a production build, this method is defined as an empty function (NOP).
+  Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
   ```javascript
   Ember.debug('I\'m a debug notice!');
@@ -89,6 +91,9 @@ setDebugFunction('debug', function debug(message) {
 /**
   Display an info notice.
 
+  * In a production build, this method is defined as an empty function (NOP).
+  Uses of this method in Ember itself are stripped from the ember.prod.js build.
+
   @method info
   @private
 */
@@ -102,8 +107,7 @@ setDebugFunction('info', function info() {
   Display a deprecation warning with the provided message and a stack trace
   (Chrome and Firefox only) when the assigned method is called.
 
-  Ember build tools will not remove calls to `Ember.deprecateFunc()`, though
-  no warnings will be shown in production.
+  * In a production build, this method is defined as an empty function (NOP).
 
   ```javascript
   Ember.oldMethod = Ember.deprecateFunc('Please use the new, updated method', Ember.newMethod);
@@ -134,8 +138,10 @@ setDebugFunction('deprecateFunc', function deprecateFunc(...args) {
 
 
 /**
-  Run a function meant for debugging. Ember build tools will remove any calls to
-  `Ember.runInDebug()` when doing a production build.
+  Run a function meant for debugging.
+
+  * In a production build, this method is defined as an empty function (NOP).
+  Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
   ```javascript
   Ember.runInDebug(() => {
