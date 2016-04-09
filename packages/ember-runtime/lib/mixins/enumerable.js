@@ -168,7 +168,7 @@ export default Mixin.create({
     pushCtx(context);
 
     return ret;
-  }),
+  }).readOnly(),
 
   /**
     Helper method returns the last object from a collection. If your enumerable

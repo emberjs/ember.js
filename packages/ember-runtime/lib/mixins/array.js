@@ -205,7 +205,7 @@ export default Mixin.create(Enumerable, {
 
   firstObject: computed(function() {
     return objectAt(this, 0);
-  }),
+  }).readOnly(),
 
   lastObject: computed(function() {
     return objectAt(this, get(this, 'length') - 1);
