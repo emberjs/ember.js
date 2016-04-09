@@ -153,6 +153,7 @@ export default Mixin.create({
 
     @property firstObject
     @return {Object} the object or undefined
+    @readOnly
     @public
   */
   firstObject: computed('[]', function() {
