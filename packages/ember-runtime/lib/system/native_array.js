@@ -137,9 +137,10 @@ var A;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
   NativeArray.apply(Array.prototype);
-  A = function (arr = []) { return arr; };
+  A = function (arr) { return arr || []; };
 } else {
-  A = function (arr = []) {
+  A = function (arr) {
+    if (!arr) { arr = []; }
     return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
   };
 }
