@@ -1,7 +1,8 @@
 import { Stream } from 'ember-metal/streams/stream';
 import {
   concat,
-  read
+  read,
+  isStream
 } from 'ember-metal/streams/utils';
 
 
@@ -28,7 +29,7 @@ QUnit.test('returns a stream if a stream is in the array', function(assert) {
   });
   let result = concat(['foo', stream, 'baz'], ' ');
 
-  assert.ok(result.isStream, 'a stream is returned');
+  assert.ok(isStream(result), 'a stream is returned');
   assert.equal(read(result), 'foo bar baz');
 });
 
