@@ -1,25 +1,23 @@
 'use strict';
 
-var tmpenv             = require('ember-cli-blueprint-test-helpers/lib/helpers/tmp-env');
-var setupTestHooks     = require('ember-cli-blueprint-test-helpers/lib/helpers/setup');
-var BlueprintHelpers   = require('ember-cli-blueprint-test-helpers/lib/helpers/blueprint-helper');
-var generateAndDestroy = BlueprintHelpers.generateAndDestroy;
+var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+var setupTestHooks = blueprintHelpers.setupTestHooks;
+var emberNew = blueprintHelpers.emberNew;
+var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+
+var chai = require('ember-cli-blueprint-test-helpers/chai');
+var expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy instance-initializer-addon', function() {
-  setupTestHooks(this, tmpenv);
+  setupTestHooks(this);
 
   it('instance-initializer-addon foo', function() {
-    // pass any additional command line options in the arguments array
-    return generateAndDestroy(['instance-initializer-addon', 'foo'], {
-      // define files to assert, and their contents
-      target: 'addon',
-      files: [
-        {
-          file: 'app/instance-initializers/foo.js',
-          contains: "export { default, initialize } from 'my-addon/instance-initializers/foo';"
-        }
-      ]
-    });
-  });
+    var args = ['instance-initializer-addon', 'foo'];
 
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/instance-initializers/foo.js'))
+          .to.contain("export { default, initialize } from 'my-addon/instance-initializers/foo';");
+      }));
+  });
 });

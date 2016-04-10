@@ -1,304 +1,252 @@
 'use strict';
 
-var setupTestHooks     = require('ember-cli-blueprint-test-helpers/lib/helpers/setup');
-var BlueprintHelpers   = require('ember-cli-blueprint-test-helpers/lib/helpers/blueprint-helper');
-var generateAndDestroy = BlueprintHelpers.generateAndDestroy;
+var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+var setupTestHooks = blueprintHelpers.setupTestHooks;
+var emberNew = blueprintHelpers.emberNew;
+var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+var modifyPackages = blueprintHelpers.modifyPackages;
+var setupPodConfig = blueprintHelpers.setupPodConfig;
+
+var chai = require('ember-cli-blueprint-test-helpers/chai');
+var expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy helper', function() {
   setupTestHooks(this);
 
   it('helper foo/bar-baz', function() {
-    return generateAndDestroy(['helper', 'foo/bar-baz'], {
-      files: [
-        {
-          file: 'app/helpers/foo/bar-baz.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBarBaz(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBarBaz);"
-        },
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo/bar-baz'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBarBaz);");
+
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';");
+      }));
   });
 
   it('in-addon helper foo-bar', function() {
-    return generateAndDestroy(['helper', 'foo-bar'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'addon/helpers/foo-bar.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBar(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBar);"
-        },
-        {
-          file: 'app/helpers/foo-bar.js',
-          contains: [
-            "export { default, fooBar } from 'my-addon/helpers/foo-bar';"
-          ]
-        },
-        {
-          file: 'tests/unit/helpers/foo-bar-test.js',
-          contains: "import { fooBar } from 'dummy/helpers/foo-bar';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo-bar'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('addon/helpers/foo-bar.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBar(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBar);");
+
+        expect(_file('app/helpers/foo-bar.js'))
+          .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
+        expect(_file('tests/unit/helpers/foo-bar-test.js'))
+          .to.contain("import { fooBar } from 'dummy/helpers/foo-bar';");
+      }));
   });
 
   it('in-addon helper foo/bar-baz', function() {
-    return generateAndDestroy(['helper', 'foo/bar-baz'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'addon/helpers/foo/bar-baz.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBarBaz(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBarBaz);"
-        },
-        {
-          file: 'app/helpers/foo/bar-baz.js',
-          contains: [
-            "export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';"
-          ]
-        },
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: "import { fooBarBaz } from 'dummy/helpers/foo/bar-baz';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo/bar-baz'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('addon/helpers/foo/bar-baz.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBarBaz);");
+
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { fooBarBaz } from 'dummy/helpers/foo/bar-baz';");
+      }));
   });
 
   it('dummy helper foo-bar', function() {
-    return generateAndDestroy(['helper', 'foo-bar', '--dummy'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'tests/dummy/app/helpers/foo-bar.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBar(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBar);"
-        },
-        {
-          file: 'app/helpers/foo-bar.js',
-          exists: false
-        },
-        {
-          file: 'tests/unit/helpers/foo-bar-test.js',
-          exists: false
-        }
-      ]
-    });
+    var args = ['helper', 'foo-bar', '--dummy'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/dummy/app/helpers/foo-bar.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBar(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBar);");
+
+        expect(_file('app/helpers/foo-bar.js'))
+          .to.not.exist;
+        expect(_file('tests/unit/helpers/foo-bar-test.js'))
+          .to.not.exist;
+      }));
   });
 
   it('dummy helper foo/bar-baz', function() {
-    return generateAndDestroy(['helper', 'foo/bar-baz', '--dummy'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'tests/dummy/app/helpers/foo/bar-baz.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBarBaz(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBarBaz);"
-        },
-        {
-          file: 'app/helpers/foo/bar-baz.js',
-          exists: false
-        },
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          exists: false
-        }
-      ]
-    });
+    var args = ['helper', 'foo/bar-baz', '--dummy'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/dummy/app/helpers/foo/bar-baz.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBarBaz);");
+
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.not.exist;
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.not.exist;
+      }));
   });
 
   it('in-repo-addon helper foo-bar', function() {
-    return generateAndDestroy(['helper', 'foo-bar', '--in-repo-addon=my-addon'], {
-      target: 'inRepoAddon',
-      files: [
-        {
-          file: 'lib/my-addon/addon/helpers/foo-bar.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBar(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBar);"
-        },
-        {
-          file: 'lib/my-addon/app/helpers/foo-bar.js',
-          contains: [
-            "export { default, fooBar } from 'my-addon/helpers/foo-bar';"
-          ]
-        },
-        {
-          file: 'tests/unit/helpers/foo-bar-test.js',
-          contains: "import { fooBar } from 'my-app/helpers/foo-bar';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo-bar', '--in-repo-addon=my-addon'];
+
+    return emberNew({ target: 'in-repo-addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('lib/my-addon/addon/helpers/foo-bar.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBar(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBar);");
+
+        expect(_file('lib/my-addon/app/helpers/foo-bar.js'))
+          .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
+        expect(_file('tests/unit/helpers/foo-bar-test.js'))
+          .to.contain("import { fooBar } from 'my-app/helpers/foo-bar';");
+      }));
   });
 
   it('in-repo-addon helper foo/bar-baz', function() {
-    return generateAndDestroy(['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'], {
-      target: 'inRepoAddon',
-      files: [
-        {
-          file: 'lib/my-addon/addon/helpers/foo/bar-baz.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBarBaz(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBarBaz);"
-        },
-        {
-          file: 'lib/my-addon/app/helpers/foo/bar-baz.js',
-          contains: [
-            "export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';"
-          ]
-        },
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'];
+
+    return emberNew({ target: 'in-repo-addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBarBaz);");
+
+        expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
+          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';");
+      }));
   });
 
-/**
-* Pod tests
-*
-*/
   it('helper foo-bar --pod', function() {
-    return generateAndDestroy(['helper', 'foo-bar', '--pod'], {
-      files: [
-        {
-          file: 'app/helpers/foo-bar.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBar(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBar);"
-        },
-        {
-          file: 'tests/unit/helpers/foo-bar-test.js',
-          contains: "import { fooBar } from 'my-app/helpers/foo-bar';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo-bar', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo-bar.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBar(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBar);");
+
+        expect(_file('tests/unit/helpers/foo-bar-test.js'))
+          .to.contain("import { fooBar } from 'my-app/helpers/foo-bar';");
+      }));
   });
 
   it('helper foo-bar --pod podModulePrefix', function() {
-    return generateAndDestroy(['helper', 'foo-bar', '--pod'], {
-      podModulePrefix: true,
-      files: [
-        {
-          file: 'app/helpers/foo-bar.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBar(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBar);"
-        },
-        {
-          file: 'tests/unit/helpers/foo-bar-test.js',
-          contains: "import { fooBar } from 'my-app/helpers/foo-bar';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo-bar', '--pod'];
+
+    return emberNew()
+      .then(() => setupPodConfig({ podModulePrefix: true }))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo-bar.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBar(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBar);");
+
+        expect(_file('tests/unit/helpers/foo-bar-test.js'))
+          .to.contain("import { fooBar } from 'my-app/helpers/foo-bar';");
+      }));
   });
 
   it('helper foo/bar-baz --pod', function() {
-    return generateAndDestroy(['helper', 'foo/bar-baz', '--pod'], {
-      files: [
-        {
-          file: 'app/helpers/foo/bar-baz.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBarBaz(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBarBaz);"
-        },
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo/bar-baz', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBarBaz);");
+
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';");
+      }));
   });
 
   it('helper foo/bar-baz --pod podModulePrefix', function() {
-    return generateAndDestroy(['helper', 'foo/bar-baz', '--pod'], {
-      podModulePrefix: true,
-      files: [
-        {
-          file: 'app/helpers/foo/bar-baz.js',
-          contains: "import Ember from 'ember';\n\n" +
-                    "export function fooBarBaz(params/*, hash*/) {\n" +
-                    "  return params;\n" +
-                    "}\n\n" +
-                    "export default Ember.Helper.helper(fooBarBaz);"
-        },
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
-        }
-      ]
-    });
+    var args = ['helper', 'foo/bar-baz', '--pod'];
+
+    return emberNew()
+      .then(() => setupPodConfig({ podModulePrefix: true }))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("import Ember from 'ember';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default Ember.Helper.helper(fooBarBaz);");
+
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';");
+      }));
   });
 
   it('helper-test foo/bar-baz', function() {
-    return generateAndDestroy(['helper-test', 'foo/bar-baz'], {
-      files: [
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';"
-        }
-      ]
-    });
+    var args = ['helper-test', 'foo/bar-baz'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';");
+      }));
   });
 
   it('in-addon helper-test foo-bar', function() {
-    return generateAndDestroy(['helper-test', 'foo-bar'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'tests/unit/helpers/foo-bar-test.js',
-          contains: "import { fooBar } from 'dummy/helpers/foo-bar';"
-        }
-      ]
-    });
+    var args = ['helper-test', 'foo-bar'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/helpers/foo-bar-test.js'))
+          .to.contain("import { fooBar } from 'dummy/helpers/foo-bar';");
+      }));
   });
 
   it('helper-test foo/bar-baz for mocha', function() {
-    return generateAndDestroy(['helper-test', 'foo/bar-baz'], {
-      packages: [
-        { name: 'ember-cli-qunit', delete: true },
-        { name: 'ember-cli-mocha', dev: true }
-      ],
-      files: [
-        {
-          file: 'tests/unit/helpers/foo/bar-baz-test.js',
-          contains: [
-            "import { describe, it } from 'mocha';",
-            "import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';",
-            "describe('Unit | Helper | foo/bar baz', function() {"
-          ]
-        }
-      ]
-    });
+    var args = ['helper-test', 'foo/bar-baz'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        {name: 'ember-cli-qunit', delete: true},
+        {name: 'ember-cli-mocha', dev: true}
+      ]))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import { fooBarBaz } from 'my-app/helpers/foo/bar-baz';")
+          .to.contain("describe('Unit | Helper | foo/bar baz', function() {");
+      }));
   });
 });

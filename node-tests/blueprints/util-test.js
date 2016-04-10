@@ -1,207 +1,163 @@
 'use strict';
 
-var setupTestHooks     = require('ember-cli-blueprint-test-helpers/lib/helpers/setup');
-var BlueprintHelpers   = require('ember-cli-blueprint-test-helpers/lib/helpers/blueprint-helper');
-var generateAndDestroy = BlueprintHelpers.generateAndDestroy;
+var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+var setupTestHooks = blueprintHelpers.setupTestHooks;
+var emberNew = blueprintHelpers.emberNew;
+var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+var modifyPackages = blueprintHelpers.modifyPackages;
+var setupPodConfig = blueprintHelpers.setupPodConfig;
+
+var chai = require('ember-cli-blueprint-test-helpers/chai');
+var expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy util', function() {
   setupTestHooks(this);
 
   it('util foo-bar', function() {
-    return generateAndDestroy(['util', 'foo-bar'], {
-      files: [
-        {
-          file: 'app/utils/foo-bar.js',
-          contains: 'export default function fooBar() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import fooBar from 'my-app/utils/foo-bar';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo-bar'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/utils/foo-bar.js'))
+          .to.contain('export default function fooBar() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'my-app/utils/foo-bar';");
+      }));
   });
 
   it('util foo-bar/baz', function() {
-    return generateAndDestroy(['util', 'foo/bar-baz'], {
-      files: [
-        {
-          file: 'app/utils/foo/bar-baz.js',
-          contains: 'export default function fooBarBaz() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'tests/unit/utils/foo/bar-baz-test.js',
-          contains: [
-            "import fooBarBaz from 'my-app/utils/foo/bar-baz';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo/bar-baz'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/utils/foo/bar-baz.js'))
+          .to.contain('export default function fooBarBaz() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('tests/unit/utils/foo/bar-baz-test.js'))
+          .to.contain("import fooBarBaz from 'my-app/utils/foo/bar-baz';");
+      }));
   });
 
   it('in-addon util foo-bar', function() {
-    return generateAndDestroy(['util', 'foo-bar'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'addon/utils/foo-bar.js',
-          contains: 'export default function fooBar() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'app/utils/foo-bar.js',
-          contains: [
-            "export { default } from 'my-addon/utils/foo-bar';"
-          ]
-        },
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import fooBar from 'dummy/utils/foo-bar';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo-bar'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('addon/utils/foo-bar.js'))
+          .to.contain('export default function fooBar() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('app/utils/foo-bar.js'))
+          .to.contain("export { default } from 'my-addon/utils/foo-bar';");
+
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'dummy/utils/foo-bar';");
+      }));
   });
 
   it('in-addon util foo-bar/baz', function() {
-    return generateAndDestroy(['util', 'foo/bar-baz'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'addon/utils/foo/bar-baz.js',
-          contains: 'export default function fooBarBaz() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'app/utils/foo/bar-baz.js',
-          contains: [
-            "export { default } from 'my-addon/utils/foo/bar-baz';"
-          ]
-        },
-        {
-          file: 'tests/unit/utils/foo/bar-baz-test.js',
-          contains: [
-            "import fooBarBaz from 'dummy/utils/foo/bar-baz';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo/bar-baz'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('addon/utils/foo/bar-baz.js'))
+          .to.contain('export default function fooBarBaz() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('app/utils/foo/bar-baz.js'))
+          .to.contain("export { default } from 'my-addon/utils/foo/bar-baz';");
+
+        expect(_file('tests/unit/utils/foo/bar-baz-test.js'))
+          .to.contain("import fooBarBaz from 'dummy/utils/foo/bar-baz';");
+      }));
   });
-/**
-* Pod tests
-*
-*/
 
   it('util foo-bar --pod', function() {
-    return generateAndDestroy(['util', 'foo-bar', '--pod'], {
-      files: [
-        {
-          file: 'app/utils/foo-bar.js',
-          contains: 'export default function fooBar() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import fooBar from 'my-app/utils/foo-bar';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo-bar', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/utils/foo-bar.js'))
+          .to.contain('export default function fooBar() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'my-app/utils/foo-bar';");
+      }));
   });
 
   it('util foo-bar --pod podModulePrefix', function() {
-    return generateAndDestroy(['util', 'foo-bar', '--pod'], {
-      podModulePrefix: true,
-      files: [
-        {
-          file: 'app/utils/foo-bar.js',
-          contains: 'export default function fooBar() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import fooBar from 'my-app/utils/foo-bar';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo-bar', '--pod'];
+
+    return emberNew()
+      .then(() => setupPodConfig({ podModulePrefix: true }))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/utils/foo-bar.js'))
+          .to.contain('export default function fooBar() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'my-app/utils/foo-bar';");
+      }));
   });
 
   it('util foo-bar/baz --pod', function() {
-    return generateAndDestroy(['util', 'foo/bar-baz', '--pod'], {
-      files: [
-        {
-          file: 'app/utils/foo/bar-baz.js',
-          contains: 'export default function fooBarBaz() {\n' +
-                    '  return true;\n' +
-                    '}'
-        },
-        {
-          file: 'tests/unit/utils/foo/bar-baz-test.js',
-          contains: [
-            "import fooBarBaz from 'my-app/utils/foo/bar-baz';"
-          ]
-        }
-      ]
-    });
+    var args = ['util', 'foo/bar-baz', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/utils/foo/bar-baz.js'))
+          .to.contain('export default function fooBarBaz() {\n' +
+                      '  return true;\n' +
+                      '}');
+
+        expect(_file('tests/unit/utils/foo/bar-baz-test.js'))
+          .to.contain("import fooBarBaz from 'my-app/utils/foo/bar-baz';");
+      }));
   });
 
   it('util-test foo-bar', function() {
-    return generateAndDestroy(['util-test', 'foo-bar'], {
-      files: [
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import fooBar from 'my-app/utils/foo-bar';"
-          ]
-        }
-      ]
-    });
+    var args = ['util-test', 'foo-bar'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'my-app/utils/foo-bar';");
+      }));
   });
 
   it('in-addon util-test foo-bar', function() {
-    return generateAndDestroy(['util-test', 'foo-bar'], {
-      target: 'addon',
-      files: [
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import fooBar from 'dummy/utils/foo-bar';"
-          ]
-        }
-      ]
-    });
+    var args = ['util-test', 'foo-bar'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import fooBar from 'dummy/utils/foo-bar';");
+      }));
   });
 
   it('util-test foo-bar for mocha', function() {
-    return generateAndDestroy(['util-test', 'foo-bar'], {
-      packages: [
-        { name: 'ember-cli-qunit', delete: true },
-        { name: 'ember-cli-mocha', dev: true }
-      ],
-      files: [
-        {
-          file: 'tests/unit/utils/foo-bar-test.js',
-          contains: [
-            "import { describe, it } from 'mocha';",
-            "import fooBar from 'my-app/utils/foo-bar';",
-            "describe('Unit | Utility | foo bar', function() {"
-          ]
-        }
-      ]
-    });
+    var args = ['util-test', 'foo-bar'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        {name: 'ember-cli-qunit', delete: true},
+        {name: 'ember-cli-mocha', dev: true}
+      ]))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/utils/foo-bar-test.js'))
+          .to.contain("import { describe, it } from 'mocha';")
+          .to.contain("import fooBar from 'my-app/utils/foo-bar';")
+          .to.contain("describe('Unit | Utility | foo bar', function() {");
+      }));
   });
 });
