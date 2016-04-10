@@ -211,7 +211,7 @@ var Enumerable = Mixin.create({
     pushCtx(context);
 
     return last;
-  }),
+  }).readOnly(),
 
   /**
     Returns `true` if the passed object can be found in the receiver. The
