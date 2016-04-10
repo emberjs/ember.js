@@ -3,6 +3,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import isEmpty from 'ember-metal/is_empty';
+import isBlank from 'ember-metal/is_blank';
 import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
 import expandProperties from 'ember-metal/expand_properties';
@@ -63,8 +64,8 @@ function generateComputedWithProperties(macro) {
   @method empty
   @for Ember.computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which negate
-  the original value for property
+  @return {Ember.ComputedProperty} computed property which returns true if
+  original value for property is empty.
   @public
 */
 export function empty(dependentKey) {
@@ -101,6 +102,72 @@ export function empty(dependentKey) {
 export function notEmpty(dependentKey) {
   return computed(dependentKey + '.length', function() {
     return !isEmpty(get(this, dependentKey));
+  });
+}
+
+/**
+  A computed property that returns true if the value of the dependent
+  property is empty or a whitespace string.
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    isAnonymous: Ember.computed.blank('name')
+  });
+
+  var hamster = Hamster.create({
+    name: 'Tomster'
+  });
+
+  hamster.get('isAnonymous'); // false
+  hamster.set('name', '\n\t');
+  hamster.get('isAnonymous'); // true
+  ```
+
+  @since 2.3.0
+  @method blank
+  @for Ember.computed
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which returns true if
+  original value for property is blank.
+  @public
+*/
+export function blank(dependentKey) {
+  return computed(dependentKey, dependentKey + '.length', function() {
+    return isBlank(get(this, dependentKey));
+  });
+}
+
+/**
+  A computed property that returns true if the value of the dependent
+  property is NOT empty or a whitespace string.
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    hasName: Ember.computed.notBlank('name')
+  });
+
+  var hamster = Hamster.create({ name: 'Tomster' });
+
+  hamster.get('hasName');         // true
+  hamster.set('name', '\t\n');
+  hamster.get('hasName');         // false
+  ```
+
+  @since 2.3.0
+  @method notBlank
+  @for Ember.computed
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which returns true if
+  original value for property is not blank.
+  @public
+*/
+export function notBlank(dependentKey) {
+  return computed(dependentKey, dependentKey + '.length', function() {
+    return !isBlank(get(this, dependentKey));
   });
 }
 
