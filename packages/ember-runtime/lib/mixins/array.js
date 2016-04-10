@@ -209,7 +209,7 @@ export default Mixin.create(Enumerable, {
 
   lastObject: computed(function() {
     return objectAt(this, get(this, 'length') - 1);
-  }),
+  }).readOnly(),
 
   // optimized version from Enumerable
   contains(obj) {
