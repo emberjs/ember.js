@@ -5,6 +5,7 @@ import { computed } from 'ember-metal/computed';
 import isEmpty from 'ember-metal/is_empty';
 import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
+import expandProperties from 'ember-metal/expand_properties';
 
 /**
 @module ember
@@ -21,11 +22,20 @@ function getProperties(self, propertyNames) {
 
 function generateComputedWithProperties(macro) {
   return function(...properties) {
+    var expandedProperties = [];
     var computedFunc = computed(function() {
-      return macro.apply(this, [getProperties(this, properties)]);
+      return macro.apply(this, [getProperties(this, expandedProperties)]);
     });
 
-    return computedFunc.property.apply(computedFunc, properties);
+    function extractProperty(entry) {
+      expandedProperties.push(entry);
+    }
+
+    for (var i = 0; i < properties.length; i++) {
+      expandProperties(properties[i], extractProperty);
+    }
+
+    return computedFunc.property.apply(computedFunc, expandedProperties);
   };
 }
 
@@ -403,22 +413,30 @@ export function lte(dependentKey, value) {
   A computed property that performs a logical `and` on the
   original values for the provided dependent properties.
 
+  You may pass in more than two properties and even use
+  property brace expansion.  The computed property will
+  returns the first falsy value or last truthy value
+  just like JavaScript's `||` operator.
+
   Example
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack')
+    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack'),
+    readyForHike: Ember.computed.and('hasWalkingStick', 'hasBackpack')
   });
 
-  var hamster = Hamster.create();
+  var tomster = Hamster.create();
 
-  hamster.get('readyForCamp'); // false
-  hamster.set('hasTent', true);
-  hamster.get('readyForCamp'); // false
-  hamster.set('hasBackpack', true);
-  hamster.get('readyForCamp'); // true
-  hamster.set('hasBackpack', 'Yes');
-  hamster.get('readyForCamp'); // 'Yes'
+  tomster.get('readyForCamp'); // false
+  tomster.set('hasTent', true);
+  tomster.get('readyForCamp'); // false
+  tomster.set('hasBackpack', true);
+  tomster.get('readyForCamp'); // true
+  tomster.set('hasBackpack', 'Yes');
+  tomster.get('readyForCamp'); // 'Yes'
+  tomster.set('hasWalkingStick', null);
+  tomster.get('readyForHike'); // null
   ```
 
   @method and
@@ -433,7 +451,7 @@ export var and = generateComputedWithProperties(function(properties) {
   for (var key in properties) {
     value = properties[key];
     if (properties.hasOwnProperty(key) && !value) {
-      return false;
+      return value;
     }
   }
   return value;
@@ -443,20 +461,28 @@ export var and = generateComputedWithProperties(function(properties) {
   A computed property which performs a logical `or` on the
   original values for the provided dependent properties.
 
+  You may pass in more than two properties and even use
+  property brace expansion.  The computed property will
+  returns the first truthy value or last falsy value just
+  like JavaScript's `||` operator.
+
   Example
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella')
+    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella'),
+    readyForBeach: Ember.computed.or('{hasSunscreen,hasUmbrella}')
   });
 
-  var hamster = Hamster.create();
+  var tomster = Hamster.create();
 
-  hamster.get('readyForRain'); // false
-  hamster.set('hasUmbrella', true);
-  hamster.get('readyForRain'); // true
-  hamster.set('hasJacket', 'Yes');
-  hamster.get('readyForRain'); // 'Yes'
+  tomster.get('readyForRain'); // undefined
+  tomster.set('hasUmbrella', true);
+  tomster.get('readyForRain'); // true
+  tomster.set('hasJacket', 'Yes');
+  tomster.get('readyForRain'); // 'Yes'
+  tomster.set('hasSunscreen', 'Check');
+  tomster.get('readyForBeach'); // 'Check'
   ```
 
   @method or

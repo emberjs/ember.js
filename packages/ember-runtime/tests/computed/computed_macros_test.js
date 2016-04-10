@@ -251,7 +251,7 @@ testBoth('computed.lte', function(get, set) {
   equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
 });
 
-testBoth('computed.and', function(get, set) {
+testBoth('computed.and two properties', function(get, set) {
   var obj = { one: true, two: true };
   defineProperty(obj, 'oneAndTwo', and('one', 'two'));
 
@@ -261,13 +261,52 @@ testBoth('computed.and', function(get, set) {
 
   equal(get(obj, 'oneAndTwo'), false, 'one and not two');
 
+  set(obj, 'one', null);
+  set(obj, 'two', 'Yes');
+
+  equal(get(obj, 'oneAndTwo'), null, 'returns falsy value as in &&');
+
   set(obj, 'one', true);
   set(obj, 'two', 2);
 
   equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
 });
 
-testBoth('computed.or', function(get, set) {
+testBoth('computed.and three properties', function(get, set) {
+  var obj = { one: true, two: true, three: true };
+  defineProperty(obj, 'oneTwoThree', and('one', 'two', 'three'));
+
+  equal(get(obj, 'oneTwoThree'), true, 'one and two and three');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
+
+  set(obj, 'one', true);
+  set(obj, 'two', 2);
+  set(obj, 'three', 3);
+
+  equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
+});
+
+testBoth('computed.and expand properties', function(get, set) {
+  var obj = { one: true, two: true, three: true };
+  defineProperty(obj, 'oneTwoThree', and('{one,two,three}'));
+
+  equal(get(obj, 'oneTwoThree'), true, 'one and two and three');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
+
+  set(obj, 'one', true);
+  set(obj, 'two', 2);
+  set(obj, 'three', 3);
+
+  equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
+});
+
+testBoth('computed.or two properties', function(get, set) {
   var obj = { one: true, two: true };
   defineProperty(obj, 'oneOrTwo', or('one', 'two'));
 
@@ -279,7 +318,7 @@ testBoth('computed.or', function(get, set) {
 
   set(obj, 'two', false);
 
-  equal(get(obj, 'oneOrTwo'), false, 'nore one nore two');
+  equal(get(obj, 'oneOrTwo'), false, 'nor one nor two');
 
   set(obj, 'two', null);
 
@@ -292,6 +331,68 @@ testBoth('computed.or', function(get, set) {
   set(obj, 'one', 1);
 
   equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
+});
+
+testBoth('computed.or three properties', function(get, set) {
+  var obj = { one: true, two: true, three: true };
+  defineProperty(obj, 'oneTwoThree', or('one', 'two', 'three'));
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'two', false);
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'three', false);
+
+  equal(get(obj, 'oneTwoThree'), false, 'one or two or three');
+
+  set(obj, 'three', null);
+
+  equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
+
+  set(obj, 'two', true);
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'one', 1);
+
+  equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
+});
+
+testBoth('computed.or expand properties', function(get, set) {
+  var obj = { one: true, two: true, three: true };
+  defineProperty(obj, 'oneTwoThree', or('{one,two,three}'));
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'two', false);
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'three', false);
+
+  equal(get(obj, 'oneTwoThree'), false, 'one or two or three');
+
+  set(obj, 'three', null);
+
+  equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
+
+  set(obj, 'two', true);
+
+  equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+
+  set(obj, 'one', 1);
+
+  equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
 });
 
 testBoth('computed.collect', function(get, set) {
