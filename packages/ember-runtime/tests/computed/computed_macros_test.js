@@ -261,6 +261,11 @@ testBoth('computed.and two properties', function(get, set) {
 
   equal(get(obj, 'oneAndTwo'), false, 'one and not two');
 
+  set(obj, 'one', null);
+  set(obj, 'two', 'Yes');
+
+  equal(get(obj, 'oneAndTwo'), null, 'returns falsy value as in &&');
+
   set(obj, 'one', true);
   set(obj, 'two', 2);
 

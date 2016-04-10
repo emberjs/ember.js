@@ -443,7 +443,7 @@ export var and = generateComputedWithProperties(function(properties) {
   for (var key in properties) {
     value = properties[key];
     if (properties.hasOwnProperty(key) && !value) {
-      return false;
+      return value;
     }
   }
   return value;
