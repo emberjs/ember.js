@@ -8,6 +8,10 @@ import Subscriber from 'ember-metal/streams/subscriber';
 import Dependency from 'ember-metal/streams/dependency';
 import { GUID_KEY } from 'ember-metal/utils';
 import require from 'require';
+import symbol from 'ember-metal/symbol';
+
+export const IS_STREAM = symbol('IS_STREAM');
+
 /**
   @module ember-metal
 */
@@ -26,9 +30,8 @@ var KeyStream;
 var ProxyMixin;
 
 BasicStream.prototype = {
-  isStream: true,
-
   _init(label) {
+    this[IS_STREAM] = true;
     this.label = makeLabel(label);
     this.isActive = false;
     this.isDirty = true;

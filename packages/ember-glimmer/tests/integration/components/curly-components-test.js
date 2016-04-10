@@ -917,4 +917,43 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
   }
 
+  ['@test can use isStream property without conflict (#13271)']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      isStream: true,
+
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+
+      template: strip`
+        {{#if isStream}}
+          true
+        {{else}}
+          false
+        {{/if}}
+      `
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { content: 'true' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'true' });
+
+    this.runTask(() => set(component, 'isStream', false));
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+
+    this.runTask(() => set(component, 'isStream', true));
+
+    this.assertComponentElement(this.firstChild, { content: 'true' });
+  }
 });
