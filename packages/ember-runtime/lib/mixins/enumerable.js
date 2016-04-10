@@ -188,6 +188,7 @@ var Enumerable = Mixin.create({
 
     @property lastObject
     @return {Object} the last object or undefined
+    @readOnly
     @public
   */
   lastObject: computed('[]', function() {
