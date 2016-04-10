@@ -20,7 +20,8 @@ DeprecateRenderModel.prototype.transform =
 
       deprecate(deprecationMessage(moduleName, node, param), false, {
         id: 'ember-template-compiler.deprecate-render-model',
-        until: '3.0.0'
+        until: '3.0.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_model-param-in-code-render-code-helper'
       });
     });
   });
