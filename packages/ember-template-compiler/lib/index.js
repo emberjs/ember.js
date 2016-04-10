@@ -13,8 +13,8 @@ import TransformComponentCurlyToReadonly from 'ember-template-compiler/plugins/t
 import TransformAngleBracketComponents from 'ember-template-compiler/plugins/transform-angle-bracket-components';
 import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
 import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
-import TransformUnescapedInlineLinkTo from 'ember-template-compiler/plugins/transform-unescaped-inline-link-to';
 import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
+import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
 import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-helper';
 import AssertNoEachIn from 'ember-template-compiler/plugins/assert-no-each-in';
@@ -31,9 +31,9 @@ registerPlugin('ast', TransformComponentCurlyToReadonly);
 registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
 registerPlugin('ast', TransformTopLevelComponents);
-registerPlugin('ast', TransformUnescapedInlineLinkTo);
 registerPlugin('ast', DeprecateRenderModel);
 registerPlugin('ast', AssertNoEachIn);
+registerPlugin('ast', TransformInlineLinkTo);
 
 if (!_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerPlugin('ast', AssertNoViewAndControllerPaths);

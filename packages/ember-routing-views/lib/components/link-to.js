@@ -322,7 +322,6 @@ import EmberComponent from 'ember-views/components/component';
 import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
-import { HAS_BLOCK } from 'ember-htmlbars/node-managers/component-node-manager';
 import htmlbarsTemplate from 'ember-htmlbars/templates/link-to';
 import require from 'require';
 
@@ -666,7 +665,7 @@ let LinkComponent = EmberComponent.extend({
     if (lastParam && lastParam.isQueryParams) {
       params.pop();
     }
-    let onlyQueryParamsSupplied = (this[HAS_BLOCK] ? params.length === 0 : params.length === 1);
+    let onlyQueryParamsSupplied = (params.length === 0);
     if (onlyQueryParamsSupplied) {
       return get(this, '_routing.currentRouteName');
     }
@@ -777,10 +776,7 @@ let LinkComponent = EmberComponent.extend({
     }
 
     // Process the positional arguments, in order.
-    // 1. Inline link title comes first, if present.
-    if (!this[HAS_BLOCK]) {
-      this.set('linkTitle', params.shift());
-    }
+    // 1. Inline link title was shifted off by AST.
 
     // 2. `targetRouteName` is now always at index 0.
     this.set('targetRouteName', params[0]);
