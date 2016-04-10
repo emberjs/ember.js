@@ -1,5 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import BasicStream, { Stream } from './stream';
+import { IS_STREAM } from 'ember-metal/streams/stream';
 
 /*
  Check whether an object is a stream or not.
@@ -11,7 +12,7 @@ import BasicStream, { Stream } from './stream';
  @return {Boolean} `true` if the object is a stream, `false` otherwise.
 */
 export function isStream(object) {
-  return object && object.isStream;
+  return object && object[IS_STREAM];
 }
 
 /*
@@ -27,7 +28,7 @@ export function isStream(object) {
                            is provided.
  */
 export function subscribe(object, callback, context) {
-  if (object && object.isStream) {
+  if (object && object[IS_STREAM]) {
     return object.subscribe(callback, context);
   }
 }
@@ -44,7 +45,7 @@ export function subscribe(object, callback, context) {
  @param {Object} [context] Object originally passed to `subscribe()`.
  */
 export function unsubscribe(object, callback, context) {
-  if (object && object.isStream) {
+  if (object && object[IS_STREAM]) {
     object.unsubscribe(callback, context);
   }
 }
@@ -60,7 +61,7 @@ export function unsubscribe(object, callback, context) {
  @return The stream's current value, or the non-stream object itself.
  */
 export function read(object) {
-  if (object && object.isStream) {
+  if (object && object[IS_STREAM]) {
     return object.value();
   } else {
     return object;
@@ -343,7 +344,7 @@ export function chain(value, fn, label) {
 }
 
 export function setValue(object, value) {
-  if (object && object.isStream) {
+  if (object && object[IS_STREAM]) {
     object.setValue(value);
   }
 }
