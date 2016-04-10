@@ -483,4 +483,89 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
     this.assertHTML(ember);
   }
 
+  ['@test it should evaluate to nothing if part of the path is `undefined`']() {
+    this.render('{{foo.bar.baz.bizz}}', {
+      foo: {}
+    });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: { baz: { bizz: 'Hey!' } }
+    }));
+
+    this.assertText('Hey!');
+
+    this.runTask(() => set(this.context, 'foo', {}));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: { baz: { bizz: 'Hello!' } }
+    }));
+
+    this.assertText('Hello!');
+
+    this.runTask(() => set(this.context, 'foo', {}));
+
+    this.assertText('');
+  }
+
+  ['@test it should evaluate to nothing if part of the path is a primative']() {
+    this.render('{{foo.bar.baz.bizz}}', {
+      foo: { bar: true }
+    });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: false
+    }));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: 'Haha'
+    }));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: null
+    }));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: undefined
+    }));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: 1
+    }));
+
+    this.assertText('');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: { baz: { bizz: 'Hello!' } }
+    }));
+
+    this.assertText('Hello!');
+
+    this.runTask(() => set(this.context, 'foo', {
+      bar: true
+    }));
+
+    this.assertText('');
+  }
 });

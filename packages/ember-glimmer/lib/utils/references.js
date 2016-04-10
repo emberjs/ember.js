@@ -74,12 +74,14 @@ class PropertyReference extends CachedReference { // jshint ignore:line
   compute() {
     let { _parentReference, _parentObjectTag, _propertyKey } = this;
 
-    let parent = _parentReference.value();
+    let parentValue = _parentReference.value();
 
-    if (parent) {
-      _parentObjectTag.update(tagFor(parent));
+    _parentObjectTag.update(tagFor(parentValue));
 
-      return get(parent, _propertyKey);
+    if (parentValue && typeof parentValue === 'object') {
+      return get(parentValue, _propertyKey);
+    } else {
+      return null;
     }
   }
 
