@@ -7,6 +7,7 @@ import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { htmlSafe } from 'ember-htmlbars/utils/string';
+import { computed } from 'ember-metal/computed';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -2022,5 +2023,94 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     // this.assertText('blarkporybaz- Click Me');
   }
-});
 
+  ['@htmlbars a two way binding flows upstream through a CP when consumed in the template']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      },
+
+      bar: computed({
+        get() {
+          return this._bar;
+        },
+
+        set(key, value) {
+          this._bar = value;
+          return this._bar;
+        }
+      })
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+
+      template: '{{bar}}'
+    });
+
+    this.render('{{localBar}} - {{foo-bar bar=localBar}}', {
+      localBar: 'initial value'
+    });
+
+    this.assertText('initial value - initial value');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('initial value - initial value');
+
+    this.runTask(() => { component.set('bar', 'updated value'); });
+
+    this.assertText('updated value - updated value');
+
+    this.runTask(() => { this.component.set('localBar', 'initial value'); });
+
+    this.assertText('initial value - initial value');
+  }
+
+  // regression introduced in Ember 1.13
+  ['@skip a two way binding flows upstream through a CP without template consumption']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      },
+
+      bar: computed({
+        get() {
+          return this._bar;
+        },
+
+        set(key, value) {
+          this._bar = value;
+          return this._bar;
+        }
+      })
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: ''
+    });
+
+    this.render('{{localBar}}{{foo-bar bar=localBar}}', {
+      localBar: 'initial value'
+    });
+
+    this.assertText('initial value');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('initial value');
+
+    this.runTask(() => { component.set('bar', 'updated value'); });
+
+    this.assertText('updated value');
+
+    this.runTask(() => { this.component.set('localBar', 'initial value'); });
+
+    this.assertText('initial value');
+  }
+});
