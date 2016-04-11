@@ -24,6 +24,7 @@ publisher.currentBranch = function() {
     master: 'canary',
     beta: 'beta',
     release: 'release',
+    'lts-2-4': 'lts-2-4',
     'release-1-13': 'release-1-13'
   }[this.CURRENT_BRANCH] || process.env.BUILD_TYPE;
 };
