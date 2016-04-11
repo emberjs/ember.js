@@ -54,7 +54,7 @@ let MutStream = ProxyStream.extend({
   To specify that a parameter is mutable, when invoking the child `Component`:
 
   ```handlebars
-  <my-child child-click-count={{mut totalClicks}} />
+  {{my-child childClickCount=(mut totalClicks)}}
   ```
 
   The child `Component` can then modify the parent's value as needed:
@@ -62,11 +62,31 @@ let MutStream = ProxyStream.extend({
   ```javascript
   // my-child.js
   export default Component.extend({
-    click: function() {
-      this.attrs.childClickCount.update(this.attrs.childClickCount.value + 1);
+    click() {
+      this.get('childClickCount').update(this.get('childClickCount').value + 1);
     }
   });
   ```
+
+  Additionally, the `mut` helper can be combined with the `action` helper to
+  mutate a value. For example:
+
+  ```handlebars
+  {{my-child childClickCount=totalClicks click-count-change=(action (mut "totalClicks"))}}
+  ```
+
+  The child `Component` would invoke the action with the new click value:
+
+  ```javascript
+  // my-child.js
+  export default Component.extend({
+    click() {
+      this.get('clickCountChange')(this.get('childClickCount') + 1);
+    }
+  });
+  ```
+
+  The `mut` helper changes the `totalClicks` value to what was provided as the action argument.
 
   See a [2.0 blog post](http://emberjs.com/blog/2015/05/10/run-up-to-two-oh.html#toc_the-code-mut-code-helper) for
   additional information on using `{{mut}}`.
