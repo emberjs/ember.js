@@ -15,6 +15,7 @@ INCLUDED_FILES=`find dist -maxdepth 1 -type f`
 echo -e "COMPONENTS_EMBER_REPO_SLUG: ${COMPONENTS_EMBER_REPO_SLUG}\n"
 echo -e "INCLUDED_FILES: ${INCLUDED_FILES}\n"
 echo -e "CURRENT_BRANCH: ${TRAVIS_BRANCH}\n"
+echo -e "CURRENT_TAG: ${TRAVIS_TAG}\n"
 
 if [[ $TRAVIS_PULL_REQUEST != "false" ]]; then
   echo "not publishing because this is a pull request."
@@ -40,10 +41,22 @@ case $TRAVIS_BRANCH in
   "release-1-13" )
     CHANNEL="release-1-13" ;;
   * )
-    echo "Not a bower release branch.  Exiting!"
-    exit 0 ;;
+    if [[ "$TRAVIS_TAG" != "" ]]; then
+      case "$TRAVIS_TAG" in
+        *alpha* )
+          CHANNEL="canary" ;;
+        *beta* )
+          CHANNEL="beta" ;;
+        * )
+          CHANNEL="release" ;;
+      esac
+    else
+      echo "Not a bower release branch or tag.  Exiting!"
+      exit 0 ;;
+    fi
 esac
 echo -e "CHANNEL: ${CHANNEL}\n"
+PUSH_TARGET=$CHANNEL
 
 if [[ -n $BUILD_TYPE ]]; then
   CHANNEL=$BUILD_TYPE
@@ -62,6 +75,14 @@ git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_
 git add -A
 git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
+
+if [[ "$TRAVIS_TAG" != "" ]]; then
+  git tag $TRAVIS_TAG
+  PUSH_TARGET=$TRAVIS_TAG
+fi
+
+echo -e "PUSH_TARGET: ${PUSH_TARGET}\n"
+
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
-git push -fq origin ${CHANNEL} &> /dev/null
+git push -fq origin ${PUSH_TARGET} &> /dev/null
 echo -e "Done\n"
