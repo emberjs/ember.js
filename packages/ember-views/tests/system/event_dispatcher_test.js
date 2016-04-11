@@ -16,10 +16,13 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
+import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
+
 var owner, view, originalViewKeyword;
 var dispatcher;
 
 import isEnabled from 'ember-metal/features';
+
 if (!isEnabled('ember-glimmer')) {
   // jscs:disable
 
@@ -46,6 +49,59 @@ QUnit.module('EventDispatcher', {
     resetKeyword('view', originalViewKeyword);
   }
 });
+
+if (isEnabled('ember-improved-instrumentation')) {
+  QUnit.test('should instrument triggered events', function() {
+    let clicked = 0;
+
+    run(function () {
+      view = View.create({
+        click(evt) {
+          clicked++;
+        },
+
+        template: compile('<p>hello</p>')
+      }).appendTo(dispatcher.get('rootElement'));
+    });
+
+    view.$().trigger('click');
+
+    equal(clicked, 1, 'precond - The click handler was invoked');
+
+    let clickInstrumented = 0;
+    let clickSubscriber = subscribe('interaction.click', {
+      before() {
+        clickInstrumented++;
+        equal(clicked, 1, 'invoked before event is handled');
+      },
+      after() {
+        clickInstrumented++;
+        equal(clicked, 2, 'invoked after event is handled');
+      }
+    });
+
+    let keypressInstrumented = 0;
+    let keypressSubscriber = subscribe('interaction.keypress', {
+      before() {
+        keypressInstrumented++;
+      },
+      after() {
+        keypressInstrumented++;
+      }
+    });
+
+    try {
+      view.$().trigger('click');
+      view.$().trigger('change');
+      equal(clicked, 2, 'precond - The click handler was invoked');
+      equal(clickInstrumented, 2, 'The click was instrumented');
+      strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
+    } finally {
+      unsubscribe(clickSubscriber);
+      unsubscribe(keypressSubscriber);
+    }
+  });
+}
 
 QUnit.test('should dispatch events to views', function() {
   var receivedEvent;

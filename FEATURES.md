@@ -45,3 +45,10 @@ for a detailed explanation.
    ],
    dedupedComments: Ember.computed.uniqBy('comments', 'id')
    ```
+
+* `ember-improved-instrumentation`
+
+  Adds additional instrumentation to Ember:
+
+  - `interaction.<event-name>` for events handled by a component.
+  - `interaction.ember-action` for closure actions.
