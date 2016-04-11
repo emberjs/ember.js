@@ -20,7 +20,9 @@ import isEnabled from 'ember-metal/features';
 */
 export default function merge(original, updates) {
   if (isEnabled('ember-metal-ember-assign')) {
-    deprecate('Usage of `Ember.merge` is deprecated, use `Ember.assign` instead.', false, { id: 'ember-metal.merge', until: '3.0.0' });
+    deprecate('Usage of `Ember.merge` is deprecated, use `Ember.assign` instead.', false, {
+      id: 'ember-metal.merge', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-merge'
+    });
   }
 
   if (!updates || typeof updates !== 'object') {
