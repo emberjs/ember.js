@@ -15,6 +15,7 @@ import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform
 import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
 import TransformEachIntoCollection from 'ember-template-compiler/plugins/transform-each-into-collection';
 import TransformUnescapedInlineLinkTo from 'ember-template-compiler/plugins/transform-unescaped-inline-link-to';
+import DeprecateRenderBlock from 'ember-template-compiler/plugins/deprecate-render-block';
 import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-helper';
 import AssertNoEachIn from 'ember-template-compiler/plugins/assert-no-each-in';
@@ -32,6 +33,7 @@ registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
 registerPlugin('ast', TransformTopLevelComponents);
 registerPlugin('ast', TransformUnescapedInlineLinkTo);
+registerPlugin('ast', DeprecateRenderBlock);
 registerPlugin('ast', AssertNoEachIn);
 
 if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
