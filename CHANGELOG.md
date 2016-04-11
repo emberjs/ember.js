@@ -1,30 +1,17 @@
 # Ember Changelog
 
-### 2.5.0-beta.4 (April 3, 2016)
+### 2.5.0 (April 11, 2016)
 
-- [#13169](https://github.com/emberjs/ember.js/pull/13169) [BUGFIX] Fixes {{link-to}} classes when transition is aborted
-
-### 2.5.0-beta.3 (March 14, 2016)
-
-- [#13083](https://github.com/emberjs/ember.js/issues/13083) [BUGFIX] Fix issue with feature flagging infrastructure in beta 2
-
-### 2.5.0-beta.2 (March 7, 2016)
-
-- [#13030](https://github.com/emberjs/ember.js/pull/13030) [BUGFIX] Fix legacy addon deprecations
+- [#13239](https://github.com/emberjs/ember.js/pull/13239) [BUGFIX] Prevent warnings for unknown feature flags
+- [#13287](https://github.com/emberjs/ember.js/pull/13287) [BUGFIX] Fix a recent regression with `Ember.A(null)`
+- [#13290](https://github.com/emberjs/ember.js/pull/13290) [BUGFIX] `isStream` is no longer a reserved property name in Components
+- [#13294](https://github.com/emberjs/ember.js/pull/13294) [DEPRECATE] Deprecate usage of `{{render}}` with a block
 - [#13031](https://github.com/emberjs/ember.js/pull/13031) [BUGFIX] Fix mergedProperties at create time modifying proto
-- [#13036](https://github.com/emberjs/ember.js/pull/13036) [BUGFIX] Revert "Update Ember.compare to use operators"
 - [#13049](https://github.com/emberjs/ember.js/pull/13049) [BUGFIX] Fixes `{{#with proxy as |foo|}}`
-
-### 2.5.0-beta.1 (February 29, 2016)
-
 - [#12829](https://github.com/emberjs/ember.js/pull/12829) [BUGFIX] Support tagless components in fastboot
-- [#12575](https://github.com/emberjs/ember.js/pull/12575) Make acceptance helpers fire native evets instead of jQuery ones.
-- [#12888](https://github.com/emberjs/ember.js/pull/12888) Add assertion for {{#each foo in bar}} syntax
-- [#12938](https://github.com/emberjs/ember.js/pull/12938) Expose `Router#transitionTo` as a public method
+- [#12575](https://github.com/emberjs/ember.js/pull/12575) [FEATURE] Make acceptance helpers fire native evets instead of jQuery ones.
 - [#12929](https://github.com/emberjs/ember.js/pull/12929) [BUGFIX] Fix bug causing an initial capital to be interpreted as a global.
 - [#12928](https://github.com/emberjs/ember.js/pull/12928) [FEATURE ember-htmlbars-component-generation] Remove feature.
-- [#12998](https://github.com/emberjs/ember.js/pull/12998) Make "calling set on destroyed object" error more descriptive.
-- [#13007](https://github.com/emberjs/ember.js/pull/13007) [BUGFIX] Update Ember.compare to use operators
 - [#13024](https://github.com/emberjs/ember.js/pull/13024) [BUGFIX] Change internal async acceptance test helpers to be somewhat more efficient in determining router transition status.
 - [FEATURE] Add helper method named `Ember.assign` to roughly emulate `Object.assign`.
 
