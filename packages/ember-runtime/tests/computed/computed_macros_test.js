@@ -277,7 +277,7 @@ testBoth('computed.and does not perform short-circuit evaluation', function(get,
   {
     let numberCallsToOne = 0;
     let numberCallsToTwo = 0;
-    const obj = {};
+    let obj = {};
     defineProperty(obj, 'one', computed(function() {
       numberCallsToOne++;
       return false;
@@ -297,7 +297,7 @@ testBoth('computed.and does not perform short-circuit evaluation', function(get,
   {
     let numberCallsToOne = 0;
     let numberCallsToTwo = 0;
-    const obj = {};
+    let obj = {};
     defineProperty(obj, 'one', computed(function() {
       numberCallsToOne++;
       return false;
