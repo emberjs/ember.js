@@ -6,12 +6,12 @@ if (!isEnabled('ember-glimmer')) {
 
   QUnit.module('ember-template-compiler: deprecate-render-block');
 
-  QUnit.test('Using `render` with a block issues a deprecation', function() {
+  QUnit.test('Using `render` with a block throws an error', function() {
     expect(1);
 
-    let expectedMessage = `Usage of \`render\` in block form is deprecated ('baz/foo-bar' @ L1:C0) .`;
+    let expectedMessage = `Usage of \`render\` in block form is unsupported ('baz/foo-bar' @ L1:C0) .`;
 
-    expectDeprecation(function() {
+    throws(function() {
       compile('{{#render "foo-bar"}}{{/render}}', {
         moduleName: 'baz/foo-bar'
       });
