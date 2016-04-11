@@ -113,6 +113,22 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
+  ['@test it can render undefined dynamic paths']() {
+    this.renderPath('name', {});
+
+    this.assertIsEmpty();
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'name', 'foo-bar'));
+
+    this.assertContent('foo-bar');
+
+    this.runTask(() => set(this.context, 'name', undefined));
+
+    this.assertIsEmpty();
+  }
+
   ['@test it can render a deeply nested dynamic path']() {
     this.renderPath('a.b.c.d.e.f', {
       a: { b: { c: { d: { e: { f: 'hello' } } } } }
