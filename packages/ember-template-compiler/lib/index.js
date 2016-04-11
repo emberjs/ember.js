@@ -14,6 +14,7 @@ import TransformAngleBracketComponents from 'ember-template-compiler/plugins/tra
 import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
 import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
 import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
+import DeprecateRenderBlock from 'ember-template-compiler/plugins/deprecate-render-block';
 import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
 import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-helper';
@@ -32,6 +33,7 @@ registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
 registerPlugin('ast', TransformTopLevelComponents);
 registerPlugin('ast', DeprecateRenderModel);
+registerPlugin('ast', DeprecateRenderBlock);
 registerPlugin('ast', AssertNoEachIn);
 registerPlugin('ast', TransformInlineLinkTo);
 
