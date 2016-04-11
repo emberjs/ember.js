@@ -29,7 +29,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 
 QUnit.module('CP macros');
 
-testBoth('Ember.computed.empty', function (get, set) {
+testBoth('computed.empty', function (get, set) {
   var obj = EmberObject.extend({
     bestLannister: null,
     lannisters: null,
@@ -50,7 +50,7 @@ testBoth('Ember.computed.empty', function (get, set) {
   equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
 });
 
-testBoth('Ember.computed.notEmpty', function(get, set) {
+testBoth('computed.notEmpty', function(get, set) {
   var obj = EmberObject.extend({
     bestLannister: null,
     lannisters: null,
@@ -278,11 +278,11 @@ testBoth('computed.and does not perform short-circuit evaluation', function(get,
     let numberCallsToOne = 0;
     let numberCallsToTwo = 0;
     const obj = {};
-    defineProperty(obj, 'one', Ember.computed(function() {
+    defineProperty(obj, 'one', computed(function() {
       numberCallsToOne++;
       return false;
     }));
-    defineProperty(obj, 'two', Ember.computed(function() {
+    defineProperty(obj, 'two', computed(function() {
       numberCallsToTwo++;
       return true;
     }));
@@ -298,15 +298,15 @@ testBoth('computed.and does not perform short-circuit evaluation', function(get,
     let numberCallsToOne = 0;
     let numberCallsToTwo = 0;
     const obj = {};
-    defineProperty(obj, 'one', Ember.computed(function() {
+    defineProperty(obj, 'one', computed(function() {
       numberCallsToOne++;
       return false;
     }));
-    defineProperty(obj, 'two', Ember.computed(function() {
+    defineProperty(obj, 'two', computed(function() {
       numberCallsToTwo++;
       return true;
     }));
-    defineProperty(obj, 'manualOneAndTwo', Ember.computed('one', 'two', function() {
+    defineProperty(obj, 'manualOneAndTwo', computed('one', 'two', function() {
       return get(this, 'one') && get(this, 'two');
     }));
     equal(get(obj, 'manualOneAndTwo'), false, 'manual one and two');
