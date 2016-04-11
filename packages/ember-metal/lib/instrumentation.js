@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import isEnabled from 'ember-metal/features';
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -105,14 +106,26 @@ export function instrument(name, _payload, callback, binding) {
   }
 }
 
+var flaggedInstrument;
+if (isEnabled('ember-improved-instrumentation')) {
+  flaggedInstrument = instrument;
+} else {
+  flaggedInstrument = function(name, payload, callback) {
+    return callback();
+  };
+}
+export { flaggedInstrument };
+
 function withFinalizer(callback, finalizer, payload, binding) {
+  let result;
   try {
-    return callback.call(binding);
+    result = callback.call(binding);
   } catch(e) {
     payload.exception = e;
-    return payload;
+    result = payload;
   } finally {
-    return finalizer();
+    finalizer();
+    return result;
   }
 }
 
@@ -151,7 +164,9 @@ export function _instrumentStart(name, _payload) {
     var timestamp = time();
     for (i = 0, l = listeners.length; i < l; i++) {
       listener = listeners[i];
-      listener.after(name, timestamp, payload, beforeValues[i]);
+      if (typeof listener.after === 'function') {
+        listener.after(name, timestamp, payload, beforeValues[i]);
+      }
     }
 
     if (STRUCTURED_PROFILE) {

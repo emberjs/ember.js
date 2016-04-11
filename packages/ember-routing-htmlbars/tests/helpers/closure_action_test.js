@@ -1,8 +1,14 @@
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import EmberComponent from 'ember-views/components/component';
+import EmberView from 'ember-views/views/view';
 import { computed } from 'ember-metal/computed';
 import { INVOKE } from 'ember-routing-htmlbars/keywords/closure-action';
+import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
+import ComponentLookup from 'ember-views/component_lookup';
+import EventDispatcher from 'ember-views/system/event_dispatcher';
 
 import {
   runAppend,
@@ -11,24 +17,148 @@ import {
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-
-var innerComponent, outerComponent, originalViewKeyword;
-
 import isEnabled from 'ember-metal/features';
+
+var innerComponent, outerComponent, originalViewKeyword, owner, view, dispatcher;
+
+function buildResolver() {
+  let resolver = {
+    resolve() { },
+    expandLocalLookup(fullName, sourceFullName) {
+      let [sourceType, sourceName ] = sourceFullName.split(':');
+      let [type, name ] = fullName.split(':');
+
+      if (type !== 'template' && sourceType === 'template' && sourceName.slice(0, 11) === 'components/') {
+        sourceName = sourceName.slice(11);
+      }
+
+      if (type === 'template' && sourceType === 'template' && name.slice(0, 11) === 'components/') {
+        name = name.slice(11);
+      }
+
+
+      let result = `${type}:${sourceName}/${name}`;
+
+      return result;
+    }
+  };
+
+  return resolver;
+}
+
+function registerTemplate(moduleName, snippet) {
+  owner.register(`template:${moduleName}`, compile(snippet, { moduleName }));
+}
+
+function registerComponent(name, factory) {
+  owner.register(`component:${name}`, factory);
+}
+
+function appendViewFor(template, moduleName='', hash={}) {
+  let view = EmberView.extend({
+    template: compile(template, { moduleName }),
+    [OWNER]: owner
+  }).create(hash);
+
+  runAppend(view);
+
+  return view;
+}
+
 if (!isEnabled('ember-glimmer')) {
   // jscs:disable
 
+let subscriber;
 QUnit.module('ember-routing-htmlbars: action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
+    owner = buildOwner({
+      _registryOptions: {
+        resolver: buildResolver()
+      }
+    });
+    owner.registerOptionsForType('component', { singleton: false });
+    owner.registerOptionsForType('view', { singleton: false });
+    owner.registerOptionsForType('template', { instantiate: false });
+    owner.register('component-lookup:main', ComponentLookup);
+    dispatcher = EventDispatcher.create();
+    dispatcher.setup();
   },
 
   teardown() {
     runDestroy(innerComponent);
     runDestroy(outerComponent);
+    runDestroy(view);
+    runDestroy(owner);
     resetKeyword('view', originalViewKeyword);
+    if (subscriber) {
+      unsubscribe(subscriber);
+    }
+    owner = view = null;
+    runDestroy(dispatcher);
   }
 });
+
+if (isEnabled('ember-improved-instrumentation')) {
+  QUnit.test('action should fire interaction event', function(assert) {
+    assert.expect(2);
+
+    subscriber = subscribe('interaction.ember-action', {
+      before() {
+        assert.ok(true, 'instrumentation subscriber was called');
+      }
+    });
+
+    registerTemplate('components/inner-component', '<button id="instrument-button" {{action "fireAction"}}>What it do</button>');
+    registerComponent('inner-component', EmberComponent.extend({
+      actions: {
+        fireAction() {
+          this.attrs.submit();
+        }
+      }
+    }));
+
+    registerTemplate('components/outer-component', '{{inner-component submit=(action outerSubmit)}}');
+    registerComponent('outer-component', EmberComponent.extend({
+      innerComponent,
+      outerSubmit() {
+        assert.ok(true, 'action is called');
+      }
+    }));
+
+    view = appendViewFor(`{{outer-component}}`);
+
+    view.$('#instrument-button').trigger('click');
+  });
+
+  QUnit.test('instrumented action should return value', function(assert) {
+    assert.expect(1);
+
+    var returnedValue = 'Chris P is so krispy';
+
+    registerTemplate('components/inner-component', '<button id="instrument-button" {{action "fireAction"}}>What it do</button>');
+    registerComponent('inner-component', EmberComponent.extend({
+      actions: {
+        fireAction() {
+          var actualReturnedValue = this.attrs.submit();
+          assert.equal(actualReturnedValue, returnedValue, 'action can return to caller');
+        }
+      }
+    }));
+
+    registerTemplate('components/outer-component', '{{inner-component submit=(action outerSubmit)}}');
+    registerComponent('outer-component', EmberComponent.extend({
+      innerComponent,
+      outerSubmit() {
+        return returnedValue;
+      }
+    }));
+
+    view = appendViewFor(`{{outer-component}}`);
+
+    view.$('#instrument-button').trigger('click');
+  });
+}
 
 QUnit.test('action should be called', function(assert) {
   assert.expect(1);
