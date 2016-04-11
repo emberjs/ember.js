@@ -1462,11 +1462,11 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   model(params, transition) {
-    var match, name, sawParams, value;
+    var match, name, sawParams, value, sawQueryParams;
     var queryParams = get(this, '_qp.map');
 
     for (var prop in params) {
-      sawParams = true;
+      sawQueryParams = true;
       if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
         continue;
       }
@@ -1475,19 +1475,26 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         name = match[1];
         value = params[prop];
       }
+      sawParams = true;
     }
 
-    if (!name && sawParams) {
+    if (name) {
+      return this.findModel(name, value);
+    }
+
+
+    if (sawParams) {
       return copy(params);
-    } else if (!name) {
-      if (transition.resolveIndex < 1) { return; }
-
-      var parentModel = transition.state.handlerInfos[transition.resolveIndex - 1].context;
-
-      return parentModel;
+    }
+    var parentModel;
+    if (transition.resolveIndex > 0) {
+      parentModel = transition.state.handlerInfos[transition.resolveIndex - 1].context;
     }
 
-    return this.findModel(name, value);
+    if (sawQueryParams) {
+      return assign(copy(params || {}), parentModel);
+    }
+    return parentModel;
   },
 
   /**
