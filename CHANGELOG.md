@@ -28,6 +28,11 @@
 - [#13024](https://github.com/emberjs/ember.js/pull/13024) [BUGFIX] Change internal async acceptance test helpers to be somewhat more efficient in determining router transition status.
 - [FEATURE] Add helper method named `Ember.assign` to roughly emulate `Object.assign`.
 
+### 2.4.5 (April 11, 2016)
+
+- [#13239](https://github.com/emberjs/ember.js/pull/13239) [BUGFIX] Prevent warnings for unknown feature flags.
+- [#13294](https://github.com/emberjs/ember.js/pull/13294) [DEPRECATE] Deprecate usage of `{{render}}` with a block.
+
 ### 2.4.4 (April 3, 2016)
 
 - [#13177](https://github.com/emberjs/ember.js/pull/13177) [BUGFIX] Allow contextual component attributes are mutable (allowing for two way binding).
