@@ -1,5 +1,6 @@
 {
     "predef": [
+        "-Promise",
         "QUnit",
         "define",
         "console",

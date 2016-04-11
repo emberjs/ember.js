@@ -24,12 +24,12 @@ function runSet(object, key, value) {
   });
 }
 
-var view, container;
+var view, container, registry;
 
 QUnit.module("ember-routing-htmlbars: {{render}} helper", {
   setup() {
     var namespace = Namespace.create();
-    var registry = buildRegistry(namespace);
+    registry = buildRegistry(namespace);
     container = registry.container();
   },
 
@@ -222,6 +222,7 @@ QUnit.test("{{render}} helper should render with given controller", function() {
   var template = '{{render "home" controller="posts"}}';
   var controller = EmberController.extend({ container: container });
   var id = 0;
+  let model = Ember.A([]);
   container._registry.register('controller:posts', EmberArrayController.extend({
     init() {
       this._super.apply(this, arguments);
