@@ -272,6 +272,49 @@ testBoth('computed.and two properties', function(get, set) {
   equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
 });
 
+testBoth('computed.and does not perform short-circuit evaluation', function(get, set) {
+  // Ember.computed.and
+  {
+    let numberCallsToOne = 0;
+    let numberCallsToTwo = 0;
+    const obj = {};
+    defineProperty(obj, 'one', Ember.computed(function() {
+      numberCallsToOne++;
+      return false;
+    }));
+    defineProperty(obj, 'two', Ember.computed(function() {
+      numberCallsToTwo++;
+      return true;
+    }));
+    defineProperty(obj, 'oneAndTwo', and('one', 'two'));
+
+    equal(get(obj, 'oneAndTwo'), false, 'one and two');
+    equal(numberCallsToOne, 1, 'computes one');
+    equal(numberCallsToTwo, 1, 'computes two');
+  }
+
+  // a && b
+  {
+    let numberCallsToOne = 0;
+    let numberCallsToTwo = 0;
+    const obj = {};
+    defineProperty(obj, 'one', Ember.computed(function() {
+      numberCallsToOne++;
+      return false;
+    }));
+    defineProperty(obj, 'two', Ember.computed(function() {
+      numberCallsToTwo++;
+      return true;
+    }));
+    defineProperty(obj, 'manualOneAndTwo', Ember.computed('one', 'two', function() {
+      return get(this, 'one') && get(this, 'two');
+    }));
+    equal(get(obj, 'manualOneAndTwo'), false, 'manual one and two');
+    equal(numberCallsToOne, 1, 'computes one');
+    equal(numberCallsToTwo, 0, 'does not compute two');
+  }
+});
+
 testBoth('computed.and three properties', function(get, set) {
   var obj = { one: true, two: true, three: true };
   defineProperty(obj, 'oneTwoThree', and('one', 'two', 'three'));
