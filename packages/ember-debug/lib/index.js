@@ -184,7 +184,7 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featur
   if (featuresWereStripped) {
     warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
 
-    let keys = Object.keys(FEATURES);
+    let keys = Object.keys(FEATURES || {});
     for (let i = 0; i < keys.length; i++) {
       let key = keys[i];
       if (key === 'isEnabled' || !(key in knownFeatures)) {
