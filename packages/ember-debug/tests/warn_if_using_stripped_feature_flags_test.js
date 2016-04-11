@@ -79,3 +79,12 @@ QUnit.test('Enabling an unknown FEATURE flag in non-canary debug build does not 
 
   confirmWarns('FEATURE["fred"] is set as enabled, but FEATURE flags are only available in canary builds.');
 });
+
+QUnit.test('`ENV.FEATURES` being undefined does not cause an error', function() {
+  expect(0);
+
+  Ember.ENV.ENABLE_OPTIONAL_FEATURES = false;
+  features = undefined;
+
+  confirmWarns();
+});
