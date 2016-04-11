@@ -44,8 +44,6 @@ function babelConfigFor(environment) {
 
 var glimmerEngine = require('glimmer-engine/ember-cli-build')();
 var find = require('broccoli-stew').find;
-var mv = require('broccoli-stew').mv;
-var log = require('broccoli-stew').log;
 
 function addGlimmerPackage(vendoredPackages, name) {
   vendoredPackages[name] = find(glimmerEngine, 'named-amd/' + name + '/**/*.js');

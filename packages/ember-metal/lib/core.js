@@ -34,7 +34,7 @@ if ('undefined' === typeof Ember) {
 var global = mainContext || {}; // jshint ignore:line
 Ember.imports = Ember.imports || global;
 Ember.lookup  = Ember.lookup  || global;
-var emExports   = Ember.exports = Ember.exports || global;
+var emExports = Ember.exports = Ember.exports || global;
 
 // aliases needed to keep minifiers from removing the global context
 emExports.Em = emExports.Ember = Ember;

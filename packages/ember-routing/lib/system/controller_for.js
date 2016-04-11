@@ -4,7 +4,6 @@
 */
 
 /**
-
   Finds a controller instance.
 
   @for Ember

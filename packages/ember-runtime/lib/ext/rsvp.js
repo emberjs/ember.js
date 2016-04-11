@@ -48,8 +48,8 @@ export function onerrorDefault(reason) {
     error = reason;
   }
 
-  if (error && error.name === "UnrecognizedURLError") {
-    assert("The URL '" + error.message + "' did not match any routes in your application", false);
+  if (error && error.name === 'UnrecognizedURLError') {
+    assert('The URL \'' + error.message + '\' did not match any routes in your application', false);
     return;
   }
 
