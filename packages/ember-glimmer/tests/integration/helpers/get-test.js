@@ -309,7 +309,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('banana');
   }
 
-  ['@htmlbars should handle object values as nulls']() {
+  ['@test should handle object values as nulls']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
       colors: null
     });
@@ -329,7 +329,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   }
 
-  ['@htmlbars should handle object keys as nulls']() {
+  ['@test should handle object keys as nulls']() {
     this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
       colors: {
         apple: 'red',
@@ -353,7 +353,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   }
 
-  ['@htmlbars should handle object values and keys as nulls']() {
+  ['@test should handle object values and keys as nulls']() {
     this.render(`[{{get colors 'apple'}}] [{{if true (get colors key)}}]`, {
       colors: null,
       key: null
