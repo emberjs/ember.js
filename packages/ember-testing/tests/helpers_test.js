@@ -447,6 +447,38 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
   });
 });
 
+QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
+  expect(5);
+
+  var triggerEvent, wait, evt;
+
+  App.IndexView = EmberView.extend({
+    classNames: 'index-view',
+
+    didInsertElement() {
+      this.element.addEventListener('mouseenter', e => evt = e);
+    }
+  });
+
+
+  Ember.TEMPLATES.index = compile('some text');
+
+  run(App, App.advanceReadiness);
+
+  triggerEvent = App.testHelpers.triggerEvent;
+  wait  = App.testHelpers.wait;
+
+  return wait().then(function() {
+    return triggerEvent('.index-view', 'mouseenter');
+  }).then(function() {
+    ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
+    ok(typeof evt.screenX === 'number' && evt.screenX > 0, 'screenX is correct');
+    ok(typeof evt.screenY === 'number' && evt.screenY > 0, 'screenY is correct');
+    ok(typeof evt.clientX === 'number' && evt.clientX > 0, 'clientX is correct');
+    ok(typeof evt.clientY === 'number' && evt.clientY > 0, 'clientY is correct');
+  });
+});
+
 }
 
 QUnit.test('`wait` waits for outstanding timers', function() {
