@@ -96,7 +96,7 @@ class GetHelperReference extends CachedReference {
         if (pathType === 'string') {
           innerReference = this.innerReference = referenceFromParts(this.sourceReference, path.split('.'));
         } else if (pathType === 'number') {
-          innerReference = this.innerReference = this.sourceReference.get(path);
+          innerReference = this.innerReference = this.sourceReference.get('' + path);
         }
 
         innerTag.update(innerReference.tag);
