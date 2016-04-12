@@ -12,14 +12,8 @@ import {
   getViewBoundingClientRect
 } from 'ember-views/system/utils';
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
-import {
-  cloneStates,
-  states
-} from 'ember-views/views/states';
 
 import { Renderer } from 'ember-metal-views';
-import { DeprecatedCoreView } from 'ember-views/views/core_view';
-import { DeprecatedView } from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -49,14 +43,6 @@ var ViewUtils = Ember.ViewUtils = {};
 ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
-
-if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember.CoreView = DeprecatedCoreView;
-  Ember.View = DeprecatedView;
-  Ember.View.states = states;
-  Ember.View.cloneStates = cloneStates;
-  Ember.View._Renderer = Renderer;
-}
 
 Ember._Renderer = Renderer;
 

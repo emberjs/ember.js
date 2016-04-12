@@ -1,7 +1,7 @@
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
-import EmberView, { DeprecatedView } from 'ember-views/views/view';
+import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
@@ -164,18 +164,3 @@ QUnit.test('propagates dependent-key invalidated bindings upstream', function() 
 });
 
 }
-
-QUnit.module('DeprecatedView');
-
-QUnit.test('calling reopen on DeprecatedView delegates to View', function() {
-  expect(2);
-  var originalReopen = EmberView.reopen;
-  var obj = {};
-
-  EmberView.reopen = function(arg) { ok(arg === obj); };
-
-  expectNoDeprecation();
-  DeprecatedView.reopen(obj);
-
-  EmberView.reopen = originalReopen;
-});
