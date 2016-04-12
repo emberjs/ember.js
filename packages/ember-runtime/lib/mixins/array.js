@@ -27,7 +27,8 @@ import {
   sendEvent,
   hasListeners
 } from 'ember-metal/events';
-import { tagFor } from 'ember-metal/tags';
+import { meta as metaFor } from 'ember-metal/meta';
+import { markObjectAsDirty } from 'ember-metal/tags';
 import EachProxy from 'ember-runtime/system/each_proxy';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
@@ -485,7 +486,7 @@ export default Mixin.create(Enumerable, {
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
     var adding, lim;
 
-    tagFor(this).dirty();
+    markObjectAsDirty(metaFor(this));
 
     // if no args are passed assume everything changes
     if (startIdx === undefined) {
