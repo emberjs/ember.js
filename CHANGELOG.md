@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### 2.6.0-beta.1 (April 11, 2016)
+
+- [#13144](https://github.com/emberjs/ember.js/pull/13144) / [#13195](https://github.com/emberjs/ember.js/pull/13195) / [#13193](https://github.com/emberjs/ember.js/pull/13193) [CLEANUP] Remove support for `ember-legacy-views` addon.
+- [#13192](https://github.com/emberjs/ember.js/pull/13192) [CLEANUP] Remove support for `ember-legacy-controllers` addon.
+- [#13295](https://github.com/emberjs/ember.js/pull/13295) [CLEANUP] Disable `render` helper in block form.
+- [#13204](https://github.com/emberjs/ember.js/pull/13204) [DEPRECATE] Deprecate Ember.Handlebars.SafeString in favor of Ember.String.htmlSafe
+- [#13207](https://github.com/emberjs/ember.js/pull/13207) [DEPRECATE] Depreacte `didInitAttrs` in components
+- [#13268](https://github.com/emberjs/ember.js/pull/13268) [DEPRECATE] Deprecate usage of `{{render}}` helper with a model param
+- [#13285](https://github.com/emberjs/ember.js/pull/13285) [BUGFIX] Make `Enumerable#firstObject` read only.
+- [#13289](https://github.com/emberjs/ember.js/pull/13289) [BUGFIX] Make `Enumerable#lastObject` read only.
+
 ### 2.5.0 (April 11, 2016)
 
 - [#13239](https://github.com/emberjs/ember.js/pull/13239) [BUGFIX] Prevent warnings for unknown feature flags
