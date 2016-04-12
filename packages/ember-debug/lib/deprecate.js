@@ -1,8 +1,8 @@
 /*global __fail__*/
 
-import Ember from 'ember-metal/core';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
+import { ENV } from 'ember-environment';
 
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
 
@@ -43,7 +43,7 @@ if (new Error().stack) {
 }
 
 registerHandler(function logDeprecationStackTrace(message, options, next) {
-  if (Ember.LOG_STACKTRACE_ON_DEPRECATION) {
+  if (ENV.LOG_STACKTRACE_ON_DEPRECATION) {
     let stackStr = '';
     let error = captureErrorForStack();
     let stack;
@@ -73,7 +73,7 @@ registerHandler(function logDeprecationStackTrace(message, options, next) {
 });
 
 registerHandler(function raiseOnDeprecation(message, options, next) {
-  if (Ember.ENV.RAISE_ON_DEPRECATION) {
+  if (ENV.RAISE_ON_DEPRECATION) {
     let updatedMessage = formatMessage(message);
 
     throw new EmberError(updatedMessage);

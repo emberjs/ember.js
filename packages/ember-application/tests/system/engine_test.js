@@ -1,18 +1,22 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import Engine from 'ember-application/system/engine';
 import EmberObject from 'ember-runtime/system/object';
 
 let engine;
+let originalLookup = context.lookup;
+let lookup;
 
 QUnit.module('Ember.Engine', {
   setup() {
+    lookup = context.lookup = {};
     run(function() {
       engine = Engine.create();
     });
   },
 
   teardown() {
+    context.lookup = originalLookup;
     if (engine) {
       run(engine, 'destroy');
     }
@@ -20,8 +24,6 @@ QUnit.module('Ember.Engine', {
 });
 
 QUnit.test('acts like a namespace', function() {
-  let lookup = Ember.lookup = {};
-
   run(function() {
     engine = lookup.TestEngine = Engine.create();
   });

@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
+import { ENV } from 'ember-environment';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
@@ -16,7 +17,7 @@ function runSet(object, key, value) {
   });
 }
 
-const ORIGINAL_LEGACY_CONTROLLER_FLAG = Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
+const ORIGINAL_LEGACY_CONTROLLER_FLAG = ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
 var view, appInstance;
 
 import isEnabled from 'ember-metal/features';
@@ -29,7 +30,7 @@ QUnit.module('ember-routing-htmlbars: {{render}} helper', {
   },
 
   teardown() {
-    Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = ORIGINAL_LEGACY_CONTROLLER_FLAG;
+    ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = ORIGINAL_LEGACY_CONTROLLER_FLAG;
     runDestroy(appInstance);
     runDestroy(view);
 
@@ -649,7 +650,7 @@ QUnit.test('{{render}} helper should not require view to provide its own templat
 QUnit.test('{{render}} helper should set router as target when parentController is not found', function() {
   expect(3);
 
-  Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
+  ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
 
   let template = `{{render 'post' post1}}`;
 

@@ -1,9 +1,13 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import { set, trySet } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 
+let originalLookup = context.lookup;
+let lookup;
+
 var obj;
 function commonSetup() {
+  context.lookup = lookup = {};
   obj = {
     foo: {
       bar: {
@@ -14,6 +18,7 @@ function commonSetup() {
 }
 
 function commonTeardown() {
+  context.lookup = originalLookup;
   obj = null;
 }
 
@@ -23,10 +28,10 @@ QUnit.module('set with path', {
 });
 
 QUnit.test('[Foo, bar] -> Foo.bar', function() {
-  Ember.lookup.Foo = { toString() { return 'Foo'; } }; // Behave like an Ember.Namespace
+  lookup.Foo = { toString() { return 'Foo'; } }; // Behave like an Ember.Namespace
 
-  set(Ember.lookup.Foo, 'bar', 'baz');
-  equal(get(Ember.lookup.Foo, 'bar'), 'baz');
+  set(lookup.Foo, 'bar', 'baz');
+  equal(get(lookup.Foo, 'bar'), 'baz');
 });
 
 // ..........................................................

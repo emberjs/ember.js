@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import {
   warn,
   deprecate,
@@ -8,7 +9,7 @@ import {
 import isEnabled, { FEATURES, KNOWN_FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-metal/logger';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 import _deprecate, {
   registerHandler as registerDeprecationHandler
 } from 'ember-debug/deprecate';
@@ -166,7 +167,7 @@ setDebugFunction('warn', _warn);
 */
 export function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featuresWereStripped) {
   if (featuresWereStripped) {
-    warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
+    warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
 
     let keys = Object.keys(FEATURES || {});
     for (let i = 0; i < keys.length; i++) {
@@ -190,7 +191,7 @@ if (!Ember.testing) {
   }
 
   delete FEATURES['features-stripped-test'];
-  _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, KNOWN_FEATURES, featuresWereStripped);
+  _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, KNOWN_FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
   var isFirefox = environment.isFirefox;

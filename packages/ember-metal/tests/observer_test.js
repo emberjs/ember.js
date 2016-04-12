@@ -1,4 +1,4 @@
-import Ember, { K } from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   addObserver,
@@ -30,6 +30,8 @@ import {
   endPropertyChanges,
   changeProperties
 } from 'ember-metal/property_events';
+
+function K() {}
 
 // ..........................................................
 // ADD OBSERVER
@@ -87,7 +89,7 @@ testBoth('observer should continue to fire after dependent properties are access
   equal(observerCount, 10, 'should continue to fire indefinitely');
 });
 
-if (Ember.EXTEND_PROTOTYPES) {
+if (ENV.EXTEND_PROTOTYPES.Function) {
   testBoth('observer added declaratively via brace expansion should fire when property changes', function (get, set) {
     var obj = { };
     var count = 0;
@@ -996,7 +998,7 @@ testBoth('immediate observers should fire synchronously', function(get, set) {
 });
 
 
-if (Ember.EXTEND_PROTOTYPES) {
+if (ENV.EXTEND_PROTOTYPES.Function) {
   testBoth('immediate observers added declaratively via brace expansion fire synchronously', function (get, set) {
     var obj = {};
     var observerCalled = 0;

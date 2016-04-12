@@ -1,12 +1,13 @@
-import Ember from 'ember-metal/core'; // Ember.imports
 import EmberError from 'ember-metal/error';
+
+import { context } from 'ember-environment';
 
 function K() { return this; }
 
 function consoleMethod(name) {
   var consoleObj, logToConsole;
-  if (Ember.imports.console) {
-    consoleObj = Ember.imports.console;
+  if (context.imports.console) {
+    consoleObj = context.imports.console;
   } else if (typeof console !== 'undefined') {
     consoleObj = console;
   }

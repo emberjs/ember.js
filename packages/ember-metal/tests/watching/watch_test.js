@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
+import { meta } from 'ember-metal/meta';
 import { set } from 'ember-metal/property_set';
 import get from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
@@ -21,12 +22,12 @@ QUnit.module('watch', {
     willKeys = [];
     didKeys = [];
 
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    originalLookup = context.lookup;
+    context.lookup = lookup = {};
   },
 
   teardown() {
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 
@@ -178,8 +179,8 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
 
   watch(objA, 'b.foo');
 
-  var meta_objB = Ember.meta(objB);
-  var chainNode = Ember.meta(objA).readableChains()._chains.b._chains.foo;
+  var meta_objB = meta(objB);
+  var chainNode = meta(objA).readableChains()._chains.b._chains.foo;
 
   equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_objB.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');

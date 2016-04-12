@@ -2,9 +2,11 @@
 @module ember
 @submodule ember-application
 */
-import Ember from 'ember-metal'; // Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import Ember from 'ember-metal'; // Ember.libraries, Ember.BOOTED, Ember.testing
+import { ENV } from 'ember-environment';
 import { assert, debug, warn, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
+import Namespace from 'ember-runtime/system/namespace';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
@@ -32,7 +34,7 @@ import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapt
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import { privatize as P } from 'container/registry';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine, { GLIMMER } from './engine';
 import require from 'require';
@@ -594,7 +596,7 @@ const Application = Engine.extend({
   _bootSync() {
     if (this._booted) { return; }
 
-    if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT && !warnedAboutLegacyViewAddon) {
+    if (ENV._ENABLE_LEGACY_VIEW_SUPPORT && !warnedAboutLegacyViewAddon) {
       deprecate(
         'Support for the `ember-legacy-views` addon will end soon, please remove it from your application.',
         false,
@@ -604,7 +606,7 @@ const Application = Engine.extend({
       warnedAboutLegacyViewAddon = true;
     }
 
-    if (Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT && !warnedAboutLegacyControllerAddon) {
+    if (ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT && !warnedAboutLegacyControllerAddon) {
       warn(
         'Support for the `ember-legacy-controllers` has been removed, please remove it from your application.',
         false,
@@ -735,7 +737,7 @@ const Application = Engine.extend({
       // TODO: Is this still needed for _globalsMode = false?
       if (!Ember.testing) {
         // Eagerly name all classes that are already loaded
-        Ember.Namespace.processAll();
+        Namespace.processAll();
         Ember.BOOTED = true;
       }
 
@@ -1174,9 +1176,9 @@ function registerLibraries() {
 }
 
 function logLibraryVersions() {
-  if (Ember.LOG_VERSION) {
+  if (ENV.LOG_VERSION) {
     // we only need to see this once per Application#init
-    Ember.LOG_VERSION = false;
+    ENV.LOG_VERSION = false;
     var libs = Ember.libraries._registry;
 
     var nameLengths = libs.map(function(item) {

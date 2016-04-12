@@ -1,23 +1,23 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 
-var originalLookup = Ember.lookup;
+var originalLookup = context.lookup;
 var lookup, view;
 
 QUnit.module('EmberView.create', {
   setup() {
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
   },
   teardown() {
     run(function() {
       view.destroy();
     });
 
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 

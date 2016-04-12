@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   Binding,
@@ -39,12 +39,12 @@ var originalLookup, lookup, GlobalB;
 
 QUnit.module('Ember.Binding', {
   setup() {
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    originalLookup = context.lookup;
+    context.lookup = lookup = {};
   },
   teardown() {
     lookup = null;
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 

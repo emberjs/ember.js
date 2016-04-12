@@ -1,5 +1,5 @@
 import { assert, deprecate } from 'ember-metal/debug';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import View from 'ember-views/views/view';

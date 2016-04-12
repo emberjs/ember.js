@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
@@ -1179,8 +1179,8 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
     dispatcher = owner.lookup('event_dispatcher:main');
     dispatcher.setup();
 
-    this.originalLegacyViewSupport = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+    this.originalLegacyViewSupport = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
   },
 
   teardown() {
@@ -1188,7 +1188,7 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
     runDestroy(dispatcher);
     runDestroy(owner);
 
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = this.originalLegacyViewSupport;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = this.originalLegacyViewSupport;
   }
 });
 

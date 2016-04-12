@@ -241,7 +241,7 @@ export default Mixin.create({
 
     **Note:** Ember-Data instantiates its models in a unique manner, and consequently
     injections onto models (or all models) will not work as expected. Injections
-    on models can be enabled by setting `Ember.MODEL_FACTORY_INJECTIONS`
+    on models can be enabled by setting `EmberENV.MODEL_FACTORY_INJECTIONS`
     to `true`.
 
     @public

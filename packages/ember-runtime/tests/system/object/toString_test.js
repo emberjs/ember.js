@@ -1,17 +1,17 @@
-import Ember from 'ember-metal/core';
+import {context} from 'ember-environment';
 import {guidFor, GUID_KEY} from 'ember-metal/utils';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 
-var originalLookup, lookup;
+let originalLookup = context.lookup;
+let lookup;
 
 QUnit.module('system/object/toString', {
   setup() {
-    originalLookup = Ember.lookup;
-    lookup = Ember.lookup = {};
+    context.lookup = lookup = {};
   },
   teardown() {
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 
@@ -54,13 +54,13 @@ QUnit.test('toString on a class returns a useful value when nested in a namespac
   equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
 });
 
-QUnit.test('toString on a namespace finds the namespace in Ember.lookup', function() {
+QUnit.test('toString on a namespace finds the namespace in lookup', function() {
   var Foo = lookup.Foo = Namespace.create();
 
   equal(Foo.toString(), 'Foo');
 });
 
-QUnit.test('toString on a namespace finds the namespace in Ember.lookup', function() {
+QUnit.test('toString on a namespace finds the namespace in lookup', function() {
   var Foo = lookup.Foo = Namespace.create();
   var obj;
 

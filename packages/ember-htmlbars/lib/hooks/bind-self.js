@@ -3,12 +3,12 @@
 @submodule ember-htmlbars
 */
 
-import _Ember from 'ember-metal';
+import { ENV } from 'ember-environment';
 import ProxyStream from 'ember-metal/streams/proxy-stream';
 
 export default function bindSelf(env, scope, self) {
   if (self && self.isView) {
-    if (!!_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+    if (!!ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
       scope.bindLocal('view', newStream(self, 'view'));
     }
 

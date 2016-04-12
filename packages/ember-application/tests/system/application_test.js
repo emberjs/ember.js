@@ -1,7 +1,7 @@
 /*globals EmberDev */
 
 import Ember from 'ember-metal/core';
-import assign from 'ember-metal/assign';
+import { ENV, context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
@@ -22,7 +22,7 @@ var app, application, originalLookup, originalDebug, originalWarn;
 
 QUnit.module('Ember.Application', {
   setup() {
-    originalLookup = Ember.lookup;
+    originalLookup = context.lookup;
     originalDebug = getDebugFunction('debug');
     originalWarn = getDebugFunction('warn');
 
@@ -37,7 +37,7 @@ QUnit.module('Ember.Application', {
     setDebugFunction('debug', originalDebug);
     setDebugFunction('warn', originalWarn);
 
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
 
     if (application) {
       run(application, 'destroy');
@@ -91,7 +91,7 @@ QUnit.test('you cannot make two default applications without a rootElement error
 });
 
 QUnit.test('acts like a namespace', function() {
-  var lookup = Ember.lookup = {};
+  var lookup = context.lookup = {};
 
   run(function() {
     app = lookup.TestApp = Application.create({ rootElement: '#two', router: false });
@@ -116,12 +116,15 @@ QUnit.test('includes deprecated access to `application.registry`', function() {
   }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
 });
 
+const originalLogVersion = ENV.LOG_VERSION;
+
 QUnit.module('Ember.Application initialization', {
   teardown() {
     if (app) {
       run(app, 'destroy');
     }
     Ember.TEMPLATES = {};
+    ENV.LOG_VERSION = originalLogVersion;
   }
 });
 
@@ -266,7 +269,7 @@ QUnit.test('enable log of libraries with an ENV var', function() {
 
   var messages = [];
 
-  Ember.LOG_VERSION = true;
+  ENV.LOG_VERSION = true;
 
   setDebugFunction('debug', function(message) {
     messages.push(message);
@@ -285,13 +288,12 @@ QUnit.test('enable log of libraries with an ENV var', function() {
   equal(messages[3], 'my-lib : ' + '2.0.0a');
 
   Ember.libraries.deRegister('my-lib');
-  Ember.LOG_VERSION = false;
 });
 
 QUnit.test('disable log version of libraries with an ENV var', function() {
   var logged = false;
 
-  Ember.LOG_VERSION = false;
+  ENV.LOG_VERSION = false;
 
   setDebugFunction('debug', function(message) {
     logged = true;
@@ -354,16 +356,13 @@ QUnit.test('does not leak itself in onLoad._loaded', function() {
   equal(_loaded.application, undefined);
 });
 
-let originalEmberENV;
+const originalLegacyViewSupport = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+const originalLegacyControllerSupport = ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
 
 QUnit.module('Ember.Application - legacy addon deprecation warnings', {
   setup() {
-    originalEmberENV = Ember.ENV;
-
-    Ember.ENV = assign({}, originalEmberENV, {
-      _ENABLE_LEGACY_VIEW_SUPPORT: false,
-      _ENABLE_LEGACY_CONTROLLER_SUPPORT: false
-    });
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+    ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
 
     originalDebug = getDebugFunction('debug');
     originalWarn = getDebugFunction('warn');
@@ -372,7 +371,8 @@ QUnit.module('Ember.Application - legacy addon deprecation warnings', {
   },
 
   teardown() {
-    Ember.ENV = originalEmberENV;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = originalLegacyViewSupport;
+    ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = originalLegacyControllerSupport;
 
     setDebugFunction('debug', originalDebug);
     setDebugFunction('warn', originalWarn);
@@ -386,13 +386,13 @@ QUnit.module('Ember.Application - legacy addon deprecation warnings', {
 QUnit.test('it does not warn about the ember-legacy-views addon on first boot when not installed', function() {
   expectNoDeprecation();
 
-  Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+  ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
 
   app = run(Application, 'create');
 });
 
 QUnit.test('it warns about the ember-legacy-views addon on first boot when installed', function() {
-  Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
+  ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
 
   expectDeprecation(() => {
     app = run(Application, 'create');
@@ -409,7 +409,7 @@ QUnit.test('it warns about the ember-legacy-views addon on first boot when insta
 QUnit.test('it does not warn about the ember-legacy-controllers addon on first boot when not installed', function() {
   expectNoDeprecation();
 
-  Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
+  ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
 
   app = run(Application, 'create');
 });
@@ -420,7 +420,7 @@ QUnit.test('it warns about the ember-legacy-controllers addon on first boot when
     return;
   }
 
-  Ember.ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = true;
+  ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = true;
 
   let warning;
   setDebugFunction('warn', function(message, test) {

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // lookup, etc
+import { ENV, context } from 'ember-environment'; // lookup, etc
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
@@ -9,14 +9,14 @@ var originalLookup, App, originalModelInjections;
 
 QUnit.module('Ember.Application Dependency Injection – toString', {
   setup() {
-    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
-    Ember.MODEL_FACTORY_INJECTIONS = true;
+    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
+    ENV.MODEL_FACTORY_INJECTIONS = true;
 
-    originalLookup = Ember.lookup;
+    originalLookup = context.lookup;
 
     run(function() {
       App = Application.create();
-      Ember.lookup = {
+      context.lookup = {
         App: App
       };
     });
@@ -25,9 +25,9 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
   },
 
   teardown() {
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
     run(App, 'destroy');
-    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
+    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 

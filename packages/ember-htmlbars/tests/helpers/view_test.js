@@ -1,5 +1,5 @@
 /*globals EmberDev */
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-views/components/component';
@@ -55,8 +55,8 @@ QUnit.module('ember-htmlbars: {{#view}} helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    originalLookup = context.lookup;
+    context.lookup = lookup = {};
 
     owner = buildOwner();
     owner.registerOptionsForType('template', { instantiate: false });
@@ -69,7 +69,7 @@ QUnit.module('ember-htmlbars: {{#view}} helper', {
     runDestroy(view);
     owner = view = null;
 
-    Ember.lookup = lookup = originalLookup;
+    context.lookup = lookup = originalLookup;
 
     resetKeyword('view', originalViewKeyword);
   }

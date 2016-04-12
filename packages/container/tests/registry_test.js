@@ -1,18 +1,8 @@
-import Ember from 'ember-metal/core';
 import { Registry } from 'container';
 import factory from 'container/tests/test-helpers/factory';
 import isEnabled from 'ember-metal/features';
 
-var originalModelInjections;
-
-QUnit.module('Registry', {
-  setup() {
-    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
-  },
-  teardown() {
-    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
-  }
-});
+QUnit.module('Registry');
 
 QUnit.test('A registered factory is returned from resolve', function() {
   var registry = new Registry();

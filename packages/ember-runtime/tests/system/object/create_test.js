@@ -1,24 +1,10 @@
-import Ember from 'ember-metal/core';
 import isEnabled from 'ember-metal/features';
 import { meta } from 'ember-metal/meta';
 import { computed } from 'ember-metal/computed';
 import { Mixin, observer } from 'ember-metal/mixin';
 import EmberObject from 'ember-runtime/system/object';
 
-var moduleOptions, originalLookup;
-
-moduleOptions = {
-  setup() {
-    originalLookup = Ember.lookup;
-    Ember.lookup = {};
-  },
-
-  teardown() {
-    Ember.lookup = originalLookup;
-  }
-};
-
-QUnit.module('EmberObject.create', moduleOptions);
+QUnit.module('EmberObject.create', {});
 
 QUnit.test('simple properties are set', function() {
   var o = EmberObject.create({ ohai: 'there' });

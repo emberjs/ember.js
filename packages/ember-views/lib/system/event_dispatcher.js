@@ -14,7 +14,7 @@ import ActionManager from 'ember-views/system/action_manager';
 import View from 'ember-views/views/view';
 import assign from 'ember-metal/assign';
 import { getOwner } from 'container/owner';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 
 let ROOT_ELEMENT_CLASS = 'ember-application';
 let ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;

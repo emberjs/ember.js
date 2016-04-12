@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import {context} from 'ember-environment';
 import {get} from 'ember-metal/property_get';
 import {set} from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
@@ -21,14 +21,14 @@ import EmberObject from 'ember-runtime/system/object';
 // EmberObject bindings Tests
 // ========================================================================
 
-var testObject, fromObject, extraObject, TestObject;
-var TestNamespace, originalLookup, lookup;
+let originalLookup = context.lookup;
+let testObject, fromObject, extraObject, TestObject;
+let TestNamespace, lookup;
 
 var bindModuleOpts = {
 
   setup() {
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
 
     testObject = EmberObject.create({
       foo: 'bar',
@@ -53,7 +53,7 @@ var bindModuleOpts = {
 
   teardown() {
     testObject = fromObject = extraObject = null;
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 
 };
@@ -87,8 +87,7 @@ QUnit.test('bind(.bar) should bind to relative path', function() {
 var fooBindingModuleOpts = {
 
   setup() {
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
 
     TestObject = EmberObject.extend({
       foo: 'bar',
@@ -112,7 +111,7 @@ var fooBindingModuleOpts = {
   },
 
   teardown() {
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
     TestObject = fromObject = extraObject = null;
     //  delete TestNamespace;
   }

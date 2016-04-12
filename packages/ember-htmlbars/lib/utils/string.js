@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import EmberStringUtils from 'ember-runtime/system/string';
 import { SafeString, escapeExpression } from 'htmlbars-util';
 
@@ -32,7 +32,7 @@ function htmlSafe(str) {
 }
 
 EmberStringUtils.htmlSafe = htmlSafe;
-if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
+if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {
     return htmlSafe(this);
   };

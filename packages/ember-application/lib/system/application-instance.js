@@ -6,17 +6,14 @@
 import { deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import symbol from 'ember-metal/symbol';
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import assign from 'ember-metal/assign';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import jQuery from 'ember-views/system/jquery';
 import EngineInstance from './engine-instance';
-
-export const INTERNAL_BOOT_OPTIONS = symbol('INTERNAL_BOOT_OPTIONS');
 
 let BootOptions;
 

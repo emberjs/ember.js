@@ -4,7 +4,7 @@ import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import { SafeString } from 'ember-htmlbars/utils/string';
 import { runDestroy } from 'ember-runtime/tests/utils';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 
 var view;
 

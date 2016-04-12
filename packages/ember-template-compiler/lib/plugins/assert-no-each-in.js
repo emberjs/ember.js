@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { assert } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
@@ -8,7 +8,7 @@ function AssertNoEachIn(options = {}) {
 }
 
 AssertNoEachIn.prototype.transform = function AssertNoEachIn_transform(ast) {
-  if (!!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  if (!!ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
     return ast;
   }
   let walker = new this.syntax.Walker();
