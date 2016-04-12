@@ -19,7 +19,7 @@ var keyboardEventTypes, mouseEventTypes, buildKeyboardEvent, buildMouseEvent, bu
 if (isEnabled('ember-test-helpers-fire-native-events')) {
   let defaultEventOptions = { canBubble: true, cancelable: true };
   keyboardEventTypes = ['keydown', 'keypress', 'keyup'];
-  mouseEventTypes = ['click', 'mousedown', 'mouseup', 'dblclick', 'mousenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover'];
+  mouseEventTypes = ['click', 'mousedown', 'mouseup', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover'];
 
 
   buildKeyboardEvent = function buildKeyboardEvent(type, options = {}) {
