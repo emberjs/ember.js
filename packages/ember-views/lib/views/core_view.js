@@ -1,4 +1,4 @@
-import { assert, deprecate } from 'ember-metal/debug';
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 
 import EmberObject from 'ember-runtime/system/object';
@@ -126,16 +126,6 @@ deprecateUnderscoreActions(CoreView);
 
 CoreView.reopenClass({
   isViewFactory: true
-});
-
-export var DeprecatedCoreView = CoreView.extend({
-  init() {
-    deprecate(
-      'Ember.CoreView is deprecated. Please use Ember.View.',
-      false, { id: 'ember-views.core-view', until: '2.4.0' }
-    );
-    this._super(...arguments);
-  }
 });
 
 var _domHelper;

@@ -1,8 +1,5 @@
 // jQuery, Ember.lookup,
 // Ember.ENV
-import Ember from 'ember-metal/core';
-import { deprecate } from 'ember-metal/debug';
-
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
 import CoreView from 'ember-views/views/core_view';
@@ -733,31 +730,6 @@ View.reopenClass({
   views: {}
 });
 
-function viewDeprecationMessage() {
-  deprecate(
-    `Ember.View is deprecated. Consult the Deprecations Guide for a migration strategy.`,
-    !!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
-    {
-      url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view',
-      id: 'ember-views.view-deprecated',
-      until: '2.4.0'
-    }
-  );
-}
-
-var DeprecatedView = View.extend({
-  init() {
-    viewDeprecationMessage();
-    this._super(...arguments);
-  }
-});
-
-DeprecatedView.reopen = function() {
-  viewDeprecationMessage();
-  View.reopen(...arguments);
-  return this;
-};
-
 export default View;
 
-export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport, DeprecatedView };
+export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
