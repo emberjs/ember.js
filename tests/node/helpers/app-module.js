@@ -74,13 +74,7 @@ if (canRunTests) {
 
   /*jshint -W079 */
   global.EmberENV = {
-    FEATURES: features,
-    // Views are disabled but can be re-enabled via an addon.
-    // This flag simulates the addon so we can verify those
-    // views remain compatible with FastBoot. This can
-    // be removed in Ember 2.4 when view support is dropped
-    // entirely.
-    _ENABLE_LEGACY_VIEW_SUPPORT: true
+    FEATURES: features
   };
 }
 
@@ -103,7 +97,6 @@ module.exports = function(moduleName) {
       this.controller = registerController;
       this.route = registerRoute;
       this.service = registerService;
-      this.view = registerView;
       this.routes = registerRoutes;
       this.registry = {};
       this.renderToHTML = renderToHTML;
@@ -214,11 +207,6 @@ function registerRoute(name, routeProps) {
 function registerService(name, serviceProps) {
   var service = this.Ember.Object.extend(serviceProps);
   this.register('service:'+name, service);
-}
-
-function registerView(name, viewProps) {
-  var view = this.Ember.View.extend(viewProps);
-  this.register('view:'+name, view);
 }
 
 function registerRoutes(cb) {

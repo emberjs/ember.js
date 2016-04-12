@@ -88,7 +88,7 @@ if (appModule.canRunTests) {
   });
 
   QUnit.test("lifecycle hooks disabled", function(assert) {
-    assert.expect(2);
+    assert.expect(1);
 
     this.template('application', "{{my-component}}{{outlet}}");
 
@@ -101,24 +101,6 @@ if (appModule.canRunTests) {
       },
       willInsertElement: function() {
         assert.ok(false, "should not trigger willInsertElement hook");
-      },
-      didInsertElement: function() {
-        assert.ok(false, "should not trigger didInsertElement hook");
-      }
-    });
-
-    this.view('index', {
-      _willRender: function() {
-        assert.ok(true, "should trigger view _willRender hook");
-      },
-      didRender: function() {
-        assert.ok(false, "should not trigger didRender hook");
-      },
-      willInsertElement: function() {
-        assert.ok(false, "should not trigger willInsertElement hook");
-      },
-      didCreateElement: function() {
-        assert.ok(false, "should not trigger didCreateElement hook");
       },
       didInsertElement: function() {
         assert.ok(false, "should not trigger didInsertElement hook");
