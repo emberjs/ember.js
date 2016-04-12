@@ -30,8 +30,6 @@ import TextSupport from 'ember-views/mixins/text_support';
 import TextField from 'ember-views/views/text_field';
 import TextArea from 'ember-views/views/text_area';
 
-import _MetamorphView, { _Metamorph } from 'ember-views/compat/metamorph_view';
-
 // END IMPORTS
 
 /**
@@ -70,12 +68,6 @@ Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
 Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
-
-// Deprecated:
-if (Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  Ember._Metamorph = _Metamorph;
-  Ember._MetamorphView = _MetamorphView;
-}
 
 // END EXPORTS
 
