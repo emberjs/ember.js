@@ -331,6 +331,14 @@ export class RenderingTest extends TestCase {
     }
   }
 
+  registerPartial(name, template) {
+    let { owner } = this;
+
+    if (typeof template === 'string') {
+      owner.register(`template:${name}`, compile(template));
+    }
+  }
+
   registerComponent(name, { ComponentClass = null, template = null }) {
     let { owner } = this;
 
