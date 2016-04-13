@@ -119,7 +119,7 @@ export class GetHelperReference extends CachedReference {
 
   isDirty() { return true; }
 
-  value() {
+  compute() {
     let key = this.pathReference.value();
     let keyType = typeof key;
 
