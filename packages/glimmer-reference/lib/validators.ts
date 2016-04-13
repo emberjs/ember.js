@@ -138,7 +138,7 @@ class TagsCombinator extends CachedTag {
 
     for (let i=0; i<tags.length; i++) {
       let value = tags[i].value();
-      max = value > max ? value : max;
+      max = Math.max(value, max);
     }
 
     return max;
