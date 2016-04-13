@@ -170,6 +170,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
   constructor({ name, component, manager, args, dynamicScope } : { name: string, component: Component, manager: ComponentManager<any>, args: EvaluatedArgs, dynamicScope: DynamicScope }) {
     super();
+    this.tag = args.tag;
     this.name = name;
     this.component = component;
     this.manager = manager;

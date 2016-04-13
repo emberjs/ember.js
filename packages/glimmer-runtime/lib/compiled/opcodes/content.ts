@@ -1,5 +1,4 @@
 import Upsert, {
-  SafeString,
   Insertion,
   CautiousInsertion,
   TrustingInsertion,
@@ -16,7 +15,7 @@ import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { Reference, ReferenceCache, isModified, isConst, map } from 'glimmer-reference';
 import { Opaque, dict } from 'glimmer-util';
-import { Bounds, Cursor, SingleNodeBounds, clear } from '../../bounds';
+import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
 import {  } from '../../environment';
 
@@ -97,6 +96,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
     private upsert: Upsert
   ) {
     super();
+    this.tag = cache.tag;
   }
 
   protected abstract insert(dom: DOMHelper, cursor: Cursor, value: T): Upsert;
