@@ -171,7 +171,7 @@ export class UpdatableTag extends CachedTag {
 //////////
 
 export const CONSTANT_TAG: RevisionTag = new (
-  class CleanTag extends RevisionTag {
+  class ConstantTag extends RevisionTag {
     value(): Revision {
       return CONSTANT;
     }
@@ -179,7 +179,7 @@ export const CONSTANT_TAG: RevisionTag = new (
 );
 
 export const VOLATILE_TAG: RevisionTag = new (
-  class CleanTag extends RevisionTag {
+  class VolatileTag extends RevisionTag {
     value(): Revision {
       return VOLATILE;
     }
