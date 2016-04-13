@@ -43,3 +43,9 @@ QUnit.test('Ember.create is deprecated', function() {
     Ember.create(null);
   }, 'Ember.create is deprecated in favor of Object.create');
 });
+
+QUnit.test('Ember.Backburner is deprecated', function() {
+  expectDeprecation(function() {
+    new Ember.Backburner(['foo']);
+  }, 'Usage of Ember.Backburner is deprecated.');
+});
