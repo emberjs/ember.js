@@ -119,8 +119,15 @@ export class GetHelperReference extends CachedReference {
 
   isDirty() { return true; }
 
-  value() {
-    return this.sourceReference.get(this.pathReference.value()).value();
+  compute() {
+    let key = this.pathReference.value();
+    let keyType = typeof key;
+
+    if (key && (keyType === 'string' || keyType === 'number')) {
+      return this.sourceReference.get(key).value();
+    }
+
+    return null;
   }
 
   get(propertyKey) {
