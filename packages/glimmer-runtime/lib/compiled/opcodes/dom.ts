@@ -17,13 +17,6 @@ import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 
-abstract class DOMUpdatingOpcode extends UpdatingOpcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: UpdatingVM);
-}
 
 export class TextOpcode extends Opcode {
   public type = "text";
@@ -313,11 +306,14 @@ export interface ElementOperation {
 }
 
 abstract class ElementPatchOperation<V> implements ElementOperation {
+  public tag: RevisionTag;
+
   protected element: Element;
   protected reference: Reference<V>;
   protected cache: ReferenceCache<V> = null;
 
   constructor(element: Element, reference: Reference<V>) {
+    this.tag = reference.tag;
     this.element = element;
     this.reference = reference;
   }
@@ -569,13 +565,14 @@ export class DynamicPropOpcode extends Opcode {
   }
 }
 
-export class PatchElementOpcode extends DOMUpdatingOpcode {
+export class PatchElementOpcode extends UpdatingOpcode {
   public type = "patch-element";
 
   private operation: ElementPatchOperation<Opaque>;
 
   constructor(operation: ElementPatchOperation<Opaque>) {
     super();
+    this.tag = operation.tag;
     this.operation = operation;
   }
 

@@ -8,14 +8,6 @@ import { NULL_REFERENCE } from '../../references';
 import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
 import { ReferenceCache, isConst, isModified } from 'glimmer-reference';
 
-abstract class VMUpdatingOpcode extends UpdatingOpcode {
-  public type: string;
-  public next = null;
-  public prev = null;
-
-  abstract evaluate(vm: UpdatingVM);
-}
-
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
 
@@ -395,13 +387,14 @@ export class JumpUnlessOpcode extends JumpOpcode {
   }
 }
 
-export class Assert extends VMUpdatingOpcode {
+export class Assert extends UpdatingOpcode {
   public type = "assert";
 
   private cache: ReferenceCache<Opaque>;
 
   constructor(cache: ReferenceCache<Opaque>) {
     super();
+    this.tag = cache.tag;
     this.cache = cache;
   }
 

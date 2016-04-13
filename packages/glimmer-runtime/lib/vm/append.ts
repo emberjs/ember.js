@@ -102,7 +102,7 @@ export default class VM implements PublicVM {
     this.stack().pushBlock();
     let state = this.capture();
 
-    let tryOpcode = new TryOpcode({ ops, state, updating });
+    let tryOpcode = new TryOpcode({ ops, state, children: updating });
 
     this.didEnter(tryOpcode, updating);
   }
@@ -112,7 +112,8 @@ export default class VM implements PublicVM {
 
     this.stack().pushBlock();
     let state = this.capture();
-    let tryOpcode = new TryOpcode({ ops, state, updating });
+
+    let tryOpcode = new TryOpcode({ ops, state, children: updating });
 
     this.listBlockStack.current.map[<string>key] = tryOpcode;
 
@@ -126,7 +127,7 @@ export default class VM implements PublicVM {
     let state = this.capture();
     let artifacts = this.frame.getIterator().artifacts;
 
-    let opcode = new ListBlockOpcode({ ops, state, updating, artifacts });
+    let opcode = new ListBlockOpcode({ ops, state, children: updating, artifacts });
 
     this.listBlockStack.push(opcode);
 
@@ -141,6 +142,10 @@ export default class VM implements PublicVM {
   exit() {
     this.stack().popBlock();
     this.updatingOpcodeStack.pop();
+
+    let parent = this.updatingOpcodeStack.current.tail() as BlockOpcode;
+
+    parent.didInitializeChildren();
   }
 
   exitList() {
