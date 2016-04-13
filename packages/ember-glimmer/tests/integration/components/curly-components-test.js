@@ -5,7 +5,7 @@ import { Component, compile } from '../../utils/helpers';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { classes } from '../../utils/test-helpers';
+import { classes, equalTokens } from '../../utils/test-helpers';
 import { htmlSafe } from 'ember-htmlbars/utils/string';
 import { computed } from 'ember-metal/computed';
 
@@ -846,78 +846,66 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
   }
 
-  ['@htmlbars should not escape HTML in triple mustaches'](assert) {
+  ['@test should not escape HTML in triple mustaches'](assert) {
+    let expectedHtmlBold = 'you need to be more <b>bold</b>';
+    let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
     let FooBarComponent = Component.extend({
       init() {
         this._super(...arguments);
         component = this;
       },
-      output: 'you need to be more <b>bold</b>'
+      output: expectedHtmlBold
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{{output}}}' });
 
     this.render('{{foo-bar}}');
 
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
-
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+    equalTokens(this.firstChild, expectedHtmlBold);
 
     this.runTask(() => this.rerender());
 
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
+    equalTokens(this.firstChild, expectedHtmlBold);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+    this.runTask(() => set(component, 'output', expectedHtmlItalic));
 
-    this.runTask(() => set(component, 'output', 'you are so <i>super</i>'));
+    equalTokens(this.firstChild, expectedHtmlItalic);
 
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
+    this.runTask(() => set(component, 'output', expectedHtmlBold));
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super' });
-
-    this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
-
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
-
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+    equalTokens(this.firstChild, expectedHtmlBold);
   }
 
   ['@htmlbars should not escape HTML if string is a htmlSafe'](assert) {
+    let expectedHtmlBold = 'you need to be more <b>bold</b>';
+    let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
     let FooBarComponent = Component.extend({
       init() {
         this._super(...arguments);
         component = this;
       },
-      output: htmlSafe('you need to be more <b>bold</b>')
+      output: htmlSafe(expectedHtmlBold)
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{output}}' });
 
     this.render('{{foo-bar}}');
 
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
-
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+    equalTokens(this.firstChild, expectedHtmlBold);
 
     this.runTask(() => this.rerender());
 
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
+    equalTokens(this.firstChild, expectedHtmlBold);
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+    this.runTask(() => set(component, 'output', htmlSafe(expectedHtmlItalic)));
 
-    this.runTask(() => set(component, 'output', htmlSafe('you are so <i>super</i>')));
+    equalTokens(this.firstChild, expectedHtmlItalic);
 
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
+    this.runTask(() => set(component, 'output', htmlSafe(expectedHtmlBold)));
 
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'i', content: 'super' });
-
-    this.runTask(() => set(component, 'output', htmlSafe('you need to be more <b>bold</b>')));
-
-    assert.strictEqual(this.firstChild.childNodes.length, 4);
-
-    this.assertElement(this.firstChild.childNodes[2], { tagName: 'b', content: 'bold' });
+    equalTokens(this.firstChild, expectedHtmlBold);
   }
 
   ['@test can use isStream property without conflict (#13271)']() {
