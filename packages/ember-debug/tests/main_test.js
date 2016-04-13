@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
 import EmberObject from 'ember-runtime/system/object';
-import { HANDLERS, generateTestAsFunctionDeprecation } from 'ember-debug/handlers';
+import { HANDLERS } from 'ember-debug/handlers';
 import {
   registerHandler,
   missingOptionsDeprecation,
@@ -13,7 +13,6 @@ import {
   missingOptionsDeprecation as missingWarnOptionsDeprecation,
   registerHandler as registerWarnHandler
 } from 'ember-debug/warn';
-import deprecate from 'ember-debug/deprecate';
 
 let originalEnvValue;
 let originalDeprecateHandler;
@@ -107,21 +106,14 @@ QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', fun
   });
 });
 
-QUnit.test('Ember.deprecate throws deprecation if second argument is a function and it returns true', function(assert) {
-  assert.expect(1);
-
-  throws(() => {
-    Ember.deprecate('This deprecation is not thrown, but argument deprecation is thrown', () => true, { id: 'test', until: 'forever' });
-  });
-});
-
-QUnit.test('Ember.deprecate throws if second argument is a function and it returns false', function() {
+QUnit.test('Ember.deprecate does not invoke a function as the second argument', function() {
   expect(1);
-  throws(function() {
-    Ember.deprecate('Deprecation is thrown', function() {
-      return false;
-    }, { id: 'test', until: 'forever' });
-  });
+
+  Ember.deprecate('Deprecation is thrown', function() {
+    ok(false, 'this function should not be invoked');
+  }, { id: 'test', until: 'forever' });
+
+  ok(true, 'deprecations were not thrown');
 });
 
 QUnit.test('Ember.deprecate does not throw deprecations if second argument is truthy', function() {
@@ -150,23 +142,12 @@ QUnit.test('Ember.assert throws if second argument is falsy', function() {
   });
 });
 
-QUnit.test('Ember.assert does not throw if second argument is a function and it returns true', function(assert) {
+QUnit.test('Ember.assert does not throw if second argument is a function', function(assert) {
   assert.expect(1);
 
-  // Shouldn't trigger an assertion, but deprecation from using function as test is expected.
-  expectDeprecation(
-    () => Ember.assert('Assertion is thrown', () => true),
-    generateTestAsFunctionDeprecation('Ember.assert')
-  );
-});
+  Ember.assert('Assertion is thrown', () => true);
 
-QUnit.test('Ember.assert throws if second argument is a function and it returns false', function() {
-  expect(1);
-  throws(function() {
-    Ember.assert('Assertion is thrown', function() {
-      return false;
-    });
-  });
+  ok(true, 'assertions were not thrown');
 });
 
 QUnit.test('Ember.assert does not throw if second argument is truthy', function() {
@@ -297,40 +278,4 @@ QUnit.test('Ember.warn without options.id triggers a deprecation', function(asse
   });
 
   Ember.warn('foo', false, { });
-});
-
-QUnit.test('Ember.deprecate triggers a deprecation when test argument is a function', function(assert) {
-  assert.expect(1);
-
-  registerHandler(message => assert.equal(
-    message,
-    generateTestAsFunctionDeprecation('Ember.deprecate'),
-    'proper deprecation is triggered when test argument is a function'
-  ));
-
-  deprecate('Deprecation is thrown', () => true, { id: 'test', until: 'forever' });
-});
-
-QUnit.test('Ember.warn triggers a deprecation when test argument is a function', function(assert) {
-  assert.expect(1);
-
-  registerHandler(message => assert.equal(
-    message,
-    generateTestAsFunctionDeprecation('Ember.warn'),
-    'proper deprecation is triggered when test argument is a function'
-  ));
-
-  Ember.warn('Warning is thrown', () => true, { id: 'test' });
-});
-
-QUnit.test('Ember.assert triggers a deprecation when test argument is a function', function(assert) {
-  assert.expect(1);
-
-  registerHandler(message => assert.equal(
-    message,
-    generateTestAsFunctionDeprecation('Ember.assert'),
-    'proper deprecation is triggered when test argument is a function'
-  ));
-
-  Ember.assert('Assertion is thrown', () => true);
 });
