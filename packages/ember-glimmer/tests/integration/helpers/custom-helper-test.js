@@ -41,7 +41,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('hello | hello world');
   }
 
-  ['@htmlbars class-based helper can recompute a new value']() {
+  ['@test class-based helper can recompute a new value']() {
     let destroyCount = 0;
     let computeCount = 0;
     let helper;
@@ -75,7 +75,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
   }
 
-  ['@htmlbars class-based helper with static arguments can recompute a new value']() {
+  ['@test class-based helper with static arguments can recompute a new value']() {
     let destroyCount = 0;
     let computeCount = 0;
     let helper;
@@ -109,7 +109,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
   }
 
-  ['@htmlbars simple helper is called for param changes']() {
+  ['@test simple helper is called for param changes']() {
     let computeCount = 0;
 
     this.registerHelper('hello-world', ([value]) => {
@@ -144,7 +144,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     assert.strictEqual(computeCount, 3, 'compute is called exactly 3 times');
   }
 
-  ['@htmlbars class-based helper compute is called for param changes']() {
+  ['@test class-based helper compute is called for param changes']() {
     let createCount = 0;
     let computeCount = 0;
 
