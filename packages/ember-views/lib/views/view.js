@@ -15,7 +15,6 @@ import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import ViewMixin from 'ember-views/mixins/view_support';
-import { deprecateProperty } from 'ember-metal/deprecate_property';
 /**
 @module ember
 @submodule ember-views
@@ -682,12 +681,6 @@ var View = CoreView.extend(
       return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
     }
   });
-
-deprecateProperty(View.prototype, 'currentState', '_currentState', {
-  id: 'ember-view.current-state',
-  until: '2.3.0',
-  url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-currentstate'
-});
 
 // jscs:enable validateIndentation
 
