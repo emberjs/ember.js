@@ -10,22 +10,37 @@ export interface OpcodeJSON {
   children?: OpcodeJSON[];
 }
 
-export abstract class UpdatingOpcode implements LinkedListNode {
-  type: string;
-  next: Opcode = null;
-  prev: Opcode = null;
-
+export abstract class AbstractOpcode implements LinkedListNode {
+  public type: string;
   public _guid: number;
+
+  prev: AbstractOpcode;
+  next: AbstractOpcode;
 
   constructor() {
     initializeGuid(this);
   }
 
-  abstract evaluate(vm: UpdatingVM);
-
   toJSON(): OpcodeJSON {
     return { guid: this._guid, type: this.type };
   }
+}
+
+export abstract class Opcode extends AbstractOpcode {
+  next: Opcode = null;
+  prev: Opcode = null;
+
+  abstract evaluate(vm: VM);
+}
+
+export type OpSeq = Slice<Opcode>;
+export type OpSeqBuilder = LinkedList<Opcode>;
+
+export abstract class UpdatingOpcode extends AbstractOpcode {
+  next: UpdatingOpcode = null;
+  prev: UpdatingOpcode = null;
+
+  abstract evaluate(vm: UpdatingVM);
 }
 
 export type UpdatingOpSeq = Slice<UpdatingOpcode>;
@@ -34,23 +49,54 @@ interface OpcodeFactory<T extends Opcode> {
   new(options: T): T;
 }
 
-export abstract class Opcode implements LinkedListNode {
-  type: string;
-  next: Opcode = null;
-  prev: Opcode = null;
+export function inspect(opcodes: LinkedList<AbstractOpcode>): string {
+  let buffer = [];
 
-  public _guid: number;
+  opcodes.toArray().forEach((opcode, i) => {
+    _inspect(opcode.toJSON(), buffer, 0, i);
+  });
 
-  constructor() {
-    initializeGuid(this);
-  }
-
-  abstract evaluate(vm: VM);
-
-  toJSON(): OpcodeJSON {
-    return { guid: this._guid, type: this.type };
-  }
+  return buffer.join('');
 }
 
-export type OpSeq = Slice<Opcode>;
-export type OpSeqBuilder = LinkedList<Opcode>;
+function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: number) {
+  let i = 1;
+  let indentation = [];
+
+  for (let i=0; i<level; i++) {
+    indentation.push('  ');
+  }
+
+  buffer.push(...indentation);
+  buffer.push(`${index+1}. ${opcode.type.toUpperCase()}`);
+
+  if (opcode.args || opcode.details) {
+    buffer.push('(');
+
+    if (opcode.args) {
+      buffer.push(opcode.args.join(', '));
+    }
+
+    if (opcode.details) {
+      let keys = Object.keys(opcode.details);
+
+      if (keys.length) {
+        if (opcode.args && opcode.args.length) {
+          buffer.push(', ');
+        }
+
+        buffer.push(keys.map(key => `${key}=${opcode.details[key]}`).join(', '));
+      }
+    }
+
+    buffer.push(')');
+  }
+
+  buffer.push('\n');
+
+  if (opcode.children && opcode.children.length) {
+    for (let i=0; i<opcode.children.length; i++) {
+      _inspect(opcode.children[i], buffer, level+1, i);
+    }
+  }
+}

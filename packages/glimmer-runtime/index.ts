@@ -59,7 +59,8 @@ export {
 export {
   Opcode,
   OpSeq,
-  OpSeqBuilder
+  OpSeqBuilder,
+  inspect as inspectOpcodes
 } from './lib/opcodes';
 
 export {
