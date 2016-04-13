@@ -117,8 +117,8 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
       return `${value}-value`;
     });
 
-    this.render('{{hello-world name}}', {
-      name: 'bob'
+    this.render('{{hello-world model.name}}', {
+      model: { name: 'bob' }
     });
 
     this.assertText('bob-value');
@@ -131,13 +131,13 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
 
-    this.runTask(() => set(this.context, 'name', 'sal'));
+    this.runTask(() => set(this.context, 'model.name', 'sal'));
 
     this.assertText('sal-value');
 
     assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
 
-    this.runTask(() => set(this.context, 'name', 'bob'));
+    this.runTask(() => set(this.context, 'model', { name: 'bob' }));
 
     this.assertText('bob-value');
 
@@ -159,8 +159,8 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
       }
     });
 
-    this.render('{{hello-world name}}', {
-      name: 'bob'
+    this.render('{{hello-world model.name}}', {
+      model: { name: 'bob' }
     });
 
     this.assertText('bob-value');
@@ -173,13 +173,13 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
 
-    this.runTask(() => set(this.context, 'name', 'sal'));
+    this.runTask(() => set(this.context, 'model.name', 'sal'));
 
     this.assertText('sal-value');
 
     assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
 
-    this.runTask(() => set(this.context, 'name', 'bob'));
+    this.runTask(() => set(this.context, 'model', { name: 'bob' }));
 
     this.assertText('bob-value');
 
@@ -192,9 +192,11 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
       return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
     });
 
-    this.render('{{hello-world name "rich" first=age last="sam"}}', {
-      name: 'bob',
-      age: 42
+    this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      model: {
+        name: 'bob',
+        age: 42
+      }
     });
 
     this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
@@ -203,18 +205,15 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
-    this.runTask(() => set(this.context, 'name', 'sal'));
+    this.runTask(() => set(this.context, 'model.name', 'sal'));
 
     this.assertText('params: ["sal","rich"], hash: {"first":42,"last":"sam"}');
 
-    this.runTask(() => set(this.context, 'age', 28));
+    this.runTask(() => set(this.context, 'model.age', 28));
 
     this.assertText('params: ["sal","rich"], hash: {"first":28,"last":"sam"}');
 
-    this.runTask(() => {
-      set(this.context, 'name', 'bob');
-      set(this.context, 'age', 42);
-    });
+    this.runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
 
     this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
   }
@@ -226,9 +225,11 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
       }
     });
 
-    this.render('{{hello-world name "rich" first=age last="sam"}}', {
-      name: 'bob',
-      age: 42
+    this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      model: {
+        name: 'bob',
+        age: 42
+      }
     });
 
     this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
@@ -237,18 +238,15 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
-    this.runTask(() => set(this.context, 'name', 'sal'));
+    this.runTask(() => set(this.context, 'model.name', 'sal'));
 
     this.assertText('params: ["sal","rich"], hash: {"first":42,"last":"sam"}');
 
-    this.runTask(() => set(this.context, 'age', 28));
+    this.runTask(() => set(this.context, 'model.age', 28));
 
     this.assertText('params: ["sal","rich"], hash: {"first":28,"last":"sam"}');
 
-    this.runTask(() => {
-      set(this.context, 'name', 'bob');
-      set(this.context, 'age', 42);
-    });
+    this.runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
 
     this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
   }
@@ -263,10 +261,10 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.render(
       `{{join-words "Who"
                    (join-words "overcomes" "by")
-                   reason
+                   model.reason
                    (join-words (join-words "hath overcome but" "half"))
                    (join-words "his" (join-words "foe"))}}`, {
-      reason: 'force'
+      model: { reason: 'force' }
     });
 
     this.assertText('Who overcomes by force hath overcome but half his foe');
@@ -275,11 +273,11 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     this.assertText('Who overcomes by force hath overcome but half his foe');
 
-    this.runTask(() => set(this.context, 'reason', 'Nickleback'));
+    this.runTask(() => set(this.context, 'model.reason', 'Nickleback'));
 
     this.assertText('Who overcomes by Nickleback hath overcome but half his foe');
 
-    this.runTask(() => set(this.context, 'reason', 'force'));
+    this.runTask(() => set(this.context, 'model', { reason: 'force' }));
 
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }

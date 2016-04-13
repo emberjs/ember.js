@@ -34,15 +34,17 @@ moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
   }
 
   ['@htmlbars Should bind its contents to the specified value']() {
-    this.render('{{textarea value=val}}', { val: 'A beautiful day in Seattle' });
+    this.render('{{textarea value=model.val}}', {
+      model: { val: 'A beautiful day in Seattle' }
+    });
     ok(this.$('textarea').val('A beautiful day in Seattle'));
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'val', 'Auckland'));
+    this.runTask(() => set(this.context, 'model.val', 'Auckland'));
     ok(this.$('textarea').val('Auckland'));
 
-    this.runTask(() => set(this.context, 'val', 'A beautiful day in Seattle'));
+    this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
     ok(this.$('textarea').val('A beautiful day in Seattle'));
   }
 

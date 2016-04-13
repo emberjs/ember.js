@@ -76,8 +76,8 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
   }
 
   ['@test should render on attributes']() {
-    this.render(`<a href="{{unbound foo}}"></a>`, {
-      foo: 'BORK'
+    this.render(`<a href="{{unbound model.foo}}"></a>`, {
+      model: { foo: 'BORK' }
     });
 
     this.assertHTML('<a href="BORK"></a>');
@@ -86,11 +86,11 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.assertHTML('<a href="BORK"></a>');
 
-    this.runTask(() => set(this.context, 'foo', 'OOF'));
+    this.runTask(() => set(this.context, 'model.foo', 'OOF'));
 
     this.assertHTML('<a href="BORK"></a>');
 
-    this.runTask(() => set(this.context, 'foo', 'BORK'));
+    this.runTask(() => set(this.context, 'model', { foo: 'BORK' }));
 
     this.assertHTML('<a href="BORK"></a>');
   }
@@ -274,10 +274,13 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
   ['@test should be able to render an bound helper invocation mixed with static values']() {
     this.registerHelper('surround', ([prefix, value, suffix]) => `${prefix}-${value}-${suffix}`);
 
-    this.render(`{{unbound (surround prefix value "bar")}} {{surround prefix value "bar"}} {{unbound (surround "bar" value suffix)}} {{surround "bar" value suffix}}`, {
-      prefix: 'before',
-      value: 'core',
-      suffix: 'after'
+    this.render(strip`
+      {{unbound (surround model.prefix model.value "bar")}} {{surround model.prefix model.value "bar"}} {{unbound (surround "bar" model.value model.suffix)}} {{surround "bar" model.value model.suffix}}`, {
+      model: {
+        prefix: 'before',
+        value: 'core',
+        suffix: 'after'
+      }
     });
 
     this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
@@ -287,7 +290,7 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
 
     this.runTask(() => {
-      setProperties(this.context, {
+      setProperties(this.context.model, {
         prefix: 'beforeChanged',
         value: 'coreChanged',
         suffix: 'afterChanged'
@@ -297,7 +300,7 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertText('before-core-bar beforeChanged-coreChanged-bar bar-core-after bar-coreChanged-afterChanged');
 
     this.runTask(() => {
-      setProperties(this.context, {
+      set(this.context, 'model', {
         prefix: 'before',
         value: 'core',
         suffix: 'after'
@@ -310,10 +313,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
   ['@test should be able to render unbound forms of multi-arg helpers']() {
     this.registerHelper('fauxconcat', (params) => params.join(''));
 
-    this.render(`{{fauxconcat foo bar bing}} {{unbound (fauxconcat foo bar bing)}}`, {
-      foo: 'a',
-      bar: 'b',
-      bing: 'c'
+    this.render(`{{fauxconcat model.foo model.bar model.bing}} {{unbound (fauxconcat model.foo model.bar model.bing)}}`, {
+      model: {
+        foo: 'a',
+        bar: 'b',
+        bing: 'c'
+      }
     });
 
     this.assertText('abc abc');
@@ -322,11 +327,15 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.assertText('abc abc');
 
-    this.runTask(() => set(this.context, 'bar', 'X'));
+    this.runTask(() => set(this.context, 'model.bar', 'X'));
 
     this.assertText('aXc abc');
 
-    this.runTask(() => set(this.context, 'bar', 'b'));
+    this.runTask(() => set(this.context, 'model', {
+      foo: 'a',
+      bar: 'b',
+      bing: 'c'
+    }));
 
     this.assertText('abc abc');
   }
@@ -498,17 +507,19 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
   ['@test should be able to render bound form of a helper inside unbound form of same helper']() {
     this.render(
       strip`
-      {{#if (unbound foo)}}
-        {{#if bar}}true{{/if}}
-        {{#unless bar}}false{{/unless}}
+      {{#if (unbound model.foo)}}
+        {{#if model.bar}}true{{/if}}
+        {{#unless model.bar}}false{{/unless}}
       {{/if}}
-      {{#unless (unbound notfoo)}}
-        {{#if bar}}true{{/if}}
-        {{#unless bar}}false{{/unless}}
+      {{#unless (unbound model.notfoo)}}
+        {{#if model.bar}}true{{/if}}
+        {{#unless model.bar}}false{{/unless}}
       {{/unless}}`, {
-      foo: true,
-      notfoo: false,
-      bar: true
+      model: {
+        foo: true,
+        notfoo: false,
+        bar: true
+      }
     });
 
     this.assertText('truetrue');
@@ -517,11 +528,15 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.assertText('truetrue');
 
-    this.runTask(() => set(this.context, 'bar', false));
+    this.runTask(() => set(this.context, 'model.bar', false));
 
     this.assertText('falsefalse');
 
-    this.runTask(() => set(this.context, 'bar', true));
+    this.runTask(() => set(this.context, 'model', {
+      foo: true,
+      notfoo: false,
+      bar: true
+    }));
 
     this.assertText('truetrue');
   }
@@ -533,12 +548,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
         this._super(...arguments);
         fooBarInstance = this;
       },
-      foo: 'bork'
+      model: { foo: 'bork' }
     });
 
     this.registerComponent('foo-bar', {
       ComponentClass: FooBarComponent,
-      template: `{{yield (unbound foo)}}`
+      template: `{{yield (unbound model.foo)}}`
     });
 
     this.render(`{{#foo-bar as |value|}}{{value}}{{/foo-bar}}`);
@@ -549,11 +564,11 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.assertText('bork');
 
-    this.runTask(() => set(fooBarInstance, 'foo', 'oof'));
+    this.runTask(() => set(fooBarInstance, 'model.foo', 'oof'));
 
     this.assertText('bork');
 
-    this.runTask(() => set(fooBarInstance, 'foo', 'bork'));
+    this.runTask(() => set(fooBarInstance, 'model', { foo: 'bork' }));
 
     this.assertText('bork');
   }
@@ -565,12 +580,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
         this._super(...arguments);
         fooBarInstance = this;
       },
-      foo: 'bork'
+      model: { foo: 'bork' }
     });
 
     this.registerComponent('foo-bar', {
       ComponentClass: FooBarComponent,
-      template: `{{yield (unbound (hash foo=foo))}}`
+      template: `{{yield (unbound (hash foo=model.foo))}}`
     });
 
     this.render(`{{#foo-bar as |value|}}{{value.foo}}{{/foo-bar}}`);
@@ -581,11 +596,11 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.assertText('bork');
 
-    this.runTask(() => set(fooBarInstance, 'foo', 'oof'));
+    this.runTask(() => set(fooBarInstance, 'model.foo', 'oof'));
 
     this.assertText('bork');
 
-    this.runTask(() => set(fooBarInstance, 'foo', 'bork'));
+    this.runTask(() => set(fooBarInstance, 'model', { foo: 'bork' }));
 
     this.assertText('bork');
   }
