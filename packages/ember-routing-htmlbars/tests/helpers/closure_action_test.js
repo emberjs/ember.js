@@ -131,6 +131,74 @@ if (isEnabled('ember-improved-instrumentation')) {
     view.$('#instrument-button').trigger('click');
   });
 
+  QUnit.test('interaction event subscriber should be passed parameters', function(assert) {
+    assert.expect(2);
+
+    let actionParam = 'So krispy';
+
+    subscriber = subscribe('interaction.ember-action', {
+      before(name, timestamp, payload) {
+        assert.equal(payload.args[0], actionParam, 'instrumentation subscriber before function was passed closure action parameters');
+      },
+      after(name, timestamp, payload) {
+        assert.equal(payload.args[0], actionParam, 'instrumentation subscriber after function was passed closure action parameters');
+      }
+    });
+
+    registerTemplate('components/inner-component', '<button id="instrument-button" {{action "fireAction"}}>What it do</button>');
+    registerComponent('inner-component', EmberComponent.extend({
+      actions: {
+        fireAction() {
+          this.attrs.submit(actionParam);
+        }
+      }
+    }));
+
+    registerTemplate('components/outer-component', '{{inner-component submit=(action outerSubmit)}}');
+    registerComponent('outer-component', EmberComponent.extend({
+      innerComponent,
+      outerSubmit() {}
+    }));
+
+    view = appendViewFor(`{{outer-component}}`);
+
+    view.$('#instrument-button').trigger('click');
+  });
+
+  QUnit.test('interaction event subscriber should be passed target', function(assert) {
+    assert.expect(2);
+
+    subscriber = subscribe('interaction.ember-action', {
+      before(name, timestamp, payload) {
+        assert.equal(payload.target.get('myProperty'), 'outer-thing', 'instrumentation subscriber before function was passed target');
+      },
+      after(name, timestamp, payload) {
+        assert.equal(payload.target.get('myProperty'), 'outer-thing', 'instrumentation subscriber after function was passed target');
+      }
+    });
+
+    registerTemplate('components/inner-component', '<button id="instrument-button" {{action "fireAction"}}>What it do</button>');
+    registerComponent('inner-component', EmberComponent.extend({
+      myProperty: 'inner-thing',
+      actions: {
+        fireAction() {
+          this.attrs.submit();
+        }
+      }
+    }));
+
+    registerTemplate('components/outer-component', '{{inner-component submit=(action outerSubmit)}}');
+    registerComponent('outer-component', EmberComponent.extend({
+      myProperty: 'outer-thing',
+      innerComponent,
+      outerSubmit() {}
+    }));
+
+    view = appendViewFor(`{{outer-component}}`);
+
+    view.$('#instrument-button').trigger('click');
+  });
+
   QUnit.test('instrumented action should return value', function(assert) {
     assert.expect(1);
 
