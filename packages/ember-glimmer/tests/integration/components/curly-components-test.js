@@ -45,7 +45,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'bizz' }, content: 'bizz bizz' });
   }
 
-  ['@htmlbars elementId cannot change'](assert) {
+  ['@test elementId cannot change'](assert) {
     let component;
     let FooBarComponent = Component.extend({
       elementId: 'blahzorz',
@@ -1351,7 +1351,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
   }
 
-  ['@htmlbars with ariaRole specified']() {
+  ['@test with ariaRole specified']() {
     this.registerComponent('aria-test', {
       template: 'Here!'
     });
@@ -1375,7 +1375,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
   }
 
-  ['@htmlbars `template` specified in component is overriden by block']() {
+  ['@test `template` specified in component is overriden by block']() {
     this.registerComponent('with-template', {
       ComponentClass: Component.extend({
         template: compile('Should not be used')
