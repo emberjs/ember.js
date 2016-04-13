@@ -26,22 +26,24 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
   }
 
   ['@htmlbars should use the current context']() {
-    this.registerPartial('_person_name', '{{firstName}} {{lastName}}');
+    this.registerPartial('_person_name', '{{model.firstName}} {{model.lastName}}');
 
     this.render('Who is {{partial "person_name"}}?', {
-      firstName: 'Kris',
-      lastName: 'Selden'
+      model: {
+        firstName: 'Kris',
+        lastName: 'Selden'
+      }
     });
 
     this.assertStableRerender();
 
     this.assertText('Who is Kris Selden?');
 
-    this.runTask(() => set(this.context, 'firstName', 'Kelly'));
+    this.runTask(() => set(this.context, 'model.firstName', 'Kelly'));
 
     this.assertText('Who is Kelly Selden?');
 
-    this.runTask(() => set(this.context, 'firstName', 'Kris'));
+    this.runTask(() => set(this.context, 'model', { firstName: 'Kris', lastName: 'Selden' }));
 
     this.assertText('Who is Kris Selden?');
   }
@@ -50,21 +52,23 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.registerPartial('_subTemplate', 'sub-template');
     this.registerPartial('_otherTemplate', 'other-template');
 
-    this.render('This {{partial partialName}} is pretty {{partial nonexistent}}great.', { partialName: 'subTemplate' });
+    this.render('This {{partial templates.partialName}} is pretty {{partial nonexistent}}great.', {
+      templates: { partialName: 'subTemplate' }
+    });
 
     this.assertStableRerender();
 
     this.assertText('This sub-template is pretty great.');
 
-    this.runTask(() => set(this.context, 'partialName', 'otherTemplate'));
+    this.runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
 
     this.assertText('This other-template is pretty great.');
 
-    this.runTask(() => set(this.context, 'partialName', null));
+    this.runTask(() => set(this.context, 'templates.partialName', null));
 
     this.assertText('This  is pretty great.');
 
-    this.runTask(() => set(this.context, 'partialName', 'subTemplate'));
+    this.runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
 
     this.assertText('This sub-template is pretty great.');
   }
@@ -74,49 +78,52 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.registerPartial('_even', 'EVEN{{i}}');
 
     this.render(strip`
-      {{#each items as |template i|}}
-        {{type}}: {{partial template}}
+      {{#each model.items as |template i|}}
+        {{model.type}}: {{partial template}}
       {{/each}}`, {
-      items: ['even', 'odd', 'even', 'odd'],
-      type: 'number'
+      model: {
+        items: ['even', 'odd', 'even', 'odd'],
+        type: 'number'
+      }
     });
 
     this.assertStableRerender();
 
     this.assertText('number: EVEN0number: ODD1number: EVEN2number: ODD3');
 
-    this.runTask(() => set(this.context, 'type', 'integer'));
+    this.runTask(() => set(this.context, 'model.type', 'integer'));
 
     this.assertText('integer: EVEN0integer: ODD1integer: EVEN2integer: ODD3');
 
-    this.runTask(() => set(this.context, 'type', 'number'));
+    this.runTask(() => set(this.context, 'model', {
+      items: ['even', 'odd', 'even', 'odd'],
+      type: 'number'
+    }));
 
     this.assertText('number: EVEN0number: ODD1number: EVEN2number: ODD3');
   }
 
   ['@htmlbars dynamic partials in {{#with}}']() {
-    this.registerPartial('_thing', '{{template.name}}');
+    this.registerPartial('_thing', '{{t}}');
 
     this.render(strip`
-      {{#with item as |template|}}
-        {{partial template.name}}
+      {{#with item.thing as |t|}}
+        {{partial t}}
       {{else}}
         Nothing!
       {{/with}}`, {
-      item: false
+      item: { thing: false }
     });
 
     this.assertStableRerender();
 
     this.assertText('Nothing!');
 
-    this.runTask(() => set(this.context, 'item', {
-      name: 'thing'
-    }));
+    this.runTask(() => set(this.context, 'item.thing', 'thing'));
 
     this.assertText('thing');
 
-    this.runTask(() => set(this.context, 'item', false));
+    this.runTask(() => set(this.context, 'item', { thing: false }));
 
     this.assertText('Nothing!');
   }
