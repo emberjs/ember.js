@@ -1,4 +1,4 @@
-import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { AbstractOpcode, Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from '../expressions/args';
 import { VM, UpdatingVM, BindDynamicScopeCallback } from '../../vm';
@@ -6,7 +6,7 @@ import { Layout, InlineBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
 import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
-import { ReferenceCache, isConst, isModified } from 'glimmer-reference';
+import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
@@ -254,18 +254,20 @@ export class ExitOpcode extends Opcode {
   }
 }
 
-export class LabelOpcode extends Opcode {
+export class LabelOpcode extends AbstractOpcode implements Opcode, UpdatingOpcode {
+  public tag = CONSTANT_TAG;
   public type = "label";
-
   public label: string = null;
+
+  prev: any = null;
+  next: any = null;
 
   constructor({ label }: { label?: string }) {
     super();
     if (label) this.label = label;
   }
 
-  evaluate(vm: VM) {
-  }
+  evaluate() {}
 
   inspect(): string {
     return `${this.label} [${this._guid}]`;
@@ -323,7 +325,7 @@ export class TestOpcode extends Opcode {
 export class JumpOpcode extends Opcode {
   public type = "jump";
 
-  public target: LabelOpcode;
+  private target: LabelOpcode;
 
   constructor({ target }: { target: LabelOpcode }) {
     super();
@@ -409,11 +411,70 @@ export class Assert extends UpdatingOpcode {
   toJSON(): OpcodeJSON {
     let { type, _guid, cache } = this;
 
+    let expected;
+
+    try {
+      expected = JSON.stringify(cache.peek());
+    } catch(e) {
+      expected = String(cache.peek());
+    }
+
     return {
       guid: _guid,
       type,
       args: [],
-      details: { expected: JSON.stringify(cache.peek()) }
+      details: { expected }
     };
   }
 }
+
+export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
+  public type = "jump-if-not-modified";
+
+  private target: LabelOpcode;
+  private lastRevision: Revision;
+
+  constructor({ tag, target }: { tag: RevisionTag, target: LabelOpcode }) {
+    super();
+    this.tag = tag;
+    this.target = target;
+    this.lastRevision = tag.value();
+  }
+
+  evaluate(vm: UpdatingVM) {
+    let { tag, target, lastRevision } = this;
+
+    if (tag.validate(lastRevision)) {
+      vm.goto(target);
+    }
+  }
+
+  didModify() {
+    this.lastRevision = this.tag.value();
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.target.inspect())]
+    };
+  }
+}
+
+export class DidModifyOpcode extends UpdatingOpcode {
+  public type = "did-modify";
+
+  private target: JumpIfNotModifiedOpcode;
+
+  constructor({ target }: { target: JumpIfNotModifiedOpcode }) {
+    super();
+    this.tag = CONSTANT_TAG;
+    this.target = target;
+  }
+
+  evaluate() {
+    this.target.didModify();
+  }
+}
+

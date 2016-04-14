@@ -1,14 +1,14 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementStack } from '../builder';
-import { Destroyable, Dict, Stack, LinkedList, LOGGER, InternedString, Opaque } from 'glimmer-util';
-import { PathReference, ReferenceIterator } from 'glimmer-reference';
+import { Destroyable, Dict, Stack, LinkedList, ListSlice, LOGGER, InternedString, Opaque } from 'glimmer-util';
+import { PathReference, ReferenceIterator, combineSlice } from 'glimmer-reference';
 import Template from '../template';
 import { Templates } from '../syntax/core';
 import { InlineBlock, CompiledBlock } from '../compiled/blocks';
 import { CompiledExpression } from '../compiled/expressions';
 import { CompiledArgs, EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq, UpdatingOpcode } from '../opcodes';
-import { LabelOpcode } from '../compiled/opcodes/vm';
+import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { Range } from '../utils';
 
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
@@ -67,6 +67,7 @@ export default class VM implements PublicVM {
   private scopeStack = new Stack<Scope>();
   private elementStack: ElementStack;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
+  public cacheGroups = new Stack<UpdatingOpcode>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public frame = new FrameStack();
 
@@ -94,6 +95,33 @@ export default class VM implements PublicVM {
   goto(op: LabelOpcode) {
     // assert(this.frame.getOps().contains(op), `Illegal jump to ${op.label}`);
     this.frame.goto(op);
+  }
+
+  beginCacheGroup() {
+    this.cacheGroups.push(this.updatingOpcodeStack.current.tail());
+  }
+
+  commitCacheGroup() {
+    //        JumpIfNotModified(END)
+    //        (head)
+    //        (....)
+    //        (tail)
+    //        DidModify
+    // END:   Noop
+
+    let END = new LabelOpcode({ label: "END" });
+
+    let opcodes = this.updatingOpcodeStack.current;
+    let marker = this.cacheGroups.pop();
+    let head = marker ? opcodes.nextNode(marker) : opcodes.head();
+    let tail = opcodes.tail();
+    let tag = combineSlice(new ListSlice(head, tail));
+
+    let guard = new JumpIfNotModifiedOpcode({ tag, target: END });
+
+    opcodes.insertBefore(guard, head);
+    opcodes.append(new DidModifyOpcode({ target: guard }));
+    opcodes.append(END);
   }
 
   enter(ops: OpSeq) {
@@ -154,7 +182,7 @@ export default class VM implements PublicVM {
   }
 
   updateWith(opcode: UpdatingOpcode) {
-    this.updatingOpcodeStack.current.insertBefore(opcode, null);
+    this.updatingOpcodeStack.current.append(opcode);
   }
 
   stack(): ElementStack {

@@ -17,7 +17,6 @@ import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 
-
 export class TextOpcode extends Opcode {
   public type = "text";
   public text: InternedString;
@@ -264,14 +263,13 @@ export class ModifierOpcode extends Opcode {
   }
 }
 
-export class UpdateModifierOpcode extends DOMUpdatingOpcode {
+export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = "update-modifier";
 
   private element: Element;
-  public args: EvaluatedArgs;
+  private args: EvaluatedArgs;
   private manager: ModifierManager<Opaque>;
   private modifier: Opaque;
-  private tag: RevisionTag;
   private lastUpdated: Revision;
 
   constructor({ manager, modifier, element, args }: { manager: ModifierManager<Opaque>, modifier: Opaque, element: Element, args: EvaluatedArgs }) {
@@ -280,6 +278,7 @@ export class UpdateModifierOpcode extends DOMUpdatingOpcode {
     this.manager = manager;
     this.element = element;
     this.args = args;
+    this.tag = args.tag;
     this.lastUpdated = args.tag.value();
   }
 
