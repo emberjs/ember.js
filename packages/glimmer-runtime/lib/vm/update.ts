@@ -54,6 +54,10 @@ export default class UpdatingVM {
     }
   }
 
+  goto(op: UpdatingOpcode) {
+    this.frameStack.current.goto(op);
+  }
+
   try(ops: UpdatingOpSeq, handler: ExceptionHandler) {
     this.frameStack.push(new UpdatingVMFrame(this, ops, handler));
   }
@@ -364,6 +368,10 @@ export class UpdatingVMFrame {
     this.ops = ops;
     this.current = ops.head();
     this.exceptionHandler = handler;
+  }
+
+  goto(op: UpdatingOpcode) {
+    this.current = op;
   }
 
   nextStatement(): UpdatingOpcode {

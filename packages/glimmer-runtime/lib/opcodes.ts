@@ -62,7 +62,6 @@ export function inspect(opcodes: LinkedList<AbstractOpcode>): string {
 }
 
 function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: number) {
-  let i = 1;
   let indentation = [];
 
   for (let i=0; i<level; i++) {
