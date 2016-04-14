@@ -41,8 +41,7 @@ function propertyWillChange(obj, keyName) {
   var m = peekMeta(obj);
   var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  var desc = m && m.peekDescs(keyName);
 
   if (!watching) {
     return;
@@ -81,8 +80,7 @@ function propertyDidChange(obj, keyName) {
   var m = peekMeta(obj);
   var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
   var proto = m && m.proto;
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  var desc = m && m.peekDescs(keyName);
 
   if (proto === obj) {
     return;
@@ -151,9 +149,8 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  var possibleDesc, desc;
-  var guid = guidFor(obj);
-  var current = seen[guid];
+  let guid = guidFor(obj);
+  let current = seen[guid];
 
   if (!current) {
     current = seen[guid] = {};
@@ -168,8 +165,7 @@ function iterDeps(method, obj, depKey, seen, meta) {
   meta.forEachInDeps(depKey, (key, value) => {
     if (!value) { return; }
 
-    possibleDesc = obj[key];
-    desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let desc = meta.peekDescs(key);
 
     if (desc && desc._suspended === obj) {
       return;

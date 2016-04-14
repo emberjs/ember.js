@@ -48,26 +48,18 @@ export function get(obj, keyName) {
     return obj;
   }
 
-  var value = obj[keyName];
-  var desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
-  var ret;
-
-  if (desc === undefined && isPath(keyName)) {
+  if (isPath(keyName)) {
     return _getPath(obj, keyName);
   }
 
-  if (desc) {
-    return desc.get(obj, keyName);
-  } else {
-    ret = value;
+  let ret = obj[keyName];
 
-    if (ret === undefined &&
-        'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
-      return obj.unknownProperty(keyName);
-    }
-
-    return ret;
+  if (ret === undefined &&
+      'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
+    return obj.unknownProperty(keyName);
   }
+
+  return ret;
 }
 
 export function _getPath(root, path) {

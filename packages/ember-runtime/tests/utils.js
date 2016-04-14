@@ -1,16 +1,11 @@
 import run from 'ember-metal/run_loop';
 
-function runAppend(view) {
+export function runAppend(view) {
   run(view, 'appendTo', '#qunit-fixture');
 }
 
-function runDestroy(destroyed) {
+export function runDestroy(destroyed) {
   if (destroyed) {
     run(destroyed, 'destroy');
   }
 }
-
-export {
-  runAppend,
-  runDestroy
-};

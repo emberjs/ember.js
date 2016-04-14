@@ -1,5 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import InjectedProperty from 'ember-metal/injected_property';
+import { meta } from 'ember-metal/meta';
 
 /**
   Namespace for injection helper methods.
@@ -47,20 +48,19 @@ export function createInjectionHelper(type, validator) {
   @param {Object} factory The factory object
 */
 export function validatePropertyInjections(factory) {
+  // TODO: this function is stupid;
   var proto = factory.proto();
   var types = [];
-  var key, desc, validator, i, l;
+  let m = meta(proto);
 
-  for (key in proto) {
-    desc = proto[key];
-    if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
-      types.push(desc.type);
-    }
-  }
+  m.forEachDescs((name, desc) => {
+    if (desc === undefined) { return; }
+    types.push(desc.type); // some unique crap
+  });
 
   if (types.length) {
-    for (i = 0, l = types.length; i < l; i++) {
-      validator = typeValidators[types[i]];
+    for (let i = 0, l = types.length; i < l; i++) {
+      let validator = typeValidators[types[i]];
 
       if (typeof validator === 'function') {
         validator(factory);

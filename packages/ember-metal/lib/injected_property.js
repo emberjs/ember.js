@@ -3,6 +3,7 @@ import { ComputedProperty } from 'ember-metal/computed';
 import { AliasedProperty } from 'ember-metal/alias';
 import { Descriptor } from 'ember-metal/properties';
 import { getOwner } from 'container/owner';
+import { meta } from 'ember-metal/meta';
 
 /**
   Read-only property that returns the result of a container lookup.
@@ -15,7 +16,7 @@ import { getOwner } from 'container/owner';
          to the property's name
   @private
 */
-function InjectedProperty(type, name) {
+export default function InjectedProperty(type, name) {
   this.type = type;
   this.name = name;
 
@@ -24,7 +25,7 @@ function InjectedProperty(type, name) {
 }
 
 function injectedPropertyGet(keyName) {
-  var desc = this[keyName];
+  var desc = meta(this).peekDescs(keyName);
   let owner = getOwner(this);
 
   assert(`InjectedProperties should be defined with the Ember.inject computed property macros.`, desc && desc.isDescriptor && desc.type);
@@ -45,5 +46,3 @@ InjectedPropertyPrototype.get = ComputedPropertyPrototype.get;
 InjectedPropertyPrototype.readOnly = ComputedPropertyPrototype.readOnly;
 
 InjectedPropertyPrototype.teardown = ComputedPropertyPrototype.teardown;
-
-export default InjectedProperty;

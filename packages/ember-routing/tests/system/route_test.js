@@ -17,8 +17,8 @@ function teardown() {
 }
 
 QUnit.module('Ember.Route', {
-  setup: setup,
-  teardown: teardown
+  setup,
+  teardown
 });
 
 QUnit.test('default store utilizes the container to acquire the model factory', function() {

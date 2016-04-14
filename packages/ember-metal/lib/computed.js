@@ -375,8 +375,7 @@ ComputedPropertyPrototype._throwReadOnlyError = function computedPropertyThrowRe
 };
 
 ComputedPropertyPrototype.clobberSet = function computedPropertyClobberSet(obj, keyName, value) {
-  let cachedValue = cacheFor(obj, keyName);
-  defineProperty(obj, keyName, null, cachedValue);
+  defineProperty(obj, keyName, null, cacheFor(obj, keyName));
   set(obj, keyName, value);
   return value;
 };
