@@ -26,3 +26,14 @@ QUnit.test('works with new (> 1 arg)', function() {
 
   equal(obj.other, undefined); // doesn't support multiple pojo' to the constructor
 });
+
+QUnit.test('toString should be not be added as a property when calling toString()', function() {
+  var obj = new CoreObject({
+    firstName: 'Foo',
+    lastName: 'Bar'
+  });
+
+  obj.toString();
+
+  notOk(obj.hasOwnProperty('toString'), 'Calling toString() should not create a toString class property');
+});

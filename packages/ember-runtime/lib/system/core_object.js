@@ -523,16 +523,11 @@ CoreObject.PrototypeMixin = Mixin.create({
     var extension = hasToStringExtension ? ':' + this.toStringExtension() : '';
     var ret = '<' + this.constructor.toString() + ':' + guidFor(this) + extension + '>';
 
-    this.toString = makeToString(ret);
     return ret;
   }
 });
 
 CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
-
-function makeToString(ret) {
-  return function() { return ret; };
-}
 
 CoreObject.__super__ = null;
 
