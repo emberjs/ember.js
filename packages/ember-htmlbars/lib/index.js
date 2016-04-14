@@ -123,6 +123,7 @@ import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
 import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
 import hashHelper from 'ember-htmlbars/helpers/hash';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
+import jsonHelper from 'ember-htmlbars/helpers/json';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import {
   getTemplates,
@@ -149,6 +150,7 @@ registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-html-safe', htmlSafeHelper);
 registerHelper('hash', hashHelper);
+registerHelper('json', jsonHelper);
 
 Ember.HTMLBars = {
   template: template,
