@@ -1004,7 +1004,7 @@ EmberRouter.reopenClass({
     path name as well.
 
     The second parameter is the optional options hash. Available options are:
-    
+
       * `path`: allows you to provide your own path as well as mark dynamic
         segments.
       * `resetNamespace`: false by default; when nesting routes, ember will
