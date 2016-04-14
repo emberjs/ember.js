@@ -15,6 +15,7 @@
         "throws",
         "deepEqual",
         "ok",
+        "notOk",
         "strictEqual",
         "expect",
         "minispade",
