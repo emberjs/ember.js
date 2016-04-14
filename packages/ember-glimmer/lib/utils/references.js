@@ -1,19 +1,31 @@
 import { get } from 'ember-metal/property_get';
 import { tagFor } from 'ember-metal/tags';
-import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, referenceFromParts } from 'glimmer-reference';
+import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
 
+// FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
+// have an `isTruthy` property on them). This is not actually supported –
+// we should fix the tests to use an actual proxy. When that's done, we should
+// remove this and use the real `isProxy` from `ember-metal`.
+//
+// import { isProxy } from 'ember-metal/-proxy';
+//
+function isProxy(obj) {
+  return (obj && typeof obj === 'object' && 'isTruthy' in obj);
+}
+
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
   get() {
-    return NULL_REFERENCE;
+    return UNDEFINED_REFERENCE;
   }
 }
 
 export const NULL_REFERENCE = new ConstReference(null);
+export const UNDEFINED_REFERENCE = new ConstReference(undefined);
 
 // @abstract
 // @implements PathReference
@@ -170,25 +182,68 @@ export class HashHelperReference extends CachedReference {
 }
 
 export class ConditionalReference extends GlimmerConditionalReference {
+  static create(reference) {
+    if (isConst(reference)) {
+      let value = reference.value();
+
+      if (!isProxy(value)) {
+        return new PrimitiveReference(emberToBool(value));
+      }
+    }
+
+    return new ConditionalReference(reference);
+  }
+
   constructor(reference) {
     super(reference);
 
-    // this.objectTag = new UpdatableTag(CURRENT_TAG);
-    // this.tag = combine([reference.tag, this.objectTag]);
-
-    // FIXME: fix failing proxy tests
-    this.tag = VOLATILE_TAG;
+    this.objectTag = new UpdatableTag(CURRENT_TAG);
+    this.tag = combine([reference.tag, this.objectTag]);
   }
 
   toBool(predicate) {
-    // this.objectTag.update(tagFor(predicate));
+    if (isProxy(predicate)) {
+      this.objectTag.update(VOLATILE_TAG);
+    } else {
+      this.objectTag.update(tagFor(predicate));
+    }
+
     return emberToBool(predicate);
   }
 }
 
-export class ConstConditionalReference extends ConstReference {
-  constructor(reference) {
-    super(emberToBool(reference.value()));
+export class ConditionalHelperReference extends CachedReference {
+  static create(_condRef, _truthyRef, _falsyRef) {
+    let condRef = ConditionalReference.create(_condRef);
+    let truthyRef = _truthyRef || UNDEFINED_REFERENCE;
+    let falsyRef = _falsyRef || UNDEFINED_REFERENCE;
+
+    if (isConst(condRef)) {
+      return condRef.value() ? truthyRef : falsyRef;
+    } else {
+      return new ConditionalHelperReference(condRef, truthyRef, falsyRef);
+    }
+  }
+
+  constructor(cond, truthy, falsy) {
+    super();
+
+    this.branchTag = new UpdatableTag(CURRENT_TAG);
+    this.tag = combine([cond.tag, this.branchTag]);
+
+    this.cond = cond;
+    this.truthy = truthy;
+    this.falsy = falsy;
+  }
+
+  compute() {
+    let { cond, truthy, falsy } = this;
+
+    let branch = cond.value() ? truthy : falsy;
+
+    this.branchTag.update(branch.tag);
+
+    return branch.value();
   }
 }
 
