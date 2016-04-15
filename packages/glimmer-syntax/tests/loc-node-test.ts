@@ -39,8 +39,15 @@ test("blocks", function() {
       }}
     `);
 
-  locEqual(ast.body[1], 2, 2, 9, 8, 'outer block');
-  locEqual(ast.body[1].program.body[0], 3, 4, 7, 13, 'nested block');
+  let [,block] = ast.body;
+  let [nestedBlock] = block.program.body;
+  let [nestedBlockText] = nestedBlock.program.body;
+  let nestedInverse = nestedBlock.inverse;
+
+  locEqual(block, 2, 2, 9, 8, 'outer block');
+  locEqual(nestedBlock, 3, 4, 7, 13, 'nested block');
+  locEqual(nestedBlockText, 4, 0, 5, 0);
+  locEqual(nestedInverse, 5, 8, 7, 2);
 });
 
 test("mustache", function() {
@@ -52,8 +59,12 @@ test("mustache", function() {
     {{/if}}
   `);
 
-  locEqual(ast.body[1], 2, 4, 2, 11, 'outer mustache');
-  locEqual(ast.body[3].program.body[1], 4, 11, 5, 10, 'inner mustache');
+  let [,foo,,innerBlock] = ast.body;
+  let [barText, bar] = innerBlock.program.body;
+
+  locEqual(foo, 2, 4, 2, 11, 'outer mustache');
+  locEqual(barText, 4, 0, 4, 11);
+  locEqual(bar, 4, 11, 5, 10, 'inner mustache');
 });
 
 test("element modifier", function() {
@@ -160,4 +171,43 @@ test("html elements after mustache", function() {
 
   locEqual(mustache, 2, 4, 2, 15, '{{foo-bar}}');
   locEqual(p, 2, 16, 2, 26, 'div element');
+});
+
+test("text", function() {
+  let ast = parse(`
+    foo!
+    <div>blah</div>
+  `);
+
+  let [fooText,div] = ast.body;
+  let [blahText] = div.children;
+
+  locEqual(fooText, 1, 0, 3, 4);
+  locEqual(blahText, 3, 9, 3, 13);
+});
+
+test("comment", function() {
+  let ast = parse(`
+    <div><!-- blah blah blah blah --></div>
+  `);
+
+  let [,div] = ast.body;
+  let [comment] = div.children;
+
+  locEqual(comment, 2, 12, 2, 36);
+});
+
+test("element attribute", function() {
+  let ast = parse(`
+    <div data-foo="blah"
+      data-derp="lolol">
+      Hi, fivetanley!
+    </div>
+  `);
+
+  let [,div] = ast.body;
+  let [dataFoo, dataDerp] = div.attributes;
+
+  locEqual(dataFoo, 2, 10, 2, 24);
+  locEqual(dataDerp, 3, 7, 3, 23);
 });
