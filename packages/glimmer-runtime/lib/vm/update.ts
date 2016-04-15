@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { Bounds, clear, move as moveBounds } from '../bounds';
 import { ElementStack, Tracker } from '../builder';
-import { Destroyable, Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
+import { LOGGER, Destroyable, Stack, LinkedList, InternedString, Dict, dict } from 'glimmer-util';
 import { ConstReference, PathReference, IterationArtifacts, IteratorSynchronizer, IteratorSynchronizerDelegate } from 'glimmer-reference';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
@@ -34,6 +34,9 @@ export default class UpdatingVM {
         this.frameStack.pop();
         continue;
       }
+
+      LOGGER.debug(`[VM] OP ${opcode.type}`);
+      LOGGER.trace(opcode);
 
       opcode.evaluate(this);
     }
