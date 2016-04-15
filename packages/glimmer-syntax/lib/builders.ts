@@ -71,11 +71,12 @@ export function buildElement(tag, attributes?, modifiers?, children?, loc?) {
   };
 }
 
-export function buildAttr(name, value) {
+export function buildAttr(name, value, loc?) {
   return {
     type: "AttrNode",
     name: name,
-    value: value
+    value: value,
+    loc: buildLoc(loc)
   };
 }
 
@@ -179,7 +180,7 @@ function buildSource(source?) {
   return source || null;
 }
 
-function buildPosition(line, column) {
+export function buildPosition(line, column) {
   return {
     line: (typeof line === 'number') ? line : null,
     column: (typeof column === 'number') ? column : null
