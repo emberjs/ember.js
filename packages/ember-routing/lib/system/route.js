@@ -612,16 +612,12 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     App.ApplicationRoute = Ember.Route.extend({
       actions: {
         loading: function(transition, route) {
-          var view = Ember.View.create({
-            classNames: ['app-loading']
-          })
-          .append();
+          let controller = this.controllerFor('foo');
+          controller.set('currentlyLoading', true);
 
-          this.router.one('didTransition', function() {
-            view.destroy();
+          transition.finally(function() {
+            controller.set('currentlyLoading', false);
           });
-
-          return true; // Bubble the loading event
         }
       }
     });
