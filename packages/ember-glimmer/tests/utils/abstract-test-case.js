@@ -187,15 +187,19 @@ export class TestCase {
     this.assert.strictEqual(actual, expected, 'DOM node stability');
   }
 
-  assertInvariants() {
-    let oldSnapshot = this.snapshot;
-    let newSnapshot = this.takeSnapshot();
+  assertInvariants(oldSnapshot, newSnapshot) {
+    oldSnapshot = oldSnapshot || this.snapshot;
+    newSnapshot = newSnapshot || this.takeSnapshot();
 
     this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
 
     for (let i = 0; i < oldSnapshot.length; i++) {
       this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
     }
+  }
+
+  assertPartialInvariants(start, end) {
+    this.assertInvariants(this.snapshot, this.takeSnapshot().slice(start, end));
   }
 
   assertStableRerender() {
