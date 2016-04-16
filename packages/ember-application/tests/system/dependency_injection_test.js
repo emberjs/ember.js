@@ -1,17 +1,17 @@
-import Ember from 'ember-metal/core';
+import { ENV, context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Application from 'ember-application/system/application';
 
 var EmberApplication = Application;
 
-var originalLookup = Ember.lookup;
+var originalLookup = context.lookup;
 var registry, locator, lookup, application, originalModelInjections;
 
 QUnit.module('Ember.Application Dependency Injection', {
   setup() {
-    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
-    Ember.MODEL_FACTORY_INJECTIONS = true;
+    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
+    ENV.MODEL_FACTORY_INJECTIONS = true;
 
     application = run(EmberApplication, 'create');
 
@@ -30,13 +30,13 @@ QUnit.module('Ember.Application Dependency Injection', {
     registry = application.__registry__;
     locator = application.__container__;
 
-    lookup = Ember.lookup = {};
+    lookup = context.lookup = {};
   },
   teardown() {
     run(application, 'destroy');
     application = locator = null;
-    Ember.lookup = originalLookup;
-    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
+    context.lookup = originalLookup;
+    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 

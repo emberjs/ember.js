@@ -5,6 +5,7 @@
 
 // BEGIN IMPORTS
 import require, { has } from 'require';
+import { ENV, context } from 'ember-environment';
 import Ember from 'ember-metal/core';
 import { deprecate, deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
@@ -345,6 +346,33 @@ if (isEnabled('ember-metal-ember-assign')) {
 Ember.FEATURES = FEATURES;
 Ember.FEATURES.isEnabled = isEnabled;
 
+Ember.EXTEND_PROTOTYPES = ENV.EXTEND_PROTOTYPES;
+
+// BACKWARDS COMPAT ACCESSORS FOR ENV FLAGS
+Object.defineProperty(Ember, 'LOG_STACKTRACE_ON_DEPRECATION', {
+  get: () => ENV.LOG_STACKTRACE_ON_DEPRECATION,
+  set: value => ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value,
+  enumerable: false
+});
+
+Object.defineProperty(Ember, 'LOG_VERSION', {
+  get: () => ENV.LOG_VERSION,
+  set: value => ENV.LOG_VERSION = !!value,
+  enumerable: false
+});
+
+Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
+  get: () => ENV.MODEL_FACTORY_INJECTIONS,
+  set: value => ENV.MODEL_FACTORY_INJECTIONS = !!value,
+  enumerable: false
+});
+
+Object.defineProperty(Ember, 'LOG_BINDINGS', {
+  get: () => ENV.LOG_BINDINGS,
+  set: value => ENV.LOG_BINDINGS = !!value,
+  enumerable: false
+});
+
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
   internals encounter an error. This is useful for specialized error handling
@@ -382,5 +410,12 @@ if (has('ember-debug')) {
 
 Ember.create = deprecateFunc('Ember.create is deprecated in favor of Object.create', { id: 'ember-metal.ember-create', until: '3.0.0' }, Object.create);
 Ember.keys = deprecateFunc('Ember.keys is deprecated in favor of Object.keys', { id: 'ember-metal.ember.keys', until: '3.0.0' }, Object.keys);
+
+/* globals module */
+if (typeof module === 'object' && module.exports) {
+  module.exports = Ember;
+} else {
+  context.exports.Ember = context.exports.Em = Ember;
+}
 
 export default Ember;

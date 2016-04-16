@@ -1,4 +1,5 @@
-import _Ember from 'ember-metal';
+export { default as _Ember } from 'ember-metal'; // Is this still needed
+import { ENV } from 'ember-environment';
 import precompile from 'ember-template-compiler/system/precompile';
 import compile from 'ember-template-compiler/system/compile';
 import template from 'ember-template-compiler/system/template';
@@ -37,14 +38,12 @@ registerPlugin('ast', PreventRenderBlock);
 registerPlugin('ast', AssertNoEachIn);
 registerPlugin('ast', TransformInlineLinkTo);
 
-if (!_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+if (!ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerPlugin('ast', AssertNoViewAndControllerPaths);
   registerPlugin('ast', AssertNoViewHelper);
 }
 
-
 export {
-  _Ember,
   precompile,
   compile,
   template,

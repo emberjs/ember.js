@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
@@ -9,7 +9,7 @@ import { registerHelper } from 'ember-htmlbars/helpers';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-var originalLookup = Ember.lookup;
+var originalLookup = context.lookup;
 var originalViewKeyword;
 var lookup, view;
 
@@ -21,7 +21,7 @@ if (!isEnabled('ember-glimmer')) {
 QUnit.module('views/view/view_lifecycle_test - pre-render', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
   },
 
   teardown() {
@@ -30,7 +30,7 @@ QUnit.module('views/view/view_lifecycle_test - pre-render', {
         view.destroy();
       });
     }
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
     resetKeyword('view', originalViewKeyword);
   }
 });

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import {context} from 'ember-environment';
 import {get} from 'ember-metal/property_get';
 import {set} from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
@@ -44,8 +44,9 @@ import EmberObject from 'ember-runtime/system/object';
 // Binding Tests
 // ========================================================================
 
-var TestNamespace, fromObject, toObject, binding, Bon1, bon2, root; // global variables
-var originalLookup, lookup;
+let TestNamespace, fromObject, toObject, binding, Bon1, bon2, root; // global variables
+let originalLookup = context.lookup;
+let lookup;
 
 QUnit.module('basic object binding', {
   setup() {
@@ -172,8 +173,7 @@ QUnit.test('changing first output should propagate to third after flush', functi
 
 QUnit.module('Custom Binding', {
   setup() {
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
 
     Bon1 = EmberObject.extend({
       value1: 'hi',
@@ -187,13 +187,13 @@ QUnit.module('Custom Binding', {
       arr: [1, 2, 3, 4]
     });
 
-    Ember.lookup['TestNamespace'] = TestNamespace = {
+    context.lookup['TestNamespace'] = TestNamespace = {
       bon2: bon2,
       Bon1: Bon1
     };
   },
   teardown() {
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
     Bon1 = bon2 = TestNamespace  = null;
     run.cancelTimers();
   }
@@ -235,10 +235,9 @@ QUnit.test('two bindings to the same value should sync in the order they are ini
 
 QUnit.module('propertyNameBinding with longhand', {
   setup() {
-    originalLookup = Ember.lookup;
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
 
-    Ember.lookup['TestNamespace'] = TestNamespace = {};
+    lookup['TestNamespace'] = TestNamespace = {};
     run(function () {
       TestNamespace.fromObject = EmberObject.create({
         value: 'originalValue'
@@ -254,7 +253,7 @@ QUnit.module('propertyNameBinding with longhand', {
   },
   teardown() {
     TestNamespace = undefined;
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 

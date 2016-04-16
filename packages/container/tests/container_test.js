@@ -1,4 +1,5 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
+import { get } from 'ember-metal/property_get';
 import Registry from 'container/registry';
 import factory from 'container/tests/test-helpers/factory';
 import { getOwner, OWNER } from 'container/owner';
@@ -8,10 +9,10 @@ var originalModelInjections;
 
 QUnit.module('Container', {
   setup() {
-    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
+    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
   },
   teardown() {
-    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
+    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 
@@ -239,7 +240,7 @@ QUnit.test('An invalid factory throws an error', function() {
 });
 
 QUnit.test('Injecting a failed lookup raises an error', function() {
-  Ember.MODEL_FACTORY_INJECTIONS = true;
+  ENV.MODEL_FACTORY_INJECTIONS = true;
 
   var registry = new Registry();
   var container = registry.container();
@@ -552,7 +553,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
   let postController = container.lookup('controller:post');
 
   expectDeprecation(function() {
-    Ember.get(postController, 'container');
+    get(postController, 'container');
   }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
 
   expectDeprecation(function() {
@@ -602,7 +603,7 @@ QUnit.test('A deprecated `container` property is appended to every object instan
   let postController = container.lookup('controller:post');
 
   expectDeprecation(function() {
-    Ember.get(postController, 'container');
+    get(postController, 'container');
   }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
 
   expectDeprecation(function() {

@@ -1,15 +1,16 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import EmberObject from 'ember-runtime/system/object';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 
-var originalLookup;
+let originalLookup = context.lookup;
+let lookup;
 
 QUnit.module('TargetActionSupport', {
   setup() {
-    originalLookup = Ember.lookup;
+    context.lookup = lookup = {};
   },
   teardown() {
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 
@@ -58,7 +59,7 @@ QUnit.test('it should find targets specified using a property path', function() 
   expect(2);
 
   var Test = {};
-  Ember.lookup = { Test: Test };
+  lookup.Test = Test;
 
   Test.targetObj = EmberObject.create({
     anEvent() {
@@ -92,7 +93,7 @@ QUnit.test('it should find an actionContext specified as a property path', funct
   expect(2);
 
   var Test = {};
-  Ember.lookup = { Test: Test };
+  lookup.Test = Test;
   Test.aContext = {};
 
   var obj = EmberObject.extend(TargetActionSupport).create({

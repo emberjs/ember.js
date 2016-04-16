@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import { observersFor } from 'ember-metal/observer';
 import { changeProperties } from 'ember-metal/property_events';
@@ -6,16 +6,16 @@ import { SafeString } from 'ember-htmlbars/utils/string';
 
 import EmberView from 'ember-views/views/view';
 
-var originalLookup = Ember.lookup;
-var lookup, view;
+let originalLookup = context.lookup;
+let lookup, view;
 
-var appendView = function() {
+let appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });
 };
 
 QUnit.module('EmberView - Attribute Bindings', {
   setup() {
-    Ember.lookup = lookup = {};
+    context.lookup = lookup = {};
   },
   teardown() {
     if (view) {
@@ -24,7 +24,7 @@ QUnit.module('EmberView - Attribute Bindings', {
       });
       view = null;
     }
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // Ember.lookup;
+import { context } from 'ember-environment';
 import EmberObject from 'ember-runtime/system/object';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
@@ -20,7 +20,7 @@ var people, view, owner;
 var template, templateMyView, MyView, MyEmptyView, templateMyEmptyView;
 var originalViewKeyword;
 
-var originalLookup = Ember.lookup;
+var originalLookup = context.lookup;
 var lookup;
 
 import isEnabled from 'ember-metal/features';
@@ -29,7 +29,7 @@ if (!isEnabled('ember-glimmer')) {
 
 QUnit.module('the #each helper', {
   setup() {
-    Ember.lookup = lookup = { Ember: Ember };
+    context.lookup = lookup = {};
 
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
@@ -64,7 +64,7 @@ QUnit.module('the #each helper', {
     runDestroy(view);
     owner = view = null;
 
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
 
     resetKeyword('view', originalViewKeyword);
   }

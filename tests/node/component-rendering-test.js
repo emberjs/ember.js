@@ -5,7 +5,7 @@ var SimpleDOM = require('simple-dom');
 var path = require('path');
 
 var distPath = path.join(__dirname, '../../dist');
-var emberPath = path.join(distPath, 'ember.debug.cjs');
+var emberPath = path.join(distPath, 'ember.debug.js');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 var compile = require(templateCompilerPath).compile;
@@ -19,11 +19,11 @@ QUnit.module("Components can be rendered without a DOM dependency", {
   },
 
   afterEach: function() {
-    delete global.Ember;
+    // delete global.Ember;
 
-    // clear the previously cached version of this module
-    delete require.cache[emberPath + '.js'];
-    delete require.cache[templateCompilerPath + '.js'];
+    // // clear the previously cached version of this module
+    // delete require.cache[emberPath + '.js'];
+    // delete require.cache[templateCompilerPath + '.js'];
   }
 });
 

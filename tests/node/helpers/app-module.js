@@ -5,7 +5,7 @@ var path = require('path');
 var QUnit = require('qunitjs');
 
 var distPath = path.join(__dirname, '../../../dist');
-var emberPath = path.join(distPath, 'ember.debug.cjs');
+var emberPath = path.join(distPath, 'ember.debug');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 var features = require(path.join(__dirname, '../../../features.json')).features;
 var SimpleDOM = require('simple-dom');

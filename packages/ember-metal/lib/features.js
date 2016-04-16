@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import assign from 'ember-metal/assign';
 
 /**
@@ -15,7 +15,7 @@ import assign from 'ember-metal/assign';
   @public
 */
 export const KNOWN_FEATURES = DEFAULT_FEATURES; // jshint ignore:line
-export var FEATURES = assign(KNOWN_FEATURES, Ember.ENV.FEATURES);
+export let FEATURES = assign(KNOWN_FEATURES, ENV.FEATURES);
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's
@@ -34,11 +34,11 @@ export var FEATURES = assign(KNOWN_FEATURES, Ember.ENV.FEATURES);
   @public
 */
 export default function isEnabled(feature) {
-  var featureValue = FEATURES[feature];
+  let featureValue = FEATURES[feature];
 
   if (featureValue === true || featureValue === false || featureValue === undefined) {
     return featureValue;
-  } else if (Ember.ENV.ENABLE_OPTIONAL_FEATURES) {
+  } else if (ENV.ENABLE_OPTIONAL_FEATURES) {
     return true;
   } else {
     return false;

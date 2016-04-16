@@ -1,9 +1,9 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { classify } from 'ember-runtime/system/string';
 
 QUnit.module('EmberStringUtils.classify');
 
-if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+if (!ENV.EXTEND_PROTOTYPES.String) {
   QUnit.test('String.prototype.classify is not modified without EXTEND_PROTOTYPES', function() {
     ok('undefined' === typeof String.prototype.classify, 'String.prototype helper disabled');
   });
@@ -12,7 +12,7 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
 function test(given, expected, description) {
   QUnit.test(description, function() {
     deepEqual(classify(given), expected);
-    if (Ember.EXTEND_PROTOTYPES) {
+    if (ENV.EXTEND_PROTOTYPES.String) {
       deepEqual(given.classify(), expected);
     }
   });

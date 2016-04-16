@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { assert } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
@@ -14,7 +14,7 @@ function AssertNoViewHelper(options = {}) {
   @param {AST} ast The AST to be transformed.
 */
 AssertNoViewHelper.prototype.transform = function AssertNoViewHelper_transform(ast) {
-  if (!!Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+  if (!!ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
     return ast;
   }
   var walker = new this.syntax.Walker();
@@ -37,7 +37,7 @@ function assertHelper(moduleName, node) {
   } else {
     assert(
       `Using the \`{{view "string"}}\` helper is removed in 2.0. ${calculateLocationDisplay(moduleName, node.loc)}`,
-      Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT,
+      ENV._ENABLE_LEGACY_VIEW_SUPPORT,
       { id: 'view.helper', until: '2.0.0' }
     );
   }

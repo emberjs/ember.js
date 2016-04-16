@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { assert } from 'ember-metal/debug';
 import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
 
@@ -59,7 +59,7 @@ function assertPath(moduleName, node, path) {
       // allow opt-out of the assertion when legacy addons are present
       let viewKeyword = path && path.type === 'PathExpression' && path.parts && path.parts[0];
       if (viewKeyword === 'view') {
-        noAssertion = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+        noAssertion = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
       }
 
       return noAssertion;

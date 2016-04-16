@@ -1,17 +1,18 @@
 import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import {get} from 'ember-metal/property_get';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 
-var originalLookup, lookup;
+let originalLookup = context.lookup;
+let lookup;
 
 QUnit.module('Namespace', {
   setup() {
-    originalLookup = Ember.lookup;
     Ember.BOOTED = false;
 
-    lookup = Ember.lookup = {};
+    lookup = context.lookup = {};
   },
   teardown() {
     Ember.BOOTED = false;
@@ -20,7 +21,7 @@ QUnit.module('Namespace', {
       if (lookup[prop]) { run(lookup[prop], 'destroy'); }
     }
 
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
   }
 });
 

@@ -1,5 +1,3 @@
-// jQuery, Ember.lookup,
-// Ember.ENV
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
 import CoreView from 'ember-views/views/core_view';

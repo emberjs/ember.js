@@ -1,5 +1,6 @@
 /* globals EmberDev */
 import Ember from 'ember-metal/core'; // Ember.TEMPLATES
+import { context } from 'ember-environment';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
@@ -20,7 +21,7 @@ var registry, locator, application, originalLookup, originalInfo;
 
 QUnit.module('Ember.Application Dependency Injection - default resolver', {
   setup() {
-    originalLookup = Ember.lookup;
+    originalLookup = context.lookup;
     application = run(Application, 'create');
 
     registry = application.__registry__;
@@ -30,7 +31,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
 
   teardown() {
     Ember.TEMPLATES = {};
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
     run(application, 'destroy');
     var UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
     if (UserInterfaceNamespace) { run(UserInterfaceNamespace, 'destroy'); }
@@ -40,7 +41,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
 });
 
 QUnit.test('the default resolver can look things up in other namespaces', function() {
-  var UserInterface = Ember.lookup.UserInterface = Namespace.create();
+  var UserInterface = context.lookup.UserInterface = Namespace.create();
   UserInterface.NavigationController = Controller.extend();
 
   var nav = locator.lookup('controller:userInterface/navigation');

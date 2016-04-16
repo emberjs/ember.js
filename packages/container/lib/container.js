@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { assert, deprecate } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
@@ -263,7 +263,7 @@ function factoryFor(container, fullName, options = {}) {
   if (factory === undefined) { return; }
 
   var type = fullName.split(':')[0];
-  if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+  if (!factory || typeof factory.extend !== 'function' || (!ENV.MODEL_FACTORY_INJECTIONS && type === 'model')) {
     if (factory && typeof factory._onLookup === 'function') {
       factory._onLookup(fullName);
     }

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import EmberComponent from 'ember-views/components/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';
@@ -12,16 +12,18 @@ import isEnabled from 'ember-metal/features';
 if (!isEnabled('ember-glimmer')) {
   // jscs:disable
 
+let originalLegacyViewSupport = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+
 QUnit.module('ember-htmlbars: compat - view keyword (use as a path)', {
   setup() {
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
     registerAstPlugin(AssertNoViewAndControllerPaths);
     component = null;
   },
   teardown() {
     runDestroy(component);
     removeAstPlugin(AssertNoViewAndControllerPaths);
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = originalLegacyViewSupport;
   }
 });
 

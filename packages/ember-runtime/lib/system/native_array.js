@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-runtime
 */
-
-import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES
+import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { _replace as replace } from 'ember-metal/replace';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
@@ -21,7 +21,7 @@ import copy from 'ember-runtime/copy';
 /**
   The NativeArray mixin contains the properties needed to make the native
   Array support Ember.MutableArray and all of its dependent APIs. Unless you
-  have `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Array` set to
+  have `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Array` set to
   false, this will be applied automatically. Otherwise you can apply the mixin
   at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
 
@@ -107,9 +107,9 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
 /**
   Creates an `Ember.NativeArray` from an Array like object.
   Does not modify the original object. Ember.A is not needed if
-  `Ember.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
   it is recommended that you use Ember.A when creating addons for
-  ember or when you can not guarantee that `Ember.EXTEND_PROTOTYPES`
+  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
   will be `true`.
 
   Example
@@ -136,7 +136,7 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
 */
 var A;
 
-if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
+if (ENV.EXTEND_PROTOTYPES.Array) {
   NativeArray.apply(Array.prototype);
   A = function (arr) { return arr || []; };
 } else {

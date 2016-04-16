@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 import { getHash } from 'ember-routing/location/util';
 
 /**

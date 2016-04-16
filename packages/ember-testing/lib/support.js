@@ -1,7 +1,7 @@
 import { warn } from 'ember-metal/debug';
 import jQuery from 'ember-views/system/jquery';
 
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 
 /**
   @module ember

@@ -1,4 +1,4 @@
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 import {
   inspect,
   checkHasSuper,

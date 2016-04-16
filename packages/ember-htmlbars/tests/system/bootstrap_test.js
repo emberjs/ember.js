@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
@@ -9,7 +10,7 @@ import Application from 'ember-application/system/application';
 
 var trim = jQuery.trim;
 
-var originalLookup = Ember.lookup;
+var originalLookup = context.lookup;
 var lookup, App, view;
 
 function checkTemplate(templateName) {
@@ -39,11 +40,11 @@ if (!isEnabled('ember-glimmer')) {
 
 QUnit.module('ember-htmlbars: bootstrap', {
   setup() {
-    Ember.lookup = lookup = { Ember: Ember };
+    context.lookup = lookup = { Ember: Ember };
   },
   teardown() {
     Ember.TEMPLATES = {};
-    Ember.lookup = originalLookup;
+    context.lookup = originalLookup;
     runDestroy(App);
     runDestroy(view);
   }

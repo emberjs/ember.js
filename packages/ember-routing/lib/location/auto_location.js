@@ -5,7 +5,7 @@ import { tryInvoke } from 'ember-metal/utils';
 import { getOwner } from 'container/owner';
 
 import EmberObject from 'ember-runtime/system/object';
-import environment from 'ember-metal/environment';
+import { environment } from 'ember-environment';
 
 import {
   supportsHashChange,

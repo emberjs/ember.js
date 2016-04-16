@@ -1,5 +1,5 @@
-import Ember from 'ember-metal/core'; // Ember.LOG_BINDINGS
 import Logger from 'ember-metal/logger';
+import { context, ENV } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
@@ -17,29 +17,10 @@ import {
   getTailPath
 } from 'ember-metal/path_cache';
 
-
-// ES6TODO: where is Ember.lookup defined?
 /**
 @module ember
 @submodule ember-metal
 */
-
-// ..........................................................
-// CONSTANTS
-//
-
-/**
-  Debug parameter you can turn on. This will log all bindings that fire to
-  the console. This should be disabled in production code. Note that you
-  can also enable this from the console or temporarily.
-
-  @property LOG_BINDINGS
-  @for Ember
-  @type Boolean
-  @default false
-  @public
-*/
-Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
 // ..........................................................
 // BINDING
@@ -169,7 +150,7 @@ Binding.prototype = {
     // whether the path refers to a global or not by consulting `Ember.lookup`.
     if (isGlobalPath(this._from)) {
       let name = getFirstKey(this._from);
-      let possibleGlobal = Ember.lookup[name];
+      let possibleGlobal = context.lookup[name];
 
       if (possibleGlobal) {
         fromObj = possibleGlobal;
@@ -257,7 +238,7 @@ Binding.prototype = {
   },
 
   _sync() {
-    var log = Ember.LOG_BINDINGS;
+    var log = ENV.LOG_BINDINGS;
 
     let toObj = this._toObj;
 

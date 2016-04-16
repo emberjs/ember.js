@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-import Ember from 'ember-metal/core'; // Ember.lookup
+import { context } from 'ember-environment';
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
@@ -39,7 +39,7 @@ var TargetActionSupport = Mixin.create({
     if (typeof target === 'string') {
       var value = get(this, target);
       if (value === undefined) {
-        value = get(Ember.lookup, target);
+        value = get(context.lookup, target);
       }
 
       return value;
@@ -53,7 +53,7 @@ var TargetActionSupport = Mixin.create({
 
     if (typeof actionContext === 'string') {
       var value = get(this, actionContext);
-      if (value === undefined) { value = get(Ember.lookup, actionContext); }
+      if (value === undefined) { value = get(context.lookup, actionContext); }
       return value;
     } else {
       return actionContext;

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import { compile } from 'ember-template-compiler';
 
 let legacyViewSupportOriginalValue;
@@ -9,12 +9,12 @@ if (!isEnabled('ember-glimmer')) {
 
 QUnit.module('ember-template-compiler: assert-no-each-in-test without legacy view support', {
   setup() {
-    legacyViewSupportOriginalValue = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+    legacyViewSupportOriginalValue = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
   },
 
   teardown() {
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = legacyViewSupportOriginalValue;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = legacyViewSupportOriginalValue;
   }
 });
 
@@ -31,12 +31,12 @@ QUnit.test('{{#each foo in bar}} is not allowed', function() {
 
 QUnit.module('ember-template-compiler: assert-no-each-in-test with legacy view support', {
   setup() {
-    legacyViewSupportOriginalValue = Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT;
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
+    legacyViewSupportOriginalValue = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
   },
 
   teardown() {
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = legacyViewSupportOriginalValue;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = legacyViewSupportOriginalValue;
   }
 });
 

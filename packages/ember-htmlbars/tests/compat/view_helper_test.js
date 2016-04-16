@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import EmberComponent from 'ember-views/components/component';
 import EmberView from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -17,9 +17,12 @@ let component, owner, originalViewKeyword;
 import isEnabled from 'ember-metal/features';
 if (!isEnabled('ember-glimmer')) {
   // jscs:disable
+
+let originalLegacyViewSupport = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
+
 QUnit.module('ember-htmlbars: compat - view helper', {
   setup() {
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
     registerAstPlugin(AssertNoViewHelper);
 
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -30,7 +33,7 @@ QUnit.module('ember-htmlbars: compat - view helper', {
     runDestroy(component);
     runDestroy(owner);
     removeAstPlugin(AssertNoViewHelper);
-    Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
+    ENV._ENABLE_LEGACY_VIEW_SUPPORT = originalLegacyViewSupport;
     owner = component = null;
 
     resetKeyword('view', originalViewKeyword);

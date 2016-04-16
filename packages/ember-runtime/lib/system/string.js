@@ -143,7 +143,7 @@ function capitalize(str) {
 
 /**
   Defines string helper methods including string formatting and localization.
-  Unless `Ember.EXTEND_PROTOTYPES.String` is `false` these methods will also be
+  Unless `EmberENV.EXTEND_PROTOTYPES.String` is `false` these methods will also be
   added to the `String.prototype` as well.
 
   @class String

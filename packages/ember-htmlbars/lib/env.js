@@ -1,5 +1,4 @@
-import _Ember from 'ember-metal';
-import environment from 'ember-metal/environment';
+import { environment, ENV } from 'ember-environment';
 
 import { hooks } from 'htmlbars-runtime';
 import assign from 'ember-metal/assign';
@@ -99,7 +98,7 @@ registerKeyword('@mut', privateMut);
 registerKeyword('readonly', readonly);
 registerKeyword('get', getKeyword);
 
-if (_Ember.ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
+if (ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerKeyword('view', view);
 }
 

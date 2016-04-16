@@ -3,8 +3,9 @@
 @submodule ember-runtime
 */
 
-// Ember.lookup, Ember.BOOTED, Ember.NAME_KEY, Ember.anyUnprocessedMixins
+// Ember.BOOTED, Ember.NAME_KEY, Ember.anyUnprocessedMixins
 import Ember from 'ember-metal/core';
+import { context } from 'ember-environment';
 import { get } from 'ember-metal/property_get';
 import {
   GUID_KEY,
@@ -57,7 +58,7 @@ var Namespace = EmberObject.extend({
     var toString = this.toString();
 
     if (toString) {
-      Ember.lookup[toString] = undefined;
+      context.lookup[toString] = undefined;
       delete Namespace.NAMESPACES_BY_ID[toString];
     }
     namespaces.splice(namespaces.indexOf(this), 1);
@@ -120,11 +121,14 @@ function processNamespace(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
-var STARTS_WITH_UPPERCASE = /^[A-Z]/;
+function isUppercase(code) {
+  return code >= 65 && // A
+         code <= 90;   // Z
+}
 
 function tryIsNamespace(lookup, prop) {
   try {
-    var obj = lookup[prop];
+    let obj = lookup[prop];
     return obj && obj.isNamespace && obj;
   } catch (e) {
     // continue
@@ -132,23 +136,20 @@ function tryIsNamespace(lookup, prop) {
 }
 
 function findNamespaces() {
-  var lookup = Ember.lookup;
-  var obj;
-
-  if (Namespace.PROCESSED) { return; }
-
-  for (var prop in lookup) {
+  if (Namespace.PROCESSED) {
+    return;
+  }
+  let lookup = context.lookup;
+  let keys = Object.keys(lookup);
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
     // Only process entities that start with uppercase A-Z
-    if (!STARTS_WITH_UPPERCASE.test(prop)) { continue; }
-
-    // Unfortunately, some versions of IE don't support window.hasOwnProperty
-    if (lookup.hasOwnProperty && !lookup.hasOwnProperty(prop)) { continue; }
-
-    // At times we are not allowed to access certain properties for security reasons.
-    // There are also times where even if we can access them, we are not allowed to access their properties.
-    obj = tryIsNamespace(lookup, prop);
+    if (!isUppercase(key.charCodeAt(0))) {
+      continue;
+    }
+    let obj = tryIsNamespace(lookup, key);
     if (obj) {
-      obj[NAME_KEY] = prop;
+      obj[NAME_KEY] = key;
     }
   }
 }
