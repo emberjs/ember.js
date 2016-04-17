@@ -2101,4 +2101,40 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('initial value');
   }
+
+  ['@htmlbars ensure attributes which have been passed in can be mutated, when they are mutated the external source is updated (#11192)']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+        this.set('bar', 'hellllloooooo');
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: ''
+    });
+
+    expectDeprecation(() => {
+      this.render('{{localBar}}{{foo-bar bar=localBar}}', {
+        localBar: undefined
+      });
+    }, /You modified localBar twice in a single render/);
+
+    this.assertText('hellllloooooo');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hellllloooooo');
+
+    this.runTask(() => { component.set('bar', 'updated value'); });
+
+    this.assertText('updated value');
+
+    this.runTask(() => { component.set('bar', 'hellllloooooo'); });
+
+    this.assertText('hellllloooooo');
+  }
 });
