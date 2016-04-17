@@ -23,11 +23,11 @@ test('basic object system functions properly', function(assert) {
   });
 
   var person = Person.create({
-    firstName: 'Max',
+    firstName: 'Henry',
     lastName: 'Jackson'
   });
 
-  assert.equal(person.get('name'), 'Max Jackson');
+  assert.equal(person.get('name'), 'Henry Jackson');
 
   person.set('firstName', 'James');
 
