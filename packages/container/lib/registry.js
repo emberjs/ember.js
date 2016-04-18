@@ -345,7 +345,9 @@ Registry.prototype = {
    @return {Boolean}
    */
   has(fullName, options) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    if (!this.isValidFullName(fullName)) {
+      return false;
+    }
 
     let source;
     if (isEnabled('ember-htmlbars-local-lookup')) {
@@ -693,10 +695,15 @@ Registry.prototype = {
   },
 
   validateFullName(fullName) {
-    if (!VALID_FULL_NAME_REGEXP.test(fullName)) {
+    if (!this.isValidFullName(fullName)) {
       throw new TypeError('Invalid Fullname, expected: `type:name` got: ' + fullName);
     }
+
     return true;
+  },
+
+  isValidFullName(fullName) {
+    return !!VALID_FULL_NAME_REGEXP.test(fullName);
   },
 
   validateInjections(injections) {
