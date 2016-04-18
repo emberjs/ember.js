@@ -21,14 +21,10 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
   let keyword = env.hooks.keywords[path];
   if (keyword && keyword.link) {
     keyword.link(renderNode.getState(), params, hash);
+  } else if (path === 'unbound') {
+    return true;
   } else {
-    switch (path) {
-      case 'unbound': return true;
-      case 'unless':
-      case 'if': params[0] = shouldDisplay(params[0], toBool); break;
-      case 'each': params[0] = eachParam(params[0]); break;
-      case 'with': params[0] = shouldDisplay(params[0], identity); break;
-    }
+    linkParamsFor(path, params);
   }
 
   // If there is a dot in the path, we need to subscribe to the arguments in the
@@ -63,6 +59,15 @@ export default function linkRenderNode(renderNode, env, scope, path, params, has
   // recomputed on subsequent re-renders because they are
   // streams.
   return true;
+}
+
+export function linkParamsFor(path, params) {
+  switch (path) {
+  case 'unless':
+  case 'if': params[0] = shouldDisplay(params[0], toBool); break;
+  case 'each': params[0] = eachParam(params[0]); break;
+  case 'with': params[0] = shouldDisplay(params[0], identity); break;
+  }
 }
 
 function eachParam(list) {
