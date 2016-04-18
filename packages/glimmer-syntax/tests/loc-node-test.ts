@@ -2,7 +2,7 @@ import { parse } from "glimmer-syntax";
 
 QUnit.module("[glimmer-syntax] Parser - Location Info");
 
-function locEqual(node, startLine, startColumn, endLine, endColumn, message) {
+function locEqual(node, startLine, startColumn, endLine, endColumn, message?) {
 
   let expected = {
     source: null,
