@@ -221,6 +221,14 @@ QUnit.test('registry.has should not accidentally cause injections on that factor
   ok(registry.has('controller:apple'));
 });
 
+QUnit.test('registry.has should not error for invalid fullNames)', function() {
+  expect(1);
+
+  var registry = new Registry();
+
+  ok(!registry.has('foo:bar:baz'));
+});
+
 QUnit.test('once resolved, always return the same result', function() {
   expect(1);
 
