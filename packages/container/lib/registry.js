@@ -5,7 +5,7 @@ import EmptyObject from 'ember-metal/empty_object';
 import assign from 'ember-metal/assign';
 import Container from './container';
 
-var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
+var VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 
 /**
  A registry used to store factory and option information keyed
