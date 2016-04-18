@@ -15,7 +15,7 @@ export default {
       source: null,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
       end: null
-    }
+    };
   },
 
   appendToCommentData: function(char) {
@@ -36,7 +36,7 @@ export default {
       source: null,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
       end: null
-    }
+    };
   },
 
   appendToData: function(char) {
