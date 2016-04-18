@@ -124,6 +124,8 @@ QUnit.test('The registry normalizes names when checking if the factory is regist
 });
 
 QUnit.test('validateFullName throws an error if name is incorrect', function() {
+  expect(2);
+
   var registry = new Registry();
   var PostController = factory();
 
@@ -133,8 +135,12 @@ QUnit.test('validateFullName throws an error if name is incorrect', function() {
 
   registry.register('controller:post', PostController);
   throws(function() {
-    registry.resolve('post');
+    registry.validateFullName('post');
   }, /TypeError: Invalid Fullname, expected: `type:name` got: post/);
+
+  throws(function() {
+    registry.validateFullName('route:http://foo.bar.com/baz');
+  }, /TypeError: Invalid Fullname, expected: `type:name` got: route:http:\/\/foo.bar.com\/baz/);
 });
 
 QUnit.test('The registry normalizes names when injecting', function() {
@@ -203,6 +209,14 @@ QUnit.test('registry.has should not accidentally cause injections on that factor
   registry.injection('controller:apple', 'badApple', 'controller:second-apple');
 
   ok(registry.has('controller:apple'));
+});
+
+QUnit.test('registry.has should not error for invalid fullNames)', function() {
+  expect(1);
+
+  var registry = new Registry();
+
+  ok(!registry.has('foo:bar:baz'));
 });
 
 QUnit.test('once resolved, always return the same result', function() {
