@@ -279,14 +279,6 @@ export class ElementStack {
     return fragmentBounds;
   }
 
-  insertTextBefore(nextSibling: Node, text: string): Fragment {
-    let concreteBounds = this.dom.insertTextBefore(this.element, this.nextSibling, text);
-    let fragmentBounds = new Fragment(concreteBounds);
-    this.blockStack.current.newBounds(fragmentBounds);
-
-    return fragmentBounds;
-  }
-
   // setAttribute(name: InternedString, value: any) {
   //   this.dom.setAttribute(this.element, name, value);
   // }
