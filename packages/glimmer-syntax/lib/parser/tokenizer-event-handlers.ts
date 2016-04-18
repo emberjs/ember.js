@@ -13,7 +13,7 @@ export default {
     this.currentNode = b.comment("");
     this.currentNode.loc = {
       source: null,
-      start: b.pos(this.tokenizer.line, this.tokenizer.column)
+      start: b.pos(this.tokenizer.line, this.tokenizer.column),
       end: null
     }
   },
@@ -34,7 +34,7 @@ export default {
     this.currentNode = b.text();
     this.currentNode.loc = {
       source: null,
-      start: b.pos(this.tokenizer.line, this.tokenizer.column)
+      start: b.pos(this.tokenizer.line, this.tokenizer.column),
       end: null
     }
   },
