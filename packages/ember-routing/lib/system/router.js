@@ -1,6 +1,7 @@
 import Logger from 'ember-metal/logger';
-import { assert, info } from 'ember-metal/debug';
+import { assert, info, deprecate } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
+import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { defineProperty } from 'ember-metal/properties';
@@ -10,6 +11,7 @@ import assign from 'ember-metal/assign';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
+import { hasDefaultSerialize } from 'ember-routing/system/route';
 import EmberRouterDSL from 'ember-routing/system/dsl';
 import EmberLocation from 'ember-routing/location/api';
 import {
@@ -102,10 +104,15 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _buildDSL() {
     let moduleBasedResolver = this._hasModuleBasedResolver();
-
-    return new EmberRouterDSL(null, {
+    let options = {
       enableLoadingSubstates: !!moduleBasedResolver
-    });
+    };
+
+    if (isEnabled('ember-route-serializers')) {
+      options.router = this;
+    }
+
+    return new EmberRouterDSL(null, options);
   },
 
   init() {
@@ -115,6 +122,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     this._qpCache = new EmptyObject();
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
+
+    if (isEnabled('ember-route-serializers')) {
+      this._serializeMethods = new EmptyObject();
+    }
   },
 
   /*
@@ -545,6 +556,18 @@ var EmberRouter = EmberObject.extend(Evented, {
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
           info(`generated -> ${routeName}`, { fullName: routeName });
+        }
+      }
+
+      if (isEnabled('ember-route-serializers')) {
+        deprecate(
+          `Defining a serialize function on route '${name}' is deprecated. Instead, define it in the router's map as an option.`,
+          hasDefaultSerialize(handler),
+          { id: 'ember-routing.serialize-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_route-serialize' }
+        );
+
+        if (this._serializeMethods[name]) {
+          handler.serialize = this._serializeMethods[name];
         }
       }
 

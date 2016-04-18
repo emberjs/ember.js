@@ -742,12 +742,6 @@ QUnit.test('The {{link-to}} helper moves into the named route with context', fun
     }
   });
 
-  App.ItemRoute = Route.extend({
-    serialize(object) {
-      return { id: object.id };
-    }
-  });
-
   bootApplication();
 
   run(function() {
@@ -925,22 +919,36 @@ QUnit.test('Issue 4201 - Shorthand for route.index shouldn\'t throw errors about
 QUnit.test('The {{link-to}} helper unwraps controllers', function() {
   expect(5);
 
-  Router.map(function() {
-    this.route('filter', { path: '/filters/:filter' });
-  });
-
   var indexObject = { filter: 'popular' };
 
-  App.FilterRoute = Route.extend({
-    model(params) {
-      return indexObject;
-    },
+  function serializeFilterRoute(passedObject) {
+    equal(passedObject, indexObject, 'The unwrapped object is passed');
+    return { filter: 'popular' };
+  }
 
-    serialize(passedObject) {
-      equal(passedObject, indexObject, 'The unwrapped object is passed');
-      return { filter: 'popular' };
-    }
-  });
+  if (isEnabled('ember-route-serializers')) {
+    Router.map(function() {
+      this.route('filter', { path: '/filters/:filter', serialize: serializeFilterRoute });
+    });
+
+    App.FilterRoute = Route.extend({
+      model(params) {
+        return indexObject;
+      }
+    });
+  } else {
+    Router.map(function() {
+      this.route('filter', { path: '/filters/:filter' });
+    });
+
+    App.FilterRoute = Route.extend({
+      model(params) {
+        return indexObject;
+      },
+
+      serialize: serializeFilterRoute
+    });
+  }
 
   App.IndexRoute = Route.extend({
     model() {
@@ -1272,6 +1280,7 @@ QUnit.test('The non-block form {{link-to}} helper updates the link text when it 
 
 QUnit.test('The non-block form {{link-to}} helper moves into the named route with context', function() {
   expect(5);
+
   Router.map(function(match) {
     this.route('item', { path: '/item/:id' });
   });
@@ -1283,12 +1292,6 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
         { id: 'tom', name: 'Tom Dale' },
         { id: 'erik', name: 'Erik Brynroflsson' }
       ]);
-    }
-  });
-
-  App.ItemRoute = Route.extend({
-    serialize(object) {
-      return { id: object.id };
     }
   });
 

@@ -1137,11 +1137,56 @@ asyncTest('Moving from one page to another triggers the correct callbacks', func
 });
 
 asyncTest('Nested callbacks are not exited when moving to siblings', function() {
-  Router.map(function() {
-    this.route('root', { path: '/' }, function() {
-      this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
+  function serializeRootRoute() {
+    rootSerialize++;
+    return this._super(...arguments);
+  }
+
+  if (isEnabled('ember-route-serializers')) {
+    Router.map(function() {
+      this.route('root', { path: '/', serialize: serializeRootRoute }, function() {
+        this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
+      });
     });
-  });
+
+    App.RootRoute = Route.extend({
+      model() {
+        rootModel++;
+        return this._super(...arguments);
+      },
+
+      setupController() {
+        rootSetup++;
+      },
+
+      renderTemplate() {
+        rootRender++;
+      }
+    });
+  } else {
+    Router.map(function() {
+      this.route('root', { path: '/' }, function() {
+        this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
+      });
+    });
+
+    App.RootRoute = Route.extend({
+      model() {
+        rootModel++;
+        return this._super(...arguments);
+      },
+
+      setupController() {
+        rootSetup++;
+      },
+
+      renderTemplate() {
+        rootRender++;
+      },
+
+      serialize: serializeRootRoute
+    });
+  }
 
   var currentPath;
 
@@ -1163,26 +1208,6 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
 
   App.LoadingRoute = Route.extend({
 
-  });
-
-  App.RootRoute = Route.extend({
-    model() {
-      rootModel++;
-      return this._super(...arguments);
-    },
-
-    serialize() {
-      rootSerialize++;
-      return this._super(...arguments);
-    },
-
-    setupController() {
-      rootSetup++;
-    },
-
-    renderTemplate() {
-      rootRender++;
-    }
   });
 
   App.HomeRoute = Route.extend({
@@ -1892,10 +1917,6 @@ QUnit.test('Redirecting to the current target with a different context aborts th
       } else {
         this.transitionTo('bar.baz', model);
       }
-    },
-
-    serialize(params) {
-      return params;
     }
   });
 
@@ -2309,12 +2330,6 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
     });
   });
 
-  App.Route = Route.extend({
-    serialize(model) {
-      return { category: model.category };
-    }
-  });
-
   bootApplication();
 
   run(function() {
@@ -2323,6 +2338,34 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
 
   deepEqual(router.location.path, '/posts/emberjs');
 });
+
+if (isEnabled('ember-route-serializers')) {
+  QUnit.test('Custom Route#serialize method still works [DEPRECATED]', function() {
+    Router.map(function() {
+      this.route('posts', function() {
+        this.route('index', {
+          path: ':category'
+        });
+      });
+    });
+
+    App.PostsIndexRoute = Route.extend({
+      serialize(model) {
+        return { category: model.category };
+      }
+    });
+
+    bootApplication();
+
+    run(function() {
+      expectDeprecation(function() {
+        router.transitionTo('posts', { category: 'emberjs' });
+      }, 'Defining a serialize function on route \'posts\' is deprecated. Instead, define it in the router\'s map as an option.');
+    });
+
+    deepEqual(router.location.path, '/posts/emberjs');
+  });
+}
 
 QUnit.test('Application template does not duplicate when re-rendered', function() {
   Ember.TEMPLATES.application = compile('<h3>I Render Once</h3>{{outlet}}');
@@ -3197,22 +3240,31 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
 });
 
 QUnit.test('Redirecting with null model doesn\'t error out', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-    this.route('about', { path: '/about/:hurhurhur' });
-  });
+  function serializeAboutRoute(model) {
+    if (model === null) {
+      return { hurhurhur: 'TreeklesMcGeekles' };
+    }
+  }
+
+  if (isEnabled('ember-route-serializers')) {
+    Router.map(function() {
+      this.route('home', { path: '/' });
+      this.route('about', { path: '/about/:hurhurhur', serialize: serializeAboutRoute });
+    });
+  } else {
+    Router.map(function() {
+      this.route('home', { path: '/' });
+      this.route('about', { path: '/about/:hurhurhur' });
+    });
+
+    App.AboutRoute = Route.extend({
+      serialize: serializeAboutRoute
+    });
+  }
 
   App.HomeRoute = Route.extend({
     beforeModel() {
       this.transitionTo('about', null);
-    }
-  });
-
-  App.AboutRoute = Route.extend({
-    serialize(model) {
-      if (model === null) {
-        return { hurhurhur: 'TreeklesMcGeekles' };
-      }
     }
   });
 

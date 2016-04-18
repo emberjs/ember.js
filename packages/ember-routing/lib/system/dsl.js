@@ -1,4 +1,5 @@
 import { assert, deprecate } from 'ember-metal/debug';
+import isEnabled from 'ember-metal/features';
 
 /**
 @module ember
@@ -11,6 +12,10 @@ function DSL(name, options) {
   this.matches = [];
   this.explicitIndex = undefined;
   this.options = options;
+
+  if (isEnabled('ember-route-serializers')) {
+    this.router = options && options.router;
+  }
 }
 
 export default DSL;
@@ -39,6 +44,10 @@ DSL.prototype = {
     if (this.enableLoadingSubstates) {
       createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
       createRoute(this, `${name}_error`, { path: dummyErrorRoute });
+    }
+
+    if (isEnabled('ember-route-serializers') && options.serialize && this.router) {
+      this.router._serializeMethods[name] = options.serialize;
     }
 
     if (callback) {
