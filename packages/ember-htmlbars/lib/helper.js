@@ -93,7 +93,7 @@ Helper.reopenClass({
 
 /**
   In many cases, the ceremony of a full `Ember.Helper` class is not required.
-  The `helper` method create pure-function helpers without instances. For
+  The `helper` method creates pure-function helpers without instances. For
   example:
 
   ```js
