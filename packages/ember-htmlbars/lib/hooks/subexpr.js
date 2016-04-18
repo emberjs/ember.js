@@ -9,6 +9,7 @@ import {
   labelsFor,
   labelFor
 } from 'ember-metal/streams/utils';
+import { linkParamsFor } from 'ember-htmlbars/hooks/link-render-node';
 
 export default function subexpr(env, scope, helperName, params, hash) {
   // TODO: Keywords and helper invocation should be integrated into
@@ -17,6 +18,8 @@ export default function subexpr(env, scope, helperName, params, hash) {
   if (keyword) {
     return keyword(null, env, scope, params, hash, null, null);
   }
+
+  linkParamsFor(helperName, params);
 
   var label = labelForSubexpr(params, hash, helperName);
   var helper = lookupHelper(helperName, scope.getSelf(), env);

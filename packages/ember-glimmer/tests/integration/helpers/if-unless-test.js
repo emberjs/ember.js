@@ -21,7 +21,7 @@ moduleFor('Helpers test: inline {{if}}', class extends TogglingHelperConditional
 
 });
 
-moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning truthy values)', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: nested {{if}} helpers (returning truthy values)', class extends TogglingHelperConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if (if ${cond} ${cond} false) ${truthy} ${falsy}}}`;
@@ -29,7 +29,7 @@ moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning truthy values
 
 });
 
-moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning falsy values)', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: nested {{if}} helpers (returning falsy values)', class extends TogglingHelperConditionalsTest {
 
   templateFor({ cond, truthy, falsy }) {
     return `{{if (if ${cond} true ${cond}) ${truthy} ${falsy}}}`;
@@ -37,7 +37,7 @@ moduleFor('@glimmer Helpers test: nested {{if}} helpers (returning falsy values)
 
 });
 
-moduleFor('@glimmer Helpers test: {{if}} used with another helper', class extends TogglingHelperConditionalsTest {
+moduleFor('Helpers test: {{if}} used with another helper', class extends TogglingHelperConditionalsTest {
 
   wrapperFor(templates) {
     return `{{concat ${templates.join(' ')}}}`;
