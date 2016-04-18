@@ -877,7 +877,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     equalTokens(this.firstChild, expectedHtmlBold);
   }
 
-  ['@htmlbars should not escape HTML if string is a htmlSafe'](assert) {
+  ['@test should not escape HTML if string is a htmlSafe'](assert) {
     let expectedHtmlBold = 'you need to be more <b>bold</b>';
     let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
