@@ -603,6 +603,32 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
   }
 
+  ['@test it renders passed named arguments']() {
+    this.registerComponent('foo-bar', {
+      template: '{{foo}}'
+    });
+
+    this.render('{{foo-bar foo=model.bar}}', {
+      model: {
+        bar: 'Hola'
+      }
+    });
+
+    this.assertText('Hola');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hola');
+
+    this.runTask(() => this.context.set('model.bar', 'Hello'));
+
+    this.assertText('Hello');
+
+    this.runTask(() => this.context.set('model', { bar: 'Hola' }));
+
+    this.assertText('Hola');
+  }
+
   ['@test it can render a basic component with a block']() {
     this.registerComponent('foo-bar', { template: '{{yield}} - In component' });
 
