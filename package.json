@@ -41,6 +41,7 @@
     "glimmer-engine": "tildeio/glimmer#2849de8",
     "glob": "^5.0.13",
     "htmlbars": "0.14.16",
+    "loader.js": "^4.0.2",
     "mocha": "^2.4.5",
     "mocha-only-detector": "0.0.2",
     "qunit-extras": "^1.5.0",

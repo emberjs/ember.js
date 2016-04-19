@@ -1,6 +1,6 @@
 import require from 'require';
 
-import { context } from 'ember-environment';
+// import { context } from 'ember-environment';
 
 /**
 @module ember
@@ -23,7 +23,7 @@ import { context } from 'ember-environment';
   @version VERSION_STRING_PLACEHOLDER
   @public
 */
-const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+const Ember = {};
 
 // Make sure these are set whether Ember was already defined or not
 Ember.isNamespace = true;

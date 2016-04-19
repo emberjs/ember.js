@@ -190,6 +190,12 @@ import Backburner from 'backburner';
 
 // BEGIN EXPORTS
 var EmberInstrumentation = Ember.Instrumentation = {};
+
+/* globals __loader */
+if (typeof __loader !== 'undefined') {
+  Ember.__loader = __loader;
+}
+
 EmberInstrumentation.instrument = instrument;
 EmberInstrumentation.subscribe = instrumentationSubscribe;
 EmberInstrumentation.unsubscribe = instrumentationUnsubscribe;

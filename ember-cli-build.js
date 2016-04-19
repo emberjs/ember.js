@@ -6,6 +6,7 @@
 // DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
 var fs = require('fs');
+var path = require('path');
 
 var EmberBuild = require('emberjs-build');
 var packages   = require('./lib/packages');
@@ -44,16 +45,31 @@ function babelConfigFor(environment) {
 
 var glimmerEngine = require('glimmer-engine/ember-cli-build')();
 var find = require('broccoli-stew').find;
+var npm = require('broccoli-stew').npm;
+var concat = require('broccoli-concat');
 
 function addGlimmerPackage(vendoredPackages, name) {
   vendoredPackages[name] = find(glimmerEngine, 'named-amd/' + name + '/**/*.js');
+}
+
+function loaderTree() {
+  return concat(npm.main('loader.js'), {
+    outputFile: 'loader/index.js',
+    header: "var __loader = (function () {\n"+
+            "if (typeof Ember !== 'undefined' && Ember.__loader) { return Ember.__loader };\n",
+    inputFiles: ['loader.js'],
+    footer: "return  {require: require, define: define, registry: requirejs.entries};\n"+
+            "}());\n"+
+            "var enifed = __loader.define, requireModule = __loader.require;\n",
+    sourceMapConfig: { enabled: true }
+  });
 }
 
 module.exports = function() {
   var features = JSON.parse(featuresJson).features;
 
   var vendorPackages = {
-    'loader':                vendoredPackage('loader'),
+    'loader':                loaderTree(),
     'rsvp':                  vendoredES6Package('rsvp'),
     'backburner':            vendoredES6Package('backburner'),
     'router':                vendoredES6Package('router.js'),
