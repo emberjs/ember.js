@@ -1,4 +1,7 @@
-import { Environment as GlimmerEnvironment } from 'glimmer-runtime';
+import {
+  Environment as GlimmerEnvironment,
+  HelperSyntax
+} from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
 import { assert } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
@@ -23,6 +26,7 @@ import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
+import { default as classHelper } from './helpers/-class';
 import { default as unbound } from './helpers/unbound';
 import { OWNER } from 'container/owner';
 
@@ -34,8 +38,24 @@ const builtInHelpers = {
   hash,
   loc,
   log,
-  unbound
+  unbound,
+  '-class': classHelper
 };
+
+function wrapClassAttribute(args) {
+  let hasClass = args.named.has('class');
+
+  if (hasClass) {
+    let { ref, type } = args.named.at('class');
+
+    if (type === 'get') {
+      let propName = ref.parts[ref.parts.length - 1];
+      let syntax = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
+      args.named.add('class', syntax);
+    }
+  }
+  return args;
+}
 
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
@@ -68,6 +88,7 @@ export default class Environment extends GlimmerEnvironment {
         let definition = this.getComponentDefinition(path);
 
         if (definition) {
+          wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
         }
       }

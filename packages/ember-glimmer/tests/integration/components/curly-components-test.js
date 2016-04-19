@@ -201,7 +201,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
   }
 
-  ['@htmlbars should not apply falsy class name']() {
+  ['@test should not apply falsy class name']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar class=somethingFalsy}}', {
@@ -213,6 +213,28 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: 'ember-view' }, content: 'hello' });
+  }
+
+  ['@test should apply classes of the dasherized property name when bound property specified is true']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar class=model.someTruth}}', {
+      model: { someTruth: true }
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: classes('ember-view some-truth') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: classes('ember-view some-truth') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'model.someTruth', false));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: classes('ember-view') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'model', { someTruth: true }));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: classes('ember-view some-truth') }, content: 'hello' });
   }
 
   ['@test class property on components can be dynamic']() {
