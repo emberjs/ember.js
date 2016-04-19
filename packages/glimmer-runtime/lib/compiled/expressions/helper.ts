@@ -5,7 +5,7 @@ import { Helper } from '../../environment';
 import { PathReference } from 'glimmer-reference';
 import { Opaque, InternedString } from 'glimmer-util';
 
-export default class CompiledHelper<T> extends CompiledExpression<Opaque> {
+export default class CompiledHelper<T> extends CompiledExpression<T> {
   public type = "helper";
   public name: InternedString[];
   public helper: Helper;
