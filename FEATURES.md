@@ -35,20 +35,20 @@ for a detailed explanation.
 
   Deprecates `Route#serialize` and introduces a `serialize` option to the router DSL as a replacement (as per the [Route Serializers RFC](https://github.com/emberjs/rfcs/blob/master/text/0120-route-serializers.md)).
 
- * `ember-runtime-computed-uniq-by`
+* `ember-runtime-computed-uniq-by`
 
-   Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.
+  Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.
 
-   Example:
+  Example:
 
-   ```
-   comments: [
-     {id: 1, comment: 'I\'m a duplicate comment!'},
-     {id: 2, comment: 'Then you should be fixed!'},
-     {id: 1, comment: 'I\'m a duplicate comment!'}
-   ],
-   dedupedComments: Ember.computed.uniqBy('comments', 'id')
-   ```
+  ```
+  comments: [
+    {id: 1, comment: 'I\'m a duplicate comment!'},
+    {id: 2, comment: 'Then you should be fixed!'},
+    {id: 1, comment: 'I\'m a duplicate comment!'}
+  ],
+  dedupedComments: Ember.computed.uniqBy('comments', 'id')
+  ```
 
 * `ember-improved-instrumentation`
 
