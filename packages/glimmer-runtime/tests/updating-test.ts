@@ -547,6 +547,28 @@ test("class attribute w/ concat follow the normal dirtying rules", function() {
   equalTokens(root, "<div class='hello world'>hello</div>");
 });
 
+test("class attribute is removed if the binding becomes falsy", function() {
+  let template = compile("<div class={{value}}>hello</div>");
+  let object = { value: "foo" };
+  render(template, object);
+
+  equalTokens(root, "<div class='foo'>hello</div>");
+
+  rerender();
+
+  equalTokens(root, "<div class='foo'>hello</div>");
+
+  object.value = null;
+  rerender();
+
+  equalTokens(root, "<div>hello</div>");
+
+  object.value = 'foo';
+  rerender();
+
+  equalTokens(root, "<div class='foo'>hello</div>");
+});
+
 test("attribute nodes follow the normal dirtying rules", function() {
   let template = compile("<div data-value='{{value}}'>hello</div>");
   let object = { value: "world" };
@@ -563,6 +585,11 @@ test("attribute nodes follow the normal dirtying rules", function() {
   rerender();
 
   equalTokens(root, "<div data-value='universe'>hello</div>", "Revalidating after dirtying");
+
+  object.value = null;
+  rerender();
+
+  equalTokens(root, "<div data-value=''>hello</div>", "Revalidating after dirtying");
 
   object.value = "world";
   rerender();
