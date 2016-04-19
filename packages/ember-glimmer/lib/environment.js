@@ -1,5 +1,6 @@
 import { Environment as GlimmerEnvironment } from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
+import { assert } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
 import { DynamicComponentSyntax } from './components/dynamic-component';
 import { OutletSyntax } from './components/outlet';
@@ -72,7 +73,13 @@ export default class Environment extends GlimmerEnvironment {
       }
     }
 
-    return super.refineStatement(statement);
+    let nativeSyntax = super.refineStatement(statement);
+
+    if (!nativeSyntax && key && this.hasHelper(key)) {
+      assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock);
+    }
+
+    return nativeSyntax;
   }
 
   hasComponentDefinition() {
