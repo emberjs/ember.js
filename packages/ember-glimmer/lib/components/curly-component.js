@@ -25,15 +25,17 @@ function attrsToProps(keys, attrs) {
     let name = keys[i];
     let value = attrs[name];
 
-    // Do we have to support passing both class /and/ classNames...?
-    if (name === 'class') {
-      name = 'classNames';
-    }
-
     merged[name] = value;
   }
 
   return merged;
+}
+
+class ComponentStateBucket {
+  constructor(component) {
+    this.component = component;
+    this.classRef = null;
+  }
 }
 
 class CurlyComponentManager {
@@ -54,14 +56,20 @@ class CurlyComponentManager {
     // component.trigger('willInsertElement');
     // component.trigger('willRender');
 
-    return component;
+    let bucket = new ComponentStateBucket(component);
+
+    if (args.named.has('class')) {
+      bucket.classRef = args.named.get('class');
+    }
+
+    return bucket;
   }
 
-  getSelf(component) {
+  getSelf({ component }) {
     return new RootReference(component);
   }
 
-  didCreateElement(component, element, operations) {
+  didCreateElement({ component, classRef }, element, operations) {
     component.element = element;
 
     let { attributeBindings, classNames, classNameBindings } = component;
@@ -70,6 +78,10 @@ class CurlyComponentManager {
       attributeBindings.forEach(binding => {
         AttributeBindingReference.apply(component, binding, operations);
       });
+    }
+
+    if (classRef) {
+      operations.addAttribute('class', classRef);
     }
 
     if (classNames) {
@@ -87,13 +99,13 @@ class CurlyComponentManager {
     component._transitionTo('hasElement');
   }
 
-  didCreate(component) {
+  didCreate({ component }) {
     // component.trigger('didInsertElement');
     // component.trigger('didRender');
     component._transitionTo('inDOM');
   }
 
-  update(component, args, dynamicScope) {
+  update({ component }, args, dynamicScope) {
     let attrs = args.named.value();
     let props = attrsToProps(args.named.keys, attrs);
 
@@ -108,12 +120,12 @@ class CurlyComponentManager {
     // component.trigger('willRender');
   }
 
-  didUpdate(component) {
+  didUpdate({ component }) {
     // component.trigger('didUpdate');
     // component.trigger('didRender');
   }
 
-  getDestructor(component) {
+  getDestructor({ component }) {
     return component;
   }
 }

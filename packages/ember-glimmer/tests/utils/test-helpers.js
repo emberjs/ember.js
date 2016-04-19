@@ -136,7 +136,8 @@ export function classes(expected) {
     [MATCHER_BRAND]: true,
 
     match(actual) {
-      return actual && (expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' '));
+      actual = actual.trim();
+      return actual && (expected.split(/\s+/).sort().join(' ') === actual.split(/\s+/).sort().join(' '));
     },
 
     expected() {

@@ -3,6 +3,7 @@ import { applyMixins } from '../utils/abstract-test-case';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import EmberObject from 'ember-runtime/system/object';
+import { classes } from '../utils/test-helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
@@ -583,5 +584,267 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
     }));
 
     this.assertText('');
+  }
+
+  ['@test quoteless class attributes update correctly']() {
+    this.render('<div class={{if fooBar "foo-bar"}}>hello</div>', {
+      fooBar: true
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo-bar') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo-bar') } });
+
+    this.runTask(() => set(this.context, 'fooBar', false));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello' });
+
+    this.runTask(() => set(this.context, 'fooBar', true));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo-bar') } });
+  }
+
+  ['@test quoted class attributes update correctly'](assert) {
+    this.render('<div class="{{if fooBar "foo-bar"}}">hello</div>', {
+      fooBar: true
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo-bar') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo-bar') } });
+
+    this.runTask(() => set(this.context, 'fooBar', false));
+
+    // HTMLBars differs in behavior here as it leaves the empty
+    // class attribute.
+    assert.equal(this.firstChild.className, '');
+
+    this.runTask(() => set(this.context, 'fooBar', true));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo-bar') } });
+  }
+
+  ['@test unquoted class attribute can contain multiple classes']() {
+    this.render('<div class={{model.classes}}>hello</div>', {
+      model: {
+        classes: 'foo bar baz'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar baz') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar baz') } });
+
+    this.runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('fizz bizz') } });
+
+    this.runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar baz') } });
+  }
+
+  ['@test unquoted class attribute']() {
+    this.render('<div class={{model.foo}}>hello</div>', {
+      model: {
+        foo: 'foo'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo') } });
+
+    this.runTask(() => set(this.context, 'model.foo', 'fizz'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('fizz') } });
+
+    this.runTask(() => set(this.context, 'model', { foo: 'foo' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo') } });
+  }
+
+  ['@test quoted class attribute']() {
+    this.render('<div class="{{model.foo}}">hello</div>', {
+      model: {
+        foo: 'foo'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo') } });
+
+    this.runTask(() => set(this.context, 'model.foo', 'fizz'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('fizz') } });
+
+    this.runTask(() => set(this.context, 'model', { foo: 'foo' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo') } });
+  }
+
+  ['@test quoted class attribute can contain multiple classes']() {
+    this.render('<div class="{{model.classes}}">hello</div>', {
+      model: {
+        classes: 'foo bar baz'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar baz') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar baz') } });
+
+    this.runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('fizz bizz') } });
+
+    this.runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar baz') } });
+  }
+
+  ['@test class attribute concats bound values']() {
+    this.render('<div class="{{model.foo}} {{model.bar}} {{model.bizz}}">hello</div>', {
+      model: {
+        foo: 'foo',
+        bar: 'bar',
+        bizz: 'bizz'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar bizz') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar bizz') } });
+
+
+    this.runTask(() => set(this.context, 'model.foo', 'fizz'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('fizz bar bizz') } });
+
+    this.runTask(() => set(this.context, 'model.bar', null));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('fizz bizz') } });
+
+    this.runTask(() => set(this.context, 'model', {
+      foo: 'foo',
+      bar: 'bar',
+      bizz: 'bizz'
+    }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar bizz') } });
+  }
+
+  ['@test class attribute accepts nested helpers, and updates']() {
+    this.render(`<div class="{{if model.hasSize model.size}} {{if model.hasShape model.shape}}">hello</div>`, {
+      model: {
+        size: 'large',
+        hasSize: true,
+        hasShape: false,
+        shape: 'round'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('large') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('large') } });
+
+    this.runTask(() => set(this.context, 'model.hasShape', true));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('large round') } });
+
+    this.runTask(() => set(this.context, 'model.hasSize', false));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('round') } });
+
+    this.runTask(() => set(this.context, 'model', {
+      size: 'large',
+      hasSize: true,
+      hasShape: false,
+      shape: 'round'
+    }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('large') } });
+  }
+
+  ['@test Multiple dynamic classes']() {
+    this.render('<div class="{{model.foo}} {{model.bar}} {{model.fizz}} {{model.baz}}">hello</div>', {
+      model: {
+        foo: 'foo',
+        bar: 'bar',
+        fizz: 'fizz',
+        baz: 'baz'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar fizz baz') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar fizz baz') } });
+
+    this.runTask(() => {
+      set(this.context, 'model.foo', null);
+      set(this.context, 'model.fizz', null);
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('bar baz') } });
+
+    this.runTask(() => {
+      set(this.context, 'model', {
+        foo: 'foo',
+        bar: 'bar',
+        fizz: 'fizz',
+        baz: 'baz'
+      });
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo bar fizz baz') } });
+  }
+
+  ['@test classes are ordered: See issue #9912']() {
+    this.render('<div class="{{model.foo}}  static   {{model.bar}}">hello</div>', {
+      model: {
+        foo: 'foo',
+        bar: 'bar'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   bar' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   bar' } });
+
+    this.runTask(() => {
+      set(this.context, 'model.bar', null);
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   ' } });
+
+    this.runTask(() => {
+      set(this.context, 'model', {
+        foo: 'foo',
+        bar: 'bar'
+      });
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   bar' } });
   }
 });

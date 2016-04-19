@@ -157,6 +157,22 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
+  ['@htmlbars class is applied before didInsertElement'](assert) {
+    let componentClass;
+    // Glimmer is failing due to life cycle hooks not being implemented
+    let FooBarComponent = Component.extend({
+      didInsertElement() {
+        componentClass = this.element.className;
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar class="foo-bar"}}');
+
+    assert.equal(componentClass, 'foo-bar ember-view');
+  }
+
   ['@test it can have custom classNames']() {
     let FooBarComponent = Component.extend({
       classNames: ['foo', 'bar']
@@ -197,6 +213,28 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: 'ember-view' }, content: 'hello' });
+  }
+
+  ['@test class property on components can be dynamic']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar class=(if fooBar "foo-bar")}}', {
+      fooBar: true
+    });
+
+    this.assertComponentElement(this.firstChild, { content: 'hello', attrs: { 'class': classes('ember-view foo-bar') } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'hello', attrs: { 'class': classes('ember-view foo-bar') } });
+
+    this.runTask(() => set(this.context, 'fooBar', false));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello', attrs: { 'class': classes('ember-view') } });
+
+    this.runTask(() => set(this.context, 'fooBar', true));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello', attrs: { 'class': classes('ember-view foo-bar') } });
   }
 
   ['@test it can have custom classNames from constructor']() {
