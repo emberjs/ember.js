@@ -29,7 +29,7 @@
 - [#13031](https://github.com/emberjs/ember.js/pull/13031) [BUGFIX] Fix mergedProperties at create time modifying proto
 - [#13049](https://github.com/emberjs/ember.js/pull/13049) [BUGFIX] Fixes `{{#with proxy as |foo|}}`
 - [#12829](https://github.com/emberjs/ember.js/pull/12829) [BUGFIX] Support tagless components in fastboot
-- [#12575](https://github.com/emberjs/ember.js/pull/12575) [FEATURE] Make acceptance helpers fire native evets instead of jQuery ones.
+- [#12575](https://github.com/emberjs/ember.js/pull/12575) [FEATURE] Make acceptance helpers fire native events instead of jQuery ones.
 - [#12929](https://github.com/emberjs/ember.js/pull/12929) [BUGFIX] Fix bug causing an initial capital to be interpreted as a global.
 - [#12928](https://github.com/emberjs/ember.js/pull/12928) [FEATURE ember-htmlbars-component-generation] Remove feature.
 - [#13024](https://github.com/emberjs/ember.js/pull/13024) [BUGFIX] Change internal async acceptance test helpers to be somewhat more efficient in determining router transition status.
