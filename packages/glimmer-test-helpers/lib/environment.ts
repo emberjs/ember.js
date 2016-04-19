@@ -394,7 +394,7 @@ export class SimplePathReference<T> implements PathReference<T> {
 
 type UserHelper = (args: any[], named: Dict<any>) => any;
 
-class HelperReference implements PathReference<Opaque> {
+class HelperReference implements Reference<Opaque> {
   private helper: UserHelper;
   private args: EvaluatedArgs;
   public tag = VOLATILE_TAG;
@@ -408,10 +408,6 @@ class HelperReference implements PathReference<Opaque> {
     let { helper, args: { positional, named } } = this;
 
     return helper(positional.value(), named.value());
-  }
-
-  get(prop: InternedString): SimplePathReference<Opaque> {
-    return new SimplePathReference(this, prop);
   }
 }
 
@@ -428,6 +424,10 @@ export class TestEnvironment extends Environment {
 
   registerHelper(name: string, helper: UserHelper) {
     this.helpers[name] = (args: EvaluatedArgs) => new HelperReference(helper, args);
+  }
+
+  setHelper(name: string, helper: GlimmerHelper) {
+    this.helpers[name] = helper;
   }
 
   registerComponent(name: string, definition: ComponentDefinition<any>) {
