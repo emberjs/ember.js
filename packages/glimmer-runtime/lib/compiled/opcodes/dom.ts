@@ -128,7 +128,7 @@ function toClassName(list: Reference<string>[]) {
 
   for (let i = 0; i < list.length; i++) {
     let value = list[i].value();
-    if (value !== null) ret.push(value);
+    if (value) ret.push(value);
   }
 
   return (ret.length === 0) ? null : ret.join(' ');
