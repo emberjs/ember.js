@@ -53,6 +53,8 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   // Determine if this is an initial render or a re-render.
   if (state.manager) {
+    let templateMeta = state.manager.block.template.meta;
+    env.meta.moduleName = (templateMeta && templateMeta.moduleName) || (env.meta && env.meta.moduleName);
     state.manager.rerender(env, attrs, visitor);
     return;
   }
