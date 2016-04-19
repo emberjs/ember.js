@@ -119,15 +119,23 @@ import { getHash } from 'ember-routing/location/util';
 
   Calling setURL or replaceURL will not trigger onUpdateURL callbacks.
   
-  Custom location implementation should be registered like so:
+  ## Custom implementation
+  
+  Ember scans `app/locations/*` for extending the Location API.
+  
+  Example:
   
   ```javascript
-  Em.Application.initializer({
-    name: 'my-implementation',
-    initialize: function(container) {
-      container.register('location:my-implementation', MyLocation);
+  import Ember from 'ember';
+
+  export default Ember.HistoryLocation.extend({
+    implementation: 'history-url-logging',
+
+    pushState: function (path) {
+      console.log(path);
+      this._super.apply(this, arguments);
     }
-  };
+  });
   ```
 
   @class Location
