@@ -200,21 +200,30 @@ export abstract class Environment {
 
 export default Environment;
 
-// TS does not allow us to use computed properties for this, so inlining for now
-// import { TRUSTED_STRING } from './symbols';
+export interface SafeString {
+  toHTML(): string;
+}
 
-interface SafeString {
-  "trusted string [id=7d10c13d-cdf5-45f4-8859-b09ce16517c2]": boolean; // true
-  string: string;
+export function isSafeString(value: Opaque): value is SafeString {
+  return value && typeof value['toHTML'] === 'function';
+}
+
+export function isNode(value: Opaque): value is Node {
+  return value !== null && typeof value === 'object' && typeof value['nodeType'] === 'number';
+}
+
+export function isString(value: Opaque): value is string {
+  return typeof value === 'string';
 }
 
 export type Insertion = string | SafeString | Node;
+export type TrustedInsertion = string | Node;
 
 type PositionalArguments = Opaque[];
 type KeywordArguments = Dict<Opaque>;
 
 export interface Helper {
-  (args: EvaluatedArgs): PathReference<Opaque>;
+  (args: EvaluatedArgs): Reference<Opaque>;
 }
 
 export interface ParsedStatement {
