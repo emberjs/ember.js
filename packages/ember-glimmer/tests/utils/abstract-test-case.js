@@ -264,7 +264,9 @@ export class ApplicationTest extends TestCase {
   }
 
   registerTemplate(name, template) {
-    this.application.register(`template:${name}`, compile(template));
+    this.application.register(`template:${name}`, compile(template, {
+      moduleName: name
+    }));
   }
 
   registerController(name, controller) {
@@ -276,11 +278,15 @@ export class RenderingTest extends TestCase {
   constructor() {
     super();
     let dom = new DOMHelper(document);
-    let owner = this.owner = buildOwner();
+    let owner = this.owner = buildOwner(this.getOwnerOptions());
     let env = this.env = new Environment({ dom, owner, [OWNER]: owner });
     this.renderer = InteractiveRenderer.create({ dom, env, [OWNER]: owner });
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
+  }
+
+  getOwnerOptions() {
+    return {};
   }
 
   teardown() {
@@ -297,7 +303,9 @@ export class RenderingTest extends TestCase {
   render(templateStr, context = {}) {
     let { renderer, owner } = this;
 
-    owner.register('template:-top-level', compile(templateStr));
+    owner.register('template:-top-level', compile(templateStr, {
+      moduleName: '-top-level'
+    }));
 
     let attrs = assign({}, context, {
       tagName: '',
@@ -347,7 +355,20 @@ export class RenderingTest extends TestCase {
     }
 
     if (typeof template === 'string') {
-      owner.register(`template:components/${name}`, compile(template));
+      owner.register(`template:components/${name}`, compile(template, {
+        moduleName: `components/${name}`
+      }));
+    }
+  }
+
+  registerTemplate(name, template) {
+    let { owner } = this;
+    if (typeof template === 'string') {
+      owner.register(`template:${name}`, compile(template, {
+        moduleName: name
+      }));
+    } else {
+      throw new Error(`Registered template "${name}" must be a string`);
     }
   }
 
