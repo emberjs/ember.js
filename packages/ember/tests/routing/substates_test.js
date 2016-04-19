@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
@@ -8,6 +7,8 @@ import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
+import DefaultResolver from 'ember-application/system/resolver';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var Router, App, templates, router, container, counter;
 
@@ -18,7 +19,7 @@ function step(expectedValue, description) {
 
 function bootApplication(startingURL) {
   for (var name in templates) {
-    Ember.TEMPLATES[name] = compile(templates[name]);
+    setTemplate(name, compile(templates[name]));
   }
 
   if (startingURL) {
@@ -41,7 +42,7 @@ QUnit.module('Loading/Error Substates', {
         name: 'App',
         rootElement: '#qunit-fixture',
         // fake a modules resolver
-        Resolver: Ember.DefaultResolver.extend({ moduleBasedResolver: true })
+        Resolver: DefaultResolver.extend({ moduleBasedResolver: true })
       });
 
       App.deferReadiness();
@@ -69,7 +70,7 @@ QUnit.module('Loading/Error Substates', {
       App.destroy();
       App = null;
 
-      Ember.TEMPLATES = {};
+      setTemplates({});
     });
 
     NoneLocation.reopen({
@@ -428,13 +429,14 @@ QUnit.test('Error events that aren\'t bubbled don\t throw application assertions
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController =
+  Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -462,13 +464,13 @@ QUnit.test('Non-bubbled errors that re-throw aren\'t swallowed', function() {
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -501,13 +503,13 @@ QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -525,7 +527,7 @@ QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
     }
   });
 
-  App.MomThisRouteThrowsRoute = Ember.Route.extend({
+  App.MomThisRouteThrowsRoute = Route.extend({
     model() {
       step(3, 'MomThisRouteThrows#model');
 
@@ -553,9 +555,9 @@ QUnit.test('Handled errors that bubble can be handled at a higher level', functi
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
-  App.MomRoute = Ember.Route.extend({
+  App.MomRoute = Route.extend({
     actions: {
       error(err) {
         step(3, 'MomRoute#error');
@@ -565,11 +567,11 @@ QUnit.test('Handled errors that bubble can be handled at a higher level', functi
     }
   });
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -603,13 +605,13 @@ QUnit.test('errors that are bubbled are thrown at a higher level if not handled'
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -652,13 +654,13 @@ QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed',
     });
   });
 
-  App.ApplicationController = Ember.Controller.extend();
+  App.ApplicationController = Controller.extend();
 
-  App.MomSallyRoute = Ember.Route.extend({
+  App.MomSallyRoute = Route.extend({
     model() {
       step(1, 'MomSallyRoute#model');
 
-      return Ember.RSVP.reject({
+      return RSVP.reject({
         msg: 'did it broke?'
       });
     },
@@ -676,11 +678,11 @@ QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed',
     }
   });
 
-  App.MomThisRouteThrowsRoute = Ember.Route.extend({
+  App.MomThisRouteThrowsRoute = Route.extend({
     model() {
       step(3, 'MomThisRouteThrows#model');
 
-      return Ember.RSVP.reject(handledError);
+      return RSVP.reject(handledError);
     }
   });
 

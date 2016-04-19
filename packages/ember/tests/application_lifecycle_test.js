@@ -1,14 +1,14 @@
-import Ember from 'ember-metal/core';
 import Application from 'ember-application/system/application';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import isEnabled from 'ember-metal/features';
+import { compile } from 'ember-template-compiler';
+import { getTemplates, setTemplates } from 'ember-htmlbars/template_registry';
+import controllerFor from 'ember-routing/system/controller_for';
 
-var compile = Ember.HTMLBars.compile;
-
-var App, appInstance, router;
+var App, TEMPLATES, appInstance, router;
 
 function setupApp(klass) {
   run(function() {
@@ -28,13 +28,14 @@ function setupApp(klass) {
 
 QUnit.module('Application Lifecycle', {
   setup() {
+    TEMPLATES = getTemplates();
     setupApp(Application.extend());
   },
 
   teardown() {
     router = null;
     run(App, 'destroy');
-    Ember.TEMPLATES = {};
+    setTemplates({});
   }
 });
 
@@ -79,13 +80,13 @@ QUnit.test('Resetting the application allows controller properties to be set whe
 
   handleURL('/');
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   App.reset();
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
 QUnit.test('Destroying the application resets the router before the appInstance is destroyed', function() {
@@ -116,13 +117,13 @@ QUnit.test('Destroying the application resets the router before the appInstance 
 
   handleURL('/');
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
 
   run(App, 'destroy');
 
-  equal(Ember.controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
-  equal(Ember.controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
+  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
 if (!isEnabled('ember-glimmer')) {
@@ -152,8 +153,8 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
     }
   });
 
-  Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
-  Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='wowza-thingy'></div>`);
+  TEMPLATES['application'] = compile(`{{foo-bar}}`);
+  TEMPLATES['components/foo-bar'] = compile(`<div id='wowza-thingy'></div>`);
 
   run(App, 'advanceReadiness');
 
@@ -186,8 +187,8 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
     }
   });
 
-  Ember.TEMPLATES['application'] = compile(`{{foo-bar}}`);
-  Ember.TEMPLATES['components/foo-bar'] = compile(`<div id='herky-thingy'></div>`);
+  TEMPLATES['application'] = compile(`{{foo-bar}}`);
+  TEMPLATES['components/foo-bar'] = compile(`<div id='herky-thingy'></div>`);
 
   run(App, 'advanceReadiness');
 
