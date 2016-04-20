@@ -20,20 +20,27 @@ function getProperties(self, propertyNames) {
   return ret;
 }
 
+function expandPropertiesToArray(properties) {
+  var expandedProperties = [];
+
+  function extractProperty(entry) {
+    expandedProperties.push(entry);
+  }
+
+  for (let i = 0; i < properties.length; i++) {
+    expandProperties(properties[i], extractProperty);
+  }
+
+  return expandedProperties;
+}
+
 function generateComputedWithProperties(macro) {
   return function(...properties) {
-    var expandedProperties = [];
+    var expandedProperties = expandPropertiesToArray(properties);
+
     var computedFunc = computed(function() {
       return macro.apply(this, [getProperties(this, expandedProperties)]);
     });
-
-    function extractProperty(entry) {
-      expandedProperties.push(entry);
-    }
-
-    for (var i = 0; i < properties.length; i++) {
-      expandProperties(properties[i], extractProperty);
-    }
 
     return computedFunc.property.apply(computedFunc, expandedProperties);
   };
