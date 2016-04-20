@@ -37,7 +37,6 @@ import {
   CompiledArgs,
   CompiledNamedArgs,
   CompiledPositionalArgs,
-  EvaluatedArgs
 } from '../compiled/expressions/args';
 
 import CompiledValue from '../compiled/expressions/value';
@@ -60,13 +59,7 @@ import {
   CompiledExpression
 } from '../compiled/expressions';
 
-import {
-  RevisionTag,
-  PathReference,
-  Reference
-} from 'glimmer-reference';
-
-import { Environment, Insertion, Helper as EnvHelper } from '../environment';
+import { Environment } from '../environment';
 
 import {
   Opaque,
@@ -88,7 +81,7 @@ import {
 } from '../compiled/opcodes/dom';
 
 import {
-  AppendOpcode,
+  CautiousAppendOpcode,
   TrustingAppendOpcode
 } from '../compiled/opcodes/content';
 
@@ -97,12 +90,6 @@ import {
   Expressions as SerializedExpressions,
   Core as SerializedCore
 } from 'glimmer-wire-format';
-
-interface Bounds {
-  parentNode(): Node;
-  firstNode(): Node;
-  lastNode(): Node;
-}
 
 export interface BlockOptions {
 
@@ -180,7 +167,7 @@ export class Unknown extends ExpressionSyntax<any> {
     this.trustingMorph = !!options.unsafe;
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<any> {
+  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<Opaque> {
     let { ref } = this;
 
     if (env.hasHelper(ref.parts)) {
@@ -228,7 +215,7 @@ export class Append extends StatementSyntax {
     if (this.trustingMorph) {
       compiler.append(new TrustingAppendOpcode());
     } else {
-      compiler.append(new AppendOpcode());
+      compiler.append(new CautiousAppendOpcode());
     }
   }
 }

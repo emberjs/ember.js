@@ -1,10 +1,24 @@
+import Upsert, {
+  SafeString,
+  Insertion,
+  CautiousInsertion,
+  TrustingInsertion,
+
+  isSafeString,
+  isNode,
+  isString,
+
+  cautiousInsert,
+  trustingInsert
+} from '../../upsert';
+import { DOMHelper } from '../../dom';
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
-import { ReferenceCache, isModified, isConst, map } from 'glimmer-reference';
+import { Reference, ReferenceCache, isModified, isConst, map } from 'glimmer-reference';
 import { Opaque, dict } from 'glimmer-util';
-import { Bounds, clear, SingleNodeBounds } from '../../bounds';
-import { FragmentBounds } from '../../builder';
-import { Insertion, TrustedInsertion, SafeString, isSafeString, isNode, isString } from '../../environment';
+import { Bounds, Cursor, SingleNodeBounds, clear } from '../../bounds';
+import { Fragment } from '../../builder';
+import {  } from '../../environment';
 
 function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value['toString'] !== 'function';
@@ -17,7 +31,7 @@ export function normalizeTextValue(value: Opaque): string {
   return String(value);
 }
 
-export function normalizeTrustedValue(value: Opaque): TrustedInsertion {
+export function normalizeTrustedValue(value: Opaque): TrustingInsertion {
   if (isEmpty(value)) {
     return '';
   }
@@ -33,7 +47,7 @@ export function normalizeTrustedValue(value: Opaque): TrustedInsertion {
   return String(value);
 }
 
-export function normalizeValue(value: Opaque): Insertion {
+export function normalizeValue(value: Opaque): CautiousInsertion {
   if (isEmpty(value)) {
     return '';
   }
@@ -46,19 +60,60 @@ export function normalizeValue(value: Opaque): Insertion {
   return String(value);
 }
 
-class UpdatingContentOpcode<T> extends UpdatingOpcode {
-  public next = null;
-  public prev = null;
+abstract class AppendOpcode<T extends Insertion> extends Opcode {
+  protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
+  protected abstract insert(dom: DOMHelper, cursor: Cursor, value: T): Upsert;
+  protected abstract updateWith(cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdateOpcode<T>;
 
-  constructor(public type: string, private cache: ReferenceCache<T>, private bounds: FragmentBounds<T>) {
+  evaluate(vm: VM) {
+    let reference = this.normalize(vm.frame.getOperand());
+    let cache = new ReferenceCache(reference);
+    let value = cache.peek();
+
+    let stack = vm.stack();
+    let upsert = this.insert(stack.dom, stack, value);
+    let bounds = new Fragment(upsert.bounds);
+
+    vm.stack().newBounds(bounds);
+
+    if (!isConst(reference)) {
+      vm.updateWith(this.updateWith(cache, bounds, upsert));
+    }
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: ["$OPERAND"]
+    };
+  }
+}
+
+abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
+  constructor(
+    private cache: ReferenceCache<T>,
+    private bounds: Fragment,
+    private upsert: Upsert
+  ) {
     super();
   }
+
+  protected abstract insert(dom: DOMHelper, cursor: Cursor, value: T): Upsert;
 
   evaluate(vm: UpdatingVM) {
     let value = this.cache.revalidate();
 
     if (isModified(value)) {
-      this.bounds.update(vm.dom, value);
+      let { bounds, upsert } = this;
+      let { dom } = vm;
+
+      if(!this.upsert.update(dom, value)) {
+        let cursor = new Cursor(bounds.parentElement(), clear(bounds));
+        upsert = this.upsert = this.insert(dom, cursor, value);
+      }
+
+      bounds.update(upsert.bounds);
     }
   }
 
@@ -73,54 +128,49 @@ class UpdatingContentOpcode<T> extends UpdatingOpcode {
   }
 }
 
-export class AppendOpcode extends Opcode {
-  type = 'append';
+export class CautiousAppendOpcode extends AppendOpcode<CautiousInsertion> {
+  type = 'cautious-append';
 
-  evaluate(vm: VM) {
-    let reference = vm.frame.getOperand();
-
-    let mapped = map(reference, normalizeValue);
-    let cache = new ReferenceCache(mapped);
-    let value = cache.peek();
-
-    if (isConst(reference)) {
-      vm.stack().appendInsertion(value);
-    } else {
-      let bounds = vm.stack().appendInsertion(value);
-      vm.updateWith(new UpdatingContentOpcode<Insertion>('update-cautious-append', cache, bounds));
-    }
+  protected normalize(reference: Reference<Opaque>): Reference<CautiousInsertion> {
+    return map(reference, normalizeValue);
   }
 
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
-    };
+  protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+    return cautiousInsert(dom, cursor, value);
+  }
+
+  protected updateWith(cache: ReferenceCache<CautiousInsertion>, bounds: Fragment, upsert: Upsert): CautiousUpdateOpcode {
+    return new CautiousUpdateOpcode(cache, bounds, upsert);
   }
 }
 
-export class TrustingAppendOpcode extends Opcode {
+class CautiousUpdateOpcode extends UpdateOpcode<CautiousInsertion> {
+  type = 'cautious-update';
+
+  protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+    return cautiousInsert(dom, cursor, value);
+  }
+}
+export class TrustingAppendOpcode extends AppendOpcode<TrustingInsertion> {
   type = 'trusting-append';
 
-  evaluate(vm: VM) {
-    let reference = vm.frame.getOperand();
-
-    let mapped = map(reference, normalizeTrustedValue);
-    let cache = new ReferenceCache(mapped);
-    let value = cache.peek();
-    let bounds = vm.stack().appendHTML(value);
-
-    if (!isConst(reference)) {
-      vm.updateWith(new UpdatingContentOpcode<TrustedInsertion>('update-trusting-append', cache, bounds));
-    }
+  protected normalize(reference: Reference<Opaque>): Reference<TrustingInsertion> {
+    return map(reference, normalizeTrustedValue);
   }
 
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$OPERAND"]
-    };
+  protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+    return trustingInsert(dom, cursor, value);
+  }
+
+  protected updateWith(cache: ReferenceCache<TrustingInsertion>, bounds: Fragment, upsert: Upsert): TrustingUpdateOpcode {
+    return new TrustingUpdateOpcode(cache, bounds, upsert);
+  }
+}
+
+class TrustingUpdateOpcode extends UpdateOpcode<TrustingInsertion> {
+  type = 'trusting-update';
+
+  protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
+    return trustingInsert(dom, cursor, value);
   }
 }

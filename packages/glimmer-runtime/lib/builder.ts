@@ -1,10 +1,10 @@
-import Bounds, { clear, SingleNodeBounds, ConcreteBounds } from './bounds';
+import Bounds, { clear, Cursor } from './bounds';
 
 import { DOMHelper } from './dom';
 
 import { Destroyable, InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
-import { Environment, Insertion, TrustedInsertion, isSafeString, isNode, isString } from './environment';
+import { Environment } from './environment';
 
 import {
   PathReference
@@ -100,12 +100,11 @@ class GroupedElementOperations implements ElementOperations {
   }
 }
 
-export class FragmentBounds<T> implements Bounds {
+export class Fragment implements Bounds {
   private bounds: Bounds;
-  private upsert: UpsertValue<T>;
-  constructor(dom: DOMHelper, parent: Element, reference: Node, value: T, upsert: UpsertValue<T>) {
-    this.upsert = upsert;
-    this.bounds = upsert(dom, parent, reference, null, value);
+
+  constructor(bounds: Bounds) {
+    this.bounds = bounds;
   }
 
   parentElement(): Element {
@@ -120,8 +119,8 @@ export class FragmentBounds<T> implements Bounds {
     return this.bounds.lastNode();
   }
 
-  update(dom: DOMHelper, value: T) {
-    this.bounds = this.upsert(dom, null, null, this.bounds, value);
+  update(bounds: Bounds) {
+    this.bounds = bounds;
   }
 }
 
@@ -137,7 +136,7 @@ interface UpdateTrackerOptions {
   dom: DOMHelper;
 }
 
-export class ElementStack {
+export class ElementStack implements Cursor {
   public nextSibling: Node;
   public dom: DOMHelper;
   public element: Element;
@@ -268,18 +267,6 @@ export class ElementStack {
     dom.insertBefore(this.element, comment, this.nextSibling);
     this.blockStack.current.newNode(comment);
     return comment;
-  }
-
-  appendInsertion(value: Insertion): FragmentBounds<Insertion> {
-    let bounds = new FragmentBounds<Insertion>(this.dom, this.element, this.nextSibling, value, upsertValue);
-    this.blockStack.current.newBounds(bounds);
-    return bounds;
-  }
-
-  appendHTML(html: TrustedInsertion): FragmentBounds<TrustedInsertion> {
-    let bounds = new FragmentBounds(this.dom, this.element, this.nextSibling, html, upsertTrustedValue);
-    this.blockStack.current.newBounds(bounds);
-    return bounds;
   }
 
   // setAttribute(name: InternedString, value: any) {
@@ -459,83 +446,4 @@ class BlockListTracker implements Tracker {
   }
 
   reset() {}
-}
-
-export interface UpsertValue<T> {
-  (dom: DOMHelper, parent: Element, reference: Node, bounds: Bounds, value: T): Bounds;
-}
-
-function upsertTrustedValue(dom: DOMHelper, _parent: Element, _reference: Node, bounds: Bounds, value: TrustedInsertion): Bounds {
-  let parent: Element, reference: Node;
-  if (bounds) {
-    parent = bounds.parentElement();
-    reference = clear(bounds);
-  } else {
-    parent = _parent;
-    reference = _reference;
-  }
-  if (isString(value)) {
-    return dom.insertHTMLBefore(parent, reference, value);
-  } else {
-    return insertBefore(dom, parent, value, reference);
-  }
-}
-
-function insertBefore(dom: DOMHelper, parent: Element, node: Node, reference: Node): Bounds {
-  if (isDocumentFragment(node)) {
-    let first = node.firstChild;
-    let last = node.lastChild;
-    dom.insertBefore(parent, node, reference);
-    return new ConcreteBounds(parent, first, last);
-  } else {
-    dom.insertBefore(parent, node, reference);
-    return new SingleNodeBounds(parent, node);
-  }
-}
-
-function isText(node: Node): node is Text {
-  return node.nodeType === Node.TEXT_NODE;
-}
-
-function isDocumentFragment(node: Node): node is DocumentFragment {
-  return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
-}
-
-function textNode(bounds: Bounds): Text {
-  let first = bounds.firstNode();
-  if (first === bounds.lastNode() && isText(first)) {
-    return first;
-  }
-}
-
-function upsertValue(dom: DOMHelper, _parent: Element, _reference: Node, bounds: Bounds, value: Insertion): Bounds {
-  // optimize most common cases first
-  if (isString(value)) {
-    if (bounds) { // update existing string
-      let text = textNode(bounds);
-      if (text) {
-        text.nodeValue = value;
-        return bounds;
-      }
-    } else { // insert text
-      return new SingleNodeBounds(_parent, dom.insertTextBefore(_parent, _reference, value));
-    }
-  }
-
-  let parent: Element, reference: Node;
-  if (bounds) {
-    parent = bounds.parentElement();
-    reference = clear(bounds);
-  } else {
-    parent = _parent;
-    reference = _reference;
-  }
-
-  if (isSafeString(value)) {
-    return dom.insertHTMLBefore(parent, reference, value.toHTML());
-  } else if (isNode(value)) {
-    return insertBefore(dom, parent, value, reference);
-  } else {
-    return new SingleNodeBounds(parent, dom.insertTextBefore(parent, reference, value));
-  }
 }

@@ -115,6 +115,17 @@ class DOMHelper {
     return new ConcreteBounds(parent, first, last);
   }
 
+  insertNodeBefore(parent: Element, node: Node, reference: Node): Bounds {
+    if (isDocumentFragment(node)) {
+      let { firstChild, lastChild } = node;
+      this.insertBefore(parent, node, reference);
+      return new ConcreteBounds(parent, firstChild, lastChild);
+    } else {
+      this.insertBefore(parent, node, reference);
+      return new SingleNodeBounds(parent, node);
+    }
+  }
+
   insertTextBefore(parent: Element, nextSibling: Node, text: string): Text {
     let textNode = this.createTextNode(text);
     this.insertBefore(parent, textNode, nextSibling);
@@ -128,6 +139,10 @@ class DOMHelper {
   insertAfter(element: Element, node: Node, reference: Node) {
     this.insertBefore(element, node, reference.nextSibling);
   }
+}
+
+function isDocumentFragment(node: Node): node is DocumentFragment {
+  return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
 }
 
 let helper = DOMHelper;
