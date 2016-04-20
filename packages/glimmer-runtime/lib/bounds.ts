@@ -5,6 +5,10 @@ export interface Bounds {
   lastNode(): Node;
 }
 
+export class Cursor {
+  constructor(public element: Element, public nextSibling: Node) {}
+}
+
 export default Bounds;
 
 export class ConcreteBounds implements Bounds {
@@ -62,7 +66,7 @@ export function move(bounds: Bounds, reference: Node) {
   return null;
 }
 
-export function clear(bounds: Bounds) {
+export function clear(bounds: Bounds): Node {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
