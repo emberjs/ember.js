@@ -19,7 +19,8 @@ export default class CompiledHelper extends CompiledExpression<Opaque> {
   }
 
   evaluate(vm: VM): PathReference<Opaque> {
-    return this.helper.call(undefined, this.args.evaluate(vm));
+    let { helper } = this;
+    return helper(this.args.evaluate(vm));
   }
 
   toJSON(): string {
