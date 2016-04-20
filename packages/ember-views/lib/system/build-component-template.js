@@ -158,7 +158,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   var normalized = {};
   var attributeBindings = component.attributeBindings;
   var streamBasePath = component.isComponent ? '' : 'view.';
-  var i, l;
+  var i;
 
   if (attrs.id && getValue(attrs.id)) {
     // Do not allow binding to the `id`
@@ -169,7 +169,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   }
 
   if (attributeBindings) {
-    for (i = 0, l = attributeBindings.length; i < l; i++) {
+    for (i = 0; i < attributeBindings.length; i++) {
       var attr = attributeBindings[i];
       var colonIndex = attr.indexOf(':');
 
@@ -232,7 +232,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
 }
 
 function normalizeClass(component, attrs, streamBasePath) {
-  var i, l;
+  var i;
   var normalizedClass = [];
   var classNames = get(component, 'classNames');
   var classNameBindings = get(component, 'classNameBindings');
@@ -250,7 +250,7 @@ function normalizeClass(component, attrs, streamBasePath) {
   }
 
   if (classNames) {
-    for (i = 0, l = classNames.length; i < l; i++) {
+    for (i = 0; i < classNames.length; i++) {
       normalizedClass.push(classNames[i]);
     }
   }
@@ -265,9 +265,9 @@ function normalizeClass(component, attrs, streamBasePath) {
 }
 
 function normalizeClasses(classes, output, streamBasePath) {
-  var i, l;
+  var i;
 
-  for (i = 0, l = classes.length; i < l; i++) {
+  for (i = 0; i < classes.length; i++) {
     var className = classes[i];
     assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', className.indexOf(' ') === -1);
 

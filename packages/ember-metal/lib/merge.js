@@ -22,9 +22,8 @@ export default function merge(original, updates) {
 
   var props = Object.keys(updates);
   var prop;
-  var length = props.length;
 
-  for (var i = 0; i < length; i++) {
+  for (var i = 0; i < props.length; i++) {
     prop = props[i];
     original[prop] = updates[prop];
   }

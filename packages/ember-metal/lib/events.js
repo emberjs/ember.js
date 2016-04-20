@@ -273,7 +273,7 @@ export function listenersFor(obj, eventName) {
 
   if (!actions) { return ret; }
 
-  for (var i = 0, l = actions.length; i < l; i += 3) {
+  for (var i = 0; i < actions.length; i += 3) {
     var target = actions[i];
     var method = actions[i + 1];
     ret.push([target, method]);

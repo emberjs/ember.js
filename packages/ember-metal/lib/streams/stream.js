@@ -298,7 +298,7 @@ BasicStream.prototype = {
       var dependencies = this.dependencies;
 
       if (dependencies) {
-        for (var i = 0, l = dependencies.length; i < l; i++) {
+        for (var i = 0; i < dependencies.length; i++) {
           dependencies[i](prune);
         }
       }

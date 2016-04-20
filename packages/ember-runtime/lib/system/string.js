@@ -42,7 +42,7 @@ var CLASSIFY_CACHE = new Cache(1000, function(str) {
     return initialChar + (chr ? chr.toUpperCase() : '');
   };
   var parts = str.split('/');
-  for (var i = 0, len = parts.length; i < len; i++) {
+  for (var i = 0; i < parts.length; i++) {
     parts[i] = parts[i]
       .replace(STRING_CLASSIFY_REGEXP_1, replace1)
       .replace(STRING_CLASSIFY_REGEXP_2, replace2);
@@ -81,7 +81,7 @@ function _fmt(str, formats) {
   if (!isArray(cachedFormats) || arguments.length > 2) {
     cachedFormats = new Array(arguments.length - 1);
 
-    for (var i = 1, l = arguments.length; i < l; i++) {
+    for (var i = 1; i < arguments.length; i++) {
       cachedFormats[i - 1] = arguments[i];
     }
   }

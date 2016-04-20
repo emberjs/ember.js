@@ -50,9 +50,9 @@ ObserverSet.prototype.add = function(sender, keyName, eventName) {
 
 ObserverSet.prototype.flush = function() {
   var observers = this.observers;
-  var i, len, observer, sender;
+  var i, observer, sender;
   this.clear();
-  for (i = 0, len = observers.length; i < len; ++i) {
+  for (i = 0; i < observers.length; ++i) {
     observer = observers[i];
     sender = observer.sender;
     if (sender.isDestroying || sender.isDestroyed) { continue; }

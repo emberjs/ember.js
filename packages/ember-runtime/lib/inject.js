@@ -49,7 +49,7 @@ export function createInjectionHelper(type, validator) {
 export function validatePropertyInjections(factory) {
   var proto = factory.proto();
   var types = [];
-  var key, desc, validator, i, l;
+  var key, desc, validator, i;
 
   for (key in proto) {
     desc = proto[key];
@@ -59,7 +59,7 @@ export function validatePropertyInjections(factory) {
   }
 
   if (types.length) {
-    for (i = 0, l = types.length; i < l; i++) {
+    for (i = 0; i < types.length; i++) {
       validator = typeValidators[types[i]];
 
       if (typeof validator === 'function') {

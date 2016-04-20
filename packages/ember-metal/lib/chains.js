@@ -37,7 +37,7 @@ ChainWatchers.prototype = {
   remove(key, node) {
     let nodes = this.chains[key];
     if (nodes) {
-      for (var i = 0, l = nodes.length; i < l; i++) {
+      for (var i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           nodes.splice(i, 1);
           break;
@@ -49,7 +49,7 @@ ChainWatchers.prototype = {
   has(key, node) {
     let nodes = this.chains[key];
     if (nodes) {
-      for (var i = 0, l = nodes.length; i < l; i++) {
+      for (var i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           return true;
         }
@@ -85,7 +85,7 @@ ChainWatchers.prototype = {
       affected = [];
     }
 
-    for (let i = 0, l = nodes.length; i < l; i++) {
+    for (let i = 0; i < nodes.length; i++) {
       nodes[i].notify(revalidate, affected);
     }
 
@@ -94,7 +94,7 @@ ChainWatchers.prototype = {
     }
 
     // we gather callbacks so we don't notify them during revalidation
-    for (let i = 0, l = affected.length; i < l; i += 2) {
+    for (let i = 0; i < affected.length; i += 2) {
       let obj  = affected[i];
       let path = affected[i + 1];
       callback(obj, path);

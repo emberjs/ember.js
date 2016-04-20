@@ -47,7 +47,7 @@ proto.cleanup = function() {
   let toDestroy = this.emberToDestroy;
 
   if (toDestroy) {
-    for (var i = 0, l = toDestroy.length; i < l; i++) {
+    for (var i = 0; i < toDestroy.length; i++) {
       toDestroy[i].destroy();
     }
 
