@@ -282,7 +282,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }
 
-  ['@htmlbars simple helper not usable with a block']() {
+  ['@test simple helper not usable with a block']() {
     this.registerHelper('some-helper', () => {});
 
     expectAssertion(() => {
