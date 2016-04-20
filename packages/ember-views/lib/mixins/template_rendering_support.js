@@ -3,6 +3,7 @@
 @submodule ember-views
 */
 import { Mixin } from 'ember-metal/mixin';
+import require from 'require';
 
 // Circular dep
 var _renderView;
