@@ -1,4 +1,4 @@
-import Bounds, { clear } from './bounds';
+import Bounds, { clear, Cursor } from './bounds';
 
 import { DOMHelper } from './dom';
 
@@ -136,7 +136,7 @@ interface UpdateTrackerOptions {
   dom: DOMHelper;
 }
 
-export class ElementStack {
+export class ElementStack implements Cursor {
   public nextSibling: Node;
   public dom: DOMHelper;
   public element: Element;
@@ -269,16 +269,6 @@ export class ElementStack {
     return comment;
   }
 
-  insertHTMLBefore(nextSibling: Node, html: string): Fragment {
-    let element = this.element;
-
-    let concreteBounds = this.dom.insertHTMLBefore(element, nextSibling, html);
-    let fragmentBounds = new Fragment(concreteBounds);
-    this.blockStack.current.newBounds(fragmentBounds);
-
-    return fragmentBounds;
-  }
-
   // setAttribute(name: InternedString, value: any) {
   //   this.dom.setAttribute(this.element, name, value);
   // }
@@ -303,10 +293,6 @@ export class ElementStack {
     this.blockStack.current.closeElement();
     let child = this.popElement();
     this.dom.insertBefore(this.element, child, this.nextSibling);
-  }
-
-  appendHTML(html: string): Bounds {
-    return this.dom.insertHTMLBefore(<HTMLElement>this.element, this.nextSibling, html);
   }
 }
 

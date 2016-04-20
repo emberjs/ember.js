@@ -130,12 +130,14 @@ export {
 
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
 
+export { SafeString } from './lib/upsert';
+
 export {
   Scope,
   default as Environment,
   Helper,
   ParsedStatement,
-  DynamicScope
+  DynamicScope,
 } from './lib/environment';
 
 export {

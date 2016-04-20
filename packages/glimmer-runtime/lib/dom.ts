@@ -1,4 +1,4 @@
-import { ConcreteBounds, Bounds } from './bounds';
+import { ConcreteBounds, SingleNodeBounds, Bounds } from './bounds';
 import applyTableElementFix from './compat/inner-html-fix';
 import applySVGElementFix from './compat/svg-inner-html-fix';
 
@@ -115,6 +115,23 @@ class DOMHelper {
     return new ConcreteBounds(parent, first, last);
   }
 
+  insertNodeBefore(parent: Element, node: Node, reference: Node): Bounds {
+    if (isDocumentFragment(node)) {
+      let { firstChild, lastChild } = node;
+      this.insertBefore(parent, node, reference);
+      return new ConcreteBounds(parent, firstChild, lastChild);
+    } else {
+      this.insertBefore(parent, node, reference);
+      return new SingleNodeBounds(parent, node);
+    }
+  }
+
+  insertTextBefore(parent: Element, nextSibling: Node, text: string): Text {
+    let textNode = this.createTextNode(text);
+    this.insertBefore(parent, textNode, nextSibling);
+    return textNode;
+  }
+
   insertBefore(element: Element, node: Node, reference: Node) {
     element.insertBefore(node, reference);
   }
@@ -122,6 +139,10 @@ class DOMHelper {
   insertAfter(element: Element, node: Node, reference: Node) {
     this.insertBefore(element, node, reference.nextSibling);
   }
+}
+
+function isDocumentFragment(node: Node): node is DocumentFragment {
+  return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
 }
 
 let helper = DOMHelper;
