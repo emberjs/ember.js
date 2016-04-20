@@ -74,11 +74,7 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     let nativeSyntax = super.refineStatement(statement);
-
-    if (!nativeSyntax && key && this.hasHelper(key)) {
-      assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock);
-    }
-
+    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !nativeSyntax && key && this.hasHelper(key) ? !isBlock : true);
     return nativeSyntax;
   }
 
