@@ -118,13 +118,13 @@ import { getHash } from 'ember-routing/location/util';
       to `false`.
 
   Calling setURL or replaceURL will not trigger onUpdateURL callbacks.
-  
+
   ## Custom implementation
-  
+
   Ember scans `app/locations/*` for extending the Location API.
-  
+
   Example:
-  
+
   ```javascript
   import Ember from 'ember';
 
