@@ -343,7 +343,8 @@ export class RenderingTest extends TestCase {
     let { owner } = this;
 
     if (typeof template === 'string') {
-      owner.register(`template:${name}`, compile(template));
+      let moduleName = `template:${name}`;
+      owner.register(moduleName, compile(template, { moduleName }));
     }
   }
 
