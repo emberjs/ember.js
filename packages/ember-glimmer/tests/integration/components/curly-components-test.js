@@ -450,7 +450,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.nthChild(3), { tagName: 'div', attrs: { }, content: 'hello' });
   }
 
-  ['@htmlbars it should not allow attributeBindings to be set']() {
+  ['@test it should not allow attributeBindings to be set']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     expectAssertion(() => {

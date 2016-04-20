@@ -3,7 +3,7 @@ import { ENV } from 'ember-environment';
 import precompile from 'ember-template-compiler/system/precompile';
 import compile from 'ember-template-compiler/system/compile';
 import template from 'ember-template-compiler/system/template';
-import { registerPlugin } from 'ember-template-compiler/plugins';
+import { registerPlugin, default as plugins } from 'ember-template-compiler/plugins';
 
 import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
 import TransformOldClassBindingSyntax from 'ember-template-compiler/plugins/transform-old-class-binding-syntax';
@@ -47,5 +47,6 @@ export {
   precompile,
   compile,
   template,
-  registerPlugin
+  registerPlugin,
+  plugins
 };
