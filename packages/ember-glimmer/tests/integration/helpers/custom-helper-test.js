@@ -290,7 +290,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     }, /Helpers may not be used in the block form/);
   }
 
-  ['@htmlbars class-based helper not usable with a block']() {
+  ['@test class-based helper not usable with a block']() {
     this.registerHelper('some-helper', {
       compute() {
       }
