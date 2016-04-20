@@ -1,6 +1,6 @@
-import { EvaluatedArgs, Template, RenderResult, SafeString } from "glimmer-runtime";
+import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference } from "glimmer-runtime";
 import { TestEnvironment, TestDynamicScope, equalTokens, stripTight } from "glimmer-test-helpers";
-import { PathReference, ConstReference } from "glimmer-reference";
+import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
 
@@ -409,8 +409,8 @@ test("triple curlies with empty string initial value", assert => {
 test("double curlies with const SafeString", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
-    return new ConstReference<Opaque>(makeSafeString(rawString));
+  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ValueReference<Opaque>(makeSafeString(rawString));
   });
 
   let template = compile('<div>{{const-foobar}}</div>');
@@ -430,8 +430,8 @@ test("double curlies with const SafeString", assert => {
 test("double curlies with const Node", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
-    return new ConstReference<Opaque>(document.createTextNode(rawString));
+  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ValueReference<Opaque>(document.createTextNode(rawString));
   });
 
   let template = compile('<div>{{const-foobar}}</div>');
@@ -451,8 +451,8 @@ test("double curlies with const Node", assert => {
 test("triple curlies with const SafeString", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
-    return new ConstReference<Opaque>(makeSafeString(rawString));
+  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ValueReference<Opaque>(makeSafeString(rawString));
   });
 
   let template = compile('<div>{{{const-foobar}}}</div>');
@@ -472,8 +472,8 @@ test("triple curlies with const SafeString", assert => {
 test("triple curlies with const Node", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
-    return new ConstReference<Opaque>(document.createTextNode(rawString));
+  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ValueReference<Opaque>(document.createTextNode(rawString));
   });
 
   let template = compile('<div>{{{const-foobar}}}</div>');

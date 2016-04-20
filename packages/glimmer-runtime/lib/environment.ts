@@ -204,7 +204,7 @@ type PositionalArguments = Opaque[];
 type KeywordArguments = Dict<Opaque>;
 
 export interface Helper {
-  (args: EvaluatedArgs): Reference<Opaque>;
+  (args: EvaluatedArgs): PathReference<Opaque>;
 }
 
 export interface ParsedStatement {
