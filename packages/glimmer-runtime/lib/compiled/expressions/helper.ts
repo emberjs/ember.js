@@ -1,11 +1,11 @@
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs } from './args';
 import VM from '../../vm/append';
-import { Helper } from '../../environment';
+import { Helper, Insertion } from '../../environment';
 import { PathReference } from 'glimmer-reference';
-import { Opaque, InternedString } from 'glimmer-util';
+import { InternedString } from 'glimmer-util';
 
-export default class CompiledHelper<T> extends CompiledExpression<T> {
+export default class CompiledHelper extends CompiledExpression<Insertion> {
   public type = "helper";
   public name: InternedString[];
   public helper: Helper;
@@ -18,7 +18,7 @@ export default class CompiledHelper<T> extends CompiledExpression<T> {
     this.args = args;
   }
 
-  evaluate(vm: VM): PathReference<T> {
+  evaluate(vm: VM): PathReference<Insertion> {
     return this.helper.call(undefined, this.args.evaluate(vm));
   }
 

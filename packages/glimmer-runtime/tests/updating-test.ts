@@ -1,6 +1,6 @@
-import { Template, RenderResult } from "glimmer-runtime";
+import { EvaluatedArgs, Template, RenderResult, SafeString } from "glimmer-runtime";
 import { TestEnvironment, TestDynamicScope, equalTokens, stripTight } from "glimmer-test-helpers";
-import { PathReference } from "glimmer-reference";
+import { PathReference, ConstReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
 
@@ -158,6 +158,336 @@ test("Cycling between two values in a trusting curly", () => {
   object.value = b;
   rerender();
   equalTokens(root, '<div><p>B</p></div>', "Updating");
+});
+
+test("updating a curly with a safe and unsafe string", () => {
+  let safeString: string | SafeString = {
+    string: '<p>hello world</p>',
+    toHTML: function () { return this.string; },
+    toString: function () { return this.string; }
+  } as SafeString;
+  let unsafeString = '<b>Big old world!</b>';
+  let object = {
+    value: safeString
+  };
+  let template = compile('<div>{{value}}</div>');
+  render(template, object);
+  let valueNode = root.firstChild.firstChild.firstChild;
+
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "no change");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
+
+  object.value = unsafeString;
+  rerender();
+
+  equalTokens(root, '<div>&lt;b&gt;Big old world!&lt;/b&gt;</div>', "After replacing with unsafe string");
+  notStrictEqual(root.firstChild.firstChild, valueNode, "The text node was blown away");
+
+  object.value = safeString;
+  rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "original input causes no problem");
+});
+
+function makeSafeString(value: string): SafeString {
+  return {
+    string: value,
+    toHTML: function () { return this.string; },
+    toString: function () { return this.string; }
+  } as SafeString;
+}
+
+// Test cases to matrix:
+// const helper returns const SafeString
+// non-const
+// safe string
+// unsafe string
+// swapping between safe and unsafe
+// swapping between unsafe and safe
+
+function makeElement(tag: string, content: string) {
+  let el = document.createElement(tag);
+  el.appendChild(document.createTextNode(content));
+  return el;
+}
+
+function makeFragment(nodes: Node[]) {
+  let frag = document.createDocumentFragment();
+  nodes.forEach(node => frag.appendChild(node));
+  return frag;
+}
+
+[{
+  name: 'double curlies',
+  template: '<div>{{value}}</div>',
+  values: [{
+    input: 'hello',
+    expected: '<div>hello</div>',
+    description: 'plain string'
+  }, {
+    input: '<b>hello</b>',
+    expected: '<div>&lt;b&gt;hello&lt;/b&gt;</div>',
+    description: 'string containing HTML'
+  }, {
+    input: null,
+    expected: '<div></div>',
+    description: 'null literal'
+  }, {
+    input: undefined,
+    expected: '<div></div>',
+    description: 'undefined literal'
+  }, {
+    input: makeSafeString('<b>hello</b>'),
+    expected: '<div><b>hello</b></div>',
+    description: 'safe string containing HTML'
+  }, {
+    input: makeElement('p', 'hello'),
+    expected: '<div><p>hello</p></div>',
+    description: 'DOM node containing and element with text'
+  }, {
+    input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
+    expected: '<div><p>one</p><p>two</p></div>',
+    description: 'DOM fragment containing multiple nodes'
+  }, {
+    input: 'not modified',
+    expected: '<div>not modified</div>',
+    description: 'plain string (not modified, first render)'
+  }, {
+    input: 'not modified',
+    expected: '<div>not modified</div>',
+    description: 'plain string (not modified, second render)'
+  }, {
+    input: 0,
+    expected: '<div>0</div>',
+    description: 'number literal (0)'
+  }, {
+    input: true,
+    expected: '<div>true</div>',
+    description: 'boolean literal (true)'
+  }, {
+    input: {
+      toString() {
+        return 'I am an Object';
+      }
+    },
+    expected: '<div>I am an Object</div>',
+    description: 'object with a toString function'
+  }]
+}, {
+  name: 'triple curlies',
+  template: '<div>{{{value}}}</div>',
+  values: [{
+    input: 'hello',
+    expected: '<div>hello</div>',
+    description: 'plain string'
+  }, {
+    input: '<b>hello</b>',
+    expected: '<div><b>hello</b></div>',
+    description: 'string containing HTML'
+  }, {
+    input: null,
+    expected: '<div></div>',
+    description: 'null literal'
+  }, {
+    input: undefined,
+    expected: '<div></div>',
+    description: 'undefined literal'
+  }, {
+    input: makeSafeString('<b>hello</b>'),
+    expected: '<div><b>hello</b></div>',
+    description: 'safe string containing HTML'
+  }, {
+    input: makeElement('p', 'hello'),
+    expected: '<div><p>hello</p></div>',
+    description: 'DOM node containing and element with text'
+  }, {
+    input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
+    expected: '<div><p>one</p><p>two</p></div>',
+    description: 'DOM fragment containing multiple nodes'
+  }, {
+    input: 'not modified',
+    expected: '<div>not modified</div>',
+    description: 'plain string (not modified, first render)'
+  }, {
+    input: 'not modified',
+    expected: '<div>not modified</div>',
+    description: 'plain string (not modified, second render)'
+  }, {
+    input: 0,
+    expected: '<div>0</div>',
+    description: 'number literal (0)'
+  }, {
+    input: true,
+    expected: '<div>true</div>',
+    description: 'boolean literal (true)'
+  }, {
+    input: {
+      toString() {
+        return 'I am an Object';
+      }
+    },
+    expected: '<div>I am an Object</div>',
+    description: 'object with a toString function'
+  }]
+}].forEach(config => {
+  test(`updating ${config.name} produces expected result`, () => {
+    let template = compile(config.template);
+    let context = {
+      value: undefined
+    };
+    config.values.forEach((testCase, index) => {
+      context.value = testCase.input;
+      if (index === 0) {
+        render(template, context);
+        equalTokens(root, testCase.expected, `expected initial render (${testCase.description})`);
+      } else {
+        rerender();
+        equalTokens(root, testCase.expected, `expected updated render (${testCase.description})`);
+      }
+    });
+  });
+});
+
+test("updating a triple curly with a safe and unsafe string", () => {
+  let safeString: string | SafeString = makeSafeString('<p>hello world</p>');
+  let unsafeString = '<b>Big old world!</b>';
+  let object = {
+    value: safeString
+  };
+  let template = compile('<div>{{{value}}}</div>');
+  render(template, object);
+  let valueNode = root.firstChild.firstChild.firstChild;
+
+  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "no change");
+  strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The nodes were not blown away");
+
+  object.value = unsafeString;
+  rerender();
+
+  equalTokens(root, '<div><b>Big old world!</b></div>', "Normal strings may contain HTML");
+  notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The nodes were blown away");
+
+  object.value = safeString;
+  rerender();
+
+  equalTokens(root, '<div><p>hello world</p></div>', "original input causes no problem");
+});
+
+test("triple curlies with empty string initial value", assert => {
+  let input = {
+    value: ''
+  };
+  let template = compile('<div>{{{value}}}</div>');
+
+  render(template, input);
+
+  equalTokens(root, '<div></div>', "Initial render");
+
+  rerender();
+
+  equalTokens(root, '<div></div>', "no change");
+
+  input.value = '<b>Bold and spicy</b>';
+  rerender();
+
+  equalTokens(root, '<div><b>Bold and spicy</b></div>', "markup is updated");
+
+  input.value = '';
+  rerender();
+
+  equalTokens(root, '<div></div>', "back to empty string");
+});
+
+test("double curlies with const SafeString", assert => {
+  let rawString = '<b>bold</b> and spicy';
+
+  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ConstReference<Opaque>(makeSafeString(rawString));
+  });
+
+  let template = compile('<div>{{const-foobar}}</div>');
+  let input = {};
+
+  render(template, input);
+  let valueNode = root.firstChild.firstChild;
+
+  equalTokens(root, '<div><b>bold</b> and spicy</div>', "initial render");
+
+  rerender();
+
+  equalTokens(root, '<div><b>bold</b> and spicy</div>', "no change");
+  strictEqual(root.firstChild.firstChild, valueNode, "The nodes were not blown away");
+});
+
+test("double curlies with const Node", assert => {
+  let rawString = '<b>bold</b> and spicy';
+
+  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ConstReference<Opaque>(document.createTextNode(rawString));
+  });
+
+  let template = compile('<div>{{const-foobar}}</div>');
+  let input = {};
+
+  render(template, input);
+  let valueNode = root.firstChild.firstChild;
+
+  equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "initial render");
+
+  rerender();
+
+  equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "no change");
+  strictEqual(root.firstChild.firstChild, valueNode, "The node was not blown away");
+});
+
+test("triple curlies with const SafeString", assert => {
+  let rawString = '<b>bold</b> and spicy';
+
+  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ConstReference<Opaque>(makeSafeString(rawString));
+  });
+
+  let template = compile('<div>{{{const-foobar}}}</div>');
+  let input = {};
+
+  render(template, input);
+  let valueNode = root.firstChild.firstChild;
+
+  equalTokens(root, '<div><b>bold</b> and spicy</div>', "initial render");
+
+  rerender();
+
+  equalTokens(root, '<div><b>bold</b> and spicy</div>', "no change");
+  strictEqual(root.firstChild.firstChild, valueNode, "The nodes were not blown away");
+});
+
+test("triple curlies with const Node", assert => {
+  let rawString = '<b>bold</b> and spicy';
+
+  env.setHelper('const-foobar', (args: EvaluatedArgs) => {
+    return new ConstReference<Opaque>(document.createTextNode(rawString));
+  });
+
+  let template = compile('<div>{{{const-foobar}}}</div>');
+  let input = {};
+
+  render(template, input);
+  let valueNode = root.firstChild;
+
+  equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "initial render");
+
+  rerender();
+
+  equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "no change");
+  strictEqual(root.firstChild, valueNode, "The node was not blown away");
 });
 
 test("dynamically scoped keywords can be passed to render, and used in curlies", assert => {

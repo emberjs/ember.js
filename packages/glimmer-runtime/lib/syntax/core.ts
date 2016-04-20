@@ -233,27 +233,6 @@ export class Append extends StatementSyntax {
   }
 }
 
-class HelperInvocationReference implements Reference<Insertion> {
-  private helper: EnvHelper;
-  private args: EvaluatedArgs;
-  public tag: RevisionTag;
-
-  constructor(helper: EnvHelper, args: EvaluatedArgs) {
-    this.helper = helper;
-    this.args = args;
-    this.tag = args.tag;
-  }
-
-  get(): PathReference<Opaque> {
-    throw new Error("Unimplemented: Yielding the result of a helper call.");
-  }
-
-  value(): Insertion {
-    let { args: { positional, named } }  = this;
-    return this.helper.call(undefined, positional.value(), named.value(), null);
-  }
-}
-
 /*
 export class Modifier implements StatementSyntax {
   static fromSpec(node) {
@@ -914,7 +893,7 @@ export class Helper extends ExpressionSyntax<Opaque> {
   compile(compiler: SymbolLookup, env: Environment): CompiledExpression<Opaque> {
     if (env.hasHelper(this.ref.parts)) {
       let { args, ref } = this;
-      return new CompiledHelper<Opaque>({ name: ref.parts, helper: env.lookupHelper(ref.parts), args: args.compile(compiler, env) });
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts), args: args.compile(compiler, env) });
     } else {
       throw new Error(`Compile Error: ${this.ref.prettyPrint()} is not a helper`);
     }
