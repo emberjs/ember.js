@@ -1,4 +1,4 @@
-import { ConcreteBounds, Bounds } from './bounds';
+import { ConcreteBounds, SingleNodeBounds, Bounds } from './bounds';
 import applyTableElementFix from './compat/inner-html-fix';
 import applySVGElementFix from './compat/svg-inner-html-fix';
 
@@ -113,6 +113,12 @@ class DOMHelper {
 
     let first = prev ? prev.nextSibling : parent.firstChild;
     return new ConcreteBounds(parent, first, last);
+  }
+
+  insertTextBefore(parent: Element, nextSibling: Node, text: string): Text {
+    let textNode = this.createTextNode(text);
+    this.insertBefore(parent, textNode, nextSibling);
+    return textNode;
   }
 
   insertBefore(element: Element, node: Node, reference: Node) {
