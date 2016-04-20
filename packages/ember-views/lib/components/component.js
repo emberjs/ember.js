@@ -484,7 +484,8 @@ var Component = View.extend(TargetActionSupport, {
     Called when the attributes passed into the component have been updated.
     Called both during the initial render of a container and during a rerender.
     Can be used in place of an observer; code placed here will be executed
-    every time any attribute updates.
+    every time any attribute updates. Called in FastBoot when rendering the
+    component.
 
     @method didReceiveAttrs
     @public
@@ -495,7 +496,8 @@ var Component = View.extend(TargetActionSupport, {
     Called when the attributes passed into the component have been updated.
     Called both during the initial render of a container and during a rerender.
     Can be used in place of an observer; code placed here will be executed
-    every time any attribute updates.
+    every time any attribute updates. Called in FastBoot when rendering the
+    component.
 
     @event didReceiveAttrs
     @public
@@ -522,7 +524,7 @@ var Component = View.extend(TargetActionSupport, {
 
   /**
     Called before a component has been rendered, both on initial render and
-    in subsequent rerenders.
+    in subsequent rerenders. Called in FastBoot when rendering the component.
 
     @method willRender
     @public
@@ -531,7 +533,7 @@ var Component = View.extend(TargetActionSupport, {
 
   /**
     Called before a component has been rendered, both on initial render and
-    in subsequent rerenders.
+    in subsequent rerenders. Called in FastBoot when rendering the component.
 
     @event willRender
     @public
@@ -540,7 +542,9 @@ var Component = View.extend(TargetActionSupport, {
 
   /**
     Called when the attributes passed into the component have been changed.
-    Called only during a rerender, not during an initial render.
+    Called only during a rerender, not during an initial render. Called in
+    FastBoot when rendering the component if the attributes are updated before
+    FastBoot sends the response.
 
     @method didUpdateAttrs
     @public
@@ -549,7 +553,9 @@ var Component = View.extend(TargetActionSupport, {
 
   /**
     Called when the attributes passed into the component have been changed.
-    Called only during a rerender, not during an initial render.
+    Called only during a rerender, not during an initial render. Called in
+    FastBoot when rendering the component if the attributes are updated before
+    FastBoot sends the response.
 
     @event didUpdateAttrs
     @public
@@ -558,7 +564,9 @@ var Component = View.extend(TargetActionSupport, {
 
   /**
     Called when the component is about to update and rerender itself.
-    Called only during a rerender, not during an initial render.
+    Called only during a rerender, not during an initial render. Called in
+    FastBoot when rendering the component if the attributes are updated before
+    FastBoot sends the response.
 
     @method willUpdate
     @public
@@ -567,7 +575,9 @@ var Component = View.extend(TargetActionSupport, {
 
   /**
     Called when the component is about to update and rerender itself.
-    Called only during a rerender, not during an initial render.
+    Called only during a rerender, not during an initial render. Called in
+    FastBoot when rendering the component if the attributes are updated before
+    FastBoot sends the response.
 
     @event willUpdate
     @public
