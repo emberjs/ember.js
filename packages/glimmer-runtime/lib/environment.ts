@@ -200,16 +200,6 @@ export abstract class Environment {
 
 export default Environment;
 
-// TS does not allow us to use computed properties for this, so inlining for now
-// import { TRUSTED_STRING } from './symbols';
-
-interface SafeString {
-  "trusted string [id=7d10c13d-cdf5-45f4-8859-b09ce16517c2]": boolean; // true
-  string: string;
-}
-
-export type Insertion = string | SafeString | Node;
-
 type PositionalArguments = Opaque[];
 type KeywordArguments = Dict<Opaque>;
 

@@ -3,9 +3,9 @@ import { CompiledArgs } from './args';
 import VM from '../../vm/append';
 import { Helper } from '../../environment';
 import { PathReference } from 'glimmer-reference';
-import { Opaque, InternedString } from 'glimmer-util';
+import { InternedString, Opaque } from 'glimmer-util';
 
-export default class CompiledHelper<T> extends CompiledExpression<T> {
+export default class CompiledHelper extends CompiledExpression<Opaque> {
   public type = "helper";
   public name: InternedString[];
   public helper: Helper;
@@ -18,8 +18,9 @@ export default class CompiledHelper<T> extends CompiledExpression<T> {
     this.args = args;
   }
 
-  evaluate(vm: VM): PathReference<T> {
-    return this.helper.call(undefined, this.args.evaluate(vm));
+  evaluate(vm: VM): PathReference<Opaque> {
+    let { helper } = this;
+    return helper(this.args.evaluate(vm));
   }
 
   toJSON(): string {

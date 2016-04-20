@@ -430,6 +430,10 @@ export class TestEnvironment extends Environment {
     this.helpers[name] = (args: EvaluatedArgs) => new HelperReference(helper, args);
   }
 
+  registerInternalHelper(name: string, helper: GlimmerHelper) {
+    this.helpers[name] = helper;
+  }
+
   registerComponent(name: string, definition: ComponentDefinition<any>) {
     this.components[name] = definition;
     return definition;
