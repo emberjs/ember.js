@@ -760,18 +760,18 @@ test("<foreignObject> tag has an SVG namespace", function() {
 
 test("Namespaced and non-namespaced elements as siblings", function() {
   compilesTo('<svg></svg><svg></svg><div></div>');
-  let [first, second, third] = root.childNodes;
-  equal(first.namespaceURI, SVG_NAMESPACE,
+  equal(root.childNodes[0].namespaceURI, SVG_NAMESPACE,
         "creates the first svg element with a namespace");
-  equal(second.namespaceURI, SVG_NAMESPACE,
+  equal(root.childNodes[1].namespaceURI, SVG_NAMESPACE,
         "creates the second svg element with a namespace");
-  equal(third.namespaceURI, XHTML_NAMESPACE,
+  equal(root.childNodes[2].namespaceURI, XHTML_NAMESPACE,
         "creates the div element without a namespace");
 });
 
 test("Namespaced and non-namespaced elements with nesting", function() {
   compilesTo('<div><svg></svg></div><div></div>');
-  let [firstDiv, secondDiv] = root.childNodes;
+  let firstDiv = root.firstChild;
+  let secondDiv = root.lastChild;
   let svg = firstDiv.firstChild;
   equal(firstDiv.namespaceURI, XHTML_NAMESPACE,
         "first div's namespace is xhtmlNamespace");
