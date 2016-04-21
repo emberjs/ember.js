@@ -111,8 +111,8 @@ class DOMHelper {
 
     if (html === null || html === '') {
       return new ConcreteBounds(parent, null, null);
-    } 
-    
+    }
+
     if (nextSibling === null) {
       parent.insertAdjacentHTML('beforeEnd', html);
       last = parent.lastChild;
@@ -120,6 +120,11 @@ class DOMHelper {
       nextSibling.insertAdjacentHTML('beforeBegin', html);
       last = nextSibling.previousSibling;
     } else {
+      // Non-element nodes do not support insertAdjacentHTML, so add an
+      // element and call it on that element. Then remove the element.
+      //
+      // This also protects Edge, IE and Firefox w/o the inspector open
+      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
       parent.insertBefore(this.uselessElement, nextSibling);
       this.uselessElement.insertAdjacentHTML('beforeBegin', html);
       last = this.uselessElement.previousSibling;
