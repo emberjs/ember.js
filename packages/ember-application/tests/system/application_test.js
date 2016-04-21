@@ -15,6 +15,7 @@ import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var trim = jQuery.trim;
 
@@ -123,7 +124,7 @@ QUnit.module('Ember.Application initialization', {
     if (app) {
       run(app, 'destroy');
     }
-    Ember.TEMPLATES = {};
+    setTemplates({});
     ENV.LOG_VERSION = originalLogVersion;
   }
 });
@@ -142,9 +143,9 @@ QUnit.test('initialized application goes to initial route', function() {
       compile('{{outlet}}')
     );
 
-    Ember.TEMPLATES.index = compile(
+    setTemplate('index', compile(
       '<h1>Hi from index</h1>'
-    );
+    ));
   });
 
   equal(jQuery('#qunit-fixture h1').text(), 'Hi from index');

@@ -1,8 +1,8 @@
-import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 
 import Application from 'ember-application/system/application';
+import Router from 'ember-routing/system/router';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
 import { OutletView } from 'ember-routing-views/views/outlet';
@@ -10,6 +10,7 @@ import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import isEnabled from 'ember-metal/features';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var App, appInstance;
 var originalHelpers;
@@ -17,8 +18,8 @@ var originalHelpers;
 const keys = Object.keys;
 
 function prepare() {
-  Ember.TEMPLATES['components/expand-it'] = compile('<p>hello {{yield}}</p>');
-  Ember.TEMPLATES.application = compile('Hello world {{#expand-it}}world{{/expand-it}}');
+  setTemplate('components/expand-it', compile('<p>hello {{yield}}</p>'));
+  setTemplate('application', compile('Hello world {{#expand-it}}world{{/expand-it}}'));
 
   originalHelpers = emberA(keys(helpers));
 }
@@ -31,8 +32,7 @@ function cleanup() {
       }
       App = appInstance = null;
     } finally {
-      Ember.TEMPLATES = {};
-
+      setTemplates({});
       cleanupHelpers();
     }
   });
@@ -61,7 +61,7 @@ function boot(callback, startURL='/') {
 
     App.deferReadiness();
 
-    App.Router = Ember.Router.extend({
+    App.Router = Router.extend({
       location: 'none'
     });
 
@@ -102,7 +102,7 @@ if (!isEnabled('ember-glimmer')) {
   // jscs:disable
 
 QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>'));
 
   boot(function() {
     appInstance.register('component:my-hero', Component.extend({
@@ -116,7 +116,7 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
 });
 
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>'));
 
   boot(function() {
     appInstance.register('template:components/sally-rutherford', compile('funkytowny{{yield}}'));
@@ -130,7 +130,7 @@ QUnit.test('Late-registered components can be rendered with template registered 
 }
 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>'));
 
   boot(function() {
     appInstance.register('template:components/borf-snorlax', compile('goodfreakingTIMES{{yield}}'));
@@ -141,7 +141,7 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
 });
 
 QUnit.test('Component-like invocations are treated as bound paths if neither template nor component are registered on the container', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -158,8 +158,8 @@ if (!isEnabled('ember-glimmer')) {
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
-  Ember.TEMPLATES['foo-bar-baz'] = compile('{{text}}-{{yield}}');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
+  setTemplate('foo-bar-baz', compile('{{text}}-{{yield}}'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -178,8 +178,8 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
 QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
   expect(1);
 
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
-  Ember.TEMPLATES['foo-bar-baz'] = compile('No way!');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
+  setTemplate('foo-bar-baz', compile('No way!'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -199,7 +199,7 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
 QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
   expect(2);
 
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
 
   expectDeprecation(function() {
     boot(function() {
@@ -220,8 +220,8 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
   expect(2);
 
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
-  Ember.TEMPLATES['components/my-component'] = compile('{{text}}-{{yield}}');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
+  setTemplate('components/my-component', compile('{{text}}-{{yield}}'));
 
   expectDeprecation(function() {
     boot(function() {
@@ -240,7 +240,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 });
 
 QUnit.test('Using name of component that does not exist', function () {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>'));
 
   expectAssertion(function () {
     boot();
@@ -253,8 +253,8 @@ QUnit.module('Application Lifecycle - Component Context', {
 });
 
 QUnit.test('Components with a block should have the proper content when a template is provided', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
-  Ember.TEMPLATES['components/my-component'] = compile('{{text}}-{{yield}}');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
+  setTemplate('components/my-component', compile('{{text}}-{{yield}}'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -270,7 +270,7 @@ QUnit.test('Components with a block should have the proper content when a templa
 });
 
 QUnit.test('Components with a block should yield the proper content without a template provided', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -286,8 +286,8 @@ QUnit.test('Components with a block should yield the proper content without a te
 });
 
 QUnit.test('Components without a block should have the proper content when a template is provided', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
-  Ember.TEMPLATES['components/my-component'] = compile('{{text}}');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
+  setTemplate('components/my-component', compile('{{text}}'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -303,7 +303,7 @@ QUnit.test('Components without a block should have the proper content when a tem
 });
 
 QUnit.test('Components without a block should have the proper content', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -322,7 +322,7 @@ QUnit.test('Components without a block should have the proper content', function
 
 // The test following this one is the non-deprecated version
 QUnit.test('properties of a component without a template should not collide with internal structures [DEPRECATED]', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -341,7 +341,7 @@ QUnit.test('properties of a component without a template should not collide with
 });
 
 QUnit.test('attrs property of a component without a template should not collide with internal structures', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -361,7 +361,7 @@ QUnit.test('attrs property of a component without a template should not collide 
 });
 
 QUnit.test('Components trigger actions in the parents context when called from within a block', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -381,8 +381,8 @@ QUnit.test('Components trigger actions in the parents context when called from w
 });
 
 QUnit.test('Components trigger actions in the components context when called from within its template', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>');
-  Ember.TEMPLATES['components/my-component'] = compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
+  setTemplate('components/my-component', compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -406,9 +406,9 @@ QUnit.test('Components trigger actions in the components context when called fro
 });
 
 QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
-  Ember.TEMPLATES.application = compile('{{outlet}}');
-  Ember.TEMPLATES.index = compile('{{my-component}}');
-  Ember.TEMPLATES['components/my-component'] = compile('<div></div>');
+  setTemplate('application', compile('{{outlet}}'));
+  setTemplate('index', compile('{{my-component}}'));
+  setTemplate('components/my-component', compile('<div></div>'));
 
   let component;
 

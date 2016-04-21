@@ -1,12 +1,10 @@
-import Ember from 'ember-metal/core';
 import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
-import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-htmlbars/system/bootstrap';
-import Application from 'ember-application/system/application';
+import { setTemplates, get as getTemplate } from 'ember-htmlbars/template_registry';
 
 var trim = jQuery.trim;
 
@@ -17,7 +15,7 @@ function checkTemplate(templateName) {
   run(function() {
     bootstrap(jQuery('#qunit-fixture'));
   });
-  var template = Ember.TEMPLATES[templateName];
+  var template = getTemplate(templateName);
   ok(template, 'template is available on Ember.TEMPLATES');
   equal(jQuery('#qunit-fixture script').length, 0, 'script removed');
   var view = EmberView.create({
@@ -40,10 +38,10 @@ if (!isEnabled('ember-glimmer')) {
 
 QUnit.module('ember-htmlbars: bootstrap', {
   setup() {
-    context.lookup = lookup = { Ember: Ember };
+    context.lookup = lookup = {};
   },
   teardown() {
-    Ember.TEMPLATES = {};
+    setTemplates({});
     context.lookup = originalLookup;
     runDestroy(App);
     runDestroy(view);
@@ -76,10 +74,12 @@ if (typeof Handlebars === 'object') {
       bootstrap(jQuery('#qunit-fixture'));
     });
 
-    ok(Ember.TEMPLATES['funkyTemplate'], 'template with name funkyTemplate available');
+    let template = getTemplate('funkyTemplate');
+
+    ok(template, 'template with name funkyTemplate available');
 
     // This won't even work with Ember templates
-    equal(trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), 'Tobias');
+    equal(trim(template({ name: 'Tobias' })), 'Tobias');
   });
 }
 
@@ -132,43 +132,5 @@ QUnit.test('duplicated template data-template-name should throw exception', func
   /Template named "[^"]+" already exists\./,
   'duplicate templates should not be allowed');
 });
-
-if (Ember.component) {
-  QUnit.test('registerComponents initializer', function() {
-    Ember.TEMPLATES['components/x-apple'] = 'asdf';
-
-    App = run(Application, 'create');
-
-    ok(Ember.Handlebars.helpers['x-apple'], 'x-apple helper is present');
-    ok(App.__container__.has('component:x-apple'), 'the container is aware of x-apple');
-  });
-
-  QUnit.test('registerComponents and generated components', function() {
-    Ember.TEMPLATES['components/x-apple'] = 'asdf';
-
-    App = run(Application, 'create');
-    view = App.__container__.lookup('component:x-apple');
-    equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
-  });
-
-  QUnit.test('registerComponents and non-generated components', function() {
-    Ember.TEMPLATES['components/x-apple'] = 'asdf';
-
-    run(function() {
-      App = Application.create();
-
-      // currently Component code must be loaded before initializers
-      // this is mostly due to how they are bootstrapped. We will hopefully
-      // sort this out soon.
-      App.XAppleComponent = Component.extend({
-        isCorrect: true
-      });
-    });
-
-    view = App.__container__.lookup('component:x-apple');
-    equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
-    ok(view.get('isCorrect'), 'ensure a non-generated component');
-  });
-}
 
 }

@@ -1,5 +1,3 @@
-import Ember from 'ember-metal/core';
-import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import ComponentLookup from 'ember-views/component_lookup';
@@ -33,9 +31,6 @@ QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
   teardown() {
-    run(function() {
-      Ember.TEMPLATES = {};
-    });
     runDestroy(view);
     commonTeardown();
     resetKeyword('view', originalViewKeyword);
