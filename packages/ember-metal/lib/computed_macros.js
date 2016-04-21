@@ -12,28 +12,36 @@ import expandProperties from 'ember-metal/expand_properties';
 @submodule ember-metal
 */
 
-function getProperties(self, propertyNames) {
-  var ret = {};
-  for (var i = 0; i < propertyNames.length; i++) {
-    ret[propertyNames[i]] = get(self, propertyNames[i]);
+function expandPropertiesToArray(properties) {
+  var expandedProperties = [];
+
+  function extractProperty(entry) {
+    expandedProperties.push(entry);
   }
-  return ret;
+
+  for (let i = 0; i < properties.length; i++) {
+    expandProperties(properties[i], extractProperty);
+  }
+
+  return expandedProperties;
 }
 
-function generateComputedWithProperties(macro) {
+function generateComputedWithPredicate(predicate) {
   return function(...properties) {
-    var expandedProperties = [];
+    var expandedProperties = expandPropertiesToArray(properties);
+
     var computedFunc = computed(function() {
-      return macro.apply(this, [getProperties(this, expandedProperties)]);
+      var lastIdx = expandedProperties.length - 1;
+
+      for (var i = 0; i < lastIdx; i++) {
+        var value = get(this, expandedProperties[i]);
+        if (!predicate(value)) {
+          return value;
+        }
+      }
+
+      return get(this, expandedProperties[lastIdx]);
     });
-
-    function extractProperty(entry) {
-      expandedProperties.push(entry);
-    }
-
-    for (var i = 0; i < properties.length; i++) {
-      expandProperties(properties[i], extractProperty);
-    }
 
     return computedFunc.property.apply(computedFunc, expandedProperties);
   };
@@ -446,14 +454,7 @@ export function lte(dependentKey, value) {
   a logical `and` on the values of all the original values for properties.
   @public
 */
-export var and = generateComputedWithProperties(function(properties) {
-  var value;
-  for (var key in properties) {
-    value = properties[key];
-    if (properties.hasOwnProperty(key) && !value) {
-      return value;
-    }
-  }
+export var and = generateComputedWithPredicate(function(value) {
   return value;
 });
 
@@ -492,15 +493,8 @@ export var and = generateComputedWithProperties(function(properties) {
   a logical `or` on the values of all the original values for properties.
   @public
 */
-export var or = generateComputedWithProperties(function(properties) {
-  var value;
-  for (var key in properties) {
-    value = properties[key];
-    if (properties.hasOwnProperty(key) && value) {
-      return value;
-    }
-  }
-  return value;
+export var or = generateComputedWithPredicate(function(value) {
+  return !value;
 });
 
 /**
