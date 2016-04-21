@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### 2.5.1 (April 21, 2016)
+
+- [#13310](https://github.com/emberjs/ember.js/pull/13310) [BUGFIX] Fix `mouseenter` typo in ember-testing helpers.
+- [#13333](https://github.com/emberjs/ember.js/pull/13333) [BUGFIX] Prevent the `toString` property from being added to the objects own
+  properties. Fixes scenarios where the list of own properties changed in debug builds.
+- [#13335](https://github.com/emberjs/ember.js/pull/13335) [BUGFIX] Ensure injected property assertion checks `container`. Fixes issues
+  with usage of objects created by older addons that are attempting to use `Ember.inject.service()`.
+- [#13344](https://github.com/emberjs/ember.js/pull/13344) [BUGFIX] Remove Ember.merge deprecation.
+
 ### 2.5.0 (April 11, 2016)
 
 - [#13239](https://github.com/emberjs/ember.js/pull/13239) [BUGFIX] Prevent warnings for unknown feature flags
