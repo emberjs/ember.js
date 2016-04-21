@@ -98,7 +98,9 @@ class DOMHelper {
 
     if (html === null || html === '') {
       return new ConcreteBounds(parent, null, null);
-    } if (nextSibling === null) {
+    } 
+    
+    if (nextSibling === null) {
       parent.insertAdjacentHTML('beforeEnd', html);
       last = parent.lastChild;
     } else if (nextSibling instanceof HTMLElement) {
