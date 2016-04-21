@@ -877,9 +877,9 @@ test("class attribute w/ concat follow the normal dirtying rules", function() {
   equalTokens(root, "<div class='hello world'>hello</div>");
 });
 
-test("class attribute is removed if the binding becomes falsy", function() {
+test("class attribute is removed if the binding becomes null or undefined", function() {
   let template = compile("<div class={{value}}>hello</div>");
-  let object = { value: "foo" };
+  let object: { value: any } = { value: "foo" };
   render(template, object);
 
   equalTokens(root, "<div class='foo'>hello</div>");
@@ -889,6 +889,16 @@ test("class attribute is removed if the binding becomes falsy", function() {
   equalTokens(root, "<div class='foo'>hello</div>");
 
   object.value = null;
+  rerender();
+
+  equalTokens(root, "<div>hello</div>");
+
+  object.value = 0;
+  rerender();
+
+  equalTokens(root, "<div class='0'>hello</div>");
+
+  object.value = undefined;
   rerender();
 
   equalTokens(root, "<div>hello</div>");

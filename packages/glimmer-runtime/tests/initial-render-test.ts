@@ -78,7 +78,7 @@ test("HTML tag with empty attribute", function() {
   let template = compile("<div class=''>content</div>");
   render(template, {});
 
-  equalTokens(root, '<div>content</div>');
+  equalTokens(root, "<div class=''>content</div>");
 });
 
 test("HTML boolean attribute 'disabled'", function() {
