@@ -1,8 +1,8 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG } from '../ember-views/component';
-import EmptyObject from 'ember-metal/empty_object';
 import { assert } from 'ember-metal/debug';
+import processArgs from '../utils/process-args';
 
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
@@ -18,21 +18,6 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
-function attrsToProps(keys, attrs) {
-  let merged = new EmptyObject();
-
-  merged.attrs = attrs;
-
-  for (let i = 0, l = keys.length; i < l; i++) {
-    let name = keys[i];
-    let value = attrs[name];
-
-    merged[name] = value;
-  }
-
-  return merged;
-}
-
 class ComponentStateBucket {
   constructor(component, args) {
     this.component = component;
@@ -46,8 +31,7 @@ class CurlyComponentManager {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
-    let attrs = args.named.value();
-    let props = attrsToProps(args.named.keys, attrs);
+    let { attrs, props } = processArgs(args, klass.positionalParams);
 
     props.renderer = parentView.renderer;
 
@@ -135,8 +119,7 @@ class CurlyComponentManager {
     if (!args.tag.validate(argsRevision)) {
       bucket.argsRevision = args.tag.value();
 
-      let attrs = args.named.value();
-      let props = attrsToProps(args.named.keys, attrs);
+      let { attrs, props } = processArgs(args, component.constructor.positionalParams);
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;

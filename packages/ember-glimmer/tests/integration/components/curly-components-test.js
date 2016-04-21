@@ -1384,7 +1384,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: something here - In template');
   }
 
-  ['@htmlbars static arbitrary number of positional parameters'](assert) {
+  ['@test static arbitrary number of positional parameters'](assert) {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'names'
@@ -1396,23 +1396,20 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{sample-component "Foo" 4 "Bar" id="args-3"}}
-      {{sample-component "Foo" 4 "Bar" 5 "Baz" id="args-5"}}
-      {{component "sample-component" "Foo" 4 "Bar" 5 "Baz" id="helper"}}`
+      {{sample-component "Foo" 4 "Bar" elementId="args-3"}}
+      {{sample-component "Foo" 4 "Bar" 5 "Baz" elementId="args-5"}}`
     );
 
     assert.equal(this.$('#args-3').text(), 'Foo4Bar');
     assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
-    assert.equal(this.$('#helper').text(), 'Foo4Bar5Baz');
 
     this.runTask(() => this.rerender());
 
     assert.equal(this.$('#args-3').text(), 'Foo4Bar');
     assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
-    assert.equal(this.$('#helper').text(), 'Foo4Bar5Baz');
   }
 
-  ['@htmlbars arbitrary positional parameter conflict with hash parameter is reported']() {
+  ['@test arbitrary positional parameter conflict with hash parameter is reported']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'names'
@@ -1468,7 +1465,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Foo4Bar');
   }
 
-  ['@htmlbars can use hash parameter instead of positional param'](assert) {
+  ['@test can use hash parameter instead of positional param'](assert) {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['first', 'second']
@@ -1476,10 +1473,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '{{first}} - {{second}}'
     });
 
+    // TODO: Fix when id is implemented
     this.render(strip`
-      {{sample-component "one" "two" id="two-positional"}}
-      {{sample-component "one" second="two" id="one-positional"}}
-      {{sample-component first="one" second="two" id="no-positional"}}`);
+      {{sample-component "one" "two" elementId="two-positional"}}
+      {{sample-component "one" second="two" elementId="one-positional"}}
+      {{sample-component first="one" second="two" elementId="no-positional"}}`);
 
     assert.equal(this.$('#two-positional').text(), 'one - two');
     assert.equal(this.$('#one-positional').text(), 'one - two');
@@ -1492,7 +1490,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#no-positional').text(), 'one - two');
   }
 
-  ['@htmlbars dynamic arbitrary number of positional parameters'](assert) {
+  ['@test dynamic arbitrary number of positional parameters'](assert) {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'n'
@@ -1503,40 +1501,33 @@ moduleFor('Components test: curly components', class extends RenderingTest {
         {{/each}}`
     });
 
-    this.render(strip`
-      {{sample-component user1 user2 id="direct"}}
-      {{component "sample-component" user1 user2 id="helper"}}`,
+    this.render(`{{sample-component user1 user2}}`,
       {
         user1: 'Foo',
         user2: 4
       }
     );
 
-    assert.equal(this.$('#direct').text(), 'Foo4', 'direct');
-    assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
+    this.assertText('Foo4');
 
     this.runTask(() => this.rerender());
 
-    assert.equal(this.$('#direct').text(), 'Foo4', 'direct');
-    assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
+    this.assertText('Foo4');
 
     this.runTask(() => this.context.set('user1', 'Bar'));
 
-    assert.equal(this.$('#direct').text(), 'Bar4', 'direct');
-    assert.equal(this.$('#helper').text(), 'Bar4', 'helper');
+    this.assertText('Bar4');
 
     this.runTask(() => this.context.set('user2', '5'));
 
-    assert.equal(this.$('#direct').text(), 'Bar5', 'direct');
-    assert.equal(this.$('#helper').text(), 'Bar5', 'helper');
+    this.assertText('Bar5');
 
     this.runTask(() => {
       this.context.set('user1', 'Foo');
       this.context.set('user2', 4);
     });
 
-    assert.equal(this.$('#direct').text(), 'Foo4', 'direct');
-    assert.equal(this.$('#helper').text(), 'Foo4', 'helper');
+    this.assertText('Foo4');
   }
 
   ['@test with ariaRole specified']() {
@@ -1683,7 +1674,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In block No Block Param!');
   }
 
-  ['@htmlbars static named positional parameters']() {
+  ['@test static named positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name', 'age']
@@ -1700,7 +1691,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Quint4');
   }
 
-  ['@htmlbars dynamic named positional parameters']() {
+  ['@test dynamic named positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name', 'age']
@@ -1735,7 +1726,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Quint4');
   }
 
-  ['@htmlbars if a value is passed as a non-positional parameter, it raises an assertion']() {
+  ['@test if a value is passed as a non-positional parameter, it raises an assertion']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
