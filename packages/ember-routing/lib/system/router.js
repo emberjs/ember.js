@@ -717,11 +717,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     let queryParams = {};
-    // merge in any queryParams from the active transition which could include
-    // queryparams from the url on initial load.
-    if (this.router.activeTransition) {
-      assign(queryParams, this.router.activeTransition.queryParams);
-    }
 
     this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
@@ -738,7 +733,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams) {
     // merge in any queryParams from the active transition which could include
-    // queryparams from the url on initial load.
+    // queryParams from the url on initial load.
     if (!this.router.activeTransition) { return; }
 
     var unchangedQPs = {};
@@ -749,9 +744,9 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
     }
 
-    // We need to fully scope query params so that we can create one object
-    // that represetns both pased in query params and ones that arent' changed
-    // from the actice transition
+    // We need to fully scope queryParams so that we can create one object
+    // that represents both pased in queryParams and ones that aren't changed
+    // from the active transition.
     this._fullyScopeQueryParams(targetRouteName, models, _queryParams);
     this._fullyScopeQueryParams(targetRouteName, models, unchangedQPs);
     assign(queryParams, unchangedQPs);
