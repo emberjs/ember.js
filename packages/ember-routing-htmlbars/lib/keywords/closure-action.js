@@ -10,17 +10,22 @@ import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
 import { flaggedInstrument } from 'ember-metal/instrumentation';
+import isNone from 'ember-metal/is_none';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
 
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {
   let s = new Stream(function() {
-    var rawAction = params[0];
-    var actionArguments = readArray(params.slice(1, params.length));
+    let rawAction = params[0];
+    let actionArguments = readArray(params.slice(1, params.length));
 
-    var target, action, valuePath;
-    if (rawAction[INVOKE]) {
+    let target, action, valuePath;
+
+    if (isNone(rawAction)) {
+      let label = labelForSubexpr(params, hash, 'action');
+      throw new EmberError(`Action passed is null or undefined in ${label} from ${read(scope.getSelf())}.`);
+    } else if (rawAction[INVOKE]) {
       // on-change={{action (mut name)}}
       target = rawAction;
       action = rawAction[INVOKE];
