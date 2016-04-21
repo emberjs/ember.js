@@ -1,9 +1,9 @@
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { applyMixins } from '../../utils/abstract-test-case';
+import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { strip } from '../../utils/abstract-test-case';
+
 import {
   BasicConditionalsTest,
   SyntaxCondtionalTestHelpers,
@@ -63,25 +63,215 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
 
     this.assertText('hello');
 
-    this.runTask(() => set(this.context.get('list').objectAt(0), 'text', 'Hello'));
+    this.runTask(() => set(get(this.context, 'list').objectAt(0), 'text', 'Hello'));
 
     this.assertText('Hello');
 
     this.runTask(() => {
-      let list = this.context.get('list');
+      let list = get(this.context, 'list');
       list.pushObject({ text: ' ' });
-      list.pushObject({ text: 'world' });
+      list.pushObject({ text: 'World' });
     });
 
-    this.assertText('Hello world');
+    this.assertText('Hello World');
 
-    this.runTask(() => this.context.get('list').clear());
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: 'Earth' });
+      list.removeAt(1);
+      list.insertAt(1, { text: 'Globe' });
+    });
+
+    this.assertText('HelloGlobeWorldEarth');
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: 'Planet' });
+      list.removeAt(1);
+      list.insertAt(1, { text: ' ' });
+      list.pushObject({ text: ' ' });
+      list.pushObject({ text: 'Earth' });
+      list.removeAt(3);
+    });
+
+    this.assertText('Hello WorldPlanet Earth');
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: 'Globe' });
+      list.removeAt(1);
+      list.insertAt(1, { text: ' ' });
+      list.pushObject({ text: ' ' });
+      list.pushObject({ text: 'World' });
+      list.removeAt(2);
+    });
+
+    this.assertText('Hello Planet EarthGlobe World');
+
+    this.runTask(() => get(this.context, 'list').replace(2, 4, { text: 'my' }));
+
+    this.assertText('Hello my World');
+
+    this.runTask(() => get(this.context, 'list').clear());
 
     this.assertText('Empty');
 
     this.runTask(() => set(this.context, 'list', [{ text: 'hello' }]));
 
     this.assertText('hello');
+  }
+
+  ['@htmlbars it receives the index as the second parameter']() {
+    this.render(`{{#each list as |item index|}}{{index}}. {{item.text}}{{/each}}`, {
+      list: emberA([{ text: 'hello' }, { text: 'world' }])
+    });
+
+    this.assertText('0. hello1. world');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').insertAt(1, { text: 'my' }));
+
+    this.assertText('0. hello1. my2. world');
+
+    this.runTask(() => set(this.context, 'list', [{ text: 'hello' }, { text: 'world' }]));
+
+    this.assertText('0. hello1. world');
+  }
+
+  ['@test it accepts a string key']() {
+    this.render(`{{#each list key='text' as |item|}}{{item.text}}{{/each}}`, {
+      list: emberA([{ text: 'hello' }, { text: 'world' }])
+    });
+
+    this.assertText('helloworld');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').pushObject({ text: 'again' }));
+
+    this.assertText('helloworldagain');
+
+    this.runTask(() => set(this.context, 'list', [{ text: 'hello' }, { text: 'world' }]));
+
+    this.assertText('helloworld');
+  }
+
+  ['@test it accepts a numeric key']() {
+    this.render(`{{#each list key='id' as |item|}}{{item.id}}{{/each}}`, {
+      list: emberA([{ id: 1 }, { id: 2 }])
+    });
+
+    this.assertText('12');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').pushObject({ id: 3 }));
+
+    this.assertText('123');
+
+    this.runTask(() => set(this.context, 'list', [{ id: 1 }, { id: 2 }]));
+
+    this.assertText('12');
+  }
+
+  ['@test it can specify @index as the key']() {
+    this.render(`{{#each list key='@index' as |item|}}{{item.id}}{{/each}}`, {
+      list: emberA([{ id: 1 }, { id: 2 }])
+    });
+
+    this.assertText('12');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').pushObject({ id: 3 }));
+
+    this.assertText('123');
+
+    this.runTask(() => set(this.context, 'list', [{ id: 1 }, { id: 2 }]));
+
+    this.assertText('12');
+  }
+
+  ['@test it can specify @identity as the key for arrays of primitives']() {
+    this.render(`{{#each list key='@identity' as |item|}}{{item}}{{/each}}`, {
+      list: emberA([1, 2])
+    });
+
+    this.assertText('12');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').pushObject(3));
+
+    this.assertText('123');
+
+    this.runTask(() => set(this.context, 'list', [1, 2]));
+
+    this.assertText('12');
+  }
+
+  ['@test it can specify @identity as the key for mixed arrays of objects and primitives']() {
+    this.render(`{{#each list key='@identity' as |item|}}{{if item.id item.id item}}{{/each}}`, {
+      list: emberA([1, { id: 2 }, 3])
+    });
+
+    this.assertText('123');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').insertAt(2, { id: 4 }));
+
+    this.assertText('1243');
+
+    this.runTask(() => set(this.context, 'list', [1, { id: 2 }, 3]));
+
+    this.assertText('123');
+  }
+
+  ['@htmlbars it can render duplicate primitive items']() {
+    this.render(`{{#each list as |item|}}{{item}}{{/each}}`, {
+      list: emberA(['a', 'a', 'a'])
+    });
+
+    this.assertText('aaa');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').pushObject('a'));
+
+    this.assertText('aaaa');
+
+    this.runTask(() => get(this.context, 'list').pushObject('a'));
+
+    this.assertText('aaaaa');
+
+    this.runTask(() => set(this.context, 'list', ['a', 'a', 'a']));
+
+    this.assertText('aaa');
+  }
+
+  ['@htmlbars it can render duplicate objects']() {
+    let duplicateItem = { text: 'foo' };
+    this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`, {
+      list: emberA([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }])
+    });
+
+    this.assertText('foofoobarbaz');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'list').pushObject(duplicateItem));
+
+    this.assertText('foofoobarbazfoo');
+
+    this.runTask(() => get(this.context, 'list').pushObject(duplicateItem));
+
+    this.assertText('foofoobarbazfoofoo');
+
+    this.runTask(() => set(this.context, 'list', [duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]));
+
+    this.assertText('foofoobarbaz');
   }
 
   [`@test it maintains DOM stability when condition changes between objects with the same keys`]() {
@@ -94,7 +284,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.takeSnapshot();
 
     this.runTask(() => {
-      let list = this.context.get('list');
+      let list = get(this.context, 'list');
       list.popObject();
       list.popObject();
       list.pushObject({ text: ' ' });
@@ -110,6 +300,61 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('Hello world');
 
     this.assertInvariants();
+  }
+
+  [`@htmlbars it maintains DOM stability for stable keys when list is updated`]() {
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
+      list: emberA([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }])
+    });
+
+    this.assertText('Hello world');
+
+    this.assertStableRerender();
+
+    let oldSnapshot = this.snapshot;
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.unshiftObject({ text: ', ' });
+      list.unshiftObject({ text: 'Hi' });
+      list.pushObject({ text: ' ' });
+      list.pushObject({ text: 'earth' });
+    });
+
+    this.assertText('Hi, Hello world earth');
+
+    this.assertPartialInvariants(2, 5);
+
+    this.runTask(() => set(this.context, 'list', [{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]));
+
+    this.assertText('Hello world');
+    this.assertInvariants(oldSnapshot, this.takeSnapshot());
+  }
+
+  ['@test context is not changed to the inner scope inside an {{#each as}} block']() {
+    this.render(`{{name}}-{{#each people as |person|}}{{name}}{{/each}}-{{name}}`, {
+      name: 'Joel',
+      people: emberA([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }])
+    });
+
+    this.assertText('Joel-JoelJoelJoel-Joel');
+
+    this.assertStableRerender();
+
+    this.runTask(() => get(this.context, 'people').shiftObject());
+
+    this.assertText('Joel-JoelJoel-Joel');
+
+    this.runTask(() => set(this.context, 'name', 'Godfrey'));
+
+    this.assertText('Godfrey-GodfreyGodfrey-Godfrey');
+
+    this.runTask(() => {
+      set(this.context, 'name', 'Joel');
+      set(this.context, 'people', [{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
+    });
+
+    this.assertText('Joel-JoelJoelJoel-Joel');
   }
 
   ['@test can access the item and the original scope']() {
@@ -232,6 +477,38 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
     });
 
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
+  }
+
+  [`@test an outer {{#each}}'s scoped variable does not clobber an inner {{#each}}'s property if they share the same name - Issue #1315`]() {
+    this.render(strip`
+      {{#each content as |value|}}
+        {{value}}-
+        {{#each options as |option|}}
+          {{option.value}}:{{option.label}}
+        {{/each}}
+      {{/each}}
+      `, {
+      content: emberA(['X', 'Y']),
+      options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
+    });
+
+    this.assertText('X-1:One2:TwoY-1:One2:Two');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      get(this.context, 'content').pushObject('Z');
+      set(get(this.context, 'options').objectAt(0), 'value', 0);
+    });
+
+    this.assertText('X-0:One2:TwoY-0:One2:TwoZ-0:One2:Two');
+
+    this.runTask(() => {
+      set(this.context, 'content', ['X', 'Y']);
+      set(this.context, 'options', [{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]);
+    });
+
+    this.assertText('X-1:One2:TwoY-1:One2:Two');
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block']() {
