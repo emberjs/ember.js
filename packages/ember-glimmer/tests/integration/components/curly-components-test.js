@@ -1821,7 +1821,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-   ['@test hasBlockParams expression in an attribute'](assert) {
+  // HTMLBars will return <button name="0"> or <button name="1"> unless a named block is passed in
+  ['@glimmer hasBlockParams expression in an attribute'](assert) {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlockParams}}></button>'
     });
