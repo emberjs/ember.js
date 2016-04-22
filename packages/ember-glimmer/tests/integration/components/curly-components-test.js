@@ -1501,7 +1501,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('No Block!');
   }
 
-  ['@htmlbars hasBlockParams is true when block param supplied']() {
+  ['@test hasBlockParams is true when block param supplied']() {
     this.registerComponent('with-block', {
       template: strip`
         {{#if hasBlockParams}}
@@ -1690,6 +1690,47 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
+  ['@test expression hasBlockParams inverse'](assert) {
+    this.registerComponent('check-inverse', {
+      template: strip`
+        {{#if (hasBlockParams "inverse")}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-inverse}}{{/check-inverse}}
+      {{#check-inverse as |something|}}{{/check-inverse}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'No' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test expression hasBlockParams default'](assert) {
+    this.registerComponent('check-block', {
+      template: strip`
+        {{#if (hasBlockParams)}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-block}}{{/check-block}}
+      {{#check-block as |something|}}{{/check-block}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+
+    this.assertStableRerender();
+  }
+
+
   ['@test non-expression hasBlock'](assert) {
     this.registerComponent('check-block', {
       template: strip`
@@ -1710,7 +1751,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@htmlbars expression hasBlockParams'](assert) {
+  ['@test expression hasBlockParams'](assert) {
     this.registerComponent('check-params', {
       template: strip`
         {{#if (hasBlockParams)}}
@@ -1721,19 +1762,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{#check-params id="expect-no"}}{{/check-params}}
-      {{#check-params id="expect-yes" as |foo|}}{{/check-params}}`);
+      {{#check-params}}{{/check-params}}
+      {{#check-params as |foo|}}{{/check-params}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertStableRerender();
   }
 
-  ['@htmlbars non-expression hasBlockParams'](assert) {
+  ['@test non-expression hasBlockParams'](assert) {
     this.registerComponent('check-params', {
       template: strip`
         {{#if hasBlockParams}}
@@ -1744,16 +1782,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{#check-params id="expect-no"}}{{/check-params}}
-      {{#check-params id="expect-yes" as |foo|}}{{/check-params}}`);
+      {{#check-params}}{{/check-params}}
+      {{#check-params as |foo|}}{{/check-params}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertStableRerender();
   }
 
   ['@test hasBlock expression in an attribute'](assert) {
@@ -1782,6 +1817,36 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
     equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+
+    this.assertStableRerender();
+  }
+
+   ['@test hasBlockParams expression in an attribute'](assert) {
+    this.registerComponent('check-attr', {
+      template: '<button name={{hasBlockParams}}></button>'
+    });
+
+    this.render(strip`
+      {{#check-attr}}{{/check-attr}}
+      {{#check-attr as |something|}}{{/check-attr}}`);
+
+    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams inverse expression in an attribute'](assert) {
+    this.registerComponent('check-attr', {
+      template: '<button name={{hasBlockParams "inverse"}}></button>'
+    }, '');
+
+    this.render(strip`
+      {{#check-attr}}{{/check-attr}}
+      {{#check-attr as |something|}}{{/check-attr}}`);
+
+    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(this.$('button')[1], 'button', { name: 'false' }, '');
 
     this.assertStableRerender();
   }
@@ -1827,6 +1892,51 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { content: 'false' });
     this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams as a param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if hasBlockParams "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper as |something|}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams as an expression param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if (hasBlockParams) "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper as |something|}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams inverse as a param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if (hasBlockParams "inverse") "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper as |something|}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'false' });
 
     this.assertStableRerender();
   }

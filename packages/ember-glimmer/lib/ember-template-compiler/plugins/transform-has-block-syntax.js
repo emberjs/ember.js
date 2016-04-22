@@ -27,6 +27,8 @@ export default function TransformHasBlockSyntax() {
 
 const OLD_HAS_BLOCK = 'hasBlock';
 const NEW_HAS_BLOCK = 'has-block';
+const OLD_HAS_BLOCK_PARAMS = 'hasBlockParams';
+const NEW_HAS_BLOCK_PARAMS = 'has-block-params';
 
 /**
   @private
@@ -41,15 +43,25 @@ TransformHasBlockSyntax.prototype.transform = function TransformHasBlockSyntax_t
       if (node.original === OLD_HAS_BLOCK) {
         return b.sexpr(b.path(NEW_HAS_BLOCK));
       }
+
+      if (node.original === OLD_HAS_BLOCK_PARAMS) {
+        return b.sexpr(b.path(NEW_HAS_BLOCK_PARAMS));
+      }
     },
     MustacheStatement(node) {
       if (node.path.original === OLD_HAS_BLOCK) {
         return b.mustache(b.path(NEW_HAS_BLOCK), node.params, node.hash, null, node.loc);
       }
+      if (node.path.original === OLD_HAS_BLOCK_PARAMS) {
+        return b.mustache(b.path(NEW_HAS_BLOCK_PARAMS), node.params, node.hash, null, node.loc);
+      }
     },
     SubExpression(node) {
       if (node.path.original === OLD_HAS_BLOCK) {
         return b.sexpr(b.path(NEW_HAS_BLOCK), node.params, node.hash);
+      }
+      if (node.path.original === OLD_HAS_BLOCK_PARAMS) {
+        return b.sexpr(b.path(NEW_HAS_BLOCK_PARAMS), node.params, node.hash);
       }
     }
   });
