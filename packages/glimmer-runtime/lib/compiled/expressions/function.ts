@@ -33,7 +33,8 @@ class CompiledFunctionExpression<T> extends CompiledExpression<T> {
   }
 
   evaluate(vm: VM): PathReference<T> {
-    return this.func.call(undefined, vm);
+    let { func } = this;
+    return func(vm);
   }
 
   toJSON(): string {
