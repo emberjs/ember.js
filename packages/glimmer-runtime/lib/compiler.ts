@@ -375,12 +375,14 @@ class ComponentBuilder {
     let BEGIN = new LabelOpcode({ label: "BEGIN" });
     let END = new LabelOpcode({ label: "END" });
 
-    let args = rawArgs.compile(compiler, env);
+    let definitionArgs = definition.args.compile(compiler, env);
+    let componentArgs = rawArgs.compile(compiler, env);
 
     compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode({ args }));
-    compiler.append(new PutComponentDefinitionOpcode({ factory: definition }));
+    compiler.append(new PutArgsOpcode({ args: definitionArgs }));
+    compiler.append(new PutComponentDefinitionOpcode(definition));
+    compiler.append(new PutArgsOpcode({ args: componentArgs }));
     compiler.append(new OpenDynamicComponentOpcode({ shadow, templates }));
     compiler.append(new CloseComponentOpcode());
     compiler.append(END);
