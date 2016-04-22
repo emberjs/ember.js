@@ -10,7 +10,7 @@ export default function getRoot(scope, key) {
     return [!!scope.hasBlock('default')];
   } else if (key === 'hasBlockParams') {
     let block = scope.getBlock('default');
-    return [!!block && block.arity];
+    return [!!block && !!block.arity];
   } else if (scope.hasLocal(key)) {
     return [scope.getLocal(key)];
   } else {
