@@ -428,9 +428,9 @@ var Component = View.extend(TargetActionSupport, {
   */
 
   /**
-    Enables components to take a list of parameters as arguments
+    Enables components to take a list of parameters as arguments.
 
-    For example a component that takes two parameters with the names
+    For example, a component that takes two parameters with the names
     `name` and `age`:
 
     ```javascript
@@ -446,7 +446,7 @@ var Component = View.extend(TargetActionSupport, {
     {{my-component "John" 38}}
     ```
 
-    The parameters can be refered to just like named parameters:
+    The parameters can be referred to just like named parameters:
 
     ```hbs
     Name: {{attrs.name}}, Age: {{attrs.age}}.
@@ -468,7 +468,7 @@ var Component = View.extend(TargetActionSupport, {
     {{my-component "John" "Michael" "Scott"}}
     ```
 
-    The parameters can then be refered to by enumerating over the list:
+    The parameters can then be referred to by enumerating over the list:
 
     ```hbs
     {{#each attrs.names as |name|}}{{name}}{{/each}}
