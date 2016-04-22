@@ -21,7 +21,8 @@ export class PutComponentDefinitionOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    let reference = this.factory.call(undefined, vm.frame.getArgs(), vm);
+    let { factory } = this;
+    let reference = factory(vm.frame.getArgs(), vm);
     vm.frame.setDynamicComponent(reference);
   }
 }

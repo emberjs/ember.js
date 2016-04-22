@@ -1060,9 +1060,8 @@ export class PositionalArgs {
     this.length = exprs.length;
   }
 
-  push(expr: ExpressionSyntax<Opaque>) {
-    this.values.push(expr);
-    this.length = this.values.length;
+  slice(start?: number, end?: number): PositionalArgs {
+    return PositionalArgs.build(this.values.slice(start, end));
   }
 
   at(index: number): ExpressionSyntax<Opaque> {
