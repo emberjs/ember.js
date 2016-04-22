@@ -1,5 +1,4 @@
 /* globals EmberDev */
-import Ember from 'ember-metal/core'; // Ember.TEMPLATES
 import { context } from 'ember-environment';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
@@ -16,6 +15,7 @@ import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 import {
   registerHelper
 } from 'ember-htmlbars/helpers';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var registry, locator, application, originalLookup, originalInfo;
 
@@ -30,7 +30,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
   },
 
   teardown() {
-    Ember.TEMPLATES = {};
+    setTemplates({});
     context.lookup = originalLookup;
     run(application, 'destroy');
     var UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
@@ -58,9 +58,9 @@ QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', functio
   function fooBarTemplate() {}
   function fooBarBazTemplate() {}
 
-  Ember.TEMPLATES['foo'] = fooTemplate;
-  Ember.TEMPLATES['fooBar'] = fooBarTemplate;
-  Ember.TEMPLATES['fooBar/baz'] = fooBarBazTemplate;
+  setTemplate('foo', fooTemplate);
+  setTemplate('fooBar', fooBarTemplate);
+  setTemplate('fooBar/baz', fooBarBazTemplate);
 
   equal(locator.lookup('template:foo'), fooTemplate, 'resolves template:foo');
   equal(locator.lookup('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');

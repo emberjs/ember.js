@@ -1,17 +1,17 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import $ from 'ember-views/system/jquery';
 import Application from 'ember-application/system/application';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
 import { compile } from 'ember-template-compiler';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var App, $fixture;
 
 function setupExample() {
   // setup templates
-  Ember.TEMPLATES.application = compile('{{outlet}}');
-  Ember.TEMPLATES.index = compile('<h1>Node 1</h1>');
-  Ember.TEMPLATES.posts = compile('<h1>Node 1</h1>');
+  setTemplate('application', compile('{{outlet}}'));
+  setTemplate('index', compile('<h1>Node 1</h1>'));
+  setTemplate('posts', compile('<h1>Node 1</h1>'));
 
   App.Router.map(function() {
     this.route('posts');
@@ -51,7 +51,7 @@ QUnit.module('View Instrumentation', {
     }
     run(App, 'destroy');
     App = null;
-    Ember.TEMPLATES = {};
+    setTemplates({});
   }
 });
 

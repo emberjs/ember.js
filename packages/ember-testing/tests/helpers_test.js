@@ -1,10 +1,10 @@
-import Ember from 'ember-metal/core';
 import Route from 'ember-routing/system/route';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberView from 'ember-views/views/view';
+import Checkbox from 'ember-views/views/checkbox';
 import jQuery from 'ember-views/system/jquery';
 
 import Test from 'ember-testing/test';
@@ -18,6 +18,7 @@ import compile from 'ember-template-compiler/system/compile';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var App;
 var originalAdapter = Test.adapter;
@@ -42,7 +43,7 @@ function cleanup() {
     App = null;
   }
 
-  Ember.TEMPLATES = {};
+  setTemplates({});
 }
 
 function assertHelpers(application, helperContainer, expected) {
@@ -108,12 +109,12 @@ QUnit.test('Ember.Application#injectTestHelpers/#removeTestHelpers', function() 
 
   App.injectTestHelpers();
   assertHelpers(App);
-  ok(Ember.Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
+  ok(Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
 
   App.removeTestHelpers();
   assertNoHelpers(App);
 
-  equal(Ember.Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
+  equal(Test.Promise.prototype.LeakyMcLeakLeak, undefined, 'should NOT leak test promise extensions');
 });
 
 
@@ -352,7 +353,7 @@ QUnit.test('`click` triggers appropriate events in order', function() {
       });
     },
 
-    Checkbox: Ember.Checkbox.extend({
+    Checkbox: Checkbox.extend({
       click() {
         events.push('click:' + this.get('checked'));
       },
@@ -363,7 +364,7 @@ QUnit.test('`click` triggers appropriate events in order', function() {
     })
   });
 
-  Ember.TEMPLATES.index = compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}} <div contenteditable="true"> </div>');
+  setTemplate('index', compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}} <div contenteditable="true"> </div>'));
 
   run(App, App.advanceReadiness);
 
@@ -426,7 +427,7 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
   });
 
 
-  Ember.TEMPLATES.index = compile('some text');
+  setTemplate('index', compile('some text'));
 
   run(App, App.advanceReadiness);
 
@@ -461,7 +462,7 @@ QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated
   });
 
 
-  Ember.TEMPLATES.index = compile('some text');
+  setTemplate('index', compile('some text'));
 
   run(App, App.advanceReadiness);
 

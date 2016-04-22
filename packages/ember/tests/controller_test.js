@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -8,6 +7,7 @@ import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import isEnabled from 'ember-metal/features';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -17,12 +17,11 @@ import isEnabled from 'ember-metal/features';
  from the runtime up to the templating layer.
 */
 
-var App, $fixture, templates;
+var App, $fixture;
 
 QUnit.module('Template scoping examples', {
   setup() {
     run(function() {
-      templates = Ember.TEMPLATES;
       App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -46,7 +45,7 @@ QUnit.module('Template scoping examples', {
 
     App = null;
 
-    Ember.TEMPLATES = {};
+    setTemplates({});
   }
 });
 
@@ -56,7 +55,7 @@ if (!isEnabled('ember-glimmer')) {
 QUnit.test('Actions inside an outlet go to the associated controller', function() {
   expect(1);
 
-  templates.index = compile('{{component-with-action action=\'componentAction\'}}');
+  setTemplate('index', compile('{{component-with-action action=\'componentAction\'}}'));
 
   App.IndexController = Controller.extend({
     actions: {

@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // TEMPLATES
 import { ENV } from 'ember-environment';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
@@ -6,10 +5,10 @@ import { observer } from 'ember-metal/mixin';
 import EmberController from 'ember-runtime/controllers/controller';
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';
-
 import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { OWNER } from 'container/owner';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 function runSet(object, key, value) {
   run(function() {
@@ -33,8 +32,7 @@ QUnit.module('ember-routing-htmlbars: {{render}} helper', {
     ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = ORIGINAL_LEGACY_CONTROLLER_FLAG;
     runDestroy(appInstance);
     runDestroy(view);
-
-    Ember.TEMPLATES = {};
+    setTemplates({});
   }
 });
 
@@ -48,7 +46,7 @@ QUnit.test('{{render}} helper should render given template', function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
+  setTemplate('home', compile('<p>BYE</p>'));
 
   runAppend(view);
 
@@ -68,9 +66,9 @@ QUnit.test('{{render}} helper should render nested helpers', function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['foo'] = compile('<p>FOO</p>{{render \'bar\'}}');
-  Ember.TEMPLATES['bar'] = compile('<p>BAR</p>{{render \'baz\'}}');
-  Ember.TEMPLATES['baz'] = compile('<p>BAZ</p>');
+  setTemplate('foo', compile('<p>FOO</p>{{render \'bar\'}}'));
+  setTemplate('bar', compile('<p>BAR</p>{{render \'baz\'}}'));
+  setTemplate('baz', compile('<p>BAZ</p>'));
 
   runAppend(view);
 
@@ -140,7 +138,7 @@ QUnit.test('{{render}} helper should render given template with a supplied model
   });
   appInstance.register('controller:post', PostController);
 
-  Ember.TEMPLATES['post'] = compile('<p>{{model.title}}</p>');
+  setTemplate('post', compile('<p>{{model.title}}</p>'));
 
   runAppend(view);
 
@@ -179,7 +177,7 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
 
   appInstance.register('controller:post', PostController);
 
-  Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
+  setTemplate('post', compile('<p>{{title}}</p>'));
 
   var modelDidChange = 0;
   runAppend(view);
@@ -201,7 +199,7 @@ QUnit.test('{{render}} helper should raise an error when a given controller name
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
+  setTemplate('home', compile('<p>BYE</p>'));
 
   expectAssertion(function() {
     runAppend(view);
@@ -231,7 +229,7 @@ QUnit.test('{{render}} helper should render with given controller', function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('{{uniqueId}}');
+  setTemplate('home', compile('{{uniqueId}}'));
 
   runAppend(view);
 
@@ -266,7 +264,7 @@ QUnit.test('{{render}} helper should rerender with given controller', function()
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('{{uniqueId}}');
+  setTemplate('home', compile('{{uniqueId}}'));
 
   runAppend(view);
   run(() => {
@@ -295,7 +293,7 @@ QUnit.test('{{render}} helper should render a template without a model only once
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
+  setTemplate('home', compile('<p>BYE</p>'));
 
   expectAssertion(function() {
     runAppend(view);
@@ -341,7 +339,7 @@ QUnit.test('{{render}} helper should render templates with models multiple times
   });
   appInstance.register('controller:post', PostController, { singleton: false });
 
-  Ember.TEMPLATES['post'] = compile('<p>{{model.title}}</p>');
+  setTemplate('post', compile('<p>{{model.title}}</p>'));
 
   runAppend(view);
 
@@ -386,7 +384,7 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
   });
   appInstance.register('controller:post', PostController);
 
-  Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
+  setTemplate('post', compile('<p>{{title}}</p>'));
 
   runAppend(view);
 
@@ -424,7 +422,7 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
   });
   appInstance.register('controller:post', PostController, { singleton: false });
 
-  Ember.TEMPLATES['post'] = compile('<p>{{#unless model}}NOTHING{{/unless}}</p>');
+  setTemplate('post', compile('<p>{{#unless model}}NOTHING{{/unless}}</p>'));
 
   runAppend(view);
 
@@ -468,7 +466,7 @@ QUnit.test('{{render}} helper should render templates both with and without mode
   });
   appInstance.register('controller:post', PostController, { singleton: false });
 
-  Ember.TEMPLATES['post'] = compile('<p>Title:{{model.title}}</p>');
+  setTemplate('post', compile('<p>Title:{{model.title}}</p>'));
 
   runAppend(view);
 
@@ -493,7 +491,7 @@ QUnit.test('{{render}} helper should be able to render a template again when it 
     [OWNER]: appInstance
   });
 
-  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
+  setTemplate('home', compile('<p>BYE</p>'));
 
   var liveRoutes = {
     render: {
@@ -553,7 +551,7 @@ QUnit.test('{{render}} works with dot notation', function() {
     template: compile(template)
   });
 
-  Ember.TEMPLATES['blog.post'] = compile('{{uniqueId}}');
+  setTemplate('blog.post', compile('{{uniqueId}}'));
 
   runAppend(view);
 
@@ -573,7 +571,7 @@ QUnit.test('throws an assertion if {{render}} is called with an unquoted templat
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
+  setTemplate('home', compile('<p>BYE</p>'));
 
   expectAssertion(function() {
     runAppend(view);
@@ -593,7 +591,7 @@ QUnit.test('throws an assertion if {{render}} is called with a literal for a mod
     template: compile(template)
   });
 
-  Ember.TEMPLATES['home'] = compile('<p>BYE</p>');
+  setTemplate('home', compile('<p>BYE</p>'));
 
   expectAssertion(function() {
     runAppend(view);

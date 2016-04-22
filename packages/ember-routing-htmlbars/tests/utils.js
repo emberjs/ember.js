@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import {
   classify,
@@ -19,6 +18,7 @@ import EmberObject from 'ember-runtime/system/object';
 import Registry from 'container/registry';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
+import { get as getTemplate, has as hasTemplate } from 'ember-htmlbars/template_registry';
 
 function resolverFor(namespace) {
   return {
@@ -29,8 +29,8 @@ function resolverFor(namespace) {
 
       if (type === 'template') {
         var templateName = decamelize(name);
-        if (Ember.TEMPLATES[templateName]) {
-          return Ember.TEMPLATES[templateName];
+        if (hasTemplate(templateName)) {
+          return getTemplate(templateName);
         }
       }
 

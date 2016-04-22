@@ -1,16 +1,17 @@
-import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler';
 import Helper, { helper } from 'ember-htmlbars/helper';
 import Application from 'ember-application/system/application';
+import Router from 'ember-routing/system/router';
+import Service from 'ember-runtime/system/service';
 import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
 import isEnabled from 'ember-metal/features';
-
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var App, appInstance, originalViewKeyword;
 
@@ -25,7 +26,7 @@ QUnit.module('Application Lifecycle - Helper Registration', {
       }
 
       App = appInstance = null;
-      Ember.TEMPLATES = {};
+      setTemplates({});
     });
     delete helpers['foo-bar-baz-widget'];
     resetKeyword('view', originalViewKeyword);
@@ -41,7 +42,7 @@ var boot = function(callback) {
 
     App.deferReadiness();
 
-    App.Router = Ember.Router.extend({
+    App.Router = Router.extend({
       location: 'none'
     });
 
@@ -59,7 +60,7 @@ var boot = function(callback) {
 };
 
 QUnit.test('Unbound dashed helpers registered on the container can be late-invoked', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-borf}} {{x-borf \'YES\'}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{x-borf}} {{x-borf \'YES\'}}</div>'));
   let myHelper = helper(function(params) {
     return params[0] || 'BORF';
   });
@@ -73,7 +74,7 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
 });
 
 QUnit.test('Bound helpers registered on the container can be late-invoked', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>'));
 
   boot(function() {
     appInstance.register('controller:application', Controller.extend({
@@ -90,7 +91,7 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
 });
 
 QUnit.test('Undashed helpers registered on the container can be invoked', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>'));
 
   boot(function() {
     appInstance.register('helper:omg', helper(function() {
@@ -110,11 +111,11 @@ if (!isEnabled('ember-glimmer')) {
 
 // needs glimmer Helper
 QUnit.test('Helpers can receive injections', function() {
-  Ember.TEMPLATES.application = compile('<div id=\'wrapper\'>{{full-name}}</div>');
+  setTemplate('application', compile('<div id=\'wrapper\'>{{full-name}}</div>'));
 
   var serviceCalled = false;
   boot(function() {
-    appInstance.register('service:name-builder', Ember.Service.extend({
+    appInstance.register('service:name-builder', Service.extend({
       build() {
         serviceCalled = true;
       }
