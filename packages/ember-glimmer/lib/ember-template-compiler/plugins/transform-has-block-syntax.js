@@ -25,10 +25,10 @@ export default function TransformHasBlockSyntax() {
   this.syntax = null;
 }
 
-const OLD_HAS_BLOCK = 'hasBlock';
-const NEW_HAS_BLOCK = 'has-block';
-const OLD_HAS_BLOCK_PARAMS = 'hasBlockParams';
-const NEW_HAS_BLOCK_PARAMS = 'has-block-params';
+const TRANSFORMATIONS = {
+  hasBlock: 'has-block',
+  hasBlockParams: 'has-block-params'
+};
 
 /**
   @private
@@ -40,28 +40,18 @@ TransformHasBlockSyntax.prototype.transform = function TransformHasBlockSyntax_t
 
   traverse(ast, {
     PathExpression(node) {
-      if (node.original === OLD_HAS_BLOCK) {
-        return b.sexpr(b.path(NEW_HAS_BLOCK));
-      }
-
-      if (node.original === OLD_HAS_BLOCK_PARAMS) {
-        return b.sexpr(b.path(NEW_HAS_BLOCK_PARAMS));
+      if (TRANSFORMATIONS[node.original]) {
+        return b.sexpr(b.path(TRANSFORMATIONS[node.original]));
       }
     },
     MustacheStatement(node) {
-      if (node.path.original === OLD_HAS_BLOCK) {
-        return b.mustache(b.path(NEW_HAS_BLOCK), node.params, node.hash, null, node.loc);
-      }
-      if (node.path.original === OLD_HAS_BLOCK_PARAMS) {
-        return b.mustache(b.path(NEW_HAS_BLOCK_PARAMS), node.params, node.hash, null, node.loc);
+      if (TRANSFORMATIONS[node.path.original]) {
+        return b.mustache(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash, null, node.loc);
       }
     },
     SubExpression(node) {
-      if (node.path.original === OLD_HAS_BLOCK) {
-        return b.sexpr(b.path(NEW_HAS_BLOCK), node.params, node.hash);
-      }
-      if (node.path.original === OLD_HAS_BLOCK_PARAMS) {
-        return b.sexpr(b.path(NEW_HAS_BLOCK_PARAMS), node.params, node.hash);
+      if (TRANSFORMATIONS[node.path.original]) {
+        return b.sexpr(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash);
       }
     }
   });
