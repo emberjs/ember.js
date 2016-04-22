@@ -23,8 +23,13 @@ export interface StaticComponentOptions {
   templates: Templates;
 }
 
+export interface DynamicComponentDefinition<T> {
+  args: Args;
+  factory: DynamicComponentFactory<T>;
+}
+
 export interface DynamicComponentOptions {
-  definition: DynamicComponentFactory<Opaque>;
+  definition: DynamicComponentDefinition<Opaque>;
   args: Args;
   shadow: InternedString[];
   templates: Templates;
