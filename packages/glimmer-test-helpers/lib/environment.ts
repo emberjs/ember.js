@@ -573,12 +573,11 @@ export class TestDynamicScope implements DynamicScope {
 }
 
 class CurlyComponentSyntax extends StatementSyntax {
-  public args: ArgsSyntax;
+  // interface for StaticComponentOptions
   public definition: ComponentDefinition<any>;
-  public templates: Templates;
-
-  // interface for OpenComponent
+  public args: ArgsSyntax;
   public shadow: InternedString[] = null;
+  public templates: Templates;
 
   constructor({ args, definition, templates }: { args: ArgsSyntax, definition: ComponentDefinition<any>, templates: Templates }) {
     super();
@@ -616,23 +615,32 @@ class DynamicComponentReference implements Reference<ComponentDefinition<Opaque>
   }
 }
 
-function dynamicComponentFactoryFor(args: EvaluatedArgs, vm: VM) {
+class DynamicComponentDefinition {
+  public args: ArgsSyntax;
+  public factory = dynamicComponentFor;
+
+  constructor(public rawArgs: ArgsSyntax) {
+    this.args = ArgsSyntax.fromPositionalArgs(rawArgs.positional.slice(0,1));
+  }
+}
+
+function dynamicComponentFor(args: EvaluatedArgs, vm: VM) {
   let nameRef = args.positional.at(0);
   let env = vm.env;
   return new DynamicComponentReference({ nameRef, env });
-}
+};
 
 class DynamicComponentSyntax extends StatementSyntax {
+  // interface for DynamicComponentOptions
+  public definition: DynamicComponentDefinition;
   public args: ArgsSyntax;
-  public templates: Templates;
-
-  // interface for OpenComponent
-  public definition = dynamicComponentFactoryFor;
   public shadow: InternedString[] = null;
+  public templates: Templates;
 
   constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {
     super();
-    this.args = args;
+    this.definition = new DynamicComponentDefinition(args);
+    this.args = ArgsSyntax.build(args.positional.slice(1), args.named);
     this.templates = templates || Templates.empty();
   }
 
