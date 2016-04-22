@@ -779,6 +779,16 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
   actions: {
 
+    /**
+      This action is called when one or more query params have changed. Bubbles.
+
+      @method queryParamsDidChange
+      @param changed {Object} Keys are names of query params that have changed.
+      @param totalPresent {Number}
+      @param removed {Object} Keys are names of query params that have been removed.
+      @returns {boolean}
+      @private
+     */
     queryParamsDidChange(changed, totalPresent, removed) {
       var qpMap = get(this, '_qp').map;
 
