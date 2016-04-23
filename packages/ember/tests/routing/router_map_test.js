@@ -1,10 +1,11 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
+import Router from 'ember-routing/system/router';
 import jQuery from 'ember-views/system/jquery';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
-var Router, router, App, container;
+var router, App, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -37,8 +38,6 @@ QUnit.module('Router.map', {
         location: 'none'
       });
 
-      Router = App.Router;
-
       container = App.__container__;
     });
   },
@@ -48,7 +47,7 @@ QUnit.module('Router.map', {
       App.destroy();
       App = null;
 
-      Ember.TEMPLATES = {};
+      setTemplates({});
     });
   }
 });
@@ -60,14 +59,14 @@ QUnit.test('Router.map returns an Ember Router class', function () {
     this.route('hello');
   });
 
-  ok(Ember.Router.detect(ret));
+  ok(Router.detect(ret));
 });
 
 QUnit.test('Router.map can be called multiple times', function () {
   expect(4);
 
-  Ember.TEMPLATES.hello = compile('Hello!');
-  Ember.TEMPLATES.goodbye = compile('Goodbye!');
+  setTemplate('hello', compile('Hello!'));
+  setTemplate('goodbye', compile('Goodbye!'));
 
   App.Router.map(function() {
     this.route('hello');

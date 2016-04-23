@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { set } from 'ember-metal/property_set';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
@@ -8,6 +7,7 @@ import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var Router, App, router, registry, container;
 
@@ -62,7 +62,7 @@ function sharedSetup() {
 
 function sharedTeardown() {
   run(function() { App.destroy(); });
-  Ember.TEMPLATES = {};
+  setTemplates({});
 }
 
 if (!isEnabled('ember-glimmer')) {
@@ -110,8 +110,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     teardown: sharedTeardown
   });
 
-  QUnit.test('doesn\'t update controller QP properties on current route when invoked', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to \'index\' id=\'the-link\'}}Index{{/link-to}}');
+  QUnit.test("doesn't update controller QP properties on current route when invoked", function() {
+    setTemplate('index', compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -119,8 +119,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test('doesn\'t update controller QP properties on current route when invoked (empty query-params obj)', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params) id=\'the-link\'}}Index{{/link-to}}');
+  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
+    setTemplate('index', compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -129,14 +129,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('link-to with no params throws', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to id='the-link'}}Index{{/link-to}}"));
     expectAssertion(function() {
       bootApplication();
     }, /one or more/);
   });
 
-  QUnit.test('doesn\'t update controller QP properties on current route when invoked (empty query-params obj, inferred route)', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params) id=\'the-link\'}}Index{{/link-to}}');
+  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
+    setTemplate('index', compile("{{#link-to (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -145,7 +145,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('updates controller QP properties on current route when invoked', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -154,7 +154,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('updates controller QP properties on current route when invoked (inferred route)', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -167,7 +167,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('about');
     });
 
-    Ember.TEMPLATES.index = compile('{{#link-to \'about\' (query-params baz=\'lol\') id=\'the-link\'}}About{{/link-to}}');
+    setTemplate('index', compile("{{#link-to 'about' (query-params baz='lol') id='the-link'}}About{{/link-to}}"));
     bootApplication();
 
     equal(jQuery('#the-link').attr('href'), '/about?baz=lol');
@@ -179,7 +179,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('supplied QP properties can be bound', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=boundThing) id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     var indexController = container.lookup('controller:index');
@@ -192,7 +192,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('supplied QP properties can be bound (booleans)', function() {
     var indexController = container.lookup('controller:index');
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params abool=boundThing) id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
 
@@ -206,7 +206,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('href updates when unsupplied controller QP props change', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=\'lol\') id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
 
@@ -222,15 +222,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
     // Test harness for bug #12033
 
-    Ember.TEMPLATES.cars = compile(
-      '{{#link-to \'cars.create\' id=\'create-link\'}}Create new car{{/link-to}} ' +
-      '{{#link-to (query-params page=\'2\') id=\'page2-link\'}}Page 2{{/link-to}}' +
+    setTemplate('cars', compile(
+      "{{#link-to 'cars.create' id='create-link'}}Create new car{{/link-to}} " +
+      "{{#link-to (query-params page='2') id='page2-link'}}Page 2{{/link-to}}" +
       '{{outlet}}'
-    );
+    ));
 
-    Ember.TEMPLATES['cars/create'] = compile(
-      '{{#link-to \'cars\' id=\'close-link\'}}Close create form{{/link-to}}'
-    );
+    setTemplate('cars/create', compile(
+      "{{#link-to 'cars' id='close-link'}}Close create form{{/link-to}}"
+    ));
 
     Router.map(function() {
       this.route('cars', function() {
@@ -270,32 +270,32 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('The {{link-to}} applies activeClass when query params are not changed', function() {
-    Ember.TEMPLATES.index = compile(
-      '{{#link-to (query-params foo=\'cat\') id=\'cat-link\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params foo=\'dog\') id=\'dog-link\'}}Index{{/link-to}} ' +
-      '{{#link-to \'index\' id=\'change-nothing\'}}Index{{/link-to}}'
-    );
+    setTemplate('index', compile(
+      "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
+      "{{#link-to 'index' id='change-nothing'}}Index{{/link-to}}"
+    ));
 
-    Ember.TEMPLATES.search = compile(
-      '{{#link-to (query-params search=\'same\') id=\'same-search\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'change\') id=\'change-search\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' archive=true) id=\'same-search-add-archive\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params archive=true) id=\'only-add-archive\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' archive=true) id=\'both-same\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'different\' archive=true) id=\'change-one\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'different\' archive=false) id=\'remove-one\'}}Index{{/link-to}} ' +
+    setTemplate('search', compile(
+      "{{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}} " +
+      "{{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}} " +
       '{{outlet}}'
-    );
+    ));
 
-    Ember.TEMPLATES['search/results'] = compile(
-      '{{#link-to (query-params sort=\'title\') id=\'same-sort-child-only\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\') id=\'same-search-parent-only\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'change\') id=\'change-search-parent-only\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' sort=\'title\') id=\'same-search-same-sort-child-and-parent\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' sort=\'author\') id=\'same-search-different-sort-child-and-parent\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'change\' sort=\'title\') id=\'change-search-same-sort-child-and-parent\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params foo=\'dog\') id=\'dog-link\'}}Index{{/link-to}} '
-    );
+    setTemplate('search/results', compile(
+      "{{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} "
+    ));
 
     Router.map(function() {
       this.route('search', function() {
@@ -370,8 +370,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('The {{link-to}} applies active class when query-param is number', function() {
-    Ember.TEMPLATES.index = compile(
-      '{{#link-to (query-params page=pageNumber) id=\'page-link\'}}Index{{/link-to}} ');
+    setTemplate('index', compile(
+      "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} "));
 
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -393,11 +393,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('The {{link-to}} applies active class when query-param is array', function() {
-    Ember.TEMPLATES.index = compile(
-      '{{#link-to (query-params pages=pagesArray) id=\'array-link\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params pages=biggerArray) id=\'bigger-link\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params pages=emptyArray) id=\'empty-link\'}}Index{{/link-to}} '
-    );
+    setTemplate('index', compile(
+      "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}} "
+    ));
 
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -438,12 +438,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    Ember.TEMPLATES.application = compile(
-      '{{#link-to \'parent\' id=\'parent-link\'}}Parent{{/link-to}} ' +
-      '{{#link-to \'parent.child\' id=\'parent-child-link\'}}Child{{/link-to}} ' +
-      '{{#link-to \'parent\' (query-params foo=cat) id=\'parent-link-qp\'}}Parent{{/link-to}} ' +
+    setTemplate('application', compile(
+      "{{#link-to 'parent' id='parent-link'}}Parent{{/link-to}} " +
+      "{{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}} " +
+      "{{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}} " +
       '{{outlet}}'
-    );
+    ));
 
     App.ParentChildRoute = Route.extend({
       queryParams: {
@@ -467,10 +467,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('parent');
     });
 
-    Ember.TEMPLATES.application = compile(
-      '{{#link-to \'parent\' (query-params page=1) current-when=\'parent\' id=\'app-link\'}}Parent{{/link-to}} {{outlet}}');
-    Ember.TEMPLATES.parent = compile(
-      '{{#link-to \'parent\' (query-params page=1) current-when=\'parent\' id=\'parent-link\'}}Parent{{/link-to}} {{outlet}}');
+    setTemplate('application', compile(
+      "{{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}"));
+    setTemplate('parent', compile(
+      "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}"));
 
     App.ParentRoute = Route.extend({
       queryParams: {
@@ -529,8 +529,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     teardown: sharedTeardown
   });
 
-  QUnit.test('doesn\'t update controller QP properties on current route when invoked', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to \'index\' id=\'the-link\'}}Index{{/link-to}}');
+  QUnit.test("doesn't update controller QP properties on current route when invoked", function() {
+    setTemplate('index', compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -538,8 +538,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test('doesn\'t update controller QP properties on current route when invoked (empty query-params obj)', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params) id=\'the-link\'}}Index{{/link-to}}');
+  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
+    setTemplate('index', compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -548,14 +548,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('link-to with no params throws', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to id='the-link'}}Index{{/link-to}}"));
     expectAssertion(function() {
       bootApplication();
     }, /one or more/);
   });
 
-  QUnit.test('doesn\'t update controller QP properties on current route when invoked (empty query-params obj, inferred route)', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params) id=\'the-link\'}}Index{{/link-to}}');
+  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
+    setTemplate('index', compile("{{#link-to (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -564,7 +564,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('updates controller QP properties on current route when invoked', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to \'index\' (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -573,7 +573,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('updates controller QP properties on current route when invoked (inferred route)', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=\'456\') id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
@@ -586,7 +586,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('about');
     });
 
-    Ember.TEMPLATES.index = compile('{{#link-to \'about\' (query-params baz=\'lol\') id=\'the-link\'}}About{{/link-to}}');
+    setTemplate('index', compile("{{#link-to 'about' (query-params baz='lol') id='the-link'}}About{{/link-to}}"));
     bootApplication();
 
     equal(jQuery('#the-link').attr('href'), '/about?baz=lol');
@@ -599,7 +599,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('supplied QP properties can be bound', function() {
     var indexController = container.lookup('controller:index');
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=boundThing) id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
 
@@ -610,7 +610,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('supplied QP properties can be bound (booleans)', function() {
     var indexController = container.lookup('controller:index');
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params abool=boundThing) id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
 
@@ -624,7 +624,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('href updates when unsupplied controller QP props change', function() {
-    Ember.TEMPLATES.index = compile('{{#link-to (query-params foo=\'lol\') id=\'the-link\'}}Index{{/link-to}}');
+    setTemplate('index', compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
     var indexController = container.lookup('controller:index');
@@ -639,15 +639,15 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
     // Test harness for bug #12033
 
-    Ember.TEMPLATES.cars = compile(
-      '{{#link-to \'cars.create\' id=\'create-link\'}}Create new car{{/link-to}} ' +
-      '{{#link-to (query-params page=\'2\') id=\'page2-link\'}}Page 2{{/link-to}}' +
+    setTemplate('cars', compile(
+      "{{#link-to 'cars.create' id='create-link'}}Create new car{{/link-to}} " +
+      "{{#link-to (query-params page='2') id='page2-link'}}Page 2{{/link-to}}" +
       '{{outlet}}'
-    );
+    ));
 
-    Ember.TEMPLATES['cars/create'] = compile(
-      '{{#link-to \'cars\' id=\'close-link\'}}Close create form{{/link-to}}'
-    );
+    setTemplate('cars/create', compile(
+      "{{#link-to 'cars' id='close-link'}}Close create form{{/link-to}}"
+    ));
 
     Router.map(function() {
       this.route('cars', function() {
@@ -688,32 +688,32 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('The {{link-to}} applies activeClass when query params are not changed', function() {
-    Ember.TEMPLATES.index = compile(
-      '{{#link-to (query-params foo=\'cat\') id=\'cat-link\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params foo=\'dog\') id=\'dog-link\'}}Index{{/link-to}} ' +
-      '{{#link-to \'index\' id=\'change-nothing\'}}Index{{/link-to}}'
-    );
+    setTemplate('index', compile(
+      "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
+      "{{#link-to 'index' id='change-nothing'}}Index{{/link-to}}"
+    ));
 
-    Ember.TEMPLATES.search = compile(
-      '{{#link-to (query-params search=\'same\') id=\'same-search\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'change\') id=\'change-search\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' archive=true) id=\'same-search-add-archive\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params archive=true) id=\'only-add-archive\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' archive=true) id=\'both-same\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'different\' archive=true) id=\'change-one\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'different\' archive=false) id=\'remove-one\'}}Index{{/link-to}} ' +
+    setTemplate('search', compile(
+      "{{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}} " +
+      "{{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}} " +
       '{{outlet}}'
-    );
+    ));
 
-    Ember.TEMPLATES['search/results'] = compile(
-      '{{#link-to (query-params sort=\'title\') id=\'same-sort-child-only\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\') id=\'same-search-parent-only\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'change\') id=\'change-search-parent-only\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' sort=\'title\') id=\'same-search-same-sort-child-and-parent\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'same\' sort=\'author\') id=\'same-search-different-sort-child-and-parent\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params search=\'change\' sort=\'title\') id=\'change-search-same-sort-child-and-parent\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params foo=\'dog\') id=\'dog-link\'}}Index{{/link-to}} '
-    );
+    setTemplate('search/results', compile(
+      "{{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} "
+    ));
 
     Router.map(function() {
       this.route('search', function() {
@@ -778,8 +778,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('The {{link-to}} applies active class when query-param is number', function() {
-    Ember.TEMPLATES.index = compile(
-      '{{#link-to (query-params page=pageNumber) id=\'page-link\'}}Index{{/link-to}} ');
+    setTemplate('index', compile(
+      "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} "));
 
     App.IndexController = Controller.extend({
       queryParams: ['page'],
@@ -795,11 +795,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('The {{link-to}} applies active class when query-param is array', function() {
-    Ember.TEMPLATES.index = compile(
-      '{{#link-to (query-params pages=pagesArray) id=\'array-link\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params pages=biggerArray) id=\'bigger-link\'}}Index{{/link-to}} ' +
-      '{{#link-to (query-params pages=emptyArray) id=\'empty-link\'}}Index{{/link-to}} '
-    );
+    setTemplate('index', compile(
+      "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}} "
+    ));
 
     App.IndexController = Controller.extend({
       queryParams: ['pages'],
@@ -833,12 +833,12 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    Ember.TEMPLATES.application = compile(
-      '{{#link-to \'parent\' id=\'parent-link\'}}Parent{{/link-to}} ' +
-      '{{#link-to \'parent.child\' id=\'parent-child-link\'}}Child{{/link-to}} ' +
-      '{{#link-to \'parent\' (query-params foo=cat) id=\'parent-link-qp\'}}Parent{{/link-to}} ' +
+    setTemplate('application', compile(
+      "{{#link-to 'parent' id='parent-link'}}Parent{{/link-to}} " +
+      "{{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}} " +
+      "{{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}} " +
       '{{outlet}}'
-    );
+    ));
 
     App.ParentChildController = Controller.extend({
       queryParams: ['foo'],
@@ -859,10 +859,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       this.route('parent');
     });
 
-    Ember.TEMPLATES.application = compile(
-      '{{#link-to \'parent\' (query-params page=1) current-when=\'parent\' id=\'app-link\'}}Parent{{/link-to}} {{outlet}}');
-    Ember.TEMPLATES.parent = compile(
-      '{{#link-to \'parent\' (query-params page=1) current-when=\'parent\' id=\'parent-link\'}}Parent{{/link-to}} {{outlet}}');
+    setTemplate('application', compile(
+      "{{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}"));
+    setTemplate('parent', compile(
+      "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}"));
 
     App.ParentController = Controller.extend({
       queryParams: ['page'],

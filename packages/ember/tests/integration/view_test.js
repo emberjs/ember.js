@@ -1,20 +1,19 @@
-import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
-
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var App, registry, originalViewKeyword;
 
 function setupExample() {
   // setup templates
-  Ember.TEMPLATES.application = compile('{{outlet}}', { moduleName: 'application' });
-  Ember.TEMPLATES.index = compile('<h1>Node 1</h1>', { moduleName: 'index' });
-  Ember.TEMPLATES.posts = compile('<h1>Node 1</h1>', { moduleName: 'posts' });
+  setTemplate('application', compile('{{outlet}}', { moduleName: 'application' }));
+  setTemplate('index', compile('<h1>Node 1</h1>', { moduleName: 'index' }));
+  setTemplate('posts', compile('<h1>Node 1</h1>', { moduleName: 'posts' }));
 
   App.Router.map(function() {
     this.route('posts');
@@ -53,14 +52,14 @@ QUnit.module('View Integration', {
     run(App, 'destroy');
     resetKeyword('view', originalViewKeyword);
     App = null;
-    Ember.TEMPLATES = {};
+    setTemplates({});
   }
 });
 
 QUnit.test('invoking `{{view}} from a non-view backed (aka only template) template provides the correct controller to the view instance`', function(assert) {
   var controllerInMyFoo, indexController;
 
-  Ember.TEMPLATES.index = compile('{{view "my-foo"}}', { moduleName: 'my-foo' });
+  setTemplate('index', compile('{{view "my-foo"}}', { moduleName: 'my-foo' }));
 
   registry.register('view:my-foo', EmberView.extend({
     init() {
