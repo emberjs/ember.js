@@ -6,13 +6,16 @@ import {
   Reference,
   ReferenceCache,
   RevisionTag,
+  Revision,
   combineTagged,
   isConst as isConstReference,
   isModified
 } from 'glimmer-reference';
+import { ModifierManager } from '../../modifier/interfaces';
 import { DOMHelper } from '../../dom';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
+import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 
 abstract class DOMUpdatingOpcode extends UpdatingOpcode {
   public type: string;
@@ -218,6 +221,90 @@ export class StaticAttrOpcode extends Opcode {
     details["value"] = JSON.stringify(value.value());
 
     return { guid, type, details };
+  }
+}
+
+export class ModifierOpcode extends Opcode {
+  public type = "modifier";
+  public name: InternedString;
+  public args: CompiledArgs;
+  private manager: ModifierManager<Opaque>;
+
+  constructor({ name, manager, args }: { name: InternedString, manager: ModifierManager<Opaque>, args: CompiledArgs }) {
+    super();
+    this.name = name;
+    this.manager = manager;
+    this.args = args;
+  }
+
+  evaluate(vm: VM) {
+    let { manager } = this;
+    let stack = vm.stack();
+    let { element, dom } = stack;
+    let args = this.args.evaluate(vm);
+
+    let modifier = manager.install(element, args, dom);
+    let destructor = manager.getDestructor(modifier);
+
+    if (destructor) {
+      vm.newDestroyable(destructor);
+    }
+
+    vm.updateWith(new UpdateModifierOpcode({
+      manager,
+      modifier,
+      element,
+      args
+    }));
+  }
+
+  toJSON(): OpcodeJSON {
+    let { _guid: guid, type, name, args } = this;
+
+    let details = dict<string>();
+
+    details["type"] = JSON.stringify(type);
+    details["name"] = JSON.stringify(name);
+    details["args"] = JSON.stringify(args);
+
+    return { guid, type, details };
+  }
+}
+
+export class UpdateModifierOpcode extends DOMUpdatingOpcode {
+  public type = "update-modifier";
+
+  private element: Element;
+  public args: EvaluatedArgs;
+  private manager: ModifierManager<Opaque>;
+  private modifier: Opaque;
+  private tag: RevisionTag;
+  private lastUpdated: Revision;
+
+  constructor({ manager, modifier, element, args }: { manager: ModifierManager<Opaque>, modifier: Opaque, element: Element, args: EvaluatedArgs }) {
+    super();
+    this.modifier = modifier;
+    this.manager = manager;
+    this.element = element;
+    this.args = args;
+    this.lastUpdated = args.tag.value();
+  }
+
+  evaluate(vm: UpdatingVM) {
+    let { manager, modifier, element, args, lastUpdated } = this;
+
+    if (!args.tag.validate(lastUpdated)) {
+      manager.update(modifier, element, args, vm.dom);
+      this.lastUpdated = args.tag.value();
+    }
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [JSON.stringify(this.args)]
+    };
   }
 }
 

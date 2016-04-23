@@ -1831,6 +1831,14 @@ styles.forEach(style => {
 
 });
 
+QUnit.test(`Glimmer component with element modifier`, function(assert) {
+  env.registerEmberishGlimmerComponent('non-block', null, `  <div>In layout</div>  `);
+
+  assert.throws(() => {
+    let view = appendViewFor('<non-block {{action}} />');
+  }, new Error("Compile Error: Element modifiers are not allowed in components"), "should throw error");
+});
+
 QUnit.skip('block without properties', function() {
   env.registerEmberishGlimmerComponent('with-block', EmberishGlimmerComponent, '<with-block>In layout - {{yield}}</with-block>');
 

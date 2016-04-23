@@ -16,6 +16,7 @@ export {
   BasicComponent,
   EmberishCurlyComponent,
   EmberishGlimmerComponent,
+  TestModifierManager,
   TestEnvironment,
   TestDynamicScope,
   equalsElement,
