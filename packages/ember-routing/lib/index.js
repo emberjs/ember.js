@@ -3,7 +3,7 @@
 @submodule ember-routing
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 
 // ES6TODO: Cleanup modules with side-effects below
 import 'ember-routing/ext/run_loop';

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Ember.BOOTED
 import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import {get} from 'ember-metal/property_get';

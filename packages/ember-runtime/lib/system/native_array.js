@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Ember.A circular
 import { ENV } from 'ember-environment';
 import { _replace as replace } from 'ember-metal/replace';
 import { get } from 'ember-metal/property_get';

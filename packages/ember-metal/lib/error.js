@@ -1,5 +1,3 @@
-import Ember from 'ember-metal/core';
-
 var errorProps = [
   'description',
   'fileName',
@@ -30,7 +28,7 @@ export default function EmberError() {
   // This is useful because we can hide Ember implementation details
   // that are not very helpful for the user.
   if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, Ember.Error);
+    Error.captureStackTrace(this, EmberError);
   }
   // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
   for (var idx = 0; idx < errorProps.length; idx++) {

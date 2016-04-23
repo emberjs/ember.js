@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // for Handlebars export
 import { htmlSafe } from 'ember-htmlbars/utils/string';
 import { deprecate } from 'ember-metal/debug';
 import {

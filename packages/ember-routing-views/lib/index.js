@@ -3,7 +3,7 @@
 @submodule ember-routing-views
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 import LinkComponent from 'ember-routing-views/components/link-to';
 import { OutletView } from 'ember-routing-views/views/outlet';
 

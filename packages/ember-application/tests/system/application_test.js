@@ -1,6 +1,6 @@
 /*globals EmberDev */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Ember.libraries, Ember.BOOTED
 import { ENV, context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';

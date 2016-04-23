@@ -3,7 +3,7 @@
 @submodule ember-routing-htmlbars
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 
 import { registerHelper } from 'ember-htmlbars/helpers';
 import { registerKeyword } from 'ember-htmlbars/keywords';
