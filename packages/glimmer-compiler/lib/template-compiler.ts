@@ -195,23 +195,23 @@ export default class TemplateCompiler {
   }
 
   StringLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   BooleanLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   NumberLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   NullLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   UndefinedLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   /// Utilities
@@ -231,12 +231,12 @@ export default class TemplateCompiler {
   }
 
   preparePath(path) {
-    this.opcode('pushLiteral', path, path.parts);
+    this.opcode('literal', path, path.parts);
   }
 
   prepareParams(params) {
     if (!params.length) {
-      this.opcode('pushLiteral', null,null);
+      this.opcode('literal', null,null);
       return;
     }
 
@@ -258,7 +258,7 @@ export default class TemplateCompiler {
     let pairs = hash.pairs;
 
     if (!pairs.length) {
-      this.opcode('pushLiteral', null, null);
+      this.opcode('literal', null, null);
       return;
     }
 
@@ -267,7 +267,7 @@ export default class TemplateCompiler {
 
       assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       this[value.type](value);
-      this.opcode('pushLiteral', null, key);
+      this.opcode('literal', null, key);
     }
 
     this.opcode('prepareObject', null, pairs.length);
