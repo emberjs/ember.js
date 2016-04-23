@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -8,6 +7,7 @@ import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import isEnabled from 'ember-metal/features';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var Router, App, router, registry, container;
 
@@ -60,7 +60,7 @@ function sharedSetup() {
 
 function sharedTeardown() {
   run(function() { App.destroy(); });
-  Ember.TEMPLATES = {};
+  setTemplates({});
 }
 
 if (!isEnabled('ember-glimmer')) {
@@ -92,8 +92,7 @@ QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS c
         }
       });
 
-
-      Ember.TEMPLATES.application = compile('{{outlet}}{{link-to \'Index\' \'index\' id=\'index-link\'}}{{link-to \'About\' \'about\' id=\'about-link\'}}{{link-to \'Other\' \'other\' id=\'other-link\'}}');
+      setTemplate('application', compile('{{outlet}}{{link-to \'Index\' \'index\' id=\'index-link\'}}{{link-to \'About\' \'about\' id=\'about-link\'}}{{link-to \'Other\' \'other\' id=\'other-link\'}}'));
     });
   },
 
@@ -148,18 +147,18 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
     }
   });
 
-  Ember.TEMPLATES.application = compile(`
-      {{outlet}}
-      {{#link-to 'index' tagName='li'}}
-        {{link-to 'Index' 'index' id='index-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.about' tagName='li'}}
-        {{link-to 'About' 'parent-route.about' id='about-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.other' tagName='li'}}
-        {{link-to 'Other' 'parent-route.other' id='other-link'}}
-      {{/link-to}}
-    `);
+  setTemplate('application', compile(`
+    {{outlet}}
+    {{#link-to 'index' tagName='li'}}
+      {{link-to 'Index' 'index' id='index-link'}}
+    {{/link-to}}
+    {{#link-to 'parent-route.about' tagName='li'}}
+      {{link-to 'About' 'parent-route.about' id='about-link'}}
+    {{/link-to}}
+    {{#link-to 'parent-route.other' tagName='li'}}
+      {{link-to 'Other' 'parent-route.other' id='other-link'}}
+    {{/link-to}}
+  `));
 
   bootApplication();
 

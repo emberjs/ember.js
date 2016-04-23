@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
@@ -7,14 +6,14 @@ import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var App, $fixture;
 
 function setupExample() {
   // setup templates
-  Ember.TEMPLATES.application = compile('{{outlet}}');
-  Ember.TEMPLATES.index = compile('<h1>People</h1><ul>{{#each model as |person|}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>');
-
+  setTemplate('application', compile('{{outlet}}'));
+  setTemplate('index', compile('<h1>People</h1><ul>{{#each model as |person|}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>'));
 
   App.Person = EmberObject.extend({
     firstName: null,
@@ -69,7 +68,7 @@ QUnit.module('Homepage Example', {
 
     App = null;
 
-    Ember.TEMPLATES = {};
+    setTemplates({});
   }
 });
 
