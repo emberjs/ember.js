@@ -127,26 +127,6 @@ export default class TemplateCompiler {
 
   /// Internal actions, not found in the original processed actions
 
-  attributeMustache([action]) {
-    let { path } = action;
-    if (path.data) {
-      this.attr([action.path]);
-    } else if (isHasBlock(action)) {
-      let name = assertValidHasBlock(action);
-      this.hasBlock(name, action);
-    } else if (isHasBlockParams(action)) {
-      let name = assertValidHasBlockParams(action);
-      this.hasBlockParams(name, action);
-    } else if (isHelper(action)) {
-      this.prepareHelper(action);
-      this.opcode('helper', action, path.parts);
-    } else if (path.type === 'PathExpression') {
-      this.opcode('get', action, path.parts);
-    } else {
-      this.opcode('literal', action, path.value);
-    }
-  }
-
   attr([path]) {
     let { parts } = path;
     this.opcode('attr', path, parts);
@@ -243,12 +223,8 @@ export default class TemplateCompiler {
     for (let i = params.length - 1; i >= 0; i--) {
       let param = params[i];
 
-      if (param.type === 'MustacheStatement') {
-        this.attributeMustache([param]);
-      } else {
-        assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
-        this[param.type](param);
-      }
+      assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
+      this[param.type](param);
     }
 
     this.opcode('prepareArray', null, params.length);
@@ -284,9 +260,43 @@ export default class TemplateCompiler {
         this.attributeMustache([value]);
         return false;
       case 'ConcatStatement':
-        this.prepareParams(value.parts);
+        this.prepareConcatParts(value.parts);
         this.opcode('concat', value);
         return false;
+    }
+  }
+
+  prepareConcatParts(parts) {
+    for (let i = parts.length - 1; i >= 0; i--) {
+      let part = parts[i];
+
+      if (part.type === 'MustacheStatement') {
+        this.attributeMustache([part]);
+      } else if (part.type === 'TextNode') {
+        this.opcode('literal', null, part.chars);
+      }
+    }
+
+    this.opcode('prepareArray', null, parts.length);
+  }
+
+  attributeMustache([action]) {
+    let { path } = action;
+    if (path.data) {
+      this.attr([action.path]);
+    } else if (isHasBlock(action)) {
+      let name = assertValidHasBlock(action);
+      this.hasBlock(name, action);
+    } else if (isHasBlockParams(action)) {
+      let name = assertValidHasBlockParams(action);
+      this.hasBlockParams(name, action);
+    } else if (isHelper(action)) {
+      this.prepareHelper(action);
+      this.opcode('helper', action, path.parts);
+    } else if (path.type === 'PathExpression') {
+      this.opcode('get', action, path.parts);
+    } else {
+      this.opcode('literal', action, path.value);
     }
   }
 
