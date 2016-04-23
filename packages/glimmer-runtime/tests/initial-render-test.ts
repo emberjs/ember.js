@@ -1,5 +1,5 @@
 import { forEach } from "glimmer-util";
-import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
+import { TestEnvironment, TestDynamicScope, TestModifierManager, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
 import { Template } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
 

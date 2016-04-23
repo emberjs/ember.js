@@ -1,5 +1,5 @@
 import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference } from "glimmer-runtime";
-import { TestEnvironment, TestDynamicScope, equalTokens, stripTight } from "glimmer-test-helpers";
+import { TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
@@ -1792,4 +1792,115 @@ test("HTML namespace is continued to child templates", function() {
   equal(getDiv().namespaceURI, XHTML_NAMESPACE);
   equal(getSvg().namespaceURI, SVG_NAMESPACE);
   equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+});
+
+QUnit.module("Updating Element Modifiers", {
+  setup: commonSetup
+});
+
+test("Updating a element modifier", assert => {
+  let manager = new TestModifierManager();
+  env.registerModifier('foo', manager);
+
+  let template = compile('<div {{foo bar}}></div>');
+  let input = {
+    bar: 'Super Metroid'
+  };
+
+  render(template, input);
+
+  let valueNode = root.firstChild;
+
+  equalTokens(root, '<div data-modifier="installed - Super Metroid"></div>', "initial render");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 0);
+  equal(manager.destroyedModifiers.length, 0);
+
+  rerender();
+
+  equalTokens(root, '<div data-modifier="updated - Super Metroid"></div>', "modifier updated");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 1);
+  equal(valueNode, manager.updatedElements[0]);
+  equal(manager.destroyedModifiers.length, 0);
+
+  input.bar = 'Super Mario';
+
+  rerender();
+
+  equalTokens(root, '<div data-modifier="updated - Super Mario"></div>', "no change");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 2);
+  equal(valueNode, manager.updatedElements[1]);
+  equal(manager.destroyedModifiers.length, 0);
+});
+
+test("Const input doesn't trigger update in a element modifier", assert => {
+  let manager = new TestModifierManager();
+  env.registerModifier('foo', manager);
+
+  let template = compile('<div {{foo "bar"}}></div>');
+  let input = {};
+
+  render(template, input);
+
+  let valueNode = root.firstChild;
+
+  equalTokens(root, '<div data-modifier="installed - bar"></div>', "initial render");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 0);
+  equal(manager.destroyedModifiers.length, 0);
+
+  rerender();
+
+  equalTokens(root, '<div data-modifier="installed - bar"></div>', "no change");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 0);
+  equal(manager.destroyedModifiers.length, 0);
+});
+
+test("Destructor is triggered on element modifiers", assert => {
+  let manager = new TestModifierManager();
+  env.registerModifier('foo', manager);
+
+  let template = compile('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}');
+  let input = {
+    bar: true
+  };
+
+  render(template, input);
+
+  let valueNode = root.firstChild;
+
+  equalTokens(root, '<div data-modifier="installed - true"></div>', "initial render");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 0);
+  equal(manager.destroyedModifiers.length, 0);
+
+  rerender();
+
+  equalTokens(root, '<div data-modifier="updated - true"></div>', "modifier updated");
+  equal(manager.installedElements.length, 1);
+  equal(valueNode, manager.installedElements[0]);
+  equal(manager.updatedElements.length, 1);
+  equal(manager.destroyedModifiers.length, 0);
+
+  input.bar = false;
+  rerender();
+
+  equalTokens(root, '<div></div>', "no more modifier");
+  equal(manager.destroyedModifiers.length, 1);
+
+  input.bar = true;
+  rerender();
+
+  equalTokens(root, '<div data-modifier="installed - true"></div>', "back to default render");
+  equal(manager.installedElements.length, 2);
+  equal(manager.destroyedModifiers.length, 1);
 });
