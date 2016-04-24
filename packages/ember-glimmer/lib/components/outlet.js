@@ -1,19 +1,12 @@
-import { StatementSyntax } from 'glimmer-runtime';
+import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 import { ConstReference } from 'glimmer-reference';
 import { generateGuid, guidFor } from 'ember-metal/utils';
 import { RootReference, NULL_REFERENCE } from '../utils/references';
 
-export class OutletSyntax extends StatementSyntax {
-  constructor({ args }) {
-    super();
+class OutletComponentLookup {
+  constructor(args) {
     this.args = args;
-    this.definition = outletComponentFor;
-    this.templates = null;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this);
+    this.factory = outletComponentFor;
   }
 }
 
@@ -25,6 +18,20 @@ function outletComponentFor(args, vm) {
   } else {
     let outletName = args.positional.at(0).value() || 'main';
     return new OutletComponentReference(outletName, outletState.get(outletName));
+  }
+}
+
+export class OutletSyntax extends StatementSyntax {
+  constructor({ args }) {
+    super();
+    this.definition = new OutletComponentLookup(args);
+    this.args = ArgsSyntax.empty();
+    this.templates = null;
+    this.shadow = null;
+  }
+
+  compile(builder) {
+    builder.component.dynamic(this);
   }
 }
 
