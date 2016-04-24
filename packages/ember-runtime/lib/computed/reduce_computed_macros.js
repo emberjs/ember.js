@@ -110,7 +110,7 @@ export function sum(dependentKey) {
   @public
 */
 export function max(dependentKey) {
-  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity);
+  return reduceMacro(dependentKey, (max, item) => item > max ? item : max, -Infinity);
 }
 
 /**
@@ -148,7 +148,7 @@ export function max(dependentKey) {
   @public
 */
 export function min(dependentKey) {
-  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity);
+  return reduceMacro(dependentKey, (min, item) => item < min ? item : min, Infinity);
 }
 
 /**
