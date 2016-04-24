@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import EmberObject from 'ember-runtime/system/object';
 import inject from 'ember-runtime/inject';
 import run from 'ember-metal/run_loop';
@@ -80,7 +79,7 @@ QUnit.module('Ember.Application - visit()', {
 // does not fire.
 QUnit.test('Applications with autoboot set to false do not autoboot', function(assert) {
   function delay(time) {
-    return new RSVP.Promise(resolve => Ember.run.later(resolve, time));
+    return new RSVP.Promise(resolve => run.later(resolve, time));
   }
 
   let appBooted = 0;

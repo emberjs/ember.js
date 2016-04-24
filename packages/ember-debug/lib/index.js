@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 import { ENV } from 'ember-environment';
 import {
   warn,

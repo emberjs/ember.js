@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import isEnabled from 'ember-metal/features';
@@ -8,8 +7,9 @@ import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
-var App, Router, container, router, registry;
+var App, container, router, registry;
 var expectedReplaceURL, expectedPushURL;
 
 
@@ -66,13 +66,11 @@ function sharedSetup() {
       location: 'test'
     });
 
-    Router = App.Router;
-
     App.LoadingRoute = Route.extend({
     });
 
-    Ember.TEMPLATES.application = compile('{{outlet}}');
-    Ember.TEMPLATES.home = compile('<h3>Hours</h3>');
+    setTemplate('application', compile('{{outlet}}'));
+    setTemplate('home', compile('<h3>Hours</h3>'));
   });
 }
 
@@ -80,8 +78,7 @@ function sharedTeardown() {
   run(function() {
     App.destroy();
     App = null;
-
-    Ember.TEMPLATES = {};
+    setTemplates({});
   });
 }
 
@@ -104,7 +101,7 @@ var testParamlessLinks = function(routeName) {
   QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
-    Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
+    setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));
 
     App[capitalize(routeName) + 'Controller'] = Controller.extend({
       queryParams: ['foo'],
@@ -122,7 +119,7 @@ var testParamlessLinksWithRouteConfig = function(routeName) {
   QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
-    Ember.TEMPLATES[routeName] = compile('{{link-to \'index\' \'index\' id=\'index-link\'}}');
+    setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));
 
     App[capitalize(routeName) + 'Route'] = Route.extend({
       queryParams: {

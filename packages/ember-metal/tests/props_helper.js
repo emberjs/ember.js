@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import {get as getFromEmberMetal, getWithDefault as getWithDefaultFromEmberMetal} from 'ember-metal/property_get';
 import {set as setFromEmberMetal} from 'ember-metal/property_set';
 
@@ -14,7 +14,7 @@ var testBoth = function(testname, callback) {
   });
 
   QUnit.test(testname + ' using accessors', function() {
-    if (Ember.USES_ACCESSORS) {
+    if (ENV.USES_ACCESSORS) {
       callback(aget, aset);
     } else {
       ok('SKIPPING ACCESSORS');
@@ -47,7 +47,7 @@ var testWithDefault = function(testname, callback) {
   });
 
   QUnit.test(testname + ' using accessors', function() {
-    if (Ember.USES_ACCESSORS) {
+    if (ENV.USES_ACCESSORS) {
       callback(aget, aset);
     } else {
       ok('SKIPPING ACCESSORS');

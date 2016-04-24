@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Ember.testing, Ember.onerror
 import require, { has } from 'require';
 import { assert } from 'ember-metal/debug';
 import Logger from 'ember-metal/logger';

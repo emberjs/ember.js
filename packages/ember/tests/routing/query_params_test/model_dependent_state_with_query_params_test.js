@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -9,8 +8,10 @@ import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
+import { setTemplates } from 'ember-htmlbars/template_registry';
+import { classify } from 'ember-runtime/system/string';
 
-var Router, App, router, registry, container;
+var App, router, registry, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -84,13 +85,11 @@ function sharedSetup() {
       location: 'test'
     });
 
-    Router = App.Router;
-
     App.LoadingRoute = Route.extend({
     });
 
-    Ember.TEMPLATES.application = compile('{{outlet}}');
-    Ember.TEMPLATES.home = compile('<h3>Hours</h3>');
+    registry.register('template:application', compile('{{outlet}}'));
+    registry.register('template:home', compile('<h3>Hours</h3>'));
   });
 }
 
@@ -98,8 +97,7 @@ function sharedTeardown() {
   run(function() {
     App.destroy();
     App = null;
-
-    Ember.TEMPLATES = {};
+    setTemplates({});
   });
 }
 
@@ -164,7 +162,7 @@ function queryParamsStickyTest2(urlPrefix) {
 
 function queryParamsStickyTest3(urlPrefix, articleLookup) {
   return function() {
-    Ember.TEMPLATES.application = compile(`{{#each articles as |a|}} {{link-to 'Article' '${articleLookup}' a.id id=a.id}} {{/each}}`);
+    registry.register('template:application', compile(`{{#each articles as |a|}} {{link-to 'Article' '${articleLookup}' a.id id=a.id}} {{/each}}`));
 
     this.boot();
 
@@ -212,7 +210,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
 
 function queryParamsStickyTest4(urlPrefix, articleLookup) {
   return function() {
-    var articleClass = Ember.String.classify(articleLookup);
+    var articleClass = classify(articleLookup);
 
     if (isEnabled('ember-routing-route-configured-query-params')) {
       App[`${articleClass}Route`].reopen({
@@ -292,7 +290,7 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
 
 function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
   return function() {
-    var articleClass = Ember.String.classify(articleLookup);
+    var articleClass = classify(articleLookup);
 
     App[`${articleClass}Route`].reopen({
       resetController(controller, isExiting) {
@@ -303,7 +301,7 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
       }
     });
 
-    Ember.TEMPLATES.about = compile(`{{link-to 'A' '${commentsLookup}' 'a-1' id='one'}} {{link-to 'B' '${commentsLookup}' 'a-2' id='two'}}`);
+    registry.register('template:about', compile(`{{link-to 'A' '${commentsLookup}' 'a-1' id='one'}} {{link-to 'B' '${commentsLookup}' 'a-2' id='two'}}`));
 
     this.boot();
 
@@ -389,7 +387,7 @@ QUnit.module('Model Dep Query Params', {
       });
     }
 
-    Ember.TEMPLATES.application = compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}');
+    registry.register('template:application', compile('{{#each articles as |a|}} {{link-to \'Article\' \'article\' a id=a.id}} {{/each}} {{outlet}}'));
 
     this.boot = function() {
       bootApplication();
@@ -479,7 +477,7 @@ QUnit.module('Model Dep Query Params (nested)', {
         page: 1
       });
     }
-    Ember.TEMPLATES.application = compile('{{#each articles as |a|}} {{link-to \'Article\' \'site.article\' a id=a.id}} {{/each}} {{outlet}}');
+    registry.register('template:application', compile('{{#each articles as |a|}} {{link-to \'Article\' \'site.article\' a id=a.id}} {{/each}} {{outlet}}'));
 
     this.boot = function() {
       bootApplication();
@@ -604,7 +602,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       });
     }
 
-    Ember.TEMPLATES.application = compile('{{#each allSitesAllArticles as |a|}} {{#link-to \'site.article\' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}');
+    registry.register('template:application', compile('{{#each allSitesAllArticles as |a|}} {{#link-to \'site.article\' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}'));
 
     this.boot = function() {
       bootApplication();

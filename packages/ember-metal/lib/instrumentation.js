@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import { ENV } from 'ember-environment';
 import isEnabled from 'ember-metal/features';
 
 /**
@@ -143,7 +143,7 @@ export function _instrumentStart(name, _payload) {
 
   var payload = _payload();
 
-  var STRUCTURED_PROFILE = Ember.STRUCTURED_PROFILE;
+  var STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
   var timeName;
   if (STRUCTURED_PROFILE) {
     timeName = name + ': ' + payload.object;

@@ -6,7 +6,7 @@
 // BEGIN IMPORTS
 import require, { has } from 'require';
 import { ENV, context } from 'ember-environment';
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 import { deprecate, deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
 import assign from 'ember-metal/assign';

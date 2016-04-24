@@ -1,6 +1,9 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import View from 'ember-views/views/view';
+import {
+  getViewClientRects,
+  getViewBoundingClientRect
+} from 'ember-views/system/utils';
 
 var hasGetClientRects, hasGetBoundingClientRect;
 var ClientRectListCtor, ClientRectCtor;
@@ -44,7 +47,7 @@ QUnit.test('getViewClientRects', function() {
 
   run(function() { view.appendTo('#qunit-fixture'); });
 
-  ok(Ember.ViewUtils.getViewClientRects(view) instanceof ClientRectListCtor);
+  ok(getViewClientRects(view) instanceof ClientRectListCtor);
 });
 
 QUnit.test('getViewBoundingClientRect', function() {
@@ -57,5 +60,5 @@ QUnit.test('getViewBoundingClientRect', function() {
 
   run(function() { view.appendTo('#qunit-fixture'); });
 
-  ok(Ember.ViewUtils.getViewBoundingClientRect(view) instanceof ClientRectCtor);
+  ok(getViewBoundingClientRect(view) instanceof ClientRectCtor);
 });

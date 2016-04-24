@@ -4,7 +4,7 @@
 */
 
 // BEGIN IMPORTS
-import Ember from 'ember-metal';
+import Ember from 'ember-metal'; // reexports
 import isEqual from 'ember-runtime/is-equal';
 import compare from 'ember-runtime/compare';
 import copy from 'ember-runtime/copy';

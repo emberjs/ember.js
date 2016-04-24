@@ -1,16 +1,16 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
+import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
-var Router, App, templates, router, container;
+var App, templates, router, container;
 
 function bootApplication() {
   for (var name in templates) {
-    Ember.TEMPLATES[name] = compile(templates[name]);
+    setTemplate(name, compile(templates[name]));
   }
   router = container.lookup('router:main');
   run(App, 'advanceReadiness');
@@ -30,8 +30,6 @@ QUnit.module('Top Level DOM Structure', {
         location: 'none'
       });
 
-      Router = App.Router;
-
       container = App.__container__;
 
       templates = {
@@ -44,8 +42,7 @@ QUnit.module('Top Level DOM Structure', {
     run(function() {
       App.destroy();
       App = null;
-
-      Ember.TEMPLATES = {};
+      setTemplates({});
     });
 
     NoneLocation.reopen({

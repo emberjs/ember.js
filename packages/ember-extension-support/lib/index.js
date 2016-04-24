@@ -3,7 +3,7 @@
 @submodule ember-extension-support
 */
 
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 import DataAdapter from 'ember-extension-support/data_adapter';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 

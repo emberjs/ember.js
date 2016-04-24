@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 import isEnabled from 'ember-metal/features';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 

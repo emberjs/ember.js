@@ -1,4 +1,4 @@
-import Ember from 'ember-metal';
+import Ember from 'ember-metal'; // Ember.onerror
 import run from 'ember-metal/run_loop';
 
 QUnit.module('system/run_loop/onerror_test');

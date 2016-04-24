@@ -20,8 +20,6 @@
   Map is mocked out to look like an Ember object, so you can do
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
-
-import Ember from 'ember-metal/core';
 import { guidFor } from 'ember-metal/utils';
 import EmptyObject from 'ember-metal/empty_object';
 
@@ -252,8 +250,6 @@ function Map() {
     missingNew('OrderedSet');
   }
 }
-
-Ember.Map = Map;
 
 /**
   @method create

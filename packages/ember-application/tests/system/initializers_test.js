@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
@@ -27,7 +26,7 @@ QUnit.test('initializers require proper \'name\' and \'initialize\' properties',
 
   expectAssertion(function() {
     run(function() {
-      MyApplication.initializer({ initialize: Ember.K });
+      MyApplication.initializer({ initialize() {} });
     });
   });
 });

@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // reexports
 
 import 'ember-testing/initializers'; // to setup initializer
 import 'ember-testing/support';      // to handle various edge cases

@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal/property_set';
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Ember.STRINGS
 
 moduleFor('Helpers test: {{loc}}', class extends RenderingTest {
 
