@@ -1,16 +1,9 @@
-import { StatementSyntax } from 'glimmer-runtime';
+import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 
-export class DynamicComponentSyntax extends StatementSyntax {
-  constructor({ args, templates }) {
-    super();
-    this.args = args;
-    this.definition = dynamicComponentFor;
-    this.templates = templates;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this);
+class DynamicComponentLookup {
+  constructor(args) {
+    this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
+    this.factory = dynamicComponentFor;
   }
 }
 
@@ -18,6 +11,20 @@ function dynamicComponentFor(args, vm) {
   let nameRef = args.positional.at(0);
   let env = vm.env;
   return new DynamicComponentReference({ nameRef, env });
+}
+
+export class DynamicComponentSyntax extends StatementSyntax {
+  constructor({ args, templates }) {
+    super();
+    this.definition = new DynamicComponentLookup(args);
+    this.args = ArgsSyntax.build(args.positional.slice(1), args.named);
+    this.templates = templates;
+    this.shadow = null;
+  }
+
+  compile(builder) {
+    builder.component.dynamic(this);
+  }
 }
 
 class DynamicComponentReference {
