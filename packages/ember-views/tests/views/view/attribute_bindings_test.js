@@ -467,6 +467,24 @@ QUnit.test('role attribute is not included if not provided', function() {
   ok(!view.element.hasAttribute('role'), 'role attribute is not present');
 });
 
+QUnit.test('aria-label attribute is included if provided', function() {
+  view = EmberView.create({
+    'aria-label': 'Aria label'
+  });
+
+  appendView();
+
+  equal(view.$().attr('aria-label'), 'Aria label');
+});
+
+QUnit.test('aria-label attribute is not included if not provided', function() {
+  view = EmberView.create();
+
+  appendView();
+
+  ok(!view.element.hasAttribute('aria-label'), 'aria-label attribute is not present');
+});
+
 QUnit.test('can set id initially via attributeBindings', function() {
   view = EmberView.create({
     attributeBindings: ['specialSauce:id'],

@@ -6,12 +6,26 @@
 import { Mixin } from 'ember-metal/mixin';
 
 /**
- @class AriaRoleSupport
+ @class AriaSupport
  @namespace Ember
  @private
 */
 export default Mixin.create({
   attributeBindings: ['ariaRole:role'],
+
+  init() {
+    this._super(...arguments);
+
+    if (!this.attributeBindings) {
+      this.attributeBindings = [];
+    }
+
+    Object.keys(this).forEach(attr => {
+      if (/^aria-/i.test(attr)) {
+        this.attributeBindings.push(attr);
+      }
+    });
+  },
 
   /**
    The WAI-ARIA role of the control represented by this view. For example, a

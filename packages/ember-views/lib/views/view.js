@@ -9,7 +9,7 @@ import TemplateRenderingSupport from 'ember-views/mixins/template_rendering_supp
 import ClassNamesSupport from 'ember-views/mixins/class_names_support';
 import LegacyViewSupport from 'ember-views/mixins/legacy_view_support';
 import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
-import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
+import AriaSupport from 'ember-views/mixins/aria_support';
 import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import ViewMixin from 'ember-views/mixins/view_support';
@@ -639,7 +639,7 @@ import ViewMixin from 'ember-views/mixins/view_support';
   @uses Ember.LegacyViewSupport
   @uses Ember.InstrumentationSupport
   @uses Ember.VisibilitySupport
-  @uses Ember.AriaRoleSupport
+  @uses Ember.AriaSupport
   @public
 */
 // jscs:disable validateIndentation
@@ -654,7 +654,7 @@ var View = CoreView.extend(
   InstrumentationSupport,
   VisibilitySupport,
   CompatAttrsProxy,
-  AriaRoleSupport,
+  AriaSupport,
   ViewMixin, {
     init() {
       this._super(...arguments);
