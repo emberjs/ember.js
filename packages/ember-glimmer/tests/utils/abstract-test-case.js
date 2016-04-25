@@ -11,6 +11,8 @@ import Router from 'ember-routing/system/router';
 import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import isEnabled from 'ember-metal/features';
+import { privatize as P } from 'container/registry';
+import DefaultComponentTemplate from 'ember-glimmer/templates/component';
 
 const packageTag = `@${packageName} `;
 
@@ -287,6 +289,8 @@ export class RenderingTest extends TestCase {
     this.renderer = InteractiveRenderer.create({ dom, env, [OWNER]: owner });
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
+
+    owner.register(P`template:components/-default`, DefaultComponentTemplate);
   }
 
   getOwnerOptions() {
