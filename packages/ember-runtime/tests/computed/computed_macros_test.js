@@ -15,7 +15,7 @@ import {
   deprecatingAlias,
   and,
   or,
-} from 'ember-metal/computed_macros';
+} from 'ember-runtime/computed/computed_macros';
 
 import alias from 'ember-metal/alias';
 import { defineProperty } from 'ember-metal/properties';

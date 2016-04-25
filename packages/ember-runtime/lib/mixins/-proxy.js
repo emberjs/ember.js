@@ -17,7 +17,7 @@ import {
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import { computed } from 'ember-metal/computed';
+import { bool } from 'ember-runtime/computed/computed_macros';
 import { defineProperty } from 'ember-metal/properties';
 import { Mixin, observer } from 'ember-metal/mixin';
 import symbol from 'ember-metal/symbol';
@@ -64,7 +64,7 @@ export default Mixin.create({
     assert('Can\'t set Proxy\'s content to itself', get(this, 'content') !== this);
   }),
 
-  isTruthy: computed.bool('content'),
+  isTruthy: bool('content'),
 
   _debugContainerKey: null,
 
