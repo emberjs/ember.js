@@ -447,6 +447,9 @@ export function lte(dependentKey, value) {
   tomster.get('readyForHike'); // null
   ```
 
+  Note that it does not perform short-circuit evaluation, i.e. if a first property is `false`,
+  it will still compute the following properties.
+
   @method and
   @for Ember.computed
   @param {String} dependentKey*
