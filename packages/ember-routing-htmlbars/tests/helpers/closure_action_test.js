@@ -1,7 +1,6 @@
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import EmberComponent from 'ember-views/components/component';
-import EmberView from 'ember-views/views/view';
 import { computed } from 'ember-metal/computed';
 import { INVOKE } from 'ember-routing-htmlbars/keywords/closure-action';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
@@ -55,8 +54,8 @@ function registerComponent(name, factory) {
 }
 
 function appendViewFor(template, moduleName='', hash={}) {
-  let view = EmberView.extend({
-    template: compile(template, { moduleName }),
+  let view = EmberComponent.extend({
+    layout: compile(template, { moduleName }),
     [OWNER]: owner
   }).create(hash);
 
@@ -266,6 +265,22 @@ QUnit.test('an error is triggered when bound action function is undefined', func
   throws(function() {
     runAppend(outerComponent);
   }, /An action could not be made for `somethingThatIsUndefined` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action 'somethingThatIsUndefined'\)`\) or a function available in .*\./);
+});
+
+QUnit.test('[#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo', function(assert) {
+  registerComponent('inner-component', EmberComponent.extend({
+    [OWNER]: owner
+  }));
+  registerTemplate('components/inner-component', '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>');
+
+  view = EmberComponent.extend({
+    layout: compile('{{inner-component}}'),
+    [OWNER]: owner
+  }).create();
+
+  throws(function() {
+    runAppend(view);
+  }, /Action passed is null or undefined in \(action [^)]*\) from .*\./);
 });
 
 QUnit.test('action value is returned', function(assert) {
