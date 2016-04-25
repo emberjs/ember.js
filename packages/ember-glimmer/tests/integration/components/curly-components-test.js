@@ -5,7 +5,7 @@ import { Component, compile } from '../../utils/helpers';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { classes, equalTokens } from '../../utils/test-helpers';
+import { classes, equalTokens, equalsElement } from '../../utils/test-helpers';
 import { htmlSafe } from 'ember-htmlbars/utils/string';
 import { computed } from 'ember-metal/computed';
 
@@ -1459,7 +1459,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] ');
   }
 
-  ['@htmlbars hasBlock is true when block supplied']() {
+  ['@test hasBlock is true when block supplied']() {
     this.registerComponent('with-block', {
       template: strip`
         {{#if hasBlock}}
@@ -1501,7 +1501,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('No Block!');
   }
 
-  ['@htmlbars hasBlockParams is true when block param supplied']() {
+  ['@test hasBlockParams is true when block param supplied']() {
     this.registerComponent('with-block', {
       template: strip`
         {{#if hasBlockParams}}
@@ -1650,7 +1650,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Yes:Hello42');
   }
 
-  ['@htmlbars expression hasBlock inverse'](assert) {
+  ['@test expression hasBlock inverse'](assert) {
     this.registerComponent('check-inverse', {
       template: strip`
         {{#if (hasBlock "inverse")}}
@@ -1661,19 +1661,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{#check-inverse id="expect-no"}}{{/check-inverse}}
-      {{#check-inverse id="expect-yes"}}{{else}}{{/check-inverse}}`);
+      {{#check-inverse}}{{/check-inverse}}
+      {{#check-inverse}}{{else}}{{/check-inverse}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertStableRerender();
   }
 
-  ['@htmlbars expression hasBlock default'](assert) {
+  ['@test expression hasBlock default'](assert) {
     this.registerComponent('check-block', {
       template: strip`
         {{#if (hasBlock)}}
@@ -1684,19 +1681,57 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{check-block id="expect-no"}}
-      {{#check-block id="expect-yes"}}{{/check-block}}`);
+      {{check-block}}
+      {{#check-block}}{{/check-block}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertStableRerender();
   }
 
-  ['@htmlbars non-expression hasBlock'](assert) {
+  ['@test expression hasBlockParams inverse'](assert) {
+    this.registerComponent('check-inverse', {
+      template: strip`
+        {{#if (hasBlockParams "inverse")}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-inverse}}{{/check-inverse}}
+      {{#check-inverse as |something|}}{{/check-inverse}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'No' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test expression hasBlockParams default'](assert) {
+    this.registerComponent('check-block', {
+      template: strip`
+        {{#if (hasBlockParams)}}
+          Yes
+        {{else}}
+          No
+        {{/if}}`
+    });
+
+    this.render(strip`
+      {{#check-block}}{{/check-block}}
+      {{#check-block as |something|}}{{/check-block}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+
+    this.assertStableRerender();
+  }
+
+
+  ['@test non-expression hasBlock'](assert) {
     this.registerComponent('check-block', {
       template: strip`
         {{#if hasBlock}}
@@ -1707,19 +1742,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{check-block id="expect-no"}}
-      {{#check-block id="expect-yes"}}{{/check-block}}`);
+      {{check-block}}
+      {{#check-block}}{{/check-block}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertStableRerender();
   }
 
-  ['@htmlbars expression hasBlockParams'](assert) {
+  ['@test expression hasBlockParams'](assert) {
     this.registerComponent('check-params', {
       template: strip`
         {{#if (hasBlockParams)}}
@@ -1730,19 +1762,16 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{#check-params id="expect-no"}}{{/check-params}}
-      {{#check-params id="expect-yes" as |foo|}}{{/check-params}}`);
+      {{#check-params}}{{/check-params}}
+      {{#check-params as |foo|}}{{/check-params}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertStableRerender();
   }
 
-  ['@htmlbars non-expression hasBlockParams'](assert) {
+  ['@test non-expression hasBlockParams'](assert) {
     this.registerComponent('check-params', {
       template: strip`
         {{#if hasBlockParams}}
@@ -1753,16 +1782,163 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.render(strip`
-      {{#check-params id="expect-no"}}{{/check-params}}
-      {{#check-params id="expect-yes" as |foo|}}{{/check-params}}`);
+      {{#check-params}}{{/check-params}}
+      {{#check-params as |foo|}}{{/check-params}}`);
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+    this.assertComponentElement(this.firstChild, { content: 'No' });
+    this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
 
-    this.runTask(() => this.rerender());
+    this.assertStableRerender();
+  }
 
-    assert.equal(this.$('#expect-no').text(), 'No');
-    assert.equal(this.$('#expect-yes').text(), 'Yes');
+  ['@test hasBlock expression in an attribute'](assert) {
+    this.registerComponent('check-attr', {
+      template: '<button name={{hasBlock}}></button>'
+    });
+
+    this.render(strip`
+      {{check-attr}}
+      {{#check-attr}}{{/check-attr}}`);
+
+    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlock inverse expression in an attribute'](assert) {
+    this.registerComponent('check-attr', {
+      template: '<button name={{hasBlock "inverse"}}></button>'
+    }, '');
+
+    this.render(strip`
+      {{#check-attr}}{{/check-attr}}
+      {{#check-attr}}{{else}}{{/check-attr}}`);
+
+    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams expression in an attribute'](assert) {
+    this.registerComponent('check-attr', {
+      template: '<button name={{hasBlockParams}}></button>'
+    });
+
+    this.render(strip`
+      {{#check-attr}}{{/check-attr}}
+      {{#check-attr as |something|}}{{/check-attr}}`);
+
+    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams inverse expression in an attribute'](assert) {
+    this.registerComponent('check-attr', {
+      template: '<button name={{hasBlockParams "inverse"}}></button>'
+    }, '');
+
+    this.render(strip`
+      {{#check-attr}}{{/check-attr}}
+      {{#check-attr as |something|}}{{/check-attr}}`);
+
+    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(this.$('button')[1], 'button', { name: 'false' }, '');
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlock as a param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if hasBlock "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{check-helper}}
+      {{#check-helper}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlock as an expression param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if (hasBlock) "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{check-helper}}
+      {{#check-helper}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlock inverse as a param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if (hasBlock "inverse") "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper}}{{else}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams as a param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if hasBlockParams "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper as |something|}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams as an expression param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if (hasBlockParams) "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper as |something|}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'true' });
+
+    this.assertStableRerender();
+  }
+
+  ['@test hasBlockParams inverse as a param to a helper'](assert) {
+    this.registerComponent('check-helper', {
+      template: '{{if (hasBlockParams "inverse") "true" "false"}}'
+    });
+
+    this.render(strip`
+      {{#check-helper}}{{/check-helper}}
+      {{#check-helper as |something|}}{{/check-helper}}`);
+
+    this.assertComponentElement(this.firstChild, { content: 'false' });
+    this.assertComponentElement(this.nthChild(1), { content: 'false' });
+
+    this.assertStableRerender();
   }
 
   ['@htmlbars component in template of a yielding component should have the proper parentView'](assert) {
