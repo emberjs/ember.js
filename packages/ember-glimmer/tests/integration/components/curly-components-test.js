@@ -1941,7 +1941,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@htmlbars component in template of a yielding component should have the proper parentView'](assert) {
+  ['@test component in template of a yielding component should have the proper parentView'](assert) {
     let outer, innerTemplate, innerLayout;
 
     this.registerComponent('x-outer', {
@@ -1985,7 +1985,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
   }
 
-  ['@htmlbars newly-added sub-components get correct parentView'](assert) {
+  ['@test newly-added sub-components get correct parentView'](assert) {
     let outer, inner;
 
     this.registerComponent('x-outer', {
@@ -2190,10 +2190,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this._super(...arguments);
           clickyThing = this;
         }
-      }),
-      // I am getting a `Cannot read property 'asLayout' of undefined` in
-      // Glimmer if I do not specify a template here :(
-      template: '{{yield}}'
+      })
     });
 
     this.render(strip`
