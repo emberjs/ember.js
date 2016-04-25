@@ -1,5 +1,5 @@
 import { set } from 'ember-metal/property_set';
-import { not } from 'ember-metal/computed_macros';
+import { not } from 'ember-runtime/computed/computed_macros';
 import run from 'ember-metal/run_loop';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
 import { A as emberA } from 'ember-runtime/system/native_array';

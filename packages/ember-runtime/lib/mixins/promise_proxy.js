@@ -1,11 +1,9 @@
 import { get } from 'ember-metal/property_get';
 import setProperties from 'ember-metal/set_properties';
 import { computed } from 'ember-metal/computed';
+import { not, or } from 'ember-runtime/computed/computed_macros';
 import { Mixin } from 'ember-metal/mixin';
 import EmberError from 'ember-metal/error';
-
-var not = computed.not;
-var or = computed.or;
 
 /**
   @module ember

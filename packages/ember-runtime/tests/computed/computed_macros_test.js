@@ -15,11 +15,7 @@ import {
   deprecatingAlias,
   and,
   or,
-} from 'ember-metal/computed_macros';
-
-import {
-  collect
-} from 'ember-runtime/computed/reduce_computed_macros';
+} from 'ember-runtime/computed/computed_macros';
 
 import alias from 'ember-metal/alias';
 import { defineProperty } from 'ember-metal/properties';
@@ -393,23 +389,6 @@ testBoth('computed.or expand properties', function(get, set) {
   set(obj, 'one', 1);
 
   equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
-});
-
-testBoth('computed.collect', function(get, set) {
-  var obj = { one: 'foo', two: 'bar', three: null };
-  defineProperty(obj, 'all', collect('one', 'two', 'three', 'four'));
-
-  deepEqual(get(obj, 'all'), ['foo', 'bar', null, null], 'have all of them');
-
-  set(obj, 'four', true);
-
-  deepEqual(get(obj, 'all'), ['foo', 'bar', null, true], 'have all of them');
-
-  var a = [];
-  set(obj, 'one', 0);
-  set(obj, 'three', a);
-
-  deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
 });
 
 testBoth('computed.oneWay', function(get, set) {

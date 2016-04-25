@@ -112,47 +112,8 @@ import {
 } from 'ember-metal/computed';
 
 import alias from 'ember-metal/alias';
-import {
-  empty,
-  notEmpty,
-  none,
-  not,
-  bool,
-  match,
-  equal,
-  gt,
-  gte,
-  lt,
-  lte,
-  oneWay as computedOneWay,
-  readOnly,
-  defaultTo,
-  deprecatingAlias,
-  and,
-  or,
-  any
-} from 'ember-metal/computed_macros';
 
-computed.empty = empty;
-computed.notEmpty = notEmpty;
-computed.none = none;
-computed.not = not;
-computed.bool = bool;
-computed.match = match;
-computed.equal = equal;
-computed.gt = gt;
-computed.gte = gte;
-computed.lt = lt;
-computed.lte = lte;
 computed.alias = alias;
-computed.oneWay = computedOneWay;
-computed.reads = computedOneWay;
-computed.readOnly = readOnly;
-computed.defaultTo = defaultTo;
-computed.deprecatingAlias = deprecatingAlias;
-computed.and = and;
-computed.or = or;
-computed.any = any;
 
 import {
   _suspendObserver,

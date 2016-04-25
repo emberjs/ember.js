@@ -45,6 +45,27 @@ import PromiseProxyMixin from 'ember-runtime/mixins/promise_proxy';
 import isEnabled from 'ember-metal/features';
 
 import {
+  empty,
+  notEmpty,
+  none,
+  not,
+  bool,
+  match,
+  equal,
+  gt,
+  gte,
+  lt,
+  lte,
+  oneWay as computedOneWay,
+  readOnly,
+  defaultTo,
+  deprecatingAlias,
+  and,
+  or,
+  any
+} from 'ember-runtime/computed/computed_macros';
+
+import {
   sum,
   min,
   max,
@@ -107,6 +128,26 @@ Ember.isArray = isArray;
 
 // ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
 var EmComputed = Ember.computed;
+
+EmComputed.empty = empty;
+EmComputed.notEmpty = notEmpty;
+EmComputed.none = none;
+EmComputed.not = not;
+EmComputed.bool = bool;
+EmComputed.match = match;
+EmComputed.equal = equal;
+EmComputed.gt = gt;
+EmComputed.gte = gte;
+EmComputed.lt = lt;
+EmComputed.lte = lte;
+EmComputed.oneWay = computedOneWay;
+EmComputed.reads = computedOneWay;
+EmComputed.readOnly = readOnly;
+EmComputed.defaultTo = defaultTo;
+EmComputed.deprecatingAlias = deprecatingAlias;
+EmComputed.and = and;
+EmComputed.or = or;
+EmComputed.any = any;
 
 EmComputed.sum = sum;
 EmComputed.min = min;
