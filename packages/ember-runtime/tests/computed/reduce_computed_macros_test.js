@@ -1,5 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
+import { defineProperty } from 'ember-metal/properties';
 import setProperties from 'ember-metal/set_properties';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import isEnabled from 'ember-metal/features';
@@ -21,9 +22,11 @@ import {
   uniq,
   uniqBy,
   union,
-  intersect
+  intersect,
+  collect
 } from 'ember-runtime/computed/reduce_computed_macros';
 import { isArray } from 'ember-runtime/utils';
+import { testBoth } from 'ember-metal/tests/props_helper';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
 var obj;
@@ -1688,4 +1691,23 @@ QUnit.test('updates when array is modified', function() {
   obj.get('array').popObject();
 
   equal(obj.get('total'), 6, 'recomputes when elements are removed');
+});
+
+QUnit.module('collect');
+
+testBoth('works', function(get, set) {
+  var obj = { one: 'foo', two: 'bar', three: null };
+  defineProperty(obj, 'all', collect('one', 'two', 'three', 'four'));
+
+  deepEqual(get(obj, 'all'), ['foo', 'bar', null, null], 'have all of them');
+
+  set(obj, 'four', true);
+
+  deepEqual(get(obj, 'all'), ['foo', 'bar', null, true], 'have all of them');
+
+  var a = [];
+  set(obj, 'one', 0);
+  set(obj, 'three', a);
+
+  deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
 });
