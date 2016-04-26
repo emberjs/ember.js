@@ -13,8 +13,8 @@ const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
  * prefix is incorrectly stripped off.
  */
 const serializesNSAttributesCorrectly = (function() {
-  let div = document.createElement('div');
-  let span = document.createElement('span');
+  let div = <HTMLElement> document.createElement('div');
+  let span = <HTMLElement> document.createElement('span');
   span.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang', 'en-uk');
   div.appendChild(span);
   return div.innerHTML === '<span xml:lang="en-uk"></span>';
@@ -76,6 +76,37 @@ test("updating a single curly", () => {
   strictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was not blown away");
 });
 
+test("updating a single curly with siblings", function() {
+  let value = 'brave new ';
+  let context = { value };
+  let getDiv = () => root.firstChild;
+  let template = compile('<div>hello {{value}}world</div>');
+  render(template, context);
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equal(getDiv().childNodes[1].textContent, 'brave new ');
+  equal(getDiv().lastChild.textContent, 'world');
+
+  rerender();
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equal(getDiv().childNodes[1].textContent, 'brave new ');
+  equal(getDiv().lastChild.textContent, 'world');
+
+  context.value = 'another ';
+  rerender();
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equal(getDiv().childNodes[1].textContent, 'another ');
+  equal(getDiv().lastChild.textContent, 'world');
+
+  rerender({value});
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equal(getDiv().childNodes[1].textContent, 'brave new ');
+  equal(getDiv().lastChild.textContent, 'world');
+});
+
 test("null and undefined produces empty text nodes", () => {
   let object = { v1: null, v2: undefined };
   let template = compile('<div><p>{{v1}}</p><p>{{v2}}</p></div>');
@@ -115,12 +146,13 @@ test("null and undefined produces empty text nodes", () => {
 });
 
 test("updating a single trusting curly", () => {
-  let object = { value: '<p>hello world</p>' };
+  let value = '<p>hello world</p>';
+  let object = { value };
   let template = compile('<div>{{{value}}}</div>');
   render(template, object);
   let valueNode = root.firstChild.firstChild.firstChild;
 
-  equalTokens(root, '<div><p>hello world</p></div>', "Initial render");
+  equalTokens(root, `<div>${value}</div>`, "Initial render");
 
   rerender();
 
@@ -130,8 +162,75 @@ test("updating a single trusting curly", () => {
   object.value = '<span>goodbye world</span>';
   rerender();
 
-  equalTokens(root, '<div><span>goodbye world</span></div>', "After updating and dirtying");
+  equalTokens(root, `<div>${object.value}</div>`, "After updating and dirtying");
   notStrictEqual(root.firstChild.firstChild.firstChild, valueNode, "The text node was blown away");
+
+  object.value = 'a <span>good man</span> is hard to <b>fund</b>';
+  rerender();
+
+  equalTokens(root, `<div>${object.value}</div>`, "After updating with many nodes and dirtying");
+
+  rerender({value});
+
+  equalTokens(root, `<div>${value}</div>`, "no change");
+});
+
+test("updating a single trusting curly with siblings", function() {
+  let value = '<b>brave new </b>';
+  let context = { value };
+  let getDiv = () => root.firstChild;
+  let template = compile('<div>hello {{{value}}}world</div>');
+  render(template, context);
+
+  equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'Initial render');
+
+  rerender();
+
+  equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'rerender');
+
+  context.value = 'big <b>wide</b> ';
+  rerender();
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equal(getDiv().childNodes[1].textContent, 'big ');
+  equal((<HTMLElement> getDiv().childNodes[2]).innerHTML, 'wide');
+  equal(getDiv().childNodes[3].textContent, ' ');
+  equal(getDiv().lastChild.textContent, 'world');
+
+  context.value = 'another ';
+  rerender();
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equal(getDiv().childNodes[1].textContent, 'another ');
+  equal(getDiv().lastChild.textContent, 'world');
+
+  rerender({value});
+
+  equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'rerender');
+});
+
+test("updating a single trusting curly with previous sibling", function() {
+  let value = '<b>brave new </b>';
+  let context = { value };
+  let getDiv = () => root.firstChild;
+  let template = compile('<div>hello {{{value}}}</div>');
+  render(template, context);
+
+  equalTokens(root, '<div>hello <b>brave new </b></div>', 'Initial render');
+
+  rerender();
+
+  equalTokens(root, '<div>hello <b>brave new </b></div>', 'rerender');
+
+  context.value = 'another ';
+  rerender();
+
+  equal(getDiv().firstChild.textContent, 'hello ');
+  equalTokens(getDiv().lastChild.textContent, 'another ');
+
+  rerender({value});
+
+  equalTokens(root, '<div>hello <b>brave new </b></div>', 'rerender');
 });
 
 // This is to catch a regression about not caching lastValue correctly
@@ -1663,6 +1762,15 @@ test("unsafe expression nested inside a namespace", function() {
   equal(getDiv().namespaceURI, XHTML_NAMESPACE);
   equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE, 'foreignObject has SVG NS');
   equal(getSvg().firstChild.firstChild.namespaceURI, XHTML_NAMESPACE, 'span has XHTML NS');
+
+  context.content = '<path></path><circle></circle>';
+  rerender();
+
+  equalTokens(root, `<svg>${context.content}</svg><div></div>`);
+  equal(getSvg().namespaceURI, SVG_NAMESPACE);
+  equal(getDiv().namespaceURI, XHTML_NAMESPACE);
+  equal(getSvg().firstChild.namespaceURI, SVG_NAMESPACE);
+  equal(getSvg().lastChild.namespaceURI, SVG_NAMESPACE);
 
   rerender({content});
 
