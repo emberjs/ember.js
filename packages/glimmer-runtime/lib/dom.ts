@@ -1,6 +1,7 @@
 import { ConcreteBounds, SingleNodeBounds, Bounds } from './bounds';
 import applyTableElementFix from './compat/inner-html-fix';
 import applySVGElementFix from './compat/svg-inner-html-fix';
+import applyTextNodeMergingFix from './compat/text-node-merging-fix';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -27,6 +28,18 @@ const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
+}
+
+export function moveNodesBefore(source, target, nextSibling) {
+  let first = source.firstChild;
+  let last = null;
+  let current = first;
+  while (current) {
+    last = current;
+    current = current.nextSibling;
+    target.insertBefore(last, nextSibling);
+  }
+  return [first, last];
 }
 
 class DOMHelper {
@@ -98,8 +111,8 @@ class DOMHelper {
 
     if (html === null || html === '') {
       return new ConcreteBounds(parent, null, null);
-    } 
-    
+    }
+
     if (nextSibling === null) {
       parent.insertAdjacentHTML('beforeEnd', html);
       last = parent.lastChild;
@@ -107,6 +120,11 @@ class DOMHelper {
       nextSibling.insertAdjacentHTML('beforeBegin', html);
       last = nextSibling.previousSibling;
     } else {
+      // Non-element nodes do not support insertAdjacentHTML, so add an
+      // element and call it on that element. Then remove the element.
+      //
+      // This also protects Edge, IE and Firefox w/o the inspector open
+      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
       parent.insertBefore(this.uselessElement, nextSibling);
       this.uselessElement.insertAdjacentHTML('beforeBegin', html);
       last = this.uselessElement.previousSibling;
@@ -150,7 +168,8 @@ function isDocumentFragment(node: Node): node is DocumentFragment {
 let helper = DOMHelper;
 let doc = typeof document === 'undefined' ? undefined : document;
 
-helper = applyTableElementFix(doc, DOMHelper);
+helper = applyTextNodeMergingFix(doc, helper);
+helper = applyTableElementFix(doc, helper);
 helper = applySVGElementFix(doc, helper, SVG_NAMESPACE);
 
 export default helper;
