@@ -1,7 +1,8 @@
 /*global __fail__*/
 
 import EmberError from 'ember-metal/error';
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
+
 import { ENV } from 'ember-environment';
 
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';

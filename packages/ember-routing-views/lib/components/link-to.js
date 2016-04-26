@@ -312,7 +312,8 @@
 */
 
 import isEnabled from 'ember-metal/features';
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
+
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';

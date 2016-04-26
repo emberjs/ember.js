@@ -5,14 +5,14 @@ import { context } from 'ember-environment';
 function K() { return this; }
 
 function consoleMethod(name) {
-  var consoleObj, logToConsole;
+  let consoleObj, logToConsole;
   if (context.imports.console) {
     consoleObj = context.imports.console;
   } else if (typeof console !== 'undefined') {
     consoleObj = console;
   }
 
-  var method = typeof consoleObj === 'object' ? consoleObj[name] : null;
+  let method = typeof consoleObj === 'object' ? consoleObj[name] : null;
 
   if (method) {
     // Older IE doesn't support bind, but Chrome needs it
@@ -28,7 +28,7 @@ function consoleMethod(name) {
       return logToConsole;
     } else {
       return function() {
-        var message = Array.prototype.join.call(arguments, ', ');
+        let message = Array.prototype.join.call(arguments, ', ');
         method(message);
       };
     }

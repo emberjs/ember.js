@@ -1,4 +1,5 @@
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
+
 import Controller from 'ember-runtime/controllers/controller';
 import { set } from 'ember-metal/property_set';
 import Route from 'ember-routing/system/route';

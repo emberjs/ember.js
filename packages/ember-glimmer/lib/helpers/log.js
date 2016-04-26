@@ -4,7 +4,7 @@ import { helper } from '../helper';
 @submodule ember-templates
 */
 
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
 
 /**
   `log` allows you to output the value of variables in the current rendering

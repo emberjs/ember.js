@@ -1,4 +1,4 @@
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
 import { deprecate } from 'ember-metal/debug';
 import { registerHandler as genericRegisterHandler, invoke } from 'ember-debug/handlers';
 

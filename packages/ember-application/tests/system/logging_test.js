@@ -1,6 +1,6 @@
 /*globals EmberDev */
 
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import View from 'ember-views/views/view';
