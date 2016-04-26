@@ -340,6 +340,17 @@ Object.defineProperty(Ember, 'ENV', {
 });
 
 /**
+  The context that Ember searches for namespace instances on.
+
+  @private
+ */
+Object.defineProperty(Ember, 'lookup', {
+  get: () => context.lookup,
+  set: value => context.lookup = value,
+  enumerable: false
+});
+
+/**
   A function may be assigned to `Ember.onerror` to be called when Ember
   internals encounter an error. This is useful for specialized error handling
   and reporting code.
