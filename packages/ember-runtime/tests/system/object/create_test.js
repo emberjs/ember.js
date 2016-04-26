@@ -47,10 +47,17 @@ if (isEnabled('mandatory-setter')) {
 }
 
 QUnit.test('allows bindings to be defined', function() {
-  var obj = EmberObject.create({
-    foo: 'foo',
-    barBinding: 'foo'
-  });
+  let obj;
+
+  let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+    ' using an `alias` computed property instead.';
+
+  expectDeprecation(() => {
+    obj = EmberObject.create({
+      foo: 'foo',
+      barBinding: 'foo'
+    });
+  }, deprecationMessage);
 
   equal(obj.get('bar'), 'foo', 'The binding value is correct');
 });

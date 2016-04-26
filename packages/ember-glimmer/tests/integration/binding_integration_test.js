@@ -18,12 +18,17 @@ moduleFor('Binding integration tests', class extends RenderingTest {
       template: 'two way: {{twoWayTest}}, string: {{stringTest}}, object: {{twoWayObjectTest}}, string object: {{stringObjectTest}}'
     });
 
-    this.render('{{foo-bar direction=direction displacement=displacement}}', {
-      direction: 'down',
-      displacement: {
-        distance: 10
-      }
-    });
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      this.render('{{foo-bar direction=direction displacement=displacement}}', {
+        direction: 'down',
+        displacement: {
+          distance: 10
+        }
+      });
+    }, deprecationMessage);
 
     this.assertText('two way: down, string: down, object: 10, string object: 10');
 
