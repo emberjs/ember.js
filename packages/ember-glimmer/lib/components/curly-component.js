@@ -86,13 +86,17 @@ class CurlyComponentManager {
 
     if (classNames) {
       classNames.forEach(name => {
-        operations.addAttribute('class', new ValueReference(name));
+        if (name) {
+          operations.addAttribute('class', new ValueReference(name));
+        }
       });
     }
 
     if (classNameBindings) {
       classNameBindings.forEach(binding => {
-        applyClassNameBinding(component, binding, operations);
+        if (binding) {
+          applyClassNameBinding(component, binding, operations);
+        }
       });
     }
 

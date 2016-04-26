@@ -201,7 +201,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
   }
 
-  ['@htmlbars should not apply falsy class name']() {
+  ['@test should not apply falsy class name']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar class=somethingFalsy}}', {
