@@ -110,7 +110,7 @@ moduleFor('Input element tests', class extends RenderingTest {
 
     this.setComponentValue('hello');
 
-    this.assertValue('hola', 'DOM is used');
+    this.assertValue('hello', 'DOM is used');
   }
 
   // private helpers and assertions
