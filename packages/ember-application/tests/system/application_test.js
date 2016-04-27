@@ -1,6 +1,6 @@
 /*globals EmberDev */
 
-import Ember from 'ember-metal/core'; // Ember.libraries, Ember.BOOTED
+import Ember from 'ember-metal/core'; // Ember.libraries
 import { ENV, context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';
@@ -10,6 +10,7 @@ import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import NoneLocation from 'ember-routing/location/none_location';
 import EmberObject from 'ember-runtime/system/object';
+import { setSearchDisabled as setNamespaceSearchDisabled } from 'ember-runtime/system/namespace';
 import EmberRoute from 'ember-routing/system/route';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
@@ -98,7 +99,7 @@ QUnit.test('acts like a namespace', function() {
     app = lookup.TestApp = Application.create({ rootElement: '#two', router: false });
   });
 
-  Ember.BOOTED = false;
+  setNamespaceSearchDisabled(false);
   app.Foo = EmberObject.extend();
   equal(app.Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
 });

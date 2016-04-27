@@ -1,21 +1,22 @@
-import Ember from 'ember-metal/core'; // Ember.BOOTED
 import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import {get} from 'ember-metal/property_get';
 import EmberObject from 'ember-runtime/system/object';
-import Namespace from 'ember-runtime/system/namespace';
+import Namespace, {
+  setSearchDisabled as setNamespaceSearchDisabled
+} from 'ember-runtime/system/namespace';
 
-let originalLookup = context.lookup;
+const originalLookup = context.lookup;
 let lookup;
 
 QUnit.module('Namespace', {
   setup() {
-    Ember.BOOTED = false;
+    setNamespaceSearchDisabled(false);
 
     lookup = context.lookup = {};
   },
   teardown() {
-    Ember.BOOTED = false;
+    setNamespaceSearchDisabled(false);
 
     for (var prop in lookup) {
       if (lookup[prop]) { run(lookup[prop], 'destroy'); }
@@ -82,7 +83,7 @@ QUnit.test('A namespace can be assigned a custom name', function() {
 });
 
 QUnit.test('Calling namespace.nameClasses() eagerly names all classes', function() {
-  Ember.BOOTED = true;
+  setNamespaceSearchDisabled(true);
 
   var namespace = lookup.NS = Namespace.create();
 

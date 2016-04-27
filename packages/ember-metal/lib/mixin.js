@@ -6,7 +6,6 @@
 @module ember
 @submodule ember-metal
 */
-import Ember from 'ember-metal/core'; // warn, assert, wrap, et;
 import EmberError from 'ember-metal/error';
 import { debugSeal, assert, deprecate, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
@@ -426,6 +425,8 @@ export function mixin(obj, ...args) {
   return obj;
 }
 
+export const NAME_KEY = GUID_KEY + '_name';
+
 /**
   The `Ember.Mixin` class allows you to create mixins, whose properties can be
   added to other classes. For instance,
@@ -505,7 +506,7 @@ export default function Mixin(args, properties) {
   this.ownerConstructor = undefined;
   this._without = undefined;
   this[GUID_KEY] = null;
-  this[GUID_KEY + '_name'] = null;
+  this[NAME_KEY] = null;
   debugSeal(this);
 }
 
@@ -518,8 +519,15 @@ Mixin.applyPartial = function(obj) {
 
 Mixin.finishPartial = finishPartial;
 
-// ES6TODO: this relies on a global state?
-Ember.anyUnprocessedMixins = false;
+let unprocessedFlag = false;
+
+export function hasUnprocessedMixins() {
+  return unprocessedFlag;
+}
+
+export function clearUnprocessedMixins() {
+  unprocessedFlag = false;
+}
 
 /**
   @method create
@@ -529,7 +537,7 @@ Ember.anyUnprocessedMixins = false;
 */
 Mixin.create = function(...args) {
   // ES6TODO: this relies on a global state?
-  Ember.anyUnprocessedMixins = true;
+  unprocessedFlag = true;
   var M = this;
   return new M(args, undefined);
 };
@@ -588,9 +596,7 @@ MixinPrototype.applyPartial = function(obj) {
   return applyMixin(obj, [this], true);
 };
 
-MixinPrototype.toString = function Mixin_toString() {
-  return '(unknown mixin)';
-};
+MixinPrototype.toString = Object.toString;
 
 function _detect(curMixin, targetMixin, seen) {
   var guid = guidFor(curMixin);

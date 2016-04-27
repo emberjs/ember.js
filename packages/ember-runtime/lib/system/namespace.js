@@ -2,18 +2,30 @@
 @module ember
 @submodule ember-runtime
 */
-
-// Ember.BOOTED, Ember.NAME_KEY, Ember.anyUnprocessedMixins
-import Ember from 'ember-metal/core';
+import Ember from 'ember-metal/core'; // Preloaded into namespaces
 import { context } from 'ember-environment';
 import { get } from 'ember-metal/property_get';
 import {
-  GUID_KEY,
   guidFor
 } from 'ember-metal/utils';
-import { Mixin } from 'ember-metal/mixin';
+import {
+  Mixin,
+  hasUnprocessedMixins,
+  clearUnprocessedMixins,
+  NAME_KEY
+} from 'ember-metal/mixin';
 
 import EmberObject from 'ember-runtime/system/object';
+
+let searchDisabled = false;
+
+export function isSearchDisabled() {
+  return searchDisabled;
+}
+
+export function setSearchDisabled(flag) {
+  searchDisabled = !!flag;
+}
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -68,11 +80,13 @@ var Namespace = EmberObject.extend({
 
 Namespace.reopenClass({
   NAMESPACES: [Ember],
-  NAMESPACES_BY_ID: {},
+  NAMESPACES_BY_ID: {
+    Ember: Ember
+  },
   PROCESSED: false,
   processAll: processAllNamespaces,
   byName(name) {
-    if (!Ember.BOOTED) {
+    if (!searchDisabled) {
       processAllNamespaces();
     }
 
@@ -154,23 +168,18 @@ function findNamespaces() {
   }
 }
 
-var NAME_KEY = Ember.NAME_KEY = GUID_KEY + '_name';
-
 function superClassString(mixin) {
   var superclass = mixin.superclass;
   if (superclass) {
     if (superclass[NAME_KEY]) {
       return superclass[NAME_KEY];
-    } else {
-      return superClassString(superclass);
     }
-  } else {
-    return;
+    return superClassString(superclass);
   }
 }
 
 function classToString() {
-  if (!Ember.BOOTED && !this[NAME_KEY]) {
+  if (!searchDisabled && !this[NAME_KEY]) {
     processAllNamespaces();
   }
 
@@ -195,7 +204,7 @@ function classToString() {
 
 function processAllNamespaces() {
   var unprocessedNamespaces = !Namespace.PROCESSED;
-  var unprocessedMixins = Ember.anyUnprocessedMixins;
+  var unprocessedMixins = hasUnprocessedMixins();
 
   if (unprocessedNamespaces) {
     findNamespaces();
@@ -211,7 +220,7 @@ function processAllNamespaces() {
       processNamespace([namespace.toString()], namespace, {});
     }
 
-    Ember.anyUnprocessedMixins = false;
+    clearUnprocessedMixins();
   }
 }
 

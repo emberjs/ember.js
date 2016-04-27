@@ -10,7 +10,10 @@ import compare from 'ember-runtime/compare';
 import copy from 'ember-runtime/copy';
 import inject from 'ember-runtime/inject';
 
-import Namespace from 'ember-runtime/system/namespace';
+import Namespace, {
+  isSearchDisabled as isNamespaceSearchDisabled,
+  setSearchDisabled as setNamespaceSearchDisabled
+} from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import { Container, Registry, getOwner, setOwner } from 'ember-runtime/system/container';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
@@ -95,6 +98,11 @@ import { isArray, typeOf } from 'ember-runtime/utils';
 
 import RegistryProxyMixin from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxyMixin from 'ember-runtime/mixins/container_proxy';
+
+import {
+  getStrings,
+  setStrings
+} from 'ember-runtime/string_registry';
 
 // END IMPORTS
 
@@ -200,10 +208,7 @@ Ember._ProxyMixin = _ProxyMixin;
 
 Ember.RSVP = RSVP;
 // END EXPORTS
-import {
-  getStrings,
-  setStrings
-} from 'ember-runtime/string_registry';
+
 /**
   Defines the hash of localized strings for the current language. Used by
   the `Ember.String.loc()` helper. To localize, add string values to this
@@ -218,6 +223,27 @@ Object.defineProperty(Ember, 'STRINGS', {
   configurable: false,
   get: getStrings,
   set: setStrings
+});
+
+/**
+  Whether searching on the global for new Namespace instances is enabled.
+
+  This is only exported here as to not break any addons.  Given the new
+  visit API, you will have issues if you treat this as a indicator of
+  booted.
+
+  Internally this is only exposing a flag in Namespace.
+
+  @property BOOTED
+  @for Ember
+  @type Boolean
+  @private
+ */
+Object.defineProperty(Ember, 'BOOTED', {
+  configurable: false,
+  enumerable: false,
+  get: isNamespaceSearchDisabled,
+  set: setNamespaceSearchDisabled
 });
 
 export default Ember;

@@ -124,6 +124,7 @@ import {
 } from 'ember-metal/observer';
 import {
   IS_BINDING,
+  NAME_KEY,
   Mixin,
   aliasMethod,
   _immediateObserver,
@@ -163,6 +164,7 @@ Ember._Cache = Cache;
 
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
+Ember.NAME_KEY        = NAME_KEY;
 Ember.platform        = {
   defineProperty: true,
   hasPropertyAccessors: true
