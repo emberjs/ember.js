@@ -2,11 +2,13 @@
 @module ember
 @submodule ember-application
 */
-import Ember from 'ember-metal'; // Ember.libraries, Ember.BOOTED, Ember.testing
+import Ember from 'ember-metal'; // Ember.libraries, Ember.testing
 import { ENV } from 'ember-environment';
 import { assert, debug, warn, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
-import Namespace from 'ember-runtime/system/namespace';
+import Namespace, {
+  setSearchDisabled as setNamespaceSearchDisabled
+} from 'ember-runtime/system/namespace';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
@@ -738,7 +740,7 @@ const Application = Engine.extend({
       if (!Ember.testing) {
         // Eagerly name all classes that are already loaded
         Namespace.processAll();
-        Ember.BOOTED = true;
+        setNamespaceSearchDisabled(true);
       }
 
       // See documentation on `_autoboot()` for details
@@ -791,7 +793,7 @@ const Application = Engine.extend({
   // This method must be moved to the application instance object
   willDestroy() {
     this._super(...arguments);
-    Ember.BOOTED = false;
+    setNamespaceSearchDisabled(false);
     this._booted = false;
     this._bootPromise = null;
     this._bootResolver = null;
