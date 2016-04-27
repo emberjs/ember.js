@@ -1,5 +1,20 @@
 # Ember Changelog
 
+### 2.6.0-beta.2 (April 27, 2016)
+
+- [#13356](https://github.com/emberjs/ember.js/pull/13356) [BUGFIX] Update `Registry#has` to always return true/false.
+- [#13359](https://github.com/emberjs/ember.js/pull/13359) [BUGFIX] Fix `{{if}}` and `{{unless}}` subexpression sometimes not updating.
+- [#13344](https://github.com/emberjs/ember.js/pull/13344) [BUGFIX] Revert `Ember.merge` deprecation.
+- [#13335](https://github.com/emberjs/ember.js/pull/13335) [BUGFIX] Ensure injected property assertion checks `container`. Fixes issues
+  with usage of objects created by older addons that are attempting to use `Ember.inject.service()`.
+- [#13333](https://github.com/emberjs/ember.js/pull/13333) [BUGFIX] Prevent the `toString` property from being added to the objects own
+  properties. Fixes scenarios where the list of own properties changed in debug builds.
+- [#13327](https://github.com/emberjs/ember.js/pull/13327) [CLEANUP] Remove deprecate-test-as-function deprecation.
+- [#13326](https://github.com/emberjs/ember.js/pull/13326) [CLEANUP] Remove `View.prototype.currentState` deprecation.
+- [#13315](https://github.com/emberjs/ember.js/pull/13315) [CLEANUP] Remove legacy view related exports.
+- [#13310](https://github.com/emberjs/ember.js/pull/13310) [BUGFIX] Fix `mouseenter` typo in ember-testing helpers.
+- [#13314](https://github.com/emberjs/ember.js/pull/13314) [CLEANUP] Remove Metamorph view and mixin.
+
 ### 2.6.0-beta.1 (April 11, 2016)
 
 - [#13144](https://github.com/emberjs/ember.js/pull/13144) / [#13195](https://github.com/emberjs/ember.js/pull/13195) / [#13193](https://github.com/emberjs/ember.js/pull/13193) [CLEANUP] Remove support for `ember-legacy-views` addon.
@@ -18,7 +33,7 @@
   properties. Fixes scenarios where the list of own properties changed in debug builds.
 - [#13335](https://github.com/emberjs/ember.js/pull/13335) [BUGFIX] Ensure injected property assertion checks `container`. Fixes issues
   with usage of objects created by older addons that are attempting to use `Ember.inject.service()`.
-- [#13344](https://github.com/emberjs/ember.js/pull/13344) [BUGFIX] Remove Ember.merge deprecation.
+- [#13344](https://github.com/emberjs/ember.js/pull/13344) [BUGFIX] Revert `Ember.merge` deprecation.
 
 ### 2.5.0 (April 11, 2016)
 
