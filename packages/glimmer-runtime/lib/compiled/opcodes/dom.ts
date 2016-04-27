@@ -127,8 +127,8 @@ function toClassName(list: Reference<string>[]) {
   let ret = [];
 
   for (let i = 0; i < list.length; i++) {
-    let value = list[i].value();
-    if (value !== null && value !== undefined) ret.push(value);
+    let value: string | boolean | number = list[i].value();
+    if (value !== false && value !== null && value !== undefined) ret.push(value);
   }
 
   return (ret.length === 0) ? null : ret.join(' ');
