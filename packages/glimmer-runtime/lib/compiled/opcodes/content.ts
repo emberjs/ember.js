@@ -59,7 +59,7 @@ export function normalizeValue(value: Opaque): CautiousInsertion {
   return String(value);
 }
 
-abstract class AppendOpcode<T extends Insertion> extends Opcode {
+export abstract class AppendOpcode<T extends Insertion> extends Opcode {
   protected abstract normalize(reference: Reference<Opaque>): Reference<T>;
   protected abstract insert(dom: DOMHelper, cursor: Cursor, value: T): Upsert;
   protected abstract updateWith(cache: ReferenceCache<T>, bounds: Fragment, upsert: Upsert): UpdateOpcode<T>;

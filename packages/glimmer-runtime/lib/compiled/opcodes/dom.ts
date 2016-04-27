@@ -181,13 +181,19 @@ export class CloseElementOpcode extends Opcode {
   }
 }
 
+export interface StaticAttrOptions {
+  namespace: InternedString;
+  name: InternedString;
+  value: InternedString;
+}
+
 export class StaticAttrOpcode extends Opcode {
   public type = "static-attr";
   public namespace: InternedString;
   public name: InternedString;
   public value: ValueReference<string>;
 
-  constructor({ namespace, name, value }: { namespace: InternedString, name: InternedString, value: InternedString }) {
+  constructor({ namespace, name, value }: StaticAttrOptions) {
     super();
     this.namespace = namespace;
     this.name = name;
@@ -382,13 +388,19 @@ function formatElement(element: Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
 
+export interface DynamicAttrNSOptions {
+  name: InternedString;
+  namespace: InternedString;
+  isTrusting: boolean;
+}
+
 export class DynamicAttrNSOpcode extends Opcode {
   public type = "dynamic-attr";
   public name: InternedString;
   public namespace: InternedString;
   public isTrusting: boolean;
 
-  constructor({ name, namespace, isTrusting }: { name: InternedString, namespace: InternedString, isTrusting: boolean }) {
+  constructor({ name, namespace, isTrusting }: DynamicAttrNSOptions) {
     super();
     this.name = name;
     this.namespace = namespace;
@@ -417,12 +429,17 @@ export class DynamicAttrNSOpcode extends Opcode {
   }
 }
 
+export interface SimpleAttrOptions {
+  name: InternedString;
+  isTrusting: boolean;
+}
+
 export class DynamicAttrOpcode extends Opcode {
   public type = "dynamic-attr";
   public name: InternedString;
   public isTrusting: boolean;
 
-  constructor({ name, isTrusting }: { name: InternedString, isTrusting: boolean }) {
+  constructor({ name, isTrusting }: SimpleAttrOptions) {
     super();
     this.name = name;
     this.isTrusting = isTrusting;
@@ -472,11 +489,15 @@ export class PatchElementOpcode extends UpdatingOpcode {
   }
 }
 
+export interface CommentOptions {
+  comment: InternedString;
+}
+
 export class CommentOpcode extends Opcode {
   public type = "comment";
   public comment: InternedString;
 
-  constructor({ comment }: { comment: InternedString }) {
+  constructor({ comment }: CommentOptions) {
     super();
     this.comment = comment;
   }

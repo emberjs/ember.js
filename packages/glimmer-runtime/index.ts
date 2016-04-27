@@ -49,6 +49,10 @@ export {
 } from './lib/opcode-builder';
 
 export {
+  default as OpcodeBuilderDSL
+} from './lib/compiled/opcodes/builder';
+
+export {
   Block,
   BlockOptions,
   CompiledBlock,
@@ -67,7 +71,6 @@ export {
 } from './lib/opcodes';
 
 export {
-  PushRootScopeOpcode,
   PushChildScopeOpcode,
   PopScopeOpcode,
   PushDynamicScopeOpcode,

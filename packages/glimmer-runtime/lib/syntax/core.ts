@@ -26,6 +26,8 @@ import {
   Opcode
 } from '../opcodes';
 
+import OpcodeBuilderDSL from '../compiled/opcodes/builder';
+
 import {
   PutValueOpcode
 } from '../compiled/opcodes/vm';
@@ -515,8 +517,8 @@ export class Text extends StatementSyntax {
     return new PrettyPrint('append', 'text', [this.content]);
   }
 
-  compile(compiler: CompileInto) {
-    compiler.append(new TextOpcode({ text: this.content }));
+  compile(dsl: OpcodeBuilderDSL) {
+    dsl.text(this.content);
   }
 }
 
@@ -544,8 +546,8 @@ export class Comment extends StatementSyntax {
     return new PrettyPrint('append', 'append-comment', [this.comment]);
   }
 
-  compile(compiler: CompileInto) {
-    compiler.append(new CommentOpcode(this));
+  compile(dsl: OpcodeBuilderDSL) {
+    dsl.comment(this.comment);
   }
 }
 

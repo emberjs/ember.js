@@ -17,6 +17,8 @@ import {
   ExitOpcode
 } from '../../compiled/opcodes/vm';
 
+import OpcodeBuilderDSL from '../../compiled/opcodes/builder'
+
 import Environment from '../../environment';
 
 export default class IfSyntax extends StatementSyntax {
@@ -36,7 +38,7 @@ export default class IfSyntax extends StatementSyntax {
     return `#if ${this.args.prettyPrint()}`;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
+  compile(dsl: OpcodeBuilderDSL) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        PutArgs
@@ -49,27 +51,21 @@ export default class IfSyntax extends StatementSyntax {
     // END:   Noop
     //        Exit
 
-    let BEGIN = new LabelOpcode({ label: "BEGIN" });
-    let ELSE = new LabelOpcode({ label: "ELSE" });
-    let END = new LabelOpcode({ label: "END" });
+    let { args, templates } = this;
 
-    compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
-    compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
-    compiler.append(new TestOpcode());
+    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
+      dsl.test();
 
-    if (this.templates.inverse) {
-      compiler.append(new JumpUnlessOpcode({ target: ELSE }));
-      compiler.append(new EvaluateOpcode({ debug: "default", block: this.templates.default }));
-      compiler.append(new JumpOpcode({ target: END }));
-      compiler.append(ELSE);
-      compiler.append(new EvaluateOpcode({ debug: "inverse", block: this.templates.inverse }));
-    } else {
-      compiler.append(new JumpUnlessOpcode({ target: END }));
-      compiler.append(new EvaluateOpcode({ debug: "default", block: this.templates.default }));
-    }
-
-    compiler.append(END);
-    compiler.append(new ExitOpcode());
+      if (templates.inverse) {
+        dsl.jumpUnless('ELSE');
+        dsl.evaluate('default');
+        dsl.jump(END);
+        dsl.label('ELSE');
+        dsl.evaluate('inverse');
+      } else {
+        dsl.jumpUnless(END);
+        dsl.evaluate('default');
+      }
+    });
   }
 }
