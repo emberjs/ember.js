@@ -4,6 +4,7 @@ import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, 
 import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
+import { dasherize } from 'ember-runtime/system/string';
 
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
@@ -219,7 +220,6 @@ export class InternalHelperReference extends CachedReference {
 }
 
 import { assert } from 'ember-metal/debug';
-import { dasherize } from 'ember-runtime/system/string';
 
 export class AttributeBindingReference extends CachedReference {
   static apply(component, microsyntax, operations) {
