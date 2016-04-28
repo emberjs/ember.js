@@ -37,7 +37,7 @@ import {
 } from 'ember-metal/meta';
 import EmberError from 'ember-metal/error';
 import Cache from 'ember-metal/cache';
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
 
 import {
   _getPath,

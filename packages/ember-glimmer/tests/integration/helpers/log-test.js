@@ -1,5 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
+
 
 moduleFor('Helpers test: {{log}}', class extends RenderingTest {
 

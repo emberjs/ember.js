@@ -1,4 +1,4 @@
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
 import { context, ENV } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import { assert } from 'ember-metal/debug';

@@ -8,7 +8,8 @@ import {
 } from 'ember-metal/debug';
 import isEnabled, { FEATURES, KNOWN_FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
+
 import { environment } from 'ember-environment';
 import _deprecate, {
   registerHandler as registerDeprecationHandler

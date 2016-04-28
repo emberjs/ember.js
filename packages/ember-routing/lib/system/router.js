@@ -1,4 +1,4 @@
-import Logger from 'ember-metal/logger';
+import Logger from 'ember-console';
 import { assert, info, deprecate } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import isEnabled from 'ember-metal/features';
