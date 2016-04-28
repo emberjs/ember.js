@@ -7,7 +7,7 @@ import { Templates } from '../../syntax/core';
 import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
 import { InternedString, Opaque, dict } from 'glimmer-util';
-import { Reference, ReferenceCache, isConst } from 'glimmer-reference';
+import { Reference, ReferenceCache, Revision, isConst } from 'glimmer-reference';
 
 export type DynamicComponentFactory<T> = (args: EvaluatedArgs, vm: PublicVM) => Reference<ComponentDefinition<T>>;
 
@@ -120,6 +120,7 @@ export class OpenComponentOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
+    vm.beginCacheGroup();
     vm.pushDynamicScope();
 
     let { args: rawArgs, shadow, definition, templates } = this;
@@ -147,6 +148,7 @@ export class OpenComponentOpcode extends Opcode {
     vm.pushRootScope(selfRef, layout.symbols);
     vm.invokeLayout({ templates, args, shadow, layout, callerScope });
     vm.env.didCreate(component, manager);
+
     vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));
   }
 
@@ -167,20 +169,27 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
   private manager: ComponentManager<Opaque>;
   private args: EvaluatedArgs;
   private dynamicScope: DynamicScope;
+  private lastUpdated: Revision;
 
   constructor({ name, component, manager, args, dynamicScope } : { name: string, component: Component, manager: ComponentManager<any>, args: EvaluatedArgs, dynamicScope: DynamicScope }) {
     super();
+    this.tag = args.tag;
     this.name = name;
     this.component = component;
     this.manager = manager;
     this.args = args;
     this.dynamicScope = dynamicScope;
+    this.lastUpdated = args.tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
-    let { component, manager, args, dynamicScope } = this;
-    manager.update(component, args, dynamicScope);
-    vm.env.didUpdate(component, manager);
+    let { component, manager, args, dynamicScope, lastUpdated } = this;
+
+    if (!args.tag.validate(lastUpdated)) {
+      manager.update(component, args, dynamicScope);
+      vm.env.didUpdate(component, manager);
+      this.lastUpdated = args.tag.value();
+    }
   }
 
   toJSON(): OpcodeJSON {
@@ -249,5 +258,6 @@ export class CloseComponentOpcode extends Opcode {
   evaluate(vm: VM) {
     vm.popScope();
     vm.popDynamicScope();
+    vm.commitCacheGroup();
   }
 }
