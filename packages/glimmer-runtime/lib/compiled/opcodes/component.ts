@@ -7,7 +7,7 @@ import { Templates } from '../../syntax/core';
 import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
 import { InternedString, Opaque, dict } from 'glimmer-util';
-import { Reference, ReferenceCache, Revision, isConst } from 'glimmer-reference';
+import { Reference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
 
 export type DynamicComponentFactory<T> = (args: EvaluatedArgs, vm: PublicVM) => Reference<ComponentDefinition<T>>;
 
@@ -173,22 +173,31 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
   constructor({ name, component, manager, args, dynamicScope } : { name: string, component: Component, manager: ComponentManager<any>, args: EvaluatedArgs, dynamicScope: DynamicScope }) {
     super();
-    this.tag = args.tag;
+
+    let tag;
+    let componentTag = manager.getTag(component);
+
+    if (componentTag) {
+      tag = this.tag = combine([args.tag, componentTag]);
+    } else {
+      tag = this.tag = args.tag;
+    }
+
     this.name = name;
     this.component = component;
     this.manager = manager;
     this.args = args;
     this.dynamicScope = dynamicScope;
-    this.lastUpdated = args.tag.value();
+    this.lastUpdated = tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
-    let { component, manager, args, dynamicScope, lastUpdated } = this;
+    let { component, manager, tag, args, dynamicScope, lastUpdated } = this;
 
-    if (!args.tag.validate(lastUpdated)) {
+    if (!tag.validate(lastUpdated)) {
       manager.update(component, args, dynamicScope);
       vm.env.didUpdate(component, manager);
-      this.lastUpdated = args.tag.value();
+      this.lastUpdated = tag.value();
     }
   }
 

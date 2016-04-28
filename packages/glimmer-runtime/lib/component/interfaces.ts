@@ -6,16 +6,16 @@ import Environment, { DynamicScope } from '../environment';
 import { ElementOperations } from '../builder';
 
 import { Destroyable, Opaque } from 'glimmer-util';
-import { PathReference } from 'glimmer-reference';
+import { PathReference, RevisionTag } from 'glimmer-reference';
 
 export type Component = Opaque;
 export type ComponentClass = any;
 
-export interface ComponentManager<T> {
+export interface ComponentManager<T extends Component> {
   // First, the component manager is asked to create a bucket of state for
-  // the supplied attributes. From the perspective of Glimmer, this is
+  // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(definition: ComponentDefinition<T>, attrs: EvaluatedArgs, dynamicScope: DynamicScope): T;
+  create(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope): T;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
@@ -30,9 +30,16 @@ export interface ComponentManager<T> {
   // the `didCreate` callbacks.
   didCreate(component: T);
 
-  // When the input attributes have changed, and top-down revalidation has
+  // Convert the opaque component into a `RevisionTag` that determins when
+  // the component's update hooks need to be called, in addition to any
+  // outside changes captured in the input arguments. If it returns null,
+  // the update hooks will only be called when one or more of the input
+  // arguments has changed.
+  getTag(component: T): RevisionTag;
+
+  // When the input arguments have changed, and top-down revalidation has
   // begun, the manager's `update` hook is called.
-  update(component: T, attrs: EvaluatedArgs, dynamicScope: DynamicScope);
+  update(component: T, args: EvaluatedArgs, dynamicScope: DynamicScope);
 
   // Finally, once top-down revalidation has completed, Glimmer invokes
   // the `didUpdate` callbacks on components that changed.
