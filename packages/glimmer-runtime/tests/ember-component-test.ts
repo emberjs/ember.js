@@ -993,6 +993,30 @@ QUnit.test('correct scope - self', assert => {
   );
 });
 
+QUnit.test('`false` class name do not render', assert => {
+  appendViewFor('<div class={{isFalse}}>FALSE</div>', { isFalse: false });
+  assert.strictEqual(view.element.getAttribute('class'), null);
+  assert.strictEqual(view.element.className, '');
+});
+
+QUnit.test('`null` class name do not render', assert => {
+  appendViewFor('<div class={{isNull}}>NULL</div>', { isNull: null });
+  assert.strictEqual(view.element.getAttribute('class'), null);
+  assert.strictEqual(view.element.className, '');
+});
+
+QUnit.test('`undefined` class name do not render', assert => {
+  appendViewFor('<div class={{isUndefined}}>UNDEFINED</div>', { isUndefined: undefined });
+  assert.strictEqual(view.element.getAttribute('class'), null);
+  assert.strictEqual(view.element.className, '');
+});
+
+QUnit.test('`0` class names do render', assert => {
+  appendViewFor('<div class={{isZero}}>ZERO</div>', { isZero: 0 });
+  assert.strictEqual(view.element.getAttribute('class'), '0');
+  assert.strictEqual(view.element.className, '0');
+});
+
 QUnit.test('component with slashed name', assert => {
   let SampleComponent = EmberishCurlyComponent.extend();
 
