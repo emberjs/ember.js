@@ -8,7 +8,8 @@ import {
   Comment,
   OpenElement,
   CloseElement,
-  StaticAttr
+  StaticAttr,
+  Modifier
 } from './core';
 
 import { InlineBlock } from '../compiled/blocks';
@@ -28,7 +29,8 @@ const {
   isComment,
   isOpenElement,
   isCloseElement,
-  isStaticAttr
+  isStaticAttr,
+  isModifier
 } = SerializedStatements;
 
 export default function(sexp: SerializedStatement, blocks: InlineBlock[]): StatementSyntax {
@@ -42,4 +44,5 @@ export default function(sexp: SerializedStatement, blocks: InlineBlock[]): State
   if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp);
   if (isCloseElement(sexp)) return CloseElement.fromSpec();
   if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);
+  if (isModifier(sexp)) return Modifier.fromSpec(sexp);
 };

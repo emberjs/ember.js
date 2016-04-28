@@ -149,5 +149,9 @@ export {
   ComponentAttrsBuilder
 } from './lib/component/interfaces';
 
+export {
+  ModifierManager
+} from './lib/modifier/interfaces';
+
 export { default as DOMHelper, DOMHelper as IDOMHelper, isWhitespace } from './lib/dom';
 export { ElementStack, ElementOperations } from './lib/builder';
