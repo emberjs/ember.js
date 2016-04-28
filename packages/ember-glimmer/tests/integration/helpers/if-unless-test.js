@@ -10,13 +10,13 @@ moduleFor('Helpers test: inline {{if}}', class extends TogglingHelperConditional
   ['@test it raises when there are more than three arguments']() {
     expectAssertion(() => {
       this.render(`{{if condition 'a' 'b' 'c'}}`, { condition: true });
-    }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
+    }, /The inline form of the `if` helper expects two or three arguments/);
   }
 
   ['@test it raises when there are less than two arguments']() {
     expectAssertion(() => {
       this.render(`{{if condition}}`, { condition: true });
-    }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
+    }, /The inline form of the `if` helper expects two or three arguments/);
   }
 
 });
@@ -82,13 +82,13 @@ moduleFor('Helpers test: inline {{unless}}', class extends TogglingHelperConditi
   ['@test it raises when there are more than three arguments']() {
     expectAssertion(() => {
       this.render(`{{unless condition 'a' 'b' 'c'}}`, { condition: true });
-    }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
+    }, /The inline form of the `unless` helper expects two or three arguments/);
   }
 
   ['@test it raises when there are less than two arguments']() {
     expectAssertion(() => {
       this.render(`{{unless condition}}`, { condition: true });
-    }, /The inline form of the `if` and `unless` helpers expect two or three arguments/);
+    }, /The inline form of the `unless` helper expects two or three arguments/);
   }
 
 });

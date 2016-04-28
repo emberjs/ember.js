@@ -3,52 +3,8 @@
 @submodule ember-templates
 */
 
-import { VOLATILE_TAG } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
-import emberToBool from '../utils/to-bool';
-import { InternalHelperReference } from '../utils/references';
-
-class ConditionalHelperReference extends InternalHelperReference {
-  constructor(helper, args) {
-    super(helper, args);
-    this.tag = VOLATILE_TAG;
-  }
-}
-
-function makeConditionalHelper(toBool) {
-  return {
-    isInternalHelper: true,
-    toReference(args) {
-      switch (args.positional.length) {
-        case 2: return new ConditionalHelperReference(conditionalWithoutAlternative, args);
-        case 3: return new ConditionalHelperReference(conditionalWithAlternative, args);
-        default:
-          assert(
-            'The inline form of the `if` and `unless` helpers expect two or ' +
-            'three arguments, e.g. `{{if trialExpired \'Expired\' expiryDate}}`'
-          );
-      }
-    }
-  };
-
-  function conditionalWithoutAlternative({ positional }) {
-    let condition = positional.at(0).value();
-
-    if (toBool(condition)) {
-      return positional.at(1).value();
-    }
-  }
-
-  function conditionalWithAlternative({ positional }) {
-    let condition = positional.at(0).value();
-
-    if (toBool(condition)) {
-      return positional.at(1).value();
-    } else {
-      return positional.at(2).value();
-    }
-  }
-}
+import { ConditionalHelperReference } from '../utils/references';
 
 /**
   The inline `if` helper conditionally renders a single property or string.
@@ -66,7 +22,20 @@ function makeConditionalHelper(toBool) {
   @for Ember.Templates.helpers
   @public
 */
-export const inlineIf = makeConditionalHelper(emberToBool);
+export const inlineIf = {
+  isInternalHelper: true,
+  toReference({ positional: pargs }) {
+    switch (pargs.length) {
+      case 2: return ConditionalHelperReference.create(pargs.at(0), pargs.at(1), null);
+      case 3: return ConditionalHelperReference.create(pargs.at(0), pargs.at(1), pargs.at(2));
+      default:
+        assert(
+          'The inline form of the `if` helper expects two or three arguments, e.g. ' +
+          '`{{if trialExpired "Expired" expiryDate}}`.'
+        );
+    }
+  }
+};
 
 /**
   The inline `unless` helper conditionally renders a single property or string.
@@ -84,4 +53,17 @@ export const inlineIf = makeConditionalHelper(emberToBool);
   @for Ember.Templates.helpers
   @public
 */
-export const inlineUnless = makeConditionalHelper(val => !emberToBool(val));
+export const inlineUnless = {
+  isInternalHelper: true,
+  toReference({ positional: pargs }) {
+    switch (pargs.length) {
+      case 2: return ConditionalHelperReference.create(pargs.at(0), null, pargs.at(1));
+      case 3: return ConditionalHelperReference.create(pargs.at(0), pargs.at(2), pargs.at(1));
+      default:
+        assert(
+          'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
+          '`{{unless isFirstLogin "Welcome back!"}}`.'
+        );
+    }
+  }
+};

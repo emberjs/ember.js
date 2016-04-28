@@ -141,14 +141,7 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   toConditionalReference(reference) {
-    // if (isConst(reference)) {
-    //   return new ConstConditionalReference(reference);
-    // } else {
-    //   return new ConditionalReference(reference);
-    // }
-
-    // FIXME: fix failing proxy tests
-    return new ConditionalReference(reference);
+    return ConditionalReference.create(reference);
   }
 
   iterableFor(ref, args) {

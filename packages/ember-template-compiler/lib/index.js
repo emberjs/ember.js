@@ -1,4 +1,5 @@
 export { default as _Ember } from 'ember-metal'; // Is this still needed
+import isEnabled from 'ember-metal/features';
 import { ENV } from 'ember-environment';
 import precompile from 'ember-template-compiler/system/precompile';
 import compile from 'ember-template-compiler/system/compile';
@@ -27,9 +28,11 @@ import 'ember-template-compiler/compat';
 registerPlugin('ast', TransformOldBindingSyntax);
 registerPlugin('ast', TransformOldClassBindingSyntax);
 registerPlugin('ast', TransformItemClass);
-registerPlugin('ast', TransformClosureComponentAttrsIntoMut);
-registerPlugin('ast', TransformComponentAttrsIntoMut);
-registerPlugin('ast', TransformComponentCurlyToReadonly);
+if (!isEnabled('ember-glimmer')) {
+  registerPlugin('ast', TransformClosureComponentAttrsIntoMut);
+  registerPlugin('ast', TransformComponentAttrsIntoMut);
+  registerPlugin('ast', TransformComponentCurlyToReadonly);
+}
 registerPlugin('ast', TransformAngleBracketComponents);
 registerPlugin('ast', TransformInputOnToOnEvent);
 registerPlugin('ast', TransformTopLevelComponents);

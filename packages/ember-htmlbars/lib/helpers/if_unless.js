@@ -63,6 +63,18 @@ import shouldDisplay from 'ember-views/streams/should_display';
   @public
 */
 function ifHelper(params, hash, options) {
+  assert(
+    'The block form of the `if` helper expects exactly one argument, e.g. ' +
+    '`{{#if newMessages}} You have new messages. {{/if}}.`',
+    !options.template.yield || params.length === 1
+  );
+
+  assert(
+    'The inline form of the `if` helper expects two or three arguments, e.g. ' +
+    '`{{if trialExpired "Expired" expiryDate}}`.',
+    !!options.template.yield || params.length === 2 || params.length === 3
+  );
+
   return ifUnless(params, hash, options, shouldDisplay(params[0]));
 }
 
@@ -76,23 +88,22 @@ function ifHelper(params, hash, options) {
   @public
 */
 function unlessHelper(params, hash, options) {
-  return ifUnless(params, hash, options, !shouldDisplay(params[0]));
-}
-
-function ifUnless(params, hash, options, truthy) {
   assert(
-    'The block form of the `if` and `unless` helpers expect exactly one ' +
-    'argument, e.g. `{{#if newMessages}} You have new messages. {{/if}}.`',
+    'The block form of the `unless` helper expects exactly one argument, e.g. ' +
+    '`{{#unless isFirstLogin}} Welcome back! {{/unless}}.`',
     !options.template.yield || params.length === 1
   );
 
   assert(
-    'The inline form of the `if` and `unless` helpers expect two or ' +
-    'three arguments, e.g. `{{if trialExpired \'Expired\' expiryDate}}` ' +
-    'or `{{unless isFirstLogin \'Welcome back!\'}}`.',
+    'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
+    '`{{if trialExpired "Expired" expiryDate}}`.',
     !!options.template.yield || params.length === 2 || params.length === 3
   );
 
+  return ifUnless(params, hash, options, !shouldDisplay(params[0]));
+}
+
+function ifUnless(params, hash, options, truthy) {
   if (truthy) {
     if (options.template.yield) {
       options.template.yield();

@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { Component } from '../../utils/helpers';
 import { set } from 'ember-metal/property_set';
-import Component from 'ember-views/components/component';
 
 moduleFor('Helpers test: {{hash}}', class extends RenderingTest {
 
