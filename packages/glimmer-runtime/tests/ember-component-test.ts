@@ -2074,6 +2074,46 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   assertFired(instance, 'didRender', 3);
 });
 
+QUnit.test('Curly component hooks (force recompute)', function() {
+  let instance;
+
+  class NonBlock extends EmberishCurlyComponent {
+    init() {
+      instance = this;
+    }
+  }
+
+  env.registerEmberishCurlyComponent('non-block', inspectHooks(NonBlock), 'In layout - someProp: {{@someProp}}');
+
+  appendViewFor('{{non-block someProp="wycats"}}');
+
+  assertFired(instance, 'didReceiveAttrs', 1);
+  assertFired(instance, 'willRender', 1);
+  assertFired(instance, 'didInsertElement', 1);
+  assertFired(instance, 'didRender', 1);
+
+  assertEmberishElement('div', 'In layout - someProp: wycats');
+
+  rerender();
+
+  assertEmberishElement('div', 'In layout - someProp: wycats');
+
+  assertFired(instance, 'didReceiveAttrs', 1);
+  assertFired(instance, 'willRender', 1);
+  assertFired(instance, 'didRender', 1);
+
+  instance.recompute();
+  rerender();
+
+  assertEmberishElement('div', 'In layout - someProp: wycats');
+
+  assertFired(instance, 'didReceiveAttrs', 2);
+  assertFired(instance, 'willUpdate', 1);
+  assertFired(instance, 'willRender', 2);
+  assertFired(instance, 'didUpdate', 1);
+  assertFired(instance, 'didRender', 2);
+});
+
 QUnit.test('Glimmer component hooks', function() {
   let instance;
 
@@ -2115,6 +2155,48 @@ QUnit.test('Glimmer component hooks', function() {
   assertFired(instance, 'didUpdate', 2);
   assertFired(instance, 'didRender', 3);
 });
+
+
+QUnit.test('Glimmer component hooks (force recompute)', function() {
+  let instance;
+
+  class NonBlock extends EmberishGlimmerComponent {
+    init() {
+      instance = this;
+    }
+  }
+
+  env.registerEmberishGlimmerComponent('non-block', inspectHooks(NonBlock), '<div>In layout - someProp: {{@someProp}}</div>');
+
+  appendViewFor('{{non-block someProp="wycats"}}');
+
+  assertFired(instance, 'didReceiveAttrs', 1);
+  assertFired(instance, 'willRender', 1);
+  assertFired(instance, 'didInsertElement', 1);
+  assertFired(instance, 'didRender', 1);
+
+  assertEmberishElement('div', 'In layout - someProp: wycats');
+
+  rerender();
+
+  assertEmberishElement('div', 'In layout - someProp: wycats');
+
+  assertFired(instance, 'didReceiveAttrs', 1);
+  assertFired(instance, 'willRender', 1);
+  assertFired(instance, 'didRender', 1);
+
+  instance.recompute();
+  rerender();
+
+  assertEmberishElement('div', 'In layout - someProp: wycats');
+
+  assertFired(instance, 'didReceiveAttrs', 2);
+  assertFired(instance, 'willUpdate', 1);
+  assertFired(instance, 'willRender', 2);
+  assertFired(instance, 'didUpdate', 1);
+  assertFired(instance, 'didRender', 2);
+});
+
 
 // QUnit.skip('[DEPRECATED] non-block with properties on self', function() {
 //   // TODO: attrs
