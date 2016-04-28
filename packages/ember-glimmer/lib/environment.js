@@ -29,6 +29,7 @@ import { default as log } from './helpers/log';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as classHelper } from './helpers/-class';
+import { default as mut } from './helpers/mut';
 import { OWNER } from 'container/owner';
 
 const builtInHelpers = {
@@ -40,6 +41,7 @@ const builtInHelpers = {
   loc,
   log,
   readonly,
+  mut,
   unbound,
   '-class': classHelper
 };

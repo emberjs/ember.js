@@ -1,3 +1,4 @@
+import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { tagFor } from 'ember-metal/tags';
 import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
@@ -5,6 +6,7 @@ import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-run
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
+import EmberError from 'ember-metal/error';
 
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
 // have an `isTruthy` property on them). This is not actually supported –
@@ -61,6 +63,10 @@ class CachedReference extends EmberPathReference {
     this._lastRevision = null;
   }
 
+  lastValue() {
+    return this._lastValue;
+  }
+
   // @abstract compute()
 }
 
@@ -101,6 +107,11 @@ class PropertyReference extends CachedReference { // jshint ignore:line
   get(propertyKey) {
     return new PropertyReference(this, propertyKey);
   }
+
+  update() {
+    let { _parentReference, _propertyKey } = this;
+    throw new EmberError(`The '${_propertyKey}' property of ${_parentReference.value()} is not mutable.`);
+  }
 }
 
 export class UpdatableReference extends EmberPathReference {
@@ -118,6 +129,45 @@ export class UpdatableReference extends EmberPathReference {
   update(value) {
     this.tag.dirty();
     this._value = value;
+  }
+}
+
+// @implements PathReference, CachedReference
+export class MutableReference extends PropertyReference {
+  constructor(sourceReference) {
+    super(sourceReference._parentReference, sourceReference._propertyKey);
+  }
+
+  get(propertyKey) {
+    return new MutableReference(this._parentReference.get(propertyKey));
+  }
+
+  update(value) {
+    let { _parentReference, _propertyKey, _parentObjectTag } = this;
+    let parentValue = _parentReference.value();
+
+    // I actually don't know what Im doing here.
+    // Do we dirty the parent reference or the property reference (or both?)
+
+    // What does this magical tagFor thing accomplish?
+    // If references are objects with values and tags, what is a tagFor a value?
+    let propertyTag = tagFor(this.get(_propertyKey));
+    let returnVal = set(parentValue, _propertyKey, value);
+    propertyTag.dirty();
+    _parentObjectTag.update(tagFor(parentValue));
+
+    // This part is the most dubious. It seems like I'm proxying fully
+    // the source reference that there's no real way of understanding
+    // the state of `this` mutable reference. Or does it not matter since
+    // its state _should_ be the state of the source reference.
+
+    // If so, how else would I get the old value of a mutableReference?
+    // For example in didUpdateAttrs when we want to set the old value,
+    // if references are by definition lazily evaluated, does this concept
+    // even make sense?
+    this._lastRevision = propertyTag.value();
+
+    return returnVal;
   }
 }
 
