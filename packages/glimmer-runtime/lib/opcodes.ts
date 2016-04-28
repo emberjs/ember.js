@@ -1,6 +1,6 @@
-import { LinkedList, LinkedListNode, Slice } from 'glimmer-util';
+import { Dict, LinkedList, LinkedListNode, Slice, initializeGuid } from 'glimmer-util';
+import { RevisionTag } from 'glimmer-reference';
 import { VM, UpdatingVM } from './vm';
-import { Dict, initializeGuid } from 'glimmer-util';
 
 export interface OpcodeJSON {
   guid: number;
@@ -37,6 +37,8 @@ export type OpSeq = Slice<Opcode>;
 export type OpSeqBuilder = LinkedList<Opcode>;
 
 export abstract class UpdatingOpcode extends AbstractOpcode {
+  public tag: RevisionTag;
+
   next: UpdatingOpcode = null;
   prev: UpdatingOpcode = null;
 
@@ -60,7 +62,6 @@ export function inspect(opcodes: LinkedList<AbstractOpcode>): string {
 }
 
 function _inspect(opcode: OpcodeJSON, buffer: string[], level: number, index: number) {
-  let i = 1;
   let indentation = [];
 
   for (let i=0; i<level; i++) {
