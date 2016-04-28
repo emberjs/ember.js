@@ -792,15 +792,13 @@ var EmberRouter = EmberObject.extend(Evented, {
   }
 });
 
-/*
-  Helper function for iterating root-ward, starting
-  from (but not including) the provided `originRoute`.
 
-  Returns true if the last callback fired requested
-  to bubble upward.
+// Helper function for iterating root-ward, starting
+// from (but not including) the provided `originRoute`.
 
-  @private
- */
+// Returns true if the last callback fired requested
+// to bubble upward.
+  
 function forEachRouteAbove(originRoute, transition, callback) {
   var handlerInfos = transition.state.handlerInfos;
   var originRouteFound = false;
