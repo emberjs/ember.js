@@ -526,7 +526,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   The alternative syntax, with prototype extensions, might look like:
 
   ```js
-  fullName() {
+  fullName: function() {
     return this.get('firstName') + ' ' + this.get('lastName');
   }.property('firstName', 'lastName')
   ```
