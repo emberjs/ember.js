@@ -65,6 +65,7 @@ import GlimmerObject, { GlimmerObjectFactory } from "glimmer-object";
 
 import {
   VOLATILE_TAG,
+  DirtyableTag,
   RevisionTag,
   Reference,
   PathReference,
@@ -172,6 +173,7 @@ export class BasicComponent {
 }
 
 export class EmberishCurlyComponent extends GlimmerObject {
+  public dirtinessTag = new DirtyableTag();
   public tagName: string = null;
   public attributeBindings: string[] = null;
   public attrs: Attrs;
@@ -180,6 +182,10 @@ export class EmberishCurlyComponent extends GlimmerObject {
 
   static create(args: { attrs: Attrs }): EmberishCurlyComponent {
     return super.create(args) as EmberishCurlyComponent;
+  }
+
+  recompute() {
+    this.dirtinessTag.dirty();
   }
 
   didInitAttrs(options : { attrs : Attrs }) {}
@@ -194,12 +200,17 @@ export class EmberishCurlyComponent extends GlimmerObject {
 }
 
 export class EmberishGlimmerComponent extends GlimmerObject {
+  public dirtinessTag = new DirtyableTag();
   public attrs: Attrs;
   public element: Element;
   public parentView: Component = null;
 
   static create(args: { attrs: Attrs }): EmberishGlimmerComponent {
     return super.create(args) as EmberishGlimmerComponent;
+  }
+
+  recompute() {
+    this.dirtinessTag.dirty();
   }
 
   didInitAttrs(options : { attrs : Attrs }) {}
@@ -228,6 +239,10 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
   }
 
   didCreate() {}
+
+  getTag() {
+    return null;
+  }
 
   update(component: BasicComponent, attrs: EvaluatedArgs) {
     component.attrs = attrs.named.value();
@@ -269,6 +284,10 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
   didCreate(component: EmberishGlimmerComponent) {
     component.didInsertElement();
     component.didRender();
+  }
+
+  getTag(component: EmberishGlimmerComponent) {
+    return component.dirtinessTag;
   }
 
   update(component: EmberishGlimmerComponent, args: EvaluatedArgs) {
@@ -334,6 +353,10 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
   didCreate(component: EmberishCurlyComponent) {
     component.didInsertElement();
     component.didRender();
+  }
+
+  getTag(component: EmberishCurlyComponent) {
+    return component.dirtinessTag;
   }
 
   update(component: EmberishCurlyComponent, args: EvaluatedArgs) {
@@ -431,10 +454,10 @@ class InertModifierManager implements ModifierManager<Opaque> {
 }
 
 interface TestModifier {
-  element: Element,
-  args: EvaluatedArgs,
-  dom: IDOMHelper,
-  destructor: Destroyable
+  element: Element;
+  args: EvaluatedArgs;
+  dom: IDOMHelper;
+  destructor: Destroyable;
 }
 
 export class TestModifierManager implements ModifierManager<TestModifier> {
