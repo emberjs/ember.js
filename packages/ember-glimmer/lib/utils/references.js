@@ -1,6 +1,6 @@
 import { get } from 'ember-metal/property_get';
 import { tagFor } from 'ember-metal/tags';
-import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, combineTagged } from 'glimmer-reference';
+import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, referenceFromParts } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
@@ -115,20 +115,38 @@ export class GetHelperReference extends CachedReference {
     super();
     this.sourceReference = sourceReference;
     this.pathReference = pathReference;
-    this.tag = combineTagged([sourceReference, pathReference]);
+
+    this.lastPath = null;
+    this.innerReference = null;
+
+    let innerTag = this.innerTag = new UpdatableTag(CURRENT_TAG);
+
+    this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
   }
 
-  isDirty() { return true; }
-
   compute() {
-    let key = this.pathReference.value();
-    let keyType = typeof key;
+    let { lastPath, innerReference, innerTag } = this;
 
-    if (key && (keyType === 'string' || keyType === 'number')) {
-      return this.sourceReference.get(key).value();
+    let path = this.lastPath = this.pathReference.value();
+
+    if (path !== lastPath) {
+      if (path) {
+        let pathType = typeof path;
+
+        if (pathType === 'string') {
+          innerReference = this.innerReference = referenceFromParts(this.sourceReference, path.split('.'));
+        } else if (pathType === 'number') {
+          innerReference = this.innerReference = this.sourceReference.get(path);
+        }
+
+        innerTag.update(innerReference.tag);
+      } else {
+        innerReference = this.innerReference = null;
+        innerTag.update(CONSTANT_TAG);
+      }
     }
 
-    return null;
+    return innerReference ? innerReference.value() : null;
   }
 
   get(propertyKey) {

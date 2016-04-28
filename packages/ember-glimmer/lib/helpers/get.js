@@ -1,5 +1,5 @@
 import { GetHelperReference } from '../utils/references';
-import { isConst } from 'glimmer-reference';
+import { isConst, referenceFromParts } from 'glimmer-reference';
 
 /**
 @module ember
@@ -58,7 +58,8 @@ export default {
     let propertyPathReference = args.positional.at(1); // bar in (get foo bar)
 
     if (isConst(propertyPathReference)) {
-      return sourceReference.get(propertyPathReference.value());
+      let parts = propertyPathReference.value().split('.');
+      return referenceFromParts(sourceReference, parts);
     } else {
       return new GetHelperReference(sourceReference, propertyPathReference);
     }
