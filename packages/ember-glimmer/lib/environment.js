@@ -42,6 +42,9 @@ const builtInHelpers = {
   '-class': classHelper
 };
 
+const builtInModifiers = {
+};
+
 function wrapClassAttribute(args) {
   let hasClass = args.named.has('class');
 
@@ -73,6 +76,7 @@ export default class Environment extends GlimmerEnvironment {
       isSimple,
       isInline,
       isBlock,
+      isModifier,
       key,
       path,
       args,
@@ -96,6 +100,7 @@ export default class Environment extends GlimmerEnvironment {
 
     let nativeSyntax = super.refineStatement(statement);
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !nativeSyntax && key && this.hasHelper(key) ? !isBlock : true);
+    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key) ? !isModifier : true);
     return nativeSyntax;
   }
 
@@ -134,6 +139,15 @@ export default class Environment extends GlimmerEnvironment {
     } else {
       throw new Error(`${name} is not a helper`);
     }
+  }
+
+  hasModifier(name) {
+    return !!builtInModifiers[name[0]];
+  }
+
+  lookupModifier(name) {
+    let modifier = builtInModifiers[name[0]];
+    return modifier;
   }
 
   rootReferenceFor(value) {

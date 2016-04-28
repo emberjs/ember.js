@@ -301,7 +301,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     }, /Helpers may not be used in the block form/);
   }
 
-  ['@htmlbars simple helper not usable within element']() {
+  ['@test simple helper not usable within element']() {
     this.registerHelper('some-helper', () => {});
 
     expectAssertion(() => {
@@ -309,7 +309,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     }, /Helpers may not be used in the element form/);
   }
 
-  ['@htmlbars class-based helper not usable within element']() {
+  ['@test class-based helper not usable within element']() {
     this.registerHelper('some-helper', {
       compute() {
       }
