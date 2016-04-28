@@ -11,6 +11,10 @@ import {
 } from './component/interfaces';
 
 import {
+  ModifierManager
+} from './modifier/interfaces';
+
+import {
   PathReference
 } from 'glimmer-reference';
 
@@ -196,6 +200,9 @@ export abstract class Environment {
   abstract lookupHelper(helperName: InternedString[]): Helper;
   abstract hasComponentDefinition(tagName: InternedString[]): boolean;
   abstract getComponentDefinition(tagName: InternedString[]): ComponentDefinition<Opaque>;
+
+  abstract hasModifier(modifierName: InternedString[]): boolean;
+  abstract lookupModifier(modifierName: InternedString[]): ModifierManager<Opaque>;
 }
 
 export default Environment;
@@ -214,6 +221,7 @@ export interface ParsedStatement {
   args: Syntax.Args;
   isInline: boolean;
   isBlock: boolean;
+  isModifier: boolean;
   templates: Syntax.Templates;
 }
 
@@ -221,6 +229,7 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
     let type = statement.type;
     let block = type === 'block' ? <Syntax.Block>statement : null;
     let append = type === 'append' ? <Syntax.Append>statement : null;
+    let modifier = type === 'modifier' ? <Syntax.Modifier>statement : null;
 
     let named: Syntax.NamedArgs;
     let args: Syntax.Args;
@@ -242,6 +251,9 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       args = helper.args;
       named = args.named;
       path = helper.ref.path();
+    } else if (modifier) {
+      path = modifier.path;
+      args = modifier.args;
     }
 
     let key: InternedString, isSimple: boolean;
@@ -258,6 +270,7 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       args,
       isInline: !!append,
       isBlock: !!block,
+      isModifier: !!modifier,
       templates: block && block.templates
     };
 }

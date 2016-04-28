@@ -13,6 +13,7 @@ import {
   ParsedStatement,
   Environment,
   Helper as GlimmerHelper,
+  ModifierManager,
   DOMHelper,
   IDOMHelper,
 
@@ -415,8 +416,79 @@ class HelperReference implements PathReference<Opaque> {
   }
 }
 
+class InertModifierManager implements ModifierManager<Opaque> {
+  install(element: Element, args: EvaluatedArgs, dom: IDOMHelper): Opaque {
+    return;
+  }
+
+  update(modifier: Opaque, element: Element, args: EvaluatedArgs, dom: IDOMHelper) {
+    return;
+  }
+
+  getDestructor(modifier: Opaque): Destroyable {
+    return null;
+  }
+}
+
+interface TestModifier {
+  element: Element,
+  args: EvaluatedArgs,
+  dom: IDOMHelper,
+  destructor: Destroyable
+}
+
+export class TestModifierManager implements ModifierManager<TestModifier> {
+  public installedElements: Element[];
+  public updatedElements: Element[];
+  public destroyedModifiers: TestModifier[];
+
+  constructor() {
+    this.installedElements = [];
+    this.updatedElements = [];
+    this.destroyedModifiers = [];
+  }
+
+  install(element: Element, args: EvaluatedArgs, dom: IDOMHelper): TestModifier {
+    let manager = this;
+    this.installedElements.push(element);
+
+    let param = args.positional.at(0).value();
+    dom.setAttribute(element, 'data-modifier', `installed - ${param}`);
+
+    let modifier: TestModifier;
+
+    modifier = {
+      element,
+      args,
+      dom,
+      destructor: {
+        destroy() {
+          manager.destroyedModifiers.push(modifier);
+          dom.removeAttribute(element, 'data-modifier');
+        }
+      }
+    };
+
+    return modifier;
+  }
+
+  update(modifier: TestModifier, element: Element, args: EvaluatedArgs, dom: IDOMHelper) {
+    this.updatedElements.push(modifier.element);
+
+    let param = args.positional.at(0).value();
+    dom.setAttribute(element, 'data-modifier', `updated - ${param}`);
+
+    return;
+  }
+
+  getDestructor(modifier: TestModifier): Destroyable {
+    return modifier.destructor;
+  }
+}
+
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
+  private modifiers = dict<ModifierManager<Opaque>>();
   private components = dict<ComponentDefinition<any>>();
 
   constructor(dom?: IDOMHelper) {
@@ -424,6 +496,7 @@ export class TestEnvironment extends Environment {
 
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
+    this.registerModifier("action", new InertModifierManager());
   }
 
   registerHelper(name: string, helper: UserHelper) {
@@ -432,6 +505,10 @@ export class TestEnvironment extends Environment {
 
   registerInternalHelper(name: string, helper: GlimmerHelper) {
     this.helpers[name] = helper;
+  }
+
+  registerModifier(name: string, modifier: ModifierManager<Opaque>) {
+    this.modifiers[name] = modifier;
   }
 
   registerComponent(name: string, definition: ComponentDefinition<any>) {
@@ -518,6 +595,19 @@ export class TestEnvironment extends Environment {
 
   getComponentDefinition(name: InternedString[]): ComponentDefinition<any> {
     return this.components[<string>name[0]];
+  }
+
+  hasModifier(modifierName: InternedString[]): boolean {
+    return modifierName.length === 1 && (<string>modifierName[0] in this.modifiers);
+  }
+
+  lookupModifier(modifierName: InternedString[]): ModifierManager<Opaque> {
+    let [name] = modifierName;
+
+    let modifier = this.modifiers[name];
+
+    if(!modifier) throw new Error(`Modifier for ${modifierName.join('.')} not found.`);
+    return modifier;
   }
 
   compile(template: string) {

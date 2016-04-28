@@ -31,6 +31,10 @@ import {
   CloseComponentOpcode
 } from '../compiled/opcodes/component';
 
+import {
+  ModifierOpcode
+} from '../compiled/opcodes/dom';
+
 import buildExpression from './expressions';
 
 import {
@@ -220,15 +224,21 @@ export class Append extends StatementSyntax {
   }
 }
 
-/*
-export class Modifier implements StatementSyntax {
+export const MODIFIER_SYNTAX = "c0420397-8ff1-4241-882b-4b7a107c9632";
+
+export class Modifier extends StatementSyntax {
+  "c0420397-8ff1-4241-882b-4b7a107c9632" = true;
+
+  public type: string = "modifier";
+  public path: InternedString[];
+  public args: Args;
+
   static fromSpec(node) {
     let [, path, params, hash] = node;
 
     return new Modifier({
       path,
-      params: Params.fromSpec(params),
-      hash: Hash.fromSpec(hash)
+      args: Args.fromSpec(params, hash)
     });
   }
 
@@ -241,16 +251,25 @@ export class Modifier implements StatementSyntax {
   }
 
   constructor(options) {
+    super();
     this.path = options.path;
-    this.params = options.params;
-    this.hash = options.hash;
+    this.args = options.args;
   }
 
-  evaluate(stack) {
-    return stack.createMorph(Modifier);
+  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
+    let args = this.args.compile(compiler, env);
+
+    if (env.hasModifier(this.path)) {
+      compiler.append(new ModifierOpcode({
+        name: this.path[0],
+        manager: env.lookupModifier(this.path),
+        args
+      }));
+    } else {
+      throw new Error(`Compile Error: ${this.path.join('.')} is not a modifier`);
+    }
   }
 }
-*/
 
 export class DynamicProp extends AttributeSyntax<Opaque> {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
@@ -545,7 +564,11 @@ export class OpenElement extends StatementSyntax {
     let args = dict<ExpressionSyntax<Opaque>>();
     let attrs: InternedString[] = [];
 
-    while (current[ATTRIBUTE_SYNTAX]) {
+    while (current[ATTRIBUTE_SYNTAX] || current[MODIFIER_SYNTAX]) {
+      if (current[MODIFIER_SYNTAX]) {
+        throw new Error(`Compile Error: Element modifiers are not allowed in components`);
+      }
+
       let attr = <AttributeSyntax<Opaque>>current;
       args[<string>attr.name] = attr.valueSyntax();
       if (attr.isAttribute()) attrs.push(attr.name);
