@@ -182,7 +182,7 @@ moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
   }
 
   // INUR not need with no data update
-  ['@htmlbars yield should not introduce a view']() {
+  ['@test yield should not introduce a view']() {
     let ParentCompComponent = Component.extend({ isParentComponent: true });
 
     let ChildCompComponent = Component.extend({

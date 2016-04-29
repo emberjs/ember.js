@@ -94,7 +94,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     this.assertText('FIRST ATTR');
   }
 
-  ['@htmlbars should be able to access unspecified attr #12035'](assert) {
+  ['@test should be able to access unspecified attr #12035'](assert) {
     let instance;
     let wootVal = 'yes';
 

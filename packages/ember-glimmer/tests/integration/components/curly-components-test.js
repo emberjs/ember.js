@@ -157,9 +157,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
-  ['@htmlbars class is applied before didInsertElement'](assert) {
+  ['@test class is applied before didInsertElement'](assert) {
     let componentClass;
-    // Glimmer is failing due to life cycle hooks not being implemented
     let FooBarComponent = Component.extend({
       didInsertElement() {
         componentClass = this.element.className;
