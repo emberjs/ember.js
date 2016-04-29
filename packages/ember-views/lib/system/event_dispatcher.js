@@ -220,7 +220,27 @@ export default EmberObject.extend({
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
-      var actions   = ActionManager.registeredActions[actionId];
+      var actions = ActionManager.registeredActions[actionId];
+
+      // In Glimmer2 this attribute is set to an empty string and an additional
+      // attribute it set for each action on a given element. In this case, the
+      // attributes need to be read so that a proper set of action handlers can
+      // be coalesced.
+      if (actionId === '') {
+        var attributes = evt.currentTarget.attributes;
+        var attributeCount = attributes.length;
+
+        actions = [];
+
+        for (var i = 0; i < attributeCount; i++) {
+          var attr = attributes.item(i);
+          var attrName = attr.name;
+
+          if (attrName.indexOf('data-ember-action-') === 0) {
+            actions = actions.concat(ActionManager.registeredActions[attr.value]);
+          }
+        }
+      }
 
       // We have to check for actions here since in some cases, jQuery will trigger
       // an event on `removeChild` (i.e. focusout) after we've already torn down the
