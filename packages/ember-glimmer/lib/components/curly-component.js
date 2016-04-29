@@ -1,5 +1,6 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
+import { DIRTY_TAG } from '../ember-views/component';
 import EmptyObject from 'ember-metal/empty_object';
 
 export class CurlyComponentSyntax extends StatementSyntax {
@@ -19,7 +20,7 @@ export class CurlyComponentSyntax extends StatementSyntax {
 function attrsToProps(keys, attrs) {
   let merged = new EmptyObject();
 
-  merged.attrs = merged;
+  merged.attrs = attrs;
 
   for (let i = 0, l = keys.length; i < l; i++) {
     let name = keys[i];
@@ -32,9 +33,10 @@ function attrsToProps(keys, attrs) {
 }
 
 class ComponentStateBucket {
-  constructor(component) {
+  constructor(component, args) {
     this.component = component;
     this.classRef = null;
+    this.argsRevision = args.tag.value();
   }
 }
 
@@ -46,17 +48,19 @@ class CurlyComponentManager {
     let attrs = args.named.value();
     let props = attrsToProps(args.named.keys, attrs);
 
+    props.renderer = parentView.renderer;
+
     let component = klass.create(props);
 
     dynamicScope.view = component;
     parentView.appendChild(component);
 
-    // component.trigger('didInitAttrs', { attrs });
-    // component.trigger('didReceiveAttrs', { newAttrs: attrs });
-    // component.trigger('willInsertElement');
-    // component.trigger('willRender');
+    component.trigger('didInitAttrs', { attrs });
+    component.trigger('didReceiveAttrs', { newAttrs: attrs });
+    component.trigger('willInsertElement');
+    component.trigger('willRender');
 
-    let bucket = new ComponentStateBucket(component);
+    let bucket = new ComponentStateBucket(component, args);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -99,30 +103,41 @@ class CurlyComponentManager {
     component._transitionTo('hasElement');
   }
 
+  getTag({ component }) {
+    return component[DIRTY_TAG];
+  }
+
   didCreate({ component }) {
-    // component.trigger('didInsertElement');
-    // component.trigger('didRender');
+    component.trigger('didInsertElement');
+    component.trigger('didRender');
     component._transitionTo('inDOM');
   }
 
-  update({ component }, args, dynamicScope) {
-    let attrs = args.named.value();
-    let props = attrsToProps(args.named.keys, attrs);
+  update(bucket, args, dynamicScope) {
+    let { component, argsRevision } = bucket;
 
-    // let oldAttrs = component.attrs;
-    // let newAttrs = attrs;
+    if (!args.tag.validate(argsRevision)) {
+      bucket.argsRevision = args.tag.value();
 
-    component.setProperties(props);
+      let attrs = args.named.value();
+      let props = attrsToProps(args.named.keys, attrs);
 
-    // component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
-    // component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
-    // component.trigger('willUpdate');
-    // component.trigger('willRender');
+      let oldAttrs = component.attrs;
+      let newAttrs = attrs;
+
+      component.setProperties(props);
+
+      component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
+      component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
+    }
+
+    component.trigger('willUpdate');
+    component.trigger('willRender');
   }
 
   didUpdate({ component }) {
-    // component.trigger('didUpdate');
-    // component.trigger('didRender');
+    component.trigger('didUpdate');
+    component.trigger('didRender');
   }
 
   getDestructor({ component }) {

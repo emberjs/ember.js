@@ -98,6 +98,14 @@ export class TestCase {
     this.assert = QUnit.config.current.assert;
   }
 
+  get isHTMLBars() {
+    return packageName === 'htmlbars';
+  }
+
+  get isGlimmer() {
+    return packageName === 'glimmer';
+  }
+
   teardown() {}
 
   // The following methods require `this.element` to work
@@ -390,6 +398,10 @@ export class RenderingTest extends TestCase {
   }
 }
 
-export function strip([str]) {
+export function strip([...strings], ...values) {
+  let str = strings.map((string, index) => {
+    let interpolated = values[index];
+    return string + (interpolated !== undefined ? interpolated : '');
+  }).join('');
   return str.split('\n').map(s => s.trim()).join('');
 }

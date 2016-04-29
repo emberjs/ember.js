@@ -61,8 +61,15 @@ class Renderer {
   }
 
   remove(view) {
+    view.trigger('willDestroyElement');
     view._transitionTo('destroying');
-    view['_renderResult'].destroy();
+
+    let { _renderResult } = view;
+
+    if (_renderResult) {
+      _renderResult.destroy();
+    }
+
     view.destroy();
   }
 
