@@ -2,6 +2,8 @@ import { RootReference } from './utils/references';
 import run from 'ember-metal/run_loop';
 import { CURRENT_TAG } from 'glimmer-reference';
 
+const { backburner } = run;
+
 class DynamicScope {
   constructor({ view, controller, outletState, isTopLevel }) {
     this.view = view;
@@ -15,6 +17,36 @@ class DynamicScope {
   }
 }
 
+class SchedulerRegistrar {
+  constructor() {
+    let schedulerRegistrar = this;
+    this._eventCallbacks = {
+      begin: []
+    };
+
+    this._trigger = backburner._trigger;
+    this.register = backburner.on;
+    this.deregister = backburner.off;
+
+    function bindEventName(eventName) {
+      return function trigger(arg1, arg2) {
+        schedulerRegistrar._trigger(eventName, arg1, arg2);
+      };
+    }
+
+    for (let eventName in this._eventCallbacks) {
+      if (backburner._eventCallbacks.hasOwnProperty(eventName)) {
+        backburner.on(eventName, bindEventName(eventName));
+      }
+    }
+  }
+
+  hasRegistrations() {
+    return !!this._eventCallbacks.length;
+  }
+}
+export const schedulerRegistrar = new SchedulerRegistrar();
+
 class Scheduler {
   constructor() {
     this._roots = [];
@@ -26,13 +58,13 @@ class Scheduler {
   destroy() {
     if (this._roots.length) {
       this._roots.splice(0, this._roots.length);
-      run.backburner.off('begin', this._scheduleMaybeUpdate);
+      schedulerRegistrar.deregister('begin', this._scheduleMaybeUpdate);
     }
   }
 
   registerView(view) {
     if (!this._roots.length) {
-      run.backburner.on('begin', this._scheduleMaybeUpdate);
+      schedulerRegistrar.register('begin', this._scheduleMaybeUpdate);
     }
     this._roots.push(view);
   }
@@ -42,7 +74,7 @@ class Scheduler {
     if (~viewIndex) {
       this._roots.splice(viewIndex, 1);
       if (!this._roots.length) {
-        run.backburner.off('begin', this._scheduleMaybeUpdate);
+        schedulerRegistrar.deregister('begin', this._scheduleMaybeUpdate);
       }
     }
   }
