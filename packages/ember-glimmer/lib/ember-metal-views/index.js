@@ -1,6 +1,6 @@
 import { RootReference } from '../utils/references';
 import run from 'ember-metal/run_loop';
-// import { CURRENT_TAG } from 'glimmer-reference';
+import { CURRENT_TAG } from 'glimmer-reference';
 
 class DynamicScope {
   constructor({ view, controller, outletState, isTopLevel }) {
@@ -16,15 +16,15 @@ class DynamicScope {
 }
 
 const RENDERED_ROOTS = [];
-// let LAST_TAG_VALUE;
+let LAST_TAG_VALUE;
 
 function maybeUpdate() {
-  // if (CURRENT_TAG.validate(LAST_TAG_VALUE)) { return; }
+  if (CURRENT_TAG.validate(LAST_TAG_VALUE)) { return; }
   for (let i = 0; i < RENDERED_ROOTS.length; ++i) {
     let view = RENDERED_ROOTS[i];
     view.renderer.rerender(view);
   }
-  // LAST_TAG_VALUE = CURRENT_TAG.value();
+  LAST_TAG_VALUE = CURRENT_TAG.value();
 }
 
 function scheduleMaybeUpdate() {
@@ -32,7 +32,7 @@ function scheduleMaybeUpdate() {
 }
 
 function registerView(view) {
-  // LAST_TAG_VALUE = LAST_TAG_VALUE || CURRENT_TAG.value();
+  LAST_TAG_VALUE = LAST_TAG_VALUE || CURRENT_TAG.value();
   if (!RENDERED_ROOTS.length) {
     run.backburner.on('begin', scheduleMaybeUpdate);
   }
