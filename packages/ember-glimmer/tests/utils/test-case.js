@@ -30,11 +30,4 @@ export class RenderingTest extends AbstractRenderingTest {
     super.render(...args);
     this.renderer._root = this.component;
   }
-
-  runTask(callback) {
-    super.runTask(() => {
-      callback();
-      this.component.rerender();
-    });
-  }
 }

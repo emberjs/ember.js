@@ -1,4 +1,6 @@
 import { RootReference } from '../utils/references';
+import run from 'ember-metal/run_loop';
+// import { CURRENT_TAG } from 'glimmer-reference';
 
 class DynamicScope {
   constructor({ view, controller, outletState, isTopLevel }) {
@@ -10,6 +12,40 @@ class DynamicScope {
 
   child() {
     return new DynamicScope(this);
+  }
+}
+
+const RENDERED_ROOTS = [];
+// let LAST_TAG_VALUE;
+
+function maybeUpdate() {
+  // if (CURRENT_TAG.validate(LAST_TAG_VALUE)) { return; }
+  for (let i = 0; i < RENDERED_ROOTS.length; ++i) {
+    let view = RENDERED_ROOTS[i];
+    view.renderer.rerender(view);
+  }
+  // LAST_TAG_VALUE = CURRENT_TAG.value();
+}
+
+function scheduleMaybeUpdate() {
+  run.backburner.schedule('render', maybeUpdate);
+}
+
+function registerView(view) {
+  // LAST_TAG_VALUE = LAST_TAG_VALUE || CURRENT_TAG.value();
+  if (!RENDERED_ROOTS.length) {
+    run.backburner.on('begin', scheduleMaybeUpdate);
+  }
+  RENDERED_ROOTS.push(view);
+}
+
+function deregisterView(view) {
+  let viewIndex = RENDERED_ROOTS.indexOf(view);
+  if (~viewIndex) {
+    RENDERED_ROOTS.splice(viewIndex, 1);
+    if (!RENDERED_ROOTS.length) {
+      run.backburner.off('begin', scheduleMaybeUpdate);
+    }
   }
 }
 
@@ -37,6 +73,8 @@ class Renderer {
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
 
+    registerView(view);
+
     return result;
   }
 
@@ -48,6 +86,8 @@ class Renderer {
     env.begin();
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
+
+    registerView(view);
 
     // FIXME: Store this somewhere else
     view['_renderResult'] = result;
@@ -61,6 +101,7 @@ class Renderer {
   }
 
   remove(view) {
+    deregisterView(view);
     view.trigger('willDestroyElement');
     view._transitionTo('destroying');
 
