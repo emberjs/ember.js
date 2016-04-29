@@ -175,13 +175,13 @@ export abstract class Environment {
   }
 
   commit() {
-    for (let i=0; i<this.createdComponents.length; i++) {
+    for (let i=this.createdComponents.length-1; i>=0; i--) {
       let component = this.createdComponents[i];
       let manager = this.createdManagers[i];
       manager.didCreate(component);
     }
 
-    for (let i=0; i<this.updatedComponents.length; i++) {
+    for (let i=this.updatedComponents.length-1; i>=0; i--) {
       let component = this.updatedComponents[i];
       let manager = this.updatedManagers[i];
       manager.didUpdate(component);
