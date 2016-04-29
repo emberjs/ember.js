@@ -28,3 +28,4 @@ export class ConditionalReference implements Reference<boolean> {
 }
 
 export const NULL_REFERENCE = new PrimitiveReference(null);
+export const UNDEFINED_REFERENCE = new PrimitiveReference(undefined);
