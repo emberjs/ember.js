@@ -1,4 +1,4 @@
-import { NULL_REFERENCE } from '../../references';
+import { UNDEFINED_REFERENCE } from '../../references';
 import { CompiledExpression } from '../expressions';
 import VM from '../../vm/append';
 import { CONSTANT_TAG, PathReference, RevisionTag, combine } from 'glimmer-reference';
@@ -113,7 +113,7 @@ class NonEmptyEvaluatedNamedArgs extends EvaluatedNamedArgs {
   }
 
   get(key: InternedString): PathReference<any> {
-    return this.map[<string>key];
+    return this.map[<string>key] || UNDEFINED_REFERENCE;
   }
 
   has(key: InternedString): boolean {
@@ -139,7 +139,7 @@ export const EVALUATED_EMPTY_NAMED_ARGS = new (class extends EvaluatedNamedArgs 
   public keys = [];
 
   get(): PathReference<any> {
-    return NULL_REFERENCE;
+    return UNDEFINED_REFERENCE;
   }
 
   has(key: InternedString): boolean {
