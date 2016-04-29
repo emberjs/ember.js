@@ -175,7 +175,7 @@ export abstract class Environment {
   }
 
   commit() {
-    for (let i=this.createdComponents.length-1; i>=0; i--) {
+    for (let i=0; i<this.createdComponents.length; i++) {
       let component = this.createdComponents[i];
       let manager = this.createdManagers[i];
       manager.didCreate(component);
