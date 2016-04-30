@@ -13,7 +13,7 @@ export { default as Template } from './lib/template';
 
 export { default as SymbolTable } from './lib/symbol-table';
 
-export { ConditionalReference, UNDEFINED_REFERENCE } from './lib/references';
+export { ConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from './lib/references';
 
 export {
   Templates,
