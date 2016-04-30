@@ -1,5 +1,3 @@
-import require from 'require';
-
 import { context } from 'ember-environment';
 
 /**
@@ -28,16 +26,6 @@ const Ember = (typeof context.imports.Ember === 'object' && context.imports.Embe
 Ember.isNamespace = true;
 
 Ember.toString = function() { return 'Ember'; };
-
-// The debug functions are exported to globals with `require` to
-// prevent babel-plugin-filter-imports from removing them.
-let debugModule = require('ember-metal/debug');
-Ember.assert = debugModule.assert;
-Ember.warn = debugModule.warn;
-Ember.debug = debugModule.debug;
-Ember.deprecate = debugModule.deprecate;
-Ember.deprecateFunc = debugModule.deprecateFunc;
-Ember.runInDebug = debugModule.runInDebug;
 
 // ..........................................................
 // BOOTSTRAP

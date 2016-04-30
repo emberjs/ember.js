@@ -141,8 +141,17 @@ import {
   isGlobalPath
 } from 'ember-metal/path_cache';
 
+import {
+  isTesting,
+  setTesting
+} from 'ember-metal/testing';
+import {
+  getOnerror,
+  setOnerror
+} from 'ember-metal/error_handler';
+
 import run from 'ember-metal/run_loop';
-import Libraries from 'ember-metal/libraries';
+import libraries from 'ember-metal/libraries';
 import isNone from 'ember-metal/is_none';
 import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
@@ -300,8 +309,9 @@ Ember._Backburner = Backburner;
  */
 Ember.VERSION = VERSION;
 
-Ember.libraries = new Libraries();
-Ember.libraries.registerCoreLibrary('Ember', VERSION);
+Ember.libraries = libraries;
+
+libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 Ember.isNone = isNone;
 Ember.isEmpty = isEmpty;
@@ -361,6 +371,12 @@ Object.defineProperty(Ember, 'lookup', {
   enumerable: false
 });
 
+Object.defineProperty(Ember, 'testing', {
+  get: isTesting,
+  set: setTesting,
+  enumerable: false
+});
+
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
   internals encounter an error. This is useful for specialized error handling
@@ -382,7 +398,11 @@ Object.defineProperty(Ember, 'lookup', {
   @param {Exception} error the error object
   @public
 */
-Ember.onerror = null;
+Object.defineProperty(Ember, 'onerror', {
+  get: getOnerror,
+  set: setOnerror,
+  enumerable: false
+});
 
 /**
   An empty function useful for some operations. Always returns `this`.
@@ -392,6 +412,16 @@ Ember.onerror = null;
   @public
 */
 Ember.K = function K() { return this; };
+
+// The debug functions are exported to globals with `require` to
+// prevent babel-plugin-filter-imports from removing them.
+let debugModule = require('ember-metal/debug');
+Ember.assert = debugModule.assert;
+Ember.warn = debugModule.warn;
+Ember.debug = debugModule.debug;
+Ember.deprecate = debugModule.deprecate;
+Ember.deprecateFunc = debugModule.deprecateFunc;
+Ember.runInDebug = debugModule.runInDebug;
 // END EXPORTS
 
 // do this for side-effects of updating Ember.assert, warn, etc when

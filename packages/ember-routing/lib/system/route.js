@@ -1,5 +1,5 @@
-import Ember from 'ember-metal/core'; // FEATURES, A, deprecate, assert, Logger
 import { assert, deprecate, info } from 'ember-metal/debug';
+import { isTesting } from 'ember-metal/testing';
 import isEnabled from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
@@ -1185,7 +1185,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   send(...args) {
-    if ((this.router && this.router.router) || !Ember.testing) {
+    if ((this.router && this.router.router) || !isTesting()) {
       this.router.send(...args);
     } else {
       var name = args[0];

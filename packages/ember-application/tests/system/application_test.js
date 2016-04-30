@@ -1,9 +1,8 @@
 /*globals EmberDev */
-
-import Ember from 'ember-metal/core'; // Ember.libraries
 import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
+import libraries from 'ember-metal/libraries';
 import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
 import Router from 'ember-routing/system/router';
@@ -278,7 +277,7 @@ QUnit.test('enable log of libraries with an ENV var', function() {
     messages.push(message);
   });
 
-  Ember.libraries.register('my-lib', '2.0.0a');
+  libraries.register('my-lib', '2.0.0a');
 
   run(function() {
     app = Application.create({
@@ -290,7 +289,7 @@ QUnit.test('enable log of libraries with an ENV var', function() {
   equal(messages[2], 'jQuery : ' + jQuery().jquery);
   equal(messages[3], 'my-lib : ' + '2.0.0a');
 
-  Ember.libraries.deRegister('my-lib');
+  libraries.deRegister('my-lib');
 });
 
 QUnit.test('disable log version of libraries with an ENV var', function() {

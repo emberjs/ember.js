@@ -1,5 +1,4 @@
 import Logger from 'ember-console';
-
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';

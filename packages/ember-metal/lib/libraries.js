@@ -10,7 +10,7 @@ import isEnabled from 'ember-metal/features';
   @constructor
   @private
 */
-function Libraries() {
+export function Libraries() {
   this._registry = [];
   this._coreLibIndex = 0;
 }
@@ -63,4 +63,4 @@ if (isEnabled('ember-libraries-isregistered')) {
   };
 }
 
-export default Libraries;
+export default new Libraries();

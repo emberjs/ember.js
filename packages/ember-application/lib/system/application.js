@@ -2,9 +2,10 @@
 @module ember
 @submodule ember-application
 */
-import Ember from 'ember-metal'; // Ember.libraries, Ember.testing
 import { ENV } from 'ember-environment';
 import { assert, debug, warn, deprecate } from 'ember-metal/debug';
+import libraries from 'ember-metal/libraries';
+import { isTesting } from 'ember-metal/testing';
 import { get } from 'ember-metal/property_get';
 import Namespace, {
   setSearchDisabled as setNamespaceSearchDisabled
@@ -737,7 +738,7 @@ const Application = Engine.extend({
   didBecomeReady() {
     try {
       // TODO: Is this still needed for _globalsMode = false?
-      if (!Ember.testing) {
+      if (!isTesting()) {
         // Eagerly name all classes that are already loaded
         Namespace.processAll();
         setNamespaceSearchDisabled(true);
@@ -1172,7 +1173,7 @@ function registerLibraries() {
     librariesRegistered = true;
 
     if (environment.hasDOM) {
-      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+      libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }
 }
@@ -1181,7 +1182,7 @@ function logLibraryVersions() {
   if (ENV.LOG_VERSION) {
     // we only need to see this once per Application#init
     ENV.LOG_VERSION = false;
-    var libs = Ember.libraries._registry;
+    var libs = libraries._registry;
 
     var nameLengths = libs.map(function(item) {
       return get(item, 'name.length');
