@@ -5,7 +5,7 @@ type Primitive = string | number | boolean;
 
 export class PrimitiveReference extends ConstReference<any> implements PathReference<Primitive> {
   get(): PrimitiveReference {
-    return NULL_REFERENCE;
+    return UNDEFINED_REFERENCE;
   }
 }
 
