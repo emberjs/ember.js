@@ -361,6 +361,9 @@ function renderContent() {
 
   let env = new TestEnvironment();
 
+  env.registerHelper('foo', function(){
+    return 'FOOOOOOO';
+  });
   env.registerEmberishGlimmerComponent("h-card", null, $layout.value);
 
   let app = env.compile($template.value);

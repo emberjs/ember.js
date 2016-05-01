@@ -195,10 +195,6 @@ export default class JavaScriptCompiler {
 
   /// Stack Management Opcodes
 
-  pushLiteral(literal: any) {
-    this.pushValue(literal);
-  }
-
   prepareArray(size: number) {
     let values = [];
 
