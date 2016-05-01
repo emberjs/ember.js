@@ -624,7 +624,6 @@ testComponent('parameterized has-block (prop, default) when block not supplied',
 });
 
 testComponent('parameterized has-block (attr, inverse) when inverse supplied', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block="{{has-block "inverse"}}"></button>',
   invokeAs: {
@@ -635,28 +634,24 @@ testComponent('parameterized has-block (attr, inverse) when inverse supplied', {
 });
 
 testComponent('parameterized has-block (attr, inverse) when inverse not supplied', {
-  skip: true,
   layout: '<button data-has-block="{{has-block "inverse"}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block="false"></button>'
 });
 
 testComponent('parameterized has-block (attr, default) when block supplied', {
-  skip: true,
   layout: '<button data-has-block="{{has-block}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block="true"></button>'
 });
 
 testComponent('parameterized has-block (attr, default) when block not supplied', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block="{{has-block}}"></button>',
   expected: '<button data-has-block="false"></button>'
 });
 
 testComponent('parameterized has-block (concatted attr, inverse) when inverse supplied', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block="is-{{has-block "inverse"}}"></button>',
   invokeAs: {
@@ -667,21 +662,18 @@ testComponent('parameterized has-block (concatted attr, inverse) when inverse su
 });
 
 testComponent('parameterized has-block (concatted attr, inverse) when inverse not supplied', {
-  skip: true,
   layout: '<button data-has-block="is-{{has-block "inverse"}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block="is-false"></button>'
 });
 
 testComponent('parameterized has-block (concatted attr, default) when block supplied', {
-  skip: true,
   layout: '<button data-has-block="is-{{has-block}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block="is-true"></button>'
 });
 
 testComponent('parameterized has-block (concatted attr, default) when block not supplied', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block="is-{{has-block}}"></button>',
   expected: '<button data-has-block="is-false"></button>'
@@ -804,7 +796,6 @@ testComponent('parameterized has-block-params (prop, default) when block not sup
 });
 
 testComponent('parameterized has-block-params (attr, inverse) when inverse supplied without block params', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block-params="{{has-block-params "inverse"}}"></button>',
   invokeAs: {
@@ -815,14 +806,12 @@ testComponent('parameterized has-block-params (attr, inverse) when inverse suppl
 });
 
 testComponent('parameterized has-block-params (attr, inverse) when inverse not supplied', {
-  skip: true,
   layout: '<button data-has-block-params="{{has-block-params "inverse"}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block-params="false"></button>'
 });
 
 testComponent('parameterized has-block-params (attr, default) when block supplied with block params', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block-params="{{has-block-params}}"></button>',
   invokeAs: {
@@ -833,21 +822,18 @@ testComponent('parameterized has-block-params (attr, default) when block supplie
 });
 
 testComponent('parameterized has-block-params (attr, default) when block supplied without block params', {
-  skip: true,
   layout: '<button data-has-block-params="{{has-block-params}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block-params="false"></button>'
 });
 
 testComponent('parameterized has-block-params (attr, default) when block not supplied', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block-params="{{has-block-params}}"></button>',
   expected: '<button data-has-block-params="false"></button>'
 });
 
 testComponent('parameterized has-block-params (concatted attr, inverse) when inverse supplied without block params', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block-params="is-{{has-block-params "inverse"}}"></button>',
   invokeAs: {
@@ -858,14 +844,12 @@ testComponent('parameterized has-block-params (concatted attr, inverse) when inv
 });
 
 testComponent('parameterized has-block-params (concatted attr, inverse) when inverse not supplied', {
-  skip: true,
   layout: '<button data-has-block-params="is-{{has-block-params "inverse"}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block-params="is-false"></button>'
 });
 
 testComponent('parameterized has-block-params (concatted attr, default) when block supplied with block params', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block-params="is-{{has-block-params}}"></button>',
   invokeAs: {
@@ -876,14 +860,12 @@ testComponent('parameterized has-block-params (concatted attr, default) when blo
 });
 
 testComponent('parameterized has-block-params (concatted attr, default) when block supplied without block params', {
-  skip: true,
   layout: '<button data-has-block-params="is-{{has-block-params}}"></button>',
   invokeAs: { template: 'block here' },
   expected: '<button data-has-block-params="is-false"></button>'
 });
 
 testComponent('parameterized has-block-params (concatted attr, default) when block not supplied', {
-  skip: true,
   kind: 'curly',
   layout: '<button data-has-block-params="is-{{has-block-params}}"></button>',
   expected: '<button data-has-block-params="is-false"></button>'

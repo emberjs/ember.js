@@ -100,22 +100,11 @@ export default class TemplateCompiler {
   mustache([action]) {
     if (isYield(action)) {
       let to = assertValidYield(action);
-      return this.yield(to, action);
-    } else if (isHasBlock(action)) {
-      let name = assertValidHasBlock(action);
-      this.hasBlock(name, action);
-    } else if (isHasBlockParams(action)) {
-      let name = assertValidHasBlockParams(action);
-      this.hasBlockParams(name, action);
-    } else if (action.path.data) {
-      this.attr([action.path]);
-    } else if (isHelper(action)) {
-      this.SubExpression(action);
+      this.yield(to, action);
     } else {
-      this.ambiguous([action]);
+      this.mustacheExpression(action);
+      this.opcode('append', action, !action.escaped);
     }
-
-    this.opcode('append', action, !action.escaped);
   }
 
   block([action/*, index, count*/]) {
@@ -127,33 +116,24 @@ export default class TemplateCompiler {
 
   /// Internal actions, not found in the original processed actions
 
-  attributeMustache([action]) {
-    let { path } = action;
-    if (path.data) {
-      this.attr([action.path]);
-    } else if (isHasBlock(action)) {
-      let name = assertValidHasBlock(action);
-      this.hasBlock(name, action);
-    } else if (isHasBlockParams(action)) {
-      let name = assertValidHasBlockParams(action);
-      this.hasBlockParams(name, action);
-    } else if (isHelper(action)) {
-      this.prepareHelper(action);
-      this.opcode('helper', action, path.parts);
-    } else if (path.type === 'PathExpression') {
-      this.opcode('get', action, path.parts);
-    } else {
-      this.opcode('literal', action, path.value);
-    }
-  }
-
   attr([path]) {
     let { parts } = path;
     this.opcode('attr', path, parts);
   }
 
-  ambiguous([action]) {
-    this.opcode('unknown', action, action.path.parts);
+  mustacheExpression(expr) {
+    if (isBuiltInHelper(expr)) {
+      this.builtInHelper(expr);
+    } else if (isLiteral(expr)) {
+      this.opcode('literal', expr, expr.path.value);
+    } else if (isAttr(expr)) {
+      this.attr([expr.path]);
+    } else if (isHelper(expr)) {
+      this.prepareHelper(expr);
+      this.opcode('helper', expr, expr.path.parts);
+    } else {
+      this.opcode('unknown', expr, expr.path.parts);
+    }
   }
 
   /// Internal Syntax
@@ -171,15 +151,21 @@ export default class TemplateCompiler {
     this.opcode('hasBlockParams', action, name);
   }
 
-  /// Expressions, invoked recursively from prepareParams and prepareHash
-
-  SubExpression(expr) {
+  builtInHelper(expr) {
     if (isHasBlock(expr)) {
       let name = assertValidHasBlock(expr);
       this.hasBlock(name, expr);
     } else if (isHasBlockParams(expr)) {
       let name = assertValidHasBlockParams(expr);
       this.hasBlockParams(name, expr);
+    }
+  }
+
+  /// Expressions, invoked recursively from prepareParams and prepareHash
+
+  SubExpression(expr) {
+    if (isBuiltInHelper(expr)) {
+      this.builtInHelper(expr);
     } else {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
@@ -195,23 +181,23 @@ export default class TemplateCompiler {
   }
 
   StringLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   BooleanLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   NumberLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   NullLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   UndefinedLiteral(action) {
-    this.opcode('pushLiteral', null, action.value);
+    this.opcode('literal', null, action.value);
   }
 
   /// Utilities
@@ -231,24 +217,20 @@ export default class TemplateCompiler {
   }
 
   preparePath(path) {
-    this.opcode('pushLiteral', path, path.parts);
+    this.opcode('literal', path, path.parts);
   }
 
   prepareParams(params) {
     if (!params.length) {
-      this.opcode('pushLiteral', null,null);
+      this.opcode('literal', null, null);
       return;
     }
 
     for (let i = params.length - 1; i >= 0; i--) {
       let param = params[i];
 
-      if (param.type === 'MustacheStatement') {
-        this.attributeMustache([param]);
-      } else {
-        assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
-        this[param.type](param);
-      }
+      assert(this[param.type], `Unimplemented ${param.type} on TemplateCompiler`);
+      this[param.type](param);
     }
 
     this.opcode('prepareArray', null, params.length);
@@ -258,7 +240,7 @@ export default class TemplateCompiler {
     let pairs = hash.pairs;
 
     if (!pairs.length) {
-      this.opcode('pushLiteral', null, null);
+      this.opcode('literal', null, null);
       return;
     }
 
@@ -267,7 +249,7 @@ export default class TemplateCompiler {
 
       assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       this[value.type](value);
-      this.opcode('pushLiteral', null, key);
+      this.opcode('literal', null, key);
     }
 
     this.opcode('prepareObject', null, pairs.length);
@@ -284,10 +266,28 @@ export default class TemplateCompiler {
         this.attributeMustache([value]);
         return false;
       case 'ConcatStatement':
-        this.prepareParams(value.parts);
+        this.prepareConcatParts(value.parts);
         this.opcode('concat', value);
         return false;
     }
+  }
+
+  prepareConcatParts(parts) {
+    for (let i = parts.length - 1; i >= 0; i--) {
+      let part = parts[i];
+
+      if (part.type === 'MustacheStatement') {
+        this.attributeMustache([part]);
+      } else if (part.type === 'TextNode') {
+        this.opcode('literal', null, part.chars);
+      }
+    }
+
+    this.opcode('prepareArray', null, parts.length);
+  }
+
+  attributeMustache([action]) {
+    this.mustacheExpression(action);
   }
 
   meta(node) {
@@ -303,12 +303,29 @@ function isYield({ path }) {
   return path.original === 'yield';
 }
 
+function isAttr({ path }) {
+  return path.data;
+}
+
+function isLiteral({ path }) {
+  return path.type === 'StringLiteral'
+      || path.type === 'BooleanLiteral'
+      || path.type === 'NumberLiteral'
+      || path.type === 'NullLiteral'
+      || path.type === 'UndefinedLiteral';
+}
+
 function isHasBlock({ path }) {
   return path.original === 'has-block';
 }
 
 function isHasBlockParams({ path }) {
   return path.original === 'has-block-params';
+}
+
+function isBuiltInHelper(expr) {
+  return isHasBlock(expr)
+      || isHasBlockParams(expr);
 }
 
 function assertValidYield({ hash }): string {

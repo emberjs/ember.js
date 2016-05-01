@@ -119,7 +119,7 @@ test("Handlebars embedded in an attribute (quoted)", function() {
   let t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, b.program([
     b.text("some "),
-    b.element("div", [ b.attr("class", b.concat([ b.path('foo') ])) ], [], [
+    b.element("div", [ b.attr("class", b.concat([ b.mustache('foo') ])) ], [], [
       b.text("content")
     ]),
     b.text(" done")
@@ -156,9 +156,9 @@ test("Handlebars embedded in an attribute with other content surrounding it", fu
     b.text("some "),
     b.element("a", [
       b.attr("href", b.concat([
-        b.string("http://"),
-        b.path('link'),
-        b.string("/")
+        b.text("http://"),
+        b.mustache('link'),
+        b.text("/")
       ]))
     ], [], [
       b.text("content")
@@ -178,9 +178,9 @@ test("A more complete embedding example", function() {
     b.text(' '),
     b.element("div", [
       b.attr("class", b.concat([
-        b.path('foo'),
-        b.string(' '),
-        b.mustache(b.path('bind-class'), [b.path('isEnabled')], b.hash([b.pair('truthy', b.string('enabled'))]))
+        b.mustache('foo'),
+        b.text(' '),
+        b.mustache('bind-class', [b.path('isEnabled')], b.hash([b.pair('truthy', b.string('enabled'))]))
       ]))
     ], [], [
       b.mustache(b.path('content'))

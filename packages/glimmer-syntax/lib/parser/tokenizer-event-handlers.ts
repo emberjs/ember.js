@@ -201,11 +201,9 @@ function assembleConcatenatedValue(parts) {
     let part = parts[i];
 
     if (typeof part === 'string') {
-      parts[i] = b.string(parts[i]);
+      parts[i] = b.text(parts[i]);
     } else {
-      if (part.type === 'MustacheStatement') {
-        parts[i] = unwrapMustache(part);
-      } else {
+      if (part.type !== 'MustacheStatement') {
         throw new Error("Unsupported node in quoted attribute value: " + part.type);
       }
     }
