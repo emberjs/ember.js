@@ -28,11 +28,11 @@ function maybeUpdate() {
 }
 
 function scheduleMaybeUpdate() {
+  LAST_TAG_VALUE = CURRENT_TAG.value();
   run.backburner.schedule('render', maybeUpdate);
 }
 
 function registerView(view) {
-  LAST_TAG_VALUE = LAST_TAG_VALUE || CURRENT_TAG.value();
   if (!RENDERED_ROOTS.length) {
     run.backburner.on('begin', scheduleMaybeUpdate);
   }
