@@ -1,5 +1,6 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
+import { DynamicScope } from '../../environment';
 import { FIXME, InternedString, Opaque, Dict, dict } from 'glimmer-util';
 import {
   CachedReference,
@@ -234,8 +235,9 @@ export class ModifierOpcode extends Opcode {
     let stack = vm.stack();
     let { element, dom } = stack;
     let args = this.args.evaluate(vm);
+    let dynamicScope = vm.dynamicScope();
 
-    let modifier = manager.install(element, args, dom);
+    let modifier = manager.install(element, args, dom, dynamicScope);
     let destructor = manager.getDestructor(modifier);
 
     if (destructor) {
@@ -246,6 +248,7 @@ export class ModifierOpcode extends Opcode {
       manager,
       modifier,
       element,
+      dynamicScope,
       args
     }));
   }
@@ -267,26 +270,28 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = "update-modifier";
 
   private element: Element;
+  private dynamicScope: DynamicScope;
   private args: EvaluatedArgs;
   private manager: ModifierManager<Opaque>;
   private modifier: Opaque;
   private lastUpdated: Revision;
 
-  constructor({ manager, modifier, element, args }: { manager: ModifierManager<Opaque>, modifier: Opaque, element: Element, args: EvaluatedArgs }) {
+  constructor({ manager, modifier, element, dynamicScope, args }: { manager: ModifierManager<Opaque>, modifier: Opaque, element: Element, dynamicScope: DynamicScope, args: EvaluatedArgs }) {
     super();
     this.modifier = modifier;
     this.manager = manager;
     this.element = element;
+    this.dynamicScope = dynamicScope;
     this.args = args;
     this.tag = args.tag;
     this.lastUpdated = args.tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
-    let { manager, modifier, element, args, lastUpdated } = this;
+    let { manager, modifier, element, dynamicScope, args, lastUpdated } = this;
 
     if (!args.tag.validate(lastUpdated)) {
-      manager.update(modifier, element, args, vm.dom);
+      manager.update(modifier, element, args, vm.dom, dynamicScope);
       this.lastUpdated = args.tag.value();
     }
   }
