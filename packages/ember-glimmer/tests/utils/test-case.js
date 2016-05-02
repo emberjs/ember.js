@@ -26,6 +26,11 @@ export class RenderingTest extends AbstractRenderingTest {
     owner.registerOptionsForType('component', { singleton: false });
   }
 
+  render(...args) {
+    super.render(...args);
+    this.renderer._root = this.component;
+  }
+
   runTask(callback) {
     super.runTask(() => {
       callback();

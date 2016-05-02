@@ -26,8 +26,9 @@ import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
-import { default as classHelper } from './helpers/-class';
+import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
+import { default as classHelper } from './helpers/-class';
 import { OWNER } from 'container/owner';
 
 const builtInHelpers = {
@@ -38,8 +39,12 @@ const builtInHelpers = {
   hash,
   loc,
   log,
+  readonly,
   unbound,
   '-class': classHelper
+};
+
+const builtInModifiers = {
 };
 
 function wrapClassAttribute(args) {
@@ -73,6 +78,7 @@ export default class Environment extends GlimmerEnvironment {
       isSimple,
       isInline,
       isBlock,
+      isModifier,
       key,
       path,
       args,
@@ -96,6 +102,7 @@ export default class Environment extends GlimmerEnvironment {
 
     let nativeSyntax = super.refineStatement(statement);
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !nativeSyntax && key && this.hasHelper(key) ? !isBlock : true);
+    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key) ? !isModifier : true);
     return nativeSyntax;
   }
 
@@ -136,6 +143,15 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
+  hasModifier(name) {
+    return !!builtInModifiers[name[0]];
+  }
+
+  lookupModifier(name) {
+    let modifier = builtInModifiers[name[0]];
+    return modifier;
+  }
+
   rootReferenceFor(value) {
     return new RootReference(value);
   }
@@ -147,5 +163,14 @@ export default class Environment extends GlimmerEnvironment {
   iterableFor(ref, args) {
     let keyPath = args.named.get('key').value();
     return createIterable(ref, keyPath);
+  }
+
+  didCreate(component, manager) {
+    this.createdComponents.unshift(component);
+    this.createdManagers.unshift(manager);
+  }
+
+  didDestroy(destroyable) {
+    destroyable.destroy();
   }
 }

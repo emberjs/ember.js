@@ -10,6 +10,7 @@ import {
   CONTAINS_DASH_CACHE,
   CONTAINS_DOT_CACHE
 } from 'ember-htmlbars/system/lookup-helper';
+import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import {
   COMPONENT_PATH,
   COMPONENT_HASH,
@@ -55,6 +56,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
   if (state.manager) {
     let templateMeta = state.manager.block.template.meta;
     env.meta.moduleName = (templateMeta && templateMeta.moduleName) || (env.meta && env.meta.moduleName);
+    extractPositionalParams(renderNode, state.manager.component.constructor, params, attrs, false);
     state.manager.rerender(env, attrs, visitor);
     return;
   }

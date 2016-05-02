@@ -556,42 +556,50 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
 
   ['@htmlbars positional parameters does not clash when rendering different components'](assert) {
     this.registerComponent('foo-bar', {
-      template: 'hello {{name}} from foo-bar',
+      template: 'hello {{name}} ({{age}}) from foo-bar',
       ComponentClass: Component.extend().reopenClass({
-        positionalParams: ['name']
+        positionalParams: ['name', 'age']
       })
     });
 
     this.registerComponent('foo-bar-baz', {
-      template: 'hello {{name}} from foo-bar-baz',
+      template: 'hello {{name}} ({{age}}) from foo-bar-baz',
       ComponentClass: Component.extend().reopenClass({
-        positionalParams: ['name']
+        positionalParams: ['name', 'age']
       })
     });
 
-    this.render('{{component componentName name}}', { componentName: 'foo-bar', name: 'Alex' });
+    this.render('{{component componentName name age}}', {
+      componentName: 'foo-bar',
+      name: 'Alex',
+      age: 29
+    });
 
-    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex (29) from foo-bar' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex (29) from foo-bar' });
 
     this.runTask(() => set(this.context, 'name', 'Ben'));
 
-    // TODO: this fails in htmlbars - https://github.com/emberjs/ember.js/issues/13158
-    // this.assertComponentElement(this.firstChild, { content: 'hello Ben from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Ben (29) from foo-bar' });
+
+    this.runTask(() => set(this.context, 'age', 22));
+
+    this.assertComponentElement(this.firstChild, { content: 'hello Ben (22) from foo-bar' });
 
     this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
-    this.assertComponentElement(this.firstChild, { content: 'hello Ben from foo-bar-baz' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Ben (22) from foo-bar-baz' });
 
     this.runTask(() => {
       set(this.context, 'componentName', 'foo-bar');
       set(this.context, 'name', 'Alex');
+      set(this.context, 'age', 29);
     });
 
-    this.assertComponentElement(this.firstChild, { content: 'hello Alex from foo-bar' });
+    this.assertComponentElement(this.firstChild, { content: 'hello Alex (29) from foo-bar' });
   }
 
   ['@htmlbars positional parameters does not pollute the attributes when changing components'](assert) {
