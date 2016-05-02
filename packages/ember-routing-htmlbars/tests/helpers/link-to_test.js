@@ -161,4 +161,16 @@ QUnit.test('able to safely extend the built-in component and use the normal path
   equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
 
+QUnit.test('[GH#13432] able to safely extend the built-in component and invoke it inline', function() {
+  view = EmberView.create({
+    [OWNER]: owner,
+    title: 'my custom link-to component',
+    template: compile('{{custom-link-to view.title \'index\'}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
+});
+
 }
