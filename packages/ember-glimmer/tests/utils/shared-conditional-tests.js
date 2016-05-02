@@ -255,7 +255,8 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
 // Testing behaviors related to objects, object proxies, `{ isTruthy: (true|false) }`, etc
 export const ObjectTestCases = {
 
-  ['@test it tests for `isTruthy` if available']() {
+  // No longer supported for Glimmer2, since contexts are always components
+  ['@htmlbars it tests for `isTruthy` if available']() {
     this.renderValues({ isTruthy: this.truthyValue }, { isTruthy: this.falsyValue });
 
     this.assertText('T1F2');
@@ -492,7 +493,7 @@ applyMixins(TogglingConditionalsTest,
     0,
     [],
     emberA(),
-    EmberObject.create({ isTruthy: false })
+    ObjectProxy.create({ isTruthy: false })
   ]),
 
   new IsTruthyGenerator([
@@ -509,7 +510,7 @@ applyMixins(TogglingConditionalsTest,
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
-    EmberObject.create({ isTruthy: true }),
+    ObjectProxy.create({ content: true }),
     /*jshint -W053 */
     new String('hello'),
     new String(''),
@@ -524,7 +525,7 @@ applyMixins(TogglingConditionalsTest,
     0,
     [],
     emberA(),
-    EmberObject.create({ isTruthy: false })
+    ObjectProxy.create({ isTruthy: false })
   ]),
 
   ObjectTestCases,
@@ -585,7 +586,8 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  ['@test it tests for `isTruthy` on the context if available']() {
+  // This no longer makes sense for glimmer since `this` refers to the component, which cannot be a proxy
+  ['@htmlbars it tests for `isTruthy` on the context if available']() {
     let template = this.wrappedTemplateFor({ cond: 'this', truthy: '"T1"', falsy: '"F1"' });
 
     this.render(template, { isTruthy: this.truthyValue });
@@ -715,7 +717,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  ['@test it tests for `isTruthy` on the context if available']() {
+  // This no longer makes sense for glimmer since `this` refers to the component, which cannot be a proxy
+  ['@htmlbars it tests for `isTruthy` on the context if available']() {
     let template = this.wrappedTemplateFor({ cond: 'this', truthy: 'T1', falsy: 'F1' });
 
     this.render(template, { isTruthy: this.truthyValue });

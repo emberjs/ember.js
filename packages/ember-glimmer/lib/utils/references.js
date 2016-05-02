@@ -7,21 +7,15 @@ import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UN
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
+<<<<<<< dc4b60be5849a6dad2cc464822294a435e08e31c
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
-export const UPDATE = symbol('UPDATE');
+=======
+import { isProxy } from 'ember-runtime/mixins/-proxy';
 
-// FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
-// have an `isTruthy` property on them). This is not actually supported –
-// we should fix the tests to use an actual proxy. When that's done, we should
-// remove this and use the real `isProxy` from `ember-metal`.
-//
-// import { isProxy } from 'ember-metal/-proxy';
-//
-function isProxy(obj) {
-  return (obj && typeof obj === 'object' && 'isTruthy' in obj);
-}
+>>>>>>> [Glimmer2] Mark glimmer2 tests on context.isTruthy to be @htmlbars only
+export const UPDATE = symbol('UPDATE');
 
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
