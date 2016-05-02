@@ -1408,12 +1408,12 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.context.set('user1', 'Bar'));
 
     assert.equal(this.$('#direct').text(), 'Bar4', 'direct');
-    //assert.equal(this.$('#helper').text(), 'Bar4', 'helper');
+    assert.equal(this.$('#helper').text(), 'Bar4', 'helper');
 
     this.runTask(() => this.context.set('user2', '5'));
 
     assert.equal(this.$('#direct').text(), 'Bar5', 'direct');
-    //assert.equal(this.$('#helper').text(), 'Bar5', 'helper');
+    assert.equal(this.$('#helper').text(), 'Bar5', 'helper');
 
     this.runTask(() => {
       this.context.set('user1', 'Foo');
