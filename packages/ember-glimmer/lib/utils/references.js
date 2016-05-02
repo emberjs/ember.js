@@ -1,7 +1,7 @@
 import { get } from 'ember-metal/property_get';
 import { tagFor } from 'ember-metal/tags';
 import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
-import { ConditionalReference as GlimmerConditionalReference } from 'glimmer-runtime';
+import { ConditionalReference as GlimmerConditionalReference, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
@@ -24,8 +24,7 @@ export class PrimitiveReference extends ConstReference {
   }
 }
 
-export const NULL_REFERENCE = new ConstReference(null);
-export const UNDEFINED_REFERENCE = new ConstReference(undefined);
+export { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 
 // @abstract
 // @implements PathReference
