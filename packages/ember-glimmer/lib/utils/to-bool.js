@@ -10,14 +10,6 @@ export default function toBool(predicate) {
     return true;
   }
 
-  if (typeof predicate === 'object') {
-    let isTruthy = get(predicate, 'isTruthy');
-
-    if (typeof isTruthy === 'boolean') {
-      return isTruthy;
-    }
-  }
-
   if (isArray(predicate)) {
     return get(predicate, 'length') !== 0;
   }
