@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 2.6.0-beta.3 (May 02, 2016)
+
+- [#13418](https://github.com/emberjs/ember.js/pull/13418) [BUGFIX] Ensure that passing `run.later` a timeout value of `NaN` does not break all future
+  timers.
+- [#13435](https://github.com/emberjs/ember.js/pull/13435) [BUGFIX] Fix positional parameters when used with component helper.
+- [#13438](https://github.com/emberjs/ember.js/pull/13438) [BUGFIX] Ensure custom components extending from `Ember.LinkComponent` can operate
+  in both block and inline form.
+
 ### 2.6.0-beta.2 (April 27, 2016)
 
 - [#13356](https://github.com/emberjs/ember.js/pull/13356) [BUGFIX] Update `Registry#has` to always return true/false.
