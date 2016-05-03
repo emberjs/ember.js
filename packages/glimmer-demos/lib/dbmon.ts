@@ -29,72 +29,13 @@ class Component {
   didRender() {}
 }
 
-class ServerUptime extends Component {
-  get upDays() {
-    return this.attrs.days.reduce((upDays, day) => {
-      return upDays += (day.up ? 1 : 0);
-    }, 0);
-  }
-
-  get streak() {
-    let [max] = this.attrs.days.reduce(([max, streak], day) => {
-      if (day.up && streak + 1 > max) {
-        return [streak + 1, streak + 1];
-      } else if (day.up) {
-        return [max, streak + 1];
-      } else {
-        return [max, 0];
-      }
-    }, [0, 0]);
-
-    return max;
-  }
-}
-
-class UptimeDay extends Component {
-  get color() {
-    return this.attrs.day.up ? '#8cc665' : '#ccc';
-  }
-
-  get memo() {
-    return this.attrs.day.up ? 'Servers operational!' : 'Red alert!';
-  }
-}
-
 class DbmonDatabase extends Component {
-  get fps() {
-    return 60;
-  }
-}
-
-class DbMonster extends Component {
-  get fps() {
-    return 60;
+  get topFiveQueries() {
+    return [{},{}];
   }
 }
 
 let env = new TestEnvironment();
-
-env.registerEmberishGlimmerComponent('uptime-day', UptimeDay as any, `
-  <div class="uptime-day">
-    <span class="uptime-day-status" style="background-color: {{color}}" />
-    <span class="hover">{{@day.number}}: {{memo}}</span>
-  </div>
-`);
-
-env.registerEmberishGlimmerComponent('server-uptime', ServerUptime as any, `
-  <div class="server-uptime">
-    <h1>{{@name}}</h1>
-    <h2>{{upDays}} Days Up</h2>
-    <h2>Biggest Streak: {{streak}}</h2>
-
-    <div class="days">
-      {{#each @days key="number" as |day|}}
-        <uptime-day day={{day}} />
-      {{/each}}
-    </div>
-  </div>
-`);
 
 env.registerEmberishGlimmerComponent('dbmon-database', DbmonDatabase as any, `
   <td class="dbname">
@@ -116,7 +57,7 @@ env.registerEmberishGlimmerComponent('dbmon-database', DbmonDatabase as any, `
   {{/each}}
 `);
 
-env.registerEmberishGlimmerComponent('db-monster-demo', DbMonster as any, `
+let app = env.compile(`
 {{#if isPlaying}}
   <button onclick={{pause}}>Pause</button>
 {{else}}
@@ -132,12 +73,6 @@ env.registerEmberishGlimmerComponent('db-monster-demo', DbMonster as any, `
 </table>
 `);
 
-let app = env.compile(`
-  {{#if fps}}<div id="fps">{{fps}} FPS</div>{{/if}}
-
-  {{db-monster-demo}}
-`);
-
 let serversRef;
 let result;
 let clear;
@@ -146,11 +81,12 @@ let playing = false;
 
 export function init() {
   let output = document.getElementById('output');
+  let model = generateData();
 
   console.time('initial render');
   env.begin();
 
-  serversRef = new UpdatableReference({ servers: generateServers(), fps: null });
+  serversRef = new UpdatableReference({ model });
   result = app.render(serversRef, env, { appendTo: output, dynamicScope: new TestDynamicScope(null) });
 
   console.log(env['createdComponents'].length);
@@ -200,24 +136,95 @@ function start() {
 }
 
 function onFrame() {
-  serversRef.update({ servers: generateServers(), fps });
+  serversRef.update({ databaseArray: generateData(serversRef.databaseArray), fps });
 }
 
-function generateServer(name: string) {
-  let days = [];
+const ROWS = 100;
 
-  for (let i=0; i<=364; i++) {
-    let up = Math.random() > 0.2;
-    days.push({ number: i, up });
+function getData() {
+  // generate some dummy data
+  var data = {
+    start_at: new Date().getTime() / 1000,
+    databases: {}
+  };
+
+  for (var i = 1; i <= ROWS; i++) {
+    data.databases["cluster" + i] = {
+      queries: []
+    };
+
+    data.databases["cluster" + i + "slave"] = {
+      queries: []
+    };
   }
 
-  return { name, days };
+  Object.keys(data.databases).forEach(function(dbname) {
+    var info = data.databases[dbname];
+
+    var r = Math.floor((Math.random() * 10) + 1);
+    for (var i = 0; i < r; i++) {
+      var q = {
+        canvas_action: null,
+        canvas_context_id: null,
+        canvas_controller: null,
+        canvas_hostname: null,
+        canvas_job_tag: null,
+        canvas_pid: null,
+        elapsed: Math.random() * 15,
+        query: "SELECT blah FROM something",
+        waiting: Math.random() < 0.5
+      };
+
+      if (Math.random() < 0.2) {
+        q.query = "<IDLE> in transaction";
+      }
+
+      if (Math.random() < 0.1) {
+        q.query = "vacuum";
+      }
+
+      info.queries.push(q);
+    }
+
+    info.queries = info.queries.sort(function(a, b) {
+      return b.elapsed - a.elapsed;
+    });
+  });
+
+  return data;
 }
 
-function generateServers() {
-  return [
-    generateServer("Stefan's Server"),
-    generateServer("Godfrey's Server"),
-    generateServer("Yehuda's Server")
-  ];
+function generateData(oldData = {}) {
+  let rawData = getData();
+
+  let databases = (oldData && oldData.databases) || {};
+  let databaseArray = [];
+
+  let data = { databases, databaseArray };
+
+  Object.keys(rawData.databases).forEach(dbname => {
+    let sampleInfo = rawData.databases[dbname];
+
+    if (!databases[dbname]) {
+      databases[dbname] = {
+        name: dbname,
+        samples: []
+      };
+    }
+
+    let samples = databases[dbname].samples;
+
+    samples.push({
+      time: rawData.start_at,
+      queries: sampleInfo.queries
+    });
+
+    if (samples.length > 5) {
+      samples.splice(0, samples.length - 5);
+    }
+
+    databaseArray.push(databases[dbname]);
+  });
+
+  return data;
 }
