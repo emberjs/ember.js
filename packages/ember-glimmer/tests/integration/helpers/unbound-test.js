@@ -252,9 +252,9 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.render(`{{unbound (repeat foo count=bar)}} {{repeat foo count=bar}} {{unbound (repeat foo count=2)}} {{repeat foo count=4}}`, {
       foo: 'X',
-      numRepeatsBinding: 'bar',
       bar: 5
     });
+
 
     this.assertText('XXXXX XXXXX XX XXXX');
 

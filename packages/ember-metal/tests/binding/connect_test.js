@@ -54,7 +54,26 @@ testBoth('Connecting a binding between two properties', function(get, set) {
   // a.bar -> a.foo
   var binding = new Binding('foo', 'bar');
 
-  performTest(binding, a, a, get, set);
+  let deprecationMessage = '`Ember.Binding` is deprecated. Consider using an' +
+    ' `alias` computed property instead.';
+
+  expectDeprecation(() => {
+    performTest(binding, a, a, get, set);
+  }, deprecationMessage);
+});
+
+testBoth('Connecting a oneWay binding raises a deprecation',
+  function(get, set) {
+  var a = { foo: 'FOO', bar: 'BAR' };
+
+  // a.bar -> a.foo
+  var binding = new Binding('foo', 'bar').oneWay();
+
+  let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+    ' are using a `oneWay` binding consider using a `readOnly` computed' +
+    ' property instead.';
+
+  expectDeprecation(() => { binding.connect(a); }, deprecationMessage);
 });
 
 testBoth('Connecting a binding between two objects', function(get, set) {
@@ -64,7 +83,12 @@ testBoth('Connecting a binding between two objects', function(get, set) {
   // b.bar -> a.foo
   var binding = new Binding('foo', 'b.bar');
 
-  performTest(binding, a, b, get, set);
+  let deprecationMessage = '`Ember.Binding` is deprecated. Consider using an' +
+    ' `alias` computed property instead.';
+
+  expectDeprecation(() => {
+    performTest(binding, a, b, get, set);
+  }, deprecationMessage);
 });
 
 testBoth('Connecting a binding to path', function(get, set) {
@@ -78,7 +102,12 @@ testBoth('Connecting a binding to path', function(get, set) {
   // globalB.b.bar -> a.foo
   var binding = new Binding('foo', 'GlobalB.b.bar');
 
-  performTest(binding, a, b, get, set);
+  let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+    ' are binding to a global consider using a service instead.';
+
+  expectDeprecation(() => {
+    performTest(binding, a, b, get, set);
+  }, deprecationMessage);
 
   // make sure modifications update
   b = { bar: 'BIFF' };
@@ -97,11 +126,15 @@ testBoth('Calling connect more than once', function(get, set) {
   // b.bar -> a.foo
   var binding = new Binding('foo', 'b.bar');
 
-  performTest(binding, a, b, get, set, function () {
-    binding.connect(a);
+  let deprecationMessage = '`Ember.Binding` is deprecated. Consider using an' +
+    ' `alias` computed property instead.';
 
-    binding.connect(a);
-  });
+  expectDeprecation(() => {
+    performTest(binding, a, b, get, set, function () {
+      binding.connect(a);
+      binding.connect(a);
+    });
+  }, deprecationMessage);
 });
 
 QUnit.test('inherited bindings should sync on create', function() {
@@ -111,10 +144,13 @@ QUnit.test('inherited bindings should sync on create', function() {
       bind(this, 'foo', 'bar.baz');
     };
 
-    a = new A();
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider using an' +
+      ' `alias` computed property instead.';
+
+    expectDeprecation(() => { a = new A(); }, deprecationMessage);
+
     set(a, 'bar', { baz: 'BAZ' });
   });
 
   equal(get(a, 'foo'), 'BAZ', 'should have synced binding on new obj');
 });
-

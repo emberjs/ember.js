@@ -160,7 +160,12 @@ QUnit.test('bindings should be synced when are updated in the willDestroy hook',
   });
 
   run(function() {
-    bind(foo, 'value', 'bar.value');
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      bind(foo, 'value', 'bar.value');
+    }, deprecationMessage);
   });
 
   ok(bar.get('value') === false, 'the initial value has been bound');

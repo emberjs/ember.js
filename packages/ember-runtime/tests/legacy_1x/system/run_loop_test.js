@@ -44,13 +44,20 @@ QUnit.module('System:run_loop() - chained binding', {
 
 QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.RunLoop)', function() {
   run(function () {
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
     //Binding of output of MyApp.first object to input of MyApp.second object
-    binding1 = Binding.from('first.output')
-      .to('second.input').connect(MyApp);
+    expectDeprecation(() => {
+      binding1 = Binding.from('first.output')
+        .to('second.input').connect(MyApp);
+    }, deprecationMessage);
 
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = Binding.from('second.output')
-      .to('third.input').connect(MyApp);
+    expectDeprecation(() => {
+      binding2 = Binding.from('second.output')
+        .to('third.input').connect(MyApp);
+    }, deprecationMessage);
   });
 
   run(function () {
@@ -75,13 +82,20 @@ QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.R
 
 QUnit.test('Should propagate bindings after the RunLoop completes', function() {
   run(function () {
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
     //Binding of output of MyApp.first object to input of MyApp.second object
-    binding1 = Binding.from('first.output')
-      .to('second.input').connect(MyApp);
+    expectDeprecation(() => {
+      binding1 = Binding.from('first.output')
+        .to('second.input').connect(MyApp);
+    }, deprecationMessage);
 
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = Binding.from('second.output')
-      .to('third.input').connect(MyApp);
+    expectDeprecation(() => {
+      binding2 = Binding.from('second.output')
+        .to('third.input').connect(MyApp);
+    }, deprecationMessage);
   });
 
   run(function () {

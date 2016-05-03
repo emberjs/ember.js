@@ -14,8 +14,15 @@ QUnit.test('chains should copy forward to subclasses when prototype created', fu
       },
       aBinding: 'obj.a' // add chain
     });
-    // realize prototype
-    objWithChains = ObjectWithChains.create();
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      // realize prototype
+      objWithChains = ObjectWithChains.create();
+    }, deprecationMessage);
+
     // should not copy chains from parent yet
     SubWithChains = ObjectWithChains.extend({
       hiBinding: 'obj.hi', // add chain
@@ -24,9 +31,13 @@ QUnit.test('chains should copy forward to subclasses when prototype created', fu
       }).property('hi'), // observe chain
       greetingBinding: 'hello'
     });
+
     SubSub = SubWithChains.extend();
-    // should realize prototypes and copy forward chains
-    subSub = SubSub.create();
+
+    expectDeprecation(() => {
+      // should realize prototypes and copy forward chains
+      subSub = SubSub.create();
+    }, deprecationMessage);
   });
   equal(subSub.get('greeting'), 'hi world');
   run(function () {

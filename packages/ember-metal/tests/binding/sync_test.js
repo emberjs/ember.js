@@ -35,7 +35,13 @@ testBoth('bindings should not sync twice in a single run loop', function(get, se
     b = {
       a: a
     };
-    bind(b, 'foo', 'a.foo');
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      bind(b, 'foo', 'a.foo');
+    }, deprecationMessage);
   });
 
   // reset after initial binding synchronization
@@ -68,7 +74,13 @@ testBoth('bindings should not infinite loop if computed properties return object
     b = {
       a: a
     };
-    bind(b, 'foo', 'a.foo');
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      bind(b, 'foo', 'a.foo');
+    }, deprecationMessage);
   });
 
   deepEqual(get(b, 'foo'), ['foo', 'bar'], 'the binding should sync');
@@ -86,12 +98,21 @@ testBoth('bindings should do the right thing when observers trigger bindings in 
     b = {
       a: a
     };
-    bind(b, 'foo', 'a.foo');
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      bind(b, 'foo', 'a.foo');
+    }, deprecationMessage);
 
     c = {
       a: a
     };
-    bind(c, 'foo', 'a.foo');
+
+    expectDeprecation(() => {
+      bind(c, 'foo', 'a.foo');
+    }, deprecationMessage);
   });
 
   addObserver(b, 'foo', function() {
@@ -116,7 +137,13 @@ testBoth('bindings should not try to sync destroyed objects', function(get, set)
     b = {
       a: a
     };
-    bind(b, 'foo', 'a.foo');
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      bind(b, 'foo', 'a.foo');
+    }, deprecationMessage);
   });
 
   run(function() {
@@ -133,7 +160,13 @@ testBoth('bindings should not try to sync destroyed objects', function(get, set)
     b = {
       a: a
     };
-    bind(b, 'foo', 'a.foo');
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      bind(b, 'foo', 'a.foo');
+    }, deprecationMessage);
   });
 
   run(function() {
