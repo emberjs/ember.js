@@ -8,12 +8,16 @@
 
   ```handlebars
  <button {{action 'foo'}}>
+ <button onblur={{action 'foo'}}>
+ <button onblur={{action (action 'foo') 'bar'}}>
   ```
 
   with
 
   ```handlebars
  <button {{action this 'foo'}}>
+ <button onblur={{action this 'foo'}}>
+ <button onblur={{action this (action this 'foo') 'bar'}}>
   ```
 
   @private
@@ -25,10 +29,6 @@ export default function TransformActionSyntax() {
   this.syntax = null;
 }
 
-const TRANSFORMATIONS = {
-  action: 'action'
-};
-
 /**
   @private
   @method transform
@@ -39,17 +39,29 @@ TransformActionSyntax.prototype.transform = function TransformActionSyntax_trans
 
   traverse(ast, {
     ElementModifierStatement(node) {
-      if (TRANSFORMATIONS[node.path.original]) {
-        let thisPath = b.path('this');
-
-        // We have to delete the `parts` here because otherwise it will be treated
-        // as a property look up (i.e. `this.this`) and will result in `undefined`.
-        thisPath.parts = [];
-
-        return b.elementModifier(node.path, [thisPath, ...node.params], node.hash, node.loc);
+      if (isAction(node)) {
+        insertThisAsFirstParam(node, b);
+      }
+    },
+    MustacheStatement(node) {
+      if (isAction(node)) {
+        insertThisAsFirstParam(node, b);
+      }
+    },
+    SubExpression(node) {
+      if (isAction(node)) {
+        insertThisAsFirstParam(node, b);
       }
     }
   });
 
   return ast;
 };
+
+function isAction(node) {
+  return node.path.original === 'action';
+}
+
+function insertThisAsFirstParam(node, builders) {
+  node.params.unshift(builders.path(''));
+}

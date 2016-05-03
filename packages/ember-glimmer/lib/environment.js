@@ -22,6 +22,7 @@ import {
   inlineUnless
 } from './helpers/if-unless';
 
+import { default as action } from './helpers/action';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
@@ -35,6 +36,7 @@ const builtInHelpers = {
   concat,
   if: inlineIf,
   unless: inlineUnless,
+  action,
   get,
   hash,
   loc,
