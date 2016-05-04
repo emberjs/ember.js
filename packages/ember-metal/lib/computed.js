@@ -250,7 +250,8 @@ ComputedPropertyPrototype.property = function() {
     warn(
       `Dependent keys containing @each only work one level deep. ` +
         `You used the key "${property}" which is invalid. ` +
-          `Please create an intermediary computed property.`,
+          `You used: ${property} . ` +
+            `Please create an intermediary computed property.`,
       DEEP_EACH_REGEX.test(property) === false,
       { id: 'ember-metal.computed-deep-each' }
     );
