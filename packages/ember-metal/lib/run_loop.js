@@ -258,7 +258,11 @@ run.end = function() {
   @public
 */
 run.schedule = function(/* queue, target, method */) {
-  checkAutoRun();
+  assert(
+    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
+    `You will need to wrap any code with asynchronous side-effects in a run`,
+    run.currentRunLoop || !Ember.testing
+  );
   backburner.schedule(...arguments);
 };
 
@@ -339,7 +343,11 @@ run.later = function(/*target, method*/) {
   @public
 */
 run.once = function(...args) {
-  checkAutoRun();
+  assert(
+    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
+    `You will need to wrap any code with asynchronous side-effects in a run`,
+    run.currentRunLoop || !Ember.testing
+  );
   args.unshift('actions');
   return backburner.scheduleOnce(...args);
 };
@@ -397,7 +405,11 @@ run.once = function(...args) {
   @public
 */
 run.scheduleOnce = function(/*queue, target, method*/) {
-  checkAutoRun();
+  assert(
+    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
+    `You will need to wrap any code with asynchronous side-effects in a run`,
+    run.currentRunLoop || !Ember.testing
+  );
   return backburner.scheduleOnce(...arguments);
 };
 
@@ -643,17 +655,6 @@ run.debounce = function() {
 run.throttle = function() {
   return backburner.throttle(...arguments);
 };
-
-// Make sure it's not an autorun during testing
-function checkAutoRun() {
-  if (!run.currentRunLoop) {
-    assert(
-      `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-      !Ember.testing
-    );
-  }
-}
 
 /**
   Add a new named queue after the specified queue.
