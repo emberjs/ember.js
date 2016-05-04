@@ -188,26 +188,32 @@ test("text", function() {
 
 test("comment", function() {
   let ast = parse(`
-    <div><!-- blah blah blah blah --></div>
+    <div><!-- blah blah blah blah -->
+      <!-- derp herky --><div></div>
+    </div>
   `);
 
   let [,div] = ast.body;
-  let [comment] = div.children;
+  let [comment1,,comment2,trailingDiv] = div.children;
 
-  locEqual(comment, 2, 12, 2, 36);
+  locEqual(comment1, 2, 9, 2, 37);
+  locEqual(comment2, 3, 6, 3, 25);
+  locEqual(trailingDiv, 3, 25, 3, 36);
 });
 
 test("element attribute", function() {
   let ast = parse(`
     <div data-foo="blah"
-      data-derp="lolol">
+      data-derp="lolol"
+data-barf="herpy">
       Hi, fivetanley!
     </div>
   `);
 
   let [,div] = ast.body;
-  let [dataFoo, dataDerp] = div.attributes;
+  let [dataFoo,dataDerp,dataBarf] = div.attributes;
 
-  locEqual(dataFoo, 2, 10, 2, 24);
-  locEqual(dataDerp, 3, 7, 3, 23);
+  locEqual(dataFoo, 2, 9, 2, 24);
+  locEqual(dataDerp, 3, 6, 3, 23);
+  locEqual(dataBarf, 4, 0, 4, 17);
 });
