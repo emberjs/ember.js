@@ -13,8 +13,7 @@ export default {
     this.currentNode = b.comment("");
     this.currentNode.loc = {
       source: null,
-      // beginComment isn't called until after the `<!--` is consumed
-      start: b.pos(this.tokenizer.line, this.tokenizer.column - 4),
+      start: b.pos(this.tokenizer.tagLine, this.tokenizer.tagColumn),
       end: null
     };
   },
