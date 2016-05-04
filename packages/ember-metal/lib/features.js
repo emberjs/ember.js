@@ -1,5 +1,6 @@
 import { ENV } from 'ember-environment';
 import assign from 'ember-metal/assign';
+import DEFAULT_FEATURES from 'ember/features';
 
 /**
   The hash of enabled Canary features. Add to this, any canary features
@@ -14,8 +15,7 @@ import assign from 'ember-metal/assign';
   @since 1.1.0
   @public
 */
-export const KNOWN_FEATURES = DEFAULT_FEATURES; // jshint ignore:line
-export let FEATURES = assign(KNOWN_FEATURES, ENV.FEATURES);
+export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's

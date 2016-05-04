@@ -1,6 +1,7 @@
 /*globals EmberDev */
 
 import Ember from 'ember-metal/core'; // Ember.libraries
+import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';
@@ -285,7 +286,7 @@ QUnit.test('enable log of libraries with an ENV var', function() {
     });
   });
 
-  equal(messages[1], 'Ember  : ' + Ember.VERSION);
+  equal(messages[1], 'Ember  : ' + VERSION);
   equal(messages[2], 'jQuery : ' + jQuery().jquery);
   equal(messages[3], 'my-lib : ' + '2.0.0a');
 

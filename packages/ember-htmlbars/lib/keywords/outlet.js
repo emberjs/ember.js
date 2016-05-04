@@ -8,9 +8,10 @@ import { get } from 'ember-metal/property_get';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import isEnabled from 'ember-metal/features';
+import VERSION from 'ember/version';
 
 if (!isEnabled('ember-glimmer')) {
-  topLevelViewTemplate.meta.revision = 'Ember@VERSION_STRING_PLACEHOLDER';
+  topLevelViewTemplate.meta.revision = 'Ember@' + VERSION;
 }
 
 /**

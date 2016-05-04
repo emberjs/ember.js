@@ -20,7 +20,6 @@ import { context } from 'ember-environment';
 
   @class Ember
   @static
-  @version VERSION_STRING_PLACEHOLDER
   @public
 */
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
@@ -39,17 +38,6 @@ Ember.debug = debugModule.debug;
 Ember.deprecate = debugModule.deprecate;
 Ember.deprecateFunc = debugModule.deprecateFunc;
 Ember.runInDebug = debugModule.runInDebug;
-
-/**
-  The semantic version.
-
-  @property VERSION
-  @type String
-  @default 'VERSION_STRING_PLACEHOLDER'
-  @static
-  @public
-*/
-Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
 // ..........................................................
 // BOOTSTRAP
