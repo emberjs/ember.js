@@ -4,6 +4,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { TogglingSyntaxConditionalsTest } from '../../utils/shared-conditional-tests';
 import { strip } from '../../utils/abstract-test-case';
+import ObjectProxy from 'ember-runtime/system/object_proxy';
 
 moduleFor('Syntax test: {{#with}}', class extends TogglingSyntaxConditionalsTest {
 
@@ -153,7 +154,7 @@ moduleFor('Syntax test: {{#with as}}', class extends TogglingSyntaxConditionalsT
 
   ['@test can access alias of a proxy']() {
     this.render(`{{#with proxyThing as |person|}}{{person.name}}{{/with}}`, {
-      proxyThing: { isTruthy: true, name: 'Tom Dale' }
+      proxyThing: ObjectProxy.create({ content: { name: 'Tom Dale' } })
     });
 
     this.assertText('Tom Dale');
@@ -174,7 +175,7 @@ moduleFor('Syntax test: {{#with as}}', class extends TogglingSyntaxConditionalsT
 
     this.assertText('');
 
-    this.runTask(() => set(this.context, 'proxyThing', { isTruthy: true, name: 'Tom Dale' }));
+    this.runTask(() => set(this.context, 'proxyThing', ObjectProxy.create({ content: { name: 'Tom Dale' } })));
 
     this.assertText('Tom Dale');
   }
