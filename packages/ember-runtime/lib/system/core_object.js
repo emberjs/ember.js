@@ -40,9 +40,6 @@ import { ComputedProperty, computed } from 'ember-metal/computed';
 import InjectedProperty from 'ember-metal/injected_property';
 import run from 'ember-metal/run_loop';
 import { destroy } from 'ember-metal/watching';
-import {
-  K
-} from 'ember-metal/core';
 import { validatePropertyInjections } from 'ember-runtime/inject';
 import symbol from 'ember-metal/symbol';
 
@@ -458,7 +455,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method willDestroy
     @public
   */
-  willDestroy: K,
+  willDestroy() {},
 
   /**
     Invoked by the run loop to actually destroy the object. This is

@@ -374,6 +374,15 @@ Object.defineProperty(Ember, 'lookup', {
   @public
 */
 Ember.onerror = null;
+
+/**
+  An empty function useful for some operations. Always returns `this`.
+
+  @method K
+  @return {Object}
+  @public
+*/
+Ember.K = function K() { return this; };
 // END EXPORTS
 
 // do this for side-effects of updating Ember.assert, warn, etc when
