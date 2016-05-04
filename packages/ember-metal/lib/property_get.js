@@ -76,7 +76,7 @@ export function _getPath(root, path) {
 
   for (let i = 0; i < parts.length; i++) {
     if (obj == null) {
-      return obj;
+      return undefined;
     }
 
     obj = get(obj, parts[i]);
