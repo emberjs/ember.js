@@ -6,6 +6,7 @@
 // BEGIN IMPORTS
 import require, { has } from 'require';
 import { ENV, context } from 'ember-environment';
+import VERSION from 'ember/version';
 import Ember from 'ember-metal/core'; // reexports
 import { deprecate, deprecateFunc } from 'ember-metal/debug';
 import isEnabled, { FEATURES } from 'ember-metal/features';
@@ -291,8 +292,16 @@ Ember.Backburner = function() {
 };
 Ember._Backburner = Backburner;
 
+/**
+  The semantic version
+  @property VERSION
+  @type String
+  @public
+ */
+Ember.VERSION = VERSION;
+
 Ember.libraries = new Libraries();
-Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
+Ember.libraries.registerCoreLibrary('Ember', VERSION);
 
 Ember.isNone = isNone;
 Ember.isEmpty = isEmpty;

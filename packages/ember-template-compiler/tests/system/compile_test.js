@@ -2,6 +2,7 @@ import compile from 'ember-template-compiler/system/compile';
 import {
   compile as htmlbarsCompile
 } from 'htmlbars-compiler/compiler';
+import VERSION from 'ember/version';
 
 import isEnabled from 'ember-metal/features';
 if (!isEnabled('ember-glimmer')) {
@@ -32,7 +33,7 @@ QUnit.test('includes the current revision in the compiled template', function() 
 
   var actual = compile(templateString);
 
-  equal(actual.meta.revision, 'Ember@VERSION_STRING_PLACEHOLDER', 'revision is included in generated template');
+  equal(actual.meta.revision, 'Ember@' + VERSION, 'revision is included in generated template');
 });
 
 QUnit.test('the template revision is different than the HTMLBars default revision', function() {
