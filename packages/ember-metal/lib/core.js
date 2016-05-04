@@ -55,16 +55,4 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 // BOOTSTRAP
 //
 
-/**
-  An empty function useful for some operations. Always returns `this`.
-
-  @method K
-  @return {Object}
-  @public
-*/
-function K() { return this; }
-export { K };
-Ember.K = K;
-//TODO: ES6 GLOBAL TODO
-
 export default Ember;
