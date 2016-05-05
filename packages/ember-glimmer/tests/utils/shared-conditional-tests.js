@@ -351,13 +351,13 @@ export const ObjectTestCases = {
     });
 
     this.assertText('T1T2F3');
-  }
+  },
 
   ['@test setting the isTruthy property of an object proxy overrides its truthiness regardless of its content']() {
     this.renderValues(
       ObjectProxy.create({ content: {} }),
       EmberObject.create({ content: false, isTruthy: true }),
-      ObjectProxy.create()
+      ObjectProxy.create({ content: null })
     );
 
     this.assertText('T1T2F3');
@@ -390,9 +390,9 @@ export const ObjectTestCases = {
     this.assertText('T1T2T3');
 
     this.runTask(() => {
-      set(this.context, 'cond1.content', undefined);
-      set(this.context, 'cond2.content', undefined);
-      set(this.context, 'cond3.content', undefined);
+      set(this.context, 'cond1.content', null);
+      set(this.context, 'cond2.content', null);
+      set(this.context, 'cond3.content', null);
     });
 
     this.assertText('T1T2F3');
@@ -400,7 +400,7 @@ export const ObjectTestCases = {
     this.runTask(() => {
       set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
       set(this.context, 'cond2', EmberObject.create({ content: true, isTruthy: true }));
-      set(this.context, 'cond3', ObjectProxy.create({ content: [] }));
+      set(this.context, 'cond3', ObjectProxy.create({ content: null }));
     });
 
     this.assertText('T1T2F3');
