@@ -217,3 +217,20 @@ data-barf="herpy">
   locEqual(dataDerp, 3, 6, 3, 23);
   locEqual(dataBarf, 4, 0, 4, 17);
 });
+
+test("char references", function() {
+  let ast = parse(`
+    &gt;<div>&lt;<p>
+      Hi, danmcclain &excl;</p>
+    </div>
+  `);
+
+  let [,div] = ast.body;
+  let [text1,p] = div.children;
+  let [text2] = p.children;
+
+  locEqual(div, 2, 8, 4, 10);
+  locEqual(text1, 2, 13, 2, 17);
+  locEqual(p, 2, 17, 3, 31);
+  locEqual(text2, 2, 20, 3, 27);
+});
