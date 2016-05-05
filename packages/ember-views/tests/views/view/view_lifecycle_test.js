@@ -13,12 +13,9 @@ var originalLookup = context.lookup;
 var originalViewKeyword;
 var lookup, view;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-
-QUnit.module('views/view/view_lifecycle_test - pre-render', {
+testModule('views/view/view_lifecycle_test - pre-render', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     context.lookup = lookup = {};
@@ -35,7 +32,7 @@ QUnit.module('views/view/view_lifecycle_test - pre-render', {
   }
 });
 
-QUnit.test('should create and append a DOM element after bindings have synced', function() {
+test('should create and append a DOM element after bindings have synced', function() {
   var ViewTest;
 
   lookup.ViewTest = ViewTest = {};
@@ -65,7 +62,7 @@ QUnit.test('should create and append a DOM element after bindings have synced', 
   equal(view.$().text(), 'controllerPropertyValue', 'renders and appends after bindings have synced');
 });
 
-QUnit.test('should throw an exception if trying to append a child before rendering has begun', function() {
+test('should throw an exception if trying to append a child before rendering has begun', function() {
   run(function() {
     view = EmberView.create();
   });
@@ -75,7 +72,7 @@ QUnit.test('should throw an exception if trying to append a child before renderi
   }, null, 'throws an error when calling appendChild()');
 });
 
-QUnit.test('should not affect rendering if rerender is called before initial render happens', function() {
+test('should not affect rendering if rerender is called before initial render happens', function() {
   run(function() {
     view = EmberView.create({
       template: compile('Rerender me!')
@@ -88,7 +85,7 @@ QUnit.test('should not affect rendering if rerender is called before initial ren
   equal(view.$().text(), 'Rerender me!', 'renders correctly if rerender is called first');
 });
 
-QUnit.test('should not affect rendering if destroyElement is called before initial render happens', function() {
+test('should not affect rendering if destroyElement is called before initial render happens', function() {
   run(function() {
     view = EmberView.create({
       template: compile('Don\'t destroy me!')
@@ -101,7 +98,7 @@ QUnit.test('should not affect rendering if destroyElement is called before initi
   equal(view.$().text(), 'Don\'t destroy me!', 'renders correctly if destroyElement is called first');
 });
 
-QUnit.module('views/view/view_lifecycle_test - in render', {
+testModule('views/view/view_lifecycle_test - in render', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
@@ -115,7 +112,7 @@ QUnit.module('views/view/view_lifecycle_test - in render', {
   }
 });
 
-QUnit.test('rerender of top level view during rendering should throw', function() {
+test('rerender of top level view during rendering should throw', function() {
   registerHelper('throw', function() {
     view.rerender();
   });
@@ -131,7 +128,7 @@ QUnit.test('rerender of top level view during rendering should throw', function(
   );
 });
 
-QUnit.test('rerender of non-top level view during rendering should throw', function() {
+test('rerender of non-top level view during rendering should throw', function() {
   let innerView = EmberView.create({
     template: compile('{{throw}}')
   });
@@ -151,7 +148,7 @@ QUnit.test('rerender of non-top level view during rendering should throw', funct
   );
 });
 
-QUnit.module('views/view/view_lifecycle_test - hasElement', {
+testModule('views/view/view_lifecycle_test - hasElement', {
   teardown() {
     if (view) {
       run(function() {
@@ -161,7 +158,7 @@ QUnit.module('views/view/view_lifecycle_test - hasElement', {
   }
 });
 
-QUnit.test('createElement puts the view into the hasElement state', function() {
+test('createElement puts the view into the hasElement state', function() {
   var hasCalledInsertElement = false;
   view = EmberView.create({
     didInsertElement() {
@@ -177,7 +174,7 @@ QUnit.test('createElement puts the view into the hasElement state', function() {
   equal(view.element.tagName, 'DIV', 'content is rendered');
 });
 
-QUnit.test('trigger rerender on a view in the hasElement state doesn\'t change its state to inDOM', function() {
+test('trigger rerender on a view in the hasElement state doesn\'t change its state to inDOM', function() {
   var hasCalledInsertElement = false;
   view = EmberView.create({
     didInsertElement() {
@@ -195,7 +192,7 @@ QUnit.test('trigger rerender on a view in the hasElement state doesn\'t change i
 });
 
 
-QUnit.module('views/view/view_lifecycle_test - in DOM', {
+testModule('views/view/view_lifecycle_test - in DOM', {
   teardown() {
     if (view) {
       run(function() {
@@ -205,7 +202,7 @@ QUnit.module('views/view/view_lifecycle_test - in DOM', {
   }
 });
 
-QUnit.test('should throw an exception when calling appendChild when DOM element exists', function() {
+test('should throw an exception when calling appendChild when DOM element exists', function() {
   run(function() {
     view = EmberView.create({
       template: compile('Wait for the kick')
@@ -221,7 +218,7 @@ QUnit.test('should throw an exception when calling appendChild when DOM element 
   }, null, 'throws an exception when calling appendChild after element is created');
 });
 
-QUnit.test('should replace DOM representation if rerender() is called after element is created', function() {
+test('should replace DOM representation if rerender() is called after element is created', function() {
   run(function() {
     view = EmberView.extend({
       rerender() {
@@ -252,7 +249,7 @@ QUnit.test('should replace DOM representation if rerender() is called after elem
         'rerenders DOM element when rerender() is called');
 });
 
-QUnit.test('should destroy DOM representation when destroyElement is called', function() {
+test('should destroy DOM representation when destroyElement is called', function() {
   run(function() {
     view = EmberView.create({
       template: compile('Don\'t fear the reaper')
@@ -270,7 +267,7 @@ QUnit.test('should destroy DOM representation when destroyElement is called', fu
   ok(!view.get('element'), 'destroys view when destroyElement() is called');
 });
 
-QUnit.test('should destroy DOM representation when destroy is called', function() {
+test('should destroy DOM representation when destroy is called', function() {
   run(function() {
     view = EmberView.create({
       template: compile('<div id=\'warning\'>Don\'t fear the reaper</div>')
@@ -288,7 +285,7 @@ QUnit.test('should destroy DOM representation when destroy is called', function(
   ok(jQuery('#warning').length === 0, 'destroys element when destroy() is called');
 });
 
-QUnit.test('should throw an exception if trying to append an element that is already in DOM', function() {
+test('should throw an exception if trying to append an element that is already in DOM', function() {
   run(function() {
     view = EmberView.create({
       template: compile('Broseidon, King of the Brocean')
@@ -306,9 +303,9 @@ QUnit.test('should throw an exception if trying to append an element that is alr
   }, null, 'raises an exception on second append');
 });
 
-QUnit.module('views/view/view_lifecycle_test - destroyed');
+testModule('views/view/view_lifecycle_test - destroyed');
 
-QUnit.test('should throw an exception when calling appendChild after view is destroyed', function() {
+test('should throw an exception when calling appendChild after view is destroyed', function() {
   run(function() {
     view = EmberView.create({
       template: compile('Wait for the kick')
@@ -328,7 +325,7 @@ QUnit.test('should throw an exception when calling appendChild after view is des
   }, null, 'throws an exception when calling appendChild');
 });
 
-QUnit.test('should throw an exception when rerender is called after view is destroyed', function() {
+test('should throw an exception when rerender is called after view is destroyed', function() {
   run(function() {
     view = EmberView.create({
       template: compile('foo')
@@ -346,7 +343,7 @@ QUnit.test('should throw an exception when rerender is called after view is dest
   }, null, 'throws an exception when calling rerender');
 });
 
-QUnit.test('should throw an exception when destroyElement is called after view is destroyed', function() {
+test('should throw an exception when destroyElement is called after view is destroyed', function() {
   run(function() {
     view = EmberView.create({
       template: compile('foo')
@@ -364,7 +361,7 @@ QUnit.test('should throw an exception when destroyElement is called after view i
   }, null, 'throws an exception when calling destroyElement');
 });
 
-QUnit.test('trigger rerender on a view in the inDOM state keeps its state as inDOM', function() {
+test('trigger rerender on a view in the inDOM state keeps its state as inDOM', function() {
   run(function() {
     view = EmberView.create({
       template: compile('foo')
@@ -383,5 +380,3 @@ QUnit.test('trigger rerender on a view in the inDOM state keeps its state as inD
     view.destroy();
   });
 });
-
-}

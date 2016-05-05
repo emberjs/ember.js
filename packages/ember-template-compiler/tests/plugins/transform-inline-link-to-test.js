@@ -14,11 +14,9 @@ function removeAstPlugin(plugin) {
 
 let legacyViewSupportOriginalValue;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-template-compiler: assert-no-view-and-controller-paths without legacy view support', {
+testModule('ember-template-compiler: assert-no-view-and-controller-paths without legacy view support', {
   setup() {
     legacyViewSupportOriginalValue = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
@@ -31,12 +29,10 @@ QUnit.module('ember-template-compiler: assert-no-view-and-controller-paths witho
   }
 });
 
-QUnit.test('Can transform an inline {{link-to}} without error', function() {
+test('Can transform an inline {{link-to}} without error', function() {
   expect(0);
 
   compile(`{{link-to 'foo' 'index'}}`, {
     moduleName: 'foo/bar/baz'
   });
 });
-
-}

@@ -56,16 +56,12 @@ QUnit.test('Topmost template always get an element', function() {
   equal(jQuery('#qunit-fixture > .ember-view').text(), 'hello world');
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('If topmost view has its own element, it doesn\'t get wrapped in a higher element', function() {
+test('If topmost view has its own element, it doesn\'t get wrapped in a higher element', function() {
   App.register('view:application', EmberView.extend({
     classNames: ['im-special']
   }));
   bootApplication();
   equal(jQuery('#qunit-fixture > .im-special').text(), 'hello world');
 });
-
-}

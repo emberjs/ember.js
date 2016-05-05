@@ -205,11 +205,9 @@ QUnit.test('do not log when template and view are missing when flag is not true'
   });
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('log which view is used with a template', function() {
+test('log which view is used with a template', function() {
   if (EmberDev && EmberDev.runningProdBuild) {
     ok(true, 'Logging does not occur in production builds');
     return;
@@ -226,8 +224,6 @@ QUnit.test('log which view is used with a template', function() {
     equal(logs['view:posts'], 1, 'expected: Rendering posts with PostsView.');
   });
 });
-
-}
 
 QUnit.test('do not log which views are used with templates when flag is not true', function() {
   App.reopen({

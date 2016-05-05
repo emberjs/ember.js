@@ -65,11 +65,10 @@ function sharedTeardown() {
   setTemplates({});
 }
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
-  QUnit.module('The {{link-to}} helper: invoking with query params when defined on a route', {
+  testModule('The {{link-to}} helper: invoking with query params when defined on a route', {
     setup() {
       run(function() {
         sharedSetup();
@@ -110,7 +109,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     teardown: sharedTeardown
   });
 
-  QUnit.test("doesn't update controller QP properties on current route when invoked", function() {
+  // jscs:disable
+
+  test("doesn't update controller QP properties on current route when invoked", function() {
     setTemplate('index', compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -119,7 +120,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
+  test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
     setTemplate('index', compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -128,14 +129,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test('link-to with no params throws', function() {
+  test('link-to with no params throws', function() {
     setTemplate('index', compile("{{#link-to id='the-link'}}Index{{/link-to}}"));
     expectAssertion(function() {
       bootApplication();
     }, /one or more/);
   });
 
-  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
+  test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
     setTemplate('index', compile("{{#link-to (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -144,7 +145,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test('updates controller QP properties on current route when invoked', function() {
+  test('updates controller QP properties on current route when invoked', function() {
     setTemplate('index', compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -153,7 +154,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
-  QUnit.test('updates controller QP properties on current route when invoked (inferred route)', function() {
+  test('updates controller QP properties on current route when invoked (inferred route)', function() {
     setTemplate('index', compile("{{#link-to (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -162,7 +163,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
-  QUnit.test('updates controller QP properties on other route after transitioning to that route', function() {
+  test('updates controller QP properties on other route after transitioning to that route', function() {
     Router.map(function() {
       this.route('about');
     });
@@ -178,7 +179,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(container.lookup('controller:application').get('currentPath'), 'about');
   });
 
-  QUnit.test('supplied QP properties can be bound', function() {
+  test('supplied QP properties can be bound', function() {
     setTemplate('index', compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -190,7 +191,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(jQuery('#the-link').attr('href'), '/?foo=ASL');
   });
 
-  QUnit.test('supplied QP properties can be bound (booleans)', function() {
+  test('supplied QP properties can be bound (booleans)', function() {
     var indexController = container.lookup('controller:index');
     setTemplate('index', compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}"));
 
@@ -205,7 +206,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
   });
 
-  QUnit.test('href updates when unsupplied controller QP props change', function() {
+  test('href updates when unsupplied controller QP props change', function() {
     setTemplate('index', compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
@@ -219,7 +220,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(jQuery('#the-link').attr('href'), '/?bar=BORF&foo=lol');
   });
 
-  QUnit.test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
+  test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
     // Test harness for bug #12033
 
     setTemplate('cars', compile(
@@ -269,7 +270,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
   });
 
-  QUnit.test('The {{link-to}} applies activeClass when query params are not changed', function() {
+  test('The {{link-to}} applies activeClass when query params are not changed', function() {
     setTemplate('index', compile(
       "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
       "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
@@ -369,7 +370,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldNotBeActive('#change-search-same-sort-child-and-parent');
   });
 
-  QUnit.test('The {{link-to}} applies active class when query-param is number', function() {
+  test('The {{link-to}} applies active class when query-param is number', function() {
     setTemplate('index', compile(
       "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} "));
 
@@ -392,7 +393,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldBeActive('#page-link');
   });
 
-  QUnit.test('The {{link-to}} applies active class when query-param is array', function() {
+  test('The {{link-to}} applies active class when query-param is array', function() {
     setTemplate('index', compile(
       "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
       "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +
@@ -431,7 +432,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldNotBeActive('#empty-link');
   });
 
-  QUnit.test('The {{link-to}} helper applies active class to parent route', function() {
+  test('The {{link-to}} helper applies active class to parent route', function() {
     App.Router.map(function() {
       this.route('parent', function() {
         this.route('child');
@@ -462,7 +463,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldNotBeActive('#parent-link-qp');
   });
 
-  QUnit.test('The {{link-to}} helper disregards query-params in activeness computation when current-when specified', function() {
+  test('The {{link-to}} helper disregards query-params in activeness computation when current-when specified', function() {
     App.Router.map(function() {
       this.route('parent');
     });
@@ -501,7 +502,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/parent');
   });
 } else {
-  QUnit.module('The {{link-to}} helper: invoking with query params', {
+  testModule('The {{link-to}} helper: invoking with query params', {
     setup() {
       run(function() {
         sharedSetup();
@@ -529,7 +530,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     teardown: sharedTeardown
   });
 
-  QUnit.test("doesn't update controller QP properties on current route when invoked", function() {
+  test("doesn't update controller QP properties on current route when invoked", function() {
     setTemplate('index', compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -538,7 +539,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
+  test("doesn't update controller QP properties on current route when invoked (empty query-params obj)", function() {
     setTemplate('index', compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -547,14 +548,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test('link-to with no params throws', function() {
+  test('link-to with no params throws', function() {
     setTemplate('index', compile("{{#link-to id='the-link'}}Index{{/link-to}}"));
     expectAssertion(function() {
       bootApplication();
     }, /one or more/);
   });
 
-  QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
+  test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
     setTemplate('index', compile("{{#link-to (query-params) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -563,7 +564,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  QUnit.test('updates controller QP properties on current route when invoked', function() {
+  test('updates controller QP properties on current route when invoked', function() {
     setTemplate('index', compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -572,7 +573,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
-  QUnit.test('updates controller QP properties on current route when invoked (inferred route)', function() {
+  test('updates controller QP properties on current route when invoked (inferred route)', function() {
     setTemplate('index', compile("{{#link-to (query-params foo='456') id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
@@ -581,7 +582,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
-  QUnit.test('updates controller QP properties on other route after transitioning to that route', function() {
+  test('updates controller QP properties on other route after transitioning to that route', function() {
     Router.map(function() {
       this.route('about');
     });
@@ -597,7 +598,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(container.lookup('controller:application').get('currentPath'), 'about');
   });
 
-  QUnit.test('supplied QP properties can be bound', function() {
+  test('supplied QP properties can be bound', function() {
     var indexController = container.lookup('controller:index');
     setTemplate('index', compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}"));
 
@@ -608,7 +609,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(jQuery('#the-link').attr('href'), '/?foo=ASL');
   });
 
-  QUnit.test('supplied QP properties can be bound (booleans)', function() {
+  test('supplied QP properties can be bound (booleans)', function() {
     var indexController = container.lookup('controller:index');
     setTemplate('index', compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}"));
 
@@ -623,7 +624,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
   });
 
-  QUnit.test('href updates when unsupplied controller QP props change', function() {
+  test('href updates when unsupplied controller QP props change', function() {
     setTemplate('index', compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
@@ -636,7 +637,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(jQuery('#the-link').attr('href'), '/?bar=BORF&foo=lol');
   });
 
-  QUnit.test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
+  test('The {{link-to}} with only query params always transitions to the current route with the query params applied', function() {
     // Test harness for bug #12033
 
     setTemplate('cars', compile(
@@ -687,7 +688,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
   });
 
-  QUnit.test('The {{link-to}} applies activeClass when query params are not changed', function() {
+  test('The {{link-to}} applies activeClass when query params are not changed', function() {
     setTemplate('index', compile(
       "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
       "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
@@ -777,7 +778,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldNotBeActive('#change-search-same-sort-child-and-parent');
   });
 
-  QUnit.test('The {{link-to}} applies active class when query-param is number', function() {
+  test('The {{link-to}} applies active class when query-param is number', function() {
     setTemplate('index', compile(
       "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} "));
 
@@ -794,7 +795,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldBeActive('#page-link');
   });
 
-  QUnit.test('The {{link-to}} applies active class when query-param is array', function() {
+  test('The {{link-to}} applies active class when query-param is array', function() {
     setTemplate('index', compile(
       "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
       "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +
@@ -826,7 +827,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldNotBeActive('#empty-link');
   });
 
-  QUnit.test('The {{link-to}} helper applies active class to parent route', function() {
+  test('The {{link-to}} helper applies active class to parent route', function() {
     App.Router.map(function() {
       this.route('parent', function() {
         this.route('child');
@@ -854,7 +855,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldNotBeActive('#parent-link-qp');
   });
 
-  QUnit.test('The {{link-to}} helper disregards query-params in activeness computation when current-when specified', function() {
+  test('The {{link-to}} helper disregards query-params in activeness computation when current-when specified', function() {
     App.Router.map(function() {
       this.route('parent');
     });
@@ -891,4 +892,3 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 }
 
-}

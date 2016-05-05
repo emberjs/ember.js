@@ -6,7 +6,6 @@ import { compile } from 'ember-template-compiler';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
-import isEnabled from 'ember-metal/features';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 var Router, App, router, registry, container;
@@ -63,9 +62,9 @@ function sharedTeardown() {
   setTemplates({});
 }
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+
+testModule('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
   setup() {
     run(function() {
       sharedSetup();
@@ -102,7 +101,7 @@ QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS c
   }
 });
 
-QUnit.test('while a transition is underway', function() {
+test('while a transition is underway', function() {
   expect(18);
   bootApplication();
 
@@ -123,7 +122,7 @@ QUnit.test('while a transition is underway', function() {
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 });
 
-QUnit.test('while a transition is underway with nested link-to\'s', function() {
+test('while a transition is underway with nested link-to\'s', function() {
   expect(54);
 
   Router.map(function() {
@@ -202,5 +201,3 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
   assertHasClass('ember-transitioning-in', $index, false, $about, false, $other, false);
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 });
-
-}

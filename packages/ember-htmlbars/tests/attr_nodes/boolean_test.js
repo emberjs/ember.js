@@ -9,11 +9,9 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-htmlbars: boolean attribute', {
+testModule('ember-htmlbars: boolean attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -21,7 +19,7 @@ QUnit.module('ember-htmlbars: boolean attribute', {
   }
 });
 
-QUnit.test('disabled property can be set true', function() {
+test('disabled property can be set true', function() {
   view = EmberView.create({
     context: { isDisabled: true },
     template: compile('<input disabled={{isDisabled}}>')
@@ -33,7 +31,7 @@ QUnit.test('disabled property can be set true', function() {
         'boolean property is set true');
 });
 
-QUnit.test('disabled property can be set false with a blank string', function() {
+test('disabled property can be set false with a blank string', function() {
   view = EmberView.create({
     context: { isDisabled: '' },
     template: compile('<input disabled={{isDisabled}}>')
@@ -45,7 +43,7 @@ QUnit.test('disabled property can be set false with a blank string', function() 
         'boolean property is set false');
 });
 
-QUnit.test('disabled property can be set false', function() {
+test('disabled property can be set false', function() {
   view = EmberView.create({
     context: { isDisabled: false },
     template: compile('<input disabled={{isDisabled}}>')
@@ -58,7 +56,7 @@ QUnit.test('disabled property can be set false', function() {
         'boolean property is set false');
 });
 
-QUnit.test('disabled property can be set true with a string', function() {
+test('disabled property can be set true with a string', function() {
   view = EmberView.create({
     context: { isDisabled: 'oh, no a string' },
     template: compile('<input disabled={{isDisabled}}>')
@@ -70,7 +68,7 @@ QUnit.test('disabled property can be set true with a string', function() {
         'boolean property is set true');
 });
 
-QUnit.test('disabled attribute turns a value to a string', function() {
+test('disabled attribute turns a value to a string', function() {
   view = EmberView.create({
     context: { isDisabled: false },
     template: compile('<input disabled=\'{{isDisabled}}\'>')
@@ -82,7 +80,7 @@ QUnit.test('disabled attribute turns a value to a string', function() {
         'boolean property is set true');
 });
 
-QUnit.test('disabled attribute preserves a blank string value', function() {
+test('disabled attribute preserves a blank string value', function() {
   view = EmberView.create({
     context: { isDisabled: '' },
     template: compile('<input disabled=\'{{isDisabled}}\'>')
@@ -94,5 +92,3 @@ QUnit.test('disabled attribute preserves a blank string value', function() {
   equal(view.element.firstChild.disabled, false,
         'boolean property is set false');
 });
-
-}

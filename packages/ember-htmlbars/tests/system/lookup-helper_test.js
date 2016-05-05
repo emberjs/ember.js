@@ -21,13 +21,11 @@ function generateOwner() {
   return owner;
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-htmlbars: lookupHelper hook');
+testModule('ember-htmlbars: lookupHelper hook');
 
-QUnit.test('looks for helpers in the provided `env.helpers`', function() {
+test('looks for helpers in the provided `env.helpers`', function() {
   var env = generateEnv({
     'flubarb'() { }
   });
@@ -37,7 +35,7 @@ QUnit.test('looks for helpers in the provided `env.helpers`', function() {
   equal(actual, env.helpers.flubarb, 'helpers are looked up on env');
 });
 
-QUnit.test('returns undefined if no container exists (and helper is not found in env)', function() {
+test('returns undefined if no container exists (and helper is not found in env)', function() {
   var env = generateEnv();
   var view = {};
 
@@ -46,7 +44,7 @@ QUnit.test('returns undefined if no container exists (and helper is not found in
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
-QUnit.test('does not lookup in the container if the name does not contain a dash (and helper is not found in env)', function() {
+test('does not lookup in the container if the name does not contain a dash (and helper is not found in env)', function() {
   var env = generateEnv();
   var view = {
     container: {
@@ -61,7 +59,7 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
-QUnit.test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
+test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
   let owner = generateOwner();
   var env = generateEnv(null, owner);
   var view = {
@@ -76,7 +74,7 @@ QUnit.test('does a lookup in the container if the name contains a dash (and help
   ok(someName.detect(actual), 'helper is an instance of the helper class');
 });
 
-QUnit.test('does a lookup in the container if the name is found in knownHelpers', function() {
+test('does a lookup in the container if the name is found in knownHelpers', function() {
   let owner = generateOwner();
   var env = generateEnv(null, owner);
   var view = {
@@ -92,7 +90,7 @@ QUnit.test('does a lookup in the container if the name is found in knownHelpers'
   ok(t.detect(actual), 'helper is an instance of the helper class');
 });
 
-QUnit.test('looks up a shorthand helper in the container', function() {
+test('looks up a shorthand helper in the container', function() {
   expect(2);
   let owner = generateOwner();
   var env = generateEnv(null, owner);
@@ -115,7 +113,7 @@ QUnit.test('looks up a shorthand helper in the container', function() {
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });
 
-QUnit.test('fails with a useful error when resolving a function', function() {
+test('fails with a useful error when resolving a function', function() {
   expect(1);
   let owner = generateOwner();
   var env = generateEnv(null, owner);
@@ -132,4 +130,3 @@ QUnit.test('fails with a useful error when resolving a function', function() {
   }, 'Expected to find an Ember.Helper with the name helper:some-name, but found an object of type function instead.');
 });
 
-}

@@ -8,6 +8,7 @@ import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
+
 var view, owner, originalViewKeyword;
 
 function commonSetup() {
@@ -21,11 +22,9 @@ function commonTeardown() {
   owner = view = null;
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
+testModule('ember-htmlbars: Support for {{yield}} helper', {
   setup() {
     commonSetup();
     originalViewKeyword = registerKeyword('view',  viewKeyword);
@@ -37,7 +36,7 @@ QUnit.module('ember-htmlbars: Support for {{yield}} helper', {
   }
 });
 
-QUnit.test('view keyword works inside component yield', function () {
+test('view keyword works inside component yield', function () {
   var component = Component.extend({
     layout: compile('<p>{{yield}}</p>')
   });
@@ -52,5 +51,3 @@ QUnit.test('view keyword works inside component yield', function () {
 
   equal(view.$('div > p').text(), 'hello', 'view keyword inside component yield block should refer to the correct view');
 });
-
-}

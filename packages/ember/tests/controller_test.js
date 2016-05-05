@@ -6,7 +6,6 @@ import Application from 'ember-application/system/application';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
-import isEnabled from 'ember-metal/features';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
 
 /*
@@ -49,10 +48,9 @@ QUnit.module('Template scoping examples', {
   }
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('Actions inside an outlet go to the associated controller', function() {
+test('Actions inside an outlet go to the associated controller', function() {
   expect(1);
 
   setTemplate('index', compile('{{component-with-action action=\'componentAction\'}}'));
@@ -77,7 +75,7 @@ QUnit.test('Actions inside an outlet go to the associated controller', function(
   $fixture.find('.component-with-action').click();
 });
 
-QUnit.test('the controller property is provided to route driven views', function() {
+test('the controller property is provided to route driven views', function() {
   var applicationController, applicationViewController;
 
   App.ApplicationController = Controller.extend({
@@ -98,8 +96,6 @@ QUnit.test('the controller property is provided to route driven views', function
 
   equal(applicationViewController, applicationController, 'application view should get its controller set properly');
 });
-
-}
 
 function bootApp() {
   run(App, 'advanceReadiness');

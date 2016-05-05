@@ -129,11 +129,9 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   Registry.prototype.register = originalRegister;
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('When an application is reset, the ApplicationView is torn down', function() {
+test('When an application is reset, the ApplicationView is torn down', function() {
   run(function() {
     application = Application.create();
     application.ApplicationView = View.extend({
@@ -153,8 +151,6 @@ QUnit.test('When an application is reset, the ApplicationView is torn down', fun
 
   notStrictEqual(originalView, resettedView, 'The view object has changed');
 });
-
-}
 
 QUnit.test('When an application is reset, the router URL is reset to `/`', function() {
   var location, router;

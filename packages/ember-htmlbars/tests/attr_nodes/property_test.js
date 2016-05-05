@@ -1,6 +1,7 @@
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 
@@ -15,11 +16,7 @@ function canSetFalsyMaxLength() {
   return input.maxLength === 0;
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-htmlbars: property', {
+testModule('ember-htmlbars: property', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -27,7 +24,7 @@ QUnit.module('ember-htmlbars: property', {
   }
 });
 
-QUnit.test('maxlength sets the property and attribute', function() {
+test('maxlength sets the property and attribute', function() {
   view = EmberView.create({
     context: { length: 5 },
     template: compile('<input maxlength={{length}}>')
@@ -40,7 +37,7 @@ QUnit.test('maxlength sets the property and attribute', function() {
   equal(view.element.firstChild.maxLength, 1);
 });
 
-QUnit.test('quoted maxlength sets the attribute and is reflected as a property', function() {
+test('quoted maxlength sets the attribute and is reflected as a property', function() {
   view = EmberView.create({
     context: { length: 5 },
     template: compile('<input maxlength=\'{{length}}\'>')
@@ -58,7 +55,7 @@ QUnit.test('quoted maxlength sets the attribute and is reflected as a property',
   }
 });
 
-QUnit.test('array value can be set as property', function() {
+test('array value can be set as property', function() {
   view = EmberView.create({
     context: {},
     template: compile('<input value={{items}}>')
@@ -69,5 +66,3 @@ QUnit.test('array value can be set as property', function() {
   run(view, view.set, 'context.items', [4, 5]);
   ok(true, 'no legacy assertion prohibited setting an array');
 });
-
-}

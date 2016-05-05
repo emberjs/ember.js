@@ -63,11 +63,9 @@ QUnit.test('should allow tagName to be a computed property [DEPRECATED]', functi
   equal(view.element.tagName, 'SPAN', 'the tagName cannot be changed after initial render');
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('should re-render if the context is changed', function() {
+test('should re-render if the context is changed', function() {
   view = EmberView.create({
     elementId: 'template-context-test',
     context: { foo: 'bar' },
@@ -89,7 +87,7 @@ QUnit.test('should re-render if the context is changed', function() {
   equal(jQuery('#qunit-fixture #template-context-test').text(), 'bang baz', 're-renders the view with the updated context');
 });
 
-QUnit.test('renders a contained view with omitted start tag and tagless parent view context', function() {
+test('renders a contained view with omitted start tag and tagless parent view context', function() {
   view = EmberView.create({
     tagName: 'table',
     template: compile('{{view view.pivot}}'),
@@ -113,7 +111,7 @@ QUnit.test('renders a contained view with omitted start tag and tagless parent v
   ok(view.$('tr').length, 'inner view is tr');
 });
 
-QUnit.test('propagates dependent-key invalidated sets upstream', function() {
+test('propagates dependent-key invalidated sets upstream', function() {
   view = EmberView.create({
     parentProp: 'parent-value',
     template: compile('{{view view.childView childProp=view.parentProp}}'),
@@ -135,7 +133,7 @@ QUnit.test('propagates dependent-key invalidated sets upstream', function() {
   equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
 });
 
-QUnit.test('propagates dependent-key invalidated bindings upstream', function() {
+test('propagates dependent-key invalidated bindings upstream', function() {
   view = EmberView.create({
     parentProp: 'parent-value',
     template: compile('{{view view.childView childProp=view.parentProp}}'),
@@ -162,5 +160,3 @@ QUnit.test('propagates dependent-key invalidated bindings upstream', function() 
   equal(childView.get('childProp'), 'new-value', 'pre-cond - new value is propagated to CP');
   equal(view.get('parentProp'), 'new-value', 'new value is propagated across template');
 });
-
-}

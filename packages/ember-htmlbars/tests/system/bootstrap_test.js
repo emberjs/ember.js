@@ -32,11 +32,9 @@ function checkTemplate(templateName) {
   runDestroy(view);
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-htmlbars: bootstrap', {
+testModule('ember-htmlbars: bootstrap', {
   setup() {
     context.lookup = lookup = {};
   },
@@ -48,26 +46,26 @@ QUnit.module('ember-htmlbars: bootstrap', {
   }
 });
 
-QUnit.test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
+test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('funkyTemplate');
 });
 
-QUnit.test('template with id instead of data-template-name should add a new template to Ember.TEMPLATES', function() {
+test('template with id instead of data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate" >{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('funkyTemplate');
 });
 
-QUnit.test('template without data-template-name or id should default to application', function() {
+test('template without data-template-name or id should default to application', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('application');
 });
 
 if (typeof Handlebars === 'object') {
-  QUnit.test('template with type text/x-raw-handlebars should be parsed', function() {
+  test('template with type text/x-raw-handlebars should be parsed', function() {
     jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
     run(function() {
@@ -83,7 +81,7 @@ if (typeof Handlebars === 'object') {
   });
 }
 
-QUnit.test('duplicated default application templates should throw exception', function() {
+test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
   throws(function () {
@@ -93,7 +91,7 @@ QUnit.test('duplicated default application templates should throw exception', fu
   'duplicate templates should not be allowed');
 });
 
-QUnit.test('default application template and id application template present should throw exception', function() {
+test('default application template and id application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
   throws(function () {
@@ -103,7 +101,7 @@ QUnit.test('default application template and id application template present sho
   'duplicate templates should not be allowed');
 });
 
-QUnit.test('default application template and data-template-name application template present should throw exception', function() {
+test('default application template and data-template-name application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
   throws(function () {
@@ -113,7 +111,7 @@ QUnit.test('default application template and data-template-name application temp
   'duplicate templates should not be allowed');
 });
 
-QUnit.test('duplicated template id should throw exception', function() {
+test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
   throws(function () {
@@ -123,7 +121,7 @@ QUnit.test('duplicated template id should throw exception', function() {
   'duplicate templates should not be allowed');
 });
 
-QUnit.test('duplicated template data-template-name should throw exception', function() {
+test('duplicated template data-template-name should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
   throws(function () {
@@ -132,5 +130,3 @@ QUnit.test('duplicated template data-template-name should throw exception', func
   /Template named "[^"]+" already exists\./,
   'duplicate templates should not be allowed');
 });
-
-}

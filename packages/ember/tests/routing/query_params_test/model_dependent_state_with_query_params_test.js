@@ -330,10 +330,9 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
   };
 }
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('Model Dep Query Params', {
+testModule('Model Dep Query Params', {
   setup() {
     sharedSetup();
 
@@ -410,19 +409,19 @@ QUnit.module('Model Dep Query Params', {
   }
 });
 
-QUnit.test('query params have \'model\' stickiness by default', queryParamsStickyTest1('/a'));
+test('query params have \'model\' stickiness by default', queryParamsStickyTest1('/a'));
 
-QUnit.test('query params have \'model\' stickiness by default (url changes)', queryParamsStickyTest2('/a'));
+test('query params have \'model\' stickiness by default (url changes)', queryParamsStickyTest2('/a'));
 
-QUnit.test('query params have \'model\' stickiness by default (params-based transitions)', queryParamsStickyTest3('/a', 'article'));
+test('query params have \'model\' stickiness by default (params-based transitions)', queryParamsStickyTest3('/a', 'article'));
 
-QUnit.test('\'controller\' stickiness shares QP state between models', queryParamsStickyTest4('/a', 'article'));
+test('\'controller\' stickiness shares QP state between models', queryParamsStickyTest4('/a', 'article'));
 
-QUnit.test('\'model\' stickiness is scoped to current or first dynamic parent route', queryParamsStickyTest5('/a', 'comments'));
+test('\'model\' stickiness is scoped to current or first dynamic parent route', queryParamsStickyTest5('/a', 'comments'));
 
-QUnit.test('can reset query params using the resetController hook', queryParamsStickyTest6('/a', 'article', 'comments'));
+test('can reset query params using the resetController hook', queryParamsStickyTest6('/a', 'article', 'comments'));
 
-QUnit.module('Model Dep Query Params (nested)', {
+testModule('Model Dep Query Params (nested)', {
   setup() {
     sharedSetup();
 
@@ -500,19 +499,19 @@ QUnit.module('Model Dep Query Params (nested)', {
   }
 });
 
-QUnit.test('query params have \'model\' stickiness by default', queryParamsStickyTest1('/site/a'));
+test('query params have \'model\' stickiness by default', queryParamsStickyTest1('/site/a'));
 
-QUnit.test('query params have \'model\' stickiness by default (url changes)', queryParamsStickyTest2('/site/a'));
+test('query params have \'model\' stickiness by default (url changes)', queryParamsStickyTest2('/site/a'));
 
-QUnit.test('query params have \'model\' stickiness by default (params-based transitions)', queryParamsStickyTest3('/site/a', 'site.article'));
+test('query params have \'model\' stickiness by default (params-based transitions)', queryParamsStickyTest3('/site/a', 'site.article'));
 
-QUnit.test('\'controller\' stickiness shares QP state between models', queryParamsStickyTest4('/site/a', 'site.article'));
+test('\'controller\' stickiness shares QP state between models', queryParamsStickyTest4('/site/a', 'site.article'));
 
-QUnit.test('\'model\' stickiness is scoped to current or first dynamic parent route', queryParamsStickyTest5('/site/a', 'site.article.comments'));
+test('\'model\' stickiness is scoped to current or first dynamic parent route', queryParamsStickyTest5('/site/a', 'site.article.comments'));
 
-QUnit.test('can reset query params using the resetController hook', queryParamsStickyTest6('/site/a', 'site.article', 'site.article.comments'));
+test('can reset query params using the resetController hook', queryParamsStickyTest6('/site/a', 'site.article', 'site.article.comments'));
 
-QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
+testModule('Model Dep Query Params (nested & more than 1 dynamic segment)', {
   setup() {
     sharedSetup();
 
@@ -638,7 +637,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
   }
 });
 
-QUnit.test('query params have \'model\' stickiness by default', function() {
+test('query params have \'model\' stickiness by default', function() {
   this.boot();
 
   run(this.links['s-1-a-1'], 'click');
@@ -705,7 +704,7 @@ QUnit.test('query params have \'model\' stickiness by default', function() {
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3');
 });
 
-QUnit.test('query params have \'model\' stickiness by default (url changes)', function() {
+test('query params have \'model\' stickiness by default (url changes)', function() {
   this.boot();
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
@@ -804,7 +803,7 @@ QUnit.test('query params have \'model\' stickiness by default (url changes)', fu
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3?country=nz&q=lol&z=123');
 });
 
-QUnit.test('query params have \'model\' stickiness by default (params-based transitions)', function() {
+test('query params have \'model\' stickiness by default (params-based transitions)', function() {
   this.boot();
 
   this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
@@ -940,5 +939,3 @@ QUnit.test('query params have \'model\' stickiness by default (params-based tran
   equal(this.links['s-3-a-2'].attr('href'), '/site/s-3/a/a-2?country=nz&q=lol&z=1');
   equal(this.links['s-3-a-3'].attr('href'), '/site/s-3/a/a-3?country=nz&q=hay&z=3');
 });
-
-}
