@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core'; // reexports
 import { ENV } from 'ember-environment';
+import { isTesting } from 'ember-metal/testing';
 import {
   warn,
   deprecate,
@@ -182,7 +183,7 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featur
   }
 }
 
-if (!Ember.testing) {
+if (!isTesting()) {
   // Complain if they're using FEATURE flags in builds other than canary
   FEATURES['features-stripped-test'] = true;
   var featuresWereStripped = true;

@@ -37,9 +37,6 @@
 
     <script>
       (function() {
-        window.Ember = {
-          testing: true
-        };
         window.ENV = window.ENV || {
           _ENABLE_LEGACY_VIEW_SUPPORT: true
         };
@@ -84,6 +81,10 @@
       } else {
         loadScript('../ember.debug.js');
       }
+    </script>
+
+    <script type="text/javascript">
+      Ember.testing = true;
     </script>
 
     <script>

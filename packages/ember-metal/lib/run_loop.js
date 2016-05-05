@@ -1,5 +1,9 @@
-import Ember from 'ember-metal/core'; // onErrorTarget and Ember.testing
 import { assert } from 'ember-metal/debug';
+import { isTesting } from 'ember-metal/testing';
+import {
+  getOnerror,
+  setOnerror
+} from 'ember-metal/error_handler';
 import {
   GUID_KEY
 } from 'ember-metal/utils';
@@ -17,7 +21,15 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-// ES6TODO: should Backburner become es6?
+const onErrorTarget = {
+  get onerror() {
+    return getOnerror();
+  },
+  set onerror(handler) {
+    return setOnerror(handler);
+  }
+};
+
 var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   GUID_KEY: GUID_KEY,
   sync: {
@@ -27,7 +39,7 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   defaultQueue: 'actions',
   onBegin: onBegin,
   onEnd: onEnd,
-  onErrorTarget: Ember,
+  onErrorTarget: onErrorTarget,
   onErrorMethod: 'onerror'
 });
 
@@ -261,7 +273,7 @@ run.schedule = function(/* queue, target, method */) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
     `You will need to wrap any code with asynchronous side-effects in a run`,
-    run.currentRunLoop || !Ember.testing
+    run.currentRunLoop || !isTesting()
   );
   backburner.schedule(...arguments);
 };
@@ -346,7 +358,7 @@ run.once = function(...args) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
     `You will need to wrap any code with asynchronous side-effects in a run`,
-    run.currentRunLoop || !Ember.testing
+    run.currentRunLoop || !isTesting()
   );
   args.unshift('actions');
   return backburner.scheduleOnce(...args);
@@ -408,7 +420,7 @@ run.scheduleOnce = function(/*queue, target, method*/) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
     `You will need to wrap any code with asynchronous side-effects in a run`,
-    run.currentRunLoop || !Ember.testing
+    run.currentRunLoop || !isTesting()
   );
   return backburner.scheduleOnce(...arguments);
 };

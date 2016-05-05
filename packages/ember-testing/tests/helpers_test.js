@@ -19,21 +19,34 @@ import compile from 'ember-template-compiler/system/compile';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import {
+  pendingRequests,
+  incrementPendingRequests,
+  clearPendingRequests
+} from 'ember-testing/test/pending_requests';
+import {
+  setAdapter,
+  getAdapter
+} from 'ember-testing/test/adapter';
+import {
+  registerWaiter,
+  unregisterWaiter
+} from 'ember-testing/test/waiters';
 
 var App;
-var originalAdapter = Test.adapter;
+var originalAdapter = getAdapter();
 var originalViewKeyword;
 
 function cleanup() {
   // Teardown setupForTesting
 
-  Test.adapter = originalAdapter;
+  setAdapter(originalAdapter);
   run(function() {
     jQuery(document).off('ajaxSend');
     jQuery(document).off('ajaxComplete');
   });
-  Test.pendingAjaxRequests = null;
-  Test.waiters = null;
+  clearPendingRequests();
+  // Test.waiters = null;
 
   // Other cleanup
 
@@ -270,29 +283,29 @@ QUnit.test('`wait` respects registerWaiters', function(assert) {
 
   let done = assert.async();
 
-  var counter = 0;
+  let counter = 0;
   function waiter() {
     return ++counter > 2;
   }
 
-  var other = 0;
+  let other = 0;
   function otherWaiter() {
     return ++other > 2;
   }
 
   run(App, App.advanceReadiness);
-  Test.registerWaiter(waiter);
-  Test.registerWaiter(otherWaiter);
+  registerWaiter(waiter);
+  registerWaiter(otherWaiter);
 
   App.testHelpers.wait()
     .then(function() {
       equal(waiter(), true, 'should not resolve until our waiter is ready');
-      Test.unregisterWaiter(waiter);
-      equal(Test.waiters.length, 1, 'should not leave the waiter registered');
-      other = 0;
+      unregisterWaiter(waiter);
+      counter = 0;
       return App.testHelpers.wait();
     })
     .then(function() {
+      equal(counter, 0, 'unregistered waiter was not checked');
       equal(otherWaiter(), true, 'other waiter is still registered');
     })
     .finally(done);
@@ -501,28 +514,29 @@ QUnit.test('`wait` waits for outstanding timers', function() {
 QUnit.test('`wait` respects registerWaiters with optional context', function() {
   expect(3);
 
-  var obj = {
+  let obj = {
     counter: 0,
     ready() {
       return ++this.counter > 2;
     }
   };
 
-  var other = 0;
+  let other = 0;
   function otherWaiter() {
     return ++other > 2;
   }
 
   run(App, App.advanceReadiness);
-  Test.registerWaiter(obj, obj.ready);
-  Test.registerWaiter(otherWaiter);
+  registerWaiter(obj, obj.ready);
+  registerWaiter(otherWaiter);
 
   return App.testHelpers.wait().then(function() {
     equal(obj.ready(), true, 'should not resolve until our waiter is ready');
-    Test.unregisterWaiter(obj, obj.ready);
-    equal(Test.waiters.length, 1, 'should not leave the waiter registered');
+    unregisterWaiter(obj, obj.ready);
+    obj.counter = 0;
     return App.testHelpers.wait();
   }).then(function() {
+    equal(obj.counter, 0, 'the unregistered waiter should still be at 0');
     equal(otherWaiter(), true, 'other waiter should still be registered');
   });
 });
@@ -838,7 +852,7 @@ QUnit.test('currentRouteName for \'/posts/new\'', function() {
   });
 });
 
-QUnit.module('ember-testing pendingAjaxRequests', {
+QUnit.module('ember-testing pendingRequests', {
   setup() {
     setupApp();
   },
@@ -848,39 +862,39 @@ QUnit.module('ember-testing pendingAjaxRequests', {
   }
 });
 
-QUnit.test('pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events', function() {
-  equal(Test.pendingAjaxRequests, 0);
+QUnit.test('pendingRequests is maintained for ajaxSend and ajaxComplete events', function() {
+  equal(pendingRequests(), 0);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
   jQuery(document).trigger('ajaxComplete', xhr);
-  equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
+  equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
 });
 
-QUnit.test('pendingAjaxRequests is ignores ajaxComplete events from past setupForTesting calls', function() {
-  equal(Test.pendingAjaxRequests, 0);
+QUnit.test('pendingRequests is ignores ajaxComplete events from past setupForTesting calls', function() {
+  equal(pendingRequests(), 0);
   var xhr = { some: 'xhr' };
   jQuery(document).trigger('ajaxSend', xhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
   run(function() {
     setupForTesting();
   });
-  equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was reset');
+  equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was reset');
 
   var altXhr = { some: 'more xhr' };
   jQuery(document).trigger('ajaxSend', altXhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
   jQuery(document).trigger('ajaxComplete', xhr);
-  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests is not impressed with your unexpected complete');
+  equal(pendingRequests(), 1, 'Ember.Test.pendingRequests is not impressed with your unexpected complete');
 });
 
-QUnit.test('pendingAjaxRequests is reset by setupForTesting', function() {
-  Test.pendingAjaxRequests = 1;
+QUnit.test('pendingRequests is reset by setupForTesting', function() {
+  incrementPendingRequests();
   run(function() {
     setupForTesting();
   });
-  equal(Test.pendingAjaxRequests, 0, 'pendingAjaxRequests is reset');
+  equal(pendingRequests(), 0, 'pendingRequests is reset');
 });
 
 QUnit.module('ember-testing async router', {

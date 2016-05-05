@@ -1,85 +1,57 @@
-import Ember from 'ember-metal/core'; // Ember.testing, Ember.onerror
-import require, { has } from 'require';
-import { assert } from 'ember-metal/debug';
-import Logger from 'ember-console';
-
-import run from 'ember-metal/run_loop';
 import * as RSVP from 'rsvp';
+import run from 'ember-metal/run_loop';
+import { assert } from 'ember-metal/debug';
+import { dispatchError } from 'ember-metal/error_handler';
 
-var testModuleName = 'ember-testing/test';
-var Test;
+const backburner = run.backburner;
+run._addQueue('rsvpAfter', 'destroy');
 
-var asyncStart = function() {
-  if (Ember.Test && Ember.Test.adapter) {
-    Ember.Test.adapter.asyncStart();
-  }
-};
-
-var asyncEnd = function() {
-  if (Ember.Test && Ember.Test.adapter) {
-    Ember.Test.adapter.asyncEnd();
-  }
-};
-
-RSVP.configure('async', function(callback, promise) {
-  var async = !run.currentRunLoop;
-
-  if (Ember.testing && async) { asyncStart(); }
-
-  run.backburner.schedule('actions', function() {
-    if (Ember.testing && async) { asyncEnd(); }
-    callback(promise);
-  });
+RSVP.configure('async', (callback, promise) => {
+  backburner.schedule('actions', null, callback, promise);
 });
 
-export function onerrorDefault(reason) {
-  var error;
+RSVP.configure('after', cb => {
+  backburner.schedule('rsvpAfter', null, cb);
+});
 
-  if (reason && reason.errorThrown) {
-    // jqXHR provides this
-    error = reason.errorThrown;
-    if (typeof error === 'string') {
-      error = new Error(error);
-    }
-    Object.defineProperty(error, '__reason_with_error_thrown__', {
-      value: reason,
-      enumerable: false
-    });
-  } else {
-    error = reason;
+RSVP.on('error', onerrorDefault);
+
+export function onerrorDefault(reason) {
+  let error = errorFor(reason);
+  if (error) {
+    dispatchError(error);
+  }
+}
+
+function errorFor(reason) {
+  if (!reason) return;
+
+  if (reason.errorThrown) {
+    return unwrapErrorThrown(reason);
   }
 
-  if (error && error.name === 'UnrecognizedURLError') {
-    assert('The URL \'' + error.message + '\' did not match any routes in your application', false);
+  if (reason.name === 'UnrecognizedURLError') {
+    assert('The URL \'' + reason.message + '\' did not match any routes in your application', false);
     return;
   }
 
-  if (error && error.name !== 'TransitionAborted') {
-    if (Ember.testing) {
-      // ES6TODO: remove when possible
-      if (!Test && has(testModuleName)) {
-        Test = require(testModuleName)['default'];
-      }
-
-      if (Test && Test.adapter) {
-        Test.adapter.exception(error);
-        Logger.error(error.stack);
-      } else {
-        throw error;
-      }
-    } else if (Ember.onerror) {
-      Ember.onerror(error);
-    } else {
-      Logger.error(error.stack);
-    }
+  if (reason.name === 'TransitionAborted') {
+    return;
   }
+
+  return reason;
 }
 
-export function after (cb) {
-  run.schedule(run.queues[run.queues.length - 1], cb);
+function unwrapErrorThrown(reason) {
+  let error = reason.errorThrown;
+  if (typeof error === 'string') {
+    error = new Error(error);
+  }
+  Object.defineProperty(error, '__reason_with_error_thrown__', {
+    value: reason,
+    enumerable: false
+  });
+  return error;
 }
-
-RSVP.on('error', onerrorDefault);
-RSVP.configure('after', after);
 
 export default RSVP;
