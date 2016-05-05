@@ -129,6 +129,12 @@ export class UpdatableReference extends EmberPathReference {
   }
 }
 
+export class UpdatablePrimitiveReference extends UpdatableReference {
+  get() {
+    return UNDEFINED_REFERENCE;
+  }
+}
+
 export class ConditionalReference extends GlimmerConditionalReference {
   static create(reference) {
     if (isConst(reference)) {
