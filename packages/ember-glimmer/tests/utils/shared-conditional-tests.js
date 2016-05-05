@@ -255,7 +255,7 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
 // Testing behaviors related to objects, object proxies, `{ isTruthy: (true|false) }`, etc
 export const ObjectTestCases = {
 
-  // POJOs can no longer mimic Proxies in glimmer2. See proxy tests below.
+  // Marking as @htmlbars since POJOs can no longer masquerade as Proxies in glimmer2. See proxy tests below.
   ['@htmlbars it tests for `isTruthy` if available']() {
     this.renderValues({ isTruthy: this.truthyValue }, { isTruthy: this.falsyValue });
 
@@ -284,7 +284,7 @@ export const ObjectTestCases = {
     this.assertText('T1F2');
   },
 
-  // POJOs can no longer mimic Proxies in glimmer2. See proxy tests below.
+  // Marking as @htmlbars since POJOs can no longer masquerade as Proxies in glimmer2. See proxy tests below.
   ['@htmlbars it tests for `isTruthy` on Ember objects if available']() {
     this.renderValues(
       EmberObject.create({ isTruthy: this.truthyValue }),
@@ -773,7 +773,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  // This no longer makes sense for glimmer since `this` refers to the component, which is not a proxy
+  // Marking as @htmlbars since this no longer relevant for glimmer as `this` refers to the component, which is never a proxy
   ['@htmlbars it tests for `isTruthy` on the context if available']() {
     let template = this.wrappedTemplateFor({ cond: 'this', truthy: 'T1', falsy: 'F1' });
 
