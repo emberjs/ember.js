@@ -1,11 +1,9 @@
-import EmberError from 'ember-metal/error';
-
 import { context } from 'ember-environment';
 
-function K() { return this; }
+function K(){}
 
 function consoleMethod(name) {
-  let consoleObj, logToConsole;
+  let consoleObj;
   if (context.imports.console) {
     consoleObj = context.imports.console;
   } else if (typeof console !== 'undefined') {
@@ -14,32 +12,24 @@ function consoleMethod(name) {
 
   let method = typeof consoleObj === 'object' ? consoleObj[name] : null;
 
-  if (method) {
-    // Older IE doesn't support bind, but Chrome needs it
-    if (typeof method.bind === 'function') {
-      logToConsole = method.bind(consoleObj);
-      logToConsole.displayName = 'console.' + name;
-      return logToConsole;
-    } else if (typeof method.apply === 'function') {
-      logToConsole = function() {
-        method.apply(consoleObj, arguments);
-      };
-      logToConsole.displayName = 'console.' + name;
-      return logToConsole;
-    } else {
-      return function() {
-        let message = Array.prototype.join.call(arguments, ', ');
-        method(message);
-      };
-    }
+  if (typeof method !== 'function') {
+    return;
   }
+
+  if (typeof method.bind === 'function') {
+    return method.bind(consoleObj);
+  }
+
+  return function() {
+    method.apply(consoleObj, arguments);
+  };
 }
 
 function assertPolyfill(test, message) {
   if (!test) {
     try {
       // attempt to preserve the stack
-      throw new EmberError('assertion failed: ' + message);
+      throw new Error('assertion failed: ' + message);
     } catch(error) {
       setTimeout(() => {
         throw error;
