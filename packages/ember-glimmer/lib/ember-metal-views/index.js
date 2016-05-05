@@ -15,36 +15,36 @@ class DynamicScope {
   }
 }
 
-const RENDERED_ROOTS = [];
-let LAST_TAG_VALUE;
-
-function maybeUpdate() {
-  if (CURRENT_TAG.validate(LAST_TAG_VALUE)) { return; }
-  for (let i = 0; i < RENDERED_ROOTS.length; ++i) {
-    let view = RENDERED_ROOTS[i];
-    view.renderer.rerender(view);
+class Scheduler {
+  constructor() {
+    this._roots = [];
+    this._scheduleMaybeUpdate = () => {
+      run.backburner.schedule('render', this, this._maybeUpdate, CURRENT_TAG.value());
+    };
   }
-  LAST_TAG_VALUE = CURRENT_TAG.value();
-}
 
-function scheduleMaybeUpdate() {
-  LAST_TAG_VALUE = CURRENT_TAG.value();
-  run.backburner.schedule('render', maybeUpdate);
-}
-
-function registerView(view) {
-  if (!RENDERED_ROOTS.length) {
-    run.backburner.on('begin', scheduleMaybeUpdate);
+  registerView(view) {
+    if (!this._roots.length) {
+      run.backburner.on('begin', this._scheduleMaybeUpdate);
+    }
+    this._roots.push(view);
   }
-  RENDERED_ROOTS.push(view);
-}
 
-function deregisterView(view) {
-  let viewIndex = RENDERED_ROOTS.indexOf(view);
-  if (~viewIndex) {
-    RENDERED_ROOTS.splice(viewIndex, 1);
-    if (!RENDERED_ROOTS.length) {
-      run.backburner.off('begin', scheduleMaybeUpdate);
+  deregisterView(view) {
+    let viewIndex = this._roots.indexOf(view);
+    if (~viewIndex) {
+      this._roots.splice(viewIndex, 1);
+      if (!this._roots.length) {
+        run.backburner.off('begin', this._scheduleMaybeUpdate);
+      }
+    }
+  }
+
+  _maybeUpdate(lastTagValue) {
+    if (CURRENT_TAG.validate(lastTagValue)) { return; }
+    for (let i = 0; i < this._roots.length; ++i) {
+      let view = this._roots[i];
+      view.renderer.rerender(view);
     }
   }
 }
@@ -55,6 +55,7 @@ class Renderer {
     this._dom = dom;
     this._env = env;
     this._destinedForDOM = destinedForDOM;
+    this._scheduler = new Scheduler();
   }
 
   appendOutletView(view, target) {
@@ -73,7 +74,7 @@ class Renderer {
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
 
-    registerView(view);
+    this._scheduler.registerView(view);
 
     return result;
   }
@@ -87,7 +88,7 @@ class Renderer {
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
 
-    registerView(view);
+    this._scheduler.registerView(view);
 
     // FIXME: Store this somewhere else
     view['_renderResult'] = result;
@@ -101,7 +102,7 @@ class Renderer {
   }
 
   remove(view) {
-    deregisterView(view);
+    this._scheduler.deregisterView(view);
     view.trigger('willDestroyElement');
     view._transitionTo('destroying');
 
