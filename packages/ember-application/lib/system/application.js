@@ -12,11 +12,8 @@ import Namespace, {
 } from 'ember-runtime/system/namespace';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
-import Controller from 'ember-runtime/controllers/controller';
 import HTMLBarsDOMHelper from 'ember-htmlbars/system/dom-helper';
 import * as HTMLBarsRenderer from 'ember-htmlbars/renderer';
-import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-import { OutletView as HTMLBarsOutletView } from 'ember-routing-views/views/outlet';
 import EmberView from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import jQuery from 'ember-views/system/jquery';
@@ -28,12 +25,6 @@ import AutoLocation from 'ember-routing/location/auto_location';
 import NoneLocation from 'ember-routing/location/none_location';
 import BucketCache from 'ember-routing/system/cache';
 import ApplicationInstance from 'ember-application/system/application-instance';
-import TextField from 'ember-views/views/text_field';
-import TextArea from 'ember-views/views/text_area';
-import Checkbox from 'ember-views/views/checkbox';
-import LinkToComponent from 'ember-routing-views/components/link-to';
-import RoutingService from 'ember-routing/services/routing';
-import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { buildFakeRegistryWithDeprecations } from 'ember-runtime/mixins/registry_proxy';
 import { privatize as P } from 'container/registry';
@@ -1051,7 +1042,6 @@ Application.reopenClass({
   */
   buildRegistry(application, options = {}) {
     let registry = this._super(...arguments);
-    registry.register('application:main', application, { instantiate: false });
 
     if (options[GLIMMER]) {
       glimmerSetupRegistry(registry);
@@ -1064,58 +1054,19 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
-  registry.optionsForType('component', { singleton: false });
-  registry.optionsForType('view', { singleton: false });
-  registry.injection('renderer', 'dom', 'service:-dom-helper');
-
-  registry.register('controller:basic', Controller, { instantiate: false });
-
-  registry.injection('service:-dom-helper', 'document', 'service:-document');
-
   registry.register('-view-registry:main', { create() { return {}; } });
-
-  registry.injection('view', '_viewRegistry', '-view-registry:main');
-
-  registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
 
   registry.injection('router:main', 'namespace', 'application:main');
-  registry.injection('view:-outlet', 'namespace', 'application:main');
 
   registry.register('location:auto', AutoLocation);
   registry.register('location:hash', HashLocation);
   registry.register('location:history', HistoryLocation);
   registry.register('location:none', NoneLocation);
 
-  registry.injection('controller', 'target', 'router:main');
-  registry.injection('controller', 'namespace', 'application:main');
-
   registry.register(P`-bucket-cache:main`, BucketCache);
-  registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('controller', '_bucketCache', P`-bucket-cache:main`);
-
-  registry.injection('route', 'router', 'router:main');
-
-  registry.register('component:-text-field', TextField);
-  registry.register('component:-text-area', TextArea);
-  registry.register('component:-checkbox', Checkbox);
-  registry.register('component:link-to', LinkToComponent);
-
-  // Register the routing service...
-  registry.register('service:-routing', RoutingService);
-  // Then inject the app router into it
-  registry.injection('service:-routing', 'router', 'router:main');
-
-  // DEBUGGING
-  registry.register('resolver-for-debugging:main', registry.resolver, { instantiate: false });
-  registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
-  // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
-
-  registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 }
 
 function glimmerSetupRegistry(registry) {
@@ -1126,9 +1077,6 @@ function glimmerSetupRegistry(registry) {
   registry.injection('service:-glimmer-environment', 'dom', 'service:-dom-helper');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
-  let OutletView = require('ember-glimmer/ember-routing-view').OutletView;
-  registry.register('view:-outlet', OutletView);
-
   let { InteractiveRenderer, InertRenderer } = require('ember-glimmer/renderer');
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
@@ -1138,22 +1086,10 @@ function glimmerSetupRegistry(registry) {
   registry.register('service:-dom-helper', {
     create({ document }) { return new DOMHelper(document); }
   });
-
-  let glimmerOutletTemplate = require('ember-glimmer/templates/outlet').default;
-  let glimmerComponentTemplate = require('ember-glimmer/templates/component').default;
-  registry.register(P`template:components/-default`, glimmerComponentTemplate);
-  registry.register('template:-outlet', glimmerOutletTemplate);
-  registry.injection('view:-outlet', 'template', 'template:-outlet');
-  registry.injection('template', 'env', 'service:-glimmer-environment');
-
-  registry.optionsForType('helper', { instantiate: false });
 }
 
 function htmlbarsSetupRegistry(registry) {
   commonSetupRegistry(registry);
-
-  registry.optionsForType('template', { instantiate: false });
-  registry.register('view:-outlet', HTMLBarsOutletView);
 
   let { InteractiveRenderer, InertRenderer } = HTMLBarsRenderer;
   registry.register('renderer:-dom', InteractiveRenderer);
@@ -1162,11 +1098,7 @@ function htmlbarsSetupRegistry(registry) {
   registry.register('service:-dom-helper', {
     create({ document }) { return new HTMLBarsDOMHelper(document); }
   });
-
-  registry.register('template:-outlet', topLevelViewTemplate);
-  registry.register('view:toplevel', EmberView.extend());
 }
-
 
 function registerLibraries() {
   if (!librariesRegistered) {
