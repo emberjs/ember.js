@@ -13,6 +13,7 @@ import buildOwner from 'container/tests/test-helpers/build-owner';
 import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
 import DefaultComponentTemplate from 'ember-glimmer/templates/component';
+import EventDispatcher from 'ember-views/system/event_dispatcher';
 
 const packageTag = `@${packageName} `;
 
@@ -299,6 +300,8 @@ export class RenderingTest extends TestCase {
     this.component = null;
 
     owner.register(P`template:components/-default`, DefaultComponentTemplate);
+    owner.register('event_dispatcher:main', EventDispatcher);
+    owner.lookup('event_dispatcher:main').setup({}, owner.element);
   }
 
   getOwnerOptions() {
@@ -308,6 +311,8 @@ export class RenderingTest extends TestCase {
   teardown() {
     if (this.component) {
       runDestroy(this.component);
+    }
+    if (this.owner) {
       runDestroy(this.owner);
     }
   }
