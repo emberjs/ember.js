@@ -1,10 +1,8 @@
-import { runDestroy } from 'ember-runtime/tests/utils';
 import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import assign from 'ember-metal/assign';
 import isEmpty from 'ember-metal/is_empty';
-import EventDispatcher from 'ember-views/system/event_dispatcher';
 
 moduleFor('@htmlbars Components test: closure components', class extends RenderingTest {
   ['@test renders with component helper']() {
@@ -586,8 +584,6 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
   ['@test parameters in a closure are mutable when closure is a param'](assert) {
     // This checks that a `(mut)` is added to parameters and attributes to
     // contextual components when it is a param.
-    let dispatcher = EventDispatcher.create();
-    dispatcher.setup();
 
     this.registerComponent('change-button', {
       ComponentClass: Component.extend().reopenClass({
@@ -621,8 +617,6 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.runTask(() => this.context.set('model', { val2: 8 }));
 
     assert.equal(this.$('.value').text(), '8');
-
-    runDestroy(dispatcher);
   }
 
 });
@@ -641,9 +635,6 @@ class MutableParamTestGenerator {
   generate({ title, setup }) {
     return {
       [`@test parameters in a closure are mutable when closure is a ${title}`](assert) {
-        let dispatcher = EventDispatcher.create();
-        dispatcher.setup();
-
         this.registerComponent('change-button', {
           ComponentClass: Component.extend().reopenClass({
             positionalParams: ['val']
@@ -669,8 +660,6 @@ class MutableParamTestGenerator {
         this.runTask(() => this.context.set('model', { val2: 8 }));
 
         assert.equal(this.$('.value').text(), '8');
-
-        runDestroy(dispatcher);
       }
     };
   }
