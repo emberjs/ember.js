@@ -9,8 +9,8 @@ import { OutletView } from 'ember-routing-views/views/outlet';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import isEnabled from 'ember-metal/features';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var App, appInstance;
 var originalHelpers;
@@ -83,10 +83,7 @@ QUnit.test('The helper becomes the body of the component', function() {
   equal(jQuery('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.test('If a component is registered, it is used', function() {
+test('If a component is registered, it is used', function() {
   boot(function() {
     appInstance.register('component:expand-it', Component.extend({
       classNames: 'testing123'
@@ -96,12 +93,7 @@ QUnit.test('If a component is registered, it is used', function() {
   equal(jQuery('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
-}
-
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
+test('Late-registered components can be rendered with custom `layout` property', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>'));
 
   boot(function() {
@@ -115,7 +107,7 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
-QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
+test('Late-registered components can be rendered with template registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>'));
 
   boot(function() {
@@ -126,8 +118,6 @@ QUnit.test('Late-registered components can be rendered with template registered 
   equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
   ok(!helpers['sally-rutherford'], 'Component wasn\'t saved to global helpers hash');
 });
-
-}
 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>'));
@@ -152,10 +142,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
+test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -175,7 +162,7 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
+test('Assigning layoutName and layout to a component should use the `layout` value', function() {
   expect(1);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -196,7 +183,7 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
+test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
   expect(2);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -217,7 +204,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
+test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
   expect(2);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -239,7 +226,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-QUnit.test('Using name of component that does not exist', function () {
+test('Using name of component that does not exist', function () {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>'));
 
   expectAssertion(function () {
@@ -247,12 +234,12 @@ QUnit.test('Using name of component that does not exist', function () {
   }, /A helper named 'no-good' could not be found/);
 });
 
-QUnit.module('Application Lifecycle - Component Context', {
+testModule('Application Lifecycle - Component Context', {
   setup: prepare,
   teardown: cleanup
 });
 
-QUnit.test('Components with a block should have the proper content when a template is provided', function() {
+test('Components with a block should have the proper content when a template is provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}-{{yield}}'));
 
@@ -269,7 +256,7 @@ QUnit.test('Components with a block should have the proper content when a templa
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-QUnit.test('Components with a block should yield the proper content without a template provided', function() {
+test('Components with a block should yield the proper content without a template provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
 
   boot(function() {
@@ -285,7 +272,7 @@ QUnit.test('Components with a block should yield the proper content without a te
   equal(jQuery('#wrapper').text(), 'outer', 'The component is composed correctly');
 });
 
-QUnit.test('Components without a block should have the proper content when a template is provided', function() {
+test('Components without a block should have the proper content when a template is provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}'));
 
@@ -302,7 +289,7 @@ QUnit.test('Components without a block should have the proper content when a tem
   equal(jQuery('#wrapper').text(), 'inner', 'The component is composed correctly');
 });
 
-QUnit.test('Components without a block should have the proper content', function() {
+test('Components without a block should have the proper content', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
 
   boot(function() {
@@ -321,7 +308,7 @@ QUnit.test('Components without a block should have the proper content', function
 });
 
 // The test following this one is the non-deprecated version
-QUnit.test('properties of a component without a template should not collide with internal structures [DEPRECATED]', function() {
+test('properties of a component without a template should not collide with internal structures [DEPRECATED]', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>'));
 
   boot(function() {
@@ -340,7 +327,7 @@ QUnit.test('properties of a component without a template should not collide with
   equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
-QUnit.test('attrs property of a component without a template should not collide with internal structures', function() {
+test('attrs property of a component without a template should not collide with internal structures', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>'));
 
   boot(function() {
@@ -360,7 +347,7 @@ QUnit.test('attrs property of a component without a template should not collide 
   equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
-QUnit.test('Components trigger actions in the parents context when called from within a block', function() {
+test('Components trigger actions in the parents context when called from within a block', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>'));
 
   boot(function() {
@@ -380,7 +367,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
   });
 });
 
-QUnit.test('Components trigger actions in the components context when called from within its template', function() {
+test('Components trigger actions in the components context when called from within its template', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>'));
 
@@ -405,7 +392,7 @@ QUnit.test('Components trigger actions in the components context when called fro
   jQuery('#fizzbuzz', '#wrapper').click();
 });
 
-QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
+test('Components receive the top-level view as their ownerView', function(assert) {
   setTemplate('application', compile('{{outlet}}'));
   setTemplate('index', compile('{{my-component}}'));
   setTemplate('components/my-component', compile('<div></div>'));
@@ -431,5 +418,3 @@ QUnit.test('Components receive the top-level view as their ownerView', function(
 
   assert.ok(ownerView._outlets, 'owner view has an internal array of outlets');
 });
-
-}

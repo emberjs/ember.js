@@ -5,12 +5,9 @@ import {
 import compile from 'ember-template-compiler/system/compile';
 
 var originalASTPlugins;
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-htmlbars: Ember.HTMLBars.registerASTPlugin', {
+testModule('ember-htmlbars: Ember.HTMLBars.registerASTPlugin', {
   setup() {
     originalASTPlugins = plugins.ast.slice();
   },
@@ -20,7 +17,7 @@ QUnit.module('ember-htmlbars: Ember.HTMLBars.registerASTPlugin', {
   }
 });
 
-QUnit.test('registering a plugin adds it to htmlbars-compiler options', function() {
+test('registering a plugin adds it to htmlbars-compiler options', function() {
   expect(2);
 
   function TestPlugin() {
@@ -38,10 +35,8 @@ QUnit.test('registering a plugin adds it to htmlbars-compiler options', function
   compile('some random template');
 });
 
-QUnit.test('registering an unknown type throws an error', function() {
+test('registering an unknown type throws an error', function() {
   throws(function() {
     registerPlugin('asdf', 'whatever');
   }, /Attempting to register "whatever" as "asdf" which is not a valid HTMLBars plugin type./);
 });
-
-}

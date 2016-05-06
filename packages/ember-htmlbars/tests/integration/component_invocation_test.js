@@ -20,11 +20,9 @@ function commonTeardown() {
   owner = component = null;
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('component - invocation', {
+testModule('component - invocation', {
   setup() {
     commonSetup();
   },
@@ -34,7 +32,7 @@ QUnit.module('component - invocation', {
   }
 });
 
-QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
+test('moduleName is available on _renderNode when a layout is present', function() {
   expect(1);
 
   var layoutModuleName = 'my-app-name/templates/components/sample-component';
@@ -56,7 +54,7 @@ QUnit.test('moduleName is available on _renderNode when a layout is present', fu
   runAppend(component);
 });
 
-QUnit.test('moduleName is available on _renderNode when no layout is present', function() {
+test('moduleName is available on _renderNode when no layout is present', function() {
   expect(1);
 
   var templateModuleName = 'my-app-name/templates/application';
@@ -75,5 +73,3 @@ QUnit.test('moduleName is available on _renderNode when no layout is present', f
 
   runAppend(component);
 });
-
-}

@@ -12,7 +12,8 @@ import { OWNER } from 'container/owner';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-import isEnabled from 'ember-metal/features';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+
 
 var owner, View, view, otherView, willDestroyCalled, originalViewKeyword;
 
@@ -74,10 +75,7 @@ QUnit.test('should be added to the specified element when calling appendTo()', f
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.test('should be added to the document body when calling append()', function() {
+test('should be added to the document body when calling append()', function() {
   view = View.create({
     template: compile('foo bar baz')
   });
@@ -92,8 +90,6 @@ QUnit.test('should be added to the document body when calling append()', functio
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
-}
-
 QUnit.test('raises an assert when a target does not exist in the DOM', function() {
   view = View.create();
 
@@ -104,10 +100,7 @@ QUnit.test('raises an assert when a target does not exist in the DOM', function(
   });
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.test('append calls willInsertElement and didInsertElement callbacks', function() {
+test('append calls willInsertElement and didInsertElement callbacks', function() {
   var willInsertElementCalled = false;
   var willInsertElementCalledInChild = false;
   var didInsertElementCalled = false;
@@ -138,7 +131,7 @@ QUnit.test('append calls willInsertElement and didInsertElement callbacks', func
   ok(didInsertElementCalled, 'didInsertElement called');
 });
 
-QUnit.test('a view calls its children\'s willInsertElement and didInsertElement', function() {
+test('a view calls its children\'s willInsertElement and didInsertElement', function() {
   var parentView;
   var willInsertElementCalled = false;
   var didInsertElementCalled = false;
@@ -177,7 +170,7 @@ QUnit.test('a view calls its children\'s willInsertElement and didInsertElement'
   });
 });
 
-QUnit.test('replacing a view should invalidate childView elements', function() {
+test('replacing a view should invalidate childView elements', function() {
   var elementOnDidInsert;
 
   view = EmberView.create({
@@ -209,7 +202,7 @@ QUnit.test('replacing a view should invalidate childView elements', function() {
   run(function() { view.destroy(); });
 });
 
-QUnit.test('trigger rerender of parent and SimpleBoundView', function () {
+test('trigger rerender of parent and SimpleBoundView', function () {
   var view = EmberView.create({
     show: true,
     foo: 'bar',
@@ -232,7 +225,6 @@ QUnit.test('trigger rerender of parent and SimpleBoundView', function () {
   });
 });
 
-}
 
 QUnit.test('remove removes an element from the DOM', function() {
   willDestroyCalled = 0;
@@ -289,10 +281,7 @@ QUnit.test('destroy more forcibly removes the view', function() {
   equal(willDestroyCalled, 1, 'the willDestroyElement hook was called once');
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
+testModule('EmberView - append() and appendTo() in a view hierarchy', {
   setup() {
     commonSetup();
 
@@ -311,7 +300,7 @@ QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
   }
 });
 
-QUnit.test('should be added to the specified element when calling appendTo()', function() {
+test('should be added to the specified element when calling appendTo()', function() {
   jQuery('#qunit-fixture').html('<div id="menu"></div>');
 
   view = View.create();
@@ -326,7 +315,7 @@ QUnit.test('should be added to the specified element when calling appendTo()', f
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
-QUnit.test('should be added to the document body when calling append()', function() {
+test('should be added to the document body when calling append()', function() {
   jQuery('#qunit-fixture').html('<div id="menu"></div>');
 
   view = View.create();
@@ -338,5 +327,3 @@ QUnit.test('should be added to the document body when calling append()', functio
   var viewElem = jQuery('#child');
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
-
-}

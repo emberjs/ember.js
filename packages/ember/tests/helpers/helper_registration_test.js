@@ -8,7 +8,6 @@ import Router from 'ember-routing/system/router';
 import Service from 'ember-runtime/system/service';
 import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
-import isEnabled from 'ember-metal/features';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
@@ -106,11 +105,10 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
   equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
 });
 
-if (!isEnabled('ember-glimmer')) {
-// jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 // needs glimmer Helper
-QUnit.test('Helpers can receive injections', function() {
+test('Helpers can receive injections', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{full-name}}</div>'));
 
   var serviceCalled = false;
@@ -130,5 +128,3 @@ QUnit.test('Helpers can receive injections', function() {
 
   ok(serviceCalled, 'service was injected, method called');
 });
-
-}

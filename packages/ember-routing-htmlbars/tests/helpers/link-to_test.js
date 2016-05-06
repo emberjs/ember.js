@@ -10,7 +10,6 @@ import ComponentLookup from 'ember-views/component_lookup';
 import LinkComponent from 'ember-routing-views/components/link-to';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
-import isEnabled from 'ember-metal/features';
 
 var owner, view;
 
@@ -42,10 +41,9 @@ QUnit.module('ember-routing-htmlbars: link-to helper', {
   }
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('should be able to be inserted in DOM when the router is not present', function() {
+test('should be able to be inserted in DOM when the router is not present', function() {
   var template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
   view = EmberView.create({
     [OWNER]: owner,
@@ -57,7 +55,7 @@ QUnit.test('should be able to be inserted in DOM when the router is not present'
   equal(view.$().text(), 'Go to Index');
 });
 
-QUnit.test('re-renders when title changes', function() {
+test('re-renders when title changes', function() {
   var template = '{{link-to title routeName}}';
   view = EmberView.create({
     [OWNER]: owner,
@@ -79,7 +77,7 @@ QUnit.test('re-renders when title changes', function() {
   equal(view.$().text(), 'bar');
 });
 
-QUnit.test('can read bound title', function() {
+test('can read bound title', function() {
   var template = '{{link-to title routeName}}';
   view = EmberView.create({
     [OWNER]: owner,
@@ -95,7 +93,7 @@ QUnit.test('can read bound title', function() {
   equal(view.$().text(), 'foo');
 });
 
-QUnit.test('escaped inline form (double curlies) escapes link title', function() {
+test('escaped inline form (double curlies) escapes link title', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
@@ -107,11 +105,11 @@ QUnit.test('escaped inline form (double curlies) escapes link title', function()
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
-QUnit.test('escaped inline form with (-html-safe) does not escape link title', function() {
+test('escaped inline form with (-html-safe) does not escape link title', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{link-to (-html-safe view.title) "index"}}'),
+    template: compile('{{link-to (-html-safe view.title) "index"}}')
   });
 
   runAppend(view);
@@ -119,7 +117,7 @@ QUnit.test('escaped inline form with (-html-safe) does not escape link title', f
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-QUnit.test('unescaped inline form (triple curlies) does not escape link title', function() {
+test('unescaped inline form (triple curlies) does not escape link title', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
@@ -131,7 +129,7 @@ QUnit.test('unescaped inline form (triple curlies) does not escape link title', 
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-QUnit.test('unwraps controllers', function() {
+test('unwraps controllers', function() {
   var template = '{{#link-to \'index\' view.otherController}}Text{{/link-to}}';
 
   view = EmberView.create({
@@ -149,7 +147,7 @@ QUnit.test('unwraps controllers', function() {
   equal(view.$().text(), 'Text');
 });
 
-QUnit.test('able to safely extend the built-in component and use the normal path', function() {
+test('able to safely extend the built-in component and use the normal path', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
@@ -161,7 +159,7 @@ QUnit.test('able to safely extend the built-in component and use the normal path
   equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
 
-QUnit.test('[GH#13432] able to safely extend the built-in component and invoke it inline', function() {
+test('[GH#13432] able to safely extend the built-in component and invoke it inline', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
@@ -173,4 +171,3 @@ QUnit.test('[GH#13432] able to safely extend the built-in component and invoke i
   equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
 
-}

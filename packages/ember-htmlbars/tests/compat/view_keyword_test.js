@@ -5,16 +5,13 @@ import compile from 'ember-template-compiler/system/compile';
 
 import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
 import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 let component;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
 let originalLegacyViewSupport = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
 
-QUnit.module('ember-htmlbars: compat - view keyword (use as a path)', {
+testModule('ember-htmlbars: compat - view keyword (use as a path)', {
   setup() {
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
     registerAstPlugin(AssertNoViewAndControllerPaths);
@@ -27,7 +24,7 @@ QUnit.module('ember-htmlbars: compat - view keyword (use as a path)', {
   }
 });
 
-QUnit.test('reading the view keyword fails assertion', function() {
+test('reading the view keyword fails assertion', function() {
   var text = 'a-prop';
   expectAssertion(function() {
     component = EmberComponent.extend({
@@ -38,5 +35,3 @@ QUnit.test('reading the view keyword fails assertion', function() {
     runAppend(component);
   }, /Using `{{view}}` or any path based on it .*/);
 });
-
-}

@@ -51,11 +51,10 @@ QUnit.test('should assert if `tagName` is an empty string and `classNameBindings
   view._renderNode = null;
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
 
-QUnit.test('calls render and turns resultant string into element', function() {
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+
+test('calls render and turns resultant string into element', function() {
   view = EmberView.create({
     tagName: 'span',
     template: compile('foo')
@@ -71,5 +70,3 @@ QUnit.test('calls render and turns resultant string into element', function() {
   equal(elem.innerHTML, 'foo', 'has innerHTML from context');
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
-
-}

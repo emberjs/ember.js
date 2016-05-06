@@ -25,11 +25,9 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('View Integration', {
+testModule('View Integration', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     run(function() {
@@ -56,7 +54,7 @@ QUnit.module('View Integration', {
   }
 });
 
-QUnit.test('invoking `{{view}} from a non-view backed (aka only template) template provides the correct controller to the view instance`', function(assert) {
+test('invoking `{{view}} from a non-view backed (aka only template) template provides the correct controller to the view instance`', function(assert) {
   var controllerInMyFoo, indexController;
 
   setTemplate('index', compile('{{view "my-foo"}}', { moduleName: 'my-foo' }));
@@ -82,5 +80,3 @@ QUnit.test('invoking `{{view}} from a non-view backed (aka only template) templa
 
   assert.strictEqual(controllerInMyFoo, indexController, 'controller is provided to `{{view}}`');
 });
-
-}

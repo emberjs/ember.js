@@ -4,13 +4,11 @@ import {
 } from 'htmlbars-compiler/compiler';
 import VERSION from 'ember/version';
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-htmlbars: compile');
+testModule('ember-htmlbars: compile');
 
-QUnit.test('compiles the provided template with htmlbars', function() {
+test('compiles the provided template with htmlbars', function() {
   var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
@@ -19,7 +17,7 @@ QUnit.test('compiles the provided template with htmlbars', function() {
   equal(actual.toString(), expected.toString(), 'compile function matches content with htmlbars compile');
 });
 
-QUnit.test('calls template on the compiled function', function() {
+test('calls template on the compiled function', function() {
   var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
@@ -28,7 +26,7 @@ QUnit.test('calls template on the compiled function', function() {
   ok(actual.isMethod === false, 'sets isMethod via template function');
 });
 
-QUnit.test('includes the current revision in the compiled template', function() {
+test('includes the current revision in the compiled template', function() {
   var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
@@ -36,7 +34,7 @@ QUnit.test('includes the current revision in the compiled template', function() 
   equal(actual.meta.revision, 'Ember@' + VERSION, 'revision is included in generated template');
 });
 
-QUnit.test('the template revision is different than the HTMLBars default revision', function() {
+test('the template revision is different than the HTMLBars default revision', function() {
   var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
 
   var actual = compile(templateString);
@@ -45,4 +43,3 @@ QUnit.test('the template revision is different than the HTMLBars default revisio
   ok(actual.meta.revision !== expected.meta.revision, 'revision differs from default');
 });
 
-}

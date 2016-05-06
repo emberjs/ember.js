@@ -340,11 +340,9 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
   });
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('Views created via visit() are not added to the global views hash', function(assert) {
+test('Views created via visit() are not added to the global views hash', function(assert) {
   run(function() {
     createApplication();
 
@@ -376,7 +374,7 @@ QUnit.test('Views created via visit() are not added to the global views hash', f
 });
 
 
-QUnit.module('Ember.Application - visit() Integration Tests', {
+testModule('Ember.Application - visit() Integration Tests', {
   teardown() {
     if (instances) {
       run(instances, 'forEach', (i) => i.destroy());
@@ -390,7 +388,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', {
   }
 });
 
-QUnit.test('Ember Islands-style setup', function(assert) {
+test('Ember Islands-style setup', function(assert) {
   let xFooInitCalled = false;
   let xFooDidInsertElementCalled = false;
 
@@ -526,5 +524,3 @@ QUnit.skip('Test setup', function(assert) {
 
 QUnit.skip('iframe setup', function(assert) {
 });
-
-}

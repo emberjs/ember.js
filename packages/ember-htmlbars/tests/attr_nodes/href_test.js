@@ -2,6 +2,7 @@ import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import { equalInnerHTML } from 'htmlbars-test-helpers';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 
@@ -9,11 +10,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-htmlbars: href attribute', {
+testModule('ember-htmlbars: href attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -21,7 +18,7 @@ QUnit.module('ember-htmlbars: href attribute', {
   }
 });
 
-QUnit.test('href is set', function() {
+test('href is set', function() {
   view = EmberView.create({
     context: { url: 'http://example.com' },
     template: compile('<a href={{url}}></a>')
@@ -31,5 +28,3 @@ QUnit.test('href is set', function() {
   equalInnerHTML(view.element, '<a href="http://example.com"></a>',
                  'attribute is output');
 });
-
-}

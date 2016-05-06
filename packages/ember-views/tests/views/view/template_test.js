@@ -34,11 +34,9 @@ QUnit.test('Template views return throw if their template cannot be found', func
   }, /cantBeFound/);
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('should call the function of the associated template', function() {
+test('should call the function of the associated template', function() {
   owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called</h1>'
   ));
@@ -55,7 +53,7 @@ QUnit.test('should call the function of the associated template', function() {
   ok(view.$('#twas-called').length, 'the named template was called');
 });
 
-QUnit.test('should call the function of the associated template with itself as the context', function() {
+test('should call the function of the associated template with itself as the context', function() {
   owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called for {{personName}}</h1>'
   ));
@@ -76,7 +74,7 @@ QUnit.test('should call the function of the associated template with itself as t
         'the named template was called with the view as the data source');
 });
 
-QUnit.test('should fall back to defaultTemplate if neither template nor templateName are provided', function() {
+test('should fall back to defaultTemplate if neither template nor templateName are provided', function() {
   var View;
 
   View = EmberView.extend({
@@ -99,7 +97,7 @@ QUnit.test('should fall back to defaultTemplate if neither template nor template
         'the named template was called with the view as the data source');
 });
 
-QUnit.test('should not use defaultTemplate if template is provided', function() {
+test('should not use defaultTemplate if template is provided', function() {
   var View = EmberView.extend({
     template: compile('foo'),
     defaultTemplate: compile(
@@ -115,7 +113,7 @@ QUnit.test('should not use defaultTemplate if template is provided', function() 
   equal('foo', view.$().text(), 'default template was not printed');
 });
 
-QUnit.test('should not use defaultTemplate if template is provided', function() {
+test('should not use defaultTemplate if template is provided', function() {
   owner.register('template:foobar', compile('foo'));
 
   var View = EmberView.extend({
@@ -135,8 +133,6 @@ QUnit.test('should not use defaultTemplate if template is provided', function() 
 
   equal('foo', view.$().text(), 'default template was not printed');
 });
-
-}
 
 QUnit.test('should render an empty element if no template is specified', function() {
   view = EmberView.create();

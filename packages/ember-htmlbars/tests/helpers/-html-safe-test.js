@@ -6,14 +6,11 @@ import Component from 'ember-views/components/component';
 import compile from 'ember-template-compiler/system/compile';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var component, registry, container, warnings, originalWarn;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
+testModule('ember-htmlbars: {{-html-safe}} helper', {
   setup() {
     registry = new Registry();
     container = registry.container();
@@ -35,7 +32,7 @@ QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
   }
 });
 
-QUnit.test('adds the attribute to the element', function() {
+test('adds the attribute to the element', function() {
   component = Component.create({
     container,
 
@@ -48,7 +45,7 @@ QUnit.test('adds the attribute to the element', function() {
 });
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.test('no warnings are triggered from setting style attribute', function() {
+  test('no warnings are triggered from setting style attribute', function() {
     component = Component.create({
       container,
 
@@ -59,6 +56,4 @@ if (!EmberDev.runningProdBuild) {
 
     deepEqual(warnings, [], 'no warnings were triggered');
   });
-}
-
 }

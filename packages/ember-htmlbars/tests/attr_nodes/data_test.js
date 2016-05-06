@@ -6,20 +6,17 @@ import { InteractiveRenderer } from 'ember-metal-views';
 import { equalInnerHTML } from 'htmlbars-test-helpers';
 import { domHelper as dom } from 'ember-htmlbars/env';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view, originalSetAttribute, setAttributeCalls, renderer;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-htmlbars: data attribute', {
+testModule('ember-htmlbars: data attribute', {
   teardown() {
     runDestroy(view);
   }
 });
 
-QUnit.test('property is output', function() {
+test('property is output', function() {
   view = EmberView.create({
     context: { name: 'erik' },
     template: compile('<div data-name={{name}}>Hi!</div>')
@@ -29,7 +26,7 @@ QUnit.test('property is output', function() {
   equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', 'attribute is output');
 });
 
-QUnit.test('property set before didInsertElement', function() {
+test('property set before didInsertElement', function() {
   var matchingElement;
   view = EmberView.create({
     didInsertElement() {
@@ -44,7 +41,7 @@ QUnit.test('property set before didInsertElement', function() {
   equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
 });
 
-QUnit.test('quoted attributes are concatenated', function() {
+test('quoted attributes are concatenated', function() {
   view = EmberView.create({
     context: { firstName: 'max', lastName: 'jackson' },
     template: compile('<div data-name=\'{{firstName}} {{lastName}}\'>Hi!</div>')
@@ -54,7 +51,7 @@ QUnit.test('quoted attributes are concatenated', function() {
   equalInnerHTML(view.element, '<div data-name="max jackson">Hi!</div>', 'attribute is output');
 });
 
-QUnit.test('quoted attributes are updated when changed', function() {
+test('quoted attributes are updated when changed', function() {
   view = EmberView.create({
     context: { firstName: 'max', lastName: 'jackson' },
     template: compile('<div data-name=\'{{firstName}} {{lastName}}\'>Hi!</div>')
@@ -68,7 +65,7 @@ QUnit.test('quoted attributes are updated when changed', function() {
   equalInnerHTML(view.element, '<div data-name="james jackson">Hi!</div>', 'attribute is output');
 });
 
-QUnit.test('quoted attributes are not removed when value is null', function() {
+test('quoted attributes are not removed when value is null', function() {
   view = EmberView.create({
     context: { firstName: 'max', lastName: 'jackson' },
     template: compile('<div data-name=\'{{firstName}}\'>Hi!</div>')
@@ -82,7 +79,7 @@ QUnit.test('quoted attributes are not removed when value is null', function() {
   equal(view.element.firstChild.getAttribute('data-name'), '', 'attribute is output');
 });
 
-QUnit.test('unquoted attributes are removed when value is null', function() {
+test('unquoted attributes are removed when value is null', function() {
   view = EmberView.create({
     context: { firstName: 'max' },
     template: compile('<div data-name={{firstName}}>Hi!</div>')
@@ -96,7 +93,7 @@ QUnit.test('unquoted attributes are removed when value is null', function() {
   ok(!view.element.firstChild.hasAttribute('data-name'), 'attribute is removed output');
 });
 
-QUnit.test('unquoted attributes that are null are not added', function() {
+test('unquoted attributes that are null are not added', function() {
   view = EmberView.create({
     context: { firstName: null },
     template: compile('<div data-name={{firstName}}>Hi!</div>')
@@ -106,7 +103,7 @@ QUnit.test('unquoted attributes that are null are not added', function() {
   equalInnerHTML(view.element, '<div>Hi!</div>', 'attribute is not present');
 });
 
-QUnit.test('unquoted attributes are added when changing from null', function() {
+test('unquoted attributes are added when changing from null', function() {
   view = EmberView.create({
     context: { firstName: null },
     template: compile('<div data-name={{firstName}}>Hi!</div>')
@@ -120,7 +117,7 @@ QUnit.test('unquoted attributes are added when changing from null', function() {
   equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', 'attribute is added output');
 });
 
-QUnit.test('property value is directly added to attribute', function() {
+test('property value is directly added to attribute', function() {
   view = EmberView.create({
     context: { name: '"" data-foo="blah"' },
     template: compile('<div data-name={{name}}>Hi!</div>')
@@ -130,7 +127,7 @@ QUnit.test('property value is directly added to attribute', function() {
   equal(view.element.firstChild.getAttribute('data-name'), '"" data-foo="blah"', 'attribute is output');
 });
 
-QUnit.test('path is output', function() {
+test('path is output', function() {
   view = EmberView.create({
     context: { name: { firstName: 'erik' } },
     template: compile('<div data-name={{name.firstName}}>Hi!</div>')
@@ -140,7 +137,7 @@ QUnit.test('path is output', function() {
   equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', 'attribute is output');
 });
 
-QUnit.test('changed property updates', function() {
+test('changed property updates', function() {
   var context = EmberObject.create({ name: 'erik' });
   view = EmberView.create({
     context: context,
@@ -155,7 +152,7 @@ QUnit.test('changed property updates', function() {
   equalInnerHTML(view.element, '<div data-name="mmun">Hi!</div>', 'attribute is updated output');
 });
 
-QUnit.test('updates are scheduled in the render queue', function() {
+test('updates are scheduled in the render queue', function() {
   expect(4);
 
   var context = EmberObject.create({ name: 'erik' });
@@ -182,7 +179,7 @@ QUnit.test('updates are scheduled in the render queue', function() {
   equalInnerHTML(view.element, '<div data-name="mmun">Hi!</div>', 'attribute is updated output');
 });
 
-QUnit.test('updates fail silently after an element is destroyed', function() {
+test('updates fail silently after an element is destroyed', function() {
   var context = EmberObject.create({ name: 'erik' });
   view = EmberView.create({
     context: context,
@@ -198,7 +195,7 @@ QUnit.test('updates fail silently after an element is destroyed', function() {
   });
 });
 
-QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {
+testModule('ember-htmlbars: {{attribute}} helper -- setAttribute', {
   setup() {
     renderer = InteractiveRenderer.create({ dom });
 
@@ -221,7 +218,7 @@ QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {
   }
 });
 
-QUnit.test('calls setAttribute for new values', function() {
+test('calls setAttribute for new values', function() {
   var context = EmberObject.create({ name: 'erik' });
   view = EmberView.create({
     renderer: renderer,
@@ -240,7 +237,7 @@ QUnit.test('calls setAttribute for new values', function() {
   deepEqual(setAttributeCalls, expected);
 });
 
-QUnit.test('does not call setAttribute if the same value is set', function() {
+test('does not call setAttribute if the same value is set', function() {
   var context = EmberObject.create({ name: 'erik' });
   view = EmberView.create({
     renderer: renderer,
@@ -260,5 +257,3 @@ QUnit.test('does not call setAttribute if the same value is set', function() {
 
   deepEqual(setAttributeCalls, expected);
 });
-
-}

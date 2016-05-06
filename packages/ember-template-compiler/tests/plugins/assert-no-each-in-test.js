@@ -1,13 +1,11 @@
 import { ENV } from 'ember-environment';
 import { compile } from 'ember-template-compiler';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+
 
 const legacyViewSupportOriginalValue = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-template-compiler: assert-no-each-in-test without legacy view support', {
+testModule('ember-template-compiler: assert-no-each-in-test without legacy view support', {
   setup() {
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
   },
@@ -17,7 +15,7 @@ QUnit.module('ember-template-compiler: assert-no-each-in-test without legacy vie
   }
 });
 
-QUnit.test('{{#each foo in bar}} is not allowed', function() {
+test('{{#each foo in bar}} is not allowed', function() {
   expect(1);
 
   expectAssertion(function() {
@@ -28,7 +26,7 @@ QUnit.test('{{#each foo in bar}} is not allowed', function() {
 });
 
 
-QUnit.module('ember-template-compiler: assert-no-each-in-test with legacy view support', {
+testModule('ember-template-compiler: assert-no-each-in-test with legacy view support', {
   setup() {
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = true;
   },
@@ -38,7 +36,7 @@ QUnit.module('ember-template-compiler: assert-no-each-in-test with legacy view s
   }
 });
 
-QUnit.test('{{#each foo in bar}} is allowed', function() {
+test('{{#each foo in bar}} is allowed', function() {
   expect(1);
 
   compile('{{#each person in people}}{{person.name}}{{/each}}', {
@@ -47,5 +45,3 @@ QUnit.test('{{#each foo in bar}} is allowed', function() {
 
   ok(true);
 });
-
-}

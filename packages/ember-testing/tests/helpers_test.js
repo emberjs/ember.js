@@ -348,11 +348,9 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
   });
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('`click` triggers appropriate events in order', function() {
+test('`click` triggers appropriate events in order', function() {
   expect(5);
 
   var click, wait, events;
@@ -423,7 +421,7 @@ QUnit.test('`click` triggers appropriate events in order', function() {
   });
 });
 
-QUnit.test('`click` triggers native events with simulated X/Y coordinates', function() {
+test('`click` triggers native events with simulated X/Y coordinates', function() {
   expect(15);
 
   var click, wait, events;
@@ -461,7 +459,7 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
   });
 });
 
-QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
+test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
   expect(5);
 
   var triggerEvent, wait, evt;
@@ -492,8 +490,6 @@ QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated
     ok(typeof evt.clientY === 'number' && evt.clientY > 0, 'clientY is correct');
   });
 });
-
-}
 
 QUnit.test('`wait` waits for outstanding timers', function() {
   expect(1);
@@ -549,10 +545,7 @@ QUnit.test('`wait` does not error if routing has not begun', function() {
   });
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.test('`triggerEvent accepts an optional options hash without context', function() {
+test('`triggerEvent accepts an optional options hash without context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -581,7 +574,7 @@ QUnit.test('`triggerEvent accepts an optional options hash without context', fun
   });
 });
 
-QUnit.test('`triggerEvent can limit searching for a selector to a scope', function() {
+test('`triggerEvent can limit searching for a selector to a scope', function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -609,7 +602,7 @@ QUnit.test('`triggerEvent can limit searching for a selector to a scope', functi
   });
 });
 
-QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() {
+test('`triggerEvent` can be used to trigger arbitrary events', function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -637,7 +630,7 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
   });
 });
 
-QUnit.test('`fillIn` takes context into consideration', function() {
+test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
@@ -663,7 +656,7 @@ QUnit.test('`fillIn` takes context into consideration', function() {
   return wait();
 });
 
-QUnit.test('`fillIn` focuses on the element', function() {
+test('`fillIn` focuses on the element', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
@@ -696,7 +689,7 @@ QUnit.test('`fillIn` focuses on the element', function() {
   return wait();
 });
 
-QUnit.test('`fillIn` fires `input` and `change` events in the proper order', function() {
+test('`fillIn` fires `input` and `change` events in the proper order', function() {
   expect(1);
 
   var fillIn, visit, andThen, wait;
@@ -732,7 +725,7 @@ QUnit.test('`fillIn` fires `input` and `change` events in the proper order', fun
   return wait();
 });
 
-QUnit.test('`triggerEvent accepts an optional options hash and context', function() {
+test('`triggerEvent accepts an optional options hash and context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -763,7 +756,6 @@ QUnit.test('`triggerEvent accepts an optional options hash and context', functio
     });
 });
 
-}
 
 QUnit.module('ember-testing debugging helpers', {
   setup() {
