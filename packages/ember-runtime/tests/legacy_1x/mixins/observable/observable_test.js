@@ -129,8 +129,8 @@ QUnit.test('should return null when property value is null on Ember.Observable',
 });
 
 QUnit.test('should call unknownProperty when value is undefined on Ember.Observable', function() {
-  equal(get(object, 'unknown'), 'unknown');
-  equal(object.lastUnknownProperty, 'unknown');
+  equal(get(objectA, 'unknown'), 'unknown');
+  equal(objectA.lastUnknownProperty, 'unknown');
 });
 
 QUnit.test('should get normal properties on standard objects', function() {
