@@ -257,8 +257,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('12');
   }
 
-  // This test only makes sense for htmlbars since there will not be automatic bindings in Glimmer2
-  ['@htmlbars automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them'](assert) {
+  ['@test automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them'](assert) {
     let inner;
 
     this.registerComponent('x-inner', {
@@ -290,7 +289,6 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('');
   }
 
-  // This test only makes sense for htmlbars since there will not be automatic bindings in Glimmer2
   ['@test automatic mutable bindings tolerate constant non-stream inputs and attempts to set them'](assert) {
     let inner;
 
