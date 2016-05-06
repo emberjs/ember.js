@@ -23,6 +23,13 @@ class Scheduler {
     };
   }
 
+  destroy() {
+    if (this._roots.length) {
+      this._roots.splice(0, this._roots.length);
+      run.backburner.off('begin', this._scheduleMaybeUpdate);
+    }
+  }
+
   registerView(view) {
     if (!this._roots.length) {
       run.backburner.on('begin', this._scheduleMaybeUpdate);
@@ -56,6 +63,10 @@ class Renderer {
     this._env = env;
     this._destinedForDOM = destinedForDOM;
     this._scheduler = new Scheduler();
+  }
+
+  destroy() {
+    this._scheduler.destroy();
   }
 
   appendOutletView(view, target) {
