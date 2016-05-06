@@ -5,6 +5,12 @@
 import { assert } from 'ember-metal/debug';
 import { isPath, hasThis } from 'ember-metal/path_cache';
 
+const ALLOWABLE_TYPES = {
+  object: true,
+  function: true,
+  string: true
+};
+
 // ..........................................................
 // GET AND SET
 //
@@ -75,7 +81,7 @@ export function _getPath(root, path) {
   let parts = path.split('.');
 
   for (let i = 0; i < parts.length; i++) {
-    if (obj == null) {
+    if (!isGettable(obj)) {
       return undefined;
     }
 
@@ -87,6 +93,14 @@ export function _getPath(root, path) {
   }
 
   return obj;
+}
+
+function isGettable(obj) {
+  if (obj == null) {
+    return false;
+  }
+
+  return ALLOWABLE_TYPES[typeof obj];
 }
 
 /**

@@ -51,7 +51,7 @@ QUnit.test('[obj, falseValue.notDefined] -> (undefined)', function() {
 });
 
 QUnit.test('[obj, emptyString.length] -> 0', function() {
-  equal(get(obj, 'emptyString.length'), 0);
+  strictEqual(get(obj, 'emptyString.length'), 0);
 });
 
 QUnit.test('[obj, nullValue.notDefined] -> (undefined)', function() {
