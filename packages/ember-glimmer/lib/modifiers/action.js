@@ -64,12 +64,12 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  constructor(actionId, actionName, actionArgs, namedArgs, dynamicScope) {
+  constructor(actionId, actionName, actionArgs, namedArgs, implicitTarget) {
     this.actionId = actionId;
     this.actionName = actionName;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
-    this.dynamicScope = dynamicScope;
+    this.implicitTarget = implicitTarget;
     this.eventName = this.getEventName();
   }
 
@@ -88,13 +88,13 @@ export class ActionState {
   }
 
   getTarget() {
-    let { dynamicScope, namedArgs } = this;
+    let { implicitTarget, namedArgs } = this;
     let target;
 
     if (namedArgs.has('target')) {
       target = namedArgs.get('target').value();
     } else {
-      target = dynamicScope.controller || dynamicScope.view;
+      target = implicitTarget.value();
     }
 
     return target;
@@ -146,10 +146,12 @@ export class ActionState {
 export default class ActionModifierManager {
   install(element, args, dom, dynamicScope) {
     let { named, positional } = args;
+    let implicitTarget;
     let actionName;
 
-    if (positional.length > 0) {
-      actionName = positional.at(0).value();
+    if (positional.length > 1) {
+      implicitTarget = positional.at(0);
+      actionName = positional.at(1).value();
     }
 
     assert(
@@ -160,12 +162,14 @@ export default class ActionModifierManager {
     );
 
     let actionArgs = [];
-    for (let i = 1; i < positional.length; i++) {
+    // The first two arguments are (1) `this` and (2) the action name.
+    // Everything else is a param.
+    for (let i = 2; i < positional.length; i++) {
       actionArgs.push(positional.at(i));
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(actionId, actionName, actionArgs, named, dynamicScope);
+    let actionState = new ActionState(actionId, actionName, actionArgs, named, implicitTarget);
 
     ActionHelper.registerAction(actionState);
 
@@ -178,8 +182,7 @@ export default class ActionModifierManager {
   update(modifier, element, args, dom, dynamicScope) {
     let { positional } = args;
 
-    modifier.actionName = positional.at(0).value();
-    modifier.dynamicScope = dynamicScope;
+    modifier.actionName = positional.at(1).value();
     modifier.eventName = modifier.getEventName();
 
     // Not sure if this is needed? If we mutate the actionState is that good enough?
