@@ -234,3 +234,33 @@ test("char references", function() {
   locEqual(p, 2, 17, 3, 31);
   locEqual(text2, 2, 20, 3, 27);
 });
+
+test("whitespace control - trailing", function() {
+  var ast = parse(`
+  {{#if foo~}}
+    <div></div>
+  {{else~}}
+    {{bar}}
+  {{/if}}`);
+
+  let [,ifBlock] = ast.body;
+  let [div] = ifBlock.program.body;
+
+  locEqual(ifBlock, 2, 2, 6, 9, 'if block');
+  locEqual(div, 3, 4, 3, 15, 'div inside truthy if block');
+});
+
+test("whitespace control - leading", function() {
+  var ast = parse(`
+  {{~#if foo}}
+    <div></div>
+  {{~else}}
+    {{bar}}
+  {{~/if}}`);
+
+  let [ifBlock] = ast.body;
+  let [,div] = ifBlock.program.body;
+
+  locEqual(ifBlock, 2, 2, 6, 10, 'if block');
+  locEqual(div, 3, 4, 3, 15, 'div inside truthy if block');
+});
