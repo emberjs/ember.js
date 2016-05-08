@@ -6,21 +6,21 @@ export default function TransformInlineLinkTo(options) {
 TransformInlineLinkTo.prototype.transform = function TransformInlineLinkTo_transform(ast) {
   let { traverse, builders: b } = this.syntax;
 
-  function buildProgram(content) {
-    return b.program([buildStatement(content)]);
+  function buildProgram(content, loc) {
+    return b.program([buildStatement(content, loc)], null, loc);
   }
 
-  function buildStatement(content) {
+  function buildStatement(content, loc) {
     switch (content.type) {
       case 'PathExpression':
-        return b.mustache(content);
+        return b.mustache(content, null, null, null, loc);
 
       case 'SubExpression':
-        return b.mustache(content.path, content.params, content.hash);
+        return b.mustache(content.path, content.params, content.hash, null, loc);
 
       // The default case handles literals.
       default:
-        return b.text('' + content.value);
+        return b.text('' + content.value, loc);
     }
   }
 
@@ -36,7 +36,9 @@ TransformInlineLinkTo.prototype.transform = function TransformInlineLinkTo_trans
           'link-to',
           node.params.slice(1),
           node.hash,
-          buildProgram(content)
+          buildProgram(content, node.loc),
+          null,
+          node.loc
         );
       }
     }
