@@ -102,13 +102,7 @@ export default {
   },
 
   ContentStatement: function(content) {
-    let changeLines = 0;
-    if (content.rightStripped) {
-      changeLines = leadingNewlineDifference(content.original, content.value);
-    }
-
-    this.tokenizer.line = content.loc.start.line + changeLines;
-    this.tokenizer.column = changeLines ? 0 : content.loc.start.column;
+    updateTokenizerLocation(this.tokenizer, content);
 
     this.tokenizer.tokenizePart(content.value);
     this.tokenizer.flushData();
@@ -164,21 +158,46 @@ export default {
   NullLiteral: function() {}
 };
 
-function leadingNewlineDifference(original, value) {
+function calculateRightStrippedOffsets(original, value) {
   if (value === '') {
     // if it is empty, just return the count of newlines
     // in original
-    return original.split("\n").length - 1;
+    return {
+      lines: original.split("\n").length - 1,
+      columns: 0
+    };
   }
 
   // otherwise, return the number of newlines prior to
   // `value`
-  let difference = original.split(value)[0];
-  let lines = difference.split(/\n/);
+  var difference = original.split(value)[0];
+  var lines = difference.split(/\n/);
+  var lineCount = lines.length - 1;
 
-  return lines.length - 1;
+  return {
+    lines: lineCount,
+    columns: lines[lineCount].length
+  };
 }
 
+function updateTokenizerLocation(tokenizer, content) {
+  var line = content.loc.start.line;
+  var column = content.loc.start.column;
+
+  if (content.rightStripped) {
+    var offsets = calculateRightStrippedOffsets(content.original, content.value);
+
+    line = line + offsets.lines;
+    if (offsets.lines) {
+      column = offsets.columns;
+    } else {
+      column = column + offsets.columns;
+    }
+  }
+
+  tokenizer.line = line;
+  tokenizer.column = column;
+}
 function acceptCommonNodes(compiler, node) {
   compiler.acceptNode(node.path);
 
