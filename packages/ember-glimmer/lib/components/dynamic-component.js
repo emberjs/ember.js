@@ -1,5 +1,6 @@
 import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 import { ConstReference, isConst } from 'glimmer-reference';
+import { assert } from 'ember-metal/debug';
 
 class DynamicComponentLookup {
   constructor(args) {
@@ -47,7 +48,10 @@ class DynamicComponentReference {
 
 function lookup(env, name) {
   if (typeof name === 'string') {
-    return env.getComponentDefinition([name]);
+    let componentDefinition = env.getComponentDefinition([name]);
+    assert(`Glimmer error: Could not find component named "${name}" (no component or template with that name was found)`, componentDefinition);
+
+    return componentDefinition;
   } else {
     throw new Error(`Cannot render ${name} as a component`);
   }
