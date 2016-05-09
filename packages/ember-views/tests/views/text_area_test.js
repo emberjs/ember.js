@@ -83,9 +83,15 @@ QUnit.test('text area value is updated when setting value property of view', fun
 QUnit.test('value binding works properly for inputs that haven\'t been created', function() {
   run(function() {
     textArea.destroy(); // destroy existing textarea
-    textArea = TextArea.create({
-      valueBinding: 'TestObject.value'
-    });
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+      ' are binding to a global consider using a service instead.';
+
+    expectDeprecation(() => {
+      textArea = TextArea.create({
+        valueBinding: 'TestObject.value'
+      });
+    }, deprecationMessage);
   });
 
   equal(get(textArea, 'value'), null, 'precond - default value is null');

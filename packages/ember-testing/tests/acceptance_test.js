@@ -13,11 +13,9 @@ import RSVP from 'ember-runtime/ext/rsvp';
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-testing Acceptance', {
+testModule('ember-testing Acceptance', {
   setup() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
@@ -109,7 +107,7 @@ QUnit.module('ember-testing Acceptance', {
   }
 });
 
-QUnit.test('helpers can be chained with then', function() {
+test('helpers can be chained with then', function() {
   expect(6);
 
   currentRoute = 'index';
@@ -136,7 +134,7 @@ QUnit.test('helpers can be chained with then', function() {
 
 // Keep this for backwards compatibility
 
-QUnit.test('helpers can be chained to each other', function() {
+test('helpers can be chained to each other', function() {
   expect(7);
 
   currentRoute = 'index';
@@ -161,7 +159,7 @@ QUnit.test('helpers can be chained to each other', function() {
   });
 });
 
-QUnit.test('helpers don\'t need to be chained', function() {
+test('helpers don\'t need to be chained', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -186,7 +184,7 @@ QUnit.test('helpers don\'t need to be chained', function() {
   });
 });
 
-QUnit.test('Nested async helpers', function() {
+test('Nested async helpers', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -213,7 +211,7 @@ QUnit.test('Nested async helpers', function() {
   });
 });
 
-QUnit.test('Multiple nested async helpers', function() {
+test('Multiple nested async helpers', function() {
   expect(3);
 
   visit('/posts');
@@ -232,7 +230,7 @@ QUnit.test('Multiple nested async helpers', function() {
   });
 });
 
-QUnit.test('Helpers nested in thens', function() {
+test('Helpers nested in thens', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -259,7 +257,7 @@ QUnit.test('Helpers nested in thens', function() {
   });
 });
 
-QUnit.test('Aborted transitions are not logged via Ember.Test.adapter#exception', function () {
+test('Aborted transitions are not logged via Ember.Test.adapter#exception', function () {
   expect(0);
 
   Test.adapter = QUnitAdapter.create({
@@ -271,7 +269,7 @@ QUnit.test('Aborted transitions are not logged via Ember.Test.adapter#exception'
   visit('/abort_transition');
 });
 
-QUnit.test('Unhandled exceptions are logged via Ember.Test.adapter#exception', function () {
+test('Unhandled exceptions are logged via Ember.Test.adapter#exception', function () {
   expect(2);
 
   var asyncHandled;
@@ -291,7 +289,7 @@ QUnit.test('Unhandled exceptions are logged via Ember.Test.adapter#exception', f
   asyncHandled = click('.does-not-exist');
 });
 
-QUnit.test('Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception', function () {
+test('Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception', function () {
   expect(1);
 
   Test.adapter = QUnitAdapter.create({
@@ -307,7 +305,7 @@ QUnit.test('Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#
   });
 });
 
-QUnit.test('should not start routing on the root URL when visiting another', function() {
+test('should not start routing on the root URL when visiting another', function() {
   expect(4);
 
   visit('/posts');
@@ -320,7 +318,7 @@ QUnit.test('should not start routing on the root URL when visiting another', fun
   });
 });
 
-QUnit.test('only enters the index route once when visiting /', function() {
+test('only enters the index route once when visiting /', function() {
   expect(1);
 
   visit('/');
@@ -330,7 +328,7 @@ QUnit.test('only enters the index route once when visiting /', function() {
   });
 });
 
-QUnit.test('test must not finish while asyncHelpers are pending', function () {
+test('test must not finish while asyncHelpers are pending', function () {
   expect(2);
 
   var async = 0;
@@ -366,7 +364,7 @@ QUnit.test('test must not finish while asyncHelpers are pending', function () {
   }
 });
 
-QUnit.test('visiting a URL that causes another transition should yield the correct URL', function () {
+test('visiting a URL that causes another transition should yield the correct URL', function () {
   expect(1);
 
   visit('/redirect');
@@ -376,7 +374,7 @@ QUnit.test('visiting a URL that causes another transition should yield the corre
   });
 });
 
-QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
+test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
   expect(2);
 
   visit('/posts');
@@ -392,9 +390,9 @@ QUnit.test('visiting a URL and then visiting a second URL with a transition shou
   });
 });
 
-QUnit.module('ember-testing Acceptance – teardown');
+testModule('ember-testing Acceptance – teardown');
 
-QUnit.test('that the setup/teardown happens correct', function() {
+test('that the setup/teardown happens correct', function() {
   expect(2);
 
   jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
@@ -416,5 +414,3 @@ QUnit.test('that the setup/teardown happens correct', function() {
   Test.adapter = originalAdapter;
   indexHitCount = 0;
 });
-
-}

@@ -16,9 +16,7 @@ let styles = [{
   class: Component
 }];
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 styles.forEach(style => {
   function invoke(name, hash = {}) {
@@ -47,7 +45,7 @@ styles.forEach(style => {
     return { isString: true, value: val };
   }
 
-  QUnit.module(`component - lifecycle hooks (${style.name})`, {
+  testModule(`component - lifecycle hooks (${style.name})`, {
     setup() {
       owner = buildOwner();
       owner.registerOptionsForType('component', { singleton: false });
@@ -73,7 +71,7 @@ styles.forEach(style => {
     return { type: type, view: view, arg: arg };
   }
 
-  QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
+  test('lifecycle hooks are invoked in a predictable order', function() {
     var components = {};
 
     function component(label) {
@@ -227,7 +225,7 @@ styles.forEach(style => {
     ]);
   });
 
-  QUnit.test('passing values through attrs causes lifecycle hooks to fire if the attribute values have changed', function() {
+  test('passing values through attrs causes lifecycle hooks to fire if the attribute values have changed', function() {
     var components = {};
 
     function component(label) {
@@ -363,7 +361,7 @@ styles.forEach(style => {
     ]);
   });
 
-  QUnit.test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
+  test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
     let component;
 
     component = style.class.extend({
@@ -387,7 +385,7 @@ styles.forEach(style => {
     });
   });
 
-  QUnit.test('DEPRECATED: didInitAttrs is deprecated', function(assert) {
+  test('DEPRECATED: didInitAttrs is deprecated', function(assert) {
     let component;
 
     let componentClass = style.class.extend({
@@ -409,7 +407,7 @@ styles.forEach(style => {
     });
   });
 
-  QUnit.test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {
+  test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {
     assert.expect(1);
 
     owner.register('component:the-thing', style.class.extend({
@@ -437,5 +435,3 @@ styles.forEach(style => {
 // TODO: Write a test that involves deep mutability: the component plucks something
 // from inside the attrs hash out into state and passes it as attrs into a child
 // component. The hooks should run correctly.
-
-}

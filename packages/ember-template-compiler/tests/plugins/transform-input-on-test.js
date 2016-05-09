@@ -1,12 +1,10 @@
 import { compile } from 'ember-template-compiler';
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-template-compiler: transform-input-on');
+testModule('ember-template-compiler: transform-input-on');
 
-QUnit.test('Using `action` without `on` provides a deprecation', function() {
+test('Using `action` without `on` provides a deprecation', function() {
   expect(1);
 
   expectDeprecation(function() {
@@ -16,7 +14,7 @@ QUnit.test('Using `action` without `on` provides a deprecation', function() {
   }, `Using '{{input action="foo"}}' ('foo/bar/baz' @ L1:C0) is deprecated. Please use '{{input enter="foo"}}' instead.`);
 });
 
-QUnit.test('Using `action` with `on` provides a deprecation', function() {
+test('Using `action` with `on` provides a deprecation', function() {
   expect(1);
 
   expectDeprecation(function() {
@@ -26,7 +24,7 @@ QUnit.test('Using `action` with `on` provides a deprecation', function() {
   }, `Using '{{input on="focus-in" action="foo"}}' ('foo/bar/baz' @ L1:C0) is deprecated. Please use '{{input focus-in="foo"}}' instead.`);
 });
 
-QUnit.test('Using `on=\'keyPress\'` does not clobber `keyPress`', function() {
+test('Using `on=\'keyPress\'` does not clobber `keyPress`', function() {
   expect(1);
 
   expectDeprecation(function() {
@@ -36,7 +34,7 @@ QUnit.test('Using `on=\'keyPress\'` does not clobber `keyPress`', function() {
   }, `Using '{{input on="keyPress" action="foo"}}' ('foo/bar/baz' @ L1:C0) is deprecated. Please use '{{input key-press="foo"}}' instead.`);
 });
 
-QUnit.test('Using `on=\'foo\'` without `action=\'asdf\'` raises specific deprecation', function() {
+test('Using `on=\'foo\'` without `action=\'asdf\'` raises specific deprecation', function() {
   expect(1);
 
   expectDeprecation(function() {
@@ -45,5 +43,3 @@ QUnit.test('Using `on=\'foo\'` without `action=\'asdf\'` raises specific depreca
     });
   }, `Using '{{input on="asdf" ...}}' without specifying an action ('foo/bar/baz' @ L1:C0) will do nothing.`);
 });
-
-}

@@ -15,6 +15,7 @@ moduleFor('Helpers test: {{log}}', class extends RenderingTest {
   }
 
   teardown() {
+    super();
     Logger.log = this.originalLog;
   }
 

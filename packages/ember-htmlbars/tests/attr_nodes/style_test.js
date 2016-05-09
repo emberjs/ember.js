@@ -6,13 +6,11 @@ import compile from 'ember-template-compiler/system/compile';
 import { SafeString } from 'ember-htmlbars/utils/string';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { styleWarning } from 'ember-htmlbars/morphs/attr-morph';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view, originalWarn, warnings;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-QUnit.module('ember-htmlbars: style attribute', {
+testModule('ember-htmlbars: style attribute', {
   setup() {
     warnings = [];
     originalWarn = getDebugFunction('warn');
@@ -30,7 +28,7 @@ QUnit.module('ember-htmlbars: style attribute', {
 });
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
+  test('specifying `<div style={{userValue}}></div>` generates a warning', function() {
     view = EmberView.create({
       userValue: 'width: 42px',
       template: compile('<div style={{view.userValue}}></div>')
@@ -41,7 +39,7 @@ if (!EmberDev.runningProdBuild) {
     deepEqual(warnings, [styleWarning]);
   });
 
-  QUnit.test('specifying `attributeBindings: ["style"]` generates a warning', function() {
+  test('specifying `attributeBindings: ["style"]` generates a warning', function() {
     view = EmberView.create({
       userValue: 'width: 42px',
       template: compile('<div style={{view.userValue}}></div>')
@@ -53,7 +51,7 @@ if (!EmberDev.runningProdBuild) {
   });
 }
 
-QUnit.test('specifying `<div style={{{userValue}}}></div>` works properly without a warning', function() {
+test('specifying `<div style={{{userValue}}}></div>` works properly without a warning', function() {
   view = EmberView.create({
     userValue: 'width: 42px',
     template: compile('<div style={{{view.userValue}}}></div>')
@@ -64,7 +62,7 @@ QUnit.test('specifying `<div style={{{userValue}}}></div>` works properly withou
   deepEqual(warnings, [ ]);
 });
 
-QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a SafeString', function() {
+test('specifying `<div style={{userValue}}></div>` works properly with a SafeString', function() {
   view = EmberView.create({
     userValue: new SafeString('width: 42px'),
     template: compile('<div style={{view.userValue}}></div>')
@@ -75,7 +73,7 @@ QUnit.test('specifying `<div style={{userValue}}></div>` works properly with a S
   deepEqual(warnings, [ ]);
 });
 
-QUnit.test('null value do not generate htmlsafe warning', function() {
+test('null value do not generate htmlsafe warning', function() {
   view = EmberView.create({
     userValue: null,
     template: compile('<div style={{view.userValue}}></div>')
@@ -86,7 +84,7 @@ QUnit.test('null value do not generate htmlsafe warning', function() {
   deepEqual(warnings, [ ]);
 });
 
-QUnit.test('undefined value do not generate htmlsafe warning', function() {
+test('undefined value do not generate htmlsafe warning', function() {
   view = EmberView.create({
     template: compile('<div style={{view.userValue}}></div>')
   });
@@ -95,5 +93,3 @@ QUnit.test('undefined value do not generate htmlsafe warning', function() {
 
   deepEqual(warnings, [ ]);
 });
-
-}

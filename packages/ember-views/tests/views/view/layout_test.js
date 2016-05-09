@@ -36,11 +36,9 @@ QUnit.test('Layout views return throw if their layout cannot be found', function
   }, /cantBeFound/);
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('should use the template of the associated layout', function() {
+test('should use the template of the associated layout', function() {
   var templateCalled = 0;
   var layoutCalled = 0;
 
@@ -69,7 +67,7 @@ QUnit.test('should use the template of the associated layout', function() {
   equal(layoutCalled, 1, 'layout is called when layout is present');
 });
 
-QUnit.test('should use the associated template with itself as the context', function() {
+test('should use the associated template with itself as the context', function() {
   owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called for {{personName}}</h1>'
   ));
@@ -90,7 +88,7 @@ QUnit.test('should use the associated template with itself as the context', func
         'the named template was called with the view as the data source');
 });
 
-QUnit.test('should fall back to defaultLayout if neither template nor templateName are provided', function() {
+test('should fall back to defaultLayout if neither template nor templateName are provided', function() {
   var View = EmberView.extend({
     defaultLayout: compile('used default layout')
   });
@@ -105,7 +103,7 @@ QUnit.test('should fall back to defaultLayout if neither template nor templateNa
         'the named template was called with the view as the data source');
 });
 
-QUnit.test('should not use defaultLayout if layout is provided', function() {
+test('should not use defaultLayout if layout is provided', function() {
   var View = EmberView.extend({
     layout: compile('used layout'),
     defaultLayout: compile('used default layout')
@@ -118,5 +116,3 @@ QUnit.test('should not use defaultLayout if layout is provided', function() {
 
   equal('used layout', view.$().text(), 'default layout was not printed');
 });
-
-}

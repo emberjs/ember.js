@@ -137,9 +137,15 @@ QUnit.test('input type is configurable when creating view', function() {
 QUnit.test('value binding works properly for inputs that haven\'t been created', function() {
   run(function() {
     textField.destroy(); // destroy existing textField
-    textField = TextField.create({
-      valueBinding: 'TestObject.value'
-    });
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+      ' are binding to a global consider using a service instead.';
+
+    expectDeprecation(() => {
+      textField = TextField.create({
+        valueBinding: 'TestObject.value'
+      });
+    }, deprecationMessage);
   });
 
   equal(get(textField, 'value'), null, 'precond - default value is null');
@@ -160,9 +166,16 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
 QUnit.test('value binding sets value on the element', function() {
   run(function() {
     textField.destroy(); // destroy existing textField
-    textField = TextField.create({
-      valueBinding: 'TestObject.value'
-    });
+
+    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+      ' are binding to a global consider using a service instead.';
+
+    expectDeprecation(() => {
+      textField = TextField.create({
+        valueBinding: 'TestObject.value'
+      });
+    }, deprecationMessage);
+
     textField.append();
   });
 

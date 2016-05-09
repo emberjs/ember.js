@@ -5,6 +5,7 @@
 
 import assign from 'ember-metal/assign';
 import defaultPlugins from 'ember-template-compiler/plugins';
+import VERSION from 'ember/version';
 
 let compileOptions;
 let fragmentReason;
@@ -40,7 +41,7 @@ compileOptions = function(_options) {
   options.buildMeta = function buildMeta(program) {
     return {
       fragmentReason: fragmentReason(program),
-      revision: 'Ember@VERSION_STRING_PLACEHOLDER',
+      revision: 'Ember@' + VERSION,
       loc: program.loc,
       moduleName: options.moduleName
     };

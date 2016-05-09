@@ -7,11 +7,9 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var originalViewKeyword;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('Ember.View additions to run queue', {
+testModule('Ember.View additions to run queue', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
@@ -20,7 +18,7 @@ QUnit.module('Ember.View additions to run queue', {
   }
 });
 
-QUnit.test('View hierarchy is done rendering to DOM when functions queued in afterRender execute', function() {
+test('View hierarchy is done rendering to DOM when functions queued in afterRender execute', function() {
   var didInsert = 0;
   var childView = View.create({
     elementId: 'child_view',
@@ -48,5 +46,3 @@ QUnit.test('View hierarchy is done rendering to DOM when functions queued in aft
     parentView.destroy();
   });
 });
-
-}

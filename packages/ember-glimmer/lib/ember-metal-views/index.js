@@ -1,4 +1,6 @@
 import { RootReference } from '../utils/references';
+import run from 'ember-metal/run_loop';
+import { CURRENT_TAG } from 'glimmer-reference';
 
 class DynamicScope {
   constructor({ view, controller, outletState, isTopLevel }) {
@@ -13,12 +15,58 @@ class DynamicScope {
   }
 }
 
+class Scheduler {
+  constructor() {
+    this._roots = [];
+    this._scheduleMaybeUpdate = () => {
+      run.backburner.schedule('render', this, this._maybeUpdate, CURRENT_TAG.value());
+    };
+  }
+
+  destroy() {
+    if (this._roots.length) {
+      this._roots.splice(0, this._roots.length);
+      run.backburner.off('begin', this._scheduleMaybeUpdate);
+    }
+  }
+
+  registerView(view) {
+    if (!this._roots.length) {
+      run.backburner.on('begin', this._scheduleMaybeUpdate);
+    }
+    this._roots.push(view);
+  }
+
+  deregisterView(view) {
+    let viewIndex = this._roots.indexOf(view);
+    if (~viewIndex) {
+      this._roots.splice(viewIndex, 1);
+      if (!this._roots.length) {
+        run.backburner.off('begin', this._scheduleMaybeUpdate);
+      }
+    }
+  }
+
+  _maybeUpdate(lastTagValue) {
+    if (CURRENT_TAG.validate(lastTagValue)) { return; }
+    for (let i = 0; i < this._roots.length; ++i) {
+      let view = this._roots[i];
+      view.renderer.rerender(view);
+    }
+  }
+}
+
 class Renderer {
   constructor({ dom, env, destinedForDOM = false }) {
     this._root = null;
     this._dom = dom;
     this._env = env;
     this._destinedForDOM = destinedForDOM;
+    this._scheduler = new Scheduler();
+  }
+
+  destroy() {
+    this._scheduler.destroy();
   }
 
   appendOutletView(view, target) {
@@ -37,6 +85,8 @@ class Renderer {
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
 
+    this._scheduler.registerView(view);
+
     return result;
   }
 
@@ -48,6 +98,8 @@ class Renderer {
     env.begin();
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
     env.commit();
+
+    this._scheduler.registerView(view);
 
     // FIXME: Store this somewhere else
     view['_renderResult'] = result;
@@ -61,6 +113,7 @@ class Renderer {
   }
 
   remove(view) {
+    this._scheduler.deregisterView(view);
     view.trigger('willDestroyElement');
     view._transitionTo('destroying');
 

@@ -1,5 +1,9 @@
-import Ember from 'ember-metal/core'; // onErrorTarget and Ember.testing
 import { assert } from 'ember-metal/debug';
+import { isTesting } from 'ember-metal/testing';
+import {
+  getOnerror,
+  setOnerror
+} from 'ember-metal/error_handler';
 import {
   GUID_KEY
 } from 'ember-metal/utils';
@@ -17,7 +21,15 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-// ES6TODO: should Backburner become es6?
+const onErrorTarget = {
+  get onerror() {
+    return getOnerror();
+  },
+  set onerror(handler) {
+    return setOnerror(handler);
+  }
+};
+
 var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   GUID_KEY: GUID_KEY,
   sync: {
@@ -27,7 +39,7 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   defaultQueue: 'actions',
   onBegin: onBegin,
   onEnd: onEnd,
-  onErrorTarget: Ember,
+  onErrorTarget: onErrorTarget,
   onErrorMethod: 'onerror'
 });
 
@@ -258,7 +270,11 @@ run.end = function() {
   @public
 */
 run.schedule = function(/* queue, target, method */) {
-  checkAutoRun();
+  assert(
+    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
+    `You will need to wrap any code with asynchronous side-effects in a run`,
+    run.currentRunLoop || !isTesting()
+  );
   backburner.schedule(...arguments);
 };
 
@@ -339,7 +355,11 @@ run.later = function(/*target, method*/) {
   @public
 */
 run.once = function(...args) {
-  checkAutoRun();
+  assert(
+    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
+    `You will need to wrap any code with asynchronous side-effects in a run`,
+    run.currentRunLoop || !isTesting()
+  );
   args.unshift('actions');
   return backburner.scheduleOnce(...args);
 };
@@ -397,7 +417,11 @@ run.once = function(...args) {
   @public
 */
 run.scheduleOnce = function(/*queue, target, method*/) {
-  checkAutoRun();
+  assert(
+    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
+    `You will need to wrap any code with asynchronous side-effects in a run`,
+    run.currentRunLoop || !isTesting()
+  );
   return backburner.scheduleOnce(...arguments);
 };
 
@@ -643,17 +667,6 @@ run.debounce = function() {
 run.throttle = function() {
   return backburner.throttle(...arguments);
 };
-
-// Make sure it's not an autorun during testing
-function checkAutoRun() {
-  if (!run.currentRunLoop) {
-    assert(
-      `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-      !Ember.testing
-    );
-  }
-}
 
 /**
   Add a new named queue after the specified queue.

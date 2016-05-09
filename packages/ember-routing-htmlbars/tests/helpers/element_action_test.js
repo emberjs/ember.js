@@ -20,6 +20,7 @@ import viewKeyword from 'ember-htmlbars/keywords/view';
 import ComponentLookup from 'ember-views/component_lookup';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 import {
   runAppend,
@@ -29,11 +30,7 @@ import {
 var dispatcher, view, originalViewKeyword, owner;
 var originalRegisterAction = ActionHelper.registerAction;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-routing-htmlbars: action helper', {
+testModule('ember-routing-htmlbars: action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     dispatcher = EventDispatcher.create();
@@ -49,7 +46,7 @@ QUnit.module('ember-routing-htmlbars: action helper', {
   }
 });
 
-QUnit.test('should output a data attribute with a guid', function() {
+test('should output a data attribute with a guid', function() {
   view = EmberView.create({
     template: compile('<a href="#" {{action "edit"}}>edit</a>')
   });
@@ -59,7 +56,7 @@ QUnit.test('should output a data attribute with a guid', function() {
   ok(view.$('a').attr('data-ember-action').match(/\d+/), 'A data-ember-action attribute with a guid was added');
 });
 
-QUnit.test('should by default register a click event', function() {
+test('should by default register a click event', function() {
   var registeredEventName;
 
   ActionHelper.registerAction = function({ eventName }) {
@@ -75,7 +72,7 @@ QUnit.test('should by default register a click event', function() {
   equal(registeredEventName, 'click', 'The click event was properly registered');
 });
 
-QUnit.test('should allow alternative events to be handled', function() {
+test('should allow alternative events to be handled', function() {
   var registeredEventName;
 
   ActionHelper.registerAction = function({ eventName }) {
@@ -91,7 +88,7 @@ QUnit.test('should allow alternative events to be handled', function() {
   equal(registeredEventName, 'mouseUp', 'The alternative mouseUp event was properly registered');
 });
 
-QUnit.test('should by default target the view\'s controller', function() {
+test('should by default target the view\'s controller', function() {
   var registeredTarget;
   var controller = {};
 
@@ -109,7 +106,7 @@ QUnit.test('should by default target the view\'s controller', function() {
   equal(registeredTarget, controller, 'The controller was registered as the target');
 });
 
-QUnit.test('Inside a yield, the target points at the original target', function() {
+test('Inside a yield, the target points at the original target', function() {
   var watted = false;
 
   var component = EmberComponent.extend({
@@ -140,7 +137,7 @@ QUnit.test('Inside a yield, the target points at the original target', function(
   equal(watted, true, 'The action was called on the right context');
 });
 
-QUnit.test('should allow a target to be specified', function() {
+test('should allow a target to be specified', function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function({ node }) {
@@ -162,7 +159,7 @@ QUnit.test('should allow a target to be specified', function() {
   runDestroy(anotherTarget);
 });
 
-QUnit.test('should lazily evaluate the target', function() {
+test('should lazily evaluate the target', function() {
   var firstEdit = 0;
   var secondEdit = 0;
   var controller = {};
@@ -205,7 +202,7 @@ QUnit.test('should lazily evaluate the target', function() {
   equal(secondEdit, 1);
 });
 
-QUnit.test('should register an event handler', function() {
+test('should register an event handler', function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -228,7 +225,7 @@ QUnit.test('should register an event handler', function() {
   ok(eventHandlerWasCalled, 'The event handler was called');
 });
 
-QUnit.test('handles whitelisted modifier keys', function() {
+test('handles whitelisted modifier keys', function() {
   var eventHandlerWasCalled = false;
   var shortcutHandlerWasCalled = false;
 
@@ -263,7 +260,7 @@ QUnit.test('handles whitelisted modifier keys', function() {
   ok(shortcutHandlerWasCalled, 'The "any" shortcut\'s event handler was called');
 });
 
-QUnit.test('handles whitelisted bound modifier keys', function() {
+test('handles whitelisted bound modifier keys', function() {
   var eventHandlerWasCalled = false;
   var shortcutHandlerWasCalled = false;
 
@@ -300,7 +297,7 @@ QUnit.test('handles whitelisted bound modifier keys', function() {
   ok(shortcutHandlerWasCalled, 'The "any" shortcut\'s event handler was called');
 });
 
-QUnit.test('handles whitelisted bound modifier keys with current value', function(assert) {
+test('handles whitelisted bound modifier keys with current value', function(assert) {
   var editHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -333,7 +330,7 @@ QUnit.test('handles whitelisted bound modifier keys with current value', functio
   ok(!editHandlerWasCalled, 'event handler was not called');
 });
 
-QUnit.test('should be able to use action more than once for the same event within a view', function() {
+test('should be able to use action more than once for the same event within a view', function() {
   var editWasCalled = false;
   var deleteWasCalled = false;
   var originalEventHandlerWasCalled = false;
@@ -375,7 +372,7 @@ QUnit.test('should be able to use action more than once for the same event withi
   equal(deleteWasCalled, false, 'The delete action was not called');
 });
 
-QUnit.test('the event should not bubble if `bubbles=false` is passed', function() {
+test('the event should not bubble if `bubbles=false` is passed', function() {
   var editWasCalled = false;
   var deleteWasCalled = false;
   var originalEventHandlerWasCalled = false;
@@ -420,7 +417,7 @@ QUnit.test('the event should not bubble if `bubbles=false` is passed', function(
   equal(originalEventHandlerWasCalled, true, 'The original event handler was called');
 });
 
-QUnit.test('the event should not bubble if `bubbles=false` is passed bound', function() {
+test('the event should not bubble if `bubbles=false` is passed bound', function() {
   var editWasCalled = false;
   var deleteWasCalled = false;
   var originalEventHandlerWasCalled = false;
@@ -466,7 +463,7 @@ QUnit.test('the event should not bubble if `bubbles=false` is passed bound', fun
   equal(originalEventHandlerWasCalled, true, 'The original event handler was called');
 });
 
-QUnit.test('the event bubbling depend on the bound parameter', function() {
+test('the event bubbling depend on the bound parameter', function() {
   var editWasCalled = false;
   var originalEventHandlerWasCalled = false;
 
@@ -504,7 +501,7 @@ QUnit.test('the event bubbling depend on the bound parameter', function() {
   equal(originalEventHandlerWasCalled, true, 'The original event handler was called');
 });
 
-QUnit.test('should work properly in an #each block', function() {
+test('should work properly in an #each block', function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -524,7 +521,7 @@ QUnit.test('should work properly in an #each block', function() {
   ok(eventHandlerWasCalled, 'The event handler was called');
 });
 
-QUnit.test('should work properly in a {{#with foo as |bar|}} block', function() {
+test('should work properly in a {{#with foo as |bar|}} block', function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -544,7 +541,7 @@ QUnit.test('should work properly in a {{#with foo as |bar|}} block', function() 
   ok(eventHandlerWasCalled, 'The event handler was called');
 });
 
-QUnit.test('should unregister event handlers on rerender', function() {
+test('should unregister event handlers on rerender', function() {
   var eventHandlerWasCalled = false;
 
   view = EmberView.extend({
@@ -572,7 +569,7 @@ QUnit.test('should unregister event handlers on rerender', function() {
   ok(ActionManager.registeredActions[newActionId], 'After rerender completes, a new event handler was added');
 });
 
-QUnit.test('should unregister event handlers on inside virtual views', function() {
+test('should unregister event handlers on inside virtual views', function() {
   var things = emberA([
     {
       name: 'Thingy'
@@ -594,7 +591,7 @@ QUnit.test('should unregister event handlers on inside virtual views', function(
   ok(!ActionManager.registeredActions[actionId], 'After the virtual view was destroyed, the action was unregistered');
 });
 
-QUnit.test('should properly capture events on child elements of a container with an action', function() {
+test('should properly capture events on child elements of a container with an action', function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -613,7 +610,7 @@ QUnit.test('should properly capture events on child elements of a container with
   ok(eventHandlerWasCalled, 'Event on a child element triggered the action of its parent');
 });
 
-QUnit.test('should allow bubbling of events from action helper to original parent event', function() {
+test('should allow bubbling of events from action helper to original parent event', function() {
   var eventHandlerWasCalled = false;
   var originalEventHandlerWasCalled = false;
 
@@ -634,7 +631,7 @@ QUnit.test('should allow bubbling of events from action helper to original paren
   ok(eventHandlerWasCalled && originalEventHandlerWasCalled, 'Both event handlers were called');
 });
 
-QUnit.test('should not bubble an event from action helper to original parent event if `bubbles=false` is passed', function() {
+test('should not bubble an event from action helper to original parent event if `bubbles=false` is passed', function() {
   var eventHandlerWasCalled = false;
   var originalEventHandlerWasCalled = false;
 
@@ -656,7 +653,7 @@ QUnit.test('should not bubble an event from action helper to original parent eve
   ok(!originalEventHandlerWasCalled, 'The parent handler was not called');
 });
 
-QUnit.test('should allow \'send\' as action name (#594)', function() {
+test('should allow \'send\' as action name (#594)', function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -675,7 +672,7 @@ QUnit.test('should allow \'send\' as action name (#594)', function() {
   ok(eventHandlerWasCalled, 'The view\'s send method was called');
 });
 
-QUnit.test('should send the view, event and current context to the action', function() {
+test('should send the view, event and current context to the action', function() {
   var passedTarget;
   var passedContext;
 
@@ -703,7 +700,7 @@ QUnit.test('should send the view, event and current context to the action', func
   strictEqual(passedContext, aContext, 'the parameter is passed along');
 });
 
-QUnit.test('should only trigger actions for the event they were registered on', function() {
+test('should only trigger actions for the event they were registered on', function() {
   var editWasCalled = false;
 
   view = EmberView.extend({
@@ -718,7 +715,7 @@ QUnit.test('should only trigger actions for the event they were registered on', 
   ok(!editWasCalled, 'The action wasn\'t called');
 });
 
-QUnit.test('should unwrap controllers passed as a context', function() {
+test('should unwrap controllers passed as a context', function() {
   var passedContext;
   var model = EmberObject.create();
   var controller = EmberController.extend({
@@ -742,7 +739,7 @@ QUnit.test('should unwrap controllers passed as a context', function() {
   equal(passedContext, model, 'the action was passed the unwrapped model');
 });
 
-QUnit.test('should allow multiple contexts to be specified', function() {
+test('should allow multiple contexts to be specified', function() {
   var passedContexts;
   var models = [EmberObject.create(), EmberObject.create()];
 
@@ -768,7 +765,7 @@ QUnit.test('should allow multiple contexts to be specified', function() {
   deepEqual(passedContexts, models, 'the action was called with the passed contexts');
 });
 
-QUnit.test('should allow multiple contexts to be specified mixed with string args', function() {
+test('should allow multiple contexts to be specified mixed with string args', function() {
   var passedParams;
   var model = EmberObject.create();
 
@@ -793,7 +790,7 @@ QUnit.test('should allow multiple contexts to be specified mixed with string arg
   deepEqual(passedParams, ['herp', model], 'the action was called with the passed contexts');
 });
 
-QUnit.test('it does not trigger action with special clicks', function() {
+test('it does not trigger action with special clicks', function() {
   var showCalled = false;
 
   view = EmberView.create({
@@ -836,7 +833,7 @@ QUnit.test('it does not trigger action with special clicks', function() {
   checkClick('which', undefined, true); // IE <9
 });
 
-QUnit.test('it can trigger actions for keyboard events', function() {
+test('it can trigger actions for keyboard events', function() {
   var showCalled = false;
 
   view = EmberView.create({
@@ -863,7 +860,7 @@ QUnit.test('it can trigger actions for keyboard events', function() {
   ok(showCalled, 'should call action with keyup');
 });
 
-QUnit.test('a quoteless parameter should allow dynamic lookup of the actionName', function() {
+test('a quoteless parameter should allow dynamic lookup of the actionName', function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -914,7 +911,7 @@ QUnit.test('a quoteless parameter should allow dynamic lookup of the actionName'
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATED]', function() {
+test('a quoteless parameter should lookup actionName in context [DEPRECATED]', function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -965,7 +962,7 @@ QUnit.test('a quoteless parameter should lookup actionName in context [DEPRECATE
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-QUnit.test('a quoteless string parameter should resolve actionName, including path', function() {
+test('a quoteless string parameter should resolve actionName, including path', function() {
   expect(4);
   var lastAction;
   var actionOrder = [];
@@ -1014,7 +1011,7 @@ QUnit.test('a quoteless string parameter should resolve actionName, including pa
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-QUnit.test('a quoteless function parameter should be called, including arguments', function() {
+test('a quoteless function parameter should be called, including arguments', function() {
   expect(2);
 
   var arg = 'rough ray';
@@ -1040,7 +1037,7 @@ QUnit.test('a quoteless function parameter should be called, including arguments
   });
 });
 
-QUnit.test('a quoteless parameter that does not resolve to a value asserts', function() {
+test('a quoteless parameter that does not resolve to a value asserts', function() {
   var controller = EmberController.extend({
     actions: {
       ohNoeNotValid() {}
@@ -1061,7 +1058,7 @@ QUnit.test('a quoteless parameter that does not resolve to a value asserts', fun
      'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).');
 });
 
-QUnit.test('allows multiple actions on a single element', function() {
+test('allows multiple actions on a single element', function() {
   var clickActionWasCalled = false;
   var doubleClickActionWasCalled = false;
 
@@ -1102,7 +1099,7 @@ QUnit.test('allows multiple actions on a single element', function() {
   ok(doubleClickActionWasCalled, 'The double click handler was called');
 });
 
-QUnit.module('ember-routing-htmlbars: action helper - deprecated invoking directly on target', {
+testModule('ember-routing-htmlbars: action helper - deprecated invoking directly on target', {
   setup() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
@@ -1114,7 +1111,7 @@ QUnit.module('ember-routing-htmlbars: action helper - deprecated invoking direct
   }
 });
 
-QUnit.test('should respect preventDefault=false option if provided', function() {
+test('should respect preventDefault=false option if provided', function() {
   view = EmberView.create({
     template: compile('<a {{action \'show\' preventDefault=false}}>Hi</a>')
   });
@@ -1136,7 +1133,7 @@ QUnit.test('should respect preventDefault=false option if provided', function() 
   equal(event.isDefaultPrevented(), false, 'should not preventDefault');
 });
 
-QUnit.test('should respect preventDefault option if provided bound', function() {
+test('should respect preventDefault option if provided bound', function() {
   view = EmberView.create({
     template: compile('<a {{action \'show\' preventDefault=shouldPreventDefault}}>Hi</a>')
   });
@@ -1168,7 +1165,7 @@ QUnit.test('should respect preventDefault option if provided bound', function() 
   equal(event.isDefaultPrevented(), true, 'should preventDefault');
 });
 
-QUnit.module('ember-routing-htmlbars: action helper - action target without `controller`', {
+testModule('ember-routing-htmlbars: action helper - action target without `controller`', {
   setup() {
     owner = buildOwner();
     owner.registerOptionsForType('template', { instantiate: false });
@@ -1192,7 +1189,7 @@ QUnit.module('ember-routing-htmlbars: action helper - action target without `con
   }
 });
 
-QUnit.test('should target the proper component when `action` is in yielded block [GH #12409]', function(assert) {
+test('should target the proper component when `action` is in yielded block [GH #12409]', function(assert) {
   assert.expect(2);
 
   owner.register('template:components/x-outer', compile(`
@@ -1232,5 +1229,3 @@ QUnit.test('should target the proper component when `action` is in yielded block
   var event = jQuery.Event('click');
   view.$('button').trigger(event);
 });
-
-}

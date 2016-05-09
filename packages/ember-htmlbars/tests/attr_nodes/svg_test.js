@@ -2,6 +2,7 @@ import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import { equalInnerHTML } from 'htmlbars-test-helpers';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 
@@ -9,11 +10,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-htmlbars: svg attribute', {
+testModule('ember-htmlbars: svg attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -21,7 +18,7 @@ QUnit.module('ember-htmlbars: svg attribute', {
   }
 });
 
-QUnit.test('unquoted viewBox property is output', function() {
+test('unquoted viewBox property is output', function() {
   var viewBoxString = '0 0 100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -35,7 +32,7 @@ QUnit.test('unquoted viewBox property is output', function() {
   equal(view.element.getAttribute('svg'), null, 'attribute is removed');
 });
 
-QUnit.test('quoted viewBox property is output', function() {
+test('quoted viewBox property is output', function() {
   var viewBoxString = '0 0 100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -46,7 +43,7 @@ QUnit.test('quoted viewBox property is output', function() {
   equalInnerHTML(view.element, `<svg viewBox="${viewBoxString}"></svg>`, 'attribute is output');
 });
 
-QUnit.test('quoted viewBox property is concat', function() {
+test('quoted viewBox property is concat', function() {
   var viewBoxString = '100 100';
   view = EmberView.create({
     context: { viewBoxString: viewBoxString },
@@ -62,7 +59,7 @@ QUnit.test('quoted viewBox property is concat', function() {
   equalInnerHTML(view.element, `<svg viewBox="0 0 ${newViewBoxString}"></svg>`, 'attribute is output');
 });
 
-QUnit.test('class is output', function() {
+test('class is output', function() {
   view = EmberView.create({
     context: { color: 'blue' },
     template: compile('<svg class=\'{{color}} tall\'></svg>')
@@ -75,5 +72,3 @@ QUnit.test('class is output', function() {
 
   equalInnerHTML(view.element, '<svg class="red tall"></svg>', 'attribute is output');
 });
-
-}

@@ -64,11 +64,10 @@ function appendViewFor(template, moduleName='', hash={}) {
   return view;
 }
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 let subscriber;
-QUnit.module('ember-routing-htmlbars: action helper', {
+testModule('ember-routing-htmlbars: action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     owner = buildOwner({
@@ -99,7 +98,7 @@ QUnit.module('ember-routing-htmlbars: action helper', {
 });
 
 if (isEnabled('ember-improved-instrumentation')) {
-  QUnit.test('action should fire interaction event', function(assert) {
+  test('action should fire interaction event', function(assert) {
     assert.expect(2);
 
     subscriber = subscribe('interaction.ember-action', {
@@ -130,7 +129,7 @@ if (isEnabled('ember-improved-instrumentation')) {
     view.$('#instrument-button').trigger('click');
   });
 
-  QUnit.test('interaction event subscriber should be passed parameters', function(assert) {
+  test('interaction event subscriber should be passed parameters', function(assert) {
     assert.expect(2);
 
     let actionParam = 'So krispy';
@@ -164,7 +163,7 @@ if (isEnabled('ember-improved-instrumentation')) {
     view.$('#instrument-button').trigger('click');
   });
 
-  QUnit.test('interaction event subscriber should be passed target', function(assert) {
+  test('interaction event subscriber should be passed target', function(assert) {
     assert.expect(2);
 
     subscriber = subscribe('interaction.ember-action', {
@@ -198,7 +197,7 @@ if (isEnabled('ember-improved-instrumentation')) {
     view.$('#instrument-button').trigger('click');
   });
 
-  QUnit.test('instrumented action should return value', function(assert) {
+  test('instrumented action should return value', function(assert) {
     assert.expect(1);
 
     var returnedValue = 'Chris P is so krispy';
@@ -227,7 +226,7 @@ if (isEnabled('ember-improved-instrumentation')) {
   });
 }
 
-QUnit.test('action should be called', function(assert) {
+test('action should be called', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.extend({
@@ -251,7 +250,7 @@ QUnit.test('action should be called', function(assert) {
   });
 });
 
-QUnit.test('an error is triggered when bound action function is undefined', function(assert) {
+test('an error is triggered when bound action function is undefined', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.extend({
@@ -267,7 +266,7 @@ QUnit.test('an error is triggered when bound action function is undefined', func
   }, /An action could not be made for `somethingThatIsUndefined` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action 'somethingThatIsUndefined'\)`\) or a function available in .*\./);
 });
 
-QUnit.test('[#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo', function(assert) {
+test('[#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo', function(assert) {
   registerComponent('inner-component', EmberComponent.extend({
     [OWNER]: owner
   }));
@@ -283,7 +282,7 @@ QUnit.test('[#12718] a nice error is shown when a bound action function is undef
   }, /Action passed is null or undefined in \(action [^)]*\) from .*\./);
 });
 
-QUnit.test('action value is returned', function(assert) {
+test('action value is returned', function(assert) {
   assert.expect(1);
 
   var returnedValue = 'terrible tom';
@@ -310,7 +309,7 @@ QUnit.test('action value is returned', function(assert) {
   });
 });
 
-QUnit.test('action should be called on the correct scope', function(assert) {
+test('action should be called on the correct scope', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.extend({
@@ -335,7 +334,7 @@ QUnit.test('action should be called on the correct scope', function(assert) {
   });
 });
 
-QUnit.test('arguments to action are passed, curry', function(assert) {
+test('arguments to action are passed, curry', function(assert) {
   assert.expect(4);
 
   let first = 'mitch';
@@ -370,7 +369,7 @@ QUnit.test('arguments to action are passed, curry', function(assert) {
   });
 });
 
-QUnit.test('arguments to action are bound', function(assert) {
+test('arguments to action are bound', function(assert) {
   assert.expect(1);
 
   let value = 'lazy leah';
@@ -401,7 +400,7 @@ QUnit.test('arguments to action are bound', function(assert) {
   innerComponent.fireAction();
 });
 
-QUnit.test('array arguments are passed correctly to action', function(assert) {
+test('array arguments are passed correctly to action', function(assert) {
   assert.expect(3);
 
   let first = 'foo';
@@ -437,7 +436,7 @@ QUnit.test('array arguments are passed correctly to action', function(assert) {
   innerComponent.fireAction();
 });
 
-QUnit.test('mut values can be wrapped in actions, are settable', function(assert) {
+test('mut values can be wrapped in actions, are settable', function(assert) {
   assert.expect(1);
 
   var newValue = 'trollin trek';
@@ -464,7 +463,7 @@ QUnit.test('mut values can be wrapped in actions, are settable', function(assert
   });
 });
 
-QUnit.test('mut values can be wrapped in actions, are settable with a curry', function(assert) {
+test('mut values can be wrapped in actions, are settable with a curry', function(assert) {
   assert.expect(1);
 
   var newValue = 'trollin trek';
@@ -491,7 +490,7 @@ QUnit.test('mut values can be wrapped in actions, are settable with a curry', fu
   });
 });
 
-QUnit.test('action can create closures over actions', function(assert) {
+test('action can create closures over actions', function(assert) {
   assert.expect(3);
 
   var first = 'raging robert';
@@ -526,7 +525,7 @@ QUnit.test('action can create closures over actions', function(assert) {
   });
 });
 
-QUnit.test('provides a helpful error if an action is not present', function(assert) {
+test('provides a helpful error if an action is not present', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.create();
@@ -550,7 +549,7 @@ QUnit.test('provides a helpful error if an action is not present', function(asse
   }, /An action named 'doesNotExist' was not found in /);
 });
 
-QUnit.test('provides a helpful error if actions hash is not present', function(assert) {
+test('provides a helpful error if actions hash is not present', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.create();
@@ -567,7 +566,7 @@ QUnit.test('provides a helpful error if actions hash is not present', function(a
   }, /An action named 'doesNotExist' was not found in /);
 });
 
-QUnit.test('action can create closures over actions with target', function(assert) {
+test('action can create closures over actions with target', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.extend({
@@ -599,7 +598,7 @@ QUnit.test('action can create closures over actions with target', function(asser
   });
 });
 
-QUnit.test('value can be used with action over actions', function(assert) {
+test('value can be used with action over actions', function(assert) {
   assert.expect(1);
 
   let newValue = 'yelping yehuda';
@@ -634,7 +633,7 @@ QUnit.test('value can be used with action over actions', function(assert) {
   });
 });
 
-QUnit.test('action will read the value of a first property', function(assert) {
+test('action will read the value of a first property', function(assert) {
   assert.expect(1);
 
   let newValue = 'irate igor';
@@ -664,7 +663,7 @@ QUnit.test('action will read the value of a first property', function(assert) {
   });
 });
 
-QUnit.test('action will read the value of a curried first argument property', function(assert) {
+test('action will read the value of a curried first argument property', function(assert) {
   assert.expect(1);
 
   let newValue = 'kissing kris';
@@ -695,7 +694,7 @@ QUnit.test('action will read the value of a curried first argument property', fu
   });
 });
 
-QUnit.test('action closure does not get auto-mut wrapped', function(assert) {
+test('action closure does not get auto-mut wrapped', function(assert) {
   assert.expect(3);
 
   var first = 'raging robert';
@@ -743,7 +742,7 @@ QUnit.test('action closure does not get auto-mut wrapped', function(assert) {
   });
 });
 
-QUnit.test('action should be called within a run loop', function(assert) {
+test('action should be called within a run loop', function(assert) {
   assert.expect(1);
 
   innerComponent = EmberComponent.extend({
@@ -767,7 +766,7 @@ QUnit.test('action should be called within a run loop', function(assert) {
   innerComponent.fireAction();
 });
 
-QUnit.test('objects that define INVOKE can be casted to actions', function(assert) {
+test('objects that define INVOKE can be casted to actions', function(assert) {
   assert.expect(2);
 
   innerComponent = EmberComponent.extend({
@@ -794,5 +793,3 @@ QUnit.test('objects that define INVOKE can be casted to actions', function(asser
 
   innerComponent.fireAction();
 });
-
-}

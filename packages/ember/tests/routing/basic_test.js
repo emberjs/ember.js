@@ -1,5 +1,4 @@
 import Logger from 'ember-console';
-
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
@@ -66,10 +65,9 @@ function handleURLRejectsWith(path, expectedReason) {
   });
 }
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule, asyncTest } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('Basic Routing', {
+testModule('Basic Routing', {
   setup() {
     run(function() {
       App = Application.create({
@@ -111,7 +109,7 @@ QUnit.module('Basic Routing', {
   }
 });
 
-QUnit.test('warn on URLs not included in the route set', function () {
+test('warn on URLs not included in the route set', function () {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -126,7 +124,7 @@ QUnit.test('warn on URLs not included in the route set', function () {
   }, 'The URL \'/what-is-this-i-dont-even\' did not match any routes in your application');
 });
 
-QUnit.test('The Homepage', function() {
+test('The Homepage', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -148,7 +146,7 @@ QUnit.test('The Homepage', function() {
   equal(jQuery('h3:contains(Hours)', '#qunit-fixture').length, 1, 'The home template was rendered');
 });
 
-QUnit.test('The Home page and the Camelot page with multiple Router.map calls', function() {
+test('The Home page and the Camelot page with multiple Router.map calls', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -190,7 +188,7 @@ QUnit.test('The Home page and the Camelot page with multiple Router.map calls', 
   equal(jQuery('h3:contains(Hours)', '#qunit-fixture').length, 1, 'The home template was rendered');
 });
 
-QUnit.test('The Homepage with explicit template name in renderTemplate', function() {
+test('The Homepage with explicit template name in renderTemplate', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -206,7 +204,7 @@ QUnit.test('The Homepage with explicit template name in renderTemplate', functio
   equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
 });
 
-QUnit.test('An alternate template will pull in an alternate controller', function() {
+test('An alternate template will pull in an alternate controller', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -228,7 +226,7 @@ QUnit.test('An alternate template will pull in an alternate controller', functio
   equal(jQuery('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
 });
 
-QUnit.test('An alternate template will pull in an alternate controller instead of controllerName', function() {
+test('An alternate template will pull in an alternate controller instead of controllerName', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -257,7 +255,7 @@ QUnit.test('An alternate template will pull in an alternate controller instead o
   equal(jQuery('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
 });
 
-QUnit.test('The template will pull in an alternate controller via key/value', function() {
+test('The template will pull in an alternate controller via key/value', function() {
   Router.map(function() {
     this.route('homepage', { path: '/' });
   });
@@ -279,7 +277,7 @@ QUnit.test('The template will pull in an alternate controller via key/value', fu
   equal(jQuery('h3:contains(Megatroll) + p:contains(Comes from home.)', '#qunit-fixture').length, 1, 'The homepage template was rendered from data from the HomeController');
 });
 
-QUnit.test('The Homepage with explicit template name in renderTemplate and controller', function() {
+test('The Homepage with explicit template name in renderTemplate and controller', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -301,7 +299,7 @@ QUnit.test('The Homepage with explicit template name in renderTemplate and contr
   equal(jQuery('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
 });
 
-QUnit.test('Model passed via renderTemplate model is set as controller\'s model', function() {
+test('Model passed via renderTemplate model is set as controller\'s model', function() {
   setTemplate('bio', compile('<p>{{model.name}}</p>'));
 
   App.BioController = Controller.extend();
@@ -324,7 +322,7 @@ QUnit.test('Model passed via renderTemplate model is set as controller\'s model'
 });
 
 if (isEnabled('ember-routing-routable-components')) {
-  QUnit.test('Renders the GlimmerComponent for the route', function() {
+  test('Renders the GlimmerComponent for the route', function() {
     setTemplate('home', null);
     setTemplate('components/home', compile('<p>{{name}}</p>'));
 
@@ -344,7 +342,7 @@ if (isEnabled('ember-routing-routable-components')) {
     equal(jQuery('p:contains(Home)', '#qunit-fixture').length, 1, 'The home component was rendered');
   });
 
-  QUnit.test('Must be a GlimmerComponent to prevent component naming collisions', function() {
+  test('Must be a GlimmerComponent to prevent component naming collisions', function() {
     setTemplate('home', null);
     setTemplate('components/home', compile('<p>{{name}}</p>'));
 
@@ -364,7 +362,7 @@ if (isEnabled('ember-routing-routable-components')) {
     equal(jQuery('p:contains(Home)', '#qunit-fixture').length, 0, 'The home component was not rendered');
   });
 
-  QUnit.test('Favors existing templates/views over the component for the route', function() {
+  test('Favors existing templates/views over the component for the route', function() {
     setTemplate('home', compile('PASS'));
     setTemplate('components/home', compile('FAIL'));
 
@@ -383,7 +381,7 @@ if (isEnabled('ember-routing-routable-components')) {
     equal(jQuery('#qunit-fixture').text(), 'PASS', 'The home view was rendered instead of the component');
   });
 
-  QUnit.test('Renders the component given in the component option', function() {
+  test('Renders the component given in the component option', function() {
     setTemplate('home', null);
     setTemplate('components/home', compile('<p>{{name}}</p>'));
 
@@ -407,7 +405,7 @@ if (isEnabled('ember-routing-routable-components')) {
     equal(jQuery('p:contains(Home)', '#qunit-fixture').length, 1, 'The home component was rendered');
   });
 
-  QUnit.test('Routable components get passed model in their attrs', function() {
+  test('Routable components get passed model in their attrs', function() {
     setTemplate('home', null);
     setTemplate('components/home', compile('<p>{{attrs.model.name}}</p>'));
 
@@ -433,7 +431,7 @@ if (isEnabled('ember-routing-routable-components')) {
   });
 }
 
-QUnit.test('Renders correct view with slash notation', function() {
+test('Renders correct view with slash notation', function() {
   setTemplate('home/page', compile('<p>{{view.name}}</p>'));
 
   Router.map(function() {
@@ -455,7 +453,7 @@ QUnit.test('Renders correct view with slash notation', function() {
   equal(jQuery('p:contains(Home/Page)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
 });
 
-QUnit.test('Renders the view given in the view option', function() {
+test('Renders the view given in the view option', function() {
   setTemplate('home', compile('<p>{{view.name}}</p>'));
 
   Router.map(function() {
@@ -477,7 +475,7 @@ QUnit.test('Renders the view given in the view option', function() {
   equal(jQuery('p:contains(Home/Page)', '#qunit-fixture').length, 1, 'The homepage view was rendered');
 });
 
-QUnit.test('render does not replace templateName if user provided', function() {
+test('render does not replace templateName if user provided', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -497,7 +495,7 @@ QUnit.test('render does not replace templateName if user provided', function() {
   equal(jQuery('p', '#qunit-fixture').text(), 'THIS IS THE REAL HOME', 'The homepage template was rendered');
 });
 
-QUnit.test('render does not replace template if user provided', function () {
+test('render does not replace template if user provided', function () {
   Router.map(function () {
     this.route('home', { path: '/' });
   });
@@ -517,7 +515,7 @@ QUnit.test('render does not replace template if user provided', function () {
   equal(jQuery('p', '#qunit-fixture').text(), 'THIS IS THE REAL HOME', 'The homepage template was rendered');
 });
 
-QUnit.test('render uses templateName from route', function() {
+test('render uses templateName from route', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -536,7 +534,7 @@ QUnit.test('render uses templateName from route', function() {
   equal(jQuery('p', '#qunit-fixture').text(), 'THIS IS THE REAL HOME', 'The homepage template was rendered');
 });
 
-QUnit.test('defining templateName allows other templates to be rendered', function() {
+test('defining templateName allows other templates to be rendered', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -572,7 +570,7 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
   equal(jQuery('.alert-box', '#qunit-fixture').text(), 'Invader!', 'Template for alert was render into outlet');
 });
 
-QUnit.test('Specifying a name to render should have precedence over everything else', function() {
+test('Specifying a name to render should have precedence over everything else', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -611,7 +609,7 @@ QUnit.test('Specifying a name to render should have precedence over everything e
   equal(jQuery('span', '#qunit-fixture').text(), 'Outertroll', 'The homepage view was used');
 });
 
-QUnit.test('The Homepage with a `setupController` hook', function() {
+test('The Homepage with a `setupController` hook', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -635,7 +633,7 @@ QUnit.test('The Homepage with a `setupController` hook', function() {
   equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
 });
 
-QUnit.test('The route controller is still set when overriding the setupController hook', function() {
+test('The route controller is still set when overriding the setupController hook', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -654,7 +652,7 @@ QUnit.test('The route controller is still set when overriding the setupControlle
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:home'), 'route controller is the home controller');
 });
 
-QUnit.test('The route controller can be specified via controllerName', function() {
+test('The route controller can be specified via controllerName', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -677,7 +675,7 @@ QUnit.test('The route controller can be specified via controllerName', function(
   equal(jQuery('p', '#qunit-fixture').text(), 'foo', 'The homepage template was rendered with data from the custom controller');
 });
 
-QUnit.test('The route controller specified via controllerName is used in render', function() {
+test('The route controller specified via controllerName is used in render', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -703,7 +701,7 @@ QUnit.test('The route controller specified via controllerName is used in render'
   equal(jQuery('p', '#qunit-fixture').text(), 'alternative home: foo', 'The homepage template was rendered with data from the custom controller');
 });
 
-QUnit.test('The route controller specified via controllerName is used in render even when a controller with the routeName is available', function() {
+test('The route controller specified via controllerName is used in render even when a controller with the routeName is available', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -730,7 +728,7 @@ QUnit.test('The route controller specified via controllerName is used in render 
   equal(jQuery('p', '#qunit-fixture').text(), 'home: myController', 'The homepage template was rendered with data from the custom controller');
 });
 
-QUnit.test('The Homepage with a `setupController` hook modifying other controllers', function() {
+test('The Homepage with a `setupController` hook modifying other controllers', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -754,7 +752,7 @@ QUnit.test('The Homepage with a `setupController` hook modifying other controlle
   equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
 });
 
-QUnit.test('The Homepage with a computed context that does not get overridden', function() {
+test('The Homepage with a computed context that does not get overridden', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -778,7 +776,7 @@ QUnit.test('The Homepage with a computed context that does not get overridden', 
   equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the context intact');
 });
 
-QUnit.test('The Homepage getting its controller context via model', function() {
+test('The Homepage getting its controller context via model', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -808,7 +806,7 @@ QUnit.test('The Homepage getting its controller context via model', function() {
   equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
 });
 
-QUnit.test('The Specials Page getting its controller context by deserializing the params hash', function() {
+test('The Specials Page getting its controller context by deserializing the params hash', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('special', { path: '/specials/:menu_item_id' });
@@ -839,7 +837,7 @@ QUnit.test('The Specials Page getting its controller context by deserializing th
   equal(jQuery('p', '#qunit-fixture').text(), '1', 'The model was used to render the template');
 });
 
-QUnit.test('The Specials Page defaults to looking models up via `find`', function() {
+test('The Specials Page defaults to looking models up via `find`', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('special', { path: '/specials/:menu_item_id' });
@@ -873,7 +871,7 @@ QUnit.test('The Specials Page defaults to looking models up via `find`', functio
   equal(jQuery('p', '#qunit-fixture').text(), '1', 'The model was used to render the template');
 });
 
-QUnit.test('The Special Page returning a promise puts the app into a loading state until the promise is resolved', function() {
+test('The Special Page returning a promise puts the app into a loading state until the promise is resolved', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('special', { path: '/specials/:menu_item_id' });
@@ -925,7 +923,7 @@ QUnit.test('The Special Page returning a promise puts the app into a loading sta
   equal(jQuery('p', '#qunit-fixture').text(), '1', 'The app is now in the specials state');
 });
 
-QUnit.test('The loading state doesn\'t get entered for promises that resolve on the same run loop', function() {
+test('The loading state doesn\'t get entered for promises that resolve on the same run loop', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('special', { path: '/specials/:menu_item_id' });
@@ -1003,7 +1001,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
 });
 */
 
-QUnit.test('The Special page returning an error invokes SpecialRoute\'s error handler', function() {
+test('The Special page returning an error invokes SpecialRoute\'s error handler', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('special', { path: '/specials/:menu_item_id' });
@@ -1089,7 +1087,7 @@ let testOverridableErrorHandler = function(handlersName) {
   });
 };
 
-QUnit.test('ApplicationRoute\'s default error handler can be overridden', function() {
+test('ApplicationRoute\'s default error handler can be overridden', function() {
   testOverridableErrorHandler('actions');
 });
 
@@ -1275,7 +1273,7 @@ asyncTest('Nested callbacks are not exited when moving to siblings', function() 
   });
 });
 
-QUnit.asyncTest('Events are triggered on the controller if a matching action name is implemented', function() {
+asyncTest('Events are triggered on the controller if a matching action name is implemented', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1319,7 +1317,7 @@ QUnit.asyncTest('Events are triggered on the controller if a matching action nam
   action.handler(event);
 });
 
-QUnit.asyncTest('Events are triggered on the current state when defined in `actions` object', function() {
+asyncTest('Events are triggered on the current state when defined in `actions` object', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1353,7 +1351,7 @@ QUnit.asyncTest('Events are triggered on the current state when defined in `acti
   action.handler(event);
 });
 
-QUnit.asyncTest('Events defined in `actions` object are triggered on the current state when routes are nested', function() {
+asyncTest('Events defined in `actions` object are triggered on the current state when routes are nested', function() {
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
@@ -1391,7 +1389,7 @@ QUnit.asyncTest('Events defined in `actions` object are triggered on the current
   action.handler(event);
 });
 
-QUnit.test('Events can be handled by inherited event handlers', function() {
+test('Events can be handled by inherited event handlers', function() {
   expect(4);
 
   App.SuperRoute = Route.extend({
@@ -1429,7 +1427,7 @@ QUnit.test('Events can be handled by inherited event handlers', function() {
   router.send('baz');
 });
 
-QUnit.asyncTest('Actions are not triggered on the controller if a matching action name is implemented as a method', function() {
+asyncTest('Actions are not triggered on the controller if a matching action name is implemented as a method', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1472,7 +1470,7 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
   action.handler(event);
 });
 
-QUnit.asyncTest('actions can be triggered with multiple arguments', function() {
+asyncTest('actions can be triggered with multiple arguments', function() {
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
@@ -1511,7 +1509,7 @@ QUnit.asyncTest('actions can be triggered with multiple arguments', function() {
   action.handler(event);
 });
 
-QUnit.test('transitioning multiple times in a single run loop only sets the URL once', function() {
+test('transitioning multiple times in a single run loop only sets the URL once', function() {
   Router.map(function() {
     this.route('root', { path: '/' });
     this.route('foo');
@@ -1538,7 +1536,7 @@ QUnit.test('transitioning multiple times in a single run loop only sets the URL 
   equal(router.get('location').getURL(), '/bar');
 });
 
-QUnit.test('navigating away triggers a url property change', function() {
+test('navigating away triggers a url property change', function() {
   expect(3);
 
   Router.map(function() {
@@ -1560,7 +1558,7 @@ QUnit.test('navigating away triggers a url property change', function() {
   });
 });
 
-QUnit.test('using replaceWith calls location.replaceURL if available', function() {
+test('using replaceWith calls location.replaceURL if available', function() {
   var setCount = 0;
   var replaceCount = 0;
 
@@ -1597,7 +1595,7 @@ QUnit.test('using replaceWith calls location.replaceURL if available', function(
   equal(router.get('location').getURL(), '/foo');
 });
 
-QUnit.test('using replaceWith calls setURL if location.replaceURL is not defined', function() {
+test('using replaceWith calls setURL if location.replaceURL is not defined', function() {
   var setCount = 0;
 
   Router.reopen({
@@ -1626,7 +1624,7 @@ QUnit.test('using replaceWith calls setURL if location.replaceURL is not defined
   equal(router.get('location').getURL(), '/foo');
 });
 
-QUnit.test('Route inherits model from parent route', function() {
+test('Route inherits model from parent route', function() {
   expect(9);
 
   Router.map(function() {
@@ -1701,7 +1699,7 @@ QUnit.test('Route inherits model from parent route', function() {
   handleURL('/posts/3/shares/3');
 });
 
-QUnit.test('Routes with { resetNamespace: true } inherits model from parent route', function() {
+test('Routes with { resetNamespace: true } inherits model from parent route', function() {
   expect(6);
 
   Router.map(function() {
@@ -1748,7 +1746,7 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
   handleURL('/posts/3/comments');
 });
 
-QUnit.test('It is possible to get the model from a parent route', function() {
+test('It is possible to get the model from a parent route', function() {
   expect(9);
 
   Router.map(function() {
@@ -1794,7 +1792,7 @@ QUnit.test('It is possible to get the model from a parent route', function() {
   handleURL('/posts/3/comments');
 });
 
-QUnit.test('A redirection hook is provided', function() {
+test('A redirection hook is provided', function() {
   Router.map(function() {
     this.route('choose', { path: '/' });
     this.route('home');
@@ -1824,7 +1822,7 @@ QUnit.test('A redirection hook is provided', function() {
   equal(getOwner(router).lookup('controller:application').get('currentPath'), 'home');
 });
 
-QUnit.test('Redirecting from the middle of a route aborts the remainder of the routes', function() {
+test('Redirecting from the middle of a route aborts the remainder of the routes', function() {
   expect(3);
 
   Router.map(function() {
@@ -1859,7 +1857,7 @@ QUnit.test('Redirecting from the middle of a route aborts the remainder of the r
   equal(router.get('location').getURL(), '/home');
 });
 
-QUnit.test('Redirecting to the current target in the middle of a route does not abort initial routing', function() {
+test('Redirecting to the current target in the middle of a route does not abort initial routing', function() {
   expect(5);
 
   Router.map(function() {
@@ -1898,7 +1896,7 @@ QUnit.test('Redirecting to the current target in the middle of a route does not 
   equal(successCount, 1, 'transitionTo success handler was called once');
 });
 
-QUnit.test('Redirecting to the current target with a different context aborts the remainder of the routes', function() {
+test('Redirecting to the current target with a different context aborts the remainder of the routes', function() {
   expect(4);
 
   Router.map(function() {
@@ -1938,7 +1936,7 @@ QUnit.test('Redirecting to the current target with a different context aborts th
   equal(router.get('location').getURL(), '/foo/bar/2/baz');
 });
 
-QUnit.test('Transitioning from a parent event does not prevent currentPath from being set', function() {
+test('Transitioning from a parent event does not prevent currentPath from being set', function() {
   Router.map(function() {
     this.route('foo', function() {
       this.route('bar', { resetNamespace: true }, function() {
@@ -1972,7 +1970,7 @@ QUnit.test('Transitioning from a parent event does not prevent currentPath from 
   equal(router.get('location').getURL(), '/foo/qux');
 });
 
-QUnit.test('Generated names can be customized when providing routes with dot notation', function() {
+test('Generated names can be customized when providing routes with dot notation', function() {
   expect(4);
 
   setTemplate('index', compile('<div>Index</div>'));
@@ -2018,7 +2016,7 @@ QUnit.test('Generated names can be customized when providing routes with dot not
   equal(jQuery('.main .middle .bottom p', '#qunit-fixture').text(), 'BarBazBottom!', 'The templates were rendered into their appropriate parents');
 });
 
-QUnit.test('Child routes render into their parent route\'s template by default', function() {
+test('Child routes render into their parent route\'s template by default', function() {
   setTemplate('index', compile('<div>Index</div>'));
   setTemplate('application', compile('<h1>Home</h1><div class=\'main\'>{{outlet}}</div>'));
   setTemplate('top', compile('<div class=\'middle\'>{{outlet}}</div>'));
@@ -2040,7 +2038,7 @@ QUnit.test('Child routes render into their parent route\'s template by default',
   equal(jQuery('.main .middle .bottom p', '#qunit-fixture').text(), 'Bottom!', 'The templates were rendered into their appropriate parents');
 });
 
-QUnit.test('Child routes render into specified template', function() {
+test('Child routes render into specified template', function() {
   setTemplate('index', compile('<div>Index</div>'));
   setTemplate('application', compile('<h1>Home</h1><div class=\'main\'>{{outlet}}</div>'));
   setTemplate('top', compile('<div class=\'middle\'>{{outlet}}</div>'));
@@ -2069,7 +2067,7 @@ QUnit.test('Child routes render into specified template', function() {
   equal(jQuery('.main .middle > p', '#qunit-fixture').text(), 'Bottom!', 'The template was rendered into the top template');
 });
 
-QUnit.test('Rendering into specified template with slash notation', function() {
+test('Rendering into specified template with slash notation', function() {
   setTemplate('person/profile', compile('profile {{outlet}}'));
   setTemplate('person/details', compile('details!'));
 
@@ -2089,7 +2087,7 @@ QUnit.test('Rendering into specified template with slash notation', function() {
   equal(jQuery('#qunit-fixture:contains(profile details!)').length, 1, 'The templates were rendered');
 });
 
-QUnit.test('Parent route context change', function() {
+test('Parent route context change', function() {
   var editCount = 0;
   var editedPostIds = emberA();
 
@@ -2159,7 +2157,7 @@ QUnit.test('Parent route context change', function() {
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
 
-QUnit.test('Router accounts for rootURL on page load when using history location', function() {
+test('Router accounts for rootURL on page load when using history location', function() {
   var rootURL = window.location.pathname + '/app';
   var postsTemplateRendered = false;
   var setHistory, HistoryTestLocation;
@@ -2214,7 +2212,7 @@ QUnit.test('Router accounts for rootURL on page load when using history location
   ok(postsTemplateRendered, 'Posts route successfully stripped from rootURL');
 });
 
-QUnit.test('The rootURL is passed properly to the location implementation', function() {
+test('The rootURL is passed properly to the location implementation', function() {
   expect(1);
   var rootURL = '/blahzorz';
   var HistoryTestLocation;
@@ -2240,7 +2238,7 @@ QUnit.test('The rootURL is passed properly to the location implementation', func
 });
 
 
-QUnit.test('Only use route rendered into main outlet for default into property on child', function() {
+test('Only use route rendered into main outlet for default into property on child', function() {
   setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('posts/index', compile('postsIndex'));
@@ -2279,7 +2277,7 @@ QUnit.test('Only use route rendered into main outlet for default into property o
   equal(jQuery('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, 'The posts/index template was rendered');
 });
 
-QUnit.test('Generating a URL should not affect currentModel', function() {
+test('Generating a URL should not affect currentModel', function() {
   Router.map(function() {
     this.route('post', { path: '/posts/:post_id' });
   });
@@ -2309,7 +2307,7 @@ QUnit.test('Generating a URL should not affect currentModel', function() {
 });
 
 
-QUnit.test('Generated route should be an instance of App.Route if provided', function() {
+test('Generated route should be an instance of App.Route if provided', function() {
   var generatedRoute;
 
   Router.map(function() {
@@ -2327,7 +2325,7 @@ QUnit.test('Generated route should be an instance of App.Route if provided', fun
   ok(generatedRoute instanceof App.Route, 'should extend the correct route');
 });
 
-QUnit.test('Nested index route is not overriden by parent\'s implicit index route', function() {
+test('Nested index route is not overriden by parent\'s implicit index route', function() {
   Router.map(function() {
     this.route('posts', function() {
       this.route('index', { path: ':category' });
@@ -2344,7 +2342,7 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
 });
 
 if (isEnabled('ember-route-serializers')) {
-  QUnit.test('Custom Route#serialize method still works [DEPRECATED]', function() {
+  test('Custom Route#serialize method still works [DEPRECATED]', function() {
     Router.map(function() {
       this.route('posts', function() {
         this.route('index', {
@@ -2371,7 +2369,7 @@ if (isEnabled('ember-route-serializers')) {
   });
 }
 
-QUnit.test('Application template does not duplicate when re-rendered', function() {
+test('Application template does not duplicate when re-rendered', function() {
   setTemplate('application', compile('<h3>I Render Once</h3>{{outlet}}'));
 
   Router.map(function() {
@@ -2392,7 +2390,7 @@ QUnit.test('Application template does not duplicate when re-rendered', function(
   equal(jQuery('h3:contains(I Render Once)').size(), 1);
 });
 
-QUnit.test('Child routes should render inside the application template if the application template causes a redirect', function() {
+test('Child routes should render inside the application template if the application template causes a redirect', function() {
   setTemplate('application', compile('<h3>App</h3> {{outlet}}'));
   setTemplate('posts', compile('posts'));
 
@@ -2412,7 +2410,7 @@ QUnit.test('Child routes should render inside the application template if the ap
   equal(jQuery('#qunit-fixture > div').text(), 'App posts');
 });
 
-QUnit.test('The template is not re-rendered when the route\'s context changes', function() {
+test('The template is not re-rendered when the route\'s context changes', function() {
   Router.map(function() {
     this.route('page', { path: '/page/:name' });
   });
@@ -2455,7 +2453,7 @@ QUnit.test('The template is not re-rendered when the route\'s context changes', 
 });
 
 
-QUnit.test('The template is not re-rendered when two routes present the exact same template, view, & controller', function() {
+test('The template is not re-rendered when two routes present the exact same template, view, & controller', function() {
   Router.map(function() {
     this.route('first');
     this.route('second');
@@ -2530,7 +2528,7 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
   equal(insertionCount, 2, 'view should have inserted a second time');
 });
 
-QUnit.test('ApplicationRoute with model does not proxy the currentPath', function() {
+test('ApplicationRoute with model does not proxy the currentPath', function() {
   var model = {};
   var currentPath;
 
@@ -2550,7 +2548,7 @@ QUnit.test('ApplicationRoute with model does not proxy the currentPath', functio
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
 });
 
-QUnit.test('Promises encountered on app load put app into loading state until resolved', function() {
+test('Promises encountered on app load put app into loading state until resolved', function() {
   expect(2);
 
   var deferred = RSVP.defer();
@@ -2571,7 +2569,7 @@ QUnit.test('Promises encountered on app load put app into loading state until re
   equal(jQuery('p', '#qunit-fixture').text(), 'INDEX', 'The index route is display.');
 });
 
-QUnit.test('Route should tear down multiple outlets', function() {
+test('Route should tear down multiple outlets', function() {
   setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}{{outlet \'footer\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
@@ -2633,7 +2631,7 @@ QUnit.test('Route should tear down multiple outlets', function() {
 });
 
 
-QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function () {
+test('Route will assert if you try to explicitly render {into: ...} a missing template', function () {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -2649,7 +2647,7 @@ QUnit.test('Route will assert if you try to explicitly render {into: ...} a miss
   }, 'You attempted to render into \'nonexistent\' but it was not found');
 });
 
-QUnit.test('Route supports clearing outlet explicitly', function() {
+test('Route supports clearing outlet explicitly', function() {
   setTemplate('application', compile('{{outlet}}{{outlet \'modal\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
@@ -2732,7 +2730,7 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
   equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, 'The posts/extra template was removed');
 });
 
-QUnit.test('Route supports clearing outlet using string parameter', function() {
+test('Route supports clearing outlet using string parameter', function() {
   setTemplate('application', compile('{{outlet}}{{outlet \'modal\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
@@ -2787,7 +2785,7 @@ QUnit.test('Route supports clearing outlet using string parameter', function() {
   equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, 'The posts/modal template was removed');
 });
 
-QUnit.test('Route silently fails when cleaning an outlet from an inactive view', function() {
+test('Route silently fails when cleaning an outlet from an inactive view', function() {
   expect(1); // handleURL
 
   setTemplate('application', compile('{{outlet}}'));
@@ -2821,7 +2819,7 @@ QUnit.test('Route silently fails when cleaning an outlet from an inactive view',
   run(function() { router.send('hideModal'); });
 });
 
-QUnit.test('Router `willTransition` hook passes in cancellable transition', function() {
+test('Router `willTransition` hook passes in cancellable transition', function() {
   // Should hit willTransition 3 times, once for the initial route, and then 2 more times
   // for the two handleURL calls below
   expect(3);
@@ -2867,7 +2865,7 @@ QUnit.test('Router `willTransition` hook passes in cancellable transition', func
   run(router, 'handleURL', '/about');
 });
 
-QUnit.test('Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered', function() {
+test('Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered', function() {
   expect(8);
 
   Router.map(function() {
@@ -2936,7 +2934,7 @@ QUnit.test('Aborting/redirecting the transition in `willTransition` prevents Loa
   run(deferred.resolve);
 });
 
-QUnit.test('`didTransition` event fires on the router', function() {
+test('`didTransition` event fires on the router', function() {
   expect(3);
 
   Router.map(function() {
@@ -2958,7 +2956,7 @@ QUnit.test('`didTransition` event fires on the router', function() {
 
   run(router, 'transitionTo', 'nork');
 });
-QUnit.test('`didTransition` can be reopened', function() {
+test('`didTransition` can be reopened', function() {
   expect(1);
 
   Router.map(function() {
@@ -2975,7 +2973,7 @@ QUnit.test('`didTransition` can be reopened', function() {
   bootApplication();
 });
 
-QUnit.test('`activate` event fires on the route', function() {
+test('`activate` event fires on the route', function() {
   expect(2);
 
   var eventFired = 0;
@@ -3003,7 +3001,7 @@ QUnit.test('`activate` event fires on the route', function() {
   run(router, 'transitionTo', 'nork');
 });
 
-QUnit.test('`deactivate` event fires on the route', function() {
+test('`deactivate` event fires on the route', function() {
   expect(2);
 
   var eventFired = 0;
@@ -3033,7 +3031,7 @@ QUnit.test('`deactivate` event fires on the route', function() {
   run(router, 'transitionTo', 'dork');
 });
 
-QUnit.test('Actions can be handled by inherited action handlers', function() {
+test('Actions can be handled by inherited action handlers', function() {
   expect(4);
 
   App.SuperRoute = Route.extend({
@@ -3071,7 +3069,7 @@ QUnit.test('Actions can be handled by inherited action handlers', function() {
   router.send('baz');
 });
 
-QUnit.test('transitionTo returns Transition when passed a route name', function() {
+test('transitionTo returns Transition when passed a route name', function() {
   expect(1);
   Router.map(function() {
     this.route('root', { path: '/' });
@@ -3089,7 +3087,7 @@ QUnit.test('transitionTo returns Transition when passed a route name', function(
   equal(transition instanceof Transition, true);
 });
 
-QUnit.test('transitionTo returns Transition when passed a url', function() {
+test('transitionTo returns Transition when passed a url', function() {
   expect(1);
   Router.map(function() {
     this.route('root', { path: '/' });
@@ -3109,7 +3107,7 @@ QUnit.test('transitionTo returns Transition when passed a url', function() {
   equal(transition instanceof Transition, true);
 });
 
-QUnit.test('currentRouteName is a property installed on ApplicationController that can be used in transitionTo', function() {
+test('currentRouteName is a property installed on ApplicationController that can be used in transitionTo', function() {
   expect(24);
 
   Router.map(function() {
@@ -3149,7 +3147,7 @@ QUnit.test('currentRouteName is a property installed on ApplicationController th
   transitionAndCheck('each.other', 'be.excellent.to.each.other', 'each.other');
 });
 
-QUnit.test('Route model hook finds the same model as a manual find', function() {
+test('Route model hook finds the same model as a manual find', function() {
   var Post;
   App.Post = EmberObject.extend();
   App.Post.reopenClass({
@@ -3170,7 +3168,7 @@ QUnit.test('Route model hook finds the same model as a manual find', function() 
   equal(App.Post, Post);
 });
 
-QUnit.test('Routes can refresh themselves causing their model hooks to be re-run', function() {
+test('Routes can refresh themselves causing their model hooks to be re-run', function() {
   Router.map(function() {
     this.route('parent', { path: '/parent/:parent_id' }, function() {
       this.route('child');
@@ -3223,7 +3221,7 @@ QUnit.test('Routes can refresh themselves causing their model hooks to be re-run
   equal(childcount, 2);
 });
 
-QUnit.test('Specifying non-existent controller name in route#render throws', function() {
+test('Specifying non-existent controller name in route#render throws', function() {
   expect(1);
 
   Router.map(function() {
@@ -3243,7 +3241,7 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
   bootApplication();
 });
 
-QUnit.test('Redirecting with null model doesn\'t error out', function() {
+test('Redirecting with null model doesn\'t error out', function() {
   function serializeAboutRoute(model) {
     if (model === null) {
       return { hurhurhur: 'TreeklesMcGeekles' };
@@ -3277,7 +3275,7 @@ QUnit.test('Redirecting with null model doesn\'t error out', function() {
   equal(router.get('location.path'), '/about/TreeklesMcGeekles');
 });
 
-QUnit.test('rejecting the model hooks promise with a non-error prints the `message` property', function() {
+test('rejecting the model hooks promise with a non-error prints the `message` property', function() {
   expect(5);
 
   var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
@@ -3307,7 +3305,7 @@ QUnit.test('rejecting the model hooks promise with a non-error prints the `messa
   }, 'expected an exception');
 });
 
-QUnit.test('rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property', function() {
+test('rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property', function() {
   expect(5);
   var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
   var rejectedStack   = 'Yeah, buddy: stack gets printed too.';
@@ -3338,7 +3336,7 @@ QUnit.test('rejecting the model hooks promise with an error with `errorThrown` p
   }, 'expected an exception');
 });
 
-QUnit.test('rejecting the model hooks promise with no reason still logs error', function() {
+test('rejecting the model hooks promise with no reason still logs error', function() {
   Router.map(function() {
     this.route('wowzers', { path: '/' });
   });
@@ -3356,7 +3354,7 @@ QUnit.test('rejecting the model hooks promise with no reason still logs error', 
   bootApplication();
 });
 
-QUnit.test('rejecting the model hooks promise with a string shows a good error', function() {
+test('rejecting the model hooks promise with a string shows a good error', function() {
   expect(3);
   var originalLoggerError = Logger.error;
   var rejectedMessage = 'Supercalifragilisticexpialidocious';
@@ -3383,7 +3381,7 @@ QUnit.test('rejecting the model hooks promise with a string shows a good error',
   Logger.error = originalLoggerError;
 });
 
-QUnit.test('willLeave, willChangeContext, willChangeModel actions don\'t fire unless feature flag enabled', function() {
+test('willLeave, willChangeContext, willChangeModel actions don\'t fire unless feature flag enabled', function() {
   expect(1);
 
   App.Router.map(function() {
@@ -3412,7 +3410,7 @@ QUnit.test('willLeave, willChangeContext, willChangeModel actions don\'t fire un
   run(router, 'transitionTo', 'about');
 });
 
-QUnit.test('Errors in transitionTo within redirect hook are logged', function() {
+test('Errors in transitionTo within redirect hook are logged', function() {
   expect(4);
   var actual = [];
 
@@ -3441,7 +3439,7 @@ QUnit.test('Errors in transitionTo within redirect hook are logged', function() 
   ok(actual[0][1].match(/More context objects were passed than there are dynamic segments for the route: stink-bomb/), 'the error is printed');
 });
 
-QUnit.test('Errors in transition show error template if available', function() {
+test('Errors in transition show error template if available', function() {
   setTemplate('error', compile('<div id=\'error\'>Error!</div>'));
 
   Router.map(function() {
@@ -3462,7 +3460,7 @@ QUnit.test('Errors in transition show error template if available', function() {
   equal(jQuery('#error').length, 1, 'Error template was rendered.');
 });
 
-QUnit.test('Route#resetController gets fired when changing models and exiting routes', function() {
+test('Route#resetController gets fired when changing models and exiting routes', function() {
   expect(4);
 
   Router.map(function() {
@@ -3505,7 +3503,7 @@ QUnit.test('Route#resetController gets fired when changing models and exiting ro
   deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
 });
 
-QUnit.test('Exception during initialization of non-initial route is not swallowed', function() {
+test('Exception during initialization of non-initial route is not swallowed', function() {
   Router.map(function() {
     this.route('boom');
   });
@@ -3521,7 +3519,7 @@ QUnit.test('Exception during initialization of non-initial route is not swallowe
 });
 
 
-QUnit.test('Exception during load of non-initial route is not swallowed', function() {
+test('Exception during load of non-initial route is not swallowed', function() {
   Router.map(function() {
     this.route('boom');
   });
@@ -3543,7 +3541,7 @@ QUnit.test('Exception during load of non-initial route is not swallowed', functi
   });
 });
 
-QUnit.test('Exception during initialization of initial route is not swallowed', function() {
+test('Exception during initialization of initial route is not swallowed', function() {
   Router.map(function() {
     this.route('boom', { path: '/' });
   });
@@ -3557,7 +3555,7 @@ QUnit.test('Exception during initialization of initial route is not swallowed', 
   }, /\bboom\b/);
 });
 
-QUnit.test('Exception during load of initial route is not swallowed', function() {
+test('Exception during load of initial route is not swallowed', function() {
   Router.map(function() {
     this.route('boom', { path: '/' });
   });
@@ -3578,7 +3576,7 @@ QUnit.test('Exception during load of initial route is not swallowed', function()
   }, /\bboom\b/);
 });
 
-QUnit.test('{{outlet}} works when created after initial render', function() {
+test('{{outlet}} works when created after initial render', function() {
   setTemplate('sample', compile('Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye'));
   setTemplate('sample/inner', compile('Yay'));
   setTemplate('sample/inner2', compile('Boo'));
@@ -3604,7 +3602,7 @@ QUnit.test('{{outlet}} works when created after initial render', function() {
   equal(jQuery('#qunit-fixture').text(), 'HiBooBye', 'third render');
 });
 
-QUnit.test('Can rerender application view multiple times when it contains an outlet', function() {
+test('Can rerender application view multiple times when it contains an outlet', function() {
   setTemplate('application', compile('App{{outlet}}'));
   setTemplate('index', compile('Hello world'));
 
@@ -3629,7 +3627,7 @@ QUnit.test('Can rerender application view multiple times when it contains an out
   equal(jQuery('#qunit-fixture').text(), 'AppHello world', 'third render');
 });
 
-QUnit.test('Can render into a named outlet at the top level', function() {
+test('Can render into a named outlet at the top level', function() {
   setTemplate('application', compile('A-{{outlet}}-B-{{outlet "other"}}-C'));
   setTemplate('modal', compile('Hello world'));
   setTemplate('index', compile('The index'));
@@ -3649,7 +3647,7 @@ QUnit.test('Can render into a named outlet at the top level', function() {
   equal(jQuery('#qunit-fixture').text(), 'A-The index-B-Hello world-C', 'initial render');
 });
 
-QUnit.test('Can disconnect a named outlet at the top level', function() {
+test('Can disconnect a named outlet at the top level', function() {
   setTemplate('application', compile('A-{{outlet}}-B-{{outlet "other"}}-C'));
   setTemplate('modal', compile('Hello world'));
   setTemplate('index', compile('The index'));
@@ -3681,7 +3679,7 @@ QUnit.test('Can disconnect a named outlet at the top level', function() {
   equal(jQuery('#qunit-fixture').text(), 'A-The index-B--C', 'second render');
 });
 
-QUnit.test('Can render into a named outlet at the top level, with empty main outlet', function() {
+test('Can render into a named outlet at the top level, with empty main outlet', function() {
   setTemplate('application', compile('A-{{outlet}}-B-{{outlet "other"}}-C'));
   setTemplate('modal', compile('Hello world'));
 
@@ -3705,7 +3703,7 @@ QUnit.test('Can render into a named outlet at the top level, with empty main out
 });
 
 
-QUnit.test('Can render into a named outlet at the top level, later', function() {
+test('Can render into a named outlet at the top level, later', function() {
   setTemplate('application', compile('A-{{outlet}}-B-{{outlet "other"}}-C'));
   setTemplate('modal', compile('Hello world'));
   setTemplate('index', compile('The index'));
@@ -3730,7 +3728,7 @@ QUnit.test('Can render into a named outlet at the top level, later', function() 
   equal(jQuery('#qunit-fixture').text(), 'A-The index-B-Hello world-C', 'second render');
 });
 
-QUnit.test('Can render routes with no \'main\' outlet and their children', function() {
+test('Can render routes with no \'main\' outlet and their children', function() {
   setTemplate('application', compile('<div id="application">{{outlet "app"}}</div>'));
   setTemplate('app', compile('<div id="app-common">{{outlet "common"}}</div><div id="app-sub">{{outlet "sub"}}</div>'));
   setTemplate('common', compile('<div id="common"></div>'));
@@ -3772,7 +3770,7 @@ QUnit.test('Can render routes with no \'main\' outlet and their children', funct
   equal(jQuery('#app-sub #sub').length, 1, 'Finds sub while viewing /app/sub');
 });
 
-QUnit.test('Tolerates stacked renders', function() {
+test('Tolerates stacked renders', function() {
   setTemplate('application', compile('{{outlet}}{{outlet "modal"}}'));
   setTemplate('index', compile('hi'));
   setTemplate('layer', compile('layer'));
@@ -3802,7 +3800,7 @@ QUnit.test('Tolerates stacked renders', function() {
   equal(trim(jQuery('#qunit-fixture').text()), 'hi');
 });
 
-QUnit.test('Renders child into parent with non-default template name', function() {
+test('Renders child into parent with non-default template name', function() {
   setTemplate('application', compile('<div class="a">{{outlet}}</div>'));
   setTemplate('exports/root', compile('<div class="b">{{outlet}}</div>'));
   setTemplate('exports/index', compile('<div class="c"></div>'));
@@ -3829,7 +3827,7 @@ QUnit.test('Renders child into parent with non-default template name', function(
   equal(jQuery('#qunit-fixture .a .b .c').length, 1);
 });
 
-QUnit.test('Allows any route to disconnectOutlet another route\'s templates', function() {
+test('Allows any route to disconnectOutlet another route\'s templates', function() {
   setTemplate('application', compile('{{outlet}}{{outlet "modal"}}'));
   setTemplate('index', compile('hi'));
   setTemplate('layer', compile('layer'));
@@ -3861,7 +3859,7 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
   equal(trim(jQuery('#qunit-fixture').text()), 'hi');
 });
 
-QUnit.test('Can this.render({into:...}) the render helper', function() {
+test('Can this.render({into:...}) the render helper', function() {
   setTemplate('application', compile('{{render "foo"}}'));
   setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
@@ -3888,7 +3886,7 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
   equal(jQuery('#qunit-fixture .foo').text(), 'bar');
 });
 
-QUnit.test('Can disconnect from the render helper', function() {
+test('Can disconnect from the render helper', function() {
   setTemplate('application', compile('{{render "foo"}}'));
   setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
@@ -3914,7 +3912,7 @@ QUnit.test('Can disconnect from the render helper', function() {
 });
 
 
-QUnit.test('Can this.render({into:...}) the render helper\'s children', function() {
+test('Can this.render({into:...}) the render helper\'s children', function() {
   setTemplate('application', compile('{{render "foo"}}'));
   setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
@@ -3943,7 +3941,7 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
   equal(jQuery('#qunit-fixture .foo .index').text(), 'bar');
 });
 
-QUnit.test('Can disconnect from the render helper\'s children', function() {
+test('Can disconnect from the render helper\'s children', function() {
   setTemplate('application', compile('{{render "foo"}}'));
   setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
@@ -3970,7 +3968,7 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
   equal(jQuery('#qunit-fixture .foo .index').text(), '');
 });
 
-QUnit.test('Can this.render({into:...}) nested render helpers', function() {
+test('Can this.render({into:...}) nested render helpers', function() {
   setTemplate('application', compile('{{render "foo"}}'));
   setTemplate('foo', compile('<div class="foo">{{render "bar"}}</div>'));
   setTemplate('bar', compile('<div class="bar">{{outlet}}</div>'));
@@ -3998,7 +3996,7 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
   equal(jQuery('#qunit-fixture .bar').text(), 'baz');
 });
 
-QUnit.test('Can disconnect from nested render helpers', function() {
+test('Can disconnect from nested render helpers', function() {
   setTemplate('application', compile('{{render "foo"}}'));
   setTemplate('foo', compile('<div class="foo">{{render "bar"}}</div>'));
   setTemplate('bar', compile('<div class="bar">{{outlet}}</div>'));
@@ -4024,7 +4022,7 @@ QUnit.test('Can disconnect from nested render helpers', function() {
   equal(jQuery('#qunit-fixture .bar').text(), '');
 });
 
-QUnit.test('Can render with layout', function() {
+test('Can render with layout', function() {
   setTemplate('application', compile('{{outlet}}'));
   setTemplate('index', compile('index-template'));
   setTemplate('my-layout', compile('my-layout [{{yield}}]'));
@@ -4037,7 +4035,7 @@ QUnit.test('Can render with layout', function() {
   equal(jQuery('#qunit-fixture').text(), 'my-layout [index-template]');
 });
 
-QUnit.test('Components inside an outlet have their didInsertElement hook invoked when the route is displayed', function(assert) {
+test('Components inside an outlet have their didInsertElement hook invoked when the route is displayed', function(assert) {
   setTemplate('index', compile('{{#if showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'));
 
   var myComponentCounter = 0;
@@ -4079,7 +4077,7 @@ QUnit.test('Components inside an outlet have their didInsertElement hook invoked
   assert.strictEqual(otherComponentCounter, 1, 'didInsertElement invoked on displayed component');
 });
 
-QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
+test('Doesnt swallow exception thrown from willTransition', function() {
   expect(1);
   setTemplate('application', compile('{{outlet}}'));
   setTemplate('index', compile('index'));
@@ -4107,7 +4105,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
   }, /boom/, 'expected an exception that didnt happen');
 });
 
-QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
+test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
   App.ApplicationRoute = Route.extend({
     actions: {
       showModal: function() {
@@ -4135,5 +4133,3 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
     run(function() { router.send('hideModal'); });
   }, /You passed undefined as the outlet name/);
 });
-
-}

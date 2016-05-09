@@ -3,7 +3,6 @@ import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import Component from 'ember-views/components/component';
 import jQuery from 'ember-views/system/jquery';
-import isEnabled from 'ember-metal/features';
 import { compile } from 'ember-template-compiler';
 import { getTemplates, setTemplates } from 'ember-htmlbars/template_registry';
 import controllerFor from 'ember-routing/system/controller_for';
@@ -126,10 +125,9 @@ QUnit.test('Destroying the application resets the router before the appInstance 
   equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
+test('initializers can augment an applications customEvents hash', function(assert) {
   assert.expect(1);
 
   run(App, 'destroy');
@@ -163,7 +161,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
   });
 });
 
-QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
+test('instanceInitializers can augment an the customEvents hash', function(assert) {
   assert.expect(1);
 
   run(App, 'destroy');
@@ -196,5 +194,3 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
     jQuery('#herky-thingy').trigger('herky');
   });
 });
-
-}

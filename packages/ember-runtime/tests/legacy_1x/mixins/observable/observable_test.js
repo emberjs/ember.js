@@ -129,8 +129,8 @@ QUnit.test('should return null when property value is null on Ember.Observable',
 });
 
 QUnit.test('should call unknownProperty when value is undefined on Ember.Observable', function() {
-  equal(get(object, 'unknown'), 'unknown');
-  equal(object.lastUnknownProperty, 'unknown');
+  equal(get(objectA, 'unknown'), 'unknown');
+  equal(objectA.lastUnknownProperty, 'unknown');
 });
 
 QUnit.test('should get normal properties on standard objects', function() {
@@ -528,9 +528,14 @@ QUnit.test('nested dependent keys should propagate after they update', function(
       })
     });
 
-    bindObj = ObservableObject.extend({
-      priceBinding: 'DepObj.price'
-    }).create();
+    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+      ' are binding to a global consider using a service instead.';
+
+    expectDeprecation(() => {
+      bindObj = ObservableObject.extend({
+        priceBinding: 'DepObj.price'
+      }).create();
+    }, deprecationMessage);
   });
 
   equal(bindObj.get('price'), 5, 'precond - binding propagates');
@@ -835,7 +840,7 @@ QUnit.test('removing an observer inside of an observer shouldn’t cause any pro
 
 
 
-QUnit.module('Bind function ', {
+QUnit.module('Bind function', {
   setup() {
     objectA = ObservableObject.create({
       name: 'Sproutcore',
@@ -865,7 +870,12 @@ QUnit.module('Bind function ', {
 QUnit.test('should bind property with method parameter as undefined', function() {
   // creating binding
   run(function() {
-    objectA.bind('name', 'Namespace.objectB.normal', undefined);
+    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
+      ' are binding to a global consider using a service instead.';
+
+    expectDeprecation(() => {
+      objectA.bind('name', 'Namespace.objectB.normal', undefined);
+    }, deprecationMessage);
   });
 
   // now make a change to see if the binding triggers.

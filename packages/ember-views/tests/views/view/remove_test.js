@@ -13,15 +13,13 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 var parentView, child;
 var originalViewKeyword;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-// jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 // .......................................................
 // removeAllChildren()
 //
 var view, childViews;
-QUnit.module('View#removeAllChildren', {
+testModule('View#removeAllChildren', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
@@ -46,21 +44,21 @@ QUnit.module('View#removeAllChildren', {
   }
 });
 
-QUnit.test('removes all child views', function() {
+test('removes all child views', function() {
   equal(get(view, 'childViews.length'), 3, 'precond - has child views');
 
   view.removeAllChildren();
   equal(get(view, 'childViews.length'), 0, 'removed all children');
 });
 
-QUnit.test('returns receiver', function() {
+test('returns receiver', function() {
   equal(view.removeAllChildren(), view, 'receiver');
 });
 
 // .......................................................
 // removeFromParent()
 //
-QUnit.module('View#removeFromParent', {
+testModule('View#removeFromParent', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
@@ -74,7 +72,7 @@ QUnit.module('View#removeFromParent', {
   }
 });
 
-QUnit.test('removes view from parent view', function() {
+test('removes view from parent view', function() {
   parentView = View.extend({
     template: compile('{{view view.childView}}'),
     childView: View.extend({
@@ -97,7 +95,7 @@ QUnit.test('removes view from parent view', function() {
   equal(parentView.$('div').length, 0, 'removes DOM element from parent');
 });
 
-QUnit.test('returns receiver', function() {
+test('returns receiver', function() {
   parentView = View.extend({
     template: compile('{{view view.childView}}'),
     childView: View.extend({
@@ -113,7 +111,7 @@ QUnit.test('returns receiver', function() {
   equal(removed, child, 'receiver');
 });
 
-QUnit.test('does nothing if not in parentView', function() {
+test('does nothing if not in parentView', function() {
   child = View.create();
 
   // monkey patch for testing...
@@ -126,7 +124,7 @@ QUnit.test('does nothing if not in parentView', function() {
   });
 });
 
-QUnit.test('the DOM element is gone after doing append and remove in two separate runloops', function() {
+test('the DOM element is gone after doing append and remove in two separate runloops', function() {
   view = View.create();
   run(function() {
     view.append();
@@ -139,7 +137,7 @@ QUnit.test('the DOM element is gone after doing append and remove in two separat
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 
-QUnit.test('the DOM element is gone after doing append and remove in a single runloop', function() {
+test('the DOM element is gone after doing append and remove in a single runloop', function() {
   view = View.create();
   run(function() {
     view.append();
@@ -149,5 +147,3 @@ QUnit.test('the DOM element is gone after doing append and remove in a single ru
   var viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
-
-}

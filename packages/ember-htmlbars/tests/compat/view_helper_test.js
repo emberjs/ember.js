@@ -11,16 +11,13 @@ import AssertNoViewHelper from 'ember-template-compiler/plugins/assert-no-view-h
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 let component, owner, originalViewKeyword;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
 let originalLegacyViewSupport = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
 
-QUnit.module('ember-htmlbars: compat - view helper', {
+testModule('ember-htmlbars: compat - view helper', {
   setup() {
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
     registerAstPlugin(AssertNoViewHelper);
@@ -40,7 +37,7 @@ QUnit.module('ember-htmlbars: compat - view helper', {
   }
 });
 
-QUnit.test('using the view helper fails assertion', function(assert) {
+test('using the view helper fails assertion', function(assert) {
   let ViewClass = EmberView.extend({
     template: compile('fooView')
   });
@@ -56,7 +53,7 @@ QUnit.test('using the view helper fails assertion', function(assert) {
   }, /Using the `{{view "string"}}` helper/);
 });
 
-QUnit.module('ember-htmlbars: compat - view helper [LEGACY]', {
+testModule('ember-htmlbars: compat - view helper [LEGACY]', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
@@ -71,7 +68,7 @@ QUnit.module('ember-htmlbars: compat - view helper [LEGACY]', {
   }
 });
 
-QUnit.test('using the view helper with a string (inline form) fails assertion [LEGACY]', function(assert) {
+test('using the view helper with a string (inline form) fails assertion [LEGACY]', function(assert) {
   let ViewClass = EmberView.extend({
     template: compile('fooView')
   });
@@ -89,7 +86,7 @@ QUnit.test('using the view helper with a string (inline form) fails assertion [L
   assert.equal(component.$().text(), 'fooView', 'view helper is still rendered');
 });
 
-QUnit.test('using the view helper with a string (block form) fails assertion [LEGACY]', function(assert) {
+test('using the view helper with a string (block form) fails assertion [LEGACY]', function(assert) {
   let ViewClass = EmberView.extend({
     template: compile('Foo says: {{yield}}')
   });
@@ -106,5 +103,3 @@ QUnit.test('using the view helper with a string (block form) fails assertion [LE
 
   assert.equal(component.$().text(), 'Foo says: I am foo', 'view helper is still rendered');
 });
-
-}

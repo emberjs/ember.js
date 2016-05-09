@@ -4,13 +4,11 @@ import { domHelper } from 'ember-htmlbars/env';
 import { equalHTML } from 'htmlbars-test-helpers';
 import assign from 'ember-metal/assign';
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-htmlbars: main');
+testModule('ember-htmlbars: main');
 
-QUnit.test('HTMLBars is present and can be executed', function() {
+test('HTMLBars is present and can be executed', function() {
   var template = compile('ohai');
 
   var env = assign({ dom: domHelper }, defaultEnv);
@@ -19,4 +17,3 @@ QUnit.test('HTMLBars is present and can be executed', function() {
   equalHTML(output, 'ohai');
 });
 
-}

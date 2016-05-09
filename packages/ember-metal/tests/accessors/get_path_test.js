@@ -18,7 +18,8 @@ var moduleOpts = {
       emptyString: '',
       Wuz: {
         nar: 'foo'
-      }
+      },
+      nullValue: null
     };
   },
 
@@ -46,11 +47,15 @@ QUnit.test('[obj, foothis.bar] -> obj.foothis.bar', function() {
 });
 
 QUnit.test('[obj, falseValue.notDefined] -> (undefined)', function() {
-  equal(get(obj, 'falseValue.notDefined'), undefined);
+  strictEqual(get(obj, 'falseValue.notDefined'), undefined);
 });
 
 QUnit.test('[obj, emptyString.length] -> 0', function() {
   equal(get(obj, 'emptyString.length'), 0);
+});
+
+QUnit.test('[obj, nullValue.notDefined] -> (undefined)', function() {
+  strictEqual(get(obj, 'nullValue.notDefined'), undefined);
 });
 
 // ..........................................................
@@ -66,9 +71,9 @@ QUnit.test('[obj, Wuz.nar] -> obj.Wuz.nar', function() {
 });
 
 QUnit.test('[obj, Foo] -> (undefined)', function() {
-  equal(get(obj, 'Foo'), undefined);
+  strictEqual(get(obj, 'Foo'), undefined);
 });
 
 QUnit.test('[obj, Foo.bar] -> (undefined)', function() {
-  equal(get(obj, 'Foo.bar'), undefined);
+  strictEqual(get(obj, 'Foo.bar'), undefined);
 });

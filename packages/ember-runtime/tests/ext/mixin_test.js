@@ -14,7 +14,12 @@ QUnit.test('Defining a property ending in Binding should setup binding when appl
   var obj = { bar: { baz: 'BIFF' } };
 
   run(function() {
-    MyMixin.apply(obj);
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      MyMixin.apply(obj);
+    }, deprecationMessage);
   });
 
   ok(get(obj, 'fooBinding') instanceof Binding, 'should be a binding object');
@@ -33,7 +38,12 @@ QUnit.test('Defining a property ending in Binding should apply to prototype chil
   obj = { bar: { baz: 'BIFF' } };
 
   run(function() {
-    MyMixin.apply(obj);
+    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
+      ' using an `alias` computed property instead.';
+
+    expectDeprecation(() => {
+      MyMixin.apply(obj);
+    }, deprecationMessage);
   });
 
 

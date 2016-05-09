@@ -11,11 +11,9 @@ import { setOwner } from 'container/owner';
 var originalViewKeyword;
 var parentView, childView;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('tests/views/view/child_views_tests.js', {
+testModule('tests/views/view/child_views_tests.js', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     childView = EmberView.create({
@@ -41,7 +39,7 @@ QUnit.module('tests/views/view/child_views_tests.js', {
 // parent element
 
 // no parent element, no buffer, no element
-QUnit.test('should render an inserted child view when the child is inserted before a DOM element is created', function() {
+test('should render an inserted child view when the child is inserted before a DOM element is created', function() {
   run(function() {
     parentView.append();
   });
@@ -49,7 +47,7 @@ QUnit.test('should render an inserted child view when the child is inserted befo
   equal(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
 });
 
-QUnit.test('should not duplicate childViews when rerendering', function() {
+test('should not duplicate childViews when rerendering', function() {
   var InnerView = EmberView.extend();
   var InnerView2 = EmberView.extend();
 
@@ -81,7 +79,7 @@ QUnit.test('should not duplicate childViews when rerendering', function() {
   });
 });
 
-QUnit.test('should remove childViews inside {{if}} on destroy', function() {
+test('should remove childViews inside {{if}} on destroy', function() {
   var outerView = EmberView.extend({
     component: 'my-thing',
     value: false,
@@ -120,7 +118,7 @@ QUnit.test('should remove childViews inside {{if}} on destroy', function() {
   });
 });
 
-QUnit.test('should remove childViews inside {{each}} on destroy', function() {
+test('should remove childViews inside {{each}} on destroy', function() {
   var outerView = EmberView.extend({
     component: 'my-thing',
     init() {
@@ -172,5 +170,3 @@ QUnit.test('should remove childViews inside {{each}} on destroy', function() {
     outerView.destroy();
   });
 });
-
-}

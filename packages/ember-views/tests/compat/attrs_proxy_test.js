@@ -13,11 +13,9 @@ import { OWNER } from 'container/owner';
 
 var view, owner, originalViewKeyword;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('ember-views: attrs-proxy', {
+testModule('ember-views: attrs-proxy', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     owner = buildOwner();
@@ -30,7 +28,7 @@ QUnit.module('ember-views: attrs-proxy', {
   }
 });
 
-QUnit.test('works with properties setup in root of view', function() {
+test('works with properties setup in root of view', function() {
   owner.register('view:foo', View.extend({
     bar: 'qux',
 
@@ -47,7 +45,7 @@ QUnit.test('works with properties setup in root of view', function() {
   equal(view.$().text(), 'baz', 'value specified in the template is used');
 });
 
-QUnit.test('works with undefined attributes', function() {
+test('works with undefined attributes', function() {
   // TODO: attrs
   // expectDeprecation();
 
@@ -78,7 +76,7 @@ QUnit.test('works with undefined attributes', function() {
   equal(get(view, 'bar'), undefined, 'value is updated upstream');
 });
 
-QUnit.test('an observer on an attribute in the root of the component is fired when attrs are set', function() {
+test('an observer on an attribute in the root of the component is fired when attrs are set', function() {
   expect(2);
 
   owner.register('view:foo', View.extend({
@@ -108,5 +106,3 @@ QUnit.test('an observer on an attribute in the root of the component is fired wh
 
   equal(view.$().text(), 'qux - 2', 'observer is fired on update');
 });
-
-}

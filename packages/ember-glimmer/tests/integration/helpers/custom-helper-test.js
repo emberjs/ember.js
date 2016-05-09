@@ -282,6 +282,30 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }
 
+  ['@test parameterless helper is usable in subexpressions']() {
+    this.registerHelper('should-show', () => { return true; });
+
+    this.render(`{{#if (should-show)}}true{{/if}}`);
+
+    this.assertText('true');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('true');
+  }
+
+  ['@glimmer parameterless helper is usable in attributes']() {
+    this.registerHelper('foo-bar', () => { return 'baz'; });
+
+    this.render(`<div data-foo-bar="{{foo-bar}}"></div>`);
+
+    this.assertHTML('<div data-foo-bar="baz"></div>');
+
+    this.runTask(() => this.rerender());
+
+    this.assertHTML('<div data-foo-bar="baz"></div>');
+  }
+
   ['@test simple helper not usable with a block']() {
     this.registerHelper('some-helper', () => {});
 

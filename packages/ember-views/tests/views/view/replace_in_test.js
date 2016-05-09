@@ -84,11 +84,9 @@ QUnit.test('should move the view to the inDOM state after replacing', function()
   equal(view._currentState, view._states.inDOM, 'the view is in the inDOM state');
 });
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-QUnit.module('EmberView - replaceIn() in a view hierarchy', {
+testModule('EmberView - replaceIn() in a view hierarchy', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
@@ -108,7 +106,7 @@ QUnit.module('EmberView - replaceIn() in a view hierarchy', {
   }
 });
 
-QUnit.test('should be added to the specified element when calling replaceIn()', function() {
+test('should be added to the specified element when calling replaceIn()', function() {
   jQuery('#qunit-fixture').html('<div id="menu"></div>');
 
   view = View.create();
@@ -122,5 +120,3 @@ QUnit.test('should be added to the specified element when calling replaceIn()', 
   var viewElem = jQuery('#menu #child');
   ok(viewElem.length > 0, 'creates and replaces the view\'s element');
 });
-
-}

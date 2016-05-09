@@ -1,7 +1,7 @@
 import Logger from 'ember-console';
 import { context, ENV } from 'ember-environment';
 import run from 'ember-metal/run_loop';
-import { assert } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { trySet } from 'ember-metal/property_set';
 import { guidFor } from 'ember-metal/utils';
@@ -43,6 +43,7 @@ function Binding(toPath, fromPath) {
 /**
   @class Binding
   @namespace Ember
+  @deprecated See http://emberjs.com/deprecations/v2.x#toc_ember-binding
   @public
 */
 
@@ -144,13 +145,13 @@ Binding.prototype = {
   connect(obj) {
     assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    let fromObj, fromPath;
+    let fromObj, fromPath, possibleGlobal;
 
     // If the binding's "from" path could be interpreted as a global, verify
     // whether the path refers to a global or not by consulting `Ember.lookup`.
     if (isGlobalPath(this._from)) {
       let name = getFirstKey(this._from);
-      let possibleGlobal = context.lookup[name];
+      possibleGlobal = context.lookup[name];
 
       if (possibleGlobal) {
         fromObj = possibleGlobal;
@@ -174,6 +175,10 @@ Binding.prototype = {
     }
 
     addListener(obj, 'willDestroy', this, 'disconnect');
+
+    fireDeprecations(possibleGlobal,
+                     this._oneWay,
+                     (!possibleGlobal && !this._oneWay));
 
     this._readyToSync = true;
     this._fromObj = fromObj;
@@ -280,6 +285,32 @@ Binding.prototype = {
   }
 
 };
+
+function fireDeprecations(deprecateGlobal, deprecateOneWay, deprecateAlias) {
+  let deprecateGlobalMessage = '`Ember.Binding` is deprecated. Since you' +
+    ' are binding to a global consider using a service instead.';
+  let deprecateOneWayMessage = '`Ember.Binding` is deprecated. Since you' +
+    ' are using a `oneWay` binding consider using a `readOnly` computed' +
+    ' property instead.';
+  let deprecateAliasMessage = '`Ember.Binding` is deprecated. Consider' +
+    ' using an `alias` computed property instead.';
+
+  deprecate(deprecateGlobalMessage, !deprecateGlobal, {
+    id: 'ember-metal.binding',
+    until: '3.0.0',
+    url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
+  });
+  deprecate(deprecateOneWayMessage, !deprecateOneWay, {
+    id: 'ember-metal.binding',
+    until: '3.0.0',
+    url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
+  });
+  deprecate(deprecateAliasMessage, !deprecateAlias, {
+    id: 'ember-metal.binding',
+    until: '3.0.0',
+    url: 'http://emberjs.com/deprecations/v2.x#toc_ember-binding'
+  });
+}
 
 function mixinProperties(to, from) {
   for (var key in from) {

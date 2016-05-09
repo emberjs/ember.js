@@ -4,6 +4,7 @@ import Application from 'ember-application/system/application';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var App, $fixture;
 
@@ -23,12 +24,8 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
 let subscriber;
-QUnit.module('View Instrumentation', {
+testModule('View Instrumentation', {
   setup() {
     run(function() {
       App = Application.create({
@@ -55,7 +52,7 @@ QUnit.module('View Instrumentation', {
   }
 });
 
-QUnit.test('Nodes without view instances are instrumented', function(assert) {
+test('Nodes without view instances are instrumented', function(assert) {
   var called = false;
   subscriber = subscribe('render', {
     before() {
@@ -69,5 +66,3 @@ QUnit.test('Nodes without view instances are instrumented', function(assert) {
   handleURL('/posts');
   assert.ok(called, 'instrumentation called on transition to non-view backed route');
 });
-
-}

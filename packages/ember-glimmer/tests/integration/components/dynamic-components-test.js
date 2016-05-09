@@ -474,13 +474,13 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('yippie! Caracas yummy Caracas arepas!');
   }
 
-  ['@htmlbars component with dynamic name argument resolving to non-existent component'](assert) {
+  ['@test component with dynamic name argument resolving to non-existent component'](assert) {
     expectAssertion(() => {
       this.render('{{component componentName}}', { componentName: 'does-not-exist' });
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@htmlbars component with static name argument for non-existent component'](assert) {
+  ['@test component with static name argument for non-existent component'](assert) {
     expectAssertion(() => {
       this.render('{{component "does-not-exist"}}');
     }, /Could not find component named "does-not-exist"/);
@@ -506,7 +506,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('hello Alex');
   }
 
-  ['@htmlbars component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
+  ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
     this.registerComponent('foo-bar', {
       template: '[{{internalName}} - {{attrs.name}}]',
       ComponentClass: Component.extend({

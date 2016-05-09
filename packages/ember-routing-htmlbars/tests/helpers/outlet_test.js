@@ -5,16 +5,13 @@ import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
+import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var trim = jQuery.trim;
 
 var appInstance, top;
 
-import isEnabled from 'ember-metal/features';
-if (!isEnabled('ember-glimmer')) {
-  // jscs:disable
-
-QUnit.module('ember-routing-htmlbars: {{outlet}} helper', {
+testModule('ember-routing-htmlbars: {{outlet}} helper', {
   setup() {
     appInstance = buildAppInstance();
     var CoreOutlet = appInstance._lookupFactory('view:core-outlet');
@@ -28,7 +25,7 @@ QUnit.module('ember-routing-htmlbars: {{outlet}} helper', {
   }
 });
 
-QUnit.test('view should render the outlet when set after dom insertion', function() {
+test('view should render the outlet when set after dom insertion', function() {
   var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   top.setOutletState(routerState);
   runAppend(top);
@@ -45,7 +42,7 @@ QUnit.test('view should render the outlet when set after dom insertion', functio
   equal(trim(top.$().text()), 'HIBYE');
 });
 
-QUnit.test('a top-level outlet should always be a view', function() {
+test('a top-level outlet should always be a view', function() {
   appInstance.register('view:toplevel', EmberView.extend({
     elementId: 'top-level'
   }));
@@ -58,7 +55,7 @@ QUnit.test('a top-level outlet should always be a view', function() {
   equal(trim(top.$('#top-level').text()), 'HIBYE');
 });
 
-QUnit.test('view should render the outlet when set before dom insertion', function() {
+test('view should render the outlet when set before dom insertion', function() {
   var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   routerState.outlets.main = withTemplate('<p>BYE</p>');
   top.setOutletState(routerState);
@@ -69,7 +66,7 @@ QUnit.test('view should render the outlet when set before dom insertion', functi
 });
 
 
-QUnit.test('outlet should support an optional name', function() {
+test('outlet should support an optional name', function() {
   var routerState = withTemplate('<h1>HI</h1>{{outlet \'mainView\'}}');
   top.setOutletState(routerState);
   runAppend(top);
@@ -86,7 +83,7 @@ QUnit.test('outlet should support an optional name', function() {
   equal(trim(top.$().text()), 'HIBYE');
 });
 
-QUnit.test('Outlets bind to the current view, not the current concrete view', function() {
+test('Outlets bind to the current view, not the current concrete view', function() {
   var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   top.setOutletState(routerState);
   runAppend(top);
@@ -103,7 +100,7 @@ QUnit.test('Outlets bind to the current view, not the current concrete view', fu
   equal(output, 'BOTTOM', 'all templates were rendered');
 });
 
-QUnit.test('Outlets bind to the current template\'s view, not inner contexts [DEPRECATED]', function() {
+test('Outlets bind to the current template\'s view, not inner contexts [DEPRECATED]', function() {
   var parentTemplate = '<h1>HI</h1>{{#if view.alwaysTrue}}{{outlet}}{{/if}}';
   var bottomTemplate = '<h3>BOTTOM</h3>';
 
@@ -131,19 +128,19 @@ QUnit.test('Outlets bind to the current template\'s view, not inner contexts [DE
   equal(output, 'BOTTOM', 'all templates were rendered');
 });
 
-QUnit.test('should not throw deprecations if {{outlet}} is used without a name', function() {
+test('should not throw deprecations if {{outlet}} is used without a name', function() {
   expectNoDeprecation();
   top.setOutletState(withTemplate('{{outlet}}'));
   runAppend(top);
 });
 
-QUnit.test('should not throw deprecations if {{outlet}} is used with a quoted name', function() {
+test('should not throw deprecations if {{outlet}} is used with a quoted name', function() {
   expectNoDeprecation();
   top.setOutletState(withTemplate('{{outlet "foo"}}'));
   runAppend(top);
 });
 
-QUnit.test('{{outlet}} should work with an unquoted name', function() {
+test('{{outlet}} should work with an unquoted name', function() {
   var routerState = {
     render: {
       controller: Controller.create({
@@ -162,7 +159,7 @@ QUnit.test('{{outlet}} should work with an unquoted name', function() {
   equal(top.$().text().trim(), 'It\'s magic');
 });
 
-QUnit.test('{{outlet}} should rerender when bound name changes', function() {
+test('{{outlet}} should rerender when bound name changes', function() {
   var routerState = {
     render: {
       controller: Controller.create({
@@ -185,7 +182,7 @@ QUnit.test('{{outlet}} should rerender when bound name changes', function() {
   equal(top.$().text().trim(), 'second');
 });
 
-QUnit.test('views created by {{outlet}} should get destroyed', function() {
+test('views created by {{outlet}} should get destroyed', function() {
   let inserted = 0;
   let destroyed = 0;
   var routerState = {
@@ -209,8 +206,6 @@ QUnit.test('views created by {{outlet}} should get destroyed', function() {
   });
   equal(destroyed, 1, 'expected to see view destroyed');
 });
-
-}
 
 function withTemplate(string) {
   return {

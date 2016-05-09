@@ -1,4 +1,5 @@
 import { context, environment } from 'ember-environment';
+import require from 'require';
 
 let jQuery;
 
