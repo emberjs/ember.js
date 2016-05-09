@@ -6,7 +6,7 @@ import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
-import { InternedString, Opaque, dict } from 'glimmer-util';
+import { InternedString, Opaque } from 'glimmer-util';
 import { Reference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
 
 export type DynamicComponentFactory<T> = (args: EvaluatedArgs, vm: PublicVM) => Reference<ComponentDefinition<T>>;
@@ -69,7 +69,7 @@ export class OpenDynamicComponentOpcode extends Opcode {
     // pass through the list of outer attributes to shadow from the
     // invocation site, as well as the component definition as internal
     // arguments.
-    args.internal = args.internal || dict<any>();
+    args = args.withInternal();
     args.internal['shadow'] = shadow;
     args.internal['definition'] = definition;
     args.internal['component'] = component;
@@ -137,7 +137,7 @@ export class OpenComponentOpcode extends Opcode {
     // pass through the list of outer attributes to shadow from the
     // invocation site, as well as the component definition as internal
     // arguments.
-    args.internal = args.internal || dict<any>();
+    args = args.withInternal();
     args.internal['shadow'] = shadow;
     args.internal['definition'] = definition;
     args.internal['component'] = component;
