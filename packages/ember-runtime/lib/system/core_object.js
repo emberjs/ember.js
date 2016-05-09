@@ -84,7 +84,7 @@ function makeCtor() {
 
         assert(
           'Ember.Object.create no longer supports mixing in other ' +
-          'definitions, use .extend & .create seperately instead.',
+          'definitions, use .extend & .create separately instead.',
           !(properties instanceof Mixin)
         );
 
