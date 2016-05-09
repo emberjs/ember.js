@@ -506,7 +506,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('hello Alex');
   }
 
-  ['@htmlbars component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
+  ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
     this.registerComponent('foo-bar', {
       template: '[{{internalName}} - {{attrs.name}}]',
       ComponentClass: Component.extend({
