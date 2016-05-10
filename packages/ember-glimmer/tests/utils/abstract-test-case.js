@@ -301,7 +301,11 @@ export class RenderingTest extends TestCase {
 
     owner.register(P`template:components/-default`, DefaultComponentTemplate);
     owner.register('event_dispatcher:main', EventDispatcher);
-    owner.lookup('event_dispatcher:main').setup({}, owner.element);
+    owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), owner.element);
+  }
+
+  getCustomDispatcherEvents() {
+    return {};
   }
 
   getOwnerOptions() {

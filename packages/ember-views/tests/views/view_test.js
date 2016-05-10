@@ -87,30 +87,6 @@ test('should re-render if the context is changed', function() {
   equal(jQuery('#qunit-fixture #template-context-test').text(), 'bang baz', 're-renders the view with the updated context');
 });
 
-test('renders a contained view with omitted start tag and tagless parent view context', function() {
-  view = EmberView.create({
-    tagName: 'table',
-    template: compile('{{view view.pivot}}'),
-    pivot: EmberView.extend({
-      tagName: '',
-      template: compile('{{view view.row}}'),
-      row: EmberView.extend({
-        tagName: 'tr'
-      })
-    })
-  });
-
-  run(view, view.append);
-
-  equal(view.element.tagName, 'TABLE', 'container view is table');
-  ok(view.$('tr').length, 'inner view is tr');
-
-  run(view, view.rerender);
-
-  equal(view.element.tagName, 'TABLE', 'container view is table');
-  ok(view.$('tr').length, 'inner view is tr');
-});
-
 test('propagates dependent-key invalidated sets upstream', function() {
   view = EmberView.create({
     parentProp: 'parent-value',

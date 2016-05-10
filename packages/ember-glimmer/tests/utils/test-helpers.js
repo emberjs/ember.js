@@ -83,7 +83,7 @@ export function equalsElement(element, tagName, attributes, content) {
     QUnit.push(element instanceof HTMLElement, null, null, 'Element must be an HTML Element, not an SVG Element');
   } else {
     QUnit.push(
-      element.attributes.length === expectedCount,
+      element.attributes.length === expectedCount || !attributes,
       element.attributes.length,
       expectedCount,
       `Expected ${expectedCount} attributes; got ${element.outerHTML}`
