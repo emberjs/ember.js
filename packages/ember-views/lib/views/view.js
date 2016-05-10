@@ -5,7 +5,6 @@ import ViewContextSupport from 'ember-views/mixins/view_context_support';
 import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
 import ViewLegacyChildViewsSupport from 'ember-views/mixins/legacy_child_views_support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
-import TemplateRenderingSupport from 'ember-views/mixins/template_rendering_support';
 import ClassNamesSupport from 'ember-views/mixins/class_names_support';
 import LegacyViewSupport from 'ember-views/mixins/legacy_view_support';
 import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
@@ -633,7 +632,6 @@ import ViewMixin from 'ember-views/mixins/view_support';
   @uses Ember.ViewSupport
   @uses Ember.ViewContextSupport
   @uses Ember.ViewChildViewsSupport
-  @uses Ember.TemplateRenderingSupport
   @uses Ember.ClassNamesSupport
   @uses Ember.AttributeBindingsSupport
   @uses Ember.LegacyViewSupport
@@ -648,7 +646,6 @@ var View = CoreView.extend(
   ViewChildViewsSupport,
   ViewLegacyChildViewsSupport,
   ViewStateSupport,
-  TemplateRenderingSupport,
   ClassNamesSupport,
   LegacyViewSupport,
   InstrumentationSupport,
@@ -723,4 +720,4 @@ View.reopenClass({
 
 export default View;
 
-export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, TemplateRenderingSupport, ClassNamesSupport };
+export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, ClassNamesSupport };

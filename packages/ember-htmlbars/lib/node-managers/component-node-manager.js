@@ -1,5 +1,5 @@
 import { assert, warn, runInDebug } from 'ember-metal/debug';
-import buildComponentTemplate from 'ember-views/system/build-component-template';
+import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';

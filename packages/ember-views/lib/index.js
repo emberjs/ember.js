@@ -13,7 +13,7 @@ import {
 } from 'ember-views/system/utils';
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
-import { Renderer } from 'ember-metal-views';
+import { Renderer } from 'ember-htmlbars/renderer';
 import Component from 'ember-views/components/component';
 
 import EventDispatcher from 'ember-views/system/event_dispatcher';

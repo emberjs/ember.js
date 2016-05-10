@@ -1,4 +1,4 @@
-import { RootReference } from '../utils/references';
+import { RootReference } from './utils/references';
 import run from 'ember-metal/run_loop';
 import { CURRENT_TAG } from 'glimmer-reference';
 

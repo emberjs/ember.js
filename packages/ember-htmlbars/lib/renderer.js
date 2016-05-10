@@ -3,9 +3,10 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import assign from 'ember-metal/assign';
 import setProperties from 'ember-metal/set_properties';
-import buildComponentTemplate from 'ember-views/system/build-component-template';
+import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import { environment } from 'ember-environment';
 import { internal } from 'htmlbars-runtime';
+import { renderHTMLBarsBlock } from 'ember-htmlbars/system/render-view';
 
 export function Renderer(domHelper, { destinedForDOM } = {}) {
   this._dom = domHelper;
@@ -39,7 +40,7 @@ Renderer.prototype.prerenderTopLevelView =
       templates: template ? { default: template.raw } : undefined
     }).block;
 
-    view.renderBlock(block, renderNode);
+    renderHTMLBarsBlock(view, block, renderNode);
     view.lastResult = renderNode.lastResult;
     this.clearRenderedViews(view.env);
   };
