@@ -1,4 +1,5 @@
 /* globals EmberDev */
+import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { observer } from 'ember-metal/mixin';
 import { Component, compile } from '../../utils/helpers';
@@ -2473,5 +2474,41 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => { this.component.set('localBar', 'initial value'); });
 
     this.assertText('initial value');
+  }
+
+  // TODO: Move to mutable-bindings-test or a better place
+  ['@test a simple mutable binding using `mut` inserts into the DOM'](assert) {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: 'mut:{{mutFoo}} bound:{{boundFoo}} get:{{getFoo}}'
+    });
+
+    this.render('{{foo-bar mutFoo=(mut bar.baz) boundFoo=bar.baz getFoo=(get bar "baz")}}', {
+      bar: {
+        baz: 'hola'
+      }
+    });
+
+    this.assertText('mut:hola bound:hola get:hola');
+
+    this.assertStableRerender();
+
+    this.runTask(() => component.set('mutFoo', 'mutadios'));
+
+    this.assertText('mut:mutadios bound:mutadios get:mutadios');
+    assert.equal(get(this.context, 'bar.baz'), 'mutadios');
+
+    this.runTask(() => set(this.context, 'bar.baz', 'hola'));
+
+    this.assertText('mut:hola bound:hola get:hola');
+    assert.equal(get(component, 'mutFoo'), 'hola');
   }
 });

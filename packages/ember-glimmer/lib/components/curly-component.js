@@ -1,7 +1,7 @@
-import { StatementSyntax, ValueReference } from 'glimmer-runtime';
+import { StatementSyntax, ValueReference, EvaluatedArgs } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG } from '../ember-views/component';
-import EmptyObject from 'ember-metal/empty_object';
+import { COMPONENT_ARGS } from '../ember-views/attrs-support';
 
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
@@ -17,21 +17,6 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
-function attrsToProps(keys, attrs) {
-  let merged = new EmptyObject();
-
-  merged.attrs = attrs;
-
-  for (let i = 0, l = keys.length; i < l; i++) {
-    let name = keys[i];
-    let value = attrs[name];
-
-    merged[name] = value;
-  }
-
-  return merged;
-}
-
 class ComponentStateBucket {
   constructor(component, args) {
     this.component = component;
@@ -45,9 +30,10 @@ class CurlyComponentManager {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
-    let attrs = args.named.value();
-    let props = attrsToProps(args.named.keys, attrs);
 
+    let attrs = args.named.value();
+    let props = new EvaluatedArgs();
+    props[COMPONENT_ARGS] = args;
     props.renderer = parentView.renderer;
 
     let component = klass.create(props);
@@ -119,13 +105,24 @@ class CurlyComponentManager {
     if (!args.tag.validate(argsRevision)) {
       bucket.argsRevision = args.tag.value();
 
-      let attrs = args.named.value();
-      let props = attrsToProps(args.named.keys, attrs);
+      let oldAttrs = new EvaluatedArgs();
+      component[COMPONENT_ARGS].named.forEach((argName, arg) => {
+        oldAttrs[argName] = arg.lastValue();
+      });
 
-      let oldAttrs = component.attrs;
-      let newAttrs = attrs;
+      let newAttrs = component[COMPONENT_ARGS].named.value();
+      // Seems like this is a good place to notify all
+      // non-glimmer dependents that this value has changed
+      // but we're essentially trying to integrate the
+      // pull-based Glimmer reference system with the
+      // push-based system of the rest of Ember.
 
-      component.setProperties(props);
+      // I don't actually know how to reconcile those things
+      // in my existing mental model of the world.
+      // I think we somehow need to establish a watcher on
+      // the references during create and notify it
+      // on mutableReference.compute()?
+      //component.notifyPropertyChange(COMPONENT_ARGS);
 
       component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
       component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });
