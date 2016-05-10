@@ -255,18 +255,20 @@ class WrappedBuilder {
       let tag = makeFunctionExpression(this.tag.dynamicTagName);
       list.append(new PutValueOpcode({ expression: tag.compile(list, env) }));
       list.append(new OpenDynamicPrimitiveElementOpcode());
-    } else {
+      list.append(new DidCreateElementOpcode());
+      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list));
+    } else if(this.tag.isStatic) {
       let tag = this.tag.staticTagName;
       list.append(new OpenPrimitiveElementOpcode({ tag }));
+      list.append(new DidCreateElementOpcode());
+      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list));
     }
-
-    list.append(new DidCreateElementOpcode());
-
-    this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list));
 
     layout.program.forEachNode(statement => compileStatement(env, statement, list));
 
-    list.append(new CloseElementOpcode());
+    if (this.tag.isDynamic || this.tag.isStatic) {
+      list.append(new CloseElementOpcode());
+    }
 
     return new CompiledBlock(list, layout.symbolTable.size);
   }
@@ -326,11 +328,12 @@ function isOpenElement(syntax: StatementSyntax): syntax is OpenElement {
 
 class ComponentTagBuilder implements Component.ComponentTagBuilder {
   public isDynamic = null;
+  public isStatic = null;
   public staticTagName: InternedString = null;
   public dynamicTagName: FunctionExpression<string> = null;
 
   static(tagName: InternedString) {
-    this.isDynamic = false;
+    this.isStatic = true;
     this.staticTagName = tagName;
   }
 
