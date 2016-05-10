@@ -1,7 +1,7 @@
 import isEnabled from 'ember-metal/features';
 import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
-import buildComponentTemplate, { buildHTMLTemplate } from 'ember-views/system/build-component-template';
+import buildComponentTemplate, { buildHTMLTemplate } from 'ember-htmlbars/system/build-component-template';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
 import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';

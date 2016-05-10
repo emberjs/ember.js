@@ -14,7 +14,7 @@ import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import HTMLBarsDOMHelper from 'ember-htmlbars/system/dom-helper';
-import * as HTMLBarsRenderer from 'ember-metal-views';
+import * as HTMLBarsRenderer from 'ember-htmlbars/renderer';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import { OutletView as HTMLBarsOutletView } from 'ember-routing-views/views/outlet';
 import EmberView from 'ember-views/views/view';
@@ -1129,7 +1129,7 @@ function glimmerSetupRegistry(registry) {
   let OutletView = require('ember-glimmer/ember-routing-view').OutletView;
   registry.register('view:-outlet', OutletView);
 
-  let { InteractiveRenderer, InertRenderer } = require('ember-glimmer/ember-metal-views');
+  let { InteractiveRenderer, InertRenderer } = require('ember-glimmer/renderer');
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
 

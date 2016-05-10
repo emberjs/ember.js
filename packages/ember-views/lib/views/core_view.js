@@ -6,7 +6,7 @@ import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import { typeOf } from 'ember-runtime/utils';
 
-import { InteractiveRenderer } from 'ember-metal-views';
+import { InteractiveRenderer } from 'ember-htmlbars/renderer';
 import { cloneStates, states } from 'ember-views/views/states';
 import { internal } from 'htmlbars-runtime';
 import require from 'require';

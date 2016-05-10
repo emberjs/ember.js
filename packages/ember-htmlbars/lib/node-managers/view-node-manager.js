@@ -1,6 +1,6 @@
 import assign from 'ember-metal/assign';
 import { assert, warn } from 'ember-metal/debug';
-import buildComponentTemplate from 'ember-views/system/build-component-template';
+import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
