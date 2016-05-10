@@ -4,15 +4,12 @@ import EmberObject from 'ember-runtime/system/object';
 import Service from 'ember-runtime/system/service';
 import inject from 'ember-runtime/inject';
 import { get } from 'ember-metal/property_get';
-import Application from 'ember-application/system/application';
-import ApplicationInstance from 'ember-application/system/application-instance';
 
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-views/components/component';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import buildOwner from 'container/tests/test-helpers/build-owner';
-import { OWNER } from 'container/owner';
 
 var a_slice = Array.prototype.slice;
 
@@ -280,87 +277,4 @@ QUnit.test('component with target', function() {
   });
 
   appComponent.send('foo', 'baz');
-});
-
-let app, appInstance;
-
-QUnit.module('Ember.Component - tagless components assertions', {
-  teardown() {
-    if (appInstance) {
-      run(appInstance, 'destroy');
-    }
-
-    if (app) {
-      run(app, 'destroy');
-    }
-  }
-});
-
-
-QUnit.test('throws an error if an event function is defined in a tagless component', function() {
-  app = run(Application, 'create', { rootElement: '#qunit-fixture', autoboot: false });
-
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-    appInstance.setupEventDispatcher();
-  });
-
-  let TestComponent = Component.extend({
-    tagName: '',
-    [OWNER]: appInstance,
-    click() { }
-  });
-
-  expectAssertion(function() {
-    TestComponent.create();
-  }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
-});
-
-QUnit.test('throws an error if an Application custom event handler is defined in a tagless component', function() {
-  app = run(Application, 'create', {
-    rootElement: '#qunit-fixture',
-    autoboot: false,
-    customEvents: {
-      awesome: 'sauce'
-    }
-  });
-
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-    appInstance.setupEventDispatcher();
-  });
-
-  let TestComponent = Component.extend({
-    tagName: '',
-    [OWNER]: appInstance,
-    sauce() { }
-  });
-
-  expectAssertion(function() {
-    TestComponent.create();
-  }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
-});
-
-QUnit.test('throws an error if an ApplicationInstance custom event handler is defined in a tagless component', function() {
-  app = run(Application, 'create', { rootElement: '#qunit-fixture', autoboot: false });
-
-  run(function() {
-    appInstance = ApplicationInstance.create({
-      application: app,
-      customEvents: {
-        love: 'hurts'
-      }
-    });
-    appInstance.setupEventDispatcher();
-  });
-
-  let TestComponent = Component.extend({
-    tagName: '',
-    [OWNER]: appInstance,
-    hurts() { }
-  });
-
-  expectAssertion(function() {
-    TestComponent.create();
-  }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
 });

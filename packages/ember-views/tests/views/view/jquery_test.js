@@ -51,17 +51,3 @@ QUnit.test('returns empty jQuery object if filter passed that does not match ite
   var jquery = view.$('body'); // would normally work if not scoped to view
   equal(jquery.length, 0, 'view.$(body) should have no elements');
 });
-
-QUnit.test('asserts for tagless views', function() {
-  var view = EmberView.create({
-    tagName: ''
-  });
-
-  runAppend(view);
-
-  expectAssertion(function() {
-    view.$();
-  }, /You cannot access this.\$\(\) on a component with `tagName: \'\'` specified/);
-
-  runDestroy(view);
-});

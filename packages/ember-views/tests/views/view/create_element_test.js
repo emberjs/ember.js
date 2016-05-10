@@ -32,26 +32,6 @@ QUnit.test('returns the receiver', function() {
   equal(ret, view, 'returns receiver');
 });
 
-QUnit.test('should assert if `tagName` is an empty string and `classNameBindings` are specified', function() {
-  expect(1);
-
-  view = EmberView.create({
-    tagName: '',
-    foo: true,
-    classNameBindings: ['foo:is-foo:is-bar']
-  });
-
-  expectAssertion(function() {
-    run(function() {
-      view.createElement();
-    });
-  }, /You cannot use `classNameBindings` on a tag-less component/);
-
-  // Prevent further assertions
-  view._renderNode = null;
-});
-
-
 import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 test('calls render and turns resultant string into element', function() {
