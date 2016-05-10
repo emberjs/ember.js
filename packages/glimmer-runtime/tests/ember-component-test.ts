@@ -889,6 +889,21 @@ QUnit.test('dynamic tagName', assert => {
   assertEmberishElement('aside', {}, `Hello. It's me.`);
 });
 
+QUnit.test('dynamic tagless component', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    tagName = '';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
+
+  appendViewFor(`{{foo-bar}}`);
+  assertAppended('Michael Jordan says "Go Tagless"');
+
+  rerender();
+
+  assertAppended('Michael Jordan says "Go Tagless"');
+});
+
 QUnit.test('dynamic attribute bindings', assert => {
   let fooBarInstance: FooBar = null;
 
@@ -2686,4 +2701,17 @@ QUnit.test('components inside the root are destroyed when the render result is d
 
   assert.strictEqual(glimmerDestroyed, true, 'the glimmer component should be destroyed');
   assert.strictEqual(curlyDestroyed, true, 'the curly component should be destroyed');
+});
+
+QUnit.test('tagless components render properly', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyTaglessComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
+
+  appendViewFor(`{{foo-bar}}`);
+  assertAppended('Michael Jordan says "Go Tagless"');
+
+  rerender();
+
+  assertAppended('Michael Jordan says "Go Tagless"');
 });
