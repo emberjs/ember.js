@@ -549,6 +549,11 @@ export class TestEnvironment extends Environment {
     return this.registerComponent(name, definition);
   }
 
+  registerEmberishCurlyTaglessComponent(name: string, Component: EmberishCurlyComponentFactory, layout: string): ComponentDefinition<EmberishCurlyTaglessComponentDefinition> {
+    let definition = new EmberishCurlyTaglessComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component, layout);
+    return this.registerComponent(name, definition);
+  }
+
   registerEmberishGlimmerComponent(name: string, Component: EmberishGlimmerComponentFactory, layout: string): ComponentDefinition<EmberishGlimmerComponentDefinition> {
     let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
@@ -839,6 +844,16 @@ function EmberTagName(vm: VM): PathReference<string> {
 function EmberID(vm: VM): PathReference<string> {
   let self = vm.getSelf().value() as { _guid: string };
   return new ValueReference(`ember${self._guid}`);
+}
+
+class EmberishCurlyTaglessComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
+  public ComponentClass: EmberishCurlyComponentFactory;
+
+  compile(builder: ComponentLayoutBuilder) {
+    builder.wrapLayout(this.compileLayout(builder.env));
+    builder.attrs.static('class', 'ember-view');
+    builder.attrs.dynamic('id', EmberID);
+  }
 }
 
 class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
