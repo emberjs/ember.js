@@ -889,6 +889,21 @@ QUnit.test('dynamic tagName', assert => {
   assertEmberishElement('aside', {}, `Hello. It's me.`);
 });
 
+QUnit.test('dynamic tagless component', assert => {
+  class FooBar extends EmberishCurlyComponent {
+    tagName = '';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
+
+  appendViewFor(`{{foo-bar}}`);
+  assertAppended('Michael Jordan says "Go Tagless"');
+
+  rerender();
+
+  assertAppended('Michael Jordan says "Go Tagless"');
+});
+
 QUnit.test('dynamic attribute bindings', assert => {
   let fooBarInstance: FooBar = null;
 

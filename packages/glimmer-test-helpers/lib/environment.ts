@@ -838,7 +838,9 @@ interface EmberishCurlyComponentFactory {
 
 function EmberTagName(vm: VM): PathReference<string> {
   let self = vm.getSelf().value();
-  return new ValueReference(self['tagName'] || 'div');
+  let tagName = self['tagName'];
+  tagName = tagName === '' ? null : self['tagName'] || 'div';
+  return new ValueReference(tagName);
 }
 
 function EmberID(vm: VM): PathReference<string> {
