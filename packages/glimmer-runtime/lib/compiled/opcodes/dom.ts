@@ -123,7 +123,7 @@ function toClassName(list: Reference<string>[]) {
   let ret = [];
 
   for (let i = 0; i < list.length; i++) {
-    let value: string | boolean | number = list[i].value();
+    let value: FIXME<'use Opaque and normalize'> = list[i].value();
     if (value !== false && value !== null && value !== undefined) ret.push(value);
   }
 
