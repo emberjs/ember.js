@@ -19,7 +19,9 @@ import {
   ExitOpcode,
   LabelOpcode,
   PutArgsOpcode,
-  PutValueOpcode
+  PutValueOpcode,
+  JumpUnlessOpcode,
+  TestOpcode
 } from './compiled/opcodes/vm';
 
 import * as Syntax from './syntax/core';
@@ -251,12 +253,18 @@ class WrappedBuilder {
       list.append(BindBlocksOpcode.create(layout));
     }
 
+    let tagExpr;
+
     if (this.tag.isDynamic) {
-      let tag = makeFunctionExpression(this.tag.dynamicTagName);
-      list.append(new PutValueOpcode({ expression: tag.compile(list, env) }));
+      let BODY = new LabelOpcode({ label: 'BODY' });
+      tagExpr = makeFunctionExpression(this.tag.dynamicTagName).compile(list, env);
+      list.append(new PutValueOpcode({ expression: tagExpr }));
+      list.append(new TestOpcode());
+      list.append(new JumpUnlessOpcode({ target: BODY }));
       list.append(new OpenDynamicPrimitiveElementOpcode());
       list.append(new DidCreateElementOpcode());
       this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list));
+      list.append(BODY);
     } else if(this.tag.isStatic) {
       let tag = this.tag.staticTagName;
       list.append(new OpenPrimitiveElementOpcode({ tag }));
@@ -266,7 +274,14 @@ class WrappedBuilder {
 
     layout.program.forEachNode(statement => compileStatement(env, statement, list));
 
-    if (this.tag.isDynamic || this.tag.isStatic) {
+    if (this.tag.isDynamic) {
+      let END = new LabelOpcode({ label: 'END' });
+      list.append(new PutValueOpcode({ expression: tagExpr }));
+      list.append(new TestOpcode());
+      list.append(new JumpUnlessOpcode({ target: END }));
+      list.append(new CloseElementOpcode());
+      list.append(END);
+    } else if(this.tag.isStatic) {
       list.append(new CloseElementOpcode());
     }
 
