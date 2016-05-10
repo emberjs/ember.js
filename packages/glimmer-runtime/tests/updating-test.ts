@@ -260,13 +260,13 @@ test("Cycling between two values in a trusting curly", () => {
 });
 
 test("updating a curly with a safe and unsafe string", () => {
-  let safeString: string | SafeString = {
+  let safeString = {
     string: '<p>hello world</p>',
     toHTML: function () { return this.string; },
     toString: function () { return this.string; }
-  } as SafeString;
+  };
   let unsafeString = '<b>Big old world!</b>';
-  let object = {
+  let object: { value: SafeString | string; } = {
     value: safeString
   };
   let template = compile('<div>{{value}}</div>');
@@ -452,9 +452,9 @@ function makeFragment(nodes: Node[]) {
 });
 
 test("updating a triple curly with a safe and unsafe string", () => {
-  let safeString: string | SafeString = makeSafeString('<p>hello world</p>');
+  let safeString = makeSafeString('<p>hello world</p>');
   let unsafeString = '<b>Big old world!</b>';
-  let object = {
+  let object: { value: string | SafeString; } = {
     value: safeString
   };
   let template = compile('<div>{{{value}}}</div>');
