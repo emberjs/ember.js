@@ -80,14 +80,14 @@ import {
   UpdatableReference
 } from "glimmer-object-reference";
 
-type KeyFor = (item: Opaque, index: number) => string;
+type KeyFor<T> = (item: Opaque, index: T) => string;
 
 class ArrayIterator implements OpaqueIterator {
   private array: Opaque[];
-  private keyFor: KeyFor;
+  private keyFor: KeyFor<number>;
   private position = 0;
 
-  constructor(array: any[], keyFor: KeyFor) {
+  constructor(array: Opaque[], keyFor: KeyFor<number>) {
     this.array = array;
     this.keyFor = keyFor;
   }
@@ -96,17 +96,49 @@ class ArrayIterator implements OpaqueIterator {
     return this.array.length === 0;
   }
 
-  next(): IterationItem<Opaque> {
+  next(): IterationItem<Opaque, number> {
     let { position, array, keyFor } = this;
 
     if (position >= array.length) return null;
 
     let value = array[position];
     let key = keyFor(value, position);
+    let memo = position;
 
     this.position++;
 
-    return { key, value };
+    return { key, value, memo };
+  }
+}
+
+class ObjectKeysIterator implements OpaqueIterator {
+  private keys: string[];
+  private values: Opaque[];
+  private keyFor: KeyFor<string>;
+  private position = 0;
+
+  constructor(keys: string[], values: Opaque[], keyFor: KeyFor<string>) {
+    this.keys = keys;
+    this.values = values;
+    this.keyFor = keyFor;
+  }
+
+  isEmpty(): boolean {
+    return this.keys.length === 0;
+  }
+
+  next(): IterationItem<Opaque, string> {
+    let { position, keys, values, keyFor } = this;
+
+    if (position >= keys.length) return null;
+
+    let value = values[position];
+    let memo = keys[position];
+    let key = keyFor(value, memo);
+
+    this.position++;
+
+    return { key, value, memo };
   }
 }
 
@@ -115,18 +147,18 @@ class EmptyIterator implements OpaqueIterator {
     return true;
   }
 
-  next(): IterationItem<Opaque> {
+  next(): IterationItem<Opaque, Opaque> {
     throw new Error(`Cannot call next() on an empty iterator`);
   }
 }
 
 const EMPTY_ITERATOR = new EmptyIterator();
 
-class Iterable implements AbstractIterable<Opaque, IterationItem<Opaque>, UpdatableReference<Opaque>> {
+class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque, Opaque>, UpdatableReference<Opaque>, UpdatableReference<Opaque>> {
   private ref: Reference<Opaque>;
-  private keyFor: KeyFor;
+  private keyFor: KeyFor<Opaque>;
 
-  constructor(ref: Reference<Opaque>, keyFor: KeyFor) {
+  constructor(ref: Reference<Opaque>, keyFor: KeyFor<Opaque>) {
     this.ref = ref;
     this.keyFor = keyFor;
   }
@@ -146,17 +178,28 @@ class Iterable implements AbstractIterable<Opaque, IterationItem<Opaque>, Updata
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
     } else if (iterable === undefined || iterable === null) {
       return EMPTY_ITERATOR;
-    } else {
+    } else if (typeof iterable === 'object') {
+       let keys = Object.keys(iterable);
+       return keys.length > 0 ? new ObjectKeysIterator(keys, keys.map(key => iterable[key]), keyFor) : EMPTY_ITERATOR;
+     } else {
       throw new Error(`Don't know how to {{#each ${iterable}}}`);
     }
   }
 
-  referenceFor(item: IterationItem<Opaque>): UpdatableReference<Opaque> {
+  valueReferenceFor(item: IterationItem<Opaque, Opaque>): UpdatableReference<Opaque> {
     return new UpdatableReference(item.value);
   }
 
-  updateReference(reference: UpdatableReference<Opaque>, item: IterationItem<Opaque>) {
+  updateValueReference(reference: UpdatableReference<Opaque>, item: IterationItem<Opaque, Opaque>) {
     reference.update(item.value);
+  }
+
+  memoReferenceFor(item: IterationItem<Opaque, Opaque>): UpdatableReference<Opaque> {
+    return new UpdatableReference(item.memo);
+  }
+
+  updateMemoReference(reference: UpdatableReference<Opaque>, item: IterationItem<Opaque, Opaque>) {
+    reference.update(item.memo);
   }
 }
 
@@ -652,7 +695,7 @@ export class TestEnvironment extends Environment {
 
   iterableFor(ref: Reference<Opaque>, args: EvaluatedArgs): OpaqueIterable {
     let keyPath = args.named.get("key" as InternedString).value();
-    let keyFor: KeyFor;
+    let keyFor: KeyFor<Opaque>;
 
     if (!keyPath) {
       throw new Error('Must specify a key for #each');
