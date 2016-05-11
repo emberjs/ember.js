@@ -104,6 +104,32 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     }, /You cannot use `classNameBindings` on a tag-less component/);
   }
 
+  ['@glimmer throws an error if `tagName` is an empty string and `attributeBindings` are specified']() {
+    let template = `hit dem folks`;
+    let FooBarComponent = Component.extend({
+      tagName: '',
+      attributeBindings: ['href']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    expectAssertion(() => {
+      this.render(`{{#foo-bar}}{{/foo-bar}}`);
+    }, /You cannot use `attributeBindings` on a tag-less component/);
+  }
+
+  ['@glimmer throws an error if `tagName` is an empty string and `elementId` is specified via JS']() {
+    let template = `hit dem folks`;
+    let FooBarComponent = Component.extend({
+      tagName: '',
+      elementId: 'turntUp'
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    expectAssertion(() => {
+      this.render(`{{#foo-bar}}{{/foo-bar}}`);
+    }, /You cannot use `elementId` on a tag-less component/);
+  }
+
   ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({

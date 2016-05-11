@@ -72,6 +72,16 @@ class CurlyComponentManager {
       return tagName || !classNameBindings || classNameBindings.length === 0;
     });
 
+    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), () => {
+      let { elementId, tagName } = component;
+      return tagName || (!elementId && elementId !== '');
+    });
+
+    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), () => {
+      let { attributeBindings, tagName } = component;
+      return tagName || !attributeBindings || attributeBindings.length === 0;
+    });
+
     return bucket;
   }
 
