@@ -71,7 +71,7 @@ function validateAction(component, actionName) {
   ```handlebars
   <!-- app-profile template -->
   <h1>{{person.title}}</h1>
-  {{! Executed in the components context. }}
+  {{! Executed in the component's context. }}
   {{yield}} {{! block contents }}
   ```
 
@@ -122,7 +122,7 @@ var Component = View.extend(TargetActionSupport, {
   isComponent: true,
   /*
     This is set so that the proto inspection in appendTemplatedView does not
-    think that it should set the components `context` to that of the parent view.
+    think that it should set the component's `context` to that of the parent view.
   */
   controller: null,
   context: null,
