@@ -67,6 +67,17 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
+    assert('classNameBindings must not have spaces in them', () => {
+      let { classNameBindings } = component;
+      for (let i = 0; i < classNameBindings.length; i++) {
+        let binding = classNameBindings[i];
+        if (binding.split(' ').length > 1) {
+          return false;
+        }
+      }
+      return true;
+    });
+
     assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), () => {
       let { classNameBindings, tagName } = component;
       return tagName || !classNameBindings || classNameBindings.length === 0;
