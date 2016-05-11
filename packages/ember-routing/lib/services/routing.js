@@ -45,6 +45,8 @@ export default Service.extend({
     if (shouldReplace) {
       transition.method('replace');
     }
+
+    return transition;
   },
 
   normalizeQueryParams(routeName, models, queryParams) {

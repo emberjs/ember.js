@@ -56,3 +56,4 @@ for a detailed explanation.
 
   - `interaction.<event-name>` for events handled by a component.
   - `interaction.ember-action` for closure actions.
+  - `interaction.link-to` for link-to execution.
