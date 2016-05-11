@@ -241,6 +241,28 @@ class WrappedBuilder {
   }
 
   compile(): CompiledBlock {
+    //========DYNAMIC
+    //        PutValue(TagExpr)
+    //        Test
+    //        JumpUnless(BODY)
+    //        OpenDynamicPrimitiveElement
+    //        DidCreateElement
+    //        ...attr statements...
+    // BODY:  Noop
+    //        PutValue(TagExpr)
+    //        Test
+    //        JumpUnless(END)
+    //        CloseElement
+    // END:   Noop
+    //        Exit
+    //
+    //========STATIC
+    //        OpenDynamicPrimitiveElement
+    //        DidCreateElement
+    //        ...attr statements...
+    //        CloseElement
+    //        Exit
+
     let { env, layout } = this;
 
     let list = new CompileIntoList(env, layout.symbolTable);
