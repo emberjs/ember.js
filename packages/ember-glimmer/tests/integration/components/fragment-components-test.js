@@ -10,7 +10,7 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     };
   }
 
-  ['@htmlbars fragments do not render an outer tag']() {
+  ['@test fragments do not render an outer tag']() {
     let instance;
     let FooBarComponent = Component.extend({
       tagName: '',
@@ -46,7 +46,7 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     });
   }
 
-  ['@htmlbars throws an error if an event function is defined in a tagless component']() {
+  ['@test throws an error if an event function is defined in a tagless component']() {
     let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
@@ -65,7 +65,7 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
   }
 
-  ['@htmlbars throws an error if a custom defined event function is defined in a tagless component']() {
+  ['@test throws an error if a custom defined event function is defined in a tagless component']() {
     let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
@@ -84,7 +84,7 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
   }
 
-  ['@htmlbars throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {
+  ['@test throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {
     let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
@@ -104,7 +104,7 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     }, /You cannot use `classNameBindings` on a tag-less component/);
   }
 
-  ['@htmlbars throws an error if when $() is accessed on component where `tagName` is an empty string']() {
+  ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
@@ -121,7 +121,7 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     }, /You cannot access this.\$\(\) on a component with `tagName: \'\'` specified/);
   }
 
-  ['@htmlbars renders a contained view with omitted start tag and tagless parent view context']() {
+  ['@test renders a contained view with omitted start tag and tagless parent view context']() {
     this.registerComponent('root-component', {
       ComponentClass: Component.extend({
         tagName: 'section'
