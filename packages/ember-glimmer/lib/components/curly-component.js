@@ -2,6 +2,7 @@ import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG } from '../ember-views/component';
 import EmptyObject from 'ember-metal/empty_object';
+import { assert } from 'ember-metal/debug';
 
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
@@ -65,6 +66,11 @@ class CurlyComponentManager {
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
     }
+
+    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), () => {
+      let { classNameBindings, tagName } = component;
+      return tagName || !classNameBindings || classNameBindings.length === 0;
+    });
 
     return bucket;
   }
@@ -153,11 +159,7 @@ import Component from '../ember-views/component';
 function tagName(vm) {
   let { tagName } = vm.dynamicScope().view;
 
-  if (tagName === '') {
-    throw new Error('Not implemented: fragments (`tagName: ""`)');
-  }
-
-  return new ValueReference(tagName || 'div');
+  return new ValueReference(tagName === '' ? null : tagName || 'div');
 }
 
 function elementId(vm) {
