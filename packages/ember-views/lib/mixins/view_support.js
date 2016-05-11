@@ -619,7 +619,7 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
 
-    if (!this.elementId) {
+    if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
     }
 
