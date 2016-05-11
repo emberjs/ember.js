@@ -44,6 +44,17 @@ QUnit.test("Component with dynamic value", function(assert) {
   assert.ok(html.match(/<h1>Hello World<\/h1>/));
 });
 
+QUnit.test("Ensure undefined attributes requiring protocol sanitization do not error", function(assert) {
+  var component = buildComponent('', {
+    tagName: 'link',
+    attributeBindings: ['href', 'rel'],
+    rel: 'canonical'
+  });
+
+  var html = renderComponent(component);
+  assert.ok(html.match(/rel="canonical"/));
+});
+
 function buildComponent(template, props) {
   var Component = Ember.Component.extend({
     renderer: new Ember._Renderer(new DOMHelper(new SimpleDOM.Document())),
