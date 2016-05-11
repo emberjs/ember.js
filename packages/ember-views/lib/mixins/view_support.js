@@ -2,7 +2,6 @@ import { assert, deprecate } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
-import { addObserver, removeObserver } from 'ember-metal/observer';
 import { guidFor } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
 import { Mixin } from 'ember-metal/mixin';
@@ -706,8 +705,6 @@ export default Mixin.create({
     }
   },
 
-  templateRenderer: null,
-
   /**
     Removes the view from its `parentView`, if one is found. Otherwise
     does nothing.
@@ -796,35 +793,5 @@ export default Mixin.create({
   */
   _unregister() {
     delete this._viewRegistry[this.elementId];
-  },
-
-  registerObserver(root, path, target, observer) {
-    if (!observer && 'function' === typeof target) {
-      observer = target;
-      target = null;
-    }
-
-    if (!root || typeof root !== 'object') {
-      return;
-    }
-
-    var scheduledObserver = this._wrapAsScheduled(observer);
-
-    addObserver(root, path, target, scheduledObserver);
-
-    this.one('willClearRender', function() {
-      removeObserver(root, path, target, scheduledObserver);
-    });
-  },
-
-  _wrapAsScheduled(fn) {
-    var view = this;
-    var stateCheckedFn = function() {
-      view._currentState.invokeObserver(this, fn);
-    };
-    var scheduledFn = function() {
-      run.scheduleOnce('render', this, stateCheckedFn);
-    };
-    return scheduledFn;
   }
 });

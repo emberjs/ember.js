@@ -8,53 +8,13 @@ import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
 import { objectAt } from 'ember-runtime/mixins/array';
-import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 var parentView, child;
 var originalViewKeyword;
 
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-// .......................................................
-// removeAllChildren()
-//
-var view, childViews;
-testModule('View#removeAllChildren', {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-
-    view = View.extend({
-      template: compile(`
-        {{view view.childView1}}
-        {{view view.childView2}}
-        {{view view.childView3}}
-      `),
-      childView1: View.extend(),
-      childView2: View.extend(),
-      childView3: View.extend()
-    }).create();
-    runAppend(view);
-
-    childViews = get(view, 'childViews');
-  },
-  teardown() {
-    childViews.forEach((v) => runDestroy(v));
-    runDestroy(view);
-    resetKeyword('view', originalViewKeyword);
-  }
-});
-
-test('removes all child views', function() {
-  equal(get(view, 'childViews.length'), 3, 'precond - has child views');
-
-  view.removeAllChildren();
-  equal(get(view, 'childViews.length'), 0, 'removed all children');
-});
-
-test('returns receiver', function() {
-  equal(view.removeAllChildren(), view, 'receiver');
-});
-
+var view;
 // .......................................................
 // removeFromParent()
 //
