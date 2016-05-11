@@ -122,7 +122,7 @@ export class NextIterOpcode extends Opcode {
       vm.frame.setCondition(TRUE_REF);
       vm.frame.setKey(item.key as FIXME<'user str to InternedString'>);
       vm.frame.setOperand(item.value);
-      vm.frame.setArgs(EvaluatedArgs.positional([item.value]));
+      vm.frame.setArgs(EvaluatedArgs.positional([item.value, item.memo]));
     } else {
       vm.frame.setCondition(FALSE_REF);
       vm.goto(this.end);
