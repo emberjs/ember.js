@@ -333,8 +333,23 @@ export class AttributeBindingReference extends CachedReference {
   compute() {
     let value = get(this.component, this.propertyPath);
 
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || value === false) {
       return null;
+    } else if (value === true) {
+      // Note:
+      // This is here to mimic functionality in HTMLBars for properties.
+      // For instance when a property like "disable" is set all of these
+      // forms are valid and have the same disabled functionality:
+      //
+      // <input disabled />
+      // <input disabled="true" />
+      // <input disabled="false" />
+      // <input disabled="" />
+      //
+      // For compatability sake we do not just cast the true boolean to
+      // a string. Potentially we can revisit this in the future as the
+      // casting feels better and we can remove this branch.
+      return '';
     } else {
       return value;
     }
