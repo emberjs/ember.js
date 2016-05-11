@@ -57,10 +57,6 @@ assign(hasElement, {
     } else {
       return true; // continue event propagation
     }
-  },
-
-  invokeObserver(target, observer) {
-    observer.call(target);
   }
 });
 

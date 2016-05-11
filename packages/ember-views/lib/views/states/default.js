@@ -43,6 +43,5 @@ export default {
 
   rerender(view) {
     view.renderer.ensureViewNotRendering(view);
-  },
-  invokeObserver() { }
+  }
 };
