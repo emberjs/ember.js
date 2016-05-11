@@ -63,5 +63,9 @@ export default EmberComponent.extend({
 
   change() {
     set(this, 'checked', this.$().prop('checked'));
+    // some browsers don't update this automatically, but according to the HTML5
+    // spec, the "indeterminate" value should be set to false before a change
+    // event is fired: http://www.w3.org/TR/html5/forms.html#checkbox-state-(type=checkbox)
+    set(this, 'indeterminate', false);
   }
 });
