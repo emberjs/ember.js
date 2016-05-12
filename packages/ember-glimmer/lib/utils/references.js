@@ -7,14 +7,11 @@ import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UN
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
-<<<<<<< dc4b60be5849a6dad2cc464822294a435e08e31c
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
-=======
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 
->>>>>>> [Glimmer2] Mark glimmer2 tests on context.isTruthy to be @htmlbars only
 export const UPDATE = symbol('UPDATE');
 
 // @implements PathReference

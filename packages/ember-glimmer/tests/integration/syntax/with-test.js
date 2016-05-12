@@ -167,13 +167,9 @@ moduleFor('Syntax test: {{#with as}}', class extends TogglingSyntaxConditionalsT
 
     this.assertText('Yehuda Katz');
 
-    this.runTask(() => set(this.context, 'proxyThing.isTruthy', false));
+    this.runTask(() => set(this.context, 'proxyThing.content', { name: 'Godfrey Chan' }));
 
-    this.assertText('');
-
-    this.runTask(() => set(this.context, 'proxyThing.name', 'Godfrey Chan'));
-
-    this.assertText('');
+    this.assertText('Godfrey Chan');
 
     this.runTask(() => set(this.context, 'proxyThing', ObjectProxy.create({ content: { name: 'Tom Dale' } })));
 
