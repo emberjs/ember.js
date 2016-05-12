@@ -49,7 +49,6 @@ class SimpleArgs {
       props[name] = value;
     }
 
-
     return { attrs, props };
   }
 }

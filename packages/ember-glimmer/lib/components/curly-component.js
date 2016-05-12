@@ -4,6 +4,13 @@ import { DIRTY_TAG } from '../ember-views/component';
 import { assert } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
 
+function aliasIdToElementId(args, props) {
+  if (args.named.has('id')) {
+    assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
+    props.elementId = props.id;
+  }
+}
+
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
     super();
@@ -34,6 +41,8 @@ class CurlyComponentManager {
     let klass = definition.ComponentClass;
     let processedArgs = processArgs(args, klass.positionalParams);
     let { attrs, props } = processedArgs.value();
+
+    aliasIdToElementId(args, props);
 
     props.renderer = parentView.renderer;
 
