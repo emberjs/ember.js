@@ -22,6 +22,7 @@ class ComponentStateBucket {
   constructor(component, args) {
     this.component = component;
     this.classRef = null;
+    this.args = args;
     this.argsRevision = args.tag.value();
   }
 }
@@ -31,7 +32,8 @@ class CurlyComponentManager {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
-    let { attrs, props } = processArgs(args, klass.positionalParams);
+    let processedArgs = processArgs(args, klass.positionalParams);
+    let { attrs, props } = processedArgs.value();
 
     props.renderer = parentView.renderer;
 
@@ -45,7 +47,7 @@ class CurlyComponentManager {
     component.trigger('willInsertElement');
     component.trigger('willRender');
 
-    let bucket = new ComponentStateBucket(component, args);
+    let bucket = new ComponentStateBucket(component, processedArgs);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -124,13 +126,13 @@ class CurlyComponentManager {
     component._transitionTo('inDOM');
   }
 
-  update(bucket, args, dynamicScope) {
-    let { component, argsRevision } = bucket;
+  update(bucket, _, dynamicScope) {
+    let { component, args, argsRevision } = bucket;
 
     if (!args.tag.validate(argsRevision)) {
       bucket.argsRevision = args.tag.value();
 
-      let { attrs, props } = processArgs(args, component.constructor.positionalParams);
+      let { attrs, props } = args.value();
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;
