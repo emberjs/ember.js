@@ -44,8 +44,7 @@ const builtInHelpers = {
   '-class': classHelper
 };
 
-const builtInModifiers = {
-};
+import { default as ActionModifierManager } from './modifiers/action';
 
 function wrapClassAttribute(args) {
   let hasClass = args.named.has('class');
@@ -104,6 +103,9 @@ export default class Environment extends GlimmerEnvironment {
     super(dom);
     this.owner = owner;
     this._components = new Dict();
+    this.builtInModifiers = {
+      action: new ActionModifierManager()
+    };
   }
 
   refineStatement(statement) {
@@ -178,12 +180,17 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   hasModifier(name) {
-    return !!builtInModifiers[name[0]];
+    return !!this.builtInModifiers[name[0]];
   }
 
   lookupModifier(name) {
-    let modifier = builtInModifiers[name[0]];
-    return modifier;
+    let modifier = this.builtInModifiers[name[0]];
+
+    if (modifier) {
+      return modifier;
+    } else {
+      throw new Error(`${name} is not a modifier`);
+    }
   }
 
   rootReferenceFor(value) {

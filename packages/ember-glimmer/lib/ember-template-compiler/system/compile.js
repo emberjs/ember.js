@@ -2,9 +2,10 @@ import template from './template';
 import require, { has } from 'require';
 import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
 import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
+import TransformActionSyntax from '../plugins/transform-action-syntax';
 
 const DEFAULT_PLUGINS = {
-  ast: [TransformOldBindingSyntax, TransformHasBlockSyntax]
+  ast: [TransformOldBindingSyntax, TransformHasBlockSyntax, TransformActionSyntax]
 };
 
 let compileSpec;
