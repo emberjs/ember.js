@@ -1,7 +1,7 @@
 import { get } from 'ember-metal/property_get';
 import { tagFor } from 'ember-metal/tags';
-import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
-import { ConditionalReference as GlimmerConditionalReference, UNDEFINED_REFERENCE } from 'glimmer-runtime';
+import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
+import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
@@ -38,7 +38,7 @@ class EmberPathReference {
 }
 
 // @abstract
-class CachedReference extends EmberPathReference {
+export class CachedReference extends EmberPathReference {
   constructor() {
     super();
     this._lastRevision = null;
@@ -120,66 +120,6 @@ export class UpdatableReference extends EmberPathReference {
   }
 }
 
-// @implements PathReference
-export class GetHelperReference extends CachedReference {
-  constructor(sourceReference, pathReference) {
-    super();
-    this.sourceReference = sourceReference;
-    this.pathReference = pathReference;
-
-    this.lastPath = null;
-    this.innerReference = null;
-
-    let innerTag = this.innerTag = new UpdatableTag(CURRENT_TAG);
-
-    this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
-  }
-
-  compute() {
-    let { lastPath, innerReference, innerTag } = this;
-
-    let path = this.lastPath = this.pathReference.value();
-
-    if (path !== lastPath) {
-      if (path) {
-        let pathType = typeof path;
-
-        if (pathType === 'string') {
-          innerReference = this.innerReference = referenceFromParts(this.sourceReference, path.split('.'));
-        } else if (pathType === 'number') {
-          innerReference = this.innerReference = this.sourceReference.get(path);
-        }
-
-        innerTag.update(innerReference.tag);
-      } else {
-        innerReference = this.innerReference = null;
-        innerTag.update(CONSTANT_TAG);
-      }
-    }
-
-    return innerReference ? innerReference.value() : null;
-  }
-
-  get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
-  }
-
-  destroy() {}
-}
-
-export class HashHelperReference extends CachedReference {
-  constructor(args) {
-    super();
-
-    this.tag = args.named.tag;
-    this.namedArgs = args.named;
-  }
-
-  compute() {
-    return this.namedArgs.value();
-  }
-}
-
 export class ConditionalReference extends GlimmerConditionalReference {
   static create(reference) {
     if (isConst(reference)) {
@@ -211,42 +151,26 @@ export class ConditionalReference extends GlimmerConditionalReference {
   }
 }
 
-export class ConditionalHelperReference extends CachedReference {
-  static create(_condRef, _truthyRef, _falsyRef) {
-    let condRef = ConditionalReference.create(_condRef);
-    let truthyRef = _truthyRef || UNDEFINED_REFERENCE;
-    let falsyRef = _falsyRef || UNDEFINED_REFERENCE;
+export class SimpleHelperReference extends CachedReference {
+  static create(helper, args) {
+    if (isConst(args)) {
+      let { positional, named } = args;
+      let result = helper(positional.value(), named.value());
 
-    if (isConst(condRef)) {
-      return condRef.value() ? truthyRef : falsyRef;
+      if (result === null) {
+        return NULL_REFERENCE;
+      } else if (result === undefined) {
+        return UNDEFINED_REFERENCE;
+      } else if (typeof result === 'object') {
+        return new RootReference(result);
+      } else {
+        return new PrimitiveReference(result);
+      }
     } else {
-      return new ConditionalHelperReference(condRef, truthyRef, falsyRef);
+      return new SimpleHelperReference(helper, args);
     }
   }
 
-  constructor(cond, truthy, falsy) {
-    super();
-
-    this.branchTag = new UpdatableTag(CURRENT_TAG);
-    this.tag = combine([cond.tag, this.branchTag]);
-
-    this.cond = cond;
-    this.truthy = truthy;
-    this.falsy = falsy;
-  }
-
-  compute() {
-    let { cond, truthy, falsy } = this;
-
-    let branch = cond.value() ? truthy : falsy;
-
-    this.branchTag.update(branch.tag);
-
-    return branch.value();
-  }
-}
-
-export class SimpleHelperReference extends CachedReference {
   constructor(helper, args) {
     super();
 
@@ -262,6 +186,10 @@ export class SimpleHelperReference extends CachedReference {
 }
 
 export class ClassBasedHelperReference extends CachedReference {
+  static create(helperClass, args) {
+    return new ClassBasedHelperReference(helperClass.create(), args);
+  }
+
   constructor(instance, args) {
     super();
 

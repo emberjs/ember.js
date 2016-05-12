@@ -171,9 +171,9 @@ export default class Environment extends GlimmerEnvironment {
     if (helper.isInternalHelper) {
       return (args) => helper.toReference(args);
     } else if (helper.isHelperInstance) {
-      return (args) => new SimpleHelperReference(helper.compute, args);
+      return (args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {
-      return (args) => new ClassBasedHelperReference(helper.create(), args);
+      return (args) => ClassBasedHelperReference.create(helper, args);
     } else {
       throw new Error(`${name} is not a helper`);
     }

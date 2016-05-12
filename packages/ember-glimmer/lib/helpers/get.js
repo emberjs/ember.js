@@ -1,5 +1,5 @@
-import { GetHelperReference } from '../utils/references';
-import { isConst, referenceFromParts } from 'glimmer-reference';
+import { CachedReference } from '../utils/references';
+import { CURRENT_TAG, CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
 
 /**
 @module ember
@@ -54,14 +54,56 @@ export default {
   isInternalHelper: true,
 
   toReference(args) {
-    let sourceReference = args.positional.at(0);
-    let propertyPathReference = args.positional.at(1); // bar in (get foo bar)
-
-    if (isConst(propertyPathReference)) {
-      let parts = propertyPathReference.value().split('.');
-      return referenceFromParts(sourceReference, parts);
-    } else {
-      return new GetHelperReference(sourceReference, propertyPathReference);
-    }
+    return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
   }
 };
+
+
+class GetHelperReference extends CachedReference {
+  static create(sourceReference, pathReference) {
+    if (isConst(pathReference)) {
+      let parts = pathReference.value().split('.');
+      return referenceFromParts(sourceReference, parts);
+    } else {
+      return new GetHelperReference(sourceReference, pathReference);
+    }
+  }
+
+  constructor(sourceReference, pathReference) {
+    super();
+    this.sourceReference = sourceReference;
+    this.pathReference = pathReference;
+
+    this.lastPath = null;
+    this.innerReference = null;
+
+    let innerTag = this.innerTag = new UpdatableTag(CURRENT_TAG);
+
+    this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
+  }
+
+  compute() {
+    let { lastPath, innerReference, innerTag } = this;
+
+    let path = this.lastPath = this.pathReference.value();
+
+    if (path !== lastPath) {
+      if (path) {
+        let pathType = typeof path;
+
+        if (pathType === 'string') {
+          innerReference = this.innerReference = referenceFromParts(this.sourceReference, path.split('.'));
+        } else if (pathType === 'number') {
+          innerReference = this.innerReference = this.sourceReference.get(path);
+        }
+
+        innerTag.update(innerReference.tag);
+      } else {
+        innerReference = this.innerReference = null;
+        innerTag.update(CONSTANT_TAG);
+      }
+    }
+
+    return innerReference ? innerReference.value() : null;
+  }
+}
