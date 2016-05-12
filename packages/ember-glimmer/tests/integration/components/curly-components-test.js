@@ -23,7 +23,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
-  ['@htmlbars it can have a custom id and it is not bound']() {
+  ['@test it can have a custom id and it is not bound']() {
     this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
 
     this.render('{{foo-bar id=customId}}', {
@@ -90,7 +90,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(foundId, newFoundId);
   }
 
-  ['@htmlbars passing literal id is ignored and results in a default elementId'](assert) {
+  ['@test id is an alias for elementId'](assert) {
     let FooBarComponent = Component.extend({
       tagName: 'h1'
     });

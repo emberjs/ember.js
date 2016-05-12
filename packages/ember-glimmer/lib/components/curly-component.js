@@ -18,6 +18,13 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
+function handleAliases(attrs) {
+  if (attrs.id && !attrs.elementId) {
+    attrs.elementId = attrs.id;
+  }
+  return attrs;
+}
+
 function attrsToProps(keys, attrs) {
   let merged = new EmptyObject();
 
@@ -47,7 +54,7 @@ class CurlyComponentManager {
 
     let klass = definition.ComponentClass;
     let attrs = args.named.value();
-    let props = attrsToProps(args.named.keys, attrs);
+    let props = handleAliases(attrsToProps(args.named.keys, attrs));
 
     props.renderer = parentView.renderer;
 
