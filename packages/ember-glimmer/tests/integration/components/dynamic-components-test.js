@@ -554,7 +554,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
   }
 
-  ['@htmlbars positional parameters does not clash when rendering different components'](assert) {
+  ['@test positional parameters does not clash when rendering different components'](assert) {
     this.registerComponent('foo-bar', {
       template: 'hello {{name}} ({{age}}) from foo-bar',
       ComponentClass: Component.extend().reopenClass({
@@ -602,7 +602,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello Alex (29) from foo-bar' });
   }
 
-  ['@htmlbars positional parameters does not pollute the attributes when changing components'](assert) {
+  ['@test positional parameters does not pollute the attributes when changing components'](assert) {
     this.registerComponent('normal-message', {
       template: 'Normal: {{something}}!',
       ComponentClass: Component.extend().reopenClass({
@@ -633,8 +633,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
 
     this.runTask(() => set(this.context, 'message', 'Hi'));
 
-    // TODO: this fails in htmlbars - https://github.com/emberjs/ember.js/issues/13158
-    // this.assertComponentElement(this.firstChild, { content: 'Alternative: Another Hi!' });
+    this.assertComponentElement(this.firstChild, { content: 'Alternative: Another Hi!' });
 
     this.runTask(() => {
       set(this.context, 'componentName', 'normal-message');
@@ -644,4 +643,63 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'Normal: Hello!' });
   }
 
+  ['@test static arbitrary number of positional parameters'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'names'
+      }),
+      template: strip`
+        {{#each names as |name|}}
+          {{name}}
+        {{/each}}`
+    });
+
+    this.render(`{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" elementId="helper"}}`);
+
+    this.assertText('Foo4Bar5Baz');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Foo4Bar5Baz');
+  }
+
+  ['@test dynamic arbitrary number of positional parameters'](assert) {
+    this.registerComponent('sample-component', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'n'
+      }),
+      template: strip`
+        {{#each n as |name|}}
+          {{name}}
+        {{/each}}`
+    });
+
+    this.render(`{{component "sample-component" user1 user2}}`,
+      {
+        user1: 'Foo',
+        user2: 4
+      }
+    );
+
+    this.assertText('Foo4');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Foo4');
+
+    this.runTask(() => this.context.set('user1', 'Bar'));
+
+    this.assertText('Bar4');
+
+    this.runTask(() => this.context.set('user2', '5'));
+
+    this.assertText('Bar5');
+
+    this.runTask(() => {
+      this.context.set('user1', 'Foo');
+      this.context.set('user2', 4);
+    });
+
+    this.assertText('Foo4');
+  }
 });
