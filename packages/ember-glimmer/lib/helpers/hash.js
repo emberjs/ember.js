@@ -1,4 +1,6 @@
-import { HashHelperReference } from '../utils/references';
+import { isConst } from 'glimmer-reference';
+import { CachedReference, RootReference } from '../utils/references';
+
 /**
 @module ember
 @submodule ember-templates
@@ -34,6 +36,27 @@ import { HashHelperReference } from '../utils/references';
 export default {
   isInternalHelper: true,
   toReference(args) {
-    return new HashHelperReference(args);
+    return HashHelperReference.create(args.named);
   }
 };
+
+class HashHelperReference extends CachedReference {
+  static create(namedArgs) {
+    if (isConst(namedArgs)) {
+      return new RootReference(namedArgs.value());
+    } else {
+      return new HashHelperReference(namedArgs);
+    }
+  }
+
+  constructor(namedArgs) {
+    super();
+
+    this.tag = namedArgs.tag;
+    this.namedArgs = namedArgs;
+  }
+
+  compute() {
+    return this.namedArgs.value();
+  }
+}

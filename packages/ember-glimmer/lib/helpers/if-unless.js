@@ -4,7 +4,9 @@
 */
 
 import { assert } from 'ember-metal/debug';
-import { ConditionalHelperReference } from '../utils/references';
+import { UNDEFINED_REFERENCE, CachedReference, ConditionalReference } from '../utils/references';
+import { CURRENT_TAG, UpdatableTag, combine, isConst } from 'glimmer-reference';
+
 
 /**
   The inline `if` helper conditionally renders a single property or string.
@@ -67,3 +69,38 @@ export const inlineUnless = {
     }
   }
 };
+
+class ConditionalHelperReference extends CachedReference {
+  static create(_condRef, _truthyRef, _falsyRef) {
+    let condRef = ConditionalReference.create(_condRef);
+    let truthyRef = _truthyRef || UNDEFINED_REFERENCE;
+    let falsyRef = _falsyRef || UNDEFINED_REFERENCE;
+
+    if (isConst(condRef)) {
+      return condRef.value() ? truthyRef : falsyRef;
+    } else {
+      return new ConditionalHelperReference(condRef, truthyRef, falsyRef);
+    }
+  }
+
+  constructor(cond, truthy, falsy) {
+    super();
+
+    this.branchTag = new UpdatableTag(CURRENT_TAG);
+    this.tag = combine([cond.tag, this.branchTag]);
+
+    this.cond = cond;
+    this.truthy = truthy;
+    this.falsy = falsy;
+  }
+
+  compute() {
+    let { cond, truthy, falsy } = this;
+
+    let branch = cond.value() ? truthy : falsy;
+
+    this.branchTag.update(branch.tag);
+
+    return branch.value();
+  }
+}
