@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import { get } from 'ember-metal/property_get';
 import { set as o_set } from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
-import TextField from 'ember-views/views/text_field';
+import TextField from 'ember-htmlbars/components/text_field';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import jQuery from 'ember-views/system/jquery';
 

@@ -14,15 +14,15 @@ import {
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
 import { Renderer } from 'ember-htmlbars/renderer';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
 import ComponentLookup from 'ember-views/component_lookup';
-import Checkbox from 'ember-views/views/checkbox';
+import Checkbox from 'ember-htmlbars/components/checkbox';
 import TextSupport from 'ember-views/mixins/text_support';
-import TextField from 'ember-views/views/text_field';
-import TextArea from 'ember-views/views/text_area';
+import TextField from 'ember-htmlbars/components/text_field';
+import TextArea from 'ember-htmlbars/components/text_area';
 
 // END IMPORTS
 

@@ -4,9 +4,9 @@ import {
 } from 'glimmer-runtime';
 import Dict from 'ember-metal/empty_object';
 import { assert } from 'ember-metal/debug';
-import { CurlyComponentSyntax, CurlyComponentDefinition } from './components/curly-component';
-import { DynamicComponentSyntax } from './components/dynamic-component';
-import { OutletSyntax } from './components/outlet';
+import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
+import { DynamicComponentSyntax } from './syntax/dynamic-component';
+import { OutletSyntax } from './syntax/outlet';
 import lookupComponent from './utils/lookup-component';
 import createIterable from './utils/iterable';
 import {

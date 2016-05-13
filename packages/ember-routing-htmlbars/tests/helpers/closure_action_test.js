@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
-import EmberComponent from 'ember-views/components/component';
+import EmberComponent from 'ember-htmlbars/component';
 import { computed } from 'ember-metal/computed';
 import { INVOKE } from 'ember-routing-htmlbars/keywords/closure-action';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';

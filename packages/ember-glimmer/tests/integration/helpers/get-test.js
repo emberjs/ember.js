@@ -1,8 +1,7 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { Component, TextField } from '../../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
-import TextField from 'ember-views/views/text_field';
 
 moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 

@@ -1,4 +1,4 @@
-import Checkbox from 'ember-views/views/checkbox';
+import Checkbox from 'ember-htmlbars/components/checkbox';
 
 import { get } from 'ember-metal/property_get';
 import { set as o_set } from 'ember-metal/property_set';

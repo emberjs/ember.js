@@ -8,7 +8,7 @@ import View from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

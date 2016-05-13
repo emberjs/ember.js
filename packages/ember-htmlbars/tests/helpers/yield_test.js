@@ -1,5 +1,5 @@
 import EmberView from 'ember-views/views/view';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import ComponentLookup from 'ember-views/component_lookup';
 
 import compile from 'ember-template-compiler/system/compile';

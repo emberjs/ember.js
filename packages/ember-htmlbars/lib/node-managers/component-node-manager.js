@@ -5,7 +5,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import LegacyEmberComponent from 'ember-views/components/component';
+import LegacyEmberComponent from 'ember-htmlbars/component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import symbol from 'ember-metal/symbol';
 import { setOwner } from 'container/owner';

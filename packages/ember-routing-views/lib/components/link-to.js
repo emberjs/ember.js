@@ -319,7 +319,7 @@ import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { deprecatingAlias } from 'ember-runtime/computed/computed_macros';
 import { isSimpleClick } from 'ember-views/system/utils';
-import EmberComponent from 'ember-views/components/component';
+import EmberComponent from 'ember-htmlbars/component';
 import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';

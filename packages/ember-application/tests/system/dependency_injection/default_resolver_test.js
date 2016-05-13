@@ -4,7 +4,7 @@ import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import View from 'ember-views/views/view';
 import Service from 'ember-runtime/system/service';
 import EmberObject from 'ember-runtime/system/object';

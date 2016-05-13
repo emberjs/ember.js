@@ -4,7 +4,7 @@
 */
 import { computed } from 'ember-metal/computed';
 import { environment } from 'ember-environment';
-import Component from 'ember-views/components/component';
+import Component from '../component';
 import TextSupport from 'ember-views/mixins/text_support';
 import EmptyObject from 'ember-metal/empty_object';
 
