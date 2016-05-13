@@ -9,7 +9,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import Mixin, { observer } from 'ember-metal/mixin';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';

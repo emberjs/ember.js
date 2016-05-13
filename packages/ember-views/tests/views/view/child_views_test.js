@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import { compile } from 'ember-template-compiler';
 import { A as emberA } from 'ember-runtime/system/native_array';
 

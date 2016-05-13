@@ -2,11 +2,11 @@
 import { context } from 'ember-environment';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import EmberView from 'ember-views/views/view';
-import EmberComponent from 'ember-views/components/component';
+import EmberComponent from 'ember-htmlbars/component';
 import ComponentLookup from 'ember-views/component_lookup';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
-import TextField from 'ember-views/views/text_field';
+import TextField from 'ember-htmlbars/components/text_field';
 import EmberObject from 'ember-runtime/system/object';
 import SafeString from 'htmlbars-util/safe-string';
 import precompile from 'ember-template-compiler/compat/precompile';

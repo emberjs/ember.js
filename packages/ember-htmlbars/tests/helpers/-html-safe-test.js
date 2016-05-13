@@ -2,7 +2,7 @@
 
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { Registry } from 'ember-runtime/system/container';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import compile from 'ember-template-compiler/system/compile';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

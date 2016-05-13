@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import EmberComponent from 'ember-views/components/component';
+import EmberComponent from 'ember-htmlbars/component';
 import EmberView from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import compile from 'ember-template-compiler/system/compile';

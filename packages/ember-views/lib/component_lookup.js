@@ -1,6 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import EmberObject from 'ember-runtime/system/object';
-import EmberComponent from 'ember-views/components/component';
+import EmberComponent from 'ember-htmlbars/component';
 import { CONTAINS_DASH_CACHE } from 'ember-htmlbars/system/lookup-helper';
 import { getOwner } from 'container/owner';
 

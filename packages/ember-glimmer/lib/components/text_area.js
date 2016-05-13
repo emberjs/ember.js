@@ -1,0 +1,1 @@
+../../../ember-htmlbars/lib/components/text_area.js

@@ -1,6 +1,6 @@
 import compile from 'ember-template-compiler/system/compile';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-views/components/component';
+import Component from 'ember-htmlbars/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
