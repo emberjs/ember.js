@@ -1,9 +1,14 @@
+/* globals EmberDev */
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import EmberObject from 'ember-runtime/system/object';
 import { classes } from '../utils/test-helpers';
+import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
+import { styleWarning } from 'ember-htmlbars/morphs/attr-morph';
+import { Component } from '../utils/helpers';
+import { SafeString } from 'ember-htmlbars/utils/string';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
@@ -848,3 +853,78 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
     this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   bar' } });
   }
 });
+
+if (!EmberDev.runningProdBuild) {
+  let warnings, originalWarn;
+
+  moduleFor('@htmlbars Inline style tests', class extends RenderingTest {
+    constructor() {
+      super(...arguments);
+      warnings = [];
+      originalWarn = getDebugFunction('warn');
+      setDebugFunction('warn', function(message, test) {
+        if (!test) {
+          warnings.push(message);
+        }
+      });
+    }
+
+    teardown() {
+      super(...arguments);
+      setDebugFunction('warn', originalWarn);
+    }
+
+    ['@test specifying <div style={{userValue}}></div> generates a warning'](assert) {
+      this.render('<div style={{userValue}}></div>', {
+        userValue: 'width: 42px'
+      });
+
+      assert.deepEqual(warnings, [styleWarning]);
+    }
+
+    ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
+      let FooBarComponent = Component.extend({
+        attributeBindings: ['style']
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{foo-bar style=userValue}}', {
+        userValue: 'width: 42px'
+      });
+
+      assert.deepEqual(warnings, [styleWarning]);
+    }
+
+    ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
+      this.render('<div style={{{userValue}}}></div>', {
+        userValue: 'width: 42px'
+      });
+
+      assert.deepEqual(warnings, []);
+    }
+
+    ['@test specifying `<div style={{userValue}}></div>` works properly with a SafeString'](assert) {
+      this.render('<div style={{userValue}}></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      assert.deepEqual(warnings, []);
+    }
+
+    ['@test null value do not generate htmlsafe warning'](assert) {
+      this.render('<div style={{userValue}}></div>', {
+        userValue: null
+      });
+
+      assert.deepEqual(warnings, []);
+    }
+
+    ['@test undefined value do not generate htmlsafe warning'](assert) {
+      this.render('<div style={{userValue}}></div>');
+
+      assert.deepEqual(warnings, []);
+    }
+
+  });
+}
