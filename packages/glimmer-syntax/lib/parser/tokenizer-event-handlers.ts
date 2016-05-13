@@ -13,7 +13,7 @@ export default {
     this.currentNode = b.comment("");
     this.currentNode.loc = {
       source: null,
-      start: b.pos(this.tokenizer.tagLine, this.tokenizer.tagColumn),
+      start: b.pos(this.tagOpenLine, this.tagOpenColumn),
       end: null
     };
   },
@@ -51,6 +51,11 @@ export default {
 
   // Tags - basic
 
+  tagOpen: function() {
+    this.tagOpenLine = this.tokenizer.line;
+    this.tagOpenColumn = this.tokenizer.column;
+  },
+
   beginStartTag: function() {
     this.currentNode = {
       type: 'StartTag',
@@ -74,10 +79,10 @@ export default {
   },
 
   finishTag: function() {
-    let { tagLine, tagColumn, line, column } = this.tokenizer;
+    let { line, column } = this.tokenizer;
 
     let tag = this.currentNode;
-    tag.loc = b.loc(tagLine, tagColumn, line, column);
+    tag.loc = b.loc(this.tagOpenLine, this.tagOpenColumn, line, column);
 
     if (tag.type === 'StartTag') {
       this.finishStartTag();
@@ -93,7 +98,7 @@ export default {
   finishStartTag: function() {
     let { name, attributes, modifiers } = this.currentNode;
 
-    let loc = b.loc(this.tokenizer.tagLine, this.tokenizer.tagColumn);
+    let loc = b.loc(this.tagOpenLine, this.tagOpenColumn);
     let element = b.element(name, attributes, modifiers, [], loc);
     this.elementStack.push(element);
   },
@@ -139,8 +144,9 @@ export default {
       parts: [],
       isQuoted: false,
       isDynamic: false,
-      // beginAttribute isn't called until after the first char is consumed
-      start: b.pos(this.tokenizer.line, this.tokenizer.column - 1)
+      start: b.pos(this.tokenizer.line, this.tokenizer.column),
+      valueStartLine: null,
+      valueStartColumn: null
     };
   },
 
@@ -150,6 +156,8 @@ export default {
 
   beginAttributeValue: function(isQuoted) {
     this.currentAttribute.isQuoted = isQuoted;
+    this.currentAttribute.valueStartLine = this.tokenizer.line;
+    this.currentAttribute.valueStartColumn = this.tokenizer.column;
   },
 
   appendToAttributeValue: function(char) {
@@ -163,8 +171,12 @@ export default {
   },
 
   finishAttributeValue: function() {
-    let { name, parts, isQuoted, isDynamic } = this.currentAttribute;
+    let { name, parts, isQuoted, isDynamic, valueStartLine, valueStartColumn } = this.currentAttribute;
     let value = assembleAttributeValue(parts, isQuoted, isDynamic, this.tokenizer.line);
+    value.loc = b.loc(
+      valueStartLine, valueStartColumn,
+      this.tokenizer.line, this.tokenizer.column
+    );
 
     let loc = b.loc(
       this.currentAttribute.start.line, this.currentAttribute.start.column,
