@@ -53,10 +53,11 @@ class ArrayIterator {
 
     let value = array[position];
     let key = keyFor(value, position);
+    let memo = position;
 
     this.position++;
 
-    return { key, value };
+    return { key, value, memo };
   }
 }
 
@@ -79,10 +80,11 @@ class EmberArrayIterator {
 
     let value = objectAt(array, position);
     let key = keyFor(value, position);
+    let memo = position;
 
     this.position++;
 
-    return { key, value };
+    return { key, value, memo };
   }
 }
 
@@ -120,11 +122,19 @@ class Iterable {
     }
   }
 
-  referenceFor(item) {
+  valueReferenceFor(item) {
     return new UpdatableReference(item.value);
   }
 
-  updateReference(reference, item) {
+  updateValueReference(reference, item) {
     reference.update(item.value);
+  }
+
+  memoReferenceFor(item) {
+    return new UpdatableReference(item.memo);
+  }
+
+  updateMemoReference(reference, item) {
+    reference.update(item.memo);
   }
 }
