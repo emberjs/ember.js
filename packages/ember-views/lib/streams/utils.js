@@ -21,18 +21,6 @@ export function readViewFactory(object, owner) {
   return viewClass;
 }
 
-export function readComponentFactory(nameOrStream, owner) {
-  var name = read(nameOrStream);
-  var componentLookup = owner.lookup('component-lookup:main');
-  assert(
-    'Could not find \'component-lookup:main\' on the provided container, ' +
-    'which is necessary for performing component lookups',
-    componentLookup
-  );
-
-  return componentLookup.lookupFactory(name, owner);
-}
-
 export function readUnwrappedModel(object) {
   if (isStream(object)) {
     var result = object.value();
