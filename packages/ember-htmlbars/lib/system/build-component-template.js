@@ -1,17 +1,15 @@
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
-import assign from 'ember-metal/assign';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { isStream } from 'ember-metal/streams/utils';
 
-export default function buildComponentTemplate({ component, tagName, layout, isAngleBracket, isComponentElement, outerAttrs }, attrs, content) {
-  var blockToRender, meta;
-
+export default function buildComponentTemplate({ component, tagName, layout, outerAttrs }, attrs, content) {
   if (component === undefined) {
     component = null;
   }
 
+  let blockToRender, meta;
   if (layout && layout.raw) {
     let yieldTo = createContentBlocks(content.templates, content.scope, content.self, component);
     blockToRender = createLayoutBlock(layout.raw, yieldTo, content.self, component, attrs);
@@ -21,15 +19,14 @@ export default function buildComponentTemplate({ component, tagName, layout, isA
     meta = content.templates.default.meta;
   }
 
-  if (component && !component._isAngleBracket || isComponentElement) {
+  if (component) {
     tagName = tagName || tagNameFor(component);
 
     // If this is not a tagless component, we need to create the wrapping
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      if (isComponentElement) { attrs = mergeAttrs(attrs, outerAttrs); }
-      var attributes = normalizeComponentAttributes(component, isAngleBracket, attrs);
+      var attributes = normalizeComponentAttributes(component, attrs);
       var elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
@@ -70,16 +67,6 @@ export function buildHTMLTemplate(tagName, _attrs, content) {
   }
 }
 
-function mergeAttrs(innerAttrs, outerAttrs) {
-  let result = assign({}, innerAttrs, outerAttrs);
-
-  if (innerAttrs.class && outerAttrs.class) {
-    result.class = ['subexpr', '-join-classes', [['value', innerAttrs.class], ['value', outerAttrs.class]], []];
-  }
-
-  return result;
-}
-
 function blockFor(template, options) {
   assert('BUG: Must pass a template to blockFor', !!template);
   return internal.blockFor(render, template, options);
@@ -87,7 +74,6 @@ function blockFor(template, options) {
 
 function createContentBlock(template, scope, self, component) {
   assert('BUG: buildComponentTemplate can take a scope or a self, but not both', !(scope && self));
-
   return blockFor(template, {
     scope,
     self,
@@ -134,7 +120,7 @@ function createElementBlock(template, yieldTo, component) {
 }
 
 function tagNameFor(view) {
-  var tagName = view.tagName;
+  let tagName = view.tagName;
 
   if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
     tagName = get(view, 'tagName');
@@ -154,11 +140,10 @@ function tagNameFor(view) {
 
 // Takes a component and builds a normalized set of attribute
 // bindings consumable by HTMLBars' `attribute` hook.
-function normalizeComponentAttributes(component, isAngleBracket, attrs) {
-  var normalized = {};
-  var attributeBindings = component.attributeBindings;
-  var streamBasePath = component.isComponent ? '' : 'view.';
-  var i;
+function normalizeComponentAttributes(component, attrs) {
+  let normalized = {};
+  let attributeBindings = component.attributeBindings;
+  let streamBasePath = component.isComponent ? '' : 'view.';
 
   if (attrs.id && getValue(attrs.id)) {
     // Do not allow binding to the `id`
@@ -169,11 +154,11 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
   }
 
   if (attributeBindings) {
-    for (i = 0; i < attributeBindings.length; i++) {
-      var attr = attributeBindings[i];
-      var colonIndex = attr.indexOf(':');
+    for (let i = 0; i < attributeBindings.length; i++) {
+      let attr = attributeBindings[i];
+      let colonIndex = attr.indexOf(':');
 
-      var attrName, expression;
+      let attrName, expression;
       if (colonIndex !== -1) {
         var attrProperty = attr.substring(0, colonIndex);
         attrName = attr.substring(colonIndex + 1);
@@ -191,19 +176,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
       }
 
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
-
       normalized[attrName] = expression;
-    }
-  }
-
-  if (isAngleBracket) {
-    for (var prop in attrs) {
-      let val = attrs[prop];
-      if (!val) { continue; }
-
-      if (typeof val === 'string' || val.isConcat) {
-        normalized[prop] = ['value', val];
-      }
     }
   }
 
@@ -211,8 +184,7 @@ function normalizeComponentAttributes(component, isAngleBracket, attrs) {
     component.tagName = attrs.tagName;
   }
 
-  var normalizedClass = normalizeClass(component, attrs, streamBasePath);
-
+  let normalizedClass = normalizeClass(component, attrs, streamBasePath);
   if (normalizedClass) {
     normalized.class = normalizedClass;
   }

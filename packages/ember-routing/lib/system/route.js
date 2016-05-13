@@ -2111,25 +2111,21 @@ function handlerInfoFor(route, handlerInfos, _offset) {
   }
 }
 
-function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
-  var controller = options && options.controller;
-  var templateName;
-  var viewName;
-  var ViewClass;
-  var template;
-  var LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
-  var into = options && options.into && options.into.replace(/\//g, '.');
-  var outlet = (options && options.outlet) || 'main';
-  let owner = getOwner(route);
+function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) {
+  let into = options && options.into && options.into.replace(/\//g, '.');
+  let outlet = (options && options.outlet) || 'main';
 
-  if (name) {
-    name = name.replace(/\//g, '.');
+  let name, templateName;
+  if (_name) {
+    name = _name.replace(/\//g, '.');
     templateName = name;
   } else {
     name = route.routeName;
     templateName = route.templateName || name;
   }
 
+  let owner = getOwner(route);
+  let controller = options && options.controller;
   if (!controller) {
     if (namePassed) {
       controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
@@ -2139,7 +2135,7 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
   }
 
   if (typeof controller === 'string') {
-    var controllerName = controller;
+    let controllerName = controller;
     controller = owner.lookup(`controller:${controllerName}`);
     if (!controller) {
       throw new EmberError(`You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`);
@@ -2154,16 +2150,16 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     controller.set('model', options.model);
   }
 
-  viewName = options && options.view || namePassed && name || route.viewName || name;
-  ViewClass = owner._lookupFactory(`view:${viewName}`);
-  template = owner.lookup(`template:${templateName}`);
+  let viewName = options && options.view || namePassed && name || route.viewName || name;
+  let ViewClass = owner._lookupFactory(`view:${viewName}`);
+  let template = owner.lookup(`template:${templateName}`);
 
-  var parent;
+  let parent;
   if (into && (parent = parentRoute(route)) && into === parentRoute(route).routeName) {
     into = undefined;
   }
 
-  var renderOptions = {
+  let renderOptions = {
     owner,
     into,
     outlet,
@@ -2173,25 +2169,11 @@ function buildRenderOptions(route, namePassed, isDefaultRender, name, options) {
     template: template || route._topLevelViewTemplate
   };
 
-  let Component;
-  if (isEnabled('ember-routing-routable-components')) {
-    let componentName = options && options.component || namePassed && name || route.componentName || name;
-    let componentLookup = owner.lookup('component-lookup:main');
-    Component = componentLookup.lookupFactory(componentName);
-    let isGlimmerComponent = Component && Component.proto().isGlimmerComponent;
-    if (!template && !ViewClass && Component && isGlimmerComponent) {
-      renderOptions.Component = Component;
-      renderOptions.ViewClass = undefined;
-      renderOptions.attrs = { model: get(controller, 'model') };
-    }
-  }
+  assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || ViewClass || template);
 
-  if (!ViewClass && !template && !Component) {
-    assert(`Could not find "${name}" template, view, or component.`, isDefaultRender);
-    if (LOG_VIEW_LOOKUPS) {
-      var fullName = `template:${name}`;
-      info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: fullName });
-    }
+  let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
+  if (LOG_VIEW_LOOKUPS && !ViewClass && !template) {
+    info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: `template:${name}` });
   }
 
   return renderOptions;

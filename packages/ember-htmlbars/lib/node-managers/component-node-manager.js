@@ -1,4 +1,4 @@
-import { assert, warn, runInDebug } from 'ember-metal/debug';
+import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
@@ -6,7 +6,6 @@ import { set } from 'ember-metal/property_set';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent from 'ember-views/components/component';
-import GlimmerComponent from 'ember-htmlbars/glimmer-component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import symbol from 'ember-metal/symbol';
 import { setOwner } from 'container/owner';
@@ -20,9 +19,8 @@ export let HAS_BLOCK = symbol('HAS_BLOCK');
 // libraries.
 import getValue from 'ember-htmlbars/hooks/get-value';
 
-function ComponentNodeManager(component, isAngleBracket, scope, renderNode, attrs, block, expectElement) {
+export default function ComponentNodeManager(component, scope, renderNode, attrs, block, expectElement) {
   this.component = component;
-  this.isAngleBracket = isAngleBracket;
   this.scope = scope;
   this.renderNode = renderNode;
   this.attrs = attrs;
@@ -30,27 +28,24 @@ function ComponentNodeManager(component, isAngleBracket, scope, renderNode, attr
   this.expectElement = expectElement;
 }
 
-export default ComponentNodeManager;
-
 ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, env, options) {
   let { tagName,
         params,
         attrs = {},
         parentView,
         parentScope,
-        isAngleBracket,
         component,
         layout,
         templates } = options;
 
-  component = component || (isAngleBracket ? GlimmerComponent : LegacyEmberComponent);
+  component = component || LegacyEmberComponent;
 
   let createOptions = {
     parentView,
     [HAS_BLOCK]: !!templates.default
   };
 
-  configureTagName(attrs, tagName, component, isAngleBracket, createOptions);
+  configureTagName(attrs, tagName, component, createOptions);
 
   // Map passed attributes (e.g. <my-component id="foo">) to component
   // properties ({ id: "foo" }).
@@ -68,7 +63,7 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
   extractPositionalParams(renderNode, component, params, attrs);
 
   // Instantiate the component
-  component = createComponent(component, isAngleBracket, createOptions, renderNode, env, attrs);
+  component = createComponent(component, createOptions, renderNode, env, attrs);
 
   // If the component specifies its layout via the `layout` property
   // instead of using the template looked up in the container, get it
@@ -77,44 +72,16 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
     layout = get(component, 'layout');
   }
 
-  runInDebug(() => {
-    if (isAngleBracket) {
-      assert(`You cannot invoke the '${tagName}' component with angle brackets, because it's a subclass of Component. Please upgrade to GlimmerComponent. Alternatively, you can invoke as '{{${tagName}}}'.`, component.isGlimmerComponent);
-    } else {
-      assert(`You cannot invoke the '${tagName}' component with curly braces, because it's a subclass of GlimmerComponent. Please invoke it as '<${tagName}>' instead.`, !component.isGlimmerComponent);
-    }
-
-    if (!layout) { return; }
-
-    let fragmentReason = layout.meta.fragmentReason;
-    if (isAngleBracket && fragmentReason) {
-      switch (fragmentReason.name) {
-        case 'missing-wrapper':
-          assert(`The <${tagName}> template must have a single top-level element because it is a GlimmerComponent.`);
-          break;
-        case 'modifiers':
-          let modifiers = fragmentReason.modifiers.map(m => `{{${m} ...}}`);
-          assert(`You cannot use ${ modifiers.join(', ') } in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
-          break;
-        case 'triple-curlies':
-          assert(`You cannot use triple curlies (e.g. style={{{ ... }}}) in the top-level element of the <${tagName}> template because it is a GlimmerComponent.`);
-          break;
-      }
-    }
-  });
-
   let results = buildComponentTemplate(
-    { layout, component, isAngleBracket }, attrs, { templates, scope: parentScope }
+    { layout, component }, attrs, { templates, scope: parentScope }
   );
 
-  return new ComponentNodeManager(component, isAngleBracket, parentScope, renderNode, attrs, results.block, results.createdElement);
+  return new ComponentNodeManager(component, parentScope, renderNode, attrs, results.block, results.createdElement);
 };
 
 
-function configureTagName(attrs, tagName, component, isAngleBracket, createOptions) {
-  if (isAngleBracket) {
-    createOptions.tagName = tagName;
-  } else if (attrs.tagName) {
+function configureTagName(attrs, tagName, component, createOptions) {
+  if (attrs.tagName) {
     createOptions.tagName = getValue(attrs.tagName);
   }
 }
@@ -143,19 +110,8 @@ ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_en
     }
 
     let element;
-    if (this.expectElement || component.isGlimmerComponent) {
-      // This code assumes that Glimmer components are never fragments. When
-      // Glimmer components gain fragment powers, we will need to communicate
-      // whether the layout produced a single top-level node or fragment
-      // somehow (either via static information on the template/component, or
-      // dynamically as the layout is being rendered).
+    if (this.expectElement) {
       element = this.renderNode.firstNode;
-
-      // Glimmer components may have whitespace or boundary nodes around the
-      // top-level element.
-      if (element && element.nodeType !== 1) {
-        element = nextElementSibling(element);
-      }
     }
 
     // In environments like FastBoot, disable any hooks that would cause the component
@@ -168,15 +124,6 @@ ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_en
     }
   }, this);
 };
-
-function nextElementSibling(node) {
-  let current = node;
-
-  while (current) {
-    if (current.nodeType === 1) { return current; }
-    current = node.nextSibling;
-  }
-}
 
 ComponentNodeManager.prototype.rerender = function ComponentNodeManager_rerender(_env, attrs, visitor) {
   var component = this.component;
@@ -221,16 +168,10 @@ ComponentNodeManager.prototype.destroy = function ComponentNodeManager_destroy()
   component.destroy();
 };
 
-export function createComponent(_component, isAngleBracket, props, renderNode, env, attrs = {}) {
-  if (!isAngleBracket) {
-    assert('controller= is no longer supported', !('controller' in attrs));
+export function createComponent(_component, props, renderNode, env, attrs = {}) {
+  assert('controller= is no longer supported', !('controller' in attrs));
 
-    snapshotAndUpdateTarget(attrs, props);
-  } else {
-    props.attrs = takeSnapshot(attrs);
-
-    props._isAngleBracket = true;
-  }
+  snapshotAndUpdateTarget(attrs, props);
 
   setOwner(props, env.owner);
   props.renderer = props.parentView ? props.parentView.renderer : env.owner.lookup('renderer:-dom');

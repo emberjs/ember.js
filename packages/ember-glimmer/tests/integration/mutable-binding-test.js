@@ -151,7 +151,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
       template: '{{#bottom-mut}}{{model.name}}{{/bottom-mut}}'
     });
 
-    this.render('{{middle-mut model=(mut view.model)}}', {
+    this.render('{{middle-mut model=(mut model)}}', {
       model: { name: 'Matthew Beale' }
     });
 

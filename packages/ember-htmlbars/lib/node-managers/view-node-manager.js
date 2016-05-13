@@ -17,15 +17,13 @@ import { setOwner } from 'container/owner';
 // libraries.
 import getValue from 'ember-htmlbars/hooks/get-value';
 
-function ViewNodeManager(component, scope, renderNode, block, expectElement) {
+export default function ViewNodeManager(component, scope, renderNode, block, expectElement) {
   this.component = component;
   this.scope = scope;
   this.renderNode = renderNode;
   this.block = block;
   this.expectElement = expectElement;
 }
-
-export default ViewNodeManager;
 
 ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs, found, parentView, path, contentScope, contentTemplate) {
   assert('HTMLBars error: Could not find component named "' + path + '" (no component or template with that name was found)', !!(function() {

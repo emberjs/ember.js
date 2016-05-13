@@ -104,47 +104,33 @@ export default {
     return isEmpty(state.outletState);
   },
 
-  render(renderNode, env, scope, params, hash, template, inverse, visitor) {
-    var state = renderNode.getState();
-    var parentView = env.view;
-    var outletState = state.outletState;
-    var toRender = outletState.render;
-    var namespace = env.owner.lookup('application:main');
-    var LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
+  render(renderNode, env, scope, params, hash, _template, inverse, visitor) {
+    let state = renderNode.getState();
+    let parentView = env.view;
+    let outletState = state.outletState;
+    let toRender = outletState.render;
+    let namespace = env.owner.lookup('application:main');
+    let LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
 
-    var ViewClass = outletState.render.ViewClass;
+    let ViewClass = outletState.render.ViewClass;
 
     if (!state.hasParentOutlet && !ViewClass) {
       ViewClass = env.owner._lookupFactory('view:toplevel');
     }
 
-    var Component;
-
-    if (isEnabled('ember-routing-routable-components')) {
-      Component = outletState.render.Component;
-    }
-
-    var options;
-    var attrs = {};
-    if (Component) {
-      options = {
-        component: Component
-      };
-      attrs = toRender.attrs;
-    } else {
-      options = {
-        component: ViewClass,
-        self: toRender.controller,
-        createOptions: {
-          controller: toRender.controller
-        }
-      };
-
-      template = template || toRender.template && toRender.template.raw;
-
-      if (LOG_VIEW_LOOKUPS && ViewClass) {
-        info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
+    let attrs = {};
+    let options = {
+      component: ViewClass,
+      self: toRender.controller,
+      createOptions: {
+        controller: toRender.controller
       }
+    };
+
+    let template = _template || toRender.template && toRender.template.raw;
+
+    if (LOG_VIEW_LOOKUPS && ViewClass) {
+      info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
     }
 
     if (state.manager) {
@@ -152,7 +138,7 @@ export default {
       state.manager = null;
     }
 
-    var nodeManager = ViewNodeManager.create(renderNode, env, attrs, options, parentView, null, null, template);
+    let nodeManager = ViewNodeManager.create(renderNode, env, attrs, options, parentView, null, null, template);
     state.manager = nodeManager;
 
     nodeManager.render(env, hash, visitor);

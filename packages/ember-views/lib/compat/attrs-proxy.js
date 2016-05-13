@@ -45,7 +45,6 @@ let AttrsProxyMixin = {
 };
 
 AttrsProxyMixin[PROPERTY_DID_CHANGE] = function(key) {
-  if (this._isAngleBracket) { return; }
   if (this._isDispatchingAttrs) { return; }
 
   if (this._currentState) {
