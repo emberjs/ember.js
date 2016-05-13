@@ -628,7 +628,7 @@ export const SyntaxCondtionalTestHelpers = {
 // i.e. {{#if}}, {{#unless}} and {{#with}}
 export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
-  ['@htmlbars it does not update when the unbound helper is used']() {
+  ['@test it does not update when the unbound helper is used']() {
     let template = `${
       this.templateFor({ cond: '(unbound cond1)', truthy: 'T1', falsy: 'F1' })
     }${
