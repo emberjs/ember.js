@@ -205,17 +205,26 @@ test("element attribute", function() {
   let ast = parse(`
     <div data-foo="blah"
       data-derp="lolol"
-data-barf="herpy">
+data-barf="herpy"
+  data-qux=lolnoquotes
+    data-hurky="some {{thing}} here">
       Hi, fivetanley!
     </div>
   `);
 
   let [,div] = ast.body;
-  let [dataFoo,dataDerp,dataBarf] = div.attributes;
+  let [dataFoo,dataDerp,dataBarf, dataQux, dataHurky] = div.attributes;
 
   locEqual(dataFoo, 2, 9, 2, 24);
   locEqual(dataDerp, 3, 6, 3, 23);
   locEqual(dataBarf, 4, 0, 4, 17);
+  locEqual(dataQux, 5, 2, 5, 22);
+
+  locEqual(dataFoo.value, 2, 18, 2, 24);
+  locEqual(dataDerp.value, 3, 16, 3, 23);
+  locEqual(dataBarf.value, 4, 10, 4, 17);
+  locEqual(dataQux.value, 5, 11, 5, 22);
+  locEqual(dataHurky.value, 6, 15, 6, 36);
 });
 
 test("char references", function() {
