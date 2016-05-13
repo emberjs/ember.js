@@ -1,8 +1,15 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG } from '../ember-views/component';
-import EmptyObject from 'ember-metal/empty_object';
 import { assert } from 'ember-metal/debug';
+import processArgs from '../utils/process-args';
+
+function aliasIdToElementId(args, props) {
+  if (args.named.has('id')) {
+    assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
+    props.elementId = props.id;
+  }
+}
 
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
@@ -18,25 +25,11 @@ export class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
-function attrsToProps(keys, attrs) {
-  let merged = new EmptyObject();
-
-  merged.attrs = attrs;
-
-  for (let i = 0, l = keys.length; i < l; i++) {
-    let name = keys[i];
-    let value = attrs[name];
-
-    merged[name] = value;
-  }
-
-  return merged;
-}
-
 class ComponentStateBucket {
   constructor(component, args) {
     this.component = component;
     this.classRef = null;
+    this.args = args;
     this.argsRevision = args.tag.value();
   }
 }
@@ -46,8 +39,10 @@ class CurlyComponentManager {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
-    let attrs = args.named.value();
-    let props = attrsToProps(args.named.keys, attrs);
+    let processedArgs = processArgs(args, klass.positionalParams);
+    let { attrs, props } = processedArgs.value();
+
+    aliasIdToElementId(args, props);
 
     props.renderer = parentView.renderer;
 
@@ -61,7 +56,7 @@ class CurlyComponentManager {
     component.trigger('willInsertElement');
     component.trigger('willRender');
 
-    let bucket = new ComponentStateBucket(component, args);
+    let bucket = new ComponentStateBucket(component, processedArgs);
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -140,14 +135,13 @@ class CurlyComponentManager {
     component._transitionTo('inDOM');
   }
 
-  update(bucket, args, dynamicScope) {
-    let { component, argsRevision } = bucket;
+  update(bucket, _, dynamicScope) {
+    let { component, args, argsRevision } = bucket;
 
     if (!args.tag.validate(argsRevision)) {
       bucket.argsRevision = args.tag.value();
 
-      let attrs = args.named.value();
-      let props = attrsToProps(args.named.keys, attrs);
+      let { attrs, props } = args.value();
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;
