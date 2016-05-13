@@ -109,7 +109,7 @@ QUnit.test('throws if you try to \'mixin\' a definition', function() {
 
   expectAssertion(function() {
     EmberObject.create(myMixin);
-  }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create seperately instead.');
+  }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
 });
 
 // This test is for IE8.
