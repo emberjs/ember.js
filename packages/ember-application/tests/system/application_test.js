@@ -1,6 +1,7 @@
 /*globals EmberDev */
 import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
+import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import libraries from 'ember-metal/libraries';
 import Application, { _resetLegacyAddonWarnings } from 'ember-application/system/application';
@@ -17,6 +18,8 @@ import compile from 'ember-template-compiler/system/compile';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { privatize as P } from 'container/registry';
+import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
 
 var trim = jQuery.trim;
 
@@ -116,6 +119,74 @@ QUnit.test('includes deprecated access to `application.registry`', function() {
   expectDeprecation(function() {
     application.registry.register();
   }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
+});
+
+QUnit.test('builds a registry', function() {
+  strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);
+  deepEqual(application.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
+  deepEqual(application.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
+  verifyInjection(application, 'renderer', 'dom', 'service:-dom-helper');
+  verifyRegistration(application, 'controller:basic');
+  verifyInjection(application, 'service:-dom-helper', 'document', 'service:-document');
+  verifyRegistration(application, '-view-registry:main');
+  verifyInjection(application, 'view', '_viewRegistry', '-view-registry:main');
+  verifyInjection(application, 'route', '_topLevelViewTemplate', 'template:-outlet');
+  verifyRegistration(application, 'route:basic');
+  verifyRegistration(application, 'event_dispatcher:main');
+  verifyInjection(application, 'router:main', 'namespace', 'application:main');
+  verifyInjection(application, 'view:-outlet', 'namespace', 'application:main');
+
+  verifyRegistration(application, 'location:auto');
+  verifyRegistration(application, 'location:hash');
+  verifyRegistration(application, 'location:history');
+  verifyRegistration(application, 'location:none');
+
+  verifyInjection(application, 'controller', 'target', 'router:main');
+  verifyInjection(application, 'controller', 'namespace', 'application:main');
+
+  verifyRegistration(application, P`-bucket-cache:main`);
+  verifyInjection(application, 'router', '_bucketCache', P`-bucket-cache:main`);
+  verifyInjection(application, 'route', '_bucketCache', P`-bucket-cache:main`);
+  verifyInjection(application, 'controller', '_bucketCache', P`-bucket-cache:main`);
+
+  verifyInjection(application, 'route', 'router', 'router:main');
+
+  verifyRegistration(application, 'component:-text-field');
+  verifyRegistration(application, 'component:-text-area');
+  verifyRegistration(application, 'component:-checkbox');
+  verifyRegistration(application, 'component:link-to');
+
+  verifyRegistration(application, 'service:-routing');
+  verifyInjection(application, 'service:-routing', 'router', 'router:main');
+
+  // DEBUGGING
+  verifyRegistration(application, 'resolver-for-debugging:main');
+  verifyInjection(application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+  verifyInjection(application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+  verifyRegistration(application, 'container-debug-adapter:main');
+
+  if (isEnabled('ember-glimmer')) {
+    verifyRegistration(application, 'service:-glimmer-environment');
+    verifyInjection(application, 'service:-glimmer-environment', 'dom', 'service:-dom-helper');
+    verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
+    verifyRegistration(application, 'view:-outlet');
+    verifyRegistration(application, 'renderer:-dom');
+    verifyRegistration(application, 'renderer:-inert');
+    verifyRegistration(application, 'service:-dom-helper');
+    verifyRegistration(application, P`template:components/-default`);
+    verifyRegistration(application, 'template:-outlet');
+    verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
+    verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
+    deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
+  } else {
+    deepEqual(application.registeredOptionsForType('template'), { instantiate: false }, `optionsForType 'template'`);
+    verifyRegistration(application, 'view:-outlet');
+    verifyRegistration(application, 'renderer:-dom');
+    verifyRegistration(application, 'renderer:-inert');
+    verifyRegistration(application, 'service:-dom-helper');
+    verifyRegistration(application, 'template:-outlet');
+    verifyRegistration(application, 'view:toplevel');
+  }
 });
 
 const originalLogVersion = ENV.LOG_VERSION;
