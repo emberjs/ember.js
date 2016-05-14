@@ -2,6 +2,7 @@ import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
+import { styles } from '../../utils/test-helpers';
 
 moduleFor('Components test: attrs lookup', class extends RenderingTest {
 
@@ -218,9 +219,9 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
 
     this.render('{{x-foo}}{{x-bar}}{{x-bar color="green"}}');
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 20px; background-color: red;' } });
-    this.assertComponentElement(this.nthChild(1), { tagName: 'div', attrs: { style: 'height: 150px; background-color: yellow;' } });
-    this.assertComponentElement(this.nthChild(2), { tagName: 'div', attrs: { style: 'height: 150px; background-color: green;' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 20px; background-color: red;') } });
+    this.assertComponentElement(this.nthChild(1), { tagName: 'div', attrs: { style: styles('height: 150px; background-color: yellow;') } });
+    this.assertComponentElement(this.nthChild(2), { tagName: 'div', attrs: { style: styles('height: 150px; background-color: green;') } });
 
     this.assertStableRerender();
 

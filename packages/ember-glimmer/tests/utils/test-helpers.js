@@ -136,8 +136,28 @@ export function classes(expected) {
     [MATCHER_BRAND]: true,
 
     match(actual) {
-      actual = actual.trim();
-      return actual && (expected.split(/\s+/).sort().join(' ') === actual.split(/\s+/).sort().join(' '));
+      actual = actual && actual.trim().split(/\s+/).sort().join(' ');
+      return expected.split(/\s+/).sort().join(' ') === actual;
+    },
+
+    expected() {
+      return expected;
+    },
+
+    message() {
+      return `should match ${this.expected}`;
+    }
+  };
+}
+
+export function styles(expected) {
+  return {
+    [MATCHER_BRAND]: true,
+
+    match(actual) {
+      actual = actual && actual.trim().split(';').filter(str => !!str).sort().join(';');
+      let sortedExpected = expected.split(';').filter(str => !!str).sort().join(';');
+      return actual === sortedExpected;
     },
 
     expected() {

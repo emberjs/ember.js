@@ -3,6 +3,7 @@ import { Component } from '../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
+import { styles } from '../utils/test-helpers';
 
 moduleFor('@htmlbars Mutable bindings integration tests', class extends RenderingTest {
 
@@ -356,7 +357,7 @@ moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound
       height: 60
     });
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 60px;' }, content: '60' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 60px;') }, content: '60' });
 
     this.assertStableRerender();
 
@@ -364,11 +365,11 @@ moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound
 
     assert.strictEqual(get(output, 'height'), 35, 'the set took effect');
     assert.strictEqual(get(this.context, 'height'), 35, 'the set propagated back up');
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 35px;' }, content: '35' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px;') }, content: '35' });
 
     this.runTask(() => set(this.context, 'height', 60));
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 60px;' }, content: '60' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 60px;') }, content: '60' });
     assert.strictEqual(get(input, 'height'), 60);
   }
 
@@ -412,7 +413,7 @@ moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound
       width: 70
     });
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 35px; width: 70px;' }, content: '70x35' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px; width: 70px;') }, content: '70x35' });
 
     this.assertStableRerender();
 
@@ -420,11 +421,11 @@ moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound
 
     assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
     assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 40px; width: 80px;' }, content: '80x40' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 40px; width: 80px;') }, content: '80x40' });
 
     this.runTask(() => set(this.context, 'width', 70));
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: 'height: 35px; width: 70px;' }, content: '70x35' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px; width: 70px;') }, content: '70x35' });
     assert.strictEqual(get(input, 'width'), 70);
   }
 });
