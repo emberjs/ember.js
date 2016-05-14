@@ -15,7 +15,7 @@ import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 import {
   registerHelper
 } from 'ember-htmlbars/helpers';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var registry, locator, application, originalLookup, originalInfo;
 

@@ -1,10 +1,9 @@
-import Ember from 'ember-routing-views';
+import Ember from 'ember-templates';
 
-QUnit.module('ember-routing-views');
+QUnit.module('ember-templates exports');
 
 QUnit.test('exports correctly', function() {
   ok(Ember.LinkComponent, 'LinkComponent is exported correctly');
-  ok(Ember.OutletView, 'OutletView is exported correctly');
 });
 
 QUnit.test('`LinkComponent#currentWhen` is deprecated in favour of `current-when` (DEPRECATED)', function() {

@@ -7,7 +7,7 @@ import Controller from 'ember-runtime/controllers/controller';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import EmberObject from 'ember-runtime/system/object';
 import ComponentLookup from 'ember-views/component_lookup';
-import LinkComponent from 'ember-routing-views/components/link-to';
+import LinkComponent from 'ember-htmlbars/components/link-to';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 

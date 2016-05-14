@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-routing-views
+@submodule ember-templates
 */
 
 import View from 'ember-views/views/view';

@@ -5,7 +5,7 @@ import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var App, registry, originalViewKeyword;
 

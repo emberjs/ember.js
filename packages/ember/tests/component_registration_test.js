@@ -5,11 +5,11 @@ import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import compile from 'ember-template-compiler/system/compile';
 import helpers from 'ember-htmlbars/helpers';
-import { OutletView } from 'ember-routing-views/views/outlet';
-import Component from 'ember-htmlbars/component';
+import { OutletView } from 'ember-htmlbars/views/outlet';
+import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var App, appInstance;

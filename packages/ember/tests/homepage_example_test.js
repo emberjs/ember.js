@@ -6,7 +6,7 @@ import { computed } from 'ember-metal/computed';
 import { compile } from 'ember-template-compiler';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var App, $fixture;
 

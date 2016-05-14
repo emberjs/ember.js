@@ -308,10 +308,9 @@
 
 /**
 @module ember
-@submodule ember-routing-views
+@submodule ember-templates
 */
 
-import isEnabled from 'ember-metal/features';
 import Logger from 'ember-console';
 
 import { assert, deprecate } from 'ember-metal/debug';
@@ -319,19 +318,13 @@ import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { deprecatingAlias } from 'ember-runtime/computed/computed_macros';
 import { isSimpleClick } from 'ember-views/system/utils';
-import EmberComponent from 'ember-htmlbars/component';
 import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
+// TODO: Glimmer 2
 import { HAS_BLOCK } from 'ember-htmlbars/node-managers/component-node-manager';
-import htmlbarsTemplate from 'ember-htmlbars/templates/link-to';
-import require from 'require';
-
-let layout = htmlbarsTemplate;
-if (isEnabled('ember-glimmer')) {
-  layout = require('ember-glimmer/templates/link-to').default;
-}
-
+import layout from '../templates/link-to';
+import EmberComponent from '../component';
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a

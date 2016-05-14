@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 
 var App1, App2, actions;

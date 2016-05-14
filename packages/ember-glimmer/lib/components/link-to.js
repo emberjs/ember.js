@@ -1,0 +1,1 @@
+../../../ember-htmlbars/lib/components/link-to.js

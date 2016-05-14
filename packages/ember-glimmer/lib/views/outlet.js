@@ -3,7 +3,7 @@ import { DirtyableTag } from 'glimmer-reference';
 
 /**
 @module ember
-@submodule ember-routing-views
+@submodule ember-templates
 */
 
 class OutletStateReference {
@@ -45,7 +45,7 @@ class ChildOutletStateReference {
   }
 }
 
-export class OutletView {
+export default class OutletView {
   static extend(injections) {
     return class extends OutletView {
       static create(options) {

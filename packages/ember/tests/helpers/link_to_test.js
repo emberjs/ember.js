@@ -7,7 +7,7 @@ import run from 'ember-metal/run_loop';
 import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
 import Application from 'ember-application/system/application';
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberObject from 'ember-runtime/system/object';
@@ -17,7 +17,7 @@ import NoneLocation from 'ember-routing/location/none_location';
 import { OWNER } from 'container/owner';
 import { compile } from 'ember-template-compiler';
 import EmberView from 'ember-views/views/view';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var Router, App, AppView, router, appInstance;
 

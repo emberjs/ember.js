@@ -14,7 +14,7 @@ import { environment } from 'ember-environment';
 import {
   has as hasTemplate,
   set as registerTemplate
-} from 'ember-htmlbars/template_registry';
+} from 'ember-templates/template_registry';
 
 /**
 @module ember
