@@ -14,10 +14,8 @@ on building killer features and UI.
 - [Blog](http://emberjs.com/blog)
 - [Builds](http://emberjs.com/builds)
 
-###What to Use Ember.js for and When to Use It
-A javascript "framework", or "library", is a collection of javascript files comprising features and functionality that can be incorporated into a web-development project, thereby enhancing the project's capabilities and feature set. The best frameworks are modular, creating flexibility by allowing the developer to use as little or as much of the library as the project requires.
 
-The Ember.js framework enables developers to build scalable, single-page web applications gracefully and efficiently; it does so by providing a set of useful and easily incorporated functionality, functionality commonly found on dynamic, feature-rich web pages. Useful features and benefits of Ember include:
+The Ember.js framework enables developers to build scalable, single-page web applications gracefully and efficiently. It does so by providing a set of useful and easily incorporated functionality, the kind commonly found on dynamic, feature-rich web pages. Useful features and benefits of Ember include:
 
 * **Built-in best practices:** all code conforms to industry-standard best practices
 
@@ -25,7 +23,9 @@ The Ember.js framework enables developers to build scalable, single-page web app
 
 * **Extensive addon collection:** Ember has a large selection of available addons and plugins (over 1,500 at the time of this writing)
 
-Ember is perfect for larger-scale, functionality-intensive web applications of any size or type. The standardization makes it easy for developers to become acquainted with the architecture and setup of both large and small code bases; additionally, by keeping your tech stack consistent and coherent, Ember can help make your organization more agile and adaptable, making Ember ideal for any kind of project.
+* **[Ember Command Line Interface](https://github.com/emberjs/ember.js/)**
+
+Ember is perfect for larger-scale, functionality-intensive web applications of any size or type. The standardization makes it easy for developers to become acquainted with the architecture and setup of both large and small code bases. Additionally, by keeping your tech stack consistent and coherent, Ember can help make your organization more agile and adaptable, making Ember ideal for any kind of project.
 
 # Building Ember.js
 
