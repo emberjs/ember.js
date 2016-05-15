@@ -85,41 +85,19 @@ const ApplicationInstance = EngineInstance.extend({
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
     this.register('-application-instance:main', this, { instantiate: false });
-
-    this._booted = false;
   },
 
   /**
-    Initialize the `Ember.ApplicationInstance` and return a promise that resolves
-    with the instance itself when the boot process is complete.
+    Overrides the base `EngineInstance._bootSync` method with concerns relevant
+    to booting application (instead of engine) instances.
 
-    The primary task here is to run any registered instance initializers.
+    This method should only contain synchronous boot concerns. Asynchronous
+    boot concerns should eventually be moved to the `boot` method, which
+    returns a promise.
 
-    See the documentation on `BootOptions` for the options it takes.
-
-    @private
-    @method boot
-    @param options
-    @return {Promise<Ember.ApplicationInstance,Error>}
-  */
-  boot(options = {}) {
-    if (this._bootPromise) { return this._bootPromise; }
-
-    this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
-
-    return this._bootPromise;
-  },
-
-  /**
-    Unfortunately, a lot of existing code assumes booting an instance is
-    synchronous – specifically, a lot of tests assumes the last call to
-    `app.advanceReadiness()` or `app.reset()` will result in a new instance
-    being fully-booted when the current runloop completes.
-
-    We would like new code (like the `visit` API) to stop making this assumption,
-    so we created the asynchronous version above that returns a promise. But until
-    we have migrated all the code, we would have to expose this method for use
-    *internally* in places where we need to boot an instance synchronously.
+    Until all boot code has been made asynchronous, we need to continue to
+    expose this method for use *internally* in places where we need to boot an
+    instance synchronously.
 
     @private
   */
@@ -128,21 +106,7 @@ const ApplicationInstance = EngineInstance.extend({
 
     options = new BootOptions(options);
 
-    let registry = this.__registry__;
-
-    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
-    registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
-
-    registry.register('service:-document', options.document, { instantiate: false });
-
-    if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
-    }
+    this.setupRegistry(options);
 
     if (options.rootElement) {
       this.rootElement = options.rootElement;
@@ -164,6 +128,24 @@ const ApplicationInstance = EngineInstance.extend({
     this._booted = true;
 
     return this;
+  },
+
+  setupRegistry(options) {
+    let registry = this.__registry__;
+
+    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
+    registry.injection('view', '_environment', '-environment:main');
+    registry.injection('route', '_environment', '-environment:main');
+
+    registry.register('service:-document', options.document, { instantiate: false });
+
+    if (options.isInteractive) {
+      registry.injection('view', 'renderer', 'renderer:-dom');
+      registry.injection('component', 'renderer', 'renderer:-dom');
+    } else {
+      registry.injection('view', 'renderer', 'renderer:-inert');
+      registry.injection('component', 'renderer', 'renderer:-inert');
+    }
   },
 
   router: computed(function() {
