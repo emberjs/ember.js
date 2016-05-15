@@ -416,10 +416,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     return ret;
   }
 
-  let watched = meta.peekWatching(keyName);
-  if (watched) {
-    propertyWillChange(obj, keyName);
-  }
+  propertyWillChange(obj, keyName);
 
   if (hadCachedValue) {
     cache[keyName] = undefined;
@@ -435,9 +432,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     cache[keyName] = ret;
   }
 
-  if (watched) {
-    propertyDidChange(obj, keyName);
-  }
+  propertyDidChange(obj, keyName);
 
   return ret;
 };

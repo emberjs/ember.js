@@ -8,6 +8,9 @@ import {
   sendEvent,
   accumulateListeners
 } from 'ember-metal/events';
+import {
+  markObjectAsDirty
+} from './tags';
 import ObserverSet from 'ember-metal/observer_set';
 import symbol from 'ember-metal/symbol';
 
@@ -39,26 +42,24 @@ var deferred = 0;
 */
 function propertyWillChange(obj, keyName) {
   var m = peekMeta(obj);
-  var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
-  var proto = m && m.proto;
+
+  if (m && !m.isInitialized(obj)) {
+    return;
+  }
+
+  var watching = m && m.peekWatching(keyName) > 0;
   var possibleDesc = obj[keyName];
   var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-  if (!watching) {
-    return;
-  }
-
-  if (proto === obj) {
-    return;
-  }
 
   if (desc && desc.willChange) {
     desc.willChange(obj, keyName);
   }
 
-  dependentKeysWillChange(obj, keyName, m);
-  chainsWillChange(obj, keyName, m);
-  notifyBeforeObservers(obj, keyName);
+  if (watching) {
+    dependentKeysWillChange(obj, keyName, m);
+    chainsWillChange(obj, keyName, m);
+    notifyBeforeObservers(obj, keyName);
+  }
 }
 
 /**
@@ -79,35 +80,36 @@ function propertyWillChange(obj, keyName) {
 */
 function propertyDidChange(obj, keyName) {
   var m = peekMeta(obj);
-  var watching = (m && m.peekWatching(keyName) > 0) || keyName === 'length';
-  var proto = m && m.proto;
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
-  if (proto === obj) {
+  if (m && !m.isInitialized(obj)) {
     return;
   }
+
+  var watching = m && m.peekWatching(keyName) > 0;
+  var possibleDesc = obj[keyName];
+  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   // shouldn't this mean that we're watching this key?
   if (desc && desc.didChange) {
     desc.didChange(obj, keyName);
   }
 
+  if (watching) {
+    if (m.hasDeps(keyName)) {
+      dependentKeysDidChange(obj, keyName, m);
+    }
+
+    chainsDidChange(obj, keyName, m, false);
+    notifyObservers(obj, keyName);
+  }
+
   if (obj[PROPERTY_DID_CHANGE]) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
-  if (!watching && keyName !== 'length') {
-    return;
-  }
-
-  if (m && m.hasDeps(keyName)) {
-    dependentKeysDidChange(obj, keyName, m);
-  }
-
-  chainsDidChange(obj, keyName, m, false);
-  notifyObservers(obj, keyName);
+  markObjectAsDirty(m);
 }
+
 
 var WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)

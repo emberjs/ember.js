@@ -1,4 +1,5 @@
 /* globals EmberDev */
+import isEnabled from 'ember-metal/features';
 import { set } from 'ember-metal/property_set';
 import { observer } from 'ember-metal/mixin';
 import { Component, compile } from '../../utils/helpers';
@@ -2041,7 +2042,97 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     // this.assertText('blarkporybaz- Click Me');
   }
 
-  ['@htmlbars a two way binding flows upstream through a CP when consumed in the template']() {
+  ['@glimmer cannot set an immutable argument']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+
+      template: '{{foo}} – {{bar}}'
+    });
+
+    this.render('{{foo-bar foo="foo" bar=(concat localBar)}}', {
+      localBar: 'bar'
+    });
+
+    this.assertText('foo – bar');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('foo – bar');
+
+    if (isEnabled('mandatory-setter')) {
+      expectAssertion(() => {
+        component.foo = 'new foo';
+      }, /You must use Ember\.set\(\) to set the `foo` property \(of .+\) to `new foo`\./);
+
+      expectAssertion(() => {
+        component.bar = 'new bar';
+      }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `new bar`\./);
+
+      this.assertText('foo – bar');
+    }
+
+    throws(() => {
+      this.runTask(() => { component.set('foo', 'new foo'); });
+    }, 'Cannot set the `foo` property (on component foo-bar) to `new foo`. The `foo` property came from an immutable binding in the template, such as {{foo-bar foo="string"}} or {{foo-bar foo=(if theTruth "truth" "false")}}.');
+
+    throws(() => {
+      this.runTask(() => { component.set('bar', 'new bar'); });
+    }, 'Cannot set the `bar` property (on component foo-bar) to `new bar`. The `bar` property came from an immutable binding in the template, such as {{foo-bar bar="string"}} or {{foo-bar bar=(if theTruth "truth" "false")}}.');
+
+    this.assertText('foo – bar');
+  }
+
+  ['@test a two way binding flows upstream when consumed in the template']() {
+    let component;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+
+      template: '{{bar}}'
+    });
+
+    this.render('{{localBar}} - {{foo-bar bar=localBar}}', {
+      localBar: 'initial value'
+    });
+
+    this.assertText('initial value - initial value');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('initial value - initial value');
+
+    if (isEnabled('mandatory-setter')) {
+      expectAssertion(() => {
+        component.bar = 'foo-bar';
+      }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
+
+      this.assertText('initial value - initial value');
+    }
+
+    this.runTask(() => { component.set('bar', 'updated value'); });
+
+    this.assertText('updated value - updated value');
+
+    this.runTask(() => { this.component.set('localBar', 'initial value'); });
+
+    this.assertText('initial value - initial value');
+  }
+
+  ['@test a two way binding flows upstream through a CP when consumed in the template']() {
     let component;
     let FooBarComponent = Component.extend({
       init() {
@@ -2086,8 +2177,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('initial value - initial value');
   }
 
-  // regression introduced in Ember 1.13
-  ['@skip a two way binding flows upstream through a CP without template consumption']() {
+  ['@test a two way binding flows upstream through a CP without template consumption']() {
     let component;
     let FooBarComponent = Component.extend({
       init() {

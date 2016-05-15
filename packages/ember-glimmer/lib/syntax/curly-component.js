@@ -1,7 +1,10 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
-import { DIRTY_TAG } from '../component';
+import { DIRTY_TAG, IS_DISPATCHING_ATTRS } from '../component';
 import { assert } from 'ember-metal/debug';
+import isEnabled from 'ember-metal/features';
+import { meta as metaFor } from 'ember-metal/meta';
+import { watchKey } from 'ember-metal/watch_key';
 import processArgs from '../utils/process-args';
 
 function aliasIdToElementId(args, props) {
@@ -47,6 +50,16 @@ class CurlyComponentManager {
     props.renderer = parentView.renderer;
 
     let component = klass.create(props);
+
+    if (isEnabled('mandatory-setter')) {
+      let meta = metaFor(component);
+      let keys = Object.keys(props);
+
+      for (let i = 0; i < keys.length; i++) {
+        // Watching a key triggers Ember to install the mandatory setter
+        watchKey(component, keys[i], meta);
+      }
+    }
 
     dynamicScope.view = component;
     parentView.appendChild(component);
@@ -146,7 +159,9 @@ class CurlyComponentManager {
       let oldAttrs = component.attrs;
       let newAttrs = attrs;
 
+      component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
+      component[IS_DISPATCHING_ATTRS] = false;
 
       component.trigger('didUpdateAttrs', { oldAttrs, newAttrs });
       component.trigger('didReceiveAttrs', { oldAttrs, newAttrs });

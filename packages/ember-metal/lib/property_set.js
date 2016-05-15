@@ -2,11 +2,10 @@ import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { _getPath as getPath } from 'ember-metal/property_get';
 import {
-  PROPERTY_DID_CHANGE,
   propertyWillChange,
   propertyDidChange
 } from 'ember-metal/property_events';
-import { defineProperty } from 'ember-metal/properties';
+
 import EmberError from 'ember-metal/error';
 import {
   isPath,
@@ -17,13 +16,8 @@ import {
 } from 'ember-metal/meta';
 
 import {
-  lookupDescriptor,
   toString
 } from 'ember-metal/utils';
-
-import {
-  markObjectAsDirty
-} from './tags';
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -44,77 +38,65 @@ export function set(obj, keyName, value, tolerant) {
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
   );
-  assert(`Cannot call set with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
+  assert(`Cannot call set with '${keyName}' on an undefined object.`, obj && typeof obj === 'object' || typeof obj === 'function');
   assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, !pathHasThis(keyName));
+  assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, !obj.isDestroyed);
 
-  let meta, possibleDesc, desc;
-
-  if (obj) {
-    meta = peekMeta(obj);
-    possibleDesc = obj[keyName];
-    desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-  }
-
-  var isUnknown, currentValue;
-  if (desc === undefined && isPath(keyName)) {
+  if (isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
-         !obj.isDestroyed);
+  let meta = peekMeta(obj);
+  let possibleDesc = obj[keyName];
 
-  markObjectAsDirty(meta);
-
-  if (desc) {
-    desc.set(obj, keyName, value);
+  let desc, currentValue;
+  if (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
+    desc = possibleDesc;
   } else {
-    if (value !== undefined && typeof obj === 'object' && obj[keyName] === value) {
-      return value;
-    }
+    currentValue = possibleDesc;
+  }
 
-    isUnknown = 'object' === typeof obj && !(keyName in obj);
+  if (desc) { /* computed property */
+    desc.set(obj, keyName, value);
+  } else if (obj.setUnknownProperty && currentValue === undefined && !(keyName in obj)) { /* unknown property */
+    assert('setUnknownProperty must be a function', typeof obj.setUnknownProperty === 'function');
+    obj.setUnknownProperty(keyName, value);
+  } else if (currentValue === value) { /* no change */
+    return value;
+  } else {
+    propertyWillChange(obj, keyName);
 
-    // setUnknownProperty is called if `obj` is an object,
-    // the property does not already exist, and the
-    // `setUnknownProperty` method exists on the object
-    if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
-      obj.setUnknownProperty(keyName, value);
-    } else if (meta && meta.peekWatching(keyName) > 0) {
-      if (meta.proto !== obj) {
-        currentValue = obj[keyName];
-      }
-      // only trigger a change if the value has changed
-      if (value !== currentValue) {
-        propertyWillChange(obj, keyName);
-
-        if (isEnabled('mandatory-setter')) {
-          if ((currentValue === undefined && !(keyName in obj)) ||
-            !Object.prototype.propertyIsEnumerable.call(obj, keyName)
-          ) {
-            defineProperty(obj, keyName, null, value); // setup mandatory setter
-          } else {
-            let descriptor = lookupDescriptor(obj, keyName);
-            let isMandatorySetter = descriptor && descriptor.set && descriptor.set.isMandatorySetter;
-            if (isMandatorySetter) {
-              meta.writeValues(keyName, value);
-            } else {
-              obj[keyName] = value;
-            }
-          }
-        } else {
-          obj[keyName] = value;
-        }
-        propertyDidChange(obj, keyName);
-      }
+    if (isEnabled('mandatory-setter')) {
+      setWithMandatorySetter(meta, obj, keyName, value);
     } else {
       obj[keyName] = value;
-      if (obj[PROPERTY_DID_CHANGE]) {
-        obj[PROPERTY_DID_CHANGE](keyName);
-      }
     }
+
+    propertyDidChange(obj, keyName);
   }
+
   return value;
+}
+
+if (isEnabled('mandatory-setter')) {
+  var setWithMandatorySetter = function(meta, obj, keyName, value) {
+    if (meta && meta.peekWatching(keyName) > 0) {
+      makeEnumerable(obj, keyName);
+      meta.writeValue(obj, keyName, value);
+    } else {
+      obj[keyName] = value;
+    }
+  };
+
+  var makeEnumerable = function(obj, key) {
+    let desc = Object.getOwnPropertyDescriptor(obj, key);
+
+    if (desc && desc.set && desc.set.isMandatorySetter) {
+      desc.enumerable = true;
+      Object.defineProperty(obj, key, desc);
+    }
+  };
 }
 
 function setPath(root, path, value, tolerant) {
