@@ -12,7 +12,7 @@ class TextAreaRenderingTest extends RenderingTest {
 
 moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
 
-  ['@htmlbars Should insert a textarea']() {
+  ['@test Should insert a textarea']() {
     this.render('{{textarea}}');
 
     equal(this.$('textarea').length, 1);
@@ -20,7 +20,21 @@ moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
     this.assertStableRerender();
   }
 
-  ['@htmlbars Should become disabled when the context changes']() {
+  ['@test Should respect disabled']() {
+    this.render('{{textarea disabled=disabled}}', {
+      disabled: true
+    });
+    ok(this.$('textarea').is(':disabled'));
+  }
+
+  ['@test Should respect disabled when false']() {
+    this.render('{{textarea disabled=disabled}}', {
+      disabled: false
+    });
+    ok(this.$('textarea').is(':not(:disabled)'));
+  }
+
+  ['@test Should become disabled when the context changes']() {
     this.render('{{textarea disabled=disabled}}');
     ok(this.$('textarea').is(':not(:disabled)'));
 
@@ -33,7 +47,7 @@ moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
     ok(this.$('textarea').is(':not(:disabled)'));
   }
 
-  ['@htmlbars Should bind its contents to the specified value']() {
+  ['@test Should bind its contents to the specified value']() {
     this.render('{{textarea value=model.val}}', {
       model: { val: 'A beautiful day in Seattle' }
     });
