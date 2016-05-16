@@ -122,7 +122,7 @@ export default class Environment extends GlimmerEnvironment {
 
     if (isSimple && (isInline || isBlock)) {
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates });
+        return new DynamicComponentSyntax({ args, templates, isBlock });
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
       } else if (key.indexOf('-') >= 0) {
