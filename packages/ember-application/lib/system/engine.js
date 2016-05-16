@@ -70,6 +70,27 @@ const Engine = Namespace.extend(RegistryProxy, {
   },
 
   /**
+    A private flag indicating whether an engine's initializers have run yet.
+
+    @private
+    @property _initializersRan
+  */
+  _initializersRan: false,
+
+  /**
+    Ensure that initializers are run once, and only once, per Engine.
+
+    @private
+    @method ensureInitializers
+  */
+  ensureInitializers() {
+    if (!this._initializersRan) {
+      this.runInitializers();
+      this._initializersRan = true;
+    }
+  },
+
+  /**
     Create an EngineInstance for this application.
 
     @private
@@ -77,6 +98,7 @@ const Engine = Namespace.extend(RegistryProxy, {
     @return {Ember.EngineInstance} the application instance
   */
   buildInstance(options = {}) {
+    this.ensureInitializers();
     options.base = this;
     return EngineInstance.create(options);
   },
