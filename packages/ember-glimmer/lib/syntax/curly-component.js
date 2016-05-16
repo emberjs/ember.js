@@ -3,6 +3,9 @@ import { AttributeBindingReference, RootReference, applyClassNameBinding } from 
 import { DIRTY_TAG } from '../component';
 import { assert } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
+import symbol from 'ember-metal/symbol';
+
+export const HAS_BLOCK = symbol('HAS_BLOCK');
 
 function aliasIdToElementId(args, props) {
   if (args.named.has('id')) {
@@ -45,6 +48,7 @@ class CurlyComponentManager {
     aliasIdToElementId(args, props);
 
     props.renderer = parentView.renderer;
+    props[HAS_BLOCK] = definition.isBlock;
 
     let component = klass.create(props);
 
@@ -183,9 +187,10 @@ function elementId(vm) {
 }
 
 export class CurlyComponentDefinition extends ComponentDefinition {
-  constructor(name, ComponentClass, template) {
+  constructor(name, ComponentClass, template, isBlock) {
     super(name, MANAGER, ComponentClass || Component);
     this.template = template;
+    this.isBlock = isBlock;
   }
 
   compile(builder) {

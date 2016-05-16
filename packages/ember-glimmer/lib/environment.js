@@ -126,7 +126,7 @@ export default class Environment extends GlimmerEnvironment {
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
       } else if (key.indexOf('-') >= 0) {
-        let definition = this.getComponentDefinition(path);
+        let definition = this.createComponentDefinition(path, isBlock);
 
         if (definition) {
           wrapClassBindingAttribute(args);
@@ -146,14 +146,14 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(name) {
+  createComponentDefinition(name, isBlock) {
     let definition = this._components[name];
 
     if (!definition) {
       let { component: ComponentClass, layout } = lookupComponent(this.owner, name[0]);
 
       if (ComponentClass || layout) {
-        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
+        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout, isBlock);
       }
     }
 
