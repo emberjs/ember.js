@@ -3,6 +3,7 @@ import { Component } from '../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
+import { styles } from '../utils/test-helpers';
 
 moduleFor('@htmlbars Mutable bindings integration tests', class extends RenderingTest {
 
@@ -322,4 +323,109 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('hellofoo');
   }
 
+});
+
+moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound as attributeBindings', class extends RenderingTest {
+
+  ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes'](assert) {
+    let input, output;
+
+    this.registerComponent('x-input', {
+      ComponentClass: Component.extend({
+        didInsertElement() {
+          input = this;
+        }
+      })
+    });
+
+    this.registerComponent('x-output', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['style'],
+        didInsertElement() {
+          output = this;
+        },
+        style: computed('height', function() {
+          let height = this.get('height');
+          return `height: ${height}px;`;
+        }),
+        height: 20
+      }),
+      template: '{{height}}'
+    });
+
+    this.render('{{x-output height=height}}{{x-input height=(mut height)}}', {
+      height: 60
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 60px;') }, content: '60' });
+
+    this.assertStableRerender();
+
+    this.runTask(() => input.attrs.height.update(35));
+
+    assert.strictEqual(get(output, 'height'), 35, 'the set took effect');
+    assert.strictEqual(get(this.context, 'height'), 35, 'the set propagated back up');
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px;') }, content: '35' });
+
+    this.runTask(() => set(this.context, 'height', 60));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 60px;') }, content: '60' });
+    assert.strictEqual(get(input, 'height'), 60);
+  }
+
+  ['@test an attribute binding of a computed property with a setter of a 2-way bound attr recomputes when the attr changes'](assert) {
+    let input, output;
+
+    this.registerComponent('x-input', {
+      ComponentClass: Component.extend({
+        didInsertElement() {
+          input = this;
+        }
+      })
+    });
+
+    this.registerComponent('x-output', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['style'],
+        didInsertElement() {
+          output = this;
+        },
+        style: computed('height', 'width', function() {
+          let height = this.get('height');
+          let width = this.get('width');
+          return `height: ${height}px; width: ${width}px;`;
+        }),
+        height: 20,
+        width: computed('height', {
+          get() {
+            return this.get('height') * 2;
+          },
+          set(keyName, width) {
+            this.set('height', width / 2);
+            return width;
+          }
+        })
+      }),
+      template: '{{width}}x{{height}}'
+    });
+
+    this.render('{{x-output width=width}}{{x-input width=(mut width)}}', {
+      width: 70
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px; width: 70px;') }, content: '70x35' });
+
+    this.assertStableRerender();
+
+    this.runTask(() => input.attrs.width.update(80));
+
+    assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
+    assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 40px; width: 80px;') }, content: '80x40' });
+
+    this.runTask(() => set(this.context, 'width', 70));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px; width: 70px;') }, content: '70x35' });
+    assert.strictEqual(get(input, 'width'), 70);
+  }
 });

@@ -137,7 +137,7 @@ export function classes(expected) {
 
     match(actual) {
       actual = actual.trim();
-      return actual && (expected.split(/\s+/).sort().join(' ') === actual.split(/\s+/).sort().join(' '));
+      return actual && (expected.split(/\s+/).sort().join(' ') === actual.trim().split(/\s+/).sort().join(' '));
     },
 
     expected() {
@@ -145,7 +145,29 @@ export function classes(expected) {
     },
 
     message() {
-      return `should match ${this.expected}`;
+      return `should match ${this.expected()}`;
+    }
+  };
+}
+
+export function styles(expected) {
+  return {
+    [MATCHER_BRAND]: true,
+
+    match(actual) {
+      actual = actual.trim();
+      return actual && (
+        expected.split(';').map(s => s.trim()).filter(s => s).sort().join('; ') ===
+        actual.split(';').map(s => s.trim()).filter(s => s).sort().join('; ')
+      );
+    },
+
+    expected() {
+      return expected;
+    },
+
+    message() {
+      return `should match ${this.expected()}`;
     }
   };
 }

@@ -1,6 +1,8 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { set } from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
+import { styles } from '../../utils/test-helpers';
 
 moduleFor('Components test: attrs lookup', class extends RenderingTest {
 
@@ -190,5 +192,39 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
 
     assert.equal(instance.get('first'), 'first', 'matches known value');
     assert.equal(instance.get('second'), 'second', 'matches known value');
+  }
+
+  ['@test bound computed properties can be overriden in extensions, set during init, and passed in as attrs']() {
+    let FooClass = Component.extend({
+      attributeBindings: ['style'],
+      style: computed('height', 'color', function() {
+        let height = this.get('height');
+        let color = this.get('color');
+        return `height: ${height}px; background-color: ${color};`;
+      }),
+      color: 'red',
+      height: 20
+    });
+
+    let BarClass = FooClass.extend({
+      init() {
+        this._super(...arguments);
+        this.height = 150;
+      },
+      color: 'yellow'
+    });
+
+    this.registerComponent('x-foo', { ComponentClass: FooClass });
+    this.registerComponent('x-bar', { ComponentClass: BarClass });
+
+    this.render('{{x-foo}}{{x-bar}}{{x-bar color="green"}}');
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 20px; background-color: red;') } });
+    this.assertComponentElement(this.nthChild(1), { tagName: 'div', attrs: { style: styles('height: 150px; background-color: yellow;') } });
+    this.assertComponentElement(this.nthChild(2), { tagName: 'div', attrs: { style: styles('height: 150px; background-color: green;') } });
+
+    this.assertStableRerender();
+
+    // No U-R
   }
 });
