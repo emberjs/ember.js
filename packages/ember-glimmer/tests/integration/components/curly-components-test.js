@@ -1825,7 +1825,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
   }
 
-  ['@htmlbars component should receive the viewRegistry from the parentView'](assert) {
+  ['@test component should receive the viewRegistry from the parentView'](assert) {
     let outer, innerTemplate, innerLayout;
 
     let viewRegistry = {};
