@@ -332,18 +332,29 @@ QUnit.test('initializers are concatenated', function() {
 });
 
 QUnit.test('initializers are per-engine', function() {
-  expect(0);
+  expect(2);
+
   let FirstEngine = Engine.extend();
+
   FirstEngine.instanceInitializer({
-    name: 'shouldNotCollide',
+    name: 'abc',
     initialize(engine) {}
   });
 
+  throws(function() {
+    FirstEngine.instanceInitializer({
+      name: 'abc',
+      initialize(engine) {}
+    });
+  }, Error, /Assertion Failed: The instance initializer 'abc' has already been registered'/);
+
   let SecondEngine = Engine.extend();
   SecondEngine.instanceInitializer({
-    name: 'shouldNotCollide',
+    name: 'abc',
     initialize(engine) {}
   });
+
+  ok(true, 'Two engines can have initializers named the same.');
 });
 
 QUnit.test('initializers are executed in their own context', function() {
