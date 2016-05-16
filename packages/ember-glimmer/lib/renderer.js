@@ -49,40 +49,38 @@ export const schedulerRegistrar = new SchedulerRegistrar();
 
 class Scheduler {
   constructor() {
-    this._roots = [];
+    this._root = null;
     this._scheduleMaybeUpdate = () => {
       run.backburner.schedule('render', this, this._maybeUpdate, CURRENT_TAG.value());
     };
   }
 
   destroy() {
-    if (this._roots.length) {
-      this._roots.splice(0, this._roots.length);
-      schedulerRegistrar.deregister('begin', this._scheduleMaybeUpdate);
+    if (this._root) {
+      this.deregisterView(this._root);
     }
   }
 
   registerView(view) {
-    if (!this._roots.length) {
+    if (!this.root) {
       schedulerRegistrar.register('begin', this._scheduleMaybeUpdate);
+      this._root = view;
+    } else {
+      throw new TypeError('Cannot register more than one root view.');
     }
-    this._roots.push(view);
   }
 
   deregisterView(view) {
-    let viewIndex = this._roots.indexOf(view);
-    if (~viewIndex) {
-      this._roots.splice(viewIndex, 1);
-      if (!this._roots.length) {
-        schedulerRegistrar.deregister('begin', this._scheduleMaybeUpdate);
-      }
+    if (this._root === view) {
+      this._root = null;
+      schedulerRegistrar.deregister('begin', this._scheduleMaybeUpdate);
     }
   }
 
   _maybeUpdate(lastTagValue) {
     if (CURRENT_TAG.validate(lastTagValue)) { return; }
-    for (let i = 0; i < this._roots.length; ++i) {
-      let view = this._roots[i];
+    let view = this._root;
+    if (view) {
       view.renderer.rerender(view);
     }
   }
