@@ -6,7 +6,7 @@ import {
 import './bootstrap';
 import { Renderer } from './renderer';
 import Component from './component';
-import Helper from './helper';
+import Helper, { helper } from './helper';
 import Checkbox from './components/checkbox';
 import TextField from './components/text_field';
 import TextArea from './components/text_area';
@@ -14,6 +14,7 @@ import LinkComponent from './components/link-to';
 
 Ember._Renderer = Renderer;
 Ember.Component = Component;
+Helper.helper = helper;
 Ember.Helper = Helper;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
