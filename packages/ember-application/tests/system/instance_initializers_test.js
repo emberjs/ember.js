@@ -318,18 +318,29 @@ QUnit.test('initializers are concatenated', function() {
 });
 
 QUnit.test('initializers are per-app', function() {
-  expect(0);
-  var FirstApp = Application.extend();
+  expect(2);
+
+  let FirstApp = Application.extend();
+
   FirstApp.instanceInitializer({
-    name: 'shouldNotCollide',
-    initialize(registry) {}
+    name: 'abc',
+    initialize(app) {}
   });
 
-  var SecondApp = Application.extend();
+  throws(function() {
+    FirstApp.instanceInitializer({
+      name: 'abc',
+      initialize(app) {}
+    });
+  }, Error, /Assertion Failed: The instance initializer 'abc' has already been registered'/);
+
+  let SecondApp = Application.extend();
   SecondApp.instanceInitializer({
-    name: 'shouldNotCollide',
-    initialize(registry) {}
+    name: 'abc',
+    initialize(app) {}
   });
+
+  ok(true, 'Two apps can have initializers named the same.');
 });
 
 QUnit.test('initializers are run before ready hook', function() {

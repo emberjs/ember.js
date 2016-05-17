@@ -8,6 +8,7 @@ import Registry from 'container/registry';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import run from 'ember-metal/run_loop';
+import RSVP from 'ember-runtime/ext/rsvp';
 
 /**
   The `EngineInstance` encapsulates all of the stateful aspects of a
@@ -48,6 +49,53 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
     // Create a per-instance container from the instance's registry
     this.__container__ = registry.container({ owner: this });
+
+    this._booted = false;
+  },
+
+  /**
+    Initialize the `Ember.EngineInstance` and return a promise that resolves
+    with the instance itself when the boot process is complete.
+
+    The primary task here is to run any registered instance initializers.
+
+    See the documentation on `BootOptions` for the options it takes.
+
+    @private
+    @method boot
+    @param options {Object}
+    @return {Promise<Ember.EngineInstance,Error>}
+  */
+  boot(options = {}) {
+    if (this._bootPromise) { return this._bootPromise; }
+
+    this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
+
+    return this._bootPromise;
+  },
+
+  /**
+    Unfortunately, a lot of existing code assumes booting an instance is
+    synchronous – specifically, a lot of tests assume the last call to
+    `app.advanceReadiness()` or `app.reset()` will result in a new instance
+    being fully-booted when the current runloop completes.
+
+    We would like new code (like the `visit` API) to stop making this
+    assumption, so we created the asynchronous version above that returns a
+    promise. But until we have migrated all the code, we would have to expose
+    this method for use *internally* in places where we need to boot an instance
+    synchronously.
+
+    @private
+  */
+  _bootSync(options) {
+    if (this._booted) { return this; }
+
+    this.base.runInstanceInitializers(this);
+
+    this._booted = true;
+
+    return this;
   },
 
   /**
