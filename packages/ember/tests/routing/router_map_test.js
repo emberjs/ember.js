@@ -3,7 +3,7 @@ import compile from 'ember-template-compiler/system/compile';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import jQuery from 'ember-views/system/jquery';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var router, App, container;
 

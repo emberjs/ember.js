@@ -16,15 +16,17 @@ import DefaultResolver from 'ember-application/system/resolver';
 import EngineInstance from './engine-instance';
 import isEnabled from 'ember-metal/features';
 import symbol from 'ember-metal/symbol';
+
 import Controller from 'ember-runtime/controllers/controller';
-import TextField from 'ember-htmlbars/components/text_field';
-import TextArea from 'ember-htmlbars/components/text_area';
-import Checkbox from 'ember-htmlbars/components/checkbox';
-import LinkToComponent from 'ember-routing-views/components/link-to';
+import TextField from 'ember-templates/components/text_field';
+import TextArea from 'ember-templates/components/text_area';
+import Checkbox from 'ember-templates/components/checkbox';
+import LinkToComponent from 'ember-templates/components/link-to';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-import { OutletView as HTMLBarsOutletView } from 'ember-routing-views/views/outlet';
+import { OutletView as HTMLBarsOutletView } from 'ember-htmlbars/views/outlet';
+
 import EmberView from 'ember-views/views/view';
 import require from 'require';
 
@@ -506,7 +508,7 @@ function commonSetupRegistry(registry) {
 function glimmerSetupRegistry(registry) {
   commonSetupRegistry(registry);
 
-  let OutletView = require('ember-glimmer/ember-routing-view').OutletView;
+  let OutletView = require('ember-glimmer/views/outlet').default;
   registry.register('view:-outlet', OutletView);
 
   let glimmerOutletTemplate = require('ember-glimmer/templates/outlet').default;

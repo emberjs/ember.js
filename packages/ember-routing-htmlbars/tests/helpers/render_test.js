@@ -8,7 +8,7 @@ import EmberView from 'ember-views/views/view';
 import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { OWNER } from 'container/owner';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 

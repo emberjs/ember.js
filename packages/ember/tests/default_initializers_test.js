@@ -1,6 +1,6 @@
 import Application from 'ember-application/system/application';
-import TextField from 'ember-htmlbars/components/text_field';
-import Checkbox from 'ember-htmlbars/components/checkbox';
+import TextField from 'ember-templates/components/text_field';
+import Checkbox from 'ember-templates/components/checkbox';
 
 import run from 'ember-metal/run_loop';
 

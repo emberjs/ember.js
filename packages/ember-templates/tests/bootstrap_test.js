@@ -3,8 +3,8 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { runDestroy } from 'ember-runtime/tests/utils';
-import bootstrap from 'ember-htmlbars/system/bootstrap';
-import { setTemplates, get as getTemplate } from 'ember-htmlbars/template_registry';
+import bootstrap from 'ember-templates/bootstrap';
+import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
 
 var trim = jQuery.trim;
 

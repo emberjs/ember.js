@@ -10,7 +10,7 @@ import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
-import { setTemplates } from 'ember-htmlbars/template_registry';
+import { setTemplates } from 'ember-templates/template_registry';
 import { dasherize } from 'ember-runtime/system/string';
 import Mixin from 'ember-metal/mixin';
 import { meta } from 'ember-metal/meta';

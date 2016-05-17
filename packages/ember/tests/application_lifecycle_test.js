@@ -1,10 +1,10 @@
 import Application from 'ember-application/system/application';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler';
-import { getTemplates, setTemplates } from 'ember-htmlbars/template_registry';
+import { getTemplates, setTemplates } from 'ember-templates/template_registry';
 import controllerFor from 'ember-routing/system/controller_for';
 
 var App, TEMPLATES, appInstance, router;

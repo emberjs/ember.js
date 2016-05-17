@@ -13,12 +13,11 @@ import {
 } from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
-import helpers from 'ember-htmlbars/helpers';
 import validateType from 'ember-application/utils/validate-type';
 import dictionary from 'ember-metal/dictionary';
 import {
   get as getTemplate
-} from 'ember-htmlbars/template_registry';
+} from 'ember-templates/template_registry';
 
 export const Resolver = EmberObject.extend({
   /*
@@ -384,7 +383,7 @@ export default EmberObject.extend({
     @public
   */
   resolveHelper(parsedName) {
-    return this.resolveOther(parsedName) || helpers[parsedName.fullNameWithoutType];
+    return this.resolveOther(parsedName);
   },
   /**
     Look up the specified object (from parsedName) on the appropriate

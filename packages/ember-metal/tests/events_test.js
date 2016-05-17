@@ -11,6 +11,7 @@ import {
   sendEvent,
   hasListeners
 } from 'ember-metal/events';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 QUnit.module('system/props/events_test');
 
@@ -260,7 +261,7 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
   equal(triggered, 1, 'should invoke from subclass property');
 });
 
-QUnit.test('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
+test('DEPRECATED: adding didInitAttrs as a listener is deprecated', function() {
   var obj = Component.create();
 
   expectDeprecation(() => {

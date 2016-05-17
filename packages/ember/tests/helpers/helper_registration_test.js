@@ -10,7 +10,7 @@ import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
-import { setTemplates, set as setTemplate } from 'ember-htmlbars/template_registry';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var App, appInstance, originalViewKeyword;
 
