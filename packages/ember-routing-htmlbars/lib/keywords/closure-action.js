@@ -1,9 +1,9 @@
-import { Stream } from 'ember-metal/streams/stream';
+import { Stream } from 'ember-htmlbars/streams/stream';
 import {
   read,
   readArray,
   labelFor
-} from 'ember-metal/streams/utils';
+} from 'ember-htmlbars/streams/utils';
 import symbol from 'ember-metal/symbol';
 import { get } from 'ember-metal/property_get';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';

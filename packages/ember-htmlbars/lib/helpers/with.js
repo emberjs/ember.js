@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import shouldDisplay from 'ember-views/streams/should_display';
+import shouldDisplay from '../streams/should_display';
 
 /**
   Use the `{{with}}` helper when you want to alias a property to a new name. This is helpful

@@ -5,9 +5,9 @@
 
 import { assert } from 'ember-metal/debug';
 import  symbol from 'ember-metal/symbol';
-import ProxyStream from 'ember-metal/streams/proxy-stream';
-import BasicStream from 'ember-metal/streams/stream';
-import { isStream } from 'ember-metal/streams/utils';
+import ProxyStream from '../streams/proxy-stream';
+import BasicStream from '../streams/stream';
+import { isStream } from '../streams/utils';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { INVOKE, ACTION } from 'ember-routing-htmlbars/keywords/closure-action';
 

@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import ProxyStream from 'ember-metal/streams/proxy-stream';
+import ProxyStream from '../streams/proxy-stream';
 
 export default function bindShadowScope(env, parentScope, shadowScope, options) {
   if (!options) { return; }

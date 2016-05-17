@@ -7,7 +7,7 @@ import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import EmptyObject from 'ember-metal/empty_object';
 import EmberError from 'ember-metal/error';
-import { isStream, read } from 'ember-metal/streams/utils';
+import { isStream, read } from 'ember-htmlbars/streams/utils';
 import { camelize } from 'ember-runtime/system/string';
 import generateController from 'ember-routing/system/generate_controller';
 import { generateControllerFactory } from 'ember-routing/system/generate_controller';

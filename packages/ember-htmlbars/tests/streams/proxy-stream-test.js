@@ -1,5 +1,5 @@
-import BasicStream from 'ember-metal/streams/stream';
-import ProxyStream from 'ember-metal/streams/proxy-stream';
+import BasicStream from 'ember-htmlbars/streams/stream';
+import ProxyStream from 'ember-htmlbars/streams/proxy-stream';
 
 var source;
 

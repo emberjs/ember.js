@@ -6,9 +6,9 @@
 import { assert } from 'ember-metal/debug';
 import isNone from 'ember-metal/is_none';
 import symbol from 'ember-metal/symbol';
-import BasicStream from 'ember-metal/streams/stream';
+import BasicStream from '../streams/stream';
 import EmptyObject from 'ember-metal/empty_object';
-import { read } from 'ember-metal/streams/utils';
+import { read } from '../streams/utils';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import assign from 'ember-metal/assign';
 import { processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';

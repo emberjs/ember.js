@@ -4,7 +4,7 @@
 */
 
 import { assert } from 'ember-metal/debug';
-import shouldDisplay from 'ember-views/streams/should_display';
+import shouldDisplay from '../streams/should_display';
 
 /**
   Use the `if` block helper to conditionally render a block depending on a

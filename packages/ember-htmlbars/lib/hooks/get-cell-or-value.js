@@ -1,4 +1,4 @@
-import { read } from 'ember-metal/streams/utils';
+import { read } from '../streams/utils';
 import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
 
 export default function getCellOrValue(ref) {

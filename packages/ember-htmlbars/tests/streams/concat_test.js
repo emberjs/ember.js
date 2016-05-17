@@ -1,9 +1,9 @@
-import { Stream } from 'ember-metal/streams/stream';
+import { Stream } from 'ember-htmlbars/streams/stream';
 import {
   concat,
   read,
   isStream
-} from 'ember-metal/streams/utils';
+} from 'ember-htmlbars/streams/utils';
 
 
 function hasSubscribers(stream) {

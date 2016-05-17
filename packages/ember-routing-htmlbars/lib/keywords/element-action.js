@@ -1,8 +1,8 @@
 import { assert } from 'ember-metal/debug';
 import { uuid } from 'ember-metal/utils';
-import { read } from 'ember-metal/streams/utils';
+import { read } from 'ember-htmlbars/streams/utils';
 import run from 'ember-metal/run_loop';
-import { readUnwrappedModel } from 'ember-views/streams/utils';
+import { readUnwrappedModel } from 'ember-htmlbars/streams/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
 
