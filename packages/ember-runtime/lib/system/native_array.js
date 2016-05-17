@@ -37,9 +37,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // because length is a built-in property we need to know to just get the
   // original property.
   get(key) {
-    if (key === 'length') {
-      return this.length;
-    } else if ('number' === typeof key) {
+    if ('number' === typeof key) {
       return this[key];
     } else {
       return this._super(key);

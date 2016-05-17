@@ -334,6 +334,8 @@ ChainNode.prototype = {
   }
 };
 
+import { makeChainNode } from './watch_path';
+
 export function finishChains(obj) {
   // We only create meta if we really have to
   let m = peekMeta(obj);
@@ -348,7 +350,7 @@ export function finishChains(obj) {
     // ensure that if we have inherited any chains they have been
     // copied onto our own meta.
     if (m.readableChains()) {
-      m.writableChains();
+      m.writableChains(makeChainNode);
     }
   }
 }

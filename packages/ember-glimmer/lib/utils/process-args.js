@@ -1,6 +1,7 @@
 import { CONSTANT_TAG } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
+import { ARGS } from '../component';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
@@ -16,7 +17,7 @@ const EMPTY_ARGS = {
   tag: CONSTANT_TAG,
 
   value() {
-    return { attrs: {}, props: { attrs: {} } };
+    return { attrs: {}, props: { attrs: {}, [ARGS]: {} } };
   }
 };
 
@@ -39,13 +40,16 @@ class SimpleArgs {
     let keys = namedArgs.keys;
     let attrs = namedArgs.value();
     let props = new EmptyObject();
+    let args = new EmptyObject();
 
     props.attrs = attrs;
+    props[ARGS] = args;
 
     for (let i = 0, l = keys.length; i < l; i++) {
       let name = keys[i];
       let value = attrs[name];
 
+      args[name] = namedArgs.get(name);
       props[name] = value;
     }
 
@@ -72,6 +76,7 @@ class RestArgs {
 
     let result = simpleArgs.value();
 
+    result.props[ARGS] = positionalArgs;
     result.attrs[restArgName] = result.props[restArgName] = positionalArgs.value();
 
     return result;
@@ -111,7 +116,8 @@ class PositionalArgs {
 
     for (let i = 0; i < positionalParamNames.length; i++) {
       let name = positionalParamNames[i];
-      result.attrs[name] = result.props[name] = positionalArgs.at(i).value();
+      let reference = result.props[ARGS][name] = positionalArgs.at(i);
+      result.attrs[name] = result.props[name] = reference.value();
     }
 
     return result;

@@ -2,8 +2,11 @@
 // Remove "use strict"; from transpiled module until
 // https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
 
+import isEnabled from 'ember-metal/features';
 import { protoMethods as listenerMethods } from 'ember-metal/meta_listeners';
 import EmptyObject from 'ember-metal/empty_object';
+import { lookupDescriptor } from 'ember-metal/utils';
+import symbol from 'ember-metal/symbol';
 
 /**
 @module ember-metal
@@ -73,6 +76,10 @@ function Meta(obj, parentMeta) {
 
   this._initializeListeners();
 }
+
+Meta.prototype.isInitialized = function(obj) {
+  return this.proto !== obj;
+};
 
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
@@ -167,6 +174,7 @@ Meta.prototype._findInherited = function(key, subkey) {
   }
 };
 
+export const UNDEFINED = symbol('undefined');
 
 // Implements a member that provides a lazily created map of maps,
 // with inheritance at both levels.
@@ -301,6 +309,38 @@ var EMBER_META_PROPERTY = {
   name: META_FIELD,
   descriptor: META_DESC
 };
+
+if (isEnabled('mandatory-setter')) {
+  Meta.prototype.readInheritedValue = function(key, subkey) {
+    let internalKey = `_${key}`;
+
+    let pointer = this;
+
+    while (pointer !== undefined) {
+      let map = pointer[internalKey];
+      if (map) {
+        let value = map[subkey];
+        if (value !== undefined || subkey in map) {
+          return map[subkey];
+        }
+      }
+      pointer = pointer.parent;
+    }
+
+    return UNDEFINED;
+  };
+
+  Meta.prototype.writeValue = function(obj, key, value) {
+    let descriptor = lookupDescriptor(obj, key);
+    let isMandatorySetter = descriptor && descriptor.set && descriptor.set.isMandatorySetter;
+
+    if (isMandatorySetter) {
+      this.writeValues(key, value);
+    } else {
+      obj[key] = value;
+    }
+  };
+}
 
 // choose the one appropriate for given platform
 let setMeta = function(obj, meta) {

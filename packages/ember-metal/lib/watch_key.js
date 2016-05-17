@@ -12,9 +12,6 @@ import { lookupDescriptor } from 'ember-metal/utils';
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
-  // can't watch length on Array - it is special...
-  if (keyName === 'length' && Array.isArray(obj)) { return; }
-
   var m = meta || metaFor(obj);
 
   // activate watching first time
@@ -42,6 +39,14 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (isEnabled('mandatory-setter')) {
+  let hasOwnProperty = function(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  };
+
+  let propertyIsEnumerable = function(obj, key) {
+    return Object.prototype.propertyIsEnumerable.call(obj, key);
+  };
+
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
   // ember strip this entire block out
@@ -61,12 +66,12 @@ if (isEnabled('mandatory-setter')) {
     if (configurable && isWritable && hasValue && keyName in obj) {
       let desc = {
         configurable: true,
-        enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
         set: MANDATORY_SETTER_FUNCTION(keyName),
+        enumerable: propertyIsEnumerable(obj, keyName),
         get: undefined
       };
 
-      if (Object.prototype.hasOwnProperty.call(obj, keyName)) {
+      if (hasOwnProperty(obj, keyName)) {
         m.writeValues(keyName, obj[keyName]);
         desc.get = DEFAULT_GETTER_FUNCTION(keyName);
       } else {
@@ -77,6 +82,8 @@ if (isEnabled('mandatory-setter')) {
     }
   };
 }
+
+import { UNDEFINED } from './meta';
 
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj);
@@ -109,16 +116,20 @@ export function unwatchKey(obj, keyName, meta) {
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
           if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
-            delete obj[keyName];
-          } else {
-            Object.defineProperty(obj, keyName, {
-              configurable: true,
-              enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-              writable: true,
-              value: m.peekValues(keyName)
-            });
-            m.deleteFromValues(keyName);
+            let possibleValue = m.readInheritedValue('values', keyName);
+            if (possibleValue === UNDEFINED) {
+              delete obj[keyName];
+              return;
+            }
           }
+
+          Object.defineProperty(obj, keyName, {
+            configurable: true,
+            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
+            writable: true,
+            value: m.peekValues(keyName)
+          });
+          m.deleteFromValues(keyName);
         }
       }
     }

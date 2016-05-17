@@ -190,6 +190,32 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
   }
 
+  ['@test it can render a computed property with nested dependency']() {
+    let Formatter = EmberObject.extend({
+      formattedMessage: computed('messenger.message', function() {
+        return this.get('messenger.message').toUpperCase();
+      })
+    });
+
+    let m = Formatter.create({ messenger: { message: 'hello' } });
+
+    this.renderPath('m.formattedMessage', { m });
+
+    this.assertContent('HELLO');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(m, 'messenger.message', 'goodbye'));
+
+    this.assertContent('GOODBYE');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'm', Formatter.create({ messenger: { message: 'hello' } })));
+
+    this.assertContent('HELLO');
+    this.assertInvariants();
+  }
+
   ['@test it can read from a null object']() {
     let nullObject = Object.create(null);
     nullObject['message'] = 'hello';

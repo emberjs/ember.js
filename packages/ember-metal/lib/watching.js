@@ -35,9 +35,6 @@ import {
   @param {String} _keyPath
 */
 function watch(obj, _keyPath, m) {
-  // can't watch length on Array - it is special...
-  if (_keyPath === 'length' && Array.isArray(obj)) { return; }
-
   if (!isPath(_keyPath)) {
     watchKey(obj, _keyPath, m);
   } else {
@@ -58,9 +55,6 @@ export function watcherCount(obj, key) {
 }
 
 export function unwatch(obj, _keyPath, m) {
-  // can't watch length on Array - it is special...
-  if (_keyPath === 'length' && Array.isArray(obj)) { return; }
-
   if (!isPath(_keyPath)) {
     unwatchKey(obj, _keyPath, m);
   } else {

@@ -216,8 +216,8 @@ testBoth('watching "length" property on an array', function(get, set) {
   equal(get(arr, 'length'), 0, 'should have original prop');
 
   set(arr, 'length', '10');
-  equal(willCount, 0, 'should NOT have invoked willCount');
-  equal(didCount, 0, 'should NOT have invoked didCount');
+  equal(willCount, 1, 'should NOT have invoked willCount');
+  equal(didCount, 1, 'should NOT have invoked didCount');
 
   equal(get(arr, 'length'), 10, 'should get new value');
   equal(arr.length, 10, 'property should be accessible on arr');

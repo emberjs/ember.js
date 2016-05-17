@@ -1,10 +1,14 @@
 import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import { tagFor } from 'ember-metal/tags';
+import symbol from 'ember-metal/symbol';
 import { CURRENT_TAG, CONSTANT_TAG, VOLATILE_TAG, ConstReference, DirtyableTag, UpdatableTag, combine, isConst } from 'glimmer-reference';
 import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
+
+export const UPDATE = symbol('UPDATE');
 
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
 // have an `isTruthy` property on them). This is not actually supported –
@@ -95,6 +99,11 @@ class PropertyReference extends CachedReference { // jshint ignore:line
     } else {
       return null;
     }
+  }
+
+  [UPDATE](value) {
+    let parent = this._parentReference.value();
+    set(parent, this._propertyKey, value);
   }
 
   get(propertyKey) {

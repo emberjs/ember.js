@@ -4,7 +4,7 @@
 
 import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
-import { meta as metaFor } from 'ember-metal/meta';
+import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 import { overrideChains } from 'ember-metal/property_events';
 // ..........................................................
 // DESCRIPTOR
@@ -43,7 +43,12 @@ const REDEFINE_SUPPORTED = (function () {
 
 export function MANDATORY_SETTER_FUNCTION(name) {
   function SETTER_FUNCTION(value) {
-    assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
+    let m = peekMeta(this);
+    if (!m.isInitialized(this)) {
+      m.writeValues(name, value);
+    } else {
+      assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
+    }
   }
 
   SETTER_FUNCTION.isMandatorySetter = true;
@@ -57,10 +62,19 @@ export function DEFAULT_GETTER_FUNCTION(name) {
   };
 }
 
+import { UNDEFINED } from './meta';
+
 export function INHERITING_GETTER_FUNCTION(name) {
   function IGETTER_FUNCTION() {
-    var proto = Object.getPrototypeOf(this);
-    return proto && proto[name];
+    let meta = this['__ember_meta__'];
+    let val = meta && meta.readInheritedValue('values', name);
+
+    if (val === UNDEFINED) {
+      var proto = Object.getPrototypeOf(this);
+      return proto && proto[name];
+    } else {
+      return val;
+    }
   }
 
   IGETTER_FUNCTION.isInheritingGetter = true;
