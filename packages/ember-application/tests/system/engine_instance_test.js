@@ -1,5 +1,6 @@
 import Engine from 'ember-application/system/engine';
 import EngineInstance from 'ember-application/system/engine-instance';
+import { setEngineParent } from 'ember-application/system/engine-parent';
 import run from 'ember-metal/run_loop';
 import factory from 'container/tests/test-helpers/factory';
 
@@ -53,4 +54,20 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   assert.ok(postComponent2, 'lookup creates instance');
 
   assert.notStrictEqual(postComponent1, postComponent2, 'lookup creates a brand new instance because previous one was reset');
+});
+
+QUnit.test('can be booted when its parent has been set', function(assert) {
+  run(function() {
+    engineInstance = EngineInstance.create({ base: engine });
+  });
+
+  expectAssertion(function() {
+    engineInstance._bootSync();
+  }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
+
+  setEngineParent(engineInstance, {});
+
+  return engineInstance.boot().then(() => {
+    assert.ok(true, 'boot successful');
+  });
 });

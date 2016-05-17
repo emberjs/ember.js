@@ -7,6 +7,8 @@ import EmberObject from 'ember-runtime/system/object';
 import Registry from 'container/registry';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import { getEngineParent } from 'ember-application/system/engine-parent';
+import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
 
@@ -90,6 +92,8 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   */
   _bootSync(options) {
     if (this._booted) { return this; }
+
+    assert('An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.', getEngineParent(this));
 
     this.base.runInstanceInitializers(this);
 
