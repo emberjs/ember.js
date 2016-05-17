@@ -45,7 +45,11 @@ class SchedulerRegistrar {
     return !!this._eventCallbacks.length;
   }
 }
-export const schedulerRegistrar = new SchedulerRegistrar();
+const schedulerRegistrar = new SchedulerRegistrar();
+
+export function rendererHasViews() {
+  return schedulerRegistrar.hasRegistrations();
+}
 
 class Scheduler {
   constructor() {
