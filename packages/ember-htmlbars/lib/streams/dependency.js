@@ -5,7 +5,7 @@ import {
   setValue,
   isStream,
   subscribe
-} from 'ember-metal/streams/utils';
+} from './utils';
 
 /**
   @module ember-metal

@@ -1,5 +1,5 @@
 import EmberObject from 'ember-runtime/system/object';
-import BasicStream from 'ember-metal/streams/stream';
+import BasicStream from './stream';
 
 const ProxyStream = BasicStream.extend({
   init(source, label) {

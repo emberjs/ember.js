@@ -3,8 +3,8 @@
 @submodule ember-htmlbars
 */
 
-import { wrap } from 'ember-metal/streams/stream';
-import ProxyStream from 'ember-metal/streams/proxy-stream';
+import { wrap } from '../streams/stream';
+import ProxyStream from '../streams/proxy-stream';
 
 export default function bindLocal(env, scope, key, value) {
   // TODO: What is the cause of these cases?

@@ -5,7 +5,7 @@
 
 import subscribe from 'ember-htmlbars/utils/subscribe';
 import { isArray } from 'ember-runtime/utils';
-import { chain, read, isStream, addDependency } from 'ember-metal/streams/utils';
+import { chain, read, isStream, addDependency } from '../streams/utils';
 import { CONTAINS_DOT_CACHE } from 'ember-htmlbars/system/lookup-helper';
 import {
   COMPONENT_HASH,

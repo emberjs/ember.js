@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import { readViewFactory } from 'ember-views/streams/utils';
+import { readViewFactory } from '../streams/utils';
 import EmberView from 'ember-views/views/view';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 

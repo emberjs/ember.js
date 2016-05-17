@@ -9,9 +9,6 @@
 import EmberError from 'ember-metal/error';
 import { debugSeal, assert, deprecate, runInDebug } from 'ember-metal/debug';
 import assign from 'ember-metal/assign';
-import EmptyObject from 'ember-metal/empty_object';
-import { get } from 'ember-metal/property_get';
-import { set, trySet } from 'ember-metal/property_set';
 import {
   guidFor,
   GUID_KEY,
@@ -30,14 +27,12 @@ import {
   addObserver,
   removeObserver,
   _addBeforeObserver,
-  _removeBeforeObserver,
-  _suspendObserver
+  _removeBeforeObserver
 } from 'ember-metal/observer';
 import {
   addListener,
   removeListener
 } from 'ember-metal/events';
-import { isStream } from 'ember-metal/streams/utils';
 
 function ROOT() {}
 ROOT.__hasSuper = false;
@@ -269,40 +264,12 @@ function detectBinding(obj, key, value, m) {
   }
 }
 
-function connectStreamBinding(obj, key, stream) {
-  var onNotify = function(stream) {
-    _suspendObserver(obj, key, null, didChange, function() {
-      trySet(obj, key, stream.value());
-    });
-  };
-
-  var didChange = function() {
-    stream.setValue(get(obj, key), onNotify);
-  };
-
-  // Initialize value
-  set(obj, key, stream.value());
-
-  addObserver(obj, key, null, didChange);
-
-  stream.subscribe(onNotify);
-
-  if (obj._streamBindingSubscriptions === undefined) {
-    obj._streamBindingSubscriptions = new EmptyObject();
-  }
-
-  obj._streamBindingSubscriptions[key] = onNotify;
-}
-
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
   m.forEachBindings((key, binding) => {
     if (binding) {
       let to = key.slice(0, -7); // strip Binding off end
-      if (isStream(binding)) {
-        connectStreamBinding(obj, to, binding);
-        return;
-      } else if (binding instanceof Binding) {
+      if (binding instanceof Binding) {
         binding = binding.copy(); // copy prototypes' instance
         binding.to(to);
       } else { // binding is string path

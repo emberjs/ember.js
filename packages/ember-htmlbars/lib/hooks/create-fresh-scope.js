@@ -1,4 +1,4 @@
-import ProxyStream from 'ember-metal/streams/proxy-stream';
+import ProxyStream from '../streams/proxy-stream';
 import EmptyObject from 'ember-metal/empty_object';
 
 /*

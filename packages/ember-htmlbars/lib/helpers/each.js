@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import shouldDisplay from 'ember-views/streams/should_display';
+import shouldDisplay from '../streams/should_display';
 import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
 
 /**

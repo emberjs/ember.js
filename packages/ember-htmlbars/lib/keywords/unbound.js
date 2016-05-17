@@ -4,8 +4,8 @@
 */
 
 import { assert } from 'ember-metal/debug';
-import BasicStream from 'ember-metal/streams/stream';
-import { read } from 'ember-metal/streams/utils';
+import BasicStream from '../streams/stream';
+import { read } from '../streams/utils';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,

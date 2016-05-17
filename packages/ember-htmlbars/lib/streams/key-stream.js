@@ -5,8 +5,8 @@ import {
   addObserver,
   removeObserver
 } from 'ember-metal/observer';
-import BasicStream from 'ember-metal/streams/stream';
-import { isStream  } from 'ember-metal/streams/utils';
+import BasicStream from './stream';
+import { isStream  } from './utils';
 
 function labelFor(source, key) {
   return source.label ? source.label + '.' + key : key;

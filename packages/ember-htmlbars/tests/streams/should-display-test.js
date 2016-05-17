@@ -1,4 +1,4 @@
-import shouldDisplay from 'ember-views/streams/should_display';
+import shouldDisplay from 'ember-htmlbars/streams/should_display';
 import { defineProperty } from 'ember-metal/properties';
 import computed from 'ember-metal/computed';
 

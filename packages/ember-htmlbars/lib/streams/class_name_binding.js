@@ -1,7 +1,7 @@
 import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { isArray } from 'ember-metal/utils';
-import { chain, read } from 'ember-metal/streams/utils';
+import { chain, read } from './utils';
 import { dasherize } from 'ember-runtime/system/string';
 
 /**

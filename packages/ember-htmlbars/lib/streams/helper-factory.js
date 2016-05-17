@@ -1,8 +1,8 @@
-import BasicStream from 'ember-metal/streams/stream';
+import BasicStream from './stream';
 import {
   getArrayValues,
   getHashValues
-} from 'ember-htmlbars/streams/utils';
+} from './utils';
 
 let HelperFactoryStream = BasicStream.extend({
   init(helperFactory, params, hash, label) {

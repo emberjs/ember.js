@@ -1,6 +1,6 @@
 import { assert } from 'ember-metal/debug';
-import { Stream } from 'ember-metal/streams/stream';
-import { readArray } from 'ember-metal/streams/utils';
+import { Stream } from '../streams/stream';
+import { readArray } from '../streams/utils';
 
 export default function extractPositionalParams(renderNode, component, params, attrs, raiseAssertions = true) {
   let positionalParams = component.positionalParams;

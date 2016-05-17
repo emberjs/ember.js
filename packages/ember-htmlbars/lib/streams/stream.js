@@ -2,10 +2,10 @@ import assign from 'ember-metal/assign';
 import { debugSeal, assert } from 'ember-metal/debug';
 import { getFirstKey, getTailPath } from 'ember-metal/path_cache';
 import { addObserver, removeObserver } from 'ember-metal/observer';
-import { isStream } from 'ember-metal/streams/utils';
+import { isStream } from './utils';
 import EmptyObject from 'ember-metal/empty_object';
-import Subscriber from 'ember-metal/streams/subscriber';
-import Dependency from 'ember-metal/streams/dependency';
+import Subscriber from './subscriber';
+import Dependency from './dependency';
 import { GUID_KEY } from 'ember-metal/utils';
 import require from 'require';
 import symbol from 'ember-metal/symbol';
@@ -48,7 +48,7 @@ BasicStream.prototype = {
   },
 
   _makeChildStream(key) {
-    KeyStream = KeyStream || require('ember-metal/streams/key-stream').default;
+    KeyStream = KeyStream || require('ember-htmlbars/streams/key-stream').default;
     return new KeyStream(this, key);
   },
 

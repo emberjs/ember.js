@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 import { ENV } from 'ember-environment';
-import ProxyStream from 'ember-metal/streams/proxy-stream';
+import ProxyStream from '../streams/proxy-stream';
 
 export default function bindSelf(env, scope, self) {
   if (self && self.isView) {

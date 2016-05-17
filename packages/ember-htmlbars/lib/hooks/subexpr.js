@@ -8,7 +8,7 @@ import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
 import {
   labelsFor,
   labelFor
-} from 'ember-metal/streams/utils';
+} from '../streams/utils';
 import { linkParamsFor } from 'ember-htmlbars/hooks/link-render-node';
 
 export default function subexpr(env, scope, helperName, params, hash) {
