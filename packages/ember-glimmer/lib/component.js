@@ -15,6 +15,7 @@ import { DirtyableTag } from 'glimmer-reference';
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
+export const HAS_BLOCK = symbol('HAS_BLOCK');
 
 export default CoreView.extend(
   ChildViewsSupport,

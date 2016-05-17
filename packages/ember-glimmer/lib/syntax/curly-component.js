@@ -1,6 +1,6 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
-import { DIRTY_TAG, IS_DISPATCHING_ATTRS } from '../component';
+import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { meta as metaFor } from 'ember-metal/meta';
@@ -48,6 +48,7 @@ class CurlyComponentManager {
     aliasIdToElementId(args, props);
 
     props.renderer = parentView.renderer;
+    props[HAS_BLOCK] = definition.isBlock;
 
     let component = klass.create(props);
 
@@ -198,9 +199,10 @@ function elementId(vm) {
 }
 
 export class CurlyComponentDefinition extends ComponentDefinition {
-  constructor(name, ComponentClass, template) {
+  constructor(name, ComponentClass, template, isBlock) {
     super(name, MANAGER, ComponentClass || Component);
     this.template = template;
+    this.isBlock = isBlock;
   }
 
   compile(builder) {

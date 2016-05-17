@@ -13,6 +13,9 @@ import { computed } from 'ember-metal/computed';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
 import { getOwner } from 'container/owner';
+import symbol from 'ember-metal/symbol';
+
+export let HAS_BLOCK = symbol('HAS_BLOCK');
 
 function validateAction(component, actionName) {
   if (actionName && actionName[MUTABLE_CELL]) {

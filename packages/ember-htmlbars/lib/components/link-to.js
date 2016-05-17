@@ -321,10 +321,8 @@ import { isSimpleClick } from 'ember-views/system/utils';
 import inject from 'ember-runtime/inject';
 import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
-// TODO: Glimmer 2
-import { HAS_BLOCK } from 'ember-htmlbars/node-managers/component-node-manager';
 import layout from '../templates/link-to';
-import EmberComponent from '../component';
+import EmberComponent, { HAS_BLOCK } from '../component';
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
