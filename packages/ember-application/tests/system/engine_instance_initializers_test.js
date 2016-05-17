@@ -341,12 +341,12 @@ QUnit.test('initializers are per-engine', function() {
     initialize(engine) {}
   });
 
-  throws(function() {
+  expectAssertion(function() {
     FirstEngine.instanceInitializer({
       name: 'abc',
       initialize(engine) {}
     });
-  }, Error, /Assertion Failed: The instance initializer 'abc' has already been registered'/);
+  });
 
   let SecondEngine = Engine.extend();
   SecondEngine.instanceInitializer({

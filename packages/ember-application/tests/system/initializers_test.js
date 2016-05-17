@@ -358,12 +358,12 @@ QUnit.test('initializers are per-app', function() {
     initialize(app) {}
   });
 
-  throws(function() {
+  expectAssertion(function() {
     FirstApp.initializer({
       name: 'abc',
       initialize(app) {}
     });
-  }, Error, /Assertion Failed: The initializer 'abc' has already been registered'/);
+  });
 
   let SecondApp = Application.extend();
   SecondApp.instanceInitializer({
