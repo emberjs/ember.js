@@ -24,6 +24,9 @@ import {
   PopDynamicScopeOpcode,
   BindDynamicScopeOpcode,
 
+  // Partials
+  PartialDefinition,
+
   // Components
   Component,
   ComponentManager,
@@ -49,7 +52,11 @@ import {
   ElementOperations,
 } from "glimmer-runtime";
 
-import { compile as rawCompile, compileLayout as rawCompileLayout } from "./helpers";
+import {
+  compileRealSpec,
+  compile as rawCompile,
+  compileLayout as rawCompileLayout
+} from "./helpers";
 
 import {
   FIXME,
@@ -555,6 +562,7 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
 export class TestEnvironment extends Environment {
   private helpers = dict<GlimmerHelper>();
   private modifiers = dict<ModifierManager<Opaque>>();
+  private partials = dict<PartialDefinition>();
   private components = dict<ComponentDefinition<any>>();
 
   constructor(dom?: IDOMHelper) {
@@ -575,6 +583,10 @@ export class TestEnvironment extends Environment {
 
   registerModifier(name: string, modifier: ModifierManager<Opaque>) {
     this.modifiers[name] = modifier;
+  }
+
+  registerPartial(name: string, source: string) {
+    this.partials[name] = new PartialDefinition(name, compileRealSpec(source, { env: this }));
   }
 
   registerComponent(name: string, definition: ComponentDefinition<any>) {
@@ -657,7 +669,22 @@ export class TestEnvironment extends Environment {
     let helper = this.helpers[helperName];
 
     if (!helper) throw new Error(`Helper for ${helperParts.join('.')} not found.`);
-    return this.helpers[helperName];
+
+    return helper;
+  }
+
+  hasPartial(partialName: InternedString[]) {
+    return partialName.length === 1 && (<string>partialName[0] in this.partials);
+  }
+
+  lookupPartial(partialParts: string[]) {
+    let partialName = partialParts[0];
+
+    let partial = this.partials[partialName];
+
+    if (!partial) throw new Error(`partial for ${partialParts.join('.')} not found.`);
+
+    return partial;
   }
 
   hasComponentDefinition(name: InternedString[]): boolean {
