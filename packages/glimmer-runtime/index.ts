@@ -141,6 +141,10 @@ export {
 } from './lib/environment';
 
 export {
+  PartialDefinition
+} from './lib/partial';
+
+export {
   Component,
   ComponentClass,
   ComponentManager,
