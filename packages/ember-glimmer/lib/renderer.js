@@ -19,30 +19,51 @@ class DynamicScope {
 
 class SchedulerRegistrar {
   constructor() {
-    let schedulerRegistrar = this;
-    this._eventCallbacks = {
-      begin: []
-    };
+    this.callback = null;
+    this.callbacks = null;
 
-    this._trigger = backburner._trigger;
-    this.register = backburner.on;
-    this.deregister = backburner.off;
+    backburner.on('begin', (arg1, arg2) => {
+      if (this.callback) {
+        this.callback(arg1, arg2);
+      } else if (this.callbacks) {
+        for (let i = 0; i < this.callbacks.length; ++i) {
+          this.callbacks[i](arg1, arg2);
+        }
+      }
+    });
+  }
 
-    function bindEventName(eventName) {
-      return function trigger(arg1, arg2) {
-        schedulerRegistrar._trigger(eventName, arg1, arg2);
-      };
+  register(callback) {
+    if (this.callbacks) {
+      this.callbacks.push(callback);
+    } else if (!this.callback) {
+      this.callback = callback;
+    } else {
+      this.callbacks = [this.callback, callback];
+      this.callback = null;
+    }
+  }
+
+  deregister(callback) {
+    let foundCallback = false;
+    if (this.callbacks) {
+      let callbackIndex = this.callbacks.indexOf(callback);
+      foundCallback = ~callbackIndex;
+      if (foundCallback) {
+        this.callbacks.splice(callbackIndex, 1);
+      }
+    } else if (this.callback === callback) {
+      this.callback = null;
+      foundCallback = true;
     }
 
-    for (let eventName in this._eventCallbacks) {
-      if (backburner._eventCallbacks.hasOwnProperty(eventName)) {
-        backburner.on(eventName, bindEventName(eventName));
-      }
+    if (!foundCallback) {
+      throw new TypeError('Cannot deregister a callback that has not been registered.');
     }
   }
 
   hasRegistrations() {
-    return !!this._eventCallbacks.length;
+    return !!this.callback || !!this.callbacks && !!this.callbacks.length;
   }
 }
 const schedulerRegistrar = new SchedulerRegistrar();
@@ -67,7 +88,7 @@ class Scheduler {
 
   registerView(view) {
     if (!this.root) {
-      schedulerRegistrar.register('begin', this._scheduleMaybeUpdate);
+      schedulerRegistrar.register(this._scheduleMaybeUpdate);
       this._root = view;
     } else {
       throw new TypeError('Cannot register more than one root view.');
@@ -77,7 +98,7 @@ class Scheduler {
   deregisterView(view) {
     if (this._root === view) {
       this._root = null;
-      schedulerRegistrar.deregister('begin', this._scheduleMaybeUpdate);
+      schedulerRegistrar.deregister(this._scheduleMaybeUpdate);
     }
   }
 
