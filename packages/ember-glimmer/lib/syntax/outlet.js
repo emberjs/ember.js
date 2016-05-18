@@ -179,7 +179,7 @@ class OutletComponentDefinition extends AbstractOutletComponentDefinition {
   }
 
   compile(builder) {
-    builder.fromLayout(this.template.asLayout());
+    builder.wrapLayout(this.template.asLayout());
   }
 }
 

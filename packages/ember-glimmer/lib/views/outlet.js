@@ -97,7 +97,6 @@ export default class OutletView {
   setOutletState(state) {
     this.outletState = state;
     this._tag.dirty();
-    this.rerender(); // FIXME
   }
 
   toReference() {
