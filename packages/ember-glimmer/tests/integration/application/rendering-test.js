@@ -318,4 +318,15 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
+  // Regression test, glimmer child outlets tried to assume the first element.
+  // but the if put-args clobbered the args used by did-create-element.
+  // I wish there was a way to assert that the OutletComponentManager did not
+  // receive a didCreateElement.
+  ['@test a child outlet is always a fragment']() {
+    this.registerTemplate('application', '{{outlet}}');
+    this.registerTemplate('index', '{{#if true}}1{{/if}}<div>2</div>');
+    return this.visit('/').then(() => {
+      this.assertComponentElement(this.firstChild, { content: '1<div>2</div>' });
+    });
+  }
 });
