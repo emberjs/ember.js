@@ -1,7 +1,9 @@
 import Engine from 'ember-application/system/engine';
 import EngineInstance from 'ember-application/system/engine-instance';
+import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
 import run from 'ember-metal/run_loop';
 import factory from 'container/tests/test-helpers/factory';
+import isEnabled from 'ember-metal/features';
 
 let engine, engineInstance;
 
@@ -54,3 +56,44 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
 
   assert.notStrictEqual(postComponent1, postComponent2, 'lookup creates a brand new instance because previous one was reset');
 });
+
+QUnit.test('can be booted when its parent has been set', function(assert) {
+  run(function() {
+    engineInstance = EngineInstance.create({ base: engine });
+  });
+
+  expectAssertion(function() {
+    engineInstance._bootSync();
+  }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
+
+  setEngineParent(engineInstance, {});
+
+  return engineInstance.boot().then(() => {
+    assert.ok(true, 'boot successful');
+  });
+});
+
+if (isEnabled('ember-application-engines')) {
+  QUnit.test('can build a child instance of a registered engine', function(assert) {
+    let ChatEngine = Engine.extend();
+    let chatEngineInstance;
+
+    engine.register('engine:chat', ChatEngine);
+
+    run(function() {
+      engineInstance = EngineInstance.create({ base: engine });
+
+      // Try to build an unregistered engine.
+      throws(function() {
+        engineInstance.buildChildEngineInstance('fake');
+      }, `You attempted to mount the engine 'fake', but it is not registered with its parent.`);
+
+      // Build the `chat` engine, registered above.
+      chatEngineInstance = engineInstance.buildChildEngineInstance('chat');
+    });
+
+    assert.ok(chatEngineInstance, 'child engine instance successfully created');
+
+    assert.strictEqual(getEngineParent(chatEngineInstance), engineInstance, 'child engine instance is assigned the correct parent');
+  });
+}

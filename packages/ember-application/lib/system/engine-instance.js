@@ -4,11 +4,15 @@
 */
 
 import EmberObject from 'ember-runtime/system/object';
+import EmberError from 'ember-metal/error';
 import Registry from 'container/registry';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
+import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import RSVP from 'ember-runtime/ext/rsvp';
+import isEnabled from 'ember-metal/features';
 
 /**
   The `EngineInstance` encapsulates all of the stateful aspects of a
@@ -91,6 +95,8 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
   _bootSync(options) {
     if (this._booted) { return this; }
 
+    assert('An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.', getEngineParent(this));
+
     this.base.runInstanceInitializers(this);
 
     this._booted = true;
@@ -121,5 +127,35 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
     run(this.__container__, 'destroy');
   }
 });
+
+if (isEnabled('ember-application-engines')) {
+  EngineInstance.reopen({
+    /**
+      Build a new `Ember.EngineInstance` that's a child of this instance.
+
+      Engines must be registered by name with their parent engine
+      (or application).
+
+      @private
+      @method buildChildEngineInstance
+      @param name {String} the registered name of the engine.
+      @param options {Object} options provided to the engine instance.
+      @return {Ember.EngineInstance,Error}
+    */
+    buildChildEngineInstance(name, options = {}) {
+      let Engine = this.lookup(`engine:${name}`);
+
+      if (!Engine) {
+        throw new EmberError(`You attempted to mount the engine '${name}', but it is not registered with its parent.`);
+      }
+
+      let engineInstance = Engine.buildInstance(options);
+
+      setEngineParent(engineInstance, this);
+
+      return engineInstance;
+    }
+  });
+}
 
 export default EngineInstance;

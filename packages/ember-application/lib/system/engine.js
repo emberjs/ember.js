@@ -80,7 +80,7 @@ const Engine = Namespace.extend(RegistryProxy, {
   _initializersRan: false,
 
   /**
-    Ensure that initializers are run once, and only once, per Engine.
+    Ensure that initializers are run once, and only once, per engine.
 
     @private
     @method ensureInitializers
@@ -93,11 +93,11 @@ const Engine = Namespace.extend(RegistryProxy, {
   },
 
   /**
-    Create an EngineInstance for this application.
+    Create an EngineInstance for this engine.
 
     @private
     @method buildInstance
-    @return {Ember.EngineInstance} the application instance
+    @return {Ember.EngineInstance} the engine instance
   */
   buildInstance(options = {}) {
     this.ensureInitializers();
@@ -106,7 +106,7 @@ const Engine = Namespace.extend(RegistryProxy, {
   },
 
   /**
-    Build and configure the registry for the current application.
+    Build and configure the registry for the current engine.
 
     @private
     @method buildRegistry

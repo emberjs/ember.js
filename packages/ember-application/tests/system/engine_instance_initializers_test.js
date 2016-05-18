@@ -1,10 +1,17 @@
 import run from 'ember-metal/run_loop';
 import Engine from 'ember-application/system/engine';
 import EngineInstance from 'ember-application/system/engine-instance';
+import { setEngineParent } from 'ember-application/system/engine-parent';
 
 let MyEngine,
     myEngine,
     myEngineInstance;
+
+function buildEngineInstance(EngineClass) {
+  let engineInstance = EngineClass.buildInstance();
+  setEngineParent(engineInstance, {});
+  return engineInstance;
+}
 
 QUnit.module('Ember.Engine instance initializers', {
   setup() {
@@ -50,7 +57,7 @@ QUnit.test('initializers are passed an engine instance', function() {
   });
 
   myEngine = MyEngine.create();
-  myEngineInstance = myEngine.buildInstance();
+  myEngineInstance = buildEngineInstance(myEngine);
   return myEngineInstance.boot();
 });
 
@@ -108,7 +115,7 @@ QUnit.test('initializers can be registered in a specified order', function() {
   });
 
   myEngine = MyEngine.create();
-  myEngineInstance = myEngine.buildInstance();
+  myEngineInstance = buildEngineInstance(myEngine);
 
   return myEngineInstance.boot().then(() => {
     deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
@@ -168,7 +175,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
   });
 
   myEngine = MyEngine.create();
-  myEngineInstance = myEngine.buildInstance();
+  myEngineInstance = buildEngineInstance(myEngine);
 
   return myEngineInstance.boot().then(() => {
     deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
@@ -222,7 +229,7 @@ QUnit.test('initializers can have multiple dependencies', function () {
   MyEngine.instanceInitializer(c);
 
   myEngine = MyEngine.create();
-  myEngineInstance = myEngine.buildInstance();
+  myEngineInstance = buildEngineInstance(myEngine);
 
   return myEngineInstance.boot().then(() => {
     ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
@@ -256,7 +263,7 @@ QUnit.test('initializers set on Engine subclasses should not be shared between e
   });
 
   firstEngine = FirstEngine.create();
-  firstEngineInstance = firstEngine.buildInstance();
+  firstEngineInstance = buildEngineInstance(firstEngine);
 
   return firstEngineInstance.boot()
     .then(() => {
@@ -264,7 +271,7 @@ QUnit.test('initializers set on Engine subclasses should not be shared between e
       equal(secondInitializerRunCount, 0, 'first initializer only was run');
 
       secondEngine = SecondEngine.create();
-      secondEngineInstance = secondEngine.buildInstance();
+      secondEngineInstance = buildEngineInstance(secondEngine);
       return secondEngineInstance.boot();
     })
     .then(() => {
@@ -303,7 +310,7 @@ QUnit.test('initializers are concatenated', function() {
   });
 
   let firstEngine = FirstEngine.create();
-  let firstEngineInstance = firstEngine.buildInstance();
+  let firstEngineInstance = buildEngineInstance(firstEngine);
 
   let secondEngine, secondEngineInstance;
 
@@ -314,7 +321,7 @@ QUnit.test('initializers are concatenated', function() {
       firstInitializerRunCount = 0;
 
       secondEngine = SecondEngine.create();
-      secondEngineInstance = secondEngine.buildInstance();
+      secondEngineInstance = buildEngineInstance(secondEngine);
       return secondEngineInstance.boot();
     })
     .then(() => {
@@ -371,7 +378,7 @@ QUnit.test('initializers are executed in their own context', function() {
   });
 
   myEngine = MyEngine.create();
-  myEngineInstance = myEngine.buildInstance();
+  myEngineInstance = buildEngineInstance(myEngine);
 
   return myEngineInstance.boot();
 });
