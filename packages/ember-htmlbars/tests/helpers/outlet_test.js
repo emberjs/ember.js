@@ -4,14 +4,14 @@ import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import compile from 'ember-template-compiler/system/compile';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
+import { buildAppInstance } from 'ember-htmlbars/tests/utils';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var trim = jQuery.trim;
 
 var appInstance, top;
 
-testModule('ember-routing-htmlbars: {{outlet}} helper', {
+testModule('ember-htmlbars: {{outlet}} helper', {
   setup() {
     appInstance = buildAppInstance();
     var CoreOutlet = appInstance._lookupFactory('view:core-outlet');

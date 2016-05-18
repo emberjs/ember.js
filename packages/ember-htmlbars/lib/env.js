@@ -82,6 +82,9 @@ import yieldKeyword from 'ember-htmlbars/keywords/yield';
 import mut, { privateMut } from 'ember-htmlbars/keywords/mut';
 import readonly from 'ember-htmlbars/keywords/readonly';
 import getKeyword from 'ember-htmlbars/keywords/get';
+import actionKeyword from 'ember-htmlbars/keywords/action';
+import renderKeyword from 'ember-htmlbars/keywords/render';
+import elementActionKeyword from 'ember-htmlbars/keywords/element-action';
 
 registerKeyword('debugger', debuggerKeyword);
 registerKeyword('with', withKeyword);
@@ -97,6 +100,9 @@ registerKeyword('mut', mut);
 registerKeyword('@mut', privateMut);
 registerKeyword('readonly', readonly);
 registerKeyword('get', getKeyword);
+registerKeyword('action', actionKeyword);
+registerKeyword('render', renderKeyword);
+registerKeyword('@element_action', elementActionKeyword);
 
 if (ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
   registerKeyword('view', view);

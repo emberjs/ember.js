@@ -1,4 +1,3 @@
-import 'ember-routing-htmlbars';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import compile from 'ember-template-compiler/system/compile';
@@ -13,7 +12,7 @@ import { OWNER } from 'container/owner';
 
 var owner, view;
 
-QUnit.module('ember-routing-htmlbars: link-to helper', {
+QUnit.module('ember-htmlbars: link-to helper', {
   setup() {
     owner = buildOwner();
 
