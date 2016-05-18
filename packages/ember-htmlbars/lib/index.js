@@ -123,6 +123,7 @@ import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
 import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
 import hashHelper from 'ember-htmlbars/helpers/hash';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
+import queryParamsHelper from 'ember-htmlbars/helpers/query-params';
 
 // Importing ember-htmlbars/compat updates the
 // Ember.Handlebars global if htmlbars is enabled.
@@ -140,6 +141,7 @@ registerHelper('concat', concatHelper);
 registerHelper('-join-classes', joinClassesHelper);
 registerHelper('-html-safe', htmlSafeHelper);
 registerHelper('hash', hashHelper);
+registerHelper('query-params', queryParamsHelper);
 
 Ember.HTMLBars = {
   template: template,

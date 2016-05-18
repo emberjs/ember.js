@@ -4,7 +4,7 @@
 */
 
 import { keyword } from 'htmlbars-runtime/hooks';
-import closureAction from 'ember-routing-htmlbars/keywords/closure-action';
+import closureAction from 'ember-htmlbars/keywords/closure-action';
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually

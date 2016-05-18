@@ -7,7 +7,6 @@ import 'ember-routing';
 import 'ember-application';
 import 'ember-extension-support';
 import 'ember-htmlbars';
-import 'ember-routing-htmlbars';
 import 'ember-templates';
 
 import require, { has } from 'require';

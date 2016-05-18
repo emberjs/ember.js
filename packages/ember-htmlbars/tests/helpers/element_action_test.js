@@ -13,7 +13,7 @@ import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-htmlbars/component';
 import jQuery from 'ember-views/system/jquery';
 
-import { ActionHelper } from 'ember-routing-htmlbars/keywords/element-action';
+import { ActionHelper } from 'ember-htmlbars/keywords/element-action';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
@@ -30,7 +30,7 @@ import {
 var dispatcher, view, originalViewKeyword, owner;
 var originalRegisterAction = ActionHelper.registerAction;
 
-testModule('ember-routing-htmlbars: action helper', {
+testModule('ember-htmlbars: element action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     dispatcher = EventDispatcher.create();
@@ -1099,7 +1099,7 @@ test('allows multiple actions on a single element', function() {
   ok(doubleClickActionWasCalled, 'The double click handler was called');
 });
 
-testModule('ember-routing-htmlbars: action helper - deprecated invoking directly on target', {
+testModule('ember-htmlbars: action helper - deprecated invoking directly on target', {
   setup() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
@@ -1165,7 +1165,7 @@ test('should respect preventDefault option if provided bound', function() {
   equal(event.isDefaultPrevented(), true, 'should preventDefault');
 });
 
-testModule('ember-routing-htmlbars: action helper - action target without `controller`', {
+testModule('ember-htmlbars: action helper - action target without `controller`', {
   setup() {
     owner = buildOwner();
     owner.registerOptionsForType('template', { instantiate: false });

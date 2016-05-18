@@ -5,7 +5,7 @@ import { observer } from 'ember-metal/mixin';
 import EmberController from 'ember-runtime/controllers/controller';
 import compile from 'ember-template-compiler/system/compile';
 import EmberView from 'ember-views/views/view';
-import { buildAppInstance } from 'ember-routing-htmlbars/tests/utils';
+import { buildAppInstance } from 'ember-htmlbars/tests/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { OWNER } from 'container/owner';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
@@ -21,7 +21,7 @@ function runSet(object, key, value) {
 const ORIGINAL_LEGACY_CONTROLLER_FLAG = ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
 var view, appInstance;
 
-testModule('ember-routing-htmlbars: {{render}} helper', {
+testModule('ember-htmlbars: {{render}} helper', {
   setup() {
     appInstance = buildAppInstance();
   },

@@ -11,7 +11,6 @@
       "packages/ember-views/lib",
       "packages/ember-htmlbars/lib",
       "packages/ember-routing/lib",
-      "packages/ember-routing-htmlbars/lib",
       "packages/ember-routing-views/lib",
       "packages/ember-application/lib",
       "packages/ember-testing/lib",

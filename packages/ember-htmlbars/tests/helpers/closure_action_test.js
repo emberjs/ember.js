@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import compile from 'ember-template-compiler/system/compile';
 import EmberComponent from 'ember-htmlbars/component';
 import { computed } from 'ember-metal/computed';
-import { INVOKE } from 'ember-routing-htmlbars/keywords/closure-action';
+import { INVOKE } from 'ember-htmlbars/keywords/closure-action';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
@@ -67,7 +67,7 @@ function appendViewFor(template, moduleName='', hash={}) {
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 let subscriber;
-testModule('ember-routing-htmlbars: action helper', {
+testModule('ember-htmlbars: action helper', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     owner = buildOwner({
