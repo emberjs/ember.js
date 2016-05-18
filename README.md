@@ -19,11 +19,11 @@ The Ember.js framework enables developers to build scalable, single-page web app
 
 * **Built-in best practices:** all code conforms to industry-standard best practices
 
-* **Rich feature set:**  Ember-specific features such as the Router and the Ember Command Line Interface enhance productivity and functionality   
+* **Rich feature set:**  Ember-specific features such as the Router and the Ember CLI enhance productivity and functionality   
 
 * **Extensive addon collection:** Ember has a large selection of available addons and plugins (over 1,500 at the time of this writing)
 
-* **[Ember Command Line Interface](https://github.com/emberjs/ember.js/)**
+* **[Ember CLI](https://github.com/ember-cli/ember-cli)**
 
 Ember is perfect for larger-scale, functionality-intensive web applications of any size or type. The standardization makes it easy for developers to become acquainted with the architecture and setup of both large and small code bases. Additionally, by keeping your tech stack consistent and coherent, Ember can help make your organization more agile and adaptable, making Ember ideal for any kind of project.
 
