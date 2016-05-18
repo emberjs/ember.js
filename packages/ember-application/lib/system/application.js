@@ -12,8 +12,6 @@ import Namespace, {
 } from 'ember-runtime/system/namespace';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
-import HTMLBarsDOMHelper from 'ember-htmlbars/system/dom-helper';
-import * as HTMLBarsRenderer from 'ember-htmlbars/renderer';
 import EmberView from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import jQuery from 'ember-views/system/jquery';
@@ -1043,9 +1041,13 @@ Application.reopenClass({
   buildRegistry(application, options = {}) {
     let registry = this._super(...arguments);
 
+    commonSetupRegistry(registry);
+
     if (options[GLIMMER]) {
+      var glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
       glimmerSetupRegistry(registry);
     } else {
+      var htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
       htmlbarsSetupRegistry(registry);
     }
 
@@ -1067,37 +1069,6 @@ function commonSetupRegistry(registry) {
   registry.register('location:none', NoneLocation);
 
   registry.register(P`-bucket-cache:main`, BucketCache);
-}
-
-function glimmerSetupRegistry(registry) {
-  commonSetupRegistry(registry);
-
-  let Environment = require('ember-glimmer/environment').default;
-  registry.register('service:-glimmer-environment', Environment);
-  registry.injection('service:-glimmer-environment', 'dom', 'service:-dom-helper');
-  registry.injection('renderer', 'env', 'service:-glimmer-environment');
-
-  let { InteractiveRenderer, InertRenderer } = require('ember-glimmer/renderer');
-  registry.register('renderer:-dom', InteractiveRenderer);
-  registry.register('renderer:-inert', InertRenderer);
-
-  let DOMHelper = require('ember-glimmer/dom').default;
-
-  registry.register('service:-dom-helper', {
-    create({ document }) { return new DOMHelper(document); }
-  });
-}
-
-function htmlbarsSetupRegistry(registry) {
-  commonSetupRegistry(registry);
-
-  let { InteractiveRenderer, InertRenderer } = HTMLBarsRenderer;
-  registry.register('renderer:-dom', InteractiveRenderer);
-  registry.register('renderer:-inert', InertRenderer);
-
-  registry.register('service:-dom-helper', {
-    create({ document }) { return new HTMLBarsDOMHelper(document); }
-  });
 }
 
 function registerLibraries() {
