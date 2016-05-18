@@ -9,6 +9,10 @@ interface CompileOptions {
   env: Environment;
 }
 
+export function compileRealSpec(string: string, options: CompileOptions): SerializedTemplate {
+  return template(compileSpec(string, options));
+}
+
 /*
  * Compile a string into a template rendering function
  *
@@ -41,13 +45,11 @@ interface CompileOptions {
  * @return {Template} A function for rendering the template
  */
 export function compile(string: string, options: CompileOptions): Template {
-  let templateSpec = template(compileSpec(string, options));
-  return Template.fromSpec(templateSpec, options.env);
+  return Template.fromSpec(compileRealSpec(string, options), options.env);
 }
 
 export function compileLayout(string: string, options: CompileOptions): Layout {
-  let templateSpec = template(compileSpec(string, options));
-  return Template.layoutFromSpec(templateSpec, options.env);
+  return Template.layoutFromSpec(compileRealSpec(string, options), options.env);
 }
 
 /*

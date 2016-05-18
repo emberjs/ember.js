@@ -1,9 +1,10 @@
 import { Program, Statement as StatementSyntax } from './syntax';
 import buildStatement from './syntax/statements';
-import { TopLevelTemplate, EntryPoint, InlineBlock, Layout } from './compiled/blocks';
+import { TopLevelTemplate, EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks';
 import Environment from './environment';
 import { EMPTY_SLICE, LinkedList, Stack } from 'glimmer-util';
 import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
+import SymbolTable from './symbol-table';
 
 export default class Scanner {
   private spec: SerializedTemplate;
@@ -24,6 +25,13 @@ export default class Scanner {
     return this.scanTop<Layout>(({ program, children }) => {
       let { named, yields } = this.spec;
       return Layout.create({ children, program, named, yields, symbolTable: null });
+    });
+  }
+
+  scanPartial(symbolTable: SymbolTable): PartialBlock {
+    return this.scanTop<PartialBlock>(({ program, children }) => {
+      let { locals } = this.spec;
+      return new PartialBlock({ children, program, locals, symbolTable });
     });
   }
 

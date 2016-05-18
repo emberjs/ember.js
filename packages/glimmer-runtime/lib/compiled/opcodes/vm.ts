@@ -1,12 +1,21 @@
 import { AbstractOpcode, Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
-import { CompiledArgs } from '../expressions/args';
+import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
 import { VM, UpdatingVM, BindDynamicScopeCallback } from '../../vm';
-import { Layout, InlineBlock } from '../blocks';
+import { Layout, InlineBlock, PartialBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
-import { ListSlice, Opaque, Slice, Dict, dict, assign } from 'glimmer-util';
+import SymbolTable from '../../symbol-table';
+import { PathReference } from 'glimmer-reference';
+import { ValueReference } from '../expressions/value';
+import { ListSlice, Opaque, Slice, Dict, dict, assign, InternedString } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
+import {
+  CompileInto,
+  SymbolLookup,
+  Statement as StatementSyntax
+} from '../../syntax';
+import Scanner from '../../scanner';
 
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
@@ -306,6 +315,70 @@ export class EvaluateOpcode extends Opcode {
   }
 }
 
+export class EvaluatePartialOpcode extends Opcode {
+  public type = "evaluate-partial";
+  public symbolTable: SymbolTable;
+  public name: CompiledExpression<any>;
+  private cache = dict<PartialBlock>();
+
+  constructor({ name, symbolTable }: { symbolTable: SymbolTable, name: CompiledExpression<any> }) {
+    super();
+    this.name = name;
+    this.symbolTable = symbolTable;
+  }
+
+  evaluate(vm: VM) {
+    let reference: PathReference<any> = this.name.evaluate(vm);
+    let name: InternedString = reference.value();
+
+    let block = this.cache[name];
+    if (!block) {
+      let { template } = vm.env.lookupPartial([name]);
+      let scanner = new Scanner(template, vm.env);
+      block = scanner.scanPartial(this.symbolTable);
+    }
+
+    vm.invokeBlock(block, EvaluatedArgs.empty());
+
+    if (!isConst(reference)) {
+      let cache = new ReferenceCache(reference);
+      vm.updateWith(new Assert(cache));
+    }
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: [this.name.toJSON()]
+    };
+  }
+}
+
+export class NameToPartialOpcode extends Opcode {
+  public type = "name-to-partial";
+
+  evaluate(vm: VM) {
+    let reference = vm.frame.getOperand();
+    let name: InternedString = reference.value();
+    let partial = name && vm.env.hasPartial([name]) ? vm.env.lookupPartial([name]) : false;
+    vm.frame.setOperand(new ValueReference(partial));
+
+    if (!isConst(reference)) {
+      let cache = new ReferenceCache(reference);
+      vm.updateWith(new Assert(cache));
+    }
+  }
+
+  toJSON(): OpcodeJSON {
+    return {
+      guid: this._guid,
+      type: this.type,
+      args: ["$OPERAND"]
+    };
+  }
+}
+
 export class TestOpcode extends Opcode {
   public type = "test";
 
@@ -477,4 +550,3 @@ export class DidModifyOpcode extends UpdatingOpcode {
     this.target.didModify();
   }
 }
-
