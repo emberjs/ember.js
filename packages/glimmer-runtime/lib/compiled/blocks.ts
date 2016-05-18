@@ -63,6 +63,16 @@ export class InlineBlock extends Block {
   }
 }
 
+export class PartialBlock extends InlineBlock {
+  initBlocks(blocks = this['children'], parentTable = this['symbolTable']): this {
+    blocks.forEach(block => {
+      let table = SymbolTable.initForBlock({ parent: parentTable, block });
+      this.initBlocks(block['children'], table);
+    });
+    return this;
+  }
+}
+
 export abstract class TopLevelTemplate extends Block {
   initBlocks(blocks = this['children'], parentTable = this['symbolTable']): this {
     blocks.forEach(block => {
