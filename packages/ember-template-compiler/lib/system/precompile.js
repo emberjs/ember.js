@@ -3,11 +3,9 @@
 @submodule ember-template-compiler
 */
 
-import isEnabled from 'ember-metal/features';
-import require, { has } from 'require';
-import compileOptions from 'ember-template-compiler/system/compile_options';
-
-var compileSpec;
+import assign from 'ember-metal/assign';
+import compiler from '../compiler';
+import compileOptions from './compile-options';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template string.
@@ -20,25 +18,6 @@ var compileSpec;
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
 export default function(templateString, options) {
-  if (isEnabled('ember-glimmer')) {
-    if (!compileSpec && has('glimmer-compiler')) {
-      compileSpec = require('glimmer-compiler').compileSpec;
-    }
-
-    if (!compileSpec) {
-      throw new Error('Cannot call `compile` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compile`.');
-    }
-
-    return JSON.stringify(compileSpec(templateString, compileOptions(options)));
-  } else {
-    if (!compileSpec && has('htmlbars-compiler/compiler')) {
-      compileSpec = require('htmlbars-compiler/compiler').compileSpec;
-    }
-
-    if (!compileSpec) {
-      throw new Error('Cannot call `compileSpec` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compileSpec`.');
-    }
-
-    return compileSpec(templateString, compileOptions(options));
-  }
+  let { precompile } = compiler();
+  return precompile(templateString, assign({}, compileOptions(), options));
 }

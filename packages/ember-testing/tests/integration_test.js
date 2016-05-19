@@ -5,7 +5,7 @@ import EmberView from 'ember-views/views/view';
 import Test from 'ember-testing/test';
 import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 import Controller from 'ember-runtime/controllers/controller';
 import { A as emberA } from 'ember-runtime/system/native_array';
 

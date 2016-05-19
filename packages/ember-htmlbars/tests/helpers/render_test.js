@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
 import EmberController from 'ember-runtime/controllers/controller';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import EmberView from 'ember-views/views/view';
 import { buildAppInstance } from 'ember-htmlbars/tests/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

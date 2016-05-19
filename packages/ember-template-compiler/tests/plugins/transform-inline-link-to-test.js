@@ -1,16 +1,5 @@
 import { ENV } from 'ember-environment';
 import { compile } from 'ember-template-compiler';
-import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
-import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
-
-function registerAstPlugin(plugin) {
-  registerPlugin('ast', plugin);
-}
-
-function removeAstPlugin(plugin) {
-  let index = plugins['ast'].indexOf(plugin);
-  plugins['ast'].splice(index, 1);
-}
 
 let legacyViewSupportOriginalValue;
 
@@ -20,12 +9,10 @@ testModule('ember-template-compiler: assert-no-view-and-controller-paths without
   setup() {
     legacyViewSupportOriginalValue = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
-    registerAstPlugin(AssertNoViewAndControllerPaths);
   },
 
   teardown() {
     ENV._ENABLE_LEGACY_VIEW_SUPPORT = legacyViewSupportOriginalValue;
-    removeAstPlugin(AssertNoViewAndControllerPaths);
   }
 });
 

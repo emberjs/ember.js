@@ -14,7 +14,7 @@ import EmberObject from 'ember-runtime/system/object';
 import { setSearchDisabled as setNamespaceSearchDisabled } from 'ember-runtime/system/namespace';
 import EmberRoute from 'ember-routing/system/route';
 import jQuery from 'ember-views/system/jquery';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { _loaded } from 'ember-runtime/system/lazy_load';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';

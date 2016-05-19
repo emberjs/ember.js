@@ -14,7 +14,7 @@ import setupForTesting from 'ember-testing/setup_for_testing';
 import EmberRouter from 'ember-routing/system/router';
 import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';

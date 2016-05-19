@@ -3,7 +3,7 @@ import run from 'ember-metal/run_loop';
 
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-htmlbars/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

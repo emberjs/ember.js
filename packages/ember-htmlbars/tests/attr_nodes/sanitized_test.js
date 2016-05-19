@@ -1,7 +1,7 @@
 /* jshint scripturl:true */
 
 import EmberView from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { SafeString } from 'ember-htmlbars/utils/string';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import { environment } from 'ember-environment';

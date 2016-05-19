@@ -1,14 +1,63 @@
 /**
 @module ember
-@submodule ember-template-compiler
+@submodule ember-htmlbars
 */
 
-import assign from 'ember-metal/assign';
-import defaultPlugins from 'ember-template-compiler/plugins';
 import VERSION from 'ember/version';
+import assign from 'ember-metal/assign';
+import TransformClosureComponentAttrsIntoMut from '../plugins/transform-closure-component-attrs-into-mut';
+import TransformComponentAttrsIntoMut from '../plugins/transform-component-attrs-into-mut';
+import TransformComponentCurlyToReadonly from '../plugins/transform-component-curly-to-readonly';
+import TransformOldClassBindingSyntax from '../plugins/transform-old-class-binding-syntax';
 
 let compileOptions;
 let fragmentReason;
+
+export let PLUGINS = {
+  ast: [
+    TransformClosureComponentAttrsIntoMut,
+    TransformComponentAttrsIntoMut,
+    TransformComponentCurlyToReadonly,
+    TransformOldClassBindingSyntax
+  ]
+};
+
+function mergePlugins(options) {
+  options = options || {};
+  options = assign({}, options);
+  if (!options.plugins) {
+    options.plugins = PLUGINS;
+  } else {
+    let pluginsToAdd = PLUGINS.ast.filter((plugin) => {
+      return options.plugins.ast.indexOf(plugin) === -1;
+    });
+
+    options.plugins.ast = options.plugins.ast.slice().concat(pluginsToAdd);
+  }
+
+  return options;
+}
+
+export function registerPlugin(type, PluginClass) {
+  if (type !== 'ast') {
+    throw new Error(`Attempting to register ${PluginClass} as "${type}" which is not a valid HTMLBars plugin type.`);
+  }
+
+  if (!PLUGINS[type]) {
+    PLUGINS[type] = [PluginClass];
+  } else {
+    PLUGINS[type].push(PluginClass);
+  }
+}
+
+export function removePlugin(type, PluginClass) {
+  if (type !== 'ast') {
+    throw new Error(`Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
+  }
+
+  PLUGINS.ast = PLUGINS.ast.filter((plugin) => !(plugin instanceof PluginClass));
+}
+
 
 /**
   @private
@@ -24,19 +73,12 @@ compileOptions = function(_options) {
   if (_options === true) {
     options = {};
   } else {
-    options = assign({}, _options);
+    options = _options || {};
   }
 
   options.disableComponentGeneration = disableComponentGeneration;
 
-  let plugins = {
-    ast: defaultPlugins.ast.slice()
-  };
-
-  if (options.plugins && options.plugins.ast) {
-    plugins.ast = plugins.ast.concat(options.plugins.ast);
-  }
-  options.plugins = plugins;
+  options = mergePlugins(options);
 
   options.buildMeta = function buildMeta(program) {
     return {
@@ -94,5 +136,7 @@ fragmentReason = function(program) {
     return false;
   }
 };
+
+
 
 export default compileOptions;

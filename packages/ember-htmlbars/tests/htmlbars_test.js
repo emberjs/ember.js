@@ -1,4 +1,4 @@
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from './utils/helpers';
 import defaultEnv from 'ember-htmlbars/env';
 import { domHelper } from 'ember-htmlbars/env';
 import { equalHTML } from 'htmlbars-test-helpers';

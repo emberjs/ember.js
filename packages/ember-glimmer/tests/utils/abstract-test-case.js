@@ -14,6 +14,7 @@ import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
 import DefaultComponentTemplate from 'ember-glimmer/templates/component';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
+import { defaultCompileOptions } from 'ember-template-compiler';
 
 const packageTag = `@${packageName} `;
 
@@ -274,12 +275,16 @@ export class ApplicationTest extends TestCase {
     }
   }
 
+  compile(string, options) {
+    return compile(string, assign({}, defaultCompileOptions(), options));
+  }
+
   registerRoute(name, route) {
     this.application.register(`route:${name}`, route);
   }
 
   registerTemplate(name, template) {
-    this.application.register(`template:${name}`, compile(template, {
+    this.application.register(`template:${name}`, this.compile(template, {
       moduleName: name
     }));
   }
@@ -302,6 +307,10 @@ export class RenderingTest extends TestCase {
     owner.register(P`template:components/-default`, DefaultComponentTemplate);
     owner.register('event_dispatcher:main', EventDispatcher);
     owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), owner.element);
+  }
+
+  compile(string, options) {
+    return compile(string, assign({}, defaultCompileOptions(), options));
   }
 
   getCustomDispatcherEvents() {
@@ -328,7 +337,7 @@ export class RenderingTest extends TestCase {
   render(templateStr, context = {}) {
     let { renderer, owner } = this;
 
-    owner.register('template:-top-level', compile(templateStr, {
+    owner.register('template:-top-level', this.compile(templateStr, {
       moduleName: '-top-level'
     }));
 
@@ -369,7 +378,7 @@ export class RenderingTest extends TestCase {
 
     if (typeof template === 'string') {
       let moduleName = `template:${name}`;
-      owner.register(moduleName, compile(template, { moduleName }));
+      owner.register(moduleName, this.compile(template, { moduleName }));
     }
   }
 
@@ -381,7 +390,7 @@ export class RenderingTest extends TestCase {
     }
 
     if (typeof template === 'string') {
-      owner.register(`template:components/${name}`, compile(template, {
+      owner.register(`template:components/${name}`, this.compile(template, {
         moduleName: `components/${name}`
       }));
     }
@@ -390,7 +399,7 @@ export class RenderingTest extends TestCase {
   registerTemplate(name, template) {
     let { owner } = this;
     if (typeof template === 'string') {
-      owner.register(`template:${name}`, compile(template, {
+      owner.register(`template:${name}`, this.compile(template, {
         moduleName: name
       }));
     } else {

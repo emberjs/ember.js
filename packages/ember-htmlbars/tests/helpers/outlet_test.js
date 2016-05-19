@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { buildAppInstance } from 'ember-htmlbars/tests/utils';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';

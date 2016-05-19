@@ -1,7 +1,7 @@
 import { get } from 'ember-metal/property_get';
 import EmberView from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 
 var view;
 QUnit.module('EmberView#$', {

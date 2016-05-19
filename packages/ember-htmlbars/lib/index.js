@@ -101,7 +101,7 @@ import {
   compile,
   template,
   registerPlugin
-} from 'ember-template-compiler';
+} from 'ember-htmlbars-template-compiler';
 
 import makeBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 

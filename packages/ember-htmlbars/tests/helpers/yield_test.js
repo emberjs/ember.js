@@ -2,7 +2,7 @@ import EmberView from 'ember-views/views/view';
 import Component from 'ember-htmlbars/component';
 import ComponentLookup from 'ember-views/component_lookup';
 
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';

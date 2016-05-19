@@ -1,4 +1,4 @@
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-htmlbars/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';

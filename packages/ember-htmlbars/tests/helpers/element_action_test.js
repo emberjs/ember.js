@@ -8,7 +8,7 @@ import EmberObject from 'ember-runtime/system/object';
 import EmberController from 'ember-runtime/controllers/controller';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import EmberView from 'ember-views/views/view';
 import EmberComponent from 'ember-htmlbars/component';
 import jQuery from 'ember-views/system/jquery';

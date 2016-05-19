@@ -1,11 +1,9 @@
 import run from 'ember-metal/run_loop';
 import { Mixin as EmberMixin } from 'ember-metal/mixin';
 import View from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import { registerAstPlugin, removeAstPlugin } from 'ember-htmlbars/tests/utils';
-import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
 var parentView, view;
@@ -17,7 +15,6 @@ import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 testModule('View#nearest*', {
   setup() {
-    removeAstPlugin(AssertNoViewAndControllerPaths);
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     Mixin = EmberMixin.create({});
     Parent = View.extend(Mixin, {
@@ -30,7 +27,6 @@ testModule('View#nearest*', {
       if (view) { view.destroy(); }
     });
     resetKeyword('view', originalViewKeyword);
-    registerAstPlugin(AssertNoViewAndControllerPaths);
   }
 });
 

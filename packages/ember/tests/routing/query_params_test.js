@@ -5,7 +5,7 @@ import get from 'ember-metal/property_get';
 import EmberObject from 'ember-runtime/system/object';
 import isEnabled from 'ember-metal/features';
 import { computed } from 'ember-metal/computed';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';

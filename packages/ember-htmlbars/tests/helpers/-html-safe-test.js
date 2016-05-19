@@ -3,7 +3,7 @@
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { Registry } from 'ember-runtime/system/container';
 import Component from 'ember-htmlbars/component';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';

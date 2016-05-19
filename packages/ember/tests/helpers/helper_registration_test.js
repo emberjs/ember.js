@@ -1,7 +1,7 @@
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import helpers from 'ember-htmlbars/helpers';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Helper, { helper } from 'ember-htmlbars/helper';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';

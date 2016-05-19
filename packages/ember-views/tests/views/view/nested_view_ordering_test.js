@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 import buildOwner from 'container/tests/test-helpers/build-owner';

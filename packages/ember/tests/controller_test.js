@@ -1,7 +1,7 @@
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-templates/component';

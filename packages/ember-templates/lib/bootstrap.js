@@ -9,7 +9,7 @@ import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberError from 'ember-metal/error';
 import { onLoad } from 'ember-runtime/system/lazy_load';
-import htmlbarsCompile from 'ember-template-compiler/system/compile';
+import { compile as htmlbarsCompile } from 'ember-template-compiler';
 import { environment } from 'ember-environment';
 import {
   has as hasTemplate,
