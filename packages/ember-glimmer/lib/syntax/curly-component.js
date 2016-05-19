@@ -37,6 +37,13 @@ function applyAttributeBindings(attributeBindings, component, operations) {
   }
 }
 
+function privatizeTargetObject(args, props) {
+  if (args.named.has('targetObject')) {
+    props._targetObject = props.targetObject;
+    delete props.targetObject;
+  }
+}
+
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
     super();
@@ -69,6 +76,7 @@ class CurlyComponentManager {
     let { attrs, props } = processedArgs.value();
 
     aliasIdToElementId(args, props);
+    privatizeTargetObject(args, props);
 
     props.renderer = parentView.renderer;
     props[HAS_BLOCK] = hasBlock;
