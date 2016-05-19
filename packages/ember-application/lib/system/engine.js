@@ -16,18 +16,9 @@ import DefaultResolver from 'ember-application/system/resolver';
 import EngineInstance from './engine-instance';
 import isEnabled from 'ember-metal/features';
 import symbol from 'ember-metal/symbol';
-
 import Controller from 'ember-runtime/controllers/controller';
-import TextField from 'ember-templates/components/text_field';
-import TextArea from 'ember-templates/components/text_area';
-import Checkbox from 'ember-templates/components/checkbox';
-import LinkToComponent from 'ember-templates/components/link-to';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
-import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
-import { OutletView as HTMLBarsOutletView } from 'ember-htmlbars/views/outlet';
-
-import EmberView from 'ember-views/views/view';
 import require from 'require';
 
 export const GLIMMER = symbol('GLIMMER');
@@ -412,9 +403,13 @@ Engine.reopenClass({
 
     registry.register('application:main', namespace, { instantiate: false });
 
+    commonSetupRegistry(registry);
+
     if (options[GLIMMER]) {
+      var glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
       glimmerSetupRegistry(registry);
     } else {
+      var htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
       htmlbarsSetupRegistry(registry);
     }
 
@@ -508,10 +503,7 @@ function commonSetupRegistry(registry) {
 
   registry.injection('route', 'router', 'router:main');
 
-  registry.register('component:-text-field', TextField);
-  registry.register('component:-text-area', TextArea);
-  registry.register('component:-checkbox', Checkbox);
-  registry.register('component:link-to', LinkToComponent);
+
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
@@ -525,32 +517,6 @@ function commonSetupRegistry(registry) {
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
-}
-
-function glimmerSetupRegistry(registry) {
-  commonSetupRegistry(registry);
-
-  let OutletView = require('ember-glimmer/views/outlet').default;
-  registry.register('view:-outlet', OutletView);
-
-  let glimmerOutletTemplate = require('ember-glimmer/templates/outlet').default;
-  let glimmerComponentTemplate = require('ember-glimmer/templates/component').default;
-  registry.register(P`template:components/-default`, glimmerComponentTemplate);
-  registry.register('template:-outlet', glimmerOutletTemplate);
-  registry.injection('view:-outlet', 'template', 'template:-outlet');
-  registry.injection('template', 'env', 'service:-glimmer-environment');
-
-  registry.optionsForType('helper', { instantiate: false });
-}
-
-function htmlbarsSetupRegistry(registry) {
-  commonSetupRegistry(registry);
-
-  registry.optionsForType('template', { instantiate: false });
-  registry.register('view:-outlet', HTMLBarsOutletView);
-
-  registry.register('template:-outlet', topLevelViewTemplate);
-  registry.register('view:toplevel', EmberView.extend());
 }
 
 export default Engine;
