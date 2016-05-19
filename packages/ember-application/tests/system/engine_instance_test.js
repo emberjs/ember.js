@@ -57,23 +57,31 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   assert.notStrictEqual(postComponent1, postComponent2, 'lookup creates a brand new instance because previous one was reset');
 });
 
-QUnit.test('can be booted when its parent has been set', function(assert) {
-  run(function() {
-    engineInstance = EngineInstance.create({ base: engine });
-  });
-
-  expectAssertion(function() {
-    engineInstance._bootSync();
-  }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
-
-  setEngineParent(engineInstance, {});
-
-  return engineInstance.boot().then(() => {
-    assert.ok(true, 'boot successful');
-  });
-});
-
 if (isEnabled('ember-application-engines')) {
+  QUnit.test('can be booted when its parent has been set', function(assert) {
+    assert.expect(3);
+
+    run(function() {
+      engineInstance = EngineInstance.create({ base: engine });
+    });
+
+    expectAssertion(function() {
+      engineInstance._bootSync();
+    }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
+
+    setEngineParent(engineInstance, {});
+
+    // Stub `cloneParentDependencies`, the internals of which are tested along
+    // with application instances.
+    engineInstance.cloneParentDependencies = function() {
+      assert.ok(true, 'parent dependencies are cloned');
+    };
+
+    return engineInstance.boot().then(() => {
+      assert.ok(true, 'boot successful');
+    });
+  });
+
   QUnit.test('can build a child instance of a registered engine', function(assert) {
     let ChatEngine = Engine.extend();
     let chatEngineInstance;
