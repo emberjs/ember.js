@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import isEnabled from 'ember-metal/features';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
-import { INVOKE } from 'ember-routing-htmlbars/keywords/closure-action';
+import { INVOKE } from 'ember-htmlbars/keywords/closure-action';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 
