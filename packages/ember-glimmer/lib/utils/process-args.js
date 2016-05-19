@@ -4,6 +4,7 @@ import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
@@ -64,8 +65,6 @@ class SimpleArgs {
     return { attrs, props };
   }
 }
-
-const MUTABLE_CELL = symbol('MUTABLE_CELL');
 
 export function isCell(val) {
   return val && val[MUTABLE_CELL];

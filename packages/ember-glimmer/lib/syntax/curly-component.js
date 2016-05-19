@@ -6,6 +6,8 @@ import processArgs from '../utils/process-args';
 import { getOwner } from 'container/owner';
 import { privatize as P } from 'container/registry';
 import get from 'ember-metal/property_get';
+import { ComponentDefinition } from 'glimmer-runtime';
+import Component from '../component';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -77,6 +79,13 @@ class CurlyComponentManager {
 
     dynamicScope.view = component;
     parentView.appendChild(component);
+
+    if (parentView.controller) {
+      dynamicScope.controller = parentView.controller;
+    }
+
+    component._controller = dynamicScope.controller;
+
 
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });
@@ -225,9 +234,6 @@ class CurlyComponentManager {
 }
 
 const MANAGER = new CurlyComponentManager();
-
-import { ComponentDefinition } from 'glimmer-runtime';
-import Component from '../component';
 
 function tagName(vm) {
   let { tagName } = vm.dynamicScope().view;

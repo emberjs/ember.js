@@ -241,6 +241,29 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
+  ['@test it should have the right controller in scope for the route template']() {
+    this.router.map(function() {
+      this.route('a');
+      this.route('b');
+    });
+
+    this.registerController('a', Controller.extend({
+      value: 'a'
+    }));
+
+    this.registerController('b', Controller.extend({
+      value: 'b'
+    }));
+
+    this.registerTemplate('a', '{{value}}');
+    this.registerTemplate('b', '{{value}}');
+
+    return this.visit('/a').then(() => {
+      this.assertText('a');
+      return this.visit('/b');
+    }).then(() => this.assertText('b'));
+  }
+
   ['@test it should update correctly when the controller changes'](assert) {
     this.router.map(function() {
       this.route('color', { path: '/colors/:color' });
