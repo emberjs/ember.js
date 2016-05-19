@@ -74,8 +74,6 @@ module.exports = function() {
   if (glimmerStatus === null || glimmerStatus === true) {
     addGlimmerPackage(vendorPackages, 'glimmer');
     addGlimmerPackage(vendorPackages, 'glimmer-compiler');
-    addGlimmerPackage(vendorPackages, 'glimmer-object');
-    addGlimmerPackage(vendorPackages, 'glimmer-object-reference');
     addGlimmerPackage(vendorPackages, 'glimmer-reference');
     addGlimmerPackage(vendorPackages, 'glimmer-runtime');
     addGlimmerPackage(vendorPackages, 'glimmer-syntax');
@@ -83,13 +81,6 @@ module.exports = function() {
     addGlimmerPackage(vendorPackages, 'glimmer-util');
     addGlimmerPackage(vendorPackages, 'glimmer-wire-format');
     addGlimmerPackage(vendorPackages, 'handlebars'); // inlined parser and whatnot
-
-    vendorPackages['glimmer-engine-tests'] = find(glimmerEngine, {
-      include: [
-        'amd/glimmer-tests.amd.js',
-        'amd/glimmer-tests.amd.map'
-      ]
-    });
   }
 
   var emberBuild = new EmberBuild({
