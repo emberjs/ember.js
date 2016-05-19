@@ -166,8 +166,8 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
       set(this.delegate, 'playing', {});
     });
 
-    this.assert.throws(() => this.delegate.sendAction());
-    this.assert.throws(() => this.delegate.sendAction('playing'));
+    expectAssertion(() => this.delegate.sendAction());
+    expectAssertion(() => this.delegate.sendAction('playing'));
   }
 
   ['@test Calling sendAction on a component with contexts']() {
@@ -195,26 +195,6 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
     this.assertSentWithArgs([firstContext, secondContext], 'multiple contexts were sent to the action');
   }
 
-  ['@test Calling sendAction on a component with a targetObject specified'](assert) {
-    assert.expect(3);
-    this.registerComponent('wrapper-component', {
-      ComponentClass: Component.extend({
-        mockTarget: EmberObject.create({
-          send(actionName, actionContext) {
-            assert.equal(actionName, 'poke', 'targetObject received the sendAction request');
-            assert.equal(actionContext, 'me', 'targetObject received the arguments for the sendAction request');
-          }
-        })
-      }),
-      template: '{{action-delegate poke="poke" targetObject=mockTarget}}'
-    });
-
-    this.render('{{wrapper-component}}');
-
-    this.runTask(() => this.delegate.sendAction('poke', 'me'));
-
-    this.assertSendCount(0);
-  }
 });
 
 moduleFor('Components test: sendAction to a controller', class extends ApplicationTest {
@@ -268,17 +248,26 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
     this.registerRoute('withNestedController.nestedWithOutController', Route);
     this.registerRoute('withoutController', Route);
 
+    function expectSendActionToThrow() {
+      let fn = () => component.sendAction('poke');
+      if (EmberDev && EmberDev.runningProdBuild) {
+        expectAssertion(fn);
+      } else {
+        assert.throws(fn);
+      }
+    }
+
     return this.visit('/withController')
       .then(() => component.sendAction('poke', 'top'))
       .then(() => this.visit('withoutController'))
-      .then(() => assert.throws(() => component.sendAction('poke')))
+      .then(expectSendActionToThrow)
       // withNestedController.index does not have a controller specified, so it should throw
       .then(() => this.visit('/withNestedController'))
-      .then(() => assert.throws(() => component.sendAction('poke')))
+      .then(expectSendActionToThrow)
       .then(() => this.visit('/withNestedController/nestedWithController'))
       .then(() => component.sendAction('poke', 'nested'))
       .then(() => this.visit('/withNestedController/nestedWithoutController'))
-      .then(() => assert.throws(() => component.sendAction('poke')));
+      .then(expectSendActionToThrow);
   }
 
   ['@test sendAction should not trigger an action an outlet\'s controller if a parent component handles it'](assert) {
@@ -411,7 +400,7 @@ moduleFor('Components test: send', class extends RenderingTest {
 
     this.runTask(() => component.send('foo', 'bar'));
 
-    assert.throws(function () {
+    expectAssertion(function () {
       component.send('baz', 'bar');
     }, /had no action handler for: baz/);
   }
@@ -521,7 +510,7 @@ moduleFor('Components test: send', class extends RenderingTest {
   }
 
   ['@test actions cannot be provided at create time'](assert) {
-    assert.throws(() => Component.create({
+    expectAssertion(() => Component.create({
       actions: {
         foo() {
           assert.ok(true, 'foo');

@@ -37,8 +37,10 @@ function applyAttributeBindings(attributeBindings, component, operations) {
   }
 }
 
-function privatizeTargetObject(args, props) {
-  if (args.named.has('targetObject')) {
+// Use `_targetObject` to avoid stomping on a CP
+// that exists in the component
+function privatizeTargetObject(props) {
+  if (props.targetObject) {
     props._targetObject = props.targetObject;
     delete props.targetObject;
   }
@@ -76,7 +78,7 @@ class CurlyComponentManager {
     let { attrs, props } = processedArgs.value();
 
     aliasIdToElementId(args, props);
-    privatizeTargetObject(args, props);
+    privatizeTargetObject(props);
 
     props.renderer = parentView.renderer;
     props[HAS_BLOCK] = hasBlock;
@@ -206,6 +208,7 @@ class CurlyComponentManager {
       bucket.argsRevision = args.tag.value();
 
       let { attrs, props } = args.value();
+      privatizeTargetObject(props);
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;

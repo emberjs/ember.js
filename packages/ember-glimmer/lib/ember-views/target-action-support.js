@@ -54,15 +54,15 @@ export default Mixin.create(TargetActionSupport, {
    @property target
    @private
   */
-  target: computed('outletState', function () {
+  target: computed(function () {
     let outletState = get(this, 'outletState');
     return outletState ? getCurrentOutletState(outletState).render.controller : undefined;
   }),
 
   // @override
   send(actionName, ...args) {
-    var target;
-    var action = this.actions && this.actions[actionName];
+    let target;
+    let action = this.actions && this.actions[actionName];
 
     if (action) {
       var shouldBubble = action.apply(this, args) === true;
@@ -98,10 +98,7 @@ export default Mixin.create(TargetActionSupport, {
     @private
   */
   targetObject: computed('parentView', function(key) {
-    let targetObjectAttr = get(this, '_targetObject');
-    if (targetObjectAttr) {
-      return targetObjectAttr;
-    }
+    if (this._targetObject) {  return this._targetObject; }
     let parentComponent = get(this, 'parentView');
     if (parentComponent) {
       let outletState = get(parentComponent, 'outletState');
