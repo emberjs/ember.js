@@ -172,6 +172,40 @@ QUnit.test('HistoryLocation.getURL() returns the current url, excluding both roo
   equal(location.getURL(), '/foo/bar');
 });
 
+QUnit.test('HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+
+      set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
+      set(this, 'rootURL', '/bar/');
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/foo/bar/baz');
+});
+
+QUnit.test('HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+
+      set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
+      set(this, 'baseURL', '/bar/');
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/foo/bar/baz');
+});
+
 QUnit.test('HistoryLocation.getURL() includes location.search', function() {
   expect(1);
 

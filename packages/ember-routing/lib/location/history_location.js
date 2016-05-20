@@ -74,8 +74,10 @@ export default EmberObject.extend({
     rootURL = rootURL.replace(/\/$/, '');
     baseURL = baseURL.replace(/\/$/, '');
 
-    // remove baseURL and rootURL from path
-    var url = path.replace(baseURL, '').replace(rootURL, '');
+    // remove baseURL and rootURL from start of path
+    var url = path
+      .replace(new RegExp('^' + baseURL), '')
+      .replace(new RegExp('^' + rootURL), '');
 
     var search = location.search || '';
     url += search;
