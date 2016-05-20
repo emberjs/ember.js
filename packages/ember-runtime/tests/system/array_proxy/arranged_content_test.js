@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
-import ArrayProxy from 'ember-runtime/system/array_proxy';
+import ArrayProxy, { removeAt } from 'ember-runtime/system/array_proxy';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { objectAt } from 'ember-runtime/mixins/array';
 
@@ -101,7 +101,7 @@ QUnit.test('pushObjects - adds multiple to end of content even if it already exi
 });
 
 QUnit.test('removeAt - removes from index in arrangedContent', function() {
-  run(() => array.removeAt(1, 2));
+  run(() => removeAt(array, 1, 2));
   deepEqual(array.get('content'), [1, 5]);
 });
 

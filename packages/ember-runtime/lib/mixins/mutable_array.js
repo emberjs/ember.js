@@ -26,6 +26,23 @@ import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import isEnabled from 'ember-metal/features';
 
+export function removeAt(array, start, len) {
+  if ('number' === typeof start) {
+    if ((start < 0) || (start >= get(array, 'length'))) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
+    // fast case
+    if (len === undefined) {
+      len = 1;
+    }
+
+    array.replace(start, len, EMPTY);
+  }
+
+  return array;
+}
+
 /**
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
@@ -129,9 +146,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```javascript
     let colors = ['red', 'green', 'blue', 'yellow', 'orange'];
 
-    colors.removeAt(0);     // ['green', 'blue', 'yellow', 'orange']
-    colors.removeAt(2, 2);  // ['green', 'blue']
-    colors.removeAt(4, 2);  // Error: Index out of range
+    removeAt(colors, 0);     // ['green', 'blue', 'yellow', 'orange']
+    removeAt(colors, 2, 2);  // ['green', 'blue']
+    removeAt(colors, 4, 2);  // Error: Index out of range
     ```
 
     @method removeAt
@@ -141,20 +158,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   removeAt(start, len) {
-    if ('number' === typeof start) {
-      if ((start < 0) || (start >= get(this, 'length'))) {
-        throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-      }
-
-      // fast case
-      if (len === undefined) {
-        len = 1;
-      }
-
-      this.replace(start, len, EMPTY);
-    }
-
-    return this;
+    return removeAt(this, start, len);
   },
 
   /**

@@ -28,6 +28,7 @@ import {
 import { isArray } from 'ember-runtime/utils';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 let obj;
 QUnit.module('map', {
@@ -68,7 +69,7 @@ QUnit.test('it maps simple properties', function() {
 
   deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
-  obj.get('array').removeAt(3);
+  removeAt(obj.get('array'), 3);
 
   deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
 });
@@ -135,7 +136,7 @@ QUnit.test('it maps objects', function() {
     { name: 'Eddard' }
   ]);
 
-  obj.get('arrayObjects').removeAt(1);
+  removeAt(obj.get('arrayObjects'), 1);
 
   deepEqual(obj.get('mappedObjects'), [
     { name: 'Robert' },
@@ -201,7 +202,7 @@ QUnit.test('it maps properties', function() {
 
   deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
-  obj.get('array').removeAt(3);
+  removeAt(obj.get('array'), 3);
 
   deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
 });
@@ -474,7 +475,7 @@ QUnit.test('properties values can be replaced', function() {
 
     deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], name + ' adds new items');
 
-    array2.removeAt(6); // remove 7
+    removeAt(array2, 6); // remove 7
 
     deepEqual(obj.get('union').sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], name + ' does not remove items that are still in the dependent array');
 
