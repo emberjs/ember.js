@@ -559,20 +559,28 @@ var EmberRouter = EmberObject.extend(Evented, {
         }
       }
 
-      if (isEnabled('ember-route-serializers')) {
+      handler.routeName = name;
+      return handler;
+    };
+  },
+
+  _getSerializerFunction() {
+    return (name) => {
+      var serializer = this._serializeMethods[name];
+
+      if (!serializer) {
+        var handler = this.router.getHandler(name);
+
         deprecate(
           `Defining a serialize function on route '${name}' is deprecated. Instead, define it in the router's map as an option.`,
           hasDefaultSerialize(handler),
           { id: 'ember-routing.serialize-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_route-serialize' }
         );
 
-        if (this._serializeMethods[name]) {
-          handler.serialize = this._serializeMethods[name];
-        }
+        this._serializeMethods[name] = handler.serialize;
       }
 
-      handler.routeName = name;
-      return handler;
+      return serializer;
     };
   },
 
@@ -581,6 +589,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     var emberRouter = this;
 
     router.getHandler = this._getHandlerFunction();
+
+    if (isEnabled('ember-route-serializers')) {
+      router.getSerializer = this._getSerializerFunction();
+    }
 
     var doUpdateURL = function() {
       location.setURL(lastURL);
