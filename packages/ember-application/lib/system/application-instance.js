@@ -299,10 +299,13 @@ const ApplicationInstance = EngineInstance.extend({
       }
     };
 
-    // Keeps the location adapter's internal URL in-sync
-    get(router, 'location').setURL(url);
+    let location = get(router, 'location');
 
-    return router.handleURL(url).then(handleResolve, handleReject);
+    // Keeps the location adapter's internal URL in-sync
+    location.setURL(url);
+
+    // getURL returns the set url with the rootURL stripped off
+    return router.handleURL(location.getURL()).then(handleResolve, handleReject);
   }
 });
 

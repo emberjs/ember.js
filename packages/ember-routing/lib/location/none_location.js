@@ -1,3 +1,4 @@
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
@@ -22,15 +23,38 @@ export default EmberObject.extend({
   implementation: 'none',
   path: '',
 
+  detect() {
+    let rootURL = this.rootURL;
+
+    assert('rootURL must end with a trailing forward slash e.g. "/app/"',
+                 rootURL.charAt(rootURL.length - 1) === '/');
+  },
+
   /**
-    Returns the current path.
+    Will be pre-pended to path.
+
+    @private
+    @property rootURL
+    @default '/'
+  */
+  rootURL: '/',
+
+  /**
+    Returns the current path without `rootURL`.
 
     @private
     @method getURL
     @return {String} path
   */
   getURL() {
-    return get(this, 'path');
+    let path = get(this, 'path');
+    let rootURL = get(this, 'rootURL');
+
+    // remove trailing slashes if they exists
+    rootURL = rootURL.replace(/\/$/, '');
+
+    // remove rootURL from url
+    return path.replace(new RegExp('^' + rootURL), '');
   },
 
   /**
@@ -83,9 +107,13 @@ export default EmberObject.extend({
     @return {String} url
   */
   formatURL(url) {
-    // The return value is not overly meaningful, but we do not want to throw
-    // errors when test code renders templates containing {{action href=true}}
-    // helpers.
-    return url;
+    let rootURL = get(this, 'rootURL');
+
+    if (url !== '') {
+      // remove trailing slashes if they exists
+      rootURL = rootURL.replace(/\/$/, '');
+    }
+
+    return rootURL + url;
   }
 });
