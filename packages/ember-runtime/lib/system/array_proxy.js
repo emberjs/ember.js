@@ -20,6 +20,8 @@ import alias from 'ember-metal/alias';
 import {
   addArrayObserver,
   removeArrayObserver,
+  arrayContentDidChange,
+  arrayContentWillChange,
   objectAt
 } from 'ember-runtime/mixins/array';
 
@@ -371,11 +373,11 @@ export default EmberObject.extend(MutableArray, {
   },
 
   arrangedContentArrayWillChange(item, idx, removedCnt, addedCnt) {
-    this.arrayContentWillChange(idx, removedCnt, addedCnt);
+    arrayContentWillChange(this, idx, removedCnt, addedCnt);
   },
 
   arrangedContentArrayDidChange(item, idx, removedCnt, addedCnt) {
-    this.arrayContentDidChange(idx, removedCnt, addedCnt);
+    arrayContentDidChange(this, idx, removedCnt, addedCnt);
   },
 
   init() {
