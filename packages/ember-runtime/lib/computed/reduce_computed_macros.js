@@ -237,7 +237,7 @@ export function mapBy(dependentKey, propertyKey) {
   The callback method you provide should have the following signature.
   `item` is the current item in the iteration.
   `index` is the integer index of the current item in the iteration.
-  `array` is the dependant array itself.
+  `array` is the dependent array itself.
 
   ```javascript
   function(item, index, array);

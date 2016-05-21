@@ -105,7 +105,7 @@ export default Mixin.create({
     handler.
 
     Because `get` unifies the syntax for accessing all these kinds
-    of properties, it can make many refactorings easier, such as replacing a
+    of properties, it can make many refactors easier, such as replacing a
     simple property with a computed property, or vice versa.
 
     ### Computed Properties

@@ -48,7 +48,7 @@ if (isEnabled('mandatory-setter')) {
   };
 
   // Future traveler, although this code looks scary. It merely exists in
-  // development to aid in development asertions. Production builds of
+  // development to aid in development assertions. Production builds of
   // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);

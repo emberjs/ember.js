@@ -246,7 +246,7 @@ const ApplicationInstance = EngineInstance.extend({
     Navigate the instance to a particular URL. This is useful in tests, for
     example, or to tell the app to start at a particular URL. This method
     returns a promise that resolves with the app instance when the transition
-    is complete, or rejects if the transion was aborted due to an error.
+    is complete, or rejects if the transition was aborted due to an error.
 
     @public
     @param url {String} the destination URL
@@ -261,7 +261,7 @@ const ApplicationInstance = EngineInstance.extend({
       // Resolve only after rendering is complete
       return new RSVP.Promise((resolve) => {
         // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
-        // Also, aren't proimses supposed to be async anyway?
+        // Also, aren't promises supposed to be async anyway?
         run.next(null, resolve, this);
       });
     };

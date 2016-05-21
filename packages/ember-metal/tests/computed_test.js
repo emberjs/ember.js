@@ -45,7 +45,7 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
       set() {},
       other() {}
     });
-  }, 'Config object pased to a Ember.computed can only contain `get` or `set` keys.');
+  }, 'Config object passed to an Ember.computed can only contain `get` or `set` keys.');
 });
 
 

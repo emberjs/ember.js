@@ -71,7 +71,7 @@ import closureAction from 'ember-htmlbars/keywords/closure-action';
   Two options can be passed to the `action` helper when it is used in this way.
 
   * `target=someProperty` will look to `someProperty` instead of the current
-    context for the `actions` hash. This can be useful when targetting a
+    context for the `actions` hash. This can be useful when targeting a
     service for actions.
   * `value="target.value"` will read the path `target.value` off the first
     argument to the action when it is called and rewrite the first argument
