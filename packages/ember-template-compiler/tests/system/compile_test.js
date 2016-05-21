@@ -1,4 +1,4 @@
-import { compile } from 'ember-htmlbars-template-compiler';
+import { compile } from '../utils/helpers';
 import {
   compile as htmlbarsCompile
 } from 'htmlbars-compiler/compiler';

@@ -2,12 +2,12 @@ import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
 import TransformActionSyntax from '../plugins/transform-action-syntax';
 import assign from 'ember-metal/assign';
 
-export const PLUGINS = {
-  ast: [
-    TransformHasBlockSyntax,
-    TransformActionSyntax
-  ]
-};
+export const PLUGINS = [
+  TransformHasBlockSyntax,
+  TransformActionSyntax
+];
+
+let USER_PLUGINS = [];
 
 export default function compileOptions(options) {
   options = options || {};
@@ -15,10 +15,10 @@ export default function compileOptions(options) {
   if (!options.plugins) {
     options.plugins = PLUGINS;
   } else {
-    let pluginsToAdd = PLUGINS.ast.filter((plugin) => {
+    let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
+    let pluginsToAdd = potententialPugins.filter((plugin) => {
       return options.plugins.ast.indexOf(plugin) === -1;
     });
-
     options.plugins.ast = options.plugins.ast.slice().concat(pluginsToAdd);
   }
 
@@ -30,10 +30,8 @@ export function registerPlugin(type, PluginClass) {
     throw new Error(`Attempting to register ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
   }
 
-  if (!PLUGINS.ast) {
-    PLUGINS.ast = [PluginClass];
-  } else {
-    PLUGINS.ast.push(PluginClass);
+  if (USER_PLUGINS.indexOf(PluginClass) === -1) {
+    USER_PLUGINS = [PluginClass, ...USER_PLUGINS];
   }
 }
 
@@ -42,5 +40,5 @@ export function removePlugin(type, PluginClass) {
     throw new Error(`Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
   }
 
-  PLUGINS.ast = PLUGINS.ast.filter((plugin) => !(plugin instanceof PluginClass));
+  USER_PLUGINS = USER_PLUGINS.filter((plugin) => plugin !== PluginClass);
 }

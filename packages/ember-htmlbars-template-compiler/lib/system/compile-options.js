@@ -13,14 +13,14 @@ import TransformOldClassBindingSyntax from '../plugins/transform-old-class-bindi
 let compileOptions;
 let fragmentReason;
 
-export let PLUGINS = {
-  ast: [
-    TransformClosureComponentAttrsIntoMut,
-    TransformComponentAttrsIntoMut,
-    TransformComponentCurlyToReadonly,
-    TransformOldClassBindingSyntax
-  ]
-};
+export let PLUGINS = [
+  TransformClosureComponentAttrsIntoMut,
+  TransformComponentAttrsIntoMut,
+  TransformComponentCurlyToReadonly,
+  TransformOldClassBindingSyntax
+];
+
+let USER_PLUGINS = [];
 
 function mergePlugins(options) {
   options = options || {};
@@ -28,7 +28,8 @@ function mergePlugins(options) {
   if (!options.plugins) {
     options.plugins = PLUGINS;
   } else {
-    let pluginsToAdd = PLUGINS.ast.filter((plugin) => {
+    let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
+    let pluginsToAdd = potententialPugins.filter((plugin) => {
       return options.plugins.ast.indexOf(plugin) === -1;
     });
 
@@ -43,10 +44,8 @@ export function registerPlugin(type, PluginClass) {
     throw new Error(`Attempting to register ${PluginClass} as "${type}" which is not a valid HTMLBars plugin type.`);
   }
 
-  if (!PLUGINS[type]) {
-    PLUGINS[type] = [PluginClass];
-  } else {
-    PLUGINS[type].push(PluginClass);
+  if (USER_PLUGINS.indexOf(PluginClass) === -1) {
+    USER_PLUGINS = [PluginClass, ...USER_PLUGINS];
   }
 }
 
@@ -55,7 +54,7 @@ export function removePlugin(type, PluginClass) {
     throw new Error(`Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
   }
 
-  PLUGINS.ast = PLUGINS.ast.filter((plugin) => !(plugin instanceof PluginClass));
+  USER_PLUGINS = USER_PLUGINS.filter((plugin) => plugin !== PluginClass);
 }
 
 

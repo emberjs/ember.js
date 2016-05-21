@@ -5,9 +5,7 @@ import TransformAngleBracketComponents from 'ember-template-compiler/plugins/tra
 import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
 import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
 import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
-import PreventRenderBlock from 'ember-template-compiler/plugins/prevent-render-block';
 import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
-import AssertNoEachIn from 'ember-template-compiler/plugins/assert-no-each-in';
 
 QUnit.module('ember-template-compiler: default compile options');
 
@@ -25,8 +23,6 @@ QUnit.test('has default AST plugins', function() {
     TransformInputOnToOnEvent,
     TransformTopLevelComponents,
     DeprecateRenderModel,
-    PreventRenderBlock,
-    AssertNoEachIn,
     TransformInlineLinkTo
   ]);
 });

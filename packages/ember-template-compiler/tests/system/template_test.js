@@ -1,4 +1,4 @@
-import template from 'ember-htmlbars-template-compiler/system/template';
+import { template } from 'ember-template-compiler';
 
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 

@@ -4,9 +4,7 @@ import TransformAngleBracketComponents from 'ember-template-compiler/plugins/tra
 import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
 import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
 import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
-import PreventRenderBlock from 'ember-template-compiler/plugins/prevent-render-block';
 import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
-import AssertNoEachIn from 'ember-template-compiler/plugins/assert-no-each-in';
 
 export default Object.freeze([
   TransformOldBindingSyntax,
@@ -15,7 +13,5 @@ export default Object.freeze([
   TransformInputOnToOnEvent,
   TransformTopLevelComponents,
   DeprecateRenderModel,
-  PreventRenderBlock,
-  AssertNoEachIn,
   TransformInlineLinkTo
 ]);

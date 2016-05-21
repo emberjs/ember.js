@@ -1,4 +1,4 @@
-import { compile } from 'ember-template-compiler';
+import { compile } from '../utils/helpers';
 
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
