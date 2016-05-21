@@ -10,6 +10,9 @@ import { dasherize } from 'ember-runtime/system/string';
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
+import { ARGS } from '../component';
+import { isMut } from '../helpers/mut';
+
 export const UPDATE = symbol('UPDATE');
 
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
@@ -72,7 +75,9 @@ export class CachedReference extends EmberPathReference {
 // @implements PathReference
 export class RootReference extends ConstReference {
   get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
+    let parentArgs = get(this.value(), ARGS);
+    let parentProperty = parentArgs && get(parentArgs, propertyKey);
+    return (isMut(parentProperty)) ? parentProperty : new PropertyReference(this, propertyKey);
   }
 }
 

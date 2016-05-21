@@ -5,7 +5,7 @@ import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { styles } from '../utils/test-helpers';
 
-moduleFor('@htmlbars Mutable bindings integration tests', class extends RenderingTest {
+moduleFor('Mutable bindings integration tests', class extends RenderingTest {
 
   ['@test a simple mutable binding using `mut` propagates properly'](assert) {
     let bottom;
@@ -76,7 +76,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
   }
 
   // See https://github.com/emberjs/ember.js/commit/807a0cd for an explanation of this test
-  ['@test using a string value through middle tier does not trigger assertion'](assert) {
+  ['@htmlbars using a string value through middle tier does not trigger assertion'](assert) {
     let bottom;
 
     this.registerComponent('bottom-mut', {
@@ -134,6 +134,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.runTask(() => middle.attrs.value.update(13));
 
     assert.strictEqual(middle.attrs.value.value, 13, 'the set took effect');
+
     assert.strictEqual(bottom.attrs.setMe, 13, 'the mutable binding has been converted to an immutable cell');
     this.assertText('13');
     assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
@@ -201,7 +202,11 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
     this.assertStableRerender();
 
-    assert.deepEqual(willRender, [12, 12], 'willReceive is [12, 12]');
+    if (this.isHTMLBars) {
+      assert.deepEqual(willRender, [12, 12], 'willReceive is [12, 12]');
+    } else {
+      assert.deepEqual(willRender, [12], 'willReceive is [12]');
+    }
     assert.deepEqual(didInsert, [12], 'didInsert is [12]');
     assert.strictEqual(bottom.attrs.setMe.value, 12, 'the data propagated');
 
@@ -258,7 +263,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('12');
   }
 
-  ['@test automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them'](assert) {
+  ['@htmlbars automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them'](assert) {
     let inner;
 
     this.registerComponent('x-inner', {
@@ -290,7 +295,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('');
   }
 
-  ['@test automatic mutable bindings tolerate constant non-stream inputs and attempts to set them'](assert) {
+  ['@htmlbars automatic mutable bindings tolerate constant non-stream inputs and attempts to set them'](assert) {
     let inner;
 
     this.registerComponent('x-inner', {
@@ -325,7 +330,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
 });
 
-moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound as attributeBindings', class extends RenderingTest {
+moduleFor('Mutable Bindings used in Computed Properties that are bound as attributeBindings', class extends RenderingTest {
 
   ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes'](assert) {
     let input, output;

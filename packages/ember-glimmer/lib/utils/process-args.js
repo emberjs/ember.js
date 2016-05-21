@@ -2,6 +2,10 @@ import { CONSTANT_TAG } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
+import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
+import { ACTION } from 'ember-htmlbars/keywords/closure-action';
+import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
+import { UPDATE } from 'ember-glimmer/utils/references';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
@@ -48,12 +52,29 @@ class SimpleArgs {
     for (let i = 0, l = keys.length; i < l; i++) {
       let name = keys[i];
       let value = attrs[name];
+      let ref = namedArgs.get(name);
 
-      args[name] = namedArgs.get(name);
+      if (ref[MUTABLE_REFERENCE] && !ref[ACTION]) {
+        attrs[name] = new MutableCell(ref, value);
+      }
+
+      args[name] = ref;
       props[name] = value;
     }
 
     return { attrs, props };
+  }
+}
+
+class MutableCell {
+  constructor(ref, value) {
+    this._ref = ref;
+    this[MUTABLE_CELL] = true;
+    this.value = value;
+  }
+
+  update(val) {
+    this._ref[UPDATE](val);
   }
 }
 

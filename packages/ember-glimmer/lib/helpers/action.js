@@ -4,6 +4,7 @@ import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
 import { get } from 'ember-metal/property_get';
 import { flaggedInstrument } from 'ember-metal/instrumentation';
+import { ACTION } from 'ember-htmlbars/keywords/closure-action';
 
 export class ClosureActionReference extends CachedReference {
   static create(args) {
@@ -14,6 +15,7 @@ export class ClosureActionReference extends CachedReference {
   constructor(args) {
     super();
 
+    this[ACTION] = true;
     this.args = args;
     this.tag = args.tag;
   }
