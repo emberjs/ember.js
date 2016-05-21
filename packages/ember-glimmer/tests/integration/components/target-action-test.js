@@ -200,17 +200,17 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
 moduleFor('Components test: sendAction to a controller', class extends ApplicationTest {
 
   ['@test sendAction should trigger an action on the parent component\'s controller if it exists'](assert) {
-    assert.expect(7);
+    assert.expect(10);
 
     let component;
 
     this.router.map(function () {
+      this.route('withController');
+      this.route('withoutController');
       this.route('withNestedController', function () {
         this.route('nestedWithController');
         this.route('nestedWithoutController');
       });
-      this.route('withController');
-      this.route('withoutController');
     });
 
     this.registerComponent('foo-bar', {
@@ -222,52 +222,64 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
       })
     });
 
-    this.registerTemplate('withNestedController', '{{foo-bar poke="poke"}}{{outlet}}');
-    this.registerTemplate('withController', '{{foo-bar poke="poke"}}');
-    this.registerTemplate('withoutController', '{{foo-bar poke="poke"}}');
-    this.registerTemplate('withNestedController.nestedWithController', '{{foo-bar poke="poke"}}');
-    this.registerTemplate('withNestedController.nestedWithoutController', '{{foo-bar poke="poke"}}');
-
+    this.registerRoute('withController', Route);
     this.registerController('withController', Controller.extend({
       send(actionName, actionContext) {
         assert.equal(actionName, 'poke', 'send() method was invoked from a top level controller');
         assert.equal(actionContext, 'top', 'action arguments were passed into the top level controller');
       }
     }));
+    this.registerTemplate('withController', '{{foo-bar poke="poke"}}');
 
+    this.registerRoute('withoutController', Route.extend({
+      actions: {
+        poke(actionContext) {
+          assert.ok(true, 'Unhandled action sent to route');
+          assert.equal(actionContext, 'top no controller');
+        }
+      }
+    }));
+    this.registerTemplate('withoutController', '{{foo-bar poke="poke"}}');
+
+    this.registerRoute('withNestedController', Route.extend({
+      actions: {
+        poke(actionContext) {
+          assert.ok(true, 'Unhandled action sent to route');
+          assert.equal(actionContext, 'top with nested no controller');
+        }
+      }
+    }));
+    this.registerTemplate('withNestedController', '{{foo-bar poke="poke"}}{{outlet}}');
+
+    this.registerRoute('withNestedController.nestedWithController', Route);
     this.registerController('withNestedControllerNestedWithController', Controller.extend({
       send(actionName, actionContext) {
         assert.equal(actionName, 'poke', 'send() method was invoked from a nested controller');
         assert.equal(actionContext, 'nested', 'action arguments were passed into the nested controller');
       }
     }));
+    this.registerTemplate('withNestedController.nestedWithController', '{{foo-bar poke="poke"}}');
 
-    this.registerRoute('withController', Route);
-    this.registerRoute('withNestedController', Route);
-    this.registerRoute('withNestedController.nestedWithController', Route);
-    this.registerRoute('withNestedController.nestedWithOutController', Route);
-    this.registerRoute('withoutController', Route);
-
-    function expectSendActionToThrow() {
-      let fn = () => component.sendAction('poke');
-      if (EmberDev && EmberDev.runningProdBuild) {
-        expectAssertion(fn);
-      } else {
-        assert.throws(fn);
+    this.registerRoute('withNestedController.nestedWithoutController', Route.extend({
+      actions: {
+        poke(actionContext) {
+          assert.ok(true, 'Unhandled action sent to route');
+          assert.equal(actionContext, 'nested no controller');
+        }
       }
-    }
+    }));
+    this.registerTemplate('withNestedController.nestedWithoutController', '{{foo-bar poke="poke"}}');
 
     return this.visit('/withController')
       .then(() => component.sendAction('poke', 'top'))
-      .then(() => this.visit('withoutController'))
-      .then(expectSendActionToThrow)
-      // withNestedController.index does not have a controller specified, so it should throw
+      .then(() => this.visit('/withoutController'))
+      .then(() => component.sendAction('poke', 'top no controller'))
       .then(() => this.visit('/withNestedController'))
-      .then(expectSendActionToThrow)
+      .then(() => component.sendAction('poke', 'top with nested no controller'))
       .then(() => this.visit('/withNestedController/nestedWithController'))
       .then(() => component.sendAction('poke', 'nested'))
       .then(() => this.visit('/withNestedController/nestedWithoutController'))
-      .then(expectSendActionToThrow);
+      .then(() => component.sendAction('poke', 'nested no controller'));
   }
 
   ['@test sendAction should not trigger an action an outlet\'s controller if a parent component handles it'](assert) {
@@ -310,7 +322,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
 moduleFor('Components test: sendAction of a closure action', class extends RenderingTest {
 
   ['@test action should be called'](assert) {
-    this.assert.expect(1);
+    assert.expect(1);
     let component;
 
     this.registerComponent('inner-component', {
@@ -400,8 +412,8 @@ moduleFor('Components test: send', class extends RenderingTest {
 
     this.runTask(() => component.send('foo', 'bar'));
 
-    expectAssertion(function () {
-      component.send('baz', 'bar');
+    expectAssertion(() => {
+      return component.send('baz', 'bar');
     }, /had no action handler for: baz/);
   }
 

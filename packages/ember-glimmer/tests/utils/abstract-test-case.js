@@ -313,20 +313,6 @@ export class ApplicationTest extends TestCase {
   registerController(name, controller) {
     this.application.register(`controller:${name}`, controller);
   }
-
-  registerComponent(name, { ComponentClass = null, template = null }) {
-    let { application } = this;
-
-    if (ComponentClass) {
-      application.register(`component:${name}`, ComponentClass);
-    }
-
-    if (typeof template === 'string') {
-      application.register(`template:components/${name}`, compile(template, {
-        moduleName: `components/${name}`
-      }));
-    }
-  }
 }
 
 export class RenderingTest extends TestCase {

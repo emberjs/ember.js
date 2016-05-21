@@ -71,16 +71,14 @@ export default Mixin.create(TargetActionSupport, {
 
     if (target = get(this, 'target')) {
       assert(
-        'The `target` for ' + this + ' (' + target +
+        'The `target` for ' + inspect(this) + ' (' + target +
         ') does not have a `send` method',
         typeof target.send === 'function'
       );
       target.send(...arguments);
-    } else {
-      if (!action) {
-        throw new Error(inspect(this) + ' had no action handler for: ' + actionName);
-      }
+      return;
     }
+    assert(`${inspect(this)} had no action handler for: ${actionName}`, action);
   },
   /**
    TODO: This looks like it's not even used by the view layer. Deprecate and remove?
@@ -106,7 +104,6 @@ export default Mixin.create(TargetActionSupport, {
     }
     return null;
   }),
-
   /**
     Calls a action passed to a component.
     For example a component for playing or pausing music may translate click events

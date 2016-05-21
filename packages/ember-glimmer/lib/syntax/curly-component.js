@@ -42,7 +42,7 @@ function applyAttributeBindings(attributeBindings, component, operations) {
 function privatizeTargetObject(props) {
   if (props.targetObject) {
     props._targetObject = props.targetObject;
-    delete props.targetObject;
+    props.targetObject = undefined;
   }
 }
 
