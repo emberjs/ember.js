@@ -9,7 +9,10 @@ let MyEngine,
 
 function buildEngineInstance(EngineClass) {
   let engineInstance = EngineClass.buildInstance();
-  setEngineParent(engineInstance, {});
+  setEngineParent(engineInstance, {
+    lookup() { return {}; },
+    resolveRegistration() { return {}; }
+  });
   return engineInstance;
 }
 

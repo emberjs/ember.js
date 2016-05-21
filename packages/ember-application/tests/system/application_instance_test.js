@@ -1,8 +1,11 @@
+import Engine from 'ember-application/system/engine';
 import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import factory from 'container/tests/test-helpers/factory';
+import isEnabled from 'ember-metal/features';
+import { privatize as P } from 'container/registry';
 
 let app, appInstance;
 
@@ -148,3 +151,46 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
 
   assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because the previous one was reset');
 });
+
+if (isEnabled('ember-application-engines')) {
+  QUnit.test('can build and boot a registered engine', function(assert) {
+    assert.expect(7);
+
+    let ChatEngine = Engine.extend();
+    let chatEngineInstance;
+
+    app.register('engine:chat', ChatEngine);
+
+    run(function() {
+      appInstance = ApplicationInstance.create({ application: app });
+      chatEngineInstance = appInstance.buildChildEngineInstance('chat');
+    });
+
+    return chatEngineInstance.boot()
+      .then(() => {
+        assert.ok(true, 'boot successful');
+
+        [
+          'route:basic',
+          'event_dispatcher:main',
+          P`-bucket-cache:main`,
+          'service:-routing'
+        ].forEach((key) => {
+          assert.strictEqual(
+            chatEngineInstance.resolveRegistration(key),
+            appInstance.resolveRegistration(key),
+            `Engine and parent app share registrations for '${key}'`);
+        });
+
+        [
+          'router:main',
+          '-view-registry:main'
+        ].forEach((key) => {
+          assert.strictEqual(
+            chatEngineInstance.lookup(key),
+            appInstance.lookup(key),
+            `Engine and parent app share singleton '${key}'`);
+        });
+      });
+  });
+}

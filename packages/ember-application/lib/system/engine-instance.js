@@ -8,6 +8,7 @@ import EmberError from 'ember-metal/error';
 import Registry from 'container/registry';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
+import { privatize as P } from 'container/registry';
 import { getEngineParent, setEngineParent } from 'ember-application/system/engine-parent';
 import { assert } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
@@ -97,6 +98,10 @@ const EngineInstance = EmberObject.extend(RegistryProxy, ContainerProxy, {
 
     assert('An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.', getEngineParent(this));
 
+    if (isEnabled('ember-application-engines')) {
+      this.cloneParentDependencies();
+    }
+
     this.base.runInstanceInitializers(this);
 
     this._booted = true;
@@ -154,6 +159,32 @@ if (isEnabled('ember-application-engines')) {
       setEngineParent(engineInstance, this);
 
       return engineInstance;
+    },
+
+    /**
+      Clone dependencies shared between an engine instance and its parent.
+
+      @private
+      @method cloneParentDependencies
+    */
+    cloneParentDependencies() {
+      let parent = getEngineParent(this);
+
+      [
+        'route:basic',
+        'event_dispatcher:main',
+        P`-bucket-cache:main`,
+        'service:-routing'
+      ].forEach((key) => {
+        this.register(key, parent.resolveRegistration(key));
+      });
+
+      [
+        'router:main',
+        '-view-registry:main'
+      ].forEach((key) => {
+        this.register(key, parent.lookup(key), { instantiate: false });
+      });
     }
   });
 }
