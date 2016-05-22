@@ -15,6 +15,7 @@ function add(paths, name, path) {
 add(paths, 'prod',  'vendor/ember/ember.prod.js');
 add(paths, 'debug', 'vendor/ember/ember.debug.js');
 add(paths, 'shims', 'vendor/ember/shims.js');
+add(paths, 'jquery', 'vendor/ember/jquery/jquery.js');
 
 add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compiler.js');
 
@@ -33,15 +34,12 @@ module.exports = {
       destDir: 'ember',
       files: [
         'ember-runtime.js',
-        'ember-runtime.map',
         'ember-template-compiler.js',
-        'ember-template-compiler.map',
         'ember-testing.js',
-        'ember.debug.cjs.js',
-        'ember.debug.cjs.map',
         'ember.debug.js',
         'ember.min.js',
-        'ember.prod.js'
+        'ember.prod.js',
+        'jquery/jquery.js'
       ]
     });
 
