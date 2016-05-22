@@ -121,11 +121,10 @@ let result;
 let clear;
 let fps;
 let playing = false;
-let model;
 
 export function init() {
   let output = document.getElementById('output');
-  model = generateData();
+  let model = generateData();
 
   console.time('initial render');
   env.begin();
@@ -179,9 +178,8 @@ function start() {
 }
 
 function onFrame() {
-  // let model = generateData(serversRef.databaseArray);
+  let model = generateData(serversRef.databaseArray);
 
-  // console.log(model);
   serversRef.update({ model, fps });
 }
 
