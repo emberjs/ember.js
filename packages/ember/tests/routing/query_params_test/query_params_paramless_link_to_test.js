@@ -3,7 +3,7 @@ import Route from 'ember-routing/system/route';
 import isEnabled from 'ember-metal/features';
 import run from 'ember-metal/run_loop';
 import { capitalize } from 'ember-runtime/system/string';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';

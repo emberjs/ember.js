@@ -1,6 +1,6 @@
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { equalInnerHTML } from 'htmlbars-test-helpers';
 
 var view;

@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import $ from 'ember-views/system/jquery';
 import Application from 'ember-application/system/application';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 

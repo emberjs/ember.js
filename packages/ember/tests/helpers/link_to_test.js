@@ -15,7 +15,7 @@ import inject from 'ember-runtime/inject';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import { OWNER } from 'container/owner';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import EmberView from 'ember-views/views/view';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 

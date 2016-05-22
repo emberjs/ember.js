@@ -7,7 +7,7 @@ import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import RSVP from 'ember-runtime/ext/rsvp';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
 import 'ember-routing';
 

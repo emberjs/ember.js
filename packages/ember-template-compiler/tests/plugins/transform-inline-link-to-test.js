@@ -1,33 +1,8 @@
-import { ENV } from 'ember-environment';
-import { compile } from 'ember-template-compiler';
-import AssertNoViewAndControllerPaths from 'ember-template-compiler/plugins/assert-no-view-and-controller-paths';
-import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
-
-function registerAstPlugin(plugin) {
-  registerPlugin('ast', plugin);
-}
-
-function removeAstPlugin(plugin) {
-  let index = plugins['ast'].indexOf(plugin);
-  plugins['ast'].splice(index, 1);
-}
-
-let legacyViewSupportOriginalValue;
+import { compile } from '../utils/helpers';
 
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('ember-template-compiler: assert-no-view-and-controller-paths without legacy view support', {
-  setup() {
-    legacyViewSupportOriginalValue = ENV._ENABLE_LEGACY_VIEW_SUPPORT;
-    ENV._ENABLE_LEGACY_VIEW_SUPPORT = false;
-    registerAstPlugin(AssertNoViewAndControllerPaths);
-  },
-
-  teardown() {
-    ENV._ENABLE_LEGACY_VIEW_SUPPORT = legacyViewSupportOriginalValue;
-    removeAstPlugin(AssertNoViewAndControllerPaths);
-  }
-});
+testModule('ember-template-compiler: assert-no-view-and-controller-paths without legacy view support');
 
 test('Can transform an inline {{link-to}} without error', function() {
   expect(0);

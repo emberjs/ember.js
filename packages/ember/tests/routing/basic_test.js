@@ -13,7 +13,7 @@ import Component from 'ember-templates/component';
 import ActionManager from 'ember-views/system/action_manager';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
-import { compile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';

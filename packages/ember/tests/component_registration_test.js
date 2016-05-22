@@ -3,7 +3,7 @@ import run from 'ember-metal/run_loop';
 
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import helpers from 'ember-htmlbars/helpers';
 import { OutletView } from 'ember-htmlbars/views/outlet';
 import Component from 'ember-templates/component';

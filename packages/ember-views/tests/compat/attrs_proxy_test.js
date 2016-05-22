@@ -1,6 +1,6 @@
 import View from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-template-compiler';
 import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';

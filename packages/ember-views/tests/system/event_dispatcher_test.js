@@ -6,7 +6,7 @@ import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-htmlbars-template-compiler';
 import ComponentLookup from 'ember-views/component_lookup';
 import Component from 'ember-htmlbars/component';
 import buildOwner from 'container/tests/test-helpers/build-owner';

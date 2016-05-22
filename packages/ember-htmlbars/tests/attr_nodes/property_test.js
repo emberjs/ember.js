@@ -1,6 +1,6 @@
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;

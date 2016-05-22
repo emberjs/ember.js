@@ -2,7 +2,7 @@ import jQuery from 'ember-views/system/jquery';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
 var application;
 

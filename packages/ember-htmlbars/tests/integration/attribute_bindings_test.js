@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
 import { set } from 'ember-metal/property_set';

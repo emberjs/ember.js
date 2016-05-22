@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import { set } from 'ember-metal/property_set';
 import View from 'ember-views/views/view';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import ComponentLookup from 'ember-views/component_lookup';
 import TextField from 'ember-htmlbars/components/text_field';
 import Checkbox from 'ember-htmlbars/components/checkbox';

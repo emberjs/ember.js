@@ -1,7 +1,7 @@
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
-import compile from 'ember-template-compiler/system/compile';
+import { compile } from '../utils/helpers';
 import { InteractiveRenderer } from 'ember-htmlbars/renderer';
 import { equalInnerHTML } from 'htmlbars-test-helpers';
 import { domHelper as dom } from 'ember-htmlbars/env';

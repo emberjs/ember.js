@@ -1,48 +1,28 @@
-import defaultPlugins from 'ember-template-compiler/plugins';
-import compileOptions from 'ember-template-compiler/system/compile_options';
+import { defaultCompileOptions } from 'ember-template-compiler';
+import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
+import TransformItemClass from 'ember-template-compiler/plugins/transform-item-class';
+import TransformAngleBracketComponents from 'ember-template-compiler/plugins/transform-angle-bracket-components';
+import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
+import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
+import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
+import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
 
+QUnit.module('ember-template-compiler: default compile options');
 
-function comparePlugins(options) {
-  let results = compileOptions(options);
-  let expectedPlugins = defaultPlugins.ast.slice();
-
-  expectedPlugins = expectedPlugins.concat(options.plugins.ast.slice());
-
-  deepEqual(results.plugins.ast, expectedPlugins);
-}
-
-QUnit.module('ember-htmlbars: compile_options');
-
-QUnit.test('repeated function calls should be able to have separate plugins', function() {
-  comparePlugins({
-    plugins: {
-      ast: ['foo', 'bar']
-    }
-  });
-
-  comparePlugins({
-    plugins: {
-      ast: ['baz', 'qux']
-    }
-  });
+QUnit.test('default options are a new copy', function() {
+  notEqual(defaultCompileOptions(), defaultCompileOptions());
 });
 
-QUnit.test('options is not required', function() {
-  let results = compileOptions();
+QUnit.test('has default AST plugins', function() {
+  let plugins = defaultCompileOptions().plugins.ast;
 
-  deepEqual(results.plugins.ast, defaultPlugins.ast.slice());
-});
-
-QUnit.test('options.plugins is not required', function() {
-  let results = compileOptions({});
-
-  deepEqual(results.plugins.ast, defaultPlugins.ast.slice());
-});
-
-QUnit.test('options.plugins.ast is not required', function() {
-  let results = compileOptions({
-    plugins: {}
-  });
-
-  deepEqual(results.plugins.ast, defaultPlugins.ast.slice());
+  deepEqual(plugins, [
+    TransformOldBindingSyntax,
+    TransformItemClass,
+    TransformAngleBracketComponents,
+    TransformInputOnToOnEvent,
+    TransformTopLevelComponents,
+    DeprecateRenderModel,
+    TransformInlineLinkTo
+  ]);
 });

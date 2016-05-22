@@ -1,9 +1,15 @@
-import EmberObject from 'ember-runtime/system/object';
 import { Template } from 'glimmer-runtime';
 
-const Wrapper = EmberObject.extend({
-  _entryPoint: null,
-  _layout: null,
+class Wrapper {
+  static create(options) {
+    return new this(options);
+  }
+
+  constructor({ env }) {
+    this._entryPoint = null;
+    this._layout = null;
+    this.env = env;
+  }
 
   asEntryPoint() {
     if (!this._entryPoint) {
@@ -12,7 +18,7 @@ const Wrapper = EmberObject.extend({
     }
 
     return this._entryPoint;
-  },
+  }
 
   asLayout() {
     if (!this._layout) {
@@ -22,8 +28,15 @@ const Wrapper = EmberObject.extend({
 
     return this._layout;
   }
-});
-
-export default function template(json) {
-  return Wrapper.extend({ spec: JSON.parse(json) });
 }
+
+const template = function(json) {
+  return class extends Wrapper {
+    constructor(options) {
+      super(options);
+      this.spec = JSON.parse(json);
+    }
+  };
+};
+
+export default template;
