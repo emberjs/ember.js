@@ -30,14 +30,60 @@ class Component {
 }
 
 class DbmonDatabase extends Component {
-  get topFiveQueries() {
-    return [{},{}];
+  db: null;
+  queries: null;
+  topFiveQueries: null;
+  countClassName: null;
+
+  didReceiveAttrs() {
+    this.queries = this.computeQueries();
+    this.topFiveQueries = this.computeTopFiveQueries();
+    this.countClassName = this.computeCountClassName();
+  }
+
+  computeQueries() {
+    let samples = this.attrs.db.samples;
+    return samples[samples.length - 1].queries;
+  }
+
+  computeTopFiveQueries() {
+    let queries = this.queries;
+    let topFiveQueries = queries.slice(0, 5);
+
+    while (topFiveQueries.length < 5) {
+      topFiveQueries.push({ query: "" });
+    }
+
+    return topFiveQueries.map(function(query, index) {
+      return {
+        key: index+'',
+        query: query.query,
+        elapsed: query.elapsed ? formatElapsed(query.elapsed) : '',
+        className: elapsedClass(query.elapsed)
+      };
+    });
+  }
+
+  computeCountClassName() {
+    var queries = this.queries;
+    var countClassName = "label";
+
+    if (queries.length >= 20) {
+      countClassName += " label-important";
+    } else if (queries.length >= 10) {
+      countClassName += " label-warning";
+    } else {
+      countClassName += " label-success";
+    }
+
+    return countClassName;
   }
 }
 
 let env = new TestEnvironment();
 
 env.registerEmberishGlimmerComponent('dbmon-database', DbmonDatabase as any, `
+ <tr>
   <td class="dbname">
   {{db.name}}
   </td>
@@ -55,14 +101,11 @@ env.registerEmberishGlimmerComponent('dbmon-database', DbmonDatabase as any, `
       </div>
     </td>
   {{/each}}
+ </tr>
 `);
 
 let app = env.compile(`
-{{#if isPlaying}}
-  <button onclick={{pause}}>Pause</button>
-{{else}}
-  <button onclick={{play}}>Play</button>
-{{/if}}
+{{#if fps}}<div id="fps">{{fps}} FPS</div>{{/if}}
 
 <table class="table table-striped latest-data">
   <tbody>
@@ -78,10 +121,11 @@ let result;
 let clear;
 let fps;
 let playing = false;
+let model;
 
 export function init() {
   let output = document.getElementById('output');
-  let model = generateData();
+  model = generateData();
 
   console.time('initial render');
   env.begin();
@@ -118,15 +162,14 @@ function start() {
   let callback = () => {
     let thisFrame = window.performance.now();
 
+    onFrame();
+
     if (lastFrame) {
       fps = Math.round(fpsMeter.push(1000 / (thisFrame - lastFrame)));
     }
 
-    onFrame();
     result.rerender();
-
     clear = requestAnimationFrame(callback);
-
     lastFrame = thisFrame;
   };
 
@@ -136,7 +179,10 @@ function start() {
 }
 
 function onFrame() {
-  serversRef.update({ databaseArray: generateData(serversRef.databaseArray), fps });
+  // let model = generateData(serversRef.databaseArray);
+
+  // console.log(model);
+  serversRef.update({ model, fps });
 }
 
 const ROWS = 100;
@@ -194,7 +240,7 @@ function getData() {
   return data;
 }
 
-function generateData(oldData = {}) {
+function generateData(oldData: any = {}) {
   let rawData = getData();
 
   let databases = (oldData && oldData.databases) || {};
@@ -227,4 +273,36 @@ function generateData(oldData = {}) {
   });
 
   return data;
+}
+
+// utils
+
+function elapsedClass(elapsed) {
+  if (elapsed >= 10.0) {
+    return "elapsed warn_long";
+  } else if (elapsed >= 1.0) {
+    return "elapsed warn";
+  } else {
+    return "elapsed short";
+  }
+}
+
+interface StringConstructor {
+  lpad(padding: any, toLength: any): any;
+}
+
+String.lpad = function(padding, toLength) {
+  return padding.repeat((toLength - this.length) / padding.length).concat(this);
+};
+
+function formatElapsed(value) {
+  var str = parseFloat(value).toFixed(2);
+  if (value > 60) {
+    var minutes = Math.floor(value / 60);
+    var comps = (value % 60).toFixed(2).split('.');
+    var seconds = comps[0].lpad('0', 2);
+    var ms = comps[1];
+    str = minutes + ":" + seconds + "." + ms;
+  }
+  return str;
 }
