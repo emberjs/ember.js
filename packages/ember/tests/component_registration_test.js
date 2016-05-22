@@ -10,7 +10,7 @@ import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var App, appInstance;
 var originalHelpers;
@@ -83,7 +83,7 @@ QUnit.test('The helper becomes the body of the component', function() {
   equal(jQuery('div.ember-view > div.ember-view', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
-test('If a component is registered, it is used', function() {
+QUnit.test('If a component is registered, it is used', function() {
   boot(function() {
     appInstance.register('component:expand-it', Component.extend({
       classNames: 'testing123'
@@ -93,7 +93,7 @@ test('If a component is registered, it is used', function() {
   equal(jQuery('div.testing123', '#qunit-fixture').text(), 'hello world', 'The component is composed correctly');
 });
 
-test('Late-registered components can be rendered with custom `layout` property', function() {
+QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>'));
 
   boot(function() {
@@ -107,7 +107,7 @@ test('Late-registered components can be rendered with custom `layout` property',
   ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
-test('Late-registered components can be rendered with template registered on the container', function() {
+QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>'));
 
   boot(function() {
@@ -234,12 +234,12 @@ test('Using name of component that does not exist', function () {
   }, /A helper named 'no-good' could not be found/);
 });
 
-testModule('Application Lifecycle - Component Context', {
+QUnit.module('Application Lifecycle - Component Context', {
   setup: prepare,
   teardown: cleanup
 });
 
-test('Components with a block should have the proper content when a template is provided', function() {
+QUnit.test('Components with a block should have the proper content when a template is provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}-{{yield}}'));
 
@@ -256,7 +256,7 @@ test('Components with a block should have the proper content when a template is 
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Components with a block should yield the proper content without a template provided', function() {
+QUnit.test('Components with a block should yield the proper content without a template provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
 
   boot(function() {
@@ -272,7 +272,7 @@ test('Components with a block should yield the proper content without a template
   equal(jQuery('#wrapper').text(), 'outer', 'The component is composed correctly');
 });
 
-test('Components without a block should have the proper content when a template is provided', function() {
+QUnit.test('Components without a block should have the proper content when a template is provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}'));
 
@@ -289,7 +289,7 @@ test('Components without a block should have the proper content when a template 
   equal(jQuery('#wrapper').text(), 'inner', 'The component is composed correctly');
 });
 
-test('Components without a block should have the proper content', function() {
+QUnit.test('Components without a block should have the proper content', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
 
   boot(function() {
@@ -308,7 +308,7 @@ test('Components without a block should have the proper content', function() {
 });
 
 // The test following this one is the non-deprecated version
-test('properties of a component without a template should not collide with internal structures [DEPRECATED]', function() {
+QUnit.test('properties of a component without a template should not collide with internal structures [DEPRECATED]', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>'));
 
   boot(function() {
@@ -347,7 +347,7 @@ test('attrs property of a component without a template should not collide with i
   equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
-test('Components trigger actions in the parents context when called from within a block', function() {
+QUnit.test('Components trigger actions in the parents context when called from within a block', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>'));
 
   boot(function() {
@@ -367,7 +367,7 @@ test('Components trigger actions in the parents context when called from within 
   });
 });
 
-test('Components trigger actions in the components context when called from within its template', function() {
+QUnit.test('Components trigger actions in the components context when called from within its template', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>'));
 
