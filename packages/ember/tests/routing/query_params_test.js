@@ -107,10 +107,10 @@ function sharedTeardown() {
   }
 }
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 // jscs:disable
 
-testModule('Routing with Query Params', {
+QUnit.module('Routing with Query Params', {
   setup() {
     sharedSetup();
   },
@@ -545,7 +545,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(parentModelCount, 2);
   });
 
-  test('URL transitions that remove QPs still register as QP changes when configuration lives on the route', function() {
+  QUnit.test('URL transitions that remove QPs still register as QP changes when configuration lives on the route', function() {
     expect(2);
 
     App.IndexRoute = Route.extend({
@@ -565,7 +565,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexController.get('omg'), 'lol');
   });
 
-  test('Subresource naming style is supported when configuration is all on the route', function() {
+  QUnit.test('Subresource naming style is supported when configuration is all on the route', function() {
     App.Router.map(function() {
       this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
@@ -867,7 +867,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('opting into replace does not affect transitions between routes when configuration occurs on the route', function() {
+  QUnit.test('opting into replace does not affect transitions between routes when configuration occurs on the route', function() {
     expect(5);
     App.register('template:application', compile(
       "{{link-to 'Foo' 'foo' id='foo-link'}}" +
@@ -1028,7 +1028,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test("controllers won't be eagerly instantiated by internal query params logic when configured on the route", function() {
+  QUnit.test("controllers won't be eagerly instantiated by internal query params logic when configured on the route", function() {
     expect(10);
     App.Router.map(function() {
       this.route('cats', function() {
@@ -1417,7 +1417,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(appController, 'setProperties', { alex: 'sriracha' });
   });
 
-  test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent when configured on the route', function() {
+  QUnit.test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent when configured on the route', function() {
     App.register('template:parent', compile('{{outlet}}'));
     App.register('template:parent.child', compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}"));
 
@@ -1534,7 +1534,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexController.get('omg'), 'lol');
   });
 
-  test('Subresource naming style is supported when configured on the route', function() {
+  QUnit.test('Subresource naming style is supported when configured on the route', function() {
     App.Router.map(function() {
       this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
@@ -1880,7 +1880,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('opting into replace does not affect transitions between routes when configured on route', function() {
+  QUnit.test('opting into replace does not affect transitions between routes when configured on route', function() {
     expect(5);
     App.register('template:application', compile(
       "{{link-to 'Foo' 'foo' id='foo-link'}}" +
@@ -1949,7 +1949,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(get(controller, 'foo'), undefined);
   });
 
-  test('Changing a query param property on a controller after navigating using a {{link-to}} should preserve the unchanged query params', function() {
+  QUnit.test('Changing a query param property on a controller after navigating using a {{link-to}} should preserve the unchanged query params', function() {
     expect(11);
     App.Router.map(function() {
       this.route('example');
@@ -2187,7 +2187,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('controllers won\'t be eagerly instantiated by internal query params logic', function() {
+  QUnit.test('controllers won\'t be eagerly instantiated by internal query params logic', function() {
     expect(10);
     App.Router.map(function() {
       this.route('cats', function() {
@@ -2659,7 +2659,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(appController, 'setProperties', { alex: 'sriracha' });
   });
 
-  test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent', function() {
+  QUnit.test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent', function() {
     App.register('template:parent', compile('{{outlet}}'));
     App.register('template:parent.child', compile('{{link-to \'Parent\' \'parent\' (query-params foo=\'change\') id=\'parent-link\'}}'));
 
@@ -2785,7 +2785,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=' + encodeURIComponent(JSON.stringify(['OVERRIDE'])));
   });
 
-  test('URL transitions that remove QPs still register as QP changes', function() {
+  QUnit.test('URL transitions that remove QPs still register as QP changes', function() {
     expect(2);
 
     App.IndexController = Controller.extend({
@@ -2802,7 +2802,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexController.get('omg'), 'lol');
   });
 
-  test('Subresource naming style is supported', function() {
+  QUnit.test('Subresource naming style is supported', function() {
     App.Router.map(function() {
       this.route('abc.def', { path: '/abcdef' }, function() {
         this.route('zoo');
@@ -3112,7 +3112,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('opting into replace does not affect transitions between routes', function() {
+  QUnit.test('opting into replace does not affect transitions between routes', function() {
     expect(5);
     App.register('template:application', compile(
       '{{link-to \'Foo\' \'foo\' id=\'foo-link\'}}' +
