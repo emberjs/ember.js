@@ -78,9 +78,9 @@ function sharedTeardown() {
   setTemplates({});
 }
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('The {{link-to}} helper', {
+QUnit.module('The {{link-to}} helper', {
   setup() {
     run(function() {
       sharedSetup();
@@ -1502,7 +1502,7 @@ test('{{link-to}} populates href with default query param values even without qu
   equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
 });
 
-test('{{link-to}} populates href with default query param values with empty query-params object', function() {
+QUnit.test('{{link-to}} populates href with default query param values with empty query-params object', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1523,7 +1523,7 @@ test('{{link-to}} populates href with default query param values with empty quer
   equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
 });
 
-test('{{link-to}} populates href with supplied query param values', function() {
+QUnit.test('{{link-to}} populates href with supplied query param values', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1544,7 +1544,7 @@ test('{{link-to}} populates href with supplied query param values', function() {
   equal(jQuery('#the-link').attr('href'), '/?foo=456', 'link has right href');
 });
 
-test('{{link-to}} populates href with partially supplied query param values', function() {
+QUnit.test('{{link-to}} populates href with partially supplied query param values', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1569,7 +1569,7 @@ test('{{link-to}} populates href with partially supplied query param values', fu
   equal(jQuery('#the-link').attr('href'), '/?foo=456', 'link has right href');
 });
 
-test('{{link-to}} populates href with partially supplied query param values, but omits if value is default value', function() {
+QUnit.test('{{link-to}} populates href with partially supplied query param values, but omits if value is default value', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1590,7 +1590,7 @@ test('{{link-to}} populates href with partially supplied query param values, but
   equal(jQuery('#the-link').attr('href'), '/', 'link has right href');
 });
 
-test('{{link-to}} populates href with fully supplied query param values', function() {
+QUnit.test('{{link-to}} populates href with fully supplied query param values', function() {
   if (isEnabled('ember-routing-route-configured-query-params')) {
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1615,7 +1615,7 @@ test('{{link-to}} populates href with fully supplied query param values', functi
   equal(jQuery('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 });
 
-test('{{link-to}} with only query-params and a block updates when route changes', function() {
+QUnit.test('{{link-to}} with only query-params and a block updates when route changes', function() {
   Router.map(function() {
     this.route('about');
   });
@@ -1649,7 +1649,7 @@ test('{{link-to}} with only query-params and a block updates when route changes'
   equal(jQuery('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
 });
 
-test('Block-less {{link-to}} with only query-params updates when route changes', function() {
+QUnit.test('Block-less {{link-to}} with only query-params updates when route changes', function() {
   Router.map(function() {
     this.route('about');
   });
