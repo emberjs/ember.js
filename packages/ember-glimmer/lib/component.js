@@ -11,6 +11,7 @@ import { get } from 'ember-metal/property_get';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import { UPDATE } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
+import { deprecate } from 'ember-metal/debug';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -33,6 +34,23 @@ export default CoreView.extend(
       this._super(...arguments);
       this._viewRegistry = this._viewRegistry || EmberView.views;
       this[DIRTY_TAG] = new DirtyableTag();
+
+      // If a `defaultLayout` was specified move it to the `layout` prop.
+      // `layout` is no longer a CP, so this just ensures that the `defaultLayout`
+      // logic is supported with a deprecation
+      if (this.defaultLayout && !this.layout) {
+        deprecate(
+          `Specifying \`defaultLayout\` to ${this} is deprecated. Please use \`layout\` instead.`,
+          false,
+          {
+            id: 'ember-views.component.defaultLayout',
+            until: '3.0.0',
+            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
+          }
+        );
+
+        this.layout = this.defaultLayout;
+      }
     },
 
     rerender() {
