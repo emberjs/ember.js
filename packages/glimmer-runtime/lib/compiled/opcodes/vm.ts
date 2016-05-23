@@ -329,7 +329,8 @@ export class EvaluatePartialOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let reference: PathReference<any> = this.name.evaluate(vm);
-    let name: InternedString = reference.value();
+    let referenceCache = new ReferenceCache(reference);
+    let name: InternedString = referenceCache.revalidate();
 
     let block = this.cache[name];
     if (!block) {
@@ -341,8 +342,7 @@ export class EvaluatePartialOpcode extends Opcode {
     vm.invokeBlock(block, EvaluatedArgs.empty());
 
     if (!isConst(reference)) {
-      let cache = new ReferenceCache(reference);
-      vm.updateWith(new Assert(cache));
+      vm.updateWith(new Assert(referenceCache));
     }
   }
 
@@ -360,13 +360,13 @@ export class NameToPartialOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let reference = vm.frame.getOperand();
-    let name: InternedString = reference.value();
+    let referenceCache = new ReferenceCache(reference);
+    let name: InternedString = referenceCache.revalidate();
     let partial = name && vm.env.hasPartial([name]) ? vm.env.lookupPartial([name]) : false;
     vm.frame.setOperand(new ValueReference(partial));
 
     if (!isConst(reference)) {
-      let cache = new ReferenceCache(reference);
-      vm.updateWith(new Assert(cache));
+      vm.updateWith(new Assert(referenceCache));
     }
   }
 
