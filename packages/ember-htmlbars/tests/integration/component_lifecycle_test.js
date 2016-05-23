@@ -1,7 +1,6 @@
 import jQuery from 'ember-views/system/jquery';
-import { compile } from 'ember-htmlbars-template-compiler';
+import { compile, Component } from '../utils/helpers';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-htmlbars/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
