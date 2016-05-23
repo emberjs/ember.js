@@ -4,6 +4,8 @@ export {
   equalInnerHTML,
   equalHTML,
   equalTokens,
+  generateSnapshot,
+  equalSnapshots,
   normalizeInnerHTML,
   isCheckedInputHTML,
   getTextContent,
