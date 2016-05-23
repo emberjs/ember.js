@@ -16,8 +16,6 @@ let styles = [{
   class: Component
 }];
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
 styles.forEach(style => {
   function invoke(name, hash = {}) {
     if (style.name === 'curly') {
@@ -45,7 +43,7 @@ styles.forEach(style => {
     return { isString: true, value: val };
   }
 
-  testModule(`component - lifecycle hooks (${style.name})`, {
+  QUnit.module(`component - lifecycle hooks (${style.name})`, {
     setup() {
       owner = buildOwner();
       owner.registerOptionsForType('component', { singleton: false });
@@ -71,7 +69,7 @@ styles.forEach(style => {
     return { type: type, view: view, arg: arg };
   }
 
-  test('lifecycle hooks are invoked in a predictable order', function() {
+  QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
     var components = {};
 
     function component(label) {
@@ -225,7 +223,7 @@ styles.forEach(style => {
     ]);
   });
 
-  test('passing values through attrs causes lifecycle hooks to fire if the attribute values have changed', function() {
+  QUnit.test('passing values through attrs causes lifecycle hooks to fire if the attribute values have changed', function() {
     var components = {};
 
     function component(label) {
@@ -361,7 +359,7 @@ styles.forEach(style => {
     ]);
   });
 
-  test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
+  QUnit.test('changing a component\'s displayed properties inside didInsertElement() is deprecated', function(assert) {
     let component;
 
     component = style.class.extend({
@@ -385,7 +383,7 @@ styles.forEach(style => {
     });
   });
 
-  test('DEPRECATED: didInitAttrs is deprecated', function(assert) {
+  QUnit.test('DEPRECATED: didInitAttrs is deprecated', function(assert) {
     let component;
 
     let componentClass = style.class.extend({
@@ -407,7 +405,7 @@ styles.forEach(style => {
     });
   });
 
-  test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {
+  QUnit.test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {
     assert.expect(1);
 
     owner.register('component:the-thing', style.class.extend({

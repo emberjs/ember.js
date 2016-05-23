@@ -62,9 +62,8 @@ function sharedTeardown() {
   setTemplates({});
 }
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
+QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
   setup() {
     run(function() {
       sharedSetup();
@@ -101,7 +100,7 @@ testModule('The {{link-to}} helper: .transitioning-in .transitioning-out CSS cla
   }
 });
 
-test('while a transition is underway', function() {
+QUnit.test('while a transition is underway', function() {
   expect(18);
   bootApplication();
 
@@ -122,7 +121,7 @@ test('while a transition is underway', function() {
   assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
 });
 
-test('while a transition is underway with nested link-to\'s', function() {
+QUnit.test('while a transition is underway with nested link-to\'s', function() {
   expect(54);
 
   Router.map(function() {

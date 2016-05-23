@@ -56,9 +56,7 @@ QUnit.module('View Integration', {
   }
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-test('booting multiple applications can properly handle events', function(assert) {
+QUnit.test('booting multiple applications can properly handle events', function(assert) {
   run(App1, 'advanceReadiness');
   run(App2, 'advanceReadiness');
 

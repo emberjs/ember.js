@@ -9,7 +9,6 @@ import Checkbox from 'ember-htmlbars/components/checkbox';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 var controller, owner;
@@ -25,7 +24,7 @@ function commonSetup() {
   dispatcher.setup({}, '#qunit-fixture');
 }
 
-testModule('{{input type=\'text\'}}', {
+QUnit.module('{{input type=\'text\'}}', {
   setup() {
     commonSetup();
 
@@ -53,11 +52,11 @@ testModule('{{input type=\'text\'}}', {
   }
 });
 
-test('should insert a text field into DOM', function() {
+QUnit.test('should insert a text field into DOM', function() {
   equal(view.$('input').length, 1, 'A single text field was inserted');
 });
 
-test('should become disabled if the disabled attribute is true', function() {
+QUnit.test('should become disabled if the disabled attribute is true', function() {
   ok(view.$('input').is(':not(:disabled)'), 'There are no disabled text fields');
 
   run(null, set, controller, 'disabled', true);
@@ -67,7 +66,7 @@ test('should become disabled if the disabled attribute is true', function() {
   ok(view.$('input').is(':not(:disabled)'), 'There are no disabled text fields');
 });
 
-test('input value is updated when setting value property of view', function() {
+QUnit.test('input value is updated when setting value property of view', function() {
   equal(view.$('input').val(), 'hello', 'renders text field with value');
 
   let id = view.$('input').prop('id');
@@ -78,37 +77,37 @@ test('input value is updated when setting value property of view', function() {
   equal(view.$('input').prop('id'), id, 'the component hasn\'t changed');
 });
 
-test('input placeholder is updated when setting placeholder property of view', function() {
+QUnit.test('input placeholder is updated when setting placeholder property of view', function() {
   equal(view.$('input').attr('placeholder'), 'Enter some text', 'renders text field with placeholder');
   run(null, set, controller, 'place', 'Text, please enter it');
   equal(view.$('input').attr('placeholder'), 'Text, please enter it', 'updates text field after placeholder changes');
 });
 
-test('input name is updated when setting name property of view', function() {
+QUnit.test('input name is updated when setting name property of view', function() {
   equal(view.$('input').attr('name'), 'some-name', 'renders text field with name');
   run(null, set, controller, 'name', 'other-name');
   equal(view.$('input').attr('name'), 'other-name', 'updates text field after name changes');
 });
 
-test('input maxlength is updated when setting maxlength property of view', function() {
+QUnit.test('input maxlength is updated when setting maxlength property of view', function() {
   equal(view.$('input').attr('maxlength'), '30', 'renders text field with maxlength');
   run(null, set, controller, 'max', 40);
   equal(view.$('input').attr('maxlength'), '40', 'updates text field after maxlength changes');
 });
 
-test('input size is updated when setting size property of view', function() {
+QUnit.test('input size is updated when setting size property of view', function() {
   equal(view.$('input').attr('size'), '30', 'renders text field with size');
   run(null, set, controller, 'size', 40);
   equal(view.$('input').attr('size'), '40', 'updates text field after size changes');
 });
 
-test('input tabindex is updated when setting tabindex property of view', function() {
+QUnit.test('input tabindex is updated when setting tabindex property of view', function() {
   equal(view.$('input').attr('tabindex'), '5', 'renders text field with the tabindex');
   run(null, set, controller, 'tab', 3);
   equal(view.$('input').attr('tabindex'), '3', 'updates text field after tabindex changes');
 });
 
-test('cursor position is not lost when updating content', function() {
+QUnit.test('cursor position is not lost when updating content', function() {
   equal(view.$('input').val(), 'hello', 'precondition - renders text field with value');
 
   var $input = view.$('input');
@@ -129,7 +128,7 @@ test('cursor position is not lost when updating content', function() {
   equal(input.selectionEnd, 3, 'cursor position was not lost');
 });
 
-test('input can be updated multiple times', function() {
+QUnit.test('input can be updated multiple times', function() {
   equal(view.$('input').val(), 'hello', 'precondition - renders text field with value');
 
   var $input = view.$('input');
@@ -150,7 +149,7 @@ test('input can be updated multiple times', function() {
 });
 
 
-testModule('{{input type=\'text\'}} - static values', {
+QUnit.module('{{input type=\'text\'}} - static values', {
   setup() {
     commonSetup();
 
@@ -171,39 +170,39 @@ testModule('{{input type=\'text\'}} - static values', {
   }
 });
 
-test('should insert a text field into DOM', function() {
+QUnit.test('should insert a text field into DOM', function() {
   equal(view.$('input').length, 1, 'A single text field was inserted');
 });
 
-test('should become disabled if the disabled attribute is true', function() {
+QUnit.test('should become disabled if the disabled attribute is true', function() {
   ok(view.$('input').is(':disabled'), 'The text field is disabled');
 });
 
-test('input value is updated when setting value property of view', function() {
+QUnit.test('input value is updated when setting value property of view', function() {
   equal(view.$('input').val(), 'hello', 'renders text field with value');
 });
 
-test('input placeholder is updated when setting placeholder property of view', function() {
+QUnit.test('input placeholder is updated when setting placeholder property of view', function() {
   equal(view.$('input').attr('placeholder'), 'Enter some text', 'renders text field with placeholder');
 });
 
-test('input name is updated when setting name property of view', function() {
+QUnit.test('input name is updated when setting name property of view', function() {
   equal(view.$('input').attr('name'), 'some-name', 'renders text field with name');
 });
 
-test('input maxlength is updated when setting maxlength property of view', function() {
+QUnit.test('input maxlength is updated when setting maxlength property of view', function() {
   equal(view.$('input').attr('maxlength'), '30', 'renders text field with maxlength');
 });
 
-test('input size is updated when setting size property of view', function() {
+QUnit.test('input size is updated when setting size property of view', function() {
   equal(view.$('input').attr('size'), '30', 'renders text field with size');
 });
 
-test('input tabindex is updated when setting tabindex property of view', function() {
+QUnit.test('input tabindex is updated when setting tabindex property of view', function() {
   equal(view.$('input').attr('tabindex'), '5', 'renders text field with the tabindex');
 });
 
-test('specifying `on="someevent" action="foo"` triggers the action', function() {
+QUnit.test('specifying `on="someevent" action="foo"` triggers the action', function() {
   expect(2);
   runDestroy(view);
   expectDeprecation(`Using '{{input on="focus-in" action="doFoo"}}' ('foo.hbs' @ L1:C0) is deprecated. Please use '{{input focus-in="doFoo"}}' instead.`);
@@ -228,7 +227,7 @@ test('specifying `on="someevent" action="foo"` triggers the action', function() 
   });
 });
 
-testModule('{{input type=\'text\'}} - dynamic type', {
+QUnit.module('{{input type=\'text\'}} - dynamic type', {
   setup() {
     commonSetup();
 
@@ -251,11 +250,11 @@ testModule('{{input type=\'text\'}} - dynamic type', {
   }
 });
 
-test('should insert a text field into DOM', function() {
+QUnit.test('should insert a text field into DOM', function() {
   equal(view.$('input').attr('type'), 'password', 'a bound property can be used to determine type.');
 });
 
-test('should change if the type changes', function() {
+QUnit.test('should change if the type changes', function() {
   equal(view.$('input').attr('type'), 'password', 'a bound property can be used to determine type.');
 
   run(function() {
@@ -265,7 +264,7 @@ test('should change if the type changes', function() {
   equal(view.$('input').attr('type'), 'text', 'it changes after the type changes');
 });
 
-testModule('{{input}} - default type', {
+QUnit.module('{{input}} - default type', {
   setup() {
     commonSetup();
 
@@ -286,11 +285,11 @@ testModule('{{input}} - default type', {
   }
 });
 
-test('should have the default type', function() {
+QUnit.test('should have the default type', function() {
   equal(view.$('input').attr('type'), 'text', 'Has a default text type');
 });
 
-testModule('{{input type=\'checkbox\'}}', {
+QUnit.module('{{input type=\'checkbox\'}}', {
   setup() {
     commonSetup();
 
@@ -315,35 +314,35 @@ testModule('{{input type=\'checkbox\'}}', {
   }
 });
 
-test('should append a checkbox', function() {
+QUnit.test('should append a checkbox', function() {
   equal(view.$('input[type=checkbox]').length, 1, 'A single checkbox is added');
 });
 
-test('should begin disabled if the disabled attribute is true', function() {
+QUnit.test('should begin disabled if the disabled attribute is true', function() {
   ok(view.$('input').is(':not(:disabled)'), 'The checkbox isn\'t disabled');
   run(null, set, controller, 'disabled', true);
   ok(view.$('input').is(':disabled'), 'The checkbox is now disabled');
 });
 
-test('should support the tabindex property', function() {
+QUnit.test('should support the tabindex property', function() {
   equal(view.$('input').prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
   run(null, set, controller, 'tab', 3);
   equal(view.$('input').prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');
 });
 
-test('checkbox name is updated', function() {
+QUnit.test('checkbox name is updated', function() {
   equal(view.$('input').attr('name'), 'hello', 'renders checkbox with the name');
   run(null, set, controller, 'name', 'bye');
   equal(view.$('input').attr('name'), 'bye', 'updates checkbox after name changes');
 });
 
-test('checkbox checked property is updated', function() {
+QUnit.test('checkbox checked property is updated', function() {
   equal(view.$('input').prop('checked'), false, 'the checkbox isn\'t checked yet');
   run(null, set, controller, 'val', true);
   equal(view.$('input').prop('checked'), true, 'the checkbox is checked now');
 });
 
-testModule('{{input type=\'checkbox\'}} - prevent value= usage', {
+QUnit.module('{{input type=\'checkbox\'}} - prevent value= usage', {
   setup() {
     commonSetup();
 
@@ -360,13 +359,13 @@ testModule('{{input type=\'checkbox\'}} - prevent value= usage', {
   }
 });
 
-test('It asserts the presence of checked=', function() {
+QUnit.test('It asserts the presence of checked=', function() {
   expectAssertion(function() {
     runAppend(view);
   }, /you must use `checked=/);
 });
 
-testModule('{{input type=boundType}}', {
+QUnit.module('{{input type=boundType}}', {
   setup() {
     commonSetup();
 
@@ -390,17 +389,17 @@ testModule('{{input type=boundType}}', {
   }
 });
 
-test('should append a checkbox', function() {
+QUnit.test('should append a checkbox', function() {
   equal(view.$('input[type=checkbox]').length, 1, 'A single checkbox is added');
 });
 
 // Checking for the checked property is a good way to verify that the correct
 // view was used.
-test('checkbox checked property is updated', function() {
+QUnit.test('checkbox checked property is updated', function() {
   equal(view.$('input').prop('checked'), true, 'the checkbox is checked');
 });
 
-testModule('{{input type=\'checkbox\'}} - static values', {
+QUnit.module('{{input type=\'checkbox\'}} - static values', {
   setup() {
     commonSetup();
 
@@ -425,23 +424,23 @@ testModule('{{input type=\'checkbox\'}} - static values', {
   }
 });
 
-test('should begin disabled if the disabled attribute is true', function() {
+QUnit.test('should begin disabled if the disabled attribute is true', function() {
   ok(view.$().is(':not(:disabled)'), 'The checkbox isn\'t disabled');
 });
 
-test('should support the tabindex property', function() {
+QUnit.test('should support the tabindex property', function() {
   equal(view.$('input').prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
 });
 
-test('checkbox name is updated', function() {
+QUnit.test('checkbox name is updated', function() {
   equal(view.$('input').attr('name'), 'hello', 'renders checkbox with the name');
 });
 
-test('checkbox checked property is updated', function() {
+QUnit.test('checkbox checked property is updated', function() {
   equal(view.$('input').prop('checked'), false, 'the checkbox isn\'t checked yet');
 });
 
-testModule('{{input type=\'text\'}} - null/undefined values', {
+QUnit.module('{{input type=\'text\'}} - null/undefined values', {
   setup() {
     commonSetup();
   },
@@ -452,7 +451,7 @@ testModule('{{input type=\'text\'}} - null/undefined values', {
   }
 });
 
-test('placeholder attribute bound to undefined is not present', function() {
+QUnit.test('placeholder attribute bound to undefined is not present', function() {
   view = View.extend({
     [OWNER]: owner,
     controller: {},
@@ -468,7 +467,7 @@ test('placeholder attribute bound to undefined is not present', function() {
   equal(view.element.childNodes[1].getAttribute('placeholder'), 'foo', 'attribute is present');
 });
 
-test('placeholder attribute bound to null is not present', function() {
+QUnit.test('placeholder attribute bound to null is not present', function() {
   view = View.extend({
     [OWNER]: owner,
     controller: {
