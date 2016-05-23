@@ -4,6 +4,21 @@ import { SerializedTemplate } from 'glimmer-wire-format';
 import { Environment, Template, Layout } from "glimmer-runtime";
 import { TemplateSpec, compileSpec } from "glimmer-compiler";
 
+const TextNode = (<any>window).Text;
+const Comment = (<any>window).Comment;
+
+function isMarker(node) {
+  if (node instanceof Comment && node.textContent === '') {
+    return true;
+  }
+
+  if (node instanceof TextNode && node.textContent === '') {
+    return true;
+  }
+
+  return false;
+}
+
 interface CompileOptions {
   buildMeta?: FIXME<'currently does nothing'>;
   env: Environment;
@@ -128,6 +143,27 @@ export function equalTokens(fragment, html, message=null) {
   }
 
   // deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
+}
+
+export function generateSnapshot(element) {
+  let snapshot = [];
+  let node = element.firstChild;
+
+  while (node) {
+    if (!isMarker(node)) {
+      snapshot.push(node);
+    }
+    node = node.nextSibling;
+  }
+
+  return snapshot;
+}
+
+export function equalSnapshots(a, b) {
+  strictEqual(a.length, b.length, 'Same number of nodes');
+  for (let i = 0; i < b.length; i++) {
+    strictEqual(a[i], b[i], 'Nodes are the same');
+  }
 }
 
 // detect side-effects of cloning svg elements in IE9-11
