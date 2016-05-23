@@ -35,38 +35,6 @@ const EMPTY = [];
 
 function K() { return this; }
 
-export function removeAt(array, start, len) {
-  if ('number' === typeof start) {
-    let content = get(array, 'content');
-    let arrangedContent = get(array, 'arrangedContent');
-    let indices = [];
-
-    if ((start < 0) || (start >= get(array, 'length'))) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    if (len === undefined) {
-      len = 1;
-    }
-
-    // Get a list of indices in original content to remove
-    for (let i = start; i < start + len; i++) {
-      // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
-      indices.push(content.indexOf(objectAt(arrangedContent, i)));
-    }
-
-    // Replace in reverse order since indices will change
-    indices.sort((a, b) => b - a);
-
-    beginPropertyChanges();
-    for (let i = 0; i < indices.length; i++) {
-      array._replace(indices[i], 1, EMPTY);
-    }
-    endPropertyChanges();
-  }
-
-  return array;
-}
 
 /**
   An ArrayProxy wraps any other object that implements `Ember.Array` and/or
@@ -335,7 +303,36 @@ export default EmberObject.extend(MutableArray, {
   },
 
   removeAt(start, len) {
-    return removeAt(this, start, len);
+    if ('number' === typeof start) {
+      let content = get(this, 'content');
+      let arrangedContent = get(this, 'arrangedContent');
+      let indices = [];
+
+      if ((start < 0) || (start >= get(this, 'length'))) {
+        throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+      }
+
+      if (len === undefined) {
+        len = 1;
+      }
+
+      // Get a list of indices in original content to remove
+      for (let i = start; i < start + len; i++) {
+        // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
+        indices.push(content.indexOf(objectAt(arrangedContent, i)));
+      }
+
+      // Replace in reverse order since indices will change
+      indices.sort((a, b) => b - a);
+
+      beginPropertyChanges();
+      for (let i = 0; i < indices.length; i++) {
+        this._replace(indices[i], 1, EMPTY);
+      }
+      endPropertyChanges();
+    }
+
+    return this;
   },
 
   pushObject(obj) {

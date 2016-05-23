@@ -146,9 +146,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```javascript
     let colors = ['red', 'green', 'blue', 'yellow', 'orange'];
 
-    removeAt(colors, 0);     // ['green', 'blue', 'yellow', 'orange']
-    removeAt(colors, 2, 2);  // ['green', 'blue']
-    removeAt(colors, 4, 2);  // Error: Index out of range
+    colors.removeAt(0);     // ['green', 'blue', 'yellow', 'orange']
+    colors.removeAt(2, 2);  // ['green', 'blue']
+    colors.removeAt(4, 2);  // Error: Index out of range
     ```
 
     @method removeAt

@@ -26,7 +26,6 @@ suite.test('removeAt([X], 0) => [] + notify', function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
-<<<<<<< f34dbabccfaa97c5d8989ce3ce4ec196e2450bbf
 suite.test('removeAt([], 200) => OUT_OF_RANGE_EXCEPTION exception', function() {
   let obj = this.newObject([]);
   throws(() => removeAt(obj, 200), Error);
@@ -104,6 +103,28 @@ suite.test('removeAt([A,B,C,D], 1,2) => [A,D] + notify', function() {
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(removeAt(obj, 1, 2), obj, 'return self');
+
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(get(obj, 'length'), after.length, 'length');
+
+  equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
+
+  equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
+  equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
+});
+
+suite.test('[A,B,C,D].removeAt(1,2) => [A,D] + notify', function() {
+  var obj, before, after, observer;
+
+  before = this.newFixture(4);
+  after  = [before[0], before[3]];
+  obj = this.newObject(before);
+  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+
+  equal(obj.removeAt(1, 2), obj, 'return self');
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(get(obj, 'length'), after.length, 'length');
