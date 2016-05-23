@@ -20,9 +20,7 @@ function commonTeardown() {
   owner = component = null;
 }
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-testModule('component - invocation', {
+QUnit.module('component - invocation', {
   setup() {
     commonSetup();
   },
@@ -32,7 +30,7 @@ testModule('component - invocation', {
   }
 });
 
-test('moduleName is available on _renderNode when a layout is present', function() {
+QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
   expect(1);
 
   var layoutModuleName = 'my-app-name/templates/components/sample-component';
@@ -54,7 +52,7 @@ test('moduleName is available on _renderNode when a layout is present', function
   runAppend(component);
 });
 
-test('moduleName is available on _renderNode when no layout is present', function() {
+QUnit.test('moduleName is available on _renderNode when no layout is present', function() {
   expect(1);
 
   var templateModuleName = 'my-app-name/templates/application';

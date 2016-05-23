@@ -1,7 +1,6 @@
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 import { compile } from '../utils/helpers';
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 
@@ -9,7 +8,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-testModule('ember-htmlbars: value attribute', {
+QUnit.module('ember-htmlbars: value attribute', {
   teardown() {
     if (view) {
       run(view, view.destroy);
@@ -17,7 +16,7 @@ testModule('ember-htmlbars: value attribute', {
   }
 });
 
-test('property is output', function() {
+QUnit.test('property is output', function() {
   view = EmberView.create({
     context: { name: 'rick' },
     template: compile('<input value={{name}}>')
@@ -29,7 +28,7 @@ test('property is output', function() {
         'property is set true');
 });
 
-test('string property is output', function() {
+QUnit.test('string property is output', function() {
   view = EmberView.create({
     context: { name: 'rick' },
     template: compile('<input value=\'{{name}}\'>')
@@ -41,7 +40,7 @@ test('string property is output', function() {
         'property is set true');
 });
 
-test('blank property is output', function() {
+QUnit.test('blank property is output', function() {
   view = EmberView.create({
     context: { name: '' },
     template: compile('<input value={{name}}>')

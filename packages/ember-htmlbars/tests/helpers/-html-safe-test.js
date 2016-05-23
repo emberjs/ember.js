@@ -6,11 +6,10 @@ import Component from 'ember-htmlbars/component';
 import { compile } from '../utils/helpers';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var component, registry, container, warnings, originalWarn;
 
-testModule('ember-htmlbars: {{-html-safe}} helper', {
+QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
   setup() {
     registry = new Registry();
     container = registry.container();
@@ -32,7 +31,7 @@ testModule('ember-htmlbars: {{-html-safe}} helper', {
   }
 });
 
-test('adds the attribute to the element', function() {
+QUnit.test('adds the attribute to the element', function() {
   component = Component.create({
     container,
 
@@ -45,7 +44,7 @@ test('adds the attribute to the element', function() {
 });
 
 if (!EmberDev.runningProdBuild) {
-  test('no warnings are triggered from setting style attribute', function() {
+  QUnit.test('no warnings are triggered from setting style attribute', function() {
     component = Component.create({
       container,
 

@@ -7,15 +7,13 @@ import { set } from 'ember-metal/property_set';
 
 var view;
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-testModule('ember-htmlbars: custom morph integration tests', {
+QUnit.module('ember-htmlbars: custom morph integration tests', {
   teardown() {
     runDestroy(view);
   }
 });
 
-test('can properly re-render an if/else with attribute morphs', function() {
+QUnit.test('can properly re-render an if/else with attribute morphs', function() {
   view = EmberView.create({
     trueClass: 'truthy',
     falseClass: 'falsey',
@@ -35,7 +33,7 @@ test('can properly re-render an if/else with attribute morphs', function() {
   equal(view.$('.falsey').length, 1, 'inverse block rendered properly');
 });
 
-test('can properly re-render an if/else with element morphs', function() {
+QUnit.test('can properly re-render an if/else with element morphs', function() {
   view = EmberView.create({
     trueClass: 'truthy',
     falseClass: 'falsey',

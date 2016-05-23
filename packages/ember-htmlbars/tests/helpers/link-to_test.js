@@ -40,9 +40,7 @@ QUnit.module('ember-htmlbars: link-to helper', {
   }
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-test('should be able to be inserted in DOM when the router is not present', function() {
+QUnit.test('should be able to be inserted in DOM when the router is not present', function() {
   var template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
   view = EmberView.create({
     [OWNER]: owner,
@@ -54,7 +52,7 @@ test('should be able to be inserted in DOM when the router is not present', func
   equal(view.$().text(), 'Go to Index');
 });
 
-test('re-renders when title changes', function() {
+QUnit.test('re-renders when title changes', function() {
   var template = '{{link-to title routeName}}';
   view = EmberView.create({
     [OWNER]: owner,
@@ -76,7 +74,7 @@ test('re-renders when title changes', function() {
   equal(view.$().text(), 'bar');
 });
 
-test('can read bound title', function() {
+QUnit.test('can read bound title', function() {
   var template = '{{link-to title routeName}}';
   view = EmberView.create({
     [OWNER]: owner,
@@ -92,7 +90,7 @@ test('can read bound title', function() {
   equal(view.$().text(), 'foo');
 });
 
-test('escaped inline form (double curlies) escapes link title', function() {
+QUnit.test('escaped inline form (double curlies) escapes link title', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
@@ -104,7 +102,7 @@ test('escaped inline form (double curlies) escapes link title', function() {
   equal(view.$('b').length, 0, 'no <b> were found');
 });
 
-test('escaped inline form with (-html-safe) does not escape link title', function() {
+QUnit.test('escaped inline form with (-html-safe) does not escape link title', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
@@ -116,7 +114,7 @@ test('escaped inline form with (-html-safe) does not escape link title', functio
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-test('unescaped inline form (triple curlies) does not escape link title', function() {
+QUnit.test('unescaped inline form (triple curlies) does not escape link title', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
@@ -128,7 +126,7 @@ test('unescaped inline form (triple curlies) does not escape link title', functi
   equal(view.$('b').length, 1, '<b> was found');
 });
 
-test('unwraps controllers', function() {
+QUnit.test('unwraps controllers', function() {
   var template = '{{#link-to \'index\' view.otherController}}Text{{/link-to}}';
 
   view = EmberView.create({
@@ -146,7 +144,7 @@ test('unwraps controllers', function() {
   equal(view.$().text(), 'Text');
 });
 
-test('able to safely extend the built-in component and use the normal path', function() {
+QUnit.test('able to safely extend the built-in component and use the normal path', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
@@ -158,7 +156,7 @@ test('able to safely extend the built-in component and use the normal path', fun
   equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
 
-test('[GH#13432] able to safely extend the built-in component and invoke it inline', function() {
+QUnit.test('[GH#13432] able to safely extend the built-in component and invoke it inline', function() {
   view = EmberView.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
