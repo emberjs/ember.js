@@ -1,4 +1,5 @@
 import { assert, deprecate } from 'ember-metal/debug';
+import { NAME_KEY } from 'ember-metal/mixin';
 import { environment } from 'ember-environment';
 
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
@@ -121,7 +122,7 @@ function validateAction(component, actionName) {
   @uses Ember.ViewTargetActionSupport
   @public
 */
-var Component = View.extend(TargetActionSupport, {
+const Component = View.extend(TargetActionSupport, {
   isComponent: true,
   /*
     This is set so that the proto inspection in appendTemplatedView does not
@@ -595,6 +596,8 @@ var Component = View.extend(TargetActionSupport, {
     @since 1.13.0
   */
 });
+
+Component[NAME_KEY] = 'Ember.Component';
 
 Component.reopenClass({
   isComponentFactory: true

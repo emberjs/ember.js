@@ -12,13 +12,14 @@ import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import { UPDATE } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
 import { deprecate } from 'ember-metal/debug';
+import { NAME_KEY } from 'ember-metal/mixin';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const HAS_BLOCK = symbol('HAS_BLOCK');
 
-export default CoreView.extend(
+const Component = CoreView.extend(
   ChildViewsSupport,
   ViewStateSupport,
   ClassNamesSupport,
@@ -84,7 +85,10 @@ or {{${name} ${key}=(if theTruth "truth" "false")}}.
         }
       }
     }
-  });
+  }
+);
+
+Component[NAME_KEY] = 'Ember.Component';
 
 function strip([...strings], ...values) {
   let str = strings.map((string, index) => {
@@ -93,3 +97,5 @@ function strip([...strings], ...values) {
   }).join('');
   return str.split('\n').map(s => s.trim()).join(' ');
 }
+
+export default Component;
