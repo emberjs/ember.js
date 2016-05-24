@@ -125,9 +125,7 @@ QUnit.test('Destroying the application resets the router before the appInstance 
   equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-test('initializers can augment an applications customEvents hash', function(assert) {
+QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
   assert.expect(1);
 
   run(App, 'destroy');
@@ -161,7 +159,7 @@ test('initializers can augment an applications customEvents hash', function(asse
   });
 });
 
-test('instanceInitializers can augment an the customEvents hash', function(assert) {
+QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
   assert.expect(1);
 
   run(App, 'destroy');
