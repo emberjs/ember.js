@@ -15,6 +15,7 @@ import { privatize as P } from 'container/registry';
 import DefaultComponentTemplate from 'ember-glimmer/templates/component';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import { defaultCompileOptions } from 'ember-template-compiler';
+import { PartialDefinition } from 'glimmer-runtime';
 
 const packageTag = `@${packageName} `;
 
@@ -374,11 +375,15 @@ export class RenderingTest extends TestCase {
   }
 
   registerPartial(name, template) {
-    let { owner } = this;
-
+    let owner = this.env.owner || this.owner;
     if (typeof template === 'string') {
       let moduleName = `template:${name}`;
-      owner.register(moduleName, this.compile(template, { moduleName }));
+      if (isEnabled('ember-glimmer')) {
+        let partial = new PartialDefinition(moduleName, this.compile(template, { moduleName, env: this.env }));
+        owner.register(moduleName, partial.template);
+      } else {
+        owner.register(moduleName, this.compile(template, { moduleName }));
+      }
     }
   }
 

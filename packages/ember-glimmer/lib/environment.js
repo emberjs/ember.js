@@ -1,3 +1,4 @@
+import lookupPartial, { hasPartial } from 'ember-views/system/lookup_partial';
 import {
   Environment as GlimmerEnvironment,
   HelperSyntax
@@ -128,7 +129,7 @@ export default class Environment extends GlimmerEnvironment {
       templates
     } = statement;
 
-    if (isSimple && (isInline || isBlock)) {
+    if (key !== 'partial' && isSimple && (isInline || isBlock)) {
       if (key === 'component') {
         return new DynamicComponentSyntax({ args, templates, isBlock });
       } else if (key === 'outlet') {
@@ -178,6 +179,22 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     return definition;
+  }
+
+  hasPartial(name) {
+    return hasPartial(this, name[0]);
+  }
+
+  lookupPartial(name) {
+    let partial = {
+      template: lookupPartial(this, name[0]).spec
+    };
+
+    if (partial) {
+      return partial;
+    } else {
+      throw new Error(`${name} is not a partial`);
+    }
   }
 
   hasHelper(name) {
