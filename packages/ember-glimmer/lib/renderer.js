@@ -1,5 +1,6 @@
 import { RootReference } from './utils/references';
 import run from 'ember-metal/run_loop';
+import { setHasViews } from 'ember-metal/tags';
 import { CURRENT_TAG } from 'glimmer-reference';
 
 const { backburner } = run;
@@ -68,9 +69,9 @@ class SchedulerRegistrar {
 }
 const schedulerRegistrar = new SchedulerRegistrar();
 
-export function rendererHasViews() {
+setHasViews(function rendererHasViews() {
   return schedulerRegistrar.hasRegistrations();
-}
+});
 
 class Scheduler {
   constructor() {

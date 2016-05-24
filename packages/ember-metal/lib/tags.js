@@ -2,7 +2,12 @@ import { meta as metaFor } from './meta';
 import require, { has } from 'require';
 
 let hasGlimmer = has('glimmer-reference');
-let CONSTANT_TAG, CURRENT_TAG, DirtyableTag, makeTag, rendererHasViews, run;
+let CONSTANT_TAG, CURRENT_TAG, DirtyableTag, makeTag, run;
+
+let hasViews = () => false;
+export function setHasViews(fn) {
+  hasViews = fn;
+}
 
 export let markObjectAsDirty;
 
@@ -25,11 +30,7 @@ function ensureRunloop() {
     run = require('ember-metal/run_loop').default;
   }
 
-  if (!rendererHasViews) {
-    rendererHasViews = require('ember-glimmer/renderer').rendererHasViews;
-  }
-
-  if (rendererHasViews() && !run.backburner.currentInstance) {
+  if (hasViews() && !run.backburner.currentInstance) {
     run.schedule('actions', K);
   }
 }
