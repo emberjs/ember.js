@@ -24,6 +24,7 @@ import { Mixin } from 'ember-metal/mixin';
 import EmberArray, { objectAt } from 'ember-runtime/mixins/array';
 import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
 import Enumerable from 'ember-runtime/mixins/enumerable';
+import isEnabled from 'ember-metal/features';
 
 /**
   This mixin defines the API for modifying array-like objects. These methods
@@ -388,7 +389,15 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   addObject(obj) {
-    if (!this.contains(obj)) {
+    var included;
+
+    if (isEnabled('ember-runtime-enumerable-includes')) {
+      included = this.includes(obj);
+    } else {
+      included = this.contains(obj);
+    }
+
+    if (!included) {
       this.pushObject(obj);
     }
 

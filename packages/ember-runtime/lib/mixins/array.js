@@ -30,6 +30,8 @@ import {
 import { meta as metaFor } from 'ember-metal/meta';
 import { markObjectAsDirty } from 'ember-metal/tags';
 import EachProxy from 'ember-runtime/system/each_proxy';
+import { deprecate } from 'ember-metal/debug';
+import isEnabled from 'ember-metal/features';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   var willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -112,7 +114,7 @@ export function isEmberArray(obj) {
   @since Ember 0.9.0
   @public
 */
-export default Mixin.create(Enumerable, {
+var ArrayMixin = Mixin.create(Enumerable, {
 
   [EMBER_ARRAY]: true,
 
@@ -214,6 +216,14 @@ export default Mixin.create(Enumerable, {
 
   // optimized version from Enumerable
   contains(obj) {
+    if (isEnabled('ember-runtime-enumerable-includes')) {
+      deprecate(
+        '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+        false,
+        { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+      );
+    }
+
     return this.indexOf(obj) >= 0;
   },
 
@@ -573,3 +583,55 @@ export default Mixin.create(Enumerable, {
     return this.__each;
   }).volatile()
 });
+
+if (isEnabled('ember-runtime-enumerable-includes')) {
+  ArrayMixin.reopen({
+    /**
+      Returns `true` if the passed object can be found in the array.
+      This method is a Polyfill for ES 2016 Array.includes.
+      If no `startAt` argument is given, the starting location to
+      search is 0. If it's negative, searches from the index of
+      `this.length + startAt` by asc.
+      ```javascript
+      [1, 2, 3].includes(2);     // true
+      [1, 2, 3].includes(4);     // false
+      [1, 2, 3].includes(3, 2);  // true
+      [1, 2, 3].includes(3, 3);  // false
+      [1, 2, 3].includes(3, -1); // true
+      [1, 2, 3].includes(1, -1); // false
+      [1, 2, 3].includes(1, -4); // true
+      [1, 2, NaN].includes(NaN); // true
+      ```
+      @method includes
+      @param {Object} obj The object to search for.
+      @param {Number} startAt optional starting location to search, default 0
+      @return {Boolean} `true` if object is found in the array.
+      @public
+    */
+    includes(obj, startAt) {
+      var len = get(this, 'length');
+      var idx, currentObj;
+
+      if (startAt === undefined) {
+        startAt = 0;
+      }
+
+      if (startAt < 0) {
+        startAt += len;
+      }
+
+      for (idx = startAt; idx < len; idx++) {
+        currentObj = objectAt(this, idx);
+
+        // SameValueZero comparison (NaN !== NaN)
+        if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  });
+}
+
+export default ArrayMixin;

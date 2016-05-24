@@ -285,6 +285,7 @@ import anyTests         from 'ember-runtime/tests/suites/enumerable/any';
 import isAnyTests       from 'ember-runtime/tests/suites/enumerable/is_any';
 import compactTests     from 'ember-runtime/tests/suites/enumerable/compact';
 import containsTests    from 'ember-runtime/tests/suites/enumerable/contains';
+import includesTests    from 'ember-runtime/tests/suites/enumerable/includes';
 import everyTests       from 'ember-runtime/tests/suites/enumerable/every';
 import filterTests      from 'ember-runtime/tests/suites/enumerable/filter';
 import findTests        from 'ember-runtime/tests/suites/enumerable/find';
@@ -323,6 +324,10 @@ EnumerableTests.importModuleTests(uniqTests);
 
 if (isEnabled('ember-runtime-computed-uniq-by')) {
   EnumerableTests.importModuleTests(uniqByTests);
+}
+
+if (isEnabled('ember-runtime-enumerable-includes')) {
+  EnumerableTests.importModuleTests(includesTests);
 }
 
 EnumerableTests.importModuleTests(withoutTests);
