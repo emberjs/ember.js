@@ -33,6 +33,10 @@ import { default as classHelper } from './helpers/-class';
 import { default as queryParams } from './helpers/query-param';
 import { OWNER } from 'container/owner';
 
+const builtInComponents = {
+  textarea: '-text-area'
+};
+
 const builtInHelpers = {
   concat,
   if: inlineIf,
@@ -133,6 +137,18 @@ export default class Environment extends GlimmerEnvironment {
         let definition = this.createComponentDefinition(path, isBlock);
 
         if (definition) {
+          wrapClassBindingAttribute(args);
+          wrapClassAttribute(args);
+          return new CurlyComponentSyntax({ args, definition, templates });
+        }
+      } else {
+        // Check if it's a keyword
+        let mappedKey = builtInComponents[key];
+        if (mappedKey) {
+          if (mappedKey !== key) {
+            path = path.map((segment) => segment === key ? mappedKey : segment);
+          }
+          let definition = this.getComponentDefinition(path);
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
