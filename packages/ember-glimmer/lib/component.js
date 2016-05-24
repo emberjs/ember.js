@@ -11,8 +11,8 @@ import { get } from 'ember-metal/property_get';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import { UPDATE } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
-import { deprecate } from 'ember-metal/debug';
 import { NAME_KEY } from 'ember-metal/mixin';
+import { deprecate, assert } from 'ember-metal/debug';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -70,18 +70,16 @@ const Component = CoreView.extend(
       let args, reference;
 
       if ((args = this[ARGS]) && (reference = args[key])) {
-        if (reference[UPDATE]) {
-          reference[UPDATE](get(this, key));
-        } else {
-          let name = this._debugContainerKey.split(':')[1];
-          let value = get(this, key);
-          throw new Error(strip`
+        let name = this._debugContainerKey.split(':')[1];
+        let value = get(this, key);
+        assert(strip`
 Cannot set the \`${key}\` property (on component ${name}) to
 \`${value}\`. The \`${key}\` property came from an immutable
 binding in the template, such as {{${name} ${key}="string"}}
 or {{${name} ${key}=(if theTruth "truth" "false")}}.
-          `);
-        }
+          `, reference[UPDATE]);
+
+        reference[UPDATE](value);
       }
     }
   }

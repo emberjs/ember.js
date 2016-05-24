@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
+import { InternalHelperReference, MUT, isMut, UPDATE } from '../utils/references';
 import { isConst } from 'glimmer-reference';
 
 export default {
@@ -10,13 +10,24 @@ export default {
     assert('You can only pass a path to mut', !isConst(ref));
 
     if (!isMut(ref)) {
-      ref[MUTABLE_REFERENCE] = true;
+      return new MutHelperReference(mut, args);
     }
     return ref;
   }
 };
 
-export function isMut(ref) {
-  return !!(ref && ref[MUTABLE_REFERENCE]);
+function mut({ positional }) {
+  return positional.at(0).value();
 }
 
+class MutHelperReference extends InternalHelperReference {
+   constructor() {
+    super(...arguments);
+    this[MUT] = true;
+  }
+
+  [UPDATE](value) {
+    let parentRef = this.args.positional.at(0);
+    parentRef[UPDATE](value);
+  }
+}

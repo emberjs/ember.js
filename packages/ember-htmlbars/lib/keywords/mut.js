@@ -4,7 +4,7 @@
 */
 
 import { assert } from 'ember-metal/debug';
-import  symbol from 'ember-metal/symbol';
+import symbol from 'ember-metal/symbol';
 import ProxyStream from '../streams/proxy-stream';
 import BasicStream from '../streams/stream';
 import { isStream } from '../streams/utils';

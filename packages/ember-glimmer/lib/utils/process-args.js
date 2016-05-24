@@ -3,9 +3,7 @@ import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
-import { ACTION } from 'ember-htmlbars/keywords/closure-action';
-import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
-import { UPDATE } from 'ember-glimmer/utils/references';
+import { UPDATE, MUT, ACTION } from 'ember-glimmer/utils/references';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
@@ -54,7 +52,7 @@ class SimpleArgs {
       let value = attrs[name];
       let ref = namedArgs.get(name);
 
-      if (ref[MUTABLE_REFERENCE] && !ref[ACTION]) {
+      if (ref[MUT] && !ref[ACTION]) {
         attrs[name] = new MutableCell(ref, value);
       }
 

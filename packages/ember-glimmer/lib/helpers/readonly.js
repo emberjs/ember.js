@@ -1,5 +1,5 @@
-import { InternalHelperReference, UPDATE } from '../utils/references';
-import EmberError from 'ember-metal/error';
+import { InternalHelperReference, UPDATE, READONLY } from '../utils/references';
+import { assert } from 'ember-metal/debug';
 
 function readonly({ positional }) {
   return positional.at(0).value();
@@ -8,12 +8,17 @@ function readonly({ positional }) {
 export default {
   isInternalHelper: true,
   toReference(args) {
-    return new ReadonlyReference(readonly, args);
+    return new ReadOnlyReference(readonly, args);
   }
 };
 
-export class ReadonlyReference extends InternalHelperReference {
+export class ReadOnlyReference extends InternalHelperReference {
+  constructor() {
+    super(...arguments);
+    this[READONLY] = true;
+  }
+
   [UPDATE](value) {
-    throw new EmberError('You cannot update the value of a readonly path');
+    assert('You cannot update the value of a readonly attribute', false);
   }
 }

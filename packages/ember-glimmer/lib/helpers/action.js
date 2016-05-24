@@ -1,10 +1,9 @@
-import { CachedReference } from '../utils/references';
+import { CachedReference, ACTION } from '../utils/references';
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
 import { get } from 'ember-metal/property_get';
 import { flaggedInstrument } from 'ember-metal/instrumentation';
-import { ACTION } from 'ember-htmlbars/keywords/closure-action';
 
 export class ClosureActionReference extends CachedReference {
   static create(args) {

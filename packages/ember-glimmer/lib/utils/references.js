@@ -11,10 +11,11 @@ import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
 import { ARGS } from '../component';
-import { isMut } from '../helpers/mut';
 
 export const UPDATE = symbol('UPDATE');
-
+export const READONLY = symbol('READONLY');
+export const MUT = symbol('MUT');
+export const ACTION = symbol('ACTION');
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
 // have an `isTruthy` property on them). This is not actually supported –
 // we should fix the tests to use an actual proxy. When that's done, we should
@@ -72,12 +73,26 @@ export class CachedReference extends EmberPathReference {
   // @abstract compute()
 }
 
+export function isMut(ref) {
+  return ref && ref[MUT];
+}
+
+export function isReadonly(ref) {
+  return ref && ref[READONLY];
+}
+
 // @implements PathReference
 export class RootReference extends ConstReference {
   get(propertyKey) {
-    let parentArgs = get(this.value(), ARGS);
-    let parentProperty = parentArgs && get(parentArgs, propertyKey);
-    return (isMut(parentProperty)) ? parentProperty : new PropertyReference(this, propertyKey);
+    let args, ref;
+
+    if ((args = this.value()[ARGS]) &&
+      (ref = args[propertyKey]) &&
+      ((isMut(ref) || isReadonly(ref)))
+    ) {
+      return ref;
+    }
+    return new PropertyReference(this, propertyKey);
   }
 }
 
