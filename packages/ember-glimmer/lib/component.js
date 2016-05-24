@@ -90,6 +90,10 @@ or {{${name} ${key}=(if theTruth "truth" "false")}}.
 
 Component[NAME_KEY] = 'Ember.Component';
 
+Component.reopenClass({
+  isComponentFactory: true
+});
+
 function strip([...strings], ...values) {
   let str = strings.map((string, index) => {
     let interpolated = values[index];
