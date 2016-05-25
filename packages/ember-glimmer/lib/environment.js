@@ -102,6 +102,10 @@ function wrapClassBindingAttribute(args) {
   }
 }
 
+function assertHelperExistence(name, condition) {
+  assert(`A helper named '${name}' could not be found`, condition);
+}
+
 export default class Environment extends GlimmerEnvironment {
   static create(options) {
     return new Environment(options);
@@ -159,6 +163,7 @@ export default class Environment extends GlimmerEnvironment {
     let nativeSyntax = super.refineStatement(statement);
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !nativeSyntax && key && this.hasHelper(key) ? !isBlock : true);
     assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key) ? !isModifier : true);
+    assertHelperExistence(key, !nativeSyntax && key && !this.hasHelper(key) ? !isBlock : true);
     return nativeSyntax;
   }
 
@@ -186,6 +191,8 @@ export default class Environment extends GlimmerEnvironment {
 
   lookupHelper(name) {
     let helper = builtInHelpers[name[0]] || this.owner.lookup(`helper:${name}`);
+
+    assertHelperExistence(name, helper);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {

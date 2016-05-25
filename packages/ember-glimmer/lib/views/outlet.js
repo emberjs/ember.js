@@ -104,6 +104,6 @@ export default class OutletView {
   }
 
   destroy() {
-    this._renderResult.destroy();
+    if (this._renderResult) { this._renderResult.destroy(); }
   }
 }

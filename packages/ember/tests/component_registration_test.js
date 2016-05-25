@@ -5,7 +5,7 @@ import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import helpers from 'ember-htmlbars/helpers';
-import { OutletView } from 'ember-htmlbars/views/outlet';
+import { OutletView } from 'ember-views/tests/utils/helpers';
 import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
@@ -142,7 +142,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
-test('Assigning layoutName to a component should setup the template as a layout', function() {
+QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -162,7 +162,7 @@ test('Assigning layoutName to a component should setup the template as a layout'
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Assigning layoutName and layout to a component should use the `layout` value', function() {
+QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
   expect(1);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -183,7 +183,7 @@ test('Assigning layoutName and layout to a component should use the `layout` val
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
+QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
   expect(2);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -204,7 +204,7 @@ test('Assigning defaultLayout to a component should set it up as a layout if no 
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
+QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
   expect(2);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -226,7 +226,7 @@ test('Assigning defaultLayout to a component should set it up as a layout if lay
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Using name of component that does not exist', function () {
+QUnit.test('Using name of component that does not exist', function () {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>'));
 
   expectAssertion(function () {

@@ -112,11 +112,9 @@ export default Mixin.create({
     }
   }),
 
-  templateForName(name, type) {
+  templateForName(name, type, owner=getOwner(this)) {
     if (!name) { return; }
     assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
-
-    let owner = getOwner(this);
 
     if (!owner) {
       throw new EmberError('Container was not found when looking up a views template. ' +
