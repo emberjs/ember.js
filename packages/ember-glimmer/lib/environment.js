@@ -148,7 +148,7 @@ export default class Environment extends GlimmerEnvironment {
           if (mappedKey !== key) {
             path = path.map((segment) => segment === key ? mappedKey : segment);
           }
-          let definition = this.getComponentDefinition(path);
+          let definition = this.createComponentDefinition(path, isBlock);
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
