@@ -622,6 +622,24 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
+  test('transitionTo called from route.beforeModel hook supports query params when configuration occurs on the route', function() {
+    App.IndexRoute = Route.extend({
+      queryParams: {
+        foo: {
+          defaultValue: 'lol'
+        }
+      },
+      beforeModel(tranition) {
+        this.transitionTo({queryParams: { foo: 'bar' }});
+      }
+    });
+
+    startingURL = "/?foo=lol";
+    bootApplication();
+
+    equal(router.get('location.path'), '/?foo=bar');
+  });
+
   test('transitionTo supports query params (multiple) when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -2850,6 +2868,24 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'longform supported (bool)');
     run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
+  });
+
+  test('transitionTo called from route.beforeModel hook supports query params', function() {
+    App.IndexController = Controller.extend({
+      queryParams: ['foo'],
+      foo: 'lol'
+    });
+
+    App.IndexRoute = Route.extend({
+      beforeModel: function(transition) {
+        this.transitionTo({queryParams: { foo: 'bar' }});
+      }
+    });
+    startingURL = '/?foo=wat';
+
+    bootApplication();
+
+    equal(router.get('location.path'), '/?foo=bar');
   });
 
   test('transitionTo supports query params (multiple)', function() {

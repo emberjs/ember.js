@@ -811,11 +811,17 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
 
       var handlerInfos = transition.state.handlerInfos;
       var router = this.router;
-      var qpMeta = router._queryParamsFor(handlerInfos[handlerInfos.length - 1].name);
+      var qpMeta;
       var changes = router._qpUpdates;
       var replaceUrl;
 
-      stashParamNames(router, handlerInfos);
+      // handlerInfos are empty for some no-op/queryParamsOnly transitions
+      if (!handlerInfos.length) {
+        qpMeta = router._queryParamsFor(this.routeName);
+      } else {
+        qpMeta = router._queryParamsFor(handlerInfos[handlerInfos.length - 1].name);
+        stashParamNames(router, handlerInfos);
+      }
 
       for (var i = 0; i < qpMeta.qps.length; ++i) {
         var qp = qpMeta.qps[i];
@@ -823,6 +829,9 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         var controller = route.controller;
         var presentKey = qp.urlKey in params && qp.urlKey;
 
+        if (!controller) {
+          controller = route._addController();
+        }
         // Do a reverse lookup to see if the changed query
         // param URL key corresponds to a QP property on
         // this controller.
@@ -1197,13 +1206,16 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     }
   },
 
-  /**
-    This hook is the entry point for router.js
 
+  /**
+    Adds query param observers to controller and sets this.controller prop
+
+    @method _addController
+    @param {Object} context
     @private
-    @method setup
   */
-  setup(context, transition) {
+
+  _addController(context) {
     var controller;
 
     var controllerName = this.controllerName || this.routeName;
@@ -1215,12 +1227,25 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
       controller = definedController;
     }
 
+    var propNames = get(this, '_qp.propertyNames');
+    addQueryParamsObservers(controller, propNames);
+    this.controller = controller;
+    return controller;
+  },
+
+  /**
+    This hook is the entry point for router.js
+
+    @private
+    @method setup
+  */
+  setup(context, transition) {
+    var controller = this.controller;
+
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers. Side effects. Side effects everywhere.
-    if (!this.controller) {
-      var propNames = get(this, '_qp.propertyNames');
-      addQueryParamsObservers(controller, propNames);
-      this.controller = controller;
+    if (!controller) {
+      controller = this._addController(context);
     }
 
     var queryParams = get(this, '_qp');

@@ -999,6 +999,9 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
 
 function updatePaths(router) {
   let infos = router.router.currentHandlerInfos;
+
+  if (!Array.isArray(infos) || infos.length === 0) { return; }
+
   let path = EmberRouter._routePath(infos);
   let currentRouteName = infos[infos.length - 1].name;
 
