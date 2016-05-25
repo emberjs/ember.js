@@ -5,7 +5,7 @@ import { strip } from '../../utils/abstract-test-case';
 
 moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
 
-  ['@htmlbars should render other templates registered with the container']() {
+  ['@test should render other templates registered with the container']() {
     this.registerPartial('_subTemplateFromContainer', 'sub-template');
 
     this.render(`This {{partial "subTemplateFromContainer"}} is pretty great.`);
@@ -15,7 +15,7 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.assertText('This sub-template is pretty great.');
   }
 
-  ['@htmlbars should render other slash-separated templates registered with the container']() {
+  ['@test should render other slash-separated templates registered with the container']() {
     this.registerPartial('child/_subTemplateFromContainer', 'sub-template');
 
     this.render(`This {{partial "child/subTemplateFromContainer"}} is pretty great.`);
@@ -25,7 +25,7 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.assertText('This sub-template is pretty great.');
   }
 
-  ['@htmlbars should use the current context']() {
+  ['@test should use the current context']() {
     this.registerPartial('_person_name', '{{model.firstName}} {{model.lastName}}');
 
     this.render('Who is {{partial "person_name"}}?', {
@@ -48,7 +48,7 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.assertText('Who is Kris Selden?');
   }
 
-  ['@htmlbars Quoteless parameters passed to {{partial}} perform a bound property lookup of the partial name']() {
+  ['@test Quoteless parameters passed to {{partial}} perform a bound property lookup of the partial name']() {
     this.registerPartial('_subTemplate', 'sub-template');
     this.registerPartial('_otherTemplate', 'other-template');
 
@@ -73,7 +73,7 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.assertText('This sub-template is pretty great.');
   }
 
-  ['@htmlbars dynamic partials in {{#each}}']() {
+  ['@test dynamic partials in {{#each}}']() {
     this.registerPartial('_odd', 'ODD{{i}}');
     this.registerPartial('_even', 'EVEN{{i}}');
 
@@ -103,7 +103,7 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.assertText('number: EVEN0number: ODD1number: EVEN2number: ODD3');
   }
 
-  ['@htmlbars dynamic partials in {{#with}}']() {
+  ['@test dynamic partials in {{#with}}']() {
     this.registerPartial('_thing', '{{t}}');
 
     this.render(strip`
