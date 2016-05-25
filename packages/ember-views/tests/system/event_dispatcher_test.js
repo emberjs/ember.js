@@ -22,9 +22,8 @@ var owner, view, originalViewKeyword;
 var dispatcher;
 
 import isEnabled from 'ember-metal/features';
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('EventDispatcher', {
+QUnit.module('EventDispatcher', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
 
@@ -49,7 +48,7 @@ testModule('EventDispatcher', {
 });
 
 if (isEnabled('ember-improved-instrumentation')) {
-  test('should instrument triggered events', function() {
+  QUnit.test('should instrument triggered events', function() {
     let clicked = 0;
 
     run(function () {
@@ -101,7 +100,7 @@ if (isEnabled('ember-improved-instrumentation')) {
   });
 }
 
-test('should dispatch events to views', function() {
+QUnit.test('should dispatch events to views', function() {
   var receivedEvent;
   var parentMouseDownCalled = 0;
   var childKeyDownCalled = 0;
@@ -154,7 +153,7 @@ test('should dispatch events to views', function() {
   equal(parentKeyDownCalled, 0, 'does not call keyDown on parent if child handles event');
 });
 
-test('should not dispatch events to views not inDOM', function() {
+QUnit.test('should not dispatch events to views not inDOM', function() {
   var receivedEvent;
 
   view = View.extend({
@@ -190,7 +189,7 @@ test('should not dispatch events to views not inDOM', function() {
   $element.remove();
 });
 
-test('should send change events up view hierarchy if view contains form elements', function() {
+QUnit.test('should send change events up view hierarchy if view contains form elements', function() {
   var receivedEvent;
   view = View.create({
     template: compile('<input id="is-done" type="checkbox">'),
@@ -209,7 +208,7 @@ test('should send change events up view hierarchy if view contains form elements
   equal(receivedEvent.target, jQuery('#is-done')[0], 'target property is the element that was clicked');
 });
 
-test('events should stop propagating if the view is destroyed', function() {
+QUnit.test('events should stop propagating if the view is destroyed', function() {
   var parentComponentReceived, receivedEvent;
 
   owner.register('component:x-foo', Component.extend({
@@ -239,7 +238,7 @@ test('events should stop propagating if the view is destroyed', function() {
   ok(!parentComponentReceived, 'parent component does not receive the event');
 });
 
-test('should dispatch events to nearest event manager', function() {
+QUnit.test('should dispatch events to nearest event manager', function() {
   var receivedEvent = 0;
   view = View.create({
     template: compile('<input id="is-done" type="checkbox">'),
@@ -261,7 +260,7 @@ test('should dispatch events to nearest event manager', function() {
   equal(receivedEvent, 1, 'event should go to manager and not view');
 });
 
-test('event manager should be able to re-dispatch events to view', function() {
+QUnit.test('event manager should be able to re-dispatch events to view', function() {
   var receivedEvent = 0;
 
   owner.register('component:x-foo', Component.extend({
@@ -301,7 +300,7 @@ test('event manager should be able to re-dispatch events to view', function() {
   equal(receivedEvent, 2, 'event should go to manager and not view');
 });
 
-test('event handlers should be wrapped in a run loop', function() {
+QUnit.test('event handlers should be wrapped in a run loop', function() {
   expect(1);
 
   view = View.extend({
@@ -336,7 +335,7 @@ QUnit.module('EventDispatcher#setup', {
   }
 });
 
-test('additional events which should be listened on can be passed', function () {
+QUnit.test('additional events which should be listened on can be passed', function () {
   expect(1);
 
   run(function () {
@@ -353,7 +352,7 @@ test('additional events which should be listened on can be passed', function () 
   jQuery('#leView').trigger('myevent');
 });
 
-test('additional events and rootElement can be specified', function () {
+QUnit.test('additional events and rootElement can be specified', function () {
   expect(3);
 
   jQuery('#qunit-fixture').append('<div class=\'custom-root\'></div>');
@@ -375,7 +374,7 @@ test('additional events and rootElement can be specified', function () {
   jQuery('#leView').trigger('myevent');
 });
 
-test('default events can be disabled via `customEvents`', function () {
+QUnit.test('default events can be disabled via `customEvents`', function () {
   expect(1);
 
   run(function () {

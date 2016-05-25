@@ -11,9 +11,7 @@ var originalViewKeyword;
 
 var Mixin, Parent;
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-testModule('View#nearest*', {
+QUnit.module('View#nearest*', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
     Mixin = EmberMixin.create({});
@@ -30,7 +28,7 @@ testModule('View#nearest*', {
   }
 });
 
-test('nearestOfType should find the closest view by view class', function() {
+QUnit.test('nearestOfType should find the closest view by view class', function() {
   var child;
 
   run(function() {
@@ -42,7 +40,7 @@ test('nearestOfType should find the closest view by view class', function() {
   equal(child.nearestOfType(Parent), parentView, 'finds closest view in the hierarchy by class');
 });
 
-test('nearestOfType should find the closest view by mixin', function() {
+QUnit.test('nearestOfType should find the closest view by mixin', function() {
   var child;
 
   run(function() {
@@ -54,7 +52,7 @@ test('nearestOfType should find the closest view by mixin', function() {
   equal(child.nearestOfType(Mixin), parentView, 'finds closest view in the hierarchy by class');
 });
 
-test('nearestWithProperty should search immediate parent', function() {
+QUnit.test('nearestWithProperty should search immediate parent', function() {
   var childView;
 
   view = View.create({
@@ -70,7 +68,7 @@ test('nearestWithProperty should search immediate parent', function() {
   equal(childView.nearestWithProperty('myProp'), view);
 });
 
-test('nearestChildOf should be deprecated', function() {
+QUnit.test('nearestChildOf should be deprecated', function() {
   var child;
 
   run(function() {

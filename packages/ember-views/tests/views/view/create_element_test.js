@@ -32,9 +32,7 @@ QUnit.test('returns the receiver', function() {
   equal(ret, view, 'returns receiver');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-test('calls render and turns resultant string into element', function() {
+QUnit.test('calls render and turns resultant string into element', function() {
   view = EmberView.create({
     tagName: 'span',
     template: compile('foo')

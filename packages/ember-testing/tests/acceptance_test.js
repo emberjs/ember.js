@@ -13,9 +13,9 @@ import RSVP from 'ember-runtime/ext/rsvp';
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('ember-testing Acceptance', {
+QUnit.module('ember-testing Acceptance', {
   setup() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
@@ -257,7 +257,7 @@ test('Helpers nested in thens', function() {
   });
 });
 
-test('Aborted transitions are not logged via Ember.Test.adapter#exception', function () {
+QUnit.test('Aborted transitions are not logged via Ember.Test.adapter#exception', function () {
   expect(0);
 
   Test.adapter = QUnitAdapter.create({
@@ -269,7 +269,7 @@ test('Aborted transitions are not logged via Ember.Test.adapter#exception', func
   visit('/abort_transition');
 });
 
-test('Unhandled exceptions are logged via Ember.Test.adapter#exception', function () {
+QUnit.test('Unhandled exceptions are logged via Ember.Test.adapter#exception', function () {
   expect(2);
 
   var asyncHandled;
@@ -289,7 +289,7 @@ test('Unhandled exceptions are logged via Ember.Test.adapter#exception', functio
   asyncHandled = click('.does-not-exist');
 });
 
-test('Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception', function () {
+QUnit.test('Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception', function () {
   expect(1);
 
   Test.adapter = QUnitAdapter.create({
@@ -305,7 +305,7 @@ test('Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#except
   });
 });
 
-test('should not start routing on the root URL when visiting another', function() {
+QUnit.test('should not start routing on the root URL when visiting another', function() {
   expect(4);
 
   visit('/posts');
@@ -318,7 +318,7 @@ test('should not start routing on the root URL when visiting another', function(
   });
 });
 
-test('only enters the index route once when visiting /', function() {
+QUnit.test('only enters the index route once when visiting /', function() {
   expect(1);
 
   visit('/');
@@ -328,7 +328,7 @@ test('only enters the index route once when visiting /', function() {
   });
 });
 
-test('test must not finish while asyncHelpers are pending', function () {
+QUnit.test('test must not finish while asyncHelpers are pending', function () {
   expect(2);
 
   var async = 0;
@@ -364,7 +364,7 @@ test('test must not finish while asyncHelpers are pending', function () {
   }
 });
 
-test('visiting a URL that causes another transition should yield the correct URL', function () {
+QUnit.test('visiting a URL that causes another transition should yield the correct URL', function () {
   expect(1);
 
   visit('/redirect');
@@ -374,7 +374,7 @@ test('visiting a URL that causes another transition should yield the correct URL
   });
 });
 
-test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
+QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
   expect(2);
 
   visit('/posts');
@@ -390,9 +390,9 @@ test('visiting a URL and then visiting a second URL with a transition should yie
   });
 });
 
-testModule('ember-testing Acceptance – teardown');
+QUnit.module('ember-testing Acceptance – teardown');
 
-test('that the setup/teardown happens correct', function() {
+QUnit.test('that the setup/teardown happens correct', function() {
   expect(2);
 
   jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');

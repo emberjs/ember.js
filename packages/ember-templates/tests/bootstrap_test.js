@@ -32,9 +32,9 @@ function checkTemplate(templateName) {
   runDestroy(view);
 }
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('ember-htmlbars: bootstrap', {
+QUnit.module('ember-htmlbars: bootstrap', {
   setup() {
     context.lookup = lookup = {};
   },
@@ -65,7 +65,7 @@ test('template without data-template-name or id should default to application', 
 });
 
 if (typeof Handlebars === 'object') {
-  test('template with type text/x-raw-handlebars should be parsed', function() {
+  QUnit.test('template with type text/x-raw-handlebars should be parsed', function() {
     jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
     run(function() {
@@ -81,7 +81,7 @@ if (typeof Handlebars === 'object') {
   });
 }
 
-test('duplicated default application templates should throw exception', function() {
+QUnit.test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
   throws(function () {
@@ -91,7 +91,7 @@ test('duplicated default application templates should throw exception', function
   'duplicate templates should not be allowed');
 });
 
-test('default application template and id application template present should throw exception', function() {
+QUnit.test('default application template and id application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
   throws(function () {
@@ -101,7 +101,7 @@ test('default application template and id application template present should th
   'duplicate templates should not be allowed');
 });
 
-test('default application template and data-template-name application template present should throw exception', function() {
+QUnit.test('default application template and data-template-name application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
   throws(function () {
@@ -111,7 +111,7 @@ test('default application template and data-template-name application template p
   'duplicate templates should not be allowed');
 });
 
-test('duplicated template id should throw exception', function() {
+QUnit.test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
   throws(function () {
@@ -121,7 +121,7 @@ test('duplicated template id should throw exception', function() {
   'duplicate templates should not be allowed');
 });
 
-test('duplicated template data-template-name should throw exception', function() {
+QUnit.test('duplicated template data-template-name should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
   throws(function () {

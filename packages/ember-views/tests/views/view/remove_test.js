@@ -12,13 +12,13 @@ import { objectAt } from 'ember-runtime/mixins/array';
 var parentView, child;
 var originalViewKeyword;
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 // .......................................................
 // removeFromParent()
 //
-testModule('View#removeFromParent', {
+QUnit.module('View#removeFromParent', {
   setup() {
     originalViewKeyword = registerKeyword('view',  viewKeyword);
   },
@@ -71,7 +71,7 @@ test('returns receiver', function() {
   equal(removed, child, 'receiver');
 });
 
-test('does nothing if not in parentView', function() {
+QUnit.test('does nothing if not in parentView', function() {
   child = View.create();
 
   // monkey patch for testing...
@@ -84,7 +84,7 @@ test('does nothing if not in parentView', function() {
   });
 });
 
-test('the DOM element is gone after doing append and remove in two separate runloops', function() {
+QUnit.test('the DOM element is gone after doing append and remove in two separate runloops', function() {
   view = View.create();
   run(function() {
     view.append();
@@ -97,7 +97,7 @@ test('the DOM element is gone after doing append and remove in two separate runl
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 
-test('the DOM element is gone after doing append and remove in a single runloop', function() {
+QUnit.test('the DOM element is gone after doing append and remove in a single runloop', function() {
   view = View.create();
   run(function() {
     view.append();
