@@ -121,7 +121,7 @@ QUnit.module('Routing with Query Params', {
 });
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
-  test('Single query params can be set on the route', function() {
+  QUnit.test('Single query params can be set on the route', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -146,7 +146,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=987');
   });
 
-  test('a query param can have define a `type` for type casting', function() {
+  QUnit.test('a query param can have define a `type` for type casting', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -168,7 +168,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('page'), 4);
   });
 
-  test('Query params can map to different url keys configured on the route', function() {
+  QUnit.test('Query params can map to different url keys configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: { as: 'other_foo', defaultValue: 'FOO' },
@@ -194,7 +194,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(router, 'transitionTo', '/?other_bar=NERK&other_foo=NAW');
   });
 
-  test('Routes have overridable serializeQueryParamKey hook and it works with route-configured query params', function() {
+  QUnit.test('Routes have overridable serializeQueryParamKey hook and it works with route-configured query params', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         funTimes: {
@@ -213,7 +213,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?fun-times=woot');
   });
 
-  test('No replaceURL occurs on startup when configured via Route because default values don\'t show up in URL', function() {
+  QUnit.test('No replaceURL occurs on startup when configured via Route because default values don\'t show up in URL', function() {
     expect(0);
 
     App.IndexRoute = Route.extend({
@@ -229,7 +229,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hooks receives query params when configred on Route', function() {
+  QUnit.test('model hooks receives query params when configred on Route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -246,7 +246,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('model hooks receives query params (overridden by incoming url value) when configured on route', function() {
+  QUnit.test('model hooks receives query params (overridden by incoming url value) when configured on route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -264,7 +264,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=yes');
   });
 
-  test('Route#paramsFor fetches query params when configured on the route', function() {
+  QUnit.test('Route#paramsFor fetches query params when configured on the route', function() {
     expect(1);
 
     App.Router.map(function() {
@@ -286,7 +286,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('Route#paramsFor fetches falsy query params when they\'re configured on the route', function() {
+  QUnit.test('Route#paramsFor fetches falsy query params when they\'re configured on the route', function() {
     expect(1);
 
     App.IndexRoute = Route.extend({
@@ -304,7 +304,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hook can query prefix-less application params when they\'re configured on the route', function() {
+  QUnit.test('model hook can query prefix-less application params when they\'re configured on the route', function() {
     App.ApplicationRoute = Route.extend({
       queryParams: {
         appomg: {
@@ -333,7 +333,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('can opt into full transition by setting refreshModel in route queryParams when all configuration is in route', function() {
+  QUnit.test('can opt into full transition by setting refreshModel in route queryParams when all configuration is in route', function() {
     expect(6);
 
     var appModelCount = 0;
@@ -379,7 +379,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexModelCount, 2);
   });
 
-  test('refreshModel does not cause a second transition during app boot ', function() {
+  QUnit.test('refreshModel does not cause a second transition during app boot ', function() {
     expect(0);
 
     App.ApplicationRoute = Route.extend({
@@ -406,7 +406,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('can use refreshModel even w URL changes that remove QPs from address bar when QP configured on route', function() {
+  QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar when QP configured on route', function() {
     expect(4);
 
     var indexModelCount = 0;
@@ -439,7 +439,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexController.get('omg'), 'lol');
   });
 
-  test('can opt into a replace query by specifying replace:true in the Router config hash when all configuration lives on route', function() {
+  QUnit.test('can opt into a replace query by specifying replace:true in the Router config hash when all configuration lives on route', function() {
     expect(2);
 
     App.ApplicationRoute = Route.extend({
@@ -460,7 +460,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(appController, 'alex', 'wallace');
   });
 
-  test('Route query params config can be configured using property name instead of URL key when configured on the route', function() {
+  QUnit.test('Route query params config can be configured using property name instead of URL key when configured on the route', function() {
     expect(2);
 
     App.ApplicationRoute = Route.extend({
@@ -481,7 +481,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(appController, 'commitBy', 'igor_seb');
   });
 
-  test('An explicit replace:false on a changed QP always wins and causes a pushState even when configuration is all on the route', function() {
+  QUnit.test('An explicit replace:false on a changed QP always wins and causes a pushState even when configuration is all on the route', function() {
     expect(3);
 
     App.ApplicationRoute = Route.extend({
@@ -599,7 +599,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
-  test('transitionTo supports query params when configuration occurs on the route', function() {
+  QUnit.test('transitionTo supports query params when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -622,7 +622,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
-  test('transitionTo supports query params (multiple) when configuration occurs on the route', function() {
+  QUnit.test('transitionTo supports query params (multiple) when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -648,7 +648,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
-  test('A default boolean value deserializes QPs as booleans rather than strings when configuration occurs on the route', function() {
+  QUnit.test('A default boolean value deserializes QPs as booleans rather than strings when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -670,7 +670,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('foo'), false);
   });
 
-  test('Query param without value are empty string when configuration occurs on the route', function() {
+  QUnit.test('Query param without value are empty string when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -686,7 +686,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('foo'), '');
   });
 
-  test('Array query params can be set when configured on the route', function() {
+  QUnit.test('Array query params can be set when configured on the route', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -711,7 +711,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=%5B3%2C4%5D');
   });
 
-  test('(de)serialization: arrays when configuration occurs on the route', function() {
+  QUnit.test('(de)serialization: arrays when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -732,7 +732,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
   });
 
-  test('Url with array query param sets controller property to array when configuration occurs on the route', function() {
+  QUnit.test('Url with array query param sets controller property to array when configuration occurs on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -748,7 +748,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
-  test('Url with array query param sets controller property to array when configuration occurs on the route and there is still a controller', function() {
+  QUnit.test('Url with array query param sets controller property to array when configuration occurs on the route and there is still a controller', function() {
     App.IndexController = Controller.extend();
 
     App.IndexRoute = Route.extend({
@@ -766,7 +766,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
-  test('Array query params can be pushed/popped when configuration occurs on the route but there is still a controller', function() {
+  QUnit.test('Array query params can be pushed/popped when configuration occurs on the route but there is still a controller', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -813,7 +813,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.foo, ['lol', 1]);
   });
 
-  test('Overwriting with array with same content shouldn\'t refire update when configuration occurs on router but there is still a controller', function() {
+  QUnit.test('Overwriting with array with same content shouldn\'t refire update when configuration occurs on router but there is still a controller', function() {
     expect(3);
     var modelCount = 0;
 
@@ -843,7 +843,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param when configuration occurs on the router', function() {
+  QUnit.test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param when configuration occurs on the router', function() {
     expect(1);
 
     App.IndexRoute = Route.extend({
@@ -908,7 +908,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(jQuery('#bar-link'), 'click');
   });
 
-  test('Undefined isn\'t deserialized into a string when configuration occurs on the route', function() {
+  QUnit.test('Undefined isn\'t deserialized into a string when configuration occurs on the route', function() {
     expect(3);
     App.Router.map(function() {
       this.route('example');
@@ -938,7 +938,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(get(controller, 'foo'), undefined);
   });
 
-  test('query params have been set by the time setupController is called when configuration occurs on the router', function() {
+  QUnit.test('query params have been set by the time setupController is called when configuration occurs on the router', function() {
     expect(1);
 
     App.ApplicationRoute = Route.extend({
@@ -956,7 +956,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('query params have been set by the time setupController is called when configuration occurs on the router and there is still a controller', function() {
+  QUnit.test('query params have been set by the time setupController is called when configuration occurs on the router and there is still a controller', function() {
     expect(1);
 
     App.ApplicationController = Controller.extend();
@@ -976,7 +976,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hooks receives query params when configured on the route', function() {
+  QUnit.test('model hooks receives query params when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -993,7 +993,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('Routes have overridable serializeQueryParamKey hook when configured on the route', function() {
+  QUnit.test('Routes have overridable serializeQueryParamKey hook when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         funTimes: {
@@ -1012,7 +1012,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?fun-times=woot');
   });
 
-  test('No replaceURL occurs on startup because default values don\'t show up in URL when configured on the route', function() {
+  QUnit.test('No replaceURL occurs on startup because default values don\'t show up in URL when configured on the route', function() {
     expect(0);
 
     App.IndexRoute = Route.extend({
@@ -1131,7 +1131,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/cats?name=domino', 'url is correct');
   });
 
-  test('query params have been set by the time setupController is called when configured on the route', function() {
+  QUnit.test('query params have been set by the time setupController is called when configured on the route', function() {
     expect(1);
 
     App.ApplicationRoute = Route.extend({
@@ -1149,7 +1149,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hooks receives query params (overridden by incoming url value) when configured on the route', function() {
+  QUnit.test('model hooks receives query params (overridden by incoming url value) when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -1167,7 +1167,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=yes');
   });
 
-  test('Route#paramsFor fetches query params when configured on the route', function() {
+  QUnit.test('Route#paramsFor fetches query params when configured on the route', function() {
     expect(1);
 
     App.Router.map(function() {
@@ -1189,7 +1189,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hook can query prefix-less application params (overridden by incoming url value) when they\'re configured on the route', function() {
+  QUnit.test('model hook can query prefix-less application params (overridden by incoming url value) when they\'re configured on the route', function() {
     App.ApplicationRoute = Route.extend({
       queryParams: {
         appomg: {
@@ -1219,7 +1219,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?appomg=appyes&omg=yes');
   });
 
-  test('Route#paramsFor fetches falsy query params when configured on the route', function() {
+  QUnit.test('Route#paramsFor fetches falsy query params when configured on the route', function() {
     expect(1);
 
     App.IndexRoute = Route.extend({
@@ -1237,7 +1237,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hook can query prefix-less application params when configured on the route', function() {
+  QUnit.test('model hook can query prefix-less application params when configured on the route', function() {
     App.ApplicationRoute = Route.extend({
       queryParams: {
         appomg: {
@@ -1266,7 +1266,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('can opt into full transition by setting refreshModel in route queryParams when configured on the route', function() {
+  QUnit.test('can opt into full transition by setting refreshModel in route queryParams when configured on the route', function() {
     expect(6);
 
     var appModelCount = 0;
@@ -1313,7 +1313,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
 
-  test('can use refreshModel even w URL changes that remove QPs from address bar when configured on the route', function() {
+  QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar when configured on the route', function() {
     expect(4);
 
     var indexModelCount = 0;
@@ -1346,7 +1346,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexController.get('omg'), 'lol');
   });
 
-  test('can opt into a replace query by specifying replace:true in the Router config hash when configured on the route', function() {
+  QUnit.test('can opt into a replace query by specifying replace:true in the Router config hash when configured on the route', function() {
     expect(2);
 
     App.ApplicationRoute = Route.extend({
@@ -1367,7 +1367,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(appController, 'alex', 'wallace');
   });
 
-  test('Route query params config can be configured using property name instead of URL key when configured on the route', function() {
+  QUnit.test('Route query params config can be configured using property name instead of URL key when configured on the route', function() {
     expect(2);
 
     App.ApplicationRoute = Route.extend({
@@ -1388,7 +1388,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(appController, 'commitBy', 'igor_seb');
   });
 
-  test('An explicit replace:false on a changed QP always wins and causes a pushState when configured on the route', function() {
+  QUnit.test('An explicit replace:false on a changed QP always wins and causes a pushState when configured on the route', function() {
     expect(3);
 
     App.ApplicationRoute = Route.extend({
@@ -1452,7 +1452,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(parentModelCount, 2);
   });
 
-  test('can override incoming QP values in setupController when configured on the route', function() {
+  QUnit.test('can override incoming QP values in setupController when configured on the route', function() {
     expect(3);
 
     App.Router.map(function() {
@@ -1483,7 +1483,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=OVERRIDE');
   });
 
-  test('can override incoming QP array values in setupController when configured on the route', function() {
+  QUnit.test('can override incoming QP array values in setupController when configured on the route', function() {
     expect(3);
 
     App.Router.map(function() {
@@ -1514,7 +1514,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=' + encodeURIComponent(JSON.stringify(['OVERRIDE'])));
   });
 
-  test('URL transitions that remove QPs still register as QP changes when configured on the route', function() {
+  QUnit.test('URL transitions that remove QPs still register as QP changes when configured on the route', function() {
     expect(2);
 
     App.IndexRoute = Route.extend({
@@ -1570,7 +1570,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
-  test('transitionTo supports query params when configured on the route', function() {
+  QUnit.test('transitionTo supports query params when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1593,7 +1593,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
-  test('transitionTo supports query params (multiple) when configured on the route', function() {
+  QUnit.test('transitionTo supports query params (multiple) when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1619,7 +1619,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
-  test('setting controller QP to empty string doesn\'t generate null in URL when configured on the route', function() {
+  QUnit.test('setting controller QP to empty string doesn\'t generate null in URL when configured on the route', function() {
     expect(1);
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1636,7 +1636,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(controller, 'foo', '');
   });
 
-  test('setting QP to empty string doesn\'t generate null in URL when configured on the route', function() {
+  QUnit.test('setting QP to empty string doesn\'t generate null in URL when configured on the route', function() {
     expect(1);
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -1653,7 +1653,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(controller, 'foo', '');
   });
 
-  test('A default boolean value deserializes QPs as booleans rather than strings when configured on the route', function() {
+  QUnit.test('A default boolean value deserializes QPs as booleans rather than strings when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1675,7 +1675,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('foo'), false);
   });
 
-  test('Query param without value are empty string when configured on the route', function() {
+  QUnit.test('Query param without value are empty string when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1691,7 +1691,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('foo'), '');
   });
 
-  test('Array query params can be set when configured on the route', function() {
+  QUnit.test('Array query params can be set when configured on the route', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -1716,7 +1716,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=%5B3%2C4%5D');
   });
 
-  test('(de)serialization: arrays when configured on the route', function() {
+  QUnit.test('(de)serialization: arrays when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1737,7 +1737,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
   });
 
-  test('Url with array query param sets controller property to array when configured on the route', function() {
+  QUnit.test('Url with array query param sets controller property to array when configured on the route', function() {
     App.IndexRoute = Route.extend({
       queryParams: {
         foo: {
@@ -1753,7 +1753,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
-  test('Array query params can be pushed/popped when configured on the route', function() {
+  QUnit.test('Array query params can be pushed/popped when configured on the route', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -1798,7 +1798,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.foo, ['lol', 1]);
   });
 
-  test('Overwriting with array with same content shouldn\'t refire update when configured on the route', function() {
+  QUnit.test('Overwriting with array with same content shouldn\'t refire update when configured on the route', function() {
     expect(3);
     var modelCount = 0;
 
@@ -1826,7 +1826,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('Defaulting to params hash as the model should not result in that params object being watched when configured on the route', function() {
+  QUnit.test('Defaulting to params hash as the model should not result in that params object being watched when configured on the route', function() {
     expect(1);
 
     App.Router.map(function() {
@@ -1857,7 +1857,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(router, 'transitionTo', 'other');
   });
 
-  test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param when configured on the route', function() {
+  QUnit.test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param when configured on the route', function() {
     expect(1);
 
     App.ApplicationRoute = Route.extend({
@@ -1921,7 +1921,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(jQuery('#bar-link'), 'click');
   });
 
-  test('Undefined isn\'t deserialized into a string when configured on the route', function() {
+  QUnit.test('Undefined isn\'t deserialized into a string when configured on the route', function() {
     expect(3);
     App.Router.map(function() {
       this.route('example');
@@ -1992,7 +1992,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(get(controller, 'foo'), '456');
   });
 
-  test('Calling transitionTo does not lose query params already on the activeTransition', function() {
+  QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
     expect(2);
     App.Router.map(function() {
       this.route('parent', function() {
@@ -2020,7 +2020,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(parentController.get('foo'), 'lol');
   });
 } else {
-  test('Calling transitionTo does not lose query params already on the activeTransition', function() {
+  QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
     expect(2);
     App.Router.map(function() {
       this.route('parent', function() {
@@ -2049,7 +2049,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(parentController.get('foo'), 'lol');
   });
 
-  test('Single query params can be set on the controller [DEPRECATED]', function() {
+  QUnit.test('Single query params can be set on the controller [DEPRECATED]', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -2071,7 +2071,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=987');
   });
 
-  test('Single query params can be set on the controller [DEPRECATED]', function() {
+  QUnit.test('Single query params can be set on the controller [DEPRECATED]', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -2093,7 +2093,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=987');
   });
 
-  test('Query params can map to different url keys configured on the controller [DEPRECATED]', function() {
+  QUnit.test('Query params can map to different url keys configured on the controller [DEPRECATED]', function() {
     App.IndexController = Controller.extend({
       queryParams: [{ foo: 'other_foo', bar: { as: 'other_bar' } }],
       foo: 'FOO',
@@ -2117,7 +2117,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(router, 'transitionTo', '/?other_bar=NERK&other_foo=NAW');
   });
 
-  test('Routes have overridable serializeQueryParamKey hook', function() {
+  QUnit.test('Routes have overridable serializeQueryParamKey hook', function() {
     App.IndexRoute = Route.extend({
       serializeQueryParamKey: dasherize
     });
@@ -2136,7 +2136,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?fun-times=woot');
   });
 
-  test('No replaceURL occurs on startup because default values don\'t show up in URL', function() {
+  QUnit.test('No replaceURL occurs on startup because default values don\'t show up in URL', function() {
     expect(0);
 
     App.IndexController = Controller.extend({
@@ -2149,7 +2149,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('Can override inherited QP behavior by specifying queryParams as a computed property', function() {
+  QUnit.test('Can override inherited QP behavior by specifying queryParams as a computed property', function() {
     expect(0);
     var SharedMixin = Mixin.create({
       queryParams: ['a'],
@@ -2170,7 +2170,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(indexController, 'set', 'a', 1);
   });
 
-  test('model hooks receives query params', function() {
+  QUnit.test('model hooks receives query params', function() {
     App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
@@ -2279,7 +2279,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/cats?name=domino', 'url is correct');
   });
 
-  test('query params have been set by the time setupController is called', function() {
+  QUnit.test('query params have been set by the time setupController is called', function() {
     expect(1);
 
     App.ApplicationController = Controller.extend({
@@ -2297,7 +2297,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hooks receives query params (overridden by incoming url value)', function() {
+  QUnit.test('model hooks receives query params (overridden by incoming url value)', function() {
     App.IndexController = Controller.extend({
       queryParams: ['omg'],
       omg: 'lol'
@@ -2315,7 +2315,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=yes');
   });
 
-  test('Route#paramsFor fetches query params', function() {
+  QUnit.test('Route#paramsFor fetches query params', function() {
     expect(1);
 
     App.Router.map(function() {
@@ -2337,7 +2337,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hook can query prefix-less application params (overridden by incoming url value)', function() {
+  QUnit.test('model hook can query prefix-less application params (overridden by incoming url value)', function() {
     App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
       appomg: 'applol'
@@ -2368,7 +2368,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
 
-  test('Route#paramsFor fetches falsy query params', function() {
+  QUnit.test('Route#paramsFor fetches falsy query params', function() {
     expect(1);
 
     App.IndexController = Controller.extend({
@@ -2386,7 +2386,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('model hook can query prefix-less application params', function() {
+  QUnit.test('model hook can query prefix-less application params', function() {
     App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
       appomg: 'applol'
@@ -2415,7 +2415,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('can opt into full transition by setting refreshModel in route queryParams', function() {
+  QUnit.test('can opt into full transition by setting refreshModel in route queryParams', function() {
     expect(6);
     App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
@@ -2464,7 +2464,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexModelCount, 2);
   });
 
-  test('refreshModel does not cause a second transition during app boot ', function() {
+  QUnit.test('refreshModel does not cause a second transition during app boot ', function() {
     expect(0);
     App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
@@ -2491,7 +2491,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
-  test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
+  QUnit.test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
     expect(6);
     App.ApplicationController = Controller.extend({
       queryParams: ['appomg'],
@@ -2540,7 +2540,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexModelCount, 2);
   });
 
-  test('can use refreshModel even w URL changes that remove QPs from address bar', function() {
+  QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar', function() {
     expect(4);
 
     App.IndexController = Controller.extend({
@@ -2577,7 +2577,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexController.get('omg'), 'lol');
   });
 
-  test('can opt into a replace query by specifying replace:true in the Router config hash', function() {
+  QUnit.test('can opt into a replace query by specifying replace:true in the Router config hash', function() {
     expect(2);
     App.ApplicationController = Controller.extend({
       queryParams: ['alex'],
@@ -2601,7 +2601,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(appController, 'alex', 'wallace');
   });
 
-  test('Route query params config can be configured using property name instead of URL key', function() {
+  QUnit.test('Route query params config can be configured using property name instead of URL key', function() {
     expect(2);
     App.ApplicationController = Controller.extend({
       queryParams: [
@@ -2627,7 +2627,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
 
-  test('An explicit replace:false on a changed QP always wins and causes a pushState', function() {
+  QUnit.test('An explicit replace:false on a changed QP always wins and causes a pushState', function() {
     expect(3);
     App.ApplicationController = Controller.extend({
       queryParams: ['alex', 'steely'],
@@ -2698,7 +2698,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(parentModelCount, 2);
   });
 
-  test('Use Ember.get to retrieve query params \'replace\' configuration', function() {
+  QUnit.test('Use Ember.get to retrieve query params \'replace\' configuration', function() {
     expect(2);
     App.ApplicationController = Controller.extend({
       queryParams: ['alex'],
@@ -2723,7 +2723,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(appController, 'alex', 'wallace');
   });
 
-  test('can override incoming QP values in setupController', function() {
+  QUnit.test('can override incoming QP values in setupController', function() {
     expect(3);
 
     App.Router.map(function() {
@@ -2754,7 +2754,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?omg=OVERRIDE');
   });
 
-  test('can override incoming QP array values in setupController', function() {
+  QUnit.test('can override incoming QP array values in setupController', function() {
     expect(3);
 
     App.Router.map(function() {
@@ -2832,7 +2832,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/abcdef/zoo?bar=456&foo=123');
   });
 
-  test('transitionTo supports query params', function() {
+  QUnit.test('transitionTo supports query params', function() {
     App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: 'lol'
@@ -2852,7 +2852,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
-  test('transitionTo supports query params (multiple)', function() {
+  QUnit.test('transitionTo supports query params (multiple)', function() {
     App.IndexController = Controller.extend({
       queryParams: ['foo', 'bar'],
       foo: 'lol',
@@ -2873,7 +2873,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=false', 'shorhand supported (bool)');
   });
 
-  test('setting controller QP to empty string doesn\'t generate null in URL', function() {
+  QUnit.test('setting controller QP to empty string doesn\'t generate null in URL', function() {
     expect(1);
     App.IndexController = Controller.extend({
       queryParams: ['foo'],
@@ -2887,7 +2887,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(controller, 'foo', '');
   });
 
-  test('setting QP to empty string doesn\'t generate null in URL', function() {
+  QUnit.test('setting QP to empty string doesn\'t generate null in URL', function() {
     expect(1);
     App.IndexRoute = Route.extend({
       queryParams: {
@@ -2904,7 +2904,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(controller, 'foo', '');
   });
 
-  test('A default boolean value deserializes QPs as booleans rather than strings', function() {
+  QUnit.test('A default boolean value deserializes QPs as booleans rather than strings', function() {
     App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: false
@@ -2926,7 +2926,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('foo'), false);
   });
 
-  test('Query param without value are empty string', function() {
+  QUnit.test('Query param without value are empty string', function() {
     App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: ''
@@ -2939,7 +2939,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(controller.get('foo'), '');
   });
 
-  test('Array query params can be set', function() {
+  QUnit.test('Array query params can be set', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -2961,7 +2961,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=%5B3%2C4%5D');
   });
 
-  test('(de)serialization: arrays', function() {
+  QUnit.test('(de)serialization: arrays', function() {
     App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: [1]
@@ -2979,7 +2979,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/?foo=%5B%5D', 'longform supported');
   });
 
-  test('Url with array query param sets controller property to array', function() {
+  QUnit.test('Url with array query param sets controller property to array', function() {
     App.IndexController = Controller.extend({
       queryParams: ['foo'],
       foo: ''
@@ -2992,7 +2992,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
-  test('Array query params can be pushed/popped', function() {
+  QUnit.test('Array query params can be pushed/popped', function() {
     App.Router.map(function() {
       this.route('home', { path: '/' });
     });
@@ -3034,7 +3034,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(controller.foo, ['lol', 1]);
   });
 
-  test('Overwriting with array with same content shouldn\'t refire update', function() {
+  QUnit.test('Overwriting with array with same content shouldn\'t refire update', function() {
     expect(3);
     var modelCount = 0;
 
@@ -3062,7 +3062,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '');
   });
 
-  test('Defaulting to params hash as the model should not result in that params object being watched', function() {
+  QUnit.test('Defaulting to params hash as the model should not result in that params object being watched', function() {
     expect(1);
 
     App.Router.map(function() {
@@ -3090,7 +3090,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(router, 'transitionTo', 'other');
   });
 
-  test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param', function() {
+  QUnit.test('A child of a resource route still defaults to parent route\'s model even if the child route has a query param', function() {
     expect(1);
 
     App.IndexController = Controller.extend({
@@ -3157,7 +3157,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(jQuery('#bar-link'), 'click');
   });
 
-  test('Undefined isn\'t deserialized into a string', function() {
+  QUnit.test('Undefined isn\'t deserialized into a string', function() {
     expect(3);
     App.Router.map(function() {
       this.route('example');
@@ -3187,7 +3187,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 }
 
-test('warn user that routes query params configuration must be an Object, not an Array', function() {
+QUnit.test('warn user that routes query params configuration must be an Object, not an Array', function() {
   expect(1);
 
   App.ApplicationRoute = Route.extend({
@@ -3201,7 +3201,7 @@ test('warn user that routes query params configuration must be an Object, not an
   }, 'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array');
 });
 
-test('handle routes names that clash with Object.prototype properties', function() {
+QUnit.test('handle routes names that clash with Object.prototype properties', function() {
   expect(1);
 
   App.Router.map(function() {

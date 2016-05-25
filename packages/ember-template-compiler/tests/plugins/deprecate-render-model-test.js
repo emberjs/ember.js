@@ -1,10 +1,8 @@
 import { compile } from '../utils/helpers';
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+QUnit.module('ember-template-compiler: deprecate-model-render');
 
-testModule('ember-template-compiler: deprecate-model-render');
-
-test('Using `{{render` with model provides a deprecation', function() {
+QUnit.test('Using `{{render` with model provides a deprecation', function() {
   expect(1);
 
   let expectedMessage =

@@ -82,9 +82,7 @@ function sharedTeardown() {
   });
 }
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-testModule('Routing with Query Params', {
+QUnit.module('Routing with Query Params', {
   setup() {
     sharedSetup();
   },
@@ -97,7 +95,7 @@ testModule('Routing with Query Params', {
 var startingURL = '';
 
 var testParamlessLinks = function(routeName) {
-  test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
+  QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
     setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));
@@ -115,7 +113,7 @@ var testParamlessLinks = function(routeName) {
 };
 
 var testParamlessLinksWithRouteConfig = function(routeName) {
-  test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
+  QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
     setTemplate(routeName, compile('{{link-to \'index\' \'index\' id=\'index-link\'}}'));

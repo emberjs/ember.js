@@ -3,11 +3,10 @@ import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 
 import { compile } from 'ember-htmlbars-template-compiler';
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var View, view;
 
-testModule('EmberView - renderToElement()', {
+QUnit.module('EmberView - renderToElement()', {
   setup() {
     View = EmberView.extend({
       template: compile('<h1>hello world</h1> goodbye world')
@@ -21,7 +20,7 @@ testModule('EmberView - renderToElement()', {
   }
 });
 
-test('should render into and return a body element', function() {
+QUnit.test('should render into and return a body element', function() {
   view = View.create();
 
   ok(!get(view, 'element'), 'precond - should not have an element');
@@ -38,7 +37,7 @@ test('should render into and return a body element', function() {
   equal(element.firstChild.firstChild.nextSibling.nodeValue, ' goodbye world', 'renders the text node');
 });
 
-test('should create and render into an element with a provided tagName', function() {
+QUnit.test('should create and render into an element with a provided tagName', function() {
   view = View.create();
 
   ok(!get(view, 'element'), 'precond - should not have an element');

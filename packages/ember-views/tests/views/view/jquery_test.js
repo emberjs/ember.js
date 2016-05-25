@@ -35,9 +35,7 @@ QUnit.test('returns jQuery object selecting element if provided', function() {
   equal(jquery[0], get(view, 'element'), 'element should be element');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-test('returns jQuery object selecting element inside element if provided', function() {
+QUnit.test('returns jQuery object selecting element inside element if provided', function() {
   ok(get(view, 'element'), 'precond - should have element');
 
   var jquery = view.$('span');
