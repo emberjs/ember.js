@@ -100,59 +100,6 @@ if (isEnabled('ember-improved-instrumentation')) {
   });
 }
 
-QUnit.test('should dispatch events to views', function() {
-  var receivedEvent;
-  var parentMouseDownCalled = 0;
-  var childKeyDownCalled = 0;
-  var parentKeyDownCalled = 0;
-
-  var childView = View.extend({
-    keyDown(evt) {
-      childKeyDownCalled++;
-
-      return false;
-    }
-  }).create({
-    template: compile('<span id="wot">ewot</span>')
-  });
-
-  view = View.extend({
-    mouseDown(evt) {
-      parentMouseDownCalled++;
-      receivedEvent = evt;
-    },
-
-    keyDown(evt) {
-      parentKeyDownCalled++;
-    }
-  }).create({
-    template: compile('some <span id="awesome">awesome</span> content {{view view.childView}}'),
-    childView: childView
-  });
-
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  view.$().trigger('mousedown');
-
-  ok(receivedEvent, 'passes event to associated event method');
-  receivedEvent = null;
-  parentMouseDownCalled = 0;
-
-  view.$('span#awesome').trigger('mousedown');
-  ok(receivedEvent, 'event bubbles up to nearest View');
-  equal(parentMouseDownCalled, 1, 'does not trigger the parent handlers twice because of browser bubbling');
-  receivedEvent = null;
-
-  jQuery('#wot').trigger('mousedown');
-  ok(receivedEvent, 'event bubbles up to nearest View');
-
-  jQuery('#wot').trigger('keydown');
-  equal(childKeyDownCalled, 1, 'calls keyDown on child view');
-  equal(parentKeyDownCalled, 0, 'does not call keyDown on parent if child handles event');
-});
-
 QUnit.test('should not dispatch events to views not inDOM', function() {
   var receivedEvent;
 
