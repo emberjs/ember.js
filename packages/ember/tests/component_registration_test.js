@@ -5,7 +5,7 @@ import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import helpers from 'ember-htmlbars/helpers';
-import { OutletView } from 'ember-views/tests/utils/helpers';
+import { OutletView } from './utils/helpers';
 import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
