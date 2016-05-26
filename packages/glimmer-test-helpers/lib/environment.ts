@@ -798,7 +798,7 @@ class DynamicComponentReference implements Reference<ComponentDefinition<Opaque>
     if (typeof name === 'string') {
       return env.getComponentDefinition([name as FIXME<'user str InternedString'> as InternedString]);
     } else {
-      throw new Error(`Cannot render ${name} as a component`);
+      return null;
     }
   }
 }

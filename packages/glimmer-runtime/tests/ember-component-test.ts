@@ -871,6 +871,81 @@ testComponent('parameterized has-block-params (concatted attr, default) when blo
   expected: '<button data-has-block-params="is-false"></button>'
 });
 
+module("Components - curlies - dynamic component");
+
+QUnit.test('initially missing, then present, then missing', assert => {
+  class FooBar extends BasicComponent {
+    public foo = 'foo';
+    public bar = 'bar';
+    public baz = null;
+
+    constructor(attrs: Attrs) {
+      super(attrs);
+      this.baz = attrs['baz'] || 'baz';
+    }
+  }
+
+  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
+
+  appendViewFor(
+    stripTight`
+      <div>
+        {{component something}}
+      </div>`,
+    {
+      something: undefined
+    }
+  );
+
+  equalsElement(view.element, 'div', {}, '<!---->');
+
+  set(view, 'something', 'foo-bar');
+  rerender();
+
+  equalsElement(view.element, 'div', {}, '<p>foo bar baz</p>');
+
+  set(view, 'something', undefined);
+  rerender();
+
+  equalsElement(view.element, 'div', {}, '<!---->');
+});
+
+QUnit.test('initially present, then missing, then present', assert => {
+  class FooBar extends BasicComponent {
+    public foo = 'foo';
+    public bar = 'bar';
+    public baz = null;
+
+    constructor(attrs: Attrs) {
+      super(attrs);
+      this.baz = attrs['baz'] || 'baz';
+    }
+  }
+
+  env.registerBasicComponent('foo-bar', FooBar, `<p>{{foo}} {{bar}} {{baz}}</p>`);
+
+  appendViewFor(
+    stripTight`
+      <div>
+        {{component something}}
+      </div>`,
+    {
+      something: "foo-bar"
+    }
+  );
+
+  equalsElement(view.element, 'div', {}, '<p>foo bar baz</p>');
+
+  set(view, 'something', undefined);
+  rerender();
+
+  equalsElement(view.element, 'div', {}, '<!---->');
+
+  set(view, 'something', 'foo-bar');
+  rerender();
+
+  equalsElement(view.element, 'div', {}, '<p>foo bar baz</p>');
+});
 
 module("Components - curlies - dynamic customizations");
 
