@@ -59,33 +59,39 @@ export class OpenDynamicComponentOpcode extends Opcode {
       definition = cache.peek();
     }
 
-    let manager = definition.manager;
-    let component = manager.create(definition, args, dynamicScope);
-    let selfRef = manager.getSelf(component);
-    let destructor = manager.getDestructor(component);
+    if(definition) {
+      let manager = definition.manager;
+      let component = manager.create(definition, args, dynamicScope);
+      let selfRef = manager.getSelf(component);
+      let destructor = manager.getDestructor(component);
 
-    let callerScope = vm.scope();
+      let callerScope = vm.scope();
 
-    // pass through the list of outer attributes to shadow from the
-    // invocation site, as well as the component definition as internal
-    // arguments.
-    args = args.withInternal();
-    args.internal['shadow'] = shadow;
-    args.internal['definition'] = definition;
-    args.internal['component'] = component;
+      // pass through the list of outer attributes to shadow from the
+      // invocation site, as well as the component definition as internal
+      // arguments.
+      args = args.withInternal();
+      args.internal['shadow'] = shadow;
+      args.internal['definition'] = definition;
+      args.internal['component'] = component;
 
-    let layout = layoutFor(definition, vm.env);
+      let layout = layoutFor(definition, vm.env);
 
-    if (destructor) vm.newDestroyable(destructor);
-    vm.pushRootScope(selfRef, layout.symbols);
-    vm.invokeLayout({ templates, args, shadow, layout, callerScope });
-    vm.env.didCreate(component, manager);
+      if (destructor) vm.newDestroyable(destructor);
+      vm.pushRootScope(selfRef, layout.symbols);
+      vm.invokeLayout({ templates, args, shadow, layout, callerScope });
+      vm.env.didCreate(component, manager);
 
-    if (!isConst(definitionRef)) {
-      vm.updateWith(new Assert(cache));
+      if (!isConst(definitionRef)) {
+        vm.updateWith(new Assert(cache));
+      }
+
+      vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));
+    } else {
+      if (cache) {
+        vm.updateWith(new Assert(cache));
+      }
     }
-
-    vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));
   }
 
   toJSON(): OpcodeJSON {
