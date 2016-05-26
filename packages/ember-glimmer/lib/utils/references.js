@@ -16,6 +16,7 @@ export const UPDATE = symbol('UPDATE');
 export const READONLY = symbol('READONLY');
 export const MUT = symbol('MUT');
 export const ACTION = symbol('ACTION');
+export const INVOKE = symbol('INVOKE');
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
 // have an `isTruthy` property on them). This is not actually supported –
 // we should fix the tests to use an actual proxy. When that's done, we should

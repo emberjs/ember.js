@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import { InternalHelperReference, MUT, isMut, UPDATE } from '../utils/references';
+import { InternalHelperReference, MUT, isMut, UPDATE, INVOKE } from '../utils/references';
 import { isConst } from 'glimmer-reference';
 
 export default {
@@ -26,8 +26,12 @@ class MutHelperReference extends InternalHelperReference {
     this[MUT] = true;
   }
 
-  [UPDATE](value) {
-    let parentRef = this.args.positional.at(0);
-    parentRef[UPDATE](value);
+  [UPDATE](val) {
+    let argRef = this.args.positional.at(0);
+    argRef[UPDATE](val);
+  }
+
+  [INVOKE](val) {
+    this[UPDATE](val);
   }
 }

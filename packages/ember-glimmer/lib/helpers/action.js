@@ -1,4 +1,4 @@
-import { CachedReference, ACTION } from '../utils/references';
+import { CachedReference, ACTION, INVOKE } from '../utils/references';
 import { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
@@ -24,6 +24,7 @@ export class ClosureActionReference extends CachedReference {
     let positionalValues = positional.value();
 
     let target = positionalValues[0];
+    let actionRef = positional.at(1);
     let rawAction = positionalValues[1];
 
     // The first two argument slots are reserved.
@@ -32,15 +33,19 @@ export class ClosureActionReference extends CachedReference {
     // Anything else is an action argument.
     let actionArgs = positionalValues.slice(2);
 
-    // TODO: Check if rawAction is INVOKE-able or (mut)
-
     // on-change={{action setName}}
     // element-space actions look to "controller" then target. Here we only
     // look to "target".
     let actionType = typeof rawAction;
     let action = rawAction;
 
-    if (actionType === 'string') {
+    // TODO: can we just replace this with isMut/UPDATE altogether
+    // since INVOKE is not really public API anyway?
+    if (typeof actionRef[INVOKE] === 'function') {
+      // on-keypress={{action (mut name) value="which"}}
+      target = actionRef;
+      action = actionRef[INVOKE];
+    } else if (actionType === 'string') {
       // on-change={{action 'setName'}}
       let actionName = rawAction;
 
@@ -58,15 +63,16 @@ export class ClosureActionReference extends CachedReference {
       if (!action) {
         throw new EmberError(`An action named '${actionName}' was not found in ${target}`);
       }
+    } else if (action && typeof action[INVOKE] === 'function') {
+      target = action;
+      action = action[INVOKE];
     } else if (actionType !== 'function') {
-      throw new EmberError(`An action could not be made for \`${rawAction}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${rawAction}')\`) or a function available in ${target}.`);
+      // FIXME: Is there a better way of doing this?
+      let rawActionLabel = actionRef._propertyKey || rawAction;
+      throw new EmberError(`An action could not be made for \`${rawActionLabel}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${rawActionLabel}')\`) or a function available in ${target}.`);
     }
 
-    // TODO: Handle INVOKE explicitly here.
-
-    // <button on-keypress={{action (mut name) value="which"}}
-    // on-keypress is not even an Ember feature yet
-    let valuePath = named.get('value').value();
+    let valuePath = named.has('value') ? named.get('value').value() : undefined;
 
     return createClosureAction(target, action, valuePath, actionArgs);
   }
@@ -78,8 +84,8 @@ export default {
   toReference(args) {
     let rawActionRef = args.positional.at(1);
 
-    if (rawActionRef === UNDEFINED_REFERENCE || rawActionRef === NULL_REFERENCE) {
-      throw new Error(`Action passed is null or undefined in (action) from ${args.positional.at(0).value()}.`);
+    if (rawActionRef === UNDEFINED_REFERENCE && rawActionRef === NULL_REFERENCE) {
+      throw new EmberError(`Action passed is null or undefined in (action) from ${args.positional.at(0).value()}.`);
     }
 
     return ClosureActionReference.create(args);

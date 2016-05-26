@@ -246,15 +246,10 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
   }
 
   ['@test an error is triggered when bound action function is undefined']() {
-    let InnerComponent = Component.extend({
+    this.registerComponent('inner-component', {
+      template: 'inner'
     });
-
-    let OuterComponent = Component.extend({
-    });
-
-    this.registerComponent('inner-component', { ComponentClass: InnerComponent, template: 'inner' });
     this.registerComponent('outer-component', {
-      ComponentClass: OuterComponent,
       template: '{{inner-component submit=(action somethingThatIsUndefined)}}'
     });
 
@@ -265,21 +260,15 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
   }
 
-  // Change to @test when element actions are committed.
+  // FIXME: attrs.external-action is returning PropertyReference with no value as opposed
+  // to an UNDEFINED_REFERENCE, causing a compute-time error to be thrown instead of
+  // an error being thrown during reference-creation time.
   ['@htmlbars [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
-    let InnerComponent = Component.extend({
-    });
-
-    let OuterComponent = Component.extend({
-    });
-
     this.registerComponent('inner-component', {
-      ComponentClass: InnerComponent,
       template: '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>'
     });
 
     this.registerComponent('outer-component', {
-      ComponentClass: OuterComponent,
       template: '{{inner-component}}'
     });
 
@@ -578,8 +567,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.assert.equal(actualThird, third, 'action has the correct third arg');
   }
 
-  // TODO: Change to @test when Glimmer2 has mut helper.
-  ['@htmlbars mut values can be wrapped in actions, are settable']() {
+  ['@test mut values can be wrapped in actions, are settable']() {
     let newValue = 'trollin trek';
 
     let innerComponent;
@@ -622,8 +610,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
   }
 
-  // TODO: Change to @test when Glimmer2 has mut helper.
-  ['@htmlbars mut values can be wrapped in actions, are settable with a curry']() {
+  ['@test mut values can be wrapped in actions, are settable with a curry']() {
     let newValue = 'trollin trek';
 
     let innerComponent;
@@ -1055,7 +1042,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
   }
 
   // TODO: Need to flesh out the Glimmer2 INVOKE story a bit.
-  ['@htmlbars objects that define INVOKE can be casted to actions']() {
+  ['@test objects that define INVOKE can be casted to actions']() {
     let innerComponent;
     let actionArgs;
     let invokableArgs;
