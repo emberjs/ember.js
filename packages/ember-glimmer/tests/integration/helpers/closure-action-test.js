@@ -254,8 +254,6 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: '{{inner-component submit=(action somethingThatIsUndefined)}}'
     });
 
-    // TODO: Improve this to test that the name of the parameter is contained
-    // within the error message.
     this.assert.throws(() => {
       this.render('{{outer-component}}');
     }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);

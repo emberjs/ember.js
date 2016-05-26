@@ -84,7 +84,7 @@ export default {
   toReference(args) {
     let rawActionRef = args.positional.at(1);
 
-    if (rawActionRef === UNDEFINED_REFERENCE && rawActionRef === NULL_REFERENCE) {
+    if (rawActionRef === UNDEFINED_REFERENCE || rawActionRef === NULL_REFERENCE) {
       throw new EmberError(`Action passed is null or undefined in (action) from ${args.positional.at(0).value()}.`);
     }
 
