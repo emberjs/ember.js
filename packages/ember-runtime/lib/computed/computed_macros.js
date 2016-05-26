@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -20,7 +20,10 @@ function expandPropertiesToArray(properties) {
   }
 
   for (let i = 0; i < properties.length; i++) {
-    expandProperties(properties[i], extractProperty);
+    let property = properties[i];
+    assert('Dependent keys passed to Ember.computed.and() or Ember.computed.or() can\'t have spaces.', property.indexOf(' ') < 0);
+
+    expandProperties(property, extractProperty);
   }
 
   return expandedProperties;

@@ -391,6 +391,17 @@ testBoth('computed.or expand properties', function(get, set) {
   equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
 });
 
+testBoth('computed.or and computed.and warn about dependent keys with spaces', function(get, set) {
+  var obj = { one: true, two: true };
+  expectAssertion(function() {
+    defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
+  }, /Dependent keys passed to Ember\.computed\.and\(\) or Ember\.computed\.or\(\) can't have spaces\./);
+
+  expectAssertion(function() {
+    defineProperty(obj, 'oneAndTwo', and('one', 'two three'));
+  }, /Dependent keys passed to Ember\.computed\.and\(\) or Ember\.computed\.or\(\) can't have spaces\./);
+});
+
 testBoth('computed.oneWay', function(get, set) {
   var obj = {
     firstName: 'Teddy',
