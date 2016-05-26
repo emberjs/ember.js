@@ -2,17 +2,12 @@ import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
-import { compile } from 'ember-template-compiler';
 
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-import { objectAt } from 'ember-runtime/mixins/array';
-
 var parentView, child;
 var originalViewKeyword;
-
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
 var view;
 // .......................................................
@@ -30,45 +25,6 @@ QUnit.module('View#removeFromParent', {
     });
     resetKeyword('view', originalViewKeyword);
   }
-});
-
-test('removes view from parent view', function() {
-  parentView = View.extend({
-    template: compile('{{view view.childView}}'),
-    childView: View.extend({
-      template: compile('child view template')
-    })
-  }).create();
-  run(parentView, parentView.append);
-
-  child = objectAt(get(parentView, 'childViews'), 0);
-  ok(get(child, 'parentView'), 'precond - has parentView');
-
-  ok(parentView.$('div').length, 'precond - has a child DOM element');
-
-  run(function() {
-    child.removeFromParent();
-  });
-
-  ok(!get(child, 'parentView'), 'no longer has parentView');
-  ok(get(parentView, 'childViews').indexOf(child) < 0, 'no longer in parent childViews');
-  equal(parentView.$('div').length, 0, 'removes DOM element from parent');
-});
-
-test('returns receiver', function() {
-  parentView = View.extend({
-    template: compile('{{view view.childView}}'),
-    childView: View.extend({
-      template: compile('child view template')
-    })
-  }).create();
-
-  run(parentView, parentView.append);
-  child = objectAt(get(parentView, 'childViews'), 0);
-
-  let removed = run(() => child.removeFromParent());
-
-  equal(removed, child, 'receiver');
 });
 
 QUnit.test('does nothing if not in parentView', function() {

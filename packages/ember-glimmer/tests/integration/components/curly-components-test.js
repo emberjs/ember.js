@@ -2127,6 +2127,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('updated value - updated value');
 
+    this.runTask(() => { component.set('bar', undefined); });
+
+    this.assertText(' - ');
+
     this.runTask(() => { this.component.set('localBar', 'initial value'); });
 
     this.assertText('initial value - initial value');
