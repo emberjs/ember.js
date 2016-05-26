@@ -365,26 +365,6 @@ test('Renders the view given in the view option', function() {
   equal(jQuery('p:contains(Home/Page)', '#qunit-fixture').length, 1, 'The homepage view was rendered');
 });
 
-test('render does not replace templateName if user provided', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  setTemplate('the_real_home_template', compile(
-    '<p>THIS IS THE REAL HOME</p>'
-  ));
-
-  App.HomeView = EmberView.extend({
-    templateName: 'the_real_home_template'
-  });
-  App.HomeController = Controller.extend();
-  App.HomeRoute = Route.extend();
-
-  bootApplication();
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'THIS IS THE REAL HOME', 'The homepage template was rendered');
-});
-
 test('render does not replace template if user provided', function () {
   Router.map(function () {
     this.route('home', { path: '/' });
@@ -2125,46 +2105,6 @@ test('The rootURL is passed properly to the location implementation', function()
   });
 
   bootApplication();
-});
-
-
-test('Only use route rendered into main outlet for default into property on child', function() {
-  setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}'));
-  setTemplate('posts', compile('{{outlet}}'));
-  setTemplate('posts/index', compile('postsIndex'));
-  setTemplate('posts/menu', compile('postsMenu'));
-
-  Router.map(function() {
-    this.route('posts', function() {});
-  });
-
-  App.PostsMenuView = EmberView.extend({
-    tagName: 'div',
-    templateName: 'posts/menu',
-    classNames: ['posts-menu']
-  });
-
-  App.PostsIndexView = EmberView.extend({
-    tagName: 'p',
-    classNames: ['posts-index']
-  });
-
-  App.PostsRoute = Route.extend({
-    renderTemplate() {
-      this.render();
-      this.render('postsMenu', {
-        into: 'application',
-        outlet: 'menu'
-      });
-    }
-  });
-
-  bootApplication();
-
-  handleURL('/posts');
-
-  equal(jQuery('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, 'The posts/menu template was rendered');
-  equal(jQuery('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, 'The posts/index template was rendered');
 });
 
 test('Generating a URL should not affect currentModel', function() {

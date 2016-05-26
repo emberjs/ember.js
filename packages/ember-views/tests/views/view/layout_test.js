@@ -38,35 +38,6 @@ QUnit.test('Layout views return throw if their layout cannot be found', function
 
 import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-test('should use the template of the associated layout', function() {
-  var templateCalled = 0;
-  var layoutCalled = 0;
-
-  registerHelper('call-template', function() {
-    templateCalled++;
-  });
-
-  registerHelper('call-layout', function() {
-    layoutCalled++;
-  });
-
-  owner.register('template:template', compile('{{call-template}}'));
-  owner.register('template:layout', compile('{{call-layout}}'));
-
-  view = EmberView.create({
-    [OWNER]: owner,
-    layoutName: 'layout',
-    templateName: 'template'
-  });
-
-  run(function() {
-    view.createElement();
-  });
-
-  equal(templateCalled, 0, 'template is not called when layout is present');
-  equal(layoutCalled, 1, 'layout is called when layout is present');
-});
-
 test('should use the associated template with itself as the context', function() {
   owner.register('template:testTemplate', compile(
     '<h1 id=\'twas-called\'>template was called for {{personName}}</h1>'

@@ -15,11 +15,6 @@ export default function appendTemplatedView(parentView, morph, viewClassOrInstan
     viewProto = viewClassOrInstance.proto();
   }
 
-  assert(
-    'You cannot provide a template block if you also specified a templateName',
-    !props.template || (!get(props, 'templateName') && !get(viewProto, 'templateName'))
-  );
-
   // We only want to override the `_context` computed property if there is
   // no specified controller. See View#_context for more information.
   var noControllerInProto = !viewProto.controller;
