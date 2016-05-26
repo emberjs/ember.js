@@ -129,7 +129,7 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     // No U-R for this test
   }
 
-  ['@test a simple mutable binding using `mut` can be converted into an immutable binding']() {
+  ['@test {{readonly}} of a {{mut}} is converted into an immutable binding']() {
     let middle, bottom;
 
     this.registerComponent('bottom-mut', {
@@ -474,13 +474,13 @@ moduleFor('Mutable Bindings used in Computed Properties that are bound as attrib
 
     this.assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
     this.assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 40px; width: 90px;') }, content: '80x40' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 40px; width: 80px;') }, content: '80x40' });
 
     this.runTask(() => input.attrs.width.update(90));
 
     this.assert.strictEqual(get(output, 'width'), 90, 'the set took effect');
     this.assert.strictEqual(get(this.context, 'width'), 90, 'the set propagated back up');
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 40px; width: 90px;') }, content: '90x40' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 45px; width: 90px;') }, content: '90x45' });
 
     this.runTask(() => set(this.context, 'width', 70));
 

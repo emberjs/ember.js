@@ -2,7 +2,8 @@ import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import isEnabled from 'ember-metal/features';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
-import { INVOKE } from 'ember-htmlbars/keywords/closure-action';
+import { INVOKE as HTMLBARS_INVOKE } from 'ember-htmlbars/keywords/closure-action';
+import { INVOKE as GLIMMER_INVOKE } from 'ember-glimmer/utils/references';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 
@@ -1046,6 +1047,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     let innerComponent;
     let actionArgs;
     let invokableArgs;
+    let INVOKE = this.isHTMLBars ? HTMLBARS_INVOKE : GLIMMER_INVOKE;
 
     let InnerComponent = Component.extend({
       init() {
