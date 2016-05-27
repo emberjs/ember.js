@@ -321,8 +321,8 @@ QUnit.test('Model passed via renderTemplate model is set as controller\'s model'
   equal(jQuery('p:contains(emberjs)', '#qunit-fixture').length, 1, 'Passed model was set as controllers model');
 });
 
-test('Renders correct view with slash notation', function() {
-  setTemplate('home/page', compile('<p>{{view.name}}</p>'));
+QUnit.test('Renders correct view with slash notation', function() {
+  setTemplate('home/page', compile('<p>put some respeck on it</p>'));
 
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -340,11 +340,11 @@ test('Renders correct view with slash notation', function() {
 
   bootApplication();
 
-  equal(jQuery('p:contains(Home/Page)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
+  equal(jQuery('p:contains(put some respeck on it)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
 });
 
-test('Renders the view given in the view option', function() {
-  setTemplate('home', compile('<p>{{view.name}}</p>'));
+QUnit.test('Renders the view given in the view option', function() {
+  setTemplate('home', compile('<p>the world is yours</p>'));
 
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -356,13 +356,9 @@ test('Renders the view given in the view option', function() {
     }
   });
 
-  App.HomePageView = EmberView.extend({
-    name: 'Home/Page'
-  });
-
   bootApplication();
 
-  equal(jQuery('p:contains(Home/Page)', '#qunit-fixture').length, 1, 'The homepage view was rendered');
+  equal(jQuery('p:contains(the world is yours)', '#qunit-fixture').length, 1, 'The homepage view was rendered');
 });
 
 test('render does not replace templateName if user provided', function() {
