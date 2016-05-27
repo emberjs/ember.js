@@ -254,15 +254,35 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: '{{inner-component submit=(action somethingThatIsUndefined)}}'
     });
 
+    // The assertion is different because in the HTMLBars case, the value is always a stream,
+    // whether or not the path read actually has value.
+    // In the Glimmer case, we're checking the value and not the reference, which could be undefined
+    // and thus throws the correct error.
+    this.assert.throws(() => {
+      this.render('{{outer-component}}');
+    }, this.isGlimmer ?
+      /Action passed is null or undefined in \(action[^)]*\) from .*\./ :
+      /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./
+    );
+  }
+
+  ['@test an error is triggered when bound action being passed in is a non-function']() {
+    this.registerComponent('inner-component', {
+      template: 'inner'
+    });
+    this.registerComponent('outer-component', {
+      ComponentClass: Component.extend({
+        nonFunctionThing: {}
+      }),
+      template: '{{inner-component submit=(action nonFunctionThing)}}'
+    });
+
     this.assert.throws(() => {
       this.render('{{outer-component}}');
     }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
   }
 
-  // FIXME: attrs.external-action is returning PropertyReference with no value as opposed
-  // to an UNDEFINED_REFERENCE, causing a compute-time error to be thrown instead of
-  // an error being thrown during reference-creation time.
-  ['@htmlbars [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
+  ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
     this.registerComponent('inner-component', {
       template: '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>'
     });
@@ -273,7 +293,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
 
     this.assert.throws(() => {
       this.render('{{outer-component}}');
-    }, /Action passed is null or undefined in \(action [^)]*\) from .*\./);
+    }, /Action passed is null or undefined in \(action[^)]*\) from .*\./);
   }
 
   ['@test action value is returned']() {
