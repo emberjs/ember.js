@@ -214,6 +214,16 @@ describe('Acceptance: ember generate and destroy helper', function() {
       }));
   });
 
+  it('helper-test foo/bar-baz --integration', function() {
+    var args = ['helper-test', 'foo/bar-baz', '--integration'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.contain("import hbs from 'htmlbars-inline-precompile';");
+      }));
+  });
+
   it('helper-test foo/bar-baz', function() {
     var args = ['helper-test', 'foo/bar-baz'];
 
@@ -231,6 +241,21 @@ describe('Acceptance: ember generate and destroy helper', function() {
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/helpers/foo-bar-test.js'))
           .to.contain("import { fooBar } from 'dummy/helpers/foo-bar';");
+      }));
+  });
+
+  it('helper-test foo/bar-baz --integration for mocha', function() {
+    var args = ['helper-test', 'foo/bar-baz', '--integration'];
+
+    return emberNew()
+      .then(() => modifyPackages([
+        {name: 'ember-cli-qunit', delete: true},
+        {name: 'ember-cli-mocha', dev: true}
+      ]))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.contain("import { describeComponent, it } from 'ember-mocha';")
+          .to.contain("import hbs from 'htmlbars-inline-precompile';");
       }));
   });
 
