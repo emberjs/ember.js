@@ -1,6 +1,7 @@
 import packageName from './package-name';
 import Environment from './environment';
-import { compile, helper, Helper, Component, DOMHelper, InteractiveRenderer } from './helpers';
+import { compile, Component, DOMHelper, InteractiveRenderer } from './helpers';
+import registerHelper from './register-helper';
 import { equalsElement, equalTokens, regex, classes, equalInnerHTML } from './test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -371,15 +372,7 @@ export class RenderingTest extends TestCase {
   }
 
   registerHelper(name, funcOrClassBody) {
-    let type = typeof funcOrClassBody;
-
-    if (type === 'function') {
-      this.owner.register(`helper:${name}`, helper(funcOrClassBody));
-    } else if (type === 'object' && type !== null) {
-      this.owner.register(`helper:${name}`, Helper.extend(funcOrClassBody));
-    } else {
-      throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
-    }
+    registerHelper(name, funcOrClassBody, this.owner);
   }
 
   registerPartial(name, template) {

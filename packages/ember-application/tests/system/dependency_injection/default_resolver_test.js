@@ -12,9 +12,6 @@ import Namespace from 'ember-runtime/system/namespace';
 import Application from 'ember-application/system/application';
 import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
 import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
-import {
-  registerHelper
-} from 'ember-htmlbars/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 var registry, locator, application, originalLookup, originalInfo;
@@ -89,22 +86,6 @@ QUnit.test('the default resolver resolves *:main on the namespace', function() {
   application.FooBar = EmberObject.extend({});
 
   detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
-});
-
-QUnit.test('the default resolver resolves helpers', function() {
-  expect(2);
-
-  function fooresolvertestHelper() {
-    ok(true, 'found fooresolvertestHelper');
-  }
-  function barBazResolverTestHelper() {
-    ok(true, 'found barBazResolverTestHelper');
-  }
-  registerHelper('fooresolvertest', fooresolvertestHelper);
-  registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
-
-  fooresolvertestHelper();
-  barBazResolverTestHelper();
 });
 
 QUnit.test('the default resolver resolves container-registered helpers', function() {
