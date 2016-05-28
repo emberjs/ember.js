@@ -2,10 +2,12 @@ import { StatementSyntax, ValueReference } from 'glimmer-runtime';
 import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert } from 'ember-metal/debug';
-import isEnabled from 'ember-metal/features';
-import { meta as metaFor } from 'ember-metal/meta';
-import { watchKey } from 'ember-metal/watch_key';
 import processArgs from '../utils/process-args';
+import { getOwner } from 'container/owner';
+import { privatize as P } from 'container/registry';
+import get from 'ember-metal/property_get';
+
+const DEFAULT_LAYOUT = P`template:components/-default`;
 
 function aliasIdToElementId(args, props) {
   if (args.named.has('id')) {
@@ -38,7 +40,7 @@ class ComponentStateBucket {
 }
 
 class CurlyComponentManager {
-  create(definition, args, dynamicScope) {
+  create(definition, args, dynamicScope, hasBlock) {
     let parentView = dynamicScope.view;
 
     let klass = definition.ComponentClass;
@@ -48,19 +50,9 @@ class CurlyComponentManager {
     aliasIdToElementId(args, props);
 
     props.renderer = parentView.renderer;
-    props[HAS_BLOCK] = definition.isBlock;
+    props[HAS_BLOCK] = hasBlock;
 
     let component = klass.create(props);
-
-    if (isEnabled('mandatory-setter')) {
-      let meta = metaFor(component);
-      let keys = Object.keys(props);
-
-      for (let i = 0; i < keys.length; i++) {
-        // Watching a key triggers Ember to install the mandatory setter
-        watchKey(component, keys[i], meta);
-      }
-    }
 
     dynamicScope.view = component;
     parentView.appendChild(component);
@@ -103,6 +95,31 @@ class CurlyComponentManager {
     });
 
     return bucket;
+  }
+
+  ensureCompilable(definition, bucket) {
+    if (definition.template) {
+      return definition;
+    }
+
+    let { component } = bucket;
+    let template = component.layout;
+    let owner = getOwner(component);
+    if (!template) {
+      let layoutName = component.layoutName && get(component, 'layoutName');
+      if (layoutName) {
+        template = owner.lookup('template:' + layoutName);
+      }
+      if (!template) {
+        template = component.defaultLayout;
+
+        if (!template) {
+          template = owner.lookup(DEFAULT_LAYOUT);
+        }
+      }
+    }
+
+    return definition.lateBound(template);
   }
 
   getSelf({ component }) {
@@ -199,10 +216,10 @@ function elementId(vm) {
 }
 
 export class CurlyComponentDefinition extends ComponentDefinition {
-  constructor(name, ComponentClass, template, isBlock) {
+  constructor(name, ComponentClass, template) {
     super(name, MANAGER, ComponentClass || Component);
     this.template = template;
-    this.isBlock = isBlock;
+    this._cache = undefined;
   }
 
   compile(builder) {
@@ -210,5 +227,19 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     builder.tag.dynamic(tagName);
     builder.attrs.dynamic('id', elementId);
     builder.attrs.static('class', 'ember-view');
+  }
+
+  lateBound(template) {
+    let definition;
+    if (this._cache) {
+      definition = this._cache[template.id];
+    } else {
+      this._cache = {};
+    }
+    if (!definition) {
+      definition = new CurlyComponentDefinition(this.name, this.ComponentClass, template);
+      this._cache[template.id] = definition;
+    }
+    return definition;
   }
 }

@@ -1,11 +1,14 @@
 import { Template } from 'glimmer-runtime';
 
+let templateId = 0;
+
 class Wrapper {
   static create(options) {
     return new this(options);
   }
 
   constructor({ env }) {
+    this.id = templateId++;
     this._entryPoint = null;
     this._layout = null;
     this.env = env;

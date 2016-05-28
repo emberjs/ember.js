@@ -131,12 +131,11 @@ export default class Environment extends GlimmerEnvironment {
 
     if (key !== 'partial' && isSimple && (isInline || isBlock)) {
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates, isBlock });
+        return new DynamicComponentSyntax({ args, templates });
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
       } else if (key.indexOf('-') >= 0) {
-        let definition = this.createComponentDefinition(path, isBlock);
-
+        let definition = this.getComponentDefinition(path);
         if (definition) {
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
@@ -146,10 +145,7 @@ export default class Environment extends GlimmerEnvironment {
         // Check if it's a keyword
         let mappedKey = builtInComponents[key];
         if (mappedKey) {
-          if (mappedKey !== key) {
-            path = path.map((segment) => segment === key ? mappedKey : segment);
-          }
-          let definition = this.createComponentDefinition(path, isBlock);
+          let definition = this.getComponentDefinition([mappedKey]);
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
@@ -167,14 +163,15 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  createComponentDefinition(name, isBlock) {
+  getComponentDefinition(path) {
+    let name = path[0];
     let definition = this._components[name];
 
     if (!definition) {
-      let { component: ComponentClass, layout } = lookupComponent(this.owner, name[0]);
+      let { component: ComponentClass, layout } = lookupComponent(this.owner, name);
 
       if (ComponentClass || layout) {
-        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout, isBlock);
+        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
       }
     }
 
