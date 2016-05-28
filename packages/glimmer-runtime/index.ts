@@ -43,7 +43,9 @@ export {
 } from './lib/compiler';
 
 export {
-  default as OpcodeBuilder
+  default as OpcodeBuilder,
+  DynamicComponentOptions,
+  StaticComponentOptions
 } from './lib/opcode-builder';
 
 export {

@@ -1,11 +1,6 @@
 import {
-  TemplateBenchmarkScenario,
-  BenchmarkSuite,
-  BenchmarkReporter,
-  BenchmarkEnvironment
+  TemplateBenchmarkScenario
 } from './bench';
-
-import Stats from './stats';
 
 abstract class IfScenario extends TemplateBenchmarkScenario {
   start() {

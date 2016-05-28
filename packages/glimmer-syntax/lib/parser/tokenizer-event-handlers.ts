@@ -1,6 +1,6 @@
 import { voidMap } from 'glimmer-util';
 import b from "../builders";
-import { appendChild, parseElementBlockParams, unwrapMustache } from "../utils";
+import { appendChild, parseElementBlockParams } from "../utils";
 
 export default {
   reset: function() {

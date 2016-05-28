@@ -1,10 +1,10 @@
-import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference } from "glimmer-runtime";
-import { TestEnvironment, TestDynamicScope, equalTokens, stripTight } from "glimmer-test-helpers";
+import { Template, RenderResult } from "glimmer-runtime";
+import { TestEnvironment, TestDynamicScope, equalTokens } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
 import { Opaque } from "glimmer-util";
 
-let hooks, root: Element;
+let root: Element;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
 let result: RenderResult;

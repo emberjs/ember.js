@@ -55,6 +55,7 @@ interface PushFrameOptions {
 
 export interface PublicVM {
   env: Environment;
+  getArgs(): EvaluatedArgs;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
 }
@@ -252,6 +253,10 @@ export default class VM implements PublicVM {
 
   referenceForSymbol(symbol: number): PathReference<any> {
     return this.scope().getSymbol(symbol);
+  }
+
+  getArgs(): EvaluatedArgs {
+    return this.frame.getArgs();
   }
 
   /// EXECUTION

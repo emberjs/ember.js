@@ -1,11 +1,10 @@
 import { Scope } from '../environment';
-import { InternedString, Opaque } from 'glimmer-util';
+import { InternedString } from 'glimmer-util';
 import { Reference, PathReference, ReferenceIterator } from 'glimmer-reference';
 import { InlineBlock } from '../compiled/blocks';
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { Opcode, OpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
-import { ComponentDefinition } from '../component/interfaces';
 
 class Frame {
   ops: OpSeq;
@@ -16,7 +15,6 @@ class Frame {
   blocks: Blocks = null;
   condition: Reference<boolean> = null;
   iterator: ReferenceIterator = null;
-  dynamicComponent: Reference<ComponentDefinition<Opaque>> = null;
   key: InternedString = null;
 
   constructor(ops: OpSeq) {
@@ -75,7 +73,8 @@ export class FrameStack {
   }
 
   setArgs(args: EvaluatedArgs): EvaluatedArgs {
-    return this.frames[this.frame].args = args;
+    let frame = this.frames[this.frame];
+    return frame.args = args;
   }
 
   getCondition(): Reference<boolean> {
@@ -92,14 +91,6 @@ export class FrameStack {
 
   setIterator(iterator: ReferenceIterator): ReferenceIterator {
     return this.frames[this.frame].iterator = iterator;
-  }
-
-  getDynamicComponent(): Reference<ComponentDefinition<Opaque>> {
-    return this.frames[this.frame].dynamicComponent;
-  }
-
-  setDynamicComponent(dynamicComponent: Reference<ComponentDefinition<Opaque>>): Reference<ComponentDefinition<Opaque>> {
-    return this.frames[this.frame].dynamicComponent = dynamicComponent;
   }
 
   getKey(): InternedString {

@@ -1,6 +1,5 @@
 import { Template, RenderResult } from "glimmer-runtime";
 import {
-  BasicComponent,
   TestEnvironment,
   TestDynamicScope,
   equalTokens,

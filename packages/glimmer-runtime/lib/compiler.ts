@@ -7,9 +7,11 @@ import {
 } from './compiled/opcodes/dom';
 import {
   DidCreateElementOpcode,
+  PutDynamicComponentDefinitionOpcode,
   PutComponentDefinitionOpcode,
   ShadowAttributesOpcode,
-  OpenDynamicComponentOpcode
+  OpenComponentOpcode,
+  CloseComponentOpcode
 } from './compiled/opcodes/component';
 import {
   BindNamedArgsOpcode,
@@ -29,11 +31,6 @@ import { Environment } from './environment';
 import SymbolTable from './symbol-table';
 import { Block, CompiledBlock, EntryPoint, InlineBlock, Layout } from './compiled/blocks';
 
-import {
-  OpenComponentOpcode,
-  CloseComponentOpcode
-} from './compiled/opcodes/component';
-
 import OpcodeBuilder, {
   StaticComponentOptions,
   DynamicComponentOptions
@@ -43,6 +40,10 @@ import {
   Statement as StatementSyntax,
   Attribute as AttributeSyntax,
   StatementCompilationBuffer
+} from './syntax';
+
+import {
+  Expression
 } from './syntax';
 
 import {
@@ -257,7 +258,7 @@ class WrappedBuilder {
     //        Exit
     //
     //========STATIC
-    //        OpenDynamicPrimitiveElement
+    //        OpenPrimitiveElementOpcode
     //        DidCreateElement
     //        ...attr statements...
     //        CloseElement
@@ -265,7 +266,27 @@ class WrappedBuilder {
 
     let { env, layout } = this;
 
-    let list = new CompileIntoList(env, layout.symbolTable);
+    let symbolTable = layout.symbolTable;
+
+    let list = new CompileIntoList(env, symbolTable);
+
+    let tagExpr;
+    if (this.tag.isDynamic) {
+      let BODY = new LabelOpcode({ label: 'BODY' });
+      tagExpr = this.tag.dynamicTagName.compile(list, env);
+      list.append(new PutValueOpcode({ expression: tagExpr }));
+      list.append(new TestOpcode());
+      list.append(new JumpUnlessOpcode({ target: BODY }));
+      list.append(new OpenDynamicPrimitiveElementOpcode());
+      list.append(new DidCreateElementOpcode());
+      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, symbolTable));
+      list.append(BODY);
+    } else if(this.tag.isStatic) {
+      let tag = this.tag.staticTagName;
+      list.append(new OpenPrimitiveElementOpcode({ tag }));
+      list.append(new DidCreateElementOpcode());
+      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, symbolTable));
+    }
 
     if (layout.hasNamedParameters()) {
       list.append(BindNamedArgsOpcode.create(layout));
@@ -273,25 +294,6 @@ class WrappedBuilder {
 
     if (layout.hasYields()) {
       list.append(BindBlocksOpcode.create(layout));
-    }
-
-    let tagExpr;
-
-    if (this.tag.isDynamic) {
-      let BODY = new LabelOpcode({ label: 'BODY' });
-      tagExpr = makeFunctionExpression(this.tag.dynamicTagName).compile(list, env);
-      list.append(new PutValueOpcode({ expression: tagExpr }));
-      list.append(new TestOpcode());
-      list.append(new JumpUnlessOpcode({ target: BODY }));
-      list.append(new OpenDynamicPrimitiveElementOpcode());
-      list.append(new DidCreateElementOpcode());
-      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, layout.symbolTable));
-      list.append(BODY);
-    } else if(this.tag.isStatic) {
-      let tag = this.tag.staticTagName;
-      list.append(new OpenPrimitiveElementOpcode({ tag }));
-      list.append(new DidCreateElementOpcode());
-      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, layout.symbolTable));
     }
 
     layout.program.forEachNode(statement => compileStatement(env, statement, list, layout.symbolTable));
@@ -307,7 +309,7 @@ class WrappedBuilder {
       list.append(new CloseElementOpcode());
     }
 
-    return new CompiledBlock(list, layout.symbolTable.size);
+    return new CompiledBlock(list, symbolTable.size);
   }
 }
 
@@ -367,7 +369,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
   public isDynamic = null;
   public isStatic = null;
   public staticTagName: InternedString = null;
-  public dynamicTagName: FunctionExpression<string> = null;
+  public dynamicTagName: Expression<string> = null;
 
   static(tagName: InternedString) {
     this.isStatic = true;
@@ -376,7 +378,7 @@ class ComponentTagBuilder implements Component.ComponentTagBuilder {
 
   dynamic(tagName: FunctionExpression<string>) {
     this.isDynamic = true;
-    this.dynamicTagName = tagName;
+    this.dynamicTagName = makeFunctionExpression(tagName);
   }
 }
 
@@ -405,25 +407,29 @@ class ComponentBuilder {
     let { compiler, env } = this;
 
     let args = rawArgs.compile(compiler, env);
-    compiler.append(new OpenComponentOpcode({ definition, args, shadow, templates }));
+    compiler.append(new PutComponentDefinitionOpcode({ args, definition }));
+    compiler.append(new OpenComponentOpcode({ shadow, templates }));
     compiler.append(new CloseComponentOpcode());
   }
 
-  dynamic({ definition, args: rawArgs, shadow, templates }: DynamicComponentOptions) {
+  dynamic({ definitionArgs: rawDefArgs, definition: rawDefinition, args: rawArgs, shadow, templates }: DynamicComponentOptions) {
     let { compiler, env } = this;
 
     let BEGIN = new LabelOpcode({ label: "BEGIN" });
     let END = new LabelOpcode({ label: "END" });
 
-    let definitionArgs = definition.args.compile(compiler, env);
-    let componentArgs = rawArgs.compile(compiler, env);
+    let definitionArgs = rawDefArgs.compile(compiler, env);
+    let definition = makeFunctionExpression(rawDefinition).compile(compiler, env);
+    let args = rawArgs.compile(compiler, env);
 
     compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
     compiler.append(new PutArgsOpcode({ args: definitionArgs }));
-    compiler.append(new PutComponentDefinitionOpcode(definition));
-    compiler.append(new PutArgsOpcode({ args: componentArgs }));
-    compiler.append(new OpenDynamicComponentOpcode({ shadow, templates }));
+    compiler.append(new PutValueOpcode({ expression: definition }));
+    compiler.append(new TestOpcode());
+    compiler.append(new JumpUnlessOpcode({ target: END }));
+    compiler.append(new PutDynamicComponentDefinitionOpcode({ args }));
+    compiler.append(new OpenComponentOpcode({ shadow, templates }));
     compiler.append(new CloseComponentOpcode());
     compiler.append(END);
     compiler.append(new ExitOpcode());

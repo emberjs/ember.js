@@ -27,6 +27,7 @@ import {
 } from '../compiled/opcodes/vm';
 
 import {
+  PutComponentDefinitionOpcode,
   OpenComponentOpcode,
   CloseComponentOpcode
 } from '../compiled/opcodes/component';
@@ -626,7 +627,8 @@ export class Component extends StatementSyntax {
     let shadow = this.attrs;
     let templates = new Templates({ template: this.template, inverse: null });
 
-    list.append(new OpenComponentOpcode({ definition, args, shadow, templates }));
+    list.append(new PutComponentDefinitionOpcode({ args, definition }));
+    list.append(new OpenComponentOpcode({ shadow, templates }));
     list.append(new CloseComponentOpcode());
   }
 }

@@ -3,7 +3,7 @@ import { COMPILED_EMPTY_NAMED_ARGS, EVALUATED_EMPTY_NAMED_ARGS, CompiledNamedArg
 import VM from '../../vm/append';
 import { Block  } from '../blocks';
 import { CONSTANT_TAG, RevisionTag, PathReference, combine } from 'glimmer-reference';
-import { dict } from 'glimmer-util';
+import { Dict, dict, Opaque } from 'glimmer-util';
 
 interface CompiledArgOptions {
   positional: CompiledPositionalArgs;
@@ -81,11 +81,11 @@ export abstract class EvaluatedArgs {
   public positional: EvaluatedPositionalArgs;
   public named: EvaluatedNamedArgs;
   public blocks: Block[];
-  public internal: Object;
+  public internal: Dict<Opaque>;
 
   public withInternal(): EvaluatedArgs {
     if (!this.internal) {
-      this.internal = dict<any>();
+      this.internal = dict<Opaque>();
     }
     return this;
   }
@@ -109,7 +109,7 @@ export const EMPTY_EVALUATED_ARGS = new (class extends EvaluatedArgs {
 
   public withInternal(): EvaluatedArgs {
     let args = new NonEmptyEvaluatedArgs(this);
-    args.internal = dict<any>();
+    args.internal = dict<Opaque>();
     return args;
   }
 });

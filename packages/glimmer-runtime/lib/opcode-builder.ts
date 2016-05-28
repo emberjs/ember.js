@@ -3,12 +3,12 @@ import {
 } from './component/interfaces';
 
 import {
-  DynamicComponentFactory
-} from './compiled/opcodes/component';
+  FunctionExpression
+} from './compiled/expressions/function';
 
 import {
   Args,
-  Templates
+  Templates,
 } from './syntax/core';
 
 import {
@@ -23,13 +23,9 @@ export interface StaticComponentOptions {
   templates: Templates;
 }
 
-export interface DynamicComponentDefinition<T> {
-  args: Args;
-  factory: DynamicComponentFactory<T>;
-}
-
 export interface DynamicComponentOptions {
-  definition: DynamicComponentDefinition<Opaque>;
+  definitionArgs: Args;
+  definition: FunctionExpression<ComponentDefinition<Opaque>>;
   args: Args;
   shadow: InternedString[];
   templates: Templates;

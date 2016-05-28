@@ -10,11 +10,6 @@ import { PathReference } from 'glimmer-reference';
 import { ValueReference } from '../expressions/value';
 import { ListSlice, Opaque, Slice, Dict, dict, assign, InternedString } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
-import {
-  CompileInto,
-  SymbolLookup,
-  Statement as StatementSyntax
-} from '../../syntax';
 import Scanner from '../../scanner';
 
 export class PushChildScopeOpcode extends Opcode {
