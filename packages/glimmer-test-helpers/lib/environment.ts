@@ -32,6 +32,8 @@ import {
   ComponentManager,
   ComponentDefinition,
   ComponentLayoutBuilder,
+  DynamicComponentOptions,
+  StaticComponentOptions,
 
   // Values
   EvaluatedArgs,
@@ -50,6 +52,7 @@ import {
 
   // Misc
   ElementOperations,
+  FunctionExpression
 } from "glimmer-runtime";
 
 import {
@@ -280,6 +283,10 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return new klass(args.named.value());
   }
 
+  ensureCompilable(definition: BasicComponentDefinition, component: BasicComponent): BasicComponentDefinition {
+    return definition;
+  }
+
   getSelf(component: BasicComponent): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
@@ -310,7 +317,7 @@ const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const BaseEmberishGlimmerComponent = EmberishGlimmerComponent.extend() as typeof EmberishGlimmerComponent;
 
 class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerComponent> {
-  create(definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs): EmberishGlimmerComponent {
+  create(definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs, dynamicScope, hasDefaultBlock: boolean): EmberishGlimmerComponent {
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.named.value();
     let component = klass.create({ attrs });
@@ -321,6 +328,10 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     component.willRender();
 
     return component;
+  }
+
+  ensureCompilable(definition: ComponentDefinition<EmberishGlimmerComponent>, component: EmberishGlimmerComponent): ComponentDefinition<EmberishGlimmerComponent> {
+    return definition;
   }
 
   getSelf(component: EmberishGlimmerComponent): PathReference<Opaque> {
@@ -378,6 +389,11 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     component.willRender();
 
     return component;
+  }
+
+  ensureCompilable(definition: GenericComponentDefinition<EmberishCurlyComponent>, component: EmberishCurlyComponent): ComponentDefinition<EmberishCurlyComponent> {
+    if (definition.isCompilable()) return definition;
+    return definition.cloneWithLayout(component["layout"]);
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
@@ -760,8 +776,7 @@ export class TestDynamicScope implements DynamicScope {
   }
 }
 
-class CurlyComponentSyntax extends StatementSyntax {
-  // interface for StaticComponentOptions
+class CurlyComponentSyntax extends StatementSyntax implements StaticComponentOptions {
   public definition: ComponentDefinition<any>;
   public args: ArgsSyntax;
   public shadow: InternedString[] = null;
@@ -779,7 +794,7 @@ class CurlyComponentSyntax extends StatementSyntax {
   }
 }
 
-class DynamicComponentReference implements Reference<ComponentDefinition<Opaque>> {
+class DynamicComponentReference implements PathReference<ComponentDefinition<Opaque>> {
   private nameRef: PathReference<Opaque>;
   private env: Environment;
   public tag: RevisionTag;
@@ -801,33 +816,30 @@ class DynamicComponentReference implements Reference<ComponentDefinition<Opaque>
       return null;
     }
   }
-}
 
-class DynamicComponentDefinition {
-  public args: ArgsSyntax;
-  public factory = dynamicComponentFor;
-
-  constructor(public rawArgs: ArgsSyntax) {
-    this.args = ArgsSyntax.fromPositionalArgs(rawArgs.positional.slice(0,1));
+  get() {
+    return null;
   }
 }
 
-function dynamicComponentFor(args: EvaluatedArgs, vm: VM) {
+function dynamicComponentFor(vm: VM) {
+  let args = vm.getArgs();
   let nameRef = args.positional.at(0);
   let env = vm.env;
   return new DynamicComponentReference({ nameRef, env });
 };
 
-class DynamicComponentSyntax extends StatementSyntax {
-  // interface for DynamicComponentOptions
-  public definition: DynamicComponentDefinition;
+class DynamicComponentSyntax extends StatementSyntax implements DynamicComponentOptions {
+  public definitionArgs: ArgsSyntax;
+  public definition: FunctionExpression<ComponentDefinition<Opaque>>;
   public args: ArgsSyntax;
   public shadow: InternedString[] = null;
   public templates: Templates;
 
   constructor({ args, templates }: { args: ArgsSyntax, templates: Templates }) {
     super();
-    this.definition = new DynamicComponentDefinition(args);
+    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0,1));
+    this.definition = dynamicComponentFor;
     this.args = ArgsSyntax.build(args.positional.slice(1), args.named);
     this.templates = templates || Templates.empty();
   }
@@ -855,47 +867,19 @@ abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
     return this.compiledLayout = rawCompileLayout(this.layoutString, { env });
   }
 
-  // private extractComponent(builder: ComponentLayoutBuilder, head: OpenElementSyntax) {
-  //   builder.tag(head.tag);
+  public isCompilable(): boolean {
+    return this.layoutString !== null && this.layoutString !== undefined;
+  }
 
-  //   let current = head.next;
-
-  //   let beginAttrs: AttributeSyntax = null;
-  //   let endAttrs: AttributeSyntax = null;
-
-  //   while (isAttribute(current)) {
-  //     beginAttrs = beginAttrs || <AttributeSyntax>current;
-  //     endAttrs = <AttributeSyntax>current;
-  //     current = current.next;
-  //   }
-
-  //   builder.attrs.replace(new ListSlice(beginAttrs, endAttrs));
-
-  //   let beginBody: StatementSyntax = null;
-  //   let endBody: StatementSyntax = null;
-  //   let nesting = 1;
-
-  //   while (true) {
-  //     if (current instanceof CloseElementSyntax && --nesting === 0) {
-  //       break;
-  //     }
-
-  //     beginBody = beginBody || current;
-  //     endBody = current;
-
-  //     if (current instanceof OpenElementSyntax || current instanceof OpenPrimitiveElementSyntax) {
-  //       nesting++;
-  //     }
-
-  //     current = current.next;
-  //   }
-
-  //   builder.body.replace(new ListSlice(beginBody, endBody));
-  // }
+  abstract cloneWithLayout(layoutString: string): GenericComponentDefinition<T>;
 }
 
 class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
   public ComponentClass: BasicComponentFactory;
+
+  cloneWithLayout(layoutString: string) {
+    return new BasicComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
+  }
 
   compile(builder: ComponentLayoutBuilder) {
     builder.fromLayout(this.compileLayout(builder.env));
@@ -921,6 +905,10 @@ function EmberID(vm: VM): PathReference<string> {
 class EmberishCurlyTaglessComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
   public ComponentClass: EmberishCurlyComponentFactory;
 
+  cloneWithLayout(layoutString: string) {
+    return new EmberishCurlyTaglessComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
+  }
+
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
     builder.attrs.static('class', 'ember-view');
@@ -930,6 +918,10 @@ class EmberishCurlyTaglessComponentDefinition extends GenericComponentDefinition
 
 class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
   public ComponentClass: EmberishCurlyComponentFactory;
+
+  cloneWithLayout(layoutString: string) {
+    return new EmberishCurlyComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
+  }
 
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
@@ -945,6 +937,10 @@ interface EmberishGlimmerComponentFactory {
 
 class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerComponent> {
   public ComponentClass: EmberishGlimmerComponentFactory;
+
+  cloneWithLayout(layoutString: string) {
+    return new EmberishGlimmerComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
+  }
 
   compile(builder: ComponentLayoutBuilder) {
     builder.fromLayout(this.compileLayout(builder.env));

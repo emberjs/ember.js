@@ -25,8 +25,9 @@ export function init() {
     return;
   }
 
-
+  /* tslint:disable:no-require-imports */
   let scenarios: ScenarioClass[] = require('glimmer-demos').Suites[options['suite']];
+  /* tslint:enable:no-require-imports */
   let suite = new BenchmarkSuite();
   let env = new TestBenchmarkEnvironment();
   let reporter = new TestReporter();
@@ -36,7 +37,7 @@ export function init() {
   let div = document.createElement('div');
   div.id = "buttons";
 
-  let buttons = Object.keys(suite.scenarios).forEach(name => {
+  Object.keys(suite.scenarios).forEach(name => {
     let button = document.createElement('button');
     button.onclick = () => suite.run(name);
     button.innerText = name;
@@ -48,26 +49,26 @@ export function init() {
 }
 
 function getJsonFromUrl(hashBased?) {
-  var query;
+  let query;
   if(hashBased) {
-    var pos = location.href.indexOf("?");
-    if(pos==-1) return [];
+    let pos = location.href.indexOf("?");
+    if(pos === -1) return [];
     query = location.href.substr(pos+1);
   } else {
     query = location.search.substr(1);
   }
-  var result = {};
+  let result = {};
   query.split("&").forEach(function(part) {
     if(!part) return;
     part = part.split("+").join(" "); // replace every + with space, regexp-free version
-    var eq = part.indexOf("=");
-    var key = eq>-1 ? part.substr(0,eq) : part;
-    var val = eq>-1 ? decodeURIComponent(part.substr(eq+1)) : "";
-    var from = key.indexOf("[");
-    if(from==-1) result[decodeURIComponent(key)] = val;
+    let eq = part.indexOf("=");
+    let key = eq>-1 ? part.substr(0,eq) : part;
+    let val = eq>-1 ? decodeURIComponent(part.substr(eq+1)) : "";
+    let from = key.indexOf("[");
+    if (from === -1) result[decodeURIComponent(key)] = val;
     else {
-      var to = key.indexOf("]");
-      var index = decodeURIComponent(key.substring(from+1,to));
+      let to = key.indexOf("]");
+      let index = decodeURIComponent(key.substring(from+1,to));
       key = decodeURIComponent(key.substring(0,from));
       if(!result[key]) result[key] = [];
       if(!index) result[key].push(val);

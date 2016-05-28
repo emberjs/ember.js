@@ -28,7 +28,6 @@ let proto = Object.create(null, {
 function EmptyObject() {}
 EmptyObject.prototype = proto;
 
-
 export function dict<T>(): Dict<T> {
   // let d = Object.create(null);
   // d.x = 1;

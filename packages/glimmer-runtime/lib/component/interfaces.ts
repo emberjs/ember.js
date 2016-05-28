@@ -15,7 +15,10 @@ export interface ComponentManager<T extends Component> {
   // First, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope): T;
+  create(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, hasDefaultBlock: boolean): T;
+
+  // Check if definition is compilable should default it and return a new definition
+  ensureCompilable(definition: ComponentDefinition<T>, component: T): ComponentDefinition<T>;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.

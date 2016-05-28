@@ -1442,7 +1442,6 @@ test('The each helper yields the index of the current item current item when usi
   strictEqual(root.firstChild.firstChild.nodeType, 8, "there are no li's after removing the remaining entry");
   equalTokens(root, "<ul><!----></ul>", "After removing the remaining entries");
 
-
   function assertStableNodes(className, index, message) {
     strictEqual(getNodeByClassName(className), itemNode, "The item node has not changed " + message);
     strictEqual(getNodeByClassName(`index-${index}`), indexNode, "The index node has not changed " + message);

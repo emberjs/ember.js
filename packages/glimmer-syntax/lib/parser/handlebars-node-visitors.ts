@@ -170,9 +170,9 @@ function calculateRightStrippedOffsets(original, value) {
 
   // otherwise, return the number of newlines prior to
   // `value`
-  var difference = original.split(value)[0];
-  var lines = difference.split(/\n/);
-  var lineCount = lines.length - 1;
+  let difference = original.split(value)[0];
+  let lines = difference.split(/\n/);
+  let lineCount = lines.length - 1;
 
   return {
     lines: lineCount,
@@ -181,11 +181,11 @@ function calculateRightStrippedOffsets(original, value) {
 }
 
 function updateTokenizerLocation(tokenizer, content) {
-  var line = content.loc.start.line;
-  var column = content.loc.start.column;
+  let line = content.loc.start.line;
+  let column = content.loc.start.column;
 
   if (content.rightStripped) {
-    var offsets = calculateRightStrippedOffsets(content.original, content.value);
+    let offsets = calculateRightStrippedOffsets(content.original, content.value);
 
     line = line + offsets.lines;
     if (offsets.lines) {

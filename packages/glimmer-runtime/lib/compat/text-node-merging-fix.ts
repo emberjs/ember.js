@@ -1,4 +1,4 @@
-import { Bounds, ConcreteBounds } from '../bounds';
+import { Bounds } from '../bounds';
 import { DOMHelper } from '../dom';
 
 // Patch:    Adjacent text node merging fix

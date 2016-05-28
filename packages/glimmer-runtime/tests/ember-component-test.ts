@@ -537,7 +537,7 @@ testComponent('yield to inverse', {
   expected: 'No:Goodbyeouter'
 });
 
-module('Components - has-block helper')
+module('Components - has-block helper');
 
 testComponent('parameterized has-block (subexpr, inverse) when inverse supplied', {
   kind: 'curly',
@@ -679,7 +679,7 @@ testComponent('parameterized has-block (concatted attr, default) when block not 
   expected: '<button data-has-block="is-false"></button>'
 });
 
-module('Components - has-block-params helper')
+module('Components - has-block-params helper');
 
 testComponent('parameterized has-block-params (subexpr, inverse) when inverse supplied without block params', {
   kind: 'curly',
@@ -1931,7 +1931,7 @@ QUnit.test(`Glimmer component with element modifier`, function(assert) {
   env.registerEmberishGlimmerComponent('non-block', null, `  <div>In layout</div>  `);
 
   assert.throws(() => {
-    let view = appendViewFor('<non-block {{action}} />');
+    appendViewFor('<non-block {{action}} />');
   }, new Error("Compile Error: Element modifiers are not allowed in components"), "should throw error");
 });
 
@@ -2228,7 +2228,6 @@ QUnit.test('Glimmer component hooks', function() {
   assertFired(instance, 'didRender', 3);
 });
 
-
 QUnit.test('Glimmer component hooks (force recompute)', function() {
   let instance;
 
@@ -2268,7 +2267,6 @@ QUnit.test('Glimmer component hooks (force recompute)', function() {
   assertFired(instance, 'didUpdate', 1);
   assertFired(instance, 'didRender', 2);
 });
-
 
 // QUnit.skip('[DEPRECATED] non-block with properties on self', function() {
 //   // TODO: attrs
@@ -2789,4 +2787,21 @@ QUnit.test('tagless components render properly', function(assert) {
   rerender();
 
   assertAppended('Michael Jordan says "Go Tagless"');
+});
+
+module('late bound layout');
+
+QUnit.test('can bind the layout late', function(assert) {
+  class FooBar extends EmberishCurlyComponent {
+    layout = 'Swap - {{yield}}';
+  }
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, null);
+
+  appendViewFor('{{#foo-bar}}YIELD{{/foo-bar}}');
+
+  equalsElement(view.element, 'div', {
+    class: classes('ember-view'),
+    id: regex(/^ember\d*$/)
+  }, 'Swap - YIELD');
 });

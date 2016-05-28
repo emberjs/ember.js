@@ -6,15 +6,12 @@ import {
   Statement as StatementSyntax
 } from '../../syntax';
 
-import Scanner from '../../scanner';
-
 import {
   LabelOpcode,
   EnterOpcode,
   PutArgsOpcode,
   TestOpcode,
   JumpUnlessOpcode,
-  JumpOpcode,
   NameToPartialOpcode,
   EvaluatePartialOpcode,
   ExitOpcode

@@ -50,8 +50,6 @@ export class TestReporter extends BenchmarkReporter {
     let widthPercentage = 100 / distribution.length;
 
     distribution.forEach((d, i) => {
-      let count = distribution[i] && distribution.count || 0;
-
       let bar = document.createElement('div');
       bar.style.width = `${widthPercentage}%`;
       bar.style.height = `${95 * d.count / maxHeight}%`;
@@ -78,11 +76,6 @@ export class TestReporter extends BenchmarkReporter {
       label2.style.left = `${(i+1) * widthPercentage}%`;
       label2.innerText = toHumanTime(d.range[1], unit, 2, false);
       div.appendChild(label2);
-
-      // let start = toHumanTime(d.range[0], unit);
-      // let end = toHumanTime(d.range[1], unit);
-
-      // this.logln(start + ' - ' + end + ' ' + lineOf(d.count, "="));
     });
 
     document.body.appendChild(div);
@@ -90,16 +83,11 @@ export class TestReporter extends BenchmarkReporter {
     this.logln('\n');
   }
 
-  private log(message: string) {
-    this.pre.innerHTML += message;
-  }
-
   private logln(message) {
     let child = document.createElement('pre');
     child.innerText = message;
     this.pre.appendChild(child);
   }
-
 }
 
 enum TimeUnit {
@@ -129,16 +117,6 @@ function toHumanTime(seconds: number, base: TimeUnit = humanUnitFor(seconds), pr
   let number = (seconds * base).toFixed(precision);
   let unit = displayUnit ? TimeUnit[base] : '';
   return `${number}${unit}`;
-}
-
-function lineOf(size, char) {
-  let out = char;
-
-  for (let i=1; i<size; i++) {
-    out += char;
-  }
-
-  return out;
 }
 
 export class TestBenchmarkEnvironment extends BenchmarkEnvironment {

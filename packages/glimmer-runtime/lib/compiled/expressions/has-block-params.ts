@@ -2,7 +2,6 @@ import VM from '../../vm/append';
 import { CompiledExpression } from '../expressions';
 import { ValueReference } from './value';
 import { InternedString } from 'glimmer-util';
-import { InlineBlock } from '../blocks';
 
 export default class CompiledHasBlockParams extends CompiledExpression<boolean> {
   public type = "has-block-params";

@@ -5,7 +5,7 @@
 // 2. unit test the examples to make sure they actually work before benchmarking
 // 3. clean up the UI of the report (post-MVP)
 
-import { Dict, dict } from 'glimmer-util';
+import { dict } from 'glimmer-util';
 
 Benchmark.support.decompilation = false;
 
@@ -91,8 +91,8 @@ export class BenchmarkSuite {
 
 /// TEMPLATE BENCHMARKS
 
-import { DOMHelper, Template, Layout } from "glimmer-runtime";
-import { TestEnvironment, TestDynamicScope, compile, compileLayout } from "glimmer-test-helpers";
+import { Template } from "glimmer-runtime";
+import { TestEnvironment, TestDynamicScope, compile } from "glimmer-test-helpers";
 import { UpdatableReference } from 'glimmer-object-reference';
 
 export abstract class TemplateBenchmarkScenario extends BenchmarkScenario {

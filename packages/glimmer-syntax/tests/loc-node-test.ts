@@ -125,7 +125,7 @@ test("html elements with nested blocks", function() {
 });
 
 test("block + newline + element ", function() {
-  var ast = parse(`
+  let ast = parse(`
     {{#if stuff}}
     {{/if}}
     <p>Hi!</p>
@@ -138,7 +138,7 @@ test("block + newline + element ", function() {
 });
 
 test("mustache + newline + element ", function() {
-  var ast = parse(`
+  let ast = parse(`
     {{foo}}
     <p>Hi!</p>
   `);
@@ -245,7 +245,7 @@ test("char references", function() {
 });
 
 test("whitespace control - trailing", function() {
-  var ast = parse(`
+  let ast = parse(`
   {{#if foo~}}
     <div></div>
   {{else~}}
@@ -260,7 +260,7 @@ test("whitespace control - trailing", function() {
 });
 
 test("whitespace control - leading", function() {
-  var ast = parse(`
+  let ast = parse(`
   {{~#if foo}}
     <div></div>
   {{~else}}

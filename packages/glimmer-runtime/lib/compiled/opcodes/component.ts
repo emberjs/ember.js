@@ -1,111 +1,63 @@
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { Assert } from './vm';
 import { Component, ComponentManager, ComponentDefinition } from '../../component/interfaces';
-import { PublicVM, VM, UpdatingVM } from '../../vm';
+import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
 import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
 import { InternedString, Opaque } from 'glimmer-util';
-import { Reference, ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
+import { ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
 
-export type DynamicComponentFactory<T> = (args: EvaluatedArgs, vm: PublicVM) => Reference<ComponentDefinition<T>>;
+export class PutDynamicComponentDefinitionOpcode extends Opcode {
+  public type = "put-dynamic-component-definition";
+
+  private args: CompiledArgs;
+
+  constructor({ args }: { args: CompiledArgs }) {
+    super();
+    this.args = args;
+  }
+
+  evaluate(vm: VM) {
+    let definitionRef = vm.frame.getOperand();
+    let cache = isConst(definitionRef) ? undefined : new ReferenceCache(definitionRef);
+    let definition = cache ? cache.peek() : definitionRef.value();
+
+    let args = this.args.evaluate(vm).withInternal();
+    vm.frame.setArgs(args);
+    args.internal["definition"] = definition;
+
+    if (cache) {
+      vm.updateWith(new Assert(cache));
+    }
+  }
+}
+
+export interface PutComponentDefinitionOptions {
+  args: CompiledArgs;
+  definition: ComponentDefinition<Opaque>;
+}
 
 export class PutComponentDefinitionOpcode extends Opcode {
   public type = "put-component-definition";
-  private factory: DynamicComponentFactory<Opaque>;
+  private args: CompiledArgs;
+  private definition: ComponentDefinition<Opaque>;
 
-  constructor({ factory }: { factory: DynamicComponentFactory<Opaque> }) {
+  constructor({ args, definition }: PutComponentDefinitionOptions) {
     super();
-    this.factory = factory;
+    this.args = args;
+    this.definition = definition;
   }
 
   evaluate(vm: VM) {
-    let { factory } = this;
-    let reference = factory(vm.frame.getArgs(), vm);
-    vm.frame.setDynamicComponent(reference);
-  }
-}
-
-export interface OpenDynamicComponentOptions {
-  shadow: InternedString[];
-  templates: Templates;
-}
-
-export class OpenDynamicComponentOpcode extends Opcode {
-  public type = "open-dynamic-component";
-  public shadow: InternedString[];
-  public templates: Templates;
-
-  constructor({ shadow, templates }: OpenDynamicComponentOptions) {
-    super();
-    this.shadow = shadow;
-    this.templates = templates;
-  }
-
-  evaluate(vm: VM) {
-    vm.pushDynamicScope();
-
-    let { shadow, templates } = this;
-    let args = vm.frame.getArgs();
-    let dynamicScope = vm.dynamicScope();
-    let definitionRef = vm.frame.getDynamicComponent();
-    let cache, definition;
-
-    if (isConst(definitionRef)) {
-      definition = definitionRef.value();
-    } else {
-      cache = new ReferenceCache(definitionRef);
-      definition = cache.peek();
-    }
-
-    if(definition) {
-      let manager = definition.manager;
-      let component = manager.create(definition, args, dynamicScope);
-      let selfRef = manager.getSelf(component);
-      let destructor = manager.getDestructor(component);
-
-      let callerScope = vm.scope();
-
-      // pass through the list of outer attributes to shadow from the
-      // invocation site, as well as the component definition as internal
-      // arguments.
-      args = args.withInternal();
-      args.internal['shadow'] = shadow;
-      args.internal['definition'] = definition;
-      args.internal['component'] = component;
-
-      let layout = layoutFor(definition, vm.env);
-
-      if (destructor) vm.newDestroyable(destructor);
-      vm.pushRootScope(selfRef, layout.symbols);
-      vm.invokeLayout({ templates, args, shadow, layout, callerScope });
-      vm.env.didCreate(component, manager);
-
-      if (!isConst(definitionRef)) {
-        vm.updateWith(new Assert(cache));
-      }
-
-      vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));
-    } else {
-      if (cache) {
-        vm.updateWith(new Assert(cache));
-      }
-    }
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: ["$DYNAMIC_COMPONENT"]
-    };
+    let args = this.args.evaluate(vm).withInternal();
+    args.internal["definition"] = this.definition;
+    vm.frame.setArgs(args);
   }
 }
 
 export interface OpenComponentOptions {
-  definition: ComponentDefinition<any>;
-  args: CompiledArgs;
   shadow: InternedString[];
   templates: Templates;
 }
@@ -117,53 +69,37 @@ export class OpenComponentOpcode extends Opcode {
   public shadow: InternedString[];
   public templates: Templates;
 
-  constructor({ definition, args, shadow, templates }: OpenComponentOptions) {
+  constructor({ shadow, templates }: OpenComponentOptions) {
     super();
-    this.definition = definition;
-    this.args = args;
     this.shadow = shadow;
     this.templates = templates;
   }
 
   evaluate(vm: VM) {
-    vm.beginCacheGroup();
-    vm.pushDynamicScope();
+    let { shadow, templates } = this;
+    let args = vm.frame.getArgs();
+    let definition = args.internal["definition"] as ComponentDefinition<Opaque>;
 
-    let { args: rawArgs, shadow, definition, templates } = this;
-    let args = rawArgs.evaluate(vm);
+    vm.pushDynamicScope();
     let dynamicScope = vm.dynamicScope();
 
     let manager = definition.manager;
-    let component = manager.create(definition, args, dynamicScope);
-    let selfRef = manager.getSelf(component);
+    let component = manager.create(definition, args, dynamicScope, !!templates.default);
     let destructor = manager.getDestructor(component);
-
-    let callerScope = vm.scope();
-
-    // pass through the list of outer attributes to shadow from the
-    // invocation site, as well as the component definition as internal
-    // arguments.
-    args = args.withInternal();
-    args.internal['shadow'] = shadow;
-    args.internal['definition'] = definition;
-    args.internal['component'] = component;
-
-    let layout = layoutFor(definition, vm.env);
-
     if (destructor) vm.newDestroyable(destructor);
+    args.internal["component"] = component;
+    args.internal["definition"] = definition = manager.ensureCompilable(definition, component);
+    args.internal["shadow"] = shadow;
+
+    vm.beginCacheGroup();
+    let layout = layoutFor(definition, vm.env);
+    let callerScope = vm.scope();
+    let selfRef = manager.getSelf(component);
     vm.pushRootScope(selfRef, layout.symbols);
     vm.invokeLayout({ templates, args, shadow, layout, callerScope });
     vm.env.didCreate(component, manager);
 
     vm.updateWith(new UpdateComponentOpcode({ name: definition.name, component, manager, args, dynamicScope }));
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      guid: this._guid,
-      type: this.type,
-      args: [JSON.stringify(this.definition.name)]
-    };
   }
 }
 
@@ -222,7 +158,7 @@ export class DidCreateElementOpcode extends Opcode {
   evaluate(vm: VM) {
     let args = vm.frame.getArgs();
     let internal = args.internal;
-    let definition: ComponentDefinition<Opaque> = internal['definition'];
+    let definition = internal['definition'] as ComponentDefinition<Opaque>;
     let manager = definition.manager;
     let component: Component = internal['component'];
 
@@ -246,8 +182,7 @@ export class ShadowAttributesOpcode extends Opcode {
   evaluate(vm: VM) {
     let args = vm.frame.getArgs();
     let internal = args.internal;
-    let shadow: InternedString[] = internal['shadow'];
-    // let definition: ComponentDefinition<any> = internal['definition'];
+    let shadow: InternedString[] = internal['shadow'] as InternedString[];
 
     let named = args.named;
 
