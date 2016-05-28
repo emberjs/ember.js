@@ -1,23 +1,8 @@
 import isEnabled from 'ember-metal/features';
-import { privatize as P } from 'container/registry';
-
-const DEFAULT_LAYOUT = P`template:components/-default`;
 
 function lookupComponentPair(componentLookup, owner, name, options) {
   let component = componentLookup.componentFor(name, owner, options);
   let layout = componentLookup.layoutFor(name, owner, options);
-
-  if (!layout && component) {
-    let layoutProp = component.proto().layout;
-    if (layoutProp) {
-      let templateFullName = 'template:components/' + name;
-      owner.register(templateFullName, layoutProp);
-      layout = owner.lookup(templateFullName, options);
-    } else {
-      layout = owner.lookup(DEFAULT_LAYOUT);
-    }
-  }
-
   return {
     component,
     layout

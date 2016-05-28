@@ -3,19 +3,13 @@ import { ConstReference } from 'glimmer-reference';
 import { generateGuid, guidFor } from 'ember-metal/utils';
 import { RootReference, NULL_REFERENCE } from '../utils/references';
 
-class OutletComponentLookup {
-  constructor(args) {
-    this.args = args;
-    this.factory = outletComponentFor;
-  }
-}
-
-function outletComponentFor(args, vm) {
+function outletComponentFor(vm) {
   let { outletState, isTopLevel } = vm.dynamicScope();
 
   if (isTopLevel) {
     return new TopLevelOutletComponentReference(outletState);
   } else {
+    let args = vm.getArgs();
     let outletName = args.positional.at(0).value() || 'main';
     return new OutletComponentReference(outletName, outletState.get(outletName));
   }
@@ -24,7 +18,8 @@ function outletComponentFor(args, vm) {
 export class OutletSyntax extends StatementSyntax {
   constructor({ args }) {
     super();
-    this.definition = new OutletComponentLookup(args);
+    this.definitionArgs = args;
+    this.definition = outletComponentFor;
     this.args = ArgsSyntax.empty();
     this.templates = null;
     this.shadow = null;
@@ -59,8 +54,10 @@ class OutletComponentReference {
     let { outletName, reference, definition, lastState } = this;
     let newState = reference.value();
 
+    definition = revalidate(definition, lastState, newState);
+
     if (definition) {
-      return revalidate(definition, lastState, newState);
+      return definition;
     } else if (newState) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
@@ -94,6 +91,10 @@ function revalidate(definition, lastState, newState) {
 class AbstractOutletComponentManager {
   create(definition, args, dynamicScope) {
     throw new Error('Not implemented: create');
+  }
+
+  ensureCompilable(definition) {
+    return definition;
   }
 
   getSelf(state) {

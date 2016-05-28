@@ -1,28 +1,23 @@
 import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
-import { ConstReference, isConst } from 'glimmer-reference';
-import { assert } from 'ember-metal/debug';
+import { ConstReference, isConst, UNDEFINED_REFERENCE } from 'glimmer-reference';
 
-class DynamicComponentLookup {
-  constructor(args, isBlock) {
-    this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
-    this.factory = (args, options) => dynamicComponentFor(args, options, isBlock);
-  }
-}
-
-function dynamicComponentFor(args, { env }, isBlock) {
+function dynamicComponentFor(vm) {
+  let env     = vm.env;
+  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
   if (isConst(nameRef)) {
-    return new ConstReference(lookup(env, nameRef.value(), isBlock));
+    return new ConstReference(env.getComponentDefinition([nameRef.value()]));
   } else {
-    return new DynamicComponentReference({ nameRef, env, isBlock });
+    return new DynamicComponentReference({ nameRef, env });
   }
 }
 
 export class DynamicComponentSyntax extends StatementSyntax {
-  constructor({ args, templates, isBlock }) {
+  constructor({ args, templates }) {
     super();
-    this.definition = new DynamicComponentLookup(args, isBlock);
+    this.definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
+    this.definition = dynamicComponentFor;
     this.args = ArgsSyntax.build(args.positional.slice(1), args.named);
     this.templates = templates;
     this.shadow = null;
@@ -34,27 +29,18 @@ export class DynamicComponentSyntax extends StatementSyntax {
 }
 
 class DynamicComponentReference {
-  constructor({ nameRef, env, isBlock }) {
+  constructor({ nameRef, env }) {
     this.nameRef = nameRef;
     this.env = env;
     this.tag = nameRef.tag;
-    this.isBlock = isBlock;
   }
 
   value() {
-    let { env, nameRef, isBlock } = this;
-    return lookup(env, nameRef.value(), isBlock);
+    let { env, nameRef } = this;
+    return env.getComponentDefinition([nameRef.value()]);
+  }
+
+  get() {
+    return UNDEFINED_REFERENCE;
   }
 }
-
-function lookup(env, name, isBlock) {
-  if (typeof name === 'string') {
-    let componentDefinition = env.createComponentDefinition([name], isBlock);
-    assert(`Glimmer error: Could not find component named "${name}" (no component or template with that name was found)`, componentDefinition);
-
-    return componentDefinition;
-  } else {
-    throw new Error(`Cannot render ${name} as a component`);
-  }
-}
-
