@@ -1,5 +1,4 @@
 import { CachedReference, ACTION, INVOKE } from '../utils/references';
-import { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
 import { get } from 'ember-metal/property_get';
