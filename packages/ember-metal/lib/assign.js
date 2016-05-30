@@ -22,8 +22,8 @@ export default function assign(original, ...args) {
 
     let updates = Object.keys(arg);
 
-    for (let i = 0; i < updates.length; i++) {
-      let prop = updates[i];
+    for (let k = 0; k < updates.length; k++) {
+      let prop = updates[k];
       original[prop] = arg[prop];
     }
   }
