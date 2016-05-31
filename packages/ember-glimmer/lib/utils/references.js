@@ -74,14 +74,6 @@ export class CachedReference extends EmberPathReference {
   // @abstract compute()
 }
 
-export function isMut(ref) {
-  return ref && ref[MUT];
-}
-
-export function isReadonly(ref) {
-  return ref && ref[READONLY];
-}
-
 // @implements PathReference
 export class RootReference extends ConstReference {
   get(propertyKey) {
@@ -89,8 +81,7 @@ export class RootReference extends ConstReference {
 
     if ((args = this.value()[ARGS]) &&
       (ref = args[propertyKey]) &&
-      ((isMut(ref) || isReadonly(ref)))
-    ) {
+      (ref[MUT] || ref[READONLY])) {
       return ref;
     }
     return new PropertyReference(this, propertyKey);
@@ -432,6 +423,12 @@ export class UnboundReference {
 
   get(key) {
     return new UnboundReference(this, key);
+  }
+
+  [UPDATE](val) {
+    let { key, sourceRef } = this;
+    let sourceVal = sourceRef.value();
+    this.cache = key ? set(sourceVal, key, val) : val;
   }
 
   destroy() {}

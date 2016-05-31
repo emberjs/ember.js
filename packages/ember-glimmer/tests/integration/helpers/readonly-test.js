@@ -25,13 +25,10 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
 
     this.assertStableRerender();
 
-    if (this.isGlimmer) {
-      expectAssertion(() => set(component, 'value', 13), /cannot update the value of a readonly/);
-    } else {
-      this.assert.notOk(component.attrs.value.update);
-    }
+    this.runTask(() => set(component, 'value', 13));
+    this.assert.notOk(component.attrs.value.update);
 
-    this.assertText('12', 'local property is not updated');
+    this.assertText('13', 'local property is updated');
     this.assert.equal(get(this.context, 'val'), 12, 'upstream attribute is not updated');
 
     // No U-R
@@ -55,28 +52,21 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
 
     this.assertStableRerender();
 
-    if (this.isGlimmer) {
-      expectAssertion(() => set(component, 'value', 13), /cannot update the value of a readonly/);
-    } else {
-      this.assert.notOk(component.attrs.value.update);
-    }
+    this.assert.notOk(component.attrs.value.update);
+    this.assert.strictEqual(get(component, 'value'), '12');
 
-    this.assertText('12', 'local property is not updated');
+    this.runTask(() => set(component, 'value', '13'));
 
-    // No U-R
+    this.assertText('13', 'local property is updated');
+    this.assert.strictEqual(get(component, 'value'), '13');
+
+    this.runTask(() => set(component, 'value', '12'));
+
+    this.assertText('12');
   }
 
-  ['@htmlbars {{mut}} of a {{readonly}} mutates only the middle and bottom tiers']() {
+  ['@test {{mut}} of a {{readonly}} mutates only the middle and bottom tiers']() {
     let middle, bottom;
-
-    this.registerComponent('x-middle', {
-      ComponentClass: Component.extend({
-        didInsertElement() {
-          middle = this;
-        }
-      }),
-      template: '{{foo}} {{x-bottom bar=(mut foo)}}'
-    });
 
     this.registerComponent('x-bottom', {
       ComponentClass: Component.extend({
@@ -85,6 +75,15 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
         }
       }),
       template: '{{bar}}'
+    });
+
+    this.registerComponent('x-middle', {
+      ComponentClass: Component.extend({
+        didInsertElement() {
+          middle = this;
+        }
+      }),
+      template: '{{foo}} {{x-bottom bar=(mut foo)}}'
     });
 
     this.render('{{x-middle foo=(readonly val)}}', {
@@ -102,32 +101,35 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
 
     this.assert.equal(get(bottom, 'bar'), 13, 'bottom\'s local bar was updated after set of bottom\'s bar');
     this.assert.equal(get(middle, 'foo'), 13, 'middle\'s local foo was updated after set of bottom\'s bar');
-    this.assertText('13 13', 'bottom and middle are both updated');
+    this.assertText('13 13');
     this.assert.equal(get(this.context, 'val'), 12, 'But context val is not updated');
 
     this.runTask(() => set(bottom, 'bar', 14));
 
     this.assert.equal(get(bottom, 'bar'), 14, 'bottom\'s local bar was updated after set of bottom\'s bar');
     this.assert.equal(get(middle, 'foo'), 14, 'middle\'s local foo was updated after set of bottom\'s bar');
-    this.assertText('14 14', 'bottom and middle are both updated');
+    this.assertText('14 14');
     this.assert.equal(get(this.context, 'val'), 12, 'But context val is not updated');
 
-    if (this.isGlimmer) {
-      expectAssertion(() => set(middle, 'foo', 15), /cannot update the value of a readonly/);
-    } else {
-      this.assert.notOk(middle.attrs.foo.update, 'middle\'s foo attr is not a mutable cell');
-    }
+    this.assert.notOk(middle.attrs.foo.update, 'middle\'s foo attr is not a mutable cell');
+    this.runTask(() => set(middle, 'foo', 15));
 
-    this.assertText('14 14', 'bottom and middle were both not updated after set of middle\'s foo');
-    this.assert.equal(get(bottom, 'bar'), 14, 'bottom\'s local bar was not updated after set of middle\'s foo');
-    this.assert.equal(get(middle, 'foo'), 14, 'middle\'s local foo was not updated after set of middle\'s foo');
+    this.assertText('15 15');
+    this.assert.equal(get(middle, 'foo'), 15, 'set of middle\'s foo took effect');
+    this.assert.equal(get(bottom, 'bar'), 15, 'bottom\'s local bar was updated after set of middle\'s foo');
     this.assert.equal(get(this.context, 'val'), 12, 'Context val remains unchanged');
 
     this.runTask(() => set(this.context, 'val', 10));
 
-    this.assertText('10 10', 'bottom and middle were both updated to the value of context\'s val');
+    this.assertText('10 10');
     this.assert.equal(get(bottom, 'bar'), 10, 'bottom\'s local bar was updated after set of context\'s val');
     this.assert.equal(get(middle, 'foo'), 10, 'middle\'s local foo was updated after set of context\'s val');
+
+    this.runTask(() => set(bottom, 'bar', undefined));
+
+    this.assertText(' ');
+    this.assert.equal(get(bottom, 'bar'), undefined, 'bottom\'s local bar was updated to a falsy value');
+    this.assert.equal(get(middle, 'foo'), undefined, 'middle\'s local foo was updated to a falsy value');
 
     this.runTask(() => set(this.context, 'val', 12));
     this.assertText('12 12', 'bottom and middle were both reset');

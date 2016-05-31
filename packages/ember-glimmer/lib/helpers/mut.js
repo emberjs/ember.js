@@ -1,5 +1,5 @@
 import { assert } from 'ember-metal/debug';
-import { InternalHelperReference, MUT, isMut, UPDATE, INVOKE } from '../utils/references';
+import { InternalHelperReference, MUT, UPDATE, INVOKE } from '../utils/references';
 import { isConst } from 'glimmer-reference';
 
 export default {
@@ -9,7 +9,7 @@ export default {
 
     assert('You can only pass a path to mut', !isConst(ref));
 
-    if (!isMut(ref)) {
+    if (!ref[MUT]) {
       return new MutHelperReference(mut, args);
     }
     return ref;
