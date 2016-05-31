@@ -576,20 +576,22 @@ QUnit.test('`triggerEvent` accepts an optional options hash without context', fu
   });
 });
 
-test('`triggerEvent can limit searching for a selector to a scope', function() {
+QUnit.test('`triggerEvent` can limit searching for a selector to a scope', function() {
   expect(2);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('.input').on('blur change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input" /><div id="limited"><input type="text" id="inside-scope" class="input" /></div>'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
