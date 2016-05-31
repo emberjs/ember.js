@@ -92,7 +92,17 @@ export default {
     let toRender = outletState && outletState.render;
     let meta = toRender && toRender.template && toRender.template.meta;
 
-    return env.childWithOutletState(outletState && outletState.outlets, true, meta);
+    let childEnv = env.childWithOutletState(outletState && outletState.outlets, true, meta);
+
+    if (isEnabled('ember-application-engines')) {
+      let owner = outletState && outletState.render && outletState.render.owner;
+      if (owner && owner !== childEnv.owner) {
+        childEnv.originalOwner = childEnv.owner;
+        childEnv.owner = owner;
+      }
+    }
+
+    return childEnv;
   },
 
   isStable(lastState, nextState) {
@@ -105,16 +115,21 @@ export default {
 
   render(renderNode, env, scope, params, hash, _template, inverse, visitor) {
     let state = renderNode.getState();
+    let owner = env.owner;
     let parentView = env.view;
     let outletState = state.outletState;
     let toRender = outletState.render;
-    let namespace = env.owner.lookup('application:main');
+    let namespace = owner.lookup('application:main');
     let LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
 
     let ViewClass = outletState.render.ViewClass;
 
+    if (isEnabled('ember-application-engines')) {
+      owner = env.originalOwner || owner;
+    }
+
     if (!state.hasParentOutlet && !ViewClass) {
-      ViewClass = env.owner._lookupFactory('view:toplevel');
+      ViewClass = owner._lookupFactory('view:toplevel');
     }
 
     let attrs = {};
@@ -135,6 +150,16 @@ export default {
     if (state.manager) {
       state.manager.destroy();
       state.manager = null;
+    }
+
+    if (isEnabled('ember-application-engines')) {
+      // detect if we are crossing into an engine
+      if (env.originalOwner) {
+        // when this outlet represents an engine we must ensure that a `ViewClass` is present
+        // even if the engine does not contain a `view:application`. We need a `ViewClass` to
+        // ensure that an `ownerView` is set on the `env` created just above
+        options.component = options.component || owner._lookupFactory('view:toplevel');
+      }
     }
 
     let nodeManager = ViewNodeManager.create(renderNode, env, attrs, options, parentView, null, null, template);
