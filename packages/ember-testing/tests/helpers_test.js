@@ -3,6 +3,7 @@ import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
+import Component from 'ember-templates/component';
 import EmberView from 'ember-views/views/view';
 import Checkbox from 'ember-htmlbars/components/checkbox';
 import jQuery from 'ember-views/system/jquery';
@@ -459,21 +460,20 @@ test('`click` triggers native events with simulated X/Y coordinates', function()
   });
 });
 
-test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
+QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
   expect(5);
 
   var triggerEvent, wait, evt;
 
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
+  App.register('component:evt-listener', Component.extend({
+    classNames: 'evt-listener',
 
     didInsertElement() {
       this.element.addEventListener('mouseenter', e => evt = e);
     }
-  });
+  }));
 
-
-  setTemplate('index', compile('some text'));
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
@@ -481,7 +481,7 @@ test('`triggerEvent` with mouseenter triggers native events with simulated X/Y c
   wait  = App.testHelpers.wait;
 
   return wait().then(function() {
-    return triggerEvent('.index-view', 'mouseenter');
+    return triggerEvent('.evt-listener', 'mouseenter');
   }).then(function() {
     ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
     ok(typeof evt.screenX === 'number' && evt.screenX > 0, 'screenX is correct');
