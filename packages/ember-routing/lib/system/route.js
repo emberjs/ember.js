@@ -362,7 +362,14 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let state = transition ? transition.state : this.router.router.state;
 
     let params = {};
-    assign(params, state.params[name]);
+    let fullName = name;
+
+    if (isEnabled('ember-application-engines')) {
+      fullName = getEngineRouteName(getOwner(this), name);
+    }
+
+    assign(params, state.params[fullName]);
+
     assign(params, getQueryParamsFor(route, state));
 
     return params;
@@ -2163,6 +2170,10 @@ function getQueryParamsFor(route, state) {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.routeName;
 
+  if (isEnabled('ember-application-engines')) {
+    name = getEngineRouteName(getOwner(route), name);
+  }
+
   if (state.queryParamsFor[name]) { return state.queryParamsFor[name]; }
 
   let fullQueryParams = getFullQueryParams(route.router, state);
@@ -2248,6 +2259,79 @@ function addQueryParamsObservers(controller, propNames) {
 
 function deprecateQueryParamDefaultValuesSetOnController(controllerName, routeName, propName) {
   deprecate(`Configuring query parameter default values on controllers is deprecated. Please move the value for the property '${propName}' from the '${controllerName}' controller to the '${routeName}' route in the format: {queryParams: ${propName}: {defaultValue: <default value> }}`, false, { id: 'ember-routing.deprecate-query-param-default-values-set-on-controller', until: '3.0.0' });
+}
+
+/*
+  Returns an arguments array where the route name arg is prefixed based on the mount point
+
+  @private
+*/
+function prefixRouteNameArg(...args) {
+  let routeName = args[0];
+  let owner = getOwner(this);
+  let prefix = owner.mountPoint;
+
+  // only alter the routeName if it's actually referencing a route.
+  if (owner.routable && typeof routeName === 'string') {
+    if (resemblesURL(routeName)) {
+      throw new EmberError('Route#transitionTo cannot be used for URLs. Please use the route name instead.');
+    } else {
+      routeName = `${prefix}.${routeName}`;
+      args[0] = routeName;
+    }
+  }
+
+  return args;
+}
+
+/*
+  Check if a routeName resembles a url instead
+
+  @private
+*/
+function resemblesURL(str) {
+  return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
+}
+
+if (isEnabled('ember-application-engines')) {
+  Route.reopen({
+    replaceWith(...args) {
+      return this._super.apply(this, (prefixRouteNameArg.call(this, ...args)));
+    },
+
+    transitionTo(...args) {
+      return this._super.apply(this, (prefixRouteNameArg.call(this, ...args)));
+    },
+
+    modelFor(_routeName, ...args) {
+      let routeName;
+      let owner = getOwner(this);
+
+      if (owner.routable && this.router && this.router.router.activeTransition) {
+        // only change the routeName when there is an active transition.
+        // otherwise, we need the passed in route name.
+        routeName = getEngineRouteName(owner, _routeName);
+      } else {
+        routeName = _routeName;
+      }
+
+      return this._super(routeName, ...args);
+    }
+  });
+}
+
+function getEngineRouteName(engine, routeName) {
+  if (engine.routable) {
+    let prefix = engine.mountPoint;
+
+    if (routeName === 'application') {
+      return prefix;
+    } else {
+      return `${prefix}.${routeName}`;
+    }
+  }
+
+  return routeName;
 }
 
 export default Route;
