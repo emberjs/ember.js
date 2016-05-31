@@ -606,20 +606,22 @@ QUnit.test('`triggerEvent` can limit searching for a selector to a scope', funct
   });
 });
 
-test('`triggerEvent` can be used to trigger arbitrary events', function() {
+QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() {
   expect(2);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="foo"}}'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('#foo').on('blur change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="foo" />'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
