@@ -74,7 +74,7 @@ export class ClosureActionReference extends CachedReference {
       throw new EmberError(`An action could not be made for \`${rawActionLabel}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${rawActionLabel}')\`) or a function available in ${target}.`);
     }
 
-    let valuePath = named.has('value') ? named.get('value').value() : undefined;
+    let valuePath = named.get('value').value();
 
     return createClosureAction(target, action, valuePath, actionArgs);
   }
