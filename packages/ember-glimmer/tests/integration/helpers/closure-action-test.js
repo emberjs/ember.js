@@ -2,10 +2,8 @@ import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import isEnabled from 'ember-metal/features';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
-import { INVOKE as HTMLBARS_INVOKE } from 'ember-htmlbars/keywords/closure-action';
-import { INVOKE as GLIMMER_INVOKE } from 'ember-glimmer/utils/references';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { Component, INVOKE } from '../../utils/helpers';
 
 if (isEnabled('ember-improved-instrumentation')) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {
@@ -1060,12 +1058,10 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.assert.ok(capturedRunLoop, 'action is called within a run loop');
   }
 
-  // TODO: Need to flesh out the Glimmer2 INVOKE story a bit.
   ['@test objects that define INVOKE can be casted to actions']() {
     let innerComponent;
     let actionArgs;
     let invokableArgs;
-    let INVOKE = this.isHTMLBars ? HTMLBARS_INVOKE : GLIMMER_INVOKE;
 
     let InnerComponent = Component.extend({
       init() {
