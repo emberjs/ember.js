@@ -545,20 +545,22 @@ QUnit.test('`wait` does not error if routing has not begun', function() {
   });
 });
 
-test('`triggerEvent accepts an optional options hash without context', function() {
+QUnit.test('`triggerEvent` accepts an optional options hash without context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="scope" class="input"}}'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="scope" class="input" />'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
