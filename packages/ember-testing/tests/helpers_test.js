@@ -560,7 +560,7 @@ QUnit.test('`triggerEvent` accepts an optional options hash without context', fu
     }
   }));
 
-  App.register('template:components/evt-listener', compile('<input type="text" id="scope" class="input" />'));
+  App.register('template:components/evt-listener', compile('<input type="text" id="scope" class="input">'));
 
   setTemplate('index', compile('{{evt-listener}}'));
 
@@ -591,7 +591,7 @@ QUnit.test('`triggerEvent` can limit searching for a selector to a scope', funct
     }
   }));
 
-  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input" /><div id="limited"><input type="text" id="inside-scope" class="input" /></div>'));
+  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input"><div id="limited"><input type="text" id="inside-scope" class="input"></div>'));
 
   setTemplate('index', compile('{{evt-listener}}'));
 
@@ -621,7 +621,7 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
     }
   }));
 
-  App.register('template:components/evt-listener', compile('<input type="text" id="foo" />'));
+  App.register('template:components/evt-listener', compile('<input type="text" id="foo">'));
 
   setTemplate('index', compile('{{evt-listener}}'));
 
@@ -642,7 +642,7 @@ QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  setTemplate('index', compile('<div id="parent"><input type="text" id="first" class="current" /></div><input type="text" id="second" class="current" />'));
+  setTemplate('index', compile('<div id="parent"><input type="text" id="first" class="current"></div><input type="text" id="second" class="current">'));
 
   run(App, App.advanceReadiness);
 
@@ -744,7 +744,7 @@ QUnit.test('`triggerEvent` accepts an optional options hash and context', functi
     }
   }));
 
-  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input" /><div id="limited"><input type="text" id="inside-scope" class="input" /></div>'));
+  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input"><div id="limited"><input type="text" id="inside-scope" class="input"></div>'));
 
   setTemplate('index', compile('{{evt-listener}}'));
 
