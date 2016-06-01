@@ -636,13 +636,11 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
   });
 });
 
-test('`fillIn` takes context into consideration', function() {
+QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  App.IndexView = EmberView.extend({
-    template: compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
-  });
+  setTemplate('index', compile('<div id="parent"><input type="text" id="first" class="current" /></div><input type="text" id="second" class="current" />'));
 
   run(App, App.advanceReadiness);
 
