@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import $ from 'ember-views/system/jquery';
 import Application from 'ember-application/system/application';
-import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
+import { subscribe, reset } from 'ember-metal/instrumentation';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
@@ -24,7 +24,6 @@ function handleURL(path) {
   return run(router, 'handleURL', path);
 }
 
-let subscriber;
 testModule('View Instrumentation', {
   setup() {
     run(function() {
@@ -43,9 +42,7 @@ testModule('View Instrumentation', {
   },
 
   teardown() {
-    if (subscriber) {
-      unsubscribe(subscriber);
-    }
+    reset();
     run(App, 'destroy');
     App = null;
     setTemplates({});
@@ -54,7 +51,7 @@ testModule('View Instrumentation', {
 
 test('Nodes without view instances are instrumented', function(assert) {
   var called = false;
-  subscriber = subscribe('render', {
+  subscribe('render', {
     before() {
       called = true;
     },

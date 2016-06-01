@@ -16,7 +16,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
 import viewKeyword from 'ember-htmlbars/keywords/view';
 
-import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
+import { subscribe, reset } from 'ember-metal/instrumentation';
 
 var owner, view, originalViewKeyword;
 var dispatcher;
@@ -42,7 +42,7 @@ QUnit.module('EventDispatcher', {
   teardown() {
     runDestroy(view);
     runDestroy(owner);
-
+    reset();
     resetKeyword('view', originalViewKeyword);
   }
 });
@@ -66,7 +66,7 @@ if (isEnabled('ember-improved-instrumentation')) {
     equal(clicked, 1, 'precond - The click handler was invoked');
 
     let clickInstrumented = 0;
-    let clickSubscriber = subscribe('interaction.click', {
+    subscribe('interaction.click', {
       before() {
         clickInstrumented++;
         equal(clicked, 1, 'invoked before event is handled');
@@ -78,7 +78,7 @@ if (isEnabled('ember-improved-instrumentation')) {
     });
 
     let keypressInstrumented = 0;
-    let keypressSubscriber = subscribe('interaction.keypress', {
+    subscribe('interaction.keypress', {
       before() {
         keypressInstrumented++;
       },
@@ -94,8 +94,7 @@ if (isEnabled('ember-improved-instrumentation')) {
       equal(clickInstrumented, 2, 'The click was instrumented');
       strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
     } finally {
-      unsubscribe(clickSubscriber);
-      unsubscribe(keypressSubscriber);
+      reset();
     }
   });
 }

@@ -323,6 +323,8 @@ import 'ember-runtime/system/service'; // creates inject.service
 import ControllerMixin from 'ember-runtime/mixins/controller';
 import layout from '../templates/link-to';
 import EmberComponent, { HAS_BLOCK } from '../component';
+import { flaggedInstrument } from 'ember-metal/instrumentation';
+
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -641,13 +643,24 @@ let LinkComponent = EmberComponent.extend({
       return false;
     }
 
-    let routing = get(this, '_routing');
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
     let models = get(this, 'models');
-    let queryParamValues = get(this, 'queryParams.values');
+    let queryParams = get(this, 'queryParams.values');
     let shouldReplace = get(this, 'replace');
 
-    routing.transitionTo(qualifiedRouteName, models, queryParamValues, shouldReplace);
+    let payload = {
+      queryParams,
+      routeName: qualifiedRouteName
+    };
+
+    flaggedInstrument('interaction.link-to', payload, this._generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace));
+  },
+
+  _generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace) {
+    let routing = get(this, '_routing');
+    return () => {
+      payload.transition = routing.transitionTo(qualifiedRouteName, models, queryParams, shouldReplace);
+    };
   },
 
   queryParams: null,
