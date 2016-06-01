@@ -1,5 +1,4 @@
 /* globals $ */
-import Route from 'ember-routing/system/route';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
@@ -663,21 +662,21 @@ QUnit.test('`fillIn` takes context into consideration', function() {
   return wait();
 });
 
-test('`fillIn` focuses on the element', function() {
+QUnit.test('`fillIn` focuses on the element', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  App.ApplicationRoute = Route.extend({
+  App.register('component:fill-in', Component.extend({
     actions: {
       wasFocused() {
         ok(true, 'focusIn event was triggered');
       }
     }
-  });
+  }));
 
-  App.IndexView = EmberView.extend({
-    template: compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>')
-  });
+  App.register('template:components/fill-in', compile('<div id="parent"><input type="text" id="first" onfocusin={{action "wasFocused"}}></div>'));
+
+  setTemplate('index', compile('{{fill-in}}'));
 
   run(App, App.advanceReadiness);
 
