@@ -1,3 +1,4 @@
+/* globals $ */
 import Route from 'ember-routing/system/route';
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
@@ -55,6 +56,8 @@ function cleanup() {
     run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
+    // TODO: why are these views not being removed from the DOM?
+    $('.ember-view').remove();
   }
 
   setTemplates({});
