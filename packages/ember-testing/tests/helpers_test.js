@@ -732,20 +732,22 @@ test('`fillIn` fires `input` and `change` events in the proper order', function(
   return wait();
 });
 
-test('`triggerEvent accepts an optional options hash and context', function() {
+QUnit.test('`triggerEvent` accepts an optional options hash and context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input" /><div id="limited"><input type="text" id="inside-scope" class="input" /></div>'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
