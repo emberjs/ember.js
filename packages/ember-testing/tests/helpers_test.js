@@ -1,5 +1,4 @@
 /* globals $ */
-import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
@@ -695,12 +694,12 @@ QUnit.test('`fillIn` focuses on the element', function() {
   return wait();
 });
 
-test('`fillIn` fires `input` and `change` events in the proper order', function() {
+QUnit.test('`fillIn` fires `input` and `change` events in the proper order', function() {
   expect(1);
 
   var fillIn, visit, andThen, wait;
   var events = [];
-  App.IndexController = Controller.extend({
+  App.register('component:fill-in', Component.extend({
     actions: {
       oninputHandler(e) {
         events.push(e.type);
@@ -709,11 +708,11 @@ test('`fillIn` fires `input` and `change` events in the proper order', function(
         events.push(e.type);
       }
     }
-  });
+  }));
 
-  App.IndexView = EmberView.extend({
-    template: compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>')
-  });
+  App.register('template:components/fill-in', compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>'));
+
+  setTemplate('index', compile('{{fill-in}}'));
 
   run(App, App.advanceReadiness);
 
