@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
@@ -12,7 +12,7 @@ import expandProperties from 'ember-metal/expand_properties';
 @submodule ember-metal
 */
 
-function expandPropertiesToArray(properties) {
+function expandPropertiesToArray(predicateName, properties) {
   var expandedProperties = [];
 
   function extractProperty(entry) {
@@ -20,15 +20,18 @@ function expandPropertiesToArray(properties) {
   }
 
   for (let i = 0; i < properties.length; i++) {
-    expandProperties(properties[i], extractProperty);
+    let property = properties[i];
+    assert(`Dependent keys passed to Ember.computed.${predicateName}() can\'t have spaces.`, property.indexOf(' ') < 0);
+
+    expandProperties(property, extractProperty);
   }
 
   return expandedProperties;
 }
 
-function generateComputedWithPredicate(predicate) {
+function generateComputedWithPredicate(name, predicate) {
   return function(...properties) {
-    var expandedProperties = expandPropertiesToArray(properties);
+    var expandedProperties = expandPropertiesToArray(name, properties);
 
     var computedFunc = computed(function() {
       var lastIdx = expandedProperties.length - 1;
@@ -454,7 +457,7 @@ export function lte(dependentKey, value) {
   a logical `and` on the values of all the original values for properties.
   @public
 */
-export var and = generateComputedWithPredicate(function(value) {
+export var and = generateComputedWithPredicate('and', function(value) {
   return value;
 });
 
@@ -493,7 +496,7 @@ export var and = generateComputedWithPredicate(function(value) {
   a logical `or` on the values of all the original values for properties.
   @public
 */
-export var or = generateComputedWithPredicate(function(value) {
+export var or = generateComputedWithPredicate('or', function(value) {
   return !value;
 });
 
