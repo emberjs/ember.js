@@ -65,8 +65,6 @@ function sharedTeardown() {
   setTemplates({});
 }
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
 if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module('The {{link-to}} helper: invoking with query params when defined on a route', {
     setup() {
@@ -129,7 +127,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
-  test('link-to with no params throws', function() {
+  QUnit.test('link-to with no params throws', function() {
     setTemplate('index', compile("{{#link-to id='the-link'}}Index{{/link-to}}"));
     expectAssertion(function() {
       bootApplication();

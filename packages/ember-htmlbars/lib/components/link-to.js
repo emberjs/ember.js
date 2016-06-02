@@ -771,10 +771,20 @@ let LinkComponent = EmberComponent.extend({
   willRender() {
     let queryParams;
 
-    // Do not mutate params in place
-    let params = get(this, 'params').slice();
+    let params = get(this, 'params');
 
-    assert('You must provide one or more parameters to the link-to component.', params.length);
+    if (params) {
+      // Do not mutate params in place
+      params = params.slice();
+    }
+
+    assert('You must provide one or more parameters to the link-to component.', () => {
+      if (!params) {
+        return false;
+      }
+
+      return params.length;
+    });
 
     let disabledWhen = get(this, 'disabledWhen');
     if (disabledWhen !== undefined) {
