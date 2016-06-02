@@ -31,22 +31,13 @@ class Component {
 
 class DbmonDatabase extends Component {
   db: null;
-  queries: null;
-  topFiveQueries: null;
-  countClassName: null;
 
-  didReceiveAttrs() {
-    this.queries = this.computeQueries();
-    this.topFiveQueries = this.computeTopFiveQueries();
-    this.countClassName = this.computeCountClassName();
-  }
-
-  computeQueries() {
+  get queries() {
     let samples = this.attrs.db.samples;
     return samples[samples.length - 1].queries;
   }
 
-  computeTopFiveQueries() {
+  get topFiveQueries() {
     let queries = this.queries;
     let topFiveQueries = queries.slice(0, 5);
 
@@ -64,9 +55,9 @@ class DbmonDatabase extends Component {
     });
   }
 
-  computeCountClassName() {
-    var queries = this.queries;
-    var countClassName = "label";
+  get countClassName() {
+    let queries = this.queries;
+    let countClassName = "label";
 
     if (queries.length >= 20) {
       countClassName += " label-important";
@@ -187,12 +178,12 @@ const ROWS = 100;
 
 function getData() {
   // generate some dummy data
-  var data = {
+  let data = {
     start_at: new Date().getTime() / 1000,
     databases: {}
   };
 
-  for (var i = 1; i <= ROWS; i++) {
+  for (let i = 1; i <= ROWS; i++) {
     data.databases["cluster" + i] = {
       queries: []
     };
@@ -203,11 +194,11 @@ function getData() {
   }
 
   Object.keys(data.databases).forEach(function(dbname) {
-    var info = data.databases[dbname];
+    let info = data.databases[dbname];
 
-    var r = Math.floor((Math.random() * 10) + 1);
-    for (var i = 0; i < r; i++) {
-      var q = {
+    let r = Math.floor((Math.random() * 10) + 1);
+    for (let i = 0; i < r; i++) {
+      let q = {
         canvas_action: null,
         canvas_context_id: null,
         canvas_controller: null,
@@ -285,21 +276,17 @@ function elapsedClass(elapsed) {
   }
 }
 
-interface StringConstructor {
-  lpad(padding: any, toLength: any): any;
+function lpad(str, padding, toLength) {
+  return padding.repeat((toLength - str.length) / padding.length).concat(str);
 }
 
-String.lpad = function(padding, toLength) {
-  return padding.repeat((toLength - this.length) / padding.length).concat(this);
-};
-
 function formatElapsed(value) {
-  var str = parseFloat(value).toFixed(2);
+  let str = parseFloat(value).toFixed(2);
   if (value > 60) {
-    var minutes = Math.floor(value / 60);
-    var comps = (value % 60).toFixed(2).split('.');
-    var seconds = comps[0].lpad('0', 2);
-    var ms = comps[1];
+    let minutes = Math.floor(value / 60);
+    let comps = (value % 60).toFixed(2).split('.');
+    let seconds = lpad(comps[0], '0', 2);
+    let ms = comps[1];
     str = minutes + ":" + seconds + "." + ms;
   }
   return str;
