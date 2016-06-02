@@ -1,6 +1,9 @@
 import { RootReference } from './utils/references';
 import run from 'ember-metal/run_loop';
+import { setHasViews } from 'ember-metal/tags';
 import { CURRENT_TAG } from 'glimmer-reference';
+
+const { backburner } = run;
 
 class DynamicScope {
   constructor({ view, controller, outletState, isTopLevel }) {
@@ -15,42 +18,95 @@ class DynamicScope {
   }
 }
 
+class SchedulerRegistrar {
+  constructor() {
+    this.callback = null;
+    this.callbacks = null;
+
+    backburner.on('begin', (arg1, arg2) => {
+      if (this.callback) {
+        this.callback(arg1, arg2);
+      } else if (this.callbacks) {
+        for (let i = 0; i < this.callbacks.length; ++i) {
+          this.callbacks[i](arg1, arg2);
+        }
+      }
+    });
+  }
+
+  register(callback) {
+    if (this.callbacks) {
+      this.callbacks.push(callback);
+    } else if (!this.callback) {
+      this.callback = callback;
+    } else {
+      this.callbacks = [this.callback, callback];
+      this.callback = null;
+    }
+  }
+
+  deregister(callback) {
+    let foundCallback = false;
+    if (this.callbacks) {
+      let callbackIndex = this.callbacks.indexOf(callback);
+      foundCallback = ~callbackIndex;
+      if (foundCallback) {
+        this.callbacks.splice(callbackIndex, 1);
+      }
+    } else if (this.callback === callback) {
+      this.callback = null;
+      foundCallback = true;
+    }
+
+    if (!foundCallback) {
+      throw new TypeError('Cannot deregister a callback that has not been registered.');
+    }
+  }
+
+  hasRegistrations() {
+    return !!this.callback || !!this.callbacks && !!this.callbacks.length;
+  }
+}
+const schedulerRegistrar = new SchedulerRegistrar();
+
+setHasViews(function rendererHasViews() {
+  return schedulerRegistrar.hasRegistrations();
+});
+
 class Scheduler {
   constructor() {
-    this._roots = [];
+    this._root = null;
     this._scheduleMaybeUpdate = () => {
       run.backburner.schedule('render', this, this._maybeUpdate, CURRENT_TAG.value());
     };
   }
 
   destroy() {
-    if (this._roots.length) {
-      this._roots.splice(0, this._roots.length);
-      run.backburner.off('begin', this._scheduleMaybeUpdate);
+    if (this._root) {
+      this.deregisterView(this._root);
     }
   }
 
   registerView(view) {
-    if (!this._roots.length) {
-      run.backburner.on('begin', this._scheduleMaybeUpdate);
+    if (!this.root) {
+      schedulerRegistrar.register(this._scheduleMaybeUpdate);
+      this._root = view;
+    } else {
+      throw new TypeError('Cannot register more than one root view.');
     }
-    this._roots.push(view);
   }
 
   deregisterView(view) {
-    let viewIndex = this._roots.indexOf(view);
-    if (~viewIndex) {
-      this._roots.splice(viewIndex, 1);
-      if (!this._roots.length) {
-        run.backburner.off('begin', this._scheduleMaybeUpdate);
-      }
+    if (this._root === view) {
+      this._root = null;
+      schedulerRegistrar.deregister(this._scheduleMaybeUpdate);
     }
   }
 
   _maybeUpdate(lastTagValue) {
     if (CURRENT_TAG.validate(lastTagValue)) { return; }
-    for (let i = 0; i < this._roots.length; ++i) {
-      let view = this._roots[i];
+    let view = this._root;
+    if (view) {
       view.renderer.rerender(view);
     }
   }

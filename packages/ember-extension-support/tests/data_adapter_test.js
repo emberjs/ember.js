@@ -61,7 +61,7 @@ QUnit.test('Model types added with DefaultResolver', function() {
     deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
   };
 
-  adapter.watchModelTypes(modelTypesAdded);
+  run(adapter, 'watchModelTypes', modelTypesAdded);
 });
 
 QUnit.test('getRecords gets a model name as second argument', function() {
@@ -112,7 +112,7 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
     deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
   };
 
-  adapter.watchModelTypes(modelTypesAdded);
+  run(adapter, 'watchModelTypes', modelTypesAdded);
 });
 
 QUnit.test('Model Types Updated', function() {
@@ -139,7 +139,7 @@ QUnit.test('Model Types Updated', function() {
     equal(postType.count, 4, 'Correctly updates the count');
   };
 
-  adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
+  run(adapter, 'watchModelTypes', modelTypesAdded, modelTypesUpdated);
 });
 
 QUnit.test('Records Added', function() {

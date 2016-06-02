@@ -9,6 +9,7 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes, equalTokens, equalsElement } from '../../utils/test-helpers';
 import { htmlSafe } from 'ember-htmlbars/utils/string';
 import { computed } from 'ember-metal/computed';
+import run from 'ember-metal/run_loop';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -63,7 +64,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { id: 'blahzorz' }, content: 'blahzorz' });
 
     if (EmberDev && !EmberDev.runningProdBuild) {
-      let willThrow = () => set(component, 'elementId', 'herpyderpy');
+      let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
 
       assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
 
