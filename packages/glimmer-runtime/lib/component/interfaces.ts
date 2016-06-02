@@ -18,7 +18,7 @@ export interface ComponentManager<T extends Component> {
   create(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, hasDefaultBlock: boolean): T;
 
   // Check if definition is compilable should default it and return a new definition
-  ensureCompilable(definition: ComponentDefinition<T>, component: T): ComponentDefinition<T>;
+  ensureCompilable(definition: ComponentDefinition<T>, component: T, env: Environment): ComponentDefinition<T>;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.

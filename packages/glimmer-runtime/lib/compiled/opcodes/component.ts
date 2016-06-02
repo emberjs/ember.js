@@ -84,11 +84,12 @@ export class OpenComponentOpcode extends Opcode {
     let dynamicScope = vm.dynamicScope();
 
     let manager = definition.manager;
-    let component = manager.create(definition, args, dynamicScope, !!templates.default);
+    let hasDefaultBlock = templates && !!templates.default; // TODO Cleanup?
+    let component = manager.create(definition, args, dynamicScope, hasDefaultBlock);
     let destructor = manager.getDestructor(component);
     if (destructor) vm.newDestroyable(destructor);
     args.internal["component"] = component;
-    args.internal["definition"] = definition = manager.ensureCompilable(definition, component);
+    args.internal["definition"] = definition = manager.ensureCompilable(definition, component, vm.env);
     args.internal["shadow"] = shadow;
 
     vm.beginCacheGroup();
