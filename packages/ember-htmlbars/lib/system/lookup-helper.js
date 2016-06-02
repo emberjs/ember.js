@@ -73,7 +73,7 @@ export function findHelper(name, view, env) {
 export default function lookupHelper(name, view, env) {
   let helper = findHelper(name, view, env);
 
-  assert(`A helper named '${name}' could not be found`, !!helper);
+  assert(`A helper named "${name}" could not be found`, !!helper);
 
   return helper;
 }

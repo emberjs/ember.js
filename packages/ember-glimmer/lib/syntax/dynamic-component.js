@@ -7,7 +7,10 @@ function dynamicComponentFor(vm) {
   let nameRef = args.positional.at(0);
 
   if (isConst(nameRef)) {
-    return new ConstReference(env.getComponentDefinition([nameRef.value()]));
+    let name = nameRef.value();
+    let definition = env.getComponentDefinition([name]);
+
+    return new ConstReference(definition);
   } else {
     return new DynamicComponentReference({ nameRef, env });
   }
@@ -37,7 +40,9 @@ class DynamicComponentReference {
 
   value() {
     let { env, nameRef } = this;
-    return env.getComponentDefinition([nameRef.value()]);
+    let name = nameRef.value();
+    let definition = env.getComponentDefinition([name]);
+    return definition;
   }
 
   get() {

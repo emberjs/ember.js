@@ -7,7 +7,9 @@ import { ConditionalReference as GlimmerConditionalReference, NULL_REFERENCE, UN
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
 import { dasherize } from 'ember-runtime/system/string';
-
+import { meta as metaFor } from 'ember-metal/meta';
+import { watchKey } from 'ember-metal/watch_key';
+import isEnabled from 'ember-metal/features';
 export const UPDATE = symbol('UPDATE');
 
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
@@ -95,6 +97,10 @@ class PropertyReference extends CachedReference { // jshint ignore:line
     _parentObjectTag.update(tagFor(parentValue));
 
     if (parentValue && typeof parentValue === 'object') {
+      if (isEnabled('mandatory-setter')) {
+        let meta = metaFor(parentValue);
+        watchKey(parentValue, _propertyKey, meta);
+      }
       return get(parentValue, _propertyKey);
     } else {
       return null;

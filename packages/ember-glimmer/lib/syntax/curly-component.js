@@ -97,25 +97,31 @@ class CurlyComponentManager {
     return bucket;
   }
 
-  ensureCompilable(definition, bucket) {
+  ensureCompilable(definition, bucket, env) {
     if (definition.template) {
       return definition;
     }
 
     let { component } = bucket;
-    let template = component.layout;
-    let owner = getOwner(component);
-    if (!template) {
+    let template;
+    let TemplateFactory = component.layout;
+    // seen the definition but not the template
+    if (TemplateFactory) {
+      if (env._templateCache[TemplateFactory.id]) {
+        template = env._templateCache[TemplateFactory.id];
+      } else {
+        template = new TemplateFactory(env);
+        env._templateCache[TemplateFactory.id] = template;
+      }
+    } else {
       let layoutName = component.layoutName && get(component, 'layoutName');
+      let owner = getOwner(component);
+
       if (layoutName) {
         template = owner.lookup('template:' + layoutName);
       }
       if (!template) {
-        template = component.defaultLayout;
-
-        if (!template) {
-          template = owner.lookup(DEFAULT_LAYOUT);
-        }
+        template = owner.lookup(DEFAULT_LAYOUT);
       }
     }
 

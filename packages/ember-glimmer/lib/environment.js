@@ -112,6 +112,7 @@ export default class Environment extends GlimmerEnvironment {
     super(dom);
     this.owner = owner;
     this._components = new Dict();
+    this._templateCache = new Dict();
     this.builtInModifiers = {
       action: new ActionModifierManager()
     };
@@ -136,10 +137,13 @@ export default class Environment extends GlimmerEnvironment {
         return new OutletSyntax({ args });
       } else if (key.indexOf('-') >= 0) {
         let definition = this.getComponentDefinition(path);
+
         if (definition) {
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
+        } else if (isBlock && !this.hasHelper(key)) {
+          assert(`A helper named '${path[0]}' could not be found`, false);
         }
       } else {
         // Check if it's a keyword
@@ -172,6 +176,8 @@ export default class Environment extends GlimmerEnvironment {
 
       if (ComponentClass || layout) {
         definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
+      } else if (!this.hasHelper(name)) {
+        assert(`Glimmer error: Could not find component named "${name}" (no component or template with that name was found)`, !!(ComponentClass || layout));
       }
     }
 
