@@ -1,23 +1,17 @@
 import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
-import helpers from 'ember-htmlbars/helpers';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import Helper, { helper } from 'ember-htmlbars/helper';
+import Helper, { helper } from 'ember-templates/helper';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import Service from 'ember-runtime/system/service';
 import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var App, appInstance, originalViewKeyword;
+var App, appInstance;
 
 QUnit.module('Application Lifecycle - Helper Registration', {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-  },
   teardown() {
     run(function() {
       if (App) {
@@ -27,8 +21,6 @@ QUnit.module('Application Lifecycle - Helper Registration', {
       App = appInstance = null;
       setTemplates({});
     });
-    delete helpers['foo-bar-baz-widget'];
-    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -69,7 +61,6 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
   });
 
   equal(jQuery('#wrapper').text(), 'BORF YES', 'The helper was invoked from the container');
-  ok(!helpers['x-borf'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
 QUnit.test('Bound helpers registered on the container can be late-invoked', function() {
@@ -86,7 +77,6 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
   });
 
   equal(jQuery('#wrapper').text(), '-- xela', 'The bound helper was invoked from the container');
-  ok(!helpers['x-reverse'], 'Container-registered helper doesn\'t wind up on global helpers hash');
 });
 
 QUnit.test('Undashed helpers registered on the container can be invoked', function() {
@@ -105,10 +95,7 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
   equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
-
-// needs glimmer Helper
-test('Helpers can receive injections', function() {
+QUnit.test('Helpers can receive injections', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{full-name}}</div>'));
 
   var serviceCalled = false;
