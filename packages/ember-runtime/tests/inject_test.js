@@ -36,20 +36,20 @@ if (!EmberDev.runningProdBuild) {
     owner.register('foo:main', AnObject);
     owner._lookupFactory('foo:main');
   });
-}
 
-QUnit.test('attempting to inject a nonexistent container key should error', function() {
-  let owner = buildOwner();
-  var AnObject = Object.extend({
-    foo: new InjectedProperty('bar', 'baz')
+  QUnit.test('attempting to inject a nonexistent container key should error', function() {
+    let owner = buildOwner();
+    var AnObject = Object.extend({
+      foo: new InjectedProperty('bar', 'baz')
+    });
+
+    owner.register('foo:main', AnObject);
+
+    throws(function() {
+      owner.lookup('foo:main');
+    }, /Attempting to inject an unknown injection: `bar:baz`/);
   });
-
-  owner.register('foo:main', AnObject);
-
-  throws(function() {
-    owner.lookup('foo:main');
-  }, /Attempting to inject an unknown injection: `bar:baz`/);
-});
+}
 
 QUnit.test('factories should return a list of lazy injection full names', function() {
   var AnObject = Object.extend({
