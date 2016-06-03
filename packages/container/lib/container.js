@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { assert, deprecate } from 'ember-metal/debug';
+import { assert, deprecate, runInDebug } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import isEnabled from 'ember-metal/features';
 import { setOwner, OWNER } from './owner';
@@ -341,13 +341,15 @@ function instantiate(container, fullName) {
 
     validationCache = container.validationCache;
 
-    // Ensure that all lazy injections are valid at instantiation time
-    if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
-      lazyInjections = factory._lazyInjections();
-      lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
+    runInDebug(function() {
+      // Ensure that all lazy injections are valid at instantiation time
+      if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
+        lazyInjections = factory._lazyInjections();
+        lazyInjections = container.registry.normalizeInjectionsHash(lazyInjections);
 
-      container.registry.validateInjections(lazyInjections);
-    }
+        container.registry.validateInjections(lazyInjections);
+      }
+    });
 
     validationCache[fullName] = true;
 
