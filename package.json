@@ -41,7 +41,7 @@
   "devDependencies": {
     "benchmark": "^1.0.0",
     "bower": "~1.3.3",
-    "ember-cli": "ember-cli/ember-cli#ef5a06a6757",
+    "ember-cli": "^2.4.2",
     "ember-cli-release": "^0.2.2",
     "ember-cli-sauce": "^1.3.0",
     "tslint": "next",
