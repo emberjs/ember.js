@@ -605,6 +605,59 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1');
   }
 
+  ['@glimmer evaluation should be lazy'](assert) {
+    let truthyEvaluated;
+    let falsyEvaluated;
+
+    let withoutEvaluatingTruthy = (callback) => {
+      truthyEvaluated = false;
+      callback();
+      assert.ok(!truthyEvaluated, 'x-truthy is not evaluated');
+    };
+
+    let withoutEvaluatingFalsy = (callback) => {
+      falsyEvaluated = false;
+      callback();
+      assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
+    };
+
+    this.registerHelper('x-truthy', {
+      compute() {
+        truthyEvaluated = true;
+        return 'T';
+      }
+    });
+
+    this.registerHelper('x-falsy', {
+      compute() {
+        falsyEvaluated = true;
+        return 'F';
+      }
+    });
+
+    let template = this.wrappedTemplateFor({ cond: 'cond', truthy: '(x-truthy)', falsy: '(x-falsy)' });
+
+    withoutEvaluatingFalsy(() => this.render(template, { cond: this.truthyValue }));
+
+    this.assertText('T');
+
+    withoutEvaluatingFalsy(() => this.runTask(() => this.rerender()));
+
+    this.assertText('T');
+
+    withoutEvaluatingTruthy(() => this.runTask(() => set(this.context, 'cond', this.falsyValue)));
+
+    this.assertText('F');
+
+    withoutEvaluatingTruthy(() => this.runTask(() => this.rerender()));
+
+    this.assertText('F');
+
+    withoutEvaluatingFalsy(() => this.runTask(() => set(this.context, 'cond', this.truthyValue)));
+
+    this.assertText('T');
+  }
+
 }
 
 export const SyntaxCondtionalTestHelpers = {
@@ -810,6 +863,59 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     assert.ok(!childCreated);
     this.assertText('');
+  }
+
+  ['@test evaluation should be lazy'](assert) {
+    let truthyEvaluated;
+    let falsyEvaluated;
+
+    let withoutEvaluatingTruthy = (callback) => {
+      truthyEvaluated = false;
+      callback();
+      assert.ok(!truthyEvaluated, 'x-truthy is not evaluated');
+    };
+
+    let withoutEvaluatingFalsy = (callback) => {
+      falsyEvaluated = false;
+      callback();
+      assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
+    };
+
+    this.registerHelper('x-truthy', {
+      compute() {
+        truthyEvaluated = true;
+        return 'T';
+      }
+    });
+
+    this.registerHelper('x-falsy', {
+      compute() {
+        falsyEvaluated = true;
+        return 'F';
+      }
+    });
+
+    let template = this.wrappedTemplateFor({ cond: 'cond', truthy: '{{x-truthy}}', falsy: '{{x-falsy}}' });
+
+    withoutEvaluatingFalsy(() => this.render(template, { cond: this.truthyValue }));
+
+    this.assertText('T');
+
+    withoutEvaluatingFalsy(() => this.runTask(() => this.rerender()));
+
+    this.assertText('T');
+
+    withoutEvaluatingTruthy(() => this.runTask(() => set(this.context, 'cond', this.falsyValue)));
+
+    this.assertText('F');
+
+    withoutEvaluatingTruthy(() => this.runTask(() => this.rerender()));
+
+    this.assertText('F');
+
+    withoutEvaluatingFalsy(() => this.runTask(() => set(this.context, 'cond', this.truthyValue)));
+
+    this.assertText('T');
   }
 
 }
