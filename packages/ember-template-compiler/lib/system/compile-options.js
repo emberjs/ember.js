@@ -1,10 +1,5 @@
-import DEFAULT_PLUGINS from '../plugins';
-import assign from 'ember-metal/assign';
+import compiler from '../compiler';
 
-export default function compileOptions() {
-  return assign({}, {
-    plugins: {
-      ast: [...DEFAULT_PLUGINS]
-    }
-  });
-}
+let { defaultCompileOptions } = compiler();
+
+export default defaultCompileOptions;
