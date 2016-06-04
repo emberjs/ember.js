@@ -318,12 +318,8 @@ Ember.isEmpty = isEmpty;
 Ember.isBlank = isBlank;
 Ember.isPresent = isPresent;
 
-if (isEnabled('ember-metal-ember-assign')) {
-  Ember.assign = Object.assign || assign;
-  Ember.merge = merge;
-} else {
-  Ember.merge = merge;
-}
+Ember.assign = Object.assign || assign;
+Ember.merge = merge;
 
 Ember.FEATURES = FEATURES;
 Ember.FEATURES.isEnabled = isEnabled;
