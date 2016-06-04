@@ -13,7 +13,7 @@ export default function compileOptions(options) {
   options = options || {};
   options = assign({}, options);
   if (!options.plugins) {
-    options.plugins = PLUGINS;
+    options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {
     let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
     let pluginsToAdd = potententialPugins.filter((plugin) => {
