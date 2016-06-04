@@ -375,33 +375,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(indexModelCount, 2);
   });
 
-  QUnit.test('refreshModel does not cause a second transition during app boot ', function() {
-    expect(0);
-
-    App.ApplicationRoute = Route.extend({
-      queryParams: {
-        appomg: {
-          defaultValue: 'applol'
-        }
-      }
-    });
-
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        omg: {
-          defaultValue: 'lol',
-          refreshModel: true
-        }
-      },
-      refresh: function() {
-        ok(false);
-      }
-    });
-
-    startingURL = '/?appomg=hello&omg=world';
-    bootApplication();
-  });
-
   QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar when QP configured on route', function() {
     expect(4);
 
@@ -1987,64 +1960,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(get(controller, 'bar'), 'rab');
     equal(get(controller, 'foo'), '456');
   });
-
-  QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
-    expect(2);
-    App.Router.map(function() {
-      this.route('parent', function() {
-        this.route('child');
-        this.route('sibling');
-      });
-    });
-
-    App.ParentRoute = Route.extend({
-      queryParams: { foo: { defaultValue: 'bar' } }
-    });
-
-    App.ParentChildRoute = Route.extend({
-      afterModel: function() {
-        ok(true, 'The after model hook was called');
-        this.transitionTo('parent.sibling');
-      }
-    });
-
-    startingURL = '/parent/child?foo=lol';
-    bootApplication();
-
-    var parentController = container.lookup('controller:parent');
-
-    equal(parentController.get('foo'), 'lol');
-  });
 } else {
-  QUnit.test('Calling transitionTo does not lose query params already on the activeTransition', function() {
-    expect(2);
-    App.Router.map(function() {
-      this.route('parent', function() {
-        this.route('child');
-        this.route('sibling');
-      });
-    });
-
-    App.ParentChildRoute = Route.extend({
-      afterModel: function() {
-        ok(true, 'The after model hook was called');
-        this.transitionTo('parent.sibling');
-      }
-    });
-
-    App.ParentController = Controller.extend({
-      queryParams: ['foo'],
-      foo: 'bar'
-    });
-
-    startingURL = '/parent/child?foo=lol';
-    bootApplication();
-
-    var parentController = container.lookup('controller:parent');
-
-    equal(parentController.get('foo'), 'lol');
-  });
-
   QUnit.test('Single query params can be set on the controller [DEPRECATED]', function() {
     Router.map(function() {
       this.route('home', { path: '/' });
@@ -2458,33 +2374,6 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(appModelCount, 1);
     equal(indexModelCount, 2);
-  });
-
-  QUnit.test('refreshModel does not cause a second transition during app boot ', function() {
-    expect(0);
-    App.ApplicationController = Controller.extend({
-      queryParams: ['appomg'],
-      appomg: 'applol'
-    });
-
-    App.IndexController = Controller.extend({
-      queryParams: ['omg'],
-      omg: 'lol'
-    });
-
-    App.IndexRoute = Route.extend({
-      queryParams: {
-        omg: {
-          refreshModel: true
-        }
-      },
-      refresh: function() {
-        ok(false);
-      }
-    });
-
-    startingURL = '/?appomg=hello&omg=world';
-    bootApplication();
   });
 
   QUnit.test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
