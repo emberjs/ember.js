@@ -1,7 +1,6 @@
 import { ENV } from 'ember-environment';
 import { assert, deprecate, runInDebug } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
-import isEnabled from 'ember-metal/features';
 import { setOwner, OWNER } from './owner';
 import { buildFakeContainerWithDeprecations } from 'ember-runtime/mixins/container_proxy';
 import symbol from 'ember-metal/symbol';
@@ -183,13 +182,11 @@ function isSingleton(container, fullName) {
 }
 
 function lookup(container, fullName, options = {}) {
-  if (isEnabled('ember-htmlbars-local-lookup')) {
-    if (options.source) {
-      fullName = container.registry.expandLocalLookup(fullName, options);
+  if (options.source) {
+    fullName = container.registry.expandLocalLookup(fullName, options);
 
-      // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!fullName) { return; }
-    }
+    // if expandLocalLookup returns falsey, we do not support local lookup
+    if (!fullName) { return; }
   }
 
   if (container.cache[fullName] !== undefined && options.singleton !== false) {
@@ -246,13 +243,11 @@ function buildInjections(/* container, ...injections */) {
 function factoryFor(container, fullName, options = {}) {
   let registry = container.registry;
 
-  if (isEnabled('ember-htmlbars-local-lookup')) {
-    if (options.source) {
-      fullName = registry.expandLocalLookup(fullName, options);
+  if (options.source) {
+    fullName = registry.expandLocalLookup(fullName, options);
 
-      // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!fullName) { return; }
-    }
+    // if expandLocalLookup returns falsey, we do not support local lookup
+    if (!fullName) { return; }
   }
 
   var cache = container.factoryCache;

@@ -3,7 +3,6 @@ import { get } from 'ember-metal/property_get';
 import Registry from 'container/registry';
 import factory from 'container/tests/test-helpers/factory';
 import { getOwner, OWNER } from 'container/owner';
-import isEnabled from 'ember-metal/features';
 
 var originalModelInjections;
 
@@ -674,44 +673,42 @@ QUnit.test('An extendable factory can provide `container` upon create, with a de
   }, 'Using the injected `container` is deprecated. Please use the `getOwner` helper instead to access the owner of this object.');
 });
 
-if (isEnabled('ember-htmlbars-local-lookup')) {
-  QUnit.test('lookupFactory passes options through to expandlocallookup', function(assert) {
-    let registry = new Registry();
-    let container = registry.container();
-    let PostController = factory();
+QUnit.test('lookupFactory passes options through to expandlocallookup', function(assert) {
+  let registry = new Registry();
+  let container = registry.container();
+  let PostController = factory();
 
-    registry.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
-    registry.expandLocalLookup = function(fullName, options) {
-      assert.ok(true, 'expandLocalLookup was called');
-      assert.equal(fullName, 'foo:bar');
-      assert.deepEqual(options, { source: 'baz:qux' });
+  registry.expandLocalLookup = function(fullName, options) {
+    assert.ok(true, 'expandLocalLookup was called');
+    assert.equal(fullName, 'foo:bar');
+    assert.deepEqual(options, { source: 'baz:qux' });
 
-      return 'controller:post';
-    };
+    return 'controller:post';
+  };
 
-    let PostControllerFactory = container.lookupFactory('foo:bar', { source: 'baz:qux' });
+  let PostControllerFactory = container.lookupFactory('foo:bar', { source: 'baz:qux' });
 
-    assert.ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
-  });
+  assert.ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
+});
 
-  QUnit.test('lookup passes options through to expandlocallookup', function(assert) {
-    let registry = new Registry();
-    let container = registry.container();
-    let PostController = factory();
+QUnit.test('lookup passes options through to expandlocallookup', function(assert) {
+  let registry = new Registry();
+  let container = registry.container();
+  let PostController = factory();
 
-    registry.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
-    registry.expandLocalLookup = function(fullName, options) {
-      assert.ok(true, 'expandLocalLookup was called');
-      assert.equal(fullName, 'foo:bar');
-      assert.deepEqual(options, { source: 'baz:qux' });
+  registry.expandLocalLookup = function(fullName, options) {
+    assert.ok(true, 'expandLocalLookup was called');
+    assert.equal(fullName, 'foo:bar');
+    assert.deepEqual(options, { source: 'baz:qux' });
 
-      return 'controller:post';
-    };
+    return 'controller:post';
+  };
 
-    let PostControllerLookupResult = container.lookup('foo:bar', { source: 'baz:qux' });
+  let PostControllerLookupResult = container.lookup('foo:bar', { source: 'baz:qux' });
 
-    assert.ok(PostControllerLookupResult instanceof PostController);
-  });
-}
+  assert.ok(PostControllerLookupResult instanceof PostController);
+});

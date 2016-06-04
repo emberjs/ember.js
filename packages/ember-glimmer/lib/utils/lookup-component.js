@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
@@ -27,15 +26,13 @@ function lookupComponentPair(componentLookup, owner, name, options) {
 export default function lookupComponent(owner, name, options) {
   let componentLookup = owner.lookup('component-lookup:main');
 
-  if (isEnabled('ember-htmlbars-local-lookup')) {
-    let source = options && options.source;
+  let source = options && options.source;
 
-    if (source) {
-      let localResult = lookupComponentPair(componentLookup, owner, name, options);
+  if (source) {
+    let localResult = lookupComponentPair(componentLookup, owner, name, options);
 
-      if (localResult.component || localResult.layout) {
-        return localResult;
-      }
+    if (localResult.component || localResult.layout) {
+      return localResult;
     }
   }
 
