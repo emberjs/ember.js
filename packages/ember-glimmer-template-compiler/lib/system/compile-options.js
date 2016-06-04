@@ -1,8 +1,11 @@
+import defaultPlugins from 'ember-template-compiler/plugins';
 import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
 import TransformActionSyntax from '../plugins/transform-action-syntax';
 import assign from 'ember-metal/assign';
 
 export const PLUGINS = [
+  ...defaultPlugins,
+  // the following are ember-glimmer specific
   TransformHasBlockSyntax,
   TransformActionSyntax
 ];
@@ -13,7 +16,7 @@ export default function compileOptions(options) {
   options = options || {};
   options = assign({}, options);
   if (!options.plugins) {
-    options.plugins = PLUGINS;
+    options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {
     let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
     let pluginsToAdd = potententialPugins.filter((plugin) => {

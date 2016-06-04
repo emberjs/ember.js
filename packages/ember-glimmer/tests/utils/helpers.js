@@ -1,6 +1,5 @@
 import assign from 'ember-metal/assign';
-import { defaultCompileOptions } from 'ember-template-compiler';
-import { compile as compiler } from 'ember-glimmer-template-compiler';
+import { compile as compiler, defaultCompileOptions } from 'ember-glimmer-template-compiler';
 
 export { default as Helper, helper } from 'ember-glimmer/helper';
 export { default as Component } from 'ember-glimmer/component';

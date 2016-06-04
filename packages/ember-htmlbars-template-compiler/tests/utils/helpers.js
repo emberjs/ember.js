@@ -1,6 +1,5 @@
-import { compile as compiler } from 'ember-htmlbars-template-compiler';
+import { compile as compiler, defaultCompileOptions } from 'ember-htmlbars-template-compiler';
 import assign from 'ember-metal/assign';
-import { defaultCompileOptions } from 'ember-template-compiler';
 
 export * from 'ember-htmlbars-template-compiler';
 export { removePlugin } from 'ember-htmlbars-template-compiler/system/compile-options';
