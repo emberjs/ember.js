@@ -1,11 +1,5 @@
 import { defaultCompileOptions } from 'ember-template-compiler';
-import TransformOldBindingSyntax from 'ember-template-compiler/plugins/transform-old-binding-syntax';
-import TransformItemClass from 'ember-template-compiler/plugins/transform-item-class';
-import TransformAngleBracketComponents from 'ember-template-compiler/plugins/transform-angle-bracket-components';
-import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform-input-on-to-onEvent';
-import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
-import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
-import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
+import defaultPlugins from 'ember-template-compiler/plugins';
 
 QUnit.module('ember-template-compiler: default compile options');
 
@@ -13,16 +7,13 @@ QUnit.test('default options are a new copy', function() {
   notEqual(defaultCompileOptions(), defaultCompileOptions());
 });
 
-QUnit.test('has default AST plugins', function() {
+QUnit.test('has default AST plugins', function(assert) {
+  assert.expect(defaultPlugins.length);
+
   let plugins = defaultCompileOptions().plugins.ast;
 
-  deepEqual(plugins, [
-    TransformOldBindingSyntax,
-    TransformItemClass,
-    TransformAngleBracketComponents,
-    TransformInputOnToOnEvent,
-    TransformTopLevelComponents,
-    DeprecateRenderModel,
-    TransformInlineLinkTo
-  ]);
+  for (let i = 0; i < defaultPlugins.length; i++) {
+    let plugin = defaultPlugins[i];
+    assert.ok(plugins.indexOf(plugin) > -1, `includes ${plugin}`);
+  }
 });
