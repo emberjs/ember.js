@@ -777,11 +777,14 @@ QUnit.module('ember-testing debugging helpers', {
 
 QUnit.test('pauseTest pauses', function() {
   expect(1);
+
   function fakeAdapterAsyncStart() {
-    ok(true, 'Async start should be called');
+    ok(true, 'Async start should be called after waiting for other helpers');
   }
 
-  Test.adapter.asyncStart = fakeAdapterAsyncStart;
+  App.testHelpers.andThen(() => {
+    Test.adapter.asyncStart = fakeAdapterAsyncStart;
+  });
 
   App.testHelpers.pauseTest();
 });
