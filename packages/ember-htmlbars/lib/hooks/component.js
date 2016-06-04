@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
@@ -65,11 +64,9 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   let parentView = env.view;
   let options = { };
-  if (isEnabled('ember-htmlbars-local-lookup')) {
-    let moduleName = env.meta && env.meta.moduleName;
-    if (moduleName) {
-      options.source = `template:${moduleName}`;
-    }
+  let moduleName = env.meta && env.meta.moduleName;
+  if (moduleName) {
+    options.source = `template:${moduleName}`;
   }
   let { component, layout } = lookupComponent(env.owner, tagName, options);
 

@@ -3,7 +3,6 @@
 @submodule ember-htmlbars
 */
 
-import isEnabled from 'ember-metal/features';
 import {
   CONTAINS_DASH_CACHE,
   CONTAINS_DOT_CACHE
@@ -38,20 +37,16 @@ export default function isComponent(env, scope, path) {
     if (hasComponentOrTemplate(owner, path)) {
       return true; // global component found
     } else {
-      if (isEnabled('ember-htmlbars-local-lookup')) {
-        let moduleName = env.meta && env.meta.moduleName;
+      let moduleName = env.meta && env.meta.moduleName;
 
-        if (!moduleName) {
-          // Without a source moduleName, we can not perform local lookups.
-          return false;
-        }
-
-        let options = { source: `template:${moduleName}` };
-
-        return hasComponentOrTemplate(owner, path, options);
-      } else {
+      if (!moduleName) {
+        // Without a source moduleName, we can not perform local lookups.
         return false;
       }
+
+      let options = { source: `template:${moduleName}` };
+
+      return hasComponentOrTemplate(owner, path, options);
     }
   }
 }

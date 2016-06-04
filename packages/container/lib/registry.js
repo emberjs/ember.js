@@ -1,4 +1,3 @@
-import isEnabled from 'ember-metal/features';
 import { assert, deprecate } from 'ember-metal/debug';
 import dictionary from 'ember-metal/dictionary';
 import EmptyObject from 'ember-metal/empty_object';
@@ -349,10 +348,7 @@ Registry.prototype = {
       return false;
     }
 
-    let source;
-    if (isEnabled('ember-htmlbars-local-lookup')) {
-      source = options && options.source && this.normalize(options.source);
-    }
+    let source = options && options.source && this.normalize(options.source);
 
     return has(this, this.normalize(fullName), source);
   },
@@ -779,42 +775,40 @@ function deprecateResolverFunction(registry) {
   };
 }
 
-if (isEnabled('ember-htmlbars-local-lookup')) {
-  /**
-    Given a fullName and a source fullName returns the fully resolved
-    fullName. Used to allow for local lookup.
+/**
+ Given a fullName and a source fullName returns the fully resolved
+ fullName. Used to allow for local lookup.
 
-    ```javascript
-    var registry = new Registry();
+ ```javascript
+ var registry = new Registry();
 
-    // the twitter factory is added to the module system
-    registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
-    ```
+ // the twitter factory is added to the module system
+ registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
+ ```
 
-    @private
-    @method expandLocalLookup
-    @param {String} fullName
-    @param {Object} [options]
-    @param {String} [options.source] the fullname of the request source (used for local lookups)
-    @return {String} fullName
-  */
-  Registry.prototype.expandLocalLookup = function Registry_expandLocalLookup(fullName, options) {
-    if (this.resolver && this.resolver.expandLocalLookup) {
-      assert('fullName must be a proper full name', this.validateFullName(fullName));
-      assert('options.source must be provided to expandLocalLookup', options && options.source);
-      assert('options.source must be a proper full name', this.validateFullName(options.source));
+ @private
+ @method expandLocalLookup
+ @param {String} fullName
+ @param {Object} [options]
+ @param {String} [options.source] the fullname of the request source (used for local lookups)
+ @return {String} fullName
+ */
+Registry.prototype.expandLocalLookup = function Registry_expandLocalLookup(fullName, options) {
+  if (this.resolver && this.resolver.expandLocalLookup) {
+    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('options.source must be provided to expandLocalLookup', options && options.source);
+    assert('options.source must be a proper full name', this.validateFullName(options.source));
 
-      let normalizedFullName = this.normalize(fullName);
-      let normalizedSource = this.normalize(options.source);
+    let normalizedFullName = this.normalize(fullName);
+    let normalizedSource = this.normalize(options.source);
 
-      return expandLocalLookup(this, normalizedFullName, normalizedSource);
-    } else if (this.fallback) {
-      return this.fallback.expandLocalLookup(fullName, options);
-    } else {
-      return null;
-    }
-  };
-}
+    return expandLocalLookup(this, normalizedFullName, normalizedSource);
+  } else if (this.fallback) {
+    return this.fallback.expandLocalLookup(fullName, options);
+  } else {
+    return null;
+  }
+};
 
 function expandLocalLookup(registry, normalizedName, normalizedSource) {
   let cache = registry._localLookupCache;
@@ -834,15 +828,13 @@ function expandLocalLookup(registry, normalizedName, normalizedSource) {
 }
 
 function resolve(registry, normalizedName, options) {
-  if (isEnabled('ember-htmlbars-local-lookup')) {
-    if (options && options.source) {
-      // when `source` is provided expand normalizedName
-      // and source into the full normalizedName
-      normalizedName = registry.expandLocalLookup(normalizedName, options);
+  if (options && options.source) {
+    // when `source` is provided expand normalizedName
+    // and source into the full normalizedName
+    normalizedName = registry.expandLocalLookup(normalizedName, options);
 
-      // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!normalizedName) { return; }
-    }
+    // if expandLocalLookup returns falsey, we do not support local lookup
+    if (!normalizedName) { return; }
   }
 
   var cached = registry._resolveCache[normalizedName];

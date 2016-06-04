@@ -1,6 +1,5 @@
 import { Registry } from 'container';
 import factory from 'container/tests/test-helpers/factory';
-import isEnabled from 'ember-metal/features';
 
 QUnit.module('Registry');
 
@@ -532,9 +531,6 @@ QUnit.test('A registry can be created with a deprecated `resolver` function inst
   equal(registry.resolve('foo:bar'), 'foo:bar-resolved', '`resolve` still calls the deprecated function');
 });
 
-if (isEnabled('ember-htmlbars-local-lookup')) {
-  // jscs:disable validateIndentation
-
 QUnit.test('resolver.expandLocalLookup is not required', function(assert) {
   assert.expect(1);
 
@@ -752,4 +748,3 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
 
   assert.deepEqual(['foo:qux/bar'], resolvedFullNames);
 });
-}
