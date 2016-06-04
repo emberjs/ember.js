@@ -96,13 +96,6 @@
 */
 import Ember from 'ember-metal/core'; // reexports
 
-import {
-  precompile,
-  compile,
-  template,
-  registerPlugin
-} from 'ember-htmlbars-template-compiler';
-
 import makeBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 
 import {
@@ -144,10 +137,6 @@ registerHelper('hash', hashHelper);
 registerHelper('query-params', queryParamsHelper);
 
 Ember.HTMLBars = {
-  template: template,
-  compile: compile,
-  precompile: precompile,
   makeBoundHelper: makeBoundHelper,
-  registerPlugin: registerPlugin,
   DOMHelper
 };
