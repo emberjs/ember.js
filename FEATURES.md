@@ -57,3 +57,8 @@ for a detailed explanation.
   - `interaction.<event-name>` for events handled by a component.
   - `interaction.ember-action` for closure actions.
   - `interaction.link-to` for link-to execution.
+
+* `ember-runtime-enumerable-includes`
+
+Deprecates `Enumerable#contains` and `Array#contains` in favor of `Enumerable#includes` and `Array#includes` 
+to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blob/master/text/0136-contains-to-includes.md)).

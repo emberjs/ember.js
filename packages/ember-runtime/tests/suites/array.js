@@ -5,10 +5,12 @@ import {
 import indexOfTests from 'ember-runtime/tests/suites/array/indexOf';
 import lastIndexOfTests from 'ember-runtime/tests/suites/array/lastIndexOf';
 import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
+import includesTests from 'ember-runtime/tests/suites/array/includes';
 import {
   addArrayObserver,
   removeArrayObserver
 } from 'ember-runtime/mixins/array';
+import isEnabled from 'ember-metal/features';
 
 var ObserverClass = EnumerableTestsObserverClass.extend({
 
@@ -45,5 +47,9 @@ ArrayTests.ObserverClass = ObserverClass;
 ArrayTests.importModuleTests(indexOfTests);
 ArrayTests.importModuleTests(lastIndexOfTests);
 ArrayTests.importModuleTests(objectAtTests);
+
+if (isEnabled('ember-runtime-enumerable-includes')) {
+  ArrayTests.importModuleTests(includesTests);
+}
 
 export {ArrayTests, ObserverClass};

@@ -10,6 +10,7 @@
     "ember-route-serializers": null,
     "ember-glimmer": null,
     "ember-runtime-computed-uniq-by": null,
-    "ember-improved-instrumentation": null
+    "ember-improved-instrumentation": null,
+    "ember-runtime-enumerable-includes": null
   }
 }

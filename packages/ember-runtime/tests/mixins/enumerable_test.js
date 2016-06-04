@@ -6,6 +6,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { observer as emberObserver } from 'ember-metal/mixin';
+import isEnabled from 'ember-metal/features';
 
 function K() { return this; }
 
@@ -93,11 +94,21 @@ QUnit.test('should apply Ember.Array to return value of toArray', function() {
 });
 
 QUnit.test('should apply Ember.Array to return value of without', function() {
-  var x = EmberObject.extend(Enumerable, {
+  var X = EmberObject.extend(Enumerable, {
     contains() {
       return true;
     }
-  }).create();
+  });
+
+  if (isEnabled('ember-runtime-enumerable-includes')) {
+    X.reopen({
+      includes() {
+        return true;
+      }
+    });
+  }
+
+  var x = X.create();
   var y = x.without(K);
   equal(EmberArray.detect(y), true, 'should have mixin applied');
 });
@@ -163,6 +174,17 @@ QUnit.test('every', function() {
   allWhite = allWhiteKittens.isEvery('color', 'white');
   equal(allWhite, true);
 });
+
+if (isEnabled('ember-runtime-enumerable-includes')) {
+  QUnit.test('should throw an error passing a second argument to includes', function() {
+    var x = EmberObject.extend(Enumerable).create();
+
+    equal(x.includes('any'), false);
+    expectAssertion(() => {
+      x.includes('any', 1);
+    }, /Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered./);
+  });
+}
 
 // ..........................................................
 // CONTENT DID CHANGE

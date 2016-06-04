@@ -1,4 +1,5 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import isEnabled from 'ember-metal/features';
 
 var suite = SuiteModuleBuilder.create();
 
@@ -15,6 +16,19 @@ suite.test('should return new instance with item removed', function() {
   deepEqual(this.toArray(ret), after, 'should have removed item');
   deepEqual(this.toArray(obj), before, 'should not have changed original');
 });
+
+if (isEnabled('ember-runtime-enumerable-includes')) {
+  suite.test('should remove NaN value', function() {
+    var before, after, obj, ret;
+
+    before = [...this.newFixture(2), NaN];
+    after  = [before[0], before[1]];
+    obj    = this.newObject(before);
+
+    ret = obj.without(NaN);
+    deepEqual(this.toArray(ret), after, 'should have removed item');
+  });
+}
 
 suite.test('should return same instance if object not found', function() {
   var item, obj, ret;
