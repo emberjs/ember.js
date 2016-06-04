@@ -14,7 +14,6 @@ import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
 import DefaultComponentTemplate from 'ember-glimmer/templates/component';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
-import { defaultCompileOptions } from 'ember-template-compiler';
 import { PartialDefinition } from 'glimmer-runtime';
 
 const packageTag = `@${packageName} `;
@@ -277,7 +276,7 @@ export class ApplicationTest extends TestCase {
   }
 
   compile(string, options) {
-    return compile(string, assign({}, defaultCompileOptions(), options));
+    return compile(...arguments);
   }
 
   registerRoute(name, route) {
@@ -310,8 +309,8 @@ export class RenderingTest extends TestCase {
     owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), owner.element);
   }
 
-  compile(string, options) {
-    return compile(string, assign({}, defaultCompileOptions(), options));
+  compile() {
+    return compile(...arguments);
   }
 
   getCustomDispatcherEvents() {

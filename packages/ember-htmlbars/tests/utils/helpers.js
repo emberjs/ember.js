@@ -3,7 +3,7 @@ import {
   compile as compiler,
   precompile as precompiler
 } from 'ember-htmlbars-template-compiler';
-import { defaultCompileOptions } from 'ember-template-compiler';
+import { defaultCompileOptions } from 'ember-htmlbars-template-compiler';
 
 export { template } from 'ember-htmlbars-template-compiler';
 export { default as Helper, helper } from 'ember-htmlbars/helper';
