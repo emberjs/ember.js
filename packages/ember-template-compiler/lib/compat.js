@@ -1,10 +1,12 @@
 import Ember from 'ember-metal/core'; // reexports
 import compiler from './compiler';
 
-var EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
+let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
+let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
 
-let { precompile, compile, template } = compiler();
+let { precompile, compile, template, registerPlugin } = compiler();
 
-EmberHandlebars.precompile = precompile;
-EmberHandlebars.compile = compile;
-EmberHandlebars.template = template;
+EmberHTMLBars.precompile = EmberHandlebars.precompile = precompile;
+EmberHTMLBars.compile = EmberHandlebars.compile = compile;
+EmberHTMLBars.template = EmberHandlebars.template = template;
+EmberHTMLBars.registerPlugin = registerPlugin;
