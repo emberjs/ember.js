@@ -26,11 +26,6 @@ for a detailed explanation.
   When the proper API's are implemented by the resolver in use this feature allows `{{x-foo}}` in a
   given routes template (say the `post` route) to lookup a component nested under `post`.
 
-* `ember-test-helpers-fire-native-events`
-
-  Makes ember test helpers (`fillIn`, `click`, `triggerEvent` ...) fire native javascript events instead
-  of `jQuery.Event`s, maching more closely app's real usage.
-
 * `ember-route-serializers`
 
   Deprecates `Route#serialize` and introduces a `serialize` option to the router DSL as a replacement (as per the [Route Serializers RFC](https://github.com/emberjs/rfcs/blob/master/text/0120-route-serializers.md)).
