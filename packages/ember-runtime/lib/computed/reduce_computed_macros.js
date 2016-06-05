@@ -103,6 +103,13 @@ export function sum(dependentKey) {
   lordByron.get('maxChildAge'); // 8
   ```
 
+  If the types of the arguments are not numbers,
+  they will be converted to numbers and the type
+  of the return value will always be `Number`.
+  For example, the max of a list of Date objects will be
+  the highest timestamp as a `Number`.
+  This behavior is consistent with `Math.max`.
+
   @method max
   @for Ember.computed
   @param {String} dependentKey
@@ -140,6 +147,13 @@ export function max(dependentKey) {
   }]);
   lordByron.get('minChildAge'); // 5
   ```
+
+  If the types of the arguments are not numbers,
+  they will be converted to numbers and the type
+  of the return value will always be `Number`.
+  For example, the min of a list of Date objects will be
+  the lowest timestamp as a `Number`.
+  This behavior is consistent with `Math.min`.
 
   @method min
   @for Ember.computed
