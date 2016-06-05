@@ -139,7 +139,7 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
   ok(!helpers['borf-snorlax'], 'Component wasn\'t saved to global helpers hash');
 });
 
-QUnit.test('Component-like invocations are treated as bound paths if neither template nor component are registered on the container', function() {
+test('Component-like invocations are treated as bound paths if neither template nor component are registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>'));
 
   boot(function() {
@@ -151,7 +151,7 @@ QUnit.test('Component-like invocations are treated as bound paths if neither tem
   equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
 });
 
-test('Assigning layoutName to a component should setup the template as a layout', function() {
+QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -171,7 +171,7 @@ test('Assigning layoutName to a component should setup the template as a layout'
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Assigning layoutName and layout to a component should use the `layout` value', function() {
+QUnit.test('Assigning layoutName and layout to a component should use the `layout` value', function() {
   expect(1);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -192,7 +192,7 @@ test('Assigning layoutName and layout to a component should use the `layout` val
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
+QUnit.test('Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]', function() {
   expect(2);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -213,7 +213,7 @@ test('Assigning defaultLayout to a component should set it up as a layout if no 
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
+QUnit.test('Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]', function() {
   expect(2);
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
@@ -235,12 +235,12 @@ test('Assigning defaultLayout to a component should set it up as a layout if lay
   equal(jQuery('#wrapper').text(), 'inner-outer', 'The component is composed correctly');
 });
 
-test('Using name of component that does not exist', function () {
+QUnit.test('Using name of component that does not exist', function () {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>'));
 
   expectAssertion(function () {
     boot();
-  }, /A helper named 'no-good' could not be found/);
+  }, /.* named "no-good" .*/);
 });
 
 QUnit.module('Application Lifecycle - Component Context', {

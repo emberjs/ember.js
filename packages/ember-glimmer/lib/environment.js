@@ -112,6 +112,7 @@ export default class Environment extends GlimmerEnvironment {
     super(dom);
     this.owner = owner;
     this._components = new Dict();
+    this._templateCache = new Dict();
     this.builtInModifiers = {
       action: new ActionModifierManager()
     };
@@ -131,25 +132,24 @@ export default class Environment extends GlimmerEnvironment {
 
     if (key !== 'partial' && isSimple && (isInline || isBlock)) {
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates, isBlock });
+        return new DynamicComponentSyntax({ args, templates });
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
       } else if (key.indexOf('-') >= 0) {
-        let definition = this.createComponentDefinition(path, isBlock);
+        let definition = this.getComponentDefinition(path);
 
         if (definition) {
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
+        } else if (isBlock && !this.hasHelper(key)) {
+          assert(`A helper named '${path[0]}' could not be found`, false);
         }
       } else {
         // Check if it's a keyword
         let mappedKey = builtInComponents[key];
         if (mappedKey) {
-          if (mappedKey !== key) {
-            path = path.map((segment) => segment === key ? mappedKey : segment);
-          }
-          let definition = this.createComponentDefinition(path, isBlock);
+          let definition = this.getComponentDefinition([mappedKey]);
           wrapClassBindingAttribute(args);
           wrapClassAttribute(args);
           return new CurlyComponentSyntax({ args, definition, templates });
@@ -167,14 +167,17 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  createComponentDefinition(name, isBlock) {
+  getComponentDefinition(path) {
+    let name = path[0];
     let definition = this._components[name];
 
     if (!definition) {
-      let { component: ComponentClass, layout } = lookupComponent(this.owner, name[0]);
+      let { component: ComponentClass, layout } = lookupComponent(this.owner, name);
 
       if (ComponentClass || layout) {
-        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout, isBlock);
+        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
+      } else if (!this.hasHelper(name)) {
+        assert(`Glimmer error: Could not find component named "${name}" (no component or template with that name was found)`, !!(ComponentClass || layout));
       }
     }
 

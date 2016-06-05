@@ -72,6 +72,61 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }
   }
 
+  ['@test can specify template with `layoutName` property']() {
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      layoutName: 'fizz-bar',
+      init() {
+        this._super(...arguments);
+        this.local = 'hey';
+      }
+    });
+
+    this.registerTemplate('fizz-bar', `FIZZ BAR {{local}}`);
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('FIZZ BAR hey');
+  }
+
+  ['@test can specify template with `defaultLayout` property [DEPRECATED]']() {
+    expectDeprecation(/Specifying `defaultLayout` to .* is deprecated. Please use `layout` instead/);
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      defaultLayout: compile('much wat {{lulz}}'),
+      init() {
+        this._super(...arguments);
+        this.lulz = 'hey';
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('much wat hey');
+  }
+
+  ['@test layout takes precedence over defaultLayout']() {
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      layout: compile('so much layout wat {{lulz}}'),
+      defaultLayout: compile('much wat {{lulz}}'),
+      init() {
+        this._super(...arguments);
+        this.lulz = 'hey';
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('so much layout wat hey');
+  }
+
   ['@test passing undefined elementId results in a default elementId'](assert) {
     let FooBarComponent = Component.extend({
       tagName: 'h1'
@@ -775,6 +830,42 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     equalTokens(this.firstChild, expectedHtmlBold);
   }
 
+  // Glimmers implementation is different here as we cache based on
+  // <number>templateId.
+  ['@glimmer late bound layouts return the same definition'](assert) {
+    let templateIds = [];
+    let component;
+
+    // This is testing the scenario where you import a template and
+    // set it to the layout property:
+    //
+    // import layout from './template';
+    //
+    // export default Ember.Component.extend({
+    //   layout
+    // });
+    let hello = compile('Hello');
+    let bye = compile('Bye');
+
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        this.layout = this.cond ? hello : bye;
+        component = this;
+        templateIds.push(this.layout.id);
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar cond=true}}{{foo-bar cond=false}}{{foo-bar cond=true}}{{foo-bar cond=false}}');
+
+    let [t1, t2, t3, t4] = templateIds;
+    templateIds.forEach((n) => assert.ok(typeof n === 'number'));
+    assert.equal(t1, t3);
+    assert.equal(t2, t4);
+  }
+
   ['@test can use isStream property without conflict (#13271)']() {
     let component;
     let FooBarComponent = Component.extend({
@@ -814,7 +905,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { content: 'true' });
   }
-  ['@test lookup of component takes priority over property']() {
+  ['@htmlbars lookup of component takes priority over property']() {
     this.registerComponent('some-component', {
       template: 'some-component'
     });
@@ -2076,7 +2167,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       expectAssertion(() => {
         component.bar = 'new bar';
       }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `new bar`\./);
-
       this.assertText('foo – bar');
     }
 
