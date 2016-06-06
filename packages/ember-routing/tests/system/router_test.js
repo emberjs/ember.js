@@ -6,6 +6,8 @@ import Router from 'ember-routing/system/router';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { setOwner } from 'container/owner';
+import { guidFor } from 'ember-metal/utils';
+import jQuery from 'ember-views/system/jquery';
 
 let owner;
 
@@ -191,4 +193,33 @@ QUnit.test('Router#handleURL should remove any #hashes before doing URL transiti
   });
 
   router.handleURL('/foo/bar?time=morphin#pink-power-ranger');
+});
+
+QUnit.test('Router#handleURL should not be called if the URL is not nested under rootURL', function() {
+  expect(1);
+
+  var guid = guidFor(this);
+  var FakeLocation = {
+    create() { return this; },
+    onUpdateURL(callback) {
+      jQuery(window).on(`fakelocation.ember-location-${guid}`, (ev, url) => {
+        callback(url);
+      });
+    }
+  };
+
+  owner.register('location:fake', FakeLocation);
+
+  createRouter({
+    location: 'fake',
+    rootURL: '/foo/',
+
+    handleURL(url) {
+      equal(url, '/foo/bar');
+    }
+  });
+
+  jQuery(window).trigger(`fakelocation.ember-location-${guid}`, '/bar');
+  jQuery(window).trigger(`fakelocation.ember-location-${guid}`, '/foo/bar');
+  jQuery(window).off(`fakelocation.ember-location-${guid}`);
 });
