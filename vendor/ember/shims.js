@@ -132,6 +132,12 @@
       'ember-object': {
         'default': Ember.Object
       },
+      'ember-owner/get': {
+        'default': Ember.getOwner
+      },
+      'ember-owner/set': {
+        'default': Ember.setOwner
+      },
       'ember-platform': {
         'assign':         Ember.merge,
         'create':         Ember.create,
