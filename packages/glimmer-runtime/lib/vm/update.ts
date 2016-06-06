@@ -24,11 +24,13 @@ import VM from './append';
 export default class UpdatingVM {
   public env: Environment;
   public dom: DOMHelper;
+  public alwaysRevalidate: boolean;
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment) {
+  constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
     this.dom = env.getDOM();
+    this.alwaysRevalidate = alwaysRevalidate;
   }
 
   execute(opcodes: UpdatingOpSeq, handler: ExceptionHandler) {
