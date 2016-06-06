@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.4.6 (June 5, 2016)
+
+- [#13600](https://github.com/emberjs/ember.js/pull/13600) [BUGFIX] Revert QP changes introduced in 2.4.4.
+
 ### 2.4.5 (April 11, 2016)
 
 - [#13239](https://github.com/emberjs/ember.js/pull/13239) [BUGFIX] Prevent warnings for unknown feature flags.
