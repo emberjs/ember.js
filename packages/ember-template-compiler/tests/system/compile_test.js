@@ -6,7 +6,7 @@ import VERSION from 'ember/version';
 
 import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
 
-testModule('ember-htmlbars: compile');
+testModule('ember-template-compiler: compile');
 
 test('compiles the provided template with htmlbars', function() {
   var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
@@ -15,15 +15,6 @@ test('compiles the provided template with htmlbars', function() {
   var expected = htmlbarsCompile(templateString);
 
   equal(actual.toString(), expected.toString(), 'compile function matches content with htmlbars compile');
-});
-
-test('calls template on the compiled function', function() {
-  var templateString = '{{foo}} -- {{some-bar blah=\'foo\'}}';
-
-  var actual = compile(templateString);
-
-  ok(actual.isTop, 'sets isTop via template function');
-  ok(actual.isMethod === false, 'sets isMethod via template function');
 });
 
 test('includes the current revision in the compiled template', function() {
