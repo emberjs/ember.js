@@ -2,6 +2,8 @@
 /* globals define, Ember, jQuery */
 
   function processEmberShims() {
+    var emberTestingDescriptor = Object.getOwnPropertyDescriptor(Ember, 'testing');
+
     var shims = {
       'ember': {
         'default': Ember
@@ -180,6 +182,10 @@
         'loc':          Ember.String.loc,
         'underscore':   Ember.String.underscore,
         'w':            Ember.String.w
+      },
+      'ember-testing': {
+        'isTesting': emberTestingDescriptor.get,
+        'setTesting': emberTestingDescriptor.set
       },
       'ember-utils': {
         'isBlank':    Ember.isBlank,
