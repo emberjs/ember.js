@@ -12,6 +12,7 @@ import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import VisibilitySupport from 'ember-views/mixins/visibility_support';
 import CompatAttrsProxy from 'ember-views/compat/attrs-proxy';
 import ViewMixin from 'ember-views/mixins/view_support';
+import TemplateSupport from 'ember-views/mixins/template_support';
 /**
 @module ember
 @submodule ember-views
@@ -652,7 +653,8 @@ var View = CoreView.extend(
   VisibilitySupport,
   CompatAttrsProxy,
   AriaRoleSupport,
-  ViewMixin, {
+  ViewMixin,
+  TemplateSupport, {
     init() {
       this._super(...arguments);
 

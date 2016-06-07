@@ -6,7 +6,7 @@ import {
   mergeInNewHash,
   processPositionalParamsFromCell,
 } from  './closure-component';
-import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import lookupComponent from 'ember-templates/utils/lookup-component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 
 export default {

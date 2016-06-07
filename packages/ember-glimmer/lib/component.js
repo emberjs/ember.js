@@ -27,7 +27,6 @@ const Component = CoreView.extend(
   AriaRoleSupport,
   ViewMixin, {
     isComponent: true,
-    template: null,
     layoutName: null,
     layout: null,
 
