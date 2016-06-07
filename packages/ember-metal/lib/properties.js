@@ -57,7 +57,7 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
-    var meta = this['__ember_meta__'];
+    let meta = peekMeta(this);
     return meta && meta.peekValues(name);
   };
 }
@@ -66,7 +66,7 @@ import { UNDEFINED } from './meta';
 
 export function INHERITING_GETTER_FUNCTION(name) {
   function IGETTER_FUNCTION() {
-    let meta = this['__ember_meta__'];
+    let meta = peekMeta(this);
     let val = meta && meta.readInheritedValue('values', name);
 
     if (val === UNDEFINED) {
