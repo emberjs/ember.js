@@ -16,6 +16,27 @@ function aliasIdToElementId(args, props) {
   }
 }
 
+// We must traverse the attributeBindings in reverse keeping track of
+// what has already been applied. This is essentially refining the concated
+// properties applying right to left.
+function applyAttributeBindings(attributeBindings, component, operations) {
+  let seen = [];
+  let i = attributeBindings.length - 1;
+
+  while (i !== -1) {
+    let binding = attributeBindings[i];
+    let parsedMicroSyntax = AttributeBindingReference.parseMicroSyntax(binding);
+    let [ prop ] = parsedMicroSyntax;
+
+    if (seen.indexOf(prop) === -1) {
+      seen.push(prop);
+      AttributeBindingReference.apply(component, parsedMicroSyntax, operations);
+    }
+
+    i--;
+  }
+}
+
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
     super();
@@ -138,9 +159,7 @@ class CurlyComponentManager {
     let { attributeBindings, classNames, classNameBindings } = component;
 
     if (attributeBindings) {
-      attributeBindings.forEach(binding => {
-        AttributeBindingReference.apply(component, binding, operations);
-      });
+      applyAttributeBindings(attributeBindings, component, operations);
     }
 
     if (classRef) {
