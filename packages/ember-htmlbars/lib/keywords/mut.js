@@ -72,7 +72,7 @@ let MutStream = ProxyStream.extend({
   mutate a value. For example:
 
   ```handlebars
-  {{my-child childClickCount=totalClicks click-count-change=(action (mut "totalClicks"))}}
+  {{my-child childClickCount=totalClicks click-count-change=(action (mut totalClicks))}}
   ```
 
   The child `Component` would invoke the action with the new click value:
