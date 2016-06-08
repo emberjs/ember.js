@@ -245,15 +245,16 @@ export function guidFor(obj) {
 }
 
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
+const fnToString = Function.prototype.toString;
 
 export const checkHasSuper = (function () {
-  let sourceAvailable = (function() {
+  let sourceAvailable = fnToString.call(function() {
     return this;
-  }).toString().indexOf('return this') > -1;
+  }).indexOf('return this') > -1;
 
   if (sourceAvailable) {
     return function checkHasSuper(func) {
-      return HAS_SUPER_PATTERN.test(func.toString());
+      return HAS_SUPER_PATTERN.test(fnToString.call(func));
     };
   }
 
@@ -297,26 +298,9 @@ export function wrap(func, superFunc) {
 
 function _wrap(func, superFunc) {
   function superWrapper() {
-    let orig = this._super;
-    let ret;
+    var orig = this._super;
     this._super = superFunc;
-    switch (arguments.length) {
-      case 0:  ret = func.call(this); break;
-      case 1:  ret = func.call(this, arguments[0]); break;
-      case 2:  ret = func.call(this, arguments[0], arguments[1]); break;
-      case 3:  ret = func.call(this, arguments[0], arguments[1], arguments[2]); break;
-      case 4:  ret = func.call(this, arguments[0], arguments[1], arguments[2], arguments[3]); break;
-      case 5:  ret = func.call(this, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]); break;
-      default:
-        // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
-        // we may want to keep this around till this ages out on mobile
-        let args = new Array(arguments.length);
-        for (var x = 0; x < arguments.length; x++) {
-          args[x] = arguments[x];
-        }
-        ret = func.apply(this, args);
-        break;
-    }
+    var ret = func.apply(this, arguments);
     this._super = orig;
     return ret;
   }
@@ -462,27 +446,6 @@ export function inspect(obj) {
     }
   }
   return '{' + ret.join(', ') + '}';
-}
-
-// The following functions are intentionally minified to keep the functions
-// below Chrome's function body size inlining limit of 600 chars.
-/**
-  @param {Object} t target
-  @param {Function} m method
-  @param {Array} a args
-  @private
-*/
-export function apply(t, m, a) {
-  var l = a && a.length;
-  if (!a || !l) { return m.call(t); }
-  switch (l) {
-    case 1:  return m.call(t, a[0]);
-    case 2:  return m.call(t, a[0], a[1]);
-    case 3:  return m.call(t, a[0], a[1], a[2]);
-    case 4:  return m.call(t, a[0], a[1], a[2], a[3]);
-    case 5:  return m.call(t, a[0], a[1], a[2], a[3], a[4]);
-    default: return m.apply(t, a);
-  }
 }
 
 /**
