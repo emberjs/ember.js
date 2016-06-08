@@ -107,7 +107,6 @@ function sharedTeardown() {
   }
 }
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 // jscs:disable
 
 QUnit.module('Routing with Query Params', {
@@ -510,7 +509,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     run(appController, 'setProperties', { alex: 'sriracha' });
   });
 
-  test('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent when all configuration is on route', function() {
+  QUnit.skip('can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent when all configuration is on route', function() {
     App.register('template:parent', compile('{{outlet}}'));
     App.register('template:parent/child', compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}"));
 
