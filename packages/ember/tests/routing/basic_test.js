@@ -2168,7 +2168,7 @@ if (isEnabled('ember-route-serializers')) {
     run(function() {
       expectDeprecation(function() {
         router.transitionTo('posts', { category: 'emberjs' });
-      }, 'Defining a serialize function on route \'posts\' is deprecated. Instead, define it in the router\'s map as an option.');
+      }, 'Defining a serialize function on route \'posts.index\' is deprecated. Instead, define it in the router\'s map as an option.');
     });
 
     deepEqual(router.location.path, '/posts/emberjs');
