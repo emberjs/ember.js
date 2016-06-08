@@ -2047,28 +2047,17 @@ QUnit.test('The rootURL is passed properly to the location implementation', func
 test('Only use route rendered into main outlet for default into property on child', function() {
   setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}'));
   setTemplate('posts', compile('{{outlet}}'));
-  setTemplate('posts/index', compile('postsIndex'));
-  setTemplate('posts/menu', compile('postsMenu'));
+  setTemplate('posts/index', compile('<p class="posts-index">postsIndex</p>'));
+  setTemplate('posts/menu', compile('<div class="posts-menu">postsMenu</div>'));
 
   Router.map(function() {
     this.route('posts', function() {});
   });
 
-  App.PostsMenuView = EmberView.extend({
-    tagName: 'div',
-    templateName: 'posts/menu',
-    classNames: ['posts-menu']
-  });
-
-  App.PostsIndexView = EmberView.extend({
-    tagName: 'p',
-    classNames: ['posts-index']
-  });
-
   App.PostsRoute = Route.extend({
     renderTemplate() {
       this.render();
-      this.render('postsMenu', {
+      this.render('posts/menu', {
         into: 'application',
         outlet: 'menu'
       });
@@ -2258,82 +2247,6 @@ test('The template is not re-rendered when the route\'s context changes', functi
   equal(insertionCount, 1, 'view should still have inserted only once');
 });
 
-
-test('The template is not re-rendered when two routes present the exact same template, view, & controller', function() {
-  Router.map(function() {
-    this.route('first');
-    this.route('second');
-    this.route('third');
-    this.route('fourth');
-  });
-
-  App.SharedRoute = Route.extend({
-    viewName: 'shared',
-    setupController(controller) {
-      this.controllerFor('shared').set('message', 'This is the ' + this.routeName + ' message');
-    },
-
-    renderTemplate(controller, context) {
-      this.render({ controller: 'shared' });
-    }
-  });
-
-  App.FirstRoute  = App.SharedRoute.extend();
-  App.SecondRoute = App.SharedRoute.extend();
-  App.ThirdRoute  = App.SharedRoute.extend();
-  App.FourthRoute = App.SharedRoute.extend({
-    viewName: 'fourth'
-  });
-
-  App.SharedController = Controller.extend();
-
-  var insertionCount = 0;
-  App.SharedView = EmberView.extend({
-    templateName: 'shared',
-    didInsertElement() {
-      insertionCount += 1;
-    }
-  });
-
-  // Extending, in essence, creates a different view
-  App.FourthView = App.SharedView.extend();
-
-  setTemplate('shared', compile(
-    '<p>{{message}}</p>'
-  ));
-
-  bootApplication();
-
-  handleURL('/first');
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'This is the first message');
-  equal(insertionCount, 1, 'expected one assertion');
-
-  // Transition by URL
-  handleURL('/second');
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'This is the second message');
-  equal(insertionCount, 1, 'view should have inserted only once');
-
-  // Then transition directly by route name
-  run(function() {
-    router.transitionTo('third').then(function(value) {
-      ok(true, 'expected transition');
-    }, function(reason) {
-      ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
-    });
-  });
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'This is the third message');
-  equal(insertionCount, 1, 'view should still have inserted only once');
-
-  // Lastly transition to a different view, with the same controller and template
-  handleURL('/fourth');
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'This is the fourth message');
-  equal(insertionCount, 2, 'view should have inserted a second time');
-});
-
 QUnit.test('ApplicationRoute with model does not proxy the currentPath', function() {
   var model = {};
   var currentPath;
@@ -2379,42 +2292,25 @@ test('Route should tear down multiple outlets', function() {
   setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}{{outlet \'footer\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
-  setTemplate('posts/index', compile('postsIndex'));
-  setTemplate('posts/menu', compile('postsMenu'));
-  setTemplate('posts/footer', compile('postsFooter'));
+  setTemplate('posts/index', compile('<p class="posts-index">postsIndex</p>'));
+  setTemplate('posts/menu', compile('<div class="posts-menu">postsMenu</div>'));
+  setTemplate('posts/footer', compile('<div class="posts-footer">postsFooter</div>'));
 
   Router.map(function() {
     this.route('posts', function() {});
     this.route('users', function() {});
   });
 
-  App.PostsMenuView = EmberView.extend({
-    tagName: 'div',
-    templateName: 'posts/menu',
-    classNames: ['posts-menu']
-  });
-
-  App.PostsIndexView = EmberView.extend({
-    tagName: 'p',
-    classNames: ['posts-index']
-  });
-
-  App.PostsFooterView = EmberView.extend({
-    tagName: 'div',
-    templateName: 'posts/footer',
-    classNames: ['posts-footer']
-  });
-
   App.PostsRoute = Route.extend({
     renderTemplate() {
-      this.render('postsMenu', {
+      this.render('posts/menu', {
         into: 'application',
         outlet: 'menu'
       });
 
       this.render();
 
-      this.render('postsFooter', {
+      this.render('posts/footer', {
         into: 'application',
         outlet: 'footer'
       });
@@ -2457,33 +2353,19 @@ test('Route supports clearing outlet explicitly', function() {
   setTemplate('application', compile('{{outlet}}{{outlet \'modal\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
-  setTemplate('posts/index', compile('postsIndex {{outlet}}'));
-  setTemplate('posts/modal', compile('postsModal'));
-  setTemplate('posts/extra', compile('postsExtra'));
+  setTemplate('posts/index', compile('<div class="posts-index">postsIndex {{outlet}}</div>'));
+  setTemplate('posts/modal', compile('<div class="posts-modal">postsModal</div>'));
+  setTemplate('posts/extra', compile('<div class="posts-extra">postsExtra</div>'));
 
   Router.map(function() {
     this.route('posts', function() {});
     this.route('users', function() {});
   });
 
-  App.PostsIndexView = EmberView.extend({
-    classNames: ['posts-index']
-  });
-
-  App.PostsModalView = EmberView.extend({
-    templateName: 'posts/modal',
-    classNames: ['posts-modal']
-  });
-
-  App.PostsExtraView = EmberView.extend({
-    templateName: 'posts/extra',
-    classNames: ['posts-extra']
-  });
-
   App.PostsRoute = Route.extend({
     actions: {
       showModal() {
-        this.render('postsModal', {
+        this.render('posts/modal', {
           into: 'application',
           outlet: 'modal'
         });
@@ -2497,7 +2379,7 @@ test('Route supports clearing outlet explicitly', function() {
   App.PostsIndexRoute = Route.extend({
     actions: {
       showExtra() {
-        this.render('postsExtra', {
+        this.render('posts/extra', {
           into: 'posts/index'
         });
       },
@@ -2540,27 +2422,18 @@ test('Route supports clearing outlet using string parameter', function() {
   setTemplate('application', compile('{{outlet}}{{outlet \'modal\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
-  setTemplate('posts/index', compile('postsIndex {{outlet}}'));
-  setTemplate('posts/modal', compile('postsModal'));
+  setTemplate('posts/index', compile('<div class="posts-index">postsIndex {{outlet}}</div>'));
+  setTemplate('posts/modal', compile('<div class="posts-modal">postsModal</div>'));
 
   Router.map(function() {
     this.route('posts', function() {});
     this.route('users', function() {});
   });
 
-  App.PostsIndexView = EmberView.extend({
-    classNames: ['posts-index']
-  });
-
-  App.PostsModalView = EmberView.extend({
-    templateName: 'posts/modal',
-    classNames: ['posts-modal']
-  });
-
   App.PostsRoute = Route.extend({
     actions: {
       showModal() {
-        this.render('postsModal', {
+        this.render('posts/modal', {
           into: 'application',
           outlet: 'modal'
         });
@@ -3825,19 +3698,6 @@ test('Can disconnect from nested render helpers', function() {
   equal(jQuery('#qunit-fixture .bar').text(), 'other');
   run(router, 'send', 'disconnect');
   equal(jQuery('#qunit-fixture .bar').text(), '');
-});
-
-test('Can render with layout', function() {
-  setTemplate('application', compile('{{outlet}}'));
-  setTemplate('index', compile('index-template'));
-  setTemplate('my-layout', compile('my-layout [{{yield}}]'));
-
-  App.IndexView = EmberView.extend({
-    layoutName: 'my-layout'
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture').text(), 'my-layout [index-template]');
 });
 
 QUnit.test('Components inside an outlet have their didInsertElement hook invoked when the route is displayed', function(assert) {

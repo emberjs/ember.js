@@ -7,6 +7,8 @@ import TextField from 'ember-htmlbars/components/text_field';
 import TextArea from 'ember-htmlbars/components/text_area';
 import Checkbox from 'ember-htmlbars/components/checkbox';
 import LinkToComponent from 'ember-htmlbars/components/link-to';
+import TemplateSupport from 'ember-views/mixins/template_support';
+
 
 export function setupApplicationRegistry(registry) {
   registry.register('renderer:-dom', InteractiveRenderer);
@@ -22,7 +24,7 @@ export function setupEngineRegistry(registry) {
   registry.register('view:-outlet', HTMLBarsOutletView);
 
   registry.register('template:-outlet', topLevelViewTemplate);
-  registry.register('view:toplevel', EmberView.extend());
+  registry.register('view:toplevel', EmberView.extend(TemplateSupport));
 
   registry.register('component:-text-field', TextField);
   registry.register('component:-text-area', TextArea);

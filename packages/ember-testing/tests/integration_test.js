@@ -1,13 +1,13 @@
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
-import EmberView from 'ember-views/views/view';
 import Test from 'ember-testing/test';
 import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
 import { compile } from 'ember-htmlbars-template-compiler';
 import Controller from 'ember-runtime/controllers/controller';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 import 'ember-application';
 
@@ -18,6 +18,9 @@ QUnit.module('ember-testing Integration', {
   setup() {
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
+      setTemplate('people', compile('<div>{{#each model as |person|}}<div class="name">{{person.firstName}}</div>{{/each}}</div>'));
+      setTemplate('application', compile('{{outlet}}'));
+
       App = EmberApplication.create({
         rootElement: '#ember-testing'
       });
@@ -32,10 +35,6 @@ QUnit.module('ember-testing Integration', {
         }
       });
 
-      App.PeopleView = EmberView.extend({
-        defaultTemplate: compile('{{#each model as |person|}}<div class="name">{{person.firstName}}</div>{{/each}}')
-      });
-
       App.PeopleController = Controller.extend({});
 
       App.Person = EmberObject.extend({
@@ -46,10 +45,6 @@ QUnit.module('ember-testing Integration', {
         find() {
           return emberA();
         }
-      });
-
-      App.ApplicationView = EmberView.extend({
-        defaultTemplate: compile('{{outlet}}')
       });
 
       App.setupForTesting();
@@ -67,6 +62,7 @@ QUnit.module('ember-testing Integration', {
 
   teardown() {
     App.removeTestHelpers();
+    setTemplates({});
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);
     App = null;
@@ -74,7 +70,9 @@ QUnit.module('ember-testing Integration', {
   }
 });
 
-QUnit.test('template is bound to empty array of people', function() {
+import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+
+test('template is bound to empty array of people', function() {
   App.Person.find = function() {
     return emberA();
   };
@@ -84,8 +82,6 @@ QUnit.test('template is bound to empty array of people', function() {
     equal(rows, 0, 'successfully stubbed an empty array of people');
   });
 });
-
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('template is bound to array of 2 people', function() {
   App.Person.find = function() {
@@ -103,7 +99,7 @@ test('template is bound to array of 2 people', function() {
   });
 });
 
-QUnit.test('template is again bound to empty array of people', function() {
+test('template is again bound to empty array of people', function() {
   App.Person.find = function() {
     return emberA();
   };
@@ -114,7 +110,7 @@ QUnit.test('template is again bound to empty array of people', function() {
   });
 });
 
-QUnit.test('`visit` can be called without advancedReadiness.', function() {
+test('`visit` can be called without advancedReadiness.', function() {
   App.Person.find = function() {
     return emberA();
   };
