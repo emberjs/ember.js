@@ -11,12 +11,11 @@ import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
 import { ARGS } from '../component';
+import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
 
 export const UPDATE = symbol('UPDATE');
 export const READONLY = symbol('READONLY');
-export const MUT = symbol('MUT');
-export const ACTION = symbol('ACTION');
-export const INVOKE = symbol('INVOKE');
+
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
 // have an `isTruthy` property on them). This is not actually supported –
 // we should fix the tests to use an actual proxy. When that's done, we should
@@ -81,7 +80,7 @@ export class RootReference extends ConstReference {
 
     if ((args = this.value()[ARGS]) &&
       (ref = args[propertyKey]) &&
-      (ref[MUT] || ref[READONLY])) {
+      (ref[MUTABLE_REFERENCE] || ref[READONLY])) {
       return ref;
     }
     return new PropertyReference(this, propertyKey);

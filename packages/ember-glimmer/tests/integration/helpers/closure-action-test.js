@@ -3,7 +3,8 @@ import { computed } from 'ember-metal/computed';
 import isEnabled from 'ember-metal/features';
 import { subscribe, unsubscribe } from 'ember-metal/instrumentation';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component, INVOKE } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
+import { INVOKE } from 'ember-htmlbars/keywords/closure-action';
 
 if (isEnabled('ember-improved-instrumentation')) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {

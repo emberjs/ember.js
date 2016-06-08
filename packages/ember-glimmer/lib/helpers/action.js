@@ -1,9 +1,10 @@
-import { CachedReference, ACTION, INVOKE } from '../utils/references';
+import { CachedReference } from '../utils/references';
 import EmberError from 'ember-metal/error';
 import run from 'ember-metal/run_loop';
 import { get } from 'ember-metal/property_get';
 import { flaggedInstrument } from 'ember-metal/instrumentation';
 import isNone from 'ember-metal/is_none';
+import { INVOKE, ACTION } from 'ember-htmlbars/keywords/closure-action';
 
 export class ClosureActionReference extends CachedReference {
   static create(args) {
@@ -42,9 +43,6 @@ export class ClosureActionReference extends CachedReference {
     if (isNone(rawAction)) {
       throw new EmberError(`Action passed is null or undefined in (action) from ${target}.`);
     } else if (rawActionRef[INVOKE]) {
-      // TODO: can we just replace this with isMut/UPDATE altogether
-      // since INVOKE is not really public API anyway?
-      // on-keypress={{action (mut name) value="which"}}
       target = rawActionRef;
       action = rawActionRef[INVOKE];
     } else if (actionType === 'string') {

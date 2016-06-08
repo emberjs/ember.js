@@ -14,7 +14,6 @@ export { default as TextArea } from 'ember-glimmer/components/text_area';
 export { default as TextField } from 'ember-glimmer/components/text_field';
 export { DOMHelper } from 'glimmer-runtime';
 export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
-export { INVOKE } from 'ember-glimmer/utils/references';
 
 export function precompile(string) {
   return template(precompiler(string));
