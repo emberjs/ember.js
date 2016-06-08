@@ -7,7 +7,7 @@ import {
   debug,
   setDebugFunction
 } from 'ember-metal/debug';
-import isEnabled, { FEATURES, KNOWN_FEATURES } from 'ember-metal/features';
+import isEnabled, { FEATURES, DEFAULT_FEATURES } from 'ember-metal/features';
 import EmberError from 'ember-metal/error';
 import Logger from 'ember-console';
 
@@ -193,7 +193,7 @@ if (!isTesting()) {
   }
 
   delete FEATURES['features-stripped-test'];
-  _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, KNOWN_FEATURES, featuresWereStripped);
+  _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, DEFAULT_FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
   var isFirefox = environment.isFirefox;
