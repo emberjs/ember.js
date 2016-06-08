@@ -7,10 +7,7 @@
 @submodule ember-metal
 */
 import { assert } from 'ember-metal/debug';
-import {
-  apply,
-  applyStr
-} from 'ember-metal/utils';
+import { applyStr } from 'ember-metal/utils';
 import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 import { deprecate } from 'ember-metal/debug';
 
@@ -237,7 +234,7 @@ export function sendEvent(obj, eventName, params, actions) {
       }
     } else {
       if (params) {
-        apply(target, method, params);
+        method.apply(target, params);
       } else {
         method.call(target);
       }
