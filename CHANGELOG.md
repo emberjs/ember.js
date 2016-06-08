@@ -1,22 +1,18 @@
 # Ember Changelog
 
-### 2.6.0-beta.4 (May 09, 2016)
+### 2.6.0 (June 8, 2016)
 
+- [#13520](https://github.com/emberjs/ember.js/pull/13520) [BUGFIX] Fixes issues with `baseURL` and `rootURL` in `Ember.HistoryLocation` and ensures that `Ember.NoneLocation` properly handles `rootURL`.
+- [#13590](https://github.com/emberjs/ember.js/pull/13590) [BUGFIX] Avoid `_lazyInjections` in production builds.
 - [#13442](https://github.com/emberjs/ember.js/pull/13442) [BUGFIX] Revert `Ember.Handlebars.SafeString` deprecation.
 - [#13449](https://github.com/emberjs/ember.js/pull/13449) [BUGFIX] Ensure that `Ember.get(null, 'foo')` returns `undefined`.
 - [#13465](https://github.com/emberjs/ember.js/pull/13465) [BUGFIX] Propagate loc information for inline link-to transform.
 - [#13461](https://github.com/emberjs/ember.js/pull/13461) [BUGFIX] Prevent `Ember.get` from attempting to retrieve properties on primitive objects.
-
-### 2.6.0-beta.3 (May 02, 2016)
-
 - [#13418](https://github.com/emberjs/ember.js/pull/13418) [BUGFIX] Ensure that passing `run.later` a timeout value of `NaN` does not break all future
   timers.
 - [#13435](https://github.com/emberjs/ember.js/pull/13435) [BUGFIX] Fix positional parameters when used with component helper.
 - [#13438](https://github.com/emberjs/ember.js/pull/13438) [BUGFIX] Ensure custom components extending from `Ember.LinkComponent` can operate
   in both block and inline form.
-
-### 2.6.0-beta.2 (April 27, 2016)
-
 - [#13356](https://github.com/emberjs/ember.js/pull/13356) [BUGFIX] Update `Registry#has` to always return true/false.
 - [#13359](https://github.com/emberjs/ember.js/pull/13359) [BUGFIX] Fix `{{if}}` and `{{unless}}` subexpression sometimes not updating.
 - [#13344](https://github.com/emberjs/ember.js/pull/13344) [BUGFIX] Revert `Ember.merge` deprecation.
@@ -29,9 +25,6 @@
 - [#13315](https://github.com/emberjs/ember.js/pull/13315) [CLEANUP] Remove legacy view related exports.
 - [#13310](https://github.com/emberjs/ember.js/pull/13310) [BUGFIX] Fix `mouseenter` typo in ember-testing helpers.
 - [#13314](https://github.com/emberjs/ember.js/pull/13314) [CLEANUP] Remove Metamorph view and mixin.
-
-### 2.6.0-beta.1 (April 11, 2016)
-
 - [#13144](https://github.com/emberjs/ember.js/pull/13144) / [#13195](https://github.com/emberjs/ember.js/pull/13195) / [#13193](https://github.com/emberjs/ember.js/pull/13193) [CLEANUP] Remove support for `ember-legacy-views` addon.
 - [#13192](https://github.com/emberjs/ember.js/pull/13192) [CLEANUP] Remove support for `ember-legacy-controllers` addon.
 - [#13295](https://github.com/emberjs/ember.js/pull/13295) [CLEANUP] Disable `render` helper in block form.
