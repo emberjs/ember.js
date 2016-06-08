@@ -486,7 +486,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@htmlbars component with dynamic component name resolving to a component, then non-existent component'](assert) {
+  ['@test component with dynamic component name resolving to a component, then non-existent component'](assert) {
     this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
     this.render('{{component componentName name=name}}', { componentName: 'foo-bar', name: 'Alex' });

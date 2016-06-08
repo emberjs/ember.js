@@ -41,8 +41,13 @@ class DynamicComponentReference {
   value() {
     let { env, nameRef } = this;
     let name = nameRef.value();
-    let definition = env.getComponentDefinition([name]);
-    return definition;
+
+    if (typeof name === 'string') {
+      let definition = env.getComponentDefinition([name]);
+      return definition;
+    } else {
+      return null;
+    }
   }
 
   get() {
