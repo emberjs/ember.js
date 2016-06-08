@@ -85,7 +85,7 @@ QUnit.test('template is bound to empty array of people', function() {
   });
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('template is bound to array of 2 people', function() {
   App.Person.find = function() {

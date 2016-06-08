@@ -48,7 +48,7 @@ QUnit.module('Template scoping examples', {
   }
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('Actions inside an outlet go to the associated controller', function() {
   expect(1);

@@ -49,7 +49,7 @@ QUnit.test('the default resolver can look things up in other namespaces', functi
   ok(nav instanceof UserInterface.NavigationController, 'the result should be an instance of the specified class');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('the default resolver looks up templates in Ember.TEMPLATES', function() {
   function fooTemplate() {}

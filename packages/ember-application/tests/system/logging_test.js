@@ -205,7 +205,7 @@ QUnit.test('do not log when template and view are missing when flag is not true'
   });
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('log which view is used with a template', function() {
   if (EmberDev && EmberDev.runningProdBuild) {

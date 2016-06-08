@@ -1,6 +1,6 @@
 import { template } from 'ember-template-compiler';
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 testModule('ember-htmlbars: template');
 

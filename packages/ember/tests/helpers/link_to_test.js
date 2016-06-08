@@ -80,7 +80,7 @@ function sharedTeardown() {
   reset();
 }
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 QUnit.module('The {{link-to}} helper', {
   setup() {

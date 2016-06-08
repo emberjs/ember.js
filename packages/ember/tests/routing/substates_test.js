@@ -739,7 +739,7 @@ QUnit.test('Setting a query param during a slow transition should work', functio
   equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
   expect(2);

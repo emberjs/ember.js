@@ -13,7 +13,7 @@ var originalLookup = context.lookup;
 var originalViewKeyword;
 var lookup, view;
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 QUnit.module('views/view/view_lifecycle_test - pre-render', {
   setup() {

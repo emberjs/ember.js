@@ -297,7 +297,7 @@ QUnit.test('initialize application with stateManager via initialize call from Ro
   equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('ApplicationView is inserted into the page', function() {
   run(function() {
