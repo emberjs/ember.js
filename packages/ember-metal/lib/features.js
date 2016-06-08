@@ -47,4 +47,4 @@ export default function isEnabled(feature) {
 
 export {
   DEFAULT_FEATURES
-}
+};
