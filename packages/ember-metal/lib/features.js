@@ -44,3 +44,7 @@ export default function isEnabled(feature) {
     return false;
   }
 }
+
+export {
+  DEFAULT_FEATURES
+}
