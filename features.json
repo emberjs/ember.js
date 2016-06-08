@@ -1,13 +1,13 @@
 {
   "features": {
-    "features-stripped-test": null,
-    "ember-routing-route-configured-query-params": null,
-    "ember-libraries-isregistered": null,
-    "ember-application-engines": null,
-    "ember-route-serializers": null,
-    "ember-glimmer": null,
+    "features-stripped-test": false,
+    "ember-routing-route-configured-query-params": false,
+    "ember-libraries-isregistered": false,
+    "ember-application-engines": false,
+    "ember-route-serializers": false,
+    "ember-glimmer": false,
     "ember-runtime-computed-uniq-by": true,
-    "ember-improved-instrumentation": null,
-    "ember-runtime-enumerable-includes": null
+    "ember-improved-instrumentation": false,
+    "ember-runtime-enumerable-includes": false
   }
 }
