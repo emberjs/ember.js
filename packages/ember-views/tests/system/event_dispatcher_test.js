@@ -12,21 +12,15 @@ import Component from 'ember-htmlbars/component';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
-
 import { subscribe, reset } from 'ember-metal/instrumentation';
 
-var owner, view, originalViewKeyword;
+var owner, view;
 var dispatcher;
 
 import isEnabled from 'ember-metal/features';
 
 QUnit.module('EventDispatcher', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-
     owner = buildOwner();
     owner.registerOptionsForType('component', { singleton: false });
     owner.registerOptionsForType('view', { singleton: false });
@@ -43,7 +37,6 @@ QUnit.module('EventDispatcher', {
     runDestroy(view);
     runDestroy(owner);
     reset();
-    resetKeyword('view', originalViewKeyword);
   }
 });
 

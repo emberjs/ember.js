@@ -25,7 +25,6 @@ import { addObserver } from 'ember-metal/observer';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test, asyncTest } from 'internal-test-helpers/tests/skip-if-glimmer';
 
-
 var trim = jQuery.trim;
 
 var Router, App, router, registry, container, originalLoggerError;
@@ -2245,6 +2244,76 @@ test('The template is not re-rendered when the route\'s context changes', functi
 
   equal(jQuery('p', '#qunit-fixture').text(), 'third');
   equal(insertionCount, 1, 'view should still have inserted only once');
+});
+
+test('The template is not re-rendered when two routes present the exact same template & controller', function() {
+  Router.map(function() {
+    this.route('first');
+    this.route('second');
+    this.route('third');
+    this.route('fourth');
+  });
+
+  // Note add a component to test insertion
+
+  let insertionCount = 0;
+  App.XInputComponent = Component.extend({
+    didInsertElement() {
+      insertionCount += 1;
+    }
+  });
+
+  App.SharedRoute = Route.extend({
+    setupController(controller) {
+      this.controllerFor('shared').set('message', 'This is the ' + this.routeName + ' message');
+    },
+
+    renderTemplate(controller, context) {
+      this.render('shared', { controller: 'shared' });
+    }
+  });
+
+  App.FirstRoute  = App.SharedRoute.extend();
+  App.SecondRoute = App.SharedRoute.extend();
+  App.ThirdRoute  = App.SharedRoute.extend();
+  App.FourthRoute = App.SharedRoute.extend();
+
+  App.SharedController = Controller.extend();
+
+  setTemplate('shared', compile(
+    '<p>{{message}}{{x-input}}</p>'
+  ));
+
+  bootApplication();
+
+  handleURL('/first');
+
+  equal(jQuery('p', '#qunit-fixture').text(), 'This is the first message');
+  equal(insertionCount, 1, 'expected one assertion');
+
+  // Transition by URL
+  handleURL('/second');
+
+  equal(jQuery('p', '#qunit-fixture').text(), 'This is the second message');
+  equal(insertionCount, 1, 'expected one assertion');
+
+  // Then transition directly by route name
+  run(function() {
+    router.transitionTo('third').then(function(value) {
+      ok(true, 'expected transition');
+    }, function(reason) {
+      ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
+    });
+  });
+
+  equal(jQuery('p', '#qunit-fixture').text(), 'This is the third message');
+  equal(insertionCount, 1, 'expected one assertion');
+
+  // Lastly transition to a different view, with the same controller and template
+  handleURL('/fourth');
+  equal(insertionCount, 1, 'expected one assertion');
+
+  equal(jQuery('p', '#qunit-fixture').text(), 'This is the fourth message');
 });
 
 QUnit.test('ApplicationRoute with model does not proxy the currentPath', function() {

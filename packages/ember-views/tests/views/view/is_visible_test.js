@@ -5,16 +5,11 @@ import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import EmberView from 'ember-views/views/view';
 
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
-
 var view;
 var warnings, originalWarn;
-var originalViewKeyword;
 
 QUnit.module('EmberView#isVisible', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
     warnings = [];
     originalWarn = getDebugFunction('warn');
     setDebugFunction('warn', function(message, test) {
@@ -28,7 +23,6 @@ QUnit.module('EmberView#isVisible', {
     if (view) {
       run(function() { view.destroy(); });
     }
-    resetKeyword('view', originalViewKeyword);
     setDebugFunction('warn', originalWarn);
   }
 });

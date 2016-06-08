@@ -70,7 +70,7 @@ QUnit.module('ember-testing Integration', {
   }
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('template is bound to empty array of people', function() {
   App.Person.find = function() {

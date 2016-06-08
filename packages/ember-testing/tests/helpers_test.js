@@ -4,8 +4,8 @@ import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
 import EmberView from 'ember-views/views/view';
-import Checkbox from 'ember-htmlbars/components/checkbox';
 import jQuery from 'ember-views/system/jquery';
+import Component from 'ember-templates/component';
 
 import Test from 'ember-testing/test';
 import 'ember-testing/helpers';  // ensure that the helpers are loaded
@@ -16,8 +16,6 @@ import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import {
   pendingRequests,
@@ -35,7 +33,6 @@ import {
 
 var App;
 var originalAdapter = getAdapter();
-var originalViewKeyword;
 
 function cleanup() {
   // Teardown setupForTesting
@@ -269,12 +266,10 @@ QUnit.test('Ember.Application#removeTestHelpers resets the helperContainer\'s or
 
 QUnit.module('ember-testing: Helper methods', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
     setupApp();
   },
   teardown() {
     cleanup();
-    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -362,20 +357,22 @@ test('`click` triggers appropriate events in order', function() {
       this.$().on('mousedown focusin mouseup click', function(e) {
         events.push(e.type);
       });
-    },
-
-    Checkbox: Checkbox.extend({
-      click() {
-        events.push('click:' + this.get('checked'));
-      },
-
-      change() {
-        events.push('change:' + this.get('checked'));
-      }
-    })
+    }
   });
 
-  setTemplate('index', compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}} <div contenteditable="true"> </div>'));
+  App.XCheckboxComponent = Component.extend({
+    tagName: 'input',
+    attributeBindings: ['type'],
+    type: 'checkbox',
+    click() {
+      events.push('click:' + this.get('checked'));
+    },
+    change() {
+      events.push('change:' + this.get('checked'));
+    }
+  });
+
+  setTemplate('index', compile('{{input type="text"}} {{x-checkbox type="checkbox"}} {{textarea}} <div contenteditable="true"> </div>'));
 
   run(App, App.advanceReadiness);
 

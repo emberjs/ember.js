@@ -1,4 +1,4 @@
-import { environment, ENV } from 'ember-environment';
+import { environment } from 'ember-environment';
 
 import { hooks } from 'htmlbars-runtime';
 import assign from 'ember-metal/assign';
@@ -72,7 +72,6 @@ import debuggerKeyword from 'ember-htmlbars/keywords/debugger';
 import withKeyword from 'ember-htmlbars/keywords/with';
 import outlet from 'ember-htmlbars/keywords/outlet';
 import unbound from 'ember-htmlbars/keywords/unbound';
-import view from 'ember-htmlbars/keywords/view';
 import componentKeyword from 'ember-htmlbars/keywords/component';
 import elementComponent from 'ember-htmlbars/keywords/element-component';
 import partial from 'ember-htmlbars/keywords/partial';
@@ -103,11 +102,6 @@ registerKeyword('get', getKeyword);
 registerKeyword('action', actionKeyword);
 registerKeyword('render', renderKeyword);
 registerKeyword('@element_action', elementActionKeyword);
-
-if (ENV._ENABLE_LEGACY_VIEW_SUPPORT) {
-  registerKeyword('view', view);
-}
-
 
 export default {
   hooks: emberHooks,
