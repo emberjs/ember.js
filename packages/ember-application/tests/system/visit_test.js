@@ -340,7 +340,7 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
   });
 });
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('Views created via visit() are not added to the global views hash', function(assert) {
   run(function() {

@@ -348,7 +348,7 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
   });
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('`click` triggers appropriate events in order', function() {
   expect(5);

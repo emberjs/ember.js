@@ -63,7 +63,7 @@ QUnit.test('should allow tagName to be a computed property [DEPRECATED]', functi
   equal(view.element.tagName, 'SPAN', 'the tagName cannot be changed after initial render');
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('should re-render if the context is changed', function() {
   view = EmberView.create({
