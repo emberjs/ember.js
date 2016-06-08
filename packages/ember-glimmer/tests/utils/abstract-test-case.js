@@ -12,11 +12,16 @@ import { OWNER } from 'container/owner';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
-import DefaultComponentTemplate from 'ember-glimmer/templates/component';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
-import { PartialDefinition } from 'glimmer-runtime';
+import require from 'require';
 
 const packageTag = `@${packageName} `;
+const DefaultComponentTemplate = require(`ember-${packageName}/templates/component`).default;
+
+let PartialDefinition;
+if (packageName === 'glimmer') {
+  PartialDefinition = require('glimmer-runtime').PartialDefinition;
+}
 
 function isGenerator(mixin) {
   return Array.isArray(mixin.cases) && (typeof mixin.generate === 'function');
