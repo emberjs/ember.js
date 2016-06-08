@@ -129,7 +129,7 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   Registry.prototype.register = originalRegister;
 });
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 test('When an application is reset, the ApplicationView is torn down', function() {
   run(function() {

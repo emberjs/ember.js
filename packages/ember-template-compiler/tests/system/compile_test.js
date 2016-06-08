@@ -4,7 +4,7 @@ import {
 } from 'htmlbars-compiler/compiler';
 import VERSION from 'ember/version';
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 testModule('ember-template-compiler: compile');
 
@@ -24,4 +24,3 @@ test('the template revision is different than the HTMLBars default revision', fu
 
   ok(actual.meta.revision !== expected.meta.revision, 'revision differs from default');
 });
-

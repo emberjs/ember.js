@@ -11,7 +11,7 @@ import { setOwner } from 'container/owner';
 var originalViewKeyword;
 var parentView, childView;
 
-import { test, testModule } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 testModule('tests/views/view/child_views_tests.js', {
   setup() {

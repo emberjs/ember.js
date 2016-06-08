@@ -13,7 +13,7 @@ import RSVP from 'ember-runtime/ext/rsvp';
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 QUnit.module('ember-testing Acceptance', {
   setup() {

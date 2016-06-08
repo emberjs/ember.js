@@ -80,7 +80,7 @@ function sharedTeardown() {
   reset();
 }
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 QUnit.module('The {{link-to}} helper', {
   setup() {
@@ -989,58 +989,6 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
   run(router, 'handleURL', '/lobby/list');
   run(jQuery('#lobby-link'), 'click');
   shouldBeActive('#lobby-link');
-});
-
-test('The {{link-to}} helper unwraps controllers', function() {
-  expect(5);
-
-  var indexObject = { filter: 'popular' };
-
-  function serializeFilterRoute(passedObject) {
-    equal(passedObject, indexObject, 'The unwrapped object is passed');
-    return { filter: 'popular' };
-  }
-
-  if (isEnabled('ember-route-serializers')) {
-    Router.map(function() {
-      this.route('filter', { path: '/filters/:filter', serialize: serializeFilterRoute });
-    });
-
-    App.FilterRoute = Route.extend({
-      model(params) {
-        return indexObject;
-      }
-    });
-  } else {
-    Router.map(function() {
-      this.route('filter', { path: '/filters/:filter' });
-    });
-
-    App.FilterRoute = Route.extend({
-      model(params) {
-        return indexObject;
-      },
-
-      serialize: serializeFilterRoute
-    });
-  }
-
-  App.IndexRoute = Route.extend({
-    model() {
-      return indexObject;
-    }
-  });
-
-  setTemplate('filter', compile('<p>{{model.filter}}</p>'));
-  setTemplate('index', compile('{{#link-to "filter" this id="link"}}Filter{{/link-to}}'));
-
-  expectDeprecation(function() {
-    bootApplication();
-  }, /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./);
-
-  run(function() { router.handleURL('/'); });
-
-  jQuery('#link', '#qunit-fixture').trigger('click');
 });
 
 test("The {{link-to}} helper doesn't change view context", function() {

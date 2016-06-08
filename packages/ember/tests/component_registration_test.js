@@ -10,7 +10,7 @@ import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 import isEnabled from 'ember-metal/features';
 
 var App, appInstance;

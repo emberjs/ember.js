@@ -23,7 +23,7 @@ import { Transition } from 'router/transition';
 import copy from 'ember-runtime/copy';
 import { addObserver } from 'ember-metal/observer';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test, asyncTest } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test, asyncTest } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 
 var trim = jQuery.trim;
@@ -2168,7 +2168,7 @@ if (isEnabled('ember-route-serializers')) {
     run(function() {
       expectDeprecation(function() {
         router.transitionTo('posts', { category: 'emberjs' });
-      }, 'Defining a serialize function on route \'posts\' is deprecated. Instead, define it in the router\'s map as an option.');
+      }, 'Defining a serialize function on route \'posts.index\' is deprecated. Instead, define it in the router\'s map as an option.');
     });
 
     deepEqual(router.location.path, '/posts/emberjs');

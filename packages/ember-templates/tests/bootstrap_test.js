@@ -32,7 +32,7 @@ function checkTemplate(templateName) {
   runDestroy(view);
 }
 
-import { test } from 'ember-glimmer/tests/utils/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 QUnit.module('ember-htmlbars: bootstrap', {
   setup() {
