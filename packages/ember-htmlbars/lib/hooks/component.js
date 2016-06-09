@@ -1,6 +1,6 @@
 import { assert } from 'ember-metal/debug';
 import ComponentNodeManager from 'ember-htmlbars/node-managers/component-node-manager';
-import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import lookupComponent from 'ember-views/utils/lookup-component';
 import assign from 'ember-metal/assign';
 import EmptyObject from 'ember-metal/empty_object';
 import {

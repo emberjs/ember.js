@@ -3,27 +3,19 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
 
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
-
 var parentView, child;
-var originalViewKeyword;
 
 var view;
 // .......................................................
 // removeFromParent()
 //
 QUnit.module('View#removeFromParent', {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-  },
   teardown() {
     run(function() {
       if (parentView) { parentView.destroy(); }
       if (child) { child.destroy(); }
       if (view) { view.destroy(); }
     });
-    resetKeyword('view', originalViewKeyword);
   }
 });
 

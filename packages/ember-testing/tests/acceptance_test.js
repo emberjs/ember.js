@@ -2,12 +2,12 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import Test from 'ember-testing/test';
 import QUnitAdapter from 'ember-testing/adapters/qunit';
-import EmberView from 'ember-views/views/view';
 import 'ember-testing/initializers'; // ensure the initializer is setup
 import EmberApplication from 'ember-application/system/application';
 import EmberRoute from 'ember-routing/system/route';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import RSVP from 'ember-runtime/ext/rsvp';
+import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 
@@ -48,10 +48,7 @@ QUnit.module('ember-testing Acceptance', {
         }
       });
 
-      App.PostsView = EmberView.extend({
-        defaultTemplate: compile('<a class="dummy-link"></a><div id="comments-link">{{#link-to \'comments\'}}Comments{{/link-to}}</div>'),
-        classNames: ['posts-view']
-      });
+      setTemplate('posts', compile('<div class="posts-view"><a class="dummy-link"></a><div id="comments-link">{{#link-to \'comments\'}}Comments{{/link-to}}</div></div>'));
 
       App.CommentsRoute = EmberRoute.extend({
         renderTemplate() {
@@ -60,9 +57,7 @@ QUnit.module('ember-testing Acceptance', {
         }
       });
 
-      App.CommentsView = EmberView.extend({
-        defaultTemplate: compile('{{input type="text"}}')
-      });
+      setTemplate('comments', compile('<div>{{input type="text"}}</div>'));
 
       App.AbortTransitionRoute = EmberRoute.extend({
         beforeModel(transition) {
@@ -99,6 +94,7 @@ QUnit.module('ember-testing Acceptance', {
 
   teardown() {
     Test.unregisterHelper('slowHelper');
+    setTemplates({});
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);
     App = null;
@@ -364,7 +360,7 @@ QUnit.test('test must not finish while asyncHelpers are pending', function () {
   }
 });
 
-QUnit.test('visiting a URL that causes another transition should yield the correct URL', function () {
+test('visiting a URL that causes another transition should yield the correct URL', function () {
   expect(1);
 
   visit('/redirect');
@@ -374,7 +370,7 @@ QUnit.test('visiting a URL that causes another transition should yield the corre
   });
 });
 
-QUnit.test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
+test('visiting a URL and then visiting a second URL with a transition should yield the correct URL', function () {
   expect(2);
 
   visit('/posts');

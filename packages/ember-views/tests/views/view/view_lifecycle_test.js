@@ -1,23 +1,17 @@
 import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
-import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
 import { registerHelper } from 'ember-htmlbars/helpers';
 
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
-
 var originalLookup = context.lookup;
-var originalViewKeyword;
 var lookup, view;
 
 import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 QUnit.module('views/view/view_lifecycle_test - pre-render', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
     context.lookup = lookup = {};
   },
 
@@ -28,38 +22,7 @@ QUnit.module('views/view/view_lifecycle_test - pre-render', {
       });
     }
     context.lookup = originalLookup;
-    resetKeyword('view', originalViewKeyword);
   }
-});
-
-test('should create and append a DOM element after bindings have synced', function() {
-  var ViewTest;
-
-  lookup.ViewTest = ViewTest = {};
-
-  run(function() {
-    ViewTest.fakeController = EmberObject.create({
-      fakeThing: 'controllerPropertyValue'
-    });
-
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
-    expectDeprecation(() => {
-      view = EmberView.create({
-        fooBinding: 'ViewTest.fakeController.fakeThing',
-        template: compile('{{view.foo}}')
-      });
-    }, deprecationMessage);
-
-    ok(!view.get('element'), 'precond - does not have an element before appending');
-
-    // the actual render happens in the `render` queue, which is after the `sync`
-    // queue where the binding is synced.
-    view.append();
-  });
-
-  equal(view.$().text(), 'controllerPropertyValue', 'renders and appends after bindings have synced');
 });
 
 QUnit.test('should throw an exception if trying to append a child before rendering has begun', function() {
@@ -99,16 +62,12 @@ test('should not affect rendering if destroyElement is called before initial ren
 });
 
 testModule('views/view/view_lifecycle_test - in render', {
-  setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
-  },
   teardown() {
     if (view) {
       run(function() {
         view.destroy();
       });
     }
-    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -128,25 +87,6 @@ test('rerender of top level view during rendering should throw', function() {
   );
 });
 
-test('rerender of non-top level view during rendering should throw', function() {
-  let innerView = EmberView.create({
-    template: compile('{{throw}}')
-  });
-  registerHelper('throw', function() {
-    innerView.rerender();
-  });
-  view = EmberView.create({
-    template: compile('{{view view.innerView}}'),
-    innerView
-  });
-  throws(
-    function() {
-      run(view, view.appendTo, '#qunit-fixture');
-    },
-    /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./,
-    'expected error was not raised'
-  );
-});
 
 QUnit.module('views/view/view_lifecycle_test - hasElement', {
   teardown() {

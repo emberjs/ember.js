@@ -10,10 +10,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
-
-var owner, View, view, otherView, willDestroyCalled, originalViewKeyword;
+var owner, View, view, otherView, willDestroyCalled;
 
 function commonSetup() {
   owner = buildOwner();
@@ -25,14 +22,12 @@ function commonSetup() {
 
 QUnit.module('EmberView - append() and appendTo()', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
     View = EmberView.extend({});
   },
 
   teardown() {
     runDestroy(view);
     runDestroy(otherView);
-    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -95,29 +90,6 @@ QUnit.test('raises an assert when a target does not exist in the DOM', function(
     run(function() {
       view.appendTo('does-not-exist-in-dom');
     });
-  });
-});
-
-QUnit.test('trigger rerender of parent and SimpleBoundView', function () {
-  var view = EmberView.create({
-    show: true,
-    foo: 'bar',
-    template: compile('{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}')
-  });
-
-  run(function() { view.append(); });
-
-  equal(view.$().text(), 'bar');
-
-  run(function() {
-    view.set('foo', 'baz'); // schedule render of simple bound
-    view.set('show', false); // destroy tree
-  });
-
-  equal(view.$().text(), '');
-
-  run(function() {
-    view.destroy();
   });
 });
 

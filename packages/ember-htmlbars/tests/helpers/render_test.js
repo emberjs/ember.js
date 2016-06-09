@@ -594,31 +594,6 @@ QUnit.test('throws an assertion if {{render}} is called with a literal for a mod
   }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
 });
 
-QUnit.test('{{render}} helper should let view provide its own template', function() {
-  var template = '{{render \'fish\'}}';
-  var Controller = EmberController.extend();
-  var controller = Controller.create({
-    [OWNER]: appInstance
-  });
-
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller,
-    template: compile(template)
-  });
-
-  appInstance.register('template:fish', compile('Hello fish!'));
-  appInstance.register('template:other', compile('Hello other!'));
-
-  appInstance.register('view:fish', EmberView.extend({
-    templateName: 'other'
-  }));
-
-  runAppend(view);
-
-  equal(view.$().text(), 'Hello other!');
-});
-
 QUnit.test('{{render}} helper should not require view to provide its own template', function() {
   var template = '{{render \'fish\'}}';
   var Controller = EmberController.extend();
