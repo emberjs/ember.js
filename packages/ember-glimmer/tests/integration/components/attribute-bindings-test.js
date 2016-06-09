@@ -315,7 +315,7 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'id': 'special-sauce' } });
   }
 
-  ['@htmlbars attributeBindings are overwritten']() {
+  ['@test attributeBindings are overwritten']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['href'],
       href: 'a href'

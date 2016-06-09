@@ -237,24 +237,34 @@ export class InternalHelperReference extends CachedReference {
 import { assert } from 'ember-metal/debug';
 
 export class AttributeBindingReference extends CachedReference {
-  static apply(component, microsyntax, operations) {
-    let reference = this.parse(component, microsyntax);
+  static apply(component, parsedMicroSyntax, operations) {
+    let reference;
+    let prop = parsedMicroSyntax[0];
+    let attr;
+
+    if (parsedMicroSyntax.length === 1) {
+      reference = new this(component, prop);
+    } else {
+      attr = parsedMicroSyntax[1];
+      reference = new this(component, prop, attr);
+    }
+
     operations.addAttribute(reference.attributeName, reference);
   }
 
-  static parse(component, microsyntax) {
+  static parseMicroSyntax(microsyntax) {
     let colonIndex = microsyntax.indexOf(':');
 
     if (colonIndex === -1) {
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', microsyntax !== 'class');
-      return new this(component, microsyntax);
+      return [microsyntax];
     } else {
       let prop = microsyntax.substring(0, colonIndex);
       let attr = microsyntax.substring(colonIndex + 1);
 
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attr !== 'class');
 
-      return new this(component, prop, attr);
+      return [prop, attr];
     }
   }
 
