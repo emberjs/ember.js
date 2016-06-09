@@ -625,6 +625,7 @@ export function readOnly(dependentKey) {
   @method deprecatingAlias
   @for Ember.computed
   @param {String} dependentKey
+  @param {Object} options Options for `Ember.deprecate`.
   @return {Ember.ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.
   @since 1.7.0
