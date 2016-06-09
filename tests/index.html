@@ -37,9 +37,7 @@
 
     <script>
       (function() {
-        window.ENV = window.ENV || {
-          _ENABLE_LEGACY_VIEW_SUPPORT: true
-        };
+        window.ENV = window.ENV || {};
 
         window.printTestCounts = function() {
           var passing = $("li[id^='qunit-'].pass").length;
@@ -118,12 +116,7 @@
 
         Ember.Debug.registerDeprecationHandler(function (message, options, next) {
           var id = options && options.id;
-
-          if (id === 'ember-legacy-views' || id === 'ember-legacy-controllers') {
-            // Our test suite relies on the legacy semantics... to test the legacy semantics
-          } else {
-            next(message, options);
-          }
+          next(message, options);
         });
 
         window.EmberDev = window.EmberDev || {};
