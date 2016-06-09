@@ -3,8 +3,8 @@ import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
+import Component from 'ember-templates/component';
 import EmberView from 'ember-views/views/view';
-import Checkbox from 'ember-htmlbars/components/checkbox';
 import jQuery from 'ember-views/system/jquery';
 
 import Test from 'ember-testing/test';
@@ -16,8 +16,6 @@ import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
-import { registerKeyword, resetKeyword } from 'ember-htmlbars/tests/utils';
-import viewKeyword from 'ember-htmlbars/keywords/view';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import {
   pendingRequests,
@@ -35,7 +33,6 @@ import {
 
 var App;
 var originalAdapter = getAdapter();
-var originalViewKeyword;
 
 function cleanup() {
   // Teardown setupForTesting
@@ -269,12 +266,10 @@ QUnit.test('Ember.Application#removeTestHelpers resets the helperContainer\'s or
 
 QUnit.module('ember-testing: Helper methods', {
   setup() {
-    originalViewKeyword = registerKeyword('view',  viewKeyword);
     setupApp();
   },
   teardown() {
     cleanup();
-    resetKeyword('view', originalViewKeyword);
   }
 });
 
@@ -355,8 +350,8 @@ test('`click` triggers appropriate events in order', function() {
 
   var click, wait, events;
 
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
+  App.register('component:click-test-helper', Component.extend({
+    classNames: 'click-test-helper',
 
     didInsertElement() {
       this.$().on('mousedown focusin mouseup click', function(e) {
@@ -364,18 +359,20 @@ test('`click` triggers appropriate events in order', function() {
       });
     },
 
-    Checkbox: Checkbox.extend({
-      click() {
+    actions: {
+      checkboxClicked() {
         events.push('click:' + this.get('checked'));
       },
 
-      change() {
+      checkboxChanged() {
         events.push('change:' + this.get('checked'));
       }
-    })
-  });
+    }
+  }));
 
-  setTemplate('index', compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}} <div contenteditable="true"> </div>'));
+  App.register('template:components/click-test-helper', compile('{{input type="text"}} <input type="checkbox" onclick={{action "checkboxClicked"}} onchange={{action "checkboxChanged"}}> {{textarea}} <div contenteditable="true"> </div>'));
+
+  setTemplate('index', compile('{{click-test-helper}}'));
 
   run(App, App.advanceReadiness);
 
@@ -384,35 +381,35 @@ test('`click` triggers appropriate events in order', function() {
 
   return wait().then(function() {
     events = [];
-    return click('.index-view');
+    return click('.click-test-helper');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'mouseup', 'click'],
       'fires events in order');
   }).then(function() {
     events = [];
-    return click('.index-view input[type=text]');
+    return click('.click-test-helper input[type=text]');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on inputs');
   }).then(function() {
     events = [];
-    return click('.index-view textarea');
+    return click('.click-test-helper textarea');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on textareas');
   }).then(function() {
     events = [];
-    return click('.index-view div');
+    return click('.click-test-helper div');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on contenteditable');
   }).then(function() {
     events = [];
-    return click('.index-view input[type=checkbox]');
+    return click('.click-test-helper input[type=checkbox]');
   }).then(function() {
     // i.e. mousedown, mouseup, change:true, click, click:true
     // Firefox differs so we can't assert the exact ordering here.
