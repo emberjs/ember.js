@@ -12,7 +12,7 @@ import { read } from '../streams/utils';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import assign from 'ember-metal/assign';
 import { processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';
-import lookupComponent from 'ember-templates/utils/lookup-component';
+import lookupComponent from 'ember-views/utils/lookup-component';
 
 export const COMPONENT_REFERENCE = symbol('COMPONENT_REFERENCE');
 export const COMPONENT_CELL = symbol('COMPONENT_CELL');

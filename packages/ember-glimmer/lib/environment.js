@@ -8,7 +8,7 @@ import { assert } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
 import { OutletSyntax } from './syntax/outlet';
-import lookupComponent from 'ember-templates/utils/lookup-component';
+import lookupComponent from 'ember-views/utils/lookup-component';
 import createIterable from './utils/iterable';
 import {
   RootReference,
