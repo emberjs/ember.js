@@ -4,7 +4,7 @@ import jQuery from 'ember-views/system/jquery';
 import Test from 'ember-testing/test';
 import EmberRoute from 'ember-routing/system/route';
 import EmberApplication from 'ember-application/system/application';
-import { compile } from 'ember-htmlbars-template-compiler';
+import { compile } from 'ember-template-compiler';
 import Controller from 'ember-runtime/controllers/controller';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
@@ -70,9 +70,7 @@ QUnit.module('ember-testing Integration', {
   }
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('template is bound to empty array of people', function() {
+QUnit.test('template is bound to empty array of people', function() {
   App.Person.find = function() {
     return emberA();
   };
@@ -83,7 +81,7 @@ test('template is bound to empty array of people', function() {
   });
 });
 
-test('template is bound to array of 2 people', function() {
+QUnit.test('template is bound to array of 2 people', function() {
   App.Person.find = function() {
     var people = emberA();
     var first = App.Person.create({ firstName: 'x' });
@@ -99,7 +97,7 @@ test('template is bound to array of 2 people', function() {
   });
 });
 
-test('template is again bound to empty array of people', function() {
+QUnit.test('template is again bound to empty array of people', function() {
   App.Person.find = function() {
     return emberA();
   };
@@ -110,7 +108,7 @@ test('template is again bound to empty array of people', function() {
   });
 });
 
-test('`visit` can be called without advancedReadiness.', function() {
+QUnit.test('`visit` can be called without advancedReadiness.', function() {
   App.Person.find = function() {
     return emberA();
   };

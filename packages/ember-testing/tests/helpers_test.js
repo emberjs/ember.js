@@ -685,7 +685,7 @@ test('`fillIn` focuses on the element', function() {
   return wait();
 });
 
-test('`fillIn` fires `input` and `change` events in the proper order', function() {
+QUnit.test('`fillIn` fires `input` and `change` events in the proper order', function() {
   expect(1);
 
   var fillIn, visit, andThen, wait;
