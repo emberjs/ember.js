@@ -93,8 +93,16 @@ asyncHelper('fillIn', fillIn);
   var $el = find('.my-selector');
   ```
 
+  With the `context` param:
+
+  ```javascript
+  var $el = find('.my-selector', '.parent-element-class');
+  ```
+
   @method find
   @param {String} selector jQuery string selector for element lookup
+  @param {String} [context] (optional) jQuery selector that will limit the selector
+                            argument to find only within the context's children
   @return {Object} jQuery object representing the results of the query
   @public
 */
