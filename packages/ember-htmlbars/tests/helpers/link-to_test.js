@@ -1,5 +1,4 @@
 import run from 'ember-metal/run_loop';
-import EmberView from 'ember-views/views/view';
 import { compile, Component } from '../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import Controller from 'ember-runtime/controllers/controller';
@@ -10,7 +9,7 @@ import LinkComponent from 'ember-htmlbars/components/link-to';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-var owner, view, component;
+var owner, component;
 
 QUnit.module('ember-htmlbars: link-to helper', {
   setup() {
@@ -35,21 +34,21 @@ QUnit.module('ember-htmlbars: link-to helper', {
   },
 
   teardown() {
-    runDestroy(view);
+    runDestroy(component);
     runDestroy(owner);
   }
 });
 
 QUnit.test('should be able to be inserted in DOM when the router is not present', function() {
   var template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
-    template: compile(template)
+    layout: compile(template)
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$().text(), 'Go to Index');
+  equal(component.$().text(), 'Go to Index');
 });
 
 QUnit.test('re-renders when title changes', function() {
@@ -88,80 +87,79 @@ QUnit.test('can read bound title', function() {
 });
 
 QUnit.test('escaped inline form (double curlies) escapes link title', function() {
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{link-to view.title "index"}}')
+    layout: compile('{{link-to title "index"}}')
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$('b').length, 0, 'no <b> were found');
+  equal(component.$('b').length, 0, 'no <b> were found');
 });
 
 QUnit.test('escaped inline form with (-html-safe) does not escape link title', function() {
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{link-to (-html-safe view.title) "index"}}')
+    layout: compile('{{link-to (-html-safe title) "index"}}')
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$('b').length, 1, '<b> was found');
+  equal(component.$('b').length, 1, '<b> was found');
 });
 
 QUnit.test('unescaped inline form (triple curlies) does not escape link title', function() {
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
     title: '<b>blah</b>',
-    template: compile('{{{link-to view.title "index"}}}')
+    layout: compile('{{{link-to title "index"}}}')
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$('b').length, 1, '<b> was found');
+  equal(component.$('b').length, 1, '<b> was found');
 });
 
 QUnit.test('unwraps controllers', function() {
-  var template = '{{#link-to \'index\' view.otherController}}Text{{/link-to}}';
+  var template = '{{#link-to \'index\' otherController}}Text{{/link-to}}';
 
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
     otherController: Controller.create({
       model: 'foo'
     }),
-    template: compile(template)
+    layout: compile(template)
   });
 
   expectDeprecation(function() {
-    runAppend(view);
+    runAppend(component);
   }, /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./);
 
-  equal(view.$().text(), 'Text');
+  equal(component.$().text(), 'Text');
 });
 
 QUnit.test('able to safely extend the built-in component and use the normal path', function() {
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
-    template: compile('{{#custom-link-to \'index\'}}{{view.title}}{{/custom-link-to}}')
+    layout: compile('{{#custom-link-to \'index\'}}{{title}}{{/custom-link-to}}')
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
+  equal(component.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
 
 QUnit.test('[GH#13432] able to safely extend the built-in component and invoke it inline', function() {
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
     title: 'my custom link-to component',
-    template: compile('{{custom-link-to view.title \'index\'}}')
+    layout: compile('{{custom-link-to title \'index\'}}')
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
+  equal(component.$().text(), 'my custom link-to component', 'rendered a custom-link-to component');
 });
-
