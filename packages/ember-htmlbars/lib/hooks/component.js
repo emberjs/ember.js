@@ -54,9 +54,15 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   // Determine if this is an initial render or a re-render.
   if (state.manager) {
-    let templateMeta = state.manager.block.template.meta;
+    let sm = state.manager;
+    let templateMeta = null;
+    if (sm.block) {
+      templateMeta = sm.block.template.meta;
+    } else if (sm.scope && sm.scope._view) {
+      templateMeta = sm.scope._view.template.meta;
+    }
     env.meta.moduleName = (templateMeta && templateMeta.moduleName) || (env.meta && env.meta.moduleName);
-    extractPositionalParams(renderNode, state.manager.component.constructor, params, attrs, false);
+    extractPositionalParams(renderNode, sm.component.constructor, params, attrs, false);
     state.manager.rerender(env, attrs, visitor);
     return;
   }
