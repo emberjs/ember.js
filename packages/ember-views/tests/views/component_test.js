@@ -3,7 +3,6 @@ import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Service from 'ember-runtime/system/service';
 import inject from 'ember-runtime/inject';
-import { get } from 'ember-metal/property_get';
 
 import EmberView from 'ember-views/views/view';
 import Component from 'ember-htmlbars/component';
@@ -61,37 +60,12 @@ QUnit.test('The controller (target of `action`) of an Ember.Component is itself'
   strictEqual(component, component.get('controller'), 'A component\'s controller is itself');
 });
 
-QUnit.test('Specifying both templateName and layoutName to a component is NOT deprecated', function() {
-  expectNoDeprecation();
-  component = Component.extend({
-    templateName: 'blah-blah',
-    layoutName: 'hum-drum'
-  }).create();
-
-  equal(get(component, 'templateName'), 'blah-blah');
-  equal(get(component, 'layoutName'), 'hum-drum');
-});
-
 QUnit.test('Specifying a defaultLayout to a component is deprecated', function() {
   expectDeprecation(function() {
     Component.extend({
       defaultLayout: 'hum-drum'
     }).create();
   }, /Specifying `defaultLayout` to .+ is deprecated\./);
-});
-
-QUnit.test('Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated', function() {
-  expectNoDeprecation();
-  var Parent = Component.extend({
-    layoutName: 'hum-drum'
-  });
-
-  component = Parent.extend({
-    templateName: 'blah-blah'
-  }).create();
-
-  equal(get(component, 'templateName'), 'blah-blah');
-  equal(get(component, 'layoutName'), 'hum-drum');
 });
 
 QUnit.module('Ember.Component - Actions', {
