@@ -1,4 +1,5 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { Component } from '../../utils/helpers';
 
 // copied from ember-htmlbars/tests/integration/local-lookup-test.js
 function buildResolver() {
@@ -42,6 +43,22 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.render('{{x-outer}}');
 
     this.assertText('Nested template says: Hi!', 'Initial render works');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Nested template says: Hi!', 'Re-render works');
+  }
+
+  ['@htmlbars tagless blockless component can lookup local template'](assert) {
+    this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
+    this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
+    this.registerComponent('x-outer', {
+      ComponentClass: Component.extend({ tagName: '' })
+    });
+
+    this.render('{{x-outer}}');
+
+    this.assertText('Nested template says: Hi!', 'Re-render works');
 
     this.runTask(() => this.rerender());
 

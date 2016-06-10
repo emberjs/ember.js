@@ -619,6 +619,17 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     assert.equal(this.$('.value').text(), '8');
   }
 
+  ['@test tagless blockless components render'](assert) {
+    this.registerComponent('my-comp', {
+      ComponentClass: Component.extend({ tagName: '' })
+    });
+
+    this.render(`{{my-comp}}`);
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$().text(), '');
+  }
 });
 
 class ClosureComponentMutableParamsTest extends RenderingTest {
