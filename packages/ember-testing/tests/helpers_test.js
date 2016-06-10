@@ -1,8 +1,8 @@
-import Route from 'ember-routing/system/route';
-import Controller from 'ember-runtime/controllers/controller';
+/* globals $ */
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
+import Component from 'ember-templates/component';
 import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import Component from 'ember-templates/component';
@@ -51,6 +51,8 @@ function cleanup() {
     run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
+    // TODO: why are these views not being removed from the DOM?
+    $('.ember-view').remove();
   }
 
   setTemplates({});
@@ -456,21 +458,20 @@ test('`click` triggers native events with simulated X/Y coordinates', function()
   });
 });
 
-test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
+QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
   expect(5);
 
   var triggerEvent, wait, evt;
 
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
+  App.register('component:evt-listener', Component.extend({
+    classNames: 'evt-listener',
 
     didInsertElement() {
       this.element.addEventListener('mouseenter', e => evt = e);
     }
-  });
+  }));
 
-
-  setTemplate('index', compile('some text'));
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
@@ -478,7 +479,7 @@ test('`triggerEvent` with mouseenter triggers native events with simulated X/Y c
   wait  = App.testHelpers.wait;
 
   return wait().then(function() {
-    return triggerEvent('.index-view', 'mouseenter');
+    return triggerEvent('.evt-listener', 'mouseenter');
   }).then(function() {
     ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
     ok(typeof evt.screenX === 'number' && evt.screenX > 0, 'screenX is correct');
@@ -542,20 +543,22 @@ QUnit.test('`wait` does not error if routing has not begun', function() {
   });
 });
 
-test('`triggerEvent accepts an optional options hash without context', function() {
+QUnit.test('`triggerEvent` accepts an optional options hash without context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="scope" class="input"}}'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="scope" class="input">'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
@@ -571,20 +574,22 @@ test('`triggerEvent accepts an optional options hash without context', function(
   });
 });
 
-test('`triggerEvent can limit searching for a selector to a scope', function() {
+QUnit.test('`triggerEvent` can limit searching for a selector to a scope', function() {
   expect(2);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('.input').on('blur change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input"><div id="limited"><input type="text" id="inside-scope" class="input"></div>'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
@@ -599,20 +604,22 @@ test('`triggerEvent can limit searching for a selector to a scope', function() {
   });
 });
 
-test('`triggerEvent` can be used to trigger arbitrary events', function() {
+QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() {
   expect(2);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="foo"}}'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('#foo').on('blur change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="foo">'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
@@ -627,13 +634,11 @@ test('`triggerEvent` can be used to trigger arbitrary events', function() {
   });
 });
 
-test('`fillIn` takes context into consideration', function() {
+QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  App.IndexView = EmberView.extend({
-    template: compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
-  });
+  setTemplate('index', compile('<div id="parent"><input type="text" id="first" class="current"></div><input type="text" id="second" class="current">'));
 
   run(App, App.advanceReadiness);
 
@@ -653,21 +658,21 @@ test('`fillIn` takes context into consideration', function() {
   return wait();
 });
 
-test('`fillIn` focuses on the element', function() {
+QUnit.test('`fillIn` focuses on the element', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  App.ApplicationRoute = Route.extend({
+  App.register('component:fill-in', Component.extend({
     actions: {
       wasFocused() {
         ok(true, 'focusIn event was triggered');
       }
     }
-  });
+  }));
 
-  App.IndexView = EmberView.extend({
-    template: compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>')
-  });
+  App.register('template:components/fill-in', compile('<div id="parent"><input type="text" id="first" onfocusin={{action "wasFocused"}}></div>'));
+
+  setTemplate('index', compile('{{fill-in}}'));
 
   run(App, App.advanceReadiness);
 
@@ -686,12 +691,12 @@ test('`fillIn` focuses on the element', function() {
   return wait();
 });
 
-test('`fillIn` fires `input` and `change` events in the proper order', function() {
+QUnit.test('`fillIn` fires `input` and `change` events in the proper order', function() {
   expect(1);
 
   var fillIn, visit, andThen, wait;
   var events = [];
-  App.IndexController = Controller.extend({
+  App.register('component:fill-in', Component.extend({
     actions: {
       oninputHandler(e) {
         events.push(e.type);
@@ -700,11 +705,11 @@ test('`fillIn` fires `input` and `change` events in the proper order', function(
         events.push(e.type);
       }
     }
-  });
+  }));
 
-  App.IndexView = EmberView.extend({
-    template: compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>')
-  });
+  App.register('template:components/fill-in', compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>'));
+
+  setTemplate('index', compile('{{fill-in}}'));
 
   run(App, App.advanceReadiness);
 
@@ -722,20 +727,22 @@ test('`fillIn` fires `input` and `change` events in the proper order', function(
   return wait();
 });
 
-test('`triggerEvent accepts an optional options hash and context', function() {
+QUnit.test('`triggerEvent` accepts an optional options hash and context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
+  App.register('component:evt-listener', Component.extend({
     didInsertElement() {
       this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
-  });
+  }));
+
+  App.register('template:components/evt-listener', compile('<input type="text" id="outside-scope" class="input"><div id="limited"><input type="text" id="inside-scope" class="input"></div>'));
+
+  setTemplate('index', compile('{{evt-listener}}'));
 
   run(App, App.advanceReadiness);
 
