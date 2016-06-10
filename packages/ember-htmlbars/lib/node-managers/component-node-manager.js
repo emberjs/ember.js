@@ -7,7 +7,7 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
-import { setOwner } from 'container/owner';
+import { setOwner, getOwner } from 'container/owner';
 
 // In theory this should come through the env, but it should
 // be safe to import this until we make the hook system public
@@ -60,12 +60,18 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
 
   // Instantiate the component
   component = createComponent(component, createOptions, renderNode, env, attrs);
+  let layoutName = get(component, 'layoutName');
 
   // If the component specifies its layout via the `layout` property
   // instead of using the template looked up in the container, get it
   // now that we have the component instance.
   if (!layout) {
     layout = get(component, 'layout');
+  }
+
+  if (!layout && layoutName) {
+    let owner = getOwner(component);
+    layout = owner.lookup(`template:${layoutName}`);
   }
 
   let results = buildComponentTemplate(

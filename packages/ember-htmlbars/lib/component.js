@@ -10,7 +10,6 @@ import { set } from 'ember-metal/property_set';
 import isNone from 'ember-metal/is_none';
 import { inspect } from 'ember-metal/utils';
 import { computed } from 'ember-metal/computed';
-import EmberError from 'ember-metal/error';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 
@@ -139,31 +138,10 @@ const Component = View.extend(TargetActionSupport, {
     }
   }),
 
-  templateForName(name, type) {
-    if (!name) { return; }
-    assert('templateNames are not allowed to contain periods: ' + name, name.indexOf('.') === -1);
-
-    let owner = getOwner(this);
-
-    if (!owner) {
-      throw new EmberError('Container was not found when looking up a views template. ' +
-                 'This is most likely due to manually instantiating an Ember.View. ' +
-                 'See: http://git.io/EKPpnA');
-    }
-
-    return owner.lookup('template:' + name);
-  },
-
   init() {
     this._super(...arguments);
     set(this, 'controller', this);
     set(this, 'context', this);
-
-    if (!this.layout && this.layoutName && getOwner(this)) {
-      let layoutName = get(this, 'layoutName');
-
-      this.layout = this.templateForName(layoutName);
-    }
 
     // If a `defaultLayout` was specified move it to the `layout` prop.
     // `layout` is no longer a CP, so this just ensures that the `defaultLayout`
