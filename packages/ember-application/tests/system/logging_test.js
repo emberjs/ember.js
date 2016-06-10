@@ -205,26 +205,6 @@ QUnit.test('do not log when template and view are missing when flag is not true'
   });
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('log which view is used with a template', function() {
-  if (EmberDev && EmberDev.runningProdBuild) {
-    ok(true, 'Logging does not occur in production builds');
-    return;
-  }
-
-  App.register('template:application', compile('{{outlet}}'));
-  App.register('template:foo', compile('Template with custom view'));
-  App.register('view:posts', View.extend({ templateName: 'foo' }));
-  run(App, 'advanceReadiness');
-
-  visit('/posts').then(function() {
-    equal(logs['view:application'], 1, 'toplevel view always get an element');
-    equal(logs['view:index'], undefined, 'expected: Should not log when index is not present.');
-    equal(logs['view:posts'], 1, 'expected: Rendering posts with PostsView.');
-  });
-});
-
 QUnit.test('do not log which views are used with templates when flag is not true', function() {
   App.reopen({
     LOG_VIEW_LOOKUPS: false

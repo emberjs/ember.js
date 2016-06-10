@@ -11,7 +11,6 @@ import { computed } from 'ember-metal/computed';
 import Mixin, { observer } from 'ember-metal/mixin';
 import Component from 'ember-templates/component';
 import ActionManager from 'ember-views/system/action_manager';
-import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
@@ -373,45 +372,6 @@ QUnit.test('defining templateName allows other templates to be rendered', functi
   });
 
   equal(jQuery('.alert-box', '#qunit-fixture').text(), 'Invader!', 'Template for alert was render into outlet');
-});
-
-test('Specifying a name to render should have precedence over everything else', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeController = Controller.extend();
-  App.HomeRoute = Route.extend({
-    templateName: 'home',
-    controllerName: 'home',
-    viewName: 'home',
-
-    renderTemplate() {
-      this.render('homepage');
-    }
-  });
-
-  App.HomeView = EmberView.extend({
-    template: compile('<h3>This should not be rendered</h3><p>{{model.home}}</p>')
-  });
-
-  App.HomepageController = Controller.extend({
-    model: {
-      home: 'Tinytroll'
-    }
-  });
-  App.HomepageView = EmberView.extend({
-    layout: compile(
-      '<span>Outer</span>{{yield}}<span>troll</span>'
-    ),
-    templateName: 'homepage'
-  });
-
-  bootApplication();
-
-  equal(jQuery('h3', '#qunit-fixture').text(), 'Megatroll', 'The homepage template was rendered');
-  equal(jQuery('p', '#qunit-fixture').text(), 'Tinytroll', 'The homepage controller was used');
-  equal(jQuery('span', '#qunit-fixture').text(), 'Outertroll', 'The homepage view was used');
 });
 
 QUnit.test('The Homepage with a `setupController` hook', function() {
@@ -2216,14 +2176,14 @@ test('The template is not re-rendered when the route\'s context changes', functi
   });
 
   var insertionCount = 0;
-  App.PageView = EmberView.extend({
+  App.FooBarComponent = Component.extend({
     didInsertElement() {
       insertionCount += 1;
     }
   });
 
   setTemplate('page', compile(
-    '<p>{{model.name}}</p>'
+    '<p>{{model.name}}{{foo-bar}}</p>'
   ));
 
   bootApplication();
@@ -3348,31 +3308,6 @@ QUnit.test('{{outlet}} works when created after initial render', function() {
   handleURL('/2');
 
   equal(jQuery('#qunit-fixture').text(), 'HiBooBye', 'third render');
-});
-
-test('Can rerender application view multiple times when it contains an outlet', function() {
-  setTemplate('application', compile('App{{outlet}}'));
-  setTemplate('index', compile('Hello world'));
-
-  registry.register('view:application', EmberView.extend({
-    elementId: 'im-special'
-  }));
-
-  bootApplication();
-
-  equal(jQuery('#qunit-fixture').text(), 'AppHello world', 'initial render');
-
-  run(function() {
-    EmberView.views['im-special'].rerender();
-  });
-
-  equal(jQuery('#qunit-fixture').text(), 'AppHello world', 'second render');
-
-  run(function() {
-    EmberView.views['im-special'].rerender();
-  });
-
-  equal(jQuery('#qunit-fixture').text(), 'AppHello world', 'third render');
 });
 
 QUnit.test('Can render into a named outlet at the top level', function() {

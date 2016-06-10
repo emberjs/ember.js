@@ -297,17 +297,13 @@ QUnit.test('initialize application with stateManager via initialize call from Ro
   equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('ApplicationView is inserted into the page', function() {
+QUnit.test('ApplicationView is inserted into the page', function() {
   run(function() {
     app = Application.create({
       rootElement: '#qunit-fixture'
     });
 
-    app.ApplicationView = View.extend({
-      template: compile('<h1>Hello!</h1>')
-    });
+    setTemplate('application', compile('<h1>Hello!</h1>'));
 
     app.ApplicationController = Controller.extend();
 

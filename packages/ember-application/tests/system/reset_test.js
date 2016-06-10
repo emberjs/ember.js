@@ -129,29 +129,6 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   Registry.prototype.register = originalRegister;
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('When an application is reset, the ApplicationView is torn down', function() {
-  run(function() {
-    application = Application.create();
-    application.ApplicationView = View.extend({
-      elementId: 'application-view'
-    });
-  });
-
-  equal(jQuery('#qunit-fixture #application-view').length, 1, 'precond - the application view is rendered');
-
-  var originalView = View.views['application-view'];
-
-  application.reset();
-
-  var resettedView = View.views['application-view'];
-
-  equal(jQuery('#qunit-fixture #application-view').length, 1, 'the application view is rendered');
-
-  notStrictEqual(originalView, resettedView, 'The view object has changed');
-});
-
 QUnit.test('When an application is reset, the router URL is reset to `/`', function() {
   var location, router;
 

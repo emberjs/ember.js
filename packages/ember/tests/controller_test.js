@@ -3,7 +3,6 @@ import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
-import EmberView from 'ember-views/views/view';
 import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
@@ -73,28 +72,6 @@ test('Actions inside an outlet go to the associated controller', function() {
   bootApp();
 
   $fixture.find('.component-with-action').click();
-});
-
-test('the controller property is provided to route driven views', function() {
-  var applicationController, applicationViewController;
-
-  App.ApplicationController = Controller.extend({
-    init: function() {
-      this._super(...arguments);
-      applicationController = this;
-    }
-  });
-
-  App.ApplicationView = EmberView.extend({
-    init: function() {
-      this._super(...arguments);
-      applicationViewController = this.get('controller');
-    }
-  });
-
-  bootApp();
-
-  equal(applicationViewController, applicationController, 'application view should get its controller set properly');
 });
 
 function bootApp() {

@@ -991,26 +991,17 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
   shouldBeActive('#lobby-link');
 });
 
-test("The {{link-to}} helper doesn't change view context", function() {
-  App.IndexView = EmberView.extend({
-    elementId: 'index',
-    name: 'test',
-    isTrue: true
+QUnit.test('Quoteless route param performs property lookup', function() {
+  let component;
+
+  App.FooBarComponent = Component.extend({
+    foo: 'index',
+    init() {
+      this._super(...arguments);
+      component = this;
+    },
+    layout: compile("{{#link-to 'index' id='string-link'}}string{{/link-to}}{{#link-to foo id='path-link'}}path{{/link-to}}{{#link-to foo id='view-link'}}{{foo}}{{/link-to}}")
   });
-
-  setTemplate('index', compile("{{view.name}}-{{#link-to 'index' id='self-link'}}Link: {{view.name}}-{{#if view.isTrue}}{{view.name}}{{/if}}{{/link-to}}"));
-
-  bootApplication();
-
-  run(function() {
-    router.handleURL('/');
-  });
-
-  equal(jQuery('#index', '#qunit-fixture').text(), 'test-Link: test-test', 'accesses correct view');
-});
-
-test('Quoteless route param performs property lookup', function() {
-  setTemplate('index', compile("{{#link-to 'index' id='string-link'}}string{{/link-to}}{{#link-to foo id='path-link'}}path{{/link-to}}{{#link-to view.foo id='view-link'}}{{view.foo}}{{/link-to}}"));
 
   function assertEquality(href) {
     equal(normalizeUrl(jQuery('#string-link', '#qunit-fixture').attr('href')), '/');
@@ -1018,14 +1009,7 @@ test('Quoteless route param performs property lookup', function() {
     equal(normalizeUrl(jQuery('#view-link', '#qunit-fixture').attr('href')), href);
   }
 
-  App.IndexView = EmberView.extend({
-    foo: 'index',
-    elementId: 'index-view'
-  });
-
-  App.IndexController = Controller.extend({
-    foo: 'index'
-  });
+  setTemplate('index', compile('{{foo-bar}}'));
 
   App.Router.map(function() {
     this.route('about');
@@ -1037,11 +1021,8 @@ test('Quoteless route param performs property lookup', function() {
 
   assertEquality('/');
 
-  var controller = appInstance.lookup('controller:index');
-  var view = EmberView.views['index-view'];
   run(function() {
-    controller.set('foo', 'about');
-    view.set('foo', 'about');
+    component.set('foo', 'about');
   });
 
   assertEquality('/about');
@@ -1335,23 +1316,25 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
   equal(normalizeUrl(jQuery('li a:contains(Erik)').attr('href')), '/item/erik');
 });
 
-test('The non-block form {{link-to}} performs property lookup', function() {
-  setTemplate('index', compile("{{link-to 'string' 'index' id='string-link'}}{{link-to path foo id='path-link'}}{{link-to view.foo view.foo id='view-link'}}"));
+QUnit.test('The non-block form {{link-to}} performs property lookup', function() {
+  let component;
+  App.FooBarComponent = Component.extend({
+    foo: 'index',
+    elementId: 'index-view',
+    init() {
+      this._super(...arguments);
+      component = this;
+    },
+    layout: compile("{{link-to 'string' 'index' id='string-link'}}{{link-to path foo id='path-link'}}{{link-to foo foo id='view-link'}}")
+  });
+
+  setTemplate('index', compile('{{foo-bar}}'));
 
   function assertEquality(href) {
     equal(normalizeUrl(jQuery('#string-link', '#qunit-fixture').attr('href')), '/');
     equal(normalizeUrl(jQuery('#path-link', '#qunit-fixture').attr('href')), href);
     equal(normalizeUrl(jQuery('#view-link', '#qunit-fixture').attr('href')), href);
   }
-
-  App.IndexView = EmberView.extend({
-    foo: 'index',
-    elementId: 'index-view'
-  });
-
-  App.IndexController = Controller.extend({
-    foo: 'index'
-  });
 
   App.Router.map(function() {
     this.route('about');
@@ -1363,11 +1346,8 @@ test('The non-block form {{link-to}} performs property lookup', function() {
 
   assertEquality('/');
 
-  var controller = appInstance.lookup('controller:index');
-  var view = EmberView.views['index-view'];
   run(function() {
-    controller.set('foo', 'about');
-    view.set('foo', 'about');
+    component.set('foo', 'about');
   });
 
   assertEquality('/about');
