@@ -2117,8 +2117,6 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
     controller.set('model', options.model);
   }
 
-  let viewName = namePassed && name || name;
-  let ViewClass = owner._lookupFactory(`view:${viewName}`);
   let template = owner.lookup(`template:${templateName}`);
 
   let parent;
@@ -2132,14 +2130,13 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
     outlet,
     name,
     controller,
-    ViewClass,
     template: template || route._topLevelViewTemplate
   };
 
-  assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || ViewClass || template);
+  assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
   let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
-  if (LOG_VIEW_LOOKUPS && !ViewClass && !template) {
+  if (LOG_VIEW_LOOKUPS && !template) {
     info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
   }
 

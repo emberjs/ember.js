@@ -1,6 +1,5 @@
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
@@ -54,14 +53,4 @@ QUnit.module('Top Level DOM Structure', {
 QUnit.test('Topmost template always get an element', function() {
   bootApplication();
   equal(jQuery('#qunit-fixture > .ember-view').text(), 'hello world');
-});
-
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('If topmost view has its own element, it doesn\'t get wrapped in a higher element', function() {
-  App.register('view:application', EmberView.extend({
-    classNames: ['im-special']
-  }));
-  bootApplication();
-  equal(jQuery('#qunit-fixture > .im-special').text(), 'hello world');
 });

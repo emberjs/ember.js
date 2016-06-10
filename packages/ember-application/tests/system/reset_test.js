@@ -4,7 +4,6 @@ import { set } from 'ember-metal/property_set';
 import EmberApplication from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
 import Router from 'ember-routing/system/router';
-import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import jQuery from 'ember-views/system/jquery';
 import Registry from 'container/registry';
@@ -127,29 +126,6 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   } catch (error) { Registry.prototype.register = originalRegister; }
 
   Registry.prototype.register = originalRegister;
-});
-
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('When an application is reset, the ApplicationView is torn down', function() {
-  run(function() {
-    application = Application.create();
-    application.ApplicationView = View.extend({
-      elementId: 'application-view'
-    });
-  });
-
-  equal(jQuery('#qunit-fixture #application-view').length, 1, 'precond - the application view is rendered');
-
-  var originalView = View.views['application-view'];
-
-  application.reset();
-
-  var resettedView = View.views['application-view'];
-
-  equal(jQuery('#qunit-fixture #application-view').length, 1, 'the application view is rendered');
-
-  notStrictEqual(originalView, resettedView, 'The view object has changed');
 });
 
 QUnit.test('When an application is reset, the router URL is reset to `/`', function() {

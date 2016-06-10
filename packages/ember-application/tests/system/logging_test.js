@@ -3,7 +3,6 @@
 import Logger from 'ember-console';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
-import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import RSVP from 'ember-runtime/ext/rsvp';
@@ -202,26 +201,6 @@ QUnit.test('do not log when template and view are missing when flag is not true'
 
   visit('/posts').then(function() {
     equal(Object.keys(logs).length, 0, 'expected no logs');
-  });
-});
-
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('log which view is used with a template', function() {
-  if (EmberDev && EmberDev.runningProdBuild) {
-    ok(true, 'Logging does not occur in production builds');
-    return;
-  }
-
-  App.register('template:application', compile('{{outlet}}'));
-  App.register('template:foo', compile('Template with custom view'));
-  App.register('view:posts', View.extend({ templateName: 'foo' }));
-  run(App, 'advanceReadiness');
-
-  visit('/posts').then(function() {
-    equal(logs['view:application'], 1, 'toplevel view always get an element');
-    equal(logs['view:index'], undefined, 'expected: Should not log when index is not present.');
-    equal(logs['view:posts'], 1, 'expected: Rendering posts with PostsView.');
   });
 });
 
