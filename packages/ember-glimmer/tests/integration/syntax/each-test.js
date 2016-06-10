@@ -121,7 +121,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('hello');
   }
 
-  ['@htmlbars it receives the index as the second parameter']() {
+  ['@test it receives the index as the second parameter']() {
     this.render(`{{#each list as |item index|}}{{index}}. {{item.text}}{{/each}}`, {
       list: emberA([{ text: 'hello' }, { text: 'world' }])
     });
