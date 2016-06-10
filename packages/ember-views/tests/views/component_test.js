@@ -9,6 +9,7 @@ import Component from 'ember-htmlbars/component';
 
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import buildOwner from 'container/tests/test-helpers/build-owner';
+import computed from 'ember-metal/computed';
 
 var a_slice = Array.prototype.slice;
 
@@ -66,6 +67,28 @@ QUnit.test('Specifying a defaultLayout to a component is deprecated', function()
       defaultLayout: 'hum-drum'
     }).create();
   }, /Specifying `defaultLayout` to .+ is deprecated\./);
+});
+
+QUnit.test('should warn if a computed property is used for classNames', function() {
+  expectAssertion(function() {
+    Component.extend({
+      elementId: 'test',
+      classNames: computed(function() {
+        return ['className'];
+      })
+    }).create();
+  }, /Only arrays of static class strings.*For dynamic classes/i);
+});
+
+QUnit.test('should warn if a non-array is used for classNameBindings', function() {
+  expectAssertion(function() {
+    Component.extend({
+      elementId: 'test',
+      classNameBindings: computed(function() {
+        return ['className'];
+      })
+    }).create();
+  }, /Only arrays are allowed/i);
 });
 
 QUnit.module('Ember.Component - Actions', {
