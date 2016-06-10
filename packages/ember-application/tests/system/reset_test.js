@@ -4,7 +4,6 @@ import { set } from 'ember-metal/property_set';
 import EmberApplication from 'ember-application/system/application';
 import EmberObject from 'ember-runtime/system/object';
 import Router from 'ember-routing/system/router';
-import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import jQuery from 'ember-views/system/jquery';
 import Registry from 'container/registry';

@@ -6,7 +6,6 @@ import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import Route from 'ember-routing/system/route';
 import Router from 'ember-routing/system/router';
-import View from 'ember-views/views/view';
 import Component from 'ember-htmlbars/component';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import jQuery from 'ember-views/system/jquery';

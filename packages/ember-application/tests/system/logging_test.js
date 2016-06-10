@@ -3,7 +3,6 @@
 import Logger from 'ember-console';
 import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
-import View from 'ember-views/views/view';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import RSVP from 'ember-runtime/ext/rsvp';
