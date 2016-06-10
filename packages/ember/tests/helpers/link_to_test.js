@@ -17,10 +17,9 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import { OWNER } from 'container/owner';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import EmberView from 'ember-views/views/view';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var Router, App, AppView, router, appInstance;
+var Router, App, router, appInstance;
 
 function bootApplication() {
   router = appInstance.lookup('router:main');
@@ -91,12 +90,6 @@ QUnit.module('The {{link-to}} helper', {
       setTemplate('index', compile(`<h3>Home</h3>{{#link-to 'about' id='about-link'}}About{{/link-to}}{{#link-to 'index' id='self-link'}}Self{{/link-to}}`));
       setTemplate('about', compile(`<h3>About</h3>{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'about' id='self-link'}}Self{{/link-to}}`));
       setTemplate('item', compile(`<h3>Item</h3><p>{{model.name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}`));
-
-      AppView = EmberView.extend({
-        templateName: 'app'
-      });
-
-      appInstance.register('view:app', AppView);
 
       appInstance.unregister('router:main');
       appInstance.register('router:main', Router);
@@ -991,37 +984,13 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
   shouldBeActive('#lobby-link');
 });
 
-test("The {{link-to}} helper doesn't change view context", function() {
-  App.IndexView = EmberView.extend({
-    elementId: 'index',
-    name: 'test',
-    isTrue: true
-  });
-
-  setTemplate('index', compile("{{view.name}}-{{#link-to 'index' id='self-link'}}Link: {{view.name}}-{{#if view.isTrue}}{{view.name}}{{/if}}{{/link-to}}"));
-
-  bootApplication();
-
-  run(function() {
-    router.handleURL('/');
-  });
-
-  equal(jQuery('#index', '#qunit-fixture').text(), 'test-Link: test-test', 'accesses correct view');
-});
-
 test('Quoteless route param performs property lookup', function() {
-  setTemplate('index', compile("{{#link-to 'index' id='string-link'}}string{{/link-to}}{{#link-to foo id='path-link'}}path{{/link-to}}{{#link-to view.foo id='view-link'}}{{view.foo}}{{/link-to}}"));
+  setTemplate('index', compile("{{#link-to 'index' id='string-link'}}string{{/link-to}}{{#link-to foo id='path-link'}}path{{/link-to}}"));
 
   function assertEquality(href) {
     equal(normalizeUrl(jQuery('#string-link', '#qunit-fixture').attr('href')), '/');
     equal(normalizeUrl(jQuery('#path-link', '#qunit-fixture').attr('href')), href);
-    equal(normalizeUrl(jQuery('#view-link', '#qunit-fixture').attr('href')), href);
   }
-
-  App.IndexView = EmberView.extend({
-    foo: 'index',
-    elementId: 'index-view'
-  });
 
   App.IndexController = Controller.extend({
     foo: 'index'
@@ -1038,10 +1007,8 @@ test('Quoteless route param performs property lookup', function() {
   assertEquality('/');
 
   var controller = appInstance.lookup('controller:index');
-  var view = EmberView.views['index-view'];
   run(function() {
     controller.set('foo', 'about');
-    view.set('foo', 'about');
   });
 
   assertEquality('/about');
@@ -1336,18 +1303,12 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
 });
 
 test('The non-block form {{link-to}} performs property lookup', function() {
-  setTemplate('index', compile("{{link-to 'string' 'index' id='string-link'}}{{link-to path foo id='path-link'}}{{link-to view.foo view.foo id='view-link'}}"));
+  setTemplate('index', compile("{{link-to 'string' 'index' id='string-link'}}{{link-to path foo id='path-link'}}"));
 
   function assertEquality(href) {
     equal(normalizeUrl(jQuery('#string-link', '#qunit-fixture').attr('href')), '/');
     equal(normalizeUrl(jQuery('#path-link', '#qunit-fixture').attr('href')), href);
-    equal(normalizeUrl(jQuery('#view-link', '#qunit-fixture').attr('href')), href);
   }
-
-  App.IndexView = EmberView.extend({
-    foo: 'index',
-    elementId: 'index-view'
-  });
 
   App.IndexController = Controller.extend({
     foo: 'index'
@@ -1364,10 +1325,8 @@ test('The non-block form {{link-to}} performs property lookup', function() {
   assertEquality('/');
 
   var controller = appInstance.lookup('controller:index');
-  var view = EmberView.views['index-view'];
   run(function() {
     controller.set('foo', 'about');
-    view.set('foo', 'about');
   });
 
   assertEquality('/about');
