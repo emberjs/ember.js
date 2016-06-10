@@ -622,9 +622,24 @@ export function readOnly(dependentKey) {
   though they were called on the original property, but also
   print a deprecation warning.
 
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    bananaCount: Ember.computed.deprecatingAlias('cavendishCount', {
+      id: 'hamster.deprecate-banana',
+      until: '3.0.0'
+    })
+  });
+
+  var hamster = Hamster.create();
+
+  hamster.set('bananaCount', 5); // Prints a deprecation warning.
+  hamster.get('cavendishCount'); // 5
+  ```
+
   @method deprecatingAlias
   @for Ember.computed
   @param {String} dependentKey
+  @param {Object} options Options for `Ember.deprecate`.
   @return {Ember.ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.
   @since 1.7.0
