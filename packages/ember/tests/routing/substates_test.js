@@ -3,7 +3,6 @@ import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import EmberView from 'ember-views/views/view';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
@@ -770,7 +769,7 @@ test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadin
 test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
   expect(3);
 
-  templates['application_loading'] = 'TOPLEVEL LOADING';
+  templates['application_loading'] = '<div id="toplevel-loading">TOPLEVEL LOADING</div>';
 
   var appDeferred = RSVP.defer();
   App.ApplicationRoute = Route.extend({
@@ -779,20 +778,9 @@ test('Slow promises returned from ApplicationRoute#model enter application_loadi
     }
   });
 
-  var loadingRouteEntered = false;
-  App.ApplicationLoadingRoute = Route.extend({
-    setupController() {
-      loadingRouteEntered = true;
-    }
-  });
-
-  App.ApplicationLoadingView = EmberView.extend({
-    elementId: 'toplevel-loading'
-  });
-
   bootApplication();
 
-  equal(jQuery('#qunit-fixture > #toplevel-loading').text(), 'TOPLEVEL LOADING');
+  equal(jQuery('#qunit-fixture #toplevel-loading').text(), 'TOPLEVEL LOADING');
 
   run(appDeferred, 'resolve', {});
 
