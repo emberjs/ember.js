@@ -19,7 +19,6 @@ import Registry from 'container/registry';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import { get as getTemplate, has as hasTemplate } from 'ember-templates/template_registry';
-import keywords, { registerKeyword as _registerKeyword } from 'ember-htmlbars/keywords';
 import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
 
 function registerAstPlugin(plugin) {
@@ -29,18 +28,6 @@ function registerAstPlugin(plugin) {
 function removeAstPlugin(plugin) {
   let index = plugins['ast'].indexOf(plugin);
   plugins['ast'].splice(index, 1);
-}
-
-function registerKeyword(name, keyword) {
-  return _registerKeyword(name, keyword);
-}
-
-function resetKeyword(name, original) {
-  if (original) {
-    keywords[name] = original;
-  } else {
-    delete keywords[name];
-  }
 }
 
 function buildAppInstance() {
@@ -100,9 +87,6 @@ function resolverFor(namespace) {
 export {
   registerAstPlugin,
   removeAstPlugin,
-  registerKeyword,
-  resetKeyword,
   resolverFor,
   buildAppInstance
 };
-
