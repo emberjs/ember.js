@@ -619,9 +619,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     assert.equal(this.$('.value').text(), '8');
   }
 
-  ['@test regression: tagless blockless components'](assert) {
-    assert.expect(0);
-
+  ['@test tagless blockless components render'](assert) {
     this.registerComponent('my-comp', {
       ComponentClass: Component.extend({ tagName: '' })
     });
@@ -629,6 +627,8 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.render(`{{my-comp}}`);
 
     this.runTask(() => this.rerender());
+
+    assert.equal(this.$().text(), '');
   }
 
 });
