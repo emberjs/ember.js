@@ -214,9 +214,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._setupRouter(router, location);
 
     location.onUpdateURL((url) => {
-      if (this._shouldHandleURL(url)) {
-        this.handleURL(url);
-      }
+      this.handleURL(url);
     });
 
     return true;
@@ -321,10 +319,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
     }
-  },
-
-  _shouldHandleURL(url) {
-    return url && url.indexOf(get(this, 'rootURL')) === 0;
   },
 
   handleURL(url) {

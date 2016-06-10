@@ -1,6 +1,7 @@
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import HistoryLocation from 'ember-routing/location/history_location';
+import jQuery from 'ember-views/system/jquery';
 
 let FakeHistory, HistoryTestLocation, location;
 
@@ -281,4 +282,49 @@ QUnit.test('HistoryLocation.getURL() includes location.hash and location.search'
   createLocation();
 
   equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
+});
+
+QUnit.test('HistoryLocation.onUpdateURL callback executes as expected', function() {
+  expect(1);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+
+      set(this, 'location', mockBrowserLocation('/foo/bar'));
+    }
+  });
+
+  createLocation();
+
+  var callback = function (param) {
+    equal(param, '/foo/bar', 'path is passed as param');
+  };
+
+  location.onUpdateURL(callback);
+
+  jQuery(window).trigger('popstate');
+});
+
+QUnit.test('HistoryLocation.onUpdateURL doesn\'t executes callback if URL doesn\'t start with rootURL', function() {
+  expect(0);
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+
+      set(this, 'location', mockBrowserLocation('/bar'));
+      set(this, 'rootURL', '/foo/');
+    }
+  });
+
+  createLocation();
+
+  var callback = function (param) {
+    ok(false, 'callback should not be called');
+  };
+
+  location.onUpdateURL(callback);
+
+  jQuery(window).trigger('popstate');
 });

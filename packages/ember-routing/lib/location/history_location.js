@@ -189,15 +189,21 @@ export default EmberObject.extend({
     this._removeEventListener();
 
     this._popstateHandler = () => {
+      var url = this.getURL();
       // Ignore initial page load popstate event in Chrome
       if (!popstateFired) {
         popstateFired = true;
-        if (this.getURL() === this._previousURL) { return; }
+        if (!this._shouldHandleURL(url)) { return; }
       }
-      callback(this.getURL());
+      callback(url);
     };
 
     window.addEventListener('popstate', this._popstateHandler);
+  },
+
+  _shouldHandleURL(url) {
+    if (url === this._previousURL) { return false; }
+    return url && url.indexOf(get(this, 'rootURL')) === 0;
   },
 
   /**
