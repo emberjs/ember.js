@@ -80,24 +80,7 @@ QUnit.test('{{render}} helper should have assertion if neither template nor view
 
   expectAssertion(function() {
     runAppend(view);
-  }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
-});
-
-QUnit.test('{{render}} helper should not have assertion if view exists without a template', function() {
-  var template = '<h1>HI</h1>{{render \'oops\'}}';
-  var controller = EmberController.extend();
-
-  view = EmberView.create({
-    [OWNER]: appInstance,
-    controller: controller.create(),
-    template: compile(template)
-  });
-
-  appInstance.register('view:oops', EmberView.extend());
-
-  runAppend(view);
-
-  equal(view.$().text(), 'HI');
+  }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
 });
 
 QUnit.test('{{render}} helper should render given template with a supplied model', function() {

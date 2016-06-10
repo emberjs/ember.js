@@ -4,11 +4,9 @@
 */
 
 import { assert } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
 import EmptyObject from 'ember-metal/empty_object';
 import EmberError from 'ember-metal/error';
 import { isStream, read } from 'ember-htmlbars/streams/utils';
-import { camelize } from 'ember-runtime/system/string';
 import generateController from 'ember-routing/system/generate_controller';
 import { generateControllerFactory } from 'ember-routing/system/generate_controller';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
@@ -123,11 +121,6 @@ export default {
 
     var owner = env.owner;
 
-    // The render keyword presumes it can work without a router. This is really
-    // only to satisfy the test:
-    //
-    //     {{view}} should not override class bindings defined on a child view"
-    //
     var router = owner.lookup('router:main');
 
     assert(
@@ -149,21 +142,12 @@ export default {
     var templateName = 'template:' + name;
     assert(
       'You used `{{render \'' + name + '\'}}`, but \'' + name + '\' can not be ' +
-      'found as either a template or a view.',
-      owner.hasRegistration('view:' + name) || owner.hasRegistration(templateName) || !!template
+      'found as a template.',
+      owner.hasRegistration(templateName) || !!template
     );
 
-    var view = owner.lookup('view:' + name);
-    if (!view) {
-      view = owner.lookup('view:default');
-    }
-    var viewHasTemplateSpecified = view && !!get(view, 'template');
-    if (!template && !viewHasTemplateSpecified) {
+    if (!template) {
       template = owner.lookup(templateName);
-    }
-
-    if (view) {
-      view.ownerView = env.view.ownerView;
     }
 
     // provide controller override
@@ -208,12 +192,7 @@ export default {
       });
     }
 
-    if (view) {
-      view.set('controller', controller);
-    }
     state.controller = controller;
-
-    hash.viewName = camelize(name);
 
     if (template && template.raw) {
       template = template.raw;
@@ -223,10 +202,6 @@ export default {
       layout: null,
       self: controller
     };
-
-    if (view) {
-      options.component = view;
-    }
 
     var nodeManager = ViewNodeManager.create(node, env, hash, options, state.parentView, null, null, template);
     state.manager = nodeManager;
