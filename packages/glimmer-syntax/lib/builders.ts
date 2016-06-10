@@ -90,23 +90,25 @@ export function buildText(chars?, loc?) {
 
 // Expressions
 
-export function buildSexpr(path, params?, hash?) {
+export function buildSexpr(path, params?, hash?, loc?) {
   return {
     type: "SubExpression",
     path: buildPath(path),
     params: params || [],
-    hash: hash || buildHash([])
+    hash: hash || buildHash([]),
+    loc: buildLoc(loc)
   };
 }
 
-export function buildPath(original) {
+export function buildPath(original, loc?) {
   if (typeof original !== 'string') return original;
 
   return {
     type: "PathExpression",
     original: original,
     parts: original.split('.'),
-    data: false
+    data: false,
+    loc: buildLoc(loc)
   };
 }
 
