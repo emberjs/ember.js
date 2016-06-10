@@ -6,7 +6,6 @@ import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import Route from 'ember-routing/system/route';
 import Router from 'ember-routing/system/router';
-import View from 'ember-views/views/view';
 import Component from 'ember-htmlbars/component';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import jQuery from 'ember-views/system/jquery';
@@ -341,38 +340,6 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
 });
 
 import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('Views created via visit() are not added to the global views hash', function(assert) {
-  run(function() {
-    createApplication();
-
-    App.register('template:application', compile('<h1>Hello world</h1> {{component "x-child"}}'));
-
-    App.register('view:application', View.extend({
-      elementId: 'my-cool-app'
-    }));
-
-    App.register('component:x-child', View.extend({
-      elementId: 'child-view'
-    }));
-  });
-
-  assert.strictEqual(jQuery('#qunit-fixture').children().length, 0, 'there are no elements in the fixture element');
-
-  return run(App, 'visit', '/').then(instance => {
-    assert.ok(instance instanceof ApplicationInstance, 'promise is resolved with an ApplicationInstance');
-    assert.equal(jQuery('#qunit-fixture > #my-cool-app h1').text(), 'Hello world', 'the application was rendered once the promise resolves');
-    assert.strictEqual(View.views['my-cool-app'], undefined, 'view was not registered globally');
-
-    function lookup(fullName) {
-      return instance.lookup(fullName);
-    }
-
-    assert.ok(lookup('-view-registry:main')['my-cool-app'] instanceof View, 'view was registered on the instance\'s view registry');
-    assert.ok(lookup('-view-registry:main')['child-view'] instanceof View, 'child view was registered on the instance\'s view registry');
-  });
-});
-
 
 testModule('Ember.Application - visit() Integration Tests', {
   teardown() {

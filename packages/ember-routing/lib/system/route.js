@@ -494,39 +494,8 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
   },
 
   /**
-    The name of the view to use by default when rendering this routes template.
-
-    When rendering a template, the route will, by default, determine the
-    template and view to use from the name of the route itself. If you need to
-    define a specific view, set this property.
-
-    This is useful when multiple routes would benefit from using the same view
-    because it doesn't require a custom `renderTemplate` method. For example,
-    the following routes will all render using the `App.PostsListView` view:
-
-    ```javascript
-    var PostsList = Ember.Route.extend({
-      viewName: 'postsList'
-    });
-
-    App.PostsIndexRoute = PostsList.extend();
-    App.PostsArchivedRoute = PostsList.extend();
-    ```
-
-    @property viewName
-    @type String
-    @default null
-    @since 1.4.0
-    @public
-  */
-  viewName: null,
-
-  /**
     The name of the template to use by default when rendering this routes
     template.
-
-    This is similar with `viewName`, but is useful when you just want a custom
-    template without a view.
 
     ```javascript
     var PostsList = Ember.Route.extend({
@@ -556,7 +525,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     This is useful in many ways, as the controller specified will be:
 
     * passed to the `setupController` method.
-    * used as the controller for the view being rendered by the route.
+    * used as the controller for the template being rendered by the route.
     * returned from a call to `controllerFor` for the route.
 
     @property controllerName
@@ -1881,7 +1850,7 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     });
     ```
 
-    `render` additionally allows you to supply which `view`, `controller`, and
+    `render` additionally allows you to supply which `controller` and
     `model` objects should be loaded and associated with the rendered template.
 
 
@@ -1892,7 +1861,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         this.render('posts', {    // the template to render, referenced by name
           into: 'application',    // the template to render into, referenced by name
           outlet: 'anOutletName', // the outlet inside `options.template` to render into.
-          view: 'aViewName',      // the view to use for this template, referenced by name
           controller: 'someControllerName', // the controller to use for this template, referenced by name
           model: model            // the model to set on `options.controller`.
         })
@@ -1900,14 +1868,14 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     });
     ```
 
-    The string values provided for the template name, view, and controller
+    The string values provided for the template name, and controller
     will eventually pass through to the resolver for lookup. See
     Ember.Resolver for how these are mapped to JavaScript objects in your
     application.
 
     Not all options need to be passed to `render`. Default values will be used
     based on the name of the route specified in the router or the Route's
-    `controllerName`, `viewName` and `templateName` properties.
+    `controllerName` and `templateName` properties.
 
     For example:
 
@@ -1938,7 +1906,6 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
     this.render('post', {  // the template name associated with 'post' Route
       into: 'application', // the parent route to 'post' Route
       outlet: 'main',      // {{outlet}} and {{outlet 'main'}} are synonymous,
-      view: 'post',        // the view associated with the 'post' Route
       controller: 'post',  // the controller associated with the 'post' Route
     })
     ```
@@ -2150,8 +2117,6 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
     controller.set('model', options.model);
   }
 
-  let viewName = options && options.view || namePassed && name || route.viewName || name;
-  let ViewClass = owner._lookupFactory(`view:${viewName}`);
   let template = owner.lookup(`template:${templateName}`);
 
   let parent;
@@ -2165,15 +2130,14 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
     outlet,
     name,
     controller,
-    ViewClass,
     template: template || route._topLevelViewTemplate
   };
 
-  assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || ViewClass || template);
+  assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
 
   let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
-  if (LOG_VIEW_LOOKUPS && !ViewClass && !template) {
-    info(`Could not find "${name}" template or view. Nothing will be rendered`, { fullName: `template:${name}` });
+  if (LOG_VIEW_LOOKUPS && !template) {
+    info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
   }
 
   return renderOptions;
