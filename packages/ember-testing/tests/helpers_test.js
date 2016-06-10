@@ -3,7 +3,6 @@ import Controller from 'ember-runtime/controllers/controller';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import RSVP from 'ember-runtime/ext/rsvp';
-import EmberView from 'ember-views/views/view';
 import jQuery from 'ember-views/system/jquery';
 import Component from 'ember-templates/component';
 
@@ -350,8 +349,8 @@ test('`click` triggers appropriate events in order', function() {
 
   var click, wait, events;
 
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
 
     didInsertElement() {
       this.$().on('mousedown focusin mouseup click', function(e) {
@@ -372,7 +371,7 @@ test('`click` triggers appropriate events in order', function() {
     }
   });
 
-  setTemplate('index', compile('{{input type="text"}} {{x-checkbox type="checkbox"}} {{textarea}} <div contenteditable="true"> </div>'));
+  setTemplate('index', compile('{{#index-wrapper}}{{input type="text"}} {{x-checkbox type="checkbox"}} {{textarea}} <div contenteditable="true"> </div>{{/index-wrapper}}'));
 
   run(App, App.advanceReadiness);
 
@@ -381,35 +380,35 @@ test('`click` triggers appropriate events in order', function() {
 
   return wait().then(function() {
     events = [];
-    return click('.index-view');
+    return click('.index-wrapper');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'mouseup', 'click'],
       'fires events in order');
   }).then(function() {
     events = [];
-    return click('.index-view input[type=text]');
+    return click('.index-wrapper input[type=text]');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on inputs');
   }).then(function() {
     events = [];
-    return click('.index-view textarea');
+    return click('.index-wrapper textarea');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on textareas');
   }).then(function() {
     events = [];
-    return click('.index-view div');
+    return click('.index-wrapper div');
   }).then(function() {
     deepEqual(events,
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on contenteditable');
   }).then(function() {
     events = [];
-    return click('.index-view input[type=checkbox]');
+    return click('.index-wrapper input[type=checkbox]');
   }).then(function() {
     // i.e. mousedown, mouseup, change:true, click, click:true
     // Firefox differs so we can't assert the exact ordering here.
@@ -423,8 +422,8 @@ test('`click` triggers native events with simulated X/Y coordinates', function()
 
   var click, wait, events;
 
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
 
     didInsertElement() {
       let pushEvent  = e => events.push(e);
@@ -435,7 +434,7 @@ test('`click` triggers native events with simulated X/Y coordinates', function()
   });
 
 
-  setTemplate('index', compile('some text'));
+  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
 
   run(App, App.advanceReadiness);
 
@@ -444,7 +443,7 @@ test('`click` triggers native events with simulated X/Y coordinates', function()
 
   return wait().then(function() {
     events = [];
-    return click('.index-view');
+    return click('.index-wrapper');
   }).then(function() {
     events.forEach(e => {
       ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
@@ -461,8 +460,8 @@ test('`triggerEvent` with mouseenter triggers native events with simulated X/Y c
 
   var triggerEvent, wait, evt;
 
-  App.IndexView = EmberView.extend({
-    classNames: 'index-view',
+  App.IndexWrapperComponent = Component.extend({
+    classNames: 'index-wrapper',
 
     didInsertElement() {
       this.element.addEventListener('mouseenter', e => evt = e);
@@ -470,7 +469,7 @@ test('`triggerEvent` with mouseenter triggers native events with simulated X/Y c
   });
 
 
-  setTemplate('index', compile('some text'));
+  setTemplate('index', compile('{{#index-wrapper}}some text{{/index-wrapper}}'));
 
   run(App, App.advanceReadiness);
 
@@ -478,7 +477,7 @@ test('`triggerEvent` with mouseenter triggers native events with simulated X/Y c
   wait  = App.testHelpers.wait;
 
   return wait().then(function() {
-    return triggerEvent('.index-view', 'mouseenter');
+    return triggerEvent('.index-wrapper', 'mouseenter');
   }).then(function() {
     ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
     ok(typeof evt.screenX === 'number' && evt.screenX > 0, 'screenX is correct');
@@ -547,15 +546,16 @@ test('`triggerEvent accepts an optional options hash without context', function(
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="scope" class="input"}}'),
-
+  App.IndexWrapperComponent = Component.extend({
     didInsertElement() {
       this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
   });
+
+  setTemplate('index', compile('{{index-wrapper}}'));
+  setTemplate('components/index-wrapper', compile('{{input type="text" id="scope" class="input"}}'));
 
   run(App, App.advanceReadiness);
 
@@ -576,8 +576,7 @@ test('`triggerEvent can limit searching for a selector to a scope', function() {
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
+  App.IndexWrapperComponent = Component.extend({
 
     didInsertElement() {
       this.$('.input').on('blur change', function(e) {
@@ -585,6 +584,9 @@ test('`triggerEvent can limit searching for a selector to a scope', function() {
       });
     }
   });
+
+  setTemplate('components/index-wrapper', compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'));
+  setTemplate('index', compile('{{index-wrapper}}'));
 
   run(App, App.advanceReadiness);
 
@@ -604,15 +606,16 @@ test('`triggerEvent` can be used to trigger arbitrary events', function() {
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="foo"}}'),
-
+  App.IndexWrapperComponent = Component.extend({
     didInsertElement() {
       this.$('#foo').on('blur change', function(e) {
         event = e;
       });
     }
   });
+
+  setTemplate('components/index-wrapper',  compile('{{input type="text" id="foo"}}'));
+  setTemplate('index', compile('{{index-wrapper}}'));
 
   run(App, App.advanceReadiness);
 
@@ -631,9 +634,7 @@ test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
-  App.IndexView = EmberView.extend({
-    template: compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
-  });
+  setTemplate('index', compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}'));
 
   run(App, App.advanceReadiness);
 
@@ -665,9 +666,7 @@ test('`fillIn` focuses on the element', function() {
     }
   });
 
-  App.IndexView = EmberView.extend({
-    template: compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>')
-  });
+  setTemplate('index', compile('<div id="parent">{{input type="text" id="first" focus-in="wasFocused"}}</div>'));
 
   run(App, App.advanceReadiness);
 
@@ -702,9 +701,7 @@ test('`fillIn` fires `input` and `change` events in the proper order', function(
     }
   });
 
-  App.IndexView = EmberView.extend({
-    template: compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>')
-  });
+  setTemplate('index', compile('<input type="text" id="first" oninput={{action "oninputHandler"}} onchange={{action "onchangeHandler"}}>'));
 
   run(App, App.advanceReadiness);
 
@@ -727,15 +724,16 @@ test('`triggerEvent accepts an optional options hash and context', function() {
 
   var triggerEvent, wait, event;
 
-  App.IndexView = EmberView.extend({
-    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
-
+  App.IndexWrapperComponent = Component.extend({
     didInsertElement() {
       this.$('.input').on('keydown change', function(e) {
         event = e;
       });
     }
   });
+
+  setTemplate('components/index-wrapper', compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'));
+  setTemplate('index', compile('{{index-wrapper}}'));
 
   run(App, App.advanceReadiness);
 
