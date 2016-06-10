@@ -617,6 +617,28 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
     this.assertText('');
   }
 
+  ['@test can set dynamic href']() {
+    this.render('<a href={{model.url}}>Example</a>', {
+      model: {
+        url: 'http://example.com'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'a', content: 'Example', attrs: { 'href': 'http://example.com' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'a', content: 'Example', attrs: { 'href': 'http://example.com' } });
+
+    this.runTask(() => set(this.context, 'model.url', 'http://linkedin.com'));
+
+    this.assertElement(this.firstChild, { tagName: 'a', content: 'Example', attrs: { 'href': 'http://linkedin.com' } });
+
+    this.runTask(() => set(this.context, 'model', { url: 'http://example.com' }));
+
+    this.assertElement(this.firstChild, { tagName: 'a', content: 'Example', attrs: { 'href': 'http://example.com' } });
+  }
+
   ['@test quoteless class attributes update correctly']() {
     this.render('<div class={{if fooBar "foo-bar"}}>hello</div>', {
       fooBar: true

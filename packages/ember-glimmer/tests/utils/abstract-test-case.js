@@ -1,7 +1,7 @@
 import packageName from './package-name';
 import Environment from './environment';
 import { compile, helper, Helper, Component, DOMHelper, InteractiveRenderer } from './helpers';
-import { equalsElement, equalTokens, regex, classes } from './test-helpers';
+import { equalsElement, equalTokens, regex, classes, equalInnerHTML } from './test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import jQuery from 'ember-views/system/jquery';
@@ -181,6 +181,10 @@ export class TestCase {
 
   assertText(text) {
     this.assert.strictEqual(this.textValue(), text, '#qunit-fixture content');
+  }
+
+  assertInnerHTML(html) {
+    equalInnerHTML(this.element, html);
   }
 
   assertHTML(html) {

@@ -299,6 +299,7 @@ Ember.Backburner = function() {
 
   return new BackburnerAlias(arguments);
 };
+
 Ember._Backburner = Backburner;
 
 /**

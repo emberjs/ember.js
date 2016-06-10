@@ -1,4 +1,4 @@
-import { assert, deprecate } from 'ember-metal/debug';
+import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { internal, render } from 'htmlbars-runtime';
 import getValue from 'ember-htmlbars/hooks/get-value';
@@ -122,14 +122,6 @@ function createElementBlock(template, yieldTo, component) {
 function tagNameFor(view) {
   let tagName = view.tagName;
 
-  if (tagName !== null && typeof tagName === 'object' && tagName.isDescriptor) {
-    tagName = get(view, 'tagName');
-    deprecate(
-      'In the future using a computed property to define tagName will not be permitted. That value will be respected, but changing it will not update the element.',
-      !tagName,
-      { id: 'ember-views.computed-tag-name', until: '2.0.0' }
-    );
-  }
 
   if (tagName === null || tagName === undefined) {
     tagName = view._defaultTagName || 'div';

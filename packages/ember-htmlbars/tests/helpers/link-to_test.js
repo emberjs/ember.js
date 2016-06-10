@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
-import { compile } from '../utils/helpers';
+import { compile, Component } from '../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import Controller from 'ember-runtime/controllers/controller';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -10,7 +10,7 @@ import LinkComponent from 'ember-htmlbars/components/link-to';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-var owner, view;
+var owner, view, component;
 
 QUnit.module('ember-htmlbars: link-to helper', {
   setup() {
@@ -54,40 +54,37 @@ QUnit.test('should be able to be inserted in DOM when the router is not present'
 
 QUnit.test('re-renders when title changes', function() {
   var template = '{{link-to title routeName}}';
-  view = EmberView.create({
+
+  component = Component.create({
     [OWNER]: owner,
-    controller: {
-      title: 'foo',
-      routeName: 'index'
-    },
-    template: compile(template)
+    title: 'foo',
+    routeName: 'index',
+    layout: compile(template)
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$().text(), 'foo');
+  equal(component.$().text(), 'foo');
 
   run(function() {
-    set(view, 'controller.title', 'bar');
+    set(component, 'title', 'bar');
   });
 
-  equal(view.$().text(), 'bar');
+  equal(component.$().text(), 'bar');
 });
 
 QUnit.test('can read bound title', function() {
   var template = '{{link-to title routeName}}';
-  view = EmberView.create({
+  component = Component.create({
     [OWNER]: owner,
-    controller: {
-      title: 'foo',
-      routeName: 'index'
-    },
-    template: compile(template)
+    title: 'foo',
+    routeName: 'index',
+    layout: compile(template)
   });
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$().text(), 'foo');
+  equal(component.$().text(), 'foo');
 });
 
 QUnit.test('escaped inline form (double curlies) escapes link title', function() {

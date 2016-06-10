@@ -1,7 +1,7 @@
 import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
-import EmberView from 'ember-views/views/view';
+import Component from 'ember-templates/component';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-templates/bootstrap';
 import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
@@ -9,7 +9,7 @@ import { setTemplates, get as getTemplate } from 'ember-templates/template_regis
 var trim = jQuery.trim;
 
 var originalLookup = context.lookup;
-var lookup, App, view;
+var lookup, App, component;
 
 function checkTemplate(templateName) {
   run(function() {
@@ -18,18 +18,16 @@ function checkTemplate(templateName) {
   var template = getTemplate(templateName);
   ok(template, 'template is available on Ember.TEMPLATES');
   equal(jQuery('#qunit-fixture script').length, 0, 'script removed');
-  var view = EmberView.create({
-    template: template,
-    context: {
-      firstName: 'Tobias',
-      drug: 'teamocil'
-    }
+  var component = Component.create({
+    layout: template,
+    firstName: 'Tobias',
+    drug: 'teamocil'
   });
   run(function() {
-    view.createElement();
+    component.createElement();
   });
-  equal(trim(view.$().text()), 'Tobias takes teamocil', 'template works');
-  runDestroy(view);
+  equal(trim(component.$().text()), 'Tobias takes teamocil', 'template works');
+  runDestroy(component);
 }
 
 import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
@@ -42,7 +40,7 @@ QUnit.module('ember-htmlbars: bootstrap', {
     setTemplates({});
     context.lookup = originalLookup;
     runDestroy(App);
-    runDestroy(view);
+    runDestroy(component);
   }
 });
 

@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 import { ENV } from 'ember-environment';
-import { assert, debug, warn, deprecate } from 'ember-metal/debug';
+import { assert, debug } from 'ember-metal/debug';
 import libraries from 'ember-metal/libraries';
 import { isTesting } from 'ember-metal/testing';
 import { get } from 'ember-metal/property_get';
@@ -588,25 +588,7 @@ const Application = Engine.extend({
   _bootSync() {
     if (this._booted) { return; }
 
-    if (ENV._ENABLE_LEGACY_VIEW_SUPPORT && !warnedAboutLegacyViewAddon) {
-      deprecate(
-        'Support for the `ember-legacy-views` addon will end soon, please remove it from your application.',
-        false,
-        { id: 'ember-legacy-views', until: '2.6.0', url: 'http://emberjs.com/deprecations/v1.x/#toc_ember-view' }
-      );
 
-      warnedAboutLegacyViewAddon = true;
-    }
-
-    if (ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT && !warnedAboutLegacyControllerAddon) {
-      warn(
-        'Support for the `ember-legacy-controllers` has been removed, please remove it from your application.',
-        false,
-        { id: 'ember-legacy-controllers', url: 'http://emberjs.com/deprecations/v1.x/#toc_objectcontroller' }
-      );
-
-      warnedAboutLegacyControllerAddon = true;
-    }
 
     // Even though this returns synchronously, we still need to make sure the
     // boot promise exists for book-keeping purposes: if anything went wrong in

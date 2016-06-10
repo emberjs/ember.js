@@ -1,9 +1,8 @@
-import { ENV } from 'ember-environment';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
 import EmberController from 'ember-runtime/controllers/controller';
-import { compile } from '../utils/helpers';
+import { compile, Component } from '../utils/helpers';
 import EmberView from 'ember-views/views/view';
 import { buildAppInstance } from 'ember-htmlbars/tests/utils';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -16,7 +15,6 @@ function runSet(object, key, value) {
   });
 }
 
-const ORIGINAL_LEGACY_CONTROLLER_FLAG = ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT;
 var view, appInstance;
 
 QUnit.module('ember-htmlbars: {{render}} helper', {
@@ -25,7 +23,6 @@ QUnit.module('ember-htmlbars: {{render}} helper', {
   },
 
   teardown() {
-    ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = ORIGINAL_LEGACY_CONTROLLER_FLAG;
     runDestroy(appInstance);
     runDestroy(view);
     setTemplates({});
@@ -105,23 +102,16 @@ QUnit.test('{{render}} helper should not have assertion if view exists without a
 
 QUnit.test('{{render}} helper should render given template with a supplied model', function() {
   var template = '<h1>HI</h1>{{render \'post\' post}}';
+  var component;
   var post = {
     title: 'Rails is omakase'
   };
 
-  var Controller = EmberController.extend({
-    post: post
-  });
-
-  var controller = Controller.create({
-    [OWNER]: appInstance
-  });
-
   expectDeprecation(() => {
-    view = EmberView.create({
+    component = Component.create({
       [OWNER]: appInstance,
-      controller: controller,
-      template: compile(template)
+      post: post,
+      layout: compile(template)
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -136,14 +126,14 @@ QUnit.test('{{render}} helper should render given template with a supplied model
 
   setTemplate('post', compile('<p>{{model.title}}</p>'));
 
-  runAppend(view);
+  runAppend(component);
 
-  equal(view.$().text(), 'HIRails is omakase');
+  equal(component.$().text(), 'HIRails is omakase');
   equal(postController.get('model'), post);
 
-  runSet(controller, 'post', { title: 'Rails is unagi' });
+  runSet(component, 'post', { title: 'Rails is unagi' });
 
-  equal(view.$().text(), 'HIRails is unagi');
+  equal(component.$().text(), 'HIRails is unagi');
   deepEqual(postController.get('model'), { title: 'Rails is unagi' });
 });
 
@@ -297,33 +287,26 @@ QUnit.test('{{render}} helper should render a template without a model only once
 });
 
 QUnit.test('{{render}} helper should render templates with models multiple times', function() {
-  var template = '<h1>HI</h1> {{render \'post\' post1}} {{render \'post\' post2}}';
-  var post1 = {
+  let template = '<h1>HI</h1> {{render \'post\' post1}} {{render \'post\' post2}}';
+  let post1 = {
     title: 'Me first'
   };
-  var post2 = {
+  let post2 = {
     title: 'Then me'
   };
-
-  var Controller = EmberController.extend({
-    post1: post1,
-    post2: post2
-  });
-
-  var controller = Controller.create({
-    [OWNER]: appInstance
-  });
+  let component;
 
   expectDeprecation(() => {
-    view = EmberView.create({
+    component = Component.create({
       [OWNER]: appInstance,
-      controller: controller,
-      template: compile(template)
+      post1,
+      post2,
+      layout: compile(template)
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  var postController1, postController2;
-  var PostController = EmberController.extend({
+  let postController1, postController2;
+  let PostController = EmberController.extend({
     init() {
       this._super(...arguments);
       if (!postController1) {
@@ -337,15 +320,15 @@ QUnit.test('{{render}} helper should render templates with models multiple times
 
   setTemplate('post', compile('<p>{{model.title}}</p>'));
 
-  runAppend(view);
+  runAppend(component);
 
-  ok(view.$().text().match(/^HI ?Me first ?Then me$/));
+  ok(component.$().text().match(/^HI ?Me first ?Then me$/));
   equal(postController1.get('model'), post1);
   equal(postController2.get('model'), post2);
 
-  runSet(controller, 'post1', { title: 'I am new' });
+  runSet(component, 'post1', { title: 'I am new' });
 
-  ok(view.$().text().match(/^HI ?I am new ?Then me$/));
+  ok(component.$().text().match(/^HI ?I am new ?Then me$/));
   deepEqual(postController1.get('model'), { title: 'I am new' });
 });
 
@@ -390,18 +373,14 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
 });
 
 QUnit.test('{{render}} helper should not treat invocations with falsy contexts as context-less', function() {
-  var template = '<h1>HI</h1> {{render \'post\' zero}} {{render \'post\' nonexistent}}';
-
-  let controller = EmberController.create({
-    [OWNER]: appInstance,
-    zero: false
-  });
+  let template = '<h1>HI</h1> {{render \'post\' zero}} {{render \'post\' nonexistent}}';
+  let component;
 
   expectDeprecation(() => {
-    view = EmberView.create({
+    component = Component.create({
       [OWNER]: appInstance,
-      controller,
-      template: compile(template)
+      zero: false,
+      layout: compile(template)
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -420,37 +399,30 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
 
   setTemplate('post', compile('<p>{{#unless model}}NOTHING{{/unless}}</p>'));
 
-  runAppend(view);
+  runAppend(component);
 
-  ok(view.$().text().match(/^HI ?NOTHING ?NOTHING$/));
+  ok(component.$().text().match(/^HI ?NOTHING ?NOTHING$/));
   equal(postController1.get('model'), 0);
   equal(postController2.get('model'), undefined);
 });
 
 QUnit.test('{{render}} helper should render templates both with and without models', function() {
-  var template = '<h1>HI</h1> {{render \'post\'}} {{render \'post\' post}}';
-  var post = {
+  let template = '<h1>HI</h1> {{render \'post\'}} {{render \'post\' post}}';
+  let post = {
     title: 'Rails is omakase'
   };
-
-  var Controller = EmberController.extend({
-    post: post
-  });
-
-  var controller = Controller.create({
-    [OWNER]: appInstance
-  });
+  let component;
 
   expectDeprecation(() => {
-    view = EmberView.create({
+    component = Component.create({
       [OWNER]: appInstance,
-      controller: controller,
+      post,
       template: compile(template)
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  var postController1, postController2;
-  var PostController = EmberController.extend({
+  let postController1, postController2;
+  let PostController = EmberController.extend({
     init() {
       this._super(...arguments);
       if (!postController1) {
@@ -464,15 +436,15 @@ QUnit.test('{{render}} helper should render templates both with and without mode
 
   setTemplate('post', compile('<p>Title:{{model.title}}</p>'));
 
-  runAppend(view);
+  runAppend(component);
 
-  ok(view.$().text().match(/^HI ?Title: ?Title:Rails is omakase$/));
+  ok(component.$().text().match(/^HI ?Title: ?Title:Rails is omakase$/));
   equal(postController1.get('model'), null);
   equal(postController2.get('model'), post);
 
-  runSet(controller, 'post', { title: 'Rails is unagi' });
+  runSet(component, 'post', { title: 'Rails is unagi' });
 
-  ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
+  ok(component.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
   deepEqual(postController2.get('model'), { title: 'Rails is unagi' });
 });
 
@@ -618,8 +590,6 @@ QUnit.test('{{render}} helper should not require view to provide its own templat
 
 QUnit.test('{{render}} helper should set router as target when parentController is not found', function() {
   expect(3);
-
-  ENV._ENABLE_LEGACY_CONTROLLER_SUPPORT = false;
 
   let template = `{{render 'post' post1}}`;
 
