@@ -77,7 +77,7 @@ QUnit.test('overriding inherited objects', function() {
   MixinB.apply(objB);
 
   cnt = 0;
-  objB.foo();
+  objB['foo']();
   equal(cnt, 2, 'should invoke both methods');
 
   cnt = 0;
