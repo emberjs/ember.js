@@ -242,7 +242,7 @@ helper('currentURL', currentURL);
  @return {Object} A promise that will never resolve
  @public
 */
-helper('pauseTest', pauseTest);
+asyncHelper('pauseTest', pauseTest);
 
 /**
   Triggers the given DOM event on the element identified by the provided selector.
