@@ -1,4 +1,3 @@
-import { assert } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 
 import EmberObject from 'ember-runtime/system/object';
@@ -8,7 +7,6 @@ import { typeOf } from 'ember-runtime/utils';
 
 import { InteractiveRenderer } from 'ember-htmlbars/renderer';
 import { cloneStates, states } from 'ember-views/views/states';
-import { internal } from 'htmlbars-runtime';
 import require from 'require';
 
 // Normally, the renderer is injected by the container when the view is looked
@@ -105,17 +103,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     if (!this._super(...arguments)) { return; }
 
     this._currentState.cleanup(this);
-
-    // If the destroyingSubtreeForView property is not set but we have an
-    // associated render node, it means this view is being destroyed from user
-    // code and not via a change in the templating layer (like an {{if}}
-    // becoming falsy, for example).  In this case, it is our responsibility to
-    // make sure that any render nodes created as part of the rendering process
-    // are cleaned up.
-    if (!this.ownerView._destroyingSubtreeForView && this._renderNode) {
-      assert('BUG: Render node exists without concomitant env.', this.ownerView.env);
-      internal.clearMorph(this._renderNode, this.ownerView.env, true);
-    }
 
     return this;
   }
