@@ -2003,7 +2003,7 @@ QUnit.test('The rootURL is passed properly to the location implementation', func
 });
 
 
-test('Only use route rendered into main outlet for default into property on child', function() {
+QUnit.test('Only use route rendered into main outlet for default into property on child', function() {
   setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('posts/index', compile('<p class="posts-index">postsIndex</p>'));
@@ -2096,7 +2096,7 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
 });
 
 if (isEnabled('ember-route-serializers')) {
-  test('Custom Route#serialize method still works [DEPRECATED]', function() {
+  QUnit.test('Custom Route#serialize method still works [DEPRECATED]', function() {
     Router.map(function() {
       this.route('posts', function() {
         this.route('index', {
@@ -2949,7 +2949,7 @@ test('Specifying non-existent controller name in route#render throws', function(
   bootApplication();
 });
 
-test('Redirecting with null model doesn\'t error out', function() {
+QUnit.test('Redirecting with null model doesn\'t error out', function() {
   function serializeAboutRoute(model) {
     if (model === null) {
       return { hurhurhur: 'TreeklesMcGeekles' };

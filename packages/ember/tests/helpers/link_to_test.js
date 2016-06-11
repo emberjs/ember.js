@@ -984,7 +984,7 @@ QUnit.test("Issue 4201 - Shorthand for route.index shouldn't throw errors about 
   shouldBeActive('#lobby-link');
 });
 
-test('Quoteless route param performs property lookup', function() {
+QUnit.test('Quoteless route param performs property lookup', function() {
   setTemplate('index', compile("{{#link-to 'index' id='string-link'}}string{{/link-to}}{{#link-to foo id='path-link'}}path{{/link-to}}"));
 
   function assertEquality(href) {
@@ -1302,7 +1302,7 @@ QUnit.test('The non-block form {{link-to}} helper moves into the named route wit
   equal(normalizeUrl(jQuery('li a:contains(Erik)').attr('href')), '/item/erik');
 });
 
-test('The non-block form {{link-to}} performs property lookup', function() {
+QUnit.test('The non-block form {{link-to}} performs property lookup', function() {
   setTemplate('index', compile("{{link-to 'string' 'index' id='string-link'}}{{link-to path foo id='path-link'}}"));
 
   function assertEquality(href) {
