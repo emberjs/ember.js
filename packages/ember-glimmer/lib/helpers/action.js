@@ -67,7 +67,7 @@ export class ClosureActionReference extends CachedReference {
       target = action;
       action = action[INVOKE];
     } else if (actionType !== 'function') {
-      // FIXME: Is there a better way of doing this?
+      // TODO: Is there a better way of doing this?
       let rawActionLabel = rawActionRef._propertyKey || rawAction;
       throw new EmberError(`An action could not be made for \`${rawActionLabel}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${rawActionLabel}')\`) or a function available in ${target}.`);
     }
