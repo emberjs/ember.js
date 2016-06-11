@@ -6,6 +6,13 @@ let assert = QUnit.assert;
 
 moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
+  ['@glimmer it cannot override built-in syntax']() {
+    this.registerHelper('if', () => 'Nope');
+    expectAssertion(() => {
+      this.render(`{{if foo 'LOL'}}`, { foo: true });
+    }, /You attempted to overwrite the built-in helper \"if\" which is not allowed. Please rename the helper./);
+  }
+
   ['@test it can resolve custom simple helpers with or without dashes']() {
     this.registerHelper('hello', () => 'hello');
     this.registerHelper('hello-world', () => 'hello world');
