@@ -183,7 +183,6 @@ class IsTruthyGenerator extends AbstractGenerator {
           this.runTask(() => this.rerender());
 
           this.assertText('F1');
-
           this.runTask(() => set(this.context, 'cond1.isTruthy', this.truthyValue));
 
           this.assertText('T1');

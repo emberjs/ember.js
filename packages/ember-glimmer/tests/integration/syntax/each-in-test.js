@@ -1,13 +1,16 @@
 import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
 import { strip } from '../../utils/abstract-test-case';
 import { applyMixins } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import ObjectProxy from 'ember-runtime/system/object_proxy';
+import EmberObject from 'ember-runtime/system/object';
+
 import {
   BasicConditionalsTest,
   SyntaxCondtionalTestHelpers,
   TruthyGenerator,
-  FalsyGenerator,
-  // ObjectTestCases
+  FalsyGenerator
 } from '../../utils/shared-conditional-tests';
 
 class EachInTest extends BasicConditionalsTest {
@@ -23,25 +26,32 @@ applyMixins(EachInTest,
 
   new TruthyGenerator([
     // TODO: figure out what the rest of the cases are
-    { foo: 1 }
+    { foo: 1 },
+    EmberObject.create({ 'Not Empty': 1 }),
+    ObjectProxy.create({ content: { 'Not empty': 1 } }),
+    ObjectProxy.create({ content: Object.create({}) }),
+    ObjectProxy.create({ content: EmberObject.create() })
   ]),
 
   new FalsyGenerator([
     // TODO: figure out what the rest of the cases are
     {},
     Object.create({ 'Not Empty': 1 }),
+    Object.create({}),
+    EmberObject.create(),
+    ObjectProxy.create({}),
+    // TODO: These 2 should be falsy but are returning true
+    //ObjectProxy.create({ content: null }),
+    //ObjectProxy.create({ content: {} }),
     undefined,
     null
   ])
-
-  // TODO(mmun): Add support for object proxies and
-  // include the ObjectTestCases mixin.
 );
 
-moduleFor('@htmlbars Syntax test: {{#each-in}}', class extends EachInTest {
+moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
 
   templateFor({ cond, truthy, falsy }) {
-    return `{{#each-in ${cond}}}${truthy}{{else}}${falsy}{{/each-in}}`;
+    return `{{#each-in ${cond} as |key|}}${truthy}{{else}}${falsy}{{/each-in}}`;
   }
 
   [`@test it repeats the given block for each item in the hash`]() {
@@ -88,6 +98,57 @@ moduleFor('@htmlbars Syntax test: {{#each-in}}', class extends EachInTest {
       'Smartphones': 8203,
       'JavaScript Frameworks': Infinity
     }));
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+  }
+
+  [`@test it repeats the given block when the hash is dynamic`]() {
+    this.render(strip`
+      <ul>
+        {{#each-in (get collection type) as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      collection: {
+        categories: {
+          'Smartphones': 8203,
+          'JavaScript Frameworks': Infinity
+        },
+        otherCategories: {
+          'Emberinios': 533462,
+          'Tweets': 7323
+        }
+      },
+      type: 'categories'
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(this.context, 'type', 'otherCategories');
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Emberinios: 533462</li>
+        <li>Tweets: 7323</li>
+      </ul>
+    `);
+
+    this.runTask(() => set(this.context, 'type', 'categories'));
 
     this.assertHTML(strip`
       <ul>
@@ -155,9 +216,74 @@ moduleFor('@htmlbars Syntax test: {{#each-in}}', class extends EachInTest {
     `);
   }
 
+  [`@test it does not observe property mutations on the object`]() {
+    this.render(strip`
+      <ul>
+        {{#each-in categories as |category count|}}
+          <li>{{category}}: {{count}}</li>
+        {{/each-in}}
+      </ul>
+    `, {
+      categories: {
+        'Smartphones': 8203,
+        'JavaScript Frameworks': Infinity
+      }
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let categories = get(this.context, 'categories');
+      delete categories.Smartphones;
+    });
+
+    this.assertInvariants();
+
+    this.runTask(() => {
+      let categories = get(this.context, 'categories');
+      categories['Emberinios'] = 123456;
+    });
+
+    this.assertInvariants();
+
+    this.runTask(() => {
+      set(this.context, 'categories', {
+        Emberinios: 123456
+      });
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Emberinios: 123456</li>
+      </ul>
+    `);
+
+    this.runTask(() => {
+      set(this.context, 'categories', {
+        'Smartphones': 8203,
+        'JavaScript Frameworks': Infinity
+      });
+      this.rerender();
+    });
+
+    this.assertHTML(strip`
+      <ul>
+        <li>Smartphones: 8203</li>
+        <li>JavaScript Frameworks: Infinity</li>
+      </ul>
+    `);
+  }
+
 });
 
-moduleFor('@htmlbars Syntax test: {{#each-in}} undefined path', class extends RenderingTest {
+moduleFor('Syntax test: {{#each-in}} undefined path', class extends RenderingTest {
   ['@test keying off of `undefined` does not render'](assert) {
     this.render(strip`
       {{#each-in foo.bar.baz as |thing|}}

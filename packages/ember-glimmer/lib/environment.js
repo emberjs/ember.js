@@ -32,6 +32,7 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as classHelper } from './helpers/-class';
 import { default as queryParams } from './helpers/query-param';
+import { default as eachIn } from './helpers/each-in';
 import { OWNER } from 'container/owner';
 
 const builtInComponents = {
@@ -50,7 +51,8 @@ const builtInHelpers = {
   readonly,
   unbound,
   'query-params': queryParams,
-  '-class': classHelper
+  '-class': classHelper,
+  '-each-in': eachIn
 };
 
 import { default as ActionModifierManager } from './modifiers/action';
@@ -206,7 +208,6 @@ export default class Environment extends GlimmerEnvironment {
 
   lookupHelper(name) {
     let helper = builtInHelpers[name[0]] || this.owner.lookup(`helper:${name}`);
-
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {
       return (args) => helper.toReference(args);
