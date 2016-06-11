@@ -5,13 +5,20 @@ import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import helpers from 'ember-htmlbars/helpers';
-import { OutletView } from 'ember-htmlbars/views/outlet';
 import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 import isEnabled from 'ember-metal/features';
+import require from 'require';
+
+let OutletView;
+if (isEnabled('ember-glimmer')) {
+  OutletView = require('ember-glimmer/views/outlet').default;
+} else {
+  OutletView = require('ember-htmlbars/views/outlet').OutletView;
+}
 
 var App, appInstance;
 var originalHelpers;
@@ -401,7 +408,7 @@ QUnit.test('Components trigger actions in the components context when called fro
   jQuery('#fizzbuzz', '#wrapper').click();
 });
 
-test('Components receive the top-level view as their ownerView', function(assert) {
+QUnit.test('Components receive the top-level view as their ownerView', function(assert) {
   setTemplate('application', compile('{{outlet}}'));
   setTemplate('index', compile('{{my-component}}'));
   setTemplate('components/my-component', compile('<div></div>'));
@@ -424,6 +431,4 @@ test('Components receive the top-level view as their ownerView', function(assert
   assert.ok(ownerView, 'owner view was set');
   assert.ok(ownerView instanceof OutletView, 'owner view has no parent view');
   assert.notStrictEqual(component, ownerView, 'owner view is not itself');
-
-  assert.ok(ownerView._outlets, 'owner view has an internal array of outlets');
 });
