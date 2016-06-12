@@ -254,7 +254,8 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
 // Testing behaviors related to objects, object proxies, `{ isTruthy: (true|false) }`, etc
 export const ObjectTestCases = {
 
-  ['@test it tests for `isTruthy` if available']() {
+  // Marking as @htmlbars since POJOs can no longer masquerade as Proxies in glimmer2. See proxy tests below.
+  ['@htmlbars it tests for `isTruthy` if available']() {
     this.renderValues({ isTruthy: this.truthyValue }, { isTruthy: this.falsyValue });
 
     this.assertText('T1F2');
@@ -282,7 +283,8 @@ export const ObjectTestCases = {
     this.assertText('T1F2');
   },
 
-  ['@test it tests for `isTruthy` on Ember objects if available']() {
+  // Marking as @htmlbars since POJOs can no longer masquerade as Proxies in glimmer2. See proxy tests below.
+  ['@htmlbars it tests for `isTruthy` on Ember objects if available']() {
     this.renderValues(
       EmberObject.create({ isTruthy: this.truthyValue }),
       EmberObject.create({ isTruthy: this.falsyValue })
@@ -344,6 +346,59 @@ export const ObjectTestCases = {
     this.runTask(() => {
       set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
       set(this.context, 'cond2', ObjectProxy.create({ content: EmberObject.create() }));
+      set(this.context, 'cond3', ObjectProxy.create({ content: null }));
+    });
+
+    this.assertText('T1T2F3');
+  },
+
+  ['@test setting the isTruthy property of an object proxy overrides its truthiness regardless of its content']() {
+    this.renderValues(
+      ObjectProxy.create({ content: {} }),
+      EmberObject.create({ content: false, isTruthy: true }),
+      ObjectProxy.create({ content: null })
+    );
+
+    this.assertText('T1T2F3');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('T1T2F3');
+
+    this.runTask(() => {
+      set(this.context, 'cond1.isTruthy', false);
+      set(this.context, 'cond2.isTruthy', false);
+    });
+
+    this.assertText('F1F2F3');
+
+    this.runTask(() => {
+      set(this.context, 'cond1.content', 1);
+      set(this.context, 'cond2.content', 1);
+      set(this.context, 'cond3.content', 1);
+    });
+
+    this.assertText('F1F2T3');
+
+
+    this.runTask(() => {
+      set(this.context, 'cond1.isTruthy', true);
+      set(this.context, 'cond2.isTruthy', true);
+    });
+
+    this.assertText('T1T2T3');
+
+    this.runTask(() => {
+      set(this.context, 'cond1.content', null);
+      set(this.context, 'cond2.content', null);
+      set(this.context, 'cond3.content', null);
+    });
+
+    this.assertText('T1T2F3');
+
+    this.runTask(() => {
+      set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
+      set(this.context, 'cond2', EmberObject.create({ content: true, isTruthy: true }));
       set(this.context, 'cond3', ObjectProxy.create({ content: null }));
     });
 
@@ -473,7 +528,7 @@ applyMixins(TogglingConditionalsTest,
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
-    EmberObject.create({ isTruthy: true }),
+    ObjectProxy.create({ content: true }),
     /*jshint -W053 */
     new String('hello'),
     new String(''),
@@ -491,7 +546,7 @@ applyMixins(TogglingConditionalsTest,
     0,
     [],
     emberA(),
-    EmberObject.create({ isTruthy: false })
+    ObjectProxy.create({ content: undefined })
   ]),
 
   new IsTruthyGenerator([
@@ -504,11 +559,14 @@ applyMixins(TogglingConditionalsTest,
     1,
     ['hello'],
     emberA(['hello']),
+    ArrayProxy.create({ content: ['hello'] }),
+    ArrayProxy.create({ content: [] }),
     {},
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
-    EmberObject.create({ isTruthy: true }),
+    ObjectProxy.create({ content: true }),
+    ObjectProxy.create({ content: undefined }),
     /*jshint -W053 */
     new String('hello'),
     new String(''),
@@ -522,8 +580,7 @@ applyMixins(TogglingConditionalsTest,
     '',
     0,
     [],
-    emberA(),
-    EmberObject.create({ isTruthy: false })
+    emberA()
   ]),
 
   ObjectTestCases,
@@ -584,7 +641,8 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  ['@test it tests for `isTruthy` on the context if available']() {
+  // This no longer makes sense for glimmer since `this` refers to the component, which cannot be a proxy
+  ['@htmlbars it tests for `isTruthy` on the context if available']() {
     let template = this.wrappedTemplateFor({ cond: 'this', truthy: '"T1"', falsy: '"F1"' });
 
     this.render(template, { isTruthy: this.truthyValue });
@@ -714,7 +772,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('T1F2');
   }
 
-  ['@test it tests for `isTruthy` on the context if available']() {
+  // Marking as @htmlbars since this no longer relevant for glimmer as `this` refers to the component, which is never a proxy
+  ['@htmlbars it tests for `isTruthy` on the context if available']() {
     let template = this.wrappedTemplateFor({ cond: 'this', truthy: 'T1', falsy: 'F1' });
 
     this.render(template, { isTruthy: this.truthyValue });

@@ -10,18 +10,9 @@ import { dasherize } from 'ember-runtime/system/string';
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
-export const UPDATE = symbol('UPDATE');
+import { isProxy } from 'ember-runtime/mixins/-proxy';
 
-// FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
-// have an `isTruthy` property on them). This is not actually supported –
-// we should fix the tests to use an actual proxy. When that's done, we should
-// remove this and use the real `isProxy` from `ember-metal`.
-//
-// import { isProxy } from 'ember-metal/-proxy';
-//
-function isProxy(obj) {
-  return (obj && typeof obj === 'object' && 'isTruthy' in obj);
-}
+export const UPDATE = symbol('UPDATE');
 
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
