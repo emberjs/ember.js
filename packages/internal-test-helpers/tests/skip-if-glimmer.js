@@ -2,9 +2,9 @@ import isEnabled from 'ember-metal/features';
 
 export function test(name, fn) {
   if (isEnabled('ember-glimmer')) {
-    QUnit.skip('[GLIMMER] ' + name, fn);
+    QUnit.skip('[SKIPPED IN GLIMMER] ' + name, fn);
   } else {
-    QUnit.test(name, fn);
+    QUnit.test('[SKIPPED IN GLIMMER] ' + name, fn);
   }
 }
 

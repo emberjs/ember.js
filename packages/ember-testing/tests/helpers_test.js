@@ -417,7 +417,7 @@ test('`click` triggers appropriate events in order', function() {
   });
 });
 
-test('`click` triggers native events with simulated X/Y coordinates', function() {
+QUnit.test('`click` triggers native events with simulated X/Y coordinates', function() {
   expect(15);
 
   var click, wait, events;
