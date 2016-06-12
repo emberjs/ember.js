@@ -1,1 +1,0 @@
-../../../ember-glimmer/tests/integration/mutable-binding-test.js

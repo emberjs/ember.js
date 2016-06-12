@@ -10,7 +10,11 @@ import { dasherize } from 'ember-runtime/system/string';
 import { meta as metaFor } from 'ember-metal/meta';
 import { watchKey } from 'ember-metal/watch_key';
 import isEnabled from 'ember-metal/features';
+import { ARGS } from '../component';
+import { MUTABLE_REFERENCE } from 'ember-htmlbars/keywords/mut';
+
 export const UPDATE = symbol('UPDATE');
+export const READONLY = symbol('READONLY');
 
 // FIXME: fix tests that uses a "fake" proxy (i.e. a POJOs that "happen" to
 // have an `isTruthy` property on them). This is not actually supported –
@@ -72,6 +76,13 @@ export class CachedReference extends EmberPathReference {
 // @implements PathReference
 export class RootReference extends ConstReference {
   get(propertyKey) {
+    let args, ref;
+
+    if ((args = this.value()[ARGS]) &&
+      (ref = args[propertyKey]) &&
+      (ref[MUTABLE_REFERENCE] || ref[READONLY])) {
+      return ref;
+    }
     return new PropertyReference(this, propertyKey);
   }
 }
@@ -411,6 +422,12 @@ export class UnboundReference {
 
   get(key) {
     return new UnboundReference(this, key);
+  }
+
+  [UPDATE](val) {
+    let { key, sourceRef } = this;
+    let sourceVal = sourceRef.value();
+    this.cache = key ? set(sourceVal, key, val) : val;
   }
 
   destroy() {}

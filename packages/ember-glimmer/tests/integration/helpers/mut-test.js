@@ -1,13 +1,13 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
-import { Component } from '../utils/helpers';
+import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { Component } from '../../utils/helpers';
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
-import { styles } from '../utils/test-helpers';
+import { styles } from '../../utils/test-helpers';
 
-moduleFor('@htmlbars Mutable bindings integration tests', class extends RenderingTest {
+moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
 
-  ['@test a simple mutable binding using `mut` propagates properly'](assert) {
+  ['@test a simple mutable binding using `mut` propagates properly']() {
     let bottom;
 
     this.registerComponent('bottom-mut', {
@@ -33,16 +33,25 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
     this.runTask(() => bottom.attrs.setMe.update(13));
 
-    this.assertText('13', 'The set took effect');
-    assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+    this.assertText('13', 'the set took effect');
+    this.assert.strictEqual(get(bottom, 'setMe'), 13, 'the set took effect on bottom\'s prop');
+    this.assert.strictEqual(bottom.attrs.setMe.value, 13, 'the set took effect on bottom\'s attr');
+    this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+
+    this.runTask(() => set(bottom, 'setMe', 14));
+
+    this.assertText('14', 'the set took effect');
+    this.assert.strictEqual(get(bottom, 'setMe'), 14, 'the set took effect on bottom\'s prop');
+    this.assert.strictEqual(bottom.attrs.setMe.value, 14, 'the set took effect on bottom\'s attr');
+    this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
     this.runTask(() => set(this.context, 'val', 12));
 
     this.assertText('12');
   }
 
-  ['@test a simple mutable binding using `mut` inserts into the DOM'](assert) {
-    let bottom;
+  ['@test a simple mutable binding using `mut` inserts into the DOM']() {
+    let bottom, middle;
 
     this.registerComponent('bottom-mut', {
       ComponentClass: Component.extend({
@@ -54,6 +63,11 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     });
 
     this.registerComponent('middle-mut', {
+      ComponentClass: Component.extend({
+        didInsertElement() {
+          middle = this;
+        }
+      }),
       template: '{{bottom-mut setMe=(mut value)}}'
     });
 
@@ -68,7 +82,20 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.runTask(() => bottom.attrs.setMe.update(13));
 
     this.assertText('13', 'the set took effect');
-    assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+    this.assert.strictEqual(get(bottom, 'setMe'), 13, 'the set took effect on bottom\'s prop');
+    this.assert.strictEqual(bottom.attrs.setMe.value, 13, 'the set took effect on bottom\'s attr');
+    this.assert.strictEqual(get(middle, 'value'), 13, 'the set propagated to middle\'s prop');
+    this.assert.strictEqual(middle.attrs.value.value, 13, 'the set propagated to middle\'s attr');
+    this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+
+    this.runTask(() => set(bottom, 'setMe', 14));
+
+    this.assertText('14', 'the set took effect');
+    this.assert.strictEqual(get(bottom, 'setMe'), 14, 'the set took effect on bottom\'s prop');
+    this.assert.strictEqual(bottom.attrs.setMe.value, 14, 'the set took effect on bottom\'s attr');
+    this.assert.strictEqual(get(middle, 'value'), 14, 'the set propagated to middle\'s prop');
+    this.assert.strictEqual(middle.attrs.value.value, 14, 'the set propagated to middle\'s attr');
+    this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
     this.runTask(() => set(this.context, 'val', 12));
 
@@ -76,7 +103,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
   }
 
   // See https://github.com/emberjs/ember.js/commit/807a0cd for an explanation of this test
-  ['@test using a string value through middle tier does not trigger assertion'](assert) {
+  ['@test using a string value through middle tier does not trigger assertion']() {
     let bottom;
 
     this.registerComponent('bottom-mut', {
@@ -89,12 +116,12 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     });
 
     this.registerComponent('middle-mut', {
-      template: '{{bottom-mut stuff=value}}'
+      template: '{{bottom-mut stuff=(mut value)}}'
     });
 
     this.render('{{middle-mut value="foo"}}');
 
-    assert.equal(bottom.attrs.stuff.value, 'foo', 'the data propagated');
+    this.assert.equal(get(bottom, 'stuff'), 'foo', 'the data propagated');
     this.assertText('foo');
 
     this.assertStableRerender();
@@ -102,7 +129,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     // No U-R for this test
   }
 
-  ['@test a simple mutable binding using `mut` can be converted into an immutable binding'](assert) {
+  ['@test {{readonly}} of a {{mut}} is converted into an immutable binding']() {
     let middle, bottom;
 
     this.registerComponent('bottom-mut', {
@@ -133,10 +160,16 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
     this.runTask(() => middle.attrs.value.update(13));
 
-    assert.strictEqual(middle.attrs.value.value, 13, 'the set took effect');
-    assert.strictEqual(bottom.attrs.setMe, 13, 'the mutable binding has been converted to an immutable cell');
-    this.assertText('13');
-    assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+    this.assert.strictEqual(get(middle, 'value'), 13, 'the set took effect on middle\'s prop');
+    this.assert.strictEqual(middle.attrs.value.value, 13, 'the set took effect on middle\'s attr');
+
+    this.runTask(() => set(middle, 'value', 14));
+
+    this.assert.strictEqual(get(middle, 'value'), 14, 'the set took effect on middle\'s prop');
+    this.assert.strictEqual(middle.attrs.value.value, 14, 'the set took effect on middle\'s attr');
+    this.assert.strictEqual(bottom.attrs.setMe, 14, 'the mutable binding has been converted to an immutable cell');
+    this.assertText('14');
+    this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
     this.runTask(() => set(this.context, 'val', 12));
 
@@ -169,7 +202,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('Matthew Beale');
   }
 
-  ['@test a simple mutable binding using `mut` is available in hooks'](assert) {
+  ['@test a simple mutable binding using {{mut}} is available in hooks']() {
     let bottom;
     let willRender = [];
     let didInsert = [];
@@ -177,10 +210,10 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.registerComponent('bottom-mut', {
       ComponentClass: Component.extend({
         willRender() {
-          willRender.push(this.attrs.setMe.value);
+          willRender.push(get(this, 'setMe'));
         },
         didInsertElement() {
-          didInsert.push(this.attrs.setMe.value);
+          didInsert.push(get(this, 'setMe'));
           bottom = this;
         }
       }),
@@ -195,27 +228,38 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
       val: 12
     });
 
-    assert.deepEqual(willRender, [12], 'willReceive is [12]');
-    assert.deepEqual(didInsert, [12], 'didInsert is [12]');
+    this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
+    this.assert.deepEqual(didInsert, [12], 'didInsert is [12]');
     this.assertText('12');
 
     this.assertStableRerender();
 
-    assert.deepEqual(willRender, [12, 12], 'willReceive is [12, 12]');
-    assert.deepEqual(didInsert, [12], 'didInsert is [12]');
-    assert.strictEqual(bottom.attrs.setMe.value, 12, 'the data propagated');
+    if (this.isHTMLBars) {
+      this.assert.deepEqual(willRender, [12, 12], 'willReceive is [12, 12]');
+    } else {
+      this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
+    }
+    this.assert.deepEqual(didInsert, [12], 'didInsert is [12]');
+    this.assert.strictEqual(get(bottom, 'setMe'), 12, 'the data propagated');
 
     this.runTask(() => bottom.attrs.setMe.update(13));
 
-    assert.strictEqual(bottom.attrs.setMe.value, 13, 'the set took effect');
-    assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+    this.assert.strictEqual(get(bottom, 'setMe'), 13, 'the set took effect on bottom\'s prop');
+    this.assert.strictEqual(bottom.attrs.setMe.value, 13, 'the set took effect on bottom\'s attr');
+    this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
+
+    this.runTask(() => set(bottom, 'setMe', 14));
+
+    this.assert.strictEqual(get(bottom, 'setMe'), 14, 'the set took effect on bottom\'s prop');
+    this.assert.strictEqual(bottom.attrs.setMe.value, 14, 'the set took effect on bottom\'s attr');
+    this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
     this.runTask(() => set(this.context, 'val', 12));
 
     this.assertText('12');
   }
 
-  ['@test a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023'](assert) {
+  ['@test a mutable binding with a backing computed property and attribute present in the root of the component is updated when the upstream property invalidates #11023']() {
     let bottom, middle;
 
     this.registerComponent('bottom-mut', {
@@ -243,14 +287,16 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
     this.render('{{middle-mut}}');
 
-    assert.strictEqual(bottom.attrs.thingy.value, 12, 'data propagated');
+    this.assert.strictEqual(get(bottom, 'thingy'), 12, 'data propagated');
     this.assertText('12');
 
     this.assertStableRerender();
 
     this.runTask(() => set(middle, 'baseValue', 13));
 
-    assert.strictEqual(bottom.attrs.thingy.value, 13, 'the set took effect');
+    this.assert.strictEqual(get(middle, 'val'), 13, 'the set took effect');
+    this.assert.strictEqual(bottom.attrs.thingy.value, 13, 'the set propagated down to bottom\'s attrs');
+    this.assert.strictEqual(get(bottom, 'thingy'), 13, 'the set propagated down to bottom\'s prop');
     this.assertText('13');
 
     this.runTask(() => set(middle, 'baseValue', 12));
@@ -258,7 +304,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('12');
   }
 
-  ['@test automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them'](assert) {
+  ['@htmlbars automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them']() {
     let inner;
 
     this.registerComponent('x-inner', {
@@ -282,7 +328,8 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
     this.runTask(() => inner.attrs.model.update(42));
 
-    assert.equal(inner.attrs.model.value, 42);
+    this.assert.equal(inner.attrs.model.value, 42);
+    this.assert.equal(get(inner, 'model'), 42);
     this.assertText('42');
 
     this.runTask(() => inner.attrs.model.update(undefined));
@@ -290,7 +337,7 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
     this.assertText('');
   }
 
-  ['@test automatic mutable bindings tolerate constant non-stream inputs and attempts to set them'](assert) {
+  ['@htmlbars automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
     let inner;
 
     this.registerComponent('x-inner', {
@@ -314,9 +361,9 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
     this.runTask(() => inner.attrs.model.update(42));
 
-    assert.equal(inner.attrs.model.value, 42);
+    this.assert.equal(inner.attrs.model.value, 42);
+    this.assert.equal(get(inner, 'model'), 42);
     this.assertText('hello42');
-
 
     this.runTask(() => inner.attrs.model.update('foo'));
 
@@ -325,9 +372,9 @@ moduleFor('@htmlbars Mutable bindings integration tests', class extends Renderin
 
 });
 
-moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound as attributeBindings', class extends RenderingTest {
+moduleFor('Mutable Bindings used in Computed Properties that are bound as attributeBindings', class extends RenderingTest {
 
-  ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes'](assert) {
+  ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes']() {
     let input, output;
 
     this.registerComponent('x-input', {
@@ -363,17 +410,23 @@ moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound
 
     this.runTask(() => input.attrs.height.update(35));
 
-    assert.strictEqual(get(output, 'height'), 35, 'the set took effect');
-    assert.strictEqual(get(this.context, 'height'), 35, 'the set propagated back up');
+    this.assert.strictEqual(get(output, 'height'), 35, 'the set took effect');
+    this.assert.strictEqual(get(this.context, 'height'), 35, 'the set propagated back up');
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px;') }, content: '35' });
+
+    this.runTask(() => set(input, 'height', 36));
+
+    this.assert.strictEqual(get(output, 'height'), 36, 'the set took effect');
+    this.assert.strictEqual(get(this.context, 'height'), 36, 'the set propagated back up');
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 36px;') }, content: '36' });
 
     this.runTask(() => set(this.context, 'height', 60));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 60px;') }, content: '60' });
-    assert.strictEqual(get(input, 'height'), 60);
+    this.assert.strictEqual(get(input, 'height'), 60);
   }
 
-  ['@test an attribute binding of a computed property with a setter of a 2-way bound attr recomputes when the attr changes'](assert) {
+  ['@test an attribute binding of a computed property with a setter of a 2-way bound attr recomputes when the attr changes']() {
     let input, output;
 
     this.registerComponent('x-input', {
@@ -417,15 +470,21 @@ moduleFor('@htmlbars Mutable Bindings used in Computed Properties that are bound
 
     this.assertStableRerender();
 
-    this.runTask(() => input.attrs.width.update(80));
+    this.runTask(() => set(input, 'width', 80));
 
-    assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
-    assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
+    this.assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
+    this.assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 40px; width: 80px;') }, content: '80x40' });
+
+    this.runTask(() => input.attrs.width.update(90));
+
+    this.assert.strictEqual(get(output, 'width'), 90, 'the set took effect');
+    this.assert.strictEqual(get(this.context, 'width'), 90, 'the set propagated back up');
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 45px; width: 90px;') }, content: '90x45' });
 
     this.runTask(() => set(this.context, 'width', 70));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { style: styles('height: 35px; width: 70px;') }, content: '70x35' });
-    assert.strictEqual(get(input, 'width'), 70);
+    this.assert.strictEqual(get(input, 'width'), 70);
   }
 });
