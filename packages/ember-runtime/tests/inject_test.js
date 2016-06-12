@@ -47,7 +47,7 @@ if (!EmberDev.runningProdBuild) {
 
     throws(function() {
       owner.lookup('foo:main');
-    }, /Attempting to inject an unknown injection: `bar:baz`/);
+    }, /Attempting to inject an unknown injection: 'bar:baz'/);
   });
 }
 

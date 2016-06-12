@@ -4,20 +4,20 @@ import factory from 'container/tests/test-helpers/factory';
 QUnit.module('Registry');
 
 QUnit.test('A registered factory is returned from resolve', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.register('controller:post', PostController);
 
-  var PostControllerFactory = registry.resolve('controller:post');
+  let PostControllerFactory = registry.resolve('controller:post');
 
   ok(PostControllerFactory, 'factory is returned');
   ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
 });
 
 QUnit.test('The registered factory returned from resolve is the same factory each time', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.register('controller:post', PostController);
 
@@ -46,8 +46,8 @@ QUnit.test('The value returned from resolver is the same value as the original v
 });
 
 QUnit.test('A registered factory returns true for `has` if an item is registered', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.register('controller:post', PostController);
 
@@ -56,14 +56,14 @@ QUnit.test('A registered factory returns true for `has` if an item is registered
 });
 
 QUnit.test('Throw exception when trying to inject `type:thing` on all type(s)', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.register('controller:post', PostController);
 
-  throws(function() {
+  throws(() => {
     registry.typeInjection('controller', 'injected', 'controller:post');
-  }, /Cannot inject a `controller:post` on other controller\(s\)\./);
+  }, /Cannot inject a 'controller:post' on other controller\(s\)\./);
 });
 
 QUnit.test('The registry can take a hook to resolve factories lazily', function() {
@@ -95,29 +95,29 @@ QUnit.test('The registry respects the resolver hook for `has`', function() {
 });
 
 QUnit.test('The registry normalizes names when resolving', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.normalizeFullName = function(fullName) {
     return 'controller:post';
   };
 
   registry.register('controller:post', PostController);
-  var type = registry.resolve('controller:normalized');
+  let type = registry.resolve('controller:normalized');
 
   strictEqual(type, PostController, 'Normalizes the name when resolving');
 });
 
 QUnit.test('The registry normalizes names when checking if the factory is registered', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.normalizeFullName = function(fullName) {
     return fullName === 'controller:normalized' ? 'controller:post' : fullName;
   };
 
   registry.register('controller:post', PostController);
-  var isPresent = registry.has('controller:normalized');
+  let isPresent = registry.has('controller:normalized');
 
   equal(isPresent, true, 'Normalizes the name when checking if the factory or instance is present');
 });
@@ -125,27 +125,27 @@ QUnit.test('The registry normalizes names when checking if the factory is regist
 QUnit.test('validateFullName throws an error if name is incorrect', function() {
   expect(2);
 
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
 
   registry.normalize = function(fullName) {
     return 'controller:post';
   };
 
   registry.register('controller:post', PostController);
-  throws(function() {
+  throws(() => {
     registry.validateFullName('post');
-  }, /TypeError: Invalid Fullname, expected: `type:name` got: post/);
+  }, /TypeError: Invalid Fullname, expected: 'type:name' got: post/);
 
-  throws(function() {
+  throws(() => {
     registry.validateFullName('route:http://foo.bar.com/baz');
-  }, /TypeError: Invalid Fullname, expected: `type:name` got: route:http:\/\/foo.bar.com\/baz/);
+  }, /TypeError: Invalid Fullname, expected: 'type:name' got: route:http:\/\/foo.bar.com\/baz/);
 });
 
 QUnit.test('The registry normalizes names when injecting', function() {
-  var registry = new Registry();
-  var PostController = factory();
-  var user = { name: 'Stef' };
+  let registry = new Registry();
+  let PostController = factory();
+  let user = { name: 'Stef' };
 
   registry.normalize = function(fullName) {
     return 'controller:post';
@@ -159,17 +159,17 @@ QUnit.test('The registry normalizes names when injecting', function() {
 });
 
 QUnit.test('cannot register an `undefined` factory', function() {
-  var registry = new Registry();
+  let registry = new Registry();
 
-  throws(function() {
+  throws(() => {
     registry.register('controller:apple', undefined);
   }, '');
 });
 
 QUnit.test('can re-register a factory', function() {
-  var registry = new Registry();
-  var FirstApple = factory('first');
-  var SecondApple = factory('second');
+  let registry = new Registry();
+  let FirstApple = factory('first');
+  let SecondApple = factory('second');
 
   registry.register('controller:apple', FirstApple);
   registry.register('controller:apple', SecondApple);
@@ -178,16 +178,16 @@ QUnit.test('can re-register a factory', function() {
 });
 
 QUnit.test('cannot re-register a factory if it has been resolved', function() {
-  var registry = new Registry();
-  var FirstApple = factory('first');
-  var SecondApple = factory('second');
+  let registry = new Registry();
+  let FirstApple = factory('first');
+  let SecondApple = factory('second');
 
   registry.register('controller:apple', FirstApple);
   strictEqual(registry.resolve('controller:apple'), FirstApple);
 
   throws(function() {
     registry.register('controller:apple', SecondApple);
-  }, /Cannot re-register: `controller:apple`, as it has already been resolved\./);
+  }, /Cannot re-register: 'controller:apple', as it has already been resolved\./);
 
   strictEqual(registry.resolve('controller:apple'), FirstApple);
 });
@@ -195,9 +195,9 @@ QUnit.test('cannot re-register a factory if it has been resolved', function() {
 QUnit.test('registry.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function() {
   expect(1);
 
-  var registry = new Registry();
-  var FirstApple = factory('first');
-  var SecondApple = factory('second');
+  let registry = new Registry();
+  let FirstApple = factory('first');
+  let SecondApple = factory('second');
 
   SecondApple.extend = function(a, b, c) {
     ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
@@ -213,7 +213,7 @@ QUnit.test('registry.has should not accidentally cause injections on that factor
 QUnit.test('registry.has should not error for invalid fullNames)', function() {
   expect(1);
 
-  var registry = new Registry();
+  let registry = new Registry();
 
   ok(!registry.has('foo:bar:baz'));
 });
@@ -221,7 +221,7 @@ QUnit.test('registry.has should not error for invalid fullNames)', function() {
 QUnit.test('once resolved, always return the same result', function() {
   expect(1);
 
-  var registry = new Registry();
+  let registry = new Registry();
 
   registry.resolver = {
     resolve() {
@@ -229,7 +229,7 @@ QUnit.test('once resolved, always return the same result', function() {
     }
   };
 
-  var Bar = registry.resolve('models:bar');
+  let Bar = registry.resolve('models:bar');
 
   registry.resolver = {
     resolve() {
@@ -241,9 +241,9 @@ QUnit.test('once resolved, always return the same result', function() {
 });
 
 QUnit.test('factory resolves are cached', function() {
-  var registry = new Registry();
-  var PostController = factory();
-  var resolveWasCalled = [];
+  let registry = new Registry();
+  let PostController = factory();
+  let resolveWasCalled = [];
 
   registry.resolver = {
     resolve(fullName) {
@@ -261,9 +261,9 @@ QUnit.test('factory resolves are cached', function() {
 });
 
 QUnit.test('factory for non extendables (MODEL) resolves are cached', function() {
-  var registry = new Registry();
-  var PostController = factory();
-  var resolveWasCalled = [];
+  let registry = new Registry();
+  let PostController = factory();
+  let resolveWasCalled = [];
 
   registry.resolver = {
     resolve(fullName) {
@@ -281,9 +281,9 @@ QUnit.test('factory for non extendables (MODEL) resolves are cached', function()
 });
 
 QUnit.test('factory for non extendables resolves are cached', function() {
-  var registry = new Registry();
-  var PostController = {};
-  var resolveWasCalled = [];
+  let registry = new Registry();
+  let PostController = {};
+  let resolveWasCalled = [];
 
   registry.resolver = {
     resolve(fullName) {
@@ -301,12 +301,12 @@ QUnit.test('factory for non extendables resolves are cached', function() {
 });
 
 QUnit.test('registry.container creates a container', function() {
-  var registry = new Registry();
-  var PostController = factory();
+  let registry = new Registry();
+  let PostController = factory();
   registry.register('controller:post', PostController);
 
-  var container = registry.container();
-  var postController = container.lookup('controller:post');
+  let container = registry.container();
+  let postController = container.lookup('controller:post');
 
   ok(postController instanceof PostController, 'The lookup is an instance of the registered factory');
 });
@@ -390,24 +390,24 @@ QUnit.test('`makeToString` will be handled by the resolver, then by the fallback
 });
 
 QUnit.test('`resolve` can be handled by a fallback registry', function() {
-  var fallback = new Registry();
+  let fallback = new Registry();
 
-  var registry = new Registry({ fallback: fallback });
-  var PostController = factory();
+  let registry = new Registry({ fallback: fallback });
+  let PostController = factory();
 
   fallback.register('controller:post', PostController);
 
-  var PostControllerFactory = registry.resolve('controller:post');
+  let PostControllerFactory = registry.resolve('controller:post');
 
   ok(PostControllerFactory, 'factory is returned');
   ok(PostControllerFactory.create() instanceof  PostController, 'The return of factory.create is an instance of PostController');
 });
 
 QUnit.test('`has` can be handled by a fallback registry', function() {
-  var fallback = new Registry();
+  let fallback = new Registry();
 
-  var registry = new Registry({ fallback: fallback });
-  var PostController = factory();
+  let registry = new Registry({ fallback: fallback });
+  let PostController = factory();
 
   fallback.register('controller:post', PostController);
 
@@ -415,8 +415,8 @@ QUnit.test('`has` can be handled by a fallback registry', function() {
 });
 
 QUnit.test('`getInjections` includes injections from a fallback registry', function() {
-  var fallback = new Registry();
-  var registry = new Registry({ fallback: fallback });
+  let fallback = new Registry();
+  let registry = new Registry({ fallback: fallback });
 
   equal(registry.getInjections('model:user').length, 0, 'No injections in the primary registry');
 
@@ -426,8 +426,8 @@ QUnit.test('`getInjections` includes injections from a fallback registry', funct
 });
 
 QUnit.test('`getTypeInjections` includes type injections from a fallback registry', function() {
-  var fallback = new Registry();
-  var registry = new Registry({ fallback: fallback });
+  let fallback = new Registry();
+  let registry = new Registry({ fallback: fallback });
 
   equal(registry.getTypeInjections('model').length, 0, 'No injections in the primary registry');
 
@@ -437,8 +437,8 @@ QUnit.test('`getTypeInjections` includes type injections from a fallback registr
 });
 
 QUnit.test('`getFactoryInjections` includes factory injections from a fallback registry', function() {
-  var fallback = new Registry();
-  var registry = new Registry({ fallback: fallback });
+  let fallback = new Registry();
+  let registry = new Registry({ fallback: fallback });
 
   equal(registry.getFactoryInjections('model:user').length, 0, 'No factory injections in the primary registry');
 
@@ -449,8 +449,8 @@ QUnit.test('`getFactoryInjections` includes factory injections from a fallback r
 
 
 QUnit.test('`getFactoryTypeInjections` includes factory type injections from a fallback registry', function() {
-  var fallback = new Registry();
-  var registry = new Registry({ fallback: fallback });
+  let fallback = new Registry();
+  let registry = new Registry({ fallback: fallback });
 
   equal(registry.getFactoryTypeInjections('model').length, 0, 'No factory type injections in the primary registry');
 
@@ -474,8 +474,8 @@ QUnit.test('`knownForType` contains keys for each item of a given type', functio
 });
 
 QUnit.test('`knownForType` includes fallback registry results', function() {
-  var fallback = new Registry();
-  var registry = new Registry({ fallback: fallback });
+  let fallback = new Registry();
+  let registry = new Registry({ fallback: fallback });
 
   registry.register('foo:bar-baz', 'baz');
   registry.register('foo:qux-fez', 'fez');
@@ -502,7 +502,7 @@ QUnit.test('`knownForType` is called on the resolver if present', function() {
     }
   };
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver
   });
   registry.register('foo:bar-baz', 'baz');
@@ -520,7 +520,7 @@ QUnit.test('A registry can be created with a deprecated `resolver` function inst
 
   let registry;
 
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     registry = new Registry({
       resolver(fullName) {
         return `${fullName}-resolved`;
@@ -534,7 +534,7 @@ QUnit.test('A registry can be created with a deprecated `resolver` function inst
 QUnit.test('resolver.expandLocalLookup is not required', function(assert) {
   assert.expect(1);
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver: { }
   });
 
@@ -558,7 +558,7 @@ QUnit.test('expandLocalLookup is called on the resolver if present', function(as
     }
   };
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver
   });
 
@@ -636,7 +636,7 @@ QUnit.test('resolver.expandLocalLookup result is cached', function(assert) {
     }
   };
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver
   });
 
@@ -665,7 +665,7 @@ QUnit.test('resolver.expandLocalLookup cache is busted when any unregister is ca
     }
   };
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver
   });
 
@@ -698,7 +698,7 @@ QUnit.test('resolve calls expandLocallookup when it receives options.source', fu
     }
   };
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver
   });
 
@@ -730,7 +730,7 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
     }
   };
 
-  var registry = new Registry({
+  let registry = new Registry({
     resolver
   });
 

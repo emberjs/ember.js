@@ -1,20 +1,21 @@
-var setProperties = function(object, properties) {
-  for (var key in properties) {
+function setProperties(object, properties) {
+  for (let key in properties) {
     if (properties.hasOwnProperty(key)) {
       object[key] = properties[key];
     }
   }
-};
+}
 
-var guids = 0;
+let guids = 0;
 
 export default function factory() {
   /*jshint validthis: true */
 
-  var Klass = function(options) {
+  function Klass(options) {
     setProperties(this, options);
     this._guid = guids++;
-  };
+    this.isDestroyed = false;
+  }
 
   Klass.prototype.constructor = Klass;
   Klass.prototype.destroy = function() {
@@ -41,11 +42,11 @@ export default function factory() {
   }
 
   function extend(options) {
-    var Child = function(options) {
+    function Child(options) {
       Klass.call(this, options);
-    };
+    }
 
-    var Parent = this;
+    let Parent = this;
 
     Child.prototype = new Parent();
     Child.prototype.constructor = Child;
