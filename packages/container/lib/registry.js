@@ -868,7 +868,7 @@ import { intern } from 'ember-metal/utils';
 import dict from 'ember-metal/dictionary';
 
 const privateNames = dict(null);
-const privateSuffix = Math.floor(Math.random() * new Date()) + '';
+const privateSuffix = `${Math.random()}${Date.now()}`;
 
 export function privatize([fullName]) {
   let name = privateNames[fullName];
