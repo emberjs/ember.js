@@ -3,9 +3,9 @@ import isPresent from 'ember-metal/is_present';
 QUnit.module('Ember.isPresent');
 
 QUnit.test('Ember.isPresent', function() {
-  var string = 'string';
-  var fn = function() {};
-  var object = { length: 0 };
+  let string = 'string';
+  let fn = function() {};
+  let object = { length: 0 };
 
   equal(false, isPresent(), 'for no params');
   equal(false, isPresent(null), 'for null');

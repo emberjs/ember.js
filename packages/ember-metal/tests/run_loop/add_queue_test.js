@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 
-var originalQueues = run.queues;
-var queues;
+const originalQueues = run.queues;
+let queues;
 
 QUnit.module('system/run_loop/add_queue_test', {
   setup() {

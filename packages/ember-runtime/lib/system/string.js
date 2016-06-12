@@ -13,16 +13,16 @@ import {
 
 import Cache from 'ember-metal/cache';
 
-var STRING_DASHERIZE_REGEXP = (/[ _]/g);
+const STRING_DASHERIZE_REGEXP = (/[ _]/g);
 
-var STRING_DASHERIZE_CACHE = new Cache(1000, function(key) {
+const STRING_DASHERIZE_CACHE = new Cache(1000, function(key) {
   return decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-');
 });
 
-var STRING_CAMELIZE_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
-var STRING_CAMELIZE_REGEXP_2 = (/(^|\/)([A-Z])/g);
+const STRING_CAMELIZE_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
+const STRING_CAMELIZE_REGEXP_2 = (/(^|\/)([A-Z])/g);
 
-var CAMELIZE_CACHE = new Cache(1000, function(key) {
+const CAMELIZE_CACHE = new Cache(1000, function(key) {
   return key.replace(STRING_CAMELIZE_REGEXP_1, function(match, separator, chr) {
     return chr ? chr.toUpperCase() : '';
   }).replace(STRING_CAMELIZE_REGEXP_2, function(match, separator, chr) {
@@ -30,19 +30,19 @@ var CAMELIZE_CACHE = new Cache(1000, function(key) {
   });
 });
 
-var STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
-var STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
-var STRING_CLASSIFY_REGEXP_3 = (/(^|\/|\.)([a-z])/g);
+const STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
+const STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
+const STRING_CLASSIFY_REGEXP_3 = (/(^|\/|\.)([a-z])/g);
 
-var CLASSIFY_CACHE = new Cache(1000, function(str) {
-  var replace1 = function(match, separator, chr) {
+const CLASSIFY_CACHE = new Cache(1000, function(str) {
+  let replace1 = function(match, separator, chr) {
     return chr ? ('_' + chr.toUpperCase()) : '';
   };
-  var replace2 = function(match, initialChar, separator, chr) {
+  let replace2 = function(match, initialChar, separator, chr) {
     return initialChar + (chr ? chr.toUpperCase() : '');
   };
-  var parts = str.split('/');
-  for (var i = 0; i < parts.length; i++) {
+  let parts = str.split('/');
+  for (let i = 0; i < parts.length; i++) {
     parts[i] = parts[i]
       .replace(STRING_CLASSIFY_REGEXP_1, replace1)
       .replace(STRING_CLASSIFY_REGEXP_2, replace2);
@@ -53,41 +53,41 @@ var CLASSIFY_CACHE = new Cache(1000, function(str) {
   });
 });
 
-var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
-var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
+const STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
+const STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
-var UNDERSCORE_CACHE = new Cache(1000, function(str) {
+const UNDERSCORE_CACHE = new Cache(1000, function(str) {
   return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
     replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
 });
 
-var STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z])/g);
+const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z])/g);
 
-var CAPITALIZE_CACHE = new Cache(1000, function(str) {
+const CAPITALIZE_CACHE = new Cache(1000, function(str) {
   return str.replace(STRING_CAPITALIZE_REGEXP, function(match, separator, chr) {
     return match.toUpperCase();
   });
 });
 
-var STRING_DECAMELIZE_REGEXP = (/([a-z\d])([A-Z])/g);
+const STRING_DECAMELIZE_REGEXP = (/([a-z\d])([A-Z])/g);
 
-var DECAMELIZE_CACHE = new Cache(1000, function(str) {
+const DECAMELIZE_CACHE = new Cache(1000, function(str) {
   return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
 });
 
 function _fmt(str, formats) {
-  var cachedFormats = formats;
+  let cachedFormats = formats;
 
   if (!isArray(cachedFormats) || arguments.length > 2) {
     cachedFormats = new Array(arguments.length - 1);
 
-    for (var i = 1; i < arguments.length; i++) {
+    for (let i = 1; i < arguments.length; i++) {
       cachedFormats[i - 1] = arguments[i];
     }
   }
 
   // first, replace any ORDERED replacements.
-  var idx  = 0; // the current index for non-numerical replacements
+  let idx  = 0; // the current index for non-numerical replacements
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = cachedFormats[argIndex];

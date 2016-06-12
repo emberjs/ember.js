@@ -469,5 +469,4 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.assertComponentElement(this.nthChild(0), { tagName: 'a', attrs: { href: 'unsafe:javascript:alert(\'foo\')' } });
   }
-
 });

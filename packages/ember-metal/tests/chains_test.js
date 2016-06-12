@@ -11,17 +11,17 @@ QUnit.module('Chains');
 QUnit.test('finishChains should properly copy chains from prototypes to instances', function() {
   function didChange() {}
 
-  var obj = {};
+  let obj = {};
   addObserver(obj, 'foo.bar', null, didChange);
 
-  var childObj = Object.create(obj);
+  let childObj = Object.create(obj);
   finishChains(childObj);
   ok(peekMeta(obj) !== peekMeta(childObj).readableChains(), 'The chains object is copied');
 });
 
 
 QUnit.test('observer and CP chains', function() {
-  var obj = { };
+  let obj = { };
 
   defineProperty(obj, 'foo', computed('qux.[]', function() { }));
   defineProperty(obj, 'qux', computed(function() { }));
@@ -44,7 +44,6 @@ QUnit.test('observer and CP chains', function() {
      +--------+    +----+
       observer       CP(foo, 'qux.[]')
   */
-
 
   // invalidate qux
   propertyDidChange(obj, 'qux');

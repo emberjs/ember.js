@@ -24,27 +24,27 @@ function generateOwner() {
 QUnit.module('ember-htmlbars: lookupHelper hook');
 
 QUnit.test('looks for helpers in the provided `env.helpers`', function() {
-  var env = generateEnv({
+  let env = generateEnv({
     'flubarb'() { }
   });
 
-  var actual = lookupHelper('flubarb', null, env);
+  let actual = lookupHelper('flubarb', null, env);
 
   equal(actual, env.helpers.flubarb, 'helpers are looked up on env');
 });
 
 QUnit.test('returns undefined if no container exists (and helper is not found in env)', function() {
-  var env = generateEnv();
-  var view = {};
+  let env = generateEnv();
+  let view = {};
 
-  var actual = findHelper('flubarb', view, env);
+  let actual = findHelper('flubarb', view, env);
 
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
 QUnit.test('does not lookup in the container if the name does not contain a dash (and helper is not found in env)', function() {
-  var env = generateEnv();
-  var view = {
+  let env = generateEnv();
+  let view = {
     container: {
       lookup() {
         ok(false, 'should not lookup in the container');
@@ -52,38 +52,38 @@ QUnit.test('does not lookup in the container if the name does not contain a dash
     }
   };
 
-  var actual = findHelper('flubarb', view, env);
+  let actual = findHelper('flubarb', view, env);
 
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
 QUnit.test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
   let owner = generateOwner();
-  var env = generateEnv(null, owner);
-  var view = {
+  let env = generateEnv(null, owner);
+  let view = {
     [OWNER]: owner
   };
 
-  var someName = Helper.extend();
+  let someName = Helper.extend();
   owner.register('helper:some-name', someName);
 
-  var actual = lookupHelper('some-name', view, env);
+  let actual = lookupHelper('some-name', view, env);
 
   ok(someName.detect(actual), 'helper is an instance of the helper class');
 });
 
 QUnit.test('does a lookup in the container if the name is found in knownHelpers', function() {
   let owner = generateOwner();
-  var env = generateEnv(null, owner);
-  var view = {
+  let env = generateEnv(null, owner);
+  let view = {
     [OWNER]: owner
   };
 
   env.knownHelpers['t'] = true;
-  var t = Helper.extend();
+  let t = Helper.extend();
   owner.register('helper:t', t);
 
-  var actual = lookupHelper('t', view, env);
+  let actual = lookupHelper('t', view, env);
 
   ok(t.detect(actual), 'helper is an instance of the helper class');
 });
@@ -91,18 +91,18 @@ QUnit.test('does a lookup in the container if the name is found in knownHelpers'
 QUnit.test('looks up a shorthand helper in the container', function() {
   expect(2);
   let owner = generateOwner();
-  var env = generateEnv(null, owner);
-  var view = {
+  let env = generateEnv(null, owner);
+  let view = {
     [OWNER]: owner
   };
-  var called;
+  let called;
 
   function someName() {
     called = true;
   }
   owner.register('helper:some-name', makeHelper(someName));
 
-  var actual = lookupHelper('some-name', view, env);
+  let actual = lookupHelper('some-name', view, env);
 
   ok(actual.isHelperInstance, 'is a helper');
 
@@ -114,16 +114,16 @@ QUnit.test('looks up a shorthand helper in the container', function() {
 QUnit.test('fails with a useful error when resolving a function', function() {
   expect(1);
   let owner = generateOwner();
-  var env = generateEnv(null, owner);
-  var view = {
+  let env = generateEnv(null, owner);
+  let view = {
     [OWNER]: owner
   };
 
   function someName() {}
   owner.register('helper:some-name', someName);
 
-  var actual;
-  expectAssertion(function() {
+  let actual;
+  expectAssertion(() => {
     actual = lookupHelper('some-name', view, env);
   }, 'Expected to find an Ember.Helper with the name helper:some-name, but found an object of type function instead.');
 });

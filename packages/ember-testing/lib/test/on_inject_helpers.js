@@ -30,7 +30,7 @@ export function onInjectHelpers(callback) {
 }
 
 export function invokeInjectHelpersCallbacks(app) {
-  for (var i = 0; i < callbacks.length; i++) {
+  for (let i = 0; i < callbacks.length; i++) {
     callbacks[i](app);
   }
 }

@@ -36,7 +36,7 @@ import EmberObject from 'ember-runtime/system/object';
   Application.initializer({
     name: "containerDebugAdapter",
 
-    initialize: function(application) {
+    initialize(application) {
       application.register('container-debug-adapter:main', require('app/container-debug-adapter'));
     }
   });
@@ -86,16 +86,16 @@ export default EmberObject.extend({
     @public
   */
   catalogEntriesByType(type) {
-    var namespaces = emberA(Namespace.NAMESPACES);
-    var types = emberA();
-    var typeSuffixRegex = new RegExp(`${classify(type)}$`);
+    let namespaces = emberA(Namespace.NAMESPACES);
+    let types = emberA();
+    let typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
-    namespaces.forEach(function(namespace) {
+    namespaces.forEach(namespace => {
       if (namespace !== Ember) {
-        for (var key in namespace) {
+        for (let key in namespace) {
           if (!namespace.hasOwnProperty(key)) { continue; }
           if (typeSuffixRegex.test(key)) {
-            var klass = namespace[key];
+            let klass = namespace[key];
             if (typeOf(klass) === 'class') {
               types.push(dasherize(key.replace(typeSuffixRegex, '')));
             }

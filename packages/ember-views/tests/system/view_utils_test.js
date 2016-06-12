@@ -5,32 +5,32 @@ import {
   getViewBoundingClientRect
 } from 'ember-views/system/utils';
 
-var hasGetClientRects, hasGetBoundingClientRect;
-var ClientRectListCtor, ClientRectCtor;
+let hasGetClientRects, hasGetBoundingClientRect;
+let ClientRectListCtor, ClientRectCtor;
 
 (function() {
   if (document.createRange) {
-    var range = document.createRange();
+    let range = document.createRange();
 
     if (range.getClientRects) {
-      var clientRectsList = range.getClientRects();
+      let clientRectsList = range.getClientRects();
       hasGetClientRects = true;
       ClientRectListCtor = clientRectsList && clientRectsList.constructor;
     }
 
     if (range.getBoundingClientRect) {
-      var clientRect = range.getBoundingClientRect();
+      let clientRect = range.getBoundingClientRect();
       hasGetBoundingClientRect = true;
       ClientRectCtor = clientRect && clientRect.constructor;
     }
   }
 })();
 
-var view;
+let view;
 
 QUnit.module('ViewUtils', {
   teardown() {
-    run(function() {
+    run(() => {
       if (view) { view.destroy(); }
     });
   }
@@ -45,7 +45,7 @@ QUnit.test('getViewClientRects', function() {
 
   view = View.create();
 
-  run(function() { view.appendTo('#qunit-fixture'); });
+  run(() => view.appendTo('#qunit-fixture'));
 
   ok(getViewClientRects(view) instanceof ClientRectListCtor);
 });
@@ -58,7 +58,7 @@ QUnit.test('getViewBoundingClientRect', function() {
 
   view = View.create();
 
-  run(function() { view.appendTo('#qunit-fixture'); });
+  run(() => view.appendTo('#qunit-fixture'));
 
   ok(getViewBoundingClientRect(view) instanceof ClientRectCtor);
 });

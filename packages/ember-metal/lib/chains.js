@@ -3,7 +3,7 @@ import { meta as metaFor, peekMeta } from 'ember-metal/meta';
 import { watchKey, unwatchKey } from 'ember-metal/watch_key';
 import EmptyObject from 'ember-metal/empty_object';
 
-var FIRST_KEY = /^([^\.]+)/;
+const FIRST_KEY = /^([^\.]+)/;
 
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
@@ -37,7 +37,7 @@ ChainWatchers.prototype = {
   remove(key, node) {
     let nodes = this.chains[key];
     if (nodes) {
-      for (var i = 0; i < nodes.length; i++) {
+      for (let i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           nodes.splice(i, 1);
           break;
@@ -49,7 +49,7 @@ ChainWatchers.prototype = {
   has(key, node) {
     let nodes = this.chains[key];
     if (nodes) {
-      for (var i = 0; i < nodes.length; i++) {
+      for (let i = 0; i < nodes.length; i++) {
         if (nodes[i] === node) {
           return true;
         }
@@ -169,7 +169,7 @@ function lazyGet(obj, key) {
     return;
   }
 
-  var meta = peekMeta(obj);
+  let meta = peekMeta(obj);
 
   // check if object meant only to be a prototype
   if (meta && meta.proto === obj) {
@@ -191,7 +191,7 @@ function lazyGet(obj, key) {
 ChainNode.prototype = {
   value() {
     if (this._value === undefined && this._watching) {
-      var obj = this._parent.value();
+      let obj = this._parent.value();
       this._value = lazyGet(obj, this._key);
     }
     return this._value;
@@ -199,7 +199,7 @@ ChainNode.prototype = {
 
   destroy() {
     if (this._watching) {
-      var obj = this._object;
+      let obj = this._object;
       if (obj) {
         removeChainWatcher(obj, this._key, this);
       }
@@ -209,9 +209,9 @@ ChainNode.prototype = {
 
   // copies a top level object only
   copy(obj) {
-    var ret = new ChainNode(null, null, obj);
-    var paths = this._paths;
-    var path;
+    let ret = new ChainNode(null, null, obj);
+    let paths = this._paths;
+    let path;
 
     for (path in paths) {
       // this check will also catch non-number vals.
@@ -250,8 +250,8 @@ ChainNode.prototype = {
   },
 
   chain(key, path) {
-    var chains = this._chains;
-    var node;
+    let chains = this._chains;
+    let node;
     if (chains === undefined) {
       chains = this._chains = new EmptyObject();
     } else {
@@ -273,13 +273,13 @@ ChainNode.prototype = {
   },
 
   unchain(key, path) {
-    var chains = this._chains;
-    var node = chains[key];
+    let chains = this._chains;
+    let node = chains[key];
 
     // unchain rest of path first...
     if (path && path.length > 1) {
-      var nextKey  = firstKey(path);
-      var nextPath = path.slice(nextKey.length + 1);
+      let nextKey  = firstKey(path);
+      let nextPath = path.slice(nextKey.length + 1);
       node.unchain(nextKey, nextPath);
     }
 
@@ -293,7 +293,7 @@ ChainNode.prototype = {
 
   notify(revalidate, affected) {
     if (revalidate && this._watching) {
-      var obj = this._parent.value();
+      let obj = this._parent.value();
       if (obj !== this._object) {
         removeChainWatcher(this._object, this._key, this);
         this._object = obj;
@@ -303,10 +303,10 @@ ChainNode.prototype = {
     }
 
     // then notify chains...
-    var chains = this._chains;
-    var node;
+    let chains = this._chains;
+    let node;
     if (chains) {
-      for (var key in chains) {
+      for (let key in chains) {
         node = chains[key];
         if (node !== undefined) {
           node.notify(revalidate, affected);

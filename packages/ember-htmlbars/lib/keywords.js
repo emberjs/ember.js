@@ -9,7 +9,7 @@ import { hooks } from 'htmlbars-runtime';
  @private
  @property helpers
 */
-var keywords = Object.create(hooks.keywords);
+const keywords = Object.create(hooks.keywords);
 
 /**
 @module ember

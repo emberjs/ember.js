@@ -4,17 +4,17 @@ import ArrayProxy from 'ember-runtime/system/array_proxy';
 
 QUnit.module('Ember Type Checking');
 
-var global = this;
+const global = this;
 
 QUnit.test('Ember.isArray', function() {
-  var numarray      = [1, 2, 3];
-  var number        = 23;
-  var strarray      = ['Hello', 'Hi'];
-  var string        = 'Hello';
-  var object        = {};
-  var length        = { length: 12 };
-  var fn            = function() {};
-  var arrayProxy = ArrayProxy.create({ content: emberA() });
+  let numarray      = [1, 2, 3];
+  let number        = 23;
+  let strarray      = ['Hello', 'Hi'];
+  let string        = 'Hello';
+  let object        = {};
+  let length        = { length: 12 };
+  let fn            = function() {};
+  let arrayProxy = ArrayProxy.create({ content: emberA() });
 
   equal(isArray(numarray), true, '[1,2,3]');
   equal(isArray(number), false, '23');

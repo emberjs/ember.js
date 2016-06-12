@@ -3,15 +3,15 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import View from 'ember-views/views/view';
 
-var parentView, child;
+let parentView, child;
 
-var view;
+let view;
 // .......................................................
 // removeFromParent()
 //
 QUnit.module('View#removeFromParent', {
   teardown() {
-    run(function() {
+    run(() => {
       if (parentView) { parentView.destroy(); }
       if (child) { child.destroy(); }
       if (view) { view.destroy(); }
@@ -27,31 +27,25 @@ QUnit.test('does nothing if not in parentView', function() {
 
   child.removeFromParent();
 
-  run(function() {
-    child.destroy();
-  });
+  run(() => child.destroy());
 });
 
 QUnit.test('the DOM element is gone after doing append and remove in two separate runloops', function() {
   view = View.create();
-  run(function() {
-    view.append();
-  });
-  run(function() {
-    view.remove();
-  });
+  run(() => view.append());
+  run(() => view.remove());
 
-  var viewElem = jQuery('#' + get(view, 'elementId'));
+  let viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });
 
 QUnit.test('the DOM element is gone after doing append and remove in a single runloop', function() {
   view = View.create();
-  run(function() {
+  run(() => {
     view.append();
     view.remove();
   });
 
-  var viewElem = jQuery('#' + get(view, 'elementId'));
+  let viewElem = jQuery('#' + get(view, 'elementId'));
   ok(viewElem.length === 0, 'view\'s element doesn\'t exist in DOM');
 });

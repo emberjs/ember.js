@@ -20,7 +20,7 @@ import { objectAt } from 'ember-runtime/mixins/array';
   @class EachProxy
   @private
 */
-function EachProxy(content) {
+export default function EachProxy(content) {
   this._content = content;
   this._keys = undefined;
   this.__ember_meta__ = null;
@@ -129,5 +129,3 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
     }
   }
 }
-
-export default EachProxy;

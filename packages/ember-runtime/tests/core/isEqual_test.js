@@ -33,6 +33,6 @@ QUnit.test('array should be equal', function() {
 QUnit.test('first object implements isEqual should use it', function() {
   ok(isEqual({ isEqual() { return true; } }, null), 'should return true always');
 
-  var obj = { isEqual() { return false; } };
+  let obj = { isEqual() { return false; } };
   equal(isEqual(obj, obj), false, 'should return false because isEqual returns false');
 });

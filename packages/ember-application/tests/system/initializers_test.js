@@ -2,30 +2,27 @@ import run from 'ember-metal/run_loop';
 import Application from 'ember-application/system/application';
 import jQuery from 'ember-views/system/jquery';
 
-var app;
+let app;
 
 QUnit.module('Ember.Application initializers', {
-  setup() {
-  },
-
   teardown() {
     if (app) {
-      run(function() { app.destroy(); });
+      run(() => app.destroy());
     }
   }
 });
 
 QUnit.test('initializers require proper \'name\' and \'initialize\' properties', function() {
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyApplication.initializer({ name: 'initializer' });
     });
   });
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyApplication.initializer({ initialize() {} });
     });
   });
@@ -35,14 +32,14 @@ QUnit.test('initializers that throw errors cause the boot promise to reject with
   QUnit.expect(2);
   QUnit.stop();
 
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'initializer',
     initialize() { throw new Error('boot failure'); }
   });
 
-  var app = MyApplication.create({
+  app = MyApplication.create({
     autoboot: false
   });
 
@@ -66,7 +63,7 @@ QUnit.test('initializers that throw errors cause the boot promise to reject with
 });
 
 QUnit.test('initializers are passed an App', function() {
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'initializer',
@@ -75,7 +72,7 @@ QUnit.test('initializers are passed an App', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -84,8 +81,8 @@ QUnit.test('initializers are passed an App', function() {
 });
 
 QUnit.test('initializers can be registered in a specified order', function() {
-  var order = [];
-  var MyApplication = Application.extend();
+  let order = [];
+  let MyApplication = Application.extend();
   MyApplication.initializer({
     name: 'fourth',
     after: 'third',
@@ -134,7 +131,7 @@ QUnit.test('initializers can be registered in a specified order', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -145,9 +142,8 @@ QUnit.test('initializers can be registered in a specified order', function() {
 });
 
 QUnit.test('initializers can be registered in a specified order as an array', function() {
-  var order = [];
-  var MyApplication = Application.extend();
-
+  let order = [];
+  let MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'third',
@@ -197,7 +193,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -208,35 +204,35 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
 });
 
 QUnit.test('initializers can have multiple dependencies', function () {
-  var order = [];
-  var a = {
+  let order = [];
+  let a = {
     name: 'a',
     before: 'b',
     initialize(registry) {
       order.push('a');
     }
   };
-  var b = {
+  let b = {
     name: 'b',
     initialize(registry) {
       order.push('b');
     }
   };
-  var c = {
+  let c = {
     name: 'c',
     after: 'b',
     initialize(registry) {
       order.push('c');
     }
   };
-  var afterB = {
+  let afterB = {
     name: 'after b',
     after: 'b',
     initialize(registry) {
       order.push('after b');
     }
   };
-  var afterC = {
+  let afterC = {
     name: 'after c',
     after: 'c',
     initialize(registry) {
@@ -250,7 +246,7 @@ QUnit.test('initializers can have multiple dependencies', function () {
   Application.initializer(afterB);
   Application.initializer(c);
 
-  run(function() {
+  run(() => {
     app = Application.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -264,51 +260,59 @@ QUnit.test('initializers can have multiple dependencies', function () {
 });
 
 QUnit.test('initializers set on Application subclasses are not shared between apps', function() {
-  var firstInitializerRunCount = 0;
-  var secondInitializerRunCount = 0;
-  var FirstApp = Application.extend();
-  var firstApp, secondApp;
+  let firstInitializerRunCount = 0;
+  let secondInitializerRunCount = 0;
+  let FirstApp = Application.extend();
+
   FirstApp.initializer({
     name: 'first',
     initialize(registry) {
       firstInitializerRunCount++;
     }
   });
-  var SecondApp = Application.extend();
+
+  let SecondApp = Application.extend();
+
   SecondApp.initializer({
     name: 'second',
     initialize(registry) {
       secondInitializerRunCount++;
     }
   });
+
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
-  run(function() {
-    firstApp = FirstApp.create({
+
+  let firstApp = run(() => {
+    return FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
     });
   });
+
   equal(firstInitializerRunCount, 1, 'first initializer only was run');
   equal(secondInitializerRunCount, 0, 'first initializer only was run');
-  run(function() {
-    secondApp = SecondApp.create({
+
+  let secondApp = run(() => {
+    return SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
     });
   });
+
   equal(firstInitializerRunCount, 1, 'second initializer only was run');
   equal(secondInitializerRunCount, 1, 'second initializer only was run');
-  run(function() {
+
+  run(() => {
     firstApp.destroy();
     secondApp.destroy();
   });
 });
 
 QUnit.test('initializers are concatenated', function() {
-  var firstInitializerRunCount = 0;
-  var secondInitializerRunCount = 0;
-  var FirstApp = Application.extend();
-  var firstApp, secondApp;
+  let firstInitializerRunCount = 0;
+  let secondInitializerRunCount = 0;
+  let FirstApp = Application.extend();
+
   FirstApp.initializer({
     name: 'first',
     initialize(registry) {
@@ -316,7 +320,7 @@ QUnit.test('initializers are concatenated', function() {
     }
   });
 
-  var SecondApp = FirstApp.extend();
+  let SecondApp = FirstApp.extend();
   SecondApp.initializer({
     name: 'second',
     initialize(registry) {
@@ -325,8 +329,8 @@ QUnit.test('initializers are concatenated', function() {
   });
 
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
-  run(function() {
-    firstApp = FirstApp.create({
+  let firstApp = run(() => {
+    return FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
     });
@@ -334,15 +338,17 @@ QUnit.test('initializers are concatenated', function() {
   equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
   equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
   firstInitializerRunCount = 0;
-  run(function() {
-    secondApp = SecondApp.create({
+
+  let secondApp = run(() => {
+    return SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
     });
   });
+
   equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
   equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
-  run(function() {
+  run(() => {
     firstApp.destroy();
     secondApp.destroy();
   });
@@ -358,7 +364,7 @@ QUnit.test('initializers are per-app', function() {
     initialize(app) {}
   });
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     FirstApp.initializer({
       name: 'abc',
       initialize(app) {}
@@ -376,7 +382,7 @@ QUnit.test('initializers are per-app', function() {
 
 QUnit.test('initializers are executed in their own context', function() {
   expect(1);
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'coolInitializer',
@@ -386,7 +392,7 @@ QUnit.test('initializers are executed in their own context', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -397,7 +403,7 @@ QUnit.test('initializers are executed in their own context', function() {
 QUnit.test('initializers throw a deprecation warning when receiving a second argument', function() {
   expect(1);
 
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.initializer({
     name: 'deprecated',
@@ -405,8 +411,8 @@ QUnit.test('initializers throw a deprecation warning when receiving a second arg
     }
   });
 
-  expectDeprecation(function() {
-    run(function() {
+  expectDeprecation(() => {
+    run(() => {
       app = MyApplication.create({
         router: false,
         rootElement: '#qunit-fixture'

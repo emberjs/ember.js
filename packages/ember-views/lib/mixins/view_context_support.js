@@ -10,7 +10,7 @@ import LegacyViewSupport from 'ember-views/mixins/legacy_view_support';
 import { observer } from 'ember-metal/mixin';
 import { on } from 'ember-metal/events';
 
-var ViewContextSupport = Mixin.create(LegacyViewSupport, {
+export default Mixin.create(LegacyViewSupport, {
   /**
     The object from which templates should access properties.
 
@@ -103,5 +103,3 @@ var ViewContextSupport = Mixin.create(LegacyViewSupport, {
     this.notifyPropertyChange('controller');
   })
 });
-
-export default ViewContextSupport;

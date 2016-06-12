@@ -1,16 +1,14 @@
 import run from 'ember-metal/run_loop';
 import Engine from 'ember-application/system/engine';
 
-let MyEngine,
-    myEngine,
-    myEngineInstance;
+let MyEngine, myEngine, myEngineInstance;
 
 QUnit.module('Ember.Engine initializers', {
   setup() {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       if (myEngineInstance) {
         myEngineInstance.destroy();
       }
@@ -25,14 +23,14 @@ QUnit.module('Ember.Engine initializers', {
 QUnit.test('initializers require proper \'name\' and \'initialize\' properties', function() {
   MyEngine = Engine.extend();
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyEngine.initializer({ name: 'initializer' });
     });
   });
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyEngine.initializer({ initialize() {} });
     });
   });

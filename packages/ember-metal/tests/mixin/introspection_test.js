@@ -8,35 +8,30 @@ import {
   Mixin
 } from 'ember-metal/mixin';
 
-var PrivateProperty = Mixin.create({
+const PrivateProperty = Mixin.create({
   _foo: '_FOO'
 });
-
-var PublicProperty = Mixin.create({
+const PublicProperty = Mixin.create({
   foo: 'FOO'
 });
-
-var PrivateMethod = Mixin.create({
+const PrivateMethod = Mixin.create({
   _fooMethod() {}
 });
-
-var PublicMethod = Mixin.create({
+const PublicMethod = Mixin.create({
   fooMethod() {}
 });
-
-var BarProperties = Mixin.create({
+const BarProperties = Mixin.create({
   _bar: '_BAR',
   bar: 'bar'
 });
-
-var BarMethods = Mixin.create({
+const BarMethods = Mixin.create({
   _barMethod() {},
   barMethod() {}
 });
 
-var Combined = Mixin.create(BarProperties, BarMethods);
+const Combined = Mixin.create(BarProperties, BarMethods);
 
-var obj;
+let obj;
 
 QUnit.module('Basic introspection', {
   setup() {
@@ -47,7 +42,7 @@ QUnit.module('Basic introspection', {
 
 QUnit.test('Ember.mixins()', function() {
   function mapGuids(ary) {
-    return ary.map(function(x) { return guidFor(x); });
+    return ary.map(x => guidFor(x));
   }
 
   deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');

@@ -1,13 +1,13 @@
-var splice = Array.prototype.splice;
+let { splice } = Array.prototype;
 
 export function _replace(array, idx, amt, objects) {
-  var args = [].concat(objects);
-  var ret = [];
+  let args = [].concat(objects);
+  let ret = [];
   // https://code.google.com/p/chromium/issues/detail?id=56588
-  var size = 60000;
-  var start = idx;
-  var ends = amt;
-  var count, chunk;
+  let size = 60000;
+  let start = idx;
+  let ends = amt;
+  let count, chunk;
 
   while (args.length) {
     count = ends > size ? size : ends;
@@ -28,13 +28,13 @@ export function _replace(array, idx, amt, objects) {
   Replaces objects in an array with the passed objects.
 
   ```javascript
-    var array = [1,2,3];
+    let array = [1,2,3];
     Ember.EnumerableUtils.replace(array, 1, 2, [4, 5]); // [1, 4, 5]
 
-    var array = [1,2,3];
+    let array = [1,2,3];
     Ember.EnumerableUtils.replace(array, 1, 1, [4, 5]); // [1, 4, 5, 3]
 
-    var array = [1,2,3];
+    let array = [1,2,3];
     Ember.EnumerableUtils.replace(array, 10, 1, [4, 5]); // [1, 2, 3, 4, 5]
   ```
 

@@ -1,17 +1,16 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('removeAt');
 
 suite.test('[X].removeAt(0) => [] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(1);
+  let after  = [];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(1);
-  after  = [];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.removeAt(0), obj, 'return self');
@@ -27,19 +26,16 @@ suite.test('[X].removeAt(0) => [] + notify', function() {
 });
 
 suite.test('[].removeAt(200) => OUT_OF_RANGE_EXCEPTION exception', function() {
-  var obj = this.newObject([]);
-  throws(function() {
-    obj.removeAt(200);
-  }, Error);
+  let obj = this.newObject([]);
+  throws(() => obj.removeAt(200), Error);
 });
 
 suite.test('[A,B].removeAt(0) => [B] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(2);
+  let after  = [before[1]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(2);
-  after  = [before[1]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.removeAt(0), obj, 'return self');
@@ -56,12 +52,11 @@ suite.test('[A,B].removeAt(0) => [B] + notify', function() {
 });
 
 suite.test('[A,B].removeAt(1) => [A] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(2);
+  let after  = [before[0]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(2);
-  after  = [before[0]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.removeAt(1), obj, 'return self');
@@ -78,12 +73,11 @@ suite.test('[A,B].removeAt(1) => [A] + notify', function() {
 });
 
 suite.test('[A,B,C].removeAt(1) => [A,C] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(3);
+  let after  = [before[0], before[2]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  after  = [before[0], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.removeAt(1), obj, 'return self');
@@ -100,12 +94,11 @@ suite.test('[A,B,C].removeAt(1) => [A,C] + notify', function() {
 });
 
 suite.test('[A,B,C,D].removeAt(1,2) => [A,D] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(4);
+  let after  = [before[0], before[3]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(4);
-  after  = [before[0], before[3]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.removeAt(1, 2), obj, 'return self');

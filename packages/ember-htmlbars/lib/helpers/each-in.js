@@ -37,17 +37,15 @@ import shouldDisplay from '../streams/should_display';
   @public
   @since 2.1.0
 */
-var eachInHelper = function([ object ], hash, blocks) {
-  var objKeys, prop, i;
+export default function eachInHelper([ object ], hash, blocks) {
+  let objKeys, prop;
   objKeys = object ? Object.keys(object) : [];
   if (shouldDisplay(objKeys)) {
-    for (i = 0; i < objKeys.length; i++) {
+    for (let i = 0; i < objKeys.length; i++) {
       prop = objKeys[i];
       blocks.template.yieldItem(prop, [prop, object[prop]]);
     }
   } else if (blocks.inverse.yield) {
     blocks.inverse.yield();
   }
-};
-
-export default eachInHelper;
+}

@@ -2,7 +2,6 @@ import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { set } from 'ember-metal/property_set';
 
-
 moduleFor('Helpers test: {{-class}}', class extends RenderingTest {
 
   ['@glimmer casts binding to dasherized class']() {

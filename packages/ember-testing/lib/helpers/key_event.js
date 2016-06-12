@@ -1,5 +1,5 @@
 export default function keyEvent(app, selector, contextOrType, typeOrKeyCode, keyCode) {
-  var context, type;
+  let context, type;
 
   if (typeof keyCode === 'undefined') {
     context = null;

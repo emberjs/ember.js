@@ -9,11 +9,11 @@ import jQuery from 'ember-views/system/jquery';
 import inject from 'ember-runtime/inject';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var App, appInstance;
+let App, appInstance;
 
 QUnit.module('Application Lifecycle - Helper Registration', {
   teardown() {
-    run(function() {
+    run(() => {
       if (App) {
         App.destroy();
       }
@@ -24,8 +24,8 @@ QUnit.module('Application Lifecycle - Helper Registration', {
   }
 });
 
-var boot = function(callback) {
-  run(function() {
+function boot(callback) {
+  run(() => {
     App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -42,19 +42,15 @@ var boot = function(callback) {
     if (callback) { callback(); }
   });
 
-  var router = appInstance.lookup('router:main');
+  let router = appInstance.lookup('router:main');
 
   run(App, 'advanceReadiness');
-  run(function() {
-    router.handleURL('/');
-  });
-};
+  run(() => router.handleURL('/'));
+}
 
 QUnit.test('Unbound dashed helpers registered on the container can be late-invoked', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{x-borf}} {{x-borf \'YES\'}}</div>'));
-  let myHelper = helper(function(params) {
-    return params[0] || 'BORF';
-  });
+  let myHelper = helper(params => params[0] || 'BORF');
 
   boot(() => {
     App.register('helper:x-borf', myHelper);
@@ -66,7 +62,7 @@ QUnit.test('Unbound dashed helpers registered on the container can be late-invok
 QUnit.test('Bound helpers registered on the container can be late-invoked', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{x-reverse}} {{x-reverse foo}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       foo: 'alex'
     }));
@@ -82,14 +78,10 @@ QUnit.test('Bound helpers registered on the container can be late-invoked', func
 QUnit.test('Undashed helpers registered on the container can be invoked', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{omg}}|{{yorp \'boo\'}}|{{yorp \'ya\'}}</div>'));
 
-  boot(function() {
-    appInstance.register('helper:omg', helper(function() {
-      return 'OMG';
-    }));
+  boot(() => {
+    appInstance.register('helper:omg', helper(() => 'OMG'));
 
-    appInstance.register('helper:yorp', helper(function([ value ]) {
-      return value;
-    }));
+    appInstance.register('helper:yorp', helper(([ value ]) => value));
   });
 
   equal(jQuery('#wrapper').text(), 'OMG|boo|ya', 'The helper was invoked from the container');
@@ -98,8 +90,8 @@ QUnit.test('Undashed helpers registered on the container can be invoked', functi
 QUnit.test('Helpers can receive injections', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{full-name}}</div>'));
 
-  var serviceCalled = false;
-  boot(function() {
+  let serviceCalled = false;
+  boot(() => {
     appInstance.register('service:name-builder', Service.extend({
       build() {
         serviceCalled = true;

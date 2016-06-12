@@ -9,8 +9,8 @@ function K() { return this; }
 QUnit.module('Mixin Computed Properties');
 
 QUnit.test('overriding computed properties', function() {
-  var MixinA, MixinB, MixinC, MixinD;
-  var obj;
+  let MixinA, MixinB, MixinC, MixinD;
+  let obj;
 
   MixinA = Mixin.create({
     aProp: computed(function() {
@@ -59,23 +59,23 @@ QUnit.test('overriding computed properties', function() {
 });
 
 QUnit.test('calling set on overridden computed properties', function() {
-  var SuperMixin, SubMixin;
-  var obj;
+  let SuperMixin, SubMixin;
+  let obj;
 
-  var superGetOccurred = false;
-  var superSetOccurred = false;
+  let superGetOccurred = false;
+  let superSetOccurred = false;
 
   SuperMixin = Mixin.create({
     aProp: computed({
-      get: function(key) { superGetOccurred = true; },
-      set: function(key, value) { superSetOccurred = true; }
+      get(key) { superGetOccurred = true; },
+      set(key, value) { superSetOccurred = true; }
     })
   });
 
   SubMixin = Mixin.create(SuperMixin, {
     aProp: computed({
-      get: function(key) { return this._super(...arguments); },
-      set: function(key, value) { return this._super(...arguments); }
+      get(key) { return this._super(...arguments); },
+      set(key, value) { return this._super(...arguments); }
     })
   });
 
@@ -98,25 +98,25 @@ QUnit.test('calling set on overridden computed properties', function() {
 });
 
 QUnit.test('setter behavior works properly when overriding computed properties', function() {
-  var obj = {};
+  let obj = {};
 
-  var MixinA = Mixin.create({
+  let MixinA = Mixin.create({
     cpWithSetter2: computed(K),
     cpWithSetter3: computed(K),
     cpWithoutSetter: computed(K)
   });
 
-  var cpWasCalled = false;
+  let cpWasCalled = false;
 
-  var MixinB = Mixin.create({
+  let MixinB = Mixin.create({
     cpWithSetter2: computed({
       get: K,
-      set: function(k, v) { cpWasCalled = true; }
+      set(k, v) { cpWasCalled = true; }
     }),
 
     cpWithSetter3: computed({
       get: K,
-      set: function(k, v) { cpWasCalled = true; }
+      set(k, v) { cpWasCalled = true; }
     }),
 
     cpWithoutSetter: computed(function(k) {

@@ -27,8 +27,8 @@ import isNone from 'ember-metal/is_none';
   @return {Boolean}
   @public
 */
-function isEmpty(obj) {
-  var none = isNone(obj);
+export default function isEmpty(obj) {
+  let none = isNone(obj);
   if (none) {
     return none;
   }
@@ -37,10 +37,10 @@ function isEmpty(obj) {
     return !obj.size;
   }
 
-  var objectType = typeof obj;
+  let objectType = typeof obj;
 
   if (objectType === 'object') {
-    var size = get(obj, 'size');
+    let size = get(obj, 'size');
     if (typeof size === 'number') {
       return !size;
     }
@@ -51,7 +51,7 @@ function isEmpty(obj) {
   }
 
   if (objectType === 'object') {
-    var length = get(obj, 'length');
+    let length = get(obj, 'length');
     if (typeof length === 'number') {
       return !length;
     }
@@ -59,5 +59,3 @@ function isEmpty(obj) {
 
   return false;
 }
-
-export default isEmpty;

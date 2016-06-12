@@ -16,7 +16,7 @@ import {
   @private
 */
 export function instrument(component, callback, context) {
-  var instrumentName, val, details, end;
+  let instrumentName, val, details, end;
   // Only instrument if there's at least one subscriber.
   if (subscribers.length) {
     if (component) {

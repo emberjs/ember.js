@@ -7,9 +7,9 @@ import { ENV, environment } from 'ember-environment';
   @submodule ember-runtime
 */
 
-var loadHooks = ENV.EMBER_LOAD_HOOKS || {};
-var loaded = {};
-export var _loaded = loaded;
+const loadHooks = ENV.EMBER_LOAD_HOOKS || {};
+const loaded = {};
+export let _loaded = loaded;
 
 /**
   Detects when a specific package of Ember (e.g. 'Ember.Application')
@@ -31,7 +31,7 @@ export var _loaded = loaded;
   @private
 */
 export function onLoad(name, callback) {
-  var object = loaded[name];
+  let object = loaded[name];
 
   loadHooks[name] = loadHooks[name] || [];
   loadHooks[name].push(callback);
@@ -56,7 +56,7 @@ export function runLoadHooks(name, object) {
   let window = environment.window;
 
   if (window && typeof CustomEvent === 'function') {
-    var event = new CustomEvent(name, { detail: object, name: name });
+    let event = new CustomEvent(name, { detail: object, name: name });
     window.dispatchEvent(event);
   }
 

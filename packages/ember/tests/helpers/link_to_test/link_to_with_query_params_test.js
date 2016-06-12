@@ -9,7 +9,7 @@ import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var Router, App, router, registry, container;
+let Router, App, router, registry, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -26,11 +26,11 @@ function shouldBeActive(selector) {
 }
 
 function checkActive(selector, active) {
-  var classList = jQuery(selector, '#qunit-fixture')[0].className;
+  let classList = jQuery(selector, '#qunit-fixture')[0].className;
   equal(classList.indexOf('active') > -1, active, selector + ' active should be ' + active.toString());
 }
 
-var updateCount, replaceCount;
+let updateCount, replaceCount;
 
 function sharedSetup() {
   App = Application.create({
@@ -61,14 +61,14 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  run(function() { App.destroy(); });
+  run(() => App.destroy());
   setTemplates({});
 }
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.module('The {{link-to}} helper: invoking with query params when defined on a route', {
     setup() {
-      run(function() {
+      run(() => {
         sharedSetup();
         App.IndexController = Controller.extend({
           boundThing: 'OMG'
@@ -114,7 +114,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
@@ -123,7 +123,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
@@ -139,7 +139,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
@@ -148,7 +148,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
@@ -157,7 +157,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
@@ -171,7 +171,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(jQuery('#the-link').attr('href'), '/about?baz=lol');
     run(jQuery('#the-link'), 'click');
-    var aboutController = container.lookup('controller:about');
+    let aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, 'about controller QP properties updated');
 
     equal(container.lookup('controller:application').get('currentPath'), 'about');
@@ -181,7 +181,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setTemplate('index', compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}"));
     bootApplication();
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
 
 
     equal(jQuery('#the-link').attr('href'), '/?foo=OMG');
@@ -190,7 +190,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('supplied QP properties can be bound (booleans)', function() {
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setTemplate('index', compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
@@ -209,7 +209,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
 
     equal(jQuery('#the-link').attr('href'), '/?foo=lol');
     run(indexController, 'set', 'bar', 'BORF');
@@ -245,23 +245,21 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    run(function() {
-      router.handleURL('/cars/create');
-    });
+    run(() => router.handleURL('/cars/create'));
 
-    run(function() {
+    run(() => {
       equal(router.currentRouteName, 'cars.create');
       jQuery('#close-link').click();
     });
 
-    run(function() {
+    run(() => {
       equal(router.currentRouteName, 'cars.index');
       equal(router.get('url'), '/cars');
       equal(container.lookup('controller:cars').get('page'), 1, 'The page query-param is 1');
       jQuery('#page2-link').click();
     });
 
-    run(function() {
+    run(() => {
       equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
       equal(router.get('url'), '/cars?page=2', 'The url has been updated');
       equal(container.lookup('controller:cars').get('page'), 2, 'The query params have been updated');
@@ -338,23 +336,21 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldBeActive('#change-nothing');
 
     //Multiple params
-    run(function() {
-      router.handleURL('/search?search=same');
-    });
+    run(() => router.handleURL('/search?search=same'));
+
     shouldBeActive('#same-search');
     shouldNotBeActive('#change-search');
     shouldNotBeActive('#same-search-add-archive');
     shouldNotBeActive('#only-add-archive');
     shouldNotBeActive('#remove-one');
 
-    run(function() {
-      router.handleURL('/search?search=same&archive=true');
-    });
+    run(() => router.handleURL('/search?search=same&archive=true'));
+
     shouldBeActive('#both-same');
     shouldNotBeActive('#change-one');
 
     //Nested Controllers
-    run(function() {
+    run(() => {
       // Note: this is kind of a strange case; sort's default value is 'title',
       // so this URL shouldn't have been generated in the first place, but
       // we should also be able to gracefully handle these cases.
@@ -489,7 +485,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(jQuery('#parent-link').attr('href'), '/parent');
     shouldBeActive('#parent-link');
 
-    var parentController = container.lookup('controller:parent');
+    let parentController = container.lookup('controller:parent');
     equal(parentController.get('page'), 2);
     run(parentController, 'set', 'page', 3);
     equal(router.get('location.path'), '/parent?page=3');
@@ -502,9 +498,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 } else {
   QUnit.module('The {{link-to}} helper: invoking with query params', {
     setup() {
-      run(function() {
+      run(() => {
         sharedSetup();
-
 
         App.IndexController = Controller.extend({
           queryParams: ['foo', 'bar', 'abool'],
@@ -533,7 +528,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
@@ -542,15 +537,13 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
   QUnit.test('link-to with no params throws', function() {
     setTemplate('index', compile("{{#link-to id='the-link'}}Index{{/link-to}}"));
-    expectAssertion(function() {
-      bootApplication();
-    }, /one or more/);
+    expectAssertion(() => bootApplication(), /one or more/);
   });
 
   QUnit.test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
@@ -558,7 +551,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, 'controller QP properties not');
   });
 
@@ -567,7 +560,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
@@ -576,7 +569,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     run(jQuery('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '456', bar: 'abc' }, 'controller QP properties updated');
   });
 
@@ -590,14 +583,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(jQuery('#the-link').attr('href'), '/about?baz=lol');
     run(jQuery('#the-link'), 'click');
-    var aboutController = container.lookup('controller:about');
+    let aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, 'about controller QP properties updated');
 
     equal(container.lookup('controller:application').get('currentPath'), 'about');
   });
 
   QUnit.test('supplied QP properties can be bound', function() {
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setTemplate('index', compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
@@ -608,7 +601,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   });
 
   QUnit.test('supplied QP properties can be bound (booleans)', function() {
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setTemplate('index', compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
@@ -626,7 +619,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setTemplate('index', compile("{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}"));
 
     bootApplication();
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
 
     equal(jQuery('#the-link').attr('href'), '/?foo=lol');
     run(indexController, 'set', 'bar', 'BORF');
@@ -661,25 +654,23 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var carsController = container.lookup('controller:cars');
+    let carsController = container.lookup('controller:cars');
 
-    run(function() {
-      router.handleURL('/cars/create');
-    });
+    run(() => router.handleURL('/cars/create'));
 
-    run(function() {
+    run(() => {
       equal(router.currentRouteName, 'cars.create');
       jQuery('#close-link').click();
     });
 
-    run(function() {
+    run(() => {
       equal(router.currentRouteName, 'cars.index');
       equal(router.get('url'), '/cars');
       equal(carsController.get('page'), 1, 'The page query-param is 1');
       jQuery('#page2-link').click();
     });
 
-    run(function() {
+    run(() => {
       equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
       equal(router.get('url'), '/cars?page=2', 'The url has been updated');
       equal(carsController.get('page'), 2, 'The query params have been updated');
@@ -746,23 +737,20 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     shouldBeActive('#change-nothing');
 
     //Multiple params
-    run(function() {
-      router.handleURL('/search?search=same');
-    });
+    run(() => router.handleURL('/search?search=same'));
     shouldBeActive('#same-search');
     shouldNotBeActive('#change-search');
     shouldNotBeActive('#same-search-add-archive');
     shouldNotBeActive('#only-add-archive');
     shouldNotBeActive('#remove-one');
 
-    run(function() {
-      router.handleURL('/search?search=same&archive=true');
-    });
+    run(() => router.handleURL('/search?search=same&archive=true'));
+
     shouldBeActive('#both-same');
     shouldNotBeActive('#change-one');
 
     //Nested Controllers
-    run(function() {
+    run(() => {
       // Note: this is kind of a strange case; sort's default value is 'title',
       // so this URL shouldn't have been generated in the first place, but
       // we should also be able to gracefully handle these cases.
@@ -878,7 +866,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(jQuery('#parent-link').attr('href'), '/parent');
     shouldBeActive('#parent-link');
 
-    var parentController = container.lookup('controller:parent');
+    let parentController = container.lookup('controller:parent');
     equal(parentController.get('page'), 2);
     run(parentController, 'set', 'page', 3);
     equal(router.get('location.path'), '/parent?page=3');
@@ -889,4 +877,3 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(router.get('location.path'), '/parent');
   });
 }
-

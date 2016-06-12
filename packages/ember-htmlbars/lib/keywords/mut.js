@@ -13,7 +13,7 @@ import { INVOKE, ACTION } from 'ember-htmlbars/keywords/closure-action';
 
 export let MUTABLE_REFERENCE = symbol('MUTABLE_REFERENCE');
 
-let MutStream = ProxyStream.extend({
+const MutStream = ProxyStream.extend({
   init(stream) {
     this.label = `(mut ${stream.label})`;
     this.path = stream.path;
@@ -100,7 +100,7 @@ let MutStream = ProxyStream.extend({
 export default function mut(morph, env, scope, originalParams, hash, template, inverse) {
   // If `morph` is `null` the keyword is being invoked as a subexpression.
   if (morph === null) {
-    var valueStream = originalParams[0];
+    let valueStream = originalParams[0];
     return mutParam(env.hooks.getValue, valueStream);
   }
 
@@ -110,14 +110,14 @@ export default function mut(morph, env, scope, originalParams, hash, template, i
 export function privateMut(morph, env, scope, originalParams, hash, template, inverse) {
   // If `morph` is `null` the keyword is being invoked as a subexpression.
   if (morph === null) {
-    var valueStream = originalParams[0];
+    let valueStream = originalParams[0];
     return mutParam(env.hooks.getValue, valueStream, true);
   }
 
   return true;
 }
 
-let LiteralStream = BasicStream.extend({
+const LiteralStream = BasicStream.extend({
   init(literal) {
     this.literal = literal;
     this.label = `(literal ${literal})`;

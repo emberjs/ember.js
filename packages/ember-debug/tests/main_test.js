@@ -65,7 +65,7 @@ QUnit.test('Ember.deprecate resets deprecation level to RAISE if ENV.RAISE_ON_DE
 
   ENV.RAISE_ON_DEPRECATION = true;
 
-  assert.throws(function() {
+  assert.throws(() => {
     deprecate('Should throw', false, { id: 'test', until: 'forever' });
   }, /Should throw/);
 });
@@ -87,11 +87,11 @@ QUnit.test('When ENV.RAISE_ON_DEPRECATION is true, it is still possible to silen
     assert.ok(false, `Expected deprecate not to throw but it did: ${e.message}`);
   }
 
-  assert.throws(function() {
+  assert.throws(() => {
     deprecate('Should throw with no matching id', false, { id: 'test', until: 'forever' });
   }, /Should throw with no matching id/);
 
-  assert.throws(function() {
+  assert.throws(() => {
     deprecate('Should throw with non-matching id', false, { id: 'other-id', until: 'forever' });
   }, /Should throw with non-matching id/);
 });
@@ -99,17 +99,9 @@ QUnit.test('When ENV.RAISE_ON_DEPRECATION is true, it is still possible to silen
 QUnit.test('Ember.deprecate throws deprecation if second argument is falsy', function() {
   expect(3);
 
-  throws(function() {
-    deprecate('Deprecation is thrown', false, { id: 'test', until: 'forever' });
-  });
-
-  throws(function() {
-    deprecate('Deprecation is thrown', '', { id: 'test', until: 'forever' });
-  });
-
-  throws(function() {
-    deprecate('Deprecation is thrown', 0, { id: 'test', until: 'forever' });
-  });
+  throws(() => deprecate('Deprecation is thrown', false, { id: 'test', until: 'forever' }));
+  throws(() => deprecate('Deprecation is thrown', '', { id: 'test', until: 'forever' }));
+  throws(() => deprecate('Deprecation is thrown', 0, { id: 'test', until: 'forever' }));
 });
 
 QUnit.test('Ember.deprecate does not invoke a function as the second argument', function() {
@@ -135,17 +127,9 @@ QUnit.test('Ember.deprecate does not throw deprecations if second argument is tr
 QUnit.test('Ember.assert throws if second argument is falsy', function() {
   expect(3);
 
-  throws(function() {
-    emberAssert('Assertion is thrown', false);
-  });
-
-  throws(function() {
-    emberAssert('Assertion is thrown', '');
-  });
-
-  throws(function() {
-    emberAssert('Assertion is thrown', 0);
-  });
+  throws(() => emberAssert('Assertion is thrown', false));
+  throws(() => emberAssert('Assertion is thrown', ''));
+  throws(() => emberAssert('Assertion is thrown', 0));
 });
 
 QUnit.test('Ember.assert does not throw if second argument is a function', function(assert) {

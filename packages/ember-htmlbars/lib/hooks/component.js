@@ -17,7 +17,7 @@ import {
 import { buildHTMLTemplate } from 'ember-htmlbars/system/build-component-template';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, _attrs, templates, visitor) {
-  var state = renderNode.getState();
+  let state = renderNode.getState();
 
   let tagName = _tagName;
   let attrs = _attrs;

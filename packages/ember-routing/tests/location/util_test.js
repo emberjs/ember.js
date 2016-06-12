@@ -27,9 +27,9 @@ QUnit.module('Location Utilities');
 QUnit.test('replacePath cannot be used to redirect to a different origin', function() {
   expect(1);
 
-  var expectedURL;
+  let expectedURL;
 
-  var location = {
+  let location = {
     protocol: 'http:',
     hostname: 'emberjs.com',
     port: '1337',
@@ -46,7 +46,7 @@ QUnit.test('replacePath cannot be used to redirect to a different origin', funct
 QUnit.test('getPath() should normalize location.pathname, making sure it always returns a leading slash', function() {
   expect(2);
 
-  var location = mockBrowserLocation({ pathname: 'test' });
+  let location = mockBrowserLocation({ pathname: 'test' });
   equal(getPath(location), '/test', 'When there is no leading slash, one is added.');
 
   location = mockBrowserLocation({ pathname: '/test' });
@@ -56,14 +56,14 @@ QUnit.test('getPath() should normalize location.pathname, making sure it always 
 QUnit.test('getQuery() should return location.search as-is', function() {
   expect(1);
 
-  var location = mockBrowserLocation({ search: '?foo=bar' });
+  let location = mockBrowserLocation({ search: '?foo=bar' });
   equal(getQuery(location), '?foo=bar');
 });
 
 QUnit.test('getFullPath() should return full pathname including query and hash', function() {
   expect(1);
 
-  var location = mockBrowserLocation({
+  let location = mockBrowserLocation({
     href: 'http://test.com/about?foo=bar#foo',
     pathname: '/about',
     search: '?foo=bar',
@@ -121,7 +121,7 @@ QUnit.test("Feature-detecting the history API", function() {
     true,
     "returns true for Chrome (not stock browser) on Android 4.0.x"
   );
-  
+
   // Windows Phone UA and History API: https://github.com/Modernizr/Modernizr/issues/1471
   equal(
     supportsHistory(

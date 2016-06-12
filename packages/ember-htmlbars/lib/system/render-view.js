@@ -5,11 +5,11 @@ import RenderEnv from 'ember-htmlbars/system/render-env';
 // HTMLBars propagates the existing env and renders templates for a given render node.
 export function renderHTMLBarsBlock(view, block, renderNode) {
   let meta = block && block.template && block.template.meta;
-  var env = RenderEnv.build(view, meta);
+  let env = RenderEnv.build(view, meta);
 
   view.env = env;
   createOrUpdateComponent(view, {}, null, renderNode, env);
-  var nodeManager = new ViewNodeManager(view, null, renderNode, block, view.tagName !== '');
+  let nodeManager = new ViewNodeManager(view, null, renderNode, block, view.tagName !== '');
 
   nodeManager.render(env, {});
 }

@@ -3,10 +3,10 @@ import assign from 'ember-metal/assign';
 QUnit.module('Ember.assign');
 
 QUnit.test('Ember.assign', function() {
-  var a = { a: 1 };
-  var b = { b: 2 };
-  var c = { c: 3 };
-  var a2 = { a: 4 };
+  let a = { a: 1 };
+  let b = { b: 2 };
+  let c = { c: 3 };
+  let a2 = { a: 4 };
 
   assign(a, b, c, a2);
 

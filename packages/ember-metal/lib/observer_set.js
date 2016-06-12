@@ -19,18 +19,17 @@ import { sendEvent } from 'ember-metal/events';
     ...
   ]
 */
-export default ObserverSet;
-function ObserverSet() {
+export default function ObserverSet() {
   this.clear();
 }
 
 
 ObserverSet.prototype.add = function(sender, keyName, eventName) {
-  var observerSet = this.observerSet;
-  var observers = this.observers;
-  var senderGuid = guidFor(sender);
-  var keySet = observerSet[senderGuid];
-  var index;
+  let observerSet = this.observerSet;
+  let observers = this.observers;
+  let senderGuid = guidFor(sender);
+  let keySet = observerSet[senderGuid];
+  let index;
 
   if (!keySet) {
     observerSet[senderGuid] = keySet = {};
@@ -49,8 +48,8 @@ ObserverSet.prototype.add = function(sender, keyName, eventName) {
 };
 
 ObserverSet.prototype.flush = function() {
-  var observers = this.observers;
-  var i, observer, sender;
+  let observers = this.observers;
+  let i, observer, sender;
   this.clear();
   for (i = 0; i < observers.length; ++i) {
     observer = observers[i];
@@ -64,4 +63,3 @@ ObserverSet.prototype.clear = function() {
   this.observerSet = {};
   this.observers = [];
 };
-

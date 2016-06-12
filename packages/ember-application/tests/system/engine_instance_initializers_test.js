@@ -21,7 +21,7 @@ QUnit.module('Ember.Engine instance initializers', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       if (myEngineInstance) {
         myEngineInstance.destroy();
       }
@@ -36,14 +36,14 @@ QUnit.module('Ember.Engine instance initializers', {
 QUnit.test('initializers require proper \'name\' and \'initialize\' properties', function() {
   MyEngine = Engine.extend();
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyEngine.instanceInitializer({ name: 'initializer' });
     });
   });
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyEngine.instanceInitializer({ initialize() {} });
     });
   });
@@ -281,7 +281,7 @@ QUnit.test('initializers set on Engine subclasses should not be shared between e
       equal(firstInitializerRunCount, 1, 'second initializer only was run');
       equal(secondInitializerRunCount, 1, 'second initializer only was run');
 
-      run(function() {
+      run(() => {
         firstEngineInstance.destroy();
         secondEngineInstance.destroy();
 
@@ -331,7 +331,7 @@ QUnit.test('initializers are concatenated', function() {
       equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
       equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
 
-      run(function() {
+      run(() => {
         firstEngineInstance.destroy();
         secondEngineInstance.destroy();
 
@@ -351,7 +351,7 @@ QUnit.test('initializers are per-engine', function() {
     initialize(engine) {}
   });
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     FirstEngine.instanceInitializer({
       name: 'abc',
       initialize(engine) {}

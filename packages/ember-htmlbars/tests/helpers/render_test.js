@@ -10,12 +10,10 @@ import { OWNER } from 'container/owner';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 function runSet(object, key, value) {
-  run(function() {
-    set(object, key, value);
-  });
+  run(() => set(object, key, value));
 }
 
-var view, appInstance;
+let view, appInstance;
 
 QUnit.module('ember-htmlbars: {{render}} helper', {
   setup() {
@@ -30,8 +28,8 @@ QUnit.module('ember-htmlbars: {{render}} helper', {
 });
 
 QUnit.test('{{render}} helper should render given template', function() {
-  var template = '<h1>HI</h1>{{render \'home\'}}';
-  var controller = EmberController.extend();
+  let template = '<h1>HI</h1>{{render \'home\'}}';
+  let controller = EmberController.extend();
 
   view = EmberView.create({
     [OWNER]: appInstance,
@@ -50,8 +48,8 @@ QUnit.test('{{render}} helper should render given template', function() {
 });
 
 QUnit.test('{{render}} helper should render nested helpers', function() {
-  var template = '<h1>HI</h1>{{render \'foo\'}}';
-  var controller = EmberController.extend();
+  let template = '<h1>HI</h1>{{render \'foo\'}}';
+  let controller = EmberController.extend();
 
   view = EmberView.create({
     [OWNER]: appInstance,
@@ -69,8 +67,8 @@ QUnit.test('{{render}} helper should render nested helpers', function() {
 });
 
 QUnit.test('{{render}} helper should have assertion if neither template nor view exists', function() {
-  var template = '<h1>HI</h1>{{render \'oops\'}}';
-  var controller = EmberController.extend();
+  let template = '<h1>HI</h1>{{render \'oops\'}}';
+  let controller = EmberController.extend();
 
   view = EmberView.create({
     [OWNER]: appInstance,
@@ -78,15 +76,15 @@ QUnit.test('{{render}} helper should have assertion if neither template nor view
     template: compile(template)
   });
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     runAppend(view);
   }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
 });
 
 QUnit.test('{{render}} helper should render given template with a supplied model', function() {
-  var template = '<h1>HI</h1>{{render \'post\' post}}';
-  var component;
-  var post = {
+  let template = '<h1>HI</h1>{{render \'post\' post}}';
+  let component;
+  let post = {
     title: 'Rails is omakase'
   };
 
@@ -98,8 +96,8 @@ QUnit.test('{{render}} helper should render given template with a supplied model
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  var postController;
-  var PostController = EmberController.extend({
+  let postController;
+  let PostController = EmberController.extend({
     init() {
       this._super(...arguments);
       postController = this;
@@ -121,8 +119,8 @@ QUnit.test('{{render}} helper should render given template with a supplied model
 });
 
 QUnit.test('{{render}} helper with a supplied model should not fire observers on the controller', function () {
-  var template = '<h1>HI</h1>{{render \'post\' post}}';
-  var post = {
+  let template = '<h1>HI</h1>{{render \'post\' post}}';
+  let post = {
     title: 'Rails is omakase'
   };
   let controller = EmberController.create({
@@ -138,17 +136,15 @@ QUnit.test('{{render}} helper with a supplied model should not fire observers on
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  var PostController = EmberController.extend({
-    modelDidChange: observer('model', function() {
-      modelDidChange++;
-    })
+  let PostController = EmberController.extend({
+    modelDidChange: observer('model', () => modelDidChange++)
   });
 
   appInstance.register('controller:post', PostController);
 
   setTemplate('post', compile('<p>{{title}}</p>'));
 
-  var modelDidChange = 0;
+  let modelDidChange = 0;
   runAppend(view);
   equal(modelDidChange, 0, 'model observer did not fire');
 });
@@ -170,19 +166,19 @@ QUnit.test('{{render}} helper should raise an error when a given controller name
 
   setTemplate('home', compile('<p>BYE</p>'));
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     runAppend(view);
   }, 'The controller name you supplied \'postss\' did not resolve to a controller.');
 });
 
 QUnit.test('{{render}} helper should render with given controller', function() {
-  var template = '{{render "home" controller="posts"}}';
-  var Controller = EmberController.extend();
+  let template = '{{render "home" controller="posts"}}';
+  let Controller = EmberController.extend();
   let model = {};
   let controller = Controller.create({
     [OWNER]: appInstance
   });
-  var id = 0;
+  let id = 0;
 
   appInstance.register('controller:posts', EmberController.extend({
     init() {
@@ -217,7 +213,7 @@ QUnit.test('{{render}} helper should rerender with given controller', function()
   let controller = Controller.create({
     [OWNER]: appInstance
   });
-  var id = 0;
+  let id = 0;
 
   appInstance.register('controller:posts', EmberController.extend({
     init() {
@@ -250,8 +246,8 @@ QUnit.test('{{render}} helper should rerender with given controller', function()
 });
 
 QUnit.test('{{render}} helper should render a template without a model only once', function() {
-  var template = '<h1>HI</h1>{{render \'home\'}}<hr/>{{render \'home\'}}';
-  var Controller = EmberController.extend();
+  let template = '<h1>HI</h1>{{render \'home\'}}<hr/>{{render \'home\'}}';
+  let Controller = EmberController.extend();
   let controller = Controller.create({
     [OWNER]: appInstance
   });
@@ -264,7 +260,7 @@ QUnit.test('{{render}} helper should render a template without a model only once
 
   setTemplate('home', compile('<p>BYE</p>'));
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     runAppend(view);
   }, /\{\{render\}\} helper once/i);
 });
@@ -316,16 +312,16 @@ QUnit.test('{{render}} helper should render templates with models multiple times
 });
 
 QUnit.test('{{render}} helper should not leak controllers', function() {
-  var template = '<h1>HI</h1> {{render \'post\' post1}}';
-  var post1 = {
+  let template = '<h1>HI</h1> {{render \'post\' post1}}';
+  let post1 = {
     title: 'Me first'
   };
 
-  var Controller = EmberController.extend({
+  let Controller = EmberController.extend({
     post1: post1
   });
 
-  var controller = Controller.create({
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 
@@ -337,8 +333,8 @@ QUnit.test('{{render}} helper should not leak controllers', function() {
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  var postController;
-  var PostController = EmberController.extend({
+  let postController;
+  let PostController = EmberController.extend({
     init() {
       this._super(...arguments);
       postController = this;
@@ -367,8 +363,8 @@ QUnit.test('{{render}} helper should not treat invocations with falsy contexts a
     });
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  var postController1, postController2;
-  var PostController = EmberController.extend({
+  let postController1, postController2;
+  let PostController = EmberController.extend({
     init() {
       this._super(...arguments);
       if (!postController1) {
@@ -444,14 +440,14 @@ QUnit.test('{{render}} helper should be able to render a template again when it 
 
   setTemplate('home', compile('<p>BYE</p>'));
 
-  var liveRoutes = {
+  let liveRoutes = {
     render: {
       template: compile('<h1>HI</h1>{{outlet}}')
     },
     outlets: {}
   };
 
-  run(function() {
+  run(() => {
     liveRoutes.outlets.main = {
       render: {
         controller,
@@ -464,7 +460,7 @@ QUnit.test('{{render}} helper should be able to render a template again when it 
 
   equal(view.$().text(), 'HI1BYE');
 
-  run(function() {
+  run(() => {
     liveRoutes.outlets.main = {
       render: {
         controller,
@@ -478,16 +474,16 @@ QUnit.test('{{render}} helper should be able to render a template again when it 
 });
 
 QUnit.test('{{render}} works with dot notation', function() {
-  var template = '{{render "blog.post"}}';
+  let template = '{{render "blog.post"}}';
 
-  var ContextController = EmberController.extend();
-  var contextController = ContextController.create({
+  let ContextController = EmberController.extend();
+  let contextController = ContextController.create({
     [OWNER]: appInstance
   });
 
-  var controller;
-  var id = 0;
-  var BlogPostController = EmberController.extend({
+  let controller;
+  let id = 0;
+  let BlogPostController = EmberController.extend({
     init() {
       this._super(...arguments);
       controller = this;
@@ -506,14 +502,14 @@ QUnit.test('{{render}} works with dot notation', function() {
 
   runAppend(view);
 
-  var singletonController = appInstance.lookup('controller:blog.post');
+  let singletonController = appInstance.lookup('controller:blog.post');
   equal(singletonController.uniqueId, view.$().html(), 'rendered with correct singleton controller');
 });
 
 QUnit.test('throws an assertion if {{render}} is called with an unquoted template name', function() {
-  var template = '<h1>HI</h1>{{render home}}';
-  var Controller = EmberController.extend();
-  var controller = Controller.create({
+  let template = '<h1>HI</h1>{{render home}}';
+  let Controller = EmberController.extend();
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 
@@ -524,15 +520,15 @@ QUnit.test('throws an assertion if {{render}} is called with an unquoted templat
 
   setTemplate('home', compile('<p>BYE</p>'));
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     runAppend(view);
   }, 'The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.');
 });
 
 QUnit.test('throws an assertion if {{render}} is called with a literal for a model', function() {
-  var template = '<h1>HI</h1>{{render "home" "model"}}';
-  var Controller = EmberController.extend();
-  var controller = Controller.create({
+  let template = '<h1>HI</h1>{{render "home" "model"}}';
+  let Controller = EmberController.extend();
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 
@@ -544,15 +540,15 @@ QUnit.test('throws an assertion if {{render}} is called with a literal for a mod
 
   setTemplate('home', compile('<p>BYE</p>'));
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     runAppend(view);
   }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
 });
 
 QUnit.test('{{render}} helper should not require view to provide its own template', function() {
-  var template = '{{render \'fish\'}}';
-  var Controller = EmberController.extend();
-  var controller = Controller.create({
+  let template = '{{render \'fish\'}}';
+  let Controller = EmberController.extend();
+  let controller = Controller.create({
     [OWNER]: appInstance
   });
 

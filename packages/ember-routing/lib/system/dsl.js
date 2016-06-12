@@ -22,7 +22,7 @@ export default DSL;
 
 DSL.prototype = {
   route(name, options, callback) {
-    var dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
+    let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -51,8 +51,8 @@ DSL.prototype = {
     }
 
     if (callback) {
-      var fullName = getFullName(this, name, options.resetNamespace);
-      var dsl = new DSL(fullName, this.options);
+      let fullName = getFullName(this, name, options.resetNamespace);
+      let dsl = new DSL(fullName, this.options);
 
       createRoute(dsl, 'loading');
       createRoute(dsl, 'error', { path: dummyErrorRoute });
@@ -66,7 +66,7 @@ DSL.prototype = {
   },
 
   push(url, name, callback) {
-    var parts = name.split('.');
+    let parts = name.split('.');
     if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
@@ -88,15 +88,15 @@ DSL.prototype = {
   },
 
   generate() {
-    var dslMatches = this.matches;
+    let dslMatches = this.matches;
 
     if (!this.explicitIndex) {
       this.route('index', { path: '/' });
     }
 
-    return function(match) {
-      for (var i = 0; i < dslMatches.length; i++) {
-        var dslMatch = dslMatches[i];
+    return match => {
+      for (let i = 0; i < dslMatches.length; i++) {
+        let dslMatch = dslMatches[i];
         match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
       }
     };
@@ -118,7 +118,7 @@ function getFullName(dsl, name, resetNamespace) {
 function createRoute(dsl, name, options, callback) {
   options = options || {};
 
-  var fullName = getFullName(dsl, name, options.resetNamespace);
+  let fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
     options.path = `/${name}`;
@@ -128,7 +128,7 @@ function createRoute(dsl, name, options, callback) {
 }
 
 DSL.map = function(callback) {
-  var dsl = new DSL();
+  let dsl = new DSL();
   callback.call(dsl);
   return dsl;
 };

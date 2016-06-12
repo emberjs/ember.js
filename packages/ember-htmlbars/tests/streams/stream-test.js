@@ -2,7 +2,7 @@ import { Stream } from 'ember-htmlbars/streams/stream';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { get } from 'ember-metal/property_get';
 
-var stream, value, count;
+let stream, value, count;
 
 function incrementCount() {
   count++;
@@ -13,9 +13,7 @@ QUnit.module('Stream - Proxy compatibility', {
     count = 0;
     value = 'zlurp';
 
-    stream = new Stream(function() {
-      return value;
-    });
+    stream = new Stream(() => value);
   },
   teardown() {
     value = undefined;

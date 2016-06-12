@@ -4,10 +4,10 @@ export default function TransformOldClassBindingSyntax(options) {
 }
 
 TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassBindingSyntax_transform(ast) {
-  var b = this.syntax.builders;
-  var walker = new this.syntax.Walker();
+  let b = this.syntax.builders;
+  let walker = new this.syntax.Walker();
 
-  walker.visit(ast, function(node) {
+  walker.visit(ast, node => {
     if (!validate(node)) { return; }
 
     let allOfTheMicrosyntaxes = [];
@@ -63,7 +63,7 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
 };
 
 function buildSexprs(microsyntax, sexprs, b) {
-  for (var i = 0; i < microsyntax.length; i++) {
+  for (let i = 0; i < microsyntax.length; i++) {
     let [propName, activeClass, inactiveClass] = microsyntax[i];
     let sexpr;
 
@@ -107,15 +107,15 @@ function validate(node) {
 }
 
 function each(list, callback) {
-  for (var i = 0; i < list.length; i++) {
+  for (let i = 0; i < list.length; i++) {
     callback(list[i], i);
   }
 }
 
 function parseMicrosyntax(string) {
-  var segments = string.split(' ');
+  let segments = string.split(' ');
 
-  for (var i = 0; i < segments.length; i++) {
+  for (let i = 0; i < segments.length; i++) {
     segments[i] = segments[i].split(':');
   }
 

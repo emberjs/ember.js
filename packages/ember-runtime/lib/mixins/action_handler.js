@@ -18,7 +18,7 @@ import { get } from 'ember-metal/property_get';
   @namespace Ember
   @private
 */
-var ActionHandler = Mixin.create({
+const ActionHandler = Mixin.create({
   mergedProperties: ['actions'],
 
   /**
@@ -38,7 +38,7 @@ var ActionHandler = Mixin.create({
     ```js
     App.CanDisplayBanner = Ember.Mixin.create({
       actions: {
-        displayBanner: function(msg) {
+        displayBanner(msg) {
           // ...
         }
       }
@@ -46,7 +46,7 @@ var ActionHandler = Mixin.create({
 
     App.WelcomeRoute = Ember.Route.extend(App.CanDisplayBanner, {
       actions: {
-        playMusic: function() {
+        playMusic() {
           // ...
         }
       }
@@ -66,7 +66,7 @@ var ActionHandler = Mixin.create({
     ```js
     App.SongRoute = Ember.Route.extend({
       actions: {
-        myAction: function() {
+        myAction() {
           this.controllerFor("song");
           this.transitionTo("other.route");
           ...
@@ -84,7 +84,7 @@ var ActionHandler = Mixin.create({
     ```js
     App.DebugRoute = Ember.Mixin.create({
       actions: {
-        debugRouteInformation: function() {
+        debugRouteInformation() {
           console.debug("trololo");
         }
       }
@@ -92,7 +92,7 @@ var ActionHandler = Mixin.create({
 
     App.AnnoyingDebugRoute = Ember.Route.extend(App.DebugRoute, {
       actions: {
-        debugRouteInformation: function() {
+        debugRouteInformation() {
           // also call the debugRouteInformation of mixed in App.DebugRoute
           this._super(...arguments);
 
@@ -125,7 +125,7 @@ var ActionHandler = Mixin.create({
 
     App.AlbumSongRoute = Ember.Route.extend({
       actions: {
-        startPlaying: function() {
+        startPlaying() {
           // ...
 
           if (actionShouldAlsoBeTriggeredOnParentRoute) {
@@ -157,10 +157,10 @@ var ActionHandler = Mixin.create({
     ```js
     App.WelcomeRoute = Ember.Route.extend({
       actions: {
-        playTheme: function() {
+        playTheme() {
            this.send('playMusic', 'theme.mp3');
         },
-        playMusic: function(track) {
+        playMusic(track) {
           // ...
         }
       }
@@ -173,17 +173,16 @@ var ActionHandler = Mixin.create({
     @public
   */
   send(actionName, ...args) {
-    var target;
+    let target;
 
     if (this.actions && this.actions[actionName]) {
-      var shouldBubble = this.actions[actionName].apply(this, args) === true;
+      let shouldBubble = this.actions[actionName].apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
     if (target = get(this, 'target')) {
       assert(
-        'The `target` for ' + this + ' (' + target +
-        ') does not have a `send` method',
+        'The `target` for ' + this + ' (' + target + ') does not have a `send` method',
         typeof target.send === 'function'
       );
       target.send(...arguments);

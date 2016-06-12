@@ -1,7 +1,7 @@
 import EmberObject from 'ember-runtime/system/object';
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 // ..........................................................
 // isAny()
@@ -10,7 +10,7 @@ var suite = SuiteModuleBuilder.create();
 suite.module('isAny');
 
 suite.test('should return true of any property matches', function() {
-  var obj = this.newObject([
+  let obj = this.newObject([
     { foo: 'foo', bar: 'BAZ' },
     EmberObject.create({ foo: 'foo', bar: 'bar' })
   ]);
@@ -21,7 +21,7 @@ suite.test('should return true of any property matches', function() {
 });
 
 suite.test('should return true of any property is true', function() {
-  var obj = this.newObject([
+  let obj = this.newObject([
     { foo: 'foo', bar: true },
     EmberObject.create({ foo: 'bar', bar: false })
   ]);
@@ -33,7 +33,7 @@ suite.test('should return true of any property is true', function() {
 });
 
 suite.test('should return true if any property matches null', function() {
-  var obj = this.newObject([
+  let obj = this.newObject([
     { foo: null, bar: 'bar' },
     EmberObject.create({ foo: 'foo', bar: null })
   ]);
@@ -43,7 +43,7 @@ suite.test('should return true if any property matches null', function() {
 });
 
 suite.test('should return true if any property is undefined', function() {
-  var obj = this.newObject([
+  let obj = this.newObject([
     { foo: undefined, bar: 'bar' },
     EmberObject.create({ foo: 'foo' })
   ]);
@@ -53,7 +53,7 @@ suite.test('should return true if any property is undefined', function() {
 });
 
 suite.test('should not match undefined properties without second argument', function() {
-  var obj = this.newObject([
+  let obj = this.newObject([
     { foo: undefined },
     EmberObject.create({ })
   ]);

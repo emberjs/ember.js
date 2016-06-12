@@ -10,7 +10,7 @@ import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
 import 'ember-routing';
 
-var App, logs, originalLogger;
+let App, logs, originalLogger;
 
 QUnit.module('Ember.Application – logging of generated classes', {
   setup() {
@@ -19,13 +19,13 @@ QUnit.module('Ember.Application – logging of generated classes', {
     originalLogger = Logger.info;
 
     Logger.info = function() {
-      var fullName = arguments[1].fullName;
+      let fullName = arguments[1].fullName;
 
       logs[fullName] = logs[fullName] || 0;
       logs[fullName]++;
     };
 
-    run(function() {
+    run(() => {
       App = Application.create({
         LOG_ACTIVE_GENERATION: true
       });
@@ -54,15 +54,15 @@ QUnit.module('Ember.Application – logging of generated classes', {
 function visit(path) {
   QUnit.stop();
 
-  var promise = run(function() {
-    return new RSVP.Promise(function(resolve, reject) {
+  var promise = run(() => {
+    return new RSVP.Promise((resolve, reject) => {
       var router = App.__container__.lookup('router:main');
 
-      resolve(router.handleURL(path).then(function(value) {
+      resolve(router.handleURL(path).then(value => {
         QUnit.start();
         ok(true, 'visited: `' + path + '`');
         return value;
-      }, function(reason) {
+      }, reason => {
         QUnit.start();
         ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
         throw reason;
@@ -97,7 +97,7 @@ QUnit.test('do NOT log class generation if logging disabled', function() {
 
   run(App, 'advanceReadiness');
 
-  visit('/posts').then(function() {
+  visit('/posts').then(() => {
     equal(Object.keys(logs).length, 0, 'expected no logs');
   });
 });
@@ -110,7 +110,7 @@ QUnit.test('actively generated classes get logged', function() {
 
   run(App, 'advanceReadiness');
 
-  visit('/posts').then(function() {
+  visit('/posts').then(() => {
     equal(logs['controller:application'], 1, 'expected: ApplicationController was generated');
     equal(logs['controller:posts'], 1, 'expected: PostsController was generated');
 
@@ -128,7 +128,7 @@ QUnit.test('predefined classes do not get logged', function() {
 
   run(App, 'advanceReadiness');
 
-  visit('/posts').then(function() {
+  visit('/posts').then(() => {
     ok(!logs['controller:application'], 'did not expect: ApplicationController was generated');
     ok(!logs['controller:posts'], 'did not expect: PostsController was generated');
 
@@ -150,7 +150,7 @@ QUnit.module('Ember.Application – logging of view lookups', {
       logs[fullName]++;
     };
 
-    run(function() {
+    run(() => {
       App = Application.create({
         LOG_VIEW_LOOKUPS: true
       });
@@ -185,7 +185,7 @@ QUnit.test('log when template and view are missing when flag is active', functio
   App.register('template:application', compile('{{outlet}}'));
   run(App, 'advanceReadiness');
 
-  visit('/posts').then(function() {
+  visit('/posts').then(() => {
     equal(logs['template:application'], undefined, 'expected: Should not log template:application since it exists.');
     equal(logs['template:index'], 1, 'expected: Could not find "index" template or view.');
     equal(logs['template:posts'], 1, 'expected: Could not find "posts" template or view.');
@@ -199,7 +199,7 @@ QUnit.test('do not log when template and view are missing when flag is not true'
 
   run(App, 'advanceReadiness');
 
-  visit('/posts').then(function() {
+  visit('/posts').then(() => {
     equal(Object.keys(logs).length, 0, 'expected no logs');
   });
 });
@@ -211,7 +211,7 @@ QUnit.test('do not log which views are used with templates when flag is not true
 
   run(App, 'advanceReadiness');
 
-  visit('/posts').then(function() {
+  visit('/posts').then(() => {
     equal(Object.keys(logs).length, 0, 'expected no logs');
   });
 });

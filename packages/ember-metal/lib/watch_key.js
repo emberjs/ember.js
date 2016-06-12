@@ -12,14 +12,14 @@ import { lookupDescriptor } from 'ember-metal/utils';
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
-  var m = meta || metaFor(obj);
+  let m = meta || metaFor(obj);
 
   // activate watching first time
   if (!m.peekWatching(keyName)) {
     m.writeWatching(keyName, 1);
 
-    var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null &&
+    let possibleDesc = obj[keyName];
+    let desc = (possibleDesc !== null &&
                 typeof possibleDesc === 'object' &&
                 possibleDesc.isDescriptor) ? possibleDesc : undefined;
     if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
@@ -52,11 +52,11 @@ if (isEnabled('mandatory-setter')) {
   // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
-    var configurable = descriptor ? descriptor.configurable : true;
-    var isWritable = descriptor ? descriptor.writable : true;
-    var hasValue = descriptor ? 'value' in descriptor : true;
-    var possibleDesc = descriptor && descriptor.value;
-    var isDescriptor = possibleDesc !== null &&
+    let configurable = descriptor ? descriptor.configurable : true;
+    let isWritable = descriptor ? descriptor.writable : true;
+    let hasValue = descriptor ? 'value' in descriptor : true;
+    let possibleDesc = descriptor && descriptor.value;
+    let isDescriptor = possibleDesc !== null &&
                        typeof possibleDesc === 'object' &&
                        possibleDesc.isDescriptor;
 
@@ -86,13 +86,13 @@ if (isEnabled('mandatory-setter')) {
 import { UNDEFINED } from './meta';
 
 export function unwatchKey(obj, keyName, meta) {
-  var m = meta || metaFor(obj);
+  let m = meta || metaFor(obj);
   let count = m.peekWatching(keyName);
   if (count === 1) {
     m.writeWatching(keyName, 0);
 
-    var possibleDesc = obj[keyName];
-    var desc = (possibleDesc !== null &&
+    let possibleDesc = obj[keyName];
+    let desc = (possibleDesc !== null &&
                 typeof possibleDesc === 'object' &&
                 possibleDesc.isDescriptor) ? possibleDesc : undefined;
 

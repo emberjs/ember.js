@@ -341,7 +341,7 @@ import { flaggedInstrument } from 'ember-metal/instrumentation';
   @see {Ember.Templates.helpers.link-to}
   @private
 **/
-let LinkComponent = EmberComponent.extend({
+const LinkComponent = EmberComponent.extend({
   layout,
 
   tagName: 'a',
@@ -819,7 +819,7 @@ let LinkComponent = EmberComponent.extend({
   }
 });
 
-LinkComponent.toString = function() { return 'LinkComponent'; };
+LinkComponent.toString = () => 'LinkComponent';
 
 LinkComponent.reopenClass({
   positionalParams: 'params'

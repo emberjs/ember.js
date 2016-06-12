@@ -16,7 +16,7 @@ function K() { return this; }
  @namespace Ember
  @public
 */
-var VisibilitySupport = Mixin.create({
+export default Mixin.create({
   /**
     If `false`, the view will appear hidden in DOM.
 
@@ -43,8 +43,8 @@ var VisibilitySupport = Mixin.create({
   }),
 
   _toggleVisibility() {
-    var $el = this.$();
-    var isVisible = get(this, 'isVisible');
+    let $el = this.$();
+    let isVisible = get(this, 'isVisible');
 
     if (this._isVisible === isVisible) { return ; }
 
@@ -68,8 +68,8 @@ var VisibilitySupport = Mixin.create({
   _notifyBecameVisible() {
     this.trigger('becameVisible');
 
-    this.forEachChildView(function(view) {
-      var isVisible = get(view, 'isVisible');
+    this.forEachChildView(view => {
+      let isVisible = get(view, 'isVisible');
 
       if (isVisible || isVisible === null) {
         view._notifyBecameVisible();
@@ -79,8 +79,8 @@ var VisibilitySupport = Mixin.create({
 
   _notifyBecameHidden() {
     this.trigger('becameHidden');
-    this.forEachChildView(function(view) {
-      var isVisible = get(view, 'isVisible');
+    this.forEachChildView(view => {
+      let isVisible = get(view, 'isVisible');
 
       if (isVisible || isVisible === null) {
         view._notifyBecameHidden();
@@ -89,7 +89,7 @@ var VisibilitySupport = Mixin.create({
   },
 
   _isAncestorHidden() {
-    var parent = get(this, 'parentView');
+    let parent = get(this, 'parentView');
 
     while (parent) {
       if (get(parent, 'isVisible') === false) { return true; }
@@ -100,5 +100,3 @@ var VisibilitySupport = Mixin.create({
     return false;
   }
 });
-
-export default VisibilitySupport;

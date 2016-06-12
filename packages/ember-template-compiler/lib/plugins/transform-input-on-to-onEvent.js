@@ -24,7 +24,7 @@ import calculateLocationDisplay from 'ember-template-compiler/system/calculate-l
   @private
   @class TransformInputOnToOnEvent
 */
-function TransformInputOnToOnEvent(options = {}) {
+export default function TransformInputOnToOnEvent(options = {}) {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
   this.options = options;
@@ -124,7 +124,7 @@ function hashPairForKey(hash, key) {
 }
 
 function removeFromHash(hash, pairToRemove) {
-  var newPairs = [];
+  let newPairs = [];
   for (let i = 0; i < hash.pairs.length; i++) {
     let pair = hash.pairs[i];
 
@@ -135,5 +135,3 @@ function removeFromHash(hash, pairToRemove) {
 
   hash.pairs = newPairs;
 }
-
-export default TransformInputOnToOnEvent;

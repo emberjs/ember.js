@@ -21,9 +21,9 @@ import { setTemplates, set as setTemplate } from 'ember-templates/template_regis
 import { privatize as P } from 'container/registry';
 import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
 
-var trim = jQuery.trim;
+let { trim } = jQuery;
 
-var app, application, originalLookup, originalDebug, originalWarn;
+let app, application, originalLookup, originalDebug, originalWarn;
 
 QUnit.module('Ember.Application', {
   setup() {
@@ -32,9 +32,7 @@ QUnit.module('Ember.Application', {
     originalWarn = getDebugFunction('warn');
 
     jQuery('#qunit-fixture').html('<div id=\'one\'><div id=\'one-child\'>HI</div></div><div id=\'two\'>HI</div>');
-    run(function() {
-      application = Application.create({ rootElement: '#one', router: null });
-    });
+    application = run(() => Application.create({ rootElement: '#one', router: null }));
   },
 
   teardown() {
@@ -55,51 +53,41 @@ QUnit.module('Ember.Application', {
 });
 
 QUnit.test('you can make a new application in a non-overlapping element', function() {
-  run(function() {
-    app = Application.create({ rootElement: '#two', router: null });
-  });
+  app = run(() => Application.create({ rootElement: '#two', router: null }));
 
   run(app, 'destroy');
   ok(true, 'should not raise');
 });
 
 QUnit.test('you cannot make a new application that is a parent of an existing application', function() {
-  expectAssertion(function() {
-    run(function() {
-      Application.create({ rootElement: '#qunit-fixture' });
-    });
+  expectAssertion(() => {
+    run(() => Application.create({ rootElement: '#qunit-fixture' }));
   });
 });
 
 QUnit.test('you cannot make a new application that is a descendant of an existing application', function() {
-  expectAssertion(function() {
-    run(function() {
-      Application.create({ rootElement: '#one-child' });
-    });
+  expectAssertion(() => {
+    run(() => Application.create({ rootElement: '#one-child' }));
   });
 });
 
 QUnit.test('you cannot make a new application that is a duplicate of an existing application', function() {
-  expectAssertion(function() {
-    run(function() {
-      Application.create({ rootElement: '#one' });
-    });
+  expectAssertion(() => {
+    run(() => Application.create({ rootElement: '#one' }));
   });
 });
 
 QUnit.test('you cannot make two default applications without a rootElement error', function() {
-  expectAssertion(function() {
-    run(function() {
-      Application.create({ router: false });
-    });
+  expectAssertion(() => {
+    run(() => Application.create({ router: false }));
   });
 });
 
 QUnit.test('acts like a namespace', function() {
-  var lookup = context.lookup = {};
+  let lookup = context.lookup = {};
 
-  run(function() {
-    app = lookup.TestApp = Application.create({ rootElement: '#two', router: false });
+  app = run(() => {
+    return lookup.TestApp = Application.create({ rootElement: '#two', router: false });
   });
 
   setNamespaceSearchDisabled(false);
@@ -116,7 +104,7 @@ QUnit.test('includes deprecated access to `application.registry`', function() {
     ok(true, '#register alias is called correctly');
   };
 
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     application.registry.register();
   }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
 });
@@ -202,7 +190,7 @@ QUnit.module('Ember.Application initialization', {
 });
 
 QUnit.test('initialized application goes to initial route', function() {
-  run(function() {
+  run(() => {
     app = Application.create({
       rootElement: '#qunit-fixture'
     });
@@ -226,18 +214,18 @@ QUnit.test('initialized application goes to initial route', function() {
 QUnit.test('ready hook is called before routing begins', function() {
   expect(2);
 
-  run(function() {
+  run(() => {
     function registerRoute(application, name, callback) {
-      var route = EmberRoute.extend({
+      let route = EmberRoute.extend({
         activate: callback
       });
 
       application.register('route:' + name, route);
     }
 
-    var MyApplication = Application.extend({
+    let MyApplication = Application.extend({
       ready() {
-        registerRoute(this, 'index', function() {
+        registerRoute(this, 'index', () => {
           ok(true, 'last-minute route is activated');
         });
       }
@@ -251,14 +239,12 @@ QUnit.test('ready hook is called before routing begins', function() {
       location: 'none'
     });
 
-    registerRoute(app, 'application', function() {
-      ok(true, 'normal route is activated');
-    });
+    registerRoute(app, 'application', () => ok(true, 'normal route is activated'));
   });
 });
 
 QUnit.test('initialize application via initialize call', function() {
-  run(function() {
+  run(() => {
     app = Application.create({
       rootElement: '#qunit-fixture'
     });
@@ -274,13 +260,13 @@ QUnit.test('initialize application via initialize call', function() {
 
   // This is not a public way to access the container; we just
   // need to make some assertions about the created router
-  var router = app.__container__.lookup('router:main');
+  let router = app.__container__.lookup('router:main');
   equal(router instanceof Router, true, 'Router was set from initialize call');
   equal(router.location instanceof NoneLocation, true, 'Location was set from location implementation name');
 });
 
 QUnit.test('initialize application with stateManager via initialize call from Router class', function() {
-  run(function() {
+  run(() => {
     app = Application.create({
       rootElement: '#qunit-fixture'
     });
@@ -292,13 +278,13 @@ QUnit.test('initialize application with stateManager via initialize call from Ro
     app.register('template:application', compile('<h1>Hello!</h1>'));
   });
 
-  var router = app.__container__.lookup('router:main');
+  let router = app.__container__.lookup('router:main');
   equal(router instanceof Router, true, 'Router was set from initialize call');
   equal(jQuery('#qunit-fixture h1').text(), 'Hello!');
 });
 
 QUnit.test('ApplicationView is inserted into the page', function() {
-  run(function() {
+  run(() => {
     app = Application.create({
       rootElement: '#qunit-fixture'
     });
@@ -317,8 +303,8 @@ QUnit.test('ApplicationView is inserted into the page', function() {
 
 QUnit.test('Minimal Application initialized with just an application template', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
-  run(function () {
-    app = Application.create({
+  app = run(() => {
+    return Application.create({
       rootElement: '#qunit-fixture'
     });
   });
@@ -332,18 +318,16 @@ QUnit.test('enable log of libraries with an ENV var', function() {
     return;
   }
 
-  var messages = [];
+  let messages = [];
 
   ENV.LOG_VERSION = true;
 
-  setDebugFunction('debug', function(message) {
-    messages.push(message);
-  });
+  setDebugFunction('debug', message => messages.push(message));
 
   libraries.register('my-lib', '2.0.0a');
 
-  run(function() {
-    app = Application.create({
+  app = run(() => {
+    return Application.create({
       rootElement: '#qunit-fixture'
     });
   });
@@ -356,17 +340,15 @@ QUnit.test('enable log of libraries with an ENV var', function() {
 });
 
 QUnit.test('disable log version of libraries with an ENV var', function() {
-  var logged = false;
+  let logged = false;
 
   ENV.LOG_VERSION = false;
 
-  setDebugFunction('debug', function(message) {
-    logged = true;
-  });
+  setDebugFunction('debug', () => logged = true);
 
   jQuery('#qunit-fixture').empty();
 
-  run(function() {
+  run(() => {
     app = Application.create({
       rootElement: '#qunit-fixture'
     });
@@ -380,9 +362,9 @@ QUnit.test('disable log version of libraries with an ENV var', function() {
 });
 
 QUnit.test('can resolve custom router', function() {
-  var CustomRouter = Router.extend();
+  let CustomRouter = Router.extend();
 
-  var CustomResolver = DefaultResolver.extend({
+  let Resolver = DefaultResolver.extend({
     resolveMain(parsedName) {
       if (parsedName.type === 'router') {
         return CustomRouter;
@@ -392,9 +374,9 @@ QUnit.test('can resolve custom router', function() {
     }
   });
 
-  app = run(function() {
+  app = run(() => {
     return Application.create({
-      Resolver: CustomResolver
+      Resolver
     });
   });
 
@@ -402,20 +384,18 @@ QUnit.test('can resolve custom router', function() {
 });
 
 QUnit.test('can specify custom router', function() {
-  var CustomRouter = Router.extend();
-
-  app = run(function() {
+  app = run(() => {
     return Application.create({
-      Router: CustomRouter
+      Router: Router.extend()
     });
   });
 
-  ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
+  ok(app.__container__.lookup('router:main') instanceof Router, 'application resolved the correct router');
 });
 
 QUnit.test('does not leak itself in onLoad._loaded', function() {
   equal(_loaded.application, undefined);
-  var app = run(Application, 'create');
+  let app = run(Application, 'create');
   equal(_loaded.application, app);
   run(app, 'destroy');
   equal(_loaded.application, undefined);

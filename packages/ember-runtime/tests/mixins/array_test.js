@@ -17,8 +17,7 @@ import { A as emberA } from 'ember-runtime/system/native_array';
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestArray = EmberObject.extend(EmberArray, {
-
+const TestArray = EmberObject.extend(EmberArray, {
   _content: null,
 
   init(ary = []) {
@@ -29,7 +28,7 @@ var TestArray = EmberObject.extend(EmberArray, {
   // arrays can be modified even if they don't implement MutableArray.  The
   // MutableArray is just a standard API for mutation but not required.
   addObject(obj) {
-    var idx = this._content.length;
+    let idx = this._content.length;
     this.arrayContentWillChange(idx, 0, 1);
     this._content.push(obj);
     this.arrayContentDidChange(idx, 0, 1);
@@ -72,15 +71,15 @@ ArrayTests.extend({
 }).run();
 
 QUnit.test('the return value of slice has Ember.Array applied', function() {
-  var x = EmberObject.extend(EmberArray).create({
+  let x = EmberObject.extend(EmberArray).create({
     length: 0
   });
-  var y = x.slice(1);
+  let y = x.slice(1);
   equal(EmberArray.detect(y), true, 'mixin should be applied');
 });
 
 QUnit.test('slice supports negative index arguments', function() {
-  var testArray = new TestArray([1, 2, 3, 4]);
+  let testArray = new TestArray([1, 2, 3, 4]);
 
   deepEqual(testArray.slice(-2), [3, 4], 'slice(-2)');
   deepEqual(testArray.slice(-2, -1), [3], 'slice(-2, -1');
@@ -100,14 +99,13 @@ QUnit.test('slice supports negative index arguments', function() {
 // CONTENT DID CHANGE
 //
 
-var DummyArray = EmberObject.extend(EmberArray, {
+const DummyArray = EmberObject.extend(EmberArray, {
   nextObject() {},
   length: 0,
   objectAt(idx) { return 'ITEM-' + idx; }
 });
 
-var obj, observer;
-
+let obj, observer;
 
 // ..........................................................
 // NOTIFY ARRAY OBSERVERS
@@ -314,7 +312,7 @@ QUnit.test('removing enumerable observer should disable', function() {
 // @each
 //
 
-var ary;
+let ary;
 
 QUnit.module('EmberArray.@each support', {
   setup() {
@@ -332,9 +330,9 @@ QUnit.module('EmberArray.@each support', {
 });
 
 QUnit.test('adding an object should notify (@each.isDone)', function() {
-  var called = 0;
+  let called = 0;
 
-  var observerObject = EmberObject.create({
+  let observerObject = EmberObject.create({
     wasCalled() {
       called++;
     }
@@ -351,9 +349,9 @@ QUnit.test('adding an object should notify (@each.isDone)', function() {
 });
 
 QUnit.test('using @each to observe arrays that does not return objects raise error', function() {
-  var called = 0;
+  let called = 0;
 
-  var observerObject = EmberObject.create({
+  let observerObject = EmberObject.create({
     wasCalled() {
       called++;
     }
@@ -367,7 +365,7 @@ QUnit.test('using @each to observe arrays that does not return objects raise err
 
   addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     ary.addObject(EmberObject.create({
       desc: 'foo',
       isDone: false
@@ -383,13 +381,13 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   // EachArray materialized but just want to know when the property has
   // changed.
 
-  var each = get(ary, '@each');
-  var count = 0;
+  let each = get(ary, '@each');
+  let count = 0;
 
-  addObserver(each, 'isDone', function() { count++; });
+  addObserver(each, 'isDone', () => count++);
 
   count = 0;
-  var item = objectAt(ary, 2);
+  let item = objectAt(ary, 2);
   set(item, 'isDone', !get(item, 'isDone'));
   equal(count, 1, '@each.isDone should have notified');
 });
@@ -401,7 +399,7 @@ QUnit.test('`objectAt` returns correct object', function() {
 });
 
 testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set) {
-  var obj = EmberObject.extend({
+  let obj = EmberObject.extend({
     init() {
       this._super(...arguments);
       set(this, 'resources', emberA());
@@ -420,18 +418,16 @@ testBoth('should be clear caches for computed properties that have dependent key
 });
 
 testBoth('observers that contain @each in the path should fire only once the first time they are accessed', function(get, set) {
-  var count = 0;
+  let count = 0;
 
-  var obj = EmberObject.extend({
+  let obj = EmberObject.extend({
     init() {
       this._super(...arguments);
       // Observer does not fire on init
       set(this, 'resources', emberA());
     },
 
-    commonDidChange: emberObserver('resources.@each.common', function() {
-      count++;
-    })
+    commonDidChange: emberObserver('resources.@each.common', () => count++)
   }).create();
 
   // Observer fires second time when new object is added

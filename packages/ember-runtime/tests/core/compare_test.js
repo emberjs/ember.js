@@ -3,8 +3,8 @@ import EmberObject from 'ember-runtime/system/object';
 import compare from 'ember-runtime/compare';
 import Comparable from 'ember-runtime/mixins/comparable';
 
-var data = [];
-var Comp = EmberObject.extend(Comparable);
+let data = [];
+let Comp = EmberObject.extend(Comparable);
 
 Comp.reopenClass({
   compare(obj) {
@@ -34,7 +34,7 @@ QUnit.module('Ember.compare()', {
 });
 
 QUnit.test('ordering should work', function() {
-  var suspect, comparable, failureMessage,
+  let suspect, comparable, failureMessage,
       suspectIndex, comparableIndex;
 
   for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
@@ -55,15 +55,15 @@ QUnit.test('ordering should work', function() {
 });
 
 QUnit.test('comparables should return values in the range of -1, 0, 1', function() {
-  var negOne = Comp.create({
+  let negOne = Comp.create({
     val: -1
   });
 
-  var zero = Comp.create({
+  let zero = Comp.create({
     val: 0
   });
 
-  var one = Comp.create({
+  let one = Comp.create({
     val: 1
   });
 

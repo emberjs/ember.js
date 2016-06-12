@@ -1,4 +1,4 @@
-function TransformClosureComponentAttrsIntoMut() {
+export default function TransformClosureComponentAttrsIntoMut() {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
 }
@@ -12,7 +12,7 @@ TransformClosureComponentAttrsIntoMut.prototype.transform = function TransformCl
   let b = this.syntax.builders;
 
   this.syntax.traverse(ast, {
-    SubExpression: function(node) {
+    SubExpression(node) {
       if (isComponentClosure(node)) {
         mutParameters(b, node);
       }
@@ -33,19 +33,12 @@ function mutParameters(builder, node) {
     }
   }
 
-  each(node.hash.pairs, function(pair) {
+  for (let i = 0;  i < node.hash.pairs.length; i++) {
+    let pair = node.hash.pairs[i];
     let { value } = pair;
 
     if (value.type === 'PathExpression') {
       pair.value = builder.sexpr(builder.path('@mut'), [pair.value]);
     }
-  });
-}
-
-function each(list, callback) {
-  for (var i = 0, l = list.length; i < l; i++) {
-    callback(list[i]);
   }
 }
-
-export default TransformClosureComponentAttrsIntoMut;

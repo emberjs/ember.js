@@ -14,7 +14,7 @@ export default function inject() {
 }
 
 // Dictionary of injection validations by type, added to by `createInjectionHelper`
-var typeValidators = {};
+const typeValidators = {};
 
 /**
   This method allows other Ember modules to register injection helpers for a
@@ -47,20 +47,19 @@ export function createInjectionHelper(type, validator) {
   @param {Object} factory The factory object
 */
 export function validatePropertyInjections(factory) {
-  var proto = factory.proto();
-  var types = [];
-  var key, desc, validator, i;
+  let proto = factory.proto();
+  let types = [];
 
-  for (key in proto) {
-    desc = proto[key];
+  for (let key in proto) {
+    let desc = proto[key];
     if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
       types.push(desc.type);
     }
   }
 
   if (types.length) {
-    for (i = 0; i < types.length; i++) {
-      validator = typeValidators[types[i]];
+    for (let i = 0; i < types.length; i++) {
+      let validator = typeValidators[types[i]];
 
       if (typeof validator === 'function') {
         validator(factory);

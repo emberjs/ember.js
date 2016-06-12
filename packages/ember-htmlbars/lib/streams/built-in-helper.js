@@ -4,7 +4,7 @@ import {
   getHashValues
 } from './utils';
 
-let BuiltInHelperStream = BasicStream.extend({
+export default BasicStream.extend({
   init(helper, params, hash, templates, env, scope, label) {
     this.helper = helper;
     this.params = params;
@@ -19,5 +19,3 @@ let BuiltInHelperStream = BasicStream.extend({
     return this.helper(getArrayValues(this.params), getHashValues(this.hash), this.templates, this.env, this.scope);
   }
 });
-
-export default BuiltInHelperStream;

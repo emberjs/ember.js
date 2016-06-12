@@ -2,24 +2,23 @@ import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 import { get } from 'ember-metal/property_get';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('removeObjects');
 
 suite.test('should return receiver', function() {
-  var before, obj;
-  before = emberA(this.newFixture(3));
-  obj = before;
+  let before = emberA(this.newFixture(3));
+  let obj = before;
+
   equal(obj.removeObjects(before[1]), obj, 'should return receiver');
 });
 
 suite.test('[A,B,C].removeObjects([B]) => [A,C] + notify', function() {
-  var obj, before, after, observer;
+  let before = emberA(this.newFixture(3));
+  let after = [before[0], before[2]];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newFixture(3));
-  after = [before[0], before[2]];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects([before[1]]);
@@ -37,12 +36,11 @@ suite.test('[A,B,C].removeObjects([B]) => [A,C] + notify', function() {
 });
 
 suite.test('[{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify', function() {
-  var obj, before, after, observer;
+  let before = emberA(this.newObjectsFixture(3));
+  let after = [before[0], before[2]];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newObjectsFixture(3));
-  after = [before[0], before[2]];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects([before[1]]);
@@ -60,12 +58,11 @@ suite.test('[{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify', function(
 });
 
 suite.test('[A,B,C].removeObjects([A,B]) => [C] + notify', function() {
-  var obj, before, after, observer;
+  let before = emberA(this.newFixture(3));
+  let after  = [before[2]];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newFixture(3));
-  after  = [before[2]];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects([before[0], before[1]]);
@@ -83,12 +80,11 @@ suite.test('[A,B,C].removeObjects([A,B]) => [C] + notify', function() {
 });
 
 suite.test('[{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify', function() {
-  var obj, before, after, observer;
+  let before = emberA(this.newObjectsFixture(3));
+  let after = [before[2]];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newObjectsFixture(3));
-  after = [before[2]];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects([before[0], before[1]]);
@@ -106,12 +102,11 @@ suite.test('[{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify', function(
 });
 
 suite.test('[A,B,C].removeObjects([A,B,C]) => [] + notify', function() {
-  var obj, before, after, observer;
+  let before = emberA(this.newFixture(3));
+  let after = [];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newFixture(3));
-  after = [];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects([before[0], before[1], before[2]]);
@@ -129,12 +124,11 @@ suite.test('[A,B,C].removeObjects([A,B,C]) => [] + notify', function() {
 });
 
 suite.test('[{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify', function() {
-  var obj, before, after, observer;
+  let before = emberA(this.newObjectsFixture(3));
+  let after = [];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newObjectsFixture(3));
-  after = [];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects(before);
@@ -152,13 +146,12 @@ suite.test('[{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify', function
 });
 
 suite.test('[A,B,C].removeObjects([D]) => [A,B,C]', function() {
-  var obj, before, after, observer, item;
+  let before = emberA(this.newFixture(3));
+  let after = before;
+  let item = this.newFixture(1)[0];
+  let obj = before;
+  let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
-  before = emberA(this.newFixture(3));
-  after = before;
-  item = this.newFixture(1)[0];
-  obj = before;
-  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObjects([item]); // Note: item not in set
@@ -176,10 +169,10 @@ suite.test('[A,B,C].removeObjects([D]) => [A,B,C]', function() {
 });
 
 suite.test('Removing objects should notify enumerable observer', function() {
-  var fixtures = this.newFixture(3);
-  var obj = this.newObject(fixtures);
-  var observer = this.newObserver(obj).observeEnumerable(obj);
-  var item = fixtures[1];
+  let fixtures = this.newFixture(3);
+  let obj = this.newObject(fixtures);
+  let observer = this.newObserver(obj).observeEnumerable(obj);
+  let item = fixtures[1];
 
   obj.removeObjects([item]);
 

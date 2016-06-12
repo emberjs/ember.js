@@ -7,11 +7,11 @@ import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
 
 export default {
-  setupState: function(state, env, scope, params, hash) {
-    var getStream = env.hooks.get;
-    var read = env.hooks.getValue;
+  setupState(state, env, scope, params, hash) {
+    let getStream = env.hooks.get;
+    let read = env.hooks.getValue;
 
-    var actionName = read(params[0]);
+    let actionName = read(params[0]);
 
     assert(
       'You specified a quoteless path to the {{action}} helper ' +
@@ -20,12 +20,12 @@ export default {
       typeof actionName === 'string' || typeof actionName === 'function'
     );
 
-    var actionArgs = [];
-    for (var i = 1; i < params.length; i++) {
+    let actionArgs = [];
+    for (let i = 1; i < params.length; i++) {
       actionArgs.push(readUnwrappedModel(params[i]));
     }
 
-    var target;
+    let target;
     if (hash.target) {
       if (typeof hash.target === 'string') {
         target = read(getStream(env, scope, hash.target));
@@ -39,11 +39,11 @@ export default {
     return { actionName, actionArgs, target };
   },
 
-  isStable: function(state, env, scope, params, hash) {
+  isStable(state, env, scope, params, hash) {
     return true;
   },
 
-  render: function(node, env, scope, params, hash, template, inverse, visitor) {
+  render(node, env, scope, params, hash, template, inverse, visitor) {
     let actionId = env.dom.getAttribute(node.element, 'data-ember-action') || uuid();
 
     ActionHelper.registerAction({
@@ -56,22 +56,20 @@ export default {
       allowedKeys: hash.allowedKeys
     });
 
-    node.cleanup = function() {
-      ActionHelper.unregisterAction(actionId);
-    };
+    node.cleanup = () => ActionHelper.unregisterAction(actionId);
 
     env.dom.setAttribute(node.element, 'data-ember-action', actionId);
   }
 };
 
-export var ActionHelper = {};
+export let ActionHelper = {};
 
 // registeredActions is re-exported for compatibility with older plugins
 // that were using this undocumented API.
 ActionHelper.registeredActions = ActionManager.registeredActions;
 
 ActionHelper.registerAction = function({ actionId, node, eventName, preventDefault, bubbles, allowedKeys }) {
-  var actions = ActionManager.registeredActions[actionId];
+  let actions = ActionManager.registeredActions[actionId];
 
   if (!actions) {
     actions = ActionManager.registeredActions[actionId] = [];
@@ -116,12 +114,10 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
   return actionId;
 };
 
-ActionHelper.unregisterAction = function(actionId) {
-  delete ActionManager.registeredActions[actionId];
-};
+ActionHelper.unregisterAction = (actionId) => delete ActionManager.registeredActions[actionId];
 
-var MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
-var POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
+const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
+const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
 
 function isAllowedEvent(event, allowedKeys) {
   if (typeof allowedKeys === 'undefined') {
@@ -136,7 +132,7 @@ function isAllowedEvent(event, allowedKeys) {
     return true;
   }
 
-  for (var i = 0; i < MODIFIERS.length; i++) {
+  for (let i = 0; i < MODIFIERS.length; i++) {
     if (event[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
       return false;
     }

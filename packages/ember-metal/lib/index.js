@@ -161,7 +161,7 @@ import Backburner from 'backburner';
 // END IMPORTS
 
 // BEGIN EXPORTS
-var EmberInstrumentation = Ember.Instrumentation = {};
+const EmberInstrumentation = Ember.Instrumentation = {};
 EmberInstrumentation.instrument = instrument;
 EmberInstrumentation.subscribe = instrumentationSubscribe;
 EmberInstrumentation.unsubscribe = instrumentationUnsubscribe;
@@ -329,31 +329,31 @@ Ember.EXTEND_PROTOTYPES = ENV.EXTEND_PROTOTYPES;
 
 // BACKWARDS COMPAT ACCESSORS FOR ENV FLAGS
 Object.defineProperty(Ember, 'LOG_STACKTRACE_ON_DEPRECATION', {
-  get: () => ENV.LOG_STACKTRACE_ON_DEPRECATION,
-  set: value => ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value,
+  get()      { return ENV.LOG_STACKTRACE_ON_DEPRECATION;    },
+  set(value) { ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value; },
   enumerable: false
 });
 
 Object.defineProperty(Ember, 'LOG_VERSION', {
-  get: () => ENV.LOG_VERSION,
-  set: value => ENV.LOG_VERSION = !!value,
+  get()      { return ENV.LOG_VERSION;   },
+  set(value) { ENV.LOG_VERSION = !!value; },
   enumerable: false
 });
 
 Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
-  get: () => ENV.MODEL_FACTORY_INJECTIONS,
-  set: value => ENV.MODEL_FACTORY_INJECTIONS = !!value,
+  get()      { return ENV.MODEL_FACTORY_INJECTIONS;    },
+  set(value) { ENV.MODEL_FACTORY_INJECTIONS = !!value;  },
   enumerable: false
 });
 
 Object.defineProperty(Ember, 'LOG_BINDINGS', {
-  get: () => ENV.LOG_BINDINGS,
-  set: value => ENV.LOG_BINDINGS = !!value,
+  get()      { return ENV.LOG_BINDINGS;    },
+  set(value) { ENV.LOG_BINDINGS = !!value; },
   enumerable: false
 });
 
 Object.defineProperty(Ember, 'ENV', {
-  get: () => ENV,
+  get() { return ENV; },
   enumerable: false
 });
 
@@ -363,8 +363,8 @@ Object.defineProperty(Ember, 'ENV', {
   @private
  */
 Object.defineProperty(Ember, 'lookup', {
-  get: () => context.lookup,
-  set: value => context.lookup = value,
+  get()      { return context.lookup; },
+  set(value) { context.lookup = value; },
   enumerable: false
 });
 

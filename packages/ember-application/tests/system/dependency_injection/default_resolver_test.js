@@ -17,7 +17,7 @@ import {
 } from 'ember-htmlbars/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var registry, locator, application, originalLookup, originalInfo;
+let registry, locator, application, originalLookup, originalInfo;
 
 QUnit.module('Ember.Application Dependency Injection - default resolver', {
   setup() {
@@ -33,7 +33,7 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
     setTemplates({});
     context.lookup = originalLookup;
     run(application, 'destroy');
-    var UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
+    let UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
     if (UserInterfaceNamespace) { run(UserInterfaceNamespace, 'destroy'); }
 
     setDebugFunction('info', originalInfo);
@@ -41,10 +41,10 @@ QUnit.module('Ember.Application Dependency Injection - default resolver', {
 });
 
 QUnit.test('the default resolver can look things up in other namespaces', function() {
-  var UserInterface = context.lookup.UserInterface = Namespace.create();
+  let UserInterface = context.lookup.UserInterface = Namespace.create();
   UserInterface.NavigationController = Controller.extend();
 
-  var nav = locator.lookup('controller:userInterface/navigation');
+  let nav = locator.lookup('controller:userInterface/navigation');
 
   ok(nav instanceof UserInterface.NavigationController, 'the result should be an instance of the specified class');
 });
@@ -108,7 +108,7 @@ QUnit.test('the default resolver resolves helpers', function() {
 });
 
 QUnit.test('the default resolver resolves container-registered helpers', function() {
-  let shorthandHelper = makeHelper(function() {});
+  let shorthandHelper = makeHelper(() => {});
   let helper = Helper.extend();
 
   application.register('helper:shorthand', shorthandHelper);
@@ -123,12 +123,12 @@ QUnit.test('the default resolver resolves container-registered helpers', functio
 });
 
 QUnit.test('the default resolver resolves helpers on the namespace', function() {
-  let ShorthandHelper = makeHelper(function() {});
+  let ShorthandHelper = makeHelper(() =>  {});
   let CompleteHelper = Helper.extend();
   let LegacyHTMLBarsBoundHelper;
 
-  expectDeprecation(function() {
-    LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(function() {});
+  expectDeprecation(() => {
+    LegacyHTMLBarsBoundHelper = makeHTMLBarsBoundHelper(() => {});
   }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
 
   application.ShorthandHelper = ShorthandHelper;
@@ -151,14 +151,14 @@ QUnit.test('the default resolver resolves to the same instance, no matter the no
 });
 
 QUnit.test('the default resolver throws an error if the fullName to resolve is invalid', function() {
-  throws(function() { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve('');       }, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  throws(function() { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve(null);     }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve(':');      }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve('model');  }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  throws(() => { registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
 
 QUnit.test('the default resolver logs hits if `LOG_RESOLVER` is set', function() {
@@ -171,7 +171,7 @@ QUnit.test('the default resolver logs hits if `LOG_RESOLVER` is set', function()
 
   application.LOG_RESOLVER = true;
   application.ScoobyDoo = EmberObject.extend();
-  application.toString = function() { return 'App'; };
+  application.toString = () => 'App';
 
   setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
     equal(symbol, '[✓]', 'proper symbol is printed when a module is found');
@@ -191,7 +191,7 @@ QUnit.test('the default resolver logs misses if `LOG_RESOLVER` is set', function
   expect(3);
 
   application.LOG_RESOLVER = true;
-  application.toString = function() { return 'App'; };
+  application.toString = () => 'App';
 
   setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
     equal(symbol, '[ ]', 'proper symbol is printed when a module is not found');
@@ -208,13 +208,11 @@ QUnit.test('doesn\'t log without LOG_RESOLVER', function() {
     return;
   }
 
-  var infoCount = 0;
+  let infoCount = 0;
 
   application.ScoobyDoo = EmberObject.extend();
 
-  setDebugFunction('info', function(symbol, name) {
-    infoCount = infoCount + 1;
-  });
+  setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1 );
 
   registry.resolve('doo:scooby');
   registry.resolve('doo:scrappy');
@@ -222,7 +220,7 @@ QUnit.test('doesn\'t log without LOG_RESOLVER', function() {
 });
 
 QUnit.test('lookup description', function() {
-  application.toString = function() { return 'App'; };
+  application.toString = () => 'App';
 
   equal(registry.describe('controller:foo'), 'App.FooController', 'Type gets appended at the end');
   equal(registry.describe('controller:foo.bar'), 'App.FooBarController', 'dots are removed');
@@ -232,9 +230,7 @@ QUnit.test('lookup description', function() {
 QUnit.test('assertion for routes without isRouteFactory property', function() {
   application.FooRoute = Component.extend();
 
-  expectAssertion(function() {
-    registry.resolve(`route:foo`);
-  }, /to resolve to an Ember.Route/, 'Should assert');
+  expectAssertion(() => registry.resolve(`route:foo`), /to resolve to an Ember.Route/, 'Should assert');
 });
 
 QUnit.test('no assertion for routes that extend from Ember.Route', function() {
@@ -298,7 +294,7 @@ QUnit.test('knownForType returns each item for a given type found', function() {
 QUnit.test('knownForType is not required to be present on the resolver', function() {
   delete registry.resolver.knownForType;
 
-  registry.resolver.knownForType('helper', function() { });
+  registry.resolver.knownForType('helper', () => { });
 
   ok(true, 'does not error');
 });

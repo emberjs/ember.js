@@ -20,10 +20,10 @@ function labelFor(source, key) {
   return `(get ${sourceLabel} ${keyLabel})`;
 }
 
-let DynamicKeyStream = BasicStream.extend({
+const DynamicKeyStream = BasicStream.extend({
   init(source, keySource) {
     // Used to get the original path for debugging purposes.
-    var label = labelFor(source, keySource);
+    let label = labelFor(source, keySource);
 
     this.label = label;
     this.path = label;
@@ -41,16 +41,16 @@ let DynamicKeyStream = BasicStream.extend({
   },
 
   compute() {
-    var object = this.sourceDep.getValue();
-    var key = this.key();
+    let object = this.sourceDep.getValue();
+    let key = this.key();
     if (object && key) {
       return get(object, key);
     }
   },
 
   setValue(value) {
-    var object = this.sourceDep.getValue();
-    var key = this.key();
+    let object = this.sourceDep.getValue();
+    let key = this.key();
     if (object) {
       set(object, key, value);
     }
@@ -61,8 +61,8 @@ let DynamicKeyStream = BasicStream.extend({
   revalidate(value) {
     this._super$revalidate(value);
 
-    var object = this.sourceDep.getValue();
-    var key = this.key();
+    let object = this.sourceDep.getValue();
+    let key = this.key();
     if (object !== this.observedObject || key !== this.observedKey) {
       this._clearObservedObject();
 
@@ -83,7 +83,7 @@ let DynamicKeyStream = BasicStream.extend({
   }
 });
 
-const buildStream = function buildStream(params) {
+function buildStream(params) {
   let [objRef, pathRef] = params;
 
   assert('The first argument to {{get}} must be a stream', isStream(objRef));
@@ -92,7 +92,7 @@ const buildStream = function buildStream(params) {
   let stream = buildDynamicKeyStream(objRef, pathRef);
 
   return stream;
-};
+}
 
 function buildDynamicKeyStream(source, keySource) {
   if (!isStream(keySource)) {
@@ -145,7 +145,7 @@ function buildDynamicKeyStream(source, keySource) {
   @for Ember.Templates.helpers
   @since 2.1.0
 */
-function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
+export default function getKeyword(morph, env, scope, params, hash, template, inverse, visitor) {
   if (morph === null) {
     return buildStream(params);
   } else {
@@ -165,5 +165,3 @@ function getKeyword(morph, env, scope, params, hash, template, inverse, visitor)
 
   return true;
 }
-
-export default getKeyword;

@@ -7,11 +7,11 @@ import { runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { setOwner } from 'container/owner';
 
-var owner;
+let owner;
 
 function createRouter(settings, options = {}) {
-  var CustomRouter = Router.extend();
-  var router = CustomRouter.create(settings);
+  let CustomRouter = Router.extend();
+  let router = CustomRouter.create(settings);
 
   if (!options.skipOwner) {
     setOwner(router, owner);
@@ -47,13 +47,13 @@ QUnit.test('can create a router without an owner', function() {
 });
 
 QUnit.test('should not create a router.js instance upon init', function() {
-  var router = createRouter(null, { disableSetup: true });
+  let router = createRouter(null, { disableSetup: true });
 
   ok(!router.router);
 });
 
 QUnit.test('should not reify location until setupRouter is called', function() {
-  var router = createRouter(null, { disableSetup: true });
+  let router = createRouter(null, { disableSetup: true });
   equal(typeof router.location, 'string', 'location is specified as a string');
 
   router.setupRouter();
@@ -62,8 +62,8 @@ QUnit.test('should not reify location until setupRouter is called', function() {
 });
 
 QUnit.test('should destroy its location upon destroying the routers owner.', function() {
-  var router = createRouter();
-  var location = router.get('location');
+  let router = createRouter();
+  let location = router.get('location');
 
   runDestroy(owner);
 
@@ -71,10 +71,10 @@ QUnit.test('should destroy its location upon destroying the routers owner.', fun
 });
 
 QUnit.test('should instantiate its location with its `rootURL`', function() {
-  var router = createRouter({
+  let router = createRouter({
     rootURL: '/rootdir/'
   });
-  var location = router.get('location');
+  let location = router.get('location');
 
   equal(location.get('rootURL'), '/rootdir/');
 });
@@ -82,9 +82,9 @@ QUnit.test('should instantiate its location with its `rootURL`', function() {
 QUnit.test('replacePath should be called with the right path', function() {
   expect(1);
 
-  var location = owner.lookup('location:auto');
+  let location = owner.lookup('location:auto');
 
-  var browserLocation = {
+  let browserLocation = {
     href: 'http://test.com/rootdir/welcome',
     origin: 'http://test.com',
     pathname: '/rootdir/welcome',
@@ -111,7 +111,7 @@ QUnit.test('Ember.Router._routePath should consume identical prefixes', function
   expect(8);
 
   function routePath(s1, s2, s3) {
-    var handlerInfos = Array.prototype.slice.call(arguments).map(function(s) {
+    let handlerInfos = Array.prototype.slice.call(arguments).map(function(s) {
       return { name: s };
     });
     handlerInfos.unshift({ name: 'ignored' });
@@ -135,8 +135,8 @@ QUnit.test('Ember.Router._routePath should consume identical prefixes', function
 QUnit.test('Router should cancel routing setup when the Location class says so via cancelRouterSetup', function() {
   expect(0);
 
-  var router;
-  var FakeLocation = {
+  let router;
+  let FakeLocation = {
     cancelRouterSetup: true,
     create() { return this; }
   };
@@ -157,7 +157,7 @@ QUnit.test('Router should cancel routing setup when the Location class says so v
 QUnit.test('AutoLocation should replace the url when it\'s not in the preferred format', function() {
   expect(1);
 
-  var location = owner.lookup('location:auto');
+  let location = owner.lookup('location:auto');
 
   location.location = {
     href: 'http://test.com/rootdir/welcome',
@@ -183,7 +183,7 @@ QUnit.test('AutoLocation should replace the url when it\'s not in the preferred 
 QUnit.test('Router#handleURL should remove any #hashes before doing URL transition', function() {
   expect(2);
 
-  var router = createRouter({
+  let router = createRouter({
     _doURLTransition(routerJsMethod, url) {
       equal(routerJsMethod, 'handleURL');
       equal(url, '/foo/bar?time=morphin');

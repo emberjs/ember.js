@@ -4,7 +4,7 @@ import run from 'ember-metal/run_loop';
 import HashLocation from 'ember-routing/location/hash_location';
 import jQuery from 'ember-views/system/jquery';
 
-var HashTestLocation, location;
+let HashTestLocation, location;
 
 function createLocation(options) {
   if (!options) { options = {}; }
@@ -14,11 +14,11 @@ function createLocation(options) {
 function mockBrowserLocation(path) {
   // This is a neat trick to auto-magically extract the hostname from any
   // url by letting the browser do the work ;)
-  var tmp = document.createElement('a');
+  let tmp = document.createElement('a');
   tmp.href = path;
 
-  var protocol = (!tmp.protocol || tmp.protocol === ':') ? 'http' : tmp.protocol;
-  var pathname = (tmp.pathname.match(/^\//)) ? tmp.pathname : '/' + tmp.pathname;
+  let protocol = (!tmp.protocol || tmp.protocol === ':') ? 'http' : tmp.protocol;
+  let pathname = (tmp.pathname.match(/^\//)) ? tmp.pathname : '/' + tmp.pathname;
 
   return {
     hash: tmp.hash,
@@ -124,7 +124,7 @@ QUnit.test('HashLocation.replaceURL() correctly replaces to the path with a page
 QUnit.test('HashLocation.onUpdateURL() registers a hashchange callback', function() {
   expect(3);
 
-  var oldInit = jQuery.fn.init;
+  let oldInit = jQuery.fn.init;
 
   jQuery.fn.init = function(element) {
     equal(element, window);
@@ -142,7 +142,7 @@ QUnit.test('HashLocation.onUpdateURL() registers a hashchange callback', functio
     willDestroy() {}
   });
 
-  var guid = guidFor(location);
+  let guid = guidFor(location);
 
   location.onUpdateURL(function () {});
 
@@ -157,7 +157,7 @@ QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() 
     _location: mockBrowserLocation('/#/foo/bar')
   });
 
-  var callback = function (param) {
+  let callback = function (param) {
     equal(param, '/foo/bar', 'path is passed as param');
   };
 
@@ -176,7 +176,7 @@ QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL ===
     lastSetURL: '/foo/bar'
   });
 
-  var callback = function (param) {
+  let callback = function (param) {
     ok(false, 'callback should not be called');
   };
 
@@ -196,7 +196,7 @@ QUnit.test('HashLocation.formatURL() prepends a # to the provided string', funct
 QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', function() {
   expect(2);
 
-  var oldInit = jQuery.fn.init;
+  let oldInit = jQuery.fn.init;
 
   jQuery.fn.init = function(element) {
     equal(element, window);
@@ -210,7 +210,7 @@ QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', fun
 
   createLocation();
 
-  var guid = guidFor(location);
+  let guid = guidFor(location);
 
   location.willDestroy();
 

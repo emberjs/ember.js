@@ -16,7 +16,7 @@ import { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler'
   @uses Ember.ControllerMixin
   @public
 */
-var Controller = EmberObject.extend(Mixin);
+const Controller = EmberObject.extend(Mixin);
 
 deprecateUnderscoreActions(Controller);
 

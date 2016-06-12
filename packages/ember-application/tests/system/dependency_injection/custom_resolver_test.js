@@ -4,15 +4,15 @@ import Application from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 
-var application;
+let application;
 
 QUnit.module('Ember.Application Dependency Injection – customResolver', {
   setup() {
-    var fallbackTemplate = compile('<h1>Fallback</h1>');
+    let fallbackTemplate = compile('<h1>Fallback</h1>');
 
-    var Resolver = DefaultResolver.extend({
+    let Resolver = DefaultResolver.extend({
       resolveTemplate(resolvable) {
-        var resolvedTemplate = this._super(resolvable);
+        let resolvedTemplate = this._super(resolvable);
         if (resolvedTemplate) { return resolvedTemplate; }
         if (resolvable.fullNameWithoutType === 'application') {
           return fallbackTemplate;
@@ -22,14 +22,14 @@ QUnit.module('Ember.Application Dependency Injection – customResolver', {
       }
     });
 
-    application = run(function() {
+    application = run(() => {
       return Application.create({
         Resolver: Resolver,
         rootElement: '#qunit-fixture'
-
       });
     });
   },
+
   teardown() {
     run(application, 'destroy');
   }

@@ -45,7 +45,7 @@ import Object from 'ember-runtime/system/object';
   @public
   @since 1.13.0
 */
-var Helper = Object.extend({
+const Helper = Object.extend({
   isHelperInstance: true,
 
   /**
@@ -111,10 +111,10 @@ Helper.reopenClass({
   @public
   @since 1.13.0
 */
-export function helper(helperFn) {
+export function helper(compute) {
   return {
     isHelperInstance: true,
-    compute: helperFn
+    compute
   };
 }
 

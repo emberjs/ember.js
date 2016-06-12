@@ -3,14 +3,14 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('system/object/detectInstance');
 
 QUnit.test('detectInstance detects instances correctly', function() {
-  var A = EmberObject.extend();
-  var B = A.extend();
-  var C = A.extend();
+  let A = EmberObject.extend();
+  let B = A.extend();
+  let C = A.extend();
 
-  var o = EmberObject.create();
-  var a = A.create();
-  var b = B.create();
-  var c = C.create();
+  let o = EmberObject.create();
+  let a = A.create();
+  let b = B.create();
+  let c = C.create();
 
   ok(EmberObject.detectInstance(o), 'o is an instance of EmberObject');
   ok(EmberObject.detectInstance(a), 'a is an instance of EmberObject');

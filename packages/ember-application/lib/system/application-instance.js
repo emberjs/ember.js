@@ -176,7 +176,7 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   startRouting() {
-    var router = get(this, 'router');
+    let router = get(this, 'router');
     router.startRouting();
     this._didSetupRouter = true;
   },
@@ -194,7 +194,7 @@ const ApplicationInstance = EngineInstance.extend({
     if (this._didSetupRouter) { return; }
     this._didSetupRouter = true;
 
-    var router = get(this, 'router');
+    let router = get(this, 'router');
     router.setupRouter();
   },
 
@@ -206,7 +206,7 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   handleURL(url) {
-    var router = get(this, 'router');
+    let router = get(this, 'router');
 
     this.setupRouter();
     return router.handleURL(url);
@@ -216,11 +216,11 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   setupEventDispatcher() {
-    var dispatcher = this.lookup('event_dispatcher:main');
-    var applicationCustomEvents = get(this.application, 'customEvents');
-    var instanceCustomEvents = get(this, 'customEvents');
+    let dispatcher = this.lookup('event_dispatcher:main');
+    let applicationCustomEvents = get(this.application, 'customEvents');
+    let instanceCustomEvents = get(this, 'customEvents');
 
-    var customEvents = assign({}, applicationCustomEvents, instanceCustomEvents);
+    let customEvents = assign({}, applicationCustomEvents, instanceCustomEvents);
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
@@ -482,7 +482,7 @@ Object.defineProperty(ApplicationInstance.prototype, 'container', {
   configurable: true,
   enumerable: false,
   get() {
-    var instance = this;
+    let instance = this;
     return {
       lookup() {
         deprecate(

@@ -4,15 +4,15 @@ import ArrayProxy from 'ember-runtime/system/array_proxy';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { objectAt } from 'ember-runtime/mixins/array';
 
-var array;
+let array;
 
 QUnit.module('ArrayProxy - arrangedContent', {
   setup() {
-    run(function() {
+    run(() => {
       array = ArrayProxy.extend({
         arrangedContent: computed('content.[]', function() {
-          var content = this.get('content');
-          return content && emberA(content.slice().sort(function(a, b) {
+          let content = this.get('content');
+          return content && emberA(content.slice().sort((a, b) => {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
             return b - a;
@@ -24,29 +24,31 @@ QUnit.module('ArrayProxy - arrangedContent', {
     });
   },
   teardown() {
-    run(function() {
-      array.destroy();
-    });
+    run(() => array.destroy());
   }
 });
 
 QUnit.test('addObject - adds to end of \'content\' if not present', function() {
-  run(function() { array.addObject(3); });
+  run(() => array.addObject(3));
+
   deepEqual(array.get('content'), [1, 2, 4, 5, 3], 'adds to end of content');
   deepEqual(array.get('arrangedContent'), [5, 4, 3, 2, 1], 'arrangedContent stays sorted');
 
-  run(function() { array.addObject(1); });
+  run(() => array.addObject(1));
+
   deepEqual(array.get('content'), [1, 2, 4, 5, 3], 'does not add existing number to content');
 });
 
 QUnit.test('addObjects - adds to end of \'content\' if not present', function() {
-  run(function() { array.addObjects([1, 3, 6]); });
+  run(() => array.addObjects([1, 3, 6]));
+
   deepEqual(array.get('content'), [1, 2, 4, 5, 3, 6], 'adds to end of content');
   deepEqual(array.get('arrangedContent'), [6, 5, 4, 3, 2, 1], 'arrangedContent stays sorted');
 });
 
 QUnit.test('compact - returns arrangedContent without nulls and undefined', function() {
-  run(function() { array.set('content', emberA([1, 3, null, 2, undefined])); });
+  run(() => array.set('content', emberA([1, 3, null, 2, undefined])));
+
   deepEqual(array.compact(), [3, 2, 1]);
 });
 
@@ -55,13 +57,12 @@ QUnit.test('indexOf - returns index of object in arrangedContent', function() {
 });
 
 QUnit.test('insertAt - raises, indeterminate behavior', function() {
-  throws(function() {
-    run(function() { array.insertAt(2, 3); });
-  });
+  throws(() => run(() =>  array.insertAt(2, 3)));
 });
 
 QUnit.test('lastIndexOf - returns last index of object in arrangedContent', function() {
-  run(function() { array.pushObject(4); });
+  run(() => array.pushObject(4));
+
   equal(array.lastIndexOf(4), 2, 'returns last arranged index');
 });
 
@@ -83,62 +84,58 @@ QUnit.test('objectsAt - returns objects at indices in arrangedContent', function
 });
 
 QUnit.test('popObject - removes last object in arrangedContent', function() {
-  var popped;
-  run(function() { popped = array.popObject(); });
+  let popped;
+  run(() => popped = array.popObject());
   equal(popped, 1, 'returns last object');
   deepEqual(array.get('content'), [2, 4, 5], 'removes from content');
 });
 
 QUnit.test('pushObject - adds to end of content even if it already exists', function() {
-  run(function() { array.pushObject(1); });
+  run(() => array.pushObject(1));
   deepEqual(array.get('content'), [1, 2, 4, 5, 1], 'adds to end of content');
 });
 
 QUnit.test('pushObjects - adds multiple to end of content even if it already exists', function() {
-  run(function() { array.pushObjects([1, 2, 4]); });
+  run(() => array.pushObjects([1, 2, 4]));
   deepEqual(array.get('content'), [1, 2, 4, 5, 1, 2, 4], 'adds to end of content');
 });
 
 QUnit.test('removeAt - removes from index in arrangedContent', function() {
-  run(function() { array.removeAt(1, 2); });
+  run(() => array.removeAt(1, 2));
   deepEqual(array.get('content'), [1, 5]);
 });
 
 QUnit.test('removeObject - removes object from content', function() {
-  run(function() { array.removeObject(2); });
+  run(() => array.removeObject(2));
   deepEqual(array.get('content'), [1, 4, 5]);
 });
 
 QUnit.test('removeObjects - removes objects from content', function() {
-  run(function() { array.removeObjects([2, 4, 6]); });
+  run(() => array.removeObjects([2, 4, 6]));
   deepEqual(array.get('content'), [1, 5]);
 });
 
 QUnit.test('replace - raises, indeterminate behavior', function() {
-  throws(function() {
-    run(function() { array.replace(1, 2, [3]); });
-  });
+  throws(() => run(() => array.replace(1, 2, [3])));
 });
 
 QUnit.test('replaceContent - does a standard array replace on content', function() {
-  run(function() { array.replaceContent(1, 2, [3]); });
+  run(() => array.replaceContent(1, 2, [3]));
   deepEqual(array.get('content'), [1, 3, 5]);
 });
 
 QUnit.test('reverseObjects - raises, use Sortable#sortAscending', function() {
-  throws(function() {
-    run(function() { array.reverseObjects(); });
-  });
+  throws(() => run(() => array.reverseObjects()));
 });
 
 QUnit.test('setObjects - replaces entire content', function() {
-  run(function() { array.setObjects([6, 7, 8]); });
+  run(() => array.setObjects([6, 7, 8]));
   deepEqual(array.get('content'), [6, 7, 8], 'replaces content');
 });
 
 QUnit.test('shiftObject - removes from start of arrangedContent', function() {
-  var shifted;
-  run(function() { shifted = array.shiftObject(); });
+  let shifted = run(() => array.shiftObject());
+
   equal(shifted, 5, 'returns first object');
   deepEqual(array.get('content'), [1, 2, 4], 'removes object from content');
 });
@@ -152,7 +149,7 @@ QUnit.test('toArray - returns copy of arrangedContent', function() {
 });
 
 QUnit.test('unshiftObject - adds to start of content', function() {
-  run(function() { array.unshiftObject(6); });
+  run(() => array.unshiftObject(6));
   deepEqual(array.get('content'), [6, 1, 2, 4, 5], 'adds to start of content');
 });
 
@@ -209,7 +206,7 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
     run(function() {
       array = ArrayProxy.extend({
         arrangedContent: computed(function() {
-          var content = this.get('content');
+          let content = this.get('content');
           return content && emberA(content.slice().sort(function(a, b) {
             if (a == null) { a = -1; }
             if (b == null) { b = -1; }
@@ -218,7 +215,7 @@ QUnit.module('ArrayProxy - arrangedContent with transforms', {
         }).property('content.[]'),
 
         objectAtContent(idx) {
-          var obj = objectAt(this.get('arrangedContent'), idx);
+          let obj = objectAt(this.get('arrangedContent'), idx);
           return obj && obj.toString();
         }
       }).create({
@@ -260,7 +257,7 @@ QUnit.test('objectsAt - returns objects at indices in arrangedContent', function
 });
 
 QUnit.test('popObject - removes last object in arrangedContent', function() {
-  var popped;
+  let popped;
   run(function() { popped = array.popObject(); });
   equal(popped, '1', 'returns last object');
   deepEqual(array.get('content'), [2, 4, 5], 'removes from content');
@@ -277,7 +274,7 @@ QUnit.test('removeObjects - removes objects from content', function() {
 });
 
 QUnit.test('shiftObject - removes from start of arrangedContent', function() {
-  var shifted;
+  let shifted;
   run(function() { shifted = array.shiftObject(); });
   equal(shifted, '5', 'returns first object');
   deepEqual(array.get('content'), [1, 2, 4], 'removes object from content');

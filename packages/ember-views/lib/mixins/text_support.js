@@ -111,7 +111,7 @@ const KEY_EVENTS = {
   @extends Ember.Mixin
   @private
 */
-var TextSupport = Mixin.create(TargetActionSupport, {
+export default Mixin.create(TargetActionSupport, {
   value: '',
 
   attributeBindings: [
@@ -188,8 +188,8 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   bubbles: false,
 
   interpretKeyEvents(event) {
-    var map = KEY_EVENTS;
-    var method = map[event.keyCode];
+    let map = KEY_EVENTS;
+    let method = map[event.keyCode];
 
     this._elementValueDidChange();
     if (method) { return this[method](event); }
@@ -334,9 +334,9 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  var action = get(view, 'attrs.' + eventName) || get(view, eventName);
-  var on = get(view, 'onEvent');
-  var value = get(view, 'value');
+  let action = get(view, 'attrs.' + eventName) || get(view, eventName);
+  let on = get(view, 'onEvent');
+  let value = get(view, 'value');
 
   // back-compat support for keyPress as an event name even though
   // it's also a method name that consumes the event (and therefore
@@ -353,5 +353,3 @@ function sendAction(eventName, view, event) {
     }
   }
 }
-
-export default TextSupport;

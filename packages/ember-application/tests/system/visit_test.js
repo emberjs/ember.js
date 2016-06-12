@@ -84,7 +84,7 @@ QUnit.test('Applications with autoboot set to false do not autoboot', function(a
   let appBooted = 0;
   let instanceBooted = 0;
 
-  run(function() {
+  run(() => {
     createApplication();
 
     App.initializer({
@@ -118,7 +118,7 @@ QUnit.test('calling visit() on an app without first calling boot() should boot t
   let appBooted = 0;
   let instanceBooted = 0;
 
-  run(function() {
+  run(() => {
     createApplication();
 
     App.initializer({
@@ -146,7 +146,7 @@ QUnit.test('calling visit() on an already booted app should not boot it again', 
   let appBooted = 0;
   let instanceBooted = 0;
 
-  run(function() {
+  run(() => {
     createApplication();
 
     App.initializer({
@@ -181,7 +181,7 @@ QUnit.test('calling visit() on an already booted app should not boot it again', 
 });
 
 QUnit.test('visit() rejects on application boot failure', function(assert) {
-  run(function() {
+  run(() => {
     createApplication();
 
     App.initializer({
@@ -203,7 +203,7 @@ QUnit.test('visit() rejects on application boot failure', function(assert) {
 });
 
 QUnit.test('visit() rejects on instance boot failure', function(assert) {
-  run(function() {
+  run(() => {
     createApplication();
 
     App.instanceInitializer({
@@ -225,7 +225,7 @@ QUnit.test('visit() rejects on instance boot failure', function(assert) {
 });
 
 QUnit.test('visit() follows redirects', function(assert) {
-  run(function() {
+  run(() => {
     createApplication();
 
     App.Router.map(function() {
@@ -254,7 +254,7 @@ QUnit.test('visit() follows redirects', function(assert) {
 });
 
 QUnit.test('visit() rejects if an error occured during a transition', function(assert) {
-  run(function() {
+  run(() => {
     createApplication();
 
     App.Router.map(function() {
@@ -293,7 +293,7 @@ QUnit.test('visit() rejects if an error occured during a transition', function(a
 });
 
 QUnit.test('visit() chain', function(assert) {
-  run(function() {
+  run(() => {
     createApplication();
 
     App.Router.map(function() {
@@ -325,7 +325,7 @@ QUnit.test('visit() chain', function(assert) {
 });
 
 QUnit.test('visit() returns a promise that resolves when the view has rendered', function(assert) {
-  run(function() {
+  run(() => {
     createApplication();
 
     App.register('template:application', compile('<h1>Hello world</h1>'));
@@ -362,7 +362,7 @@ test('Ember Islands-style setup', function(assert) {
   let xBarInitCalled = false;
   let xBarDidInsertElementCalled = false;
 
-  run(function() {
+  run(() => {
     createApplication(true);
 
     App.Router.map(function() {
@@ -469,14 +469,12 @@ test('Ember Islands-style setup', function(assert) {
     assert.equal($bar.find('button').text(), 'Join 0 others in clicking me!');
     assert.ok($bar.text().indexOf('X-Foo') === -1);
 
-    run(function() {
-      $foo.find('x-foo').click();
-    });
+    run(() => $foo.find('x-foo').click());
 
     assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 1 times (1 times combined)!');
     assert.equal($bar.find('button').text(), 'Join 1 others in clicking me!');
 
-    run(function() {
+    run(() => {
       $bar.find('button').click();
       $bar.find('button').click();
     });

@@ -7,7 +7,7 @@ export default function hasHelperHook(env, scope, helperName) {
 
   let owner = env.owner;
   if (validateLazyHelperName(helperName, owner, env.hooks.keywords)) {
-    var registrationName = 'helper:' + helperName;
+    let registrationName = 'helper:' + helperName;
     if (owner.hasRegistration(registrationName)) {
       return true;
     }

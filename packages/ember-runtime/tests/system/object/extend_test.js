@@ -4,22 +4,22 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('EmberObject.extend');
 
 QUnit.test('Basic extend', function() {
-  var SomeClass = EmberObject.extend({ foo: 'BAR' });
+  let SomeClass = EmberObject.extend({ foo: 'BAR' });
   ok(SomeClass.isClass, 'A class has isClass of true');
-  var obj = new SomeClass();
+  let obj = new SomeClass();
   equal(obj.foo, 'BAR');
 });
 
 QUnit.test('Sub-subclass', function() {
-  var SomeClass = EmberObject.extend({ foo: 'BAR' });
-  var AnotherClass = SomeClass.extend({ bar: 'FOO' });
-  var obj = new AnotherClass();
+  let SomeClass = EmberObject.extend({ foo: 'BAR' });
+  let AnotherClass = SomeClass.extend({ bar: 'FOO' });
+  let obj = new AnotherClass();
   equal(obj.foo, 'BAR');
   equal(obj.bar, 'FOO');
 });
 
 QUnit.test('Overriding a method several layers deep', function() {
-  var SomeClass = EmberObject.extend({
+  let SomeClass = EmberObject.extend({
     fooCnt: 0,
     foo() { this.fooCnt++; },
 
@@ -27,7 +27,7 @@ QUnit.test('Overriding a method several layers deep', function() {
     bar() { this.barCnt++; }
   });
 
-  var AnotherClass = SomeClass.extend({
+  let AnotherClass = SomeClass.extend({
     barCnt: 0,
     bar() {
       this.barCnt++;
@@ -35,7 +35,7 @@ QUnit.test('Overriding a method several layers deep', function() {
     }
   });
 
-  var FinalClass = AnotherClass.extend({
+  let FinalClass = AnotherClass.extend({
     fooCnt: 0,
     foo() {
       this.fooCnt++;
@@ -43,7 +43,7 @@ QUnit.test('Overriding a method several layers deep', function() {
     }
   });
 
-  var obj = new FinalClass();
+  let obj = new FinalClass();
   obj.foo();
   obj.bar();
   equal(obj.fooCnt, 2, 'should invoke both');
@@ -64,30 +64,30 @@ QUnit.test('Overriding a method several layers deep', function() {
 });
 
 QUnit.test('With concatenatedProperties', function() {
-  var SomeClass = EmberObject.extend({ things: 'foo', concatenatedProperties: ['things'] });
-  var AnotherClass = SomeClass.extend({ things: 'bar' });
-  var YetAnotherClass = SomeClass.extend({ things: 'baz' });
-  var some = new SomeClass();
-  var another = new AnotherClass();
-  var yetAnother = new YetAnotherClass();
+  let SomeClass = EmberObject.extend({ things: 'foo', concatenatedProperties: ['things'] });
+  let AnotherClass = SomeClass.extend({ things: 'bar' });
+  let YetAnotherClass = SomeClass.extend({ things: 'baz' });
+  let some = new SomeClass();
+  let another = new AnotherClass();
+  let yetAnother = new YetAnotherClass();
   deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
   deepEqual(another.get('things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
   deepEqual(yetAnother.get('things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
 });
 
 QUnit.test('With concatenatedProperties class properties', function() {
-  var SomeClass = EmberObject.extend();
+  let SomeClass = EmberObject.extend();
   SomeClass.reopenClass({
     concatenatedProperties: ['things'],
     things: 'foo'
   });
-  var AnotherClass = SomeClass.extend();
+  let AnotherClass = SomeClass.extend();
   AnotherClass.reopenClass({ things: 'bar' });
-  var YetAnotherClass = SomeClass.extend();
+  let YetAnotherClass = SomeClass.extend();
   YetAnotherClass.reopenClass({ things: 'baz' });
-  var some = new SomeClass();
-  var another = new AnotherClass();
-  var yetAnother = new YetAnotherClass();
+  let some = new SomeClass();
+  let another = new AnotherClass();
+  let yetAnother = new YetAnotherClass();
   deepEqual(get(some.constructor, 'things'), ['foo'], 'base class should have just its value');
   deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
   deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], 'subclass should have base class\' and its own');

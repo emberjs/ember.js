@@ -6,7 +6,7 @@ import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
-var App, $fixture;
+let App, $fixture;
 
 function setupExample() {
   // setup templates
@@ -20,13 +20,13 @@ function setupExample() {
 }
 
 function handleURL(path) {
-  var router = App.__container__.lookup('router:main');
+  let router = App.__container__.lookup('router:main');
   return run(router, 'handleURL', path);
 }
 
 testModule('View Instrumentation', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create({
         rootElement: '#qunit-fixture'
       });
@@ -50,7 +50,7 @@ testModule('View Instrumentation', {
 });
 
 test('Nodes without view instances are instrumented', function(assert) {
-  var called = false;
+  let called = false;
   subscribe('render', {
     before() {
       called = true;

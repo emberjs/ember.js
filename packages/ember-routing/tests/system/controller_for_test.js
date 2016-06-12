@@ -11,7 +11,7 @@ import {
 } from 'ember-routing/system/generate_controller';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
-var buildInstance = function(namespace) {
+function buildInstance(namespace) {
   let owner = buildOwner();
 
   owner.__registry__.resolver = resolverFor(namespace);
@@ -22,27 +22,27 @@ var buildInstance = function(namespace) {
   owner.register('controller:basic', Controller, { instantiate: false });
 
   return owner;
-};
+}
 
 function resolverFor(namespace) {
   return {
     resolve(fullName) {
-      var nameParts = fullName.split(':');
-      var type = nameParts[0];
-      var name = nameParts[1];
+      let nameParts = fullName.split(':');
+      let type = nameParts[0];
+      let name = nameParts[1];
 
       if (name === 'basic') {
         name = '';
       }
-      var className = classify(name) + classify(type);
-      var factory = get(namespace, className);
+      let className = classify(name) + classify(type);
+      let factory = get(namespace, className);
 
       if (factory) { return factory; }
     }
   };
 }
 
-var appInstance, appController, namespace;
+let appInstance, appController, namespace;
 
 QUnit.module('Ember.controllerFor', {
   setup() {
@@ -52,7 +52,7 @@ QUnit.module('Ember.controllerFor', {
     appController = appInstance.lookup('controller:app');
   },
   teardown() {
-    run(function () {
+    run(() => {
       appInstance.destroy();
       namespace.destroy();
     });
@@ -60,7 +60,7 @@ QUnit.module('Ember.controllerFor', {
 });
 
 QUnit.test('controllerFor should lookup for registered controllers', function() {
-  var controller = controllerFor(appInstance, 'app');
+  let controller = controllerFor(appInstance, 'app');
 
   equal(appController, controller, 'should find app controller');
 });
@@ -71,7 +71,7 @@ QUnit.module('Ember.generateController', {
     appInstance = buildInstance(namespace);
   },
   teardown() {
-    run(function () {
+    run(() => {
       appInstance.destroy();
       namespace.destroy();
     });
@@ -84,14 +84,14 @@ QUnit.test('generateController and generateControllerFactory are properties on t
 });
 
 QUnit.test('generateController should create Ember.Controller', function() {
-  var controller = generateController(appInstance, 'home');
+  let controller = generateController(appInstance, 'home');
 
   ok(controller instanceof Controller, 'should create controller');
 });
 
 
 QUnit.test('generateController should create App.Controller if provided', function() {
-  var controller;
+  let controller;
   namespace.Controller = Controller.extend();
 
   controller = generateController(appInstance, 'home');

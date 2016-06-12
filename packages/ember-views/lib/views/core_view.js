@@ -14,7 +14,7 @@ import require from 'require';
 // container (e.g. `Ember.View.create().append()`) then we create a fallback
 // DOM renderer that is shared. In general, this path should be avoided since
 // views created this way cannot run in a node environment.
-var renderer;
+let renderer;
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
@@ -46,7 +46,7 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     // Fallback for legacy cases where the view was created directly
     // via `create()` instead of going through the container.
     if (!this.renderer) {
-      var DOMHelper = domHelper();
+      let DOMHelper = domHelper();
       renderer = renderer || InteractiveRenderer.create({ dom: new DOMHelper() });
       this.renderer = renderer;
     }
@@ -84,11 +84,11 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
   */
   trigger() {
     this._super(...arguments);
-    var name = arguments[0];
-    var method = this[name];
+    let name = arguments[0];
+    let method = this[name];
     if (method) {
-      var args = new Array(arguments.length - 1);
-      for (var i = 1; i < arguments.length; i++) {
+      let args = new Array(arguments.length - 1);
+      for (let i = 1; i < arguments.length; i++) {
         args[i - 1] = arguments[i];
       }
       return method.apply(this, args);
@@ -114,7 +114,7 @@ CoreView.reopenClass({
   isViewFactory: true
 });
 
-var _domHelper;
+let _domHelper;
 function domHelper() {
   return _domHelper = _domHelper || require('ember-htmlbars/system/dom-helper').default;
 }

@@ -3,7 +3,7 @@
 @submodule ember-views
 */
 
-function ActionManager() {}
+export default function ActionManager() {}
 
 /**
   Global action id hash.
@@ -13,5 +13,3 @@ function ActionManager() {}
   @type Object
 */
 ActionManager.registeredActions = {};
-
-export default ActionManager;

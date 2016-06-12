@@ -6,7 +6,7 @@ import inject from 'ember-runtime/inject';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { setOwner } from 'container/owner';
 
-var route, routeOne, routeTwo, lookupHash;
+let route, routeOne, routeTwo, lookupHash;
 
 function setup() {
   route = EmberRoute.create();
@@ -24,8 +24,8 @@ QUnit.module('Ember.Route', {
 QUnit.test('default store utilizes the container to acquire the model factory', function() {
   expect(4);
 
-  var Post = EmberObject.extend();
-  var post = {};
+  let Post = EmberObject.extend();
+  let post = {};
 
   Post.reopenClass({
     find(id) {
@@ -57,11 +57,11 @@ QUnit.test('\'store\' can be injected by data persistence frameworks', function(
 
   let owner = buildOwner();
 
-  var post = {
+  let post = {
     id: 1
   };
 
-  var Store = EmberObject.extend({
+  let Store = EmberObject.extend({
     find(type, value) {
       ok(true, 'injected model was called');
       equal(type, 'post', 'correct type was called');
@@ -86,7 +86,7 @@ QUnit.test('assert if \'store.find\' method is not found', function() {
   runDestroy(route);
 
   let owner = buildOwner();
-  var Post = EmberObject.extend();
+  let Post = EmberObject.extend();
 
   owner.register('route:index', EmberRoute);
   owner.register('model:post', Post);
@@ -149,7 +149,7 @@ QUnit.test('modelFor doesn\'t require the router', function() {
 
 QUnit.test('.send just calls an action if the router is absent', function() {
   expect(7);
-  var route = EmberRoute.extend({
+  let route = EmberRoute.extend({
     actions: {
       returnsTrue(foo, bar) {
         equal(foo, 1);
@@ -172,7 +172,7 @@ QUnit.test('.send just calls an action if the router is absent', function() {
 
 QUnit.test('.send just calls an action if the routers internal router property is absent', function() {
   expect(7);
-  var route = EmberRoute.extend({
+  let route = EmberRoute.extend({
     router: { },
     actions: {
       returnsTrue(foo, bar) {
@@ -197,7 +197,7 @@ QUnit.test('.send just calls an action if the routers internal router property i
 QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
   expect(2);
 
-  var route = EmberRoute.extend({
+  let route = EmberRoute.extend({
     actions: {
       foo: function() {
         ok(true, 'called foo action');
@@ -249,19 +249,19 @@ QUnit.module('Ember.Route serialize', {
 });
 
 QUnit.test('returns the models properties if params does not include *_id', function() {
-  var model = { id: 2, firstName: 'Ned', lastName: 'Ryerson' };
+  let model = { id: 2, firstName: 'Ned', lastName: 'Ryerson' };
 
   deepEqual(route.serialize(model, ['firstName', 'lastName']), { firstName: 'Ned', lastName: 'Ryerson' }, 'serialized correctly');
 });
 
 QUnit.test('returns model.id if params include *_id', function() {
-  var model = { id: 2 };
+  let model = { id: 2 };
 
   deepEqual(route.serialize(model, ['post_id']), { post_id: 2 }, 'serialized correctly');
 });
 
 QUnit.test('returns checks for existence of model.post_id before trying model.id', function() {
-  var model = { post_id: 3 };
+  let model = { post_id: 3 };
 
   deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
 });
@@ -272,7 +272,7 @@ QUnit.test('returns undefined if model is not set', function() {
 
 QUnit.module('Ember.Route interaction', {
   setup() {
-    var owner = {
+    let owner = {
       lookup(fullName) {
         return lookupHash[fullName];
       }
@@ -297,7 +297,7 @@ QUnit.module('Ember.Route interaction', {
 });
 
 QUnit.test('controllerFor uses route\'s controllerName if specified', function() {
-  var testController = {};
+  let testController = {};
   lookupHash['controller:test'] = testController;
 
   routeOne.controllerName = 'test';
@@ -316,8 +316,8 @@ QUnit.test('services can be injected into routes', function() {
 
   owner.register('service:auth', Service.extend());
 
-  var appRoute = owner.lookup('route:application');
-  var authService = owner.lookup('service:auth');
+  let appRoute = owner.lookup('route:application');
+  let authService = owner.lookup('service:auth');
 
   equal(authService, appRoute.get('authService'), 'service.auth is injected');
 });

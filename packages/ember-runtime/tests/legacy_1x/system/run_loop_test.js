@@ -18,7 +18,7 @@ import EmberObject from 'ember-runtime/system/object';
     broken anyway.  I don't think it ever even worked.
 */
 
-var MyApp, binding1, binding2;
+let MyApp, binding1, binding2;
 
 QUnit.module('System:run_loop() - chained binding', {
   setup() {
@@ -43,7 +43,7 @@ QUnit.module('System:run_loop() - chained binding', {
 });
 
 QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.RunLoop)', function() {
-  run(function () {
+  run(() => {
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
@@ -60,7 +60,7 @@ QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.R
     }, deprecationMessage);
   });
 
-  run(function () {
+  run(() => {
     // Based on the above binding if you change the output of MyApp.first
     // object it should change the all the variable of
     //  MyApp.first,MyApp.second and MyApp.third object
@@ -81,7 +81,7 @@ QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.R
 });
 
 QUnit.test('Should propagate bindings after the RunLoop completes', function() {
-  run(function () {
+  run(() => {
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
@@ -98,7 +98,7 @@ QUnit.test('Should propagate bindings after the RunLoop completes', function() {
     }, deprecationMessage);
   });
 
-  run(function () {
+  run(() => {
     //Based on the above binding if you change the output of MyApp.first object it should
     //change the all the variable of MyApp.first,MyApp.second and MyApp.third object
     MyApp.first.set('output', 'change');

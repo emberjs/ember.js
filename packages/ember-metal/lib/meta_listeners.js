@@ -11,10 +11,10 @@
  */
 
 /* listener flags */
-export var ONCE = 1;
-export var SUSPENDED = 2;
+export const ONCE = 1;
+export const SUSPENDED = 2;
 
-export var protoMethods = {
+export const protoMethods = {
 
   addToListeners(eventName, target, method, flags) {
     if (!this._listeners) {

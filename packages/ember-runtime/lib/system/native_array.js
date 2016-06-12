@@ -32,7 +32,7 @@ import copy from 'ember-runtime/copy';
   @uses Ember.Copyable
   @public
 */
-var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
+let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // because length is a built-in property we need to know to just get the
   // original property.
@@ -57,7 +57,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
     // since everything has shifted
-    var len = objects ? get(objects, 'length') : 0;
+    let len = objects ? get(objects, 'length') : 0;
     this.arrayContentWillChange(idx, amt, len);
 
     if (len === 0) {
@@ -73,7 +73,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // If you ask for an unknown property, then try to collect the value
   // from member items.
   unknownProperty(key, value) {
-    var ret;// = this.reducedProperty(key, value);
+    let ret;// = this.reducedProperty(key, value);
     if (value !== undefined && ret === undefined) {
       ret = this[key] = value;
     }
@@ -93,7 +93,7 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 });
 
 // Remove any methods implemented natively so we don't override them
-var ignore = ['length'];
+const ignore = ['length'];
 NativeArray.keys().forEach((methodName) => {
   if (Array.prototype[methodName]) {
     ignore.push(methodName);
@@ -132,13 +132,13 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
   @return {Ember.NativeArray}
   @public
 */
-var A;
+let A;
 
 if (ENV.EXTEND_PROTOTYPES.Array) {
   NativeArray.apply(Array.prototype);
-  A = function (arr) { return arr || []; };
+  A = arr => arr || [];
 } else {
-  A = function (arr) {
+  A = arr => {
     if (!arr) { arr = []; }
     return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
   };

@@ -13,7 +13,7 @@
   @private
   @return {Number} the uuid
 */
-var _uuid = 0;
+let _uuid = 0;
 
 /**
   Generates a universally unique identifier. This method
@@ -35,11 +35,11 @@ export function uuid() {
   @type String
   @final
 */
-var GUID_PREFIX = 'ember';
+const GUID_PREFIX = 'ember';
 
 // Used for guid generation...
-var numberCache  = [];
-var stringCache  = {};
+const numberCache  = [];
+const stringCache  = {};
 
 /**
   Strongly hint runtimes to intern the provided string.
@@ -81,9 +81,9 @@ var stringCache  = {};
   @return {String} interned version of the provided string
 */
 export function intern(str) {
-  var obj = {};
+  let obj = {};
   obj[str] = 1;
-  for (var key in obj) {
+  for (let key in obj) {
     if (key === str) {
       return key;
     }
@@ -105,23 +105,23 @@ export function intern(str) {
   @type String
   @final
 */
-var GUID_KEY = intern('__ember' + (+ new Date()));
+const GUID_KEY = intern('__ember' + (+ new Date()));
 
-export var GUID_DESC = {
+export let GUID_DESC = {
   writable:     true,
   configurable: true,
   enumerable:   false,
   value: null
 };
 
-var nullDescriptor = {
+let nullDescriptor = {
   configurable: true,
   writable: true,
   enumerable: false,
   value: null
 };
 
-export var GUID_KEY_PROPERTY = {
+export let GUID_KEY_PROPERTY = {
   name: GUID_KEY,
   descriptor: nullDescriptor
 };
@@ -148,7 +148,7 @@ export function generateGuid(obj, prefix) {
     prefix = GUID_PREFIX;
   }
 
-  var ret = (prefix + uuid());
+  let ret = (prefix + uuid());
   if (obj) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
@@ -192,8 +192,8 @@ export function guidFor(obj) {
     return '(null)';
   }
 
-  var ret;
-  var type = typeof obj;
+  let ret;
+  let type = typeof obj;
 
   // Don't allow prototype changes to String etc. to change the guidFor
   switch (type) {
@@ -298,9 +298,9 @@ export function wrap(func, superFunc) {
 
 function _wrap(func, superFunc) {
   function superWrapper() {
-    var orig = this._super;
+    let orig = this._super;
     this._super = superFunc;
-    var ret = func.apply(this, arguments);
+    let ret = func.apply(this, arguments);
     this._super = orig;
     return ret;
   }
@@ -317,7 +317,7 @@ function _wrap(func, superFunc) {
   Checks to see if the `methodName` exists on the `obj`.
 
   ```javascript
-  var foo = { bar: function() { return 'bar'; }, baz: null };
+  let foo = { bar: function() { return 'bar'; }, baz: null };
 
   Ember.canInvoke(foo, 'bar'); // true
   Ember.canInvoke(foo, 'baz'); // false
@@ -340,7 +340,7 @@ function canInvoke(obj, methodName) {
   and if it does, invokes it with the arguments passed.
 
   ```javascript
-  var d = new Date('03/15/2013');
+  let d = new Date('03/15/2013');
 
   Ember.tryInvoke(d, 'getTime');              // 1363320000000
   Ember.tryInvoke(d, 'setFullYear', [2014]);  // 1394856000000
@@ -365,7 +365,7 @@ export function tryInvoke(obj, methodName, args) {
 // TYPING & ARRAY MESSAGING
 //
 
-var objectToString = Object.prototype.toString;
+const objectToString = Object.prototype.toString;
 
 /**
   Forces the passed object to be part of an array. If the object is already
@@ -379,7 +379,7 @@ var objectToString = Object.prototype.toString;
   Ember.makeArray('lindsay');   // ['lindsay']
   Ember.makeArray([1, 2, 42]);  // [1, 2, 42]
 
-  var controller = Ember.ArrayProxy.create({ content: [] });
+  let controller = Ember.ArrayProxy.create({ content: [] });
 
   Ember.makeArray(controller) === controller;  // true
   ```
@@ -420,7 +420,7 @@ export function inspect(obj) {
     return '[' + obj + ']';
   }
   // for non objects
-  var type = typeof obj;
+  let type = typeof obj;
   if (type !== 'object' && type !== 'symbol') {
     return '' + obj;
   }
@@ -430,9 +430,9 @@ export function inspect(obj) {
   }
 
   // Object.prototype.toString === {}.toString
-  var v;
-  var ret = [];
-  for (var key in obj) {
+  let v;
+  let ret = [];
+  for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
@@ -455,7 +455,7 @@ export function inspect(obj) {
   @private
 */
 export function applyStr(t, m, a) {
-  var l = a && a.length;
+  let l = a && a.length;
   if (!a || !l) { return t[m](); }
   switch (l) {
     case 1:  return t[m](a[0]);
@@ -497,5 +497,3 @@ export {
   makeArray,
   canInvoke
 };
-
-

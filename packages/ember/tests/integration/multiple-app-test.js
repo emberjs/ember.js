@@ -4,12 +4,12 @@ import Application from 'ember-application/system/application';
 import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 
-var App1, App2, actions;
+let App1, App2, actions;
 
 function startApp(rootElement) {
-  var application;
+  let application;
 
-  run(function() {
+  run(() => {
     application = Application.create({
       rootElement
     });
@@ -19,11 +19,11 @@ function startApp(rootElement) {
       location: 'none'
     });
 
-    var registry = application.__registry__;
+    let registry = application.__registry__;
 
     registry.register('component:special-button', Component.extend({
       actions: {
-        doStuff: function() {
+        doStuff() {
           actions.push(rootElement);
         }
       }
@@ -37,7 +37,7 @@ function startApp(rootElement) {
 }
 
 function handleURL(application, path) {
-  var router = application.__container__.lookup('router:main');
+  let router = application.__container__.lookup('router:main');
   return run(router, 'handleURL', path);
 }
 

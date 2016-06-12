@@ -10,7 +10,7 @@ import setProperties from 'ember-metal/set_properties';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { getOwner, setOwner, OWNER } from 'container/owner';
 
-var EMPTY_ARRAY = [];
+const EMPTY_ARRAY = [];
 
 export default Mixin.create({
   /**
@@ -59,9 +59,9 @@ export default Mixin.create({
     this.unlinkChild(view);
 
     // remove view from childViews array.
-    var childViews = get(this, 'childViews');
+    let childViews = get(this, 'childViews');
 
-    var index = childViews.indexOf(view);
+    let index = childViews.indexOf(view);
     if (index !== -1) { childViews.splice(index, 1); }
 
     return this;
@@ -91,7 +91,7 @@ export default Mixin.create({
       return maybeViewClass;
     }
 
-    var view;
+    let view;
 
     attrs.parentView = this;
     attrs.renderer = this.renderer;
@@ -106,8 +106,8 @@ export default Mixin.create({
         set(this, view.viewName, view);
       }
     } else if ('string' === typeof maybeViewClass) {
-      var fullName = 'view:' + maybeViewClass;
-      var ViewKlass = owner._lookupFactory(fullName);
+      let fullName = 'view:' + maybeViewClass;
+      let ViewKlass = owner._lookupFactory(fullName);
 
       assert('Could not find view: \'' + fullName + '\'', !!ViewKlass);
 

@@ -3,9 +3,9 @@ import isBlank from 'ember-metal/is_blank';
 QUnit.module('Ember.isBlank');
 
 QUnit.test('Ember.isBlank', function() {
-  var string = 'string';
-  var fn = function() {};
-  var object = { length: 0 };
+  let string = 'string';
+  let fn = function() {};
+  let object = { length: 0 };
 
   equal(true, isBlank(null), 'for null');
   equal(true, isBlank(undefined), 'for undefined');

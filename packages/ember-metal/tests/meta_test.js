@@ -5,7 +5,7 @@ import {
 QUnit.module('Ember.meta');
 
 QUnit.test('should return the same hash for an object', function() {
-  var obj = {};
+  let obj = {};
 
   meta(obj).foo = 'bar';
 
@@ -13,7 +13,7 @@ QUnit.test('should return the same hash for an object', function() {
 });
 
 QUnit.test('meta is not enumerable', function () {
-  var proto, obj, props, prop;
+  let proto, obj, props, prop;
   proto = { foo: 'bar' };
   meta(proto);
   obj = Object.create(proto);

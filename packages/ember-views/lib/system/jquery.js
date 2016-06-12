@@ -19,7 +19,7 @@ if (environment.hasDOM) {
       'dragover',
       'drop',
       'dragend'
-    ].forEach(function(eventName) {
+    ].forEach(eventName => {
       jQuery.event.fixHooks[eventName] = {
         props: ['dataTransfer']
       };

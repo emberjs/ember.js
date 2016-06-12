@@ -3,7 +3,7 @@ import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 import { Libraries } from 'ember-metal/libraries';
 
-var libs, registry;
+let libs, registry;
 let originalWarn = getDebugFunction('warn');
 
 QUnit.module('Libraries registry', {

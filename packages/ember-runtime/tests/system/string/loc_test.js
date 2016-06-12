@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core'; // ES6TODO Ember.STRINGS
 import { ENV } from 'ember-environment';
 import { loc } from 'ember-runtime/system/string';
 
-var oldString;
+let oldString;
 
 QUnit.module('EmberStringUtils.loc', {
   setup() {

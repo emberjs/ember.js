@@ -24,7 +24,7 @@ view-aware defaults for target and actionContext.
 @extends Ember.Mixin
 @private
 */
-var TargetActionSupport = Mixin.create({
+export default Mixin.create({
   target: null,
   action: null,
   actionContext: null,
@@ -34,10 +34,10 @@ var TargetActionSupport = Mixin.create({
       return this._targetObject;
     }
 
-    var target = get(this, 'target');
+    let target = get(this, 'target');
 
     if (typeof target === 'string') {
-      var value = get(this, target);
+      let value = get(this, target);
       if (value === undefined) {
         value = get(context.lookup, target);
       }
@@ -48,17 +48,17 @@ var TargetActionSupport = Mixin.create({
     }
   }),
 
-  actionContextObject: computed(function() {
-    var actionContext = get(this, 'actionContext');
+  actionContextObject: computed('actionContext', function() {
+    let actionContext = get(this, 'actionContext');
 
     if (typeof actionContext === 'string') {
-      var value = get(this, actionContext);
+      let value = get(this, actionContext);
       if (value === undefined) { value = get(context.lookup, actionContext); }
       return value;
     } else {
       return actionContext;
     }
-  }).property('actionContext'),
+  }),
 
   /**
   Send an `action` with an `actionContext` to a `target`. The action, actionContext
@@ -69,7 +69,7 @@ var TargetActionSupport = Mixin.create({
     target: Ember.computed.alias('controller'),
     action: 'save',
     actionContext: Ember.computed.alias('context'),
-    click: function() {
+    click() {
       this.triggerAction(); // Sends the `save` action, along with the current context
                             // to the current controller
     }
@@ -81,7 +81,7 @@ var TargetActionSupport = Mixin.create({
 
   ```javascript
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    click: function() {
+    click() {
       this.triggerAction({
         action: 'save',
         target: this.get('controller'),
@@ -99,7 +99,7 @@ var TargetActionSupport = Mixin.create({
   ```javascript
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
     target: Ember.computed.alias('controller'),
-    click: function() {
+    click() {
       this.triggerAction({
         action: 'save'
       }); // Sends the `save` action, along with a reference to `this`,
@@ -114,12 +114,12 @@ var TargetActionSupport = Mixin.create({
   @private
   */
   triggerAction(opts = {}) {
-    var action = opts.action || get(this, 'action');
-    var target = opts.target || get(this, 'targetObject');
-    var actionContext = opts.actionContext;
+    let action = opts.action || get(this, 'action');
+    let target = opts.target || get(this, 'targetObject');
+    let actionContext = opts.actionContext;
 
     function args(options, actionName) {
-      var ret = [];
+      let ret = [];
       if (actionName) { ret.push(actionName); }
 
       return ret.concat(options);
@@ -130,7 +130,7 @@ var TargetActionSupport = Mixin.create({
     }
 
     if (target && action) {
-      var ret;
+      let ret;
 
       if (target.send) {
         ret = target.send.apply(target, args(actionContext, action));
@@ -149,5 +149,3 @@ var TargetActionSupport = Mixin.create({
     }
   }
 });
-
-export default TargetActionSupport;

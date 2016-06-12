@@ -73,7 +73,7 @@ export function linkParamsFor(path, params) {
 function eachParam(list) {
   let listChange = getKey(list, '[]');
 
-  let stream = chain(list, function() {
+  let stream = chain(list, () => {
     read(listChange);
     return read(list);
   }, 'each');
@@ -86,7 +86,7 @@ function shouldDisplay(predicate, coercer) {
   let length = getKey(predicate, 'length');
   let isTruthy = getKey(predicate, 'isTruthy');
 
-  let stream = chain(predicate, function() {
+  let stream = chain(predicate, () => {
     let predicateVal = read(predicate);
     let lengthVal = read(length);
     let isTruthyVal = read(isTruthy);

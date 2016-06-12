@@ -5,10 +5,8 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 QUnit.module('Ember.ArrayProxy - content update');
 
 QUnit.test('The `contentArrayDidChange` method is invoked after `content` is updated.', function() {
-  var proxy;
-  var observerCalled = false;
-
-  proxy = ArrayProxy.extend({
+  let observerCalled = false;
+  let proxy = ArrayProxy.extend({
     arrangedContent: computed('content', function(key) {
       return emberA(this.get('content').slice());
     }),

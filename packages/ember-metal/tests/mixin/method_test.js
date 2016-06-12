@@ -6,7 +6,7 @@ import {
 QUnit.module('Mixin Methods');
 
 QUnit.test('defining simple methods', function() {
-  var MixinA, obj, props;
+  let MixinA, obj, props;
 
   props = {
     publicMethod() { return 'publicMethod'; },
@@ -23,7 +23,7 @@ QUnit.test('defining simple methods', function() {
 });
 
 QUnit.test('overriding public methods', function() {
-  var MixinA, MixinB, MixinD, MixinF, obj;
+  let MixinA, MixinB, MixinD, MixinF, obj;
 
   MixinA = Mixin.create({
     publicMethod() { return 'A'; }
@@ -61,22 +61,22 @@ QUnit.test('overriding public methods', function() {
 
 
 QUnit.test('overriding inherited objects', function() {
-  var cnt = 0;
-  var MixinA = Mixin.create({
+  let cnt = 0;
+  let MixinA = Mixin.create({
     foo() { cnt++; }
   });
 
-  var MixinB = Mixin.create({
+  let MixinB = Mixin.create({
     foo() {
       this._super(...arguments);
       cnt++;
     }
   });
 
-  var objA = {};
+  let objA = {};
   MixinA.apply(objA);
 
-  var objB = Object.create(objA);
+  let objB = Object.create(objA);
   MixinB.apply(objB);
 
   cnt = 0;
@@ -89,24 +89,24 @@ QUnit.test('overriding inherited objects', function() {
 });
 
 QUnit.test('Including the same mixin more than once will only run once', function() {
-  var cnt = 0;
-  var MixinA = Mixin.create({
+  let cnt = 0;
+  let MixinA = Mixin.create({
     foo() { cnt++; }
   });
 
-  var MixinB = Mixin.create(MixinA, {
+  let MixinB = Mixin.create(MixinA, {
     foo() { this._super(...arguments); }
   });
 
-  var MixinC = Mixin.create(MixinA, {
+  let MixinC = Mixin.create(MixinA, {
     foo() { this._super(...arguments); }
   });
 
-  var MixinD = Mixin.create(MixinB, MixinC, MixinA, {
+  let MixinD = Mixin.create(MixinB, MixinC, MixinA, {
     foo() { this._super(...arguments); }
   });
 
-  var obj = {};
+  let obj = {};
   MixinD.apply(obj);
   MixinA.apply(obj); // try to apply again..
 
@@ -117,13 +117,13 @@ QUnit.test('Including the same mixin more than once will only run once', functio
 });
 
 QUnit.test('_super from a single mixin with no superclass does not error', function() {
-  var MixinA = Mixin.create({
+  let MixinA = Mixin.create({
     foo() {
       this._super(...arguments);
     }
   });
 
-  var obj = {};
+  let obj = {};
   MixinA.apply(obj);
 
   obj.foo();
@@ -133,8 +133,8 @@ QUnit.test('_super from a single mixin with no superclass does not error', funct
 QUnit.test('_super from a first-of-two mixins with no superclass function does not error', function() {
   // _super was previously calling itself in the second assertion.
   // Use remaining count of calls to ensure it doesn't loop indefinitely.
-  var remaining = 3;
-  var MixinA = Mixin.create({
+  let remaining = 3;
+  let MixinA = Mixin.create({
     foo() {
       if (remaining-- > 0) {
         this._super(...arguments);
@@ -142,11 +142,11 @@ QUnit.test('_super from a first-of-two mixins with no superclass function does n
     }
   });
 
-  var MixinB = Mixin.create({
+  let MixinB = Mixin.create({
     foo() { this._super(...arguments); }
   });
 
-  var obj = {};
+  let obj = {};
   MixinA.apply(obj);
   MixinB.apply(obj);
 
@@ -162,11 +162,11 @@ QUnit.module('Method Conflicts');
 
 
 QUnit.test('overriding toString', function() {
-  var MixinA = Mixin.create({
+  let MixinA = Mixin.create({
     toString() { return 'FOO'; }
   });
 
-  var obj = {};
+  let obj = {};
   MixinA.apply(obj);
   equal(obj.toString(), 'FOO', 'should override toString w/o error');
 
@@ -182,26 +182,26 @@ QUnit.test('overriding toString', function() {
 QUnit.module('system/mixin/method_test BUGS');
 
 QUnit.test('applying several mixins at once with sup already defined causes infinite loop', function() {
-  var cnt = 0;
-  var MixinA = Mixin.create({
+  let cnt = 0;
+  let MixinA = Mixin.create({
     foo() { cnt++; }
   });
 
-  var MixinB = Mixin.create({
+  let MixinB = Mixin.create({
     foo() {
       this._super(...arguments);
       cnt++;
     }
   });
 
-  var MixinC = Mixin.create({
+  let MixinC = Mixin.create({
     foo() {
       this._super(...arguments);
       cnt++;
     }
   });
 
-  var obj = {};
+  let obj = {};
   mixin(obj, MixinA); // sup already exists
   mixin(obj, MixinB, MixinC); // must be more than one mixin
 

@@ -7,7 +7,7 @@ testModule('ember-htmlbars: template');
 test('sets `isTop` on the provided function', function() {
   function test() { }
 
-  var result = template(test);
+  let result = template(test);
 
   equal(result.isTop, true, 'sets isTop on the provided function');
 });
@@ -15,7 +15,7 @@ test('sets `isTop` on the provided function', function() {
 test('sets `isMethod` on the provided function', function() {
   function test() { }
 
-  var result = template(test);
+  let result = template(test);
 
   equal(result.isMethod, false, 'sets isMethod on the provided function');
 });

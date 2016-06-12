@@ -6,11 +6,11 @@ import run from 'ember-metal/run_loop';
 
 import EmberView from 'ember-views/views/view';
 
-var parentView, view;
+let parentView, view;
 
 QUnit.module('Ember.View#element', {
   teardown() {
-    run(function() {
+    run(() => {
       if (parentView) { parentView.destroy(); }
       view.destroy();
     });
@@ -27,7 +27,7 @@ QUnit.test('returns element if you set the value', function() {
   view = EmberView.create();
   equal(get(view, 'element'), null, 'precond- has no element');
 
-  var dom = document.createElement('div');
+  let dom = document.createElement('div');
   set(view, 'element', dom);
 
   equal(get(view, 'element'), dom, 'now has set element');
@@ -39,13 +39,9 @@ if (EmberDev && !EmberDev.runningProdBuild) {
       elementId: 'one'
     });
 
-    run(function() {
-      view.appendTo('#qunit-fixture');
-    });
+    run(() => view.appendTo('#qunit-fixture'));
 
-    throws(function() {
-      view.set('elementId', 'two');
-    }, 'raises elementId changed exception');
+    throws(() => view.set('elementId', 'two'), 'raises elementId changed exception');
 
     equal(view.get('elementId'), 'one', 'elementId is still "one"');
   });

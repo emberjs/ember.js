@@ -4,7 +4,7 @@ import EmberObject from 'ember-runtime/system/object';
 // ........................................
 // TYPING & ARRAY MESSAGING
 //
-var TYPE_MAP = {
+const TYPE_MAP = {
   '[object Boolean]':  'boolean',
   '[object Number]':   'number',
   '[object String]':   'string',
@@ -15,7 +15,7 @@ var TYPE_MAP = {
   '[object Object]':   'object'
 };
 
-var toString = Object.prototype.toString;
+const { toString } = Object.prototype;
 
 /**
   Returns true if the passed object is an array or Array-like.
@@ -108,7 +108,7 @@ export function isArray(obj) {
 export function typeOf(item) {
   if (item === null) { return 'null'; }
   if (item === undefined) { return 'undefined'; }
-  var ret = TYPE_MAP[toString.call(item)] || 'object';
+  let ret = TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
     if (EmberObject.detect(item)) {

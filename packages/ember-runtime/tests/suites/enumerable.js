@@ -6,8 +6,7 @@ import {get} from 'ember-metal/property_get';
 import { _addBeforeObserver } from 'ember-metal/observer';
 import isEnabled from 'ember-metal/features';
 
-var ObserverClass = EmberObject.extend({
-
+const ObserverClass = EmberObject.extend({
   _keysBefore: null,
   _keys: null,
   _values: null,
@@ -20,7 +19,6 @@ var ObserverClass = EmberObject.extend({
     this._super(...arguments);
     this.reset();
   },
-
 
   propertyWillChange(target, key) {
     if (this._keysBefore[key] === undefined) { this._keysBefore[key] = 0; }
@@ -53,8 +51,8 @@ var ObserverClass = EmberObject.extend({
 
 
   observeBefore(obj) {
-    var keys = Array.prototype.slice.call(arguments, 1);
-    var loc  = keys.length;
+    let keys = Array.prototype.slice.call(arguments, 1);
+    let loc  = keys.length;
     while (--loc>=0) {
       _addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
     }
@@ -73,8 +71,8 @@ var ObserverClass = EmberObject.extend({
   */
   observe(obj) {
     if (obj.addObserver) {
-      var keys = Array.prototype.slice.call(arguments, 1);
-      var loc  = keys.length;
+      let keys = Array.prototype.slice.call(arguments, 1);
+      let loc  = keys.length;
 
       while (--loc >= 0) {
         obj.addObserver(keys[loc], this, 'propertyDidChange');
@@ -155,11 +153,9 @@ var ObserverClass = EmberObject.extend({
     equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
-
 });
 
-
-var EnumerableTests = Suite.extend({
+const EnumerableTests = Suite.extend({
   /*
     __Required.__ You must implement this method to apply this mixin.
 
@@ -184,7 +180,7 @@ var EnumerableTests = Suite.extend({
     @returns {Array} array of strings
   */
   newFixture(cnt) {
-    var ret = [];
+    let ret = [];
     while (--cnt >= 0) {
       ret.push(generateGuid());
     }
@@ -202,8 +198,8 @@ var EnumerableTests = Suite.extend({
     @returns {Array} array of objects
   */
   newObjectsFixture(cnt) {
-    var ret = [];
-    var item;
+    let ret = [];
+    let item;
     while (--cnt >= 0) {
       item = {};
       guidFor(item);
@@ -258,7 +254,6 @@ var EnumerableTests = Suite.extend({
   */
   run() {},
 
-
   /*
     Creates a new observer object for testing.  You can add this object as an
     observer on an array and it will record results anytime it is invoked.
@@ -266,7 +261,7 @@ var EnumerableTests = Suite.extend({
     validate the results.
   */
   newObserver(obj) {
-    var ret = get(this, 'observerClass').create();
+    let ret = get(this, 'observerClass').create();
     if (arguments.length > 0) {
       ret.observeBefore.apply(ret, arguments);
     }

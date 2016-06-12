@@ -33,11 +33,11 @@ import { ONCE, SUSPENDED } from 'ember-metal/meta_listeners';
 */
 
 function indexOf(array, target, method) {
-  var index = -1;
+  let index = -1;
   // hashes are added to the end of the event array
   // so it makes sense to start searching at the end
   // of the array and search in reverse
-  for (var i = array.length - 3 ; i >=0; i -= 3) {
+  for (let i = array.length - 3 ; i >=0; i -= 3) {
     if (target === array[i] && method === array[i + 1]) {
       index = i;
       break;
@@ -47,16 +47,16 @@ function indexOf(array, target, method) {
 }
 
 export function accumulateListeners(obj, eventName, otherActions) {
-  var meta = peekMeta(obj);
+  let meta = peekMeta(obj);
   if (!meta) { return; }
-  var actions = meta.matchingListeners(eventName);
-  var newActions = [];
+  let actions = meta.matchingListeners(eventName);
+  let newActions = [];
 
-  for (var i = actions.length - 3; i >= 0; i -= 3) {
-    var target = actions[i];
-    var method = actions[i + 1];
-    var flags = actions[i + 2];
-    var actionIndex = indexOf(otherActions, target, method);
+  for (let i = actions.length - 3; i >= 0; i -= 3) {
+    let target = actions[i];
+    let method = actions[i + 1];
+    let flags = actions[i + 2];
+    let actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
       otherActions.push(target, method, flags);
@@ -99,7 +99,7 @@ export function addListener(obj, eventName, target, method, once) {
     target = null;
   }
 
-  var flags = 0;
+  let flags = 0;
   if (once) {
     flags |= ONCE;
   }
@@ -211,16 +211,16 @@ export function watchedEvents(obj) {
 */
 export function sendEvent(obj, eventName, params, actions) {
   if (!actions) {
-    var meta = peekMeta(obj);
+    let meta = peekMeta(obj);
     actions = meta && meta.matchingListeners(eventName);
   }
 
   if (!actions || actions.length === 0) { return; }
 
-  for (var i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
-    var target = actions[i];
-    var method = actions[i + 1];
-    var flags = actions[i + 2];
+  for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
+    let target = actions[i];
+    let method = actions[i + 1];
+    let flags = actions[i + 2];
 
     if (!method) { continue; }
     if (flags & SUSPENDED) { continue; }
@@ -251,7 +251,7 @@ export function sendEvent(obj, eventName, params, actions) {
   @param {String} eventName
 */
 export function hasListeners(obj, eventName) {
-  var meta = peekMeta(obj);
+  let meta = peekMeta(obj);
   if (!meta) { return false; }
   return meta.matchingListeners(eventName).length > 0;
 }
@@ -264,15 +264,15 @@ export function hasListeners(obj, eventName) {
   @param {String} eventName
 */
 export function listenersFor(obj, eventName) {
-  var ret = [];
-  var meta = peekMeta(obj);
-  var actions = meta && meta.matchingListeners(eventName);
+  let ret = [];
+  let meta = peekMeta(obj);
+  let actions = meta && meta.matchingListeners(eventName);
 
   if (!actions) { return ret; }
 
-  for (var i = 0; i < actions.length; i += 3) {
-    var target = actions[i];
-    var method = actions[i + 1];
+  for (let i = 0; i < actions.length; i += 3) {
+    let target = actions[i];
+    let method = actions[i + 1];
     ret.push([target, method]);
   }
 
@@ -285,13 +285,13 @@ export function listenersFor(obj, eventName) {
 
 
   ``` javascript
-  var Job = Ember.Object.extend({
+  let Job = Ember.Object.extend({
     logCompleted: Ember.on('completed', function() {
       console.log('Job completed!');
     })
   });
 
-  var job = Job.create();
+  let job = Job.create();
 
   Ember.sendEvent(job, 'completed'); // Logs 'Job completed!'
  ```
@@ -304,8 +304,8 @@ export function listenersFor(obj, eventName) {
   @public
 */
 export function on(...args) {
-  var func = args.pop();
-  var events = args;
+  let func = args.pop();
+  let events = args;
   func.__ember_listens__ = events;
   return func;
 }

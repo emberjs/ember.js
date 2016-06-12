@@ -29,7 +29,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       }.property() // Call this flag to mark the function as a property
     });
 
-    var president = MyApp.President.create({
+    let president = MyApp.President.create({
       firstName: 'Barack',
       lastName: 'Obama'
     });
@@ -72,7 +72,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @public
   */
   FunctionPrototype.property = function () {
-    var ret = computed(this);
+    let ret = computed(this);
     // ComputedProperty.prototype.property expands properties; no need for us to
     // do so here.
     return ret.property(...arguments);
@@ -114,7 +114,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       'Immediate observers must observe internal properties only, ' +
       'not properties on other objects.',
       function checkIsInternalProperty() {
-        for (var i = 0; i < arguments.length; i++) {
+        for (let i = 0; i < arguments.length; i++) {
           if (arguments[i].indexOf('.') !== -1) {
             return false;
           }
@@ -182,7 +182,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @public
   */
   FunctionPrototype.on = function () {
-    var events = a_slice.call(arguments);
+    let events = a_slice.call(arguments);
     this.__ember_listens__ = events;
 
     return this;

@@ -11,10 +11,11 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
   var b = this.syntax.builders;
   var walker = new this.syntax.Walker();
 
-  walker.visit(ast, function(node) {
+  walker.visit(ast, node => {
     if (!validate(node)) { return; }
 
-    each(node.hash.pairs, function(pair) {
+    for (let i = 0; i < node.hash.pairs.length; i++) {
+      let pair = node.hash.pairs[i];
       let { key, value } = pair;
 
       var sourceInformation = calculateLocationDisplay(moduleName, pair.loc);
@@ -37,7 +38,7 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
           pair.value = b.path(value.original);
         }
       }
-    });
+    }
   });
 
   return ast;
@@ -45,12 +46,6 @@ TransformOldBindingSyntax.prototype.transform = function TransformOldBindingSynt
 
 function validate(node) {
   return (node.type === 'BlockStatement' || node.type === 'MustacheStatement');
-}
-
-function each(list, callback) {
-  for (var i = 0; i < list.length; i++) {
-    callback(list[i]);
-  }
 }
 
 function exprToString(expr) {

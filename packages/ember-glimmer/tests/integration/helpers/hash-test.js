@@ -167,5 +167,4 @@ moduleFor('Helpers test: {{hash}}', class extends RenderingTest {
 
     this.assertText('Chad Hietala');
   }
-
 });

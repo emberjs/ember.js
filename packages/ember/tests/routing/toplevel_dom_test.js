@@ -5,10 +5,10 @@ import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var App, templates, router, container;
+let App, templates, router, container;
 
 function bootApplication() {
-  for (var name in templates) {
+  for (let name in templates) {
     setTemplate(name, compile(templates[name]));
   }
   router = container.lookup('router:main');
@@ -17,7 +17,7 @@ function bootApplication() {
 
 QUnit.module('Top Level DOM Structure', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -38,7 +38,7 @@ QUnit.module('Top Level DOM Structure', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       App.destroy();
       App = null;
       setTemplates({});

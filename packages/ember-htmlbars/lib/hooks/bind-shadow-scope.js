@@ -8,7 +8,7 @@ import ProxyStream from '../streams/proxy-stream';
 export default function bindShadowScope(env, parentScope, shadowScope, options) {
   if (!options) { return; }
 
-  var view = options.view;
+  let view = options.view;
   if (view && !view.isComponent) {
     shadowScope.bindLocal('view', newStream(view, 'view'));
 

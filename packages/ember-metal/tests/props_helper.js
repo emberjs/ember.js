@@ -1,9 +1,9 @@
 import { ENV } from 'ember-environment';
-import {get as getFromEmberMetal, getWithDefault as getWithDefaultFromEmberMetal} from 'ember-metal/property_get';
-import {set as setFromEmberMetal} from 'ember-metal/property_set';
+import { get as getFromEmberMetal, getWithDefault as getWithDefaultFromEmberMetal } from 'ember-metal/property_get';
+import { set as setFromEmberMetal } from 'ember-metal/property_set';
 
 // used by unit tests to test both accessor mode and non-accessor mode
-var testBoth = function(testname, callback) {
+export function testBoth(testname, callback) {
   function emberget(x, y) { return getFromEmberMetal(x, y); }
   function emberset(x, y, z) { return setFromEmberMetal(x, y, z); }
   function aget(x, y) { return x[y]; }
@@ -20,9 +20,9 @@ var testBoth = function(testname, callback) {
       ok('SKIPPING ACCESSORS');
     }
   });
-};
+}
 
-var testWithDefault = function(testname, callback) {
+export function testWithDefault(testname, callback) {
   function emberget(x, y) { return getFromEmberMetal(x, y); }
   function embergetwithdefault(x, y, z) { return getWithDefaultFromEmberMetal(x, y, z); }
   function getwithdefault(x, y, z) { return x.getWithDefault(y, z); }
@@ -53,6 +53,4 @@ var testWithDefault = function(testname, callback) {
       ok('SKIPPING ACCESSORS');
     }
   });
-};
-
-export {testWithDefault, testBoth};
+}

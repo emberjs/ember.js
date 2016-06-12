@@ -11,7 +11,7 @@ import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates } from 'ember-templates/template_registry';
 import { classify } from 'ember-runtime/system/string';
 
-var App, router, registry, container;
+let App, router, registry, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -30,14 +30,14 @@ function handleURL(path) {
   });
 }
 
-var startingURL = '';
-var expectedReplaceURL, expectedPushURL;
+let startingURL = '';
+let expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
   run(obj, 'set', prop, value);
 }
 
-var TestLocation = NoneLocation.extend({
+let TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -210,7 +210,7 @@ function queryParamsStickyTest3(urlPrefix, articleLookup) {
 
 function queryParamsStickyTest4(urlPrefix, articleLookup) {
   return function() {
-    var articleClass = classify(articleLookup);
+    let articleClass = classify(articleLookup);
 
     if (isEnabled('ember-routing-route-configured-query-params')) {
       App[`${articleClass}Route`].reopen({
@@ -268,7 +268,7 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
 
     run(router, 'transitionTo', commentsLookupKey, 'a-1');
 
-    var commentsCtrl = container.lookup(`controller:${commentsLookupKey}`);
+    let commentsCtrl = container.lookup(`controller:${commentsLookupKey}`);
     equal(commentsCtrl.get('page'), 1);
     equal(router.get('location.path'), `${urlPrefix}/a-1/comments`);
 
@@ -290,7 +290,7 @@ function queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
 
 function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
   return function() {
-    var articleClass = classify(articleLookup);
+    let articleClass = classify(articleLookup);
 
     App[`${articleClass}Route`].reopen({
       resetController(controller, isExiting) {
@@ -307,7 +307,7 @@ function queryParamsStickyTest6(urlPrefix, articleLookup, commentsLookup) {
 
     run(router, 'transitionTo', commentsLookup, 'a-1');
 
-    var commentsCtrl = container.lookup(`controller:${commentsLookup}`);
+    let commentsCtrl = container.lookup(`controller:${commentsLookup}`);
     equal(commentsCtrl.get('page'), 1);
     equal(router.get('location.path'), `${urlPrefix}/a-1/comments`);
 
@@ -342,13 +342,13 @@ QUnit.module('Model Dep Query Params', {
       this.route('about');
     });
 
-    var articles = this.articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    let articles = this.articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
     App.ApplicationController = Controller.extend({
       articles: this.articles
     });
 
-    var self = this;
+    let self = this;
     App.ArticleRoute = Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
@@ -433,13 +433,13 @@ QUnit.module('Model Dep Query Params (nested)', {
       this.route('about');
     });
 
-    var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    let site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
     App.ApplicationController = Controller.extend({
       articles: this.site_articles
     });
 
-    var self = this;
+    let self = this;
     App.SiteArticleRoute = Route.extend({
       model(params) {
         if (self.expectedModelHookParams) {
@@ -522,18 +522,18 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       });
     });
 
-    var sites = this.sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
-    var site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
+    let sites = this.sites = emberA([{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }]);
+    let site_articles = this.site_articles = emberA([{ id: 'a-1' }, { id: 'a-2' }, { id: 'a-3' }]);
 
     App.ApplicationController = Controller.extend({
       siteArticles: this.site_articles,
       sites: this.sites,
       allSitesAllArticles: computed({
-        get: function() {
-          var ret = [];
-          var siteArticles = this.siteArticles;
-          var sites = this.sites;
-          sites.forEach(function(site) {
+        get() {
+          let ret = [];
+          let siteArticles = this.siteArticles;
+          let sites = this.sites;
+          sites.forEach(site => {
             ret = ret.concat(siteArticles.map((article) => {
               return { id: `${site.id}-${article.id}`, site_id: site.id, article_id: article.id };
             }));
@@ -543,7 +543,7 @@ QUnit.module('Model Dep Query Params (nested & more than 1 dynamic segment)', {
       })
     });
 
-    var self = this;
+    let self = this;
     App.SiteRoute = Route.extend({
       model(params) {
         if (self.expectedSiteModelHookParams) {

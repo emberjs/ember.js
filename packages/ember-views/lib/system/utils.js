@@ -4,8 +4,8 @@
 */
 
 export function isSimpleClick(event) {
-  var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
-  var secondaryClick = event.which > 1; // IE9 may return undefined
+  let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
+  let secondaryClick = event.which > 1; // IE9 may return undefined
 
   return !modifier && !secondaryClick;
 }
@@ -16,7 +16,7 @@ export function isSimpleClick(event) {
   @param {Ember.View} view
 */
 function getViewRange(view) {
-  var range = document.createRange();
+  let range = document.createRange();
   range.setStartBefore(view._renderNode.firstNode);
   range.setEndAfter(view._renderNode.lastNode);
   return range;
@@ -34,7 +34,7 @@ function getViewRange(view) {
   @param {Ember.View} view
 */
 export function getViewClientRects(view) {
-  var range = getViewRange(view);
+  let range = getViewRange(view);
   return range.getClientRects();
 }
 
@@ -50,6 +50,6 @@ export function getViewClientRects(view) {
   @param {Ember.View} view
 */
 export function getViewBoundingClientRect(view) {
-  var range = getViewRange(view);
+  let range = getViewRange(view);
   return range.getBoundingClientRect();
 }

@@ -26,7 +26,7 @@ export const GLIMMER = symbol('GLIMMER');
 function props(obj) {
   var properties = [];
 
-  for (var key in obj) {
+  for (let key in obj) {
     properties.push(key);
   }
 
@@ -104,7 +104,7 @@ const Engine = Namespace.extend(RegistryProxy, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    var registry = this.__registry__ = this.constructor.buildRegistry(this, {
+    let registry = this.__registry__ = this.constructor.buildRegistry(this, {
       [GLIMMER]: this[GLIMMER]
     });
 
@@ -163,19 +163,17 @@ const Engine = Namespace.extend(RegistryProxy, {
   },
 
   _runInitializer(bucketName, cb) {
-    var initializersByName = get(this.constructor, bucketName);
-    var initializers = props(initializersByName);
-    var graph = new DAG();
-    var initializer;
+    let initializersByName = get(this.constructor, bucketName);
+    let initializers = props(initializersByName);
+    let graph = new DAG();
+    let initializer;
 
-    for (var i = 0; i < initializers.length; i++) {
+    for (let i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
       graph.addEdges(initializer.name, initializer, initializer.before, initializer.after);
     }
 
-    graph.topsort(function (vertex) {
-      cb(vertex.name, vertex.value);
-    });
+    graph.topsort(vertex => cb(vertex.name, vertex.value));
   }
 });
 
@@ -395,7 +393,7 @@ Engine.reopenClass({
     @public
   */
   buildRegistry(namespace, options = {}) {
-    var registry = new Registry({
+    let registry = new Registry({
       resolver: resolverFor(namespace)
     });
 
@@ -406,10 +404,10 @@ Engine.reopenClass({
     commonSetupRegistry(registry);
 
     if (options[GLIMMER]) {
-      var glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
+      let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
       glimmerSetupRegistry(registry);
     } else {
-      var htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
+      let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
       htmlbarsSetupRegistry(registry);
     }
 
@@ -466,7 +464,7 @@ function buildInitializerMethod(bucketName, humanName) {
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
     if (this.superclass[bucketName] !== undefined && this.superclass[bucketName] === this[bucketName]) {
-      var attrs = {};
+      let attrs = {};
       attrs[bucketName] = Object.create(this[bucketName]);
       this.reopenClass(attrs);
     }
@@ -502,8 +500,6 @@ function commonSetupRegistry(registry) {
   registry.injection('controller', '_bucketCache', P`-bucket-cache:main`);
 
   registry.injection('route', 'router', 'router:main');
-
-
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);

@@ -6,7 +6,7 @@ import EmberError from 'ember-metal/error';
 @submodule ember-views
 */
 
-var destroying = Object.create(_default);
+const destroying = Object.create(_default);
 
 assign(destroying, {
   appendChild() {

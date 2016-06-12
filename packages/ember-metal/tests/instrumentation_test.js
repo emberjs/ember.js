@@ -12,7 +12,7 @@ QUnit.module('Ember Instrumentation', {
 });
 
 QUnit.test('execute block even if no listeners', function() {
-  var result = instrument('render', {}, function() {
+  let result = instrument('render', {}, function() {
     return 'hello';
   });
   equal(result, 'hello', 'called block');
@@ -21,8 +21,8 @@ QUnit.test('execute block even if no listeners', function() {
 QUnit.test('subscribing to a simple path receives the listener', function() {
   expect(12);
 
-  var sentPayload = {};
-  var count = 0;
+  let sentPayload = {};
+  let count = 0;
 
   subscribe('render', {
     before(name, timestamp, payload) {
@@ -58,8 +58,8 @@ QUnit.test('subscribing to a simple path receives the listener', function() {
 QUnit.test('returning a value from the before callback passes it to the after callback', function() {
   expect(2);
 
-  var passthru1 = {};
-  var passthru2 = {};
+  let passthru1 = {};
+  let passthru2 = {};
 
   subscribe('render', {
     before(name, timestamp, payload) {
@@ -98,7 +98,7 @@ QUnit.test('instrument with 2 args (name, callback) no payload', function() {
 QUnit.test('instrument with 3 args (name, callback, binding) no payload', function() {
   expect(2);
 
-  var binding = {};
+  let binding = {};
   subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, {});
@@ -115,7 +115,7 @@ QUnit.test('instrument with 3 args (name, callback, binding) no payload', functi
 QUnit.test('instrument with 3 args (name, payload, callback) with payload', function() {
   expect(1);
 
-  var expectedPayload = { hi: 1 };
+  let expectedPayload = { hi: 1 };
   subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
@@ -129,8 +129,8 @@ QUnit.test('instrument with 3 args (name, payload, callback) with payload', func
 QUnit.test('instrument with 4 args (name, payload, callback, binding) with payload', function() {
   expect(2);
 
-  var expectedPayload = { hi: 1 };
-  var binding = {};
+  let expectedPayload = { hi: 1 };
+  let binding = {};
   subscribe('render', {
     before(name, timestamp, payload) {
       deepEqual(payload, expectedPayload);
@@ -147,7 +147,7 @@ QUnit.test('instrument with 4 args (name, payload, callback, binding) with paylo
 QUnit.test('raising an exception in the instrumentation attaches it to the payload', function() {
   expect(2);
 
-  var error = new Error('Instrumentation');
+  let error = new Error('Instrumentation');
 
   subscribe('render', {
     before() {},
@@ -186,9 +186,9 @@ QUnit.test('it is possible to add a new subscriber after the first instrument', 
 QUnit.test('it is possible to remove a subscriber', function() {
   expect(4);
 
-  var count = 0;
+  let count = 0;
 
-  var subscriber = subscribe('render', {
+  let subscriber = subscribe('render', {
     before() {
       equal(count, 0);
       ok(true, 'Before callback was called');

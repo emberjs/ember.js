@@ -160,7 +160,7 @@ function ComputedProperty(config, opts) {
 
 ComputedProperty.prototype = new Descriptor();
 
-var ComputedPropertyPrototype = ComputedProperty.prototype;
+const ComputedPropertyPrototype = ComputedProperty.prototype;
 
 /**
   Call on a computed property to set it into non-cached mode. When in this
@@ -246,9 +246,9 @@ ComputedPropertyPrototype.readOnly = function() {
   @public
 */
 ComputedPropertyPrototype.property = function() {
-  var args;
+  let args = [];
 
-  var addArg = function(property) {
+  function addArg(property) {
     warn(
       `Dependent keys containing @each only work one level deep. ` +
         `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
@@ -257,10 +257,9 @@ ComputedPropertyPrototype.property = function() {
       { id: 'ember-metal.computed-deep-each' }
     );
     args.push(property);
-  };
+  }
 
-  args = [];
-  for (var i = 0; i < arguments.length; i++) {
+  for (let i = 0; i < arguments.length; i++) {
     expandProperties(arguments[i], addArg);
   }
 
@@ -536,14 +535,14 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   @public
 */
 export default function computed(func) {
-  var args;
+  let args;
 
   if (arguments.length > 1) {
     args = [].slice.call(arguments);
     func = args.pop();
   }
 
-  var cp = new ComputedProperty(func);
+  let cp = new ComputedProperty(func);
 
   if (args) {
     cp.property.apply(cp, args);
@@ -567,9 +566,9 @@ export default function computed(func) {
   @public
 */
 function cacheFor(obj, key) {
-  var meta = peekMeta(obj);
-  var cache = meta && meta.source === obj && meta.readableCache();
-  var ret = cache && cache[key];
+  let meta = peekMeta(obj);
+  let cache = meta && meta.source === obj && meta.readableCache();
+  let ret = cache && cache[key];
 
   if (ret === UNDEFINED) {
     return undefined;
@@ -586,7 +585,7 @@ cacheFor.set = function(cache, key, value) {
 };
 
 cacheFor.get = function(cache, key) {
-  var ret = cache[key];
+  let ret = cache[key];
   if (ret === UNDEFINED) {
     return undefined;
   }

@@ -24,7 +24,7 @@ function getKey(scope, key) {
     if (attrs) { return attrs; }
   }
 
-  var self = scope.getSelf() || scope.getLocal('view');
+  let self = scope.getSelf() || scope.getLocal('view');
 
   if (self) {
     return self.getKey(key);

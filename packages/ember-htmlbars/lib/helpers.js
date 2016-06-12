@@ -9,7 +9,7 @@
 */
 import EmptyObject from 'ember-metal/empty_object';
 
-var helpers = new EmptyObject();
+const helpers = new EmptyObject();
 
 /**
 @module ember

@@ -7,38 +7,38 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('EmberObject.create', {});
 
 QUnit.test('simple properties are set', function() {
-  var o = EmberObject.create({ ohai: 'there' });
+  let o = EmberObject.create({ ohai: 'there' });
   equal(o.get('ohai'), 'there');
 });
 
 QUnit.test('calls computed property setters', function() {
-  var MyClass = EmberObject.extend({
+  let MyClass = EmberObject.extend({
     foo: computed({
-      get: function() {
+      get() {
         return 'this is not the value you\'re looking for';
       },
-      set: function(key, value) {
+      set(key, value) {
         return value;
       }
     })
   });
 
-  var o = MyClass.create({ foo: 'bar' });
+  let o = MyClass.create({ foo: 'bar' });
   equal(o.get('foo'), 'bar');
 });
 
 if (isEnabled('mandatory-setter')) {
   QUnit.test('sets up mandatory setters for watched simple properties', function() {
-    var MyClass = EmberObject.extend({
+    let MyClass = EmberObject.extend({
       foo: null,
       bar: null,
       fooDidChange: observer('foo', function() {})
     });
 
-    var o = MyClass.create({ foo: 'bar', bar: 'baz' });
+    let o = MyClass.create({ foo: 'bar', bar: 'baz' });
     equal(o.get('foo'), 'bar');
 
-    var descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+    let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
     ok(descriptor.set, 'Mandatory setter was setup');
 
     descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
@@ -63,9 +63,9 @@ QUnit.test('allows bindings to be defined', function() {
 });
 
 QUnit.test('calls setUnknownProperty if defined', function() {
-  var setUnknownPropertyCalled = false;
+  let setUnknownPropertyCalled = false;
 
-  var MyClass = EmberObject.extend({
+  let MyClass = EmberObject.extend({
     setUnknownProperty(key, value) {
       setUnknownPropertyCalled = true;
     }
@@ -94,7 +94,7 @@ QUnit.test('throws if you try to call _super in a method', function() {
 });
 
 QUnit.test('throws if you try to \'mixin\' a definition', function() {
-  var myMixin = Mixin.create({
+  let myMixin = Mixin.create({
     adder(arg1, arg2) {
       return arg1 + arg2;
     }
@@ -107,7 +107,7 @@ QUnit.test('throws if you try to \'mixin\' a definition', function() {
 
 // This test is for IE8.
 QUnit.test('property name is the same as own prototype property', function() {
-  var MyClass = EmberObject.extend({
+  let MyClass = EmberObject.extend({
     toString() { return 'MyClass'; }
   });
 
@@ -115,27 +115,25 @@ QUnit.test('property name is the same as own prototype property', function() {
 });
 
 QUnit.test('inherits properties from passed in EmberObject', function() {
-  var baseObj = EmberObject.create({ foo: 'bar' });
-  var secondaryObj = EmberObject.create(baseObj);
+  let baseObj = EmberObject.create({ foo: 'bar' });
+  let secondaryObj = EmberObject.create(baseObj);
 
   equal(secondaryObj.foo, baseObj.foo, 'Em.O.create inherits properties from EmberObject parameter');
 });
 
 QUnit.test('throws if you try to pass anything a string as a parameter', function() {
-  var expected = 'EmberObject.create only accepts an objects.';
+  let expected = 'EmberObject.create only accepts an objects.';
 
-  throws(function() {
-    EmberObject.create('some-string');
-  }, expected);
+  throws(() => EmberObject.create('some-string'), expected);
 });
 
 QUnit.test('EmberObject.create can take undefined as a parameter', function() {
-  var o = EmberObject.create(undefined);
+  let o = EmberObject.create(undefined);
   deepEqual(EmberObject.create(), o);
 });
 
 QUnit.test('EmberObject.create can take null as a parameter', function() {
-  var o = EmberObject.create(null);
+  let o = EmberObject.create(null);
   deepEqual(EmberObject.create(), o);
 });
 

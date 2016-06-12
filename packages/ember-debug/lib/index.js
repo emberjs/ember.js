@@ -186,7 +186,7 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featur
 if (!isTesting()) {
   // Complain if they're using FEATURE flags in builds other than canary
   FEATURES['features-stripped-test'] = true;
-  var featuresWereStripped = true;
+  let featuresWereStripped = true;
 
   if (isEnabled('features-stripped-test')) {
     featuresWereStripped = false;
@@ -196,11 +196,11 @@ if (!isTesting()) {
   _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, DEFAULT_FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
-  var isFirefox = environment.isFirefox;
-  var isChrome = environment.isChrome;
+  let isFirefox = environment.isFirefox;
+  let isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
-    window.addEventListener('load', function() {
+    window.addEventListener('load', () => {
       if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
         var downloadURL;
 
@@ -295,7 +295,7 @@ Ember.Debug.registerWarnHandler = registerWarnHandler;
   so that if `ember.js` (which must be output for backwards compat reasons) is
   used a nice helpful warning message will be printed out.
 */
-export var runningNonEmberDebugJS = false;
+export let runningNonEmberDebugJS = false;
 if (runningNonEmberDebugJS) {
   warn('Please use `ember.debug.js` instead of `ember.js` for development and debugging.');
 }

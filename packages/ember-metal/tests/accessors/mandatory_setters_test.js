@@ -20,7 +20,7 @@ function hasMetaValue(object, property) {
 
 if (isEnabled('mandatory-setter')) {
   QUnit.test('does not assert if property is not being watched', function() {
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
@@ -34,7 +34,7 @@ if (isEnabled('mandatory-setter')) {
   QUnit.test('should not setup mandatory-setter if property is not writable', function() {
     expect(6);
 
-    var obj = { };
+    let obj = { };
 
     Object.defineProperty(obj, 'a', { value: true });
     Object.defineProperty(obj, 'b', { value: false });
@@ -61,7 +61,7 @@ if (isEnabled('mandatory-setter')) {
   QUnit.test('should not teardown non mandatory-setter descriptor', function() {
     expect(1);
 
-    var obj = { get a() { return 'hi'; } };
+    let obj = { get a() { return 'hi'; } };
 
     watch(obj, 'a');
     unwatch(obj, 'a');
@@ -72,7 +72,7 @@ if (isEnabled('mandatory-setter')) {
   QUnit.test('should not confuse non descriptor watched gets', function() {
     expect(2);
 
-    var obj = { get a() { return 'hi'; } };
+    let obj = { get a() { return 'hi'; } };
 
     watch(obj, 'a');
     equal(get(obj, 'a'), 'hi');
@@ -82,7 +82,7 @@ if (isEnabled('mandatory-setter')) {
   QUnit.test('should not setup mandatory-setter if setter is already setup on property', function() {
     expect(2);
 
-    var obj = { someProp: null };
+    let obj = { someProp: null };
 
     Object.defineProperty(obj, 'someProp', {
       get() {
@@ -130,7 +130,7 @@ if (isEnabled('mandatory-setter')) {
       }
     });
 
-    var obj = new Foo();
+    let obj = new Foo();
 
     watch(obj, 'someProp');
     ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
@@ -157,7 +157,7 @@ if (isEnabled('mandatory-setter')) {
     Bar.prototype = Object.create(Foo.prototype);
     Bar.prototype.constructor = Bar;
 
-    var obj = new Bar();
+    let obj = new Bar();
 
     watch(obj, 'someProp');
     ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
@@ -188,7 +188,7 @@ if (isEnabled('mandatory-setter')) {
     Qux.prototype = Object.create(Bar.prototype);
     Qux.prototype.constructor = Qux;
 
-    var obj = new Qux();
+    let obj = new Qux();
 
     watch(obj, 'someProp');
     ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
@@ -197,7 +197,7 @@ if (isEnabled('mandatory-setter')) {
   });
 
   QUnit.test('should assert if set without Ember.set when property is being watched', function() {
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
@@ -212,7 +212,7 @@ if (isEnabled('mandatory-setter')) {
   });
 
   QUnit.test('should not assert if set with Ember.set when property is being watched', function() {
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
@@ -226,7 +226,7 @@ if (isEnabled('mandatory-setter')) {
   });
 
   QUnit.test('does not setup mandatory-setter if non-configurable', function() {
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
@@ -244,7 +244,7 @@ if (isEnabled('mandatory-setter')) {
   });
 
   QUnit.test('ensure after watch the property is restored (and the value is no-longer stored in meta) [non-enumerable]', function() {
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
@@ -296,7 +296,7 @@ if (isEnabled('mandatory-setter')) {
   });
 
   QUnit.test('ensure after watch the property is restored (and the value is no-longer stored in meta) [enumerable]', function() {
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
@@ -349,14 +349,14 @@ if (isEnabled('mandatory-setter')) {
   QUnit.test('sets up mandatory-setter if property comes from prototype', function() {
     expect(2);
 
-    var obj = {
+    let obj = {
       someProp: null,
       toString() {
         return 'custom-object';
       }
     };
 
-    var obj2 = Object.create(obj);
+    let obj2 = Object.create(obj);
 
     watch(obj2, 'someProp');
 
@@ -371,7 +371,7 @@ if (isEnabled('mandatory-setter')) {
     function Parent() {}
     Parent.prototype.food  = 'chips';
 
-    var child = new Parent();
+    let child = new Parent();
 
     equal(child.food , 'chips');
 

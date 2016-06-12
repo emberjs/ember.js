@@ -23,7 +23,7 @@ export function Descriptor() {
 
 const REDEFINE_SUPPORTED = (function () {
   // https://github.com/spalger/kibana/commit/b7e35e6737df585585332857a4c397dc206e7ff9
-  var a = Object.create(Object.prototype, {
+  let a = Object.create(Object.prototype, {
     prop: {
       configurable: true,
       value: 1
@@ -70,7 +70,7 @@ export function INHERITING_GETTER_FUNCTION(name) {
     let val = meta && meta.readInheritedValue('values', name);
 
     if (val === UNDEFINED) {
-      var proto = Object.getPrototypeOf(this);
+      let proto = Object.getPrototypeOf(this);
       return proto && proto[name];
     } else {
       return val;
@@ -127,12 +127,12 @@ export function INHERITING_GETTER_FUNCTION(name) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  var possibleDesc, existingDesc, watching, value;
+  let possibleDesc, existingDesc, watching, value;
 
   if (!meta) {
     meta = metaFor(obj);
   }
-  var watchEntry = meta.peekWatching(keyName);
+  let watchEntry = meta.peekWatching(keyName);
   possibleDesc = obj[keyName];
   existingDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 

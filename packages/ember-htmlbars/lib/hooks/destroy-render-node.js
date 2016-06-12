@@ -8,7 +8,7 @@ export default function destroyRenderNode(renderNode) {
     renderNode.emberView.destroy();
   }
 
-  var streamUnsubscribers = renderNode.streamUnsubscribers;
+  let streamUnsubscribers = renderNode.streamUnsubscribers;
   if (streamUnsubscribers) {
     for (let i = 0; i < streamUnsubscribers.length; i++) {
       streamUnsubscribers[i]();

@@ -14,8 +14,8 @@ QUnit.test('services can be injected into views', function() {
 
   owner.register('service:profiler', Service.extend());
 
-  var appView = owner.lookup('view:application');
-  var profilerService = owner.lookup('service:profiler');
+  let appView = owner.lookup('view:application');
+  let profilerService = owner.lookup('service:profiler');
 
   equal(profilerService, appView.get('profilerService'), 'service.profiler is injected');
 });

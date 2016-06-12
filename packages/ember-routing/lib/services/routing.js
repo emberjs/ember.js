@@ -38,9 +38,9 @@ export default Service.extend({
   },
 
   transitionTo(routeName, models, queryParams, shouldReplace) {
-    var router = get(this, 'router');
+    let router = get(this, 'router');
 
-    var transition = router._doTransition(routeName, models, queryParams);
+    let transition = router._doTransition(routeName, models, queryParams);
 
     if (shouldReplace) {
       transition.method('replace');
@@ -50,29 +50,29 @@ export default Service.extend({
   },
 
   normalizeQueryParams(routeName, models, queryParams) {
-    var router = get(this, 'router');
+    let router = get(this, 'router');
     router._prepareQueryParams(routeName, models, queryParams);
   },
 
   generateURL(routeName, models, queryParams) {
-    var router = get(this, 'router');
+    let router = get(this, 'router');
     if (!router.router) { return; }
 
-    var visibleQueryParams = {};
+    let visibleQueryParams = {};
     assign(visibleQueryParams, queryParams);
 
     this.normalizeQueryParams(routeName, models, visibleQueryParams);
 
-    var args = routeArgs(routeName, models, visibleQueryParams);
+    let args = routeArgs(routeName, models, visibleQueryParams);
     return router.generate.apply(router, args);
   },
 
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
-    var router = get(this, 'router');
+    let router = get(this, 'router');
 
-    var handlers = router.router.recognizer.handlersFor(routeName);
-    var leafName = handlers[handlers.length - 1].handler;
-    var maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
+    let handlers = router.router.recognizer.handlersFor(routeName);
+    let leafName = handlers[handlers.length - 1].handler;
+    let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
     // NOTE: any ugliness in the calculation of activeness is largely
     // due to the fact that we support automatic normalizing of
@@ -93,8 +93,8 @@ export default Service.extend({
 });
 
 function numberOfContextsAcceptedByHandler(handler, handlerInfos) {
-  var req = 0;
-  for (var i = 0; i < handlerInfos.length; i++) {
+  let req = 0;
+  for (let i = 0; i < handlerInfos.length; i++) {
     req = req + handlerInfos[i].names.length;
     if (handlerInfos[i].handler === handler) {
       break;

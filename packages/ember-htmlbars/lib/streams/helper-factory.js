@@ -4,7 +4,7 @@ import {
   getHashValues
 } from './utils';
 
-let HelperFactoryStream = BasicStream.extend({
+export default BasicStream.extend({
   init(helperFactory, params, hash, label) {
     this.helperFactory = helperFactory;
     this.params = params;
@@ -30,5 +30,3 @@ let HelperFactoryStream = BasicStream.extend({
   },
   super$deactivate: BasicStream.prototype.deactivate
 });
-
-export default HelperFactoryStream;

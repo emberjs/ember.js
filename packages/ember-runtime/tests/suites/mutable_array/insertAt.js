@@ -1,16 +1,14 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('insertAt');
 
 suite.test('[].insertAt(0, X) => [X] + notify', function() {
-  var obj, after, observer;
-
-  after = this.newFixture(1);
-  obj = this.newObject([]);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let after = this.newFixture(1);
+  let obj = this.newObject([]);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -34,22 +32,18 @@ suite.test('[].insertAt(0, X) => [X] + notify', function() {
 });
 
 suite.test('[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception', function() {
-  var obj = this.newObject([]);
-  var that = this;
+  let obj = this.newObject([]);
+  let that = this;
 
-  throws(function() {
-    obj.insertAt(200, that.newFixture(1)[0]);
-  }, Error);
+  throws(() => obj.insertAt(200, that.newFixture(1)[0]), Error);
 });
 
 suite.test('[A].insertAt(0, X) => [X,A] + notify', function() {
-  var obj, item, after, before, observer;
-
-  item = this.newFixture(1)[0];
-  before = this.newFixture(1);
-  after  = [item, before[0]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let item = this.newFixture(1)[0];
+  let before = this.newFixture(1);
+  let after = [item, before[0]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -73,13 +67,11 @@ suite.test('[A].insertAt(0, X) => [X,A] + notify', function() {
 });
 
 suite.test('[A].insertAt(1, X) => [A,X] + notify', function() {
-  var obj, item, after, before, observer;
-
-  item = this.newFixture(1)[0];
-  before = this.newFixture(1);
-  after  = [before[0], item];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let item = this.newFixture(1)[0];
+  let before = this.newFixture(1);
+  let after = [before[0], item];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -103,22 +95,18 @@ suite.test('[A].insertAt(1, X) => [A,X] + notify', function() {
 });
 
 suite.test('[A].insertAt(200,X) => OUT_OF_RANGE exception', function() {
-  var obj = this.newObject(this.newFixture(1));
-  var that = this;
+  let obj = this.newObject(this.newFixture(1));
+  let that = this;
 
-  throws(function() {
-    obj.insertAt(200, that.newFixture(1)[0]);
-  }, Error);
+  throws(() => obj.insertAt(200, that.newFixture(1)[0]), Error);
 });
 
 suite.test('[A,B,C].insertAt(0,X) => [X,A,B,C] + notify', function() {
-  var obj, item, after, before, observer;
-
-  item = this.newFixture(1)[0];
-  before = this.newFixture(3);
-  after  = [item, before[0], before[1], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let item = this.newFixture(1)[0];
+  let before = this.newFixture(3);
+  let after  = [item, before[0], before[1], before[2]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -142,13 +130,11 @@ suite.test('[A,B,C].insertAt(0,X) => [X,A,B,C] + notify', function() {
 });
 
 suite.test('[A,B,C].insertAt(1,X) => [A,X,B,C] + notify', function() {
-  var obj, item, after, before, observer;
-
-  item = this.newFixture(1)[0];
-  before = this.newFixture(3);
-  after  = [before[0], item, before[1], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let item = this.newFixture(1)[0];
+  let before = this.newFixture(3);
+  let after  = [before[0], item, before[1], before[2]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -172,13 +158,11 @@ suite.test('[A,B,C].insertAt(1,X) => [A,X,B,C] + notify', function() {
 });
 
 suite.test('[A,B,C].insertAt(3,X) => [A,B,C,X] + notify', function() {
-  var obj, item, after, before, observer;
-
-  item = this.newFixture(1)[0];
-  before = this.newFixture(3);
-  after  = [before[0], before[1], before[2], item];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  let item = this.newFixture(1)[0];
+  let before = this.newFixture(3);
+  let after  = [before[0], before[1], before[2], item];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 

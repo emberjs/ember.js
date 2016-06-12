@@ -13,9 +13,7 @@ let lookup;
 QUnit.module('Ember.Engine', {
   setup() {
     lookup = context.lookup = {};
-    run(function() {
-      engine = Engine.create();
-    });
+    engine = run(() => Engine.create());
   },
 
   teardown() {
@@ -27,9 +25,7 @@ QUnit.module('Ember.Engine', {
 });
 
 QUnit.test('acts like a namespace', function() {
-  run(function() {
-    engine = lookup.TestEngine = Engine.create();
-  });
+  engine = run(() => lookup.TestEngine = Engine.create());
 
   engine.Foo = EmberObject.extend();
   equal(engine.Foo.toString(), 'TestEngine.Foo', 'Classes pick up their parent namespace');

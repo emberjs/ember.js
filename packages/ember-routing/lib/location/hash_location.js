@@ -51,8 +51,8 @@ export default EmberObject.extend({
     @method getURL
   */
   getURL() {
-    var originalPath = this.getHash().substr(1);
-    var outPath = originalPath;
+    let originalPath = this.getHash().substr(1);
+    let outPath = originalPath;
 
     if (outPath.charAt(0) !== '/') {
       outPath = '/';
@@ -106,11 +106,11 @@ export default EmberObject.extend({
     @param callback {Function}
   */
   onUpdateURL(callback) {
-    var guid = guidFor(this);
+    let guid = guidFor(this);
 
     jQuery(window).on(`hashchange.ember-location-${guid}`, () => {
       run(() => {
-        var path = this.getURL();
+        let path = this.getURL();
         if (get(this, 'lastSetURL') === path) { return; }
 
         set(this, 'lastSetURL', null);
@@ -142,7 +142,7 @@ export default EmberObject.extend({
     @method willDestroy
   */
   willDestroy() {
-    var guid = guidFor(this);
+    let guid = guidFor(this);
 
     jQuery(window).off(`hashchange.ember-location-${guid}`);
   }

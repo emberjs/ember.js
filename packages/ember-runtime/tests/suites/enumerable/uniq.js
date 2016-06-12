@@ -1,11 +1,11 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('uniq');
 
 suite.test('should return new instance with duplicates removed', function() {
-  var before, after, obj, ret;
+  let before, after, obj, ret;
 
   after  = this.newFixture(3);
   before = [after[0], after[1], after[2], after[1], after[0]];
@@ -18,7 +18,7 @@ suite.test('should return new instance with duplicates removed', function() {
 });
 
 suite.test('should return duplicate of same content if no duplicates found', function() {
-  var item, obj, ret;
+  let item, obj, ret;
   obj = this.newObject(this.newFixture(3));
   ret = obj.uniq(item);
   ok(ret !== obj, 'should not be same object');

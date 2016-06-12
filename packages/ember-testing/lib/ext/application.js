@@ -126,7 +126,7 @@ EmberApplication.reopen({
     });
 
     this.testHelpers = {};
-    for (var name in helpers) {
+    for (let name in helpers) {
       this.originalMethods[name] = this.helperContainer[name];
       this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
       protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name].meta.wait);
@@ -151,7 +151,7 @@ EmberApplication.reopen({
   removeTestHelpers() {
     if (!this.helperContainer) { return; }
 
-    for (var name in helpers) {
+    for (let name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
       delete TestPromise.prototype[name];
       delete this.testHelpers[name];

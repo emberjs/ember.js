@@ -1,10 +1,10 @@
 import DOMHelper from 'dom-helper';
 import { debugSeal } from 'ember-metal/debug';
 
-var HTMLBarsMorph = DOMHelper.prototype.MorphClass;
+const HTMLBarsMorph = DOMHelper.prototype.MorphClass;
 let guid = 1;
 
-function EmberMorph(DOMHelper, contextualElement) {
+export default function EmberMorph(DOMHelper, contextualElement) {
   this.HTMLBarsMorph$constructor(DOMHelper, contextualElement);
 
   this.emberView = null;
@@ -24,7 +24,7 @@ function EmberMorph(DOMHelper, contextualElement) {
   debugSeal(this);
 }
 
-var proto = EmberMorph.prototype = Object.create(HTMLBarsMorph.prototype);
+let proto = EmberMorph.prototype = Object.create(HTMLBarsMorph.prototype);
 proto.HTMLBarsMorph$constructor = HTMLBarsMorph;
 proto.HTMLBarsMorph$clear = HTMLBarsMorph.prototype.clear;
 
@@ -47,7 +47,7 @@ proto.cleanup = function() {
   let toDestroy = this.emberToDestroy;
 
   if (toDestroy) {
-    for (var i = 0; i < toDestroy.length; i++) {
+    for (let i = 0; i < toDestroy.length; i++) {
       toDestroy[i].destroy();
     }
 
@@ -58,5 +58,3 @@ proto.cleanup = function() {
 proto.didRender = function(env, scope) {
   env.renderedNodes.add(this);
 };
-
-export default EmberMorph;

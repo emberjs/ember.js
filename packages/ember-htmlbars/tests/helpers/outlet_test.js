@@ -6,14 +6,14 @@ import { compile } from '../utils/helpers';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { buildAppInstance } from 'ember-htmlbars/tests/utils';
 
-var trim = jQuery.trim;
+let { trim } = jQuery;
 
-var appInstance, top;
+let appInstance, top;
 
 QUnit.module('ember-htmlbars: {{outlet}} helper', {
   setup() {
     appInstance = buildAppInstance();
-    var CoreOutlet = appInstance._lookupFactory('view:core-outlet');
+    let CoreOutlet = appInstance._lookupFactory('view:core-outlet');
     top = CoreOutlet.create();
   },
 
@@ -25,7 +25,7 @@ QUnit.module('ember-htmlbars: {{outlet}} helper', {
 });
 
 QUnit.test('view should render the outlet when set after dom insertion', function() {
-  var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
+  let routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   top.setOutletState(routerState);
   runAppend(top);
 
@@ -33,9 +33,7 @@ QUnit.test('view should render the outlet when set after dom insertion', functio
 
   routerState.outlets.main = withTemplate('<p>BYE</p>');
 
-  run(function() {
-    top.setOutletState(routerState);
-  });
+  run(() => top.setOutletState(routerState));
 
   // Replace whitespace for older IE
   equal(trim(top.$().text()), 'HIBYE');
@@ -45,7 +43,7 @@ QUnit.test('a top-level outlet should always be a view', function() {
   appInstance.register('view:toplevel', EmberView.extend({
     elementId: 'top-level'
   }));
-  var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
+  let routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   top.setOutletState(routerState);
   routerState.outlets.main = withTemplate('<p>BYE</p>');
   runAppend(top);
@@ -55,7 +53,7 @@ QUnit.test('a top-level outlet should always be a view', function() {
 });
 
 QUnit.test('view should render the outlet when set before dom insertion', function() {
-  var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
+  let routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   routerState.outlets.main = withTemplate('<p>BYE</p>');
   top.setOutletState(routerState);
   runAppend(top);
@@ -66,7 +64,7 @@ QUnit.test('view should render the outlet when set before dom insertion', functi
 
 
 QUnit.test('outlet should support an optional name', function() {
-  var routerState = withTemplate('<h1>HI</h1>{{outlet \'mainView\'}}');
+  let routerState = withTemplate('<h1>HI</h1>{{outlet \'mainView\'}}');
   top.setOutletState(routerState);
   runAppend(top);
 
@@ -74,36 +72,30 @@ QUnit.test('outlet should support an optional name', function() {
 
   routerState.outlets.mainView = withTemplate('<p>BYE</p>');
 
-  run(function() {
-    top.setOutletState(routerState);
-  });
+  run(() => top.setOutletState(routerState));
 
   // Replace whitespace for older IE
   equal(trim(top.$().text()), 'HIBYE');
 });
 
 QUnit.test('Outlets bind to the current view, not the current concrete view', function() {
-  var routerState = withTemplate('<h1>HI</h1>{{outlet}}');
+  let routerState = withTemplate('<h1>HI</h1>{{outlet}}');
   top.setOutletState(routerState);
   runAppend(top);
   routerState.outlets.main = withTemplate('<h2>MIDDLE</h2>{{outlet}}');
-  run(function() {
-    top.setOutletState(routerState);
-  });
+  run(() => top.setOutletState(routerState));
   routerState.outlets.main.outlets.main = withTemplate('<h3>BOTTOM</h3>');
-  run(function() {
-    top.setOutletState(routerState);
-  });
+  run(() => top.setOutletState(routerState));
 
-  var output = jQuery('#qunit-fixture h1 ~ h2 ~ h3').text();
+  let output = jQuery('#qunit-fixture h1 ~ h2 ~ h3').text();
   equal(output, 'BOTTOM', 'all templates were rendered');
 });
 
 QUnit.test('Outlets bind to the current template\'s view, not inner contexts [DEPRECATED]', function() {
-  var parentTemplate = '<h1>HI</h1>{{#if view.alwaysTrue}}{{outlet}}{{/if}}';
-  var bottomTemplate = '<h3>BOTTOM</h3>';
+  let parentTemplate = '<h1>HI</h1>{{#if view.alwaysTrue}}{{outlet}}{{/if}}';
+  let bottomTemplate = '<h3>BOTTOM</h3>';
 
-  var routerState = {
+  let routerState = {
     render: {
       ViewClass: EmberView.extend({
         alwaysTrue: true,
@@ -119,11 +111,11 @@ QUnit.test('Outlets bind to the current template\'s view, not inner contexts [DE
 
   routerState.outlets.main = withTemplate(bottomTemplate);
 
-  run(function() {
+  run(() => {
     top.setOutletState(routerState);
   });
 
-  var output = jQuery('#qunit-fixture h1 ~ h3').text();
+  let output = jQuery('#qunit-fixture h1 ~ h3').text();
   equal(output, 'BOTTOM', 'all templates were rendered');
 });
 
@@ -140,7 +132,7 @@ QUnit.test('should not throw deprecations if {{outlet}} is used with a quoted na
 });
 
 QUnit.test('{{outlet}} should work with an unquoted name', function() {
-  var routerState = {
+  let routerState = {
     render: {
       controller: Controller.create({
         outletName: 'magical'
@@ -159,7 +151,7 @@ QUnit.test('{{outlet}} should work with an unquoted name', function() {
 });
 
 QUnit.test('{{outlet}} should rerender when bound name changes', function() {
-  var routerState = {
+  let routerState = {
     render: {
       controller: Controller.create({
         outletName: 'magical'
@@ -175,16 +167,14 @@ QUnit.test('{{outlet}} should rerender when bound name changes', function() {
   top.setOutletState(routerState);
   runAppend(top);
   equal(top.$().text().trim(), 'It\'s magic');
-  run(function() {
-    routerState.render.controller.set('outletName', 'second');
-  });
+  run(() => routerState.render.controller.set('outletName', 'second'));
   equal(top.$().text().trim(), 'second');
 });
 
 QUnit.test('views created by {{outlet}} should get destroyed', function() {
   let inserted = 0;
   let destroyed = 0;
-  var routerState = {
+  let routerState = {
     render: {
       ViewClass: EmberView.extend({
         didInsertElement() {
@@ -200,9 +190,7 @@ QUnit.test('views created by {{outlet}} should get destroyed', function() {
   top.setOutletState(routerState);
   runAppend(top);
   equal(inserted, 1, 'expected to see view inserted');
-  run(function() {
-    top.setOutletState(withTemplate('hello world'));
-  });
+  run(() => top.setOutletState(withTemplate('hello world')));
   equal(destroyed, 1, 'expected to see view destroyed');
 });
 

@@ -30,12 +30,12 @@ Renderer.prototype.prerenderTopLevelView =
     view.ownerView = renderNode.emberView = view;
     view._renderNode = renderNode;
 
-    var layout = get(view, 'layout');
-    var template = get(view, 'template');
+    let layout = get(view, 'layout');
+    let template = get(view, 'template');
 
-    var componentInfo = { component: view, layout: layout };
+    let componentInfo = { component: view, layout: layout };
 
-    var block = buildComponentTemplate(componentInfo, {}, {
+    let block = buildComponentTemplate(componentInfo, {}, {
       self: view,
       templates: template ? { default: template.raw } : undefined
     }).block;
@@ -71,10 +71,10 @@ Renderer.prototype.revalidateTopLevelView =
 
 Renderer.prototype.dispatchLifecycleHooks =
   function Renderer_dispatchLifecycleHooks(env) {
-    var ownerView = env.view;
+    let ownerView = env.view;
 
-    var lifecycleHooks = env.lifecycleHooks;
-    var i, hook;
+    let lifecycleHooks = env.lifecycleHooks;
+    let i, hook;
 
     for (i = 0; i < lifecycleHooks.length; i++) {
       hook = lifecycleHooks[i];
@@ -94,7 +94,7 @@ Renderer.prototype.dispatchLifecycleHooks =
 
 Renderer.prototype.ensureViewNotRendering =
   function Renderer_ensureViewNotRendering(view) {
-    var env = view.ownerView.env;
+    let env = view.ownerView.env;
     if (env && env.renderedViews.indexOf(view.elementId) !== -1) {
       throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
     }
@@ -131,7 +131,7 @@ Renderer.prototype.clearRenderedViews =
 // This entry point is called from top-level `view.appendTo`.
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
-    var morph = this._dom.appendMorph(target);
+    let morph = this._dom.appendMorph(target);
     morph.ownerNode = morph;
     view._willInsert = true;
     run.schedule('render', this, this.renderTopLevelView, view, morph);
@@ -139,7 +139,7 @@ Renderer.prototype.appendTo =
 
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
-    var morph = this._dom.replaceContentWithMorph(target);
+    let morph = this._dom.replaceContentWithMorph(target);
     morph.ownerNode = morph;
     view._willInsert = true;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
@@ -147,7 +147,7 @@ Renderer.prototype.replaceIn =
 
 Renderer.prototype.createElement =
   function Renderer_createElement(view) {
-    var morph = this._dom.createFragmentMorph();
+    let morph = this._dom.createFragmentMorph();
     morph.ownerNode = morph;
     this.prerenderTopLevelView(view, morph);
   };
@@ -230,7 +230,7 @@ Renderer.prototype.componentWillRender = function (component) {
 };
 
 Renderer.prototype.rerender = function (view) {
-  var renderNode = view._renderNode;
+  let renderNode = view._renderNode;
 
   renderNode.isDirty = true;
   internal.visitChildren(renderNode.childNodes, function(node) {

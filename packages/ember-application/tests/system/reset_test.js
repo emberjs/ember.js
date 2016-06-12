@@ -8,7 +8,7 @@ import Controller from 'ember-runtime/controllers/controller';
 import jQuery from 'ember-views/system/jquery';
 import Registry from 'container/registry';
 
-var application, Application;
+let application, Application;
 
 QUnit.module('Ember.Application - resetting', {
   setup() {
@@ -43,7 +43,7 @@ QUnit.test('Does not bring its own run loop if one is already provided', functio
 
   application = run(Application, 'create');
 
-  run(function() {
+  run(() => {
     application.ready = function() {
       didBecomeReady = true;
     };
@@ -60,17 +60,17 @@ QUnit.test('Does not bring its own run loop if one is already provided', functio
 });
 
 QUnit.test('When an application is reset, new instances of controllers are generated', function() {
-  run(function() {
+  run(() => {
     application = Application.create();
     application.AcademicController = Controller.extend();
   });
 
-  var firstController = application.__container__.lookup('controller:academic');
-  var secondController = application.__container__.lookup('controller:academic');
+  let firstController = application.__container__.lookup('controller:academic');
+  let secondController = application.__container__.lookup('controller:academic');
 
   application.reset();
 
-  var thirdController = application.__container__.lookup('controller:academic');
+  let thirdController = application.__container__.lookup('controller:academic');
 
   strictEqual(firstController, secondController, 'controllers looked up in succession should be the same instance');
 
@@ -80,12 +80,12 @@ QUnit.test('When an application is reset, new instances of controllers are gener
 });
 
 QUnit.test('When an application is reset, the eventDispatcher is destroyed and recreated', function() {
-  var eventDispatcherWasSetup, eventDispatcherWasDestroyed;
+  let eventDispatcherWasSetup, eventDispatcherWasDestroyed;
 
   eventDispatcherWasSetup = 0;
   eventDispatcherWasDestroyed = 0;
 
-  var mock_event_dispatcher = {
+  let mock_event_dispatcher = {
     create() {
       return {
         setup() {
@@ -99,7 +99,7 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   };
 
   // this is pretty awful. We should make this less Global-ly.
-  var originalRegister = Registry.prototype.register;
+  let originalRegister = Registry.prototype.register;
   Registry.prototype.register = function(name, type, options) {
     if (name === 'event_dispatcher:main') {
       return mock_event_dispatcher;
@@ -109,7 +109,7 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
   };
 
   try {
-    run(function() {
+    run(() => {
       application = Application.create();
 
       equal(eventDispatcherWasSetup, 0);
@@ -129,9 +129,9 @@ QUnit.test('When an application is reset, the eventDispatcher is destroyed and r
 });
 
 QUnit.test('When an application is reset, the router URL is reset to `/`', function() {
-  var location, router;
+  let location, router;
 
-  run(function() {
+  run(() => {
     application = Application.create();
     application.Router = Router.extend({
       location: 'none'
@@ -147,13 +147,13 @@ QUnit.test('When an application is reset, the router URL is reset to `/`', funct
 
   location = router.get('location');
 
-  run(function() {
+  run(() => {
     location.handleURL('/one');
   });
 
   application.reset();
 
-  var applicationController = application.__container__.lookup('controller:application');
+  let applicationController = application.__container__.lookup('controller:application');
   router = application.__container__.lookup('router:main');
   location = router.get('location');
 
@@ -162,7 +162,7 @@ QUnit.test('When an application is reset, the router URL is reset to `/`', funct
   equal(get(applicationController, 'currentPath'), 'index');
 
   location = application.__container__.lookup('router:main').get('location');
-  run(function() {
+  run(() => {
     location.handleURL('/one');
   });
 
@@ -174,7 +174,7 @@ QUnit.test('When an application with advance/deferReadiness is reset, the app do
 
   readyCallCount = 0;
 
-  run(function() {
+  run(() => {
     application = Application.create({
       ready() {
         readyCallCount++;
@@ -185,7 +185,7 @@ QUnit.test('When an application with advance/deferReadiness is reset, the app do
     equal(readyCallCount, 0, 'ready has not yet been called');
   });
 
-  run(function() {
+  run(() => {
     application.advanceReadiness();
   });
 
@@ -197,11 +197,11 @@ QUnit.test('When an application with advance/deferReadiness is reset, the app do
 });
 
 QUnit.test('With ember-data like initializer and constant', function() {
-  var readyCallCount;
+  let readyCallCount;
 
   readyCallCount = 0;
 
-  var DS = {
+  let DS = {
     Store: EmberObject.extend({
       init() {
         if (!get(DS, 'defaultStore')) {
@@ -228,7 +228,7 @@ QUnit.test('With ember-data like initializer and constant', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     application = Application.create();
     application.Store = DS.Store;
   });
@@ -242,13 +242,11 @@ QUnit.test('With ember-data like initializer and constant', function() {
 });
 
 QUnit.test('Ensure that the hashchange event listener is removed', function() {
-  var listeners;
+  let listeners;
 
   jQuery(window).off('hashchange'); // ensure that any previous listeners are cleared
 
-  run(function() {
-    application = Application.create();
-  });
+  application = run(() => Application.create());
 
   listeners = jQuery._data(jQuery(window)[0], 'events');
   equal(listeners['hashchange'].length, 1, 'hashchange event listener was set up');

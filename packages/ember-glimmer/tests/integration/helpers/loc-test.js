@@ -85,5 +85,4 @@ moduleFor('Helpers test: {{loc}}', class extends RenderingTest {
     this.assertText('Hallo Freund - Hallo, Mr. Pitkin',
                     'the bound value is correct after replacement');
   }
-
 });

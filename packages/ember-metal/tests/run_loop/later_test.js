@@ -1,14 +1,14 @@
 import isNone from 'ember-metal/is_none';
 import run from 'ember-metal/run_loop';
 
-var originalSetTimeout = window.setTimeout;
-var originalDateValueOf = Date.prototype.valueOf;
+const originalSetTimeout = window.setTimeout;
+const originalDateValueOf = Date.prototype.valueOf;
 const originalPlatform = run.backburner._platform;
 
 function wait(callback, maxWaitCount) {
   maxWaitCount = isNone(maxWaitCount) ? 100 : maxWaitCount;
 
-  originalSetTimeout(function() {
+  originalSetTimeout(() => {
     if (maxWaitCount > 0 && (run.hasScheduledTimers() || run.currentRunLoop)) {
       wait(callback, maxWaitCount - 1);
 
@@ -41,49 +41,49 @@ QUnit.module('run.later', {
 });
 
 asyncTest('should invoke after specified period of time - function only', function() {
-  var invoked = false;
+  let invoked = false;
 
-  run(function() {
-    run.later(function() { invoked = true; }, 100);
+  run(() => {
+    run.later(() => invoked = true, 100);
   });
 
-  wait(function() {
+  wait(() => {
     QUnit.start();
     equal(invoked, true, 'should have invoked later item');
   });
 });
 
 asyncTest('should invoke after specified period of time - target/method', function() {
-  var obj = { invoked: false };
+  let obj = { invoked: false };
 
-  run(function() {
+  run(() => {
     run.later(obj, function() { this.invoked = true; }, 100);
   });
 
-  wait(function() {
+  wait(() => {
     QUnit.start();
     equal(obj.invoked, true, 'should have invoked later item');
   });
 });
 
 asyncTest('should invoke after specified period of time - target/method/args', function() {
-  var obj = { invoked: 0 };
+  let obj = { invoked: 0 };
 
-  run(function() {
+  run(() => {
     run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
   });
 
-  wait(function() {
+  wait(() => {
     QUnit.start();
     equal(obj.invoked, 10, 'should have invoked later item');
   });
 });
 
 asyncTest('should always invoke within a separate runloop', function() {
-  var obj = { invoked: 0 };
-  var firstRunLoop, secondRunLoop;
+  let obj = { invoked: 0 };
+  let firstRunLoop, secondRunLoop;
 
-  run(function() {
+  run(() => {
     firstRunLoop = run.currentRunLoop;
 
     run.later(obj, function(amt) {
@@ -98,7 +98,7 @@ asyncTest('should always invoke within a separate runloop', function() {
   ok(!run.currentRunLoop, 'shouldn\'t be in a run loop after flush');
   equal(obj.invoked, 0, 'shouldn\'t have invoked later item yet');
 
-  wait(function() {
+  wait(() => {
     QUnit.start();
     equal(obj.invoked, 10, 'should have invoked later item');
     ok(secondRunLoop, 'second run loop took place');
@@ -111,7 +111,7 @@ asyncTest('should always invoke within a separate runloop', function() {
 // See https://github.com/emberjs/ember.js/issues/3526 for more information.
 
 // asyncTest('callback order', function() {
-//   var array = [];
+//   let array = [];
 //   function fn(val) { array.push(val); }
 
 //   run(function() {
@@ -136,14 +136,14 @@ asyncTest('should always invoke within a separate runloop', function() {
 // See https://github.com/emberjs/ember.js/issues/3522 for more information.
 
 // asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
-//   var array = [];
+//   let array = [];
 //   function fn(val) { array.push(run.currentRunLoop); }
 
 //   run(function() {
 
 //     // Force +new Date to return the same result while scheduling
 //     // run.later timers. Otherwise: non-determinism!
-//     var now = +new Date();
+//     let now = +new Date();
 //     Date.prototype.valueOf = function() { return now; };
 
 //     run.later(this, fn, 10);
@@ -166,18 +166,18 @@ asyncTest('should always invoke within a separate runloop', function() {
 // });
 
 asyncTest('inception calls to run.later should run callbacks in separate run loops', function() {
-  var runLoop, finished;
+  let runLoop, finished;
 
-  run(function() {
+  run(() => {
     runLoop = run.currentRunLoop;
     ok(runLoop);
 
-    run.later(function() {
+    run.later(() => {
       ok(run.currentRunLoop && run.currentRunLoop !== runLoop,
          'first later callback has own run loop');
       runLoop = run.currentRunLoop;
 
-      run.later(function() {
+      run.later(() => {
         ok(run.currentRunLoop && run.currentRunLoop !== runLoop,
            'second later callback has own run loop');
         finished = true;
@@ -185,7 +185,7 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
     }, 40);
   });
 
-  wait(function() {
+  wait(() => {
     QUnit.start();
     ok(finished, 'all .later callbacks run');
   });
@@ -198,10 +198,10 @@ asyncTest('setTimeout should never run with a negative wait', function() {
   // older browsers (IE <= 8) break with a negative wait, which
   // happens when an expired timer callback takes a while to run,
   // which is what we simulate here.
-  var newSetTimeoutUsed;
+  let newSetTimeoutUsed;
   run.backburner._platform = {
     setTimeout() {
-      var wait = arguments[arguments.length - 1];
+      let wait = arguments[arguments.length - 1];
       newSetTimeoutUsed = true;
       ok(!isNaN(wait) && wait >= 0, 'wait is a non-negative number');
 
@@ -209,9 +209,9 @@ asyncTest('setTimeout should never run with a negative wait', function() {
     }
   };
 
-  var count = 0;
-  run(function() {
-    run.later(function() {
+  let count = 0;
+  run(() => {
+    run.later(() => {
       count++;
 
       // This will get run first. Waste some time.
@@ -223,12 +223,12 @@ asyncTest('setTimeout should never run with a negative wait', function() {
       pauseUntil(+new Date() + 60);
     }, 1);
 
-    run.later(function() {
+    run.later(() => {
       equal(count, 1, 'callbacks called in order');
     }, 50);
   });
 
-  wait(function() {
+  wait(() => {
     QUnit.start();
     ok(newSetTimeoutUsed, 'stub setTimeout was used');
   });

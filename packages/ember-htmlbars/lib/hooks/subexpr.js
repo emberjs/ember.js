@@ -14,23 +14,23 @@ import { linkParamsFor } from 'ember-htmlbars/hooks/link-render-node';
 export default function subexpr(env, scope, helperName, params, hash) {
   // TODO: Keywords and helper invocation should be integrated into
   // the subexpr hook upstream in HTMLBars.
-  var keyword = env.hooks.keywords[helperName];
+  let keyword = env.hooks.keywords[helperName];
   if (keyword) {
     return keyword(null, env, scope, params, hash, null, null);
   }
 
   linkParamsFor(helperName, params);
 
-  var label = labelForSubexpr(params, hash, helperName);
-  var helper = lookupHelper(helperName, scope.getSelf(), env);
+  let label = labelForSubexpr(params, hash, helperName);
+  let helper = lookupHelper(helperName, scope.getSelf(), env);
 
-  var helperStream = buildHelperStream(helper, params, hash, null, env, scope, label);
+  let helperStream = buildHelperStream(helper, params, hash, null, env, scope, label);
 
-  for (var i = 0; i < params.length; i++) {
+  for (let i = 0; i < params.length; i++) {
     helperStream.addDependency(params[i]);
   }
 
-  for (var key in hash) {
+  for (let key in hash) {
     helperStream.addDependency(hash[key]);
   }
 
@@ -38,9 +38,9 @@ export default function subexpr(env, scope, helperName, params, hash) {
 }
 
 export function labelForSubexpr(params, hash, helperName) {
-  var paramsLabels = labelsForParams(params);
-  var hashLabels = labelsForHash(hash);
-  var label = `(${helperName}`;
+  let paramsLabels = labelsForParams(params);
+  let hashLabels = labelsForHash(hash);
+  let label = `(${helperName}`;
 
   if (paramsLabels) { label += ` ${paramsLabels}`; }
   if (hashLabels) { label += ` ${hashLabels}`; }
@@ -53,9 +53,9 @@ function labelsForParams(params) {
 }
 
 function labelsForHash(hash) {
-  var out = [];
+  let out = [];
 
-  for (var prop in hash) {
+  for (let prop in hash) {
     out.push(`${prop}=${labelFor(hash[prop])}`);
   }
 

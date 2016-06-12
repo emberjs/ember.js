@@ -7,13 +7,13 @@ import run from 'ember-metal/run_loop';
 QUnit.module('system/mixin/binding_test');
 
 QUnit.test('Defining a property ending in Binding should setup binding when applied', function() {
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
     fooBinding: 'bar.baz'
   });
 
-  var obj = { bar: { baz: 'BIFF' } };
+  let obj = { bar: { baz: 'BIFF' } };
 
-  run(function() {
+  run(() => {
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
@@ -27,15 +27,13 @@ QUnit.test('Defining a property ending in Binding should setup binding when appl
 });
 
 QUnit.test('Defining a property ending in Binding should apply to prototype children', function() {
-  var MyMixin, obj, obj2;
-
-  run(function() {
-    MyMixin = Mixin.create({
+  let MyMixin = run(()  => {
+    return Mixin.create({
       fooBinding: 'bar.baz'
     });
   });
 
-  obj = { bar: { baz: 'BIFF' } };
+  let obj = { bar: { baz: 'BIFF' } };
 
   run(function() {
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
@@ -47,11 +45,8 @@ QUnit.test('Defining a property ending in Binding should apply to prototype chil
   });
 
 
-  obj2 = Object.create(obj);
-  run(function() {
-    set(get(obj2, 'bar'), 'baz', 'BARG');
-  });
-
+  let obj2 = Object.create(obj);
+  run(() => set(get(obj2, 'bar'), 'baz', 'BARG'));
 
   ok(get(obj2, 'fooBinding') instanceof Binding, 'should be a binding object');
   equal(get(obj2, 'foo'), 'BARG', 'binding should be created and synced');

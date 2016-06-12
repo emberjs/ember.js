@@ -15,11 +15,11 @@ import { setTemplates, set as setTemplate } from 'ember-templates/template_regis
  from the runtime up to the templating layer.
 */
 
-var App, $fixture;
+let App, $fixture;
 
 QUnit.module('Template scoping examples', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -37,9 +37,7 @@ QUnit.module('Template scoping examples', {
   },
 
   teardown() {
-    run(function() {
-      App.destroy();
-    });
+    run(() => App.destroy());
 
     App = null;
 

@@ -2,10 +2,10 @@ import { ENV } from 'ember-environment';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { _warnIfUsingStrippedFeatureFlags } from 'ember-debug';
 
-var oldWarn, oldRunInDebug, origEnvFeatures, origEnableOptional, features, knownFeatures;
+let oldWarn, oldRunInDebug, origEnvFeatures, origEnableOptional, features, knownFeatures;
 
 function confirmWarns(expectedMsg) {
-  var featuresWereStripped = true;
+  let featuresWereStripped = true;
 
   setDebugFunction('warn', function(msg, test) {
     if (!test) {

@@ -24,9 +24,7 @@ QUnit.test('returns string if no streams were in the array', function(assert) {
 });
 
 QUnit.test('returns a stream if a stream is in the array', function(assert) {
-  let stream = new Stream(function() {
-    return 'bar';
-  });
+  let stream = new Stream(() => 'bar');
   let result = concat(['foo', stream, 'baz'], ' ');
 
   assert.ok(isStream(result), 'a stream is returned');
@@ -35,9 +33,7 @@ QUnit.test('returns a stream if a stream is in the array', function(assert) {
 
 QUnit.test('returns updated value upon input dirtied', function(assert) {
   let value = 'bar';
-  let stream = new Stream(function() {
-    return value;
-  });
+  let stream = new Stream(() => value);
   let result = concat(['foo', stream, 'baz'], ' ');
   result.activate();
 
@@ -50,9 +46,7 @@ QUnit.test('returns updated value upon input dirtied', function(assert) {
 });
 
 QUnit.test('removes dependencies when unsubscribeDependencies is called', function(assert) {
-  let stream = new Stream(function() {
-    return 'bar';
-  });
+  let stream = new Stream(() => 'bar');
   let result = concat(['foo', stream, 'baz'], ' ');
   result.activate();
 

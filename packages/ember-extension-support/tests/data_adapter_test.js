@@ -11,10 +11,10 @@ import EmberDataAdapter from 'ember-extension-support/data_adapter';
 import EmberApplication from 'ember-application/system/application';
 import DefaultResolver from 'ember-application/system/resolver';
 
-var adapter, App;
-var Model = EmberObject.extend();
+let adapter, App;
+const Model = EmberObject.extend();
 
-var DataAdapter = EmberDataAdapter.extend({
+const DataAdapter = EmberDataAdapter.extend({
   detect(klass) {
     return klass !== Model && Model.detect(klass);
   }
@@ -22,7 +22,7 @@ var DataAdapter = EmberDataAdapter.extend({
 
 QUnit.module('Data Adapter', {
   setup() {
-    run(function() {
+    run(() => {
       App = EmberApplication.create();
       App.toString = function() { return 'App'; };
       App.deferReadiness();
@@ -30,7 +30,7 @@ QUnit.module('Data Adapter', {
     });
   },
   teardown() {
-    run(function() {
+    run(() => {
       adapter.destroy();
       App.destroy();
     });
@@ -52,14 +52,14 @@ QUnit.test('Model types added with DefaultResolver', function() {
 
   run(App, 'advanceReadiness');
 
-  var modelTypesAdded = function(types) {
+  function modelTypesAdded(types) {
     equal(types.length, 1);
-    var postType = types[0];
+    let postType = types[0];
     equal(postType.name, 'post', 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, App.Post, 'Correctly sets the object');
     deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
-  };
+  }
 
   run(adapter, 'watchModelTypes', modelTypesAdded);
 });
@@ -79,8 +79,8 @@ QUnit.test('getRecords gets a model name as second argument', function() {
 });
 
 QUnit.test('Model types added with custom container-debug-adapter', function() {
-  var PostClass = Model.extend();
-  var StubContainerDebugAdapter = DefaultResolver.extend({
+  let PostClass = Model.extend();
+  let StubContainerDebugAdapter = DefaultResolver.extend({
     canCatalogEntriesByType(type) {
       return true;
     },
@@ -102,15 +102,15 @@ QUnit.test('Model types added with custom container-debug-adapter', function() {
 
   run(App, 'advanceReadiness');
 
-  var modelTypesAdded = function(types) {
+  function modelTypesAdded(types) {
     equal(types.length, 1);
-    var postType = types[0];
+    let postType = types[0];
 
     equal(postType.name, PostClass.toString(), 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, PostClass, 'Correctly sets the object');
     deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
-  };
+  }
 
   run(adapter, 'watchModelTypes', modelTypesAdded);
 });
@@ -119,7 +119,7 @@ QUnit.test('Model Types Updated', function() {
   App.Post = Model.extend();
 
   adapter = App.__container__.lookup('data-adapter:main');
-  var records = emberA([1, 2, 3]);
+  let records = emberA([1, 2, 3]);
   adapter.reopen({
     getRecords() {
       return records;
@@ -128,28 +128,28 @@ QUnit.test('Model Types Updated', function() {
 
   run(App, 'advanceReadiness');
 
-  var modelTypesAdded = function() {
-    run(function() {
+  function modelTypesAdded() {
+    run(() => {
       records.pushObject(4);
     });
-  };
+  }
 
-  var modelTypesUpdated = function(types) {
-    var postType = types[0];
+  function modelTypesUpdated(types) {
+    let postType = types[0];
     equal(postType.count, 4, 'Correctly updates the count');
-  };
+  }
 
   run(adapter, 'watchModelTypes', modelTypesAdded, modelTypesUpdated);
 });
 
 QUnit.test('Records Added', function() {
   expect(8);
-  var countAdded = 1;
+  let countAdded = 1;
 
   App.Post = Model.extend();
 
-  var post = App.Post.create();
-  var recordList = emberA([post]);
+  let post = App.Post.create();
+  let recordList = emberA([post]);
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
@@ -167,13 +167,13 @@ QUnit.test('Records Added', function() {
     }
   });
 
-  var recordsAdded = function(records) {
-    var record = records[0];
+  function recordsAdded(records) {
+    let record = records[0];
     equal(record.color, 'blue', 'Sets the color correctly');
     deepEqual(record.columnValues, { title: 'Post ' + countAdded }, 'Sets the column values correctly');
     deepEqual(record.searchKeywords, ['Post ' + countAdded], 'Sets search keywords correctly');
     strictEqual(record.object, post, 'Sets the object to the record instance');
-  };
+  }
 
   adapter.watchRecords(App.Post, recordsAdded);
   countAdded++;
@@ -182,11 +182,11 @@ QUnit.test('Records Added', function() {
 });
 
 QUnit.test('Observes and releases a record correctly', function() {
-  var updatesCalled = 0;
+  let updatesCalled = 0;
   App.Post = Model.extend();
 
-  var post = App.Post.create({ title: 'Post' });
-  var recordList = emberA([post]);
+  let post = App.Post.create({ title: 'Post' });
+  let recordList = emberA([post]);
 
   adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
@@ -194,10 +194,10 @@ QUnit.test('Observes and releases a record correctly', function() {
       return recordList;
     },
     observeRecord(record, recordUpdated) {
-      var self = this;
-      var callback = function() {
+      let self = this;
+      function callback() {
         recordUpdated(self.wrapRecord(record));
-      };
+      }
       addObserver(record, 'title', callback);
       return function() {
         removeObserver(record, 'title', callback);
@@ -208,16 +208,16 @@ QUnit.test('Observes and releases a record correctly', function() {
     }
   });
 
-  var recordsAdded = function() {
+  function recordsAdded() {
     set(post, 'title', 'Post Modified');
-  };
+  }
 
-  var recordsUpdated = function(records) {
+  function recordsUpdated(records) {
     updatesCalled++;
     equal(records[0].columnValues.title, 'Post Modified');
-  };
+  }
 
-  var release = adapter.watchRecords(App.Post, recordsAdded, recordsUpdated);
+  let release = adapter.watchRecords(App.Post, recordsAdded, recordsUpdated);
   release();
   set(post, 'title', 'New Title');
   equal(updatesCalled, 1, 'Release function removes observers');

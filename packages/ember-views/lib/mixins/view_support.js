@@ -30,10 +30,10 @@ export default Mixin.create({
     @private
   */
   nearestOfType(klass) {
-    var view = get(this, 'parentView');
-    var isOfType = klass instanceof Mixin ?
-                   function(view) { return klass.detect(view); } :
-                   function(view) { return klass.detect(view.constructor); };
+    let view = get(this, 'parentView');
+    let isOfType = klass instanceof Mixin ?
+                   view => klass.detect(view) :
+                   view => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) { return view; }
@@ -50,7 +50,7 @@ export default Mixin.create({
     @private
   */
   nearestWithProperty(property) {
-    var view = get(this, 'parentView');
+    let view = get(this, 'parentView');
 
     while (view) {
       if (property in view) { return view; }
@@ -111,11 +111,11 @@ export default Mixin.create({
   },
 
   forEachChildView(callback) {
-    var childViews = this.childViews;
+    let childViews = this.childViews;
 
     if (!childViews) { return this; }
 
-    var view, idx;
+    let view, idx;
 
     for (idx = 0; idx < childViews.length; idx++) {
       view = childViews[idx];
@@ -178,7 +178,7 @@ export default Mixin.create({
     inserted directly into the DOM.
 
     ```js
-    var element = view.renderToElement();
+    let element = view.renderToElement();
     element.tagName; // => "BODY"
     ```
 
@@ -186,7 +186,7 @@ export default Mixin.create({
     specifying an optional tag name as the first argument.
 
     ```js
-    var element = view.renderToElement('table');
+    let element = view.renderToElement('table');
     element.tagName; // => "TABLE"
     ```
 
@@ -197,7 +197,7 @@ export default Mixin.create({
 
     ```js
     app.visit('/').then(function(instance) {
-      var element;
+      let element;
       Ember.run(function() {
         element = renderToElement(instance);
       });
@@ -214,7 +214,7 @@ export default Mixin.create({
   renderToElement(tagName) {
     tagName = tagName || 'body';
 
-    var element = this.renderer._dom.createElement(tagName);
+    let element = this.renderer._dom.createElement(tagName);
 
     this.renderer.appendTo(this, element);
     return element;
@@ -235,7 +235,7 @@ export default Mixin.create({
     @private
   */
   replaceIn(selector) {
-    var target = jQuery(selector);
+    let target = jQuery(selector);
 
     assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
     assert('You cannot replace an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
@@ -303,7 +303,7 @@ export default Mixin.create({
     ```javascript
       export default Ember.Component.extend({
         setElementId: Ember.on('init', function() {
-          var index = this.get('index');
+          let index = this.get('index');
           this.set('elementId', 'component-id' + index);
         })
       });
@@ -328,7 +328,7 @@ export default Mixin.create({
     @private
   */
   findElementInParentElement(parentElem) {
-    var id = '#' + this.elementId;
+    let id = '#' + this.elementId;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 
@@ -606,7 +606,7 @@ export default Mixin.create({
     @private
   */
   removeFromParent() {
-    var parent = this.parentView;
+    let parent = this.parentView;
 
     // Remove DOM element from parent
     this.remove();
@@ -626,8 +626,8 @@ export default Mixin.create({
   */
   destroy() {
     // get parentView before calling super because it'll be destroyed
-    var parentView = this.parentView;
-    var viewName = this.viewName;
+    let parentView = this.parentView;
+    let viewName = this.viewName;
 
     if (!this._super(...arguments)) { return; }
 

@@ -4,16 +4,14 @@ import TextArea from 'ember-htmlbars/components/text_area';
 import { get } from 'ember-metal/property_get';
 import { set as o_set } from 'ember-metal/property_set';
 
-var textArea, TestObject;
+let textArea, TestObject;
 
 function set(object, key, value) {
-  run(function() { o_set(object, key, value); });
+  run(() => o_set(object, key, value));
 }
 
 function append() {
-  run(function() {
-    textArea.appendTo('#qunit-fixture');
-  });
+  run(() => textArea.appendTo('#qunit-fixture'));
 }
 
 QUnit.module('TextArea', {
@@ -26,9 +24,7 @@ QUnit.module('TextArea', {
   },
 
   teardown() {
-    run(function() {
-      textArea.destroy();
-    });
+    run(() => textArea.destroy());
 
     TestObject = window.TestObject = textArea = null;
   }
@@ -45,43 +41,43 @@ QUnit.test('should become disabled if the disabled attribute is true', function(
   append();
   ok(textArea.$().is(':not(:disabled)'));
 
-  run(function() { textArea.set('disabled', true); });
+  run(() => textArea.set('disabled', true));
   ok(textArea.$().is(':disabled'));
 
-  run(function() { textArea.set('disabled', false); });
+  run(() => textArea.set('disabled', false));
   ok(textArea.$().is(':not(:disabled)'));
 });
 
 ['placeholder', 'name', 'title', 'maxlength', 'rows', 'cols', 'tabindex'].forEach(function(attributeName) {
   QUnit.test(`text area ${attributeName} is updated when setting ${attributeName} property of view`, function() {
-    run(function() {
+    run(() => {
       set(textArea, attributeName, '1');
       textArea.append();
     });
 
     equal(textArea.$().attr(attributeName), '1', 'renders text area with ' + attributeName);
 
-    run(function() { set(textArea, attributeName, '2'); });
+    run(() => set(textArea, attributeName, '2'));
 
     equal(textArea.$().attr(attributeName), '2', `updates text area after ${attributeName} changes`);
   });
 });
 
 QUnit.test('text area value is updated when setting value property of view', function() {
-  run(function() {
+  run(() => {
     set(textArea, 'value', 'foo');
     textArea.append();
   });
 
   equal(textArea.$().val(), 'foo', 'renders text area with value');
 
-  run(function() { set(textArea, 'value', 'bar'); });
+  run(() => set(textArea, 'value', 'bar'));
 
   equal(textArea.$().val(), 'bar', 'updates text area after value changes');
 });
 
 QUnit.test('value binding works properly for inputs that haven\'t been created', function() {
-  run(function() {
+  run(() => {
     textArea.destroy(); // destroy existing textarea
 
     let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
@@ -97,26 +93,22 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
   equal(get(textArea, 'value'), null, 'precond - default value is null');
   equal(textArea.$(), undefined, 'precond - view doesn\'t have its layer created yet, thus no input element');
 
-  run(function() {
-    set(TestObject, 'value', 'ohai');
-  });
+  run(() => set(TestObject, 'value', 'ohai'));
 
   equal(get(textArea, 'value'), 'ohai', 'value property was properly updated');
 
-  run(function() { textArea.append(); });
+  run(() => textArea.append());
 
   equal(get(textArea, 'value'), 'ohai', 'value property remains the same once the view has been appended');
   equal(textArea.$().val(), 'ohai', 'value is reflected in the input element once it is created');
 });
 
-['cut', 'paste', 'input'].forEach(function(eventName) {
+['cut', 'paste', 'input'].forEach(eventName => {
   QUnit.test('should update the value on ' + eventName + ' events', function() {
-    run(function() {
-      textArea.append();
-    });
+    run(() => textArea.append());
 
     textArea.$().val('new value');
-    run(function() {
+    run(() => {
       textArea.trigger(eventName, EmberObject.create({
         type: eventName
       }));
@@ -127,12 +119,12 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
 });
 
 QUnit.test('should call the insertNewline method when return key is pressed', function() {
-  var wasCalled;
-  var event = EmberObject.create({
+  let wasCalled;
+  let event = EmberObject.create({
     keyCode: 13
   });
 
-  run(function() { textArea.append(); });
+  run(() => textArea.append());
 
   textArea.insertNewline = function() {
     wasCalled = true;
@@ -143,12 +135,12 @@ QUnit.test('should call the insertNewline method when return key is pressed', fu
 });
 
 QUnit.test('should call the cancel method when escape key is pressed', function() {
-  var wasCalled;
-  var event = EmberObject.create({
+  let wasCalled;
+  let event = EmberObject.create({
     keyCode: 27
   });
 
-  run(function() { textArea.append(); });
+  run(() => textArea.append());
 
   textArea.cancel = function() {
     wasCalled = true;

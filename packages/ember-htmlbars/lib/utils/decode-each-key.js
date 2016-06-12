@@ -14,7 +14,7 @@ function identity(item) {
   return key;
 }
 export default function decodeEachKey(item, keyPath, index) {
-  var key;
+  let key;
 
   switch (keyPath) {
   case '@index':

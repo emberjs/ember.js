@@ -4,11 +4,11 @@ import { isArray } from 'ember-runtime/utils';
 import BasicStream from './stream';
 import { read, isStream } from './utils';
 
-let ShouldDisplayStream = BasicStream.extend({
+const ShouldDisplayStream = BasicStream.extend({
   init(predicate) {
     assert('ShouldDisplayStream error: predicate must be a stream', isStream(predicate));
 
-    var isTruthy = predicate.get('isTruthy');
+    let isTruthy = predicate.get('isTruthy');
 
     this.init();
     this.predicate = predicate;
@@ -20,7 +20,7 @@ let ShouldDisplayStream = BasicStream.extend({
   },
 
   compute() {
-    var truthy = read(this.isTruthy);
+    let truthy = read(this.isTruthy);
 
     if (typeof truthy === 'boolean') {
       return truthy;
@@ -52,12 +52,12 @@ export default function shouldDisplay(predicate) {
     return new ShouldDisplayStream(predicate);
   }
 
-  var type = typeof predicate;
+  let type = typeof predicate;
 
   if (type === 'boolean') { return predicate; }
 
   if (type && type === 'object' && predicate !== null) {
-    var isTruthy = get(predicate, 'isTruthy');
+    let isTruthy = get(predicate, 'isTruthy');
     if (typeof isTruthy === 'boolean') {
       return isTruthy;
     }

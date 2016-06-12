@@ -3,37 +3,34 @@ import Application from 'ember-application/system/application';
 import ApplicationInstance from 'ember-application/system/application-instance';
 import jQuery from 'ember-views/system/jquery';
 
-var app;
+let app;
 
 QUnit.module('Ember.Application instance initializers', {
-  setup() {
-  },
-
   teardown() {
     if (app) {
-      run(function() { app.destroy(); });
+      run(() => app.destroy());
     }
   }
 });
 
 QUnit.test('initializers require proper \'name\' and \'initialize\' properties', function() {
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyApplication.instanceInitializer({ name: 'initializer' });
     });
   });
 
-  expectAssertion(function() {
-    run(function() {
+  expectAssertion(() => {
+    run(() => {
       MyApplication.instanceInitializer({ initialize() {} });
     });
   });
 });
 
 QUnit.test('initializers are passed an app instance', function() {
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.instanceInitializer({
     name: 'initializer',
@@ -42,7 +39,7 @@ QUnit.test('initializers are passed an app instance', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -51,8 +48,8 @@ QUnit.test('initializers are passed an app instance', function() {
 });
 
 QUnit.test('initializers can be registered in a specified order', function() {
-  var order = [];
-  var MyApplication = Application.extend();
+  let order = [];
+  let MyApplication = Application.extend();
   MyApplication.instanceInitializer({
     name: 'fourth',
     after: 'third',
@@ -101,7 +98,7 @@ QUnit.test('initializers can be registered in a specified order', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -112,9 +109,8 @@ QUnit.test('initializers can be registered in a specified order', function() {
 });
 
 QUnit.test('initializers can be registered in a specified order as an array', function() {
-  var order = [];
-  var MyApplication = Application.extend();
-
+  let order = [];
+  let MyApplication = Application.extend();
 
   MyApplication.instanceInitializer({
     name: 'third',
@@ -164,7 +160,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -175,35 +171,35 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
 });
 
 QUnit.test('initializers can have multiple dependencies', function () {
-  var order = [];
-  var a = {
+  let order = [];
+  let a = {
     name: 'a',
     before: 'b',
     initialize(registry) {
       order.push('a');
     }
   };
-  var b = {
+  let b = {
     name: 'b',
     initialize(registry) {
       order.push('b');
     }
   };
-  var c = {
+  let c = {
     name: 'c',
     after: 'b',
     initialize(registry) {
       order.push('c');
     }
   };
-  var afterB = {
+  let afterB = {
     name: 'after b',
     after: 'b',
     initialize(registry) {
       order.push('after b');
     }
   };
-  var afterC = {
+  let afterC = {
     name: 'after c',
     after: 'c',
     initialize(registry) {
@@ -217,7 +213,7 @@ QUnit.test('initializers can have multiple dependencies', function () {
   Application.instanceInitializer(afterB);
   Application.instanceInitializer(c);
 
-  run(function() {
+  run(() => {
     app = Application.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -231,10 +227,10 @@ QUnit.test('initializers can have multiple dependencies', function () {
 });
 
 QUnit.test('initializers set on Application subclasses should not be shared between apps', function() {
-  var firstInitializerRunCount = 0;
-  var secondInitializerRunCount = 0;
-  var FirstApp = Application.extend();
-  var firstApp, secondApp;
+  let firstInitializerRunCount = 0;
+  let secondInitializerRunCount = 0;
+  let FirstApp = Application.extend();
+  let firstApp, secondApp;
 
   FirstApp.instanceInitializer({
     name: 'first',
@@ -242,7 +238,7 @@ QUnit.test('initializers set on Application subclasses should not be shared betw
       firstInitializerRunCount++;
     }
   });
-  var SecondApp = Application.extend();
+  let SecondApp = Application.extend();
   SecondApp.instanceInitializer({
     name: 'second',
     initialize(registry) {
@@ -250,7 +246,7 @@ QUnit.test('initializers set on Application subclasses should not be shared betw
     }
   });
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
-  run(function() {
+  run(() => {
     firstApp = FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
@@ -258,7 +254,7 @@ QUnit.test('initializers set on Application subclasses should not be shared betw
   });
   equal(firstInitializerRunCount, 1, 'first initializer only was run');
   equal(secondInitializerRunCount, 0, 'first initializer only was run');
-  run(function() {
+  run(() => {
     secondApp = SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
@@ -266,17 +262,17 @@ QUnit.test('initializers set on Application subclasses should not be shared betw
   });
   equal(firstInitializerRunCount, 1, 'second initializer only was run');
   equal(secondInitializerRunCount, 1, 'second initializer only was run');
-  run(function() {
-  firstApp.destroy();
-  secondApp.destroy();
-});
+  run(() => {
+    firstApp.destroy();
+    secondApp.destroy();
+  });
 });
 
 QUnit.test('initializers are concatenated', function() {
-  var firstInitializerRunCount = 0;
-  var secondInitializerRunCount = 0;
-  var FirstApp = Application.extend();
-  var firstApp, secondApp;
+  let firstInitializerRunCount = 0;
+  let secondInitializerRunCount = 0;
+  let FirstApp = Application.extend();
+  let firstApp, secondApp;
 
   FirstApp.instanceInitializer({
     name: 'first',
@@ -285,7 +281,7 @@ QUnit.test('initializers are concatenated', function() {
     }
   });
 
-  var SecondApp = FirstApp.extend();
+  let SecondApp = FirstApp.extend();
   SecondApp.instanceInitializer({
     name: 'second',
     initialize(registry) {
@@ -346,9 +342,9 @@ QUnit.test('initializers are per-app', function() {
 QUnit.test('initializers are run before ready hook', function() {
   expect(2);
 
-  var readyWasCalled = false;
+  let readyWasCalled = false;
 
-  var MyApplication = Application.extend({
+  let MyApplication = Application.extend({
     ready() {
       ok(true, 'ready is called');
       readyWasCalled = true;
@@ -373,7 +369,7 @@ QUnit.test('initializers are run before ready hook', function() {
 QUnit.test('initializers are executed in their own context', function() {
   expect(1);
 
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.instanceInitializer({
     name: 'coolInitializer',
@@ -383,7 +379,7 @@ QUnit.test('initializers are executed in their own context', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -394,7 +390,7 @@ QUnit.test('initializers are executed in their own context', function() {
 QUnit.test('initializers get an instance on app reset', function() {
   expect(2);
 
-  var MyApplication = Application.extend();
+  let MyApplication = Application.extend();
 
   MyApplication.instanceInitializer({
     name: 'giveMeAnInstance',
@@ -403,7 +399,7 @@ QUnit.test('initializers get an instance on app reset', function() {
     }
   });
 
-  run(function() {
+  run(() => {
     app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'

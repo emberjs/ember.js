@@ -153,8 +153,8 @@ import assign from 'ember-metal/assign';
 */
 export default {
   setupState(lastState, env, scope, params, hash) {
-    var type = env.hooks.getValue(hash.type);
-    var componentName = componentNameMap[type] || defaultComponentName;
+    let type = env.hooks.getValue(hash.type);
+    let componentName = componentNameMap[type] || defaultComponentName;
 
     assert(
       '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
@@ -174,8 +174,8 @@ export default {
   }
 };
 
-var defaultComponentName = '-text-field';
+const defaultComponentName = '-text-field';
 
-var componentNameMap = {
+const componentNameMap = {
   'checkbox': '-checkbox'
 };

@@ -1,23 +1,23 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('pushObject');
 
 suite.test('returns pushed object', function() {
-  var exp = this.newFixture(1)[0];
-  var obj = this.newObject([]);
+  let exp = this.newFixture(1)[0];
+  let obj = this.newObject([]);
+
   equal(obj.pushObject(exp), exp, 'should return pushed object');
 });
 
 suite.test('[].pushObject(X) => [X] + notify', function() {
-  var obj, before, after, observer;
+  let before = [];
+  let after  = this.newFixture(1);
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = [];
-  after  = this.newFixture(1);
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.pushObject(after[0]);
@@ -33,13 +33,12 @@ suite.test('[].pushObject(X) => [X] + notify', function() {
 });
 
 suite.test('[A,B,C].pushObject(X) => [A,B,C,X] + notify', function() {
-  var obj, before, after, item, observer;
+  let before = this.newFixture(3);
+  let item = this.newFixture(1)[0];
+  let after = [before[0], before[1], before[2], item];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  item   = this.newFixture(1)[0];
-  after  = [before[0], before[1], before[2], item];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.pushObject(item);

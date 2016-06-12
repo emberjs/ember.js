@@ -1,7 +1,7 @@
 import BasicStream from 'ember-htmlbars/streams/stream';
 import ProxyStream from 'ember-htmlbars/streams/proxy-stream';
 
-var source;
+let source;
 
 QUnit.module('ProxyStream', {
   setup() {
@@ -28,7 +28,7 @@ QUnit.module('ProxyStream', {
 });
 
 QUnit.test('supports a stream argument', function() {
-  var stream = new ProxyStream(source);
+  let stream = new ProxyStream(source);
   equal(stream.value(), 'zlurp');
 
   stream.setValue('blorg');
@@ -36,7 +36,7 @@ QUnit.test('supports a stream argument', function() {
 });
 
 QUnit.test('supports a non-stream argument', function() {
-  var stream = new ProxyStream('zlurp');
+  let stream = new ProxyStream('zlurp');
   equal(stream.value(), 'zlurp');
 
   stream.setValue('blorg');

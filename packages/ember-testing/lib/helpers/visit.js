@@ -4,7 +4,7 @@ export default function visit(app, url) {
   let router = app.__container__.lookup('router:main');
   let shouldHandleURL = false;
 
-  app.boot().then(function() {
+  app.boot().then(() => {
     router.location.setURL(url);
 
     if (shouldHandleURL) {

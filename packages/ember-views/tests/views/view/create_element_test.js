@@ -3,7 +3,7 @@ import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-htmlbars-template-compiler';
 
-var view;
+let view;
 
 QUnit.module('Ember.View#createElement', {
   teardown() {
@@ -14,13 +14,9 @@ QUnit.module('Ember.View#createElement', {
 });
 
 QUnit.test('returns the receiver', function() {
-  var ret;
-
   view = EmberView.create();
 
-  run(function() {
-    ret = view.createElement();
-  });
+  let ret = run(() => view.createElement());
 
   equal(ret, view, 'returns receiver');
 });
@@ -32,11 +28,10 @@ QUnit.test('calls render and turns resultant string into element', function() {
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');
-  run(function() {
-    view.createElement();
-  });
 
-  var elem = get(view, 'element');
+  run(() => view.createElement());
+
+  let elem = get(view, 'element');
   ok(elem, 'has element now');
   equal(elem.innerHTML, 'foo', 'has innerHTML from context');
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');

@@ -7,8 +7,8 @@ import EmberView from 'ember-views/views/view';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-var owner, view;
-var hooks;
+let owner, view;
+let hooks;
 
 let styles = [{
   name: 'curly',
@@ -69,7 +69,7 @@ styles.forEach(style => {
   }
 
   QUnit.test('lifecycle hooks are invoked in a predictable order', function() {
-    var components = {};
+    let components = {};
 
     function component(label) {
       return style.class.extend({
@@ -150,9 +150,7 @@ styles.forEach(style => {
 
     hooks = [];
 
-    run(function() {
-      components.bottom.rerender();
-    });
+    run(() => components.bottom.rerender());
 
     deepEqual(hooks, [
       hook('bottom', 'willUpdate'), hook('bottom', 'willRender'),
@@ -161,9 +159,7 @@ styles.forEach(style => {
 
     hooks = [];
 
-    run(function() {
-      components.middle.rerender();
-    });
+    run(() => components.middle.rerender());
 
     bottomAttrs = { oldAttrs: { website: 'tomdale.net' }, newAttrs: { website: 'tomdale.net' } };
 
@@ -181,9 +177,7 @@ styles.forEach(style => {
 
     hooks = [];
 
-    run(function() {
-      components.top.rerender();
-    });
+    run(() => components.top.rerender());
 
     middleAttrs = { oldAttrs: { name: 'Tom Dale' }, newAttrs: { name: 'Tom Dale' } };
 
@@ -203,9 +197,7 @@ styles.forEach(style => {
 
     hooks = [];
 
-    run(function() {
-      view.set('twitter', '@hipstertomdale');
-    });
+    run(() => view.set('twitter', '@hipstertomdale'));
 
     // Because the `twitter` attr is only used by the topmost component,
     // and not passed down, we do not expect to see lifecycle hooks
@@ -223,7 +215,7 @@ styles.forEach(style => {
   });
 
   QUnit.test('passing values through attrs causes lifecycle hooks to fire if the attribute values have changed', function() {
-    var components = {};
+    let components = {};
 
     function component(label) {
       return style.class.extend({
@@ -304,9 +296,7 @@ styles.forEach(style => {
 
     hooks = [];
 
-    run(function() {
-      view.set('twitter', '@hipstertomdale');
-    });
+    run(() => view.set('twitter', '@hipstertomdale'));
 
     // Because the `twitter` attr is used by the all of the components,
     // the lifecycle hooks are invoked for all components.
@@ -334,9 +324,7 @@ styles.forEach(style => {
 
     // In this case, because the attrs are passed down, all child components are invoked.
 
-    run(function() {
-      view.rerender();
-    });
+    run(() => view.rerender());
 
     topAttrs = { oldAttrs: { twitter: '@hipstertomdale' }, newAttrs: { twitter: '@hipstertomdale' } };
     middleAttrs = { oldAttrs: { twitterTop: '@hipstertomdale' }, newAttrs: { twitterTop: '@hipstertomdale' } };
@@ -377,9 +365,7 @@ styles.forEach(style => {
 
     assert.strictEqual(component.$().text(), '@tomdale');
 
-    run(() => {
-      component.destroy();
-    });
+    run(() => component.destroy());
   });
 
   QUnit.test('DEPRECATED: didInitAttrs is deprecated', function(assert) {
@@ -399,9 +385,7 @@ styles.forEach(style => {
       component = componentClass.create();
     }, /\[DEPRECATED\] didInitAttrs called in <\(subclass of Ember.Component\)\:ember[\d+]+>\./);
 
-    run(() => {
-      component.destroy();
-    });
+    run(() => component.destroy());
   });
 
   QUnit.test('properties set during `init` are availabe in `didReceiveAttrs`', function(assert) {

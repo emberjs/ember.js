@@ -84,12 +84,12 @@ import decodeEachKey from 'ember-htmlbars/utils/decode-each-key';
   @public
 */
 export default function eachHelper(params, hash, blocks) {
-  var list = params[0];
-  var keyPath = hash.key;
+  let list = params[0];
+  let keyPath = hash.key;
 
   if (shouldDisplay(list)) {
     forEach(list, (item, i) => {
-      var key = decodeEachKey(item, keyPath, i);
+      let key = decodeEachKey(item, keyPath, i);
 
       blocks.template.yieldItem(key, [item, i]);
     });

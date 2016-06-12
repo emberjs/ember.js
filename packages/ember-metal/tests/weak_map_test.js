@@ -56,25 +56,11 @@ QUnit.test('invoking the WeakMap constructor with arguments is not supported at 
 QUnit.test('that error is thrown when using a primitive key', function(assert) {
   let map = new WeakMap();
 
-  expectAssertion(function() {
-    map.set('a', 1);
-  }, /Uncaught TypeError: Invalid value used as weak map key/);
-
-  expectAssertion(function() {
-    map.set(1, 1);
-  }, /Uncaught TypeError: Invalid value used as weak map key/);
-
-  expectAssertion(function() {
-    map.set(true, 1);
-  }, /Uncaught TypeError: Invalid value used as weak map key/);
-
-  expectAssertion(function() {
-    map.set(null, 1);
-  }, /Uncaught TypeError: Invalid value used as weak map key/);
-
-  expectAssertion(function() {
-    map.set(undefined, 1);
-  }, /Uncaught TypeError: Invalid value used as weak map key/);
+  expectAssertion(() => map.set('a', 1),       /Uncaught TypeError: Invalid value used as weak map key/);
+  expectAssertion(() => map.set(1, 1),         /Uncaught TypeError: Invalid value used as weak map key/);
+  expectAssertion(() => map.set(true, 1),      /Uncaught TypeError: Invalid value used as weak map key/);
+  expectAssertion(() => map.set(null, 1),      /Uncaught TypeError: Invalid value used as weak map key/);
+  expectAssertion(() => map.set(undefined, 1), /Uncaught TypeError: Invalid value used as weak map key/);
 });
 
 QUnit.test('that .has and .delete work as expected', function(assert) {

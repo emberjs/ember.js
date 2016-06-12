@@ -16,9 +16,9 @@ import symbol from 'ember-metal/symbol';
 
 export let PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
-var beforeObserverSet = new ObserverSet();
-var observerSet = new ObserverSet();
-var deferred = 0;
+const beforeObserverSet = new ObserverSet();
+const observerSet = new ObserverSet();
+let deferred = 0;
 
 // ..........................................................
 // PROPERTY CHANGES
@@ -41,15 +41,15 @@ var deferred = 0;
   @private
 */
 function propertyWillChange(obj, keyName) {
-  var m = peekMeta(obj);
+  let m = peekMeta(obj);
 
   if (m && !m.isInitialized(obj)) {
     return;
   }
 
-  var watching = m && m.peekWatching(keyName) > 0;
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let watching = m && m.peekWatching(keyName) > 0;
+  let possibleDesc = obj[keyName];
+  let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   if (desc && desc.willChange) {
     desc.willChange(obj, keyName);
@@ -79,15 +79,15 @@ function propertyWillChange(obj, keyName) {
   @private
 */
 function propertyDidChange(obj, keyName) {
-  var m = peekMeta(obj);
+  let m = peekMeta(obj);
 
   if (m && !m.isInitialized(obj)) {
     return;
   }
 
-  var watching = m && m.peekWatching(keyName) > 0;
-  var possibleDesc = obj[keyName];
-  var desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+  let watching = m && m.peekWatching(keyName) > 0;
+  let possibleDesc = obj[keyName];
+  let desc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
   // shouldn't this mean that we're watching this key?
   if (desc && desc.didChange) {
@@ -111,14 +111,14 @@ function propertyDidChange(obj, keyName) {
 }
 
 
-var WILL_SEEN, DID_SEEN;
+let WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
   if (meta && meta.hasDeps(depKey)) {
-    var seen = WILL_SEEN;
-    var top = !seen;
+    let seen = WILL_SEEN;
+    let top = !seen;
 
     if (top) {
       seen = WILL_SEEN = {};
@@ -137,8 +137,8 @@ function dependentKeysDidChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
   if (meta && meta.hasDeps(depKey)) {
-    var seen = DID_SEEN;
-    var top = !seen;
+    let seen = DID_SEEN;
+    let top = !seen;
 
     if (top) {
       seen = DID_SEEN = {};
@@ -153,9 +153,9 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  var possibleDesc, desc;
-  var guid = guidFor(obj);
-  var current = seen[guid];
+  let possibleDesc, desc;
+  let guid = guidFor(obj);
+  let current = seen[guid];
 
   if (!current) {
     current = seen[guid] = {};
@@ -251,8 +251,8 @@ function changeProperties(callback, binding) {
 function notifyBeforeObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
-  var eventName = keyName + ':before';
-  var listeners, added;
+  let eventName = keyName + ':before';
+  let listeners, added;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
     added = accumulateListeners(obj, eventName, listeners);
@@ -265,8 +265,8 @@ function notifyBeforeObservers(obj, keyName) {
 function notifyObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
-  var eventName = keyName + ':change';
-  var listeners;
+  let eventName = keyName + ':change';
+  let listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);
     accumulateListeners(obj, eventName, listeners);

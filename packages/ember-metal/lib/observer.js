@@ -13,8 +13,8 @@ import {
 @module ember-metal
 */
 
-var AFTER_OBSERVERS = ':change';
-var BEFORE_OBSERVERS = ':before';
+const AFTER_OBSERVERS = ':change';
+const BEFORE_OBSERVERS = ':before';
 
 function changeEvent(keyName) {
   return keyName + AFTER_OBSERVERS;
@@ -86,7 +86,7 @@ export function _suspendObserver(obj, path, target, method, callback) {
 }
 
 export function _suspendObservers(obj, paths, target, method, callback) {
-  var events = paths.map(changeEvent);
+  let events = paths.map(changeEvent);
   return suspendListeners(obj, events, target, method, callback);
 }
 

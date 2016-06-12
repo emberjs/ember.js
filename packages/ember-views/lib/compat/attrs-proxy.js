@@ -12,7 +12,7 @@ function isCell(val) {
   return val && val[MUTABLE_CELL];
 }
 
-let AttrsProxyMixin = {
+const AttrsProxyMixin = {
   attrs: null,
 
   getAttr(key) {

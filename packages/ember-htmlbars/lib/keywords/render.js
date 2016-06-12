@@ -87,7 +87,7 @@ export default {
   },
 
   setupState(prevState, env, scope, params, hash) {
-    var name = params[0];
+    let name = params[0];
 
     assert(
       'The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.',
@@ -115,13 +115,13 @@ export default {
   },
 
   render(node, env, scope, params, hash, template, inverse, visitor) {
-    var state = node.getState();
-    var name = params[0];
-    var context = params[1];
+    let state = node.getState();
+    let name = params[0];
+    let context = params[1];
 
-    var owner = env.owner;
+    let owner = env.owner;
 
-    var router = owner.lookup('router:main');
+    let router = owner.lookup('router:main');
 
     assert(
       'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.',
@@ -139,7 +139,7 @@ export default {
       throw new EmberError('You must pass a templateName to render');
     }
 
-    var templateName = 'template:' + name;
+    let templateName = 'template:' + name;
     assert(
       'You used `{{render \'' + name + '\'}}`, but \'' + name + '\' can not be ' +
       'found as a template.',
@@ -151,8 +151,8 @@ export default {
     }
 
     // provide controller override
-    var controllerName;
-    var controllerFullName;
+    let controllerName;
+    let controllerFullName;
 
     if (hash.controller) {
       controllerName = hash.controller;
@@ -170,11 +170,11 @@ export default {
     }
 
     let target = router;
-    var controller;
+    let controller;
 
     // choose name
     if (params.length > 1) {
-      var factory = owner._lookupFactory(controllerFullName) ||
+      let factory = owner._lookupFactory(controllerFullName) ||
                     generateControllerFactory(owner, controllerName);
 
       controller = factory.create({
@@ -198,12 +198,12 @@ export default {
       template = template.raw;
     }
 
-    var options = {
+    let options = {
       layout: null,
       self: controller
     };
 
-    var nodeManager = ViewNodeManager.create(node, env, hash, options, state.parentView, null, null, template);
+    let nodeManager = ViewNodeManager.create(node, env, hash, options, state.parentView, null, null, template);
     state.manager = nodeManager;
 
     if (router && params.length === 1) {
@@ -215,24 +215,24 @@ export default {
 
   rerender(node, env, scope, params, hash, template, inverse, visitor) {
     if (params.length > 1) {
-      var model = read(params[1]);
+      let model = read(params[1]);
       node.getState().controller.set('model', model);
     }
   }
 };
 
 function childOutletState(name, env) {
-  var topLevel = env.view.ownerView;
+  let topLevel = env.view.ownerView;
   if (!topLevel || !topLevel.outletState) { return; }
 
-  var outletState = topLevel.outletState;
+  let outletState = topLevel.outletState;
   if (!outletState.main) { return; }
 
-  var selectedOutletState = outletState.main.outlets['__ember_orphans__'];
+  let selectedOutletState = outletState.main.outlets['__ember_orphans__'];
   if (!selectedOutletState) { return; }
-  var matched = selectedOutletState.outlets[name];
+  let matched = selectedOutletState.outlets[name];
   if (matched) {
-    var childState = new EmptyObject();
+    let childState = new EmptyObject();
     childState[matched.render.outlet] = matched;
     matched.wasUsed = true;
     return childState;
@@ -246,7 +246,7 @@ function isStable(a, b) {
   if (!a || !b) {
     return false;
   }
-  for (var outletName in a) {
+  for (let outletName in a) {
     if (!isStableOutlet(a[outletName], b[outletName])) {
       return false;
     }
@@ -263,7 +263,7 @@ function isStableOutlet(a, b) {
   }
   a = a.render;
   b = b.render;
-  for (var key in a) {
+  for (let key in a) {
     if (a.hasOwnProperty(key)) {
       // name is only here for logging & debugging. If two different
       // names result in otherwise identical states, they're still

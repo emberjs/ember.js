@@ -3,9 +3,7 @@ import Cache from 'ember-metal/cache';
 QUnit.module('Cache');
 
 QUnit.test('basic', function() {
-  var cache = new Cache(100, function(key) {
-    return key.toUpperCase();
-  });
+  let cache = new Cache(100, key => key.toUpperCase());
 
   equal(cache.get('foo'), 'FOO');
   equal(cache.get('bar'), 'BAR');
@@ -13,8 +11,8 @@ QUnit.test('basic', function() {
 });
 
 QUnit.test('caches computation correctly', function() {
-  var count = 0;
-  var cache = new Cache(100, function(key) {
+  let count = 0;
+  let cache = new Cache(100, key => {
     count++;
     return key.toUpperCase();
   });
@@ -31,15 +29,13 @@ QUnit.test('caches computation correctly', function() {
 });
 
 QUnit.test('handles undefined value correctly', function() {
-  var cache = new Cache(100, function(key) {});
+  let cache = new Cache(100, (key) => { });
 
   equal(cache.get('foo'), undefined);
 });
 
 QUnit.test('continues working after reaching cache limit', function() {
-  var cache = new Cache(3, function(key) {
-    return key.toUpperCase();
-  });
+  let cache = new Cache(3, key => key.toUpperCase());
 
   cache.get('a');
   cache.get('b');

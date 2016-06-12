@@ -20,7 +20,7 @@ export const COMPONENT_PATH = symbol('COMPONENT_PATH');
 export const COMPONENT_POSITIONAL_PARAMS = symbol('COMPONENT_POSITIONAL_PARAMS');
 export const COMPONENT_HASH = symbol('COMPONENT_HASH');
 
-let ClosureComponentStream = BasicStream.extend({
+const ClosureComponentStream = BasicStream.extend({
   init(env, path, params, hash) {
     this._env = env;
     this._path = path;

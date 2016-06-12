@@ -34,11 +34,11 @@ ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs,
     }
   }()));
 
-  var component;
-  var componentInfo = { layout: found.layout };
+  let component;
+  let componentInfo = { layout: found.layout };
 
   if (found.component) {
-    var options = { parentView: parentView };
+    let options = { parentView: parentView };
 
     if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
@@ -70,7 +70,7 @@ ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs,
 
   assert('BUG: ViewNodeManager.create can take a scope or a self, but not both', !(contentScope && found.self));
 
-  var results = buildComponentTemplate(componentInfo, attrs, {
+  let results = buildComponentTemplate(componentInfo, attrs, {
     templates: { default: contentTemplate },
     scope: contentScope,
     self: found.self
@@ -80,10 +80,10 @@ ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs,
 };
 
 ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, visitor) {
-  var component = this.component;
+  let component = this.component;
 
   return instrument(component, function ViewNodeManager_render_instrument() {
-    var newEnv = env;
+    let newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
     } else {
@@ -102,7 +102,7 @@ ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, v
     }
 
     if (component) {
-      var element = this.expectElement && this.renderNode.firstNode;
+      let element = this.expectElement && this.renderNode.firstNode;
 
       // In environments like FastBoot, disable any hooks that would cause the component
       // to access the DOM directly.
@@ -116,14 +116,14 @@ ViewNodeManager.prototype.render = function ViewNodeManager_render(env, attrs, v
 };
 
 ViewNodeManager.prototype.rerender = function ViewNodeManager_rerender(env, attrs, visitor) {
-  var component = this.component;
+  let component = this.component;
 
   return instrument(component, function ViewNodeManager_rerender_instrument() {
-    var newEnv = env;
+    let newEnv = env;
     if (component) {
       newEnv = env.childWithView(component);
 
-      var snapshot = takeSnapshot(attrs);
+      let snapshot = takeSnapshot(attrs);
 
       // Notify component that it has become dirty and is about to change.
       env.renderer.willUpdate(component, snapshot);
@@ -226,7 +226,7 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 function takeSnapshot(attrs) {
   let hash = {};
 
-  for (var prop in attrs) {
+  for (let prop in attrs) {
     hash[prop] = getCellOrValue(attrs[prop]);
   }
 
@@ -234,7 +234,7 @@ function takeSnapshot(attrs) {
 }
 
 function mergeBindings(target, attrs) {
-  for (var prop in attrs) {
+  for (let prop in attrs) {
     if (!attrs.hasOwnProperty(prop)) { continue; }
     // when `attrs` is an actual value being set in the
     // attrs hash (`{{foo-bar attrs="blah"}}`) we cannot

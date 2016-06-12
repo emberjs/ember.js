@@ -194,7 +194,7 @@ const Component = View.extend(TargetActionSupport, {
   targetObject: computed('controller', function(key) {
     if (this._targetObject) { return this._targetObject; }
     if (this._controller) { return this._controller; }
-    var parentView = get(this, 'parentView');
+    let parentView = get(this, 'parentView');
     return parentView ? get(parentView, 'controller') : null;
   }),
 
@@ -279,7 +279,7 @@ const Component = View.extend(TargetActionSupport, {
     @public
   */
   sendAction(action, ...contexts) {
-    var actionName;
+    let actionName;
 
     // Send the default action
     if (action === undefined) {
@@ -302,11 +302,11 @@ const Component = View.extend(TargetActionSupport, {
   },
 
   send(actionName, ...args) {
-    var target;
-    var action = this.actions && this.actions[actionName];
+    let target;
+    let action = this.actions && this.actions[actionName];
 
     if (action) {
-      var shouldBubble = action.apply(this, args) === true;
+      let shouldBubble = action.apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 

@@ -1,25 +1,24 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('unshiftObject');
 
 suite.test('returns unshifted object', function() {
-  var obj = this.newObject([]);
-  var item = this.newFixture(1)[0];
+  let obj = this.newObject([]);
+  let item = this.newFixture(1)[0];
+
   equal(obj.unshiftObject(item), item, 'should return unshifted object');
 });
 
-
 suite.test('[].unshiftObject(X) => [X] + notify', function() {
-  var obj, before, after, item, observer;
+  let before = [];
+  let item = this.newFixture(1)[0];
+  let after  = [item];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = [];
-  item = this.newFixture(1)[0];
-  after  = [item];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.unshiftObject(item);
@@ -35,13 +34,12 @@ suite.test('[].unshiftObject(X) => [X] + notify', function() {
 });
 
 suite.test('[A,B,C].unshiftObject(X) => [X,A,B,C] + notify', function() {
-  var obj, before, after, item, observer;
+  let before = this.newFixture(3);
+  let item = this.newFixture(1)[0];
+  let after  = [item, before[0], before[1], before[2]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  item = this.newFixture(1)[0];
-  after  = [item, before[0], before[1], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.unshiftObject(item);
@@ -58,13 +56,12 @@ suite.test('[A,B,C].unshiftObject(X) => [X,A,B,C] + notify', function() {
 });
 
 suite.test('[A,B,C].unshiftObject(A) => [A,A,B,C] + notify', function() {
-  var obj, before, after, item, observer;
+  let before = this.newFixture(3);
+  let item = before[0]; // note same object as current head. should end up twice
+  let after  = [item, before[0], before[1], before[2]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  item = before[0]; // note same object as current head. should end up twice
-  after  = [item, before[0], before[1], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.unshiftObject(item);

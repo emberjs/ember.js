@@ -5,7 +5,7 @@
 */
 
 export default function joinClasses(classNames) {
-  var result = [];
+  let result = [];
 
   for (let i = 0; i < classNames.length; i++) {
     let className = classNames[i];

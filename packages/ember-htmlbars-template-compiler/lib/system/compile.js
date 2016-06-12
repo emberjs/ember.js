@@ -13,7 +13,7 @@ export default function compiler(string, options) {
     throw new Error('Cannot call `compile` without the template compiler loaded. Please load `ember-template-compiler.js` prior to calling `compile`.');
   }
 
-  var templateSpec = compile(string, compileOptions(options));
+  let templateSpec = compile(string, compileOptions(options));
 
   return template(templateSpec);
 }

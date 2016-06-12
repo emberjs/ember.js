@@ -10,7 +10,7 @@ import { get } from 'ember-metal/property_get';
   @namespace Ember
   @public
 */
-var InstrumentationSupport = Mixin.create({
+export default Mixin.create({
   /**
     Used to identify this view during debugging
 
@@ -27,5 +27,3 @@ var InstrumentationSupport = Mixin.create({
     this._super(hash);
   }
 });
-
-export default InstrumentationSupport;

@@ -8,7 +8,7 @@ export default function wait(app, value) {
     let router = app.__container__.lookup('router:main');
 
     // Every 10ms, poll for the async thing to have finished
-    let watcher = setInterval(function() {
+    let watcher = setInterval(() => {
       // 1. If the router is loading, keep polling
       let routerIsLoading = router.router && !!router.router.activeTransition;
       if (routerIsLoading) { return; }

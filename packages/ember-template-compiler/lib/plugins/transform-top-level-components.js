@@ -1,4 +1,4 @@
-function TransformTopLevelComponents() {
+export default function TransformTopLevelComponents() {
   // set later within HTMLBars to the syntax package
   this.syntax = null;
 }
@@ -46,5 +46,3 @@ function hasSingleComponentNode(program, componentCallback) {
     componentCallback(lastComponentNode);
   }
 }
-
-export default TransformTopLevelComponents;

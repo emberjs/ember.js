@@ -19,9 +19,9 @@ import { addObserver } from 'ember-metal/observer';
 QUnit.module('Computed Properties - Number of times evaluated');
 
 QUnit.test('computed properties that depend on multiple properties should run only once per run loop', function() {
-  var obj = { a: 'a', b: 'b', c: 'c' };
-  var cpCount = 0;
-  var obsCount = 0;
+  let obj = { a: 'a', b: 'b', c: 'c' };
+  let cpCount = 0;
+  let obsCount = 0;
 
   defineProperty(obj, 'abc', computed(function(key) {
     cpCount++;
@@ -49,9 +49,9 @@ QUnit.test('computed properties that depend on multiple properties should run on
 });
 
 QUnit.test('computed properties are not executed if they are the last segment of an observer chain pain', function() {
-  var foo = { bar: { baz: { } } };
+  let foo = { bar: { baz: { } } };
 
-  var count = 0;
+  let count = 0;
 
   defineProperty(foo.bar.baz, 'bam', computed(function() {
     count++;

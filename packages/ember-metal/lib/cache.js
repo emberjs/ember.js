@@ -10,7 +10,7 @@ function Cache(limit, func) {
   this.func   = func;
 }
 
-var UNDEFINED = function() {};
+function UNDEFINED() {}
 
 Cache.prototype = {
   set(key, value) {
@@ -27,7 +27,7 @@ Cache.prototype = {
   },
 
   get(key) {
-    var value = this.store[key];
+    let value = this.store[key];
 
     if (value === undefined) {
       this.misses ++;

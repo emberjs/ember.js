@@ -12,7 +12,7 @@ import {
   destroy
 } from 'ember-metal/watching';
 
-var willCount, didCount,
+let willCount, didCount,
     willKeys, didKeys,
     originalLookup, lookup;
 
@@ -43,12 +43,12 @@ function addListeners(obj, keyPath) {
 }
 
 testBoth('watching a computed property', function(get, set) {
-  var obj = {};
+  let obj = {};
   defineProperty(obj, 'foo', computed({
-    get: function() {
+    get() {
       return this.__foo;
     },
-    set: function(keyName, value) {
+    set(keyName, value) {
       if (value !== undefined) {
         this.__foo = value;
       }
@@ -64,7 +64,7 @@ testBoth('watching a computed property', function(get, set) {
 });
 
 testBoth('watching a regular defined property', function(get, set) {
-  var obj = { foo: 'baz' };
+  let obj = { foo: 'baz' };
   addListeners(obj, 'foo');
 
   watch(obj, 'foo');
@@ -79,7 +79,7 @@ testBoth('watching a regular defined property', function(get, set) {
 });
 
 testBoth('watching a regular undefined property', function(get, set) {
-  var obj = { };
+  let obj = { };
   addListeners(obj, 'foo');
 
   watch(obj, 'foo');
@@ -96,8 +96,8 @@ testBoth('watching a regular undefined property', function(get, set) {
 });
 
 testBoth('watches should inherit', function(get, set) {
-  var obj = { foo: 'baz' };
-  var objB = Object.create(obj);
+  let obj = { foo: 'baz' };
+  let objB = Object.create(obj);
 
   addListeners(obj, 'foo');
   watch(obj, 'foo');
@@ -110,7 +110,7 @@ testBoth('watches should inherit', function(get, set) {
 });
 
 QUnit.test('watching an object THEN defining it should work also', function() {
-  var obj = {};
+  let obj = {};
   addListeners(obj, 'foo');
 
   watch(obj, 'foo');
@@ -124,8 +124,8 @@ QUnit.test('watching an object THEN defining it should work also', function() {
 });
 
 QUnit.test('watching a chain then defining the property', function () {
-  var obj = {};
-  var foo = { bar: 'bar' };
+  let obj = {};
+  let foo = { bar: 'bar' };
   addListeners(obj, 'foo.bar');
   addListeners(foo, 'bar');
 
@@ -141,9 +141,9 @@ QUnit.test('watching a chain then defining the property', function () {
 });
 
 QUnit.test('watching a chain then defining the nested property', function () {
-  var bar = {};
-  var obj = { foo: bar };
-  var baz = { baz: 'baz' };
+  let bar = {};
+  let obj = { foo: bar };
+  let baz = { baz: 'baz' };
   addListeners(obj, 'foo.bar.baz');
   addListeners(baz, 'baz');
 
@@ -159,12 +159,12 @@ QUnit.test('watching a chain then defining the nested property', function () {
 });
 
 testBoth('watching an object value then unwatching should restore old value', function(get, set) {
-  var obj = { foo: { bar: { baz: { biff: 'BIFF' } } } };
+  let obj = { foo: { bar: { baz: { biff: 'BIFF' } } } };
   addListeners(obj, 'foo.bar.baz.biff');
 
   watch(obj, 'foo.bar.baz.biff');
 
-  var foo = get(obj, 'foo');
+  let foo = get(obj, 'foo');
   equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 
   unwatch(obj, 'foo.bar.baz.biff');
@@ -172,15 +172,15 @@ testBoth('watching an object value then unwatching should restore old value', fu
 });
 
 QUnit.test('when watching another object, destroy should remove chain watchers from the other object', function() {
-  var objA = {};
-  var objB = { foo: 'bar' };
+  let objA = {};
+  let objB = { foo: 'bar' };
   objA.b = objB;
   addListeners(objA, 'b.foo');
 
   watch(objA, 'b.foo');
 
-  var meta_objB = meta(objB);
-  var chainNode = meta(objA).readableChains()._chains.b._chains.foo;
+  let meta_objB = meta(objB);
+  let chainNode = meta(objA).readableChains()._chains.b._chains.foo;
 
   equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_objB.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
@@ -194,7 +194,7 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
 // TESTS for length property
 
 testBoth('watching "length" property on an object', function(get, set) {
-  var obj = { length: '26.2 miles' };
+  let obj = { length: '26.2 miles' };
   addListeners(obj, 'length');
 
   watch(obj, 'length');
@@ -209,7 +209,7 @@ testBoth('watching "length" property on an object', function(get, set) {
 });
 
 testBoth('watching "length" property on an array', function(get, set) {
-  var arr = [];
+  let arr = [];
   addListeners(arr, 'length');
 
   watch(arr, 'length');
@@ -224,8 +224,8 @@ testBoth('watching "length" property on an array', function(get, set) {
 });
 
 testBoth('watch + ES5 getter', function(get) {
-  var parent = { b: 1 };
-  var child = {
+  let parent = { b: 1 };
+  let child = {
     get b() {
       return parent.b;
     }
@@ -244,7 +244,7 @@ testBoth('watch + ES5 getter', function(get) {
 });
 
 testBoth('watch + Ember.set + no-descriptor', function(get, set) {
-  var child = { };
+  let child = { };
 
   equal(child.b, undefined, 'child.b ');
   equal(get(child, 'b'), undefined, 'Ember.get(child, "b")');

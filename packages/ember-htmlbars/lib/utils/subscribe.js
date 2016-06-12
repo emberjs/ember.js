@@ -2,10 +2,10 @@ import { isStream, labelFor } from '../streams/utils';
 
 export default function subscribe(node, env, scope, stream) {
   if (!isStream(stream)) { return; }
-  var component = scope.getComponent();
-  var unsubscribers = node.streamUnsubscribers = node.streamUnsubscribers || [];
+  let component = scope.getComponent();
+  let unsubscribers = node.streamUnsubscribers = node.streamUnsubscribers || [];
 
-  unsubscribers.push(stream.subscribe(function() {
+  unsubscribers.push(stream.subscribe(() => {
     node.isDirty = true;
 
     // Whenever a render node directly inside a component becomes

@@ -11,7 +11,7 @@ import jQuery from 'ember-views/system/jquery';
 @submodule ember-routing
 */
 
-var popstateFired = false;
+let popstateFired = false;
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -37,7 +37,7 @@ export default EmberObject.extend({
     @method initState
   */
   initState() {
-    var history = get(this, 'history') || window.history;
+    let history = get(this, 'history') || window.history;
     set(this, 'history', history);
 
     if (history && 'state' in history) {
@@ -64,22 +64,22 @@ export default EmberObject.extend({
     @return url {String}
   */
   getURL() {
-    var location = get(this, 'location');
-    var path = location.pathname;
+    let location = get(this, 'location');
+    let path = location.pathname;
 
-    var rootURL = get(this, 'rootURL');
-    var baseURL = get(this, 'baseURL');
+    let rootURL = get(this, 'rootURL');
+    let baseURL = get(this, 'baseURL');
 
     // remove trailing slashes if they exists
     rootURL = rootURL.replace(/\/$/, '');
     baseURL = baseURL.replace(/\/$/, '');
 
     // remove baseURL and rootURL from start of path
-    var url = path
+    let url = path
       .replace(new RegExp('^' + baseURL), '')
       .replace(new RegExp('^' + rootURL), '');
 
-    var search = location.search || '';
+    let search = location.search || '';
     url += search;
     url += this.getHash();
 
@@ -94,7 +94,7 @@ export default EmberObject.extend({
     @param path {String}
   */
   setURL(path) {
-    var state = this.getState();
+    let state = this.getState();
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
@@ -111,7 +111,7 @@ export default EmberObject.extend({
     @param path {String}
   */
   replaceURL(path) {
-    var state = this.getState();
+    let state = this.getState();
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
@@ -145,7 +145,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   pushState(path) {
-    var state = { path: path };
+    let state = { path: path };
 
     get(this, 'history').pushState(state, null, path);
 
@@ -163,7 +163,7 @@ export default EmberObject.extend({
    @param path {String}
   */
   replaceState(path) {
-    var state = { path: path };
+    let state = { path: path };
     get(this, 'history').replaceState(state, null, path);
 
     this._historyState = state;
@@ -181,7 +181,7 @@ export default EmberObject.extend({
     @param callback {Function}
   */
   onUpdateURL(callback) {
-    var guid = guidFor(this);
+    let guid = guidFor(this);
 
     jQuery(window).on(`popstate.ember-location-${guid}`, (e) => {
       // Ignore initial page load popstate event in Chrome
@@ -202,8 +202,8 @@ export default EmberObject.extend({
     @return formatted url {String}
   */
   formatURL(url) {
-    var rootURL = get(this, 'rootURL');
-    var baseURL = get(this, 'baseURL');
+    let rootURL = get(this, 'rootURL');
+    let baseURL = get(this, 'baseURL');
 
     if (url !== '') {
       // remove trailing slashes if they exists
@@ -225,7 +225,7 @@ export default EmberObject.extend({
     @method willDestroy
   */
   willDestroy() {
-    var guid = guidFor(this);
+    let guid = guidFor(this);
 
     jQuery(window).off(`popstate.ember-location-${guid}`);
   },

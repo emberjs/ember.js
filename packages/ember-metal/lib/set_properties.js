@@ -7,7 +7,7 @@ import { set } from 'ember-metal/property_set';
   observers will be buffered.
 
   ```javascript
-  var anObject = Ember.Object.create();
+  let anObject = Ember.Object.create();
 
   anObject.setProperties({
     firstName: 'Stanley',
@@ -25,10 +25,10 @@ import { set } from 'ember-metal/property_set';
 export default function setProperties(obj, properties) {
   if (!properties || typeof properties !== 'object') { return properties; }
   changeProperties(() => {
-    var props = Object.keys(properties);
-    var propertyName;
+    let props = Object.keys(properties);
+    let propertyName;
 
-    for (var i = 0; i < props.length; i++) {
+    for (let i = 0; i < props.length; i++) {
       propertyName = props[i];
 
       set(obj, propertyName, properties[propertyName]);

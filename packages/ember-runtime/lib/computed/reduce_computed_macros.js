@@ -32,7 +32,7 @@ function reduceMacro(dependentKey, callback, initialValue) {
 
 function arrayMacro(dependentKey, callback) {
   // This is a bit ugly
-  var propertyName;
+  let propertyName;
   if (/@each/.test(dependentKey)) {
     propertyName = dependentKey.replace(/\.@each.*$/, '');
   } else {
@@ -41,7 +41,7 @@ function arrayMacro(dependentKey, callback) {
   }
 
   return computed(dependentKey, function() {
-    var value = get(this, propertyName);
+    let value = get(this, propertyName);
     if (isArray(value)) {
       return emberA(callback.call(this, value));
     } else {
@@ -51,7 +51,7 @@ function arrayMacro(dependentKey, callback) {
 }
 
 function multiArrayMacro(dependentKeys, callback) {
-  var args = dependentKeys.map(key => `${key}.[]`);
+  let args = dependentKeys.map(key => `${key}.[]`);
 
   args.push(function() {
     return emberA(callback.call(this, dependentKeys));
@@ -81,12 +81,12 @@ export function sum(dependentKey) {
   array is empty.
 
   ```javascript
-  var Person = Ember.Object.extend({
+  let Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age'),
     maxChildAge: Ember.computed.max('childAges')
   });
 
-  var lordByron = Person.create({ children: [] });
+  let lordByron = Person.create({ children: [] });
 
   lordByron.get('maxChildAge'); // -Infinity
   lordByron.get('children').pushObject({
@@ -126,12 +126,12 @@ export function max(dependentKey) {
   array is empty.
 
   ```javascript
-  var Person = Ember.Object.extend({
+  let Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age'),
     minChildAge: Ember.computed.min('childAges')
   });
 
-  var lordByron = Person.create({ children: [] });
+  let lordByron = Person.create({ children: [] });
 
   lordByron.get('minChildAge'); // Infinity
   lordByron.get('children').pushObject({
@@ -179,13 +179,13 @@ export function min(dependentKey) {
   Example
 
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     excitingChores: Ember.computed.map('chores', function(chore, index) {
       return chore.toUpperCase() + '!';
     })
   });
 
-  var hamster = Hamster.create({
+  let hamster = Hamster.create({
     chores: ['clean', 'write more unit tests']
   });
 
@@ -209,11 +209,11 @@ export function map(dependentKey, callback) {
   Returns an array mapped to the specified key.
 
   ```javascript
-  var Person = Ember.Object.extend({
+  let Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age')
   });
 
-  var lordByron = Person.create({ children: [] });
+  let lordByron = Person.create({ children: [] });
 
   lordByron.get('childAges'); // []
   lordByron.get('children').pushObject({ name: 'Augusta Ada Byron', age: 7 });
@@ -258,13 +258,13 @@ export function mapBy(dependentKey, propertyKey) {
   ```
 
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     remainingChores: Ember.computed.filter('chores', function(chore, index, array) {
       return !chore.done;
     })
   });
 
-  var hamster = Hamster.create({
+  let hamster = Hamster.create({
     chores: [
       { name: 'cook', done: true },
       { name: 'clean', done: true },
@@ -292,11 +292,11 @@ export function filter(dependentKey, callback) {
   Filters the array by the property and value
 
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     remainingChores: Ember.computed.filterBy('chores', 'done', false)
   });
 
-  var hamster = Hamster.create({
+  let hamster = Hamster.create({
     chores: [
       { name: 'cook', done: true },
       { name: 'clean', done: true },
@@ -316,16 +316,12 @@ export function filter(dependentKey, callback) {
   @public
 */
 export function filterBy(dependentKey, propertyKey, value) {
-  var callback;
+  let callback;
 
   if (arguments.length === 2) {
-    callback = function(item) {
-      return get(item, propertyKey);
-    };
+    callback = (item) => get(item, propertyKey);
   } else {
-    callback = function(item) {
-      return get(item, propertyKey) === value;
-    };
+    callback = (item) => get(item, propertyKey) === value;
   }
 
   return filter(`${dependentKey}.@each.${propertyKey}`, callback);
@@ -338,11 +334,11 @@ export function filterBy(dependentKey, propertyKey, value) {
   Example
 
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     uniqueFruits: Ember.computed.uniq('fruits')
   });
 
-  var hamster = Hamster.create({
+  let hamster = Hamster.create({
     fruits: [
       'banana',
       'grape',
@@ -363,10 +359,10 @@ export function filterBy(dependentKey, propertyKey, value) {
 */
 export function uniq(...args) {
   return multiArrayMacro(args, function(dependentKeys) {
-    var uniq = emberA();
+    let uniq = emberA();
 
     dependentKeys.forEach(dependentKey => {
-      var value = get(this, dependentKey);
+      let value = get(this, dependentKey);
       if (isArray(value)) {
         value.forEach(item => {
           if (uniq.indexOf(item) === -1) {
@@ -385,10 +381,10 @@ export function uniq(...args) {
   elements from an array, with uniqueness determined by specific key.
   Example
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     uniqueFruits: Ember.computed.uniqBy('fruits', 'id')
   });
-  var hamster = Hamster.create({
+  let hamster = Hamster.create({
     fruits: [
       { id: 1, 'banana' },
       { id: 2, 'grape' },
@@ -408,12 +404,12 @@ export function uniq(...args) {
 */
 export function uniqBy(dependentKey, propertyKey) {
   return computed(`${dependentKey}.[]`, function() {
-    var uniq = emberA();
-    var seen = new EmptyObject();
-    var list = get(this, dependentKey);
+    let uniq = emberA();
+    let seen = new EmptyObject();
+    let list = get(this, dependentKey);
     if (isArray(list)) {
       list.forEach(item => {
-        var guid = guidFor(get(item, propertyKey));
+        let guid = guidFor(get(item, propertyKey));
         if (!(guid in seen)) {
           seen[guid] = true;
           uniq.push(item);
@@ -434,7 +430,7 @@ export function uniqBy(dependentKey, propertyKey) {
   unique elements from the dependent array
   @public
 */
-export var union = uniq;
+export let union = uniq;
 
 /**
   A computed property which returns a new array with all the duplicated
@@ -443,7 +439,7 @@ export var union = uniq;
   Example
 
   ```javascript
-  var obj = Ember.Object.extend({
+  let obj = Ember.Object.extend({
     friendsInCommon: Ember.computed.intersect('adaFriends', 'charlesFriends')
   }).create({
     adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
@@ -462,17 +458,17 @@ export var union = uniq;
 */
 export function intersect(...args) {
   return multiArrayMacro(args, function(dependentKeys) {
-    var arrays = dependentKeys.map(dependentKey => {
-      var array = get(this, dependentKey);
+    let arrays = dependentKeys.map(dependentKey => {
+      let array = get(this, dependentKey);
 
       return isArray(array) ? array : [];
     });
 
-    var results = arrays.pop().filter(candidate => {
-      for (var i = 0; i < arrays.length; i++) {
-        var found = false;
-        var array = arrays[i];
-        for (var j = 0; j < array.length; j++) {
+    let results = arrays.pop().filter(candidate => {
+      for (let i = 0; i < arrays.length; i++) {
+        let found = false;
+        let array = arrays[i];
+        for (let j = 0; j < array.length; j++) {
           if (array[j] === candidate) {
             found = true;
             break;
@@ -499,12 +495,12 @@ export function intersect(...args) {
   Example
 
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     likes: ['banana', 'grape', 'kale'],
     wants: Ember.computed.setDiff('likes', 'fruits')
   });
 
-  var hamster = Hamster.create({
+  let hamster = Hamster.create({
     fruits: [
       'grape',
       'kale',
@@ -529,8 +525,8 @@ export function setDiff(setAProperty, setBProperty) {
   }
 
   return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {
-    var setA = this.get(setAProperty);
-    var setB = this.get(setBProperty);
+    let setA = this.get(setAProperty);
+    let setB = this.get(setBProperty);
 
     if (!isArray(setA)) { return emberA(); }
     if (!isArray(setB)) { return emberA(setA); }
@@ -546,11 +542,11 @@ export function setDiff(setAProperty, setBProperty) {
   Example
 
   ```javascript
-  var Hamster = Ember.Object.extend({
+  let Hamster = Ember.Object.extend({
     clothes: Ember.computed.collect('hat', 'shirt')
   });
 
-  var hamster = Hamster.create();
+  let hamster = Hamster.create();
 
   hamster.get('clothes'); // [null, null]
   hamster.set('hat', 'Camp Hat');
@@ -567,9 +563,9 @@ export function setDiff(setAProperty, setBProperty) {
 */
 export function collect(...dependentKeys) {
   return multiArrayMacro(dependentKeys, function() {
-    var properties = getProperties(this, dependentKeys);
-    var res = emberA();
-    for (var key in properties) {
+    let properties = getProperties(this, dependentKeys);
+    let res = emberA();
+    for (let key in properties) {
       if (properties.hasOwnProperty(key)) {
         if (isNone(properties[key])) {
           res.push(null);
@@ -606,7 +602,7 @@ export function collect(...dependentKeys) {
   Example
 
   ```javascript
-  var ToDoList = Ember.Object.extend({
+  let ToDoList = Ember.Object.extend({
     // using standard ascending sort
     todosSorting: ['name'],
     sortedTodos: Ember.computed.sort('todos', 'todosSorting'),
@@ -627,7 +623,7 @@ export function collect(...dependentKeys) {
     })
   });
 
-  var todoList = ToDoList.create({todos: [
+  let todoList = ToDoList.create({todos: [
     { name: 'Unit Test', priority: 2 },
     { name: 'Documentation', priority: 3 },
     { name: 'Release', priority: 1 }
@@ -686,9 +682,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
     let activeObservers = activeObserversMap.get(this);
 
     if (activeObservers) {
-      activeObservers.forEach(args => {
-        removeObserver.apply(null, args);
-      });
+      activeObservers.forEach(args => removeObserver.apply(null, args));
     }
 
     function sortPropertyDidChange() {

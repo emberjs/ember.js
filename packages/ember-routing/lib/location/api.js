@@ -166,10 +166,10 @@ export default {
     @private
   */
   create(options) {
-    var implementation = options && options.implementation;
+    let implementation = options && options.implementation;
     assert('Ember.Location.create: you must specify a \'implementation\' option', !!implementation);
 
-    var implementationClass = this.implementations[implementation];
+    let implementationClass = this.implementations[implementation];
     assert(`Ember.Location.create: ${implementation} is not a valid implementation`, !!implementationClass);
 
     return implementationClass.create(...arguments);

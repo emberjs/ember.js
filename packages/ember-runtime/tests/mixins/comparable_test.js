@@ -3,7 +3,7 @@ import EmberObject from 'ember-runtime/system/object';
 import compare from 'ember-runtime/compare';
 import Comparable from 'ember-runtime/mixins/comparable';
 
-var Rectangle = EmberObject.extend(Comparable, {
+const Rectangle = EmberObject.extend(Comparable, {
   length: 0,
   width: 0,
 
@@ -17,18 +17,13 @@ var Rectangle = EmberObject.extend(Comparable, {
 
 });
 
-var r1, r2;
+let r1, r2;
 
 QUnit.module('Comparable', {
-
   setup() {
     r1 = Rectangle.create({ length: 6, width: 12 });
     r2 = Rectangle.create({ length: 6, width: 13 });
-  },
-
-  teardown() {
   }
-
 });
 
 QUnit.test('should be comparable and return the correct result', function() {

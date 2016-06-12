@@ -14,8 +14,8 @@ import { OWNER } from 'container/owner';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import { subscribe, reset } from 'ember-metal/instrumentation';
 
-var owner, view;
-var dispatcher;
+let owner, view;
+let dispatcher;
 
 import isEnabled from 'ember-metal/features';
 
@@ -44,7 +44,7 @@ if (isEnabled('ember-improved-instrumentation')) {
   QUnit.test('should instrument triggered events', function() {
     let clicked = 0;
 
-    run(function () {
+    run(() => {
       view = View.create({
         click(evt) {
           clicked++;
@@ -93,7 +93,7 @@ if (isEnabled('ember-improved-instrumentation')) {
 }
 
 QUnit.test('should not dispatch events to views not inDOM', function() {
-  var receivedEvent;
+  let receivedEvent;
 
   view = View.extend({
     mouseDown(evt) {
@@ -103,13 +103,11 @@ QUnit.test('should not dispatch events to views not inDOM', function() {
     template: compile('some <span id="awesome">awesome</span> content')
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
-  var $element = view.$();
+  let $element = view.$();
 
-  run(function() {
+  run(() => {
     // TODO change this test not to use private API
     // Force into preRender
     view.renderer.remove(view, false, true);
@@ -129,7 +127,7 @@ QUnit.test('should not dispatch events to views not inDOM', function() {
 });
 
 QUnit.test('should send change events up view hierarchy if view contains form elements', function() {
-  var receivedEvent;
+  let receivedEvent;
   view = View.create({
     template: compile('<input id="is-done" type="checkbox">'),
 
@@ -138,9 +136,7 @@ QUnit.test('should send change events up view hierarchy if view contains form el
     }
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   jQuery('#is-done').trigger('change');
   ok(receivedEvent, 'calls change method when a child element is changed');
@@ -148,15 +144,13 @@ QUnit.test('should send change events up view hierarchy if view contains form el
 });
 
 QUnit.test('events should stop propagating if the view is destroyed', function() {
-  var parentComponentReceived, receivedEvent;
+  let parentComponentReceived, receivedEvent;
 
   owner.register('component:x-foo', Component.extend({
     layout: compile('<input id="is-done" type="checkbox" />'),
     change(evt) {
       receivedEvent = true;
-      run(() => {
-        get(this, 'parentView').destroy();
-      });
+      run(() => get(this, 'parentView').destroy());
     }
   }));
 
@@ -178,7 +172,7 @@ QUnit.test('events should stop propagating if the view is destroyed', function()
 });
 
 QUnit.test('should dispatch events to nearest event manager', function() {
-  var receivedEvent = 0;
+  let receivedEvent = 0;
   view = View.create({
     template: compile('<input id="is-done" type="checkbox">'),
 
@@ -191,16 +185,14 @@ QUnit.test('should dispatch events to nearest event manager', function() {
     mouseDown() {}
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   jQuery('#is-done').trigger('mousedown');
   equal(receivedEvent, 1, 'event should go to manager and not view');
 });
 
 QUnit.test('event manager should be able to re-dispatch events to view', function() {
-  var receivedEvent = 0;
+  let receivedEvent = 0;
 
   owner.register('component:x-foo', Component.extend({
     elementId: 'nestedView',
@@ -252,14 +244,14 @@ QUnit.test('event handlers should be wrapped in a run loop', function() {
     elementId: 'test-view'
   });
 
-  run(function() { view.append(); });
+  run(() => view.append());
 
   jQuery('#test-view').trigger('mousedown');
 });
 
 QUnit.module('EventDispatcher#setup', {
   setup() {
-    run(function() {
+    run(() => {
       dispatcher = EventDispatcher.create({
         rootElement: '#qunit-fixture'
       });
@@ -267,7 +259,7 @@ QUnit.module('EventDispatcher#setup', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       if (view) { view.destroy(); }
       dispatcher.destroy();
     });
@@ -277,7 +269,7 @@ QUnit.module('EventDispatcher#setup', {
 QUnit.test('additional events which should be listened on can be passed', function () {
   expect(1);
 
-  run(function () {
+  run(() => {
     dispatcher.setup({ myevent: 'myEvent' });
 
     view = View.create({
@@ -296,7 +288,7 @@ QUnit.test('additional events and rootElement can be specified', function () {
 
   jQuery('#qunit-fixture').append('<div class=\'custom-root\'></div>');
 
-  run(function () {
+  run(() => {
     dispatcher.setup({ myevent: 'myEvent' }, '.custom-root');
 
     view = View.create({
@@ -316,7 +308,7 @@ QUnit.test('additional events and rootElement can be specified', function () {
 QUnit.test('default events can be disabled via `customEvents`', function () {
   expect(1);
 
-  run(function () {
+  run(() => {
     dispatcher.setup({
       click: null
     });

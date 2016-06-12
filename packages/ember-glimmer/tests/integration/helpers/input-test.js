@@ -439,5 +439,4 @@ moduleFor(`@htmlbars Helpers test: {{input type='text'}}`, class extends InputRe
     // this.assertAttr('size', undefined); //NOTE: re-enable once `size` bug above has been addressed
     this.assertAttr('tabindex', undefined);
   }
-
 });

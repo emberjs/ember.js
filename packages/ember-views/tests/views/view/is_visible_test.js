@@ -5,8 +5,8 @@ import run from 'ember-metal/run_loop';
 import { computed } from 'ember-metal/computed';
 import EmberView from 'ember-views/views/view';
 
-var view;
-var warnings, originalWarn;
+let view;
+let warnings, originalWarn;
 
 QUnit.module('EmberView#isVisible', {
   setup() {
@@ -21,7 +21,7 @@ QUnit.module('EmberView#isVisible', {
 
   teardown() {
     if (view) {
-      run(function() { view.destroy(); });
+      run(() => view.destroy());
     }
     setDebugFunction('warn', originalWarn);
   }
@@ -32,20 +32,14 @@ QUnit.test('should hide views when isVisible is false', function() {
     isVisible: false
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   ok(view.$().is(':hidden'), 'the view is hidden');
 
-  run(function() {
-    set(view, 'isVisible', true);
-  });
+  run(() => set(view, 'isVisible', true));
 
   ok(view.$().is(':visible'), 'the view is visible');
-  run(function() {
-    view.remove();
-  });
+  run(() => view.remove());
 
   deepEqual(warnings, [], 'no warnings were triggered');
 });
@@ -57,31 +51,21 @@ QUnit.test('should hide element if isVisible is false before element is created'
 
   ok(!get(view, 'isVisible'), 'precond - view is not visible');
 
-  set(view, 'template', function() { return 'foo'; });
+  set(view, 'template', () => 'foo');
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   ok(view.$().is(':hidden'), 'should be hidden');
 
-  run(function() {
-    view.remove();
-  });
+  run(() => view.remove());
 
-  run(function() {
-    set(view, 'isVisible', true);
-  });
+  run(() => set(view, 'isVisible', true));
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   ok(view.$().is(':visible'), 'view should be visible');
 
-  run(function() {
-    view.remove();
-  });
+  run(() => view.remove());
 
   deepEqual(warnings, [], 'no warnings were triggered');
 });
@@ -93,20 +77,14 @@ QUnit.test('should hide views when isVisible is a CP returning false', function(
     })
   }).create();
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   ok(view.$().is(':hidden'), 'the view is hidden');
 
-  run(function() {
-    set(view, 'isVisible', true);
-  });
+  run(() => set(view, 'isVisible', true));
 
   ok(view.$().is(':visible'), 'the view is visible');
-  run(function() {
-    view.remove();
-  });
+  run(() => view.remove());
 
   deepEqual(warnings, [], 'no warnings were triggered');
 });
@@ -118,9 +96,7 @@ QUnit.test('doesn\'t overwrite existing style attribute bindings', function() {
     style: 'color: blue;'
   });
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   equal(view.$().attr('style'), 'color: blue; display: none;', 'has concatenated style attribute');
 });

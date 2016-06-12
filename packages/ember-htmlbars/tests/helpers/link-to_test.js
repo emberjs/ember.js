@@ -9,7 +9,7 @@ import LinkComponent from 'ember-htmlbars/components/link-to';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-var owner, component;
+let owner, component;
 
 QUnit.module('ember-htmlbars: link-to helper', {
   setup() {
@@ -40,7 +40,7 @@ QUnit.module('ember-htmlbars: link-to helper', {
 });
 
 QUnit.test('should be able to be inserted in DOM when the router is not present', function() {
-  var template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
+  let template = '{{#link-to \'index\'}}Go to Index{{/link-to}}';
   component = Component.create({
     [OWNER]: owner,
     layout: compile(template)
@@ -52,7 +52,7 @@ QUnit.test('should be able to be inserted in DOM when the router is not present'
 });
 
 QUnit.test('re-renders when title changes', function() {
-  var template = '{{link-to title routeName}}';
+  let template = '{{link-to title routeName}}';
 
   component = Component.create({
     [OWNER]: owner,
@@ -65,15 +65,13 @@ QUnit.test('re-renders when title changes', function() {
 
   equal(component.$().text(), 'foo');
 
-  run(function() {
-    set(component, 'title', 'bar');
-  });
+  run(() => set(component, 'title', 'bar'));
 
   equal(component.$().text(), 'bar');
 });
 
 QUnit.test('can read bound title', function() {
-  var template = '{{link-to title routeName}}';
+  let template = '{{link-to title routeName}}';
   component = Component.create({
     [OWNER]: owner,
     title: 'foo',
@@ -123,7 +121,7 @@ QUnit.test('unescaped inline form (triple curlies) does not escape link title', 
 });
 
 QUnit.test('unwraps controllers', function() {
-  var template = '{{#link-to \'index\' otherController}}Text{{/link-to}}';
+  let template = '{{#link-to \'index\' otherController}}Text{{/link-to}}';
 
   component = Component.create({
     [OWNER]: owner,
@@ -133,7 +131,7 @@ QUnit.test('unwraps controllers', function() {
     layout: compile(template)
   });
 
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     runAppend(component);
   }, /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./);
 

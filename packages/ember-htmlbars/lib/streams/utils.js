@@ -105,8 +105,8 @@ export function read(object) {
                  and replaced with the stream's current value.
  */
 export function readArray(array) {
-  var ret = new Array(array.length);
-  for (var i = 0; i < array.length; i++) {
+  let ret = new Array(array.length);
+  for (let i = 0; i < array.length; i++) {
     ret[i] = read(array[i]);
   }
   return ret;
@@ -126,8 +126,8 @@ export function readArray(array) {
                   values in the case of stream objects.
  */
 export function readHash(object) {
-  var ret = {};
-  for (var key in object) {
+  let ret = {};
+  for (let key in object) {
     ret[key] = read(object[key]);
   }
   return ret;
@@ -144,9 +144,9 @@ export function readHash(object) {
                    otherwise.
 */
 export function scanArray(array) {
-  var containsStream = false;
+  let containsStream = false;
 
-  for (var i = 0; i < array.length; i++) {
+  for (let i = 0; i < array.length; i++) {
     if (isStream(array[i])) {
       containsStream = true;
       break;
@@ -167,9 +167,9 @@ export function scanArray(array) {
                    otherwise.
  */
 export function scanHash(hash) {
-  var containsStream = false;
+  let containsStream = false;
 
-  for (var prop in hash) {
+  for (let prop in hash) {
     if (isStream(hash[prop])) {
       containsStream = true;
       break;
@@ -179,7 +179,7 @@ export function scanHash(hash) {
   return containsStream;
 }
 
-let ConcatStream = BasicStream.extend({
+const ConcatStream = BasicStream.extend({
   init(array, separator) {
     this.array = array;
     this.separator = separator;
@@ -215,7 +215,7 @@ let ConcatStream = BasicStream.extend({
 export function concat(array, separator) {
   // TODO: Create subclass ConcatStream < Stream. Defer
   // subscribing to streams until the value() is called.
-  var hasStream = scanArray(array);
+  let hasStream = scanArray(array);
   if (hasStream) {
     let stream = new ConcatStream(array, separator);
 
@@ -230,10 +230,10 @@ export function concat(array, separator) {
 }
 
 export function labelsFor(streams) {
-  var labels =  [];
+  let labels =  [];
 
-  for (var i = 0; i < streams.length; i++) {
-    var stream = streams[i];
+  for (let i = 0; i < streams.length; i++) {
+    let stream = streams[i];
     labels.push(labelFor(stream));
   }
 
@@ -241,9 +241,9 @@ export function labelsFor(streams) {
 }
 
 export function labelsForObject(streams) {
-  var labels = [];
+  let labels = [];
 
-  for (var prop in streams) {
+  for (let prop in streams) {
     labels.push(`${prop}: ${inspect(streams[prop])}`);
   }
 
@@ -252,7 +252,7 @@ export function labelsForObject(streams) {
 
 export function labelFor(maybeStream) {
   if (isStream(maybeStream)) {
-    var stream = maybeStream;
+    let stream = maybeStream;
     return typeof stream.label === 'function' ? stream.label() : stream.label;
   } else {
     return inspect(maybeStream);
@@ -269,7 +269,7 @@ function inspect(value) {
 }
 
 export function or(first, second) {
-  var stream = new Stream(function() {
+  let stream = new Stream(function() {
     return first.value() || second.value();
   }, function() {
     return `${labelFor(first)} || ${labelFor(second)}`;
@@ -291,14 +291,12 @@ export function addDependency(stream, dependency) {
 export function zip(streams, callback, label) {
   assert('Must call zip with a label', !!label);
 
-  var stream = new Stream(function() {
-    var array = readArray(streams);
+  let stream = new Stream(() => {
+    let array = readArray(streams);
     return callback ? callback(array) : array;
-  }, function() {
-    return `${label}(${labelsFor(streams)})`;
-  });
+  }, () => `${label}(${labelsFor(streams)})`);
 
-  for (var i = 0; i < streams.length; i++) {
+  for (let i = 0; i < streams.length; i++) {
     stream.addDependency(streams[i]);
   }
 
@@ -308,14 +306,12 @@ export function zip(streams, callback, label) {
 export function zipHash(object, callback, label) {
   assert('Must call zipHash with a label', !!label);
 
-  var stream = new Stream(function() {
-    var hash = readHash(object);
+  let stream = new Stream(() => {
+    let hash = readHash(object);
     return callback ? callback(hash) : hash;
-  }, function() {
-    return `${label}(${labelsForObject(object)})`;
-  });
+  }, () => `${label}(${labelsForObject(object)})` );
 
-  for (var prop in object) {
+  for (let prop in object) {
     stream.addDependency(object[prop]);
   }
 
@@ -331,10 +327,10 @@ export function zipHash(object, callback, label) {
  to `chain()` via scope. For example:
 
  ```javascript
-     var source = ...;  // stream returning a number
+     let source = ...;  // stream returning a number
                             // or a numeric (non-stream) object
-     var result = chain(source, function() {
-       var currentValue = read(source);
+     let result = chain(source, function() {
+       let currentValue = read(source);
        return currentValue + 1;
      });
  ```
@@ -357,7 +353,7 @@ export function zipHash(object, callback, label) {
 export function chain(value, fn, label) {
   assert('Must call chain with a label', !!label);
   if (isStream(value)) {
-    var stream = new Stream(fn, function() { return `${label}(${labelFor(value)})`; });
+    let stream = new Stream(fn, () => `${label}(${labelFor(value)})`);
     stream.addDependency(value);
     return stream;
   } else {
@@ -372,8 +368,8 @@ export function setValue(object, value) {
 }
 
 export function readViewFactory(object, owner) {
-  var value = read(object);
-  var viewClass;
+  let value = read(object);
+  let viewClass;
 
   if (typeof value === 'string') {
     assert('View requires an owner to resolve views not passed in through the context', !!owner);
@@ -382,7 +378,7 @@ export function readViewFactory(object, owner) {
     viewClass = value;
   }
 
-  assert(`${value} must be a subclass or an instance of Ember.View, not ${viewClass}`, (function(viewClass) {
+  assert(`${value} must be a subclass or an instance of Ember.View, not ${viewClass}`, (viewClass => {
     return viewClass && (viewClass.isViewFactory || viewClass.isView || viewClass.isComponentFactory || viewClass.isComponent);
   })(viewClass));
 
@@ -391,7 +387,7 @@ export function readViewFactory(object, owner) {
 
 export function readUnwrappedModel(object) {
   if (isStream(object)) {
-    var result = object.value();
+    let result = object.value();
 
     // If the path is exactly `controller` then we don't unwrap it.
     if (object.label !== 'controller') {
