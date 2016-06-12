@@ -170,6 +170,11 @@ switch (process.env.TEST_SUITE) {
     require('../node-tests/nodetest-runner');
     server.close();
     return;
+  case 'travis-browsers':
+    console.log('suite: sauce');
+    require('./run-travis-browser-tests');
+    return;
+
   case 'sauce':
     console.log('suite: sauce');
     require('./run-sauce-tests');
