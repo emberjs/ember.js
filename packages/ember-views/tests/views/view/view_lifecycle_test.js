@@ -3,10 +3,12 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import { compile } from 'ember-template-compiler';
-import { registerHelper } from 'ember-htmlbars/helpers';
+import { registerHelper } from 'ember-templates/tests/utils/helpers';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import { OWNER } from 'container/owner';
 
 var originalLookup = context.lookup;
-var lookup, view;
+var owner, lookup, view;
 
 import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
 
@@ -21,6 +23,7 @@ QUnit.module('views/view/view_lifecycle_test - pre-render', {
         view.destroy();
       });
     }
+    view = null;
     context.lookup = originalLookup;
   }
 });
@@ -62,20 +65,25 @@ test('should not affect rendering if destroyElement is called before initial ren
 });
 
 testModule('views/view/view_lifecycle_test - in render', {
+  setup() {
+    owner = buildOwner();
+  },
   teardown() {
     if (view) {
       run(function() {
         view.destroy();
       });
     }
+    owner = view = null;
   }
 });
 
 test('rerender of top level view during rendering should throw', function() {
   registerHelper('throw', function() {
     view.rerender();
-  });
+  }, owner);
   view = EmberView.create({
+    [OWNER]: owner,
     template: compile('{{throw}}')
   });
   throws(
@@ -86,7 +94,6 @@ test('rerender of top level view during rendering should throw', function() {
     'expected error was not raised'
   );
 });
-
 
 QUnit.module('views/view/view_lifecycle_test - hasElement', {
   teardown() {
