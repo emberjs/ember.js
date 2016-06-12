@@ -4,7 +4,7 @@ import EmptyObject from 'ember-metal/empty_object';
 import assign from 'ember-metal/assign';
 import Container from './container';
 
-var VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
+const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 
 /**
  A registry used to store factory and option information keyed
@@ -19,7 +19,7 @@ var VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
  @class Registry
  @since 1.11.0
 */
-function Registry(options) {
+export default function Registry(options) {
   this.fallback = options && options.fallback ? options.fallback : null;
 
   if (options && options.resolver) {
@@ -154,7 +154,7 @@ Registry.prototype = {
    Example:
 
    ```javascript
-   var registry = new Registry();
+   let registry = new Registry();
 
    registry.register('model:user', Person, {singleton: false });
    registry.register('fruit:favorite', Orange);
@@ -171,13 +171,13 @@ Registry.prototype = {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     if (factory === undefined) {
-      throw new TypeError('Attempting to register an unknown factory: `' + fullName + '`');
+      throw new TypeError(`Attempting to register an unknown factory: '${fullName}'`);
     }
 
-    var normalizedName = this.normalize(fullName);
+    let normalizedName = this.normalize(fullName);
 
     if (this._resolveCache[normalizedName]) {
-      throw new Error('Cannot re-register: `' + fullName + '`, as it has already been resolved.');
+      throw new Error(`Cannot re-register: '${fullName}', as it has already been resolved.`);
     }
 
     delete this._failCache[normalizedName];
@@ -189,7 +189,7 @@ Registry.prototype = {
    Unregister a fullName
 
    ```javascript
-   var registry = new Registry();
+   let registry = new Registry();
    registry.register('model:user', User);
 
    registry.resolve('model:user').create() instanceof User //=> true
@@ -205,7 +205,7 @@ Registry.prototype = {
   unregister(fullName) {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
 
-    var normalizedName = this.normalize(fullName);
+    let normalizedName = this.normalize(fullName);
 
     this._localLookupCache = new EmptyObject();
 
@@ -222,7 +222,7 @@ Registry.prototype = {
    the registry.
 
    ```javascript
-   var registry = new Registry();
+   let registry = new Registry();
    registry.register('api:twitter', Twitter);
 
    registry.resolve('api:twitter') // => Twitter
@@ -234,7 +234,7 @@ Registry.prototype = {
    to the registry.
 
    ```javascript
-   var registry = new Registry();
+   let registry = new Registry();
    registry.resolver = function(fullName) {
       // lookup via the module system of choice
     };
@@ -357,8 +357,8 @@ Registry.prototype = {
    Allow registering options for all factories of a type.
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    // if all of type `connection` must not be singletons
    registry.optionsForType('connection', { singleton: false });
@@ -366,13 +366,13 @@ Registry.prototype = {
    registry.register('connection:twitter', TwitterConnection);
    registry.register('connection:facebook', FacebookConnection);
 
-   var twitter = container.lookup('connection:twitter');
-   var twitter2 = container.lookup('connection:twitter');
+   let twitter = container.lookup('connection:twitter');
+   let twitter2 = container.lookup('connection:twitter');
 
    twitter === twitter2; // => false
 
-   var facebook = container.lookup('connection:facebook');
-   var facebook2 = container.lookup('connection:facebook');
+   let facebook = container.lookup('connection:facebook');
+   let facebook2 = container.lookup('connection:facebook');
 
    facebook === facebook2; // => false
    ```
@@ -387,7 +387,7 @@ Registry.prototype = {
   },
 
   getOptionsForType(type) {
-    var optionsForType = this._typeOptions[type];
+    let optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback) {
       optionsForType = this.fallback.getOptionsForType(type);
     }
@@ -401,13 +401,14 @@ Registry.prototype = {
    @param {Object} options
    */
   options(fullName, options = {}) {
-    var normalizedName = this.normalize(fullName);
+    let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   },
 
   getOptions(fullName) {
-    var normalizedName = this.normalize(fullName);
-    var options = this._options[normalizedName];
+    let normalizedName = this.normalize(fullName);
+    let options = this._options[normalizedName];
+
     if (options === undefined && this.fallback) {
       options = this.fallback.getOptions(fullName);
     }
@@ -415,13 +416,13 @@ Registry.prototype = {
   },
 
   getOption(fullName, optionName) {
-    var options = this._options[fullName];
+    let options = this._options[fullName];
 
     if (options && options[optionName] !== undefined) {
       return options[optionName];
     }
 
-    var type = fullName.split(':')[0];
+    let type = fullName.split(':')[0];
     options = this._typeOptions[type];
 
     if (options && options[optionName] !== undefined) {
@@ -442,8 +443,8 @@ Registry.prototype = {
    one would do the following:
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('router:main', Router);
    registry.register('controller:user', UserController);
@@ -451,8 +452,8 @@ Registry.prototype = {
 
    registry.typeInjection('controller', 'router', 'router:main');
 
-   var user = container.lookup('controller:user');
-   var post = container.lookup('controller:post');
+   let user = container.lookup('controller:user');
+   let post = container.lookup('controller:post');
 
    user.router instanceof Router; //=> true
    post.router instanceof Router; //=> true
@@ -470,13 +471,12 @@ Registry.prototype = {
   typeInjection(type, property, fullName) {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
 
-    var fullNameType = fullName.split(':')[0];
+    let fullNameType = fullName.split(':')[0];
     if (fullNameType === type) {
-      throw new Error('Cannot inject a `' + fullName +
-      '` on other ' + type + '(s).');
+      throw new Error(`Cannot inject a '${fullName}' on other ${type}(s).`);
     }
 
-    var injections = this._typeInjections[type] ||
+    let injections = this._typeInjections[type] ||
                      (this._typeInjections[type] = []);
 
     injections.push({
@@ -499,8 +499,8 @@ Registry.prototype = {
    Example:
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('source:main', Source);
    registry.register('model:user', User);
@@ -513,8 +513,8 @@ Registry.prototype = {
    // injecting one fullName on another type
    registry.injection('model', 'source', 'source:main');
 
-   var user = container.lookup('model:user');
-   var post = container.lookup('model:post');
+   let user = container.lookup('model:user');
+   let post = container.lookup('model:post');
 
    user.source instanceof Source; //=> true
    post.source instanceof Source; //=> true
@@ -533,16 +533,16 @@ Registry.prototype = {
    */
   injection(fullName, property, injectionName) {
     this.validateFullName(injectionName);
-    var normalizedInjectionName = this.normalize(injectionName);
+    let normalizedInjectionName = this.normalize(injectionName);
 
     if (fullName.indexOf(':') === -1) {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
     assert('fullName must be a proper full name', this.validateFullName(fullName));
-    var normalizedName = this.normalize(fullName);
+    let normalizedName = this.normalize(fullName);
 
-    var injections = this._injections[normalizedName] ||
+    let injections = this._injections[normalizedName] ||
                      (this._injections[normalizedName] = []);
 
     injections.push({
@@ -563,14 +563,14 @@ Registry.prototype = {
    one would do the following:
 
    ```javascript
-   var registry = new Registry();
+   let registry = new Registry();
 
    registry.register('store:main', SomeStore);
 
    registry.factoryTypeInjection('model', 'store', 'store:main');
 
-   var store = registry.lookup('store:main');
-   var UserFactory = registry.lookupFactory('model:user');
+   let store = registry.lookup('store:main');
+   let UserFactory = registry.lookupFactory('model:user');
 
    UserFactory.store instanceof SomeStore; //=> true
    ```
@@ -582,7 +582,7 @@ Registry.prototype = {
    @param {String} fullName
    */
   factoryTypeInjection(type, property, fullName) {
-    var injections = this._factoryTypeInjections[type] ||
+    let injections = this._factoryTypeInjections[type] ||
                      (this._factoryTypeInjections[type] = []);
 
     injections.push({
@@ -608,8 +608,8 @@ Registry.prototype = {
    Example:
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('store:main', Store);
    registry.register('store:secondary', OtherStore);
@@ -622,9 +622,9 @@ Registry.prototype = {
    // injecting one fullName on another fullName
    registry.factoryInjection('model:post', 'secondaryStore', 'store:secondary');
 
-   var UserFactory = container.lookupFactory('model:user');
-   var PostFactory = container.lookupFactory('model:post');
-   var store = container.lookup('store:main');
+   let UserFactory = container.lookupFactory('model:user');
+   let PostFactory = container.lookupFactory('model:post');
+   let store = container.lookup('store:main');
 
    UserFactory.store instanceof Store; //=> true
    UserFactory.secondaryStore instanceof OtherStore; //=> false
@@ -643,8 +643,8 @@ Registry.prototype = {
    @param {String} injectionName
    */
   factoryInjection(fullName, property, injectionName) {
-    var normalizedName = this.normalize(fullName);
-    var normalizedInjectionName = this.normalize(injectionName);
+    let normalizedName = this.normalize(fullName);
+    let normalizedInjectionName = this.normalize(injectionName);
 
     this.validateFullName(injectionName);
 
@@ -652,7 +652,7 @@ Registry.prototype = {
       return this.factoryTypeInjection(normalizedName, property, normalizedInjectionName);
     }
 
-    var injections = this._factoryInjections[normalizedName] || (this._factoryInjections[normalizedName] = []);
+    let injections = this._factoryInjections[normalizedName] || (this._factoryInjections[normalizedName] = []);
 
     injections.push({
       property: property,
@@ -692,7 +692,7 @@ Registry.prototype = {
 
   validateFullName(fullName) {
     if (!this.isValidFullName(fullName)) {
-      throw new TypeError('Invalid Fullname, expected: `type:name` got: ' + fullName);
+      throw new TypeError(`Invalid Fullname, expected: 'type:name' got: ${fullName}`);
     }
 
     return true;
@@ -705,23 +705,23 @@ Registry.prototype = {
   validateInjections(injections) {
     if (!injections) { return; }
 
-    var fullName;
+    let fullName;
 
-    for (var i = 0; i < injections.length; i++) {
+    for (let i = 0; i < injections.length; i++) {
       fullName = injections[i].fullName;
 
       if (!this.has(fullName)) {
-        throw new Error('Attempting to inject an unknown injection: `' + fullName + '`');
+        throw new Error(`Attempting to inject an unknown injection: '${fullName}'`);
       }
     }
   },
 
   normalizeInjectionsHash(hash) {
-    var injections = [];
+    let injections = [];
 
-    for (var key in hash) {
+    for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        assert('Expected a proper full name, given \'' + hash[key] + '\'', this.validateFullName(hash[key]));
+        assert(`Expected a proper full name, given '${hash[key]}'`, this.validateFullName(hash[key]));
 
         injections.push({
           property: key,
@@ -734,7 +734,7 @@ Registry.prototype = {
   },
 
   getInjections(fullName) {
-    var injections = this._injections[fullName] || [];
+    let injections = this._injections[fullName] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getInjections(fullName));
     }
@@ -742,7 +742,7 @@ Registry.prototype = {
   },
 
   getTypeInjections(type) {
-    var injections = this._typeInjections[type] || [];
+    let injections = this._typeInjections[type] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getTypeInjections(type));
     }
@@ -750,7 +750,7 @@ Registry.prototype = {
   },
 
   getFactoryInjections(fullName) {
-    var injections = this._factoryInjections[fullName] || [];
+    let injections = this._factoryInjections[fullName] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getFactoryInjections(fullName));
     }
@@ -758,7 +758,7 @@ Registry.prototype = {
   },
 
   getFactoryTypeInjections(type) {
-    var injections = this._factoryTypeInjections[type] || [];
+    let injections = this._factoryTypeInjections[type] || [];
     if (this.fallback) {
       injections = injections.concat(this.fallback.getFactoryTypeInjections(type));
     }
@@ -780,7 +780,7 @@ function deprecateResolverFunction(registry) {
  fullName. Used to allow for local lookup.
 
  ```javascript
- var registry = new Registry();
+ let registry = new Registry();
 
  // the twitter factory is added to the module system
  registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
@@ -837,7 +837,7 @@ function resolve(registry, normalizedName, options) {
     if (!normalizedName) { return; }
   }
 
-  var cached = registry._resolveCache[normalizedName];
+  let cached = registry._resolveCache[normalizedName];
   if (cached !== undefined) { return cached; }
   if (registry._failCache[normalizedName]) { return; }
 
@@ -877,6 +877,3 @@ export function privatize([fullName]) {
   let [type, rawName] = fullName.split(':');
   return privateNames[fullName] = intern(`${type}:${rawName}-${privateSuffix}`);
 }
-
-
-export default Registry;

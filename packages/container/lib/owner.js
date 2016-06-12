@@ -7,7 +7,6 @@ import symbol from 'ember-metal/symbol';
 
 export const OWNER = symbol('OWNER');
 
-
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
   are created via a factory and dependency injection system. Each of these

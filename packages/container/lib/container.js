@@ -20,7 +20,7 @@ const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
  @private
  @class Container
  */
-function Container(registry, options) {
+export default function Container(registry, options) {
   this.registry        = registry;
   this.owner           = options && options.owner ? options.owner : null;
   this.cache           = dictionary(options && options.cache ? options.cache : null);
@@ -28,6 +28,7 @@ function Container(registry, options) {
   this.validationCache = dictionary(options && options.validationCache ? options.validationCache : null);
   this._fakeContainerToInject = buildFakeContainerWithDeprecations(this);
   this[CONTAINER_OVERRIDE] = undefined;
+  this.isDestroyed = false;
 }
 
 Container.prototype = {
@@ -75,17 +76,17 @@ Container.prototype = {
    to all have their own locally scoped singletons.
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('api:twitter', Twitter);
 
-   var twitter = container.lookup('api:twitter');
+   let twitter = container.lookup('api:twitter');
 
    twitter instanceof Twitter; // => true
 
    // by default the container will return singletons
-   var twitter2 = container.lookup('api:twitter');
+   let twitter2 = container.lookup('api:twitter');
    twitter2 instanceof Twitter; // => true
 
    twitter === twitter2; //=> true
@@ -94,13 +95,13 @@ Container.prototype = {
    If singletons are not wanted, an optional flag can be provided at lookup.
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('api:twitter', Twitter);
 
-   var twitter = container.lookup('api:twitter', { singleton: false });
-   var twitter2 = container.lookup('api:twitter', { singleton: false });
+   let twitter = container.lookup('api:twitter', { singleton: false });
+   let twitter2 = container.lookup('api:twitter', { singleton: false });
 
    twitter === twitter2; //=> false
    ```
@@ -140,7 +141,7 @@ Container.prototype = {
    @method destroy
    */
   destroy() {
-    eachDestroyable(this, function(item) {
+    eachDestroyable(this, item => {
       if (item.destroy) {
         item.destroy();
       }
@@ -193,7 +194,7 @@ function lookup(container, fullName, options = {}) {
     return container.cache[fullName];
   }
 
-  var value = instantiate(container, fullName);
+  let value = instantiate(container, fullName);
 
   if (value === undefined) { return; }
 
@@ -213,14 +214,14 @@ function areInjectionsDynamic(injections) {
 }
 
 function buildInjections(/* container, ...injections */) {
-  var hash = {};
+  let hash = {};
 
   if (arguments.length > 1) {
-    var container = arguments[0];
-    var injections = [];
-    var injection;
+    let container = arguments[0];
+    let injections = [];
+    let injection;
 
-    for (var i = 1; i < arguments.length; i++) {
+    for (let i = 1; i < arguments.length; i++) {
       if (arguments[i]) {
         injections = injections.concat(arguments[i]);
       }
@@ -228,7 +229,7 @@ function buildInjections(/* container, ...injections */) {
 
     container.registry.validateInjections(injections);
 
-    for (i = 0; i < injections.length; i++) {
+    for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
       if (!isSingleton(container, injection.fullName)) {
@@ -250,14 +251,14 @@ function factoryFor(container, fullName, options = {}) {
     if (!fullName) { return; }
   }
 
-  var cache = container.factoryCache;
+  let cache = container.factoryCache;
   if (cache[fullName]) {
     return cache[fullName];
   }
-  var factory = registry.resolve(fullName);
+  let factory = registry.resolve(fullName);
   if (factory === undefined) { return; }
 
-  var type = fullName.split(':')[0];
+  let type = fullName.split(':')[0];
   if (!factory || typeof factory.extend !== 'function' || (!ENV.MODEL_FACTORY_INJECTIONS && type === 'model')) {
     if (factory && typeof factory._onLookup === 'function') {
       factory._onLookup(fullName);
@@ -268,13 +269,13 @@ function factoryFor(container, fullName, options = {}) {
     cache[fullName] = factory;
     return factory;
   } else {
-    var injections = injectionsFor(container, fullName);
-    var factoryInjections = factoryInjectionsFor(container, fullName);
-    var cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
+    let injections = injectionsFor(container, fullName);
+    let factoryInjections = factoryInjectionsFor(container, fullName);
+    let cacheable = !areInjectionsDynamic(injections) && !areInjectionsDynamic(factoryInjections);
 
     factoryInjections._toString = registry.makeToString(factory, fullName);
 
-    var injectedFactory = factory.extend(injections);
+    let injectedFactory = factory.extend(injections);
 
     // TODO - remove all `container` injections when Ember reaches v3.0.0
     injectDeprecatedContainer(injectedFactory.prototype, container);
@@ -293,11 +294,11 @@ function factoryFor(container, fullName, options = {}) {
 }
 
 function injectionsFor(container, fullName) {
-  var registry = container.registry;
-  var splitName = fullName.split(':');
-  var type = splitName[0];
+  let registry = container.registry;
+  let splitName = fullName.split(':');
+  let type = splitName[0];
 
-  var injections = buildInjections(container,
+  let injections = buildInjections(container,
                                    registry.getTypeInjections(type),
                                    registry.getInjections(fullName));
   injections._debugContainerKey = fullName;
@@ -308,11 +309,11 @@ function injectionsFor(container, fullName) {
 }
 
 function factoryInjectionsFor(container, fullName) {
-  var registry = container.registry;
-  var splitName = fullName.split(':');
-  var type = splitName[0];
+  let registry = container.registry;
+  let splitName = fullName.split(':');
+  let type = splitName[0];
 
-  var factoryInjections = buildInjections(container,
+  let factoryInjections = buildInjections(container,
                                           registry.getFactoryTypeInjections(type),
                                           registry.getFactoryInjections(fullName));
   factoryInjections._debugContainerKey = fullName;
@@ -321,8 +322,8 @@ function factoryInjectionsFor(container, fullName) {
 }
 
 function instantiate(container, fullName) {
-  var factory = factoryFor(container, fullName);
-  var lazyInjections, validationCache;
+  let factory = factoryFor(container, fullName);
+  let lazyInjections, validationCache;
 
   if (container.registry.getOption(fullName, 'instantiate') === false) {
     return factory;
@@ -330,13 +331,13 @@ function instantiate(container, fullName) {
 
   if (factory) {
     if (typeof factory.create !== 'function') {
-      throw new Error('Failed to create an instance of \'' + fullName + '\'. ' +
-      'Most likely an improperly defined class or an invalid module export.');
+      throw new Error(`Failed to create an instance of '${fullName}'. Most likely an improperly defined class or` +
+                      ` an invalid module export.`);
     }
 
     validationCache = container.validationCache;
 
-    runInDebug(function() {
+    runInDebug(() => {
       // Ensure that all lazy injections are valid at instantiation time
       if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
         lazyInjections = factory._lazyInjections();
@@ -403,13 +404,12 @@ function injectDeprecatedContainer(object, container) {
 }
 
 function eachDestroyable(container, callback) {
-  var cache = container.cache;
-  var keys = Object.keys(cache);
-  var key, value;
+  let cache = container.cache;
+  let keys = Object.keys(cache);
 
-  for (var i = 0; i < keys.length; i++) {
-    key = keys[i];
-    value = cache[key];
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let value = cache[key];
 
     if (container.registry.getOption(key, 'instantiate') !== false) {
       callback(value);
@@ -418,7 +418,7 @@ function eachDestroyable(container, callback) {
 }
 
 function resetCache(container) {
-  eachDestroyable(container, function(value) {
+  eachDestroyable(container, (value) => {
     if (value.destroy) {
       value.destroy();
     }
@@ -428,7 +428,7 @@ function resetCache(container) {
 }
 
 function resetMember(container, fullName) {
-  var member = container.cache[fullName];
+  let member = container.cache[fullName];
 
   delete container.factoryCache[fullName];
 
@@ -440,5 +440,3 @@ function resetMember(container, fullName) {
     }
   }
 }
-
-export default Container;
