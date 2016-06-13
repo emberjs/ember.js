@@ -47,7 +47,7 @@ let members = {
   tag: ownCustomObject
 };
 
-let memberNames = Object.keys(members);
+const memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
 
 function Meta(obj, parentMeta) {
@@ -92,10 +92,10 @@ memberNames.forEach(name => members[name](name, Meta));
 function ownMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['writable' + capitalized] = function() {
+  Meta.prototype[`writable${capitalized}`] = function() {
     return this._getOrCreateOwnMap(key);
   };
-  Meta.prototype['readable' + capitalized] = function() { return this[key]; };
+  Meta.prototype[`readable${capitalized}`] = function() { return this[key]; };
 }
 
 Meta.prototype._getOrCreateOwnMap = function(key) {
@@ -112,16 +112,16 @@ function inheritedMap(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['write' + capitalized] = function(subkey, value) {
+  Meta.prototype[`write${capitalized}`] = function(subkey, value) {
     let map = this._getOrCreateOwnMap(key);
     map.set(subkey, value);
   };
 
-  Meta.prototype['peek' + capitalized] = function(subkey) {
+  Meta.prototype[`peek${capitalized}`] = function(subkey) {
     return this._findInherited(key, subkey);
   };
 
-  Meta.prototype['forEach' + capitalized] = function(fn) {
+  Meta.prototype[`forEach${capitalized}`] = function(fn) {
     let pointer = this;
     let seen = new LodashishStack();
 
@@ -141,15 +141,15 @@ function inheritedMap(name, Meta) {
     }
   };
 
-  Meta.prototype['clear' + capitalized] = function() {
+  Meta.prototype[`clear${capitalized}`] = function() {
     this[key] = undefined;
   };
 
-  Meta.prototype['deleteFrom' + capitalized] = function(subkey) {
+  Meta.prototype[`deleteFrom${capitalized}`] = function(subkey) {
     this._getOrCreateOwnMap(key).delete(subkey);
   };
 
-  Meta.prototype['hasIn' + capitalized] = function(subkey) {
+  Meta.prototype[`hasIn${capitalized}`] = function(subkey) {
     return this._findInherited(key, subkey) !== undefined;
   };
 }
@@ -186,7 +186,7 @@ function inheritedMapOfMaps(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['write' + capitalized] = function(subkey, itemkey, value) {
+  Meta.prototype[`write${capitalized}`] = function(subkey, itemkey, value) {
     let keyMap = this._getOrCreateOwnMap(key);
     let subkeyMap = keyMap.get(subkey);
     if (!subkeyMap) {
@@ -196,7 +196,7 @@ function inheritedMapOfMaps(name, Meta) {
     subkeyMap.set(itemkey, value);
   };
 
-  Meta.prototype['peek' + capitalized] = function(subkey, itemkey) {
+  Meta.prototype[`peek${capitalized}`] = function(subkey, itemkey) {
     let pointer = this;
     while (pointer !== undefined) {
       let keyMap = pointer[key];
@@ -213,7 +213,7 @@ function inheritedMapOfMaps(name, Meta) {
     }
   };
 
-  Meta.prototype['has' + capitalized] = function(subkey) {
+  Meta.prototype[`has${capitalized}`] = function(subkey) {
     let pointer = this;
     while (pointer !== undefined) {
       if (pointer[key] && pointer[key].has(subkey)) {
@@ -224,7 +224,7 @@ function inheritedMapOfMaps(name, Meta) {
     return false;
   };
 
-  Meta.prototype['forEachIn' + capitalized] = function(subkey, fn) {
+  Meta.prototype[`forEachIn${capitalized}`] = function(subkey, fn) {
     return this._forEachIn(key, subkey, fn);
   };
 }
@@ -264,14 +264,14 @@ Meta.prototype._forEachIn = function(key, subkey, fn) {
 function ownCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['writable' + capitalized] = function(create) {
+  Meta.prototype[`writable${capitalized}`] = function(create) {
     let ret = this[key];
     if (!ret) {
       ret = this[key] = create(this.source);
     }
     return ret;
   };
-  Meta.prototype['readable' + capitalized] = function() {
+  Meta.prototype[`readable${capitalized}`] = function() {
     return this[key];
   };
 }
@@ -282,18 +282,18 @@ function ownCustomObject(name, Meta) {
 function inheritedCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
-  Meta.prototype['writable' + capitalized] = function(create) {
+  Meta.prototype[`writable${capitalized}`] = function(create) {
     let ret = this[key];
     if (!ret) {
       if (this.parent) {
-        ret = this[key] = this.parent['writable' + capitalized](create).copy(this.source);
+        ret = this[key] = this.parent[`writable${capitalized}`](create).copy(this.source);
       } else {
         ret = this[key] = create(this.source);
       }
     }
     return ret;
   };
-  Meta.prototype['readable' + capitalized] = function() {
+  Meta.prototype[`readable${capitalized}`] = function() {
     return this._getInherited(key);
   };
 }
@@ -309,7 +309,7 @@ function capitalize(name) {
   return name.replace(/^\w/, m => m.toUpperCase());
 }
 
-export var META_DESC = {
+export const META_DESC = {
   writable: true,
   configurable: true,
   enumerable: false,
