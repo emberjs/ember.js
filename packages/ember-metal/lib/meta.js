@@ -4,9 +4,10 @@
 
 import isEnabled from 'ember-metal/features';
 import { protoMethods as listenerMethods } from 'ember-metal/meta_listeners';
-import EmptyObject from 'ember-metal/empty_object';
 import { lookupDescriptor } from 'ember-metal/utils';
 import symbol from 'ember-metal/symbol';
+import LodashishStack from './utils/lodash-stack';
+
 
 /**
 @module ember-metal
@@ -100,7 +101,7 @@ function ownMap(name, Meta) {
 Meta.prototype._getOrCreateOwnMap = function(key) {
   let ret = this[key];
   if (!ret) {
-    ret = this[key] = new EmptyObject();
+    ret = this[key] = new LodashishStack();
   }
   return ret;
 };
@@ -113,7 +114,7 @@ function inheritedMap(name, Meta) {
 
   Meta.prototype['write' + capitalized] = function(subkey, value) {
     let map = this._getOrCreateOwnMap(key);
-    map[subkey] = value;
+    map.set(subkey, value);
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey) {
@@ -122,16 +123,19 @@ function inheritedMap(name, Meta) {
 
   Meta.prototype['forEach' + capitalized] = function(fn) {
     let pointer = this;
-    let seen = new EmptyObject();
+    let seen = new LodashishStack();
+
+    let perSubKeyCallback = (subkey, value) => {
+      if (!seen.has(subkey)) {
+        seen.set(subkey, true);
+        fn(subkey, value);
+      }
+    };
+
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
-        for (let key in map) {
-          if (!seen[key]) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-        }
+        map.forEach(perSubKeyCallback);
       }
       pointer = pointer.parent;
     }
@@ -142,7 +146,7 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype['deleteFrom' + capitalized] = function(subkey) {
-    delete this._getOrCreateOwnMap(key)[subkey];
+    this._getOrCreateOwnMap(key).delete(subkey);
   };
 
   Meta.prototype['hasIn' + capitalized] = function(subkey) {
@@ -165,7 +169,7 @@ Meta.prototype._findInherited = function(key, subkey) {
   while (pointer !== undefined) {
     let map = pointer[key];
     if (map) {
-      let value = map[subkey];
+      let value = map.get(subkey);
       if (value !== undefined) {
         return value;
       }
@@ -183,23 +187,25 @@ function inheritedMapOfMaps(name, Meta) {
   let capitalized = capitalize(name);
 
   Meta.prototype['write' + capitalized] = function(subkey, itemkey, value) {
-    let outerMap = this._getOrCreateOwnMap(key);
-    let innerMap = outerMap[subkey];
-    if (!innerMap) {
-      innerMap = outerMap[subkey] = new EmptyObject();
+    let keyMap = this._getOrCreateOwnMap(key);
+    let subkeyMap = keyMap.get(subkey);
+    if (!subkeyMap) {
+      subkeyMap = new LodashishStack();
+      keyMap.set(subkey, subkeyMap);
     }
-    innerMap[itemkey] = value;
+    subkeyMap.set(itemkey, value);
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey, itemkey) {
     let pointer = this;
     while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map) {
-        let value = map[subkey];
-        if (value) {
-          if (value[itemkey] !== undefined) {
-            return value[itemkey];
+      let keyMap = pointer[key];
+      if (keyMap) {
+        let subkeyMap = keyMap.get(subkey);
+        if (subkeyMap) {
+          let itemkeyValue = subkeyMap.get(itemkey);
+          if (itemkeyValue !== undefined) {
+            return itemkeyValue;
           }
         }
       }
@@ -210,7 +216,7 @@ function inheritedMapOfMaps(name, Meta) {
   Meta.prototype['has' + capitalized] = function(subkey) {
     let pointer = this;
     while (pointer !== undefined) {
-      if (pointer[key] && pointer[key][subkey]) {
+      if (pointer[key] && pointer[key].has(subkey)) {
         return true;
       }
       pointer = pointer.parent;
@@ -225,23 +231,28 @@ function inheritedMapOfMaps(name, Meta) {
 
 Meta.prototype._forEachIn = function(key, subkey, fn) {
   let pointer = this;
-  let seen = new EmptyObject();
+  let seen = new LodashishStack();
   let calls = [];
+
+  let perSubkeyItemCallback = (itemKey, itemValue) => {
+    if (!seen.has(itemKey)) {
+      seen.set(itemKey, true);
+      calls.push([itemKey, itemValue]);
+    }
+  };
+
   while (pointer !== undefined) {
-    let map = pointer[key];
-    if (map) {
-      let innerMap = map[subkey];
-      if (innerMap) {
-        for (let innerKey in innerMap) {
-          if (!seen[innerKey]) {
-            seen[innerKey] = true;
-            calls.push([innerKey, innerMap[innerKey]]);
-          }
-        }
+    let keyMap = pointer[key];
+    if (keyMap) {
+      let subkeyMap = keyMap.get(subkey);
+      if (subkeyMap) {
+        subkeyMap.forEach(perSubkeyItemCallback);
       }
     }
+
     pointer = pointer.parent;
   }
+
   for (let i = 0; i < calls.length; i++) {
     let [innerKey, value] = calls[i];
     fn(innerKey, value);
@@ -319,9 +330,9 @@ if (isEnabled('mandatory-setter')) {
     while (pointer !== undefined) {
       let map = pointer[internalKey];
       if (map) {
-        let value = map[subkey];
-        if (value !== undefined || subkey in map) {
-          return map[subkey];
+        let value = map.get(subkey);
+        if (value !== undefined || map.has(subkey)) {
+          return value;
         }
       }
       pointer = pointer.parent;

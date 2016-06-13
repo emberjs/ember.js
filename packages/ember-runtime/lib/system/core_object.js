@@ -936,8 +936,8 @@ CoreObject.reopen({
     if (value instanceof ComputedProperty) {
       var cache = meta(this.constructor).readableCache();
 
-      if (cache && cache._computedProperties !== undefined) {
-        cache._computedProperties = undefined;
+      if (cache && cache.get('_computedProperties') !== undefined) {
+        cache.set('_computedProperties', undefined);
       }
     }
   }
