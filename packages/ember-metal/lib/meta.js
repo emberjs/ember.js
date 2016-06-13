@@ -40,7 +40,7 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
-  deps: inheritedMapOfArrays,
+  deps: inheritedArrayOfArrays,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
   tag: ownCustomObject
@@ -101,14 +101,6 @@ Meta.prototype._getOrCreateOwnMap = function(key) {
   let ret = this[key];
   if (!ret) {
     ret = this[key] = new EmptyObject();
-  }
-  return ret;
-};
-
-Meta.prototype._getOrCreateOwnArray = function(key) {
-  let ret = this[key];
-  if (!ret) {
-    ret = this[key] = [];
   }
   return ret;
 };
@@ -184,44 +176,61 @@ Meta.prototype._findInherited = function(key, subkey) {
 
 export const UNDEFINED = symbol('undefined');
 
-// Implements a member that provides a lazily created map of arrays,
+// Implements a member that provides a lazily created array of arrays,
 // with inheritance at both levels.
-function inheritedMapOfArrays(name, Meta) {
+function inheritedArrayOfArrays(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
   Meta.prototype['write' + capitalized] = function(subkey, itemKey, value) {
-    let outerMap = this._getOrCreateOwnMap(key);
-    let innerMap = outerMap[subkey];
-    if (!innerMap) {
-      innerMap = outerMap[subkey] = [[itemKey, value]];
-      return;
+    let keyArray = this[key];
+    if (!keyArray) {
+      keyArray = this[key] = [];
     }
 
-    for (let i = 0; i < innerMap.length; i++) {
-      if (innerMap[i][0] === itemKey) {
-        innerMap[i][1] = value;
-        return;
+    for (let i = 0; i < keyArray.length; i++) {
+      if (keyArray[i][0] === subkey) {
+        let subkeyArray = keyArray[i][1];
+
+        for (let j = 0; j < subkeyArray.length; j++) {
+          if (subkeyArray[j][0] === itemKey) {
+            subkeyArray[j][1] = value;
+            return;
+          }
+        }
+
+        subkeyArray.push([itemKey, value]);
       }
     }
 
-    innerMap.push([itemKey, value]);
+    // add the subkey to the outerArray
+    keyArray.push([
+      subkey,
+      // array of itemKeys for the subkey
+      [
+        [itemKey, value]
+      ]
+    ]);
   };
 
   Meta.prototype['peek' + capitalized] = function(subkey, itemKey) {
     let pointer = this;
     while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map) {
-        let value = map[subkey];
-        if (value) {
-          for (let i = 0; i < value.length; i++) {
-            if (value[i][0] === itemKey) {
-              return value[i][1];
+      let keyArray = pointer[key];
+      if (keyArray) {
+        for (let i = 0; i < keyArray.length; i++) {
+          if (keyArray[i][0] === subkey) {
+            let subkeyArray = keyArray[i][1];
+
+            for (let j = 0; j < subkeyArray.length; j++) {
+              if (subkeyArray[j][0] === itemKey) {
+                return subkeyArray[j][1];
+              }
             }
           }
         }
       }
+
       pointer = pointer.parent;
     }
   };
@@ -229,11 +238,18 @@ function inheritedMapOfArrays(name, Meta) {
   Meta.prototype['has' + capitalized] = function(subkey) {
     let pointer = this;
     while (pointer !== undefined) {
-      if (pointer[key] && pointer[key][subkey]) {
-        return true;
+      let keyArray = pointer[key];
+      if (keyArray) {
+        for (let i = 0; i < keyArray.length; i++) {
+          if (keyArray[i][0] === subkey) {
+            return true;
+          }
+        }
       }
+
       pointer = pointer.parent;
     }
+
     return false;
   };
 
@@ -247,21 +263,26 @@ Meta.prototype._forEachIn = function(key, subkey, fn) {
   let seen = new EmptyObject();
   let calls = [];
   while (pointer !== undefined) {
-    let map = pointer[key];
-    if (map) {
-      let innerMap = map[subkey];
-      if (innerMap) {
-        for (let i = 0; i < innerMap.length; i++) {
-          let innerKey = innerMap[i][0];
-          if (!seen[innerKey]) {
-            seen[innerKey] = true;
-            calls.push(innerMap[i]);
+    let keyArray = pointer[key];
+    if (keyArray) {
+      for (let i = 0; i < keyArray.length; i++) {
+        if (keyArray[i][0] === subkey) {
+          let subkeyArray = keyArray[i][1];
+
+          for (let j = 0; j < subkeyArray.length; j++) {
+            let innerKey = subkeyArray[j][0];
+
+            if (!seen[innerKey]) {
+              seen[innerKey] = true;
+              calls.push(subkeyArray[j]);
+            }
           }
         }
       }
     }
     pointer = pointer.parent;
   }
+
   for (let i = 0; i < calls.length; i++) {
     let [innerKey, value] = calls[i];
     fn(innerKey, value);
