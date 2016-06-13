@@ -114,7 +114,7 @@ asyncHelper('fillIn', fillIn);
   With the `context` param:
 
   ```javascript
-  var $el = find('.my-selector', 'parent-element');
+  var $el = find('.my-selector', '.parent-element-class');
   ```
 
   @method find
@@ -137,7 +137,7 @@ helper('find', find);
   With the `context` param:
 
   ```javascript
-  var $el = findWithAssert('.selector-id', 'parent-element'); // assert will pass
+  var $el = findWithAssert('.selector-id', '.parent-element-class'); // assert will pass
   ```
 
   @method findWithAssert
