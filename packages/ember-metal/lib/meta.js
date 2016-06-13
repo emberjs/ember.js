@@ -40,7 +40,7 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
-  deps: inheritedMapOfMaps,
+  deps: inheritedMapOfArrays,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
   tag: ownCustomObject
@@ -101,6 +101,14 @@ Meta.prototype._getOrCreateOwnMap = function(key) {
   let ret = this[key];
   if (!ret) {
     ret = this[key] = new EmptyObject();
+  }
+  return ret;
+};
+
+Meta.prototype._getOrCreateOwnArray = function(key) {
+  let ret = this[key];
+  if (!ret) {
+    ret = this[key] = [];
   }
   return ret;
 };
@@ -176,30 +184,41 @@ Meta.prototype._findInherited = function(key, subkey) {
 
 export const UNDEFINED = symbol('undefined');
 
-// Implements a member that provides a lazily created map of maps,
+// Implements a member that provides a lazily created map of arrays,
 // with inheritance at both levels.
-function inheritedMapOfMaps(name, Meta) {
+function inheritedMapOfArrays(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
 
-  Meta.prototype['write' + capitalized] = function(subkey, itemkey, value) {
+  Meta.prototype['write' + capitalized] = function(subkey, itemKey, value) {
     let outerMap = this._getOrCreateOwnMap(key);
     let innerMap = outerMap[subkey];
     if (!innerMap) {
-      innerMap = outerMap[subkey] = new EmptyObject();
+      innerMap = outerMap[subkey] = [[itemKey, value]];
+      return;
     }
-    innerMap[itemkey] = value;
+
+    for (let i = 0; i < innerMap.length; i++) {
+      if (innerMap[i][0] === itemKey) {
+        innerMap[i][1] = value;
+        return;
+      }
+    }
+
+    innerMap.push([itemKey, value]);
   };
 
-  Meta.prototype['peek' + capitalized] = function(subkey, itemkey) {
+  Meta.prototype['peek' + capitalized] = function(subkey, itemKey) {
     let pointer = this;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map) {
         let value = map[subkey];
         if (value) {
-          if (value[itemkey] !== undefined) {
-            return value[itemkey];
+          for (let i = 0; i < value.length; i++) {
+            if (value[i][0] === itemKey) {
+              return value[i][1];
+            }
           }
         }
       }
@@ -232,10 +251,11 @@ Meta.prototype._forEachIn = function(key, subkey, fn) {
     if (map) {
       let innerMap = map[subkey];
       if (innerMap) {
-        for (let innerKey in innerMap) {
+        for (let i = 0; i < innerMap.length; i++) {
+          let innerKey = innerMap[i][0];
           if (!seen[innerKey]) {
             seen[innerKey] = true;
-            calls.push([innerKey, innerMap[innerKey]]);
+            calls.push(innerMap[i]);
           }
         }
       }
@@ -343,7 +363,7 @@ if (isEnabled('mandatory-setter')) {
 }
 
 // choose the one appropriate for given platform
-let setMeta = function(obj, meta) {
+function setMeta(obj, meta) {
   // if `null` already, just set it to the new value
   // otherwise define property first
   if (obj[META_FIELD] !== null) {
@@ -355,7 +375,7 @@ let setMeta = function(obj, meta) {
   }
 
   obj[META_FIELD] = meta;
-};
+}
 
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
