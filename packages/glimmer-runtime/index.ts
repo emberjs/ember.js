@@ -99,6 +99,14 @@ export {
 } from './lib/compiled/opcodes/dom';
 
 export {
+  IChangeList,
+  AttributeChangeList,
+  SafeHrefAttributeChangeList,
+  NullValueAttributeChangeList,
+  defaultChangeLists
+} from './lib/change-lists';
+
+export {
   normalizeTextValue
 } from './lib/compiled/opcodes/content';
 

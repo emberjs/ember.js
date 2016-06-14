@@ -69,3 +69,59 @@ test("helpers shadow self", () => {
 
   equalTokens(root, '<div data-test="hello"></div>');
 });
+
+test("a[href] marks javascript: protocol as unsafe", () => {
+  let template = compile('<a href="{{foo}}"></a>');
+
+  let context = { foo: 'javascript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<a href="unsafe:javascript:foo()"></a>');
+
+  rerender();
+
+  equalTokens(root, '<a href="unsafe:javascript:foo()"></a>');
+});
+
+test("a[href] marks javascript: protocol as unsafe, http as safe", () => {
+  let template = compile('<a href="{{foo}}"></a>');
+
+  let context = { foo: 'javascript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<a href="unsafe:javascript:foo()"></a>');
+
+  rerender({ foo: 'http://foo.bar' });
+
+  equalTokens(root, '<a href="http://foo.bar"></a>');
+
+  rerender({ foo: 'javascript:foo()' });
+
+  equalTokens(root, '<a href="unsafe:javascript:foo()"></a>');
+});
+
+test("a[href] marks vbscript: protocol as unsafe", () => {
+  let template = compile('<a href="{{foo}}"></a>');
+
+  let context = { foo: 'vbscript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<a href="unsafe:vbscript:foo()"></a>');
+
+  rerender();
+
+  equalTokens(root, '<a href="unsafe:vbscript:foo()"></a>');
+});
+
+test("div[href] is not not marked as unsafe", () => {
+  let template = compile('<div href="{{foo}}"></div>');
+
+  let context = { foo: 'javascript:foo()' };
+  render(template, context);
+
+  equalTokens(root, '<div href="javascript:foo()"></div>');
+
+  rerender();
+
+  equalTokens(root, '<div href="javascript:foo()"></div>');
+});
