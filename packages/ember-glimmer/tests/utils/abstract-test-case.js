@@ -298,6 +298,18 @@ export class ApplicationTest extends TestCase {
     }));
   }
 
+  registerComponent(name, { ComponentClass = null, template = null }) {
+    if (ComponentClass) {
+      this.application.register(`component:${name}`, ComponentClass);
+    }
+
+    if (typeof template === 'string') {
+      this.application.register(`template:components/${name}`, this.compile(template, {
+        moduleName: `components/${name}`
+      }));
+    }
+  }
+
   registerController(name, controller) {
     this.application.register(`controller:${name}`, controller);
   }

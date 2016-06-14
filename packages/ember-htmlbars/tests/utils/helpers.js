@@ -12,6 +12,7 @@ export { default as Component } from 'ember-htmlbars/component';
 export { default as Checkbox } from 'ember-htmlbars/components/checkbox';
 export { default as TextArea } from 'ember-htmlbars/components/text_area';
 export { default as TextField } from 'ember-htmlbars/components/text_field';
+export { default as LinkTo } from 'ember-htmlbars/components/link-to';
 export { InteractiveRenderer, InertRenderer } from 'ember-htmlbars/renderer';
 
 export function compile(string, options) {
