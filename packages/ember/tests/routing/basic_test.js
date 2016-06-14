@@ -2677,6 +2677,14 @@ QUnit.test('Route supports clearing outlet explicitly', function() {
     router.send('hideExtra');
   });
   equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, 'The posts/extra template was removed');
+  run(function() {
+    router.send('showModal');
+  });
+  equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 1, 'The posts/modal template was rendered');
+  run(function() {
+    router.send('showExtra');
+  });
+  equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 1, 'The posts/extra template was rendered');
 
   handleURL('/users');
 
