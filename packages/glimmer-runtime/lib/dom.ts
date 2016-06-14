@@ -46,11 +46,19 @@ class DOMHelper {
   private document: HTMLDocument;
   private namespace: string;
   private uselessElement: HTMLElement;
+  private uselessAnchor: HTMLAnchorElement;
 
   constructor(document) {
     this.document = document;
     this.namespace = null;
     this.uselessElement = this.document.createElement('div');
+    this.uselessAnchor = this.document.createElement('a');
+  }
+
+  protocolForURL(url: string): string {
+    let { uselessAnchor } = this;
+    uselessAnchor.href = url;
+    return uselessAnchor.protocol;
   }
 
   setAttribute(element: Element, name: string, value: string) {
@@ -59,10 +67,6 @@ class DOMHelper {
 
   setAttributeNS(element: Element, namespace: string, name: string, value: string) {
     element.setAttributeNS(namespace, name, value);
-  }
-
-  setProperty(element: Element, name: string, value: any) {
-    element[name] = value;
   }
 
   removeAttribute(element: Element, name: string) {

@@ -17,6 +17,7 @@ import { DOMHelper } from '../../dom';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
+import { IChangeList } from '../../change-lists';
 
 export class TextOpcode extends Opcode {
   public type = "text";
@@ -139,7 +140,7 @@ export class CloseElementOpcode extends Opcode {
     let { element, elementOperations: { groups } } = stack;
 
     let classList = new ClassList();
-    let flattened = dict<ElementOperation>();
+    let flattened = dict<Attribute>();
     let flattenedKeys = [];
 
     // This is a hardcoded merge strategy:
@@ -162,15 +163,17 @@ export class CloseElementOpcode extends Opcode {
     }
 
     let className = classList.toReference();
+    let attr = 'class' as InternedString;
+    let attributeManager = vm.env.attributeFor(element, attr, className);
+    let attribute = new Attribute(element, attributeManager, attr, className);
+    let opcode = attribute.flush(dom);
 
-    if (isConstReference(className)) {
-      NonNamespacedAttribute.install(dom, element, 'class' as InternedString, className.value());
-    } else {
-      vm.updateWith(new NonNamespacedAttribute(element, 'class' as InternedString, className).flush(dom));
+    if (opcode) {
+      vm.updateWith(opcode);
     }
 
     for (let k = 0; k < flattenedKeys.length; k++) {
-      let opcode = flattened[flattenedKeys[k]].flush(dom, element);
+      let opcode = flattened[flattenedKeys[k]].flush(dom);
       if (opcode) vm.updateWith(opcode);
     }
 
@@ -305,35 +308,25 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   }
 }
 
-export interface ElementOperation {
-  flush(dom: DOMHelper, element: Element): UpdatingOpcode;
-}
+export class Attribute {
+  private changeList: IChangeList;
+  private element: Element;
+  private reference: Reference<Opaque>;
+  private cache: ReferenceCache<Opaque>;
+  private namespace?: string;
 
-abstract class ElementPatchOperation<V> implements ElementOperation {
+  protected name: InternedString;
+
   public tag: RevisionTag;
 
-  protected element: Element;
-  protected reference: Reference<V>;
-  protected cache: ReferenceCache<V> = null;
-
-  constructor(element: Element, reference: Reference<V>) {
-    this.tag = reference.tag;
+  constructor(element: Element, changeList: IChangeList, name: InternedString, reference: Reference<Opaque>, namespace?: string) {
     this.element = element;
     this.reference = reference;
-  }
-
-  flush(dom: DOMHelper) {
-    let { reference, element } = this;
-
-    if (isConstReference(reference)) {
-      let value = reference.value();
-      this.install(dom, element, value);
-    } else {
-      let cache = this.cache = new ReferenceCache(reference);
-      let value = cache.peek();
-      this.install(dom, element, value);
-      return new PatchElementOpcode(this);
-    }
+    this.changeList = changeList;
+    this.tag = reference.tag;
+    this.name = name;
+    this.cache = null;
+    this.namespace = namespace;
   }
 
   patch(dom: DOMHelper) {
@@ -342,160 +335,47 @@ abstract class ElementPatchOperation<V> implements ElementOperation {
     let value = cache.revalidate();
 
     if (isModified(value)) {
-      this.update(dom, element, value);
+      this.changeList.updateAttribute(dom, element, this.name, value, this.namespace);
     }
   }
 
-  protected abstract install(dom: DOMHelper, element: Element, value: V);
-  protected abstract update(dom: DOMHelper, element: Element, value: V);
-  abstract toJSON(): Dict<string>;
-}
+  flush(dom: DOMHelper): UpdatingOpcode {
+    let { reference, element } = this;
 
-export class NamespacedAttribute extends ElementPatchOperation<string> {
-  private name: InternedString;
-  private namespace: InternedString;
-
-  static install(dom: DOMHelper, element: Element, namespace: InternedString, name: InternedString, value: string) {
-    if (value !== null) {
-      dom.setAttributeNS(element, namespace, name, value);
-    }
-  }
-
-  static update(dom: DOMHelper, element: Element, namespace: InternedString, name: InternedString, value: string) {
-    if (value === null) {
-      dom.removeAttributeNS(element, namespace, name);
+    if (isConstReference(reference)) {
+      let value = reference.value();
+      this.changeList.setAttribute(dom, element, this.name, value, this.namespace);
     } else {
-      dom.setAttributeNS(element, namespace, name, value);
+      let cache = this.cache = new ReferenceCache(reference);
+      let value = cache.peek();
+      this.changeList.setAttribute(dom, element, this.name, value, this.namespace);
+      return new PatchElementOpcode(this);
     }
-  }
-
-  constructor(element: Element, namespace: InternedString, name: InternedString, reference: Reference<string>) {
-    super(element, reference);
-    this.element = element;
-    this.namespace = namespace;
-    this.name = name;
-    this.reference = reference;
-  }
-
-  protected install(dom: DOMHelper, element: Element, value: string) {
-    let { namespace, name } = this;
-    NamespacedAttribute.install(dom, element, namespace, name, value);
-  }
-
-  protected update(dom: DOMHelper, element: Element, value: string) {
-    let { namespace, name } = this;
-    NamespacedAttribute.update(dom, element, namespace, name, value);
   }
 
   toJSON(): Dict<string> {
     let { element, namespace, name, cache } = this;
 
+    let formattedElement = formatElement(element);
+    let lastValue = cache.peek() as string;
+
+    if (namespace) {
+      return {
+        element: formattedElement,
+        type: 'attribute',
+        namespace,
+        name,
+        lastValue
+      };
+    }
+
     return {
-      element: formatElement(element),
+      element: formattedElement,
       type: 'attribute',
       namespace,
       name,
-      lastValue: cache.peek()
+      lastValue
     };
-  }
-}
-
-export class NonNamespacedAttribute extends ElementPatchOperation<string> {
-  private name: InternedString;
-
-  static install(dom: DOMHelper, element: Element, name: InternedString, value: string) {
-    if (value !== null) {
-      dom.setAttribute(element, name, value);
-    }
-  }
-
-  static update(dom: DOMHelper, element: Element, name: InternedString, value: string) {
-    if (value === null) {
-      dom.removeAttribute(element, name);
-    } else {
-      dom.setAttribute(element, name, value);
-    }
-  }
-
-  constructor(element: Element, name: InternedString, reference: Reference<string>) {
-    super(element, reference);
-    this.name = name;
-  }
-
-  protected install(dom: DOMHelper, element: Element, value: string) {
-    let { name } = this;
-    NonNamespacedAttribute.install(dom, element, name, value);
-  }
-
-  protected update(dom: DOMHelper, element: Element, value: string) {
-    let { name } = this;
-    NonNamespacedAttribute.update(dom, element, name, value);
-  }
-
-  toJSON(): Dict<string> {
-    let { element, name, cache } = this;
-
-    return {
-      element: formatElement(element),
-      type: 'attribute',
-      name,
-      lastValue: cache.peek()
-    };
-  }
-}
-
-export class Property extends ElementPatchOperation<Opaque> {
-  static set(dom: DOMHelper, element: Element, name: InternedString, value: Opaque) {
-    dom.setProperty(element, name, value);
-  }
-
-  name: InternedString;
-
-  constructor(element: Element, name: InternedString, reference: Reference<Opaque>) {
-    super(element, reference);
-    this.name = name;
-  }
-
-  protected install(dom: DOMHelper, element: Element, value: Opaque) {
-    let { name } = this;
-    Property.set(dom, element, name, value);
-  }
-
-  protected update(dom: DOMHelper, element: Element, value: Opaque) {
-    let { name } = this;
-    Property.set(dom, element, name, value);
-  }
-
-  toJSON(): Dict<string> {
-    let { element, name, cache } = this;
-
-    return {
-      element: formatElement(element),
-      type: 'property',
-      name,
-      lastValue: JSON.stringify(cache.peek())
-    };
-  }
-}
-
-export class EmptyStringResetingProperty extends Property {
-  protected install(dom: DOMHelper, element: Element, value: Opaque) {
-    let { name } = this;
-    // Needed for cases where removeAttribute() does not work
-    if (value === null) {
-      value = '';
-    }
-
-    super.install(dom, element, value);
-  }
-
-  protected update(dom: DOMHelper, element: Element, value: Opaque) {
-    // Needed for cases where removeAttribute() does not work
-    if (value === null) {
-      value = '';
-    }
-
-    super.update(dom, element, value);
   }
 }
 
@@ -575,7 +455,7 @@ export class DynamicPropOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setProperty(name, reference);
+    vm.stack().setAttribute(name, reference);
   }
 
   toJSON(): OpcodeJSON {
@@ -593,9 +473,9 @@ export class DynamicPropOpcode extends Opcode {
 export class PatchElementOpcode extends UpdatingOpcode {
   public type = "patch-element";
 
-  private operation: ElementPatchOperation<Opaque>;
+  private operation: Attribute;
 
-  constructor(operation: ElementPatchOperation<Opaque>) {
+  constructor(operation: Attribute) {
     super();
     this.tag = operation.tag;
     this.operation = operation;
