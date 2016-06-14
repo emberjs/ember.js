@@ -44,5 +44,17 @@ for a detailed explanation.
 
 * `ember-runtime-enumerable-includes`
 
-Deprecates `Enumerable#contains` and `Array#contains` in favor of `Enumerable#includes` and `Array#includes` 
+Deprecates `Enumerable#contains` and `Array#contains` in favor of `Enumerable#includes` and `Array#includes`
 to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blob/master/text/0136-contains-to-includes.md)).
+
+* `ember-string-ishtmlsafe`
+
+  Introduces an API to detect if strings are decorated as htmlSafe. Example:
+
+  ```javascript
+  var plainString = 'plain string',
+      safeString = Ember.String.htmlSafe('<div>someValue</div>');
+
+  Ember.String.isHtmlSafe(plainString); // false
+  Ember.String.isHtmlSafe(safeString);  // true
+  ```

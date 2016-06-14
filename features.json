@@ -8,6 +8,7 @@
     "ember-glimmer": null,
     "ember-runtime-computed-uniq-by": true,
     "ember-improved-instrumentation": null,
-    "ember-runtime-enumerable-includes": null
+    "ember-runtime-enumerable-includes": null,
+    "ember-string-ishtmlsafe": null
   }
 }
