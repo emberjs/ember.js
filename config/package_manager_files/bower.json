@@ -12,6 +12,6 @@
     "url": "https://github.com/emberjs/ember.js.git"
   },
   "dependencies": {
-    "jquery": ">= 1.7.0 < 3.0.0"
+    "jquery": ">= 1.7.0 < 4.0.0"
   }
 }
