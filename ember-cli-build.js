@@ -94,10 +94,11 @@ module.exports = function() {
   // SimpleHTMLTokenizer ships as either ES6 or a single AMD-ish file, so we have to
   // compile it from ES6 modules to CJS using TypeScript. broccoli-typescript-compiler
   // only works with `.ts` files, so we rename the `.js` files to `.ts` first.
-  var simpleHTMLTokenizerLib = rename('node_modules/simple-html-tokenizer/lib', '.js', '.ts');
+  var simpleHTMLTokenizerPath = path.join(__dirname, 'node_modules/simple-html-tokenizer/lib');
+  var simpleHTMLTokenizerLib = rename(simpleHTMLTokenizerPath, '.js', '.ts');
   var simpleHTMLTokenizerJSTree = typescript(simpleHTMLTokenizerLib, tsOptions);
 
-  cjsTree = merge([cjsTree, simpleHTMLTokenizerJSTree, 'node_modules/handlebars/dist/cjs/']);
+  cjsTree = merge([cjsTree, simpleHTMLTokenizerJSTree, path.join(__dirname, 'node_modules/handlebars/dist/cjs/')]);
 
   // Glimmer packages require other Glimmer packages using non-relative module names
   // (e.g., `glimmer-compiler` may import `glimmer-util` instead of `../glimmer-util`),
