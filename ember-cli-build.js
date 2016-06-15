@@ -16,11 +16,7 @@ function transpile(tree, label) {
   return transpileES6(tree, label, { sourceMaps: 'inline' });
 }
 
-module.exports = function() {
-  var packages = __dirname + '/packages';
-  var bower = __dirname + '/bower_components';
-  var hasBower = existsSync(bower);
-
+function buildTSOptions(compilerOptions) {
   var tsOptions = {
     tsconfig: {
       compilerOptions: {
@@ -35,6 +31,18 @@ module.exports = function() {
       }
     }
   };
+
+  Object.assign(tsOptions.tsconfig.compilerOptions, compilerOptions);
+
+  return tsOptions;
+}
+
+module.exports = function() {
+  var packages = __dirname + '/packages';
+  var bower = __dirname + '/bower_components';
+  var hasBower = existsSync(bower);
+
+  var tsOptions = buildTSOptions();
 
   var demoTrees = [
     find(__dirname + '/demos', {
@@ -87,7 +95,10 @@ module.exports = function() {
   /*
    * CommonJS Build
    */
-  tsOptions.tsconfig.compilerOptions.module = "commonjs";
+  tsOptions = buildTSOptions({
+    module: "commonjs",
+    target: "es5"
+  });
 
   var cjsTree = typescript(tsTree, tsOptions);
 
