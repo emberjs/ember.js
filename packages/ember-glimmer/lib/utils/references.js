@@ -407,6 +407,4 @@ export class UnboundReference {
   get(key) {
     return new UnboundReference(this, key);
   }
-
-  destroy() {}
 }

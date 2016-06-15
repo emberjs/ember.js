@@ -11,8 +11,9 @@ import { get } from 'ember-metal/property_get';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
 import { UPDATE } from './utils/references';
 import { DirtyableTag } from 'glimmer-reference';
-import { deprecate } from 'ember-metal/debug';
+import { assert, deprecate } from 'ember-metal/debug';
 import { NAME_KEY } from 'ember-metal/mixin';
+import { getOwner } from 'container/owner';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -51,6 +52,23 @@ const Component = CoreView.extend(
 
         this.layout = this.defaultLayout;
       }
+
+      // If in a tagless component, assert that no event handlers are defined
+      assert(
+        `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
+        this.tagName !== '' || !this.renderer._destinedForDOM || !(() => {
+          let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
+          let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+
+          for (let key in events) {
+            let methodName = events[key];
+
+            if (typeof this[methodName]  === 'function') {
+              return true; // indicate that the assertion should be triggered
+            }
+          }
+        }
+      )());
     },
 
     rerender() {

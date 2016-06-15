@@ -89,7 +89,7 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
-    assert('classNameBindings must not have spaces in them', () => {
+    assert('classNameBindings must not have spaces in them', (() => {
       let { classNameBindings } = component;
       for (let i = 0; i < classNameBindings.length; i++) {
         let binding = classNameBindings[i];
@@ -98,22 +98,22 @@ class CurlyComponentManager {
         }
       }
       return true;
-    });
+    })());
 
-    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), () => {
+    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
       let { classNameBindings, tagName } = component;
-      return tagName || !classNameBindings || classNameBindings.length === 0;
-    });
+      return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
+    })());
 
-    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), () => {
+    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
       let { elementId, tagName } = component;
-      return tagName || (!elementId && elementId !== '');
-    });
+      return tagName !== '' || (!elementId && elementId !== '');
+    })());
 
-    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), () => {
+    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
       let { attributeBindings, tagName } = component;
-      return tagName || !attributeBindings || attributeBindings.length === 0;
-    });
+      return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
+    })());
 
     return bucket;
   }
@@ -158,7 +158,7 @@ class CurlyComponentManager {
 
     let { attributeBindings, classNames, classNameBindings } = component;
 
-    if (attributeBindings) {
+    if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(attributeBindings, component, operations);
     }
 
@@ -166,13 +166,13 @@ class CurlyComponentManager {
       operations.addAttribute('class', classRef);
     }
 
-    if (classNames) {
+    if (classNames && classNames.length) {
       classNames.forEach(name => {
         operations.addAttribute('class', new ValueReference(name));
       });
     }
 
-    if (classNameBindings) {
+    if (classNameBindings && classNameBindings.length) {
       classNameBindings.forEach(binding => {
         applyClassNameBinding(component, binding, operations);
       });
@@ -240,6 +240,10 @@ function elementId(vm) {
   return new ValueReference(component.elementId);
 }
 
+function ariaRole(vm) {
+  return vm.getSelf().get('ariaRole');
+}
+
 export class CurlyComponentDefinition extends ComponentDefinition {
   constructor(name, ComponentClass, template) {
     super(name, MANAGER, ComponentClass || Component);
@@ -251,6 +255,7 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     builder.wrapLayout(this.template.asLayout());
     builder.tag.dynamic(tagName);
     builder.attrs.dynamic('id', elementId);
+    builder.attrs.dynamic('role', ariaRole);
     builder.attrs.static('class', 'ember-view');
   }
 

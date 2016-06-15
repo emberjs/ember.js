@@ -11,8 +11,6 @@ import { Mixin } from 'ember-metal/mixin';
  @private
 */
 export default Mixin.create({
-  attributeBindings: ['ariaRole:role'],
-
   /**
    The WAI-ARIA role of the control represented by this view. For example, a
    button may have a role of type 'button', or a pane may have a role of
