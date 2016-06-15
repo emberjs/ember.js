@@ -144,9 +144,8 @@ export function _resetLegacyAddonWarnings() {
   not receive events.* If you specify a custom root element, make sure you only
   append views inside it!
 
-  To learn more about the advantages of event delegation and the Ember view
-  layer, and a list of the event listeners that are setup by default, visit the
-  [Ember View Layer guide](http://emberjs.com/guides/understanding-ember/the-view-layer/#toc_event-delegation).
+  To learn more about the events Ember components use, see
+  [components/handling-events](https://guides.emberjs.com/v2.6.0/components/handling-events/#toc_event-names).
 
   ### Initializers
 
