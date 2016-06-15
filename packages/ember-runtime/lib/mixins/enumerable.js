@@ -676,7 +676,7 @@ var Enumerable = Mixin.create({
 
     next = last = null;
     context = pushCtx(context);
-    return found;
+    return !!found;
   },
 
   /**

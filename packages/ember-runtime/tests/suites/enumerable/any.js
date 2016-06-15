@@ -19,7 +19,7 @@ suite.test('any should should invoke callback on each item as long as you return
     found.push(i);
     return false;
   });
-  equal(result, false, 'return value of obj.any');
+  strictEqual(result, false, 'return value of obj.any');
   deepEqual(found, ary, 'items passed during any() should match');
 });
 
@@ -35,27 +35,27 @@ suite.test('any should stop invoking when you return true', function() {
     found.push(i);
     return --cnt <= 0;
   });
-  equal(result, true, 'return value of obj.any');
-  equal(found.length, exp, 'should invoke proper number of times');
+  strictEqual(result, true, 'return value of obj.any');
+  strictEqual(found.length, exp, 'should invoke proper number of times');
   deepEqual(found, ary.slice(0, -2), 'items passed during any() should match');
 });
 
 
-suite.test('any should return true if any object matches the callback', function() {
+suite.test('any should return true if any object returns a truthy value for the callback', function() {
   var obj = emberA([0, 1, 2]);
   var result;
 
-  result = obj.any(function(i) { return !!i; });
-  equal(result, true, 'return value of obj.any');
+  result = obj.any(function(i) { return i; });
+  strictEqual(result, true, 'return value of obj.any');
 });
 
 
-suite.test('any should return false if no object matches the callback', function() {
-  var obj = emberA([0, null, false]);
+suite.test('any should return false if no object returns a truthy value for the callback', function() {
+  var obj = emberA([0, null, false, undefined]);
   var result;
 
-  result = obj.any(function(i) { return !!i; });
-  equal(result, false, 'return value of obj.any');
+  result = obj.any(function(i) { return i; });
+  strictEqual(result, false, 'return value of obj.any');
 });
 
 
@@ -64,7 +64,7 @@ suite.test('any should produce correct results even if the matching element is u
   var result;
 
   result = obj.any(function(i) { return true; });
-  equal(result, true, 'return value of obj.any');
+  strictEqual(result, true, 'return value of obj.any');
 });
 
 
