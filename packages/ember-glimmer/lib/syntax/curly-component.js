@@ -1,5 +1,5 @@
 import { StatementSyntax, ValueReference } from 'glimmer-runtime';
-import { AttributeBindingReference, RootReference, applyClassNameBinding } from '../utils/references';
+import { TO_ROOT_REFERENCE, AttributeBindingReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
@@ -89,7 +89,7 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
-    assert('classNameBindings must not have spaces in them', (() => {
+    assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
       let { classNameBindings } = component;
       for (let i = 0; i < classNameBindings.length; i++) {
         let binding = classNameBindings[i];
@@ -150,7 +150,7 @@ class CurlyComponentManager {
   }
 
   getSelf({ component }) {
-    return new RootReference(component);
+    return component[TO_ROOT_REFERENCE]();
   }
 
   didCreateElement({ component, classRef }, element, operations) {

@@ -13,6 +13,8 @@ import isEnabled from 'ember-metal/features';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 
 export const UPDATE = symbol('UPDATE');
+export const TO_ROOT_REFERENCE = symbol('TO_ROOT_REFERENCE');
+export const REFERENCE_FOR_KEY = symbol('REFERENCE_FOR_KEY');
 
 // @implements PathReference
 export class PrimitiveReference extends ConstReference {
@@ -63,11 +65,28 @@ export class CachedReference extends EmberPathReference {
 // @implements PathReference
 export class RootReference extends ConstReference {
   get(propertyKey) {
-    return new PropertyReference(this, propertyKey);
+    let self = this.value();
+    let ref = self[REFERENCE_FOR_KEY] && self[REFERENCE_FOR_KEY](propertyKey);
+
+    if (isEnabled('mandatory-setter')) {
+      if (ref) {
+        let _ref = ref;
+
+        ref = Object.create(ref);
+
+        ref.value = function() {
+          let meta = metaFor(self);
+          watchKey(self, propertyKey, meta);
+          return _ref.value();
+        };
+      }
+    }
+
+    return ref || new PropertyReference(this, propertyKey);
   }
 }
 
-class PropertyReference extends CachedReference { // jshint ignore:line
+export class PropertyReference extends CachedReference { // jshint ignore:line
   constructor(parentReference, propertyKey) {
     super();
 

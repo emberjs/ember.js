@@ -11,23 +11,23 @@ import { OutletSyntax } from './syntax/outlet';
 import lookupComponent from 'ember-views/utils/lookup-component';
 import createIterable from './utils/iterable';
 import {
-  RootReference,
   ConditionalReference,
   SimpleHelperReference,
   ClassBasedHelperReference
 } from './utils/references';
 
-import { default as concat } from './helpers/concat';
 import {
   inlineIf,
   inlineUnless
 } from './helpers/if-unless';
 
 import { default as action } from './helpers/action';
+import { default as concat } from './helpers/concat';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
+import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as classHelper } from './helpers/-class';
@@ -40,17 +40,18 @@ const builtInComponents = {
 };
 
 const builtInHelpers = {
-  concat,
   if: inlineIf,
-  unless: inlineUnless,
   action,
+  concat,
   get,
   hash,
   loc,
   log,
+  mut,
+  'query-params': queryParams,
   readonly,
   unbound,
-  'query-params': queryParams,
+  unless: inlineUnless,
   '-class': classHelper,
   '-each-in': eachIn
 };
@@ -232,10 +233,6 @@ export default class Environment extends GlimmerEnvironment {
     } else {
       throw new Error(`${name} is not a modifier`);
     }
-  }
-
-  rootReferenceFor(value) {
-    return new RootReference(value);
   }
 
   toConditionalReference(reference) {

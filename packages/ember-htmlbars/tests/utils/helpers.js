@@ -7,6 +7,7 @@ import { defaultCompileOptions } from 'ember-htmlbars-template-compiler';
 
 export { template } from 'ember-htmlbars-template-compiler';
 export { default as Helper, helper } from 'ember-htmlbars/helper';
+export { INVOKE } from 'ember-htmlbars/keywords/closure-action';
 export { default as DOMHelper } from 'ember-htmlbars/system/dom-helper';
 export { default as Component } from 'ember-htmlbars/component';
 export { default as Checkbox } from 'ember-htmlbars/components/checkbox';

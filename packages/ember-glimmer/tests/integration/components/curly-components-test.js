@@ -2127,11 +2127,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('blarkporybaz- Click Me');
 
-    // Errors here cause `blahzz` has become just `baz` and `Don't know how to
-    // {{#each baz}}`
-    // this.runTask(() => this.rerender());
+    if (this.isGlimmer) {
+      this.runTask(() => this.rerender());
 
-    // this.assertText('blarkporybaz- Click Me');
+      this.assertText('blarkporybaz- Click Me');
+    }
   }
 
   ['@glimmer cannot set an immutable argument']() {

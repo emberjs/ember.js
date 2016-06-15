@@ -1,7 +1,10 @@
 import { CONSTANT_TAG } from 'glimmer-reference';
+import symbol from 'ember-metal/symbol';
 import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
+import { isMut } from '../helpers/mut';
+import { UPDATE } from './references';
 
 export default function processArgs(args, positionalParamsDefinition) {
   if (!positionalParamsDefinition || positionalParamsDefinition.length === 0 || args.positional.length === 0) {
@@ -47,13 +50,38 @@ class SimpleArgs {
 
     for (let i = 0, l = keys.length; i < l; i++) {
       let name = keys[i];
+      let ref = namedArgs.get(name);
       let value = attrs[name];
 
-      args[name] = namedArgs.get(name);
+      if (isMut(ref)) {
+        attrs[name] = new MutableCell(ref, value);
+      }
+
+      args[name] = ref;
       props[name] = value;
     }
 
     return { attrs, props };
+  }
+}
+
+const MUTABLE_CELL = symbol('MUTABLE_CELL');
+
+export function isCell(val) {
+  return val && val[MUTABLE_CELL];
+}
+
+const REF = symbol('REF');
+
+class MutableCell {
+  constructor(ref, value) {
+    this[MUTABLE_CELL] = true;
+    this[REF] = ref;
+    this.value = value;
+  }
+
+  update(val) {
+    this[REF][UPDATE](val);
   }
 }
 
