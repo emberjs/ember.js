@@ -2030,9 +2030,13 @@ var Route = EmberObject.extend(ActionHandler, Evented, {
         // into its outlets, which won't render anywhere. All of this
         // statefulness should get the machete in 2.0.
         this.connections[i] = {
+          owner: connection.owner,
           into: connection.into,
           outlet: connection.outlet,
-          name: connection.name
+          name: connection.name,
+          controller: undefined,
+          template: undefined,
+          ViewClass: undefined
         };
         run.once(this.router, '_setOutlets');
       }
@@ -2130,7 +2134,8 @@ function buildRenderOptions(route, namePassed, isDefaultRender, _name, options) 
     outlet,
     name,
     controller,
-    template: template || route._topLevelViewTemplate
+    template: template || route._topLevelViewTemplate,
+    ViewClass: undefined
   };
 
   assert(`Could not find "${name}" template, view, or component.`, isDefaultRender || template);
