@@ -55,10 +55,10 @@ WeakMap.prototype.get = function(obj) {
  * @return {WeakMap} the weak map
  */
 WeakMap.prototype.set = function(obj, value) {
-  assert(
-    'Uncaught TypeError: Invalid value used as weak map key',
-    obj && (typeof obj === 'object' || typeof obj === 'function')
-  );
+  let type = typeof obj;
+  if (!obj || (type !== 'object' && type !== 'function')) {
+    throw new TypeError('Invalid value used as weak map key');
+  }
 
   if (value === undefined) {
     value = UNDEFINED;
