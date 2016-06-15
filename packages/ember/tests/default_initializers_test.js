@@ -4,11 +4,11 @@ import Checkbox from 'ember-templates/components/checkbox';
 
 import run from 'ember-metal/run_loop';
 
-var App;
+let App;
 
 QUnit.module('Default Registry', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create({
         rootElement: '#qunit-fixture'
       });
@@ -31,7 +31,5 @@ QUnit.test('Default objects are registered', function(assert) {
     }
   });
 
-  run(function() {
-    App.advanceReadiness();
-  });
+  run(() => App.advanceReadiness());
 });

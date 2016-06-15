@@ -24,10 +24,10 @@ import { dasherize } from 'ember-runtime/system/string';
   @private
 */
 export function parsePropertyPath(path) {
-  var split = path.split(':');
-  var propertyPath = split[0];
-  var classNames = '';
-  var className, falsyClassName;
+  let split = path.split(':');
+  let propertyPath = split[0];
+  let classNames = '';
+  let className, falsyClassName;
 
   // check if the property is defined as prop:class or prop:trueClass:falseClass
   if (split.length > 1) {
@@ -96,7 +96,7 @@ export function classStringForValue(path, val, className, falsyClassName) {
     // Normalize property path to be suitable for use
     // as a class name. For exaple, content.foo.barBaz
     // becomes bar-baz.
-    var parts = path.split('.');
+    let parts = path.split('.');
     return dasherize(parts[parts.length - 1]);
 
   // If the value is not false, undefined, or null, return the current
@@ -114,7 +114,7 @@ export function classStringForValue(path, val, className, falsyClassName) {
 export function streamifyClassNameBinding(view, classNameBinding, prefix) {
   prefix = prefix || '';
   assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', classNameBinding.indexOf(' ') === -1);
-  var parsedPath = parsePropertyPath(classNameBinding);
+  let parsedPath = parsePropertyPath(classNameBinding);
   if (parsedPath.path === '') {
     return classStringForValue(
       parsedPath.path,
@@ -123,8 +123,8 @@ export function streamifyClassNameBinding(view, classNameBinding, prefix) {
       parsedPath.falsyClassName
     );
   } else {
-    var pathValue = view.getStream(prefix + parsedPath.path);
-    return chain(pathValue, function() {
+    let pathValue = view.getStream(prefix + parsedPath.path);
+    return chain(pathValue, () => {
       return classStringForValue(
         parsedPath.path,
         read(pathValue),

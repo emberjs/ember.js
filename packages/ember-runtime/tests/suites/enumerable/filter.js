@@ -1,7 +1,7 @@
 import EmberObject from 'ember-runtime/system/object';
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 // ..........................................................
 // filter()
@@ -10,11 +10,11 @@ var suite = SuiteModuleBuilder.create();
 suite.module('filter');
 
 suite.test('filter should invoke on each item', function() {
-  var obj = this.newObject();
-  var ary = this.toArray(obj);
-  var cnt = ary.length - 2;
-  var found = [];
-  var result;
+  let obj = this.newObject();
+  let ary = this.toArray(obj);
+  let cnt = ary.length - 2;
+  let found = [];
+  let result;
 
   // return true on all but the last two
   result = obj.filter(function(i) {
@@ -32,7 +32,7 @@ suite.test('filter should invoke on each item', function() {
 suite.module('filterBy');
 
 suite.test('should filter based on object', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { foo: 'foo', bar: 'BAZ' },
@@ -46,7 +46,7 @@ suite.test('should filter based on object', function() {
 });
 
 suite.test('should include in result if property is true', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { foo: 'foo', bar: true },
@@ -61,7 +61,7 @@ suite.test('should include in result if property is true', function() {
 });
 
 suite.test('should filter on second argument if provided', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -76,7 +76,7 @@ suite.test('should filter on second argument if provided', function() {
 });
 
 suite.test('should correctly filter null second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -91,7 +91,7 @@ suite.test('should correctly filter null second argument', function() {
 });
 
 suite.test('should not return all objects on undefined second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -104,7 +104,7 @@ suite.test('should not return all objects on undefined second argument', functio
 });
 
 suite.test('should correctly filter explicit undefined second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -121,7 +121,7 @@ suite.test('should correctly filter explicit undefined second argument', functio
 });
 
 suite.test('should not match undefined properties without second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },

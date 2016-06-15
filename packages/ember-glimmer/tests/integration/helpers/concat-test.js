@@ -95,5 +95,4 @@ moduleFor('Helpers test: {{concat}}', class extends RenderingTest {
 
     this.assertText('Truthy!');
   }
-
 });

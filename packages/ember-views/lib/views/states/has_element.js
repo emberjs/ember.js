@@ -11,16 +11,16 @@ import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 import { get } from 'ember-metal/property_get';
 
-var hasElement = Object.create(_default);
+const hasElement = Object.create(_default);
 
 assign(hasElement, {
   $(view, sel) {
-    var elem = view.element;
+    let elem = view.element;
     return sel ? jQuery(sel, elem) : jQuery(elem);
   },
 
   getElement(view) {
-    var parent = get(view, 'parentView');
+    let parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
     if (parent) { return view.findElementInParentElement(parent); }
     return jQuery('#' + get(view, 'elementId'))[0];

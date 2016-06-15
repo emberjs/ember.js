@@ -1,6 +1,6 @@
 import { onLoad } from 'ember-runtime/system/lazy_load';
 
-var name = 'deferReadiness in `testing` mode';
+let name = 'deferReadiness in `testing` mode';
 
 onLoad('Ember.Application', function(Application) {
   if (!Application.initializers[name]) {

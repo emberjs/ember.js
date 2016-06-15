@@ -16,8 +16,8 @@ import assign from 'ember-metal/assign';
 import { getOwner } from 'container/owner';
 import { environment } from 'ember-environment';
 
-let ROOT_ELEMENT_CLASS = 'ember-application';
-let ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
+const ROOT_ELEMENT_CLASS = 'ember-application';
+const ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -40,7 +40,7 @@ export default EmberObject.extend({
     To add new events to be listened to:
 
     ```javascript
-    var App = Ember.Application.create({
+    let App = Ember.Application.create({
       customEvents: {
         paste: 'paste'
       }
@@ -50,7 +50,7 @@ export default EmberObject.extend({
     To prevent default events from being listened to:
 
     ```javascript
-    var App = Ember.Application.create({
+    let App = Ember.Application.create({
       customEvents: {
         mouseenter: null,
         mouseleave: null
@@ -117,7 +117,7 @@ export default EmberObject.extend({
     `eventManager` on the view tree.
 
     ```javascript
-    var EventDispatcher = Em.EventDispatcher.extend({
+    let EventDispatcher = Em.EventDispatcher.extend({
       events: {
           click       : 'click',
           focusin     : 'focusIn',
@@ -155,8 +155,8 @@ export default EmberObject.extend({
     @param addedEvents {Object}
   */
   setup(addedEvents, rootElement) {
-    var event;
-    var events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
+    let event;
+    let events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
@@ -194,7 +194,7 @@ export default EmberObject.extend({
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler(rootElement, event, eventName) {
-    var self = this;
+    let self = this;
 
     let owner = getOwner(this);
     let viewRegistry = owner && owner.lookup('-view-registry:main') || View.views;
@@ -204,10 +204,10 @@ export default EmberObject.extend({
     }
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = viewRegistry[this.id];
-      var result = true;
+      let view = viewRegistry[this.id];
+      let result = true;
 
-      var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
+      let manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
 
       if (manager && manager !== triggeringManager) {
         result = self._dispatchEvent(manager, evt, eventName, view);
@@ -219,22 +219,22 @@ export default EmberObject.extend({
     });
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
-      var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
-      var actions = ActionManager.registeredActions[actionId];
+      let actionId = jQuery(evt.currentTarget).attr('data-ember-action');
+      let actions = ActionManager.registeredActions[actionId];
 
       // In Glimmer2 this attribute is set to an empty string and an additional
       // attribute it set for each action on a given element. In this case, the
       // attributes need to be read so that a proper set of action handlers can
       // be coalesced.
       if (actionId === '') {
-        var attributes = evt.currentTarget.attributes;
-        var attributeCount = attributes.length;
+        let attributes = evt.currentTarget.attributes;
+        let attributeCount = attributes.length;
 
         actions = [];
 
-        for (var i = 0; i < attributeCount; i++) {
-          var attr = attributes.item(i);
-          var attrName = attr.name;
+        for (let i = 0; i < attributeCount; i++) {
+          let attr = attributes.item(i);
+          let attrName = attr.name;
 
           if (attrName.indexOf('data-ember-action-') === 0) {
             actions = actions.concat(ActionManager.registeredActions[attr.value]);
@@ -260,7 +260,7 @@ export default EmberObject.extend({
   },
 
   _findNearestEventManager(view, eventName) {
-    var manager = null;
+    let manager = null;
 
     while (view) {
       manager = get(view, 'eventManager');
@@ -273,9 +273,9 @@ export default EmberObject.extend({
   },
 
   _dispatchEvent(object, evt, eventName, view) {
-    var result = true;
+    let result = true;
 
-    var handler = object[eventName];
+    let handler = object[eventName];
     if (typeof handler === 'function') {
       result = run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
@@ -292,7 +292,7 @@ export default EmberObject.extend({
   },
 
   destroy() {
-    var rootElement = get(this, 'rootElement');
+    let rootElement = get(this, 'rootElement');
     jQuery(rootElement).off('.ember', '**').removeClass(ROOT_ELEMENT_CLASS);
     return this._super(...arguments);
   },

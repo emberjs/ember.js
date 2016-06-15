@@ -45,12 +45,12 @@ function watch(obj, _keyPath, m) {
 export { watch };
 
 export function isWatching(obj, key) {
-  var meta = peekMeta(obj);
+  let meta = peekMeta(obj);
   return (meta && meta.peekWatching(key)) > 0;
 }
 
 export function watcherCount(obj, key) {
-  var meta = peekMeta(obj);
+  let meta = peekMeta(obj);
   return (meta && meta.peekWatching(key)) || 0;
 }
 
@@ -62,7 +62,7 @@ export function unwatch(obj, _keyPath, m) {
   }
 }
 
-var NODE_STACK = [];
+const NODE_STACK = [];
 
 /**
   Tears down the meta on an object so that it can be garbage collected.
@@ -75,8 +75,8 @@ var NODE_STACK = [];
   @private
 */
 export function destroy(obj) {
-  var meta = peekMeta(obj);
-  var node, nodes, key, nodeObject;
+  let meta = peekMeta(obj);
+  let node, nodes, key, nodeObject;
 
   if (meta) {
     deleteMeta(obj);

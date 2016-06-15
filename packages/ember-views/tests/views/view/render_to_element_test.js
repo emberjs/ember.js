@@ -4,7 +4,7 @@ import EmberView from 'ember-views/views/view';
 
 import { compile } from 'ember-htmlbars-template-compiler';
 
-var View, view;
+let View, view;
 
 QUnit.module('EmberView - renderToElement()', {
   setup() {
@@ -14,7 +14,7 @@ QUnit.module('EmberView - renderToElement()', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }
@@ -25,11 +25,7 @@ QUnit.test('should render into and return a body element', function() {
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  var element;
-
-  run(function() {
-    element = view.renderToElement();
-  });
+  let element = run(() => view.renderToElement());
 
   equal(element.tagName, 'BODY', 'returns a body element');
   equal(element.firstChild.tagName, 'DIV', 'renders the view div');
@@ -42,11 +38,7 @@ QUnit.test('should create and render into an element with a provided tagName', f
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  var element;
-
-  run(function() {
-    element = view.renderToElement('div');
-  });
+  let element = run(() => view.renderToElement('div'));
 
   equal(element.tagName, 'DIV', 'returns a body element');
   equal(element.firstChild.tagName, 'DIV', 'renders the view div');

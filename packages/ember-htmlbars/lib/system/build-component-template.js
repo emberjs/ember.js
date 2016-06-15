@@ -26,8 +26,8 @@ export default function buildComponentTemplate({ component, tagName, layout, out
     // element. We use `manualElement` to create a template that represents
     // the wrapping element and yields to the previous block.
     if (tagName !== '') {
-      var attributes = normalizeComponentAttributes(component, attrs);
-      var elementTemplate = internal.manualElement(tagName, attributes);
+      let attributes = normalizeComponentAttributes(component, attrs);
+      let elementTemplate = internal.manualElement(tagName, attributes);
       elementTemplate.meta = meta;
 
       blockToRender = createElementBlock(elementTemplate, blockToRender, component);
@@ -85,10 +85,10 @@ function createContentBlocks(templates, scope, self, component) {
   if (!templates) {
     return;
   }
-  var output = {};
-  for (var name in templates) {
+  let output = {};
+  for (let name in templates) {
     if (templates.hasOwnProperty(name)) {
-      var template = templates[name];
+      let template = templates[name];
       if (template) {
         output[name] = createContentBlock(templates[name], scope, self, component);
       }
@@ -122,7 +122,6 @@ function createElementBlock(template, yieldTo, component) {
 function tagNameFor(view) {
   let tagName = view.tagName;
 
-
   if (tagName === null || tagName === undefined) {
     tagName = view._defaultTagName || 'div';
   }
@@ -152,7 +151,7 @@ function normalizeComponentAttributes(component, attrs) {
 
       let attrName, expression;
       if (colonIndex !== -1) {
-        var attrProperty = attr.substring(0, colonIndex);
+        let attrProperty = attr.substring(0, colonIndex);
         attrName = attr.substring(colonIndex + 1);
         expression = ['get', `${streamBasePath}${attrProperty}`];
       } else if (attrs[attr]) {
@@ -182,8 +181,8 @@ function normalizeComponentAttributes(component, attrs) {
   }
 
   if (get(component, 'isVisible') === false) {
-    var hiddenStyle = ['subexpr', '-html-safe', ['display: none;'], []];
-    var existingStyle = normalized.style;
+    let hiddenStyle = ['subexpr', '-html-safe', ['display: none;'], []];
+    let existingStyle = normalized.style;
 
     if (existingStyle) {
       normalized.style = ['subexpr', 'concat', [existingStyle, ' ', hiddenStyle], [ ]];
@@ -196,10 +195,9 @@ function normalizeComponentAttributes(component, attrs) {
 }
 
 function normalizeClass(component, attrs, streamBasePath) {
-  var i;
-  var normalizedClass = [];
-  var classNames = get(component, 'classNames');
-  var classNameBindings = get(component, 'classNameBindings');
+  let normalizedClass = [];
+  let classNames = get(component, 'classNames');
+  let classNameBindings = get(component, 'classNameBindings');
 
   if (attrs.class) {
     if (isStream(attrs.class)) {
@@ -214,7 +212,7 @@ function normalizeClass(component, attrs, streamBasePath) {
   }
 
   if (classNames) {
-    for (i = 0; i < classNames.length; i++) {
+    for (let i = 0; i < classNames.length; i++) {
       normalizedClass.push(classNames[i]);
     }
   }
@@ -229,13 +227,11 @@ function normalizeClass(component, attrs, streamBasePath) {
 }
 
 function normalizeClasses(classes, output, streamBasePath) {
-  var i;
-
-  for (i = 0; i < classes.length; i++) {
-    var className = classes[i];
+  for (let i = 0; i < classes.length; i++) {
+    let className = classes[i];
     assert('classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. [\'foo\', \':bar\']', className.indexOf(' ') === -1);
 
-    var [propName, activeClass, inactiveClass] = className.split(':');
+    let [propName, activeClass, inactiveClass] = className.split(':');
 
     // Legacy :class microsyntax for static class names
     if (propName === '') {
@@ -243,7 +239,7 @@ function normalizeClasses(classes, output, streamBasePath) {
       continue;
     }
 
-    var prop = `${streamBasePath}${propName}`;
+    let prop = `${streamBasePath}${propName}`;
 
     output.push(['subexpr', '-normalize-class', [
       // params
@@ -259,7 +255,7 @@ function normalizeClasses(classes, output, streamBasePath) {
 
 function validateTaglessComponent(component) {
   assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), () => {
-    var classNameBindings = component.classNameBindings;
+    let classNameBindings = component.classNameBindings;
     return !classNameBindings || classNameBindings.length === 0;
   }());
 }

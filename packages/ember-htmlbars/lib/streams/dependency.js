@@ -17,7 +17,7 @@ import {
   @namespace Ember.streams
   @constructor
 */
-function Dependency(depender, dependee) {
+export default function Dependency(depender, dependee) {
   assert('Dependency error: Depender must be a stream', isStream(depender));
 
   this.next = null;
@@ -81,5 +81,3 @@ assign(Dependency.prototype, {
   //   this.unsubscribe();
   // }
 });
-
-export default Dependency;

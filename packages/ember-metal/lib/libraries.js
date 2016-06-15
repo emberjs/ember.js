@@ -19,10 +19,10 @@ Libraries.prototype = {
   constructor: Libraries,
 
   _getLibraryByName(name) {
-    var libs = this._registry;
-    var count = libs.length;
+    let libs = this._registry;
+    let count = libs.length;
 
-    for (var i = 0; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       if (libs[i].name === name) {
         return libs[i];
       }
@@ -30,7 +30,7 @@ Libraries.prototype = {
   },
 
   register(name, version, isCoreLibrary) {
-    var index = this._registry.length;
+    let index = this._registry.length;
 
     if (!this._getLibraryByName(name)) {
       if (isCoreLibrary) {
@@ -47,8 +47,8 @@ Libraries.prototype = {
   },
 
   deRegister(name) {
-    var lib = this._getLibraryByName(name);
-    var index;
+    let lib = this._getLibraryByName(name);
+    let index;
 
     if (lib) {
       index = this._registry.indexOf(lib);

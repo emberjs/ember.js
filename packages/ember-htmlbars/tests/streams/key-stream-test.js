@@ -3,7 +3,7 @@ import { Stream } from 'ember-htmlbars/streams/stream';
 import KeyStream from 'ember-htmlbars/streams/key-stream';
 import { set } from 'ember-metal/property_set';
 
-var source, object, count;
+let source, object, count;
 
 function incrementCount() {
   count++;
@@ -14,9 +14,7 @@ QUnit.module('KeyStream', {
     count = 0;
     object = { name: 'mmun' };
 
-    source = new Stream(function() {
-      return object;
-    });
+    source = new Stream(() => object);
   },
   teardown() {
     count = undefined;
@@ -26,17 +24,17 @@ QUnit.module('KeyStream', {
 });
 
 QUnit.test('can be instantiated manually', function() {
-  var nameStream = new KeyStream(source, 'name');
+  let nameStream = new KeyStream(source, 'name');
   equal(nameStream.value(), 'mmun', 'Stream value is correct');
 });
 
 QUnit.test('can be instantiated via `Stream.prototype.get`', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
   equal(nameStream.value(), 'mmun', 'Stream value is correct');
 });
 
 QUnit.test('is notified when the observed object\'s property is mutated', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, 'Subscribers called correct number of times');
@@ -49,7 +47,7 @@ QUnit.test('is notified when the observed object\'s property is mutated', functi
 });
 
 QUnit.test('is notified when the source stream\'s value changes to a new object', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, 'Subscribers called correct number of times');
@@ -68,7 +66,7 @@ QUnit.test('is notified when the source stream\'s value changes to a new object'
 });
 
 QUnit.test('is notified when the source stream\'s value changes to the same object', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, 'Subscribers called correct number of times');
@@ -86,16 +84,14 @@ QUnit.test('is notified when the source stream\'s value changes to the same obje
 });
 
 QUnit.test('is notified when setSource is called with a new stream whose value is a new object', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, 'Subscribers called correct number of times');
   equal(nameStream.value(), 'mmun', 'Stream value is correct');
 
   object = { name: 'wycats' };
-  nameStream.setSource(new Stream(function() {
-    return object;
-  }));
+  nameStream.setSource(new Stream(() => object));
 
   equal(count, 1, 'Subscribers called correct number of times');
   equal(nameStream.value(), 'wycats', 'Stream value is correct');
@@ -107,15 +103,13 @@ QUnit.test('is notified when setSource is called with a new stream whose value i
 });
 
 QUnit.test('is notified when setSource is called with a new stream whose value is the same object', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
   nameStream.subscribe(incrementCount);
 
   equal(count, 0, 'Subscribers called correct number of times');
   equal(nameStream.value(), 'mmun', 'Stream value is correct');
 
-  nameStream.setSource(new Stream(function() {
-    return object;
-  }));
+  nameStream.setSource(new Stream(() => object));
 
   equal(count, 1, 'Subscribers called correct number of times');
   equal(nameStream.value(), 'mmun', 'Stream value is correct');
@@ -127,7 +121,7 @@ QUnit.test('is notified when setSource is called with a new stream whose value i
 });
 
 QUnit.test('adds and removes key observers on activation and deactivation', function() {
-  var nameStream = source.get('name');
+  let nameStream = source.get('name');
 
   ok(!isWatching(object, 'name'), 'Key is not observered immediately after creation');
 
@@ -135,7 +129,7 @@ QUnit.test('adds and removes key observers on activation and deactivation', func
 
   ok(!isWatching(object, 'name'), 'Key is not observered after calling value with no subscribers');
 
-  var firstCallback = function() {};
+  let firstCallback = function() {};
   nameStream.subscribe(firstCallback);
 
   ok(!isWatching(object, 'name'), 'Key is not observered immediately after first subscription');
@@ -144,7 +138,7 @@ QUnit.test('adds and removes key observers on activation and deactivation', func
 
   ok(isWatching(object, 'name'), 'Key is observered after activation');
 
-  var secondCallback = function() {};
+  let secondCallback = function() {};
   nameStream.subscribe(secondCallback);
 
   ok(isWatching(object, 'name'), 'Key is still observered after second subscription is added');
@@ -159,8 +153,8 @@ QUnit.test('adds and removes key observers on activation and deactivation', func
 });
 
 QUnit.test('removes key observers on destruction', function() {
-  var nameStream = source.get('name');
-  nameStream.subscribe(function() {});
+  let nameStream = source.get('name');
+  nameStream.subscribe(() => {});
   nameStream.value();
 
   ok(isWatching(object, 'name'), '(Precondition) Key is observered after activation');
@@ -171,13 +165,13 @@ QUnit.test('removes key observers on destruction', function() {
 });
 
 QUnit.test('manages key observers correctly when the object changes', function() {
-  var nameStream = source.get('name');
-  nameStream.subscribe(function() {});
+  let nameStream = source.get('name');
+  nameStream.subscribe(() => {});
   nameStream.value();
 
   ok(isWatching(object, 'name'), '(Precondition) Key is observered after activation');
 
-  var prevObject = object;
+  let prevObject = object;
   object = { name: 'wycats' };
   source.notify();
 

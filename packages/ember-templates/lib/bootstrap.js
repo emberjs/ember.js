@@ -38,18 +38,18 @@ import {
   @param ctx
 */
 function bootstrap(ctx) {
-  var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
+  let selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
 
   jQuery(selectors, ctx)
-    .each(function() {
+  .each(function() {
     // Get a reference to the script tag.
-    var script = jQuery(this);
+    let script = jQuery(this);
 
     // Get the name of the script, used by Ember.View's templateName property.
     // First look for data-template-name attribute, then fall back to its
     // id if no name is found.
-    var templateName = script.attr('data-template-name') || script.attr('id') || 'application';
-    var template, compile;
+    let templateName = script.attr('data-template-name') || script.attr('id') || 'application';
+    let template, compile;
 
     if (script.attr('type') === 'text/x-raw-handlebars') {
       compile = jQuery.proxy(Handlebars.compile, Handlebars);

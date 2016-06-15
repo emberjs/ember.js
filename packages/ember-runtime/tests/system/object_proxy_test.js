@@ -7,16 +7,16 @@ import ObjectProxy from 'ember-runtime/system/object_proxy';
 QUnit.module('ObjectProxy');
 
 testBoth('should not proxy properties passed to create', function (get, set) {
-  var Proxy = ObjectProxy.extend({
+  let Proxy = ObjectProxy.extend({
     cp: computed({
-      get: function(key) { return this._cp; },
-      set: function(key, value) {
+      get(key) { return this._cp; },
+      set(key, value) {
         this._cp = value;
         return this._cp;
       }
     })
   });
-  var proxy = Proxy.create({
+  let proxy = Proxy.create({
     prop: 'Foo',
     cp: 'Bar'
   });
@@ -26,15 +26,15 @@ testBoth('should not proxy properties passed to create', function (get, set) {
 });
 
 testBoth('should proxy properties to content', function(get, set) {
-  var content = {
+  let content = {
         firstName: 'Tom',
         lastName: 'Dale',
         unknownProperty(key) { return key + ' unknown';}
       };
-  var proxy = ObjectProxy.create();
+  let proxy = ObjectProxy.create();
 
   equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');
-  expectAssertion(function () {
+  expectAssertion(() => {
     set(proxy, 'firstName', 'Foo');
   }, /Cannot delegate set\('firstName', Foo\) to the 'content'/i);
 
@@ -56,15 +56,15 @@ testBoth('should proxy properties to content', function(get, set) {
 });
 
 testBoth('should work with watched properties', function(get, set) {
-  var content1 = { firstName: 'Tom', lastName: 'Dale' };
-  var content2 = { firstName: 'Yehuda', lastName: 'Katz' };
-  var count = 0;
-  var Proxy, proxy, last;
+  let content1 = { firstName: 'Tom', lastName: 'Dale' };
+  let content2 = { firstName: 'Yehuda', lastName: 'Katz' };
+  let count = 0;
+  let last;
 
-  Proxy = ObjectProxy.extend({
+  let Proxy = ObjectProxy.extend({
     fullName: computed(function () {
-      var firstName = this.get('firstName');
-      var lastName = this.get('lastName');
+      let firstName = this.get('firstName');
+      let lastName = this.get('lastName');
 
       if (firstName && lastName) {
         return firstName + ' ' + lastName;
@@ -73,7 +73,7 @@ testBoth('should work with watched properties', function(get, set) {
     }).property('firstName', 'lastName')
   });
 
-  proxy = Proxy.create();
+  let proxy = Proxy.create();
 
   addObserver(proxy, 'fullName', function () {
     last = get(proxy, 'fullName');
@@ -117,9 +117,9 @@ testBoth('should work with watched properties', function(get, set) {
 });
 
 QUnit.test('set and get should work with paths', function () {
-  var content = { foo: { bar: 'baz' } };
-  var proxy = ObjectProxy.create({ content: content });
-  var count = 0;
+  let content = { foo: { bar: 'baz' } };
+  let proxy = ObjectProxy.create({ content });
+  let count = 0;
 
   proxy.set('foo.bar', 'hello');
   equal(proxy.get('foo.bar'), 'hello');
@@ -137,9 +137,9 @@ QUnit.test('set and get should work with paths', function () {
 });
 
 testBoth('should transition between watched and unwatched strategies', function(get, set) {
-  var content = { foo: 'foo' };
-  var proxy = ObjectProxy.create({ content: content });
-  var count = 0;
+  let content = { foo: 'foo' };
+  let proxy = ObjectProxy.create({ content: content });
+  let count = 0;
 
   function observer() {
     count++;
@@ -185,7 +185,7 @@ testBoth('should transition between watched and unwatched strategies', function(
 });
 
 testBoth('setting `undefined` to a proxied content property should override its existing value', function(get, set) {
-  var proxyObject = ObjectProxy.create({
+  let proxyObject = ObjectProxy.create({
     content: {
       prop: 'emberjs'
     }

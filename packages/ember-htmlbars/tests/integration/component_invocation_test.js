@@ -5,7 +5,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-var owner, component;
+let owner, component;
 
 function commonSetup() {
   owner = buildOwner();
@@ -33,13 +33,13 @@ QUnit.module('component - invocation', {
 QUnit.test('moduleName is available on _renderNode when a layout is present', function() {
   expect(1);
 
-  var layoutModuleName = 'my-app-name/templates/components/sample-component';
-  var sampleComponentLayout = compile('Sample Component - {{yield}}', {
+  let layoutModuleName = 'my-app-name/templates/components/sample-component';
+  let sampleComponentLayout = compile('Sample Component - {{yield}}', {
     moduleName: layoutModuleName
   });
   owner.register('template:components/sample-component', sampleComponentLayout);
   owner.register('component:sample-component', Component.extend({
-    didInsertElement: function() {
+    didInsertElement() {
       equal(this._renderNode.lastResult.template.meta.moduleName, layoutModuleName);
     }
   }));
@@ -55,9 +55,9 @@ QUnit.test('moduleName is available on _renderNode when a layout is present', fu
 QUnit.test('moduleName is available on _renderNode when no layout is present', function() {
   expect(1);
 
-  var templateModuleName = 'my-app-name/templates/application';
+  let templateModuleName = 'my-app-name/templates/application';
   owner.register('component:sample-component', Component.extend({
-    didInsertElement: function() {
+    didInsertElement() {
       equal(this._renderNode.lastResult.template.meta.moduleName, templateModuleName);
     }
   }));

@@ -8,23 +8,22 @@ export default EmberObject.extend({
     return bucketKey in this.cache;
   },
   stash(bucketKey, key, value) {
-    var bucket = this.cache[bucketKey];
+    let bucket = this.cache[bucketKey];
     if (!bucket) {
       bucket = this.cache[bucketKey] = {};
     }
     bucket[key] = value;
   },
   lookup(bucketKey, prop, defaultValue) {
-    var cache = this.cache;
+    let cache = this.cache;
     if (!(bucketKey in cache)) {
       return defaultValue;
     }
-    var bucket = cache[bucketKey];
+    let bucket = cache[bucketKey];
     if (prop in bucket) {
       return bucket[prop];
     } else {
       return defaultValue;
     }
-  },
-  cache: null
+  }
 });

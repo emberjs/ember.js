@@ -4,7 +4,7 @@ import {
   escapeExpression
 } from 'ember-htmlbars/utils/string';
 
-var EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
+const EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
 
 EmberHandlebars.SafeString = SafeString;
 EmberHandlebars.Utils =  {

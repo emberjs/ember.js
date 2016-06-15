@@ -1,6 +1,6 @@
 import expandProperties from 'ember-metal/expand_properties';
 
-var foundProperties = [];
+let foundProperties = [];
 
 function addProperty(property) {
   foundProperties.push(property);
@@ -36,7 +36,7 @@ QUnit.test('A property with only a brace expansion expands correctly', function(
 
   expandProperties('{a,b,c}', addProperty);
 
-  var expected = ['a', 'b', 'c'];
+  let expected = ['a', 'b', 'c'];
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
@@ -53,7 +53,7 @@ QUnit.test('A single brace expansion expands correctly', function() {
 
   expandProperties('a.{b,c,d}.e', addProperty);
 
-  var expected = ['a.b.e', 'a.c.e', 'a.d.e'];
+  let expected = ['a.b.e', 'a.c.e', 'a.d.e'];
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
@@ -62,7 +62,7 @@ QUnit.test('Multiple brace expansions work correctly', function() {
 
   expandProperties('{a,b,c}.d.{e,f}.g', addProperty);
 
-  var expected = ['a.d.e.g', 'a.d.f.g', 'b.d.e.g', 'b.d.f.g', 'c.d.e.g', 'c.d.f.g'];
+  let expected = ['a.d.e.g', 'a.d.f.g', 'b.d.e.g', 'b.d.f.g', 'c.d.e.g', 'c.d.f.g'];
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
@@ -71,14 +71,14 @@ QUnit.test('A property with only brace expansions expands correctly', function()
 
   expandProperties('{a,b,c}.{d}.{e,f}', addProperty);
 
-  var expected = ['a.d.e', 'a.d.f', 'b.d.e', 'b.d.f', 'c.d.e', 'c.d.f'];
+  let expected = ['a.d.e', 'a.d.f', 'b.d.e', 'b.d.f', 'c.d.e', 'c.d.f'];
   deepEqual(expected.sort(), foundProperties.sort());
 });
 
 QUnit.test('A pattern must be a string', function() {
   expect(1);
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     expandProperties([], addProperty);
   }, /A computed property key must be a string/);
 });
@@ -86,7 +86,7 @@ QUnit.test('A pattern must be a string', function() {
 QUnit.test('A pattern must not contain a space', function() {
   expect(1);
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     expandProperties('a, b', addProperty);
   }, /Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"/);
 });

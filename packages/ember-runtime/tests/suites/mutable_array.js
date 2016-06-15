@@ -10,7 +10,7 @@ import shiftObjectTests from 'ember-runtime/tests/suites/mutable_array/shiftObje
 import unshiftObjectTests from 'ember-runtime/tests/suites/mutable_array/unshiftObject';
 import reverseObjectsTests from 'ember-runtime/tests/suites/mutable_array/reverseObjects';
 
-var MutableArrayTests = ArrayTests.extend();
+const MutableArrayTests = ArrayTests.extend();
 MutableArrayTests.importModuleTests(insertAtTests);
 MutableArrayTests.importModuleTests(popObjectTests);
 MutableArrayTests.importModuleTests(pushObjectTests);

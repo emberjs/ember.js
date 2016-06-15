@@ -7,9 +7,9 @@ import { A as emberA } from 'ember-runtime/system/native_array';
 QUnit.module('ArrayProxy - content change');
 
 QUnit.test('should update length for null content', function() {
-  var proxy = ArrayProxy.create({
-        content: emberA([1, 2, 3])
-      });
+  let proxy = ArrayProxy.create({
+    content: emberA([1, 2, 3])
+  });
 
   equal(proxy.get('length'), 3, 'precond - length is 3');
 
@@ -19,7 +19,7 @@ QUnit.test('should update length for null content', function() {
 });
 
 QUnit.test('should update length for null content when there is a computed property watching length', function() {
-  var proxy = ArrayProxy.extend({
+  let proxy = ArrayProxy.extend({
     isEmpty: not('length')
   }).create({
     content: emberA([1, 2, 3])
@@ -37,10 +37,10 @@ QUnit.test('should update length for null content when there is a computed prope
 });
 
 QUnit.test('The `arrangedContentWillChange` method is invoked before `content` is changed.', function() {
-  var callCount = 0;
-  var expectedLength;
+  let callCount = 0;
+  let expectedLength;
 
-  var proxy = ArrayProxy.extend({
+  let proxy = ArrayProxy.extend({
     arrangedContentWillChange() {
       equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked before array has changed');
       callCount++;
@@ -59,10 +59,10 @@ QUnit.test('The `arrangedContentWillChange` method is invoked before `content` i
 });
 
 QUnit.test('The `arrangedContentDidChange` method is invoked after `content` is changed.', function() {
-  var callCount = 0;
-  var expectedLength;
+  let callCount = 0;
+  let expectedLength;
 
-  var proxy = ArrayProxy.extend({
+  let proxy = ArrayProxy.extend({
     arrangedContentDidChange() {
       equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked after array has changed');
       callCount++;
@@ -85,12 +85,10 @@ QUnit.test('The `arrangedContentDidChange` method is invoked after `content` is 
 });
 
 QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', function() {
-  var proxy1 = ArrayProxy.create();
-  var proxy2 = ArrayProxy.create();
+  let proxy1 = ArrayProxy.create();
+  let proxy2 = ArrayProxy.create();
 
-  run(function() {
-    proxy1.destroy();
-  });
+  run(() => proxy1.destroy());
 
   set(proxy2, 'content', proxy1);
 

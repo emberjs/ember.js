@@ -33,7 +33,7 @@ QUnit.test('object', function() {
 });
 
 QUnit.test('objects without a prototype', function() {
-  var prototypelessObj = Object.create(null);
+  let prototypelessObj = Object.create(null);
   equal(inspect({ foo: prototypelessObj }), '{foo: [object Object]}');
 });
 
@@ -46,7 +46,7 @@ QUnit.test('regexp', function() {
 });
 
 QUnit.test('date', function() {
-  var inspected = inspect(new Date('Sat Apr 30 2011 13:24:11'));
+  let inspected = inspect(new Date('Sat Apr 30 2011 13:24:11'));
   ok(inspected.match(/Sat Apr 30/), 'The inspected date has its date');
   ok(inspected.match(/2011/), 'The inspected date has its year');
   ok(inspected.match(/13:24:11/), 'The inspected date has its time');

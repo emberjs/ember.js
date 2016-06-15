@@ -2,7 +2,7 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import HistoryLocation from 'ember-routing/location/history_location';
 
-var FakeHistory, HistoryTestLocation, location;
+let FakeHistory, HistoryTestLocation, location;
 
 function createLocation(options) {
   if (!options) { options = {}; }
@@ -12,11 +12,11 @@ function createLocation(options) {
 function mockBrowserLocation(path) {
   // This is a neat trick to auto-magically extract the hostname from any
   // url by letting the browser do the work ;)
-  var tmp = document.createElement('a');
+  let tmp = document.createElement('a');
   tmp.href = path;
 
-  var protocol = (!tmp.protocol || tmp.protocol === ':') ? 'http' : tmp.protocol;
-  var pathname = (tmp.pathname.match(/^\//)) ? tmp.pathname : '/' + tmp.pathname;
+  let protocol = (!tmp.protocol || tmp.protocol === ':') ? 'http' : tmp.protocol;
+  let pathname = (tmp.pathname.match(/^\//)) ? tmp.pathname : '/' + tmp.pathname;
 
   return {
     hash: tmp.hash,
@@ -51,7 +51,7 @@ QUnit.module('Ember.HistoryLocation', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       if (location) { location.destroy(); }
     });
   }

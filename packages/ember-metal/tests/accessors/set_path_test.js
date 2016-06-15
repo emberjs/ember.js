@@ -5,7 +5,7 @@ import { get } from 'ember-metal/property_get';
 let originalLookup = context.lookup;
 let lookup;
 
-var obj;
+let obj;
 function commonSetup() {
   context.lookup = lookup = {};
   obj = {
@@ -58,7 +58,7 @@ QUnit.module('set with path - deprecated', {
 });
 
 QUnit.test('[obj, bla.bla] gives a proper exception message', function() {
-  var exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
+  let exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
   try {
     set(obj, 'bla.bla', 'BAM');
   } catch(ex) {
@@ -67,9 +67,7 @@ QUnit.test('[obj, bla.bla] gives a proper exception message', function() {
 });
 
 QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  throws(function() {
-    set(obj, 'foo.baz.bat', 'BAM');
-  }, Error);
+  throws(() => set(obj, 'foo.baz.bat', 'BAM'));
 });
 
 QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {

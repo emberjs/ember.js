@@ -13,7 +13,7 @@ QUnit.module('Controller event handling');
 QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
   expect(2);
 
-  var controller = Controller.extend({
+  let controller = Controller.extend({
     actions: {
       foo: function() {
         ok(true, 'called foo action');
@@ -28,20 +28,20 @@ QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
 
 QUnit.test('Action can be handled by a function on actions object', function() {
   expect(1);
-  var TestController = Controller.extend({
+  let TestController = Controller.extend({
     actions: {
       poke() {
         ok(true, 'poked');
       }
     }
   });
-  var controller = TestController.create();
+  let controller = TestController.create();
   controller.send('poke');
 });
 
 QUnit.test('A handled action can be bubbled to the target for continued processing', function() {
   expect(2);
-  var TestController = Controller.extend({
+  let TestController = Controller.extend({
     actions: {
       poke() {
         ok(true, 'poked 1');
@@ -50,7 +50,7 @@ QUnit.test('A handled action can be bubbled to the target for continued processi
     }
   });
 
-  var controller = TestController.create({
+  let controller = TestController.create({
     target: Controller.extend({
       actions: {
         poke() {
@@ -65,7 +65,7 @@ QUnit.test('A handled action can be bubbled to the target for continued processi
 QUnit.test('Action can be handled by a superclass\' actions object', function() {
   expect(4);
 
-  var SuperController = Controller.extend({
+  let SuperController = Controller.extend({
     actions: {
       foo() {
         ok(true, 'foo');
@@ -76,7 +76,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
     }
   });
 
-  var BarControllerMixin = Mixin.create({
+  let BarControllerMixin = Mixin.create({
     actions: {
       bar(msg) {
         equal(msg, 'HELLO');
@@ -85,7 +85,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
     }
   });
 
-  var IndexController = SuperController.extend(BarControllerMixin, {
+  let IndexController = SuperController.extend(BarControllerMixin, {
     actions: {
       baz() {
         ok(true, 'baz');
@@ -93,7 +93,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
     }
   });
 
-  var controller = IndexController.create({});
+  let controller = IndexController.create({});
   controller.send('foo');
   controller.send('bar', 'HELLO');
   controller.send('baz');
@@ -105,7 +105,7 @@ QUnit.module('Controller Content -> Model Alias');
 
 QUnit.test('`model` is aliased as `content`', function() {
   expect(1);
-  var controller = Controller.extend({
+  let controller = Controller.extend({
     model: 'foo-bar'
   }).create();
 
@@ -114,7 +114,7 @@ QUnit.test('`model` is aliased as `content`', function() {
 
 QUnit.test('`content` is moved to `model` when `model` is unset', function() {
   expect(2);
-  var controller;
+  let controller;
 
   ignoreDeprecation(function() {
     controller = Controller.extend({
@@ -128,7 +128,7 @@ QUnit.test('`content` is moved to `model` when `model` is unset', function() {
 
 QUnit.test('specifying `content` (without `model` specified) results in deprecation', function() {
   expect(1);
-  var controller;
+  let controller;
 
   expectDeprecation(function() {
     controller = Controller.extend({
@@ -141,7 +141,7 @@ QUnit.test('specifying `content` (with `model` specified) does not result in dep
   expect(3);
   expectNoDeprecation();
 
-  var controller = Controller.extend({
+  let controller = Controller.extend({
     content: 'foo-bar',
     model: 'blammo'
   }).create();
@@ -157,7 +157,7 @@ if (!EmberDev.runningProdBuild) {
     expectAssertion(function() {
       let owner = buildOwner();
 
-      var AnObject = Object.extend({
+      let AnObject = Object.extend({
         foo: inject.controller('bar')
       });
 
@@ -177,8 +177,8 @@ QUnit.test('controllers can be injected into controllers', function() {
 
   owner.register('controller:posts', Controller.extend());
 
-  var postController = owner.lookup('controller:post');
-  var postsController = owner.lookup('controller:posts');
+  let postController = owner.lookup('controller:post');
+  let postsController = owner.lookup('controller:posts');
 
   equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
@@ -192,8 +192,8 @@ QUnit.test('services can be injected into controllers', function() {
 
   owner.register('service:auth', Service.extend());
 
-  var appController = owner.lookup('controller:application');
-  var authService = owner.lookup('service:auth');
+  let appController = owner.lookup('controller:application');
+  let authService = owner.lookup('service:auth');
 
   equal(authService, appController.get('authService'), 'service.auth is injected');
 });

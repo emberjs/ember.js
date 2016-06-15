@@ -8,7 +8,7 @@ import { environment } from 'ember-environment';
   @submodule ember-testing
 */
 
-var $ = jQuery;
+const $ = jQuery;
 
 /**
   This method creates a checkbox and triggers the click event to fire the

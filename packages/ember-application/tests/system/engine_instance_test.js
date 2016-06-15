@@ -9,7 +9,7 @@ let engine, engineInstance;
 
 QUnit.module('Ember.EngineInstance', {
   setup() {
-    run(function() {
+    run(() => {
       engine = Engine.create({ router: null });
     });
   },
@@ -26,7 +26,7 @@ QUnit.module('Ember.EngineInstance', {
 });
 
 QUnit.test('an engine instance can be created based upon a base engine', function() {
-  run(function() {
+  run(() => {
     engineInstance = EngineInstance.create({ base: engine });
   });
 
@@ -37,9 +37,7 @@ QUnit.test('an engine instance can be created based upon a base engine', functio
 QUnit.test('unregistering a factory clears all cached instances of that factory', function(assert) {
   assert.expect(3);
 
-  run(function() {
-    engineInstance = EngineInstance.create({ base: engine });
-  });
+  engineInstance = run(() => EngineInstance.create({ base: engine }));
 
   let PostComponent = factory();
 
@@ -61,11 +59,9 @@ if (isEnabled('ember-application-engines')) {
   QUnit.test('can be booted when its parent has been set', function(assert) {
     assert.expect(3);
 
-    run(function() {
-      engineInstance = EngineInstance.create({ base: engine });
-    });
+    engineInstance = run(() => EngineInstance.create({ base: engine }));
 
-    expectAssertion(function() {
+    expectAssertion(() => {
       engineInstance._bootSync();
     }, 'An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.');
 
@@ -88,11 +84,11 @@ if (isEnabled('ember-application-engines')) {
 
     engine.register('engine:chat', ChatEngine);
 
-    run(function() {
+    run(() => {
       engineInstance = EngineInstance.create({ base: engine });
 
       // Try to build an unregistered engine.
-      throws(function() {
+      throws(() => {
         engineInstance.buildChildEngineInstance('fake');
       }, `You attempted to mount the engine 'fake', but it is not registered with its parent.`);
 

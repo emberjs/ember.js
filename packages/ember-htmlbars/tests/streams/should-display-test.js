@@ -37,19 +37,19 @@ QUnit.test('predicate permutations', function() {
   falseFunction.isTruthy = true;
   equal(shouldDisplay(trueFunction), true, 'shouldDisplay(function.isTruthy = true)');
 
-  var truthyObj = { };
+  let truthyObj = { };
   defineProperty(truthyObj, 'isTruthy', computed(() => true));
   equal(shouldDisplay(truthyObj), true, 'shouldDisplay(obj.get("isTruthy") === true)');
 
-  var falseyObj = { };
+  let falseyObj = { };
   defineProperty(falseyObj, 'isTruthy', computed(() => false));
   equal(shouldDisplay(falseyObj), false, 'shouldDisplay(obj.get("isFalsey") === false)');
 
-  var falsyArray = [1];
+  let falsyArray = [1];
   falsyArray.isTruthy = false;
   equal(shouldDisplay(falsyArray), false, '[1].isTruthy = false');
 
-  var falseyCPArray = [1];
+  let falseyCPArray = [1];
   defineProperty(falseyCPArray, 'isTruthy', computed(() => false));
   equal(shouldDisplay(falseyCPArray), false, 'shouldDisplay([1].get("isFalsey") === true');
 });

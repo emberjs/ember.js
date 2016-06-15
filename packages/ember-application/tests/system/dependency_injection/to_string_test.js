@@ -5,7 +5,7 @@ import EmberObject from 'ember-runtime/system/object';
 import DefaultResolver from 'ember-application/system/resolver';
 import { guidFor } from 'ember-metal/utils';
 
-var originalLookup, App, originalModelInjections;
+let originalLookup, App, originalModelInjections;
 
 QUnit.module('Ember.Application Dependency Injection – toString', {
   setup() {
@@ -14,7 +14,7 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
 
     originalLookup = context.lookup;
 
-    run(function() {
+    run(() => {
       App = Application.create();
       context.lookup = {
         App: App
@@ -32,13 +32,13 @@ QUnit.module('Ember.Application Dependency Injection – toString', {
 });
 
 QUnit.test('factories', function() {
-  var PostFactory = App.__container__.lookupFactory('model:post');
+  let PostFactory = App.__container__.lookupFactory('model:post');
   equal(PostFactory.toString(), 'App.Post', 'expecting the model to be post');
 });
 
 QUnit.test('instances', function() {
-  var post = App.__container__.lookup('model:post');
-  var guid = guidFor(post);
+  let post = App.__container__.lookup('model:post');
+  let guid = guidFor(post);
 
   equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
 });
@@ -46,7 +46,7 @@ QUnit.test('instances', function() {
 QUnit.test('with a custom resolver', function() {
   run(App, 'destroy');
 
-  run(function() {
+  run(() => {
     App = Application.create({
       Resolver: DefaultResolver.extend({
         makeToString(factory, fullName) {
@@ -58,8 +58,8 @@ QUnit.test('with a custom resolver', function() {
 
   App.register('model:peter', EmberObject.extend());
 
-  var peter = App.__container__.lookup('model:peter');
-  var guid = guidFor(peter);
+  let peter = App.__container__.lookup('model:peter');
+  let guid = guidFor(peter);
 
   equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
 });

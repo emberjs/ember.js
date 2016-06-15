@@ -76,10 +76,10 @@ export default {
   },
 
   setupState(state, env, scope, params, hash) {
-    var outletState = env.outletState;
-    var read = env.hooks.getValue;
-    var outletName = read(params[0]) || 'main';
-    var selectedOutletState = outletState[outletName];
+    let outletState = env.outletState;
+    let read = env.hooks.getValue;
+    let outletName = read(params[0]) || 'main';
+    let selectedOutletState = outletState[outletName];
 
     return {
       outletState: selectedOutletState,
@@ -158,7 +158,7 @@ function isStable(a, b) {
   }
   a = a.render;
   b = b.render;
-  for (var key in a) {
+  for (let key in a) {
     if (a.hasOwnProperty(key)) {
       // Name is only here for logging & debugging. If two different
       // names result in otherwise identical states, they're still

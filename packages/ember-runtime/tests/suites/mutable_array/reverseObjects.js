@@ -1,17 +1,16 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('reverseObjects');
 
 suite.test('[A,B,C].reverseObjects() => [] + notify', function () {
-  var obj, before, after, observer;
+  let before = this.newFixture(3);
+  let after  = [before[2], before[1], before[0]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  after  = [before[2], before[1], before[0]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.reverseObjects(), obj, 'return self');

@@ -5,7 +5,7 @@ import {
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 
-var view, beforeCalls, afterCalls;
+let view, beforeCalls, afterCalls;
 
 function confirmPayload(payload, view) {
   equal(payload && payload.object, view.toString(), 'payload object equals view.toString()');
@@ -44,7 +44,7 @@ QUnit.module('EmberView#instrumentation', {
 });
 
 QUnit.test('generates the proper instrumentation details when called directly', function() {
-  var payload = {};
+  let payload = {};
 
   view.instrumentDetails(payload);
 

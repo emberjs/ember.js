@@ -1,15 +1,14 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('popObject');
 
 suite.test('[].popObject() => [] + returns undefined + NO notify', function() {
-  var obj, observer;
+  let obj = this.newObject([]);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  obj = this.newObject([]);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.popObject(), undefined, 'popObject results');
@@ -24,15 +23,14 @@ suite.test('[].popObject() => [] + returns undefined + NO notify', function() {
 });
 
 suite.test('[X].popObject() => [] + notify', function() {
-  var obj, before, after, observer, ret;
+  let before = this.newFixture(1);
+  let after  = [];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(1);
-  after  = [];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  ret = obj.popObject();
+  let ret = obj.popObject();
 
   equal(ret, before[0], 'return object');
   deepEqual(this.toArray(obj), after, 'post item results');
@@ -46,15 +44,14 @@ suite.test('[X].popObject() => [] + notify', function() {
 });
 
 suite.test('[A,B,C].popObject() => [A,B] + notify', function() {
-  var obj, before, after, observer, ret;
+  let before = this.newFixture(3);
+  let after  = [before[0], before[1]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  after  = [before[0], before[1]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  ret = obj.popObject();
+  let ret = obj.popObject();
 
   equal(ret, before[2], 'return object');
   deepEqual(this.toArray(obj), after, 'post item results');

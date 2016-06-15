@@ -1,7 +1,7 @@
 import { get } from 'ember-metal/property_get';
 
-var obj;
-var moduleOpts = {
+let obj;
+const moduleOpts = {
   setup() {
     obj = {
       foo: {

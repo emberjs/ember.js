@@ -37,8 +37,7 @@ import {
 function ROOT() {}
 ROOT.__hasSuper = false;
 
-var REQUIRED;
-var a_slice = [].slice;
+const a_slice = [].slice;
 
 function isMethod(obj) {
   return 'function' === typeof obj &&
@@ -51,10 +50,10 @@ function isMethod(obj) {
          obj !== String;
 }
 
-var CONTINUE = {};
+const CONTINUE = {};
 
 function mixinProperties(mixinsMeta, mixin) {
-  var guid;
+  let guid;
 
   if (mixin instanceof Mixin) {
     guid = guidFor(mixin);
@@ -67,7 +66,7 @@ function mixinProperties(mixinsMeta, mixin) {
 }
 
 function concatenatedMixinProperties(concatProp, props, values, base) {
-  var concats;
+  let concats;
 
   // reset before adding each new mixin to pickup concats from previous
   concats = values[concatProp] || base[concatProp];
@@ -79,7 +78,7 @@ function concatenatedMixinProperties(concatProp, props, values, base) {
 }
 
 function giveDescriptorSuper(meta, key, property, values, descs, base) {
-  var superProperty;
+  let superProperty;
 
   // Computed properties override methods, and do not call super to them
   if (values[key] === undefined) {
@@ -90,8 +89,8 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // If we didn't find the original descriptor in a parent mixin, find
   // it on the original object.
   if (!superProperty) {
-    var possibleDesc = base[key];
-    var superDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let possibleDesc = base[key];
+    let superDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
 
     superProperty = superDesc;
   }
@@ -117,7 +116,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
 }
 
 function giveMethodSuper(obj, key, method, values, descs) {
-  var superMethod;
+  let superMethod;
 
   // Methods overwrite computed properties, and do not call super to them.
   if (descs[key] === undefined) {
@@ -138,7 +137,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
-  var baseValue = values[key] || obj[key];
+  let baseValue = values[key] || obj[key];
 
   if (baseValue) {
     if ('function' === typeof baseValue.concat) {
@@ -156,7 +155,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 }
 
 function applyMergedProperties(obj, key, value, values) {
-  var baseValue = values[key] || obj[key];
+  let baseValue = values[key] || obj[key];
 
   runInDebug(function() {
     if (Array.isArray(value)) { // use conditional to avoid stringifying every time
@@ -166,13 +165,13 @@ function applyMergedProperties(obj, key, value, values) {
 
   if (!baseValue) { return value; }
 
-  var newBase = assign({}, baseValue);
-  var hasFunction = false;
+  let newBase = assign({}, baseValue);
+  let hasFunction = false;
 
-  for (var prop in value) {
+  for (let prop in value) {
     if (!value.hasOwnProperty(prop)) { continue; }
 
-    var propValue = value[prop];
+    let propValue = value[prop];
     if (isMethod(propValue)) {
       // TODO: support for Computed Properties, etc?
       hasFunction = true;
@@ -218,14 +217,14 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
 }
 
 function mergeMixins(mixins, m, descs, values, base, keys) {
-  var currentMixin, props, key, concats, mergings, meta;
+  let currentMixin, props, key, concats, mergings, meta;
 
   function removeKeys(keyName) {
     delete descs[keyName];
     delete values[keyName];
   }
 
-  for (var i = 0; i < mixins.length; i++) {
+  for (let i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
     assert(
       `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
@@ -256,7 +255,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
   }
 }
 
-var IS_BINDING = /^.+Binding$/;
+let IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
@@ -289,9 +288,9 @@ function finishPartial(obj, m) {
 }
 
 function followAlias(obj, desc, m, descs, values) {
-  var altKey = desc.methodName;
-  var value;
-  var possibleDesc;
+  let altKey = desc.methodName;
+  let value;
+  let possibleDesc;
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
     desc  = descs[altKey];
@@ -307,17 +306,17 @@ function followAlias(obj, desc, m, descs, values) {
 }
 
 function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
-  var paths = observerOrListener[pathsKey];
+  let paths = observerOrListener[pathsKey];
 
   if (paths) {
-    for (var i = 0; i < paths.length; i++) {
+    for (let i = 0; i < paths.length; i++) {
       updateMethod(obj, paths[i], null, key);
     }
   }
 }
 
 function replaceObserversAndListeners(obj, key, observerOrListener) {
-  var prev = obj[key];
+  let prev = obj[key];
 
   if ('function' === typeof prev) {
     updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', _removeBeforeObserver);
@@ -333,11 +332,11 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
 }
 
 function applyMixin(obj, mixins, partial) {
-  var descs = {};
-  var values = {};
-  var m = metaFor(obj);
-  var keys = [];
-  var key, value, desc;
+  let descs = {};
+  let values = {};
+  let m = metaFor(obj);
+  let keys = [];
+  let key, value, desc;
 
   obj._super = ROOT;
 
@@ -350,7 +349,7 @@ function applyMixin(obj, mixins, partial) {
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, m, descs, values, obj, keys);
 
-  for (var i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i++) {
     key = keys[i];
     if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
 
@@ -360,7 +359,7 @@ function applyMixin(obj, mixins, partial) {
     if (desc === REQUIRED) { continue; }
 
     while (desc && desc instanceof Alias) {
-      var followed = followAlias(obj, desc, m, descs, values);
+      let followed = followAlias(obj, desc, m, descs, values);
       desc = followed.desc;
       value = followed.value;
     }
@@ -452,13 +451,13 @@ export const NAME_KEY = GUID_KEY + '_name';
 export default function Mixin(args, properties) {
   this.properties = properties;
 
-  var length = args && args.length;
+  let length = args && args.length;
 
   if (length > 0) {
-    var m = new Array(length);
+    let m = new Array(length);
 
-    for (var i = 0; i < length; i++) {
-      var x = args[i];
+    for (let i = 0; i < length; i++) {
+      let x = args[i];
       if (x instanceof Mixin) {
         m[i] = x;
       } else {
@@ -480,7 +479,7 @@ export default function Mixin(args, properties) {
 Mixin._apply = applyMixin;
 
 Mixin.applyPartial = function(obj) {
-  var args = a_slice.call(arguments, 1);
+  let args = a_slice.call(arguments, 1);
   return applyMixin(obj, args, true);
 };
 
@@ -505,12 +504,11 @@ export function clearUnprocessedMixins() {
 Mixin.create = function(...args) {
   // ES6TODO: this relies on a global state?
   unprocessedFlag = true;
-  var M = this;
+  let M = this;
   return new M(args, undefined);
 };
 
-var MixinPrototype = Mixin.prototype;
-
+let MixinPrototype = Mixin.prototype;
 
 /**
   @method reopen
@@ -518,7 +516,7 @@ var MixinPrototype = Mixin.prototype;
   @private
 */
 MixinPrototype.reopen = function() {
-  var currentMixin;
+  let currentMixin;
 
   if (this.properties) {
     currentMixin = new Mixin(undefined, this.properties);
@@ -528,8 +526,8 @@ MixinPrototype.reopen = function() {
     this.mixins = [];
   }
 
-  var mixins = this.mixins;
-  var idx;
+  let mixins = this.mixins;
+  let idx;
 
   for (idx = 0; idx < arguments.length; idx++) {
     currentMixin = arguments[idx];
@@ -566,14 +564,14 @@ MixinPrototype.applyPartial = function(obj) {
 MixinPrototype.toString = Object.toString;
 
 function _detect(curMixin, targetMixin, seen) {
-  var guid = guidFor(curMixin);
+  let guid = guidFor(curMixin);
 
   if (seen[guid]) { return false; }
   seen[guid] = true;
 
   if (curMixin === targetMixin) { return true; }
-  var mixins = curMixin.mixins;
-  var loc = mixins ? mixins.length : 0;
+  let mixins = curMixin.mixins;
+  let loc = mixins ? mixins.length : 0;
   while (--loc >= 0) {
     if (_detect(mixins[loc], targetMixin, seen)) { return true; }
   }
@@ -589,13 +587,13 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = peekMeta(obj);
+  let m = peekMeta(obj);
   if (!m) { return false; }
   return !!m.peekMixins(guidFor(this));
 };
 
 MixinPrototype.without = function(...args) {
-  var ret = new Mixin([this]);
+  let ret = new Mixin([this]);
   ret._without = args;
   return ret;
 };
@@ -605,9 +603,9 @@ function _keys(ret, mixin, seen) {
   seen[guidFor(mixin)] = true;
 
   if (mixin.properties) {
-    var props = Object.keys(mixin.properties);
-    for (var i = 0; i < props.length; i++) {
-      var key = props[i];
+    let props = Object.keys(mixin.properties);
+    for (let i = 0; i < props.length; i++) {
+      let key = props[i];
       ret[key] = true;
     }
   } else if (mixin.mixins) {
@@ -616,11 +614,11 @@ function _keys(ret, mixin, seen) {
 }
 
 MixinPrototype.keys = function() {
-  var keys = {};
-  var seen = {};
+  let keys = {};
+  let seen = {};
 
   _keys(keys, this, seen);
-  var ret = Object.keys(keys);
+  let ret = Object.keys(keys);
   return ret;
 };
 
@@ -629,8 +627,8 @@ debugSeal(MixinPrototype);
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var m = peekMeta(obj);
-  var ret = [];
+  let m = peekMeta(obj);
+  let ret = [];
   if (!m) { return ret; }
 
   m.forEachMixins((key, currentMixin) => {
@@ -641,7 +639,7 @@ Mixin.mixins = function(obj) {
   return ret;
 };
 
-REQUIRED = new Descriptor();
+const REQUIRED = new Descriptor();
 REQUIRED.toString = function() { return '(Required Property)'; };
 
 /**
@@ -678,7 +676,7 @@ Alias.prototype = new Descriptor();
     moniker: Ember.aliasMethod('name')
   });
 
-  var goodGuy = App.Person.create();
+  let goodGuy = App.Person.create();
 
   goodGuy.name();    // 'Tomhuda Katzdale'
   goodGuy.moniker(); // 'Tomhuda Katzdale'
@@ -719,13 +717,13 @@ export function aliasMethod(methodName) {
   @public
 */
 export function observer(...args) {
-  var func  = args.slice(-1)[0];
-  var paths;
+  let func  = args.slice(-1)[0];
+  let paths;
 
-  var addWatchedProperty = function(path) {
+  let addWatchedProperty = function(path) {
     paths.push(path);
   };
-  var _paths = args.slice(0, -1);
+  let _paths = args.slice(0, -1);
 
   if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
@@ -737,7 +735,7 @@ export function observer(...args) {
 
   paths = [];
 
-  for (var i = 0; i < _paths.length; ++i) {
+  for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 
@@ -777,8 +775,8 @@ export function observer(...args) {
 export function _immediateObserver() {
   deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
 
-  for (var i = 0; i < arguments.length; i++) {
-    var arg = arguments[i];
+  for (let i = 0; i < arguments.length; i++) {
+    let arg = arguments[i];
     assert(
       'Immediate observers must observe internal properties only, not properties on other objects.',
       typeof arg !== 'string' || arg.indexOf('.') === -1
@@ -805,7 +803,7 @@ export function _immediateObserver() {
     valueDidChange: Ember.observer('content.value', function(obj, keyName) {
         // only run if updating a value already in the DOM
         if (this.get('state') === 'inDOM') {
-          var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
+          let color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
           // logic
         }
     }),
@@ -829,12 +827,12 @@ export function _immediateObserver() {
   @private
 */
 export function _beforeObserver(...args) {
-  var func  = args.slice(-1)[0];
-  var paths;
+  let func  = args.slice(-1)[0];
+  let paths;
 
-  var addWatchedProperty = function(path) { paths.push(path); };
+  let addWatchedProperty = function(path) { paths.push(path); };
 
-  var _paths = args.slice(0, -1);
+  let _paths = args.slice(0, -1);
 
   if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
@@ -845,7 +843,7 @@ export function _beforeObserver(...args) {
 
   paths = [];
 
-  for (var i = 0; i < _paths.length; ++i) {
+  for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 

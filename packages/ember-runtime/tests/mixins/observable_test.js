@@ -6,31 +6,31 @@ import { testBoth } from 'ember-metal/tests/props_helper';
 QUnit.module('mixins/observable');
 
 QUnit.test('should be able to use getProperties to get a POJO of provided keys', function() {
-  var obj = EmberObject.create({
+  let obj = EmberObject.create({
     firstName: 'Steve',
     lastName: 'Jobs',
     companyName: 'Apple, Inc.'
   });
 
-  var pojo = obj.getProperties('firstName', 'lastName');
+  let pojo = obj.getProperties('firstName', 'lastName');
   equal('Steve', pojo.firstName);
   equal('Jobs', pojo.lastName);
 });
 
 QUnit.test('should be able to use getProperties with array parameter to get a POJO of provided keys', function() {
-  var obj = EmberObject.create({
+  let obj = EmberObject.create({
     firstName: 'Steve',
     lastName: 'Jobs',
     companyName: 'Apple, Inc.'
   });
 
-  var pojo = obj.getProperties(['firstName', 'lastName']);
+  let pojo = obj.getProperties(['firstName', 'lastName']);
   equal('Steve', pojo.firstName);
   equal('Jobs', pojo.lastName);
 });
 
 QUnit.test('should be able to use setProperties to set multiple properties at once', function() {
-  var obj = EmberObject.create({
+  let obj = EmberObject.create({
     firstName: 'Steve',
     lastName: 'Jobs',
     companyName: 'Apple, Inc.'
@@ -42,8 +42,8 @@ QUnit.test('should be able to use setProperties to set multiple properties at on
 });
 
 testBoth('calling setProperties completes safely despite exceptions', function(get, set) {
-  var exc = new Error('Something unexpected happened!');
-  var obj = EmberObject.extend({
+  let exc = new Error('Something unexpected happened!');
+  let obj = EmberObject.extend({
     companyName: computed({
       get() { return 'Apple, Inc.'; },
       set(key, value) { throw exc; }
@@ -53,9 +53,9 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
     lastName: 'Jobs'
   });
 
-  var firstNameChangedCount = 0;
+  let firstNameChangedCount = 0;
 
-  addObserver(obj, 'firstName', function() { firstNameChangedCount++; });
+  addObserver(obj, 'firstName', () => firstNameChangedCount++);
 
   try {
     obj.setProperties({
@@ -73,7 +73,7 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
 });
 
 testBoth('should be able to retrieve cached values of computed properties without invoking the computed property', function(get) {
-  var obj = EmberObject.extend({
+  let obj = EmberObject.extend({
     foo: computed(function() {
       return 'foo';
     })
@@ -91,7 +91,7 @@ testBoth('should be able to retrieve cached values of computed properties withou
 });
 
 QUnit.test('incrementProperty should work even if value is number in string', function() {
-  var obj = EmberObject.create({
+  let obj = EmberObject.create({
     age: '24'
   });
   obj.incrementProperty('age');

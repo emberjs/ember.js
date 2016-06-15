@@ -8,23 +8,23 @@ import jQuery from 'ember-views/system/jquery';
 
 function K() { return this; }
 
-var textField;
-var TestObject;
+let textField;
+let TestObject;
 
-var view;
+let view;
 
-var appendView = function(view) {
+function appendView(view) {
   run(view, 'appendTo', '#qunit-fixture');
-};
+}
 
-var caretPosition = function(element) {
-  var ctrl = element[0];
-  var caretPos = 0;
+function caretPosition(element) {
+  let ctrl = element[0];
+  let caretPos = 0;
 
   // IE Support
   if (document.selection) {
     ctrl.focus();
-    var selection = document.selection.createRange();
+    let selection = document.selection.createRange();
 
     selection.moveStart('character', -ctrl.value.length);
 
@@ -35,31 +35,29 @@ var caretPosition = function(element) {
   }
 
   return caretPos;
-};
+}
 
-var setCaretPosition = function(element, pos) {
-  var ctrl = element[0];
+function setCaretPosition(element, pos) {
+  let ctrl = element[0];
 
   if (ctrl.setSelectionRange) {
     ctrl.focus();
     ctrl.setSelectionRange(pos, pos);
   } else if (ctrl.createTextRange) {
-    var range = ctrl.createTextRange();
+    let range = ctrl.createTextRange();
     range.collapse(true);
     range.moveEnd('character', pos);
     range.moveStart('character', pos);
     range.select();
   }
-};
+}
 
 function set(object, key, value) {
-  run(function() { o_set(object, key, value); });
+  run(() => o_set(object, key, value));
 }
 
 function append() {
-  run(function() {
-    textField.appendTo('#qunit-fixture');
-  });
+  run(() => textField.appendTo('#qunit-fixture'));
 }
 
 QUnit.module('Ember.TextField', {
@@ -72,9 +70,7 @@ QUnit.module('Ember.TextField', {
   },
 
   teardown() {
-    run(function() {
-      textField.destroy();
-    });
+    run(() => textField.destroy());
     TestObject = window.TestObject = textField = null;
   }
 });
@@ -90,43 +86,43 @@ QUnit.test('should become disabled if the disabled attribute is true', function(
   append();
   ok(textField.$().is(':not(:disabled)'));
 
-  run(function() { textField.set('disabled', true); });
+  run(() => textField.set('disabled', true));
   ok(textField.$().is(':disabled'));
 
-  run(function() { textField.set('disabled', false); });
+  run(() => textField.set('disabled', false));
   ok(textField.$().is(':not(:disabled)'));
 });
 
 ['placeholder', 'name', 'title', 'size', 'maxlength', 'tabindex'].forEach(function(attributeName) {
   QUnit.test(`text field ${attributeName} is updated when setting ${attributeName} property of view`, function() {
-    run(function() {
+    run(() => {
       set(textField, attributeName, '1');
       textField.append();
     });
 
     equal(textField.$().attr(attributeName), '1', `renders text field with ${attributeName}`);
 
-    run(function() { set(textField, attributeName, '2'); });
+    run(() => set(textField, attributeName, '2'));
 
     equal(textField.$().attr(attributeName), '2', `updates text field after ${attributeName} changes`);
   });
 });
 
 QUnit.test('input value is updated when setting value property of view', function() {
-  run(function() {
+  run(() => {
     set(textField, 'value', 'foo');
     textField.append();
   });
 
   equal(textField.$().val(), 'foo', 'renders text field with value');
 
-  run(function() { set(textField, 'value', 'bar'); });
+  run(() => set(textField, 'value', 'bar'));
 
   equal(textField.$().val(), 'bar', 'updates text field after value changes');
 });
 
 QUnit.test('input type is configurable when creating view', function() {
-  run(function() {
+  run(() => {
     set(textField, 'type', 'password');
     textField.append();
   });
@@ -135,7 +131,7 @@ QUnit.test('input type is configurable when creating view', function() {
 });
 
 QUnit.test('value binding works properly for inputs that haven\'t been created', function() {
-  run(function() {
+  run(() => {
     textField.destroy(); // destroy existing textField
 
     let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
@@ -151,20 +147,18 @@ QUnit.test('value binding works properly for inputs that haven\'t been created',
   equal(get(textField, 'value'), null, 'precond - default value is null');
   equal(textField.$(), undefined, 'precond - view doesn\'t have its layer created yet, thus no input element');
 
-  run(function() {
-    set(TestObject, 'value', 'ohai');
-  });
+  run(() => set(TestObject, 'value', 'ohai'));
 
   equal(get(textField, 'value'), 'ohai', 'value property was properly updated');
 
-  run(function() { textField.append(); });
+  run(() => textField.append());
 
   equal(get(textField, 'value'), 'ohai', 'value property remains the same once the view has been appended');
   equal(textField.$().val(), 'ohai', 'value is reflected in the input element once it is created');
 });
 
 QUnit.test('value binding sets value on the element', function() {
-  run(function() {
+  run(() => {
     textField.destroy(); // destroy existing textField
 
     let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
@@ -180,7 +174,7 @@ QUnit.test('value binding sets value on the element', function() {
   });
 
   // Set the value via the DOM
-  run(function() {
+  run(() => {
     textField.$().val('via dom');
     // Trigger lets the view know we changed this value (like a real user editing)
     textField.trigger('input', EmberObject.create({
@@ -192,21 +186,19 @@ QUnit.test('value binding sets value on the element', function() {
   equal(textField.$().val(), 'via dom', 'dom property was properly updated via dom');
 
   // Now, set it via the binding
-  run(function() {
-    set(TestObject, 'value', 'via view');
-  });
+  run(() => set(TestObject, 'value', 'via view'));
 
   equal(get(textField, 'value'), 'via view', 'value property was properly updated via view');
   equal(textField.$().val(), 'via view', 'dom property was properly updated via view');
 });
 
 QUnit.test('should call the insertNewline method when return key is pressed', function() {
-  var wasCalled;
-  var event = EmberObject.create({
+  let wasCalled;
+  let event = EmberObject.create({
     keyCode: 13
   });
 
-  run(function() { textField.append(); });
+  run(() => textField.append());
 
   textField.insertNewline = function() {
     wasCalled = true;
@@ -217,12 +209,12 @@ QUnit.test('should call the insertNewline method when return key is pressed', fu
 });
 
 QUnit.test('should call the cancel method when escape key is pressed', function() {
-  var wasCalled;
-  var event = EmberObject.create({
+  let wasCalled;
+  let event = EmberObject.create({
     keyCode: 27
   });
 
-  run(function() { textField.append(); });
+  run(() => textField.append());
 
   textField.cancel = function() {
     wasCalled = true;
@@ -235,7 +227,7 @@ QUnit.test('should call the cancel method when escape key is pressed', function(
 QUnit.test('should send an action if one is defined when the return key is pressed', function() {
   expect(2);
 
-  var StubController = EmberObject.extend({
+  let StubController = EmberObject.extend({
     send(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', 'text field sent correct action name');
       equal(value, 'textFieldValue', 'text field sent its current value as first argument');
@@ -246,9 +238,9 @@ QUnit.test('should send an action if one is defined when the return key is press
   textField.set('value', 'textFieldValue');
   textField.set('targetObject', StubController.create());
 
-  run(function() { textField.append(); });
+  run(() => textField.append());
 
-  var event = {
+  let event = {
     keyCode: 13,
     stopPropagation: K
   };
@@ -259,7 +251,7 @@ QUnit.test('should send an action if one is defined when the return key is press
 QUnit.test('should send an action on keyPress if one is defined with onEvent=keyPress', function() {
   expect(2);
 
-  var StubController = EmberObject.extend({
+  let StubController = EmberObject.extend({
     send(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', 'text field sent correct action name');
       equal(value, 'textFieldValue', 'text field sent its current value as first argument');
@@ -271,9 +263,9 @@ QUnit.test('should send an action on keyPress if one is defined with onEvent=key
   textField.set('value', 'textFieldValue');
   textField.set('targetObject', StubController.create());
 
-  run(function() { textField.append(); });
+  run(() => textField.append());
 
-  var event = {
+  let event = {
     keyCode: 48,
     stopPropagation: K
   };
@@ -292,8 +284,8 @@ QUnit.test('bubbling of handled actions can be enabled via bubbles property', fu
 
   append();
 
-  var stopPropagationCount = 0;
-  var event = {
+  let stopPropagationCount = 0;
+  let event = {
     keyCode: 13,
     stopPropagation() {
       stopPropagationCount++;
@@ -309,7 +301,7 @@ QUnit.test('bubbling of handled actions can be enabled via bubbles property', fu
 });
 
 
-var dispatcher, StubController;
+let dispatcher, StubController;
 QUnit.module('Ember.TextField - Action events', {
   setup() {
     dispatcher = EventDispatcher.create();
@@ -323,7 +315,7 @@ QUnit.module('Ember.TextField - Action events', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       dispatcher.destroy();
 
       if (textField) {
@@ -347,9 +339,7 @@ QUnit.test('when the text field is blurred, the `focus-out` action is sent to th
 
   append();
 
-  run(function() {
-    textField.$().blur();
-  });
+  run(() => textField.$().blur());
 });
 
 QUnit.test('when the text field is focused, the `focus-in` action is sent to the controller', function() {
@@ -362,9 +352,7 @@ QUnit.test('when the text field is focused, the `focus-in` action is sent to the
 
   append();
 
-  run(function() {
-    textField.$().focusin();
-  });
+  run(() => textField.$().focusin());
 });
 
 QUnit.test('when the user presses a key, the `key-press` action is sent to the controller', function() {
@@ -377,8 +365,8 @@ QUnit.test('when the user presses a key, the `key-press` action is sent to the c
 
   append();
 
-  run(function() {
-    var event = jQuery.Event('keypress');
+  run(() => {
+    let event = jQuery.Event('keypress');
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
   });
@@ -394,8 +382,8 @@ QUnit.test('when the user inserts a new line, the `insert-newline` action is sen
 
   append();
 
-  run(function() {
-    var event = jQuery.Event('keyup');
+  run(() => {
+    let event = jQuery.Event('keyup');
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
   });
@@ -412,8 +400,8 @@ QUnit.test('when the user presses the `enter` key, the `enter` action is sent to
 
   append();
 
-  run(function() {
-    var event = jQuery.Event('keyup');
+  run(() => {
+    let event = jQuery.Event('keyup');
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
   });
@@ -429,8 +417,8 @@ QUnit.test('when the user hits escape, the `escape-press` action is sent to the 
 
   append();
 
-  run(function() {
-    var event = jQuery.Event('keyup');
+  run(() => {
+    let event = jQuery.Event('keyup');
     event.keyCode = event.which = 27;
     textField.$().trigger(event);
   });
@@ -438,7 +426,7 @@ QUnit.test('when the user hits escape, the `escape-press` action is sent to the 
 
 QUnit.test('when the user presses a key, the `key-down` action is sent to the controller', function() {
   expect(3);
-  var event;
+  let event;
 
   textField = TextField.create({
     'key-down': 'doSomething',
@@ -453,7 +441,7 @@ QUnit.test('when the user presses a key, the `key-down` action is sent to the co
 
   append();
 
-  run(function() {
+  run(() => {
     event = jQuery.Event('keydown');
     event.keyCode = event.which = 65;
     textField.$().val('foo');
@@ -463,7 +451,7 @@ QUnit.test('when the user presses a key, the `key-down` action is sent to the co
 
 QUnit.test('when the user releases a key, the `key-up` action is sent to the controller', function() {
   expect(3);
-  var event;
+  let event;
 
   textField = TextField.create({
     'key-up': 'doSomething',
@@ -478,7 +466,7 @@ QUnit.test('when the user releases a key, the `key-up` action is sent to the con
 
   append();
 
-  run(function() {
+  run(() => {
     event = jQuery.Event('keyup');
     event.keyCode = event.which = 65;
     textField.$().val('bar');
@@ -495,7 +483,7 @@ QUnit.test('should not reset cursor position when text field receives keyUp even
 
   setCaretPosition(view.$(), 5);
 
-  run(function() {
+  run(() => {
     view.trigger('keyUp', {});
   });
 

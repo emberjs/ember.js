@@ -4,10 +4,10 @@ import Evented from 'ember-runtime/mixins/evented';
 QUnit.module('Object events');
 
 QUnit.test('a listener can be added to an object', function() {
-  var count = 0;
-  var F = function() { count++; };
+  let count = 0;
+  let F = function() { count++; };
 
-  var obj = EmberObject.extend(Evented).create();
+  let obj = EmberObject.extend(Evented).create();
 
   obj.on('event!', F);
   obj.trigger('event!');
@@ -20,10 +20,10 @@ QUnit.test('a listener can be added to an object', function() {
 });
 
 QUnit.test('a listener can be added and removed automatically the first time it is triggered', function() {
-  var count = 0;
-  var F = function() { count++; };
+  let count = 0;
+  let F = function() { count++; };
 
-  var obj = EmberObject.extend(Evented).create();
+  let obj = EmberObject.extend(Evented).create();
 
   obj.one('event!', F);
   obj.trigger('event!');
@@ -36,9 +36,9 @@ QUnit.test('a listener can be added and removed automatically the first time it 
 });
 
 QUnit.test('triggering an event can have arguments', function() {
-  var self, args;
+  let self, args;
 
-  var obj = EmberObject.extend(Evented).create();
+  let obj = EmberObject.extend(Evented).create();
 
   obj.on('event!', function() {
     args = [].slice.call(arguments);
@@ -52,10 +52,10 @@ QUnit.test('triggering an event can have arguments', function() {
 });
 
 QUnit.test('a listener can be added and removed automatically and have arguments', function() {
-  var self, args;
-  var count = 0;
+  let self, args;
+  let count = 0;
 
-  var obj = EmberObject.extend(Evented).create();
+  let obj = EmberObject.extend(Evented).create();
 
   obj.one('event!', function() {
     args = [].slice.call(arguments);
@@ -77,10 +77,10 @@ QUnit.test('a listener can be added and removed automatically and have arguments
 });
 
 QUnit.test('binding an event can specify a different target', function() {
-  var self, args;
+  let self, args;
 
-  var obj = EmberObject.extend(Evented).create();
-  var target = {};
+  let obj = EmberObject.extend(Evented).create();
+  let target = {};
 
   obj.on('event!', target, function() {
     args = [].slice.call(arguments);
@@ -94,11 +94,11 @@ QUnit.test('binding an event can specify a different target', function() {
 });
 
 QUnit.test('a listener registered with one can take method as string and can be added with different target', function() {
-  var count = 0;
-  var target = {};
+  let count = 0;
+  let target = {};
   target.fn = function() { count++; };
 
-  var obj = EmberObject.extend(Evented).create();
+  let obj = EmberObject.extend(Evented).create();
 
   obj.one('event!', target, 'fn');
   obj.trigger('event!');
@@ -111,10 +111,10 @@ QUnit.test('a listener registered with one can take method as string and can be 
 });
 
 QUnit.test('a listener registered with one can be removed with off', function() {
-  var obj = EmberObject.extend(Evented, {
+  let obj = EmberObject.extend(Evented, {
     F() {}
   }).create();
-  var F = function() {};
+  let F = function() {};
 
   obj.one('event!', F);
   obj.one('event!', obj, 'F');
@@ -128,10 +128,10 @@ QUnit.test('a listener registered with one can be removed with off', function() 
 });
 
 QUnit.test('adding and removing listeners should be chainable', function() {
-  var obj = EmberObject.extend(Evented).create();
-  var F = function() {};
+  let obj = EmberObject.extend(Evented).create();
+  let F = function() {};
 
-  var ret = obj.on('event!', F);
+  let ret = obj.on('event!', F);
   equal(ret, obj, '#on returns self');
 
   ret = obj.off('event!', F);

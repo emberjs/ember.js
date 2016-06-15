@@ -6,26 +6,26 @@ import { runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-templates/bootstrap';
 import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
 
-var trim = jQuery.trim;
+const { trim } = jQuery;
 
-var originalLookup = context.lookup;
-var lookup, App, component;
+const originalLookup = context.lookup;
+let lookup, App, component;
 
 function checkTemplate(templateName) {
-  run(function() {
-    bootstrap(jQuery('#qunit-fixture'));
-  });
-  var template = getTemplate(templateName);
+  run(() => bootstrap(jQuery('#qunit-fixture')));
+
+  let template = getTemplate(templateName);
+
   ok(template, 'template is available on Ember.TEMPLATES');
   equal(jQuery('#qunit-fixture script').length, 0, 'script removed');
-  var component = Component.create({
+
+  let component = Component.create({
     layout: template,
     firstName: 'Tobias',
     drug: 'teamocil'
   });
-  run(function() {
-    component.createElement();
-  });
+
+  run(() => component.createElement());
   equal(trim(component.$().text()), 'Tobias takes teamocil', 'template works');
   runDestroy(component);
 }
@@ -66,9 +66,7 @@ if (typeof Handlebars === 'object') {
   QUnit.test('template with type text/x-raw-handlebars should be parsed', function() {
     jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
-    run(function() {
-      bootstrap(jQuery('#qunit-fixture'));
-    });
+    run(() => bootstrap(jQuery('#qunit-fixture')));
 
     let template = getTemplate('funkyTemplate');
 
@@ -82,49 +80,39 @@ if (typeof Handlebars === 'object') {
 QUnit.test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
-  throws(function () {
-    bootstrap(jQuery('#qunit-fixture'));
-  },
-  /Template named "[^"]+" already exists\./,
-  'duplicate templates should not be allowed');
+  throws(() => bootstrap(jQuery('#qunit-fixture')),
+         /Template named "[^"]+" already exists\./,
+         'duplicate templates should not be allowed');
 });
 
 QUnit.test('default application template and id application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
-  throws(function () {
-    bootstrap(jQuery('#qunit-fixture'));
-  },
-  /Template named "[^"]+" already exists\./,
-  'duplicate templates should not be allowed');
+  throws(() => bootstrap(jQuery('#qunit-fixture')),
+         /Template named "[^"]+" already exists\./,
+         'duplicate templates should not be allowed');
 });
 
 QUnit.test('default application template and data-template-name application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
-  throws(function () {
-    bootstrap(jQuery('#qunit-fixture'));
-  },
-  /Template named "[^"]+" already exists\./,
-  'duplicate templates should not be allowed');
+  throws(() => bootstrap(jQuery('#qunit-fixture')),
+         /Template named "[^"]+" already exists\./,
+         'duplicate templates should not be allowed');
 });
 
 QUnit.test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
-  throws(function () {
-    bootstrap(jQuery('#qunit-fixture'));
-  },
-  /Template named "[^"]+" already exists\./,
-  'duplicate templates should not be allowed');
+  throws(() => bootstrap(jQuery('#qunit-fixture')),
+         /Template named "[^"]+" already exists\./,
+         'duplicate templates should not be allowed');
 });
 
 QUnit.test('duplicated template data-template-name should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
-  throws(function () {
-    bootstrap(jQuery('#qunit-fixture'));
-  },
-  /Template named "[^"]+" already exists\./,
-  'duplicate templates should not be allowed');
+  throws(() => bootstrap(jQuery('#qunit-fixture')),
+         /Template named "[^"]+" already exists\./,
+         'duplicate templates should not be allowed');
 });

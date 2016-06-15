@@ -1,17 +1,16 @@
 import get from 'ember-metal/property_get';
 import { SuiteModuleBuilder } from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('clear');
 
 suite.test('[].clear() => [] + notify', function () {
-  var obj, before, after, observer;
+  let before = [];
+  let after  = [];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = [];
-  after  = [];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.clear(), obj, 'return self');

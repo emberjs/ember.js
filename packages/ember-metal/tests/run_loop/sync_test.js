@@ -3,9 +3,9 @@ import run from 'ember-metal/run_loop';
 QUnit.module('system/run_loop/sync_test');
 
 QUnit.test('sync() will immediately flush the sync queue only', function() {
-  var cnt = 0;
+  let cnt = 0;
 
-  run(function() {
+  run(() => {
     function cntup() { cnt++; }
 
     function syncfunc() {

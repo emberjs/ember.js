@@ -13,63 +13,63 @@ function validateAliasMethod(obj) {
 }
 
 QUnit.test('methods of another name are aliased when the mixin is applied', function() {
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
     fooMethod() { return 'FOO'; },
     barMethod: aliasMethod('fooMethod')
   });
 
-  var obj = MyMixin.apply({});
+  let obj = MyMixin.apply({});
   validateAliasMethod(obj);
 });
 
 QUnit.test('should follow aliasMethods all the way down', function() {
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
     bar: aliasMethod('foo'), // put first to break ordered iteration
     baz() { return 'baz'; },
     foo: aliasMethod('baz')
   });
 
-  var obj = MyMixin.apply({});
+  let obj = MyMixin.apply({});
   equal(get(obj, 'bar')(), 'baz', 'should have followed aliasMethods');
 });
 
 QUnit.test('should alias methods from other dependent mixins', function() {
-  var BaseMixin = Mixin.create({
+  let BaseMixin = Mixin.create({
     fooMethod() { return 'FOO'; }
   });
 
-  var MyMixin = Mixin.create(BaseMixin, {
+  let MyMixin = Mixin.create(BaseMixin, {
     barMethod: aliasMethod('fooMethod')
   });
 
-  var obj = MyMixin.apply({});
+  let obj = MyMixin.apply({});
   validateAliasMethod(obj);
 });
 
 QUnit.test('should alias methods from other mixins applied at same time', function() {
-  var BaseMixin = Mixin.create({
+  let BaseMixin = Mixin.create({
     fooMethod() { return 'FOO'; }
   });
 
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
     barMethod: aliasMethod('fooMethod')
   });
 
-  var obj = mixin({}, BaseMixin, MyMixin);
+  let obj = mixin({}, BaseMixin, MyMixin);
   validateAliasMethod(obj);
 });
 
 QUnit.test('should alias methods from mixins already applied on object', function() {
-  var BaseMixin = Mixin.create({
+  let BaseMixin = Mixin.create({
     quxMethod() { return 'qux'; }
   });
 
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
     bar: aliasMethod('foo'),
     barMethod: aliasMethod('fooMethod')
   });
 
-  var obj = {
+  let obj = {
     fooMethod() { return 'FOO'; }
   };
 

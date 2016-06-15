@@ -6,7 +6,7 @@ import { assert } from 'ember-metal/debug';
 import { Mixin } from 'ember-metal/mixin';
 import { A as emberA } from 'ember-runtime/system/native_array';
 
-var EMPTY_ARRAY = [];
+const EMPTY_ARRAY = [];
 
 /**
   @class ClassNamesSupport

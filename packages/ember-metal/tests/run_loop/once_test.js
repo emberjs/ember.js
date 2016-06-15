@@ -3,9 +3,9 @@ import run from 'ember-metal/run_loop';
 QUnit.module('system/run_loop/once_test');
 
 QUnit.test('calling invokeOnce more than once invokes only once', function() {
-  var count = 0;
-  run(function() {
-    var F = function() { count++; };
+  let count = 0;
+  run(() => {
+    function F() { count++; }
     run.once(F);
     run.once(F);
     run.once(F);
@@ -15,10 +15,10 @@ QUnit.test('calling invokeOnce more than once invokes only once', function() {
 });
 
 QUnit.test('should differentiate based on target', function() {
-  var A = { count: 0 };
-  var B = { count: 0 };
-  run(function() {
-    var F = function() { this.count++; };
+  let A = { count: 0 };
+  let B = { count: 0 };
+  run(() => {
+    function F() { this.count++; }
     run.once(A, F);
     run.once(B, F);
     run.once(A, F);
@@ -31,10 +31,11 @@ QUnit.test('should differentiate based on target', function() {
 
 
 QUnit.test('should ignore other arguments - replacing previous ones', function() {
-  var A = { count: 0 };
-  var B = { count: 0 };
-  run(function() {
-    var F = function(amt) { this.count += amt; };
+  let A = { count: 0 };
+  let B = { count: 0 };
+
+  run(() => {
+    function F(amt) { this.count += amt; }
     run.once(A, F, 10);
     run.once(B, F, 20);
     run.once(A, F, 30);
@@ -46,10 +47,8 @@ QUnit.test('should ignore other arguments - replacing previous ones', function()
 });
 
 QUnit.test('should be inside of a runloop when running', function() {
-  run(function() {
-    run.once(function() {
-      ok(!!run.currentRunLoop, 'should have a runloop');
-    });
+  run(() => {
+    run.once(() => ok(!!run.currentRunLoop, 'should have a runloop'));
   });
 });
 

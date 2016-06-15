@@ -1,6 +1,6 @@
 import { canInvoke } from 'ember-metal/utils';
 
-var obj;
+let obj;
 
 QUnit.module('Ember.canInvoke', {
   setup() {

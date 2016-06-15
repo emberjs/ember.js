@@ -35,7 +35,7 @@ import { read } from '../streams/utils';
   @public
 */
 
-let VolatileStream = BasicStream.extend({
+const VolatileStream = BasicStream.extend({
   init(source) {
     this.label = `(volatile ${source.label})`;
     this.source = source;

@@ -1,5 +1,5 @@
 export default function(element) {
-  var style = element.getAttribute('style');
+  let style = element.getAttribute('style');
   style = style.toUpperCase(); // IE8 keeps this is uppercase, so lets just upcase them all
 
   if (style !== '' && style.slice(-1) !== ';') {

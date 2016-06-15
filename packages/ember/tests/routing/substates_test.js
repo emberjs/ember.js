@@ -9,7 +9,7 @@ import NoneLocation from 'ember-routing/location/none_location';
 import DefaultResolver from 'ember-application/system/resolver';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var Router, App, templates, router, container, counter;
+let Router, App, templates, router, container, counter;
 
 function step(expectedValue, description) {
   equal(counter, expectedValue, 'Step ' + expectedValue + ': ' + description);
@@ -17,7 +17,7 @@ function step(expectedValue, description) {
 }
 
 function bootApplication(startingURL) {
-  for (var name in templates) {
+  for (let name in templates) {
     setTemplate(name, compile(templates[name]));
   }
 
@@ -79,8 +79,8 @@ QUnit.module('Loading/Error Substates', {
 });
 
 QUnit.test('Slow promise from a child route of application enters nested loading state', function() {
-  var broModel = {};
-  var broDeferred = RSVP.defer();
+  let broModel = {};
+  let broDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('bro');
@@ -111,8 +111,8 @@ QUnit.test('Slow promise from a child route of application enters nested loading
 QUnit.test('Slow promises waterfall on startup', function() {
   expect(7);
 
-  var grandmaDeferred = RSVP.defer();
-  var sallyDeferred = RSVP.defer();
+  let grandmaDeferred = RSVP.defer();
+  let sallyDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -165,7 +165,7 @@ QUnit.test('Slow promises waterfall on startup', function() {
 QUnit.test('ApplicationRoute#currentPath reflects loading state path', function() {
   expect(4);
 
-  var momDeferred = RSVP.defer();
+  let momDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -187,7 +187,7 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA GRANDMALOADING');
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.loading', 'currentPath reflects loading state');
 
   run(momDeferred, 'resolve', {});
@@ -198,7 +198,7 @@ QUnit.test('ApplicationRoute#currentPath reflects loading state path', function(
 QUnit.test('Slow promises returned from ApplicationRoute#model don\'t enter LoadingRoute', function() {
   expect(2);
 
-  var appDeferred = RSVP.defer();
+  let appDeferred = RSVP.defer();
 
   App.ApplicationRoute = Route.extend({
     model() {
@@ -225,7 +225,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
 
   expect(2);
 
-  var indexDeferred = RSVP.defer();
+  let indexDeferred = RSVP.defer();
 
   App.ApplicationController = Controller.extend();
 
@@ -237,7 +237,7 @@ QUnit.test('Don\'t enter loading route unless either route or template defined',
 
   bootApplication();
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   ok(appController.get('currentPath') !== 'loading', 'loading state not entered');
 
   run(indexDeferred, 'resolve', {});
@@ -249,7 +249,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 
   expect(4);
 
-  var indexDeferred = RSVP.defer();
+  let indexDeferred = RSVP.defer();
 
   App.IndexRoute = Route.extend({
     model() {
@@ -266,7 +266,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 
   bootApplication();
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'loading', 'loading state entered');
 
   run(indexDeferred, 'resolve', {});
@@ -276,7 +276,7 @@ QUnit.test('Enter loading route if only LoadingRoute defined', function() {
 QUnit.test('Enter child loading state of pivot route', function() {
   expect(4);
 
-  var deferred = RSVP.defer();
+  let deferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -305,7 +305,7 @@ QUnit.test('Enter child loading state of pivot route', function() {
 
   bootApplication('/grandma/mom/sally');
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.mom.sally', 'Initial route fully loaded');
 
   run(router, 'transitionTo', 'grandma.smells');
@@ -321,8 +321,8 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 
   delete templates.loading;
 
-  var sallyDeferred = RSVP.defer();
-  var smellsDeferred = RSVP.defer();
+  let sallyDeferred = RSVP.defer();
+  let smellsDeferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', function() {
@@ -357,7 +357,7 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 
   bootApplication('/grandma/mom/sally');
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   ok(!appController.get('currentPath'), 'Initial route fully loaded');
   run(sallyDeferred, 'resolve', {});
 
@@ -411,7 +411,7 @@ QUnit.test('Default error event moves into nested route', function() {
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.error', 'Initial route fully loaded');
 });
 
@@ -489,7 +489,7 @@ QUnit.test('Non-bubbled errors that re-throw aren\'t swallowed', function() {
 QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
   expect(4);
 
-  var handledError;
+  let handledError;
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
 
@@ -542,7 +542,7 @@ QUnit.test('Handled errors that re-throw aren\'t swallowed', function() {
 QUnit.test('Handled errors that bubble can be handled at a higher level', function() {
   expect(4);
 
-  var handledError;
+  let handledError;
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
 
@@ -592,7 +592,7 @@ QUnit.test('Handled errors that bubble can be handled at a higher level', functi
 QUnit.test('errors that are bubbled are thrown at a higher level if not handled', function() {
   expect(3);
 
-  var handledError;
+  let handledError;
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
 
@@ -640,7 +640,7 @@ QUnit.test('errors that are bubbled are thrown at a higher level if not handled'
 QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed', function() {
   expect(4);
 
-  var handledError;
+  let handledError;
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
 
@@ -691,7 +691,7 @@ QUnit.test('Handled errors that are thrown through rejection aren\'t swallowed',
 });
 
 QUnit.test('Setting a query param during a slow transition should work', function() {
-  var deferred = RSVP.defer();
+  let deferred = RSVP.defer();
 
   Router.map(function() {
     this.route('grandma', { path: '/grandma/:seg' },  function() { });
@@ -721,8 +721,8 @@ QUnit.test('Setting a query param during a slow transition should work', functio
 
   bootApplication('/');
 
-  var appController = container.lookup('controller:application');
-  var grandmaController = container.lookup('controller:grandma');
+  let appController = container.lookup('controller:application');
+  let grandmaController = container.lookup('controller:grandma');
 
   equal(appController.get('currentPath'), 'grandma.loading', 'Initial route should be loading');
 
@@ -743,7 +743,7 @@ import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
   expect(2);
 
-  var appDeferred = RSVP.defer();
+  let appDeferred = RSVP.defer();
 
   App.ApplicationRoute = Route.extend({
     model() {
@@ -751,7 +751,7 @@ test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadin
     }
   });
 
-  var loadingRouteEntered = false;
+  let loadingRouteEntered = false;
   App.ApplicationLoadingRoute = Route.extend({
     setupController() {
       loadingRouteEntered = true;
@@ -771,7 +771,7 @@ test('Slow promises returned from ApplicationRoute#model enter application_loadi
 
   templates['application_loading'] = '<div id="toplevel-loading">TOPLEVEL LOADING</div>';
 
-  var appDeferred = RSVP.defer();
+  let appDeferred = RSVP.defer();
   App.ApplicationRoute = Route.extend({
     model() {
       return appDeferred.promise;
@@ -829,7 +829,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'GRANDMA MOM ERROR: did it broke?', 'the more specifically-named mom error substate was entered over the other error route');
 
-  var appController = container.lookup('controller:application');
+  let appController = container.lookup('controller:application');
   equal(appController.get('currentPath'), 'grandma.mom_error', 'Initial route fully loaded');
 });
 
@@ -848,7 +848,7 @@ QUnit.test('Prioritized substate entry works with preserved-namespace nested rou
 
   App.ApplicationController = Controller.extend();
 
-  var deferred = RSVP.defer();
+  let deferred = RSVP.defer();
   App.FooBarRoute = Route.extend({
     model() {
       return deferred.promise;
@@ -878,7 +878,7 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
 
   App.ApplicationController = Controller.extend();
 
-  var deferred = RSVP.defer();
+  let deferred = RSVP.defer();
   App.FooBarRoute = Route.extend({
     model() {
       return deferred.promise;
@@ -938,7 +938,7 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
 
   App.ApplicationController = Controller.extend();
 
-  var deferred = RSVP.defer();
+  let deferred = RSVP.defer();
   App.FooIndexRoute = Route.extend({
     model() {
       return deferred.promise;
@@ -987,9 +987,8 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
     }
   });
 
-  throws(function() {
-    bootApplication('/foo');
-  }, function(err) { return err.msg === 'did it broke?'; });
+  throws(() => bootApplication('/foo'),
+         err => err.msg === 'did it broke?');
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
 });
@@ -999,7 +998,7 @@ test('Rejected promises returned from ApplicationRoute transition into top-level
 
   templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
 
-  var reject = true;
+  let reject = true;
   App.ApplicationRoute = Route.extend({
     model() {
       if (reject) {
@@ -1010,9 +1009,8 @@ test('Rejected promises returned from ApplicationRoute transition into top-level
     }
   });
 
-  throws(function() {
-    bootApplication();
-  }, function(err) { return err.msg === 'BAD NEWS BEARS'; });
+  throws(() => bootApplication(),
+        err => err.msg === 'BAD NEWS BEARS');
 
   equal(jQuery('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
 

@@ -59,8 +59,8 @@ export default Mixin.create({
   */
   template: computed({
     get() {
-      var templateName = get(this, 'templateName');
-      var template = this.templateForName(templateName, 'template');
+      let templateName = get(this, 'templateName');
+      let template = this.templateForName(templateName, 'template');
       assert('You specified the templateName ' + templateName + ' for ' + this + ', but it did not exist.', !templateName || !!template);
       return template || get(this, 'defaultTemplate');
     },
@@ -87,8 +87,8 @@ export default Mixin.create({
   */
   layout: computed({
     get(key) {
-      var layoutName = get(this, 'layoutName');
-      var layout = this.templateForName(layoutName, 'layout');
+      let layoutName = get(this, 'layoutName');
+      let layout = this.templateForName(layoutName, 'layout');
 
       assert('You specified the layoutName ' + layoutName + ' for ' + this + ', but it did not exist.', !layoutName || !!layout);
 

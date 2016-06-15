@@ -1,6 +1,6 @@
 import { Mixin } from 'ember-metal/mixin';
 
-var ViewStateSupport = Mixin.create({
+export default Mixin.create({
   _transitionTo(state) {
     var priorState = this._currentState;
     var currentState = this._currentState = this._states[state];
@@ -10,5 +10,3 @@ var ViewStateSupport = Mixin.create({
     if (currentState.enter) { currentState.enter(this); }
   }
 });
-
-export default ViewStateSupport;

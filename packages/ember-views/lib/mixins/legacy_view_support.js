@@ -11,7 +11,7 @@ import { get } from 'ember-metal/property_get';
   @namespace Ember
   @private
 */
-var LegacyViewSupport = Mixin.create({
+export default Mixin.create({
   /**
     Return the nearest ancestor whose parent is an instance of
     `klass`.
@@ -29,7 +29,7 @@ var LegacyViewSupport = Mixin.create({
       { id: 'ember-views.nearest-child-of', until: '3.0.0' }
     );
 
-    var view = get(this, 'parentView');
+    let view = get(this, 'parentView');
 
     while (view) {
       if (get(view, 'parentView') instanceof klass) { return view; }
@@ -54,7 +54,7 @@ var LegacyViewSupport = Mixin.create({
       { id: 'ember-views.nearest-instance-of', until: '3.0.0' }
     );
 
-    var view = get(this, 'parentView');
+    let view = get(this, 'parentView');
 
     while (view) {
       if (view instanceof klass) { return view; }
@@ -62,5 +62,3 @@ var LegacyViewSupport = Mixin.create({
     }
   }
 });
-
-export default LegacyViewSupport;

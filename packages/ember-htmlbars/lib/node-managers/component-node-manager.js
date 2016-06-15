@@ -98,7 +98,7 @@ function configureCreateOptions(attrs, createOptions) {
 }
 
 ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_env, visitor) {
-  var { component } = this;
+  let { component } = this;
 
   return instrument(component, function ComponentNodeManager_render_instrument() {
     let meta = this.block && this.block.template.meta;
@@ -128,12 +128,12 @@ ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_en
 };
 
 ComponentNodeManager.prototype.rerender = function ComponentNodeManager_rerender(_env, attrs, visitor) {
-  var component = this.component;
+  let component = this.component;
 
   return instrument(component, function ComponentNodeManager_rerender_instrument() {
     let env = _env.childWithView(component);
 
-    var snapshot = takeSnapshot(attrs);
+    let snapshot = takeSnapshot(attrs);
 
     if (component._renderNode.shouldReceiveAttrs) {
       if (component._propagateAttrsToThis) {
@@ -198,7 +198,7 @@ export function createComponent(_component, props, renderNode, env, attrs = {}) 
 function takeSnapshot(attrs) {
   let hash = {};
 
-  for (var prop in attrs) {
+  for (let prop in attrs) {
     hash[prop] = getCellOrValue(attrs[prop]);
   }
 
@@ -208,7 +208,7 @@ function takeSnapshot(attrs) {
 export function takeLegacySnapshot(attrs) {
   let hash = {};
 
-  for (var prop in attrs) {
+  for (let prop in attrs) {
     hash[prop] = getValue(attrs[prop]);
   }
 
@@ -218,7 +218,7 @@ export function takeLegacySnapshot(attrs) {
 function snapshotAndUpdateTarget(rawAttrs, target) {
   let attrs = {};
 
-  for (var prop in rawAttrs) {
+  for (let prop in rawAttrs) {
     let value = getCellOrValue(rawAttrs[prop]);
     attrs[prop] = value;
 

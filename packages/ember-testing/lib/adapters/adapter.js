@@ -15,7 +15,7 @@ function K() { return this; }
   @namespace Ember.Test
   @public
 */
-var Adapter = EmberObject.extend({
+export default EmberObject.extend({
   /**
     This callback will be called whenever an async operation is about to start.
 
@@ -56,5 +56,3 @@ var Adapter = EmberObject.extend({
     throw error;
   }
 });
-
-export default Adapter;

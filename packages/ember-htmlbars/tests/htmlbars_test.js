@@ -7,11 +7,11 @@ import assign from 'ember-metal/assign';
 QUnit.module('ember-htmlbars: main');
 
 QUnit.test('HTMLBars is present and can be executed', function() {
-  var template = compile('ohai');
+  let template = compile('ohai');
 
-  var env = assign({ dom: domHelper }, defaultEnv);
+  let env = assign({ dom: domHelper }, defaultEnv);
 
-  var output = template.render({}, env, { contextualElement: document.body }).fragment;
+  let output = template.render({}, env, { contextualElement: document.body }).fragment;
   equalHTML(output, 'ohai');
 });
 

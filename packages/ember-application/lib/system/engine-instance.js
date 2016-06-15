@@ -175,16 +175,12 @@ if (isEnabled('ember-application-engines')) {
         'event_dispatcher:main',
         P`-bucket-cache:main`,
         'service:-routing'
-      ].forEach((key) => {
-        this.register(key, parent.resolveRegistration(key));
-      });
+      ].forEach(key => this.register(key, parent.resolveRegistration(key)));
 
       [
         'router:main',
         '-view-registry:main'
-      ].forEach((key) => {
-        this.register(key, parent.lookup(key), { instantiate: false });
-      });
+      ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
     }
   });
 }

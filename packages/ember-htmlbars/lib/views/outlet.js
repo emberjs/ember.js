@@ -7,7 +7,7 @@ import View from 'ember-views/views/view';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import TemplateSupport from 'ember-views/mixins/template_support';
 
-export var CoreOutletView = View.extend(TemplateSupport, {
+export let CoreOutletView = View.extend(TemplateSupport, {
   defaultTemplate: topLevelViewTemplate,
 
   init() {
@@ -32,10 +32,10 @@ export var CoreOutletView = View.extend(TemplateSupport, {
 
   dirtyOutlets() {
     // Dirty any render nodes that correspond to outlets
-    for (var i = 0; i < this._outlets.length; i++) {
+    for (let i = 0; i < this._outlets.length; i++) {
       this._outlets[i].isDirty = true;
     }
   }
 });
 
-export var OutletView = CoreOutletView.extend({ tagName: '' });
+export let OutletView = CoreOutletView.extend({ tagName: '' });

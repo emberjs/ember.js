@@ -31,10 +31,10 @@ ControllerMixin.reopen({
     @private
   */
   _qpChanged(controller, _prop) {
-    var prop = _prop.substr(0, _prop.length - 3);
+    let prop = _prop.substr(0, _prop.length - 3);
 
-    var delegate = controller._qpDelegate;
-    var value = get(controller, prop);
+    let delegate = controller._qpDelegate;
+    let value = get(controller, prop);
     delegate(prop, value);
   },
 
@@ -112,8 +112,8 @@ ControllerMixin.reopen({
   */
   transitionToRoute() {
     // target may be either another controller or a router
-    var target = get(this, 'target');
-    var method = target.transitionToRoute || target.transitionTo;
+    let target = get(this, 'target');
+    let method = target.transitionToRoute || target.transitionTo;
     return method.apply(target, arguments);
   },
 
@@ -175,8 +175,8 @@ ControllerMixin.reopen({
   */
   replaceRoute() {
     // target may be either another controller or a router
-    var target = get(this, 'target');
-    var method = target.replaceRoute || target.replaceWith;
+    let target = get(this, 'target');
+    let method = target.replaceRoute || target.replaceWith;
     return method.apply(target, arguments);
   }
 });

@@ -10,11 +10,11 @@ import isEnabled from 'ember-metal/features';
 
   ```javascript
   Ember.subscribe("render", {
-    before: function(name, timestamp, payload) {
+    before(name, timestamp, payload) {
 
     },
 
-    after: function(name, timestamp, payload) {
+    after(name, timestamp, payload) {
 
     }
   });
@@ -48,14 +48,14 @@ import isEnabled from 'ember-metal/features';
   @static
   @private
 */
-export var subscribers = [];
-var cache = {};
+export let subscribers = [];
+let cache = {};
 
-var populateListeners = function(name) {
-  var listeners = [];
-  var subscriber;
+function populateListeners(name) {
+  let listeners = [];
+  let subscriber;
 
-  for (var i = 0; i < subscribers.length; i++) {
+  for (let i = 0; i < subscribers.length; i++) {
     subscriber = subscribers[i];
     if (subscriber.regex.test(name)) {
       listeners.push(subscriber.object);
@@ -64,11 +64,11 @@ var populateListeners = function(name) {
 
   cache[name] = listeners;
   return listeners;
-};
+}
 
-var time = (function() {
-  var perf = 'undefined' !== typeof window ? window.performance || {} : {};
-  var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
+const time = (function() {
+  let perf = 'undefined' !== typeof window ? window.performance || {} : {};
+  let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
   // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
   return fn ? fn.bind(perf) : () => {
     return +new Date();
@@ -96,8 +96,8 @@ export function instrument(name, _payload, callback, binding) {
   if (subscribers.length === 0) {
     return callback.call(binding);
   }
-  var payload = _payload || {};
-  var finalizer = _instrumentStart(name, () => payload);
+  let payload = _payload || {};
+  let finalizer = _instrumentStart(name, () => payload);
 
   if (finalizer) {
     return withFinalizer(callback, finalizer, payload, binding);
@@ -106,13 +106,11 @@ export function instrument(name, _payload, callback, binding) {
   }
 }
 
-var flaggedInstrument;
+let flaggedInstrument;
 if (isEnabled('ember-improved-instrumentation')) {
   flaggedInstrument = instrument;
 } else {
-  flaggedInstrument = function(name, payload, callback) {
-    return callback();
-  };
+  flaggedInstrument = (name, payload, callback) => callback();
 }
 export { flaggedInstrument };
 
@@ -131,7 +129,7 @@ function withFinalizer(callback, finalizer, payload, binding) {
 
 // private for now
 export function _instrumentStart(name, _payload) {
-  var listeners = cache[name];
+  let listeners = cache[name];
 
   if (!listeners) {
     listeners = populateListeners(name);
@@ -141,26 +139,26 @@ export function _instrumentStart(name, _payload) {
     return;
   }
 
-  var payload = _payload();
+  let payload = _payload();
 
-  var STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
-  var timeName;
+  let STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
+  let timeName;
   if (STRUCTURED_PROFILE) {
     timeName = name + ': ' + payload.object;
     console.time(timeName);
   }
 
-  var beforeValues = new Array(listeners.length);
-  var i, listener;
-  var timestamp = time();
+  let beforeValues = new Array(listeners.length);
+  let i, listener;
+  let timestamp = time();
   for (i = 0; i < listeners.length; i++) {
     listener = listeners[i];
     beforeValues[i] = listener.before(name, timestamp, payload);
   }
 
   return function _instrumentEnd() {
-    var i, listener;
-    var timestamp = time();
+    let i, listener;
+    let timestamp = time();
     for (i = 0; i < listeners.length; i++) {
       listener = listeners[i];
       if (typeof listener.after === 'function') {
@@ -187,11 +185,11 @@ export function _instrumentStart(name, _payload) {
   @private
 */
 export function subscribe(pattern, object) {
-  var paths = pattern.split('.');
-  var path;
-  var regex = [];
+  let paths = pattern.split('.');
+  let path;
+  let regex = [];
 
-  for (var i = 0; i < paths.length; i++) {
+  for (let i = 0; i < paths.length; i++) {
     path = paths[i];
     if (path === '*') {
       regex.push('[^\\.]*');
@@ -203,7 +201,7 @@ export function subscribe(pattern, object) {
   regex = regex.join('\\.');
   regex = regex + '(\\..*)?';
 
-  var subscriber = {
+  let subscriber = {
     pattern: pattern,
     regex: new RegExp('^' + regex + '$'),
     object: object
@@ -225,9 +223,9 @@ export function subscribe(pattern, object) {
   @private
 */
 export function unsubscribe(subscriber) {
-  var index;
+  let index;
 
-  for (var i = 0; i < subscribers.length; i++) {
+  for (let i = 0; i < subscribers.length; i++) {
     if (subscribers[i] === subscriber) {
       index = i;
     }

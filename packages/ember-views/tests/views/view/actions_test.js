@@ -4,11 +4,11 @@ import Controller from 'ember-runtime/controllers/controller';
 import EmberObject from 'ember-runtime/system/object';
 import View from 'ember-views/views/view';
 
-var view;
+let view;
 
 QUnit.module('View action handling', {
   teardown() {
-    run(function() {
+    run(() => {
       if (view) { view.destroy(); }
     });
   }
@@ -49,7 +49,7 @@ QUnit.test('A handled action can be bubbled to the target for continued processi
 QUnit.test('Action can be handled by a superclass\' actions object', function() {
   expect(4);
 
-  var SuperView = View.extend({
+  let SuperView = View.extend({
     actions: {
       foo() {
         ok(true, 'foo');
@@ -60,7 +60,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
     }
   });
 
-  var BarViewMixin = Mixin.create({
+  let BarViewMixin = Mixin.create({
     actions: {
       bar(msg) {
         equal(msg, 'HELLO');
@@ -69,7 +69,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
     }
   });
 
-  var IndexView = SuperView.extend(BarViewMixin, {
+  let IndexView = SuperView.extend(BarViewMixin, {
     actions: {
       baz() {
         ok(true, 'baz');
@@ -84,7 +84,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
 });
 
 QUnit.test('Actions cannot be provided at create time', function() {
-  expectAssertion(function() {
+  expectAssertion(() => {
     view = View.create({
       actions: {
         foo() {
@@ -98,5 +98,3 @@ QUnit.test('Actions cannot be provided at create time', function() {
     actions: ['foo']
   });
 });
-
-

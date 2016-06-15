@@ -2,7 +2,7 @@ import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import NoneLocation from 'ember-routing/location/none_location';
 
-var NoneTestLocation, location;
+let NoneTestLocation, location;
 
 function createLocation(options) {
   if (!options) { options = {}; }
@@ -15,7 +15,7 @@ QUnit.module('Ember.NoneLocation', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       if (location) { location.destroy(); }
     });
   }

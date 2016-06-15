@@ -3,8 +3,8 @@
 
   ```javascript
   Ember.merge({first: 'Tom'}, {last: 'Dale'}); // {first: 'Tom', last: 'Dale'}
-  var a = {first: 'Yehuda'};
-  var b = {last: 'Katz'};
+  let a = {first: 'Yehuda'};
+  let b = {last: 'Katz'};
   Ember.merge(a, b); // a == {first: 'Yehuda', last: 'Katz'}, b == {last: 'Katz'}
   ```
 
@@ -20,10 +20,10 @@ export default function merge(original, updates) {
     return original;
   }
 
-  var props = Object.keys(updates);
-  var prop;
+  let props = Object.keys(updates);
+  let prop;
 
-  for (var i = 0; i < props.length; i++) {
+  for (let i = 0; i < props.length; i++) {
     prop = props[i];
     original[prop] = updates[prop];
   }

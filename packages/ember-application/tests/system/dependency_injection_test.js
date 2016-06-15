@@ -3,10 +3,10 @@ import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Application from 'ember-application/system/application';
 
-var EmberApplication = Application;
+let EmberApplication = Application;
 
-var originalLookup = context.lookup;
-var registry, locator, lookup, application, originalModelInjections;
+let originalLookup = context.lookup;
+let registry, locator, lookup, application, originalModelInjections;
 
 QUnit.module('Ember.Application Dependency Injection', {
   setup() {
@@ -41,8 +41,8 @@ QUnit.module('Ember.Application Dependency Injection', {
 });
 
 QUnit.test('container lookup is normalized', function() {
-  var dotNotationController = locator.lookup('controller:post.index');
-  var camelCaseController = locator.lookup('controller:postIndex');
+  let dotNotationController = locator.lookup('controller:post.index');
+  let camelCaseController = locator.lookup('controller:postIndex');
 
   ok(dotNotationController instanceof application.PostIndexController);
   ok(camelCaseController instanceof application.PostIndexController);
@@ -66,9 +66,9 @@ QUnit.test('injections', function() {
   application.inject('model', 'fruit', 'fruit:favorite');
   application.inject('model:user', 'communication', 'communication:main');
 
-  var user = locator.lookup('model:user');
-  var person = locator.lookup('model:person');
-  var fruit = locator.lookup('fruit:favorite');
+  let user = locator.lookup('model:user');
+  let person = locator.lookup('model:person');
+  let fruit = locator.lookup('fruit:favorite');
 
   equal(user.get('fruit'), fruit);
   equal(person.get('fruit'), fruit);

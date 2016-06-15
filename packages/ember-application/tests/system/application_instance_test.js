@@ -7,14 +7,12 @@ import factory from 'container/tests/test-helpers/factory';
 import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
 
-let app, appInstance;
+let application, appInstance;
 
 QUnit.module('Ember.ApplicationInstance', {
   setup() {
     jQuery('#qunit-fixture').html('<div id=\'one\'><div id=\'one-child\'>HI</div></div><div id=\'two\'>HI</div>');
-    run(function() {
-      app = Application.create({ rootElement: '#one', router: null });
-    });
+    application = run(() => Application.create({ rootElement: '#one', router: null }));
   },
 
   teardown() {
@@ -24,27 +22,23 @@ QUnit.module('Ember.ApplicationInstance', {
       run(appInstance, 'destroy');
     }
 
-    if (app) {
-      run(app, 'destroy');
+    if (application) {
+      run(application, 'destroy');
     }
   }
 });
 
 QUnit.test('an application instance can be created based upon an application', function() {
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-  });
+  appInstance = run(() => appInstance = ApplicationInstance.create({ application }));
 
   ok(appInstance, 'instance should be created');
-  equal(appInstance.application, app, 'application should be set to parent');
+  equal(appInstance.application, application, 'application should be set to parent');
 });
 
 QUnit.test('properties (and aliases) are correctly assigned for accessing the container and registry', function() {
   expect(9);
 
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-  });
+  appInstance = run(() => ApplicationInstance.create({ application }));
 
   ok(appInstance, 'instance should be created');
   ok(appInstance.__container__, '#__container__ is accessible');
@@ -57,7 +51,7 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
     ok(true, '#loookup alias is called correctly');
   };
 
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     appInstance.container.lookup();
   }, /Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead./);
 
@@ -67,7 +61,7 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
     ok(true, '#register alias is called correctly');
   };
 
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     appInstance.registry.register();
   }, /Using `ApplicationInstance.registry.register` is deprecated. Please use `ApplicationInstance.register` instead./);
 });
@@ -75,15 +69,13 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
 QUnit.test('customEvents added to the application before setupEventDispatcher', function(assert) {
   assert.expect(1);
 
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-  });
+  appInstance = run(() => ApplicationInstance.create({ application }));
 
-  app.customEvents = {
+  application.customEvents = {
     awesome: 'sauce'
   };
 
-  var eventDispatcher = appInstance.lookup('event_dispatcher:main');
+  let eventDispatcher = appInstance.lookup('event_dispatcher:main');
   eventDispatcher.setup = function(events) {
     assert.equal(events.awesome, 'sauce');
   };
@@ -94,15 +86,13 @@ QUnit.test('customEvents added to the application before setupEventDispatcher', 
 QUnit.test('customEvents added to the application before setupEventDispatcher', function(assert) {
   assert.expect(1);
 
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-  });
+  run(() => appInstance = ApplicationInstance.create({ application }));
 
-  app.customEvents = {
+  application.customEvents = {
     awesome: 'sauce'
   };
 
-  var eventDispatcher = appInstance.lookup('event_dispatcher:main');
+  let eventDispatcher = appInstance.lookup('event_dispatcher:main');
   eventDispatcher.setup = function(events) {
     assert.equal(events.awesome, 'sauce');
   };
@@ -113,15 +103,13 @@ QUnit.test('customEvents added to the application before setupEventDispatcher', 
 QUnit.test('customEvents added to the application instance before setupEventDispatcher', function(assert) {
   assert.expect(1);
 
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-  });
+  appInstance = run(() => ApplicationInstance.create({ application }));
 
   appInstance.customEvents = {
     awesome: 'sauce'
   };
 
-  var eventDispatcher = appInstance.lookup('event_dispatcher:main');
+  let eventDispatcher = appInstance.lookup('event_dispatcher:main');
   eventDispatcher.setup = function(events) {
     assert.equal(events.awesome, 'sauce');
   };
@@ -132,9 +120,7 @@ QUnit.test('customEvents added to the application instance before setupEventDisp
 QUnit.test('unregistering a factory clears all cached instances of that factory', function(assert) {
   assert.expect(3);
 
-  run(function() {
-    appInstance = ApplicationInstance.create({ application: app });
-  });
+  appInstance = run(() => ApplicationInstance.create({ application }));
 
   let PostController = factory();
 
@@ -159,10 +145,10 @@ if (isEnabled('ember-application-engines')) {
     let ChatEngine = Engine.extend();
     let chatEngineInstance;
 
-    app.register('engine:chat', ChatEngine);
+    application.register('engine:chat', ChatEngine);
 
-    run(function() {
-      appInstance = ApplicationInstance.create({ application: app });
+    run(() => {
+      appInstance = ApplicationInstance.create({ application });
       chatEngineInstance = appInstance.buildChildEngineInstance('chat');
     });
 
@@ -175,7 +161,7 @@ if (isEnabled('ember-application-engines')) {
           'event_dispatcher:main',
           P`-bucket-cache:main`,
           'service:-routing'
-        ].forEach((key) => {
+        ].forEach(key => {
           assert.strictEqual(
             chatEngineInstance.resolveRegistration(key),
             appInstance.resolveRegistration(key),
@@ -185,7 +171,7 @@ if (isEnabled('ember-application-engines')) {
         [
           'router:main',
           '-view-registry:main'
-        ].forEach((key) => {
+        ].forEach(key => {
           assert.strictEqual(
             chatEngineInstance.lookup(key),
             appInstance.lookup(key),

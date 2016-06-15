@@ -34,7 +34,7 @@ QUnit.test('registering a plugin adds it to htmlbars-compiler options', function
 });
 
 QUnit.test('registering an unknown type throws an error', function() {
-  throws(function() {
+  throws(() => {
     registerPlugin('asdf', 'whatever');
   }, `Attempting to register whatever as "asdf" which is not a valid ${engineName} plugin type.`);
 });

@@ -33,7 +33,7 @@ export default Mixin.create({
     // there is another Mixin loaded first.
     this._super(...arguments);
 
-    var modelSpecified = !!props.model;
+    let modelSpecified = !!props.model;
 
     if (props.content && !modelSpecified) {
       props.model = props.content;

@@ -6,18 +6,18 @@ import {
 QUnit.module('Routing query parameter utils - normalizeControllerQueryParams');
 
 QUnit.test('returns the cached value if that has been previously set', function(assert) {
-  var cached = {};
-  var params = ['foo'];
+  let cached = {};
+  let params = ['foo'];
   params._qpMap = cached;
 
-  var normalized = normalizeControllerQueryParams(params);
+  let normalized = normalizeControllerQueryParams(params);
   equal(cached, normalized, 'cached value returned if previously set');
 });
 
 QUnit.test('converts array style into verbose object style', function(assert) {
-  var paramName = 'foo';
-  var params = [paramName];
-  var normalized = normalizeControllerQueryParams(params);
+  let paramName = 'foo';
+  let params = [paramName];
+  let normalized = normalizeControllerQueryParams(params);
 
   ok(normalized[paramName], 'turns the query param name into key');
   equal(normalized[paramName].as, null, 'includes a blank alias in \'as\' key');
@@ -25,9 +25,9 @@ QUnit.test('converts array style into verbose object style', function(assert) {
 });
 
 QUnit.test('converts object stlye [{foo: \'an_alias\'}]', function(assert) {
-  var paramName = 'foo';
-  var params = [{ 'foo': 'an_alias' }];
-  var normalized = normalizeControllerQueryParams(params);
+  let paramName = 'foo';
+  let params = [{ 'foo': 'an_alias' }];
+  let normalized = normalizeControllerQueryParams(params);
 
   ok(normalized[paramName], 'retains the query param name as key');
   equal(normalized[paramName].as, 'an_alias', 'includes the provided alias in \'as\' key');
@@ -35,9 +35,9 @@ QUnit.test('converts object stlye [{foo: \'an_alias\'}]', function(assert) {
 });
 
 QUnit.test('retains maximally verbose object stlye [{foo: {as: \'foo\'}}]', function(assert) {
-  var paramName = 'foo';
-  var params = [{ 'foo': { as: 'an_alias' } }];
-  var normalized = normalizeControllerQueryParams(params);
+  let paramName = 'foo';
+  let params = [{ 'foo': { as: 'an_alias' } }];
+  let normalized = normalizeControllerQueryParams(params);
 
   ok(normalized[paramName], 'retains the query param name as key');
   equal(normalized[paramName].as, 'an_alias', 'includes the provided alias in \'as\' key');

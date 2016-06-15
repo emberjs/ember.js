@@ -34,9 +34,9 @@ import { deprecate } from 'ember-metal/debug';
 import isEnabled from 'ember-metal/features';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
-  var willChange = (opts && opts.willChange) || 'arrayWillChange';
-  var didChange  = (opts && opts.didChange) || 'arrayDidChange';
-  var hasObservers = get(obj, 'hasArrayObservers');
+  let willChange = (opts && opts.willChange) || 'arrayWillChange';
+  let didChange  = (opts && opts.didChange) || 'arrayDidChange';
+  let hasObservers = get(obj, 'hasArrayObservers');
 
   if (hasObservers === notify) {
     propertyWillChange(obj, 'hasArrayObservers');
@@ -114,7 +114,7 @@ export function isEmberArray(obj) {
   @since Ember 0.9.0
   @public
 */
-var ArrayMixin = Mixin.create(Enumerable, {
+const ArrayMixin = Mixin.create(Enumerable, {
 
   [EMBER_ARRAY]: true,
 
@@ -139,7 +139,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     yourself.
 
     ```javascript
-    var arr = ['a', 'b', 'c', 'd'];
+    let arr = ['a', 'b', 'c', 'd'];
 
     arr.objectAt(0);   // 'a'
     arr.objectAt(3);   // 'd'
@@ -165,7 +165,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     This returns the objects at the specified indexes, using `objectAt`.
 
     ```javascript
-    var arr = ['a', 'b', 'c', 'd'];
+    let arr = ['a', 'b', 'c', 'd'];
 
     arr.objectsAt([0, 1, 2]);  // ['a', 'b', 'c']
     arr.objectsAt([2, 3, 4]);  // ['c', 'd', undefined]
@@ -234,7 +234,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     slice.
 
     ```javascript
-    var arr = ['red', 'green', 'blue'];
+    let arr = ['red', 'green', 'blue'];
 
     arr.slice(0);       // ['red', 'green', 'blue']
     arr.slice(0, 2);    // ['red', 'green']
@@ -248,8 +248,8 @@ var ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   slice(beginIndex, endIndex) {
-    var ret = Ember.A();
-    var length = get(this, 'length');
+    let ret = Ember.A();
+    let length = get(this, 'length');
 
     if (isNone(beginIndex)) {
       beginIndex = 0;
@@ -281,7 +281,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     the end of the array. Returns -1 if no match is found.
 
     ```javascript
-    var arr = ['a', 'b', 'c', 'd', 'a'];
+    let arr = ['a', 'b', 'c', 'd', 'a'];
 
     arr.indexOf('a');       //  0
     arr.indexOf('z');       // -1
@@ -298,8 +298,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   indexOf(object, startAt) {
-    var len = get(this, 'length');
-    var idx;
+    let len = get(this, 'length');
 
     if (startAt === undefined) {
       startAt = 0;
@@ -309,7 +308,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
       startAt += len;
     }
 
-    for (idx = startAt; idx < len; idx++) {
+    for (let idx = startAt; idx < len; idx++) {
       if (objectAt(this, idx) === object) {
         return idx;
       }
@@ -325,7 +324,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     from the end of the array. Returns -1 if no match is found.
 
     ```javascript
-    var arr = ['a', 'b', 'c', 'd', 'a'];
+    let arr = ['a', 'b', 'c', 'd', 'a'];
 
     arr.lastIndexOf('a');       //  4
     arr.lastIndexOf('z');       // -1
@@ -342,8 +341,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   lastIndexOf(object, startAt) {
-    var len = get(this, 'length');
-    var idx;
+    let len = get(this, 'length');
 
     if (startAt === undefined || startAt >= len) {
       startAt = len - 1;
@@ -353,7 +351,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
       startAt += len;
     }
 
-    for (idx = startAt; idx >= 0; idx--) {
+    for (let idx = startAt; idx >= 0; idx--) {
       if (objectAt(this, idx) === object) {
         return idx;
       }
@@ -439,7 +437,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   arrayContentWillChange(startIdx, removeAmt, addAmt) {
-    var removing, lim;
+    let removing, lim;
 
     // if no args are passed assume everything changes
     if (startIdx === undefined) {
@@ -466,7 +464,7 @@ var ArrayMixin = Mixin.create(Enumerable, {
       removing = [];
       lim = startIdx + removeAmt;
 
-      for (var idx = startIdx; idx < lim; idx++) {
+      for (let idx = startIdx; idx < lim; idx++) {
         removing.push(objectAt(this, idx));
       }
     } else {
@@ -494,8 +492,6 @@ var ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
-    var adding, lim;
-
     markObjectAsDirty(metaFor(this));
 
     // if no args are passed assume everything changes
@@ -512,11 +508,12 @@ var ArrayMixin = Mixin.create(Enumerable, {
       }
     }
 
+    let adding;
     if (startIdx >= 0 && addAmt >= 0 && get(this, 'hasEnumerableObservers')) {
       adding = [];
-      lim = startIdx + addAmt;
+      let lim = startIdx + addAmt;
 
-      for (var idx = startIdx; idx < lim; idx++) {
+      for (let idx = startIdx; idx < lim; idx++) {
         adding.push(objectAt(this, idx));
       }
     } else {
@@ -531,9 +528,9 @@ var ArrayMixin = Mixin.create(Enumerable, {
 
     sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
-    var length = get(this, 'length');
-    var cachedFirst = cacheFor(this, 'firstObject');
-    var cachedLast = cacheFor(this, 'lastObject');
+    let length = get(this, 'length');
+    let cachedFirst = cacheFor(this, 'firstObject');
+    let cachedLast = cacheFor(this, 'lastObject');
 
     if (objectAt(this, 0) !== cachedFirst) {
       propertyWillChange(this, 'firstObject');
@@ -609,8 +606,7 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
       @public
     */
     includes(obj, startAt) {
-      var len = get(this, 'length');
-      var idx, currentObj;
+      let len = get(this, 'length');
 
       if (startAt === undefined) {
         startAt = 0;
@@ -620,8 +616,8 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
         startAt += len;
       }
 
-      for (idx = startAt; idx < len; idx++) {
-        currentObj = objectAt(this, idx);
+      for (let idx = startAt; idx < len; idx++) {
+        let currentObj = objectAt(this, idx);
 
         // SameValueZero comparison (NaN !== NaN)
         if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {

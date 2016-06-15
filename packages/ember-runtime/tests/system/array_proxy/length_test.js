@@ -7,33 +7,19 @@ import { A as a } from 'ember-runtime/system/native_array';
 QUnit.module('Ember.ArrayProxy - content change (length)');
 
 QUnit.test('array proxy + aliasedProperty complex test', function() {
-  var aCalled, bCalled, cCalled, dCalled, eCalled;
+  let aCalled, bCalled, cCalled, dCalled, eCalled;
 
   aCalled = bCalled = cCalled = dCalled = eCalled = 0;
 
-  var obj = Object.extend({
+  let obj = Object.extend({
     colors: computed.reads('model'),
     length: computed.reads('colors.length'),
 
-    a: observer('length', function() {
-      aCalled++;
-    }),
-
-    b: observer('colors.length', function() {
-      bCalled++;
-    }),
-
-    c: observer('colors.content.length', function() {
-      cCalled++;
-    }),
-
-    d: observer('colors.[]', function() {
-      dCalled++;
-    }),
-
-    e: observer('colors.content.[]', function() {
-      eCalled++;
-    })
+    a: observer('length',                () => aCalled++),
+    b: observer('colors.length',         () => bCalled++),
+    c: observer('colors.content.length', () => cCalled++),
+    d: observer('colors.[]',             () => dCalled++),
+    e: observer('colors.content.[]',     () => eCalled++)
   }).create();
 
   obj.set('model', ArrayProxy.create({

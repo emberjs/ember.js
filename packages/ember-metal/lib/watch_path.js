@@ -15,7 +15,7 @@ export function makeChainNode(obj) {
 }
 
 export function watchPath(obj, keyPath, meta) {
-  var m = meta || metaFor(obj);
+  let m = meta || metaFor(obj);
   let counter = m.peekWatching(keyPath) || 0;
   if (!counter) { // activate watching first time
     m.writeWatching(keyPath, 1);
@@ -26,7 +26,7 @@ export function watchPath(obj, keyPath, meta) {
 }
 
 export function unwatchPath(obj, keyPath, meta) {
-  var m = meta || metaFor(obj);
+  let m = meta || metaFor(obj);
   let counter = m.peekWatching(keyPath) || 0;
 
   if (counter === 1) {

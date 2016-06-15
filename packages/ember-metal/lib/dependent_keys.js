@@ -19,8 +19,8 @@ import {
 export function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
-  var idx, depKey;
-  var depKeys = desc._dependentKeys;
+  let idx, depKey;
+  let depKeys = desc._dependentKeys;
   if (!depKeys) {
     return;
   }
@@ -37,14 +37,13 @@ export function addDependentKeys(desc, obj, keyName, meta) {
 export function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // remove all of its dependent keys.
-  var depKeys = desc._dependentKeys;
-  var idx, depKey;
+  let depKeys = desc._dependentKeys;
   if (!depKeys) {
     return;
   }
 
-  for (idx = 0; idx < depKeys.length; idx++) {
-    depKey = depKeys[idx];
+  for (let idx = 0; idx < depKeys.length; idx++) {
+    let depKey = depKeys[idx];
     // Decrement the number of times depKey depends on keyName.
     meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName) || 0) - 1);
     // Unwatch the depKey

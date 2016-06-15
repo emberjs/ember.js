@@ -1,12 +1,12 @@
 import EmberObject from 'ember-runtime/system/object';
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('invoke');
 
 suite.test('invoke should call on each object that implements', function() {
-  var cnt, ary, obj;
+  let cnt, ary, obj;
 
   function F(amt) {
     cnt += amt === undefined ? 1 : amt;

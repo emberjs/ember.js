@@ -24,9 +24,9 @@ import { get } from 'ember-metal/property_get';
   @public
 */
 export default function getProperties(obj) {
-  var ret = {};
-  var propertyNames = arguments;
-  var i = 1;
+  let ret = {};
+  let propertyNames = arguments;
+  let i = 1;
 
   if (arguments.length === 2 && Array.isArray(arguments[1])) {
     i = 0;

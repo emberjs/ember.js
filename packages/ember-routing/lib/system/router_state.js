@@ -2,21 +2,19 @@ import isEmpty from 'ember-metal/is_empty';
 import EmberObject from 'ember-runtime/system/object';
 import assign from 'ember-metal/assign';
 
-const keys = Object.keys;
-
-var RouterState = EmberObject.extend({
+export default EmberObject.extend({
   emberRouter: null,
   routerJs: null,
   routerJsState: null,
 
   isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
-    var state = this.routerJsState;
+    let state = this.routerJsState;
     if (!this.routerJs.isActiveIntent(routeName, models, null, state)) { return false; }
 
-    var emptyQueryParams = isEmpty(keys(queryParams));
+    let emptyQueryParams = isEmpty(Object.keys(queryParams));
 
     if (queryParamsMustMatch && !emptyQueryParams) {
-      var visibleQueryParams = {};
+      let visibleQueryParams = {};
       assign(visibleQueryParams, queryParams);
 
       this.emberRouter._prepareQueryParams(routeName, models, visibleQueryParams);
@@ -28,7 +26,7 @@ var RouterState = EmberObject.extend({
 });
 
 function shallowEqual(a, b) {
-  var k;
+  let k;
   for (k in a) {
     if (a.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
   }
@@ -37,5 +35,3 @@ function shallowEqual(a, b) {
   }
   return true;
 }
-
-export default RouterState;

@@ -20,10 +20,10 @@ if (isEnabled('ember-glimmer')) {
   OutletView = require('ember-htmlbars/views/outlet').OutletView;
 }
 
-var App, appInstance;
-var originalHelpers;
+let App, appInstance;
+let originalHelpers;
 
-const keys = Object.keys;
+const { keys } = Object;
 
 function prepare() {
   setTemplate('components/expand-it', compile('<p>hello {{yield}}</p>'));
@@ -33,7 +33,7 @@ function prepare() {
 }
 
 function cleanup() {
-  run(function() {
+  run(() => {
     try {
       if (App) {
         App.destroy();
@@ -47,10 +47,10 @@ function cleanup() {
 }
 
 function cleanupHelpers() {
-  var included;
+  let included;
 
   keys(helpers).
-    forEach((name) => {
+    forEach(name => {
       if (isEnabled('ember-runtime-enumerable-includes')) {
         included = originalHelpers.includes(name);
       } else {
@@ -69,7 +69,7 @@ QUnit.module('Application Lifecycle - Component Registration', {
 });
 
 function boot(callback, startURL='/') {
-  run(function() {
+  run(() => {
     App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -86,12 +86,10 @@ function boot(callback, startURL='/') {
     if (callback) { callback(); }
   });
 
-  var router = appInstance.lookup('router:main');
+  let router = appInstance.lookup('router:main');
 
   run(App, 'advanceReadiness');
-  run(function() {
-    router.handleURL(startURL);
-  });
+  run(() => router.handleURL(startURL));
 }
 
 QUnit.test('The helper becomes the body of the component', function() {
@@ -100,7 +98,7 @@ QUnit.test('The helper becomes the body of the component', function() {
 });
 
 QUnit.test('If a component is registered, it is used', function() {
-  boot(function() {
+  boot(() => {
     appInstance.register('component:expand-it', Component.extend({
       classNames: 'testing123'
     }));
@@ -112,7 +110,7 @@ QUnit.test('If a component is registered, it is used', function() {
 QUnit.test('Late-registered components can be rendered with custom `layout` property', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>there goes {{my-hero}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('component:my-hero', Component.extend({
       classNames: 'testing123',
       layout: compile('watch him as he GOES')
@@ -126,7 +124,7 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('template:components/sally-rutherford', compile('funkytowny{{yield}}'));
     appInstance.register('component:sally-rutherford', Component);
   });
@@ -138,7 +136,7 @@ QUnit.test('Late-registered components can be rendered with template registered 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('template:components/borf-snorlax', compile('goodfreakingTIMES{{yield}}'));
   });
 
@@ -149,7 +147,7 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
 test('Component-like invocations are treated as bound paths if neither template nor component are registered on the container', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'user-name': 'machty'
     }));
@@ -164,7 +162,7 @@ QUnit.test('Assigning layoutName to a component should setup the template as a l
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('foo-bar-baz', compile('{{text}}-{{yield}}'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
@@ -184,7 +182,7 @@ QUnit.test('Assigning layoutName and layout to a component should use the `layou
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('foo-bar-baz', compile('No way!'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
@@ -204,8 +202,8 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
 
-  expectDeprecation(function() {
-    boot(function() {
+  expectDeprecation(() => {
+    boot(() => {
       appInstance.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
@@ -226,8 +224,8 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}-{{yield}}'));
 
-  expectDeprecation(function() {
-    boot(function() {
+  expectDeprecation(() => {
+    boot(() => {
       appInstance.register('controller:application', Controller.extend({
         'text': 'outer'
       }));
@@ -245,9 +243,7 @@ QUnit.test('Assigning defaultLayout to a component should set it up as a layout 
 QUnit.test('Using name of component that does not exist', function () {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#no-good}} {{/no-good}}</div>'));
 
-  expectAssertion(function () {
-    boot();
-  }, /.* named "no-good" .*/);
+  expectAssertion(() => boot(), /.* named "no-good" .*/);
 });
 
 QUnit.module('Application Lifecycle - Component Context', {
@@ -259,7 +255,7 @@ QUnit.test('Components with a block should have the proper content when a templa
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}-{{yield}}'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
@@ -275,7 +271,7 @@ QUnit.test('Components with a block should have the proper content when a templa
 QUnit.test('Components with a block should yield the proper content without a template provided', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
@@ -292,7 +288,7 @@ QUnit.test('Components without a block should have the proper content when a tem
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
   setTemplate('components/my-component', compile('{{text}}'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
@@ -308,7 +304,7 @@ QUnit.test('Components without a block should have the proper content when a tem
 QUnit.test('Components without a block should have the proper content', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer'
     }));
@@ -327,7 +323,7 @@ QUnit.test('Components without a block should have the proper content', function
 QUnit.test('properties of a component without a template should not collide with internal structures [DEPRECATED]', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component data=foo}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
@@ -346,7 +342,7 @@ QUnit.test('properties of a component without a template should not collide with
 test('attrs property of a component without a template should not collide with internal structures', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       'text': 'outer',
       'foo': 'Some text inserted by jQuery'
@@ -366,7 +362,7 @@ test('attrs property of a component without a template should not collide with i
 QUnit.test('Components trigger actions in the parents context when called from within a block', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>{{/my-component}}</div>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
@@ -378,7 +374,7 @@ QUnit.test('Components trigger actions in the parents context when called from w
     appInstance.register('component:my-component', Component.extend());
   });
 
-  run(function() {
+  run(() => {
     jQuery('#fizzbuzz', '#wrapper').click();
   });
 });
@@ -387,7 +383,7 @@ QUnit.test('Components trigger actions in the components context when called fro
   setTemplate('application', compile('<div id=\'wrapper\'>{{#my-component}}{{text}}{{/my-component}}</div>'));
   setTemplate('components/my-component', compile('<a href=\'#\' id=\'fizzbuzz\' {{action \'fizzbuzz\'}}>Fizzbuzz</a>'));
 
-  boot(function() {
+  boot(() => {
     appInstance.register('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
@@ -415,7 +411,7 @@ QUnit.test('Components receive the top-level view as their ownerView', function(
 
   let component;
 
-  boot(function() {
+  boot(() => {
     appInstance.register('component:my-component', Component.extend({
       init() {
         this._super();

@@ -12,8 +12,7 @@ import {
 } from 'ember-runtime/mixins/array';
 import isEnabled from 'ember-metal/features';
 
-var ObserverClass = EnumerableTestsObserverClass.extend({
-
+const ObserverClass = EnumerableTestsObserverClass.extend({
   observeArray(obj) {
     addArrayObserver(obj, this);
     return this;
@@ -33,13 +32,10 @@ var ObserverClass = EnumerableTestsObserverClass.extend({
     equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
-
 });
 
-var ArrayTests = EnumerableTests.extend({
-
+const ArrayTests = EnumerableTests.extend({
   observerClass: ObserverClass
-
 });
 
 ArrayTests.ObserverClass = ObserverClass;

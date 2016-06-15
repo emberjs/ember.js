@@ -8,7 +8,7 @@ import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var App, $fixture;
+let App, $fixture;
 
 function setupExample() {
   // setup templates
@@ -26,7 +26,7 @@ function setupExample() {
 
   App.IndexRoute = Route.extend({
     model() {
-      var people = emberA([
+      let people = emberA([
         App.Person.create({
           firstName: 'Tom',
           lastName: 'Dale'
@@ -43,7 +43,7 @@ function setupExample() {
 
 QUnit.module('Homepage Example', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -62,9 +62,7 @@ QUnit.module('Homepage Example', {
   },
 
   teardown() {
-    run(function() {
-      App.destroy();
-    });
+    run(() => App.destroy());
 
     App = null;
 

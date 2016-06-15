@@ -8,9 +8,9 @@ import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var Router, App, router, registry, container;
+let Router, App, router, registry, container;
 
-var aboutDefer, otherDefer;
+let aboutDefer, otherDefer;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -18,16 +18,16 @@ function bootApplication() {
 }
 
 function assertHasClass(className) {
-  var i = 1;
+  let i = 1;
   while (i < arguments.length) {
-    var $a = arguments[i];
-    var shouldHaveClass = arguments[i + 1];
+    let $a = arguments[i];
+    let shouldHaveClass = arguments[i + 1];
     equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + ' should ' + (shouldHaveClass ? '' : 'not ') + 'have class ' + className);
     i += 2;
   }
 }
 
-var updateCount, replaceCount;
+let updateCount, replaceCount;
 
 function sharedSetup() {
   App = Application.create({
@@ -58,14 +58,14 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  run(function() { App.destroy(); });
+  run(() => App.destroy());
   setTemplates({});
 }
 
 
 QUnit.module('The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes', {
   setup() {
-    run(function() {
+    run(() => {
       sharedSetup();
 
       registry.unregister('router:main');
@@ -104,9 +104,9 @@ QUnit.test('while a transition is underway', function() {
   expect(18);
   bootApplication();
 
-  var $index = jQuery('#index-link');
-  var $about = jQuery('#about-link');
-  var $other = jQuery('#other-link');
+  let $index = jQuery('#index-link');
+  let $about = jQuery('#about-link');
+  let $other = jQuery('#other-link');
 
   run($about, 'click');
 
@@ -160,9 +160,9 @@ QUnit.test('while a transition is underway with nested link-to\'s', function() {
 
   bootApplication();
 
-  var $index = jQuery('#index-link');
-  var $about = jQuery('#about-link');
-  var $other = jQuery('#other-link');
+  let $index = jQuery('#index-link');
+  let $about = jQuery('#about-link');
+  let $other = jQuery('#other-link');
 
   run($about, 'click');
 

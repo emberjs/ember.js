@@ -4,17 +4,17 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('Ember Type Checking');
 
 QUnit.test('Ember.typeOf', function() {
-  var MockedDate = function() { };
+  let MockedDate = function() { };
   MockedDate.prototype = new Date();
 
-  var mockedDate  = new MockedDate();
-  var date        = new Date();
-  var error       = new Error('boum');
-  var object      = { a: 'b' };
-  var a = null;
-  var arr = [1, 2, 3];
-  var obj = {};
-  var instance = EmberObject.create({ method() {} });
+  let mockedDate  = new MockedDate();
+  let date        = new Date();
+  let error       = new Error('boum');
+  let object      = { a: 'b' };
+  let a = null;
+  let arr = [1, 2, 3];
+  let obj = {};
+  let instance = EmberObject.create({ method() {} });
 
   equal(typeOf(), 'undefined', 'undefined');
   equal(typeOf(null), 'null', 'null');

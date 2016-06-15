@@ -18,7 +18,7 @@ export default BasicStream.extend({
     assert('KeyStream error: key must be a non-empty string', typeof key === 'string' && key.length > 0);
     assert('KeyStream error: key must not have a \'.\'', key.indexOf('.') === -1);
 
-    var label = labelFor(source, key);
+    let label = labelFor(source, key);
 
     this.path = label;
     this.observedObject = null;
@@ -43,7 +43,7 @@ export default BasicStream.extend({
   },
 
   setValue(value) {
-    var object = this.sourceDep.getValue();
+    let object = this.sourceDep.getValue();
     if (object) {
       set(object, this.key, value);
     }
@@ -59,7 +59,7 @@ export default BasicStream.extend({
   revalidate(value) {
     this._super$revalidate(value);
 
-    var object = this.sourceDep.getValue();
+    let object = this.sourceDep.getValue();
     if (object !== this.observedObject) {
       this._clearObservedObject();
 

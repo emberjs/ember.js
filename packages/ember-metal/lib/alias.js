@@ -44,14 +44,14 @@ AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
 
 AliasedProperty.prototype.setup = function(obj, keyName) {
   assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
-  var m = meta(obj);
+  let m = meta(obj);
   if (m.peekWatching(keyName)) {
     addDependentKeys(this, obj, keyName, m);
   }
 };
 
 AliasedProperty.prototype.teardown = function(obj, keyName) {
-  var m = meta(obj);
+  let m = meta(obj);
   if (m.peekWatching(keyName)) {
     removeDependentKeys(this, obj, keyName, m);
   }

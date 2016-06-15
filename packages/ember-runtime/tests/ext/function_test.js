@@ -12,7 +12,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
     return;
   }
 
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
 
     count: 0,
 
@@ -22,7 +22,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 
   });
 
-  var obj = mixin({}, MyMixin);
+  let obj = mixin({}, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
@@ -38,7 +38,7 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
     return;
   }
 
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
 
     count: 0,
 
@@ -48,7 +48,7 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
 
   });
 
-  var obj = mixin({}, Evented, MyMixin);
+  let obj = mixin({}, Evented, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
 
   obj.trigger('bar');
@@ -62,7 +62,7 @@ testBoth('can be chained with observes', function(get, set) {
     return;
   }
 
-  var MyMixin = Mixin.create({
+  let MyMixin = Mixin.create({
 
     count: 0,
     bay: 'bay',
@@ -71,7 +71,7 @@ testBoth('can be chained with observes', function(get, set) {
     }.observes('bay').on('bar')
   });
 
-  var obj = mixin({}, Evented, MyMixin);
+  let obj = mixin({}, Evented, MyMixin);
   equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
 
   set(obj, 'bay', 'BAY');
@@ -87,7 +87,7 @@ testBoth('sets up a ComputedProperty', function(get, set) {
     return;
   }
 
-  var MyClass = EmberObject.extend({
+  let MyClass = EmberObject.extend({
     firstName: null,
     lastName: null,
     fullName: function() {
@@ -95,7 +95,7 @@ testBoth('sets up a ComputedProperty', function(get, set) {
     }.property('firstName', 'lastName')
   });
 
-  var obj = MyClass.create({ firstName: 'Fred', lastName: 'Flinstone' });
+  let obj = MyClass.create({ firstName: 'Fred', lastName: 'Flinstone' });
   equal(get(obj, 'fullName'), 'Fred Flinstone', 'should return the computed value');
 
   set(obj, 'firstName', 'Wilma');

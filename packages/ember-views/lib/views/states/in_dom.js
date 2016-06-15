@@ -9,7 +9,7 @@ import hasElement from 'ember-views/views/states/has_element';
 @submodule ember-views
 */
 
-var inDOM = Object.create(hasElement);
+const inDOM = Object.create(hasElement);
 
 assign(inDOM, {
   enter(view) {
@@ -19,8 +19,8 @@ assign(inDOM, {
       view._register();
     }
 
-    runInDebug(function() {
-      _addBeforeObserver(view, 'elementId', function() {
+    runInDebug(() => {
+      _addBeforeObserver(view, 'elementId', () => {
         throw new EmberError('Changing a view\'s elementId after creation is not allowed');
       });
     });

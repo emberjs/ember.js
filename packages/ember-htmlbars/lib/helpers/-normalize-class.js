@@ -11,8 +11,8 @@ import { isPath } from 'ember-metal/path_cache';
   @private
 */
 export default function normalizeClass(params, hash) {
-  var [propName, value] = params;
-  var { activeClass, inactiveClass } = hash;
+  let [propName, value] = params;
+  let { activeClass, inactiveClass } = hash;
 
   // When using the colon syntax, evaluate the truthiness or falsiness
   // of the value to determine which className to return.
@@ -28,7 +28,7 @@ export default function normalizeClass(params, hash) {
   } else if (value === true) {
     // Only apply to last segment in the path.
     if (propName && isPath(propName)) {
-      var segments = propName.split('.');
+      let segments = propName.split('.');
       propName = segments[segments.length - 1];
     }
 

@@ -1,6 +1,6 @@
 import { tryInvoke } from 'ember-metal/utils';
 
-var obj;
+let obj;
 
 QUnit.module('Ember.tryInvoke', {
   setup() {

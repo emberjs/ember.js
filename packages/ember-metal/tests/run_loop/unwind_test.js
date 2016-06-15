@@ -4,10 +4,10 @@ import EmberError from 'ember-metal/error';
 QUnit.module('system/run_loop/unwind_test');
 
 QUnit.test('RunLoop unwinds despite unhandled exception', function() {
-  var initialRunLoop = run.currentRunLoop;
+  let initialRunLoop = run.currentRunLoop;
 
-  throws(function() {
-    run(function() {
+  throws(() => {
+    run(() => {
       run.schedule('actions', function() { throw new EmberError('boom!'); });
     });
   }, Error, 'boom!');
@@ -25,7 +25,7 @@ QUnit.test('RunLoop unwinds despite unhandled exception', function() {
 QUnit.test('run unwinds despite unhandled exception', function() {
   var initialRunLoop = run.currentRunLoop;
 
-  throws(function() {
+  throws(() => {
     run(function() {
       throw new EmberError('boom!');
     });

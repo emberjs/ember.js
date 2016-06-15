@@ -11,16 +11,16 @@ import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import computed from 'ember-metal/computed';
 
-var a_slice = Array.prototype.slice;
+const a_slice = Array.prototype.slice;
 
-var component, controller, actionCounts, sendCount, actionArguments;
+let component, controller, actionCounts, sendCount, actionArguments;
 
 QUnit.module('Ember.Component', {
   setup() {
     component = Component.create();
   },
   teardown() {
-    run(function() {
+    run(() => {
       if (component) { component.destroy(); }
       if (controller) { controller.destroy(); }
     });
@@ -32,7 +32,7 @@ QUnit.test('throws an error if `this._super` is not called from `init`', functio
     init() { }
   });
 
-  expectAssertion(function() {
+  expectAssertion(() => {
     TestComponent.create();
   }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
 });
@@ -42,13 +42,13 @@ QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
 
   component = Component.extend({
     actions: {
-      foo: function() {
+      foo() {
         ok(true, 'called foo action');
       }
     }
   }).create();
 
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     component._actions.foo();
   }, 'Usage of `_actions` is deprecated, use `actions` instead.');
 });
@@ -62,7 +62,7 @@ QUnit.test('The controller (target of `action`) of an Ember.Component is itself'
 });
 
 QUnit.test('Specifying a defaultLayout to a component is deprecated', function() {
-  expectDeprecation(function() {
+  expectDeprecation(() => {
     Component.extend({
       defaultLayout: 'hum-drum'
     }).create();
@@ -70,7 +70,7 @@ QUnit.test('Specifying a defaultLayout to a component is deprecated', function()
 });
 
 QUnit.test('should warn if a computed property is used for classNames', function() {
-  expectAssertion(function() {
+  expectAssertion(() => {
     Component.extend({
       elementId: 'test',
       classNames: computed(function() {
@@ -81,7 +81,7 @@ QUnit.test('should warn if a computed property is used for classNames', function
 });
 
 QUnit.test('should warn if a non-array is used for classNameBindings', function() {
-  expectAssertion(function() {
+  expectAssertion(() => {
     Component.extend({
       elementId: 'test',
       classNameBindings: computed(function() {
@@ -114,7 +114,7 @@ QUnit.module('Ember.Component - Actions', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       component.destroy();
       controller.destroy();
     });
@@ -146,7 +146,7 @@ QUnit.test('Calling sendAction on a component with a function calls the function
 
 QUnit.test('Calling sendAction on a component with a function calls the function with arguments', function() {
   expect(1);
-  var argument = {};
+  let argument = {};
   set(component, 'action', function(actualArgument) {
     equal(actualArgument, argument, 'argument is passed');
   });
@@ -155,7 +155,7 @@ QUnit.test('Calling sendAction on a component with a function calls the function
 });
 
 QUnit.test('Calling sendAction on a component with a mut attr calls the function with arguments', function() {
-  var mut = {
+  let mut = {
     value: 'didStartPlaying',
     [MUTABLE_CELL]: true
   };
@@ -192,19 +192,15 @@ QUnit.test('Calling sendAction when the action name is not a string raises an ex
   set(component, 'action', {});
   set(component, 'playing', {});
 
-  expectAssertion(function() {
-    component.sendAction();
-  });
+  expectAssertion(() => component.sendAction());
 
-  expectAssertion(function() {
-    component.sendAction('playing');
-  });
+  expectAssertion(() => component.sendAction('playing'));
 });
 
 QUnit.test('Calling sendAction on a component with a context', function() {
   set(component, 'playing', 'didStartPlaying');
 
-  var testContext = { song: 'She Broke My Ember' };
+  let testContext = { song: 'She Broke My Ember' };
 
   component.sendAction('playing', testContext);
 
@@ -214,8 +210,8 @@ QUnit.test('Calling sendAction on a component with a context', function() {
 QUnit.test('Calling sendAction on a component with multiple parameters', function() {
   set(component, 'playing', 'didStartPlaying');
 
-  var firstContext  = { song: 'She Broke My Ember' };
-  var secondContext = { song: 'My Achey Breaky Ember' };
+  let firstContext  = { song: 'She Broke My Ember' };
+  let secondContext = { song: 'My Achey Breaky Ember' };
 
   component.sendAction('playing', firstContext, secondContext);
 
@@ -233,8 +229,8 @@ QUnit.test('services can be injected into components', function() {
 
   owner.register('service:profiler', Service.extend());
 
-  var appComponent = owner.lookup('component:application');
-  var profilerService = owner.lookup('service:profiler');
+  let appComponent = owner.lookup('component:application');
+  let profilerService = owner.lookup('service:profiler');
 
   equal(profilerService, appComponent.get('profilerService'), 'service.profiler is injected');
 });
@@ -244,7 +240,7 @@ QUnit.module('Ember.Component - subscribed and sent actions trigger errors');
 QUnit.test('something', function() {
   expect(2);
 
-  var appComponent = Component.extend({
+  let appComponent = Component.extend({
     actions: {
       foo(message) {
         equal('bar', message);
@@ -254,22 +250,20 @@ QUnit.test('something', function() {
 
   appComponent.send('foo', 'bar');
 
-  throws(function() {
-    appComponent.send('baz', 'bar');
-  }, /had no action handler for: baz/, 'asdf');
+  throws(() => appComponent.send('baz', 'bar'), /had no action handler for: baz/, 'asdf');
 });
 
 QUnit.test('component with target', function() {
   expect(2);
 
-  var target = {
+  let target = {
     send(message, payload) {
       equal('foo', message);
       equal('baz', payload);
     }
   };
 
-  var appComponent = Component.create({
+  let appComponent = Component.create({
     target: target
   });
 

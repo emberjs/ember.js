@@ -9,11 +9,11 @@ import jQuery from 'ember-views/system/jquery';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var App, container, router, registry;
-var expectedReplaceURL, expectedPushURL;
+let App, container, router, registry;
+let expectedReplaceURL, expectedPushURL;
 
 
-var TestLocation = NoneLocation.extend({
+let TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -47,7 +47,7 @@ function bootApplication() {
 }
 
 function sharedSetup() {
-  run(function() {
+  run(() => {
     App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -75,7 +75,7 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  run(function() {
+  run(() => {
     App.destroy();
     App = null;
     setTemplates({});
@@ -92,9 +92,9 @@ QUnit.module('Routing with Query Params', {
   }
 });
 
-var startingURL = '';
+let startingURL = '';
 
-var testParamlessLinks = function(routeName) {
+function testParamlessLinks(routeName) {
   QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
@@ -110,9 +110,9 @@ var testParamlessLinks = function(routeName) {
 
     equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
   });
-};
+}
 
-var testParamlessLinksWithRouteConfig = function(routeName) {
+function testParamlessLinksWithRouteConfig(routeName) {
   QUnit.test('param-less links in an app booted with query params in the URL don\'t reset the query params: ' + routeName, function() {
     expect(1);
 
@@ -131,7 +131,7 @@ var testParamlessLinksWithRouteConfig = function(routeName) {
 
     equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
   });
-};
+}
 
 if (isEnabled('ember-routing-route-configured-query-params')) {
   testParamlessLinksWithRouteConfig('application');

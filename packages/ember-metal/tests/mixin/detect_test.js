@@ -3,8 +3,8 @@ import { Mixin } from 'ember-metal/mixin';
 QUnit.module('Mixin.detect');
 
 QUnit.test('detect() finds a directly applied mixin', function() {
-  var MixinA = Mixin.create();
-  var obj = {};
+  let MixinA = Mixin.create();
+  let obj = {};
 
   equal(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
 
@@ -13,9 +13,9 @@ QUnit.test('detect() finds a directly applied mixin', function() {
 });
 
 QUnit.test('detect() finds nested mixins', function() {
-  var MixinA = Mixin.create({});
-  var MixinB = Mixin.create(MixinA);
-  var obj = {};
+  let MixinA = Mixin.create({});
+  let MixinB = Mixin.create(MixinA);
+  let obj = {};
 
   equal(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
 
@@ -24,13 +24,13 @@ QUnit.test('detect() finds nested mixins', function() {
 });
 
 QUnit.test('detect() finds mixins on other mixins', function() {
-  var MixinA = Mixin.create({});
-  var MixinB = Mixin.create(MixinA);
+  let MixinA = Mixin.create({});
+  let MixinB = Mixin.create(MixinA);
   equal(MixinA.detect(MixinB), true, 'MixinA is part of MixinB');
   equal(MixinB.detect(MixinA), false, 'MixinB is not part of MixinA');
 });
 
 QUnit.test('detect handles null values', function() {
-  var MixinA = Mixin.create();
+  let MixinA = Mixin.create();
   equal(MixinA.detect(null), false);
 });

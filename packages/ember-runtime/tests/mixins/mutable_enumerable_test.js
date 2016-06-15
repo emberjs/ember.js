@@ -8,8 +8,7 @@ import { get } from 'ember-metal/property_get';
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
-
+const TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   _content: null,
 
   addObject(obj) {
@@ -23,7 +22,7 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   },
 
   removeObject(obj) {
-    var idx = this._content.indexOf(obj);
+    let idx = this._content.indexOf(obj);
     if (idx < 0) {
       return this;
     }
@@ -53,7 +52,6 @@ var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
 
 
 MutableEnumerableTests.extend({
-
   name: 'Basic Mutable Array',
 
   newObject(ary) {
@@ -69,5 +67,4 @@ MutableEnumerableTests.extend({
   toArray(obj) {
     return obj.slice();
   }
-
 }).run();

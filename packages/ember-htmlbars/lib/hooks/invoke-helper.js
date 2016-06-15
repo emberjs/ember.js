@@ -2,7 +2,7 @@ import { buildHelperStream } from 'ember-htmlbars/system/invoke-helper';
 import subscribe from 'ember-htmlbars/utils/subscribe';
 
 export default function invokeHelper(morph, env, scope, visitor, params, hash, helper, templates, context) {
-  var helperStream = buildHelperStream(helper, params, hash, templates, env, scope);
+  let helperStream = buildHelperStream(helper, params, hash, templates, env, scope);
 
   // Ember.Helper helpers are pure values, thus linkable.
   if (helperStream.linkable) {
@@ -12,11 +12,11 @@ export default function invokeHelper(morph, env, scope, visitor, params, hash, h
       // We subscribe the morph to the helperStream here, and also subscribe
       // the helperStream to any params.
       let addedDependency = false;
-      for (var i = 0; i < params.length; i++) {
+      for (let i = 0; i < params.length; i++) {
         addedDependency = true;
         helperStream.addDependency(params[i]);
       }
-      for (var key in hash) {
+      for (let key in hash) {
         addedDependency = true;
         helperStream.addDependency(hash[key]);
       }

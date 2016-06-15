@@ -53,9 +53,9 @@ export default {
   },
 
   render(renderNode, env, scope, params, hash, template, inverse, visitor) {
-    var state = renderNode.getState();
+    let state = renderNode.getState();
     if (!state.partialName) { return true; }
-    var found = lookupPartial(env, state.partialName);
+    let found = lookupPartial(env, state.partialName);
     if (!found) { return true; }
 
     internal.hostBlock(renderNode, env, scope, found.raw, null, null, visitor, function(options) {

@@ -4,7 +4,7 @@ import addObjectTests from 'ember-runtime/tests/suites/mutable_enumerable/addObj
 import removeObjectTests from 'ember-runtime/tests/suites/mutable_enumerable/removeObject';
 import removeObjectsTests from 'ember-runtime/tests/suites/mutable_enumerable/removeObjects';
 
-var MutableEnumerableTests = EnumerableTests.extend();
+const MutableEnumerableTests = EnumerableTests.extend();
 MutableEnumerableTests.importModuleTests(addObjectTests);
 MutableEnumerableTests.importModuleTests(removeObjectTests);
 MutableEnumerableTests.importModuleTests(removeObjectsTests);

@@ -69,7 +69,7 @@ export const Resolver = EmberObject.extend({
   App = Ember.Application.create({
     Resolver: Ember.DefaultResolver.extend({
       resolveTemplate: function(parsedName) {
-        var resolvedTemplate = this._super(parsedName);
+        let resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
         return Ember.TEMPLATES['not_found'];
       }
@@ -212,7 +212,7 @@ export default EmberObject.extend({
   },
 
   _parseName(fullName) {
-    var [
+    let [
       type,
       fullNameWithoutType
     ] = fullName.split(':');
@@ -224,9 +224,9 @@ export default EmberObject.extend({
     let dirname = lastSlashIndex !== -1 ? name.slice(0, lastSlashIndex) : null;
 
     if (type !== 'template' && lastSlashIndex !== -1) {
-      var parts = name.split('/');
+      let parts = name.split('/');
       name = parts[parts.length - 1];
-      var namespaceName = capitalize(parts.slice(0, -1).join('.'));
+      let namespaceName = capitalize(parts.slice(0, -1).join('.'));
       root = Namespace.byName(namespaceName);
 
       assert(
@@ -236,19 +236,19 @@ export default EmberObject.extend({
       );
     }
 
-    var resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);
+    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);
 
     if (!(name && type)) {
       throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
     }
 
     return {
-      fullName: fullName,
-      type: type,
-      fullNameWithoutType: fullNameWithoutType,
+      fullName,
+      type,
+      fullNameWithoutType,
       dirname,
-      name: name,
-      root: root,
+      name,
+      root,
       resolveMethodName: 'resolve' + resolveMethodName
     };
   },
@@ -265,8 +265,8 @@ export default EmberObject.extend({
     @public
   */
   lookupDescription(fullName) {
-    var parsedName = this.parseName(fullName);
-    var description;
+    let parsedName = this.parseName(fullName);
+    let description;
 
     if (parsedName.type === 'template') {
       return 'template at ' + parsedName.fullNameWithoutType.replace(/\./g, '/');
@@ -311,7 +311,7 @@ export default EmberObject.extend({
     @public
   */
   resolveTemplate(parsedName) {
-    var templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
+    let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
     return getTemplate(templateName) || getTemplate(decamelize(templateName));
   },
@@ -367,10 +367,10 @@ export default EmberObject.extend({
     @public
   */
   resolveModel(parsedName) {
-    var className = classify(parsedName.name);
-    var factory = get(parsedName.root, className);
+    let className = classify(parsedName.name);
+    let factory = get(parsedName.root, className);
 
-    if (factory) { return factory; }
+    return factory;
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
@@ -396,13 +396,13 @@ export default EmberObject.extend({
     @public
   */
   resolveOther(parsedName) {
-    var className = classify(parsedName.name) + classify(parsedName.type);
-    var factory = get(parsedName.root, className);
-    if (factory) { return factory; }
+    let className = classify(parsedName.name) + classify(parsedName.type);
+    let factory = get(parsedName.root, className);
+    return factory;
   },
 
   resolveMain(parsedName) {
-    var className = classify(parsedName.type);
+    let className = classify(parsedName.type);
     return get(parsedName.root, className);
   },
 
@@ -413,7 +413,7 @@ export default EmberObject.extend({
    @private
   */
   _logLookup(found, parsedName) {
-    var symbol, padding;
+    let symbol, padding;
 
     if (found) {
       symbol = '[✓]';

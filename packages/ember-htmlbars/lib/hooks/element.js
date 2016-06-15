@@ -12,10 +12,10 @@ export default function emberElement(morph, env, scope, path, params, hash, visi
     return;
   }
 
-  var result;
-  var helper = findHelper(path, scope.getSelf(), env);
+  let result;
+  let helper = findHelper(path, scope.getSelf(), env);
   if (helper) {
-    var helperStream = buildHelperStream(helper, params, hash, { element: morph.element }, env, scope, path);
+    let helperStream = buildHelperStream(helper, params, hash, { element: morph.element }, env, scope, path);
     result = helperStream.value();
   } else {
     result = env.hooks.get(env, scope, path);

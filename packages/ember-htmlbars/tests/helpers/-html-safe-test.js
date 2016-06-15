@@ -7,7 +7,7 @@ import { compile } from '../utils/helpers';
 
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 
-var component, registry, container, warnings, originalWarn;
+let component, registry, container, warnings, originalWarn;
 
 QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
   setup() {
@@ -17,7 +17,7 @@ QUnit.module('ember-htmlbars: {{-html-safe}} helper', {
 
     warnings = [];
     originalWarn = getDebugFunction('warn');
-    setDebugFunction('warn', function(message, test) {
+    setDebugFunction('warn', (message, test) => {
       if (!test) {
         warnings.push(message);
       }

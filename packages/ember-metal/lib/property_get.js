@@ -54,9 +54,9 @@ export function get(obj, keyName) {
     return obj;
   }
 
-  var value = obj[keyName];
-  var desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
-  var ret;
+  let value = obj[keyName];
+  let desc = (value !== null && typeof value === 'object' && value.isDescriptor) ? value : undefined;
+  let ret;
 
   if (desc === undefined && isPath(keyName)) {
     return _getPath(obj, keyName);
@@ -120,7 +120,7 @@ function isGettable(obj) {
   @public
 */
 export function getWithDefault(root, key, defaultValue) {
-  var value = get(root, key);
+  let value = get(root, key);
 
   if (value === undefined) { return defaultValue; }
   return value;

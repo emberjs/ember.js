@@ -65,19 +65,19 @@ function buildAppInstance() {
 function resolverFor(namespace) {
   return {
     resolve(fullName) {
-      var nameParts = fullName.split(':');
-      var type = nameParts[0];
-      var name = nameParts[1];
+      let nameParts = fullName.split(':');
+      let type = nameParts[0];
+      let name = nameParts[1];
 
       if (type === 'template') {
-        var templateName = decamelize(name);
+        let templateName = decamelize(name);
         if (hasTemplate(templateName)) {
           return getTemplate(templateName);
         }
       }
 
-      var className = classify(name) + classify(type);
-      var factory = get(namespace, className);
+      let className = classify(name) + classify(type);
+      let factory = get(namespace, className);
 
       if (factory) { return factory; }
     }

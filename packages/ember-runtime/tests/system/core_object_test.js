@@ -4,7 +4,7 @@ import CoreObject from 'ember-runtime/system/core_object';
 QUnit.module('Ember.CoreObject');
 
 QUnit.test('works with new (one arg)', function() {
-  var obj = new CoreObject({
+  let obj = new CoreObject({
     firstName: 'Stef',
     lastName: 'Penner'
   });
@@ -14,7 +14,7 @@ QUnit.test('works with new (one arg)', function() {
 });
 
 QUnit.test('works with new (> 1 arg)', function() {
-  var obj = new CoreObject({
+  let obj = new CoreObject({
     firstName: 'Stef',
     lastName: 'Penner'
   }, {
@@ -28,7 +28,7 @@ QUnit.test('works with new (> 1 arg)', function() {
 });
 
 QUnit.test('toString should be not be added as a property when calling toString()', function() {
-  var obj = new CoreObject({
+  let obj = new CoreObject({
     firstName: 'Foo',
     lastName: 'Bar'
   });

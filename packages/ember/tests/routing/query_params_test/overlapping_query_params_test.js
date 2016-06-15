@@ -8,21 +8,21 @@ import Application from 'ember-application/system/application';
 import NoneLocation from 'ember-routing/location/none_location';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var App, router, registry, container;
+let App, router, registry, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
   run(App, 'advanceReadiness');
 }
 
-var startingURL = '';
-var expectedReplaceURL, expectedPushURL;
+let startingURL = '';
+let expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
   run(obj, 'set', prop, value);
 }
 
-var TestLocation = NoneLocation.extend({
+const TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -51,7 +51,7 @@ var TestLocation = NoneLocation.extend({
 });
 
 function sharedSetup() {
-  run(function() {
+  run(() => {
     App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -79,7 +79,7 @@ function sharedSetup() {
 }
 
 function sharedTeardown() {
-  run(function() {
+  run(() => {
     App.destroy();
     App = null;
 
@@ -133,8 +133,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '/parent/child');
 
-    var parentController = container.lookup('controller:parent');
-    var parentChildController = container.lookup('controller:parent.child');
+    let parentController = container.lookup('controller:parent');
+    let parentChildController = container.lookup('controller:parent.child');
 
     setAndFlush(parentController, 'page', 2);
     equal(router.get('location.path'), '/parent/child?parentPage=2');
@@ -146,14 +146,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(parentChildController, 'page', 1);
     equal(router.get('location.path'), '/parent/child');
 
-    run(function() {
+    run(() => {
       parentController.set('page', 2);
       parentChildController.set('page', 2);
     });
 
     equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
 
-    run(function() {
+    run(() => {
       parentController.set('page', 1);
       parentChildController.set('page', 1);
     });
@@ -180,8 +180,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    var self = this;
-    expectAssertion(function() {
+    let self = this;
+    expectAssertion(() => {
       self.boot();
     }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
   });
@@ -222,8 +222,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '/parent/child');
 
-    var parentController = container.lookup('controller:parent');
-    var parentChildController = container.lookup('controller:parent.child');
+    let parentController = container.lookup('controller:parent');
+    let parentChildController = container.lookup('controller:parent.child');
 
     setAndFlush(parentController, 'page', 2);
     equal(router.get('location.path'), '/parent/child?parentPage=2');
@@ -235,14 +235,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     setAndFlush(parentChildController, 'page', 1);
     equal(router.get('location.path'), '/parent/child');
 
-    run(function() {
+    run(() => {
       parentController.set('page', 2);
       parentChildController.set('page', 2);
     });
 
     equal(router.get('location.path'), '/parent/child?childPage=2&parentPage=2');
 
-    run(function() {
+    run(() => {
       parentController.set('page', 1);
       parentChildController.set('page', 1);
     });
@@ -261,14 +261,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       bar: 1
     });
 
-    var self = this;
-    expectAssertion(function() {
+    let self = this;
+    expectAssertion(() => {
       self.boot();
     }, 'You\'re not allowed to have more than one controller property map to the same query param key, but both `parent:foo` and `parent.child:bar` map to `shared`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `foo: { as: \'other-foo\' }`');
   });
 
   QUnit.test('Support shared but overridable mixin pattern', function() {
-    var HasPage = Mixin.create({
+    let HasPage = Mixin.create({
       queryParams: 'page',
       page: 1
     });
@@ -283,8 +283,8 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '/parent/child');
 
-    var parentController = container.lookup('controller:parent');
-    var parentChildController = container.lookup('controller:parent.child');
+    let parentController = container.lookup('controller:parent');
+    let parentChildController = container.lookup('controller:parent.child');
 
     setAndFlush(parentChildController, 'page', 2);
     equal(router.get('location.path'), '/parent/child?page=2');

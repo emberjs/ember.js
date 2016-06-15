@@ -141,20 +141,20 @@ export default EmberObject.extend({
     @return {Function} Method to call to remove all observers
   */
   watchModelTypes(typesAdded, typesUpdated) {
-    var modelTypes = this.getModelTypes();
-    var releaseMethods = emberA();
-    var typesToSend;
+    let modelTypes = this.getModelTypes();
+    let releaseMethods = emberA();
+    let typesToSend;
 
-    typesToSend = modelTypes.map((type) => {
-      var klass = type.klass;
-      var wrapped = this.wrapModelType(klass, type.name);
+    typesToSend = modelTypes.map(type => {
+      let klass = type.klass;
+      let wrapped = this.wrapModelType(klass, type.name);
       releaseMethods.push(this.observeModelType(type.name, typesUpdated));
       return wrapped;
     });
 
     typesAdded(typesToSend);
 
-    var release = () => {
+    let release = () => {
       releaseMethods.forEach((fn) => fn() );
       this.releaseMethods.removeObject(release);
     };
@@ -194,25 +194,24 @@ export default EmberObject.extend({
     @return {Function} Method to call to remove all observers.
   */
   watchRecords(modelName, recordsAdded, recordsUpdated, recordsRemoved) {
-    var releaseMethods = emberA();
-    var klass = this._nameToClass(modelName);
-    var records = this.getRecords(klass, modelName);
-    var release;
+    let releaseMethods = emberA();
+    let klass = this._nameToClass(modelName);
+    let records = this.getRecords(klass, modelName);
+    let release;
 
-    var recordUpdated = function(updatedRecord) {
+    function recordUpdated(updatedRecord) {
       recordsUpdated([updatedRecord]);
-    };
+    }
 
-    var recordsToSend = records.map((record) => {
+    let recordsToSend = records.map((record) => {
       releaseMethods.push(this.observeRecord(record, recordUpdated));
       return this.wrapRecord(record);
     });
 
-
-    var contentDidChange = (array, idx, removedCount, addedCount) => {
-      for (var i = idx; i < idx + addedCount; i++) {
-        var record = objectAt(array, i);
-        var wrapped = this.wrapRecord(record);
+    let contentDidChange = (array, idx, removedCount, addedCount) => {
+      for (let i = idx; i < idx + addedCount; i++) {
+        let record = objectAt(array, i);
+        let wrapped = this.wrapRecord(record);
         releaseMethods.push(this.observeRecord(record, recordUpdated));
         recordsAdded([wrapped]);
       }
@@ -222,11 +221,11 @@ export default EmberObject.extend({
       }
     };
 
-    var observer = { didChange: contentDidChange, willChange() { return this; } };
+    let observer = { didChange: contentDidChange, willChange() { return this; } };
     addArrayObserver(records, this, observer);
 
     release = () => {
-      releaseMethods.forEach(function(fn) { fn(); });
+      releaseMethods.forEach(fn => fn());
       removeArrayObserver(records, this, observer);
       this.releaseMethods.removeObject(release);
     };
@@ -244,9 +243,7 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._super(...arguments);
-    this.releaseMethods.forEach(function(fn) {
-      fn();
-    });
+    this.releaseMethods.forEach(fn => fn());
   },
 
   /**
@@ -289,13 +286,14 @@ export default EmberObject.extend({
   */
 
   observeModelType(modelName, typesUpdated) {
-    var klass = this._nameToClass(modelName);
-    var records = this.getRecords(klass, modelName);
+    let klass = this._nameToClass(modelName);
+    let records = this.getRecords(klass, modelName);
 
-    var onChange = () => {
+    function onChange() {
       typesUpdated([this.wrapModelType(klass, modelName)]);
-    };
-    var observer = {
+    }
+
+    let observer = {
       didChange() {
         run.scheduleOnce('actions', this, onChange);
       },
@@ -304,9 +302,9 @@ export default EmberObject.extend({
 
     addArrayObserver(records, this, observer);
 
-    var release = () => {
+    function release() {
       removeArrayObserver(records, this, observer);
-    };
+    }
 
     return release;
   },
@@ -330,8 +328,8 @@ export default EmberObject.extend({
       release: {Function} The function to remove observers.
   */
   wrapModelType(klass, name) {
-    var records = this.getRecords(klass, name);
-    var typeToSend;
+    let records = this.getRecords(klass, name);
+    let typeToSend;
 
     typeToSend = {
       name,
@@ -339,7 +337,6 @@ export default EmberObject.extend({
       columns: this.columnsForType(klass),
       object: klass
     };
-
 
     return typeToSend;
   },
@@ -353,8 +350,8 @@ export default EmberObject.extend({
     @return {Array} Array of model types.
   */
   getModelTypes() {
-    var containerDebugAdapter = this.get('containerDebugAdapter');
-    var types;
+    let containerDebugAdapter = this.get('containerDebugAdapter');
+    let types;
 
     if (containerDebugAdapter.canCatalogEntriesByType('model')) {
       types = containerDebugAdapter.catalogEntriesByType('model');
@@ -369,9 +366,7 @@ export default EmberObject.extend({
         name: name
       };
     });
-    types = emberA(types).filter((type) => {
-      return this.detect(type.klass);
-    });
+    types = emberA(types).filter(type => this.detect(type.klass));
 
     return emberA(types);
   },
@@ -385,17 +380,17 @@ export default EmberObject.extend({
     @return {Array} Array of model type strings.
   */
   _getObjectsOnNamespaces() {
-    var namespaces = emberA(Namespace.NAMESPACES);
-    var types = emberA();
+    let namespaces = emberA(Namespace.NAMESPACES);
+    let types = emberA();
 
-    namespaces.forEach((namespace) => {
-      for (var key in namespace) {
+    namespaces.forEach(namespace => {
+      for (let key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupFactory` on non-models
         // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
-        var name = dasherize(key);
+        let name = dasherize(key);
         if (!(namespace instanceof Application) && namespace.toString()) {
           name = `${namespace}/${name}`;
         }
@@ -429,7 +424,7 @@ export default EmberObject.extend({
     searchKeywords: {Array}
   */
   wrapRecord(record) {
-    var recordToSend = { object: record };
+    let recordToSend = { object: record };
 
     recordToSend.columnValues = this.getRecordColumnValues(record);
     recordToSend.searchKeywords = this.getRecordKeywords(record);

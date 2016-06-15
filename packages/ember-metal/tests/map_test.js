@@ -4,8 +4,8 @@ import {
   OrderedSet
 } from 'ember-metal/map';
 
-var object, number, string, map, variety;
-var varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];
+let object, number, string, map, variety;
+const varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];
 
 function testMap(nameAndFunc) {
   variety = nameAndFunc[0];
@@ -20,10 +20,10 @@ function testMap(nameAndFunc) {
     }
   });
 
-  var mapHasLength = function(expected, theMap) {
+  let mapHasLength = function(expected, theMap) {
     theMap = theMap || map;
 
-    var length = 0;
+    let length = 0;
     theMap.forEach(function() {
       length++;
     });
@@ -31,10 +31,10 @@ function testMap(nameAndFunc) {
     equal(length, expected, 'map should contain ' + expected + ' items');
   };
 
-  var mapHasEntries = function(entries, theMap) {
+  let mapHasEntries = function(entries, theMap) {
     theMap = theMap || map;
 
-    for (var i = 0; i < entries.length; i++) {
+    for (let i = 0; i < entries.length; i++) {
       equal(theMap.get(entries[i][0]), entries[i][1]);
       equal(theMap.has(entries[i][0]), true);
     }
@@ -42,7 +42,7 @@ function testMap(nameAndFunc) {
     mapHasLength(entries.length, theMap);
   };
 
-  var unboundThis;
+  let unboundThis;
 
   (function() {
     unboundThis = this;
@@ -146,7 +146,7 @@ function testMap(nameAndFunc) {
     map.set(number, 'winning');
     map.set(string, 'winning');
 
-    var map2 = map.copy();
+    let map2 = map.copy();
 
     map2.set(object, 'losing');
     map2.set(number, 'losing');
@@ -170,7 +170,7 @@ function testMap(nameAndFunc) {
     map.set(number, 'winning');
     map.set(string, 'winning');
 
-    var map2 = map.copy();
+    let map2 = map.copy();
 
     map2.delete(object);
     map2.delete(number);
@@ -202,7 +202,7 @@ function testMap(nameAndFunc) {
     equal(map.size, 2);
 
     //Check copy
-    var copy = map.copy();
+    let copy = map.copy();
     equal(copy.size, 2);
 
     //Remove a key twice
@@ -250,16 +250,16 @@ function testMap(nameAndFunc) {
     map.set('b', 2);
     map.set('c', 3);
 
-    var iteration = 0;
+    let iteration = 0;
 
-    var expectations = [
+    let expectations = [
       { value: 1, key: 'a', context: unboundThis },
       { value: 2, key: 'b', context: unboundThis },
       { value: 3, key: 'c', context: unboundThis }
     ];
 
     map.forEach(function(value, key, theMap) {
-      var expectation = expectations[iteration];
+      let expectation = expectations[iteration];
 
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
@@ -277,16 +277,16 @@ function testMap(nameAndFunc) {
     map.set('b', 2);
     map.set('c', 3);
 
-    var iteration = 0;
-    var context = {};
-    var expectations = [
+    let iteration = 0;
+    let context = {};
+    let expectations = [
       { value: 1, key: 'a', context: context },
       { value: 2, key: 'b', context: context },
       { value: 3, key: 'c', context: context }
     ];
 
     map.forEach(function(value, key, theMap) {
-      var expectation = expectations[iteration];
+      let expectation = expectations[iteration];
 
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
@@ -304,9 +304,9 @@ function testMap(nameAndFunc) {
     map.set('b', 2);
     map.set('c', 3);
 
-    var iteration = 0;
+    let iteration = 0;
 
-    var expectations = [
+    let expectations = [
       { value: 1, key: 'a', context: unboundThis },
       { value: 2, key: 'b', context: unboundThis }
     ];
@@ -316,7 +316,7 @@ function testMap(nameAndFunc) {
         map.delete('c');
       }
 
-      var expectation = expectations[iteration];
+      let expectation = expectations[iteration];
 
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
@@ -334,9 +334,9 @@ function testMap(nameAndFunc) {
     map.set('b', 2);
     map.set('c', 3);
 
-    var iteration = 0;
+    let iteration = 0;
 
-    var expectations = [
+    let expectations = [
       { value: 1, key: 'a', context: unboundThis },
       { value: 2, key: 'b', context: unboundThis },
       { value: 3, key: 'c', context: unboundThis },
@@ -348,7 +348,7 @@ function testMap(nameAndFunc) {
         map.set('d', 4);
       }
 
-      var expectation = expectations[iteration];
+      let expectation = expectations[iteration];
 
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
@@ -362,7 +362,7 @@ function testMap(nameAndFunc) {
   });
 
   QUnit.test('clear', function() {
-    var iterations = 0;
+    let iterations = 0;
 
     map.set('a', 1);
     map.set('b', 2);
@@ -414,7 +414,7 @@ function testMap(nameAndFunc) {
 
   QUnit.test('NaN Boxed', function() {
     //jshint -W053
-    var boxed = new Number(NaN);
+    let boxed = new Number(NaN);
     equal(map.has(boxed), false);
 
     map.set(boxed, 'not-a-number');
@@ -427,7 +427,7 @@ function testMap(nameAndFunc) {
   });
 
   QUnit.test('0 value', function() {
-    var obj = {};
+    let obj = {};
     equal(map.has(obj), false);
 
     equal(map.size, 0);
@@ -444,39 +444,39 @@ function testMap(nameAndFunc) {
   });
 }
 
-for (var i = 0;  i < varieties.length;  i++) {
+for (let i = 0;  i < varieties.length;  i++) {
   testMap(varieties[i]);
 }
 
 QUnit.module('MapWithDefault - default values');
 
 QUnit.test('Retrieving a value that has not been set returns and sets a default value', function() {
-  var map = MapWithDefault.create({
+  let map = MapWithDefault.create({
     defaultValue(key) {
       return [key];
     }
   });
 
-  var value = map.get('ohai');
+  let value = map.get('ohai');
   deepEqual(value, ['ohai']);
 
   strictEqual(value, map.get('ohai'));
 });
 
 QUnit.test('Map.prototype.constructor', function() {
-  var map = new Map();
+  let map = new Map();
   equal(map.constructor, Map);
 });
 
 QUnit.test('MapWithDefault.prototype.constructor', function() {
-  var map = new MapWithDefault({
+  let map = new MapWithDefault({
     defaultValue(key) { return key; }
   });
   equal(map.constructor, MapWithDefault);
 });
 
 QUnit.test('Copying a MapWithDefault copies the default value', function() {
-  var map = MapWithDefault.create({
+  let map = MapWithDefault.create({
     defaultValue(key) {
       return [key];
     }
@@ -485,7 +485,7 @@ QUnit.test('Copying a MapWithDefault copies the default value', function() {
   map.set('ohai', 1);
   map.get('bai');
 
-  var map2 = map.copy();
+  let map2 = map.copy();
 
   equal(map2.get('ohai'), 1);
   deepEqual(map2.get('bai'), ['bai']);
@@ -497,9 +497,7 @@ QUnit.test('Copying a MapWithDefault copies the default value', function() {
 
   deepEqual(map2.get('default'), ['default']);
 
-  map2.defaultValue = function(key) {
-    return ['tom is on', key];
-  };
+  map2.defaultValue = key => ['tom is on', key];
 
   deepEqual(map2.get('drugs'), ['tom is on', 'drugs']);
 });
@@ -515,7 +513,7 @@ QUnit.module('OrderedSet', {
 });
 
 QUnit.test('add returns the set', function() {
-  var obj = {};
+  let obj = {};
   equal(map.add(obj), map);
   equal(map.add(obj), map, 'when it is already in the set');
 });

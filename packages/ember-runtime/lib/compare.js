@@ -1,7 +1,7 @@
 import { typeOf } from 'ember-runtime/utils';
 import Comparable from 'ember-runtime/mixins/comparable';
 
-var TYPE_ORDER = {
+const TYPE_ORDER = {
   'undefined': 0,
   'null': 1,
   'boolean': 2,
@@ -33,7 +33,7 @@ var TYPE_ORDER = {
 //                                `._________`-.   `.   `.___
 //                                              SSt  `------'`
 function spaceship(a, b) {
-  var diff = a - b;
+  let diff = a - b;
   return (diff > 0) - (diff < 0);
 }
 
@@ -83,8 +83,8 @@ export default function compare(v, w) {
     return 0;
   }
 
-  var type1 = typeOf(v);
-  var type2 = typeOf(w);
+  let type1 = typeOf(v);
+  let type2 = typeOf(w);
 
   if (Comparable) {
     if (type1 === 'instance' && Comparable.detect(v) && v.constructor.compare) {
@@ -96,7 +96,7 @@ export default function compare(v, w) {
     }
   }
 
-  var res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
+  let res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
 
   if (res !== 0) {
     return res;
@@ -112,12 +112,12 @@ export default function compare(v, w) {
       return spaceship(v.localeCompare(w), 0);
 
     case 'array':
-      var vLen = v.length;
-      var wLen = w.length;
-      var len = Math.min(vLen, wLen);
+      let vLen = v.length;
+      let wLen = w.length;
+      let len = Math.min(vLen, wLen);
 
-      for (var i = 0; i < len; i++) {
-        var r = compare(v[i], w[i]);
+      for (let i = 0; i < len; i++) {
+        let r = compare(v[i], w[i]);
         if (r !== 0) {
           return r;
         }

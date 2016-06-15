@@ -31,7 +31,7 @@ import RSVP from 'ember-runtime/ext/rsvp';
 import Engine, { GLIMMER } from './engine';
 import require from 'require';
 
-var librariesRegistered = false;
+let librariesRegistered = false;
 
 let warnedAboutLegacyViewAddon = false;
 let warnedAboutLegacyControllerAddon = false;
@@ -103,7 +103,7 @@ export function _resetLegacyAddonWarnings() {
   names by setting the application's `customEvents` property:
 
   ```javascript
-  var App = Ember.Application.create({
+  let App = Ember.Application.create({
     customEvents: {
       // add support for the paste event
       paste: 'paste'
@@ -116,7 +116,7 @@ export function _resetLegacyAddonWarnings() {
   property:
 
   ```javascript
-  var App = Ember.Application.create({
+  let App = Ember.Application.create({
     customEvents: {
       // prevent listeners for mouseenter/mouseleave events
       mouseenter: null,
@@ -134,7 +134,7 @@ export function _resetLegacyAddonWarnings() {
   should be delegated, set your application's `rootElement` property:
 
   ```javascript
-  var App = Ember.Application.create({
+  let App = Ember.Application.create({
     rootElement: '#ember-app'
   });
   ```
@@ -177,7 +177,7 @@ export function _resetLegacyAddonWarnings() {
   the `LOG_TRANSITIONS_INTERNAL` flag:
 
   ```javascript
-  var App = Ember.Application.create({
+  let App = Ember.Application.create({
     LOG_TRANSITIONS: true, // basic logging of successful transitions
     LOG_TRANSITIONS_INTERNAL: true // detailed logging of all routing steps
   });
@@ -253,7 +253,7 @@ const Application = Engine.extend({
     To add new events to be listened to:
 
     ```javascript
-    var App = Ember.Application.create({
+    let App = Ember.Application.create({
       customEvents: {
         // add support for the paste event
         paste: 'paste'
@@ -264,7 +264,7 @@ const Application = Engine.extend({
     To prevent default events from being listened to:
 
     ```javascript
-    var App = Ember.Application.create({
+    let App = Ember.Application.create({
       customEvents: {
         // remove support for mouseenter / mouseleave events
         mouseenter: null,
@@ -299,7 +299,7 @@ const Application = Engine.extend({
     classes.
 
     ```javascript
-    var App = Ember.Application.create({
+    let App = Ember.Application.create({
       ...
     });
 
@@ -499,7 +499,7 @@ const Application = Engine.extend({
     Example:
 
     ```javascript
-    var App = Ember.Application.create();
+    let App = Ember.Application.create();
 
     App.deferReadiness();
 
@@ -623,7 +623,7 @@ const Application = Engine.extend({
     Typical Example:
 
     ```javascript
-    var App;
+    let App;
 
     run(function() {
       App = Ember.Application.create();
@@ -651,7 +651,7 @@ const Application = Engine.extend({
     to the app becoming ready.
 
     ```javascript
-    var App;
+    let App;
 
     run(function() {
       App = Ember.Application.create();
@@ -686,7 +686,7 @@ const Application = Engine.extend({
             create new \`Ember.ApplicationInstance\`s and dispose them
             via their \`destroy()\` method instead.`, this._globalsMode && this.autoboot);
 
-    var instance = this.__deprecatedInstance__;
+    let instance = this.__deprecatedInstance__;
 
     this._readinessDeferrals = 1;
     this._bootPromise = null;
@@ -1026,10 +1026,10 @@ Application.reopenClass({
     commonSetupRegistry(registry);
 
     if (options[GLIMMER]) {
-      var glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
+      let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
       glimmerSetupRegistry(registry);
     } else {
-      var htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
+      let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
       htmlbarsSetupRegistry(registry);
     }
 
@@ -1067,18 +1067,16 @@ function logLibraryVersions() {
   if (ENV.LOG_VERSION) {
     // we only need to see this once per Application#init
     ENV.LOG_VERSION = false;
-    var libs = libraries._registry;
+    let libs = libraries._registry;
 
-    var nameLengths = libs.map(function(item) {
-      return get(item, 'name.length');
-    });
+    let nameLengths = libs.map(item => get(item, 'name.length'));
 
-    var maxNameLength = Math.max.apply(this, nameLengths);
+    let maxNameLength = Math.max.apply(this, nameLengths);
 
     debug('-------------------------------');
-    for (var i = 0; i < libs.length; i++) {
-      var lib = libs[i];
-      var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+    for (let i = 0; i < libs.length; i++) {
+      let lib = libs[i];
+      let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
       debug([lib.name, spaces, ' : ', lib.version].join(''));
     }
     debug('-------------------------------');

@@ -18,7 +18,7 @@ QUnit.module('Namespace', {
   teardown() {
     setNamespaceSearchDisabled(false);
 
-    for (var prop in lookup) {
+    for (let prop in lookup) {
       if (lookup[prop]) { run(lookup[prop], 'destroy'); }
     }
 
@@ -35,22 +35,22 @@ QUnit.test('Namespace should be duck typed', function() {
 });
 
 QUnit.test('Namespace is found and named', function() {
-  var nsA = lookup.NamespaceA = Namespace.create();
+  let nsA = lookup.NamespaceA = Namespace.create();
   equal(nsA.toString(), 'NamespaceA', 'namespaces should have a name if they are on lookup');
 
-  var nsB = lookup.NamespaceB = Namespace.create();
+  let nsB = lookup.NamespaceB = Namespace.create();
   equal(nsB.toString(), 'NamespaceB', 'namespaces work if created after the first namespace processing pass');
 });
 
 QUnit.test('Classes under an Namespace are properly named', function() {
-  var nsA = lookup.NamespaceA = Namespace.create();
+  let nsA = lookup.NamespaceA = Namespace.create();
   nsA.Foo = EmberObject.extend();
   equal(nsA.Foo.toString(), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
 
   nsA.Bar = EmberObject.extend();
   equal(nsA.Bar.toString(), 'NamespaceA.Bar', 'New Classes get the naming treatment too');
 
-  var nsB = lookup.NamespaceB = Namespace.create();
+  let nsB = lookup.NamespaceB = Namespace.create();
   nsB.Foo = EmberObject.extend();
   equal(nsB.Foo.toString(), 'NamespaceB.Foo', 'Classes in new namespaces get the naming treatment');
 });
@@ -62,16 +62,16 @@ QUnit.test('Classes under an Namespace are properly named', function() {
 //});
 
 QUnit.test('Lowercase namespaces are no longer supported', function() {
-  var nsC = lookup.namespaceC = Namespace.create();
+  let nsC = lookup.namespaceC = Namespace.create();
   equal(nsC.toString(), undefined);
 });
 
 QUnit.test('A namespace can be assigned a custom name', function() {
-  var nsA = Namespace.create({
+  let nsA = Namespace.create({
     name: 'NamespaceA'
   });
 
-  var nsB = lookup.NamespaceB = Namespace.create({
+  let nsB = lookup.NamespaceB = Namespace.create({
     name: 'CustomNamespaceB'
   });
 
@@ -85,7 +85,7 @@ QUnit.test('A namespace can be assigned a custom name', function() {
 QUnit.test('Calling namespace.nameClasses() eagerly names all classes', function() {
   setNamespaceSearchDisabled(true);
 
-  var namespace = lookup.NS = Namespace.create();
+  let namespace = lookup.NS = Namespace.create();
 
   namespace.ClassA = EmberObject.extend();
   namespace.ClassB = EmberObject.extend();
@@ -97,9 +97,9 @@ QUnit.test('Calling namespace.nameClasses() eagerly names all classes', function
 });
 
 QUnit.test('A namespace can be looked up by its name', function() {
-  var NS = lookup.NS = Namespace.create();
-  var UI = lookup.UI = Namespace.create();
-  var CF = lookup.CF = Namespace.create();
+  let NS = lookup.NS = Namespace.create();
+  let UI = lookup.UI = Namespace.create();
+  let CF = lookup.CF = Namespace.create();
 
   equal(Namespace.byName('NS'), NS);
   equal(Namespace.byName('UI'), UI);
@@ -107,21 +107,21 @@ QUnit.test('A namespace can be looked up by its name', function() {
 });
 
 QUnit.test('A nested namespace can be looked up by its name', function() {
-  var UI = lookup.UI = Namespace.create();
+  let UI = lookup.UI = Namespace.create();
   UI.Nav = Namespace.create();
 
   equal(Namespace.byName('UI.Nav'), UI.Nav);
 });
 
 QUnit.test('Destroying a namespace before caching lookup removes it from the list of namespaces', function() {
-  var CF = lookup.CF = Namespace.create();
+  let CF = lookup.CF = Namespace.create();
 
   run(CF, 'destroy');
   equal(Namespace.byName('CF'), undefined, 'namespace can not be found after destroyed');
 });
 
 QUnit.test('Destroying a namespace after looking up removes it from the list of namespaces', function() {
-  var CF = lookup.CF = Namespace.create();
+  let CF = lookup.CF = Namespace.create();
 
   equal(Namespace.byName('CF'), CF, 'precondition - namespace can be looked up by name');
 

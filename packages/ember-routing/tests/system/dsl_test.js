@@ -1,6 +1,6 @@
 import EmberRouter from 'ember-routing/system/router';
 
-var Router;
+let Router;
 
 QUnit.module('Ember Router DSL', {
   setup() {
@@ -13,30 +13,30 @@ QUnit.module('Ember Router DSL', {
 
 QUnit.test('should fail when using a reserved route name', function() {
   expectDeprecation('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
-  var reservedNames = ['array', 'basic', 'object', 'application'];
+  let reservedNames = ['array', 'basic', 'object', 'application'];
 
   expect((reservedNames.length * 2) + 1);
 
-  reservedNames.forEach(function(reservedName) {
-    expectAssertion(function() {
+  reservedNames.forEach(reservedName => {
+    expectAssertion(() => {
       Router = EmberRouter.extend();
 
       Router.map(function() {
         this.route(reservedName);
       });
 
-      var router = Router.create();
+      let router = Router.create();
       router._initRouterJs();
     }, '\'' + reservedName + '\' cannot be used as a route name.');
 
-    expectAssertion(function() {
+    expectAssertion(() => {
       Router = EmberRouter.extend();
 
       Router.map(function() {
         this.resource(reservedName);
       });
 
-      var router = Router.create();
+      let router = Router.create();
       router._initRouterJs();
     }, `'${reservedName}' cannot be used as a route name.`);
   });
@@ -53,7 +53,7 @@ QUnit.test('should reset namespace if nested with resource', function() {
     });
   });
 
-  var router = Router.create();
+  let router = Router.create();
   router._initRouterJs();
 
   ok(router.router.recognizer.names['bleep'], 'nested resources do not contain parent name');
@@ -70,7 +70,7 @@ QUnit.test('should retain resource namespace if nested with routes', function() 
     });
   });
 
-  var router = Router.create();
+  let router = Router.create();
   router._initRouterJs();
 
   ok(router.router.recognizer.names['bleep'], 'parent name was used as base of nested routes');
@@ -83,7 +83,7 @@ QUnit.test('should add loading and error routes if _isRouterMapResult is true', 
     this.route('blork');
   });
 
-  var router = Router.create({
+  let router = Router.create({
     _hasModuleBasedResolver() { return true; }
   });
 
@@ -99,7 +99,7 @@ QUnit.test('should not add loading and error routes if _isRouterMapResult is fal
     this.route('blork');
   });
 
-  var router = Router.create();
+  let router = Router.create();
   router._initRouterJs(false);
 
   ok(router.router.recognizer.names['blork'], 'main route was created');

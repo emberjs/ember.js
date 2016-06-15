@@ -22,10 +22,10 @@ import Observable from 'ember-runtime/mixins/observable';
 import {computed} from 'ember-metal/computed';
 import {observer} from 'ember-metal/mixin';
 
-var ObservableObject = EmberObject.extend(Observable);
+const ObservableObject = EmberObject.extend(Observable);
 
-var revMatches = false;
-var ObjectA;
+let revMatches = false;
+let ObjectA;
 
 QUnit.module('object.propertyChanges', {
   setup() {
@@ -117,7 +117,7 @@ QUnit.test('should notify that the property of an object has changed', function(
 });
 
 QUnit.test('should invalidate function property cache when notifyPropertyChange is called', function() {
-  var a = ObservableObject.extend({
+  let a = ObservableObject.extend({
     b: computed({
       get() { return this._b; },
       set(key, value) {

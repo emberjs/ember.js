@@ -1,17 +1,16 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 import {get} from 'ember-metal/property_get';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('shiftObject');
 
 suite.test('[].shiftObject() => [] + returns undefined + NO notify', function() {
-  var obj, before, after, observer;
+  let before = [];
+  let after  = [];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = [];
-  after  = [];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.shiftObject(), undefined);
@@ -28,12 +27,11 @@ suite.test('[].shiftObject() => [] + returns undefined + NO notify', function() 
 });
 
 suite.test('[X].shiftObject() => [] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(1);
+  let after  = [];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(1);
-  after  = [];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.shiftObject(), before[0], 'should return object');
@@ -49,12 +47,11 @@ suite.test('[X].shiftObject() => [] + notify', function() {
 });
 
 suite.test('[A,B,C].shiftObject() => [B,C] + notify', function() {
-  var obj, before, after, observer;
+  let before = this.newFixture(3);
+  let after  = [before[1], before[2]];
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
-  before = this.newFixture(3);
-  after  = [before[1], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.shiftObject(), before[0], 'should return object');

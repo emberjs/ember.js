@@ -5,7 +5,7 @@ QUnit.module('system/run_loop/run_bind_test');
 QUnit.test('Ember.run.bind builds a run-loop wrapped callback handler', function() {
   expect(3);
 
-  var obj = {
+  let obj = {
     value: 0,
     increment(increment) {
       ok(run.currentRunLoop, 'expected a run-loop');
@@ -13,7 +13,7 @@ QUnit.test('Ember.run.bind builds a run-loop wrapped callback handler', function
     }
   };
 
-  var proxiedFunction = run.bind(obj, obj.increment, 1);
+  let proxiedFunction = run.bind(obj, obj.increment, 1);
   equal(proxiedFunction(), 1);
   equal(obj.value, 1);
 });
@@ -21,16 +21,16 @@ QUnit.test('Ember.run.bind builds a run-loop wrapped callback handler', function
 QUnit.test('Ember.run.bind keeps the async callback arguments', function() {
   expect(4);
 
-  var asyncCallback = function(increment, increment2, increment3) {
+  function asyncCallback(increment, increment2, increment3) {
     ok(run.currentRunLoop, 'expected a run-loop');
     equal(increment, 1);
     equal(increment2, 2);
     equal(increment3, 3);
-  };
+  }
 
-  var asyncFunction = function(fn) {
+  function asyncFunction(fn) {
     fn(2, 3);
-  };
+  }
 
   asyncFunction(run.bind(asyncCallback, asyncCallback, 1));
 });

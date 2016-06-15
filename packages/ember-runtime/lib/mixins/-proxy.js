@@ -29,13 +29,13 @@ export function isProxy(value) {
 }
 
 function contentPropertyWillChange(content, contentKey) {
-  var key = contentKey.slice(8); // remove "content."
+  let key = contentKey.slice(8); // remove "content."
   if (key in this) { return; }  // if shadowed in proxy
   propertyWillChange(this, key);
 }
 
 function contentPropertyDidChange(content, contentKey) {
-  var key = contentKey.slice(8); // remove "content."
+  let key = contentKey.slice(8); // remove "content."
   if (key in this) { return; } // if shadowed in proxy
   propertyDidChange(this, key);
 }
@@ -69,19 +69,19 @@ export default Mixin.create({
   _debugContainerKey: null,
 
   willWatchProperty(key) {
-    var contentKey = 'content.' + key;
+    let contentKey = 'content.' + key;
     _addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     addObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
   didUnwatchProperty(key) {
-    var contentKey = 'content.' + key;
+    let contentKey = 'content.' + key;
     _removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     removeObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
   unknownProperty(key) {
-    var content = get(this, 'content');
+    let content = get(this, 'content');
     if (content) {
       deprecate(
         `You attempted to access \`${key}\` from \`${this}\`, but object proxying is deprecated. Please use \`model.${key}\` instead.`,
@@ -93,7 +93,7 @@ export default Mixin.create({
   },
 
   setUnknownProperty(key, value) {
-    var m = meta(this);
+    let m = meta(this);
     if (m.proto === this) {
       // if marked as prototype then just defineProperty
       // rather than delegate
@@ -101,7 +101,7 @@ export default Mixin.create({
       return value;
     }
 
-    var content = get(this, 'content');
+    let content = get(this, 'content');
     assert(`Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`, content);
 
     deprecate(
@@ -111,5 +111,4 @@ export default Mixin.create({
     );
     return set(content, key, value);
   }
-
 });

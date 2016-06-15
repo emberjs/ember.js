@@ -6,7 +6,7 @@ import inDOM from 'ember-views/views/states/in_dom';
 import destroying from 'ember-views/views/states/destroying';
 
 export function cloneStates(from) {
-  var into = {};
+  let into = {};
 
   into._default = {};
   into.preRender = Object.create(into._default);
@@ -14,7 +14,7 @@ export function cloneStates(from) {
   into.hasElement = Object.create(into._default);
   into.inDOM = Object.create(into.hasElement);
 
-  for (var stateName in from) {
+  for (let stateName in from) {
     if (!from.hasOwnProperty(stateName)) { continue; }
     assign(into[stateName], from[stateName]);
   }
@@ -22,7 +22,7 @@ export function cloneStates(from) {
   return into;
 }
 
-export var states = {
+export let states = {
   _default: _default,
   preRender: preRender,
   inDOM: inDOM,

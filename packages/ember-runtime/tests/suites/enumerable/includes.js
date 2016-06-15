@@ -1,12 +1,12 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 suite.module('includes');
 
 suite.test('includes returns true if item is in enumerable', function() {
-  var data = this.newFixture(1);
-  var obj  = this.newObject([...data, NaN, undefined, null]);
+  let data = this.newFixture(1);
+  let obj  = this.newObject([...data, NaN, undefined, null]);
 
   equal(obj.includes(data[0]), true, 'should return true if included');
   equal(obj.includes(NaN), true, 'should return true if NaN included');
@@ -15,8 +15,8 @@ suite.test('includes returns true if item is in enumerable', function() {
 });
 
 suite.test('includes returns false if item is not in enumerable', function() {
-  var data = this.newFixture(1);
-  var obj  = this.newObject([...this.newFixture(3), null]);
+  let data = this.newFixture(1);
+  let obj  = this.newObject([...this.newFixture(3), null]);
 
   equal(obj.includes(data[0]), false, 'should return false if not included');
   equal(obj.includes(undefined), false, 'should return false if undefined not included but null is included');

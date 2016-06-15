@@ -11,19 +11,19 @@ import { propertyWillChange, propertyDidChange } from 'ember-metal/property_even
 QUnit.module('system/binding/sync_test.js');
 
 testBoth('bindings should not sync twice in a single run loop', function(get, set) {
-  var a, b, setValue;
-  var setCalled = 0;
-  var getCalled = 0;
+  let a, b, setValue;
+  let setCalled = 0;
+  let getCalled = 0;
 
-  run(function() {
+  run(() => {
     a = {};
 
     defineProperty(a, 'foo', computed({
-      get: function(key) {
+      get(key) {
         getCalled++;
         return setValue;
       },
-      set: function(key, value) {
+      set(key, value) {
         setCalled++;
         propertyWillChange(this, key);
         setValue = value;
@@ -39,15 +39,13 @@ testBoth('bindings should not sync twice in a single run loop', function(get, se
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
-    expectDeprecation(() => {
-      bind(b, 'foo', 'a.foo');
-    }, deprecationMessage);
+    expectDeprecation(() => bind(b, 'foo', 'a.foo'), deprecationMessage);
   });
 
   // reset after initial binding synchronization
   getCalled = 0;
 
-  run(function() {
+  run(() => {
     set(a, 'foo', 'trollface');
   });
 
@@ -57,10 +55,10 @@ testBoth('bindings should not sync twice in a single run loop', function(get, se
 });
 
 testBoth('bindings should not infinite loop if computed properties return objects', function(get, set) {
-  var a, b;
-  var getCalled = 0;
+  let a, b;
+  let getCalled = 0;
 
-  run(function() {
+  run(() => {
     a = {};
 
     defineProperty(a, 'foo', computed(function() {
@@ -78,9 +76,7 @@ testBoth('bindings should not infinite loop if computed properties return object
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
-    expectDeprecation(() => {
-      bind(b, 'foo', 'a.foo');
-    }, deprecationMessage);
+    expectDeprecation(() => bind(b, 'foo', 'a.foo'), deprecationMessage);
   });
 
   deepEqual(get(b, 'foo'), ['foo', 'bar'], 'the binding should sync');
@@ -88,9 +84,9 @@ testBoth('bindings should not infinite loop if computed properties return object
 });
 
 testBoth('bindings should do the right thing when observers trigger bindings in the opposite direction', function(get, set) {
-  var a, b, c;
+  let a, b, c;
 
-  run(function() {
+  run(() => {
     a = {
       foo: 'trololol'
     };
@@ -102,9 +98,7 @@ testBoth('bindings should do the right thing when observers trigger bindings in 
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
-    expectDeprecation(() => {
-      bind(b, 'foo', 'a.foo');
-    }, deprecationMessage);
+    expectDeprecation(() => bind(b, 'foo', 'a.foo'), deprecationMessage);
 
     c = {
       a: a
@@ -115,21 +109,17 @@ testBoth('bindings should do the right thing when observers trigger bindings in 
     }, deprecationMessage);
   });
 
-  addObserver(b, 'foo', function() {
-    set(c, 'foo', 'what is going on');
-  });
+  addObserver(b, 'foo', () => set(c, 'foo', 'what is going on'));
 
-  run(function() {
-    set(a, 'foo', 'trollface');
-  });
+  run(() => set(a, 'foo', 'trollface'));
 
   equal(get(a, 'foo'), 'what is going on');
 });
 
 testBoth('bindings should not try to sync destroyed objects', function(get, set) {
-  var a, b;
+  let a, b;
 
-  run(function() {
+  run(() => {
     a = {
       foo: 'trololol'
     };
@@ -141,18 +131,16 @@ testBoth('bindings should not try to sync destroyed objects', function(get, set)
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
-    expectDeprecation(() => {
-      bind(b, 'foo', 'a.foo');
-    }, deprecationMessage);
+    expectDeprecation(() => bind(b, 'foo', 'a.foo'), deprecationMessage);
   });
 
-  run(function() {
+  run(() => {
     set(a, 'foo', 'trollface');
     set(b, 'isDestroyed', true);
     ok(true, 'should not raise');
   });
 
-  run(function() {
+  run(() => {
     a = {
       foo: 'trololol'
     };
@@ -164,12 +152,10 @@ testBoth('bindings should not try to sync destroyed objects', function(get, set)
     let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
       ' using an `alias` computed property instead.';
 
-    expectDeprecation(() => {
-      bind(b, 'foo', 'a.foo');
-    }, deprecationMessage);
+    expectDeprecation(() => bind(b, 'foo', 'a.foo'), deprecationMessage);
   });
 
-  run(function() {
+  run(() => {
     set(b, 'foo', 'trollface');
     set(a, 'isDestroyed', true);
     ok(true, 'should not raise');

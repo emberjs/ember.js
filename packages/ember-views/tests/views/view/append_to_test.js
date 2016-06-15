@@ -10,7 +10,7 @@ import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
 
-var owner, View, view, otherView, willDestroyCalled;
+let owner, View, view, otherView, willDestroyCalled;
 
 function commonSetup() {
   owner = buildOwner();
@@ -32,7 +32,7 @@ QUnit.module('EmberView - append() and appendTo()', {
 });
 
 QUnit.test('can call `appendTo` for multiple views #11109', function() {
-  var elem;
+  let elem;
   jQuery('#qunit-fixture').html('<div id="menu"></div><div id="other-menu"></div>');
 
   view = View.create();
@@ -41,7 +41,7 @@ QUnit.test('can call `appendTo` for multiple views #11109', function() {
   ok(!get(view, 'element'), 'precond - should not have an element');
   ok(!get(otherView, 'element'), 'precond - should not have an element');
 
-  run(function() {
+  run(() => {
     view.appendTo('#menu');
     otherView.appendTo('#other-menu');
   });
@@ -60,11 +60,9 @@ QUnit.test('should be added to the specified element when calling appendTo()', f
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  run(function() {
-    view.appendTo('#menu');
-  });
+  run(() => view.appendTo('#menu'));
 
-  var viewElem = jQuery('#menu').children();
+  let viewElem = jQuery('#menu').children();
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
@@ -75,21 +73,17 @@ QUnit.test('should be added to the document body when calling append()', functio
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
-  var viewElem = jQuery(document.body).find(':contains("foo bar baz")');
+  let viewElem = jQuery(document.body).find(':contains("foo bar baz")');
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
 QUnit.test('raises an assert when a target does not exist in the DOM', function() {
   view = View.create();
 
-  expectAssertion(function() {
-    run(function() {
-      view.appendTo('does-not-exist-in-dom');
-    });
+  expectAssertion(() => {
+    run(() => view.appendTo('does-not-exist-in-dom'));
   });
 });
 
@@ -105,15 +99,11 @@ QUnit.test('remove removes an element from the DOM', function() {
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   ok(jQuery('#' + get(view, 'elementId')).length === 1, 'precond - element was inserted');
 
-  run(function() {
-    view.remove();
-  });
+  run(() => view.remove());
 
   ok(jQuery('#' + get(view, 'elementId')).length === 0, 'remove removes an element from the DOM');
   ok(EmberView.views[get(view, 'elementId')] === undefined, 'remove does not remove the view from the view hash');
@@ -132,15 +122,11 @@ QUnit.test('destroy more forcibly removes the view', function() {
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  run(function() {
-    view.append();
-  });
+  run(() => view.append());
 
   ok(jQuery('#' + get(view, 'elementId')).length === 1, 'precond - element was inserted');
 
-  run(function() {
-    view.destroy();
-  });
+  run(() => view.destroy());
 
   ok(jQuery('#' + get(view, 'elementId')).length === 0, 'destroy removes an element from the DOM');
   ok(EmberView.views[get(view, 'elementId')] === undefined, 'destroy removes a view from the global views hash');
@@ -175,11 +161,9 @@ QUnit.test('should be added to the specified element when calling appendTo()', f
 
   ok(!get(view, 'element'), 'precond - should not have an element');
 
-  run(function() {
-    view.appendTo('#menu');
-  });
+  run(() => view.appendTo('#menu'));
 
-  var viewElem = jQuery('#menu #child');
+  let viewElem = jQuery('#menu #child');
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
@@ -192,6 +176,6 @@ QUnit.test('should be added to the document body when calling append()', functio
 
   runAppend(view);
 
-  var viewElem = jQuery('#child');
+  let viewElem = jQuery('#child');
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });

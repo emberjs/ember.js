@@ -54,17 +54,17 @@ export default Mixin.create({
    to all have their own locally scoped singletons.
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('api:twitter', Twitter);
 
-   var twitter = container.lookup('api:twitter');
+   let twitter = container.lookup('api:twitter');
 
    twitter instanceof Twitter; // => true
 
    // by default the container will return singletons
-   var twitter2 = container.lookup('api:twitter');
+   let twitter2 = container.lookup('api:twitter');
    twitter2 instanceof Twitter; // => true
 
    twitter === twitter2; //=> true
@@ -73,13 +73,13 @@ export default Mixin.create({
    If singletons are not wanted an optional flag can be provided at lookup.
 
    ```javascript
-   var registry = new Registry();
-   var container = registry.container();
+   let registry = new Registry();
+   let container = registry.container();
 
    registry.register('api:twitter', Twitter);
 
-   var twitter = container.lookup('api:twitter', { singleton: false });
-   var twitter2 = container.lookup('api:twitter', { singleton: false });
+   let twitter = container.lookup('api:twitter', { singleton: false });
+   let twitter2 = container.lookup('api:twitter', { singleton: false });
 
    twitter === twitter2; //=> false
    ```

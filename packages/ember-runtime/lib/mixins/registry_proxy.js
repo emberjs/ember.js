@@ -34,7 +34,7 @@ export default Mixin.create({
     A simple example:
 
     ```javascript
-    var App = Ember.Application.create();
+    let App = Ember.Application.create();
 
     App.Orange = Ember.Object.extend();
     App.register('fruit:favorite', App.Orange);
@@ -47,8 +47,8 @@ export default Mixin.create({
     An example of registering a controller with a non-standard name:
 
     ```javascript
-    var App = Ember.Application.create();
-    var Session = Ember.Controller.extend();
+    let App = Ember.Application.create();
+    let Session = Ember.Controller.extend();
 
     App.register('controller:session', Session);
 
@@ -66,7 +66,7 @@ export default Mixin.create({
     Some examples modifying that default behavior:
 
     ```javascript
-    var App = Ember.Application.create();
+    let App = Ember.Application.create();
 
     App.Person = Ember.Object.extend();
     App.Orange = Ember.Object.extend();
@@ -91,8 +91,8 @@ export default Mixin.create({
    Unregister a factory.
 
    ```javascript
-   var App = Ember.Application.create();
-   var User = Ember.Object.extend();
+   let App = Ember.Application.create();
+   let User = Ember.Object.extend();
    App.register('model:user', User);
 
    App.resolveRegistration('model:user').create() instanceof User //=> true
@@ -163,8 +163,8 @@ export default Mixin.create({
    Allow registering options for all factories of a type.
 
    ```javascript
-   var App = Ember.Application.create();
-   var appInstance = App.buildInstance();
+   let App = Ember.Application.create();
+   let appInstance = App.buildInstance();
 
    // if all of type `connection` must not be singletons
    appInstance.optionsForType('connection', { singleton: false });
@@ -172,13 +172,13 @@ export default Mixin.create({
    appInstance.register('connection:twitter', TwitterConnection);
    appInstance.register('connection:facebook', FacebookConnection);
 
-   var twitter = appInstance.lookup('connection:twitter');
-   var twitter2 = appInstance.lookup('connection:twitter');
+   let twitter = appInstance.lookup('connection:twitter');
+   let twitter2 = appInstance.lookup('connection:twitter');
 
    twitter === twitter2; // => false
 
-   var facebook = appInstance.lookup('connection:facebook');
-   var facebook2 = appInstance.lookup('connection:facebook');
+   let facebook = appInstance.lookup('connection:facebook');
+   let facebook2 = appInstance.lookup('connection:facebook');
 
    facebook === facebook2; // => false
    ```
@@ -211,8 +211,8 @@ export default Mixin.create({
     An example of providing a session object to all controllers:
 
     ```javascript
-    var App = Ember.Application.create();
-    var Session = Ember.Object.extend({ isAuthenticated: false });
+    let App = Ember.Application.create();
+    let Session = Ember.Object.extend({ isAuthenticated: false });
 
     // A factory must be registered before it can be injected
     App.register('session:main', Session);
@@ -260,8 +260,8 @@ function registryAlias(name) {
 }
 
 export function buildFakeRegistryWithDeprecations(instance, typeForMessage) {
-  var fakeRegistry = {};
-  var registryProps = {
+  let fakeRegistry = {};
+  let registryProps = {
     resolve: 'resolveRegistration',
     register: 'register',
     unregister: 'unregister',
@@ -274,7 +274,7 @@ export function buildFakeRegistryWithDeprecations(instance, typeForMessage) {
     injection: 'inject'
   };
 
-  for (var deprecatedProperty in registryProps) {
+  for (let deprecatedProperty in registryProps) {
     fakeRegistry[deprecatedProperty] = buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, registryProps[deprecatedProperty]);
   }
 

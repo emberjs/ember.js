@@ -16,7 +16,7 @@ QUnit.module('system/object/toString', {
 });
 
 QUnit.test('toString() returns the same value if called twice', function() {
-  var Foo = Namespace.create();
+  let Foo = Namespace.create();
   Foo.toString = function() { return 'Foo'; };
 
   Foo.Bar = EmberObject.extend();
@@ -24,7 +24,7 @@ QUnit.test('toString() returns the same value if called twice', function() {
   equal(Foo.Bar.toString(), 'Foo.Bar');
   equal(Foo.Bar.toString(), 'Foo.Bar');
 
-  var obj = Foo.Bar.create();
+  let obj = Foo.Bar.create();
 
   equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
   equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
@@ -33,9 +33,9 @@ QUnit.test('toString() returns the same value if called twice', function() {
 });
 
 QUnit.test('toString on a class returns a useful value when nested in a namespace', function() {
-  var obj;
+  let obj;
 
-  var Foo = Namespace.create();
+  let Foo = Namespace.create();
   Foo.toString = function() { return 'Foo'; };
 
   Foo.Bar = EmberObject.extend();
@@ -55,14 +55,14 @@ QUnit.test('toString on a class returns a useful value when nested in a namespac
 });
 
 QUnit.test('toString on a namespace finds the namespace in lookup', function() {
-  var Foo = lookup.Foo = Namespace.create();
+  let Foo = lookup.Foo = Namespace.create();
 
   equal(Foo.toString(), 'Foo');
 });
 
 QUnit.test('toString on a namespace finds the namespace in lookup', function() {
-  var Foo = lookup.Foo = Namespace.create();
-  var obj;
+  let Foo = lookup.Foo = Namespace.create();
+  let obj;
 
   Foo.Bar = EmberObject.extend();
 
@@ -73,20 +73,20 @@ QUnit.test('toString on a namespace finds the namespace in lookup', function() {
 });
 
 QUnit.test('toString on a namespace falls back to modulePrefix, if defined', function() {
-  var Foo = Namespace.create({ modulePrefix: 'foo' });
+  let Foo = Namespace.create({ modulePrefix: 'foo' });
 
   equal(Foo.toString(), 'foo');
 });
 
 QUnit.test('toString includes toStringExtension if defined', function() {
-  var Foo = EmberObject.extend({
+  let Foo = EmberObject.extend({
         toStringExtension() {
           return 'fooey';
         }
       });
-  var foo = Foo.create();
-  var Bar = EmberObject.extend({});
-  var bar = Bar.create();
+  let foo = Foo.create();
+  let Bar = EmberObject.extend({});
+  let bar = Bar.create();
 
   // simulate these classes being defined on a Namespace
   Foo[GUID_KEY + '_name'] = 'Foo';

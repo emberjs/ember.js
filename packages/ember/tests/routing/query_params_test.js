@@ -15,7 +15,7 @@ import { dasherize } from 'ember-runtime/system/string';
 import Mixin from 'ember-metal/mixin';
 import { meta } from 'ember-metal/meta';
 
-var App, router, container;
+let App, router, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -23,7 +23,7 @@ function bootApplication() {
 }
 
 function handleURL(path) {
-  return run(function() {
+  return run(() => {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -34,14 +34,14 @@ function handleURL(path) {
   });
 }
 
-var startingURL = '';
-var expectedReplaceURL, expectedPushURL;
+let startingURL = '';
+let expectedReplaceURL, expectedPushURL;
 
 function setAndFlush(obj, prop, value) {
   run(obj, 'set', prop, value);
 }
 
-var TestLocation = NoneLocation.extend({
+const TestLocation = NoneLocation.extend({
   initState() {
     this.set('path', startingURL);
   },
@@ -70,7 +70,7 @@ var TestLocation = NoneLocation.extend({
 });
 
 function sharedSetup() {
-  run(function() {
+  run(() => {
     App = Application.create({
       name: 'App',
       rootElement: '#qunit-fixture'
@@ -98,7 +98,7 @@ function sharedSetup() {
 
 function sharedTeardown() {
   try {
-    run(function() {
+    run(() => {
       App.destroy();
       App = null;
     });
@@ -135,7 +135,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     setAndFlush(controller, 'foo', '456');
 
@@ -161,7 +161,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     run(router, 'transitionTo', 'home', { queryParams: { page: '4' } });
     equal(controller.get('page'), 4);
@@ -178,7 +178,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
 
     setAndFlush(controller, 'foo', 'LEX');
 
@@ -206,7 +206,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     setAndFlush(controller, 'funTimes', 'woot');
 
     equal(router.get('location.path'), '/?fun-times=woot');
@@ -335,7 +335,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can opt into full transition by setting refreshModel in route queryParams when all configuration is in route', function() {
     expect(6);
 
-    var appModelCount = 0;
+    let appModelCount = 0;
     App.ApplicationRoute = Route.extend({
       queryParams: {
         'appomg': {
@@ -347,7 +347,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -371,7 +371,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(appModelCount, 1);
     equal(indexModelCount, 1);
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setAndFlush(indexController, 'omg', 'lex');
 
     equal(appModelCount, 1);
@@ -396,7 +396,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           refreshModel: true
         }
       },
-      refresh: function() {
+      refresh() {
         ok(false);
       }
     });
@@ -408,7 +408,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar when QP configured on route', function() {
     expect(4);
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -419,7 +419,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       model(params) {
         indexModelCount++;
 
-        var data;
+        let data;
         if (indexModelCount === 1) {
           data = 'foo';
         } else if (indexModelCount === 2) {
@@ -434,7 +434,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     handleURL('/');
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'lol');
   });
 
@@ -454,7 +454,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?alex=wallace';
     setAndFlush(appController, 'alex', 'wallace');
   });
@@ -475,7 +475,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?commit_by=igor_seb';
     setAndFlush(appController, 'commitBy', 'igor_seb');
   });
@@ -498,7 +498,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedPushURL = '/?alex=wallace&steely=jan';
     run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
 
@@ -519,7 +519,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    var parentModelCount = 0;
+    let parentModelCount = 0;
     App.ParentRoute = Route.extend({
       model() {
         parentModelCount++;
@@ -558,7 +558,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?omg=borf';
     bootApplication();
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'borf');
     run(router, 'transitionTo', '/');
     equal(indexController.get('omg'), 'lol');
@@ -662,7 +662,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo=true';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     equal(controller.get('foo'), true);
 
     handleURL('/?foo=false');
@@ -681,7 +681,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo=';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     equal(controller.get('foo'), '');
   });
 
@@ -700,7 +700,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     setAndFlush(controller, 'foo', [1, 2]);
 
@@ -743,7 +743,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo[]=1&foo[]=2&foo[]=3';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
@@ -761,7 +761,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo[]=1&foo[]=2&foo[]=3';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
@@ -784,7 +784,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
@@ -814,7 +814,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Overwriting with array with same content shouldn\'t refire update when configuration occurs on router but there is still a controller', function() {
     expect(3);
-    var modelCount = 0;
+    let modelCount = 0;
 
     App.Router.map(function() {
       this.route('home', { path: '/' });
@@ -836,7 +836,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     equal(modelCount, 1);
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
     setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
@@ -889,7 +889,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:bar');
+    let controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
     run(jQuery('#foo-link'), 'click');
@@ -929,11 +929,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = jQuery('#the-link');
+    let $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
     run($link, 'click');
 
-    var controller = container.lookup('controller:example');
+    let controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
   });
 
@@ -1005,7 +1005,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     setAndFlush(controller, 'funTimes', 'woot');
 
     equal(router.get('location.path'), '/?fun-times=woot');
@@ -1041,9 +1041,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.register('template:about',      compile("<h3>{{link-to 'Home' 'home'  (query-params foo='naw')}}</h3>"));
     App.register('template:cats.index', compile("<h3>{{link-to 'Cats' 'cats'  (query-params name='domino') id='cats-link'}}</h3>"));
 
-    var homeShouldBeCreated = false;
-    var aboutShouldBeCreated = false;
-    var catsIndexShouldBeCreated = false;
+    let homeShouldBeCreated = false;
+    let aboutShouldBeCreated = false;
+    let catsIndexShouldBeCreated = false;
 
     App.HomeRoute = Route.extend({
       queryParams: {
@@ -1114,7 +1114,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     equal(router.get('location.path'), '', 'url is correct');
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
     setAndFlush(controller, 'foo', '456');
     equal(router.get('location.path'), '/?foo=456', 'url is correct');
     equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
@@ -1268,7 +1268,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can opt into full transition by setting refreshModel in route queryParams when configured on the route', function() {
     expect(6);
 
-    var appModelCount = 0;
+    let appModelCount = 0;
     App.ApplicationRoute = Route.extend({
       queryParams: {
         'appomg': {
@@ -1280,7 +1280,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       }
     });
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -1304,7 +1304,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(appModelCount, 1);
     equal(indexModelCount, 1);
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setAndFlush(indexController, 'omg', 'lex');
 
     equal(appModelCount, 1);
@@ -1315,7 +1315,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
   QUnit.test('can use refreshModel even w URL changes that remove QPs from address bar when configured on the route', function() {
     expect(4);
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -1326,7 +1326,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       model(params) {
         indexModelCount++;
 
-        var data;
+        let data;
         if (indexModelCount === 1) {
           data = 'foo';
         } else if (indexModelCount === 2) {
@@ -1341,7 +1341,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     handleURL('/');
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'lol');
   });
 
@@ -1361,7 +1361,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?alex=wallace';
     setAndFlush(appController, 'alex', 'wallace');
   });
@@ -1382,7 +1382,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?commit_by=igor_seb';
     setAndFlush(appController, 'commitBy', 'igor_seb');
   });
@@ -1405,7 +1405,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedPushURL = '/?alex=wallace&steely=jan';
     run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
 
@@ -1426,7 +1426,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    var parentModelCount = 0;
+    let parentModelCount = 0;
     App.ParentRoute = Route.extend({
       model() {
         parentModelCount++;
@@ -1527,7 +1527,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?omg=borf';
     bootApplication();
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'borf');
     run(router, 'transitionTo', '/');
     equal(indexController.get('omg'), 'lol');
@@ -1629,7 +1629,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
 
     expectedPushURL = '/?foo=';
     setAndFlush(controller, 'foo', '');
@@ -1646,7 +1646,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
 
     expectedPushURL = '/?foo=';
     setAndFlush(controller, 'foo', '');
@@ -1667,7 +1667,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo=true';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     equal(controller.get('foo'), true);
 
     handleURL('/?foo=false');
@@ -1686,7 +1686,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo=';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     equal(controller.get('foo'), '');
   });
 
@@ -1705,7 +1705,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     setAndFlush(controller, 'foo', [1, 2]);
 
@@ -1748,7 +1748,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo[]=1&foo[]=2&foo[]=3';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
@@ -1769,7 +1769,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
@@ -1799,7 +1799,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Overwriting with array with same content shouldn\'t refire update when configured on the route', function() {
     expect(3);
-    var modelCount = 0;
+    let modelCount = 0;
 
     App.Router.map(function() {
       this.route('home', { path: '/' });
@@ -1819,7 +1819,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     equal(modelCount, 1);
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
     setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
@@ -1846,7 +1846,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.OtherRoute = Route.extend({
       model(p, trans) {
-        var m = meta(trans.params.application);
+        let m = meta(trans.params.application);
         ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
       }
     });
@@ -1902,7 +1902,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:bar');
+    let controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
     run(jQuery('#foo-link'), 'click');
@@ -1940,11 +1940,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = jQuery('#the-link');
+    let $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
     run($link, 'click');
 
-    var controller = container.lookup('controller:example');
+    let controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
   });
 
@@ -1968,10 +1968,10 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:example');
+    let controller = container.lookup('controller:example');
 
-    var $link1 = jQuery('#the-link1');
-    var $link2 = jQuery('#the-link2');
+    let $link1 = jQuery('#the-link1');
+    let $link2 = jQuery('#the-link2');
     equal($link1.attr('href'), '/example?bar=abc&foo=def');
     equal($link2.attr('href'), '/example?bar=123&foo=456');
 
@@ -2014,7 +2014,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/parent/child?foo=lol';
     bootApplication();
 
-    var parentController = container.lookup('controller:parent');
+    let parentController = container.lookup('controller:parent');
 
     equal(parentController.get('foo'), 'lol');
   });
@@ -2043,7 +2043,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/parent/child?foo=lol';
     bootApplication();
 
-    var parentController = container.lookup('controller:parent');
+    let parentController = container.lookup('controller:parent');
 
     equal(parentController.get('foo'), 'lol');
   });
@@ -2060,7 +2060,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     setAndFlush(controller, 'foo', '456');
 
@@ -2082,7 +2082,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     setAndFlush(controller, 'foo', '456');
 
@@ -2102,7 +2102,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     setAndFlush(controller, 'foo', 'LEX');
 
     equal(router.get('location.path'), '/?other_foo=LEX');
@@ -2129,7 +2129,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     setAndFlush(controller, 'funTimes', 'woot');
 
     equal(router.get('location.path'), '/?fun-times=woot');
@@ -2150,7 +2150,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Can override inherited QP behavior by specifying queryParams as a computed property', function() {
     expect(0);
-    var SharedMixin = Mixin.create({
+    let SharedMixin = Mixin.create({
       queryParams: ['a'],
       a: 0
     });
@@ -2163,7 +2163,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
 
     expectedReplaceURL = 'not gonna happen';
     run(indexController, 'set', 'a', 1);
@@ -2200,9 +2200,9 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     App.register('template:about',      compile("<h3>{{link-to 'Home' 'home'  (query-params foo='naw')}}</h3>"));
     App.register('template:cats.index', compile("<h3>{{link-to 'Cats' 'cats'  (query-params name='domino') id='cats-link'}}</h3>"));
 
-    var homeShouldBeCreated = false;
-    var aboutShouldBeCreated = false;
-    var catsIndexShouldBeCreated = false;
+    let homeShouldBeCreated = false;
+    let aboutShouldBeCreated = false;
+    let catsIndexShouldBeCreated = false;
 
     App.HomeRoute = Route.extend({
       setup() {
@@ -2262,7 +2262,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     equal(router.get('location.path'), '', 'url is correct');
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
     setAndFlush(controller, 'foo', '456');
     equal(router.get('location.path'), '/?foo=456', 'url is correct');
     equal(jQuery('#link-to-about').attr('href'), '/about?lol=wat', 'link to about is correct');
@@ -2426,14 +2426,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       omg: 'lol'
     });
 
-    var appModelCount = 0;
+    let appModelCount = 0;
     App.ApplicationRoute = Route.extend({
       model(params) {
         appModelCount++;
       }
     });
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -2456,7 +2456,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(appModelCount, 1);
     equal(indexModelCount, 1);
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setAndFlush(indexController, 'omg', 'lex');
 
     equal(appModelCount, 1);
@@ -2481,7 +2481,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
           refreshModel: true
         }
       },
-      refresh: function() {
+      refresh() {
         ok(false);
       }
     });
@@ -2502,14 +2502,14 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       omg: 'lol'
     });
 
-    var appModelCount = 0;
+    let appModelCount = 0;
     App.ApplicationRoute = Route.extend({
       model(params) {
         appModelCount++;
       }
     });
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: EmberObject.create({
         unknownProperty(keyName) {
@@ -2532,7 +2532,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     equal(appModelCount, 1);
     equal(indexModelCount, 1);
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     setAndFlush(indexController, 'omg', 'lex');
 
     equal(appModelCount, 1);
@@ -2547,7 +2547,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       omg: 'lol'
     });
 
-    var indexModelCount = 0;
+    let indexModelCount = 0;
     App.IndexRoute = Route.extend({
       queryParams: {
         omg: {
@@ -2557,7 +2557,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       model(params) {
         indexModelCount++;
 
-        var data;
+        let data;
         if (indexModelCount === 1) {
           data = 'foo';
         } else if (indexModelCount === 2) {
@@ -2572,7 +2572,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
     handleURL('/');
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'lol');
   });
 
@@ -2595,7 +2595,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?alex=wallace';
     setAndFlush(appController, 'alex', 'wallace');
   });
@@ -2620,7 +2620,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?commit_by=igor_seb';
     setAndFlush(appController, 'commitBy', 'igor_seb');
   });
@@ -2647,7 +2647,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedPushURL = '/?alex=wallace&steely=jan';
     run(appController, 'setProperties', { alex: 'wallace', steely: 'jan' });
 
@@ -2668,7 +2668,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
       });
     });
 
-    var parentModelCount = 0;
+    let parentModelCount = 0;
     App.ParentRoute = Route.extend({
       model() {
         parentModelCount++;
@@ -2717,7 +2717,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var appController = container.lookup('controller:application');
+    let appController = container.lookup('controller:application');
     expectedReplaceURL = '/?alex=wallace';
     setAndFlush(appController, 'alex', 'wallace');
   });
@@ -2795,7 +2795,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?omg=borf';
     bootApplication();
 
-    var indexController = container.lookup('controller:index');
+    let indexController = container.lookup('controller:index');
     equal(indexController.get('omg'), 'borf');
     run(router, 'transitionTo', '/');
     equal(indexController.get('omg'), 'lol');
@@ -2880,7 +2880,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
 
     expectedPushURL = '/?foo=';
     setAndFlush(controller, 'foo', '');
@@ -2897,7 +2897,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
 
     expectedPushURL = '/?foo=';
     setAndFlush(controller, 'foo', '');
@@ -2918,7 +2918,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo=true';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     equal(controller.get('foo'), true);
 
     handleURL('/?foo=false');
@@ -2934,7 +2934,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo=';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     equal(controller.get('foo'), '');
   });
 
@@ -2950,7 +2950,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     setAndFlush(controller, 'foo', [1, 2]);
 
@@ -2987,7 +2987,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     startingURL = '/?foo[]=1&foo[]=2&foo[]=3';
     bootApplication();
 
-    var controller = container.lookup('controller:index');
+    let controller = container.lookup('controller:index');
     deepEqual(controller.get('foo'), ['1', '2', '3']);
   });
 
@@ -3005,7 +3005,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     equal(router.get('location.path'), '');
 
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
 
     run(controller.foo, 'pushObject', 1);
     equal(router.get('location.path'), '/?foo=%5B1%5D');
@@ -3035,7 +3035,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
   QUnit.test('Overwriting with array with same content shouldn\'t refire update', function() {
     expect(3);
-    var modelCount = 0;
+    let modelCount = 0;
 
     App.Router.map(function() {
       this.route('home', { path: '/' });
@@ -3055,7 +3055,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
 
     equal(modelCount, 1);
-    var controller = container.lookup('controller:home');
+    let controller = container.lookup('controller:home');
     setAndFlush(controller, 'model', emberA([1]));
     equal(modelCount, 1);
     equal(router.get('location.path'), '');
@@ -3079,7 +3079,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     App.OtherRoute = Route.extend({
       model(p, trans) {
-        var m = meta(trans.params.application);
+        let m = meta(trans.params.application);
         ok(!m.peekWatching('woot'), 'A meta object isn\'t constructed for this params POJO');
       }
     });
@@ -3138,7 +3138,7 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     });
 
     bootApplication();
-    var controller = container.lookup('controller:bar');
+    let controller = container.lookup('controller:bar');
 
     expectedPushURL = '/foo';
     run(jQuery('#foo-link'), 'click');
@@ -3177,11 +3177,11 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     bootApplication();
 
-    var $link = jQuery('#the-link');
+    let $link = jQuery('#the-link');
     equal($link.attr('href'), '/example');
     run($link, 'click');
 
-    var controller = container.lookup('controller:example');
+    let controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
   });
 }
@@ -3219,6 +3219,6 @@ QUnit.test('handle routes names that clash with Object.prototype properties', fu
 
   run(router, 'transitionTo', 'constructor', { queryParams: { foo: '999' } });
 
-  var controller = container.lookup('controller:constructor');
+  let controller = container.lookup('controller:constructor');
   equal(get(controller, 'foo'), '999');
 });

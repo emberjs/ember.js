@@ -35,7 +35,7 @@ import { get } from 'ember-metal/property_get';
   @extends Ember.Object
   @private
 */
-var Suite = EmberObject.extend({
+const Suite = EmberObject.extend({
 
   /*
     __Required.__ You must implement this method to apply this mixin.
@@ -58,7 +58,7 @@ Suite.reopenClass({
   plan: null,
 
   run() {
-    var C = this;
+    let C = this;
     return new C().run();
   },
 
@@ -67,13 +67,13 @@ Suite.reopenClass({
       opts = {};
     }
 
-    var setup = opts.setup;
-    var teardown = opts.teardown;
+    let setup = opts.setup;
+    let teardown = opts.teardown;
     this.reopen({
       run() {
         this._super(...arguments);
-        var title = get(this, 'name') + ': ' + desc;
-        var ctx = this;
+        let title = get(this, 'name') + ': ' + desc;
+        let ctx = this;
         QUnit.module(title, {
           setup() {
             if (setup) {
@@ -95,12 +95,12 @@ Suite.reopenClass({
     this.reopen({
       run() {
         this._super(...arguments);
-        var ctx = this;
+        let ctx = this;
 
         if (!func) {
           QUnit.test(name); // output warning
         } else {
-          QUnit.test(name, function() { func.call(ctx); });
+          QUnit.test(name, () => func.call(ctx));
         }
       }
     });
@@ -108,8 +108,8 @@ Suite.reopenClass({
 
   // convert to guids to minimize logging.
   same(actual, exp, message) {
-    actual = (actual && actual.map) ? actual.map(function(x) { return guidFor(x); }) : actual;
-    exp = (exp && exp.map) ? exp.map(function(x) { return guidFor(x); }) : exp;
+    actual = (actual && actual.map) ? actual.map(x => guidFor(x)) : actual;
+    exp = (exp && exp.map) ? exp.map(x => guidFor(x)) : exp;
     return deepEqual(actual, exp, message);
   },
 
@@ -125,7 +125,7 @@ Suite.reopenClass({
   }
 });
 
-var SuiteModuleBuilder = EmberObject.extend({
+const SuiteModuleBuilder = EmberObject.extend({
   _module: null,
   _tests: null,
 

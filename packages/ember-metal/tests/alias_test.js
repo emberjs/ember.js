@@ -6,7 +6,7 @@ import { meta } from 'ember-metal/meta';
 import { isWatching } from 'ember-metal/watching';
 import { addObserver, removeObserver } from 'ember-metal/observer';
 
-var obj, count;
+let obj, count;
 
 QUnit.module('ember-metal/alias', {
   setup() {
@@ -35,7 +35,7 @@ QUnit.test('should proxy set to alt key', function() {
 
 QUnit.test('basic lifecycle', function() {
   defineProperty(obj, 'bar', alias('foo.faz'));
-  var m = meta(obj);
+  let m = meta(obj);
   addObserver(obj, 'bar', incrementCount);
   equal(m.peekDeps('foo.faz', 'bar'), 1);
   removeObserver(obj, 'bar', incrementCount);
@@ -43,7 +43,7 @@ QUnit.test('basic lifecycle', function() {
 });
 
 QUnit.test('old dependent keys should not trigger property changes', function() {
-  var obj1 = Object.create(null);
+  let obj1 = Object.create(null);
   defineProperty(obj1, 'foo', null, null);
   defineProperty(obj1, 'bar', alias('foo'));
   defineProperty(obj1, 'baz', alias('foo'));
@@ -60,13 +60,13 @@ QUnit.test('old dependent keys should not trigger property changes', function() 
 });
 
 QUnit.test('overridden dependent keys should not trigger property changes', function() {
-  var obj1 = Object.create(null);
+  let obj1 = Object.create(null);
   defineProperty(obj1, 'foo', null, null);
   defineProperty(obj1, 'bar', alias('foo'));
   defineProperty(obj1, 'baz', alias('foo'));
   addObserver(obj1, 'baz', incrementCount);
 
-  var obj2 = Object.create(obj1);
+  let obj2 = Object.create(obj1);
   defineProperty(obj2, 'baz', alias('bar')); // override baz
 
   set(obj2, 'foo', 'FOO');
@@ -95,7 +95,5 @@ QUnit.test('immediately sets up dependencies if already being watched', function
 });
 
 QUnit.test('setting alias on self should fail assertion', function() {
-  expectAssertion(function() {
-    defineProperty(obj, 'bar', alias('bar'));
-  }, 'Setting alias \'bar\' on self');
+  expectAssertion(() => defineProperty(obj, 'bar', alias('bar')), 'Setting alias \'bar\' on self');
 });

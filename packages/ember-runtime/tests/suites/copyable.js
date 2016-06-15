@@ -1,6 +1,6 @@
 import { Suite } from 'ember-runtime/tests/suites/suite';
 
-var CopyableTests = Suite.extend({
+const CopyableTests = Suite.extend({
 
   /*
     __Required.__ You must implement this method to apply this mixin.

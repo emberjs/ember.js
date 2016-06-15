@@ -37,7 +37,7 @@ function emberA() {
   return (_emberA || (_emberA = require('ember-runtime/system/native_array').A))();
 }
 
-var contexts = [];
+const contexts = [];
 
 function popCtx() {
   return contexts.length === 0 ? {} : contexts.pop();
@@ -49,10 +49,10 @@ function pushCtx(ctx) {
 }
 
 function iter(key, value) {
-  var valueProvided = arguments.length === 2;
+  let valueProvided = arguments.length === 2;
 
   function i(item) {
-    var cur = get(item, key);
+    let cur = get(item, key);
     return valueProvided ? value === cur : !!cur;
   }
 
@@ -97,7 +97,7 @@ function iter(key, value) {
   @since Ember 0.9
   @private
 */
-var Enumerable = Mixin.create({
+const Enumerable = Mixin.create({
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -148,10 +148,10 @@ var Enumerable = Mixin.create({
     If your enumerable is empty, this method should return `undefined`.
 
     ```javascript
-    var arr = ['a', 'b', 'c'];
+    let arr = ['a', 'b', 'c'];
     arr.get('firstObject');  // 'a'
 
-    var arr = [];
+    let arr = [];
     arr.get('firstObject');  // undefined
     ```
 
@@ -166,8 +166,8 @@ var Enumerable = Mixin.create({
     }
 
     // handle generic enumerables
-    var context = popCtx();
-    var ret = this.nextObject(0, null, context);
+    let context = popCtx();
+    let ret = this.nextObject(0, null, context);
 
     pushCtx(context);
 
@@ -180,10 +180,10 @@ var Enumerable = Mixin.create({
     If your enumerable is empty, this method should return `undefined`.
 
     ```javascript
-    var arr = ['a', 'b', 'c'];
+    let arr = ['a', 'b', 'c'];
     arr.get('lastObject');  // 'c'
 
-    var arr = [];
+    let arr = [];
     arr.get('lastObject');  // undefined
     ```
 
@@ -193,16 +193,16 @@ var Enumerable = Mixin.create({
     @public
   */
   lastObject: computed('[]', function() {
-    var len = get(this, 'length');
+    let len = get(this, 'length');
 
     if (len === 0) {
       return undefined;
     }
 
-    var context = popCtx();
-    var idx = 0;
-    var last = null;
-    var cur;
+    let context = popCtx();
+    let idx = 0;
+    let last = null;
+    let cur;
 
     do {
       last = cur;
@@ -220,7 +220,7 @@ var Enumerable = Mixin.create({
     is found. You may want to override this with a more efficient version.
 
     ```javascript
-    var arr = ['a', 'b', 'c'];
+    let arr = ['a', 'b', 'c'];
 
     arr.contains('a'); // true
     arr.contains('z'); // false
@@ -240,9 +240,7 @@ var Enumerable = Mixin.create({
       );
     }
 
-    var found = this.find(function(item) {
-      return item === obj;
-    });
+    let found = this.find(item => item === obj);
 
     return found !== undefined;
   },
@@ -278,16 +276,16 @@ var Enumerable = Mixin.create({
       throw new TypeError();
     }
 
-    var context = popCtx();
-    var len = get(this, 'length');
-    var last = null;
+    let context = popCtx();
+    let len = get(this, 'length');
+    let last = null;
 
     if (target === undefined) {
       target = null;
     }
 
-    for (var idx = 0; idx < len; idx++) {
-      var next = this.nextObject(idx, last, context);
+    for (let idx = 0; idx < len; idx++) {
+      let next = this.nextObject(idx, last, context);
       callback.call(target, next, idx, this);
       last = next;
     }
@@ -321,9 +319,7 @@ var Enumerable = Mixin.create({
     @public
   */
   setEach(key, value) {
-    return this.forEach(function(item) {
-      set(item, key, value);
-    });
+    return this.forEach(item => set(item, key, value));
   },
 
   /**
@@ -354,11 +350,9 @@ var Enumerable = Mixin.create({
     @public
   */
   map(callback, target) {
-    var ret = emberA();
+    let ret = emberA();
 
-    this.forEach(function(x, idx, i) {
-      ret[idx] = callback.call(target, x, idx, i);
-    });
+    this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
 
     return ret;
   },
@@ -373,9 +367,7 @@ var Enumerable = Mixin.create({
     @public
   */
   mapBy(key) {
-    return this.map(function(next) {
-      return get(next, key);
-    });
+    return this.map(next => get(next, key));
   },
 
   /**
@@ -408,7 +400,7 @@ var Enumerable = Mixin.create({
     @public
   */
   filter(callback, target) {
-    var ret = emberA();
+    let ret = emberA();
 
     this.forEach(function(x, idx, i) {
       if (callback.call(target, x, idx, i)) {
@@ -479,15 +471,9 @@ var Enumerable = Mixin.create({
     @public
   */
   rejectBy(key, value) {
-    var exactValue = function(item) {
-      return get(item, key) === value;
-    };
-
-    var hasValue = function(item) {
-      return !!get(item, key);
-    };
-
-    var use = (arguments.length === 2 ? exactValue : hasValue);
+    let exactValue = item => get(item, key) === value;
+    let hasValue = item  => !!get(item, key);
+    let use = (arguments.length === 2 ? exactValue : hasValue);
 
     return this.reject(use);
   },
@@ -522,18 +508,18 @@ var Enumerable = Mixin.create({
     @public
   */
   find(callback, target) {
-    var len = get(this, 'length');
+    let len = get(this, 'length');
 
     if (target === undefined) {
       target = null;
     }
 
-    var context = popCtx();
-    var found = false;
-    var last = null;
-    var next, ret;
+    let context = popCtx();
+    let found = false;
+    let last = null;
+    let next, ret;
 
-    for (var idx = 0; idx < len && !found; idx++) {
+    for (let idx = 0; idx < len && !found; idx++) {
       next = this.nextObject(idx, last, context);
 
       if (found = callback.call(target, next, idx, this)) {
@@ -658,17 +644,17 @@ var Enumerable = Mixin.create({
     @public
   */
   any(callback, target) {
-    var len = get(this, 'length');
-    var context = popCtx();
-    var found = false;
-    var last = null;
-    var next, idx;
+    let len = get(this, 'length');
+    let context = popCtx();
+    let found = false;
+    let last = null;
+    let next;
 
     if (target === undefined) {
       target = null;
     }
 
-    for (idx = 0; idx < len && !found; idx++) {
+    for (let idx = 0; idx < len && !found; idx++) {
       next  = this.nextObject(idx, last, context);
       found = callback.call(target, next, idx, this);
       last  = next;
@@ -734,7 +720,7 @@ var Enumerable = Mixin.create({
       throw new TypeError();
     }
 
-    var ret = initialValue;
+    let ret = initialValue;
 
     this.forEach(function(item, i) {
       ret = callback(ret, item, i, this, reducerProperty);
@@ -755,10 +741,10 @@ var Enumerable = Mixin.create({
     @public
   */
   invoke(methodName, ...args) {
-    var ret = emberA();
+    let ret = emberA();
 
     this.forEach(function(x, idx) {
-      var method = x && x[methodName];
+      let method = x && x[methodName];
 
       if ('function' === typeof method) {
         ret[idx] = args ? method.apply(x, args) : x[methodName]();
@@ -777,11 +763,9 @@ var Enumerable = Mixin.create({
     @public
   */
   toArray() {
-    var ret = emberA();
+    let ret = emberA();
 
-    this.forEach(function(o, idx) {
-      ret[idx] = o;
-    });
+    this.forEach((o, idx) => ret[idx] = o);
 
     return ret;
   },
@@ -790,7 +774,7 @@ var Enumerable = Mixin.create({
     Returns a copy of the array with all `null` and `undefined` elements removed.
 
     ```javascript
-    var arr = ['a', null, 'c', undefined];
+    let arr = ['a', null, 'c', undefined];
     arr.compact();  // ['a', 'c']
     ```
 
@@ -799,9 +783,7 @@ var Enumerable = Mixin.create({
     @public
   */
   compact() {
-    return this.filter(function(value) {
-      return value != null;
-    });
+    return this.filter(value => value != null);
   },
 
   /**
@@ -810,7 +792,7 @@ var Enumerable = Mixin.create({
     If the receiver does not contain the value it returns the original enumerable.
 
     ```javascript
-    var arr = ['a', 'b', 'a', 'c'];
+    let arr = ['a', 'b', 'a', 'c'];
     arr.without('a');  // ['b', 'c']
     ```
 
@@ -824,9 +806,9 @@ var Enumerable = Mixin.create({
       return this; // nothing to do
     }
 
-    var ret = emberA();
+    let ret = emberA();
 
-    this.forEach(function(k) {
+    this.forEach(k => {
       if (k !== value) {
         ret[ret.length] = k;
       }
@@ -840,7 +822,7 @@ var Enumerable = Mixin.create({
     implementation returns an array regardless of the receiver type.
 
     ```javascript
-    var arr = ['a', 'a', 'b', 'b'];
+    let arr = ['a', 'a', 'b', 'b'];
     arr.uniq();  // ['a', 'b']
     ```
 
@@ -851,9 +833,9 @@ var Enumerable = Mixin.create({
     @public
   */
   uniq() {
-    var ret = emberA();
+    let ret = emberA();
 
-    this.forEach((k) => {
+    this.forEach(k => {
       if (ret.indexOf(k) < 0) {
         ret.push(k);
       }
@@ -894,9 +876,9 @@ var Enumerable = Mixin.create({
     @private
   */
   addEnumerableObserver(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
-    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-    var hasObservers = get(this, 'hasEnumerableObservers');
+    let willChange = (opts && opts.willChange) || 'enumerableWillChange';
+    let didChange  = (opts && opts.didChange) || 'enumerableDidChange';
+    let hasObservers = get(this, 'hasEnumerableObservers');
 
     if (!hasObservers) {
       propertyWillChange(this, 'hasEnumerableObservers');
@@ -922,9 +904,9 @@ var Enumerable = Mixin.create({
     @private
   */
   removeEnumerableObserver(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
-    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-    var hasObservers = get(this, 'hasEnumerableObservers');
+    let willChange = (opts && opts.willChange) || 'enumerableWillChange';
+    let didChange  = (opts && opts.didChange) || 'enumerableDidChange';
+    let hasObservers = get(this, 'hasEnumerableObservers');
 
     if (hasObservers) {
       propertyWillChange(this, 'hasEnumerableObservers');
@@ -967,7 +949,7 @@ var Enumerable = Mixin.create({
     @private
   */
   enumerableContentWillChange(removing, adding) {
-    var removeCnt, addCnt, hasDelta;
+    let removeCnt, addCnt, hasDelta;
 
     if ('number' === typeof removing) {
       removeCnt = removing;
@@ -1022,7 +1004,7 @@ var Enumerable = Mixin.create({
     @private
   */
   enumerableContentDidChange(removing, adding) {
-    var removeCnt, addCnt, hasDelta;
+    let removeCnt, addCnt, hasDelta;
 
     if ('number' === typeof removing) {
       removeCnt = removing;
@@ -1074,15 +1056,15 @@ var Enumerable = Mixin.create({
     @public
   */
   sortBy() {
-    var sortKeys = arguments;
+    let sortKeys = arguments;
 
-    return this.toArray().sort(function(a, b) {
-      for (var i = 0; i < sortKeys.length; i++) {
-        var key = sortKeys[i];
-        var propA = get(a, key);
-        var propB = get(b, key);
+    return this.toArray().sort((a, b) => {
+      for (let i = 0; i < sortKeys.length; i++) {
+        let key = sortKeys[i];
+        let propA = get(a, key);
+        let propB = get(b, key);
         // return 1 or -1 else continue to the next sortKey
-        var compareValue = compare(propA, propB);
+        let compareValue = compare(propA, propB);
 
         if (compareValue) {
           return compareValue;
@@ -1101,7 +1083,7 @@ if (isEnabled('ember-runtime-computed-uniq-by')) {
       The default implementation returns an array regardless of the receiver type.
 
       ```javascript
-      var arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
+      let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
       arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
       ```
 
@@ -1111,11 +1093,11 @@ if (isEnabled('ember-runtime-computed-uniq-by')) {
     */
 
     uniqBy(key) {
-      var ret = emberA();
-      var seen = new EmptyObject();
+      let ret = emberA();
+      let seen = new EmptyObject();
 
       this.forEach((item) => {
-        var guid = guidFor(get(item, key));
+        let guid = guidFor(get(item, key));
         if (!(guid in seen)) {
           seen[guid] = true;
           ret.push(item);
@@ -1146,12 +1128,12 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
     includes(obj) {
       assert('Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered.', arguments.length === 1);
 
-      var len = get(this, 'length');
-      var idx, next;
-      var last = null;
-      var found = false;
+      let len = get(this, 'length');
+      let idx, next;
+      let last = null;
+      let found = false;
 
-      var context = popCtx();
+      let context = popCtx();
 
       for (idx = 0; idx < len && !found; idx++) {
         next = this.nextObject(idx, last, context);
@@ -1172,9 +1154,9 @@ if (isEnabled('ember-runtime-enumerable-includes')) {
         return this; // nothing to do
       }
 
-      var ret = emberA();
+      let ret = emberA();
 
-      this.forEach(function(k) {
+      this.forEach(k => {
         // SameValueZero comparison (NaN !== NaN)
         if (!(k === value || k !== k && value !== value)) {
           ret[ret.length] = k;

@@ -136,12 +136,12 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.render('{{foo-bar id=somethingUndefined}}');
 
-    var foundId = this.$('h1').attr('id');
+    let foundId = this.$('h1').attr('id');
     assert.ok(/^ember/.test(foundId), 'Has a reasonable id attribute (found id=' + foundId + ').');
 
     this.runTask(() => this.rerender());
 
-    var newFoundId = this.$('h1').attr('id');
+    let newFoundId = this.$('h1').attr('id');
     assert.ok(/^ember/.test(newFoundId), 'Has a reasonable id attribute (found id=' + newFoundId + ').');
 
     assert.equal(foundId, newFoundId);
@@ -156,12 +156,12 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.render('{{foo-bar id="custom-id"}}');
 
-    var foundId = this.$('h1').attr('id');
+    let foundId = this.$('h1').attr('id');
     assert.equal(foundId, 'custom-id');
 
     this.runTask(() => this.rerender());
 
-    var newFoundId = this.$('h1').attr('id');
+    let newFoundId = this.$('h1').attr('id');
     assert.equal(newFoundId, 'custom-id');
 
     assert.equal(foundId, newFoundId);

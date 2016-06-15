@@ -1,7 +1,7 @@
 import EmberObject from 'ember-runtime/system/object';
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 
 // ..........................................................
 // reject()
@@ -10,17 +10,17 @@ var suite = SuiteModuleBuilder.create();
 suite.module('reject');
 
 suite.test('should reject any item that does not meet the condition', function() {
-  var obj = this.newObject([1, 2, 3, 4]);
-  var result;
+  let obj = this.newObject([1, 2, 3, 4]);
+  let result;
 
-  result = obj.reject(function(i) { return i < 3; });
+  result = obj.reject(i => i < 3);
   deepEqual(result, [3, 4], 'reject the correct items');
 });
 
 suite.test('should be the inverse of filter', function() {
-  var obj = this.newObject([1, 2, 3, 4]);
-  var isEven = function(i) { return i % 2 === 0; };
-  var filtered, rejected;
+  let obj = this.newObject([1, 2, 3, 4]);
+  let isEven = i => i % 2 === 0;
+  let filtered, rejected;
 
   filtered = obj.filter(isEven);
   rejected = obj.reject(isEven);
@@ -36,7 +36,7 @@ suite.test('should be the inverse of filter', function() {
 suite.module('rejectBy');
 
 suite.test('should reject based on object', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { foo: 'foo', bar: 'BAZ' },
@@ -50,7 +50,7 @@ suite.test('should reject based on object', function() {
 });
 
 suite.test('should include in result if property is false', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { foo: false, bar: true },
@@ -64,7 +64,7 @@ suite.test('should include in result if property is false', function() {
 });
 
 suite.test('should reject on second argument if provided', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -79,7 +79,7 @@ suite.test('should reject on second argument if provided', function() {
 });
 
 suite.test('should correctly reject null second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -94,7 +94,7 @@ suite.test('should correctly reject null second argument', function() {
 });
 
 suite.test('should correctly reject undefined second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -107,7 +107,7 @@ suite.test('should correctly reject undefined second argument', function() {
 });
 
 suite.test('should correctly reject explicit undefined second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },
@@ -124,7 +124,7 @@ suite.test('should correctly reject explicit undefined second argument', functio
 });
 
 suite.test('should match undefined, null, or false properties without second argument', function() {
-  var obj, ary;
+  let obj, ary;
 
   ary = [
     { name: 'obj1', foo: 3 },

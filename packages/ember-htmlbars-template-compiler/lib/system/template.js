@@ -2,7 +2,7 @@ import require from 'require';
 
 let { wrap } = require('htmlbars-runtime/hooks');
 
-let template = function(templateSpec) {
+export default function template(templateSpec) {
   if (!templateSpec.render) {
     templateSpec = wrap(templateSpec);
   }
@@ -11,6 +11,4 @@ let template = function(templateSpec) {
   templateSpec.isMethod = false;
 
   return templateSpec;
-};
-
-export default template;
+}

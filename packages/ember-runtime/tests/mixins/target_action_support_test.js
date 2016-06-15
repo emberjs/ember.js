@@ -17,7 +17,7 @@ QUnit.module('TargetActionSupport', {
 QUnit.test('it should return false if no target or action are specified', function() {
   expect(1);
 
-  var obj = EmberObject.extend(TargetActionSupport).create();
+  let obj = EmberObject.extend(TargetActionSupport).create();
 
   ok(false === obj.triggerAction(), 'no target or action was specified');
 });
@@ -25,7 +25,7 @@ QUnit.test('it should return false if no target or action are specified', functi
 QUnit.test('it should support actions specified as strings', function() {
   expect(2);
 
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     target: EmberObject.create({
       anEvent() {
         ok(true, 'anEvent method was called');
@@ -41,7 +41,7 @@ QUnit.test('it should support actions specified as strings', function() {
 QUnit.test('it should invoke the send() method on objects that implement it', function() {
   expect(3);
 
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     target: EmberObject.create({
       send(evt, context) {
         equal(evt, 'anEvent', 'send() method was invoked with correct event name');
@@ -58,7 +58,7 @@ QUnit.test('it should invoke the send() method on objects that implement it', fu
 QUnit.test('it should find targets specified using a property path', function() {
   expect(2);
 
-  var Test = {};
+  let Test = {};
   lookup.Test = Test;
 
   Test.targetObj = EmberObject.create({
@@ -67,7 +67,7 @@ QUnit.test('it should find targets specified using a property path', function() 
     }
   });
 
-  var myObj = EmberObject.extend(TargetActionSupport).create({
+  let myObj = EmberObject.extend(TargetActionSupport).create({
     target: 'Test.targetObj',
     action: 'anEvent'
   });
@@ -77,7 +77,7 @@ QUnit.test('it should find targets specified using a property path', function() 
 
 QUnit.test('it should use an actionContext object specified as a property on the object', function() {
   expect(2);
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     action: 'anEvent',
     actionContext: {},
     target: EmberObject.create({
@@ -92,11 +92,11 @@ QUnit.test('it should use an actionContext object specified as a property on the
 QUnit.test('it should find an actionContext specified as a property path', function() {
   expect(2);
 
-  var Test = {};
+  let Test = {};
   lookup.Test = Test;
   Test.aContext = {};
 
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     action: 'anEvent',
     actionContext: 'Test.aContext',
     target: EmberObject.create({
@@ -111,12 +111,12 @@ QUnit.test('it should find an actionContext specified as a property path', funct
 
 QUnit.test('it should use the target specified in the argument', function() {
   expect(2);
-  var targetObj = EmberObject.create({
+  let targetObj = EmberObject.create({
     anEvent() {
       ok(true, 'anEvent method was called');
     }
   });
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     action: 'anEvent'
   });
 
@@ -126,7 +126,7 @@ QUnit.test('it should use the target specified in the argument', function() {
 QUnit.test('it should use the action specified in the argument', function() {
   expect(2);
 
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     target: EmberObject.create({
       anEvent() {
         ok(true, 'anEvent method was called');
@@ -138,8 +138,8 @@ QUnit.test('it should use the action specified in the argument', function() {
 
 QUnit.test('it should use the actionContext specified in the argument', function() {
   expect(2);
-  var context = {};
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let context = {};
+  let obj = EmberObject.extend(TargetActionSupport).create({
     target: EmberObject.create({
       anEvent(ctx) {
         ok(context === ctx, 'anEvent method was called with the expected context');
@@ -153,9 +153,9 @@ QUnit.test('it should use the actionContext specified in the argument', function
 
 QUnit.test('it should allow multiple arguments from actionContext', function() {
   expect(3);
-  var param1 = 'someParam';
-  var param2 = 'someOtherParam';
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let param1 = 'someParam';
+  let param2 = 'someOtherParam';
+  let obj = EmberObject.extend(TargetActionSupport).create({
     target: EmberObject.create({
       anEvent(first, second) {
         ok(first === param1, 'anEvent method was called with the expected first argument');
@@ -170,7 +170,7 @@ QUnit.test('it should allow multiple arguments from actionContext', function() {
 
 QUnit.test('it should use a null value specified in the actionContext argument', function() {
   expect(2);
-  var obj = EmberObject.extend(TargetActionSupport).create({
+  let obj = EmberObject.extend(TargetActionSupport).create({
     target: EmberObject.create({
       anEvent(ctx) {
         ok(null === ctx, 'anEvent method was called with the expected context (null)');

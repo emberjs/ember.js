@@ -1,12 +1,12 @@
 import Ember from 'ember-metal'; // testing reexports
 
 // From sindresourhus/semver-regex https://github.com/sindresorhus/semver-regex/blob/795b05628d96597ebcbe6d31ef4a432858365582/index.js#L3
-var SEMVER_REGEX = /^\bv?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?\b$/;
+const SEMVER_REGEX = /^\bv?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?\b$/;
 
 QUnit.module('ember-metal/core/main');
 
 QUnit.test('Ember registers itself', function() {
-  var lib = Ember.libraries._registry[0];
+  let lib = Ember.libraries._registry[0];
 
   equal(lib.name, 'Ember');
   equal(lib.version, Ember.VERSION);

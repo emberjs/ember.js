@@ -35,7 +35,7 @@ import keywords, { registerKeyword } from 'ember-htmlbars/keywords';
 
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 
-var emberHooks = assign({}, hooks);
+const emberHooks = assign({}, hooks);
 emberHooks.keywords = keywords;
 
 assign(emberHooks, {
@@ -109,6 +109,6 @@ export default {
   useFragmentCache: true
 };
 
-var domHelper = environment.hasDOM ? new DOMHelper() : null;
+const domHelper = environment.hasDOM ? new DOMHelper() : null;
 
 export { domHelper };

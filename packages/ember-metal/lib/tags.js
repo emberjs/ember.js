@@ -37,7 +37,7 @@ function ensureRunloop() {
 
 if (hasGlimmer) {
   ({ DirtyableTag, CONSTANT_TAG, CURRENT_TAG } = require('glimmer-reference'));
-  makeTag = function() { return new DirtyableTag(); };
+  makeTag = () => new DirtyableTag();
 
   markObjectAsDirty = function(meta) {
     ensureRunloop();

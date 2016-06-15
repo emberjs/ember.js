@@ -7,7 +7,7 @@ import { get } from 'ember-metal/property_get';
 import View from 'ember-views/views/view';
 
 export default function appendTemplatedView(parentView, morph, viewClassOrInstance, props) {
-  var viewProto;
+  let viewProto;
   if (View.detectInstance(viewClassOrInstance)) {
     viewProto = viewClassOrInstance;
   } else {
@@ -16,7 +16,7 @@ export default function appendTemplatedView(parentView, morph, viewClassOrInstan
 
   // We only want to override the `_context` computed property if there is
   // no specified controller. See View#_context for more information.
-  var noControllerInProto = !viewProto.controller;
+  let noControllerInProto = !viewProto.controller;
   if (viewProto.controller && viewProto.controller.isDescriptor) { noControllerInProto = true; }
   if (noControllerInProto &&
       !viewProto.controllerBinding &&

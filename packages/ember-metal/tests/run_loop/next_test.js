@@ -3,29 +3,27 @@ import run from 'ember-metal/run_loop';
 QUnit.module('run.next');
 
 asyncTest('should invoke immediately on next timeout', function() {
-  var invoked = false;
+  let invoked = false;
 
-  run(function() {
-    run.next(function() { invoked = true; });
-  });
+  run(() => run.next(() => invoked = true));
 
   equal(invoked, false, 'should not have invoked yet');
 
 
-  setTimeout(function() {
+  setTimeout(() => {
     QUnit.start();
     equal(invoked, true, 'should have invoked later item');
   }, 20);
 });
 
 asyncTest('callback should be called from within separate loop', function() {
-  var firstRunLoop, secondRunLoop;
-  run(function() {
+  let firstRunLoop, secondRunLoop;
+  run(() => {
     firstRunLoop = run.currentRunLoop;
-    run.next(function() { secondRunLoop = run.currentRunLoop; });
+    run.next(() => secondRunLoop = run.currentRunLoop);
   });
 
-  setTimeout(function() {
+  setTimeout(() => {
     QUnit.start();
     ok(secondRunLoop, 'callback was called from within run loop');
     ok(firstRunLoop && secondRunLoop !== firstRunLoop, 'two separate run loops were invoked');
@@ -33,14 +31,14 @@ asyncTest('callback should be called from within separate loop', function() {
 });
 
 asyncTest('multiple calls to run.next share coalesce callbacks into same run loop', function() {
-  var firstRunLoop, secondRunLoop, thirdRunLoop;
-  run(function() {
+  let firstRunLoop, secondRunLoop, thirdRunLoop;
+  run(() => {
     firstRunLoop = run.currentRunLoop;
-    run.next(function() { secondRunLoop = run.currentRunLoop; });
-    run.next(function() { thirdRunLoop  = run.currentRunLoop; });
+    run.next(() => secondRunLoop = run.currentRunLoop);
+    run.next(() => thirdRunLoop  = run.currentRunLoop);
   });
 
-  setTimeout(function() {
+  setTimeout(() => {
     QUnit.start();
     ok(secondRunLoop && secondRunLoop === thirdRunLoop, 'callbacks coalesced into same run loop');
   }, 20);

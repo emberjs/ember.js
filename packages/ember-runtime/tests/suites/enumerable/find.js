@@ -1,7 +1,7 @@
 import EmberObject from 'ember-runtime/system/object';
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = SuiteModuleBuilder.create();
+const suite = SuiteModuleBuilder.create();
 // ..........................................................
 // find()
 //
@@ -9,10 +9,10 @@ var suite = SuiteModuleBuilder.create();
 suite.module('find');
 
 suite.test('find should invoke callback on each item as long as you return false', function() {
-  var obj = this.newObject();
-  var ary = this.toArray(obj);
-  var found = [];
-  var result;
+  let obj = this.newObject();
+  let ary = this.toArray(obj);
+  let found = [];
+  let result;
 
   result = obj.find(function(i) {
     found.push(i);
@@ -23,12 +23,12 @@ suite.test('find should invoke callback on each item as long as you return false
 });
 
 suite.test('every should stop invoking when you return true', function() {
-  var obj = this.newObject();
-  var ary = this.toArray(obj);
-  var cnt = ary.length - 2;
-  var exp = cnt;
-  var found = [];
-  var result;
+  let obj = this.newObject();
+  let ary = this.toArray(obj);
+  let cnt = ary.length - 2;
+  let exp = cnt;
+  let found = [];
+  let result;
 
   result = obj.find(function(i) {
     found.push(i);
@@ -46,7 +46,7 @@ suite.test('every should stop invoking when you return true', function() {
 suite.module('findBy');
 
 suite.test('should return first object of property matches', function() {
-  var ary, obj;
+  let ary, obj;
 
   ary = [
     { foo: 'foo', bar: 'BAZ' },
@@ -60,7 +60,7 @@ suite.test('should return first object of property matches', function() {
 });
 
 suite.test('should return first object with truthy prop', function() {
-  var ary, obj;
+  let ary, obj;
 
   ary = [
     { foo: 'foo', bar: false },
@@ -75,7 +75,7 @@ suite.test('should return first object with truthy prop', function() {
 });
 
 suite.test('should return first null property match', function() {
-  var ary, obj;
+  let ary, obj;
 
   ary = [
     { foo: null, bar: 'BAZ' },
@@ -89,7 +89,7 @@ suite.test('should return first null property match', function() {
 });
 
 suite.test('should return first undefined property match', function() {
-  var ary, obj;
+  let ary, obj;
 
   ary = [
     { foo: undefined, bar: 'BAZ' },

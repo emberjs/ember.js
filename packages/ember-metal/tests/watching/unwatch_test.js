@@ -8,7 +8,7 @@ import { addListener } from 'ember-metal/events';
 import { computed } from 'ember-metal/computed';
 import { set } from 'ember-metal/property_set';
 
-var willCount, didCount;
+let willCount, didCount;
 
 QUnit.module('unwatch', {
   setup() {
@@ -17,21 +17,18 @@ QUnit.module('unwatch', {
 });
 
 function addListeners(obj, keyPath) {
-  addListener(obj, keyPath + ':before', function() {
-    willCount++;
-  });
-  addListener(obj, keyPath + ':change', function() {
-    didCount++;
-  });
+  addListener(obj, keyPath + ':before', () => willCount++);
+  addListener(obj, keyPath + ':change', () => didCount++);
 }
 
 testBoth('unwatching a computed property - regular get/set', function(get, set) {
-  var obj = {};
+  let obj = {};
+
   defineProperty(obj, 'foo', computed({
-    get: function() {
+    get() {
       return this.__foo;
     },
-    set: function(keyName, value) {
+    set(keyName, value) {
       this.__foo = value;
       return this.__foo;
     }
@@ -52,7 +49,7 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
 
 
 testBoth('unwatching a regular property - regular get/set', function(get, set) {
-  var obj = { foo: 'BIFF' };
+  let obj = { foo: 'BIFF' };
   addListeners(obj, 'foo');
 
   watch(obj, 'foo');
@@ -68,7 +65,7 @@ testBoth('unwatching a regular property - regular get/set', function(get, set) {
 });
 
 QUnit.test('unwatching should be nested', function() {
-  var obj = { foo: 'BIFF' };
+  let obj = { foo: 'BIFF' };
   addListeners(obj, 'foo');
 
   watch(obj, 'foo');
@@ -91,7 +88,7 @@ QUnit.test('unwatching should be nested', function() {
 });
 
 testBoth('unwatching "length" property on an object', function(get, set) {
-  var obj = { foo: 'RUN' };
+  let obj = { foo: 'RUN' };
   addListeners(obj, 'length');
 
   // Can watch length when it is undefined
@@ -109,7 +106,7 @@ testBoth('unwatching "length" property on an object', function(get, set) {
 });
 
 testBoth('unwatching should not destroy non MANDATORY_SETTER descriptor', function(get, set) {
-  var obj = { get foo() { return 'RUN'; } };
+  let obj = { get foo() { return 'RUN'; } };
 
   equal(obj.foo, 'RUN', 'obj.foo');
   watch(obj, 'foo');

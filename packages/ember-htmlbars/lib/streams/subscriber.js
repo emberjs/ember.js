@@ -10,7 +10,7 @@ import assign from 'ember-metal/assign';
   @namespace Ember.streams
   @constructor
 */
-function Subscriber(callback, context) {
+export default function Subscriber(callback, context) {
   this.next = null;
   this.prev = null;
   this.callback = callback;
@@ -19,8 +19,8 @@ function Subscriber(callback, context) {
 
 assign(Subscriber.prototype, {
   removeFrom(stream) {
-    var next = this.next;
-    var prev = this.prev;
+    let next = this.next;
+    let prev = this.prev;
 
     if (prev) {
       prev.next = next;
@@ -37,5 +37,3 @@ assign(Subscriber.prototype, {
     stream.maybeDeactivate();
   }
 });
-
-export default Subscriber;

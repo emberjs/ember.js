@@ -39,7 +39,7 @@ Ember.$ = jQuery;
 
 Ember.ViewTargetActionSupport = ViewTargetActionSupport;
 
-var ViewUtils = Ember.ViewUtils = {};
+const ViewUtils = Ember.ViewUtils = {};
 ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;

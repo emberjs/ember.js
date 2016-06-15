@@ -7,7 +7,7 @@ import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { getTemplates, setTemplates } from 'ember-templates/template_registry';
 import controllerFor from 'ember-routing/system/controller_for';
 
-var App, TEMPLATES, appInstance, router;
+let App, TEMPLATES, appInstance, router;
 
 function setupApp(klass) {
   run(function() {
@@ -130,7 +130,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   run(App, 'destroy');
 
-  var ApplicationSubclass = Application.extend();
+  let ApplicationSubclass = Application.extend();
 
   ApplicationSubclass.initializer({
     name: 'customize-things',
@@ -154,9 +154,7 @@ QUnit.test('initializers can augment an applications customEvents hash', functio
 
   run(App, 'advanceReadiness');
 
-  run(function() {
-    jQuery('#wowza-thingy').trigger('wowza');
-  });
+  run(() => jQuery('#wowza-thingy').trigger('wowza'));
 });
 
 QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
@@ -164,7 +162,7 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
 
   run(App, 'destroy');
 
-  var ApplicationSubclass = Application.extend();
+  let ApplicationSubclass = Application.extend();
 
   ApplicationSubclass.instanceInitializer({
     name: 'customize-things',
@@ -188,7 +186,5 @@ QUnit.test('instanceInitializers can augment an the customEvents hash', function
 
   run(App, 'advanceReadiness');
 
-  run(function() {
-    jQuery('#herky-thingy').trigger('herky');
-  });
+  run(() => jQuery('#herky-thingy').trigger('herky'));
 });

@@ -16,13 +16,13 @@ function tap(proxy, promise) {
     isRejected: false
   });
 
-  return promise.then(function(value) {
+  return promise.then(value => {
     setProperties(proxy, {
       content: value,
       isFulfilled: true
     });
     return value;
-  }, function(reason) {
+  }, reason => {
     setProperties(proxy, {
       reason: reason,
       isRejected: true
@@ -35,9 +35,9 @@ function tap(proxy, promise) {
   A low level mixin making ObjectProxy promise-aware.
 
   ```javascript
-  var ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+  let ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
 
-  var proxy = ObjectPromiseProxy.create({
+  let proxy = ObjectPromiseProxy.create({
     promise: $.getJSON('/some/remote/data.json')
   });
 
@@ -201,7 +201,7 @@ export default Mixin.create({
 
 function promiseAlias(name) {
   return function () {
-    var promise = get(this, 'promise');
+    let promise = get(this, 'promise');
     return promise[name](...arguments);
   };
 }

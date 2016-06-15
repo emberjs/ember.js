@@ -6,7 +6,7 @@ import EmptyObject from './empty_object';
 // the cost of creation dramatically over a plain Object.create. And as this
 // only makes sense for long-lived dictionaries that aren't instantiated often.
 export default function makeDictionary(parent) {
-  var dict;
+  let dict;
   if (parent === null) {
     dict = new EmptyObject();
   } else {

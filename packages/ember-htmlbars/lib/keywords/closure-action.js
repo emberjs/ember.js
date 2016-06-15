@@ -16,7 +16,7 @@ export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
 
 export default function closureAction(morph, env, scope, params, hash, template, inverse, visitor) {
-  let s = new Stream(function() {
+  let s = new Stream(() => {
     let rawAction = params[0];
     let actionArguments = readArray(params.slice(1, params.length));
 
@@ -67,9 +67,7 @@ export default function closureAction(morph, env, scope, params, hash, template,
     }
 
     return createClosureAction(this, target, action, valuePath, actionArguments);
-  }, function() {
-    return labelForSubexpr(params, hash, 'action');
-  });
+  }, () => labelForSubexpr(params, hash, 'action'));
 
   params.forEach(s.addDependency, s);
   Object.keys(hash).forEach(item => s.addDependency(item));
@@ -78,11 +76,11 @@ export default function closureAction(morph, env, scope, params, hash, template,
 }
 
 function createClosureAction(stream, target, action, valuePath, actionArguments) {
-  var closureAction;
+  let closureAction;
 
   if (actionArguments.length > 0) {
     closureAction = function(...passedArguments) {
-      var args = actionArguments;
+      let args = actionArguments;
       if (passedArguments.length > 0) {
         args = actionArguments.concat(passedArguments);
       }

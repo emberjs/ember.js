@@ -45,7 +45,7 @@ export function setSearchDisabled(flag) {
   @extends Ember.Object
   @public
 */
-var Namespace = EmberObject.extend({
+const Namespace = EmberObject.extend({
   isNamespace: true,
 
   init() {
@@ -54,7 +54,7 @@ var Namespace = EmberObject.extend({
   },
 
   toString() {
-    var name = get(this, 'name') || get(this, 'modulePrefix');
+    let name = get(this, 'name') || get(this, 'modulePrefix');
     if (name) { return name; }
 
     findNamespaces();
@@ -66,8 +66,8 @@ var Namespace = EmberObject.extend({
   },
 
   destroy() {
-    var namespaces = Namespace.NAMESPACES;
-    var toString = this.toString();
+    let namespaces = Namespace.NAMESPACES;
+    let toString = this.toString();
 
     if (toString) {
       context.lookup[toString] = undefined;
@@ -94,19 +94,19 @@ Namespace.reopenClass({
   }
 });
 
-var NAMESPACES_BY_ID = Namespace.NAMESPACES_BY_ID;
+let NAMESPACES_BY_ID = Namespace.NAMESPACES_BY_ID;
 
-var hasOwnProp = ({}).hasOwnProperty;
+let hasOwnProp = ({}).hasOwnProperty;
 
 function processNamespace(paths, root, seen) {
-  var idx = paths.length;
+  let idx = paths.length;
 
   NAMESPACES_BY_ID[paths.join('.')] = root;
 
   // Loop over all of the keys in the namespace, looking for classes
-  for (var key in root) {
+  for (let key in root) {
     if (!hasOwnProp.call(root, key)) { continue; }
-    var obj = root[key];
+    let obj = root[key];
 
     // If we are processing the `Ember` namespace, for example, the
     // `paths` will start with `["Ember"]`. Every iteration through
@@ -169,7 +169,7 @@ function findNamespaces() {
 }
 
 function superClassString(mixin) {
-  var superclass = mixin.superclass;
+  let superclass = mixin.superclass;
   if (superclass) {
     if (superclass[NAME_KEY]) {
       return superclass[NAME_KEY];
@@ -183,14 +183,14 @@ function classToString() {
     processAllNamespaces();
   }
 
-  var ret;
+  let ret;
 
   if (this[NAME_KEY]) {
     ret = this[NAME_KEY];
   } else if (this._toString) {
     ret = this._toString;
   } else {
-    var str = superClassString(this);
+    let str = superClassString(this);
     if (str) {
       ret = '(subclass of ' + str + ')';
     } else {
@@ -203,8 +203,8 @@ function classToString() {
 }
 
 function processAllNamespaces() {
-  var unprocessedNamespaces = !Namespace.PROCESSED;
-  var unprocessedMixins = hasUnprocessedMixins();
+  let unprocessedNamespaces = !Namespace.PROCESSED;
+  let unprocessedMixins = hasUnprocessedMixins();
 
   if (unprocessedNamespaces) {
     findNamespaces();
@@ -212,10 +212,10 @@ function processAllNamespaces() {
   }
 
   if (unprocessedNamespaces || unprocessedMixins) {
-    var namespaces = Namespace.NAMESPACES;
-    var namespace;
+    let namespaces = Namespace.NAMESPACES;
+    let namespace;
 
-    for (var i = 0; i < namespaces.length; i++) {
+    for (let i = 0; i < namespaces.length; i++) {
       namespace = namespaces[i];
       processNamespace([namespace.toString()], namespace, {});
     }
@@ -225,7 +225,7 @@ function processAllNamespaces() {
 }
 
 function makeToString(ret) {
-  return function() { return ret; };
+  return () => ret;
 }
 
 Mixin.prototype.toString = classToString; // ES6TODO: altering imported objects. SBB.

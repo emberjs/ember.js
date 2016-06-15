@@ -5,8 +5,8 @@ import { assert } from 'ember-metal/debug';
 @submodule ember-metal
 */
 
-var SPLIT_REGEX = /\{|\}/;
-var END_WITH_EACH_REGEX = /\.@each$/;
+const SPLIT_REGEX = /\{|\}/;
+const END_WITH_EACH_REGEX = /\.@each$/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.
@@ -42,8 +42,8 @@ export default function expandProperties(pattern, callback) {
     pattern.indexOf(' ') === -1
   );
 
-  var parts = pattern.split(SPLIT_REGEX);
-  var properties = [parts];
+  let parts = pattern.split(SPLIT_REGEX);
+  let properties = [parts];
 
   for (let i = 0; i < parts.length; i++) {
     let part = parts[i];
@@ -58,11 +58,11 @@ export default function expandProperties(pattern, callback) {
 }
 
 function duplicateAndReplace(properties, currentParts, index) {
-  var all = [];
+  let all = [];
 
   properties.forEach((property) => {
     currentParts.forEach((part) => {
-      var current = property.slice(0);
+      let current = property.slice(0);
       current[index] = part;
       all.push(current);
     });

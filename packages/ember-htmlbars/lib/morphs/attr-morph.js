@@ -2,7 +2,7 @@ import { warn, debugSeal } from 'ember-metal/debug';
 import DOMHelper from 'dom-helper';
 import isNone from 'ember-metal/is_none';
 
-var HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
+const HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
 
 export var styleWarning = '' +
   'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +

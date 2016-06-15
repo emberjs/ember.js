@@ -11,8 +11,6 @@ import TransformComponentAttrsIntoMut from '../plugins/transform-component-attrs
 import TransformComponentCurlyToReadonly from '../plugins/transform-component-curly-to-readonly';
 import TransformOldClassBindingSyntax from '../plugins/transform-old-class-binding-syntax';
 
-let compileOptions;
-
 export let PLUGINS = [
   ...defaultPlugins,
 
@@ -25,8 +23,7 @@ export let PLUGINS = [
 
 let USER_PLUGINS = [];
 
-function mergePlugins(options) {
-  options = options || {};
+function mergePlugins(options = {}) {
   options = assign({}, options);
   if (!options.plugins) {
     options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
@@ -65,9 +62,8 @@ export function removePlugin(type, PluginClass) {
   @private
   @property compileOptions
 */
-compileOptions = function(_options) {
-  var disableComponentGeneration = true;
-
+export default function compileOptions(_options) {
+  let disableComponentGeneration = true;
   let options;
   // When calling `Ember.Handlebars.compile()` a second argument of `true`
   // had a special meaning (long since lost), this just gaurds against
@@ -91,6 +87,4 @@ compileOptions = function(_options) {
   };
 
   return options;
-};
-
-export default compileOptions;
+}

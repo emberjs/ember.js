@@ -22,12 +22,13 @@ export const IS_STREAM = symbol('IS_STREAM');
   @namespace Ember.stream
   @constructor
 */
-function BasicStream(label) {
+export default function BasicStream(label) {
   this._init(label);
 }
 
-var KeyStream;
-var ProxyMixin;
+// lazy
+let KeyStream;
+let ProxyMixin;
 
 BasicStream.prototype = {
   _init(label) {
@@ -61,7 +62,7 @@ BasicStream.prototype = {
       this.children = new EmptyObject();
     }
 
-    var keyStream = this.children[key];
+    let keyStream = this.children[key];
 
     if (keyStream === undefined) {
       keyStream = this._makeChildStream(key);
@@ -72,14 +73,14 @@ BasicStream.prototype = {
   },
 
   get(path) {
-    var firstKey = getFirstKey(path);
-    var tailPath = getTailPath(path);
+    let firstKey = getFirstKey(path);
+    let tailPath = getTailPath(path);
 
     if (this.children === undefined) {
       this.children = new EmptyObject();
     }
 
-    var keyStream = this.children[firstKey];
+    let keyStream = this.children[firstKey];
 
     if (keyStream === undefined) {
       keyStream = this._makeChildStream(firstKey, path);
@@ -105,7 +106,7 @@ BasicStream.prototype = {
       this.isDirty = true;
     }
 
-    var willRevalidate = false;
+    let willRevalidate = false;
 
     if (!this.isActive && this.subscriberHead) {
       this.activate();
@@ -129,7 +130,7 @@ BasicStream.prototype = {
   },
 
   addMutableDependency(object) {
-    var dependency = new Dependency(this, object);
+    let dependency = new Dependency(this, object);
 
     if (this.isActive) {
       dependency.subscribe();
@@ -138,7 +139,7 @@ BasicStream.prototype = {
     if (this.dependencyHead === null) {
       this.dependencyHead = this.dependencyTail = dependency;
     } else {
-      var tail = this.dependencyTail;
+      let tail = this.dependencyTail;
       tail.next = dependency;
       dependency.prev = tail;
       this.dependencyTail = dependency;
@@ -154,18 +155,18 @@ BasicStream.prototype = {
   },
 
   subscribeDependencies() {
-    var dependency = this.dependencyHead;
+    let dependency = this.dependencyHead;
     while (dependency) {
-      var next = dependency.next;
+      let next = dependency.next;
       dependency.subscribe();
       dependency = next;
     }
   },
 
   unsubscribeDependencies() {
-    var dependency = this.dependencyHead;
+    let dependency = this.dependencyHead;
     while (dependency) {
-      var next = dependency.next;
+      let next = dependency.next;
       dependency.unsubscribe();
       dependency = next;
     }
@@ -230,17 +231,17 @@ BasicStream.prototype = {
   subscribe(callback, context) {
     assert('You tried to subscribe to a stream but the callback provided was not a function.', typeof callback === 'function');
 
-    var subscriber = new Subscriber(callback, context, this);
+    let subscriber = new Subscriber(callback, context, this);
     if (this.subscriberHead === null) {
       this.subscriberHead = this.subscriberTail = subscriber;
     } else {
-      var tail = this.subscriberTail;
+      let tail = this.subscriberTail;
       tail.next = subscriber;
       subscriber.prev = tail;
       this.subscriberTail = subscriber;
     }
 
-    var stream = this;
+    let stream = this;
     return function(prune) {
       subscriber.removeFrom(stream);
       if (prune) { stream.prune(); }
@@ -254,10 +255,10 @@ BasicStream.prototype = {
   },
 
   unsubscribe(callback, context) {
-    var subscriber = this.subscriberHead;
+    let subscriber = this.subscriberHead;
 
     while (subscriber) {
-      var next = subscriber.next;
+      let next = subscriber.next;
       if (subscriber.callback === callback && subscriber.context === context) {
         subscriber.removeFrom(this);
       }
@@ -266,13 +267,13 @@ BasicStream.prototype = {
   },
 
   notifySubscribers(callbackToSkip, contextToSkip) {
-    var subscriber = this.subscriberHead;
+    let subscriber = this.subscriberHead;
 
     while (subscriber) {
-      var next = subscriber.next;
+      let next = subscriber.next;
 
-      var callback = subscriber.callback;
-      var context = subscriber.context;
+      let callback = subscriber.callback;
+      let context = subscriber.context;
 
       subscriber = next;
 
@@ -295,10 +296,10 @@ BasicStream.prototype = {
       this.subscriberHead = this.subscriberTail = null;
       this.maybeDeactivate();
 
-      var dependencies = this.dependencies;
+      let dependencies = this.dependencies;
 
       if (dependencies) {
-        for (var i = 0; i < dependencies.length; i++) {
+        for (let i = 0; i < dependencies.length; i++) {
           dependencies[i](prune);
         }
       }
@@ -323,7 +324,7 @@ BasicStream.extend = function(object) {
   return Child;
 };
 
-var Stream = BasicStream.extend({
+export const Stream = BasicStream.extend({
   init(fn, label) {
     this._compute = fn;
     this.label = label;
@@ -349,6 +350,3 @@ function makeLabel(label) {
     return label;
   }
 }
-
-export default BasicStream;
-export { Stream };

@@ -5,7 +5,7 @@ import Router from 'ember-routing/system/router';
 import jQuery from 'ember-views/system/jquery';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
-var router, App, container;
+let router, App, container;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -13,7 +13,7 @@ function bootApplication() {
 }
 
 function handleURL(path) {
-  return run(function() {
+  return run(() => {
     return router.handleURL(path).then(function(value) {
       ok(true, 'url: `' + path + '` was handled');
       return value;
@@ -26,7 +26,7 @@ function handleURL(path) {
 
 QUnit.module('Router.map', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
@@ -43,7 +43,7 @@ QUnit.module('Router.map', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       App.destroy();
       App = null;
 
@@ -55,7 +55,7 @@ QUnit.module('Router.map', {
 QUnit.test('Router.map returns an Ember Router class', function () {
   expect(1);
 
-  var ret = App.Router.map(function() {
+  let ret = App.Router.map(function() {
     this.route('hello');
   });
 

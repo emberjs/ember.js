@@ -6,7 +6,7 @@ import { observer } from 'ember-metal/mixin';
 
 import { getOwner, OWNER } from 'container/owner';
 
-var view, myViewClass, newView, owner;
+let view, myViewClass, newView, owner;
 
 QUnit.module('EmberView#createChildView', {
   setup() {
@@ -19,7 +19,7 @@ QUnit.module('EmberView#createChildView', {
   },
 
   teardown() {
-    run(function() {
+    run(() => {
       view.destroy();
       if (newView) { newView.destroy(); }
     });
@@ -27,7 +27,7 @@ QUnit.module('EmberView#createChildView', {
 });
 
 QUnit.test('should create view from class with any passed attributes', function() {
-  var attrs = {
+  let attrs = {
     foo: 'baz'
   };
 
@@ -68,7 +68,7 @@ QUnit.test('should set newView.parentView to receiver', function() {
 });
 
 QUnit.test('should create property on parentView to a childView instance if provided a viewName', function() {
-  var attrs = {
+  let attrs = {
     viewName: 'someChildView'
   };
 
@@ -79,11 +79,11 @@ QUnit.test('should create property on parentView to a childView instance if prov
 });
 
 QUnit.test('should update a view instances attributes, including the parentView and container properties', function() {
-  var attrs = {
+  let attrs = {
     foo: 'baz'
   };
 
-  var myView = myViewClass.create();
+  let myView = myViewClass.create();
   newView = view.createChildView(myView, attrs);
 
   equal(getOwner(newView), owner, 'expects to share container with parent');
@@ -94,8 +94,8 @@ QUnit.test('should update a view instances attributes, including the parentView 
 });
 
 QUnit.test('should create from string via container lookup', function() {
-  var ChildViewClass = EmberView.extend();
-  var fullName = 'view:bro';
+  let ChildViewClass = EmberView.extend();
+  let fullName = 'view:bro';
 
   owner._lookupFactory = function(viewName) {
     equal(fullName, viewName);
@@ -112,7 +112,5 @@ QUnit.test('should create from string via container lookup', function() {
 QUnit.test('should assert when trying to create childView from string, but no such view is registered', function() {
   owner._lookupFactory = function() {};
 
-  expectAssertion(function() {
-    view.createChildView('bro');
-  });
+  expectAssertion(() => view.createChildView('bro'));
 });

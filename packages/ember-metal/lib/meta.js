@@ -305,7 +305,7 @@ export var META_DESC = {
   value: null
 };
 
-var EMBER_META_PROPERTY = {
+const EMBER_META_PROPERTY = {
   name: META_FIELD,
   descriptor: META_DESC
 };

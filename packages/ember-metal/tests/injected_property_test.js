@@ -14,7 +14,7 @@ QUnit.test('injected properties should be descriptors', function() {
 });
 
 QUnit.test('injected properties should be overridable', function() {
-  var obj = {};
+  let obj = {};
   defineProperty(obj, 'foo', new InjectedProperty());
 
   set(obj, 'foo', 'bar');
@@ -23,7 +23,7 @@ QUnit.test('injected properties should be overridable', function() {
 });
 
 QUnit.test('getting on an object without an owner or container should fail assertion', function() {
-  var obj = {};
+  let obj = {};
   defineProperty(obj, 'foo', new InjectedProperty('type', 'name'));
 
   expectAssertion(function() {
@@ -32,7 +32,7 @@ QUnit.test('getting on an object without an owner or container should fail asser
 });
 
 QUnit.test('getting on an object without an owner but with a container should not fail', function() {
-  var obj = {
+  let obj = {
     container: {
       lookup(key) {
         ok(true, 'should call container.lookup');
@@ -49,7 +49,7 @@ QUnit.test('getting on an object without an owner but with a container should no
 QUnit.test('getting should return a lookup on the container', function() {
   expect(2);
 
-  var obj = {};
+  let obj = {};
 
   setOwner(obj, {
     lookup(key) {
@@ -64,7 +64,7 @@ QUnit.test('getting should return a lookup on the container', function() {
 });
 
 QUnit.test('omitting the lookup name should default to the property name', function() {
-  var obj = {};
+  let obj = {};
 
   setOwner(obj, {
     lookup(key) {

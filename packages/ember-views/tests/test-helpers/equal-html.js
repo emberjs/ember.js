@@ -1,10 +1,10 @@
 export function equalHTML(element, expectedHTML, message) {
-  var html;
+  let html;
   if (typeof element === 'string') {
     html = document.getElementById(element).innerHTML;
   } else {
     if (element instanceof window.NodeList) {
-      var fragment = document.createElement('div');
+      let fragment = document.createElement('div');
       while (element[0]) {
         fragment.appendChild(element[0]);
       }
@@ -14,10 +14,8 @@ export function equalHTML(element, expectedHTML, message) {
     }
   }
 
-  var actualHTML = html.replace(/ id="[^"]+"/gmi, '');
-  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, function(tag) {
-    return tag.toLowerCase();
-  });
+  let actualHTML = html.replace(/ id="[^"]+"/gmi, '');
+  actualHTML = actualHTML.replace(/<\/?([A-Z]+)/gi, tag => tag.toLowerCase());
   actualHTML = actualHTML.replace(/\r\n/gm, '');
   actualHTML = actualHTML.replace(/ $/, '');
   equal(actualHTML, expectedHTML, message || 'HTML matches');

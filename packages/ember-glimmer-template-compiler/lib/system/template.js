@@ -32,7 +32,8 @@ class Wrapper {
 }
 
 let templateId = 0;
-const template = function(json) {
+
+export default function template(json) {
   let id = templateId++;
   let Factory = class extends Wrapper {
     constructor(options) {
@@ -42,6 +43,4 @@ const template = function(json) {
   };
   Factory.id = id;
   return Factory;
-};
-
-export default template;
+}

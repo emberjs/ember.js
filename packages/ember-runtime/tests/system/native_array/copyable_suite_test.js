@@ -31,9 +31,9 @@ CopyableTests.extend({
 QUnit.module('NativeArray Copyable');
 
 QUnit.test('deep copy is respected', function() {
-  var array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }]);
+  let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }]);
 
-  var copiedArray = array.copy(true);
+  let copiedArray = array.copy(true);
 
   deepEqual(copiedArray, array, 'copied array is equivalent');
   ok(copiedArray[0] !== array[0], 'objects inside should be unique');

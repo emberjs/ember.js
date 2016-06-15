@@ -3,8 +3,7 @@ import EmberController from 'ember-runtime/controllers/controller';
 import 'ember-extension-support'; // Must be required to export Ember.ContainerDebugAdapter.
 import Application from 'ember-application/system/application';
 
-var adapter, App, appInstance;
-
+let adapter, App, appInstance;
 
 function boot() {
   run(App, 'advanceReadiness');
@@ -12,19 +11,19 @@ function boot() {
 
 QUnit.module('Container Debug Adapter', {
   setup() {
-    run(function() {
+    run(() => {
       App = Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime.
       App.toString = function() { return 'App'; };
       App.deferReadiness();
     });
     boot();
-    run(function() {
+    run(() => {
       appInstance = App.__deprecatedInstance__;
       adapter = appInstance.lookup('container-debug-adapter:main');
     });
   },
   teardown() {
-    run(function() {
+    run(() => {
       adapter.destroy();
       appInstance.destroy();
       App.destroy();
@@ -46,7 +45,7 @@ QUnit.test('the default ContainerDebugAdapter can catalog typical entries by typ
 
 QUnit.test('the default ContainerDebugAdapter catalogs controller entries', function() {
   App.PostController = EmberController.extend();
-  var controllerClasses = adapter.catalogEntriesByType('controller');
+  let controllerClasses = adapter.catalogEntriesByType('controller');
 
   equal(controllerClasses.length, 1, 'found 1 class');
   equal(controllerClasses[0], 'post', 'found the right class');
