@@ -1,4 +1,4 @@
-/* globals __dirname */
+/*jshint node:true*/
 
 var path = require('path');
 var existsSync = require('exists-sync');
@@ -7,10 +7,10 @@ var merge = require('broccoli-merge-trees');
 var typescript = require('broccoli-typescript-compiler');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
-var getVersion = require('git-repo-version');
 var stew = require('broccoli-stew');
 var mv = stew.mv;
 var find = stew.find;
+var rename = stew.rename;
 
 function transpile(tree, label) {
   return transpileES6(tree, label, { sourceMaps: 'inline' });
@@ -56,6 +56,9 @@ module.exports = function() {
   }
   var demos = merge(demoTrees);
 
+  /*
+   * ES6 Build
+   */
   var tokenizerPath = path.join(require.resolve('simple-html-tokenizer'), '..', '..', 'lib');
   // TODO: WAT, why does { } change the output so much....
   var HTMLTokenizer = find(tokenizerPath, { });
@@ -70,12 +73,42 @@ module.exports = function() {
   var libTree = find(jsTree, {
     include: ['*/index.js', '*/lib/**/*.js']
   });
+
   libTree = merge([libTree, HTMLTokenizer, handlebarsInlinedTrees.compiler]);
 
   var es6LibTree = mv(libTree, 'es6');
+
+  /*
+   * ES5 Named AMD Build
+   */
   libTree = transpile(libTree, 'ES5 Lib Tree');
   var es5LibTree = mv(libTree, 'named-amd');
 
+  /*
+   * CommonJS Build
+   */
+  tsOptions.tsconfig.compilerOptions.module = "commonjs";
+
+  var cjsTree = typescript(tsTree, tsOptions);
+
+  // SimpleHTMLTokenizer ships as either ES6 or a single AMD-ish file, so we have to
+  // compile it from ES6 modules to CJS using TypeScript. broccoli-typescript-compiler
+  // only works with `.ts` files, so we rename the `.js` files to `.ts` first.
+  var simpleHTMLTokenizerLib = rename('node_modules/simple-html-tokenizer/lib', '.js', '.ts');
+  var simpleHTMLTokenizerJSTree = typescript(simpleHTMLTokenizerLib, tsOptions);
+
+  cjsTree = merge([cjsTree, simpleHTMLTokenizerJSTree, 'node_modules/handlebars/dist/cjs/']);
+
+  // Glimmer packages require other Glimmer packages using non-relative module names
+  // (e.g., `glimmer-compiler` may import `glimmer-util` instead of `../glimmer-util`),
+  // which doesn't work with Node's module resolution strategy.
+  // As a workaround, naming the CommonJS directory `node_modules` allows us to treat each
+  // package inside as a top-level module.
+  cjsTree = mv(cjsTree, 'node_modules');
+
+  /*
+   * Anonymous AMD Build
+   */
   var glimmerCommon = find(libTree, {
     include: [
       'glimmer/**/*.js',
@@ -195,6 +228,7 @@ module.exports = function() {
     glimmerRuntime,
     glimmerTests,
     glimmerDemos,
+    cjsTree,
     es5LibTree,
     es6LibTree
   ];
@@ -210,4 +244,4 @@ module.exports = function() {
   }
 
   return merge(finalTrees);
-}
+};
