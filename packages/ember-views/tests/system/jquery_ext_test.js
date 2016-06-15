@@ -6,23 +6,14 @@ import View from 'ember-views/views/view';
 var view, dispatcher;
 
 // Adapted from https://github.com/jquery/jquery/blob/f30f7732e7775b6e417c4c22ced7adb2bf76bf89/test/data/testinit.js
-var canDataTransfer, fireNativeWithDataTransfer;
 
-if (document.createEvent) {
-  canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
-  fireNativeWithDataTransfer = function(node, type, dataTransfer) {
-    var event = document.createEvent('HTMLEvents');
-    event.initEvent(type, true, true);
-    event.dataTransfer = dataTransfer;
-    node.dispatchEvent(event);
-  };
-} else {
-  canDataTransfer = !!document.createEventObject().dataTransfer;
-  fireNativeWithDataTransfer = function(node, type, dataTransfer) {
-    var event = document.createEventObject();
-    event.dataTransfer = dataTransfer;
-    node.fireEvent('on' + type, event);
-  };
+var canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
+
+function fireNativeWithDataTransfer(node, type, dataTransfer) {
+  var event = document.createEvent('HTMLEvents');
+  event.initEvent(type, true, true);
+  event.dataTransfer = dataTransfer;
+  node.dispatchEvent(event);
 }
 
 QUnit.module('EventDispatcher - jQuery integration', {
