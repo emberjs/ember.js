@@ -85,7 +85,11 @@ class PropertyReference extends CachedReference { // jshint ignore:line
 
     let parentValue = _parentReference.value();
 
-    _parentObjectTag.update(tagFor(parentValue));
+    if (isProxy(parentValue)) {
+      _parentObjectTag.update(VOLATILE_TAG);
+    } else {
+      _parentObjectTag.update(tagFor(parentValue));
+    }
 
     if (parentValue && typeof parentValue === 'object') {
       if (isEnabled('mandatory-setter')) {

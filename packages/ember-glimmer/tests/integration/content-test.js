@@ -4,6 +4,7 @@ import { applyMixins } from '../utils/abstract-test-case';
 import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import EmberObject from 'ember-runtime/system/object';
+import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { classes } from '../utils/test-helpers';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { styleWarning } from 'ember-htmlbars/morphs/attr-morph';
@@ -213,6 +214,39 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() => set(this.context, 'm', Formatter.create({ messenger: { message: 'hello' } })));
 
     this.assertContent('HELLO');
+    this.assertInvariants();
+  }
+
+  // HTMLBars fail the DOM node stability test in the last step
+  ['@glimmer it can read from a proxy object']() {
+    this.renderPath('proxy.name', { proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }) });
+
+    this.assertContent('Tom Dale');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
+
+    this.assertContent('Yehuda Katz');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
+
+    this.assertContent('Godfrey Chan');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
+
+    this.assertContent('Stefan Penner');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'proxy.content', null));
+
+    this.assertIsEmpty();
+
+    this.runTask(() => set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } })));
+
+    this.assertContent('Tom Dale');
     this.assertInvariants();
   }
 
