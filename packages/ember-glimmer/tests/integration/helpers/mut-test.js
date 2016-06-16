@@ -118,26 +118,6 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     }, 'You can only pass a path to mut');
   }
 
-  ['@glimmer passing a literal indirectly results in an assertion']() {
-    this.registerComponent('bottom-mut', { template: '{{setMe}}' });
-
-    this.registerComponent('middle-mut', { template: '{{bottom-mut setMe=(mut value)}}' });
-
-    expectAssertion(() => {
-      this.render('{{middle-mut value="foo bar"}}');
-    }, 'You can only pass a path to mut');
-  }
-
-  ['@glimmer passing the result of a helper invocation indirectly results in an assertion']() {
-    this.registerComponent('bottom-mut', { template: '{{setMe}}' });
-
-    this.registerComponent('middle-mut', { template: '{{bottom-mut setMe=(mut value)}}' });
-
-    expectAssertion(() => {
-      this.render('{{middle-mut value=(concat "foo" " " "bar")}}');
-    }, 'You can only pass a path to mut');
-  }
-
   // See https://github.com/emberjs/ember.js/commit/807a0cd for an explanation of this test
   ['@test using a string value through middle tier does not trigger assertion (due to the auto-mut transform)']() {
     let bottom;

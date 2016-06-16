@@ -46,6 +46,12 @@ let members = {
   tag: ownCustomObject
 };
 
+if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+  members.lastRendered = ownMap;
+  members.lastRenderedFrom = ownMap; // FIXME: not used in production, remove me from prod builds
+}
+
 let memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
 
@@ -73,6 +79,12 @@ function Meta(obj, parentMeta) {
   // have detailed knowledge of how each property should really be
   // inherited, and we can optimize it much better than JS runtimes.
   this.parent = parentMeta;
+
+  if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+      isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    this._lastRendered = undefined;
+    this._lastRenderedFrom = undefined; // FIXME: not used in production, remove me from prod builds
+  }
 
   this._initializeListeners();
 }

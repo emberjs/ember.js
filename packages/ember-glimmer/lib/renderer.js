@@ -4,6 +4,20 @@ import { setHasViews } from 'ember-metal/tags';
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
 import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
 import { assert } from 'ember-metal/debug';
+import _runInTransaction from 'ember-metal/transaction';
+import isEnabled from 'ember-metal/features';
+
+let runInTransaction;
+
+if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
+    isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+  runInTransaction = _runInTransaction;
+} else {
+  runInTransaction = callback => {
+    callback();
+    return false;
+  };
+}
 
 const { backburner } = run;
 
@@ -146,9 +160,22 @@ class Renderer {
       isTopLevel: true
     });
 
-    env.begin();
-    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
-    env.commit();
+    let result, shouldReflush, afterRender, didChangeAfterRender;
+
+    let callback = () => {
+      result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
+    };
+
+    let rerender = () => result.rerender({ alwaysRevalidate: shouldReflush });
+
+    do {
+      env.begin();
+      shouldReflush = runInTransaction(callback);
+      afterRender = CURRENT_TAG.value();
+      env.commit();
+      didChangeAfterRender = !CURRENT_TAG.validate(afterRender);
+      callback = rerender;
+    } while (shouldReflush || didChangeAfterRender);
 
     this._scheduler.registerView(view);
 
@@ -171,9 +198,22 @@ class Renderer {
       isTopLevel: true
     });
 
-    env.begin();
-    let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
-    env.commit();
+    let result, shouldReflush, afterRender, didChangeAfterRender;
+
+    let callback = () => {
+      result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
+    };
+
+    let rerender = () => result.rerender({ alwaysRevalidate: shouldReflush });
+
+    do {
+      env.begin();
+      shouldReflush = runInTransaction(callback);
+      afterRender = CURRENT_TAG.value();
+      env.commit();
+      didChangeAfterRender = !CURRENT_TAG.validate(afterRender);
+      callback = rerender;
+    } while (shouldReflush || didChangeAfterRender);
 
     this._scheduler.registerView(view);
 
@@ -185,11 +225,21 @@ class Renderer {
   }
 
   rerender(view) {
-    let env = this._env;
+    let { _env: env } = this;
 
-    env.begin();
-    (view['_renderResult'] || this._root['_renderResult']).rerender();
-    env.commit();
+    let renderResult = view['_renderResult'] || this._root['_renderResult'];
+    let shouldReflush = false;
+    let afterRender, didChangeAfterRender;
+
+    let callback = () => renderResult.rerender({ alwaysRevalidate: shouldReflush });
+
+    do {
+      env.begin();
+      shouldReflush = runInTransaction(callback);
+      afterRender = CURRENT_TAG.value();
+      env.commit();
+      didChangeAfterRender = !CURRENT_TAG.validate(afterRender);
+    } while (shouldReflush || didChangeAfterRender);
   }
 
   remove(view) {
