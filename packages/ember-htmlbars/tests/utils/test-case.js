@@ -1,7 +1,7 @@
 export { TestCase, moduleFor } from './abstract-test-case';
 import {
-  ApplicationTest as AbstractApplicationTest,
-  RenderingTest as AbstractRenderingTest
+  AbstractApplicationTest,
+  AbstractRenderingTest
 } from './abstract-test-case';
 import ComponentLookup from 'ember-views/component_lookup';
 
@@ -13,6 +13,7 @@ export class RenderingTest extends AbstractRenderingTest {
     super();
 
     let { owner } = this;
+    this.env = owner.lookup('service:-htmlbars-environment');
 
     owner.register('component-lookup:main', ComponentLookup);
     owner.registerOptionsForType('helper', { instantiate: false });
