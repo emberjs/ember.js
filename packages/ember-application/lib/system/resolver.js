@@ -199,10 +199,9 @@ export default EmberObject.extend({
     a Javascript object with the parsed aspects of the name
     broken out.
 
-    @protected
     @param {String} fullName the lookup string
     @method parseName
-    @public
+    @protected
   */
 
   parseName(fullName) {
@@ -259,10 +258,9 @@ export default EmberObject.extend({
     precise name of the class that Ember is looking for, rather than
     container keys.
 
-    @protected
     @param {String} fullName the lookup string
     @method lookupDescription
-    @public
+    @protected
   */
   lookupDescription(fullName) {
     let parsedName = this.parseName(fullName);
@@ -289,11 +287,10 @@ export default EmberObject.extend({
     Given a parseName object (output from `parseName`), apply
     the conventions expected by `Ember.Router`
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method useRouterNaming
-    @public
+    @protected
   */
   useRouterNaming(parsedName) {
     parsedName.name = parsedName.name.replace(/\./g, '_');
@@ -304,11 +301,10 @@ export default EmberObject.extend({
   /**
     Look up the template in Ember.TEMPLATES
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveTemplate
-    @public
+    @protected
   */
   resolveTemplate(parsedName) {
     let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
@@ -319,11 +315,10 @@ export default EmberObject.extend({
   /**
     Lookup the view using `resolveOther`
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveView
-    @public
+    @protected
   */
   resolveView(parsedName) {
     this.useRouterNaming(parsedName);
@@ -333,11 +328,10 @@ export default EmberObject.extend({
   /**
     Lookup the controller using `resolveOther`
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveController
-    @public
+    @protected
   */
   resolveController(parsedName) {
     this.useRouterNaming(parsedName);
@@ -346,11 +340,10 @@ export default EmberObject.extend({
   /**
     Lookup the route using `resolveOther`
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveRoute
-    @public
+    @protected
   */
   resolveRoute(parsedName) {
     this.useRouterNaming(parsedName);
@@ -360,11 +353,10 @@ export default EmberObject.extend({
   /**
     Lookup the model on the Application namespace
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveModel
-    @public
+    @protected
   */
   resolveModel(parsedName) {
     let className = classify(parsedName.name);
@@ -376,11 +368,10 @@ export default EmberObject.extend({
     Look up the specified object (from parsedName) on the appropriate
     namespace (usually on the Application)
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveHelper
-    @public
+    @protected
   */
   resolveHelper(parsedName) {
     return this.resolveOther(parsedName);
@@ -389,11 +380,10 @@ export default EmberObject.extend({
     Look up the specified object (from parsedName) on the appropriate
     namespace (usually on the Application)
 
-    @protected
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
     @method resolveOther
-    @public
+    @protected
   */
   resolveOther(parsedName) {
     let className = classify(parsedName.name) + classify(parsedName.type);
