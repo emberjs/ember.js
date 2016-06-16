@@ -386,13 +386,12 @@ Engine.reopenClass({
     * the application view receives the application template as its
       `defaultTemplate` property
 
-    @private
     @method buildRegistry
     @static
     @param {Ember.Application} namespace the application for which to
       build the registry
     @return {Ember.Registry} the built registry
-    @public
+    @private
   */
   buildRegistry(namespace, options = {}) {
     var registry = new Registry({

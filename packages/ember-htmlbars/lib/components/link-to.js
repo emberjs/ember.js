@@ -613,7 +613,6 @@ let LinkComponent = EmberComponent.extend({
   /**
     Event handler that invokes the link, activating the associated route.
 
-    @private
     @method _invoke
     @param {Event} event
     @private
