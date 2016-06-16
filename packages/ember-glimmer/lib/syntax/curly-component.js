@@ -89,7 +89,7 @@ class CurlyComponentManager {
       bucket.classRef = args.named.get('class');
     }
 
-    assert('classNameBindings must not have spaces in them', () => {
+    assert('classNameBindings must not have spaces in them: ' + component.toString(), () => {
       let { classNameBindings } = component;
       for (let i = 0; i < classNameBindings.length; i++) {
         let binding = classNameBindings[i];
