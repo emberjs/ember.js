@@ -1,0 +1,3 @@
+module.exports = {
+  publish: true
+};
