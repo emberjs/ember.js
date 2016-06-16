@@ -2106,7 +2106,7 @@ QUnit.test('Application template does not duplicate when re-rendered', function(
   // should cause application template to re-render
   handleURL('/posts');
 
-  equal(jQuery('h3:contains(I Render Once)').size(), 1);
+  equal(jQuery('h3:contains(I Render Once)').length, 1);
 });
 
 QUnit.test('Child routes should render inside the application template if the application template causes a redirect', function() {

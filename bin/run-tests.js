@@ -126,6 +126,9 @@ function generateOldJQueryTests() {
   testFunctions.push(function() {
     return run('jquery=1.10.2&nojshint=true');
   });
+  testFunctions.push(function() {
+    return run('jquery=2.2.4&nojshint=true');
+  });
 }
 
 function generateExtendPrototypeTests() {

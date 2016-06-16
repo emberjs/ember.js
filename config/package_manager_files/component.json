@@ -9,6 +9,6 @@
     "ember.debug.js"
   ],
   "dependencies": {
-    "components/jquery": ">= 1.7.0 < 3.0.0"
+    "components/jquery": ">= 1.7.0 < 4.0.0"
   }
 }
