@@ -78,11 +78,13 @@ import {
   trySet
 } from 'ember-metal/property_set';
 
+import WeakMap from 'ember-metal/weak_map';
 import {
   Map,
   MapWithDefault,
   OrderedSet
 } from 'ember-metal/map';
+
 import getProperties from 'ember-metal/get_properties';
 import setProperties from 'ember-metal/set_properties';
 import {
@@ -226,6 +228,9 @@ Ember.defineProperty = defineProperty;
 Ember.set    = set;
 Ember.trySet = trySet;
 
+if (isEnabled('ember-metal-weakmap')) {
+  Ember.WeakMap = WeakMap;
+}
 Ember.OrderedSet = OrderedSet;
 Ember.Map = Map;
 Ember.MapWithDefault = MapWithDefault;

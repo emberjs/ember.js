@@ -10,6 +10,7 @@
     "ember-improved-instrumentation": null,
     "ember-runtime-enumerable-includes": null,
     "ember-string-ishtmlsafe": null,
-    "ember-testing-check-waiters": null
+    "ember-testing-check-waiters": null,
+    "ember-metal-weakmap": null
   }
 }
