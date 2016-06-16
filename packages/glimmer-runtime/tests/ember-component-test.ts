@@ -1375,33 +1375,34 @@ QUnit.skip('dynamic arbitrary number of positional parameters', function() {
   // assertElementIsEmberishElement(second, 'div', { id: 'helper' }, 'Bar6');
 });
 
-// QUnit.skip('{{component}} helper works with positional params', function() {
-//   let SampleComponent = Component.extend();
-//   SampleComponent.reopenClass({
-//     positionalParams: ['name', 'age']
-//   });
+QUnit.test('{{component}} helper works with positional params', function() {
+  let SampleComponent = EmberishCurlyComponent.extend();
 
-//   registry.register('template:components/sample-component', compile('{{attrs.name}}{{attrs.age}}'));
-//   registry.register('component:sample-component', SampleComponent);
+  SampleComponent.reopenClass({
+    positionalParams: ['name', 'age']
+  });
 
-//   view = EmberView.extend({
-//     layout: compile('{{component "sample-component" myName myAge}}'),
-//     container: container,
-//     context: {
-//       myName: 'Quint',
-//       myAge: 4
-//     }
-//   }).create();
+  env.registerEmberishCurlyComponent('sample-component', SampleComponent as any, `{{attrs.name}}{{attrs.age}}`);
 
-//   runAppend(view);
-//   equal(jQuery('#qunit-fixture').text(), 'Quint4');
-//   run(function() {
-//     set(view.context, 'myName', 'Edward');
-//     set(view.context, 'myAge', '5');
-//   });
+  appendViewFor(`{{component "sample-component" myName myAge}}`, {
+    myName: 'Quint',
+    myAge: 4
+  });
 
-//   equal(jQuery('#qunit-fixture').text(), 'Edward5');
-// });
+  assertEmberishElement('div', 'Quint4');
+
+  set(view, 'myName', 'Edward');
+  set(view, 'myAge', '5');
+  rerender();
+
+  assertEmberishElement('div', 'Edward5');
+
+  set(view, 'myName', 'Quint');
+  set(view, 'myAge', '4');
+  rerender();
+
+  assertEmberishElement('div', 'Quint4');
+});
 
 module("Emberish Components - parentView");
 

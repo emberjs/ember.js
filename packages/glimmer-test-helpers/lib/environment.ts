@@ -37,6 +37,8 @@ import {
 
   // Values
   EvaluatedArgs,
+  EvaluatedNamedArgs,
+  EvaluatedPositionalArgs,
 
   // Syntax Classes
   StatementSyntax,
@@ -83,7 +85,8 @@ import {
   OpaqueIterable,
   AbstractIterable,
   IterationItem,
-  isConst
+  isConst,
+  combine
 } from "glimmer-reference";
 
 import {
@@ -232,6 +235,7 @@ export class EmberishCurlyComponent extends GlimmerObject {
   public attrs: Attrs;
   public element: Element;
   public parentView: Component = null;
+  public args: ProcessedArgs;
 
   static create(args: { attrs: Attrs }): EmberishCurlyComponent {
     return super.create(args) as EmberishCurlyComponent;
@@ -372,6 +376,44 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
   }
 }
 
+class ProcessedArgs {
+  tag: RevisionTag;
+  named: EvaluatedNamedArgs;
+  positional: EvaluatedPositionalArgs;
+  positionalParamNames: Array<string>
+
+  constructor(args: EvaluatedArgs, positionalParamsDefinition: string[]) {
+    this.tag = args.tag;
+    this.named = args.named;
+    this.positional = args.positional;
+    this.positionalParamNames = positionalParamsDefinition;
+  }
+
+  value() {
+    let { named, positional, positionalParamNames } = this;
+
+    let result = this.named.value();
+
+    if (positionalParamNames && positionalParamNames.length) {
+      for (let i = 0; i < positionalParamNames.length; i++) {
+        let name = positionalParamNames[i];
+        let reference = positional.at(i);
+
+        result[name] = reference.value();
+      }
+    }
+
+    return {
+      attrs: result,
+      props: result
+    };
+  }
+}
+
+function processArgs(args: EvaluatedArgs, positionalParamsDefinition: string[]) : ProcessedArgs {
+  return new ProcessedArgs(args, positionalParamsDefinition);
+}
+
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
 
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
@@ -379,8 +421,9 @@ const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof Emb
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
   create(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
-    let attrs = args.named.value();
-    let merged = assign({}, attrs, { attrs });
+    let processedArgs = processArgs(args, klass['positionalParams']);
+    let { attrs, props } = processedArgs.value();
+    let merged = assign({}, attrs, { attrs }, { args: processedArgs });
     let component = klass.create(merged);
 
     component.didInitAttrs({ attrs });
@@ -427,7 +470,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
 
   update(component: EmberishCurlyComponent, args: EvaluatedArgs) {
     let oldAttrs = component.attrs;
-    let newAttrs = args.named.value();
+    let newAttrs = component.args.value().attrs;
     let merged = assign({}, newAttrs, { attrs: newAttrs });
 
     component.setProperties(merged);
@@ -799,10 +842,10 @@ class DynamicComponentReference implements PathReference<ComponentDefinition<Opa
   private env: Environment;
   public tag: RevisionTag;
 
-  constructor({ nameRef, env }: { nameRef: PathReference<Opaque>, env: Environment }) {
+  constructor({ nameRef, env, args }: { nameRef: PathReference<Opaque>, env: Environment, args: EvaluatedArgs }) {
     this.nameRef = nameRef;
     this.env = env;
-    this.tag = nameRef.tag;
+    this.tag = args.tag;
   }
 
   value(): ComponentDefinition<Opaque> {
@@ -826,7 +869,7 @@ function dynamicComponentFor(vm: VM) {
   let args = vm.getArgs();
   let nameRef = args.positional.at(0);
   let env = vm.env;
-  return new DynamicComponentReference({ nameRef, env });
+  return new DynamicComponentReference({ nameRef, env, args });
 };
 
 class DynamicComponentSyntax extends StatementSyntax implements DynamicComponentOptions {
@@ -887,6 +930,7 @@ class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent
 }
 
 interface EmberishCurlyComponentFactory {
+  positionalParams?: string[];
   create(options: { attrs: Attrs }): EmberishCurlyComponent;
 }
 
