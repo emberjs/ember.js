@@ -1,15 +1,17 @@
 import defaultPlugins from 'ember-template-compiler/plugins';
-import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
 import TransformActionSyntax from '../plugins/transform-action-syntax';
+import TransformAttrsIntoProps from '../plugins/transform-attrs-into-props';
 import TransformEachInIntoEach from '../plugins/transform-each-in-into-each';
+import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
 import assign from 'ember-metal/assign';
 
 export const PLUGINS = [
   ...defaultPlugins,
   // the following are ember-glimmer specific
-  TransformHasBlockSyntax,
   TransformActionSyntax,
-  TransformEachInIntoEach
+  TransformAttrsIntoProps,
+  TransformEachInIntoEach,
+  TransformHasBlockSyntax
 ];
 
 let USER_PLUGINS = [];

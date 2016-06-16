@@ -340,7 +340,40 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     this.assertText('12');
   }
 
-  ['@htmlbars automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them']() {
+  ['@test automatic mutable bindings exposes a mut cell in attrs']() {
+    let inner;
+
+    this.registerComponent('x-inner', {
+      ComponentClass: Component.extend({
+        didInsertElement() {
+          inner = this;
+        }
+      }),
+      template: '{{foo}}'
+    });
+
+    this.registerComponent('x-outer', {
+      template: '{{x-inner foo=bar}}'
+    });
+
+    this.render('{{x-outer bar=baz}}', { baz: 'foo' });
+
+    this.assertText('foo');
+
+    this.assertStableRerender();
+
+    this.runTask(() => inner.attrs.foo.update('bar'));
+
+    this.assert.equal(inner.attrs.foo.value, 'bar');
+    this.assert.equal(get(inner, 'foo'), 'bar');
+    this.assertText('bar');
+
+    this.runTask(() => inner.attrs.foo.update('foo'));
+
+    this.assertText('foo');
+  }
+
+  ['@test automatic mutable bindings tolerate undefined non-stream inputs and attempts to set them']() {
     let inner;
 
     this.registerComponent('x-inner', {
@@ -373,6 +406,8 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     this.assertText('');
   }
 
+  // TODO: This is not really consistent with how the rest of the system works. Investigate if we need to
+  // support this, if not then this test can be deleted.
   ['@htmlbars automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
     let inner;
 

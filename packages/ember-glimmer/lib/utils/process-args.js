@@ -3,7 +3,6 @@ import symbol from 'ember-metal/symbol';
 import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
-import { isMut } from '../helpers/mut';
 import { UPDATE } from './references';
 
 export default function processArgs(args, positionalParamsDefinition) {
@@ -53,7 +52,7 @@ class SimpleArgs {
       let ref = namedArgs.get(name);
       let value = attrs[name];
 
-      if (isMut(ref)) {
+      if (ref[UPDATE]) {
         attrs[name] = new MutableCell(ref, value);
       }
 
