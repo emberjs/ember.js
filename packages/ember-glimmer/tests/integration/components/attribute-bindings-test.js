@@ -442,7 +442,6 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
   ['@test asserts if an attributeBinding is setup on class']() {
     let FooBarComponent = Component.extend({
-      tagName: 'div',
       attributeBindings: ['class']
     });
 

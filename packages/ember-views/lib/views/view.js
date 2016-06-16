@@ -521,6 +521,8 @@ var View = CoreView.extend(
   CompatAttrsProxy,
   AriaRoleSupport,
   ViewMixin, {
+    attributeBindings: ['ariaRole:role'],
+
     init() {
       this._super(...arguments);
 

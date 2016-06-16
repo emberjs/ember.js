@@ -508,12 +508,12 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
 
   ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
     this.registerComponent('foo-bar', {
-      template: '[{{internalName}} - {{attrs.name}}]',
+      template: '[{{internalName}} - {{name}}]',
       ComponentClass: Component.extend({
         willRender() {
           // store internally available name to ensure that the name available in `this.attrs.name`
           // matches the template lookup name
-          set(this, 'internalName', this.attrs.name);
+          set(this, 'internalName', this.get('name'));
         }
       })
     });

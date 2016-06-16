@@ -6,8 +6,8 @@ import {
   template
 } from 'ember-glimmer-template-compiler';
 
-
 export { default as Helper, helper } from 'ember-glimmer/helper';
+export { INVOKE } from 'ember-glimmer/helpers/action';
 export { default as Component } from 'ember-glimmer/component';
 export { default as Checkbox } from 'ember-glimmer/components/checkbox';
 export { default as TextArea } from 'ember-glimmer/components/text_area';
