@@ -68,6 +68,99 @@ export function objectAt(content, idx) {
   return content[idx];
 }
 
+export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
+  let removing, lim;
+
+  // if no args are passed assume everything changes
+  if (startIdx === undefined) {
+    startIdx = 0;
+    removeAmt = addAmt = -1;
+  } else {
+    if (removeAmt === undefined) {
+      removeAmt = -1;
+    }
+
+    if (addAmt === undefined) {
+      addAmt = -1;
+    }
+  }
+
+  if (array.__each) {
+    array.__each.arrayWillChange(array, startIdx, removeAmt, addAmt);
+  }
+
+  sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
+
+  if (startIdx >= 0 && removeAmt >= 0 && get(array, 'hasEnumerableObservers')) {
+    removing = [];
+    lim = startIdx + removeAmt;
+
+    for (let idx = startIdx; idx < lim; idx++) {
+      removing.push(objectAt(array, idx));
+    }
+  } else {
+    removing = removeAmt;
+  }
+
+  array.enumerableContentWillChange(removing, addAmt);
+
+  return array;
+}
+
+export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
+  markObjectAsDirty(metaFor(array));
+
+  // if no args are passed assume everything changes
+  if (startIdx === undefined) {
+    startIdx = 0;
+    removeAmt = addAmt = -1;
+  } else {
+    if (removeAmt === undefined) {
+      removeAmt = -1;
+    }
+
+    if (addAmt === undefined) {
+      addAmt = -1;
+    }
+  }
+
+  let adding;
+  if (startIdx >= 0 && addAmt >= 0 && get(array, 'hasEnumerableObservers')) {
+    adding = [];
+    let lim = startIdx + addAmt;
+
+    for (let idx = startIdx; idx < lim; idx++) {
+      adding.push(objectAt(array, idx));
+    }
+  } else {
+    adding = addAmt;
+  }
+
+  array.enumerableContentDidChange(removeAmt, adding);
+
+  if (array.__each) {
+    array.__each.arrayDidChange(array, startIdx, removeAmt, addAmt);
+  }
+
+  sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
+
+  let length = get(array, 'length');
+  let cachedFirst = cacheFor(array, 'firstObject');
+  let cachedLast = cacheFor(array, 'lastObject');
+
+  if (objectAt(array, 0) !== cachedFirst) {
+    propertyWillChange(array, 'firstObject');
+    propertyDidChange(array, 'firstObject');
+  }
+
+  if (objectAt(array, length - 1) !== cachedLast) {
+    propertyWillChange(array, 'lastObject');
+    propertyDidChange(array, 'lastObject');
+  }
+
+  return array;
+}
+
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
@@ -437,43 +530,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   arrayContentWillChange(startIdx, removeAmt, addAmt) {
-    let removing, lim;
-
-    // if no args are passed assume everything changes
-    if (startIdx === undefined) {
-      startIdx = 0;
-      removeAmt = addAmt = -1;
-    } else {
-      if (removeAmt === undefined) {
-        removeAmt = -1;
-      }
-
-      if (addAmt === undefined) {
-        addAmt = -1;
-      }
-    }
-
-    if (this.__each) {
-      this.__each.arrayWillChange(this, startIdx, removeAmt, addAmt);
-    }
-
-    sendEvent(this, '@array:before', [this, startIdx, removeAmt, addAmt]);
-
-
-    if (startIdx >= 0 && removeAmt >= 0 && get(this, 'hasEnumerableObservers')) {
-      removing = [];
-      lim = startIdx + removeAmt;
-
-      for (let idx = startIdx; idx < lim; idx++) {
-        removing.push(objectAt(this, idx));
-      }
-    } else {
-      removing = removeAmt;
-    }
-
-    this.enumerableContentWillChange(removing, addAmt);
-
-    return this;
+    return arrayContentWillChange(this, startIdx, removeAmt, addAmt);
   },
 
   /**
@@ -492,57 +549,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
-    markObjectAsDirty(metaFor(this));
-
-    // if no args are passed assume everything changes
-    if (startIdx === undefined) {
-      startIdx = 0;
-      removeAmt = addAmt = -1;
-    } else {
-      if (removeAmt === undefined) {
-        removeAmt = -1;
-      }
-
-      if (addAmt === undefined) {
-        addAmt = -1;
-      }
-    }
-
-    let adding;
-    if (startIdx >= 0 && addAmt >= 0 && get(this, 'hasEnumerableObservers')) {
-      adding = [];
-      let lim = startIdx + addAmt;
-
-      for (let idx = startIdx; idx < lim; idx++) {
-        adding.push(objectAt(this, idx));
-      }
-    } else {
-      adding = addAmt;
-    }
-
-    this.enumerableContentDidChange(removeAmt, adding);
-
-    if (this.__each) {
-      this.__each.arrayDidChange(this, startIdx, removeAmt, addAmt);
-    }
-
-    sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
-
-    let length = get(this, 'length');
-    let cachedFirst = cacheFor(this, 'firstObject');
-    let cachedLast = cacheFor(this, 'lastObject');
-
-    if (objectAt(this, 0) !== cachedFirst) {
-      propertyWillChange(this, 'firstObject');
-      propertyDidChange(this, 'firstObject');
-    }
-
-    if (objectAt(this, length - 1) !== cachedLast) {
-      propertyWillChange(this, 'lastObject');
-      propertyDidChange(this, 'lastObject');
-    }
-
-    return this;
+    return arrayContentDidChange(this, startIdx, removeAmt, addAmt);
   },
 
   /**

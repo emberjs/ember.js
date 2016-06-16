@@ -5,6 +5,7 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { TogglingSyntaxConditionalsTest } from '../../utils/shared-conditional-tests';
 import { strip } from '../../utils/abstract-test-case';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
+import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 moduleFor('Syntax test: {{#with}}', class extends TogglingSyntaxConditionalsTest {
 
@@ -198,7 +199,7 @@ moduleFor('Syntax test: {{#with as}}', class extends TogglingSyntaxConditionalsT
     this.runTask(() => {
       let array = get(this.context, 'arrayThing');
       array.replace(0, 1, 'Goodbye');
-      array.removeAt(1);
+      removeAt(array, 1);
       array.insertAt(1, ', ');
       array.pushObject('!');
     });

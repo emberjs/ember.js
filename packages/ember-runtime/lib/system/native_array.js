@@ -7,7 +7,10 @@ import { ENV } from 'ember-environment';
 import { _replace as replace } from 'ember-metal/replace';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
-import EmberArray from 'ember-runtime/mixins/array';
+import EmberArray, {
+  arrayContentDidChange,
+  arrayContentWillChange
+} from 'ember-runtime/mixins/array';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import Observable from 'ember-runtime/mixins/observable';
 import Copyable from 'ember-runtime/mixins/copyable';
@@ -58,7 +61,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     // replaced range. Otherwise, pass the full remaining array length
     // since everything has shifted
     let len = objects ? get(objects, 'length') : 0;
-    this.arrayContentWillChange(idx, amt, len);
+    arrayContentWillChange(this, idx, amt, len);
 
     if (len === 0) {
       this.splice(idx, amt);
@@ -66,7 +69,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
       replace(this, idx, amt, objects);
     }
 
-    this.arrayContentDidChange(idx, amt, len);
+    arrayContentDidChange(this, idx, amt, len);
     return this;
   },
 
