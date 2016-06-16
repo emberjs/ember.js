@@ -64,7 +64,6 @@ if (!isEnabled('ember-glimmer')) {
 
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
-  @public
   @method outlet
   @param {String} [name]
   @for Ember.Templates.helpers

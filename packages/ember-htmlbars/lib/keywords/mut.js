@@ -91,7 +91,6 @@ const MutStream = ProxyStream.extend({
   See a [2.0 blog post](http://emberjs.com/blog/2015/05/10/run-up-to-two-oh.html#toc_the-code-mut-code-helper) for
   additional information on using `{{mut}}`.
 
-  @public
   @method mut
   @param {Object} [attr] the "two-way" attribute that can be modified.
   @for Ember.Templates.helpers

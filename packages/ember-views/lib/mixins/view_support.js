@@ -168,8 +168,6 @@ export default Mixin.create({
   },
 
   /**
-    @private
-
     Creates a new DOM element, renders the view into it, then returns the
     element.
 
