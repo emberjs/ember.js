@@ -30,7 +30,7 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
     this.assertText('HIFOOBARBAZ');
   }
 
-  ['@test should have assertion if neither template nor view exists']() {
+  ['@test should have assertion if the template does not exist']() {
     this.owner.register('controller:oops', Controller.extend());
 
     expectAssertion(() => {
