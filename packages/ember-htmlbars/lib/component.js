@@ -199,7 +199,7 @@ const Component = View.extend(TargetActionSupport, {
   }),
 
   /**
-    Calls a action passed to a component.
+    Calls an action passed to a component.
 
     For example a component for playing or pausing music may translate click events
     into action notifications of "play" or "stop" depending on some internal state
