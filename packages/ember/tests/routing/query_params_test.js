@@ -3236,7 +3236,7 @@ QUnit.test('boolean toggle of null controller query parameter yields logical val
     nullProperty: null,
     actions: {
       flag() {
-        this.toggleProperty('nullProperty')
+        this.toggleProperty('nullProperty');
       }
     }
   });
