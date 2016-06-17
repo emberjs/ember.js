@@ -3222,3 +3222,33 @@ QUnit.test('handle routes names that clash with Object.prototype properties', fu
   let controller = container.lookup('controller:constructor');
   equal(get(controller, 'foo'), '999');
 });
+
+QUnit.test('boolean toggle of null controller query parameter yields logical values', function() {
+  expect(3);
+
+  App.register('template:application', compile(
+    '<button id="flag" {{action "flag"}}>Flag</button> ' +
+    '{{outlet}}'
+  ));
+
+  App.ApplicationController = Controller.extend({
+    queryParams: ['nullProperty'],
+    nullProperty: null,
+    actions: {
+      flag() {
+        this.toggleProperty('nullProperty')
+      }
+    }
+  });
+
+  bootApplication();
+
+  let controller = container.lookup('controller:application');
+
+  run(jQuery('#flag'), 'click');
+  equal(controller.get('nullProperty'), true);
+  run(jQuery('#flag'), 'click');
+  equal(controller.get('nullProperty'), false);
+  run(jQuery('#flag'), 'click');
+  equal(controller.get('nullProperty'), true);
+});
