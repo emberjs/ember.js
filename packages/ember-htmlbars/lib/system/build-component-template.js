@@ -1,6 +1,7 @@
 import { assert, deprecate } from 'ember-metal/debug';
 import { get } from 'ember-metal/property_get';
 import { internal, render } from 'htmlbars-runtime';
+import { buildStatement } from 'htmlbars-util/template-utils';
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { isStream } from '../streams/utils';
 
@@ -52,7 +53,7 @@ export function buildHTMLTemplate(tagName, _attrs, content) {
     if (typeof val === 'string') {
       attrs[prop] = val;
     } else {
-      attrs[prop] = ['value', val];
+      attrs[prop] = buildStatement('value', val);
     }
   }
 
@@ -162,17 +163,17 @@ function normalizeComponentAttributes(component, attrs) {
       if (colonIndex !== -1) {
         var attrProperty = attr.substring(0, colonIndex);
         attrName = attr.substring(colonIndex + 1);
-        expression = ['get', `${streamBasePath}${attrProperty}`];
+        expression = buildStatement('get', `${streamBasePath}${attrProperty}`);
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
         // probably want to suspend observers and allow the
         // willUpdateAttrs logic to trigger observers at the correct time.
         attrName = attr;
-        expression = ['value', attrs[attr]];
+        expression = buildStatement('value', attrs[attr]);
       } else {
         attrName = attr;
-        expression = ['get', `${streamBasePath}${attr}`];
+        expression = buildStatement('get', `${streamBasePath}${attr}`);
       }
 
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
@@ -190,11 +191,11 @@ function normalizeComponentAttributes(component, attrs) {
   }
 
   if (get(component, 'isVisible') === false) {
-    var hiddenStyle = ['subexpr', '-html-safe', ['display: none;'], []];
+    let hiddenStyle = buildStatement('subexpr', '-html-safe', ['display: none;'], []);
     var existingStyle = normalized.style;
 
     if (existingStyle) {
-      normalized.style = ['subexpr', 'concat', [existingStyle, ' ', hiddenStyle], [ ]];
+      normalized.style = buildStatement('subexpr', 'concat', [existingStyle, ' ', hiddenStyle], [ ]);
     } else {
       normalized.style = hiddenStyle;
     }
@@ -211,7 +212,7 @@ function normalizeClass(component, attrs, streamBasePath) {
 
   if (attrs.class) {
     if (isStream(attrs.class)) {
-      normalizedClass.push(['subexpr', '-normalize-class', [['value', attrs.class.path], ['value', attrs.class]], []]);
+      normalizedClass.push(buildStatement('subexpr', '-normalize-class', [buildStatement('value', attrs.class.path), buildStatement('value', attrs.class)], []));
     } else {
       normalizedClass.push(attrs.class);
     }
@@ -232,7 +233,7 @@ function normalizeClass(component, attrs, streamBasePath) {
   }
 
   if (normalizeClass.length) {
-    return ['subexpr', '-join-classes', normalizedClass, []];
+    return buildStatement('subexpr', '-join-classes', normalizedClass, []);
   }
 }
 
@@ -253,15 +254,15 @@ function normalizeClasses(classes, output, streamBasePath) {
 
     var prop = `${streamBasePath}${propName}`;
 
-    output.push(['subexpr', '-normalize-class', [
+    output.push(buildStatement('subexpr', '-normalize-class', [
       // params
-      ['value', propName],
-      ['get', prop]
+      buildStatement('value', propName),
+      buildStatement('get', prop)
     ], [
       // hash
       'activeClass', activeClass,
       'inactiveClass', inactiveClass
-    ]]);
+    ]));
   }
 }
 
