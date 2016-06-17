@@ -1,6 +1,5 @@
 import packageName from './package-name';
-import Environment from './environment';
-import { compile, helper, Helper, Component, DOMHelper, InteractiveRenderer } from './helpers';
+import { compile, helper, Helper, Component } from './helpers';
 import { equalsElement, equalTokens, regex, classes, equalInnerHTML } from './test-helpers';
 import run from 'ember-metal/run_loop';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
@@ -8,12 +7,11 @@ import jQuery from 'ember-views/system/jquery';
 import assign from 'ember-metal/assign';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
-import { OWNER } from 'container/owner';
-import buildOwner from 'container/tests/test-helpers/build-owner';
 import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import require from 'require';
+import { buildOwner } from './helpers';
 
 const packageTag = `@${packageName} `;
 const DefaultComponentTemplate = require(`ember-${packageName}/templates/component`).default;
@@ -242,7 +240,7 @@ function isMarker(node) {
   return false;
 }
 
-export class ApplicationTest extends TestCase {
+export class AbstractApplicationTest extends TestCase {
   constructor() {
     super();
 
@@ -315,13 +313,12 @@ export class ApplicationTest extends TestCase {
   }
 }
 
-export class RenderingTest extends TestCase {
+export class AbstractRenderingTest extends TestCase {
   constructor() {
     super();
-    let dom = new DOMHelper(document);
     let owner = this.owner = buildOwner(this.getOwnerOptions());
-    let env = this.env = new Environment({ dom, owner, [OWNER]: owner });
-    this.renderer = InteractiveRenderer.create({ dom, env, [OWNER]: owner });
+
+    this.renderer = this.owner.lookup('renderer:-dom');
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
 
@@ -356,7 +353,7 @@ export class RenderingTest extends TestCase {
   }
 
   render(templateStr, context = {}) {
-    let { renderer, owner } = this;
+    let { owner } = this;
 
     owner.register('template:-top-level', this.compile(templateStr, {
       moduleName: '-top-level'
@@ -364,12 +361,12 @@ export class RenderingTest extends TestCase {
 
     let attrs = assign({}, context, {
       tagName: '',
-      [OWNER]: owner,
-      renderer,
       template: owner.lookup('template:-top-level')
     });
 
-    this.component = Component.create(attrs);
+    owner.register('component:-top-level', Component.extend(attrs));
+
+    this.component = owner.lookup('component:-top-level');
 
     runAppend(this.component);
   }
