@@ -3,7 +3,6 @@ import { set } from 'ember-metal/property_set';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 import {
   BasicConditionalsTest,
@@ -79,7 +78,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.runTask(() => {
       let list = get(this.context, 'list');
       list.pushObject({ text: 'Earth' });
-      removeAt(list, 1);
+      list.removeAt(1);
       list.insertAt(1, { text: 'Globe' });
     });
 
@@ -88,11 +87,11 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.runTask(() => {
       let list = get(this.context, 'list');
       list.pushObject({ text: 'Planet' });
-      removeAt(list, 1);
+      list.removeAt(1);
       list.insertAt(1, { text: ' ' });
       list.pushObject({ text: ' ' });
       list.pushObject({ text: 'Earth' });
-      removeAt(list, 3);
+      list.removeAt(3);
     });
 
     this.assertText('Hello WorldPlanet Earth');
@@ -100,11 +99,11 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.runTask(() => {
       let list = get(this.context, 'list');
       list.pushObject({ text: 'Globe' });
-      removeAt(list, 1);
+      list.removeAt(1);
       list.insertAt(1, { text: ' ' });
       list.pushObject({ text: ' ' });
       list.pushObject({ text: 'World' });
-      removeAt(list, 2);
+      list.removeAt(2);
     });
 
     this.assertText('Hello Planet EarthGlobe World');
@@ -373,7 +372,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.runTask(() => {
       let people = get(this.context, 'people');
       set(people.objectAt(1), 'name', 'Stefan Penner');
-      removeAt(people, 0);
+      people.removeAt(0);
       people.pushObject({ name: 'Tom Dale' });
       people.insertAt(1, { name: 'Chad Hietala' });
       set(this.context, 'title', 'Principal Engineer');

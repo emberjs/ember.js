@@ -7,7 +7,6 @@ import EmberObject from 'ember-runtime/system/object';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import ArrayProxy from 'ember-runtime/system/array_proxy';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
 import { Component } from './helpers';
 
 class AbstractConditionalsTest extends RenderingTest {
@@ -309,7 +308,7 @@ export const ArrayTestCases = {
 
     this.assertText('T1F2');
 
-    this.runTask(() => removeAt(get(this.context, 'cond1'), 0));
+    this.runTask(() => get(this.context, 'cond1').removeAt(0));
 
     this.assertText('F1F2');
 
@@ -374,7 +373,7 @@ export const ArrayTestCases = {
 
     this.assertText('T1F2');
 
-    this.runTask(() => removeAt(get(this.context, 'cond1.content'), 0));
+    this.runTask(() => get(this.context, 'cond1.content').removeAt(0));
 
     this.assertText('F1F2');
 

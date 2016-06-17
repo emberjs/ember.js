@@ -20,8 +20,6 @@ import alias from 'ember-metal/alias';
 import {
   addArrayObserver,
   removeArrayObserver,
-  arrayContentDidChange,
-  arrayContentWillChange,
   objectAt
 } from 'ember-runtime/mixins/array';
 
@@ -34,7 +32,6 @@ const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
 
 function K() { return this; }
-
 
 /**
   An ArrayProxy wraps any other object that implements `Ember.Array` and/or
@@ -374,11 +371,11 @@ export default EmberObject.extend(MutableArray, {
   },
 
   arrangedContentArrayWillChange(item, idx, removedCnt, addedCnt) {
-    arrayContentWillChange(this, idx, removedCnt, addedCnt);
+    this.arrayContentWillChange(idx, removedCnt, addedCnt);
   },
 
   arrangedContentArrayDidChange(item, idx, removedCnt, addedCnt) {
-    arrayContentDidChange(this, idx, removedCnt, addedCnt);
+    this.arrayContentDidChange(idx, removedCnt, addedCnt);
   },
 
   init() {
