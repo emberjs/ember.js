@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import { expect } from 'chai';
 import { describeComponent, it } from 'ember-mocha';<% if (testType === 'integration') { %>
 import hbs from 'htmlbars-inline-precompile';<% } %>
