@@ -15,6 +15,7 @@ import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
 import {
   registerHelper
 } from 'ember-htmlbars/helpers';
+import { compile } from 'ember-template-compiler';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
 let registry, locator, application, originalLookup, originalInfo;
@@ -49,20 +50,18 @@ QUnit.test('the default resolver can look things up in other namespaces', functi
   ok(nav instanceof UserInterface.NavigationController, 'the result should be an instance of the specified class');
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('the default resolver looks up templates in Ember.TEMPLATES', function() {
-  function fooTemplate() {}
-  function fooBarTemplate() {}
-  function fooBarBazTemplate() {}
+QUnit.test('the default resolver looks up templates in Ember.TEMPLATES', function() {
+  let fooTemplate = compile('foo template');
+  let fooBarTemplate = compile('fooBar template');
+  let fooBarBazTemplate = compile('fooBar/baz template');
 
   setTemplate('foo', fooTemplate);
   setTemplate('fooBar', fooBarTemplate);
   setTemplate('fooBar/baz', fooBarBazTemplate);
 
-  equal(locator.lookup('template:foo'), fooTemplate, 'resolves template:foo');
-  equal(locator.lookup('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');
-  equal(locator.lookup('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
+  equal(locator.lookupFactory('template:foo'), fooTemplate, 'resolves template:foo');
+  equal(locator.lookupFactory('template:fooBar'), fooBarTemplate, 'resolves template:foo_bar');
+  equal(locator.lookupFactory('template:fooBar.baz'), fooBarBazTemplate, 'resolves template:foo_bar.baz');
 });
 
 QUnit.test('the default resolver looks up basic name as no prefix', function() {
