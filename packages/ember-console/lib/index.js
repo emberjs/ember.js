@@ -136,11 +136,13 @@ export default {
     ```javascript
     Ember.Logger.assert(true); // undefined
     Ember.Logger.assert(true === false); // Throws an Assertion failed error.
+    Ember.Logger.assert(true === false, 'Something invalid'); // Throws an Assertion failed error with message.
     ```
 
    @method assert
    @for Ember.Logger
    @param {Boolean} bool Value to test
+   @param {String} message Assertion message on failed
    @public
   */
   assert: consoleMethod('assert') || assertPolyfill
