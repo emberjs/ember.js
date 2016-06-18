@@ -905,7 +905,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertComponentElement(this.firstChild, { content: 'true' });
   }
-  ['@htmlbars lookup of component takes priority over property']() {
+  ['@test lookup of component takes priority over property']() {
     this.registerComponent('some-component', {
       template: 'some-component'
     });

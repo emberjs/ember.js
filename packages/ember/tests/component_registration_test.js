@@ -144,18 +144,6 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
   ok(!helpers['borf-snorlax'], 'Component wasn\'t saved to global helpers hash');
 });
 
-test('Component-like invocations are treated as bound paths if neither template nor component are registered on the container', function() {
-  setTemplate('application', compile('<div id=\'wrapper\'>{{user-name}} hello {{api-key}} world</div>'));
-
-  boot(() => {
-    appInstance.register('controller:application', Controller.extend({
-      'user-name': 'machty'
-    }));
-  });
-
-  equal(jQuery('#wrapper').text(), 'machty hello  world', 'The component is composed correctly');
-});
-
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {
   expect(1);
 

@@ -121,7 +121,43 @@ export default class Environment extends GlimmerEnvironment {
     };
   }
 
+   // Hello future traveler, welcome to the world of syntax refinement.
+   // The method below is called by Glimmer's runtime compiler to allow
+   // us to take generic statement syntax and refine it to more meaniful
+   // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
+   // and dandy, however Ember has precedence on statement refinement that you
+   // need to be aware of. The presendence for language constructs is as follows:
+   //
+   // ------------------------
+   // Native & Built-in Syntax
+   // ------------------------
+   //   User-land components
+   // ------------------------
+   //     User-land helpers
+   // ------------------------
+   //
+   // The one caveat here is that Ember also allows for dashed references that are
+   // not a component or helper:
+   //
+   // export default Component.extend({
+   //   'foo-bar': 'LAME'
+   // });
+   //
+   // {{foo-bar}}
+   //
+   // The heuristic for the above situation is a dashed "key" in inline form
+   // that does not resolve to a defintion. In this case refine statement simply
+   // isn't going to return any syntax and the Glimmer engine knows how to handle
+   // this case.
+
   refineStatement(statement) {
+    // 1. resolve any native syntax – if, unless, with, each, and partial
+    let nativeSyntax = super.refineStatement(statement);
+
+    if (nativeSyntax) {
+      return nativeSyntax;
+    }
+
     let {
       isSimple,
       isInline,
@@ -133,37 +169,37 @@ export default class Environment extends GlimmerEnvironment {
       templates
     } = statement;
 
-    if (key !== 'partial' && isSimple && (isInline || isBlock)) {
+    assert(`You attempted to overwrite the built-in helper "${key}" which is not allowed. Please rename the helper.`, !(builtInHelpers[key] && this.owner.hasRegistration(`helper:${key}`)));
+
+    if (isSimple && (isInline || isBlock)) {
+      // 2. built-in syntax
       if (key === 'component') {
         return new DynamicComponentSyntax({ args, templates });
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
-      } else if (key.indexOf('-') >= 0) {
-        let definition = this.getComponentDefinition(path);
-
-        if (definition) {
-          wrapClassBindingAttribute(args);
-          wrapClassAttribute(args);
-          return new CurlyComponentSyntax({ args, definition, templates });
-        } else if (isBlock && !this.hasHelper(key)) {
-          assert(`A helper named '${path[0]}' could not be found`, false);
-        }
-      } else {
-        // Check if it's a keyword
-        let mappedKey = builtInComponents[key];
-        if (mappedKey) {
-          let definition = this.getComponentDefinition([mappedKey]);
-          wrapClassBindingAttribute(args);
-          wrapClassAttribute(args);
-          return new CurlyComponentSyntax({ args, definition, templates });
-        }
       }
+
+      let internalKey = builtInComponents[key];
+      let definition = null;
+
+      if (internalKey) {
+        definition = this.getComponentDefinition([internalKey]);
+      } else if (key.indexOf('-') >= 0) {
+        definition = this.getComponentDefinition(path);
+      }
+
+      if (definition) {
+        wrapClassBindingAttribute(args);
+        wrapClassAttribute(args);
+        return new CurlyComponentSyntax({ args, definition, templates });
+      }
+
+      assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key));
     }
 
-    let nativeSyntax = super.refineStatement(statement);
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !nativeSyntax && key && this.hasHelper(key) ? !isBlock : true);
+    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key));
+
     assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key) ? !isModifier : true);
-    return nativeSyntax;
   }
 
   hasComponentDefinition() {
@@ -179,8 +215,6 @@ export default class Environment extends GlimmerEnvironment {
 
       if (ComponentClass || layout) {
         definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
-      } else if (!this.hasHelper(name)) {
-        assert(`Glimmer error: Could not find component named "${name}" (no component or template with that name was found)`, !!(ComponentClass || layout));
       }
     }
 
