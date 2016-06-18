@@ -758,7 +758,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
 });
 */
 
-test('The Special page returning an error invokes SpecialRoute\'s error handler', function() {
+QUnit.test('The Special page returning an error invokes SpecialRoute\'s error handler', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('special', { path: '/specials/:menu_item_id' });
@@ -840,7 +840,7 @@ let testOverridableErrorHandler = function(handlersName) {
   run(() => resolve(menuItem));
 };
 
-test('ApplicationRoute\'s default error handler can be overridden', function() {
+QUnit.test('ApplicationRoute\'s default error handler can be overridden', function() {
   testOverridableErrorHandler('actions');
 });
 
@@ -1890,7 +1890,7 @@ QUnit.test('Parent route context change', function() {
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
 
-test('Router accounts for rootURL on page load when using history location', function() {
+QUnit.test('Router accounts for rootURL on page load when using history location', function() {
   let rootURL = window.location.pathname + '/app';
   let postsTemplateRendered = false;
   let setHistory, HistoryTestLocation;
@@ -2416,7 +2416,7 @@ test('Route supports clearing outlet explicitly', function() {
   equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, 'The posts/extra template was removed');
 });
 
-test('Route supports clearing outlet using string parameter', function() {
+QUnit.test('Route supports clearing outlet using string parameter', function() {
   setTemplate('application', compile('{{outlet}}{{outlet \'modal\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
@@ -2462,7 +2462,7 @@ test('Route supports clearing outlet using string parameter', function() {
   equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, 'The posts/modal template was removed');
 });
 
-test('Route silently fails when cleaning an outlet from an inactive view', function() {
+QUnit.test('Route silently fails when cleaning an outlet from an inactive view', function() {
   expect(1); // handleURL
 
   setTemplate('application', compile('{{outlet}}'));
@@ -2890,7 +2890,7 @@ QUnit.test('Routes can refresh themselves causing their model hooks to be re-run
   equal(childcount, 2);
 });
 
-test('Specifying non-existent controller name in route#render throws', function() {
+QUnit.test('Specifying non-existent controller name in route#render throws', function() {
   expect(1);
 
   Router.map(function() {
@@ -3273,7 +3273,7 @@ QUnit.test('Can render into a named outlet at the top level', function() {
   equal(jQuery('#qunit-fixture').text(), 'A-The index-B-Hello world-C', 'initial render');
 });
 
-test('Can disconnect a named outlet at the top level', function() {
+QUnit.test('Can disconnect a named outlet at the top level', function() {
   setTemplate('application', compile('A-{{outlet}}-B-{{outlet "other"}}-C'));
   setTemplate('modal', compile('Hello world'));
   setTemplate('index', compile('The index'));
@@ -3396,7 +3396,7 @@ QUnit.test('Can render routes with no \'main\' outlet and their children', funct
   equal(jQuery('#app-sub #sub').length, 1, 'Finds sub while viewing /app/sub');
 });
 
-test('Tolerates stacked renders', function() {
+QUnit.test('Tolerates stacked renders', function() {
   setTemplate('application', compile('{{outlet}}{{outlet "modal"}}'));
   setTemplate('index', compile('hi'));
   setTemplate('layer', compile('layer'));
@@ -3453,7 +3453,7 @@ QUnit.test('Renders child into parent with non-default template name', function(
   equal(jQuery('#qunit-fixture .a .b .c').length, 1);
 });
 
-test('Allows any route to disconnectOutlet another route\'s templates', function() {
+QUnit.test('Allows any route to disconnectOutlet another route\'s templates', function() {
   setTemplate('application', compile('{{outlet}}{{outlet "modal"}}'));
   setTemplate('index', compile('hi'));
   setTemplate('layer', compile('layer'));
