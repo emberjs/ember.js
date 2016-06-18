@@ -8,14 +8,11 @@ import { subscribe, reset } from 'ember-metal/instrumentation';
 import isEnabled from 'ember-metal/features';
 import alias from 'ember-metal/alias';
 import Application from 'ember-application/system/application';
-import Component from 'ember-templates/component';
-import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberObject from 'ember-runtime/system/object';
 import inject from 'ember-runtime/inject';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
-import { OWNER } from 'container/owner';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
@@ -97,41 +94,6 @@ QUnit.module('The {{link-to}} helper', {
   },
 
   teardown: sharedTeardown
-});
-
-// These two tests are designed to simulate the context of an ember-qunit/ember-test-helpers component integration test,
-// so the container is available but it does not boot the entire app
-test('Using {{link-to}} does not cause an exception if it is rendered before the router has started routing', function(assert) {
-  Router.map(function() {
-    this.route('about');
-  });
-
-  appInstance.register('component-lookup:main', ComponentLookup);
-
-  let component = Component.extend({
-    [OWNER]: appInstance,
-    layout: compile('{{#link-to "about"}}Go to About{{/link-to}}')
-  }).create();
-
-  let router = appInstance.lookup('router:main');
-  router.setupRouter();
-
-  run(() => component.appendTo('#qunit-fixture'));
-
-  assert.strictEqual(component.$('a').length, 1, 'the link is rendered');
-});
-
-test('Using {{link-to}} does not cause an exception if it is rendered without a router.js instance', function(assert) {
-  appInstance.register('component-lookup:main', ComponentLookup);
-
-  let component = Component.extend({
-    [OWNER]: appInstance,
-    layout: compile('{{#link-to "nonexistent"}}Does not work.{{/link-to}}')
-  }).create();
-
-  run(() => component.appendTo('#qunit-fixture'));
-
-  assert.strictEqual(component.$('a').length, 1, 'the link is rendered');
 });
 
 QUnit.test('The {{link-to}} helper moves into the named route', function() {
