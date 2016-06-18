@@ -56,9 +56,11 @@ class OutletComponentReference {
 
     definition = revalidate(definition, lastState, newState);
 
+    let hasTemplate = newState && newState.render.template;
+
     if (definition) {
       return definition;
-    } else if (newState) {
+    } else if (hasTemplate) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
       return this.definition = EMPTY_OUTLET_DEFINITION;
