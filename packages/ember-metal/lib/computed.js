@@ -137,7 +137,7 @@ function ComputedProperty(config, opts) {
     this._getter = config;
   } else {
     assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-    assert('Config object pased to a Ember.computed can only contain `get` or `set` keys.', (function() {
+    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', (function() {
       let keys = Object.keys(config);
       for (let i = 0; i < keys.length; i++) {
         if (keys[i] !== 'get' && keys[i] !== 'set') {
