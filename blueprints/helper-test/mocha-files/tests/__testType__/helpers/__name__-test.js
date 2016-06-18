@@ -1,4 +1,3 @@
-/* jshint expr:true */
 import { expect } from 'chai';
 <% if (testType == 'integration') { %>
 import { describeComponent, it } from 'ember-mocha';
