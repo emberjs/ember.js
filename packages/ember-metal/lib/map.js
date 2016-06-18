@@ -240,13 +240,13 @@ OrderedSet.prototype = {
   @constructor
 */
 function Map() {
-  if (this instanceof this.constructor) {
+  if (this instanceof Map) {
     this._keys = OrderedSet.create();
     this._keys._silenceRemoveDeprecation = true;
     this._values = new EmptyObject();
     this.size = 0;
   } else {
-    missingNew('OrderedSet');
+    missingNew('Map');
   }
 }
 

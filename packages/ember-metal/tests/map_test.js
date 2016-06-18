@@ -468,6 +468,13 @@ QUnit.test('Map.prototype.constructor', function() {
   equal(map.constructor, Map);
 });
 
+QUnit.test('Map() without `new`', function() {
+  QUnit.throws(() => {
+    // jshint newcap:false
+    Map();
+  }, /Constructor Map requires 'new'/);
+});
+
 QUnit.test('MapWithDefault.prototype.constructor', function() {
   let map = new MapWithDefault({
     defaultValue(key) { return key; }
@@ -510,6 +517,13 @@ QUnit.module('OrderedSet', {
 
     map = OrderedSet.create();
   }
+});
+
+QUnit.test('OrderedSet() without `new`', function() {
+  QUnit.throws(() => {
+    // jshint newcap:false
+    OrderedSet();
+  }, /Constructor OrderedSet requires 'new'/);
 });
 
 QUnit.test('add returns the set', function() {
