@@ -44,7 +44,6 @@ class SimpleArgs {
     let props = new EmptyObject();
     let args = new EmptyObject();
 
-    props.attrs = attrs;
     props[ARGS] = args;
 
     for (let i = 0, l = keys.length; i < l; i++) {
@@ -59,6 +58,8 @@ class SimpleArgs {
       args[name] = ref;
       props[name] = value;
     }
+
+    props.attrs = attrs;
 
     return { attrs, props };
   }

@@ -9,7 +9,6 @@ import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 import isEnabled from 'ember-metal/features';
 import require from 'require';
 
@@ -327,7 +326,7 @@ QUnit.test('properties of a component without a template should not collide with
   equal(jQuery('#wrapper').text(), 'Some text inserted by jQuery', 'The component is composed correctly');
 });
 
-test('attrs property of a component without a template should not collide with internal structures', function() {
+QUnit.test('attrs property of a component without a template should not collide with internal structures', function() {
   setTemplate('application', compile('<div id=\'wrapper\'>{{my-component attrs=foo}}</div>'));
 
   boot(() => {
