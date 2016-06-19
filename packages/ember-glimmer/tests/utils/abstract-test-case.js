@@ -77,10 +77,8 @@ export function moduleFor(description, TestClass, ...mixins) {
 
   function generateTest(name) {
     if (modulePackagePrefix && packageName !== modulePackagePrefix) {
-      return;
-    }
-
-    if (name.indexOf('@test ') === 0) {
+      QUnit.skip(`SKIPPED IN ${packageName.toUpperCase()} ${name.slice(5)}`, assert => context[name](assert));
+    } else if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
       QUnit.skip(name.slice(5), assert => context[name](assert));
