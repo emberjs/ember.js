@@ -1,15 +1,22 @@
-import { context } from 'ember-environment';
 import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import Component from 'ember-templates/component';
-import { runDestroy } from 'ember-runtime/tests/utils';
+import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import bootstrap from 'ember-templates/bootstrap';
 import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
+import isEnabled from 'ember-metal/features';
+import require from 'require';
+
+let buildOwner;
+if (isEnabled('ember-glimmer')) {
+  buildOwner = require('ember-glimmer/tests/utils/helpers').buildOwner;
+} else {
+  buildOwner = require('ember-htmlbars/tests/utils/helpers').buildOwner;
+}
 
 const { trim } = jQuery;
 
-const originalLookup = context.lookup;
-let lookup, App, component;
+let component;
 
 function checkTemplate(templateName) {
   run(() => bootstrap(jQuery('#qunit-fixture')));
@@ -19,44 +26,41 @@ function checkTemplate(templateName) {
   ok(template, 'template is available on Ember.TEMPLATES');
   equal(jQuery('#qunit-fixture script').length, 0, 'script removed');
 
-  let component = Component.create({
-    layout: template,
+  let owner = buildOwner();
+  owner.register('template:-top-level', template);
+  owner.register('component:-top-level', Component.extend({
+    template: owner.lookup('template:-top-level'),
     firstName: 'Tobias',
     drug: 'teamocil'
-  });
+  }));
 
-  run(() => component.createElement());
-  equal(trim(component.$().text()), 'Tobias takes teamocil', 'template works');
+  component = owner.lookup('component:-top-level');
+  runAppend(component);
+
+  equal(jQuery('#qunit-fixture').text().trim(), 'Tobias takes teamocil', 'template works');
   runDestroy(component);
 }
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
 QUnit.module('ember-htmlbars: bootstrap', {
-  setup() {
-    context.lookup = lookup = {};
-  },
   teardown() {
     setTemplates({});
-    context.lookup = originalLookup;
-    runDestroy(App);
     runDestroy(component);
   }
 });
 
-test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
+QUnit.test('template with data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('funkyTemplate');
 });
 
-test('template with id instead of data-template-name should add a new template to Ember.TEMPLATES', function() {
+QUnit.test('template with id instead of data-template-name should add a new template to Ember.TEMPLATES', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate" >{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('funkyTemplate');
 });
 
-test('template without data-template-name or id should default to application', function() {
+QUnit.test('template without data-template-name or id should default to application', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">{{firstName}} takes {{drug}}</script>');
 
   checkTemplate('application');

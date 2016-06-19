@@ -2,14 +2,14 @@
 
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
 import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberError from 'ember-metal/error';
 import { onLoad } from 'ember-runtime/system/lazy_load';
-import { compile as htmlbarsCompile } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler';
 import { environment } from 'ember-environment';
 import {
   has as hasTemplate,
@@ -18,7 +18,7 @@ import {
 
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 
 /**
@@ -49,13 +49,13 @@ function bootstrap(ctx) {
     // First look for data-template-name attribute, then fall back to its
     // id if no name is found.
     let templateName = script.attr('data-template-name') || script.attr('id') || 'application';
-    let template, compile;
+    let template;
 
     if (script.attr('type') === 'text/x-raw-handlebars') {
-      compile = jQuery.proxy(Handlebars.compile, Handlebars);
+      let compile = jQuery.proxy(Handlebars.compile, Handlebars);
       template = compile(script.html());
     } else {
-      template = htmlbarsCompile(script.html(), {
+      template = compile(script.html(), {
         moduleName: templateName
       });
     }
