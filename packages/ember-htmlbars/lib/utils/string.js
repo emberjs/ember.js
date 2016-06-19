@@ -6,6 +6,7 @@
 import { ENV } from 'ember-environment';
 import EmberStringUtils from 'ember-runtime/system/string';
 import { SafeString, escapeExpression } from 'htmlbars-util';
+import isEnabled from 'ember-metal/features';
 
 /**
   Mark a string as safe for unescaped output with Ember templates. If you
@@ -38,8 +39,34 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 }
 
+/**
+  Detects if a string was decorated using `Ember.String.htmlSafe`.
+
+  ```javascript
+  var plainString = 'plain string',
+      safeString = Ember.String.htmlSafe('<div>someValue</div>');
+
+  Ember.String.isHtmlSafe(plainString); // false
+  Ember.String.isHtmlSafe(safeString);  // true
+  ```
+
+  @method isHtmlSafe
+  @for Ember.String
+  @static
+  @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
+  @public
+*/
+function isHtmlSafe(str) {
+  return str && typeof str.toHTML === 'function';
+}
+
+if (isEnabled('ember-string-ishtmlsafe')) {
+  EmberStringUtils.isHtmlSafe = isHtmlSafe;
+}
+
 export {
   SafeString,
   htmlSafe,
+  isHtmlSafe,
   escapeExpression
 };
