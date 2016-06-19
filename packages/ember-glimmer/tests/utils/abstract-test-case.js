@@ -8,13 +8,11 @@ import assign from 'ember-metal/assign';
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
 import isEnabled from 'ember-metal/features';
-import { privatize as P } from 'container/registry';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import require from 'require';
 import { buildOwner } from './helpers';
 
 const packageTag = `@${packageName} `;
-const DefaultComponentTemplate = require(`ember-${packageName}/templates/component`).default;
 
 let PartialDefinition;
 if (packageName === 'glimmer') {
@@ -322,7 +320,6 @@ export class AbstractRenderingTest extends TestCase {
     this.element = jQuery('#qunit-fixture')[0];
     this.component = null;
 
-    owner.register(P`template:components/-default`, DefaultComponentTemplate);
     owner.register('event_dispatcher:main', EventDispatcher);
     owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), owner.element);
   }
