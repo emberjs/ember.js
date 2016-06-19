@@ -1,13 +1,10 @@
-import assign from 'ember-metal/assign';
-import {
-  compile as compiler,
-  precompile as precompiler,
-  defaultCompileOptions,
-  template
-} from 'ember-glimmer-template-compiler';
 import { setupApplicationRegistry, setupEngineRegistry } from 'ember-glimmer/setup-registry';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
 
+export {
+  compile,
+  precompile
+} from 'ember-glimmer-template-compiler/tests/utils/helpers';
 export { default as Helper, helper } from 'ember-glimmer/helper';
 export { INVOKE } from 'ember-glimmer/helpers/action';
 export { default as Component } from 'ember-glimmer/component';
@@ -29,10 +26,3 @@ export function buildOwner(options) {
   return owner;
 }
 
-export function precompile(string) {
-  return template(precompiler(string));
-}
-
-export function compile(string, options) {
-  return compiler(string, assign({}, defaultCompileOptions(), options));
-}

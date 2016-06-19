@@ -1,13 +1,11 @@
-import assign from 'ember-metal/assign';
-import {
-  compile as compiler,
-  precompile as precompiler
-} from 'ember-htmlbars-template-compiler';
-import { defaultCompileOptions } from 'ember-htmlbars-template-compiler';
 import { setupApplicationRegistry, setupEngineRegistry } from 'ember-htmlbars/setup-registry';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
 import Environment from './environment';
 
+export {
+  compile,
+  precompile
+} from 'ember-htmlbars-template-compiler/tests/utils/helpers';
 export { template } from 'ember-htmlbars-template-compiler';
 export { default as Helper, helper } from 'ember-htmlbars/helper';
 export { INVOKE } from 'ember-htmlbars/keywords/closure-action';
@@ -26,12 +24,4 @@ export function buildOwner(options) {
   owner.register('service:-htmlbars-environment', new Environment(), { instantiate: false });
   owner.inject('service:-htmlbars-environment', 'dom', 'service:-dom-helper');
   return owner;
-}
-
-export function compile(string, options) {
-  return compiler(string, assign({}, defaultCompileOptions(), options));
-}
-
-export function precompile(string, options) {
-  return precompiler(string, assign({}, defaultCompileOptions(), options));
 }
