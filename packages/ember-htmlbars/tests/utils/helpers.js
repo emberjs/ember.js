@@ -4,7 +4,7 @@ import {
   precompile as precompiler
 } from 'ember-htmlbars-template-compiler';
 import { defaultCompileOptions } from 'ember-htmlbars-template-compiler';
-import { setupApplicationRegistry } from 'ember-htmlbars/setup-registry';
+import { setupApplicationRegistry, setupEngineRegistry } from 'ember-htmlbars/setup-registry';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
 import Environment from './environment';
 
@@ -21,6 +21,7 @@ export { InteractiveRenderer, InertRenderer } from 'ember-htmlbars/renderer';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);
+  setupEngineRegistry(owner.__registry__);
   setupApplicationRegistry(owner.__registry__);
   owner.register('service:-htmlbars-environment', new Environment(), { instantiate: false });
   owner.inject('service:-htmlbars-environment', 'dom', 'service:-dom-helper');

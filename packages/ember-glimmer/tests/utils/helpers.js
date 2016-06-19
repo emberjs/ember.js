@@ -5,7 +5,7 @@ import {
   defaultCompileOptions,
   template
 } from 'ember-glimmer-template-compiler';
-import { setupApplicationRegistry } from 'ember-glimmer/setup-registry';
+import { setupApplicationRegistry, setupEngineRegistry } from 'ember-glimmer/setup-registry';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
 
 export { default as Helper, helper } from 'ember-glimmer/helper';
@@ -20,6 +20,7 @@ export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);
+  setupEngineRegistry(owner.__registry__);
   setupApplicationRegistry(owner.__registry__);
   owner.register('service:-document', document, { instantiate: false });
   owner.inject('service:-dom-helper', 'document', 'service:-document');
