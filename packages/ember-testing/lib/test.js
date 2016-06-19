@@ -14,14 +14,17 @@ import TestPromise, {
   resolve
 } from './test/promise';
 import {
+  checkWaiters,
   registerWaiter,
-  unregisterWaiter
+  unregisterWaiter,
+  generateDeprecatedWaitersArray
 } from './test/waiters';
 
 import {
   getAdapter,
   setAdapter
 } from './test/adapter';
+import isEnabled from 'ember-metal/features';
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -56,6 +59,10 @@ const Test = {
   unregisterWaiter
 };
 
+if (isEnabled('ember-testing-check-waiters')) {
+  Test.checkWaiters = checkWaiters;
+}
+
 /**
  Used to allow ember-testing to communicate with a specific testing
  framework.
@@ -79,6 +86,10 @@ const Test = {
 Object.defineProperty(Test, 'adapter', {
   get: getAdapter,
   set: setAdapter
+});
+
+Object.defineProperty(Test, 'waiters', {
+  get: generateDeprecatedWaitersArray
 });
 
 export default Test;
