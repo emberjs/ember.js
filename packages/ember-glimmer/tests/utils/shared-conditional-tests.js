@@ -494,12 +494,11 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     this.render(wrappedTemplate, context);
   }
 
-  ['@htmlbars it does not update when the unbound helper is used']() {
-    let template = `${
-      this.wrappedTemplateFor({ cond: '(unbound cond1)', truthy: '"T1"', falsy: '"F1"' })
-    }${
-      this.wrappedTemplateFor({ cond: '(unbound cond2)', truthy: '"T2"', falsy: '"F2"' })
-    }`;
+  ['@test it does not update when the unbound helper is used']() {
+    let template = this.wrapperFor([
+      this.templateFor({ cond: '(unbound cond1)', truthy: '"T1"', falsy: '"F1"' }),
+      this.templateFor({ cond: '(unbound cond2)', truthy: '"T2"', falsy: '"F2"' })
+    ]);
 
     this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue });
 
