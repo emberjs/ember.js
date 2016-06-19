@@ -308,7 +308,10 @@ QUnit.test('`wait` respects registerWaiters', function(assert) {
       equal(counter, 0, 'unregistered waiter was not checked');
       equal(otherWaiter(), true, 'other waiter is still registered');
     })
-    .finally(done);
+    .finally(() => {
+      unregisterWaiter(otherWaiter);
+      done();
+    });
 });
 
 QUnit.test('`visit` advances readiness.', function() {
@@ -534,7 +537,10 @@ QUnit.test('`wait` respects registerWaiters with optional context', function() {
   }).then(function() {
     equal(obj.counter, 0, 'the unregistered waiter should still be at 0');
     equal(otherWaiter(), true, 'other waiter should still be registered');
-  });
+  })
+    .finally(() => {
+      unregisterWaiter(otherWaiter);
+    });
 });
 
 QUnit.test('`wait` does not error if routing has not begun', function() {

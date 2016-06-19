@@ -9,5 +9,6 @@
     "ember-runtime-computed-uniq-by": true,
     "ember-improved-instrumentation": false,
     "ember-runtime-enumerable-includes": false
+    "ember-testing-check-waiters": false
   }
 }
