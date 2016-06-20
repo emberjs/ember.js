@@ -76,8 +76,6 @@ function sharedTeardown() {
   reset();
 }
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
 QUnit.module('The {{link-to}} helper', {
   setup() {
     run(() => {
@@ -417,7 +415,7 @@ QUnit.test('The {{link-to}} helper supports a custom activeClass from a bound pa
   equal(jQuery('#about-link:not(.active)', '#qunit-fixture').length, 1, 'The other link was rendered without active class');
 });
 
-test("The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]", function() {
+QUnit.test("The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]", function() {
   setTemplate('index', compile(`<h3>Home</h3>{{#link-to 'about' id='about-link' classNameBindings='foo:foo-is-true:foo-is-false'}}About{{/link-to}}`));
 
   Router.map(function() {

@@ -44,6 +44,27 @@ moduleFor('ClassNameBindings intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo enabled sad') }, content: 'hello' });
   }
 
+  ['@test const bindings can be set as attrs']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+    this.render('{{foo-bar classNameBindings="foo:enabled:disabled"}}', {
+      foo: true
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view enabled') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view enabled') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo', false));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view disabled') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo', true));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view enabled') }, content: 'hello' });
+  }
+
   ['@test :: class name syntax works with an empty true class']() {
     let FooBarComponent = Component.extend({
       classNameBindings: ['isEnabled::not-enabled']
@@ -170,11 +191,8 @@ moduleFor('ClassNameBindings intigration', class extends RenderingTest {
 
 });
 
-const bindingDeprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-  ' using an `alias` computed property instead.';
-
 moduleFor('ClassBinding intigration', class extends RenderingTest {
-  ['@htmlbars it should apply classBinding without condition always']() {
+  ['@test it should apply classBinding without condition always']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding=":foo"}}');
@@ -186,9 +204,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
   }
 
-  ['@glimmer it should merge classBinding with class']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should merge classBinding with class']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="birdman:respeck" class="myName"}}', { birdman: true });
@@ -200,23 +216,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('respeck myName ember-view') } });
   }
 
-  ['@glimmer in glimmer it should apply classBinding without condition always']() {
-    expectDeprecation(bindingDeprecationMessage);
-
-    this.registerComponent('foo-bar', { template: 'hello' });
-
-    this.render('{{foo-bar classBinding=":foo"}}');
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
-
-    this.runTask(() => this.rerender());
-
-    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('foo  ember-view') } });
-  }
-
-  ['@glimmer it should apply classBinding with only truthy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with only truthy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName:respeck"}}', { myName: true });
@@ -228,9 +228,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('respeck  ember-view') } });
   }
 
-  ['@glimmer it should apply classBinding with only falsy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with only falsy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName::shade"}}', { myName: false });
@@ -242,9 +240,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('shade  ember-view') } });
   }
 
-  ['@glimmer it should apply nothing when classBinding is falsy but only supplies truthy class']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply nothing when classBinding is falsy but only supplies truthy class']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName:respeck"}}', { myName: false });
@@ -256,9 +252,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('ember-view') } });
   }
 
-  ['@glimmer it should apply nothing when classBinding is truthy but only supplies falsy class']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply nothing when classBinding is truthy but only supplies falsy class']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="myName::shade"}}', { myName: true });
@@ -270,9 +264,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('ember-view') } });
   }
 
-  ['@glimmer it should apply classBinding with falsy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with falsy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', { swag: false });
@@ -284,9 +276,7 @@ moduleFor('ClassBinding intigration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': classes('scrub  ember-view') } });
   }
 
-  ['@glimmer it should apply classBinding with truthy condition']() {
-    expectDeprecation(bindingDeprecationMessage);
-
+  ['@test it should apply classBinding with truthy condition']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', { swag: true });

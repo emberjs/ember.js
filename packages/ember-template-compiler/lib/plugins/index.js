@@ -5,6 +5,7 @@ import TransformInputOnToOnEvent from 'ember-template-compiler/plugins/transform
 import TransformTopLevelComponents from 'ember-template-compiler/plugins/transform-top-level-components';
 import DeprecateRenderModel from 'ember-template-compiler/plugins/deprecate-render-model';
 import TransformInlineLinkTo from 'ember-template-compiler/plugins/transform-inline-link-to';
+import TransformOldClassBindingSyntax from 'ember-template-compiler/plugins/transform-old-class-binding-syntax';
 
 export default Object.freeze([
   TransformOldBindingSyntax,
@@ -13,5 +14,6 @@ export default Object.freeze([
   TransformInputOnToOnEvent,
   TransformTopLevelComponents,
   DeprecateRenderModel,
-  TransformInlineLinkTo
+  TransformInlineLinkTo,
+  TransformOldClassBindingSyntax
 ]);

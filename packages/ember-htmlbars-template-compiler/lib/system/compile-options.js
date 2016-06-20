@@ -9,7 +9,6 @@ import defaultPlugins from 'ember-template-compiler/plugins';
 import TransformClosureComponentAttrsIntoMut from '../plugins/transform-closure-component-attrs-into-mut';
 import TransformComponentAttrsIntoMut from '../plugins/transform-component-attrs-into-mut';
 import TransformComponentCurlyToReadonly from '../plugins/transform-component-curly-to-readonly';
-import TransformOldClassBindingSyntax from '../plugins/transform-old-class-binding-syntax';
 
 export let PLUGINS = [
   ...defaultPlugins,
@@ -17,8 +16,7 @@ export let PLUGINS = [
   // the following are ember-htmlbars specific
   TransformClosureComponentAttrsIntoMut,
   TransformComponentAttrsIntoMut,
-  TransformComponentCurlyToReadonly,
-  TransformOldClassBindingSyntax
+  TransformComponentCurlyToReadonly
 ];
 
 let USER_PLUGINS = [];
