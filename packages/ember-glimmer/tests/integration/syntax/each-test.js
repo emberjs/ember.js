@@ -303,7 +303,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertInvariants();
   }
 
-  [`@htmlbars it maintains DOM stability for stable keys when list is updated`]() {
+  [`@test it maintains DOM stability for stable keys when list is updated`]() {
     this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
       list: emberA([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }])
     });
@@ -318,11 +318,11 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
       let list = get(this.context, 'list');
       list.unshiftObject({ text: ', ' });
       list.unshiftObject({ text: 'Hi' });
-      list.pushObject({ text: ' ' });
+      list.pushObject({ text: '!' });
       list.pushObject({ text: 'earth' });
     });
 
-    this.assertText('Hi, Hello world earth');
+    this.assertText('Hi, Hello world!earth');
 
     this.assertPartialInvariants(2, 5);
 
