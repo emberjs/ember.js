@@ -112,6 +112,23 @@ const EmberRouter = EmberObject.extend(Evented, {
       options.router = this;
     }
 
+    if (isEnabled('ember-application-engines')) {
+      let owner = getOwner(this);
+      let router = this;
+
+      options.enableLoadingSubstates = !!moduleBasedResolver;
+
+      options.resolveRouteMap = function(name) {
+        return owner._lookupFactory('route-map:' + name);
+      };
+
+      options.addRouteForEngine = function(name, engineInfo) {
+        if (!router._engineInfoByRoute[name]) {
+          router._engineInfoByRoute[name] = engineInfo;
+        }
+      };
+    }
+
     return new EmberRouterDSL(null, options);
   },
 

@@ -1,4 +1,5 @@
 import { assert, deprecate } from 'ember-metal/debug';
+import assign from 'ember-metal/assign';
 import isEnabled from 'ember-metal/features';
 
 /**
@@ -67,6 +68,16 @@ DSL.prototype = {
 
   push(url, name, callback) {
     let parts = name.split('.');
+
+    if (isEnabled('ember-application-engines')) {
+      if (this.options.engineInfo) {
+        let localFullName = name.slice(this.options.engineInfo.fullName.length + 1);
+        let routeInfo = assign({ localFullName }, this.options.engineInfo);
+
+        this.options.addRouteForEngine(name, routeInfo);
+      }
+    }
+
     if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
 
     this.matches.push([url, name, callback]);
@@ -132,3 +143,60 @@ DSL.map = function(callback) {
   callback.call(dsl);
   return dsl;
 };
+
+if (isEnabled('ember-application-engines')) {
+  let uuid = 0;
+
+  DSL.prototype.mount = function(_name, _options) {
+    let options = _options || {};
+    let engineRouteMap = this.options.resolveRouteMap(_name);
+    let name = _name;
+
+    if (options.as) {
+      name = options.as;
+    }
+
+    var fullName = getFullName(this, name, options.resetNamespace);
+
+    let engineInfo = {
+      name: _name,
+      instanceId: uuid++,
+      mountPoint: fullName,
+      fullName
+    };
+
+    let path = options.path;
+
+    if (typeof path !== 'string') {
+      path = `/${name}`;
+    }
+
+    let callback;
+    if (engineRouteMap) {
+      let shouldResetEngineInfo = false;
+      let oldEngineInfo = this.options.engineInfo;
+      if (oldEngineInfo) {
+        shouldResetEngineInfo = true;
+        this.options.engineInfo = engineInfo;
+      }
+
+      let optionsForChild = assign({ engineInfo }, this.options);
+      let childDSL = new DSL(fullName, optionsForChild);
+
+      engineRouteMap.call(childDSL);
+
+      callback = childDSL.generate();
+
+      if (shouldResetEngineInfo) {
+        this.options.engineInfo = oldEngineInfo;
+      }
+    }
+
+    let localFullName = 'application';
+    let routeInfo = assign({ localFullName }, engineInfo);
+
+    this.options.addRouteForEngine(fullName, routeInfo);
+
+    this.push(path, fullName, callback);
+  };
+}
