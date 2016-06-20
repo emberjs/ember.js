@@ -302,9 +302,7 @@ export default EmberObject.extend({
 
     addArrayObserver(records, this, observer);
 
-    function release() {
-      removeArrayObserver(records, this, observer);
-    }
+    let release = () => removeArrayObserver(records, this, observer);
 
     return release;
   },
