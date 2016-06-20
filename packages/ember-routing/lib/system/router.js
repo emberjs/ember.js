@@ -126,6 +126,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (isEnabled('ember-route-serializers')) {
       this._serializeMethods = new EmptyObject();
     }
+
+    if (isEnabled('ember-application-engines')) {
+      this._engineInstances = new EmptyObject();
+      this._engineInfoByRoute = new EmptyObject();
+    }
   },
 
   /*
@@ -437,6 +442,16 @@ const EmberRouter = EmberObject.extend(Evented, {
       this._toplevelView = null;
     }
     this._super(...arguments);
+
+    if (isEnabled('ember-application-engines')) {
+      let instances = this._engineInstances;
+      for (let name in instances) {
+        for (let id in instances[name]) {
+          run(instances[name][id], 'destroy');
+        }
+      }
+    }
+
     this.reset();
   },
 
@@ -538,11 +553,25 @@ const EmberRouter = EmberObject.extend(Evented, {
   _getHandlerFunction() {
     let seen = new EmptyObject();
     let owner = getOwner(this);
-    let DefaultRoute = owner._lookupFactory('route:basic');
 
     return (name) => {
-      let routeName = 'route:' + name;
-      let handler = owner.lookup(routeName);
+      let routeName = name;
+      let routeOwner = owner;
+
+      if (isEnabled('ember-application-engines')) {
+        let engineInfo = this._engineInfoByRoute[routeName];
+
+        if (engineInfo) {
+          let engineInstance = this._getEngineInstance(engineInfo);
+
+          routeOwner = engineInstance;
+          routeName = engineInfo.localFullName;
+        }
+      }
+
+      let fullRouteName = 'route:' + routeName;
+
+      let handler = routeOwner.lookup(fullRouteName);
 
       if (seen[name]) {
         return handler;
@@ -551,15 +580,18 @@ const EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        owner.register(routeName, DefaultRoute.extend());
-        handler = owner.lookup(routeName);
+        let DefaultRoute = routeOwner._lookupFactory('route:basic');
+
+        routeOwner.register(fullRouteName, DefaultRoute.extend());
+        handler = routeOwner.lookup(fullRouteName);
 
         if (get(this, 'namespace.LOG_ACTIVE_GENERATION')) {
-          info(`generated -> ${routeName}`, { fullName: routeName });
+          info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
         }
       }
 
-      handler.routeName = name;
+      handler.routeName = routeName;
+
       return handler;
     };
   },
@@ -1245,6 +1277,40 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     };
     return defaultParentState;
   }
+}
+
+if (isEnabled('ember-application-engines')) {
+  EmberRouter.reopen({
+    _getEngineInstance({ name, instanceId, mountPoint }) {
+      let engineInstances = this._engineInstances;
+
+      if (!engineInstances[name]) {
+        engineInstances[name] = new EmptyObject();
+      }
+
+      let engineInstance = engineInstances[name][instanceId];
+
+      if (!engineInstance) {
+        let owner = getOwner(this);
+
+        assert(
+          'You attempted to mount the engine \'' + name + '\' in your router map, but the engine can not be found.',
+          owner.hasRegistration(`engine:${name}`)
+        );
+
+        engineInstance = owner.buildChildEngineInstance(name, {
+          routable: true,
+          mountPoint
+        });
+
+        engineInstance.boot();
+
+        engineInstances[name][instanceId] = engineInstance;
+      }
+
+      return engineInstance;
+    }
+  });
 }
 
 export default EmberRouter;
