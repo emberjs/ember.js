@@ -332,6 +332,22 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertInvariants(oldSnapshot, this.takeSnapshot());
   }
 
+  [`@htmlbars it renders all items with duplicate key values`]() {
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
+      list: emberA([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }])
+    });
+
+    this.assertText('HelloHelloHello');
+
+    let list = get(this.context, 'list');
+
+    this.runTask(() => {
+      list.forEach(hash => set(hash, 'text', 'Goodbye'));
+    });
+
+    this.assertText('GoodbyeGoodbyeGoodbye');
+  }
+
   ['@test context is not changed to the inner scope inside an {{#each as}} block']() {
     this.render(`{{name}}-{{#each people as |person|}}{{name}}{{/each}}-{{name}}`, {
       name: 'Joel',
