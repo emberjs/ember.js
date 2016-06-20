@@ -2,30 +2,43 @@ import EmberHandlebars from 'ember-htmlbars/compat';
 import { isHtmlSafe } from 'ember-htmlbars/utils/string';
 import { TestCase } from '../utils/abstract-test-case';
 import { moduleFor } from '../utils/test-case';
+import isEnabled from 'ember-metal/features';
 
 
 moduleFor('compat - SafeString', class extends TestCase {
   ['@test using new results in a deprecation']() {
     let result;
 
-    expectDeprecation(() => {
+    if (isEnabled('ember-string-ishtmlsafe')) {
+      expectDeprecation(() => {
+        result = new EmberHandlebars.SafeString('<b>test</b>');
+      }, 'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe');
+    } else {
       result = new EmberHandlebars.SafeString('<b>test</b>');
-    }, 'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe');
+    }
 
     this.assert.equal(result.toHTML(), '<b>test</b>');
 
-    // Ensure this functionality is maintained for backwards compat, but also deprecated.
-    expectDeprecation(() => {
+    if (isEnabled('ember-string-ishtmlsafe')) {
+      // Ensure this functionality is maintained for backwards compat, but also deprecated.
+      expectDeprecation(() => {
+        this.assert.ok(result instanceof EmberHandlebars.SafeString);
+      }, 'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe');
+    } else {
       this.assert.ok(result instanceof EmberHandlebars.SafeString);
-    }, 'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe');
+    }
   }
 
   ['@test isHtmlSafe should detect SafeString']() {
     let safeString;
 
-    expectDeprecation(() => {
+    if (isEnabled('ember-string-ishtmlsafe')) {
+      expectDeprecation(() => {
+        safeString = new EmberHandlebars.SafeString('<b>test</b>');
+      }, 'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe');
+    } else {
       safeString = new EmberHandlebars.SafeString('<b>test</b>');
-    }, 'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe');
+    }
 
     this.assert.ok(isHtmlSafe(safeString));
   }
