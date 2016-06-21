@@ -2147,6 +2147,29 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   assertFired(instance, 'didRender', 3);
 });
 
+QUnit.test('Setting value attributeBinding to null results in empty string value', function(assert) {
+  let instance;
+
+  class InputComponent extends EmberishCurlyComponent {
+    tagName = 'input';
+    attributeBindings = ['value'];
+    init() {
+      instance = this;
+    }
+  }
+
+  env.registerEmberishCurlyComponent('input-component', inspectHooks(InputComponent), 'input component');
+
+  appendViewFor('{{input-component value=someProp}}', { someProp: 'wycats' });
+
+  assert.equal(instance.element.value, 'wycats');
+
+  set(view, 'someProp', null);
+  rerender();
+
+  assert.equal(instance.element.value, '');
+});
+
 QUnit.test('Curly component hooks (force recompute)', function() {
   let instance;
 
