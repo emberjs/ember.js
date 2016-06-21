@@ -12,6 +12,7 @@ import {
 
 import {
   ElementOperation,
+  EmptyStringResetingProperty,
   NamespacedAttribute,
   NonNamespacedAttribute,
   Property
@@ -88,6 +89,9 @@ class GroupedElementOperations implements ElementOperations {
   }
 
   addAttribute(name: InternedString, reference: PathReference<string>) {
+    if (this.element.tagName === 'INPUT' && name === 'value') {
+      this.group.push(new EmptyStringResetingProperty(this.element, name, reference));
+    }
     this.group.push(new NonNamespacedAttribute(this.element, name, reference));
   }
 
