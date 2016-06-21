@@ -4,7 +4,7 @@
 */
 import Ember from 'ember-metal/core'; // Ember.A circular
 import { ENV } from 'ember-environment';
-import { _replace as replace } from 'ember-metal/replace';
+import replace from 'ember-metal/replace';
 import { get } from 'ember-metal/property_get';
 import { Mixin } from 'ember-metal/mixin';
 import EmberArray from 'ember-runtime/mixins/array';
