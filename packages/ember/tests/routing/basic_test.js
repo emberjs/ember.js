@@ -10,7 +10,6 @@ import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import Mixin, { observer } from 'ember-metal/mixin';
 import Component from 'ember-templates/component';
-import ActionManager from 'ember-views/system/action_manager';
 import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
@@ -22,7 +21,7 @@ import { Transition } from 'router/transition';
 import copy from 'ember-runtime/copy';
 import { addObserver } from 'ember-metal/observer';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test, asyncTest } from 'internal-test-helpers/tests/skip-if-glimmer';
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 let trim = jQuery.trim;
 
@@ -1022,7 +1021,7 @@ QUnit.asyncTest('Nested callbacks are not exited when moving to siblings', funct
   });
 });
 
-asyncTest('Events are triggered on the controller if a matching action name is implemented', function() {
+QUnit.asyncTest('Events are triggered on the controller if a matching action name is implemented', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1060,13 +1059,10 @@ asyncTest('Events are triggered on the controller if a matching action name is i
 
   bootApplication();
 
-  let actionId = jQuery('#qunit-fixture a').data('ember-action');
-  let [ action ] = ActionManager.registeredActions[actionId];
-  let event = new jQuery.Event('click');
-  action.handler(event);
+  jQuery('#qunit-fixture a').click();
 });
 
-asyncTest('Events are triggered on the current state when defined in `actions` object', function() {
+QUnit.asyncTest('Events are triggered on the current state when defined in `actions` object', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1094,13 +1090,10 @@ asyncTest('Events are triggered on the current state when defined in `actions` o
 
   bootApplication();
 
-  let actionId = jQuery('#qunit-fixture a').data('ember-action');
-  let [ action ] = ActionManager.registeredActions[actionId];
-  let event = new jQuery.Event('click');
-  action.handler(event);
+  jQuery('#qunit-fixture a').click();
 });
 
-asyncTest('Events defined in `actions` object are triggered on the current state when routes are nested', function() {
+QUnit.asyncTest('Events defined in `actions` object are triggered on the current state when routes are nested', function() {
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
@@ -1132,10 +1125,7 @@ asyncTest('Events defined in `actions` object are triggered on the current state
 
   bootApplication();
 
-  let actionId = jQuery('#qunit-fixture a').data('ember-action');
-  let [ action ] = ActionManager.registeredActions[actionId];
-  let event = new jQuery.Event('click');
-  action.handler(event);
+  jQuery('#qunit-fixture a').click();
 });
 
 QUnit.test('Events can be handled by inherited event handlers', function() {
@@ -1176,7 +1166,7 @@ QUnit.test('Events can be handled by inherited event handlers', function() {
   router.send('baz');
 });
 
-asyncTest('Actions are not triggered on the controller if a matching action name is implemented as a method', function() {
+QUnit.asyncTest('Actions are not triggered on the controller if a matching action name is implemented as a method', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1213,13 +1203,10 @@ asyncTest('Actions are not triggered on the controller if a matching action name
 
   bootApplication();
 
-  let actionId = jQuery('#qunit-fixture a').data('ember-action');
-  let [ action ] = ActionManager.registeredActions[actionId];
-  let event = new jQuery.Event('click');
-  action.handler(event);
+  jQuery('#qunit-fixture a').click();
 });
 
-asyncTest('actions can be triggered with multiple arguments', function() {
+QUnit.asyncTest('actions can be triggered with multiple arguments', function() {
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
@@ -1252,10 +1239,7 @@ asyncTest('actions can be triggered with multiple arguments', function() {
 
   bootApplication();
 
-  let actionId = jQuery('#qunit-fixture a').data('ember-action');
-  let [ action ] = ActionManager.registeredActions[actionId];
-  let event = new jQuery.Event('click');
-  action.handler(event);
+  jQuery('#qunit-fixture a').click();
 });
 
 QUnit.test('transitioning multiple times in a single run loop only sets the URL once', function() {
