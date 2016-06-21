@@ -40,7 +40,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.7.2",
     "simple-html-tokenizer": "^0.2.5",
-    "typescript": "next"
+    "typescript": "Microsoft/TypeScript#ba78d1e"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
