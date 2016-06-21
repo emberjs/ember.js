@@ -635,7 +635,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
 
 class ClosureComponentMutableParamsTest extends RenderingTest {
   render(templateStr, context = {}) {
-    super(`${templateStr}<span class="value">{{model.val2}}</span>`, assign(context, { model: { val2: 8 } }));
+    super.render(`${templateStr}<span class="value">{{model.val2}}</span>`, assign(context, { model: { val2: 8 } }));
   }
 }
 
