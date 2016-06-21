@@ -33,6 +33,7 @@ import { default as unbound } from './helpers/unbound';
 import { default as classHelper } from './helpers/-class';
 import { default as queryParams } from './helpers/query-param';
 import { default as eachIn } from './helpers/each-in';
+import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { OWNER } from 'container/owner';
 
 const builtInComponents = {
@@ -53,11 +54,13 @@ const builtInHelpers = {
   unbound,
   unless: inlineUnless,
   '-class': classHelper,
-  '-each-in': eachIn
+  '-each-in': eachIn,
+  '-normalize-class': normalizeClassHelper
 };
 
 import { default as ActionModifierManager } from './modifiers/action';
 
+// TODO we should probably do this transform at build time
 function wrapClassAttribute(args) {
   let hasClass = args.named.has('class');
 
@@ -71,39 +74,6 @@ function wrapClassAttribute(args) {
     }
   }
   return args;
-}
-
-function wrapClassBindingAttribute(args) {
-  let hasClassBinding = args.named.has('classBinding');
-
-  if (hasClassBinding) {
-    let { value , type } = args.named.at('classBinding');
-    if (type === 'value') {
-      let [ prop, truthy, falsy ] = value.split(':');
-      let spec;
-      if (prop === '') {
-        spec = ['helper', ['-class'], [truthy], null];
-      } else if (falsy) {
-        let parts = prop.split('.');
-        spec = ['helper', ['-class'], [['get', parts], truthy, falsy], null];
-      } else if (truthy) {
-        let parts = prop.split('.');
-        spec = ['helper', ['-class'], [['get', parts], truthy], null];
-      }
-
-      if (spec) {
-        let syntax;
-        if (args.named.has('class')) {
-          // If class already exists, merge
-          let classValue = args.named.at('class').value;
-          syntax = HelperSyntax.fromSpec(['helper', ['concat'], [classValue, ' ', spec]]);
-        } else {
-          syntax = HelperSyntax.fromSpec(spec);
-        }
-        args.named.add('class', syntax);
-      }
-    }
-  }
 }
 
 export default class Environment extends GlimmerEnvironment {
@@ -189,7 +159,6 @@ export default class Environment extends GlimmerEnvironment {
       }
 
       if (definition) {
-        wrapClassBindingAttribute(args);
         wrapClassAttribute(args);
         return new CurlyComponentSyntax({ args, definition, templates });
       }
