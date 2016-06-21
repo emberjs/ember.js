@@ -1,3 +1,6 @@
+import isEnabled from 'ember-metal/features';
+import { deprecate } from 'ember-metal/debug';
+
 const contexts = [];
 const callbacks = [];
 
@@ -68,6 +71,19 @@ export function unregisterWaiter(context, callback) {
   callbacks.splice(i, 1);
 }
 
+/**
+  Iterates through each registered test waiter, and invokes
+  its callback. If any waiter returns false, this method will return
+  true indicating that the waiters have not settled yet.
+
+  This is generally used internally from the acceptance/integration test
+  infrastructure.
+
+  @public
+  @for Ember.Test
+  @static
+  @method checkWaiters
+*/
 export function checkWaiters() {
   if (!callbacks.length) {
     return false;
@@ -89,4 +105,22 @@ function indexOf(context, callback) {
     }
   }
   return -1;
+}
+
+export function generateDeprecatedWaitersArray() {
+  deprecate(
+    'Usage of `Ember.Test.waiters` is deprecated. Please refactor to `Ember.Test.checkWaiters`.',
+    !isEnabled('ember-testing-check-waiters'),
+    { until: '2.8.0', id: 'ember-testing.test-waiters' }
+  );
+
+  let array = new Array(callbacks.length);
+  for (let i = 0; i < callbacks.length; i++) {
+    let context = contexts[i];
+    let callback = callbacks[i];
+
+    array[i] = [context, callback];
+  }
+
+  return array;
 }
