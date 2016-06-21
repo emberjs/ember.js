@@ -623,16 +623,7 @@ export default Mixin.create({
     @private
   */
   destroy() {
-    // get parentView before calling super because it'll be destroyed
-    let parentView = this.parentView;
-    let viewName = this.viewName;
-
     if (!this._super(...arguments)) { return; }
-
-    // remove from non-virtual parent view if viewName was specified
-    if (viewName && parentView) {
-      parentView.set(viewName, null);
-    }
 
     // Destroy HTMLbars template
     if (this.lastResult) {
