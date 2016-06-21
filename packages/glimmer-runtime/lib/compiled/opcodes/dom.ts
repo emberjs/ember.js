@@ -478,6 +478,17 @@ export class Property extends ElementPatchOperation<Opaque> {
   }
 }
 
+export class EmptyStringResetingProperty extends Property {
+  protected update(dom: DOMHelper, element: Element, value: Opaque) {
+    // Needed for cases where removeAttribute() does not work
+    if (value === null) {
+      value = '';
+    }
+
+    super.update(dom, element, value);
+  }
+}
+
 function formatElement(element: Element): string {
   return JSON.stringify(`<${element.tagName.toLowerCase()} />`);
 }
