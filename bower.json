@@ -1,5 +1,5 @@
 {
-  "name": "htmlbars",
+  "name": "glimmer-engine",
   "devDependencies": {
     "loader.js": "~3.5.0",
     "qunit": "~1.20.0",
