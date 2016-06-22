@@ -5,6 +5,7 @@ import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
 import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import ViewMixin from 'ember-views/mixins/view_support';
+import TargetActionSupport from './ember-views/target-action-support';
 import EmberView from 'ember-views/views/view';
 import symbol from 'ember-metal/symbol';
 import EmptyObject from 'ember-metal/empty_object';
@@ -36,6 +37,7 @@ const Component = CoreView.extend(
   ClassNamesSupport,
   InstrumentationSupport,
   AriaRoleSupport,
+  TargetActionSupport,
   ViewMixin, {
     isComponent: true,
     layoutName: null,

@@ -37,6 +37,15 @@ function applyAttributeBindings(attributeBindings, component, operations) {
   }
 }
 
+// Use `_targetObject` to avoid stomping on a CP
+// that exists in the component
+function privatizeTargetObject(props) {
+  if (props.targetObject) {
+    props._targetObject = props.targetObject;
+    props.targetObject = undefined;
+  }
+}
+
 export class CurlyComponentSyntax extends StatementSyntax {
   constructor({ args, definition, templates }) {
     super();
@@ -69,6 +78,7 @@ class CurlyComponentManager {
     let { attrs, props } = processedArgs.value();
 
     aliasIdToElementId(args, props);
+    privatizeTargetObject(props);
 
     props.renderer = parentView.renderer;
     props[HAS_BLOCK] = hasBlock;
@@ -198,6 +208,7 @@ class CurlyComponentManager {
       bucket.argsRevision = args.tag.value();
 
       let { attrs, props } = args.value();
+      privatizeTargetObject(props);
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;
