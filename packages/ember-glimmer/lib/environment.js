@@ -158,7 +158,7 @@ export default class Environment extends GlimmerEnvironment {
    // isn't going to return any syntax and the Glimmer engine knows how to handle
    // this case.
 
-  refineStatement(statement) {
+  refineStatement(statement, symbolTable) {
     // 1. resolve any native syntax – if, unless, with, each, and partial
     let nativeSyntax = super.refineStatement(statement);
 
@@ -196,17 +196,17 @@ export default class Environment extends GlimmerEnvironment {
       let definition = null;
 
       if (internalKey) {
-        definition = this.getComponentDefinition([internalKey]);
+        definition = this.getComponentDefinition([internalKey], symbolTable);
       } else if (key.indexOf('-') >= 0) {
-        definition = this.getComponentDefinition(path);
+        definition = this.getComponentDefinition(path, symbolTable);
       } else if (mappedKey) {
-        definition = this.getComponentDefinition([mappedKey]);
+        definition = this.getComponentDefinition([mappedKey], symbolTable);
       }
 
       if (definition) {
         return createCurly(args, templates, definition);
       } else if (generateBuiltInSyntax) {
-        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path]));
+        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], symbolTable));
       }
 
       assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key));
@@ -221,15 +221,17 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(path) {
-    let name = path[0];
+  getComponentDefinition(nameSegments, symbolTable) {
+    let name = nameSegments.join('/');
     let definition = this._components[name];
 
     if (!definition) {
-      let { component: ComponentClass, layout } = lookupComponent(this.owner, name);
+      let { component: ComponentClass, layout } = lookupComponent(this.owner, name, {
+        source: `template:${symbolTable.meta.moduleName}`
+      });
 
       if (ComponentClass || layout) {
-        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
+        definition = this._components[name] = new CurlyComponentDefinition(nameSegments, ComponentClass, layout);
       }
     }
 
