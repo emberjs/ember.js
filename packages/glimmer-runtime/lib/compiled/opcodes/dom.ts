@@ -479,6 +479,16 @@ export class Property extends ElementPatchOperation<Opaque> {
 }
 
 export class EmptyStringResetingProperty extends Property {
+  protected install(dom: DOMHelper, element: Element, value: Opaque) {
+    let { name } = this;
+    // Needed for cases where removeAttribute() does not work
+    if (value === null) {
+      value = '';
+    }
+
+    super.install(dom, element, value);
+  }
+
   protected update(dom: DOMHelper, element: Element, value: Opaque) {
     // Needed for cases where removeAttribute() does not work
     if (value === null) {
