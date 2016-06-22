@@ -117,6 +117,11 @@ const Component = CoreView.extend(
       }
     },
 
+    readDOMAttr(name) {
+      // TODO this is probably not correct
+      return this.element.getAttribute(name);
+    },
+
     [TO_ROOT_REFERENCE]() {
       let ref = this[ROOT_REF];
 
