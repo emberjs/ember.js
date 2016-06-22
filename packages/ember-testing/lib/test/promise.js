@@ -14,7 +14,7 @@ export default class TestPromise extends RSVP.Promise {
   }
 
   then(onFulfillment, ...args) {
-    return super(result => isolate(onFulfillment, result), ...args);
+    return super.then(result => isolate(onFulfillment, result), ...args);
   }
 }
 

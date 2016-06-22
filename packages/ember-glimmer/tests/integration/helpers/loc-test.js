@@ -14,7 +14,7 @@ moduleFor('Helpers test: {{loc}}', class extends RenderingTest {
   }
 
   teardown() {
-    super();
+    super.teardown();
     Ember.STRINGS = this.oldString;
   }
 

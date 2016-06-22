@@ -952,7 +952,7 @@ if (!EmberDev.runningProdBuild) {
     }
 
     teardown() {
-      super(...arguments);
+      super.teardown(...arguments);
       setDebugFunction('warn', originalWarn);
     }
 
