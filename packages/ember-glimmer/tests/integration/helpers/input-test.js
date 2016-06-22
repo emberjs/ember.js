@@ -1,10 +1,15 @@
 import { set } from 'ember-metal/property_set';
 import { TextField, Checkbox } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { runDestroy } from 'ember-runtime/tests/utils';
 
 class InputRenderingTest extends RenderingTest {
   constructor() {
     super();
+
+    // Modifying input.selectionStart, which is utilized in the cursor tests,
+    // causes an event in Safari.
+    runDestroy(this.owner.lookup('event_dispatcher:main'));
 
     this.registerComponent('-text-field', { ComponentClass: TextField });
     this.registerComponent('-checkbox', { ComponentClass: Checkbox });
@@ -65,7 +70,7 @@ class InputRenderingTest extends RenderingTest {
   }
 }
 
-moduleFor('@htmlbars Helpers test: {{input}}', class extends InputRenderingTest {
+moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
 
   ['@test a single text field is inserted into the DOM'](assert) {
     this.render(`{{input type="text" value=value}}`, { value: 'hello' });
@@ -252,7 +257,7 @@ moduleFor('@htmlbars Helpers test: {{input}}', class extends InputRenderingTest 
 
 });
 
-moduleFor('@htmlbars Helpers test: {{input}} with dynamic type', class extends InputRenderingTest {
+moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRenderingTest {
 
   ['@test a bound property can be used to determine type']() {
     this.render(`{{input type=type}}`, { type: 'password' });
@@ -274,7 +279,7 @@ moduleFor('@htmlbars Helpers test: {{input}} with dynamic type', class extends I
 
 });
 
-moduleFor(`@htmlbars Helpers test: {{input type='checkbox'}}`, class extends InputRenderingTest {
+moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderingTest {
 
   ['@test dynamic attributes']() {
     this.render(`{{input
@@ -370,7 +375,7 @@ moduleFor(`@htmlbars Helpers test: {{input type='checkbox'}}`, class extends Inp
 
 });
 
-moduleFor(`@htmlbars Helpers test: {{input type='text'}}`, class extends InputRenderingTest {
+moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTest {
 
   ['@test null values'](assert) {
     let attributes = ['disabled', 'placeholder', 'name', 'maxlength', 'size', 'tabindex'];

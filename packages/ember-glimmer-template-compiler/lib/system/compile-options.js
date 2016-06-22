@@ -1,5 +1,6 @@
 import defaultPlugins from 'ember-template-compiler/plugins';
 import TransformActionSyntax from '../plugins/transform-action-syntax';
+import TransformInputTypeSyntax from '../plugins/transform-input-type-syntax';
 import TransformAttrsIntoProps from '../plugins/transform-attrs-into-props';
 import TransformEachInIntoEach from '../plugins/transform-each-in-into-each';
 import TransformHasBlockSyntax from '../plugins/transform-has-block-syntax';
@@ -9,6 +10,7 @@ export const PLUGINS = [
   ...defaultPlugins,
   // the following are ember-glimmer specific
   TransformActionSyntax,
+  TransformInputTypeSyntax,
   TransformAttrsIntoProps,
   TransformEachInIntoEach,
   TransformHasBlockSyntax
