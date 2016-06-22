@@ -31,6 +31,7 @@ import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as classHelper } from './helpers/-class';
+import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as queryParams } from './helpers/query-param';
 import { default as eachIn } from './helpers/each-in';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -38,6 +39,42 @@ import { OWNER } from 'container/owner';
 
 const builtInComponents = {
   textarea: '-text-area'
+};
+
+function createCurly(args, templates, definition) {
+  wrapClassAttribute(args);
+  return new CurlyComponentSyntax({ args, definition, templates });
+}
+
+function buildTextFieldSyntax({ args, templates }, getDefinition) {
+  let definition = getDefinition('-text-field');
+  wrapClassAttribute(args);
+  return new CurlyComponentSyntax({ args, definition, templates });
+}
+
+const builtInDynamicComponents = {
+  input({ key, args, templates }, getDefinition) {
+    if (args.named.has('type')) {
+      let typeArg = args.named.at('type');
+      if (typeArg.type === 'value') {
+        if (typeArg.value === 'checkbox') {
+          assert(
+            '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+            'you must use `checked=someBooleanValue` instead.',
+            !args.named.has('value')
+          );
+
+          return createCurly(args, templates, getDefinition('-checkbox'));
+        } else {
+          return buildTextFieldSyntax({ args, templates }, getDefinition);
+        }
+      }
+    } else {
+      return buildTextFieldSyntax({ args, templates }, getDefinition);
+    }
+
+    return new DynamicComponentSyntax({ args, templates });
+  }
 };
 
 const builtInHelpers = {
@@ -55,6 +92,7 @@ const builtInHelpers = {
   unless: inlineUnless,
   '-class': classHelper,
   '-each-in': eachIn,
+  '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper
 };
 
@@ -143,6 +181,11 @@ export default class Environment extends GlimmerEnvironment {
 
     if (isSimple && (isInline || isBlock)) {
       // 2. built-in syntax
+
+      let generateBuiltInSyntax = builtInDynamicComponents[key];
+      // Check if it's a keyword
+      let mappedKey = builtInComponents[key];
+
       if (key === 'component') {
         return new DynamicComponentSyntax({ args, templates });
       } else if (key === 'outlet') {
@@ -156,11 +199,14 @@ export default class Environment extends GlimmerEnvironment {
         definition = this.getComponentDefinition([internalKey]);
       } else if (key.indexOf('-') >= 0) {
         definition = this.getComponentDefinition(path);
+      } else if (mappedKey) {
+        definition = this.getComponentDefinition([mappedKey]);
       }
 
       if (definition) {
-        wrapClassAttribute(args);
-        return new CurlyComponentSyntax({ args, definition, templates });
+        return createCurly(args, templates, definition);
+      } else if (generateBuiltInSyntax) {
+        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path]));
       }
 
       assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key));
