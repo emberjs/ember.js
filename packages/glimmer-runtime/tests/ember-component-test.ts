@@ -2160,7 +2160,12 @@ QUnit.test('Setting value attributeBinding to null results in empty string value
 
   env.registerEmberishCurlyComponent('input-component', inspectHooks(InputComponent), 'input component');
 
-  appendViewFor('{{input-component value=someProp}}', { someProp: 'wycats' });
+  appendViewFor('{{input-component value=someProp}}', { someProp: null });
+
+  assert.equal(instance.element.value, '');
+
+  set(view, 'someProp', 'wycats');
+  rerender();
 
   assert.equal(instance.element.value, 'wycats');
 
