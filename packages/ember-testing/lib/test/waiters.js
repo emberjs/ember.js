@@ -7,7 +7,8 @@ const callbacks = [];
 /**
    This allows ember-testing to play nicely with other asynchronous
    events, such as an application that is waiting for a CSS3
-   transition or an IndexDB transaction.
+   transition or an IndexDB transaction. The waiter runs periodically
+   until the returning result is truthy.
 
    For example:
 
