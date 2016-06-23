@@ -8,7 +8,9 @@ const callbacks = [];
    This allows ember-testing to play nicely with other asynchronous
    events, such as an application that is waiting for a CSS3
    transition or an IndexDB transaction. The waiter runs periodically
-   until the returning result is truthy.
+   after all async helpers (i.e. `click`, `andThen`, `visit`, etc) have executed,
+   until the returning result is truthy. After all waiters finish, the next batch of async helpers
+   are executed and the process repeats.
 
    For example:
 
