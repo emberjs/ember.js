@@ -347,7 +347,7 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
 
 import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
-test('`click` triggers appropriate events in order', function() {
+QUnit.test('`click` triggers appropriate events in order', function() {
   expect(5);
 
   var click, wait, events;
@@ -547,7 +547,7 @@ QUnit.test('`wait` does not error if routing has not begun', function() {
   });
 });
 
-test('`triggerEvent accepts an optional options hash without context', function() {
+QUnit.test('`triggerEvent accepts an optional options hash without context', function() {
   expect(3);
 
   var triggerEvent, wait, event;
@@ -577,7 +577,7 @@ test('`triggerEvent accepts an optional options hash without context', function(
   });
 });
 
-test('`triggerEvent can limit searching for a selector to a scope', function() {
+QUnit.test('`triggerEvent can limit searching for a selector to a scope', function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -607,7 +607,7 @@ test('`triggerEvent can limit searching for a selector to a scope', function() {
   });
 });
 
-test('`triggerEvent` can be used to trigger arbitrary events', function() {
+QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() {
   expect(2);
 
   var triggerEvent, wait, event;
@@ -636,7 +636,7 @@ test('`triggerEvent` can be used to trigger arbitrary events', function() {
   });
 });
 
-test('`fillIn` takes context into consideration', function() {
+QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
