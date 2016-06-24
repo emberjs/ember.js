@@ -128,8 +128,10 @@ const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
 class OutletComponentManager extends AbstractOutletComponentManager {
   create(definition, args, dynamicScope) {
-    let outletState = dynamicScope.outletState = dynamicScope.outletState.get(definition.outletName);
-    return outletState.value();
+    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get(definition.outletName);
+    let outletState = outletStateReference.value();
+    dynamicScope.controller = outletState.render.controller;
+    return outletState;
   }
 }
 

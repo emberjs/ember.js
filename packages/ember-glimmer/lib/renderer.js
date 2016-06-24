@@ -149,7 +149,7 @@ class Renderer {
   appendTo(view, target) {
     let env = this._env;
     let self = new RootReference(view);
-    let dynamicScope = new DynamicScope({ view });
+    let dynamicScope = new DynamicScope({ view, controller: view.controller });
 
     env.begin();
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });

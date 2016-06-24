@@ -399,7 +399,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('foo-bar Caracas Caracas arepas!');
   }
 
-  ['@htmlbars component helper with actions'](assert) {
+  ['@test component helper with actions'](assert) {
     this.registerComponent('inner-component', {
       template: 'inner-component {{yield}}',
       ComponentClass: Component.extend({

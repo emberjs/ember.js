@@ -237,22 +237,6 @@ QUnit.test('services can be injected into components', function() {
 
 QUnit.module('Ember.Component - subscribed and sent actions trigger errors');
 
-QUnit.test('something', function() {
-  expect(2);
-
-  let appComponent = Component.extend({
-    actions: {
-      foo(message) {
-        equal('bar', message);
-      }
-    }
-  }).create();
-
-  appComponent.send('foo', 'bar');
-
-  throws(() => appComponent.send('baz', 'bar'), /had no action handler for: baz/, 'asdf');
-});
-
 QUnit.test('component with target', function() {
   expect(2);
 
