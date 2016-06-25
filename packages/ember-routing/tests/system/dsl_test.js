@@ -1,14 +1,21 @@
 import EmberRouter from 'ember-routing/system/router';
+import { setOwner } from 'container/owner';
+import buildOwner from 'container/tests/test-helpers/build-owner';
+import isEnabled from 'ember-metal/features';
 
 let Router;
 
+function setup() {
+  Router = EmberRouter.extend();
+}
+
+function teardown() {
+  Router = null;
+}
+
 QUnit.module('Ember Router DSL', {
-  setup() {
-    Router = EmberRouter.extend();
-  },
-  teardown() {
-    Router = null;
-  }
+  setup,
+  teardown
 });
 
 QUnit.test('should fail when using a reserved route name', function() {
@@ -106,3 +113,90 @@ QUnit.test('should not add loading and error routes if _isRouterMapResult is fal
   ok(!router.router.recognizer.names['blork_loading'], 'loading route was not added');
   ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
 });
+
+if (isEnabled('ember-application-engines')) {
+  QUnit.module('Ember Router DSL with engines', {
+    setup,
+    teardown
+  });
+
+  QUnit.test('should allow mounting of engines', function(assert) {
+    assert.expect(3);
+
+    Router = Router.map(function() {
+      this.route('bleep', function() {
+        this.route('bloop', function() {
+          this.mount('chat');
+        });
+      });
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create();
+    setOwner(router, engineInstance);
+    router._initRouterJs();
+
+    assert.ok(router.router.recognizer.names['bleep'], 'parent name was used as base of nested routes');
+    assert.ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+    assert.ok(router.router.recognizer.names['bleep.bloop.chat'], 'parent name was used as base of mounted engine');
+  });
+
+  QUnit.test('should allow mounting of engines at a custom path', function(assert) {
+    assert.expect(1);
+
+    Router = Router.map(function() {
+      this.route('bleep', function() {
+        this.route('bloop', function() {
+          this.mount('chat', { path: 'custom-chat' });
+        });
+      });
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create();
+    setOwner(router, engineInstance);
+    router._initRouterJs();
+
+    assert.deepEqual(
+      router.router.recognizer.names['bleep.bloop.chat']
+        .segments
+        .slice(1, 4)
+        .map(s => s.string),
+      ['bleep', 'bloop', 'custom-chat'],
+      'segments are properly associated with mounted engine');
+  });
+
+  QUnit.test('should allow aliasing of engine names with `as`', function(assert) {
+    assert.expect(1);
+
+    Router = Router.map(function() {
+      this.route('bleep', function() {
+        this.route('bloop', function() {
+          this.mount('chat', { as: 'blork' });
+        });
+      });
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create();
+    setOwner(router, engineInstance);
+    router._initRouterJs();
+
+    assert.deepEqual(
+      router.router.recognizer.names['bleep.bloop.blork']
+        .segments
+        .slice(1, 4)
+        .map(s => s.string),
+      ['bleep', 'bloop', 'blork'],
+      'segments are properly associated with mounted engine with aliased name');
+  });
+}
