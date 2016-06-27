@@ -23,12 +23,6 @@ QUnit.module('views/view/view_lifecycle_test - pre-render', {
   }
 });
 
-QUnit.test('should throw an exception if trying to append a child before rendering has begun', function() {
-  view = run(() => EmberView.create());
-
-  throws(() => view.appendChild(EmberView, {}), null, 'throws an error when calling appendChild()');
-});
-
 test('should not affect rendering if rerender is called before initial render happens', function() {
   run(() => {
     view = EmberView.create({
@@ -125,22 +119,6 @@ QUnit.module('views/view/view_lifecycle_test - in DOM', {
   }
 });
 
-QUnit.test('should throw an exception when calling appendChild when DOM element exists', function() {
-  run(() => {
-    view = EmberView.create({
-      template: compile('Wait for the kick')
-    });
-
-    view.append();
-  });
-
-  throws(() => {
-    view.appendChild(EmberView, {
-      template: compile('Ah ah ah! You didn\'t say the magic word!')
-    });
-  }, null, 'throws an exception when calling appendChild after element is created');
-});
-
 test('should replace DOM representation if rerender() is called after element is created', function() {
   run(() => {
     view = EmberView.extend({
@@ -219,24 +197,6 @@ QUnit.test('should throw an exception if trying to append an element that is alr
 });
 
 QUnit.module('views/view/view_lifecycle_test - destroyed');
-
-QUnit.test('should throw an exception when calling appendChild after view is destroyed', function() {
-  run(() => {
-    view = EmberView.create({
-      template: compile('Wait for the kick')
-    });
-
-    view.append();
-  });
-
-  run(() => view.destroy());
-
-  throws(() => {
-    view.appendChild(EmberView, {
-      template: compile('Ah ah ah! You didn\'t say the magic word!')
-    });
-  }, null, 'throws an exception when calling appendChild');
-});
 
 QUnit.test('should throw an exception when rerender is called after view is destroyed', function() {
   run(() => {

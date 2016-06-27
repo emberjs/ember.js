@@ -1,8 +1,7 @@
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
 import CoreView from 'ember-views/views/core_view';
-import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
-import ViewLegacyChildViewsSupport from 'ember-views/mixins/legacy_child_views_support';
+import ViewChildViewsSupport from 'ember-views/mixins/child_views_support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import ClassNamesSupport from 'ember-views/mixins/class_names_support';
 import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
@@ -507,7 +506,6 @@ import ViewMixin from 'ember-views/mixins/view_support';
 // jscs:disable validateIndentation
 var View = CoreView.extend(
   ViewChildViewsSupport,
-  ViewLegacyChildViewsSupport,
   ViewStateSupport,
   ClassNamesSupport,
   InstrumentationSupport,

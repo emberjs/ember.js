@@ -2,7 +2,6 @@ import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
@@ -183,10 +182,6 @@ export function createComponent(_component, props, renderNode, env, attrs = {}) 
 
   if (props.parentView) {
     props.parentView.appendChild(component);
-
-    if (props.viewName) {
-      set(props.parentView, props.viewName, component);
-    }
   }
 
   component._renderNode = renderNode;
