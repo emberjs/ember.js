@@ -58,7 +58,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     this.assertText('first attr');
   }
 
-  ['@htmlbars should be able to modify a provided attr into local state #11571 / #11559'](assert) {
+  ['@test should be able to modify a provided attr into local state #11571 / #11559'](assert) {
     let instance;
     let FooBarComponent = Component.extend({
       init() {
@@ -137,8 +137,66 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     assert.equal(instance.get('woot'), 'yes', 'component found attr after reset');
   }
 
+  // HTMLBars runs `didReceiveAttrs` on `rerender`
   ['@htmlbars getAttr() should return the same value as get()'](assert) {
     assert.expect(20);
+    let instance;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        instance = this;
+      },
+
+      didReceiveAttrs() {
+        let rootFirst = this.get('first');
+        let rootSecond = this.get('second');
+        let attrFirst = this.getAttr('first');
+        let attrSecond = this.getAttr('second');
+
+        equal(rootFirst, attrFirst, 'root property matches attrs value');
+        equal(rootSecond, attrSecond, 'root property matches attrs value');
+      }
+    });
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render(`{{foo-bar first=first second=second}}`, {
+      first: 'first',
+      second: 'second'
+    });
+
+    assert.equal(instance.get('first'), 'first', 'matches known value');
+    assert.equal(instance.get('second'), 'second', 'matches known value');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(instance.get('first'), 'first', 'matches known value');
+    assert.equal(instance.get('second'), 'second', 'matches known value');
+
+    this.runTask(() => {
+      set(this.context, 'first', 'third');
+    });
+
+    assert.equal(instance.get('first'), 'third', 'matches known value');
+    assert.equal(instance.get('second'), 'second', 'matches known value');
+
+    this.runTask(() => {
+      set(this.context, 'second', 'fourth');
+    });
+
+    assert.equal(instance.get('first'), 'third', 'matches known value');
+    assert.equal(instance.get('second'), 'fourth', 'matches known value');
+
+    this.runTask(() => {
+      set(this.context, 'first', 'first');
+      set(this.context, 'second', 'second');
+    });
+
+    assert.equal(instance.get('first'), 'first', 'matches known value');
+    assert.equal(instance.get('second'), 'second', 'matches known value');
+  }
+
+  ['@glimmer getAttr() should return the same value as get()'](assert) {
+    assert.expect(18);
     let instance;
     let FooBarComponent = Component.extend({
       init() {

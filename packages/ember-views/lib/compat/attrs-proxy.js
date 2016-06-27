@@ -12,18 +12,18 @@ function isCell(val) {
   return val && val[MUTABLE_CELL];
 }
 
+export function getAttrFor(attrs, key) {
+  let val = attrs[key];
+  return isCell(val) ? val.value : val;
+}
+
 const AttrsProxyMixin = {
   attrs: null,
 
   getAttr(key) {
     let attrs = this.attrs;
     if (!attrs) { return; }
-    return this.getAttrFor(attrs, key);
-  },
-
-  getAttrFor(attrs, key) {
-    let val = attrs[key];
-    return isCell(val) ? val.value : val;
+    return getAttrFor(attrs, key);
   },
 
   setAttr(key, value) {
