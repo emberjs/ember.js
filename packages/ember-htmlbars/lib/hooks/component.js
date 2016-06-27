@@ -8,8 +8,9 @@ import {
 } from 'ember-htmlbars/system/lookup-helper';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import {
-  COMPONENT_PATH,
   COMPONENT_HASH,
+  COMPONENT_PATH,
+  COMPONENT_POSITIONAL_PARAMS,
   isComponentCell,
   mergeInNewHash,
   processPositionalParamsFromCell,
@@ -41,8 +42,11 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
        */
       let newAttrs = assign(new EmptyObject(), attrs);
       processPositionalParamsFromCell(componentCell, params, newAttrs);
+      attrs = mergeInNewHash(componentCell[COMPONENT_HASH],
+                             newAttrs,
+                             componentCell[COMPONENT_POSITIONAL_PARAMS],
+                             params);
       params = [];
-      attrs = mergeInNewHash(componentCell[COMPONENT_HASH], newAttrs);
     }
   }
 

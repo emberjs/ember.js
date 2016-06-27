@@ -4,6 +4,7 @@
 */
 
 import { assert } from 'ember-metal/debug';
+import isEmpty from 'ember-metal/is_empty';
 import isNone from 'ember-metal/is_none';
 import symbol from 'ember-metal/symbol';
 import BasicStream from '../streams/stream';
@@ -11,8 +12,8 @@ import EmptyObject from 'ember-metal/empty_object';
 import { read } from '../streams/utils';
 import { labelForSubexpr } from 'ember-htmlbars/hooks/subexpr';
 import assign from 'ember-metal/assign';
-import { processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';
 import lookupComponent from 'ember-htmlbars/utils/lookup-component';
+import { isRestPositionalParams, processPositionalParams } from 'ember-htmlbars/utils/extract-positional-params';
 
 export const COMPONENT_REFERENCE = symbol('COMPONENT_REFERENCE');
 export const COMPONENT_CELL = symbol('COMPONENT_CELL');
@@ -82,7 +83,10 @@ function createNestedClosureComponentCell(componentCell, params, hash) {
 
   return {
     [COMPONENT_PATH]: componentCell[COMPONENT_PATH],
-    [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH], hash),
+    [COMPONENT_HASH]: mergeInNewHash(componentCell[COMPONENT_HASH],
+                                     hash,
+                                     componentCell[COMPONENT_POSITIONAL_PARAMS],
+                                     params),
     [COMPONENT_POSITIONAL_PARAMS]: componentCell[COMPONENT_POSITIONAL_PARAMS],
     [COMPONENT_CELL]: true
   };
@@ -124,6 +128,50 @@ function getPositionalParams(container, componentPath) {
   }
 }
 
-export function mergeInNewHash(original, updates) {
-  return assign({}, original, updates);
+/*
+ * This function merges two hashes in a new one.
+ * Furthermore this function deals with the issue expressed in #13742.
+ *
+ * ```hbs
+ * {{component (component 'link-to' 'index')}}
+ * ```
+ *
+ * results in the following error
+ *
+ * > You must provide one or more parameters to the link-to component.
+ *
+ * This is so because a naive merging would not take into account that the
+ * invocation (the external `{{component}}`) would result in the following
+ * attributes (before merging with the ones in the contextual component):
+ *
+ * ```js
+ * let attrs = { params: [] };
+ * ```
+ *
+ * Given that the contextual component has the following attributes:
+ *
+ * ```js
+ * let attrs = { params: ['index'] };
+ * ```
+ *
+ * Merging them would result in:
+ *
+ * ```js
+ * let attrs = { params: [] };
+ * ```
+ *
+ * Therefore, if there are no positional parameters and `positionalParams` is
+ * a string (rest positional parameters), we keep the parameters from the
+ * `original` hash.
+ *
+ */
+export function mergeInNewHash(original, updates, positionalParams=[], params=[]) {
+  let newHash = assign({}, original, updates);
+
+  if (isRestPositionalParams(positionalParams) && isEmpty(params)) {
+    let propName = positionalParams;
+    newHash[propName] = original[propName];
+  }
+
+  return newHash;
 }
