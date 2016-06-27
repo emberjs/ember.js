@@ -2,7 +2,6 @@ import assign from 'ember-metal/assign';
 import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
 import View from 'ember-views/views/view';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
@@ -43,7 +42,6 @@ ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs,
     if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
     if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
-    if (attrs && attrs.viewName) { options.viewName = getValue(attrs.viewName); }
 
     if (found.component.create && contentScope) {
       let _self = contentScope.getSelf();
@@ -211,10 +209,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
   if (options.parentView) {
     options.parentView.appendChild(component);
-
-    if (options.viewName) {
-      set(options.parentView, options.viewName, component);
-    }
   }
 
   component._renderNode = renderNode;

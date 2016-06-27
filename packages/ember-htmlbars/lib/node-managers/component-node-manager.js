@@ -2,7 +2,6 @@ import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
 import LegacyEmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
@@ -47,14 +46,8 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
   // properties ({ id: "foo" }).
   configureCreateOptions(attrs, createOptions);
 
-  // If there is a controller on the scope, pluck it off and save it on the
-  // component. This allows the component to target actions sent via
-  // `sendAction` correctly.
-  if (parentScope.hasLocal('controller')) {
-    createOptions._controller = getValue(parentScope.getLocal('controller'));
-  } else {
-    createOptions._targetObject = getValue(parentScope.getSelf());
-  }
+  // This allows the component to target actions sent via `sendAction` correctly.
+  createOptions._targetObject = getValue(parentScope.getSelf());
 
   extractPositionalParams(renderNode, component, params, attrs);
 
@@ -94,7 +87,6 @@ function configureCreateOptions(attrs, createOptions) {
   // they are still streams.
   if (attrs.id) { createOptions.elementId = getValue(attrs.id); }
   if (attrs._defaultTagName) { createOptions._defaultTagName = getValue(attrs._defaultTagName); }
-  if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
 }
 
 ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_env, visitor) {
@@ -183,10 +175,6 @@ export function createComponent(_component, props, renderNode, env, attrs = {}) 
 
   if (props.parentView) {
     props.parentView.appendChild(component);
-
-    if (props.viewName) {
-      set(props.parentView, props.viewName, component);
-    }
   }
 
   component._renderNode = renderNode;

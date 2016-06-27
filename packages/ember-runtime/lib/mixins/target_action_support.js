@@ -160,11 +160,5 @@ function getTarget(instance) {
     }
   }
 
-  if (instance._controller) { return instance._controller; }
-
-  // fallback to `parentView.controller`
-  let parentViewController = get(instance, 'parentView.controller');
-  if (parentViewController) { return parentViewController; }
-
   return null;
 }

@@ -1,12 +1,9 @@
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
 import CoreView from 'ember-views/views/core_view';
-import ViewContextSupport from 'ember-views/mixins/view_context_support';
-import ViewChildViewsSupport from 'ember-views/mixins/view_child_views_support';
-import ViewLegacyChildViewsSupport from 'ember-views/mixins/legacy_child_views_support';
+import ViewChildViewsSupport from 'ember-views/mixins/child_views_support';
 import ViewStateSupport from 'ember-views/mixins/view_state_support';
 import ClassNamesSupport from 'ember-views/mixins/class_names_support';
-import LegacyViewSupport from 'ember-views/mixins/legacy_view_support';
 import InstrumentationSupport from 'ember-views/mixins/instrumentation_support';
 import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import VisibilitySupport from 'ember-views/mixins/visibility_support';
@@ -498,11 +495,9 @@ import ViewMixin from 'ember-views/mixins/view_support';
   @extends Ember.CoreView
   @deprecated See http://emberjs.com/deprecations/v1.x/#toc_ember-view
   @uses Ember.ViewSupport
-  @uses Ember.ViewContextSupport
   @uses Ember.ViewChildViewsSupport
   @uses Ember.ClassNamesSupport
   @uses Ember.AttributeBindingsSupport
-  @uses Ember.LegacyViewSupport
   @uses Ember.InstrumentationSupport
   @uses Ember.VisibilitySupport
   @uses Ember.AriaRoleSupport
@@ -510,12 +505,9 @@ import ViewMixin from 'ember-views/mixins/view_support';
 */
 // jscs:disable validateIndentation
 var View = CoreView.extend(
-  ViewContextSupport,
   ViewChildViewsSupport,
-  ViewLegacyChildViewsSupport,
   ViewStateSupport,
   ClassNamesSupport,
-  LegacyViewSupport,
   InstrumentationSupport,
   VisibilitySupport,
   CompatAttrsProxy,
@@ -590,4 +582,4 @@ View.reopenClass({
 
 export default View;
 
-export { ViewContextSupport, ViewChildViewsSupport, ViewStateSupport, ClassNamesSupport };
+export { ViewChildViewsSupport, ViewStateSupport, ClassNamesSupport };

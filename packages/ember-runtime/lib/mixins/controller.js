@@ -31,8 +31,6 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
   */
   target: null,
 
-  parentController: null,
-
   store: null,
 
   /**

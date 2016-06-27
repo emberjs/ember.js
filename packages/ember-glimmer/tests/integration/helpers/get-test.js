@@ -454,7 +454,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
 
     assert.strictEqual(this.$('#get-input').val(), 'banana');
 
-    this.runTask(() => set(this.context, 'context.source.banana', 'yellow'));
+    this.runTask(() => set(this.context, 'source.banana', 'yellow'));
 
     assert.strictEqual(this.$('#get-input').val(), 'yellow');
 

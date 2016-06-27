@@ -19,7 +19,6 @@ export default Mixin.create({
       @private
     */
     this.childViews = [];
-    this.parentView = null;
     this.ownerView = this.ownerView || this;
   },
 

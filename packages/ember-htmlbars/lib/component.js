@@ -6,7 +6,6 @@ import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import ActionSupport from 'ember-views/mixins/action_support';
 import View from 'ember-views/views/view';
 
-import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 
 import { getOwner } from 'container/owner';
@@ -108,12 +107,6 @@ export let HAS_BLOCK = symbol('HAS_BLOCK');
 */
 const Component = View.extend(TargetActionSupport, ActionSupport, {
   isComponent: true,
-  /*
-    This is set so that the proto inspection in appendTemplatedView does not
-    think that it should set the component's `context` to that of the parent view.
-  */
-  controller: null,
-  context: null,
 
   instrumentName: 'component',
   instrumentDisplay: computed(function() {
@@ -124,8 +117,6 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
 
   init() {
     this._super(...arguments);
-    set(this, 'controller', this);
-    set(this, 'context', this);
 
     // If a `defaultLayout` was specified move it to the `layout` prop.
     // `layout` is no longer a CP, so this just ensures that the `defaultLayout`
