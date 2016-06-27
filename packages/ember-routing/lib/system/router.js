@@ -717,11 +717,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     assert(`The route ${targetRouteName} was not found`, targetRouteName && this.router.hasRoute(targetRouteName));
 
     let queryParams = {};
-    // merge in any queryParams from the active transition which could include
-    // queryparams from the url on initial load.
-    if (this.router.activeTransition) {
-      assign(queryParams, this.router.activeTransition.queryParams);
-    }
+
+    this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
     assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams);
@@ -732,6 +729,27 @@ const EmberRouter = EmberObject.extend(Evented, {
     didBeginTransition(transition, this);
 
     return transition;
+  },
+
+  _processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams) {
+    // merge in any queryParams from the active transition which could include
+    // queryParams from the url on initial load.
+    if (!this.router.activeTransition) { return; }
+
+    var unchangedQPs = {};
+    var qpUpdates = this._qpUpdates || {};
+    for (var key in this.router.activeTransition.queryParams) {
+      if (!qpUpdates[key]) {
+        unchangedQPs[key] = this.router.activeTransition.queryParams[key];
+      }
+    }
+
+    // We need to fully scope queryParams so that we can create one object
+    // that represents both pased in queryParams and ones that aren't changed
+    // from the active transition.
+    this._fullyScopeQueryParams(targetRouteName, models, _queryParams);
+    this._fullyScopeQueryParams(targetRouteName, models, unchangedQPs);
+    assign(queryParams, unchangedQPs);
   },
 
   _prepareQueryParams(targetRouteName, models, queryParams) {
@@ -778,6 +796,32 @@ const EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
+  _fullyScopeQueryParams(leafRouteName, contexts, queryParams) {
+    var state = calculatePostTransitionState(this, leafRouteName, contexts);
+    var handlerInfos = state.handlerInfos;
+    stashParamNames(this, handlerInfos);
+
+    for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+      var route = handlerInfos[i].handler;
+      var qpMeta = get(route, '_qp');
+
+      for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
+        var qp = qpMeta.qps[j];
+
+        var presentProp = qp.prop in queryParams  && qp.prop ||
+                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
+                          qp.urlKey in queryParams && qp.urlKey;
+
+        if (presentProp) {
+          if (presentProp !== qp.scopedPropertyName) {
+            queryParams[qp.scopedPropertyName] = queryParams[presentProp];
+            delete queryParams[presentProp];
+          }
+        }
+      }
+    }
+  },
+
   _hydrateUnsuppliedQueryParams(leafRouteName, contexts, queryParams) {
     let state = calculatePostTransitionState(this, leafRouteName, contexts);
     let handlerInfos = state.handlerInfos;
@@ -792,7 +836,8 @@ const EmberRouter = EmberObject.extend(Evented, {
         let qp = qpMeta.qps[j];
 
         let presentProp = qp.prop in queryParams  && qp.prop ||
-                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName;
+                          qp.scopedPropertyName in queryParams && qp.scopedPropertyName ||
+                          qp.urlKey in queryParams && qp.urlKey;
 
         if (presentProp) {
           if (presentProp !== qp.scopedPropertyName) {
@@ -1048,6 +1093,8 @@ function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
 
 function updatePaths(router) {
   let infos = router.router.currentHandlerInfos;
+  if (infos.length === 0) { return; }
+
   let path = EmberRouter._routePath(infos);
   let currentRouteName = infos[infos.length - 1].name;
 

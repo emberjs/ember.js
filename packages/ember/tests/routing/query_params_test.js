@@ -1,4 +1,5 @@
 import Controller from 'ember-runtime/controllers/controller';
+import RSVP from 'ember-runtime/ext/rsvp';
 import Route from 'ember-routing/system/route';
 import run from 'ember-metal/run_loop';
 import get from 'ember-metal/property_get';
@@ -2490,6 +2491,45 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
     bootApplication();
   });
 
+  QUnit.test('queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  ', function() {
+    setTemplates({
+      application: compile(
+        '<button id="test-button" {{action \'increment\'}}>Increment</button>' +
+        '<span id="test-value">{{foo}}</span>' +
+        '{{outlet}}'
+      )
+    });
+    App.ApplicationController = Controller.extend({
+      queryParams: ['foo'],
+      foo: 1,
+      actions: {
+        increment: function() {
+          this.incrementProperty('foo');
+          this.send('refreshRoute');
+        }
+      }
+    });
+
+    App.ApplicationRoute = Route.extend({
+      actions: {
+        refreshRoute: function() {
+          this.refresh();
+        }
+      }
+    });
+
+    startingURL = '/';
+    bootApplication();
+    equal(jQuery('#test-value').text().trim(), '1');
+    equal(router.get('location.path'), '/', 'url is correct');
+    run(jQuery('#test-button'), 'click');
+    equal(jQuery('#test-value').text().trim(), '2');
+    equal(router.get('location.path'), '/?foo=2', 'url is correct');
+    run(jQuery('#test-button'), 'click');
+    equal(jQuery('#test-value').text().trim(), '3');
+    equal(router.get('location.path'), '/?foo=3', 'url is correct');
+  });
+
   QUnit.test('Use Ember.get to retrieve query params \'refreshModel\' configuration', function() {
     expect(6);
     App.ApplicationController = Controller.extend({
@@ -3183,6 +3223,133 @@ if (isEnabled('ember-routing-route-configured-query-params')) {
 
     let controller = container.lookup('controller:example');
     equal(get(controller, 'foo'), undefined);
+  });
+
+  QUnit.test('when refreshModel is true and loading action returns false, model hook will rerun when QPs change even if previous did not finish', function() {
+    expect(6);
+
+    var appModelCount = 0;
+    var promiseResolve;
+
+    App.ApplicationRoute = Route.extend({
+      queryParams: {
+        'appomg': {
+          defaultValue: 'applol'
+        }
+      },
+      model(params) {
+        appModelCount++;
+      }
+    });
+
+    App.IndexController = Controller.extend({
+      queryParams: ['omg']
+      // uncommon to not support default value, but should assume undefined.
+    });
+
+    var indexModelCount = 0;
+    App.IndexRoute = Route.extend({
+      queryParams: {
+        omg: {
+          refreshModel: true
+        }
+      },
+      actions: {
+        loading: function() {
+          return false;
+        }
+      },
+      model(params) {
+        indexModelCount++;
+        if (indexModelCount === 2) {
+          deepEqual(params, { omg: 'lex' });
+          return new RSVP.Promise(function(resolve) {
+            promiseResolve = resolve;
+            return;
+          });
+        } else if (indexModelCount === 3) {
+          deepEqual(params, { omg: 'hello' }, 'Model hook reruns even if the previous one didnt finish');
+        }
+      }
+    });
+
+    bootApplication();
+
+    equal(indexModelCount, 1);
+
+    var indexController = container.lookup('controller:index');
+    setAndFlush(indexController, 'omg', 'lex');
+    equal(indexModelCount, 2);
+
+    setAndFlush(indexController, 'omg', 'hello');
+    equal(indexModelCount, 3);
+    run(function() {
+      promiseResolve();
+    });
+    equal(get(indexController, 'omg'), 'hello', 'At the end last value prevails');
+  });
+
+  QUnit.test('when refreshModel is true and loading action does not return false, model hook will not rerun when QPs change even if previous did not finish', function() {
+    expect(7);
+
+    var appModelCount = 0;
+    var promiseResolve;
+
+    App.ApplicationRoute = Route.extend({
+      queryParams: {
+        'appomg': {
+          defaultValue: 'applol'
+        }
+      },
+      model(params) {
+        appModelCount++;
+      }
+    });
+
+    App.IndexController = Controller.extend({
+      queryParams: ['omg']
+      // uncommon to not support default value, but should assume undefined.
+    });
+
+    var indexModelCount = 0;
+    App.IndexRoute = Route.extend({
+      queryParams: {
+        omg: {
+          refreshModel: true
+        }
+      },
+      model(params) {
+        indexModelCount++;
+
+        if (indexModelCount === 2) {
+          deepEqual(params, { omg: 'lex' });
+          return new RSVP.Promise(function(resolve) {
+            promiseResolve = resolve;
+            return;
+          });
+        } else if (indexModelCount === 3) {
+          ok(false, 'shouldnt get here');
+        }
+      }
+    });
+
+    bootApplication();
+
+    equal(appModelCount, 1);
+    equal(indexModelCount, 1);
+
+    var indexController = container.lookup('controller:index');
+    setAndFlush(indexController, 'omg', 'lex');
+
+    equal(appModelCount, 1);
+    equal(indexModelCount, 2);
+
+    setAndFlush(indexController, 'omg', 'hello');
+    equal(get(indexController, 'omg'), 'hello', ' value was set');
+    equal(indexModelCount, 2);
+    run(function() {
+      promiseResolve();
+    });
   });
 }
 
