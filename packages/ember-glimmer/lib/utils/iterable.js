@@ -1,8 +1,11 @@
 import { get } from 'ember-metal/property_get';
 import { guidFor } from 'ember-metal/utils';
+import Dict from 'ember-metal/empty_object';
 import { objectAt, isEmberArray } from 'ember-runtime/mixins/array';
 import { UpdatableReference, UpdatablePrimitiveReference } from './references';
 import { isEachIn } from '../helpers/each-in';
+
+const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
 export default function iterableFor(ref, keyPath) {
   return new Iterable(ref, keyFor(keyPath));
@@ -35,12 +38,26 @@ function identity(item) {
   }
 }
 
+function ensureUniqueKey(seen, key) {
+  let seenCount = seen[key];
+
+  if (seenCount) {
+    seen[key]++;
+    return `${key}${ITERATOR_KEY_GUID}${seenCount}`;
+  } else {
+    seen[key] = 1;
+  }
+
+  return key;
+}
+
 class ArrayIterator {
   constructor(array, keyFor) {
     this.array = array;
     this.length = array.length;
     this.keyFor = keyFor;
     this.position = 0;
+    this.seen = new Dict();
   }
 
   isEmpty() {
@@ -48,12 +65,12 @@ class ArrayIterator {
   }
 
   next() {
-    let { array, length, keyFor, position } = this;
+    let { array, length, keyFor, position, seen } = this;
 
     if (position >= length) { return null; }
 
     let value = array[position];
-    let key = keyFor(value, position);
+    let key = ensureUniqueKey(seen, keyFor(value, position));
     let memo = position;
 
     this.position++;
@@ -68,6 +85,7 @@ class EmberArrayIterator {
     this.length = get(array, 'length');
     this.keyFor = keyFor;
     this.position = 0;
+    this.seen = new Dict();
   }
 
   isEmpty() {
@@ -75,12 +93,12 @@ class EmberArrayIterator {
   }
 
   next() {
-    let { array, length, keyFor, position } = this;
+    let { array, length, keyFor, position, seen } = this;
 
     if (position >= length) { return null; }
 
     let value = objectAt(array, position);
-    let key = keyFor(value, position);
+    let key = ensureUniqueKey(seen, keyFor(value, position));
     let memo = position;
 
     this.position++;
@@ -141,10 +159,10 @@ class Iterable {
 
     if (iterable === undefined || iterable === null) {
       return EMPTY_ITERATOR;
-    } else if (Array.isArray(iterable)) {
-      return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (isEmberArray(iterable)) {
       return new EmberArrayIterator(iterable, keyFor);
+    } else if (Array.isArray(iterable)) {
+      return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (isEachIn(ref)) {
       let keys = Object.keys(iterable);
       let values = keys.map(key => iterable[key]);
