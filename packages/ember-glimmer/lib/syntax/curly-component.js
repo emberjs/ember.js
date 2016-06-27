@@ -74,18 +74,14 @@ class CurlyComponentManager {
 
     props.renderer = parentView.renderer;
     props[HAS_BLOCK] = hasBlock;
+    // parentView.controller represents any parent components
+    // dynamicScope.controller represents the outlet controller
+    props._targetObject = parentView.controller || dynamicScope.controller;
 
     let component = klass.create(props);
 
     dynamicScope.view = component;
     parentView.appendChild(component);
-
-    if (parentView.controller) {
-      dynamicScope.controller = parentView.controller;
-    }
-
-    component._controller = dynamicScope.controller;
-
 
     component.trigger('didInitAttrs', { attrs });
     component.trigger('didReceiveAttrs', { newAttrs: attrs });

@@ -29,25 +29,6 @@ export default Mixin.create({
   action: null,
   actionContext: null,
 
-  targetObject: computed('target', function() {
-    if (this._targetObject) {
-      return this._targetObject;
-    }
-
-    let target = get(this, 'target');
-
-    if (typeof target === 'string') {
-      let value = get(this, target);
-      if (value === undefined) {
-        value = get(context.lookup, target);
-      }
-
-      return value;
-    } else {
-      return target;
-    }
-  }),
-
   actionContextObject: computed('actionContext', function() {
     let actionContext = get(this, 'actionContext');
 
@@ -115,7 +96,12 @@ export default Mixin.create({
   */
   triggerAction(opts = {}) {
     let action = opts.action || get(this, 'action');
-    let target = opts.target || get(this, 'targetObject');
+    let target = opts.target;
+
+    if (!target) {
+      target = getTarget(this);
+    }
+
     let actionContext = opts.actionContext;
 
     function args(options, actionName) {
@@ -149,3 +135,36 @@ export default Mixin.create({
     }
   }
 });
+
+function getTarget(instance) {
+  // TODO: Deprecate specifying `targetObject`
+  let target = get(instance, 'targetObject');
+
+  // if a `targetObject` CP was provided, use it
+  if (target) { return target; }
+
+  // if _targetObject use it
+  if (instance._targetObject) { return instance._targetObject; }
+
+  target = get(instance, 'target');
+  if (target) {
+    if (typeof target === 'string') {
+      let value = get(instance, target);
+      if (value === undefined) {
+        value = get(context.lookup, target);
+      }
+
+      return value;
+    } else {
+      return target;
+    }
+  }
+
+  if (instance._controller) { return instance._controller; }
+
+  // fallback to `parentView.controller`
+  let parentViewController = get(instance, 'parentView.controller');
+  if (parentViewController) { return parentViewController; }
+
+  return null;
+}

@@ -1,5 +1,4 @@
 import { Mixin } from 'ember-metal/mixin';
-import { computed } from 'ember-metal/computed';
 import { get } from 'ember-metal/property_get';
 import isNone from 'ember-metal/is_none';
 import { assert } from 'ember-metal/debug';
@@ -123,22 +122,6 @@ export default Mixin.create({
       });
     }
   },
-
-  /**
-    If the component is currently inserted into the DOM of a parent view, this
-    property will point to the controller of the parent view.
-
-    @property targetObject
-    @type Ember.Controller
-    @default null
-    @private
-  */
-  targetObject: computed('controller', function(key) {
-    if (this._targetObject) { return this._targetObject; }
-    if (this._controller) { return this._controller; }
-    let parentView = get(this, 'parentView');
-    return parentView ? get(parentView, 'controller') : null;
-  }),
 
   send(actionName, ...args) {
     let target;
