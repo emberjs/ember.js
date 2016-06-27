@@ -65,6 +65,7 @@ export default Mixin.create({
 
     instance.parentView = this;
     instance.ownerView = this.ownerView;
+    instance._viewRegistry = this._viewRegistry;
   },
 
   unlinkChild(instance) {
