@@ -113,8 +113,7 @@ Helper.reopenClass({
 
   ```js
   // app/helpers/format-currency.js
-  export function Ember.Helper.helper(function(params, hash) {
-    let cents = params[0];
+  export function formatCurrency([cents], hash) {
     let currency = hash.currency;
     return `${currency}${cents * 0.01}`;
   });
@@ -122,7 +121,7 @@ Helper.reopenClass({
   export default Ember.Helper.helper(formatCurrency);
 
   // tests/myhelper.js
-  import {formatCurrency} from ..../helpers/myhelper
+  import { formatCurrency } from ..../helpers/myhelper
   // add some tests
   ```
 
