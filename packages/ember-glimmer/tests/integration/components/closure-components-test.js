@@ -40,6 +40,142 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Hodi Hodari');
   }
 
+  ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'params'
+      }),
+      template: '{{#each params as |p|}}{{p}}{{/each}}'
+    });
+
+    this.render('{{component (component "-looked-up" model.greeting model.name)}}', {
+      model: {
+        greeting: 'Gabon ',
+        name: 'Zack'
+      }
+    });
+
+    this.assertText('Gabon Zack');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Gabon Zack');
+
+    this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+    this.assertText('Good morning Zack');
+
+    this.runTask(() => this.context.set('model.name', 'Matthew'));
+
+    this.assertText('Good morning Matthew');
+
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+
+    this.assertText('Gabon Zack');
+  }
+
+  ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'params'
+      }),
+      template: '{{#each params as |p|}}{{p}}{{/each}}'
+    });
+
+    this.render('{{component (component "-looked-up" model.greeting model.name) model.name model.greeting}}', {
+      model: {
+        greeting: 'Gabon ',
+        name: 'Zack'
+      }
+    });
+
+    this.assertText('ZackGabon ');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('ZackGabon ');
+
+    this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+    this.assertText('ZackGood morning ');
+
+    this.runTask(() => this.context.set('model.name', 'Matthew'));
+
+    this.assertText('MatthewGood morning ');
+
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+
+    this.assertText('ZackGabon ');
+  }
+
+  ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'params'
+      }),
+      template: '{{#each params as |p|}}{{p}}{{/each}}'
+    });
+
+    this.render('{{component (component (component "-looked-up" model.greeting model.name))}}', {
+      model: {
+        greeting: 'Gabon ',
+        name: 'Zack'
+      }
+    });
+
+    this.assertText('Gabon Zack');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Gabon Zack');
+
+    this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+    this.assertText('Good morning Zack');
+
+    this.runTask(() => this.context.set('model.name', 'Matthew'));
+
+    this.assertText('Good morning Matthew');
+
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+
+    this.assertText('Gabon Zack');
+  }
+
+  ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: 'params'
+      }),
+      template: '{{#each params as |p|}}{{p}}{{/each}}'
+    });
+
+    this.render('{{component (component (component "-looked-up" model.greeting model.name) model.name model.greeting)}}', {
+      model: {
+        greeting: 'Gabon ',
+        name: 'Zack'
+      }
+    });
+
+    this.assertText('ZackGabon ');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('ZackGabon ');
+
+    this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+
+    this.assertText('ZackGood morning ');
+
+    this.runTask(() => this.context.set('model.name', 'Matthew'));
+
+    this.assertText('MatthewGood morning ');
+
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+
+    this.assertText('ZackGabon ');
+  }
+
   ['@test renders with component helper with curried params, hash']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
