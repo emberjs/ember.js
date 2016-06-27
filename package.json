@@ -37,7 +37,7 @@
     "handlebars": "^3.0.2",
     "qunit": "^0.7.2",
     "simple-html-tokenizer": "^0.2.5",
-    "typescript": "Microsoft/TypeScript#ba78d1e"
+    "typescript": "1.9.0-dev.20160619-1.0"
   },
   "devDependencies": {
     "benchmark": "^1.0.0",
