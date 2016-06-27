@@ -2113,7 +2113,7 @@ QUnit.test('Child routes should render inside the application template if the ap
   equal(jQuery('#qunit-fixture > div').text(), 'App posts');
 });
 
-test('The template is not re-rendered when the route\'s context changes', function() {
+QUnit.test('The template is not re-rendered when the route\'s context changes', function() {
   Router.map(function() {
     this.route('page', { path: '/page/:name' });
   });
@@ -2153,7 +2153,7 @@ test('The template is not re-rendered when the route\'s context changes', functi
   equal(insertionCount, 1, 'view should still have inserted only once');
 });
 
-test('The template is not re-rendered when two routes present the exact same template & controller', function() {
+QUnit.test('The template is not re-rendered when two routes present the exact same template & controller', function() {
   Router.map(function() {
     this.route('first');
     this.route('second');
@@ -2264,7 +2264,7 @@ QUnit.test('Promises encountered on app load put app into loading state until re
   equal(jQuery('p', '#qunit-fixture').text(), 'INDEX', 'The index route is display.');
 });
 
-test('Route should tear down multiple outlets', function() {
+QUnit.test('Route should tear down multiple outlets', function() {
   setTemplate('application', compile('{{outlet \'menu\'}}{{outlet}}{{outlet \'footer\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
@@ -2323,7 +2323,7 @@ QUnit.test('Route will assert if you try to explicitly render {into: ...} a miss
   expectAssertion(() => bootApplication(), 'You attempted to render into \'nonexistent\' but it was not found');
 });
 
-test('Route supports clearing outlet explicitly', function() {
+QUnit.test('Route supports clearing outlet explicitly', function() {
   setTemplate('application', compile('{{outlet}}{{outlet \'modal\'}}'));
   setTemplate('posts', compile('{{outlet}}'));
   setTemplate('users', compile('users'));
