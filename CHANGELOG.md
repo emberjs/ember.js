@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.6.1 (June 27, 2016)
+
+- [#13634](https://github.com/emberjs/ember.js/pull/13634) [BUGFIX] Fix issues with rerendering blockless and tagless components.
+- [#13655](https://github.com/emberjs/ember.js/pull/13655) [BUGFIX] Make debugging `this._super` much easier (remove manual `.call` / `.apply` optimizations).
+- [#13672](https://github.com/emberjs/ember.js/pull/13672) [BUGFIX] Fix issue with `this.render` and `this.disconnectOutlet` in routes.
+
 ### 2.6.0 (June 8, 2016)
 
 - [#13520](https://github.com/emberjs/ember.js/pull/13520) [BUGFIX] Fixes issues with `baseURL` and `rootURL` in `Ember.HistoryLocation` and ensures that `Ember.NoneLocation` properly handles `rootURL`.
