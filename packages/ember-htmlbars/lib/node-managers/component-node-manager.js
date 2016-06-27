@@ -87,7 +87,6 @@ function configureCreateOptions(attrs, createOptions) {
   // they are still streams.
   if (attrs.id) { createOptions.elementId = getValue(attrs.id); }
   if (attrs._defaultTagName) { createOptions._defaultTagName = getValue(attrs._defaultTagName); }
-  if (attrs.viewName) { createOptions.viewName = getValue(attrs.viewName); }
 }
 
 ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_env, visitor) {
