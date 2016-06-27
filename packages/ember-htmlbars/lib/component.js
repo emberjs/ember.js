@@ -6,7 +6,6 @@ import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
 import ActionSupport from 'ember-views/mixins/action_support';
 import View from 'ember-views/views/view';
 
-import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 
 import { getOwner } from 'container/owner';
