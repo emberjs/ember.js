@@ -268,18 +268,19 @@ asyncHelper('visit', visit);
 
 /**
   Clicks an element and triggers any actions triggered by the element's `click`
-  event.
+  event. Accepts `context` as an optional second argument.
 
   Example:
 
   ```javascript
-  click('.some-jQuery-selector').then(function() {
+  click('.some-jQuery-selector', 'body').then(function() {
     // assert something
   });
   ```
 
   @method click
   @param {String} selector jQuery selector for finding element on the DOM
+  @param {String} context for finding element on the DOM
   @return {RSVP.Promise}
   @public
 */
