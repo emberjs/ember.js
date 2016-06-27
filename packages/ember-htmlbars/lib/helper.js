@@ -41,6 +41,37 @@ import Object from 'ember-runtime/system/object';
 
   Additionally, class helpers can call `recompute` to force a new computation.
 
+  If the output of your helper is only dependent on the current input, then you
+  can use the `Helper.helper` function.
+
+  In this form the example above becomes:
+  
+  ```js
+  export default Ember.Helper.helper((params, hash) => {
+    let cents = params[0];
+    let currency = hash.currency;
+    return `${currency}${cents * 0.01}`;
+  });
+  ```
+
+  This latter form is more efficient at run time and results in smaller compiled js.
+  It is also easier to test by using the following structure and importing the 
+  `formatCurrency` function into a test:
+
+  ```js
+  export function formatCurrency (params, hash) {
+    let cents = params[0];
+    let currency = hash.currency;
+    return `${currency}${cents * 0.01}`;
+  }
+
+  export default Ember.Helper.helper(formatCurrency);
+
+  // tests/myhelper.js
+  import {formatCurrency} from ..../helpers/myhelper
+  // add some tests
+  ```
+
   @class Ember.Helper
   @public
   @since 1.13.0
