@@ -1,7 +1,7 @@
 import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 import { ConstReference } from 'glimmer-reference';
 import { generateGuid, guidFor } from 'ember-metal/utils';
-import { RootReference, NULL_REFERENCE } from '../utils/references';
+import { RootReference } from '../utils/references';
 
 function outletComponentFor(vm) {
   let { outletState, isTopLevel } = vm.dynamicScope();
@@ -39,8 +39,6 @@ class TopLevelOutletComponentReference extends ConstReference {
   }
 }
 
-const INVALIDATE = null;
-
 class OutletComponentReference {
   constructor(outletName, reference) {
     this.outletName = outletName;
@@ -52,7 +50,7 @@ class OutletComponentReference {
 
   value() {
     let { outletName, reference, definition, lastState } = this;
-    let newState = reference.value();
+    let newState = this.lastState = reference.value();
 
     definition = revalidate(definition, lastState, newState);
 
@@ -63,11 +61,9 @@ class OutletComponentReference {
     } else if (hasTemplate) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
-      return this.definition = EMPTY_OUTLET_DEFINITION;
+      return null;
     }
   }
-
-  destroy() {}
 }
 
 function revalidate(definition, lastState, newState) {
@@ -76,17 +72,17 @@ function revalidate(definition, lastState, newState) {
   }
 
   if (!lastState && newState || lastState && !newState) {
-    return INVALIDATE;
+    return null;
   }
 
   if (
-    newState.template === lastState.template &&
-    newState.controller === lastState.controller
+    newState.render.template === lastState.render.template &&
+    newState.render.controller === lastState.render.controller
   ) {
     return definition;
   }
 
-  return INVALIDATE;
+  return null;
 }
 
 
@@ -137,19 +133,6 @@ class OutletComponentManager extends AbstractOutletComponentManager {
 
 const MANAGER = new OutletComponentManager();
 
-class EmptyOutletComponentManager extends AbstractOutletComponentManager {
-  create(definition, args, dynamicScope) {
-    dynamicScope.outletState = null;
-    return null;
-  }
-
-  getSelf(state) {
-    return NULL_REFERENCE;
-  }
-}
-
-const EMPTY_MANAGER = new EmptyOutletComponentManager();
-
 import { ComponentDefinition } from 'glimmer-runtime';
 
 class AbstractOutletComponentDefinition extends ComponentDefinition {
@@ -187,15 +170,3 @@ class OutletComponentDefinition extends AbstractOutletComponentDefinition {
     builder.wrapLayout(this.template.asLayout());
   }
 }
-
-class EmptyOutletComponentDefinition extends AbstractOutletComponentDefinition {
-  constructor() {
-    super(EMPTY_MANAGER, null, null);
-  }
-
-  compile(builder) {
-    builder.empty();
-  }
-}
-
-const EMPTY_OUTLET_DEFINITION = new EmptyOutletComponentDefinition();
