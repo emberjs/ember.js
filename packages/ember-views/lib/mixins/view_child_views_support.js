@@ -67,64 +67,6 @@ export default Mixin.create({
     return this;
   },
 
-  /**
-    Instantiates a view to be added to the childViews array during view
-    initialization. You generally will not call this method directly unless
-    you are overriding `createChildViews()`. Note that this method will
-    automatically configure the correct settings on the new view instance to
-    act as a child of the parent.
-
-    @method createChildView
-    @param {Class|String} viewClass
-    @param {Object} [attrs] Attributes to add
-    @return {Ember.View} new instance
-    @private
-  */
-  createChildView(maybeViewClass, attrs = {}) {
-    if (!maybeViewClass) {
-      throw new TypeError('createChildViews first argument must exist');
-    }
-
-    let owner = getOwner(this);
-
-    if (maybeViewClass.isView && maybeViewClass.parentView === this && getOwner(maybeViewClass) === owner) {
-      return maybeViewClass;
-    }
-
-    let view;
-
-    attrs.parentView = this;
-    attrs.renderer = this.renderer;
-    attrs._viewRegistry = this._viewRegistry;
-
-    if (maybeViewClass.isViewFactory) {
-      setOwner(attrs, owner);
-
-      view = maybeViewClass.create(attrs);
-
-      if (view.viewName) {
-        set(this, view.viewName, view);
-      }
-    } else if ('string' === typeof maybeViewClass) {
-      let fullName = 'view:' + maybeViewClass;
-      let ViewKlass = owner._lookupFactory(fullName);
-
-      assert('Could not find view: \'' + fullName + '\'', !!ViewKlass);
-
-      view = ViewKlass.create(attrs);
-    } else {
-      view = maybeViewClass;
-      assert('You must pass instance or subclass of View', view.isView);
-
-      setOwner(attrs, owner);
-      setProperties(view, attrs);
-    }
-
-    this.linkChild(view);
-
-    return view;
-  },
-
   linkChild(instance) {
     if (!instance[OWNER]) {
       setOwner(instance, getOwner(this));
