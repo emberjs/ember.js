@@ -2,7 +2,6 @@ import assign from 'ember-metal/assign';
 import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import setProperties from 'ember-metal/set_properties';
 import View from 'ember-views/views/view';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
