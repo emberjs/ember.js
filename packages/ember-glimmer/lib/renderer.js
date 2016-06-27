@@ -1,16 +1,17 @@
 import { RootReference } from './utils/references';
 import run from 'ember-metal/run_loop';
 import { setHasViews } from 'ember-metal/tags';
-import { CURRENT_TAG } from 'glimmer-reference';
+import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
 
 const { backburner } = run;
 
 class DynamicScope {
-  constructor({ view, controller, outletState, isTopLevel }) {
+  constructor({ view, controller, outletState, isTopLevel, targetObject }) {
     this.view = view;
     this.controller = controller;
     this.outletState = outletState;
     this.isTopLevel = isTopLevel;
+    this.targetObject = targetObject;
   }
 
   child() {
@@ -130,9 +131,11 @@ class Renderer {
 
     let env = this._env;
     let self = new RootReference(view);
+    let controller = view.outletState.render.controller;
     let dynamicScope = new DynamicScope({
       view,
-      controller: view.outletState.render.controller,
+      controller,
+      targetObject: controller,
       outletState: view.toReference(),
       isTopLevel: true
     });
@@ -149,7 +152,13 @@ class Renderer {
   appendTo(view, target) {
     let env = this._env;
     let self = new RootReference(view);
-    let dynamicScope = new DynamicScope({ view, controller: view.controller });
+    let dynamicScope = new DynamicScope({
+      view,
+      controller: undefined,
+      targetObject: undefined,
+      outletState: UNDEFINED_REFERENCE,
+      isTopLevel: true
+    });
 
     env.begin();
     let result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
