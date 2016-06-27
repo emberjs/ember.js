@@ -53,14 +53,6 @@ QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
   }, 'Usage of `_actions` is deprecated, use `actions` instead.');
 });
 
-QUnit.test('The context of an Ember.Component is itself', function() {
-  strictEqual(component, component.get('context'), 'A component\'s context is itself');
-});
-
-QUnit.test('The controller (target of `action`) of an Ember.Component is itself', function() {
-  strictEqual(component, component.get('controller'), 'A component\'s controller is itself');
-});
-
 QUnit.test('Specifying a defaultLayout to a component is deprecated', function() {
   expectDeprecation(() => {
     Component.extend({

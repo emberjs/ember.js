@@ -155,7 +155,11 @@ class Renderer {
     let dynamicScope = new DynamicScope({
       view,
       controller: undefined,
-      targetObject: undefined,
+      // this is generally only used for the test harness, and is not a "supported"
+      // mechanism for setting up a template/test environment. We are defaulting the
+      // targetObject to the view instance based on the assumption that it is a component
+      // instance
+      targetObject: view,
       outletState: UNDEFINED_REFERENCE,
       isTopLevel: true
     });

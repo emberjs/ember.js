@@ -44,8 +44,6 @@ const Component = CoreView.extend(
     isComponent: true,
     layoutName: null,
     layout: null,
-    controller: null,
-    _controller: null,
 
     init() {
       this._super(...arguments);
@@ -53,7 +51,6 @@ const Component = CoreView.extend(
       this[DIRTY_TAG] = new DirtyableTag();
       this[ROOT_REF] = null;
       this[REFS] = new EmptyObject();
-      this.controller = this;
 
       // If a `defaultLayout` was specified move it to the `layout` prop.
       // `layout` is no longer a CP, so this just ensures that the `defaultLayout`
