@@ -166,18 +166,14 @@ const UI =
   </div>
 {{/if}}`;
 
-function $(selector) {
-  return document.querySelectorAll(selector);
-}
-
-let $inputs:   HTMLDivElement,
+let $inputs:   Element,
     $data:     HTMLTextAreaElement,
     $template: HTMLTextAreaElement,
     $layout:   HTMLTextAreaElement,
-    $render:   HTMLButtonElement,
-    $update:   HTMLButtonElement,
-    $clear:    HTMLButtonElement,
-    $reset:    HTMLButtonElement;
+    $render:   Element,
+    $update:   Element,
+    $clear:    Element,
+    $reset:    Element;
 
 let ui = {
   rendered: false,
@@ -324,14 +320,14 @@ function renderUI() {
 }
 
 function bindUI() {
-  $inputs   = $("#inputs")[0] as HTMLDivElement;
-  $data     = $("#data")[0] as HTMLTextAreaElement;
-  $template = $("#top-level-template")[0] as HTMLTextAreaElement;
-  $layout   = $("#component-layout")[0] as HTMLTextAreaElement;
-  $render   = $("#btn-render")[0] as HTMLButtonElement;
-  $update   = $("#btn-update")[0] as HTMLButtonElement;
-  $clear    = $("#btn-clear")[0] as HTMLButtonElement;
-  $reset    = $("#btn-reset")[0] as HTMLButtonElement;
+  $inputs   = document.querySelectorAll("#inputs")[0];
+  $data     = <HTMLTextAreaElement>document.querySelectorAll("#data")[0];
+  $template = <HTMLTextAreaElement>document.querySelectorAll("#top-level-template")[0];
+  $layout   = <HTMLTextAreaElement>document.querySelectorAll("#component-layout")[0];
+  $render   = document.querySelectorAll("#btn-render")[0];
+  $update   = document.querySelectorAll("#btn-update")[0];
+  $clear    = document.querySelectorAll("#btn-clear")[0];
+  $reset    = document.querySelectorAll("#btn-reset")[0];
 }
 
 function wireUI() {
