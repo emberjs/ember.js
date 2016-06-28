@@ -5,7 +5,7 @@ import { set } from 'ember-metal/property_set';
 import EmberRouter from 'ember-routing/system/router';
 
 
-moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
+moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
     this.owner.register('controller:home', Controller.extend());
     this.registerTemplate('home', '<p>BYE</p>');
@@ -37,6 +37,34 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
       this.render(`<h1>HI</h1>{{render 'oops'}}`);
     }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as a template.');
   }
+
+  ['@test should render given template with the singleton controller as its context']() {
+    this.owner.register('controller:post', Controller.extend({
+      init() {
+        this.set('title', `It's Simple Made Easy`);
+      }
+    }));
+    this.registerTemplate('post', '<p>{{title}}</p>');
+
+    this.render(`<h1>HI</h1>{{render 'post'}}`);
+
+    this.assertText(`HIIt's Simple Made Easy`);
+
+    this.runTask(() => this.rerender());
+
+    this.assertText(`HIIt's Simple Made Easy`);
+
+    let controller = this.owner.lookup('controller:post');
+
+    this.runTask(() => set(controller, 'title', `Rails is omakase`));
+
+    this.assertText(`HIRails is omakase`);
+
+    this.runTask(() => set(controller, 'title', `It's Simple Made Easy`));
+
+    this.assertText(`HIIt's Simple Made Easy`);
+  }
+
 
   ['@test should render given template with a supplied model']() {
     this.owner.register('controller:post', Controller.extend());
@@ -234,7 +262,7 @@ moduleFor('@htmlbars Helpers test: {{render}}', class extends RenderingTest {
     }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
   }
 
-  ['@test should render a template without a model only once']() {
+  ['@htmlbars should render a template without a model only once']() {
     this.owner.register('controller:home', Controller.extend());
     this.owner.register('router:main', EmberRouter.extend());
     this.registerTemplate('home', '<p>BYE</p>');
