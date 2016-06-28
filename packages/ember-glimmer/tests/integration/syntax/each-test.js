@@ -4,6 +4,7 @@ import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { removeAt } from 'ember-runtime/mixins/mutable_array';
+import ArrayProxy from 'ember-runtime/system/array_proxy';
 
 import {
   BasicConditionalsTest,
@@ -332,7 +333,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertInvariants(oldSnapshot, this.takeSnapshot());
   }
 
-  [`@htmlbars it renders all items with duplicate key values`]() {
+  [`@test it renders all items with duplicate key values`]() {
     this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
       list: emberA([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }])
     });
@@ -340,6 +341,34 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('HelloHelloHello');
 
     let list = get(this.context, 'list');
+
+    this.runTask(() => {
+      list.forEach(hash => set(hash, 'text', 'Goodbye'));
+    });
+
+    this.assertText('GoodbyeGoodbyeGoodbye');
+  }
+
+  [`@test it renders all items with duplicate key values - Ember array`]() {
+    let list = ArrayProxy.create({
+      content: [
+        {
+          text: 'Hello'
+        },
+        {
+          text: 'Hello'
+        },
+        {
+          text: 'Hello'
+        }
+      ]
+    });
+
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
+      list
+    });
+
+    this.assertText('HelloHelloHello');
 
     this.runTask(() => {
       list.forEach(hash => set(hash, 'text', 'Goodbye'));

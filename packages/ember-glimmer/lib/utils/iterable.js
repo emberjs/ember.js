@@ -17,7 +17,9 @@ function keyFor(keyPath) {
     case null:
       return identity;
     default:
-      return (item) => get(item, keyPath);
+      return function (item)  {
+        return this.generateUniqueKey(get(item, keyPath));
+      };
   }
 }
 
@@ -35,8 +37,64 @@ function identity(item) {
   }
 }
 
-class ArrayIterator {
+/*
+  Base class for iterators.
+  Provides the `generateKey` method, which detects collisions when
+  iteratoting over objects in a list.
+  For instance, you may be using the `{{#each}}` helper with the `key=` option:
+
+  ```javascript
+  this.set('data', [
+    {
+      name: 'Yehuda' }
+    },
+    {
+      name: 'Jenn'
+    },
+    {
+      name: 'Yehuda'
+    }
+  ])
+  ```
+
+  and the following template:
+
+  ```handlebars
+  {{#each data key="name" as |person|}}
+    {{person.name}}
+  {{/each}}
+  ```
+
+  In the above example, we want each item in the list to render, even though two objects have the same
+  value for the key (Notice there are two "Yehuda"'s above.
+
+  As the iterator goes through the array, it will cache value of the `key` `name`.
+  In order to make sure the cache updates correctly, we assign it a unique key.
+*/
+class CollisionDetectionIterator {
+  constructor() {
+    this.collisions = undefined;
+  }
+
+  // implementation stolen from https://github.com/tildeio/htmlbars/pull/393/files
+  generateUniqueKey(key) {
+    if (!this.collisions) {
+      this.collisions = Object.create(null);
+    }
+
+    let { collisions } = this;
+
+    let count = collisions[key] | 0;
+    collisions[key] = ++count;
+    // I'm not sure why this UUID is this particular UUID.
+    // TODO: ask @krisselden
+    return `${key}-${count}_11c3fd46-300c-11e5-932c-5cf9388a6f6c`;
+  }
+}
+
+class ArrayIterator extends CollisionDetectionIterator {
   constructor(array, keyFor) {
+    super();
     this.array = array;
     this.length = array.length;
     this.keyFor = keyFor;
@@ -48,12 +106,12 @@ class ArrayIterator {
   }
 
   next() {
-    let { array, length, keyFor, position } = this;
+    let { array, length, position } = this;
 
     if (position >= length) { return null; }
 
     let value = array[position];
-    let key = keyFor(value, position);
+    let key = this.keyFor(value, position);
     let memo = position;
 
     this.position++;
@@ -62,8 +120,9 @@ class ArrayIterator {
   }
 }
 
-class EmberArrayIterator {
+class EmberArrayIterator extends CollisionDetectionIterator {
   constructor(array, keyFor) {
+    super();
     this.array = array;
     this.length = get(array, 'length');
     this.keyFor = keyFor;
@@ -75,12 +134,12 @@ class EmberArrayIterator {
   }
 
   next() {
-    let { array, length, keyFor, position } = this;
+    let { array, length, position } = this;
 
     if (position >= length) { return null; }
 
     let value = objectAt(array, position);
-    let key = keyFor(value, position);
+    let key = this.keyFor(value, position);
     let memo = position;
 
     this.position++;
@@ -102,17 +161,24 @@ class ObjectKeysIterator {
   }
 
   next() {
-    let { keys, values, keyFor, position } = this;
+    let { keys, values, position } = this;
 
     if (position >= keys.length) { return null; }
 
     let value = values[position];
     let memo = keys[position];
-    let key = keyFor(value, memo);
+    let key = this.keyFor(value, memo);
 
     this.position++;
 
     return { key, value: memo, memo: value };
+  }
+
+  // Because an Object or an Ember.Object can only have
+  // one value per key, we don't need to detect collisions.
+  // Just return the key given instead to appease the interface.
+  generateUniqueKey(key) {
+    return key;
   }
 }
 
