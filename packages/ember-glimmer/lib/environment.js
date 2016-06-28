@@ -7,6 +7,7 @@ import Dict from 'ember-metal/empty_object';
 import { assert } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
+import { RenderSyntax } from './syntax/render';
 import { OutletSyntax } from './syntax/outlet';
 import lookupComponent from 'ember-views/utils/lookup-component';
 import createIterable from './utils/iterable';
@@ -188,6 +189,8 @@ export default class Environment extends GlimmerEnvironment {
 
       if (key === 'component') {
         return new DynamicComponentSyntax({ args, templates });
+      } else if (key === 'render') {
+        return new RenderSyntax({ args });
       } else if (key === 'outlet') {
         return new OutletSyntax({ args });
       }
