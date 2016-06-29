@@ -1,5 +1,4 @@
 import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
-import { ConstReference } from 'glimmer-reference';
 import { generateGuid, guidFor } from 'ember-metal/utils';
 import { RootReference } from '../utils/references';
 
@@ -30,12 +29,23 @@ export class OutletSyntax extends StatementSyntax {
   }
 }
 
-class TopLevelOutletComponentReference extends ConstReference {
+class TopLevelOutletComponentReference {
   constructor(reference) {
-    let outletState = reference.value();
-    let definition = new TopLevelOutletComponentDefinition(outletState.render.template);
+    this.outletReference = reference;
+    this.lastState = reference.value();
+    this.definition = new TopLevelOutletComponentDefinition(this.lastState.render.template);
+    this.tag = reference.tag;
+  }
 
-    super(definition);
+  value() {
+    let lastState = this.lastState;
+    let newState = this.outletReference.value();
+
+    if (lastState.render.name !== newState.render.name) {
+      return new TopLevelOutletComponentDefinition(newState.outlets.main.render.template);
+    }
+
+    return this.definition;
   }
 }
 
@@ -51,7 +61,6 @@ class OutletComponentReference {
   value() {
     let { outletName, reference, definition, lastState } = this;
     let newState = this.lastState = reference.value();
-
     definition = revalidate(definition, lastState, newState);
 
     let hasTemplate = newState && newState.render.template;

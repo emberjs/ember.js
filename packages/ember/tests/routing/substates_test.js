@@ -738,9 +738,7 @@ QUnit.test('Setting a query param during a slow transition should work', functio
   equal(appController.get('currentPath'), 'grandma.index', 'Transition should be complete');
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
+QUnit.test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadingRoute if present', function() {
   expect(2);
 
   let appDeferred = RSVP.defer();
@@ -766,7 +764,7 @@ test('Slow promises returned from ApplicationRoute#model enter ApplicationLoadin
   equal(jQuery('#app', '#qunit-fixture').text(), 'INDEX');
 });
 
-test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
+QUnit.test('Slow promises returned from ApplicationRoute#model enter application_loading if template present', function() {
   expect(3);
 
   templates['application_loading'] = '<div id="toplevel-loading">TOPLEVEL LOADING</div>';
@@ -993,7 +991,7 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
 });
 
-test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
+QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
   expect(3);
 
   templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
