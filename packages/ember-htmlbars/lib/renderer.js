@@ -268,9 +268,6 @@ Renderer.prototype.renderElementRemoval =
 Renderer.prototype.willRemoveElement = function (/*view*/) {};
 
 Renderer.prototype.willDestroyElement = function (view) {
-  if (view._willDestroyElement) {
-    view._willDestroyElement();
-  }
   if (view.trigger) {
     view.trigger('willDestroyElement');
     view.trigger('willClearRender');
@@ -295,7 +292,7 @@ Renderer.prototype.didDestroyElement = function (view) {
   if (view.trigger) {
     view.trigger('didDestroyElement');
   }
-}; // Element destroyed so view.destroy shouldn't try to remove it removedFromDOM
+};
 
 export const InertRenderer = {
   create({ dom }) {

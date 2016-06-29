@@ -39,7 +39,7 @@ QUnit.test('should hide views when isVisible is false', function() {
   run(() => set(view, 'isVisible', true));
 
   ok(view.$().is(':visible'), 'the view is visible');
-  run(() => view.remove());
+  run(() => view.destroyElement());
 
   deepEqual(warnings, [], 'no warnings were triggered');
 });
@@ -57,7 +57,7 @@ QUnit.test('should hide element if isVisible is false before element is created'
 
   ok(view.$().is(':hidden'), 'should be hidden');
 
-  run(() => view.remove());
+  run(() => view.destroyElement());
 
   run(() => set(view, 'isVisible', true));
 
@@ -65,7 +65,7 @@ QUnit.test('should hide element if isVisible is false before element is created'
 
   ok(view.$().is(':visible'), 'view should be visible');
 
-  run(() => view.remove());
+  run(() => view.destroyElement());
 
   deepEqual(warnings, [], 'no warnings were triggered');
 });
@@ -84,7 +84,7 @@ QUnit.test('should hide views when isVisible is a CP returning false', function(
   run(() => set(view, 'isVisible', true));
 
   ok(view.$().is(':visible'), 'the view is visible');
-  run(() => view.remove());
+  run(() => view.destroyElement());
 
   deepEqual(warnings, [], 'no warnings were triggered');
 });

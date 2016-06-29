@@ -26,7 +26,7 @@ QUnit.skip('classNameBindings lifecycle test', function() {
   equal(isWatching(view, 'priority'), true);
 
   run(() => {
-    view.remove();
+    view.destroyElement();
     view.set('priority', 'low');
   });
 

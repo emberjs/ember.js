@@ -103,7 +103,7 @@ QUnit.test('remove removes an element from the DOM', function() {
 
   ok(jQuery('#' + get(view, 'elementId')).length === 1, 'precond - element was inserted');
 
-  run(() => view.remove());
+  run(() => view.destroyElement());
 
   ok(jQuery('#' + get(view, 'elementId')).length === 0, 'remove removes an element from the DOM');
   ok(EmberView.views[get(view, 'elementId')] === undefined, 'remove does not remove the view from the view hash');

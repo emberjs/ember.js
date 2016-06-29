@@ -110,12 +110,12 @@ QUnit.test('checked property mirrors input value', function() {
 
   equal(checkboxComponent.$().prop('checked'), true, 'changing the value property changes the DOM');
 
-  run(() => checkboxComponent.remove());
+  run(() => checkboxComponent.destroyElement());
   run(() => checkboxComponent.append());
 
   equal(checkboxComponent.$().prop('checked'), true, 'changing the value property changes the DOM');
 
-  run(() => checkboxComponent.remove());
+  run(() => checkboxComponent.destroyElement());
   run(() => set(checkboxComponent, 'checked', false));
   run(() => checkboxComponent.append());
 
