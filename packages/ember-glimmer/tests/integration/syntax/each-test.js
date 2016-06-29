@@ -230,7 +230,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('123');
   }
 
-  ['@htmlbars it can render duplicate primitive items']() {
+  ['@test it can render duplicate primitive items']() {
     this.render(`{{#each list as |item|}}{{item}}{{/each}}`, {
       list: emberA(['a', 'a', 'a'])
     });
@@ -252,7 +252,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('aaa');
   }
 
-  ['@htmlbars it can render duplicate objects']() {
+  ['@test it can render duplicate objects']() {
     let duplicateItem = { text: 'foo' };
     this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`, {
       list: emberA([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }])
