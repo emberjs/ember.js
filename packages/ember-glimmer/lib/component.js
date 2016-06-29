@@ -12,6 +12,7 @@ import symbol from 'ember-metal/symbol';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
 import { PROPERTY_DID_CHANGE } from 'ember-metal/property_events';
+import { getAttrFor } from 'ember-views/compat/attrs-proxy';
 import {
   UPDATE,
   TO_ROOT_REFERENCE,
@@ -119,6 +120,13 @@ const Component = CoreView.extend(
           `);
         }
       }
+    },
+
+    getAttr(key) {
+      // TODO Intimate API should be deprecated
+      let attrs = this.attrs;
+      if (!attrs) { return; }
+      return getAttrFor(attrs, key);
     },
 
     readDOMAttr(name) {
