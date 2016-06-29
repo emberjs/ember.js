@@ -29,6 +29,7 @@ proto.HTMLBarsMorph$constructor = HTMLBarsMorph;
 proto.HTMLBarsMorph$clear = HTMLBarsMorph.prototype.clear;
 
 proto.addDestruction = function(toDestroy) {
+  // called from Router.prototype._connectActiveComponentNode for {{render}}
   this.emberToDestroy = this.emberToDestroy || [];
   this.emberToDestroy.push(toDestroy);
 };
@@ -38,7 +39,6 @@ proto.cleanup = function() {
 
   if (view) {
     let parentView = view.parentView;
-
     if (parentView && view.ownerView._destroyingSubtreeForView === parentView) {
       parentView.removeChild(view);
     }

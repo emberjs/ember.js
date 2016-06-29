@@ -33,17 +33,12 @@ assign(hasElement, {
     view.renderer.rerender(view);
   },
 
-  cleanup(view) {
-    view._currentState.destroyElement(view);
-  },
-
-  // once the view is already in the DOM, destroying it removes it
-  // from the DOM, nukes its element, and puts it back into the
-  // preRender state if inDOM.
-
   destroyElement(view) {
     view.renderer.remove(view, false);
-    return view;
+  },
+
+  destroy(view) {
+    view.renderer.remove(view, true);
   },
 
   // Handle events from `Ember.EventDispatcher`

@@ -192,7 +192,9 @@ class Renderer {
       _renderResult.destroy();
     }
 
-    view.destroy();
+    if (!view.isDestroying) {
+      view.destroy();
+    }
   }
 
   componentInitAttrs() {

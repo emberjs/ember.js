@@ -38,8 +38,9 @@ export default {
     return true; // continue event propagation
   },
 
-  cleanup() { } ,
   destroyElement() { },
+
+  destroy() { },
 
   rerender(view) {
     view.renderer.ensureViewNotRendering(view);

@@ -41,6 +41,15 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
+    this._willInsert = false;
+    this._renderNode = null;
+    this.lastResult = null;
+    this._dispatching = null;
+    this._destroyingSubtreeForView = null;
+    this._isDispatchingAttrs = false;
+    this._isVisible = false;
+    this.element = null;
+    this.env = null;
     this._isVisible = get(this, 'isVisible');
 
     // Fallback for legacy cases where the view was created directly
@@ -50,9 +59,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
       renderer = renderer || InteractiveRenderer.create({ dom: new DOMHelper() });
       this.renderer = renderer;
     }
-
-    this._destroyingSubtreeForView = null;
-    this._dispatching = null;
   },
 
   /**
@@ -97,14 +103,6 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   has(name) {
     return typeOf(this[name]) === 'function' || this._super(name);
-  },
-
-  destroy() {
-    if (!this._super(...arguments)) { return; }
-
-    this._currentState.cleanup(this);
-
-    return this;
   }
 });
 

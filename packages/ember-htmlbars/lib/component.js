@@ -193,7 +193,7 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     let attr = this._renderNode.childNodes.filter(node => node.attrName === name)[0];
     if (!attr) { return null; }
     return attr.getContent();
-  }
+  },
 
   /**
     Returns true when the component was invoked with a block template.
@@ -359,6 +359,7 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     @public
     @since 1.13.0
   */
+  didReceiveAttrs() {},
 
   /**
     Called when the attributes passed into the component have been updated.
@@ -379,6 +380,7 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     @public
     @since 1.13.0
   */
+  didRender() {},
 
   /**
     Called after a component has been rendered, both on initial render and
@@ -397,6 +399,7 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     @public
     @since 1.13.0
   */
+  willRender() {},
 
   /**
     Called before a component has been rendered, both on initial render and
@@ -415,6 +418,7 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     @public
     @since 1.13.0
   */
+  didUpdateAttrs() {},
 
   /**
     Called when the attributes passed into the component have been changed.
@@ -433,6 +437,7 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     @public
     @since 1.13.0
   */
+  willUpdate() {},
 
   /**
     Called when the component is about to update and rerender itself.
@@ -447,10 +452,11 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
     Called when the component has updated and rerendered itself.
     Called only during a rerender, not during an initial render.
 
-    @event didUpdate
+    @method didUpdate
     @public
     @since 1.13.0
   */
+  didUpdate() {}
 
   /**
     Called when the component has updated and rerendered itself.
@@ -465,7 +471,8 @@ const Component = View.extend(TargetActionSupport, ActionSupport, {
 Component[NAME_KEY] = 'Ember.Component';
 
 Component.reopenClass({
-  isComponentFactory: true
+  isComponentFactory: true,
+  positionalParams: []
 });
 
 export default Component;
