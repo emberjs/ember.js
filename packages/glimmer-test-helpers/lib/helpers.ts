@@ -2,7 +2,7 @@ import { tokenize } from "simple-html-tokenizer";
 import { FIXME, forEach } from "glimmer-util";
 import { SerializedTemplate } from 'glimmer-wire-format';
 import { Environment, Template, Layout } from "glimmer-runtime";
-import { TemplateSpec, compileSpec } from "glimmer-compiler";
+import { TemplateSpec, compileSpec, CompileOptions } from "glimmer-compiler";
 
 const TextNode = (<any>window).Text;
 const Comment = (<any>window).Comment;
@@ -19,12 +19,11 @@ function isMarker(node) {
   return false;
 }
 
-interface CompileOptions {
-  buildMeta?: FIXME<'currently does nothing'>;
+interface TestCompileOptions extends CompileOptions {
   env: Environment;
 }
 
-export function compileRealSpec(string: string, options: CompileOptions): SerializedTemplate {
+export function compileRealSpec(string: string, options: TestCompileOptions): SerializedTemplate {
   return template(compileSpec(string, options));
 }
 
@@ -59,11 +58,11 @@ export function compileRealSpec(string: string, options: CompileOptions): Serial
  * @param {Object} options A set of options to provide to the compiler
  * @return {Template} A function for rendering the template
  */
-export function compile(string: string, options: CompileOptions): Template {
+export function compile(string: string, options: TestCompileOptions): Template {
   return Template.fromSpec(compileRealSpec(string, options), options.env);
 }
 
-export function compileLayout(string: string, options: CompileOptions): Layout {
+export function compileLayout(string: string, options: TestCompileOptions): Layout {
   return Template.layoutFromSpec(compileRealSpec(string, options), options.env);
 }
 

@@ -17,21 +17,22 @@ export default class Scanner {
 
   scanEntryPoint(): EntryPoint {
     return this.scanTop<EntryPoint>(({ program, children }) => {
-      return EntryPoint.create({ children, program, symbolTable: null });
+      let { meta } = this.spec;
+      return EntryPoint.create({ children, program, symbolTable: null, meta });
     });
   }
 
   scanLayout(): Layout {
     return this.scanTop<Layout>(({ program, children }) => {
-      let { named, yields } = this.spec;
-      return Layout.create({ children, program, named, yields, symbolTable: null });
+      let { named, yields, meta } = this.spec;
+      return Layout.create({ children, program, named, yields, symbolTable: null, meta });
     });
   }
 
   scanPartial(symbolTable: SymbolTable): PartialBlock {
     return this.scanTop<PartialBlock>(({ program, children }) => {
-      let { locals } = this.spec;
-      return new PartialBlock({ children, program, locals, symbolTable });
+      let { locals, meta } = this.spec;
+      return new PartialBlock({ children, program, locals, symbolTable, meta });
     });
   }
 
@@ -50,7 +51,7 @@ export default class Scanner {
 
   private buildBlock(block: SerializedBlock, blocks: InlineBlock[]): InlineBlock{
     let { program, children } = this.buildStatements(block, blocks);
-    return new InlineBlock({ children, locals: block.locals, program, symbolTable: null });
+    return new InlineBlock({ children, locals: block.locals, program, symbolTable: null, meta: null });
   }
 
   private buildStatements({ statements }: SerializedBlock, blocks: InlineBlock[]): ScanResults {
@@ -97,7 +98,7 @@ export class BlockScanner {
 
   endBlock(): InlineBlock {
     let { children, program } = this.stack.pop();
-    let block = new InlineBlock({ children, program, symbolTable: null, locals: [] });
+    let block = new InlineBlock({ children, program, symbolTable: null, meta: null, locals: [] });
     this.addChild(block);
     return block;
   }

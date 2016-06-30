@@ -1,26 +1,35 @@
 import TemplateVisitor from "./template-visitor";
 import JavaScriptCompiler from "./javascript-compiler";
-import { getAttrNamespace } from "glimmer-util";
+import { FIXME, getAttrNamespace } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
 import { assert } from "glimmer-util";
+import { Environment } from "glimmer-runtime";
+
+export interface CompileOptions {
+  buildMeta?: FIXME<'currently does nothing'>;
+  moduleName?: string;
+}
 
 export default class TemplateCompiler {
-  static compile(options, ast) {
+  static compile(options: CompileOptions, ast) {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
     let compiler = new TemplateCompiler(options);
     let opcodes = compiler.process(templateVisitor.actions);
-    return JavaScriptCompiler.process(opcodes);
+    let meta = {
+      moduleName: options.moduleName
+    };
+    return JavaScriptCompiler.process(opcodes, meta);
   }
 
-  private options: Object;
+  private options: CompileOptions;
   private templateId = 0;
   private templateIds: number[] = [];
   private opcodes: any[] = [];
   private includeMeta = false;
 
-  constructor(options: Object = {}) {
+  constructor(options: CompileOptions = {}) {
     this.options = options;
   }
 

@@ -3,6 +3,9 @@ import { OpSeq } from '../opcodes';
 import { Program } from '../syntax';
 import { Environment } from '../environment';
 import SymbolTable from '../symbol-table';
+import {
+  BlockMeta
+} from 'glimmer-wire-format';
 
 import {
   EntryPointCompiler,
@@ -13,6 +16,7 @@ export interface BlockOptions {
   children: InlineBlock[];
   program: Program;
   symbolTable: SymbolTable;
+  meta: BlockMeta;
 }
 
 export class CompiledBlock {
@@ -26,6 +30,7 @@ export class CompiledBlock {
 }
 
 export abstract class Block {
+  public meta: BlockMeta;
   public children: InlineBlock[];
   public program: Program;
   public symbolTable: SymbolTable;
@@ -35,6 +40,7 @@ export abstract class Block {
     this.symbolTable = options.symbolTable || null;
     this.children = options.children;
     this.program = options.program;
+    this.meta = options.meta;
   }
 }
 
