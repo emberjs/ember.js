@@ -11,7 +11,6 @@ export default Mixin.create({
 
     /**
       Array of child views. You should never edit this array directly.
-      Instead, use `appendChild` and `removeFromParent`.
 
       @property childViews
       @type Array

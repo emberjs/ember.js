@@ -67,36 +67,34 @@ export default Mixin.create({
 
   _notifyBecameVisible() {
     this.trigger('becameVisible');
-
-    this.forEachChildView(view => {
+    let childViews = this.childViews;
+    for (let i = 0; i < childViews.length; i++) {
+      let view = childViews[i];
       let isVisible = get(view, 'isVisible');
-
       if (isVisible || isVisible === null) {
         view._notifyBecameVisible();
       }
-    });
+    }
   },
 
   _notifyBecameHidden() {
     this.trigger('becameHidden');
-    this.forEachChildView(view => {
+    let childViews = this.childViews;
+    for (let i = 0; i < childViews.length; i++) {
+      let view = childViews[i];
       let isVisible = get(view, 'isVisible');
-
       if (isVisible || isVisible === null) {
         view._notifyBecameHidden();
       }
-    });
+    }
   },
 
   _isAncestorHidden() {
-    let parent = get(this, 'parentView');
-
+    let parent = this.parentView;
     while (parent) {
       if (get(parent, 'isVisible') === false) { return true; }
-
-      parent = get(parent, 'parentView');
+      parent = parent.parentView;
     }
-
     return false;
   }
 });

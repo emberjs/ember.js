@@ -1,5 +1,4 @@
 import { assert, deprecate } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
 import run from 'ember-metal/run_loop';
 import { guidFor } from 'ember-metal/utils';
 import { Mixin } from 'ember-metal/mixin';
@@ -27,17 +26,18 @@ export default Mixin.create({
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
            or an instance of Ember.Mixin.
     @return Ember.View
+    @deprecated use `yield` and contextual components for composition instead.
     @private
   */
   nearestOfType(klass) {
-    let view = get(this, 'parentView');
+    let view = this.parentView;
     let isOfType = klass instanceof Mixin ?
                    view => klass.detect(view) :
                    view => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) { return view; }
-      view = get(view, 'parentView');
+      view = view.parentView;
     }
   },
 
@@ -47,14 +47,15 @@ export default Mixin.create({
     @method nearestWithProperty
     @param {String} property A property name
     @return Ember.View
+    @deprecated use `yield` and contextual components for composition instead.
     @private
   */
   nearestWithProperty(property) {
-    let view = get(this, 'parentView');
+    let view = this.parentView;
 
     while (view) {
       if (property in view) { return view; }
-      view = get(view, 'parentView');
+      view = view.parentView;
     }
   },
 
@@ -108,21 +109,6 @@ export default Mixin.create({
   $(sel) {
     assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
     return this._currentState.$(this, sel);
-  },
-
-  forEachChildView(callback) {
-    let childViews = this.childViews;
-
-    if (!childViews) { return this; }
-
-    let view, idx;
-
-    for (idx = 0; idx < childViews.length; idx++) {
-      view = childViews[idx];
-      callback(view);
-    }
-
-    return this;
   },
 
   /**
@@ -262,25 +248,6 @@ export default Mixin.create({
   */
   append() {
     return this.appendTo(document.body);
-  },
-
-  /**
-    Removes the view's element from the element to which it is attached.
-
-    @method remove
-    @return {Ember.View} receiver
-    @private
-  */
-  remove() {
-    // What we should really do here is wait until the end of the run loop
-    // to determine if the element has been re-appended to a different
-    // element.
-    // In the interim, we will just re-render if that happens. It is more
-    // important than elements get garbage collected.
-    if (!this.removedFromDOM) { this.destroyElement(); }
-
-    // Set flag to avoid future renders
-    this._willInsert = false;
   },
 
   /**
@@ -555,24 +522,6 @@ export default Mixin.create({
       this.scheduledRevalidation = true;
       run.scheduleOnce('render', this, this.revalidate);
     }
-  },
-
-  /**
-    Removes the view from its `parentView`, if one is found. Otherwise
-    does nothing.
-
-    @method removeFromParent
-    @return {Ember.View} receiver
-    @private
-  */
-  removeFromParent() {
-    let parent = this.parentView;
-
-    // Remove DOM element from parent
-    this.remove();
-
-    if (parent) { parent.removeChild(this); }
-    return this;
   },
 
   /**
