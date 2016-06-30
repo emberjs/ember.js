@@ -379,9 +379,9 @@ export function uniq(...args) {
 /**
   A computed property which returns a new array with all the unique
   elements from an array, with uniqueness determined by specific key.
-  
+
   Example
-  
+
   ```javascript
   let Hamster = Ember.Object.extend({
     uniqueFruits: Ember.computed.uniqBy('fruits', 'id')
@@ -396,7 +396,7 @@ export function uniq(...args) {
   });
   hamster.get('uniqueFruits'); // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
   ```
-  
+
   @method uniqBy
   @for Ember.computed
   @param {String} dependentKey
