@@ -10,6 +10,16 @@ class LifeCycleHooksTest extends RenderingTest {
     this.components = {};
   }
 
+  teardown() {
+    super();
+    this.assertHooks(
+      'destroy',
+      ['the-top', 'willDestroyElement'],
+      ['the-middle', 'willDestroyElement'],
+      ['the-bottom', 'willDestroyElement']
+    );
+  }
+
   /* abstract */
   get ComponentClass() {
     throw new Error('Not implemented: `ComponentClass`');
@@ -80,6 +90,10 @@ class LifeCycleHooksTest extends RenderingTest {
 
       didUpdate(options) {
         pushHook('didUpdate', options);
+      },
+
+      willDestroyElement() {
+        pushHook('willDestroyElement');
       }
     });
 
