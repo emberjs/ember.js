@@ -426,7 +426,7 @@ export function lte(dependentKey, value) {
 
   You may pass in more than two properties and even use
   property brace expansion.  The computed property will
-  returns the first falsy value or last truthy value
+  return the first falsy value or last truthy value
   just like JavaScript's `||` operator.
 
   Example
@@ -467,7 +467,7 @@ export var and = generateComputedWithPredicate('and', function(value) {
 
   You may pass in more than two properties and even use
   property brace expansion.  The computed property will
-  returns the first truthy value or last falsy value just
+  return the first truthy value or last falsy value just
   like JavaScript's `||` operator.
 
   Example
