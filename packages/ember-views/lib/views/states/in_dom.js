@@ -27,7 +27,9 @@ assign(inDOM, {
   },
 
   exit(view) {
-    view._unregister();
+    if (view.tagName !== '') {
+      view._unregister();
+    }
   }
 });
 

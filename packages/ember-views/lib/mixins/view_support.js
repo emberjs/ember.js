@@ -368,7 +368,22 @@ export default Mixin.create({
     @private
   */
   destroyElement() {
-    return this._currentState.destroyElement(this);
+    this._currentState.destroyElement(this);
+    return this;
+  },
+
+  /**
+    You must call `destroy` on a view to destroy the view (and all of its
+    child views). This will remove the view from any parent node, then make
+    sure that the DOM element managed by the view can be released by the
+    memory manager.
+
+    @method destroy
+    @private
+  */
+  destroy() {
+    this._super(...arguments);
+    this._currentState.destroy(this);
   },
 
   /**
@@ -522,26 +537,6 @@ export default Mixin.create({
       this.scheduledRevalidation = true;
       run.scheduleOnce('render', this, this.revalidate);
     }
-  },
-
-  /**
-    You must call `destroy` on a view to destroy the view (and all of its
-    child views). This will remove the view from any parent node, then make
-    sure that the DOM element managed by the view can be released by the
-    memory manager.
-
-    @method destroy
-    @private
-  */
-  destroy() {
-    if (!this._super(...arguments)) { return; }
-
-    // Destroy HTMLbars template
-    if (this.lastResult) {
-      this.lastResult.destroy();
-    }
-
-    return this;
   },
 
   // .......................................................

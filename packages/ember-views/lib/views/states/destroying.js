@@ -21,4 +21,3 @@ assign(destroying, {
 });
 
 export default destroying;
-

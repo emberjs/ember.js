@@ -108,9 +108,7 @@ QUnit.test('should not dispatch events to views not inDOM', function() {
   let $element = view.$();
 
   run(() => {
-    // TODO change this test not to use private API
-    // Force into preRender
-    view.renderer.remove(view, false, true);
+    view.destroyElement();
   });
 
   $element.trigger('mousedown');

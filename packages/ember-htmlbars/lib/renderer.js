@@ -166,10 +166,6 @@ Renderer.prototype.willInsertElement = function (view) {
   if (view.trigger) { view.trigger('willInsertElement'); }
 }; // Will place into DOM.
 
-Renderer.prototype.setAttrs = function (view, attrs) {
-  set(view, 'attrs', attrs);
-}; // Set attrs the first time.
-
 Renderer.prototype.componentInitAttrs = function (component, attrs) {
   component.trigger('didInitAttrs', { attrs });
   component.trigger('didReceiveAttrs', { newAttrs: attrs });
@@ -190,10 +186,6 @@ Renderer.prototype.didUpdate = function (view) {
 Renderer.prototype.didRender = function (view) {
   if (view.trigger) { view.trigger('didRender'); }
 };
-
-Renderer.prototype.updateAttrs = function (view, attrs) {
-  this.setAttrs(view, attrs);
-}; // Setting new attrs.
 
 Renderer.prototype.componentUpdateAttrs = function (component, newAttrs) {
   let oldAttrs = null;
@@ -244,50 +236,45 @@ Renderer.prototype.rerender = function (view) {
 };
 
 Renderer.prototype.remove = function (view, shouldDestroy) {
-  this.willDestroyElement(view);
+  let renderNode = view._renderNode;
+  view._renderNode = null;
+  if (renderNode) {
+    renderNode.emberView = null;
+    this.willDestroyElement(view);
+    view._transitionTo('destroying');
 
-  view._willRemoveElement = true;
-  run.schedule('render', this, this.renderElementRemoval, view);
-};
-
-Renderer.prototype.renderElementRemoval =
-  function Renderer_renderElementRemoval(view) {
-    // Use the _willRemoveElement flag to avoid mulitple removal attempts in
-    // case many have been scheduled. This should be more performant than using
-    // `scheduleOnce`.
-    if (view._willRemoveElement) {
-      view._willRemoveElement = false;
-
-      if (view._renderNode && view.element && view.element.parentNode) {
-        view._renderNode.clear();
-      }
-      this.didDestroyElement(view);
+    view._renderNode = null;
+    let lastResult = renderNode.lastResult;
+    if (lastResult) {
+      internal.clearMorph(renderNode, lastResult.env, shouldDestroy !== false);
     }
-  };
+    if (!shouldDestroy) {
+      view._transitionTo('preRender');
+    }
+    this.didDestroyElement(view);
+  }
 
-Renderer.prototype.willRemoveElement = function (/*view*/) {};
+  // toplevel view removed, remove insertion point
+  let lastResult = view.lastResult;
+  if (lastResult) {
+    view.lastResult = null;
+    lastResult.destroy();
+  }
+
+  if (shouldDestroy && !view.isDestroying) {
+    view.destroy();
+  }
+};
 
 Renderer.prototype.willDestroyElement = function (view) {
   if (view.trigger) {
     view.trigger('willDestroyElement');
     view.trigger('willClearRender');
   }
-
-  if (view._transitionTo) {
-    view._transitionTo('destroying');
-  }
 };
 
 Renderer.prototype.didDestroyElement = function (view) {
   view.element = null;
-
-  // Views that are being destroyed should never go back to the preRender state.
-  // However if we're just destroying an element on a view (as is the case when
-  // using View#remove) then the view should go to a preRender state so that
-  // it can be rendered again later.
-  if (view._state !== 'destroying' && view._transitionTo) {
-    view._transitionTo('preRender');
-  }
 
   if (view.trigger) {
     view.trigger('didDestroyElement');

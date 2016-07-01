@@ -72,6 +72,7 @@ class CurlyComponentManager {
 
     aliasIdToElementId(args, props);
 
+    props.parentView = parentView;
     props.renderer = parentView.renderer;
     props[HAS_BLOCK] = hasBlock;
 

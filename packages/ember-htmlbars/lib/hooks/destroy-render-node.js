@@ -2,10 +2,10 @@
 @module ember
 @submodule ember-htmlbars
 */
-
 export default function destroyRenderNode(renderNode) {
-  if (renderNode.emberView) {
-    renderNode.emberView.destroy();
+  let view = renderNode.emberView;
+  if (view) {
+    view.renderer.remove(view, true);
   }
 
   let streamUnsubscribers = renderNode.streamUnsubscribers;
