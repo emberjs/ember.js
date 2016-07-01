@@ -8,16 +8,15 @@ class LifeCycleHooksTest extends RenderingTest {
     super();
     this.hooks = [];
     this.components = {};
+    this.teardownAssertions = [];
   }
 
   teardown() {
-    super();
-    this.assertHooks(
-      'destroy',
-      ['the-top', 'willDestroyElement'],
-      ['the-middle', 'willDestroyElement'],
-      ['the-bottom', 'willDestroyElement']
-    );
+    super.teardown();
+
+    for (let i = 0; i < this.teardownAssertions.length; i++) {
+      this.teardownAssertions[i]();
+    }
   }
 
   /* abstract */
@@ -51,6 +50,31 @@ class LifeCycleHooksTest extends RenderingTest {
       this.hooks.push(hook(name, hookName, args));
     };
 
+    let assertParentView = (hookName, instance) => {
+      if (!instance.parentView) {
+        this.assert.ok(false, `parentView should be present in ${hookName}`);
+      }
+    };
+
+    let assertElement = (hookName, instance) => {
+      if (instance.tagName === '') { return; }
+
+      if (!instance.element) {
+        this.assert.ok(false, `element property should be present on ${instance} during ${hookName}`);
+      }
+
+      let inDOM = this.$(`#${instance.elementId}`)[0];
+      if (!inDOM) {
+        this.assert.ok(false, `element for ${instance} should be in the DOM during ${hookName}`);
+      }
+    };
+
+    let assertNoElement = (hookName, instance) => {
+      if (instance.element) {
+        this.assert.ok(false, `element should not be present in ${hookName}`);
+      }
+    };
+
     let ComponentClass = this.ComponentClass.extend({
       init() {
         expectDeprecation(() => { this._super(...arguments); },
@@ -58,42 +82,58 @@ class LifeCycleHooksTest extends RenderingTest {
 
         pushHook('init');
         pushComponent(this);
+        assertParentView('init', this);
+        assertNoElement('init', this);
       },
 
       didInitAttrs(options) {
         pushHook('didInitAttrs', options);
+        assertParentView('didInitAttrs', this);
+        assertNoElement('didInitAttrs', this);
       },
 
       didUpdateAttrs(options) {
         pushHook('didUpdateAttrs', options);
+        assertParentView('didUpdateAttrs', this);
       },
 
       willUpdate(options) {
         pushHook('willUpdate', options);
+        assertParentView('willUpdate', this);
       },
 
       didReceiveAttrs(options) {
         pushHook('didReceiveAttrs', options);
+        assertParentView('didReceiveAttrs', this);
       },
 
       willRender() {
         pushHook('willRender');
+        assertParentView('willRender', this);
       },
 
       didRender() {
         pushHook('didRender');
+        assertParentView('didRender', this);
+        assertElement('didRender', this);
       },
 
       didInsertElement() {
         pushHook('didInsertElement');
+        assertParentView('didInsertElement', this);
+        assertElement('didInsertElement', this);
       },
 
       didUpdate(options) {
         pushHook('didUpdate', options);
+        assertParentView('didUpdate', this);
+        assertElement('didUpdate', this);
       },
 
       willDestroyElement() {
         pushHook('willDestroyElement');
+        assertParentView('willDestroyElement', this);
+        assertElement('willDestroyElement', this);
       }
     });
 
@@ -341,6 +381,15 @@ class LifeCycleHooksTest extends RenderingTest {
       ['the-top', 'didRender']
 
     );
+
+    this.teardownAssertions.push(() => {
+      this.assertHooks(
+        'destroy',
+        ['the-top', 'willDestroyElement'],
+        ['the-middle', 'willDestroyElement'],
+        ['the-bottom', 'willDestroyElement']
+      );
+    });
   }
 
   ['@test passing values through attrs causes lifecycle hooks to fire if the attribute values have changed']() {
@@ -504,8 +553,105 @@ class LifeCycleHooksTest extends RenderingTest {
     } else {
       this.assertHooks('after no-op rernder (root)');
     }
+
+    this.teardownAssertions.push(() => {
+      this.assertHooks(
+        'destroy',
+        ['the-top', 'willDestroyElement'],
+        ['the-middle', 'willDestroyElement'],
+        ['the-bottom', 'willDestroyElement']
+      );
+    });
   }
 
+  ['@test components rendered from `{{each}}` have correct life-cycle hooks to be called']() {
+    let { invoke } = this.boundHelpers;
+
+    this.registerComponent('an-item', { template: strip`
+      <div>Item: {{count}}</div>
+    ` });
+
+    this.registerComponent('no-items', { template: strip`
+      <div>Nothing to see here</div>
+    ` });
+
+    this.render(strip`
+      {{#each items as |item|}}
+        ${invoke('an-item', { count: expr('item') })}
+      {{else}}
+        ${invoke('no-items')}
+      {{/each}}
+    `, {
+      items: [1, 2, 3, 4, 5]
+    });
+
+    this.assertText('Item: 1Item: 2Item: 3Item: 4Item: 5');
+
+    let initialHooks = (count) => {
+      return [
+        ['an-item', 'init'],
+        ['an-item', 'didInitAttrs',       { attrs: { count } }],
+        ['an-item', 'didReceiveAttrs',    { newAttrs: { count } }],
+        ['an-item', 'willRender']
+      ];
+    };
+
+    let initialAfterRenderHooks = (count) => {
+      return [
+        ['an-item', 'didInsertElement'],
+        ['an-item', 'didRender']
+      ];
+    };
+
+    this.assertHooks(
+
+      'after initial render',
+
+      // Sync hooks
+        ...initialHooks(1),
+        ...initialHooks(2),
+        ...initialHooks(3),
+        ...initialHooks(4),
+        ...initialHooks(5),
+
+      // Async hooks
+        ...initialAfterRenderHooks(5),
+        ...initialAfterRenderHooks(4),
+        ...initialAfterRenderHooks(3),
+        ...initialAfterRenderHooks(2),
+        ...initialAfterRenderHooks(1)
+    );
+
+    this.runTask(() => set(this.context, 'items', []));
+
+    this.assertText('Nothing to see here');
+
+    this.assertHooks(
+      'reset to empty array',
+
+      ['an-item', 'willDestroyElement'],
+      ['an-item', 'willDestroyElement'],
+      ['an-item', 'willDestroyElement'],
+      ['an-item', 'willDestroyElement'],
+      ['an-item', 'willDestroyElement'],
+
+      ['no-items', 'init'],
+      ['no-items', 'didInitAttrs',       { attrs: { } }],
+      ['no-items', 'didReceiveAttrs',    { newAttrs: { } }],
+      ['no-items', 'willRender'],
+
+      ['no-items', 'didInsertElement'],
+      ['no-items', 'didRender']
+    );
+
+    this.teardownAssertions.push(() => {
+      this.assertHooks(
+        'destroy',
+
+        ['no-items', 'willDestroyElement']
+      );
+    });
+  }
 }
 
 moduleFor('Components test: lifecycle hooks (curly components)', class extends LifeCycleHooksTest {
