@@ -129,8 +129,8 @@ const UI =
 
   <button id="btn-render" class="primary" style="display: {{if rendered 'none' 'block'}}">Render</button>
   <button id="btn-update" class="primary" style="display: {{if rendered 'block' 'none'}}">Update</button>
-  <button id="btn-clear" style="display: {{if rendered 'block' 'none'}}">Clear</button>
-  <button id="btn-reset">Reset to example</button>
+  <button id="btn-edit" style="display: {{if rendered 'block' 'none'}}">Edit</button>
+  <button id="btn-reset">Reset</button>
 </div>
 {{#if rendered}}
   <div id="output">
@@ -166,13 +166,17 @@ const UI =
   </div>
 {{/if}}`;
 
+function $(selector) {
+  return document.querySelectorAll(selector);
+}
+
 let $inputs:   Element,
     $data:     HTMLTextAreaElement,
     $template: HTMLTextAreaElement,
     $layout:   HTMLTextAreaElement,
     $render:   Element,
     $update:   Element,
-    $clear:    Element,
+    $edit:     Element,
     $reset:    Element;
 
 let ui = {
@@ -326,14 +330,14 @@ function bindUI() {
   $layout   = <HTMLTextAreaElement>document.querySelectorAll("#component-layout")[0];
   $render   = document.querySelectorAll("#btn-render")[0];
   $update   = document.querySelectorAll("#btn-update")[0];
-  $clear    = document.querySelectorAll("#btn-clear")[0];
+  $edit    = document.querySelectorAll("#btn-edit")[0];
   $reset    = document.querySelectorAll("#btn-reset")[0];
 }
 
 function wireUI() {
   $render.addEventListener("click", renderContent, false);
   $update.addEventListener("click", updateContent, false);
-  $clear.addEventListener("click", clearContent, false);
+  $edit.addEventListener("click", editContent, false);
   $reset.addEventListener("click", resetContent, false);
 
   $data.addEventListener("input", storeContent);
@@ -430,7 +434,7 @@ function updateContent() {
   _updateContent();
 }
 
-function clearContent() {
+function editContent() {
   _updateContent = null;
   ui.rendered = false;
   rerenderUI();
@@ -465,5 +469,5 @@ function resetContent() {
   $layout.value = DEFAULT_LAYOUT;
 
   storeContent();
-  clearContent();
+  editContent();
 }
