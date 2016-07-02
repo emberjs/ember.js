@@ -29,6 +29,10 @@ import {
   ensureGuid
 } from 'glimmer-util';
 
+import {
+  BlockMeta
+} from 'glimmer-wire-format';
+
 import { EvaluatedArgs } from './compiled/expressions/args';
 
 import { InlineBlock } from './compiled/blocks';
@@ -130,11 +134,11 @@ export abstract class Environment {
     return intern(ensureGuid(object) + '');
   }
 
-  statement(statement: StatementSyntax): StatementSyntax {
-    return this.refineStatement(parseStatement(statement)) || statement;
+  statement(statement: StatementSyntax, blockMeta: BlockMeta): StatementSyntax {
+    return this.refineStatement(parseStatement(statement), blockMeta) || statement;
   }
 
-  protected refineStatement(statement: ParsedStatement): StatementSyntax {
+  protected refineStatement(statement: ParsedStatement, blockMeta: BlockMeta): StatementSyntax {
     let {
       isSimple,
       isBlock,

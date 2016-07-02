@@ -68,12 +68,12 @@ abstract class Compiler {
   }
 
   protected compileStatement(statement: StatementSyntax, ops: StatementCompilationBuffer) {
-    this.env.statement(statement).compile(ops, this.env, this.symbolTable);
+    this.env.statement(statement, this.block.meta).compile(ops, this.env, this.symbolTable);
   }
 }
 
-function compileStatement(env: Environment, statement: StatementSyntax, ops: StatementCompilationBuffer, symbolTable: SymbolTable) {
-  env.statement(statement).compile(ops, env, symbolTable);
+function compileStatement(env: Environment, statement: StatementSyntax, ops: StatementCompilationBuffer, layout: Layout) {
+  env.statement(statement, layout.meta).compile(ops, env, layout.symbolTable);
 }
 
 export default Compiler;
@@ -279,13 +279,13 @@ class WrappedBuilder {
       list.append(new JumpUnlessOpcode({ target: BODY }));
       list.append(new OpenDynamicPrimitiveElementOpcode());
       list.append(new DidCreateElementOpcode());
-      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, symbolTable));
+      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, layout));
       list.append(BODY);
     } else if(this.tag.isStatic) {
       let tag = this.tag.staticTagName;
       list.append(new OpenPrimitiveElementOpcode({ tag }));
       list.append(new DidCreateElementOpcode());
-      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, symbolTable));
+      this.attrs['buffer'].forEach(statement => compileStatement(env, statement, list, layout));
     }
 
     if (layout.hasNamedParameters()) {
@@ -296,7 +296,7 @@ class WrappedBuilder {
       list.append(BindBlocksOpcode.create(layout));
     }
 
-    layout.program.forEachNode(statement => compileStatement(env, statement, list, layout.symbolTable));
+    layout.program.forEachNode(statement => compileStatement(env, statement, list, layout));
 
     if (this.tag.isDynamic) {
       let END = new LabelOpcode({ label: 'END' });
@@ -345,12 +345,12 @@ class UnwrappedBuilder {
     let attrsInserted = false;
 
     this.layout.program.forEachNode(statement => {
-      compileStatement(env, statement, list, layout.symbolTable);
+      compileStatement(env, statement, list, layout);
 
       if (!attrsInserted && isOpenElement(statement)) {
         list.append(new DidCreateElementOpcode());
         list.append(new ShadowAttributesOpcode());
-        attrs.forEach(statement => compileStatement(env, statement, list, layout.symbolTable));
+        attrs.forEach(statement => compileStatement(env, statement, list, layout));
         attrsInserted = true;
       }
     });
