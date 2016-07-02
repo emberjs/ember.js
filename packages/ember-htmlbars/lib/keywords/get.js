@@ -66,7 +66,7 @@ const DynamicKeyStream = BasicStream.extend({
     if (object !== this.observedObject || key !== this.observedKey) {
       this._clearObservedObject();
 
-      if (object && typeof object === 'object' && key) {
+      if (typeof object === 'object' && object && key) {
         addObserver(object, key, this, this.notify);
         this.observedObject = object;
         this.observedKey = key;

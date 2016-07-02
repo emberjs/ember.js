@@ -63,7 +63,7 @@ export default BasicStream.extend({
     if (object !== this.observedObject) {
       this._clearObservedObject();
 
-      if (object && typeof object === 'object') {
+      if (typeof object === 'object' && object) {
         addObserver(object, this.key, this, this.notify);
         this.observedObject = object;
       }
