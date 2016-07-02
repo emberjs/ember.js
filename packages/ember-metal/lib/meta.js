@@ -5,6 +5,17 @@
 import { EmptyObject, lookupDescriptor, symbol } from 'ember-utils';
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
+import { runInDebug } from './debug';
+
+let counters = {
+  peekCalls: 0,
+  peekParentCalls: 0,
+  peekPrototypeWalks: 0,
+  setCalls: 0,
+  deleteCalls: 0,
+  metaCalls: 0,
+  metaInstantiated: 0
+};
 
 /**
 @module ember-metal
@@ -53,7 +64,9 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
 let memberNames = Object.keys(members);
 const META_FIELD = '__ember_meta__';
 
-function Meta(obj, parentMeta) {
+export function Meta(obj, parentMeta) {
+  runInDebug(() => counters.metaInstantiated++);
+
   this._cache = undefined;
   this._weak = undefined;
   this._watching = undefined;
@@ -352,20 +365,87 @@ if (isEnabled('mandatory-setter')) {
   };
 }
 
-// choose the one appropriate for given platform
-let setMeta = function(obj, meta) {
-  // if `null` already, just set it to the new value
-  // otherwise define property first
-  if (obj[META_FIELD] !== null) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      Object.defineProperty(obj, META_FIELD, META_DESC);
-    }
-  }
+const HAS_NATIVE_WEAKMAP = (function() {
+  // detect if `WeakMap` is even present
+  let hasWeakMap = typeof WeakMap === 'function';
+  if (!hasWeakMap) { return false; }
 
-  obj[META_FIELD] = meta;
-};
+  let instance = new WeakMap();
+  // use `Object`'s `.toString` directly to prevent us from detecting
+  // polyfills as native weakmaps
+  return Object.prototype.toString.call(instance) === '[object WeakMap]';
+})();
+
+let setMeta, peekMeta, deleteMeta;
+
+// choose the one appropriate for given platform
+if (HAS_NATIVE_WEAKMAP) {
+  let getPrototypeOf = Object.getPrototypeOf;
+  let metaStore = new WeakMap();
+
+  setMeta = function WeakMap_setMeta(obj, meta) {
+    runInDebug(() => counters.setCalls++);
+    metaStore.set(obj, meta);
+  };
+
+  peekMeta = function WeakMap_peekMeta(obj) {
+    runInDebug(() => counters.peekCalls++);
+
+    return metaStore.get(obj);
+  };
+
+  peekMeta = function WeakMap_peekParentMeta(obj) {
+    let pointer = obj;
+    let meta;
+    while (pointer) {
+      meta = metaStore.get(pointer);
+      // jshint loopfunc:true
+      runInDebug(() => counters.peekCalls++);
+      // stop if we find a `null` value, since
+      // that means the meta was deleted
+      // any other truthy value is a "real" meta
+      if (meta === null || meta) {
+        return meta;
+      }
+
+      pointer = getPrototypeOf(pointer);
+      runInDebug(() => counters.peakPrototypeWalks++);
+    }
+  };
+
+  deleteMeta = function WeakMap_deleteMeta(obj) {
+    runInDebug(() => counters.deleteCalls++);
+
+    // set value to `null` so that we can detect
+    // a deleted meta in peekMeta later
+    metaStore.set(obj, null);
+  };
+} else {
+  setMeta = function Fallback_setMeta(obj, meta) {
+    // if `null` already, just set it to the new value
+    // otherwise define property first
+    if (obj[META_FIELD] !== null) {
+      if (obj.__defineNonEnumerable) {
+        obj.__defineNonEnumerable(EMBER_META_PROPERTY);
+      } else {
+        Object.defineProperty(obj, META_FIELD, META_DESC);
+      }
+    }
+
+    obj[META_FIELD] = meta;
+  };
+
+  peekMeta = function Fallback_peekMeta(obj) {
+    return obj[META_FIELD];
+  };
+
+  deleteMeta = function Fallback_deleteMeta(obj) {
+    if (typeof obj[META_FIELD] !== 'object') {
+      return;
+    }
+    obj[META_FIELD] = null;
+  };
+}
 
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
@@ -386,6 +466,8 @@ let setMeta = function(obj, meta) {
   @return {Object} the meta hash for an object
 */
 export function meta(obj) {
+  runInDebug(() => counters.metaCalls++);
+
   let maybeMeta = peekMeta(obj);
   let parent;
 
@@ -402,13 +484,9 @@ export function meta(obj) {
   return newMeta;
 }
 
-export function peekMeta(obj) {
-  return obj[META_FIELD];
-}
-
-export function deleteMeta(obj) {
-  if (typeof obj[META_FIELD] !== 'object') {
-    return;
-  }
-  obj[META_FIELD] = null;
-}
+export {
+  peekMeta,
+  setMeta,
+  deleteMeta,
+  counters
+};
