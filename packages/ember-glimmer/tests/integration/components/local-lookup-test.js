@@ -36,7 +36,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     };
   }
 
-  ['@htmlbars it can lookup a local template']() {
+  ['@test it can lookup a local template']() {
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
     this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
 
@@ -49,7 +49,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Nested template says: Hi!', 'Re-render works');
   }
 
-  ['@htmlbars tagless blockless component can lookup local template'](assert) {
+  ['@test tagless blockless component can lookup local template'](assert) {
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
     this.registerComponent('x-outer', {
@@ -65,7 +65,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Nested template says: Hi!', 'Re-render works');
   }
 
-  ['@htmlbars it can lookup a local component template']() {
+  ['@test it can lookup a local component template']() {
     this.registerTemplate('components/x-outer/x-inner', 'Nested template says: {{yield}}');
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
 
@@ -76,6 +76,32 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertText('Nested template says: Hi!', 'Re-render works');
+  }
+
+  ['@test it can local lookup a dynamic component']() {
+    this.registerComponent('foo-bar', { template: 'yall finished {{component child}}' });
+    this.registerComponent('foo-bar/biz-baz', { template: 'or yall done?' });
+
+    this.render('{{foo-bar child=child}}', { child: 'biz-baz' });
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall done?');
+  }
+
+  ['@test it can local lookup a dynamic component from a dynamic component']() {
+    this.registerComponent('foo-bar', { template: 'yall finished {{component child}}' });
+    this.registerComponent('foo-bar/biz-baz', { template: 'or yall done?' });
+
+    this.render('{{component componentName child=child}}', { componentName: 'foo-bar', child: 'biz-baz' });
+
+    this.assertText('yall finished or yall done?');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('yall finished or yall done?');
   }
 
   ['@htmlbars it can lookup a local helper']() {
