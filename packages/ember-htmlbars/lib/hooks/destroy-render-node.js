@@ -14,4 +14,6 @@ export default function destroyRenderNode(renderNode) {
       streamUnsubscribers[i]();
     }
   }
+
+  renderNode.destroy();
 }
