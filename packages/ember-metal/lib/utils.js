@@ -179,7 +179,11 @@ export function generateGuid(obj, prefix) {
   @return {String} the unique guid for this instance.
 */
 export function guidFor(obj) {
-  if (obj && obj[GUID_KEY]) {
+  let type = typeof obj;
+  let isObject = type === 'object' && obj !== null;
+  let isFunction = type === 'function';
+
+  if ((isObject || isFunction) && obj[GUID_KEY]) {
     return obj[GUID_KEY];
   }
 
@@ -193,7 +197,6 @@ export function guidFor(obj) {
   }
 
   let ret;
-  let type = typeof obj;
 
   // Don't allow prototype changes to String etc. to change the guidFor
   switch (type) {
