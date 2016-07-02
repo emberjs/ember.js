@@ -50,6 +50,13 @@ var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
 var hasCachedComputedProperties = false;
 
+const FALSE_DESCRIPTOR = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: false
+};
+
 function makeCtor() {
   // Note: avoid accessing any properties on the object since it makes the
   // method a lot faster. This is glue code so we want it to be as fast as
@@ -67,7 +74,18 @@ function makeCtor() {
       initProperties = [arguments[0]];
     }
 
+    this.__defineNonEnumerable({
+      name: 'isDestroying',
+      descriptor: FALSE_DESCRIPTOR
+    });
+
+    this.__defineNonEnumerable({
+      name: 'isDestroyed',
+      descriptor: FALSE_DESCRIPTOR
+    });
+
     this.__defineNonEnumerable(GUID_KEY_PROPERTY);
+
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;
