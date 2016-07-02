@@ -93,6 +93,10 @@ import {
   UpdatableReference
 } from "glimmer-object-reference";
 
+import {
+  BlockMeta
+} from "glimmer-wire-format";
+
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
 class ArrayIterator implements OpaqueIterator {
@@ -681,7 +685,7 @@ export class TestEnvironment extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  refineStatement(statement: ParsedStatement): StatementSyntax {
+  refineStatement(statement: ParsedStatement, parentMeta: BlockMeta): StatementSyntax {
     let {
       isSimple,
       isBlock,
@@ -715,7 +719,7 @@ export class TestEnvironment extends Environment {
       }
     }
 
-    return super.refineStatement(statement);
+    return super.refineStatement(statement, parentMeta);
   }
 
   hasHelper(helperName: InternedString[]) {
