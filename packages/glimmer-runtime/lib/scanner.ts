@@ -3,7 +3,7 @@ import buildStatement from './syntax/statements';
 import { TopLevelTemplate, EntryPoint, InlineBlock, PartialBlock, Layout } from './compiled/blocks';
 import Environment from './environment';
 import { EMPTY_SLICE, LinkedList, Stack } from 'glimmer-util';
-import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement } from 'glimmer-wire-format';
+import { SerializedTemplate, SerializedBlock, Statement as SerializedStatement, BlockMeta } from 'glimmer-wire-format';
 import SymbolTable from './symbol-table';
 
 export default class Scanner {
@@ -38,20 +38,20 @@ export default class Scanner {
 
   private scanTop<T extends TopLevelTemplate>(makeTop: (options: { program: Program, children: InlineBlock[] }) => T): T {
     let { spec } = this;
-    let { blocks: specBlocks } = spec;
+    let { blocks: specBlocks, meta } = spec;
 
     let blocks: InlineBlock[] = [];
 
     for (let i = 0, block: SerializedBlock; block = specBlocks[i]; i++) {
-      blocks.push(this.buildBlock(block, blocks));
+      blocks.push(this.buildBlock(block, blocks, meta));
     }
 
     return makeTop(this.buildStatements(spec, blocks)).initBlocks();
   }
 
-  private buildBlock(block: SerializedBlock, blocks: InlineBlock[]): InlineBlock{
+  private buildBlock(block: SerializedBlock, blocks: InlineBlock[], meta: BlockMeta): InlineBlock{
     let { program, children } = this.buildStatements(block, blocks);
-    return new InlineBlock({ children, locals: block.locals, program, symbolTable: null, meta: null });
+    return new InlineBlock({ children, locals: block.locals, program, symbolTable: null, meta });
   }
 
   private buildStatements({ statements }: SerializedBlock, blocks: InlineBlock[]): ScanResults {
