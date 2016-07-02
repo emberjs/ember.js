@@ -52,7 +52,7 @@ QUnit.test('NoneLocation.getURL() returns the current path minus rootURL', funct
   equal(location.getURL(), '/bar');
 });
 
-QUnit.test('NonoLocation.getURL() will remove the rootURL only from the beginning of a url', function() {
+QUnit.test('NoneLocation.getURL() will remove the rootURL only from the beginning of a url', function() {
   expect(1);
 
   NoneTestLocation.reopen({
@@ -66,4 +66,20 @@ QUnit.test('NonoLocation.getURL() will remove the rootURL only from the beginnin
   createLocation();
 
   equal(location.getURL(), '/foo/bar/baz');
+});
+
+QUnit.test('NoneLocation.getURL() will not remove the rootURL when only a partial match', function() {
+  expect(1);
+
+  NoneTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+      set(this, 'rootURL', '/bar/');
+      set(this, 'path', '/bars/baz');
+    }
+  });
+
+  createLocation();
+
+  equal(location.getURL(), '/bars/baz');
 });
