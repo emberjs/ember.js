@@ -14,19 +14,12 @@ import {
   mergeInNewHash,
   processPositionalParamsFromCell,
 } from 'ember-htmlbars/keywords/closure-component';
-import { buildHTMLTemplate } from 'ember-htmlbars/system/build-component-template';
 
 export default function componentHook(renderNode, env, scope, _tagName, params, _attrs, templates, visitor) {
   var state = renderNode.getState();
 
   let tagName = _tagName;
   let attrs = _attrs;
-  if (isAngle(tagName)) {
-    tagName = tagName.slice(1, -1);
-    let block = buildHTMLTemplate(tagName, attrs, { templates, scope });
-    block.invoke(env, [], undefined, renderNode, scope, visitor);
-    return;
-  }
 
   if (CONTAINS_DOT_CACHE.get(tagName)) {
     let stream = env.hooks.get(env, scope, tagName);
@@ -91,8 +84,4 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
 
   state.manager = manager;
   manager.render(env, visitor);
-}
-
-function isAngle(tagName) {
-  return tagName.charCodeAt(0) === 60;
 }
