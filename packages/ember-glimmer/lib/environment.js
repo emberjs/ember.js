@@ -159,7 +159,7 @@ export default class Environment extends GlimmerEnvironment {
    // isn't going to return any syntax and the Glimmer engine knows how to handle
    // this case.
 
-  refineStatement(statement) {
+  refineStatement(statement, parentMeta) {
     // 1. resolve any native syntax – if, unless, with, each, and partial
     let nativeSyntax = super.refineStatement(statement);
 
@@ -188,7 +188,7 @@ export default class Environment extends GlimmerEnvironment {
       let mappedKey = builtInComponents[key];
 
       if (key === 'component') {
-        return new DynamicComponentSyntax({ args, templates });
+        return new DynamicComponentSyntax({ args, templates, parentMeta });
       } else if (key === 'render') {
         return new RenderSyntax({ args });
       } else if (key === 'outlet') {
@@ -199,17 +199,17 @@ export default class Environment extends GlimmerEnvironment {
       let definition = null;
 
       if (internalKey) {
-        definition = this.getComponentDefinition([internalKey]);
+        definition = this.getComponentDefinition([internalKey], parentMeta);
       } else if (key.indexOf('-') >= 0) {
-        definition = this.getComponentDefinition(path);
+        definition = this.getComponentDefinition(path, parentMeta);
       } else if (mappedKey) {
-        definition = this.getComponentDefinition([mappedKey]);
+        definition = this.getComponentDefinition([mappedKey], parentMeta);
       }
 
       if (definition) {
         return createCurly(args, templates, definition);
       } else if (generateBuiltInSyntax) {
-        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path]));
+        return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], parentMeta));
       }
 
       assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key));
@@ -224,15 +224,17 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(path) {
+  getComponentDefinition(path, parentMeta) {
+    let source = parentMeta && `template:${parentMeta.moduleName}`;
     let name = path[0];
-    let definition = this._components[name];
+    let cacheKey = (source && this.owner._resolveLocalLookupName(name, source)) || name;
+    let definition = this._components[cacheKey];
 
     if (!definition) {
-      let { component: ComponentClass, layout } = lookupComponent(this.owner, name);
+      let { component: ComponentClass, layout } = lookupComponent(this.owner, name, { source });
 
       if (ComponentClass || layout) {
-        definition = this._components[name] = new CurlyComponentDefinition(name, ComponentClass, layout);
+        definition = this._components[cacheKey] = new CurlyComponentDefinition(name, ComponentClass, layout);
       }
     }
 

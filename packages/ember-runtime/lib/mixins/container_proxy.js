@@ -107,6 +107,21 @@ export default Mixin.create({
   },
 
   /**
+   Given a name and a source path, resolve the fullName
+
+   @private
+   @method _resolveLocalLookupName
+   @param {String} fullName
+   @param {String} source
+   @return {String}
+   */
+  _resolveLocalLookupName(name, source) {
+    return this.__container__.registry.expandLocalLookup(`component:${name}`, {
+      source
+    });
+  },
+
+  /**
    @private
    */
   willDestroy() {
