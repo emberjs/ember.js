@@ -142,7 +142,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     existingDesc.teardown(obj, keyName);
   }
 
-  if (desc instanceof Descriptor) {
+  if (desc !== null && typeof desc === 'object' && desc.isDescriptor) {
     value = desc;
     if (isEnabled('mandatory-setter')) {
       if (watching) {
@@ -159,6 +159,8 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       obj[keyName] = value;
     }
     if (desc.setup) { desc.setup(obj, keyName); }
+
+    meta.writeDescriptor(keyName, desc);
   } else {
     if (desc == null) {
       value = data;

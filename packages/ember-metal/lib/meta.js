@@ -37,7 +37,8 @@ let counters = {
  peekWatching, clearWatching, writeMixins,
  peekMixins, clearMixins, writeBindings,
  peekBindings, clearBindings, writeValues,
- peekValues, clearValues, writeDeps, forEachInDeps
+ peekValues, clearValues, writeDescriptor,
+ forEachDescriptor, writeDeps, forEachInDeps
  writableChainWatchers, readableChainWatchers, writableChains,
  readableChains, writableTag, readableTag
 
@@ -49,6 +50,7 @@ let members = {
   mixins: inheritedMap,
   bindings: inheritedMap,
   values: inheritedMap,
+  descriptor: inheritedMap,
   deps: inheritedMapOfMaps,
   chainWatchers: ownCustomObject,
   chains: inheritedCustomObject,
@@ -73,6 +75,7 @@ export function Meta(obj, parentMeta) {
   this._mixins = undefined;
   this._bindings = undefined;
   this._values = undefined;
+  this._descriptor = undefined;
   this._deps = undefined;
   this._chainWatchers = undefined;
   this._chains = undefined;
@@ -139,6 +142,11 @@ function inheritedMap(name, Meta) {
     map[subkey] = value;
   };
 
+  Meta.prototype['reset' + capitalized] = function(subkey) {
+    let map = this._getOrCreateOwnMap(key);
+    map[subkey] = UNDEFINED;
+  };
+
   Meta.prototype['peek' + capitalized] = function(subkey) {
     return this._findInherited(key, subkey);
   };
@@ -152,7 +160,10 @@ function inheritedMap(name, Meta) {
         for (let key in map) {
           if (!seen[key]) {
             seen[key] = true;
-            fn(key, map[key]);
+
+            if (map[key] !== UNDEFINED) {
+              fn(key, map[key]);
+            }
           }
         }
       }

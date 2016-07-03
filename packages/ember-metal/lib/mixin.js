@@ -345,6 +345,9 @@ function applyMixin(obj, mixins, partial) {
 
   obj._super = ROOT;
 
+  let knownDescriptors = [];
+  m.forEachDescriptor(name => knownDescriptors.push(name));
+
   // Go through all mixins and hashes passed in, and:
   //
   // * Handle concatenated properties
@@ -367,6 +370,12 @@ function applyMixin(obj, mixins, partial) {
       let followed = followAlias(obj, desc, m, descs, values);
       desc = followed.desc;
       value = followed.value;
+    }
+
+    if (desc && desc.isDescriptor) {
+      m.writeDescriptor(key, desc);
+    } else if (knownDescriptors.indexOf(key) > -1) {
+      m.resetDescriptor(key);
     }
 
     if (desc === undefined && value === undefined) { continue; }
