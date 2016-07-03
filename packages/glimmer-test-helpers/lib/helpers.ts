@@ -23,41 +23,6 @@ interface TestCompileOptions extends CompileOptions {
   env: Environment;
 }
 
-export function compileRealSpec(string: string, options: TestCompileOptions): SerializedTemplate {
-  return template(compileSpec(string, options));
-}
-
-/*
- * Compile a string into a template rendering function
- *
- * Example usage:
- *
- *     // Template is the hydration portion of the compiled template
- *     let template = compile("Howdy {{name}}");
- *
- *     // Template accepts three arguments:
- *     //
- *     //   1. A context object
- *     //   2. An env object
- *     //   3. A contextualElement (optional, document.body is the default)
- *     //
- *     // The env object *must* have at least these two properties:
- *     //
- *     //   1. `hooks` - Basic hooks for rendering a template
- *     //   2. `dom` - An instance of DOMHelper
- *     //
- *     import {hooks} from 'glimmer-runtime';
- *     import {DOMHelper} from 'morph';
- *     let context = {name: 'whatever'},
- *         env = {hooks: hooks, dom: new DOMHelper()},
- *         contextualElement = document.body;
- *     let domFragment = template(context, env, contextualElement);
- *
- * @method compile
- * @param {String} string An Glimmer template string
- * @param {Object} options A set of options to provide to the compiler
- * @return {Template} A function for rendering the template
- */
 export function compile(string: string, options: TestCompileOptions): Template {
   return Template.fromSpec(compileRealSpec(string, options), options.env);
 }
@@ -66,11 +31,10 @@ export function compileLayout(string: string, options: TestCompileOptions): Layo
   return Template.layoutFromSpec(compileRealSpec(string, options), options.env);
 }
 
-/*
- * @method template
- * @param {TemplateSpec} templateSpec A precompiled template
- * @return {Template} A template spec string
- */
+export function compileRealSpec(string: string, options: TestCompileOptions): SerializedTemplate {
+  return template(compileSpec(string, options));
+}
+
 export function template(templateSpec: TemplateSpec): SerializedTemplate {
   return JSON.parse(templateSpec);
 }
