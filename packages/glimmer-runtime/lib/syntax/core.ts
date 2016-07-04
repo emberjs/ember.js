@@ -15,8 +15,11 @@ import {
 } from '../syntax';
 
 import {
-  InlineBlock
+  InlineBlock,
+  Block as CompiledBlock
 } from '../compiled/blocks';
+
+import SymbolTable from '../symbol-table';
 
 import {
   Opcode
@@ -93,7 +96,8 @@ import {
 import {
   Statements as SerializedStatements,
   Expressions as SerializedExpressions,
-  Core as SerializedCore
+  Core as SerializedCore,
+  BlockMeta
 } from 'glimmer-wire-format';
 
 export interface BlockOptions {
@@ -172,11 +176,11 @@ export class Unknown extends ExpressionSyntax<any> {
     this.trustingMorph = !!options.unsafe;
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<Opaque> {
+  compile(compiler: SymbolLookup, env: Environment, parentMeta: BlockMeta): CompiledExpression<Opaque> {
     let { ref } = this;
 
-    if (env.hasHelper(ref.parts)) {
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts), args: CompiledArgs.empty() });
+    if (env.hasHelper(ref.parts, parentMeta)) {
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, parentMeta), args: CompiledArgs.empty() });
     } else {
       return this.ref.compile(compiler);
     }
@@ -214,8 +218,8 @@ export class Append extends StatementSyntax {
     return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
-    compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env) }));
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
+    compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env, block.meta) }));
 
     if (this.trustingMorph) {
       compiler.append(new TrustingAppendOpcode());
@@ -902,10 +906,10 @@ export class Helper extends ExpressionSyntax<Opaque> {
     return new PrettyPrint('expr', this.ref.prettyPrint(), params, hash);
   }
 
-  compile(compiler: SymbolLookup, env: Environment): CompiledExpression<Opaque> {
-    if (env.hasHelper(this.ref.parts)) {
+  compile(compiler: SymbolLookup, env: Environment, parentMeta: BlockMeta): CompiledExpression<Opaque> {
+    if (env.hasHelper(this.ref.parts, parentMeta)) {
       let { args, ref } = this;
-      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts), args: args.compile(compiler, env) });
+      return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, parentMeta), args: args.compile(compiler, env) });
     } else {
       throw new Error(`Compile Error: ${this.ref.prettyPrint()} is not a helper`);
     }

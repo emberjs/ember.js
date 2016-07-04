@@ -212,8 +212,8 @@ export abstract class Environment {
     return false;
   }
 
-  abstract hasHelper(helperName: InternedString[]): boolean;
-  abstract lookupHelper(helperName: InternedString[]): Helper;
+  abstract hasHelper(helperName: InternedString[], blockMeta: BlockMeta): boolean;
+  abstract lookupHelper(helperName: InternedString[], blockMeta: BlockMeta): Helper;
   abstract hasPartial(partialName: InternedString[]): boolean;
   abstract lookupPartial(PartialName: InternedString[]): PartialDefinition;
   abstract hasComponentDefinition(tagName: InternedString[]): boolean;

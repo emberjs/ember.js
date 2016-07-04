@@ -68,12 +68,12 @@ abstract class Compiler {
   }
 
   protected compileStatement(statement: StatementSyntax, ops: StatementCompilationBuffer) {
-    this.env.statement(statement, this.block.meta).compile(ops, this.env, this.symbolTable);
+    this.env.statement(statement, this.block.meta).compile(ops, this.env, this.block);
   }
 }
 
 function compileStatement(env: Environment, statement: StatementSyntax, ops: StatementCompilationBuffer, layout: Layout) {
-  env.statement(statement, layout.meta).compile(ops, env, layout.symbolTable);
+  env.statement(statement, layout.meta).compile(ops, env, layout);
 }
 
 export default Compiler;
@@ -273,7 +273,7 @@ class WrappedBuilder {
     let tagExpr;
     if (this.tag.isDynamic) {
       let BODY = new LabelOpcode({ label: 'BODY' });
-      tagExpr = this.tag.dynamicTagName.compile(list, env);
+      tagExpr = this.tag.dynamicTagName.compile(list, env, layout.meta);
       list.append(new PutValueOpcode({ expression: tagExpr }));
       list.append(new TestOpcode());
       list.append(new JumpUnlessOpcode({ target: BODY }));
