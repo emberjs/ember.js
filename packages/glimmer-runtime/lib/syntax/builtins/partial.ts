@@ -19,7 +19,7 @@ import {
 
 import * as Syntax from '../core';
 import Environment from '../../environment';
-import SymbolTable from '../../symbol-table';
+import { Block } from '../../compiled/blocks';
 
 export default class PartialSyntax extends StatementSyntax {
   type = "partial-statement";
@@ -36,7 +36,7 @@ export default class PartialSyntax extends StatementSyntax {
     return `partial ${this.args.prettyPrint()}`;
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment, symbolTable: SymbolTable) {
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, block: Block) {
 
     /*
     //        Enter(BEGIN, END)
@@ -67,7 +67,7 @@ export default class PartialSyntax extends StatementSyntax {
     compiler.append(new JumpUnlessOpcode({ target: END }));
     compiler.append(new EvaluatePartialOpcode({
       name: compiledPartialNameExpression,
-      symbolTable
+      symbolTable: block.symbolTable
     }));
 
     compiler.append(END);

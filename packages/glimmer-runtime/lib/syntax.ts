@@ -3,14 +3,14 @@ import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
 import { Opcode, OpSeq } from './opcodes';
-import { InlineBlock } from './compiled/blocks';
-import SymbolTable from './symbol-table';
+import { InlineBlock, Block } from './compiled/blocks';
 
 import OpcodeBuilder from './opcode-builder';
 
 import {
   Statement as SerializedStatement,
-  Expression as SerializedExpression
+  Expression as SerializedExpression,
+  BlockMeta
 } from 'glimmer-wire-format';
 
 export type PrettyPrintValue = PrettyPrint | string | string[] | PrettyPrintValueArray | PrettyPrintValueDict;
@@ -66,7 +66,7 @@ export abstract class Statement implements LinkedListNode {
     return new (<new (any) => any>this.constructor)(this);
   }
 
-  abstract compile(opcodes: StatementCompilationBuffer, env: Environment, symbolTable: SymbolTable);
+  abstract compile(opcodes: StatementCompilationBuffer, env: Environment, block: Block);
 
   scan(scanner: BlockScanner): Statement {
     return this;
@@ -88,7 +88,7 @@ export abstract class Expression<T> {
     return `${this.type}`;
   }
 
-  abstract compile(compiler: SymbolLookup, env: Environment): CompiledExpression<T>;
+  abstract compile(compiler: SymbolLookup, env: Environment, parentMeta?: BlockMeta): CompiledExpression<T>;
 }
 
 export interface SymbolLookup {
