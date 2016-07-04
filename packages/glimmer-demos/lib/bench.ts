@@ -41,6 +41,7 @@ export abstract class BenchmarkScenario {
     this.reporter.complete(event.target as Benchmark, event);
   }
 
+  abstract name: string;
   abstract description: string;
 
   abstract run();
@@ -66,7 +67,7 @@ export class BenchmarkSuite {
   add(scenario: BenchmarkScenario) {
     let bench = new Benchmark({
       minSamples: 200,
-      name: scenario.description,
+      name: scenario.name,
       fn: scenario.run.bind(scenario),
       onStart: scenario.start.bind(scenario),
       onCycle(event: Benchmark.Event) {
@@ -79,7 +80,7 @@ export class BenchmarkSuite {
       onComplete: scenario.complete.bind(scenario)
     });
 
-    this.scenarios[scenario.description] = bench;
+    this.scenarios[scenario.name] = bench;
   }
 
   run(name: string) {
