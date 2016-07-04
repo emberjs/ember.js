@@ -1,6 +1,4 @@
-import {
-  TemplateBenchmarkScenario
-} from './bench';
+import { TemplateBenchmarkScenario } from '../bench';
 
 abstract class IfScenario extends TemplateBenchmarkScenario {
   start() {
@@ -30,7 +28,8 @@ abstract class IfScenario extends TemplateBenchmarkScenario {
 }
 
 class InlineIfScenario extends IfScenario {
-  description = 'inline if';
+  name = 'inline if';
+  description = 'two `inline-if` helpers';
 
   template() {
     return '{{inline-if truthy first "empty"}} {{inline-if falsy "empty" last}}';
@@ -38,7 +37,8 @@ class InlineIfScenario extends IfScenario {
 }
 
 class BlockIfScenario extends IfScenario {
-  description = 'block if';
+  name = 'block if';
+  description = 'two `{{#if}}` blocks';
 
   template() {
     return '{{#if truthy}}{{first}}{{else}}empty{{/if}} {{#if falsy}}empty{{else}}{{last}}{{/if}}';
