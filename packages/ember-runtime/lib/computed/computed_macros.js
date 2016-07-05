@@ -427,7 +427,7 @@ export function lte(dependentKey, value) {
   You may pass in more than two properties and even use
   property brace expansion.  The computed property will
   return the first falsy value or last truthy value
-  just like JavaScript's `||` operator.
+  just like JavaScript's `&&` operator.
 
   Example
 
