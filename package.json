@@ -8,8 +8,8 @@
   "scripts": {
     "build": "ember build --environment production",
     "pretest": "ember build",
-    "test": "bin/run-tests.js",
-    "test:sauce": "bin/run-sauce-tests.js",
+    "test": "node bin/run-tests.js",
+    "test:sauce": "node bin/run-sauce-tests.js",
     "test:testem": "testem -f testem.dist.json",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "start": "ember serve",
