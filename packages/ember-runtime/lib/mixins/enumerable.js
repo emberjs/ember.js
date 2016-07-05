@@ -227,6 +227,7 @@ const Enumerable = Mixin.create({
     ```
 
     @method contains
+    @deprecated Use `Enumerable#includes` instead. See http://emberjs.com/deprecations/v2.x#toc_enumerable-contains
     @param {Object} obj The object to search for.
     @return {Boolean} `true` if object is found in enumerable.
     @public
