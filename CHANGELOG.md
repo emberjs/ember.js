@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.7.0-beta.3 (July 5, 2016)
+
+- [#13768](https://github.com/emberjs/ember.js/pull/13768) [BUGFIX] Update route-recognizer to v0.2.0. This addresses a large number of per-existing bugs related to URL encoding. However, in doing so, it might inevitably break existing workarounds in this area. Please refer to the linked pull request for more details.
+
 ### 2.7.0-beta.2 (June 27, 2016)
 
 - [#13634](https://github.com/emberjs/ember.js/pull/13634) [BUGFIX] Fix issues with rerendering blockless and tagless components.
