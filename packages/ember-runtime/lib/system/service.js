@@ -1,4 +1,4 @@
-import Object from 'ember-runtime/system/object';
+import EmberObject from 'ember-runtime/system/object';
 import { createInjectionHelper } from 'ember-runtime/inject';
 
 
@@ -39,7 +39,7 @@ createInjectionHelper('service');
   @since 1.10.0
   @public
 */
-const Service = Object.extend();
+const Service = EmberObject.extend();
 
 Service.reopenClass({
   isServiceFactory: true

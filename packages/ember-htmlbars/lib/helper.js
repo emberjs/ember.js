@@ -3,7 +3,7 @@
 @submodule ember-templates
 */
 
-import Object from 'ember-runtime/system/object';
+import EmberObject from 'ember-runtime/system/object';
 
 /**
   Ember Helpers are functions that can compute values, and are used in templates.
@@ -60,7 +60,7 @@ import Object from 'ember-runtime/system/object';
   @public
   @since 1.13.0
 */
-const Helper = Object.extend({
+const Helper = EmberObject.extend({
   isHelperInstance: true,
 
   /**
