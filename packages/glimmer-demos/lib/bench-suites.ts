@@ -1,5 +1,11 @@
-import Inline from './bench-inline';
+import If from './benchmarks/if';
+import Baseline from './benchmarks/baseline';
+import Partials from './benchmarks/partials';
+import Components from './benchmarks/components';
 
 export default {
-  Inline
+  Baseline,
+  If,
+  Partials,
+  Components
 }
