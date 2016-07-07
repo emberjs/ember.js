@@ -24,7 +24,7 @@ export default Service.extend({
       routeName,
       models,
       queryParams,
-      shoudReplace
+      shouldReplace
     );
   },
 
