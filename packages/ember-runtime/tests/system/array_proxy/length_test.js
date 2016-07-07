@@ -1,5 +1,5 @@
 import ArrayProxy from 'ember-runtime/system/array_proxy';
-import Object from 'ember-runtime/system/object';
+import EmberObject from 'ember-runtime/system/object';
 import { observer } from 'ember-metal/mixin';
 import { computed } from 'ember-metal/computed';
 import { A as a } from 'ember-runtime/system/native_array';
@@ -11,7 +11,7 @@ QUnit.test('array proxy + aliasedProperty complex test', function() {
 
   aCalled = bCalled = cCalled = dCalled = eCalled = 0;
 
-  let obj = Object.extend({
+  let obj = EmberObject.extend({
     colors: computed.reads('model'),
     length: computed.reads('colors.length'),
 

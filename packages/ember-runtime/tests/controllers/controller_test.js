@@ -3,7 +3,7 @@
 import Controller from 'ember-runtime/controllers/controller';
 import Service from 'ember-runtime/system/service';
 import Mixin from 'ember-metal/mixin';
-import Object from 'ember-runtime/system/object';
+import EmberObject from 'ember-runtime/system/object';
 import inject from 'ember-runtime/inject';
 import { get } from 'ember-metal/property_get';
 import buildOwner from 'container/tests/test-helpers/build-owner';
@@ -157,7 +157,7 @@ if (!EmberDev.runningProdBuild) {
     expectAssertion(function() {
       let owner = buildOwner();
 
-      let AnObject = Object.extend({
+      let AnObject = EmberObject.extend({
         foo: inject.controller('bar')
       });
 

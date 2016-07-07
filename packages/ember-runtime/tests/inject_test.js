@@ -5,7 +5,7 @@ import inject from 'ember-runtime/inject';
 import {
   createInjectionHelper
 } from 'ember-runtime/inject';
-import Object from 'ember-runtime/system/object';
+import EmberObject from 'ember-runtime/system/object';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 
 QUnit.module('inject');
@@ -28,7 +28,7 @@ if (!EmberDev.runningProdBuild) {
 
     let owner = buildOwner();
 
-    let AnObject = Object.extend({
+    let AnObject = EmberObject.extend({
       bar: inject.foo(),
       baz: inject.foo()
     });
@@ -39,7 +39,7 @@ if (!EmberDev.runningProdBuild) {
 
   QUnit.test('attempting to inject a nonexistent container key should error', function() {
     let owner = buildOwner();
-    let AnObject = Object.extend({
+    let AnObject = EmberObject.extend({
       foo: new InjectedProperty('bar', 'baz')
     });
 
@@ -52,7 +52,7 @@ if (!EmberDev.runningProdBuild) {
 }
 
 QUnit.test('factories should return a list of lazy injection full names', function() {
-  let AnObject = Object.extend({
+  let AnObject = EmberObject.extend({
     foo: new InjectedProperty('foo', 'bar'),
     bar: new InjectedProperty('quux')
   });
