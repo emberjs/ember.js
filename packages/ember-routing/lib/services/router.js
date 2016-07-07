@@ -4,9 +4,10 @@
 */
 
 import Service from 'ember-runtime/system/service';
+import inject from 'ember-runtime/inject';
 
 export default Service.extend({
-  _routing: Ember.inject.service('-routing'),
+  _routing: inject.service('-routing'),
 
   // NEW API
   transitionTo(routeName, ...models, queryParams, shouldReplace) {
