@@ -6,13 +6,12 @@
 @module ember
 @submodule ember-metal
 */
-import { applyStr } from 'ember-utils';
+import { applyStr, functionMetaFor } from 'ember-utils';
 import { assert } from './debug';
 import { meta as metaFor, peekMeta } from './meta';
 import { deprecate } from './debug';
 
 import { ONCE, SUSPENDED } from './meta_listeners';
-
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -304,6 +303,9 @@ export function listenersFor(obj, eventName) {
 export function on(...args) {
   let func = args.pop();
   let events = args;
-  func.__ember_listens__ = events;
+
+  let meta = functionMetaFor(func);
+  meta.writeListeners(events);
+
   return func;
 }

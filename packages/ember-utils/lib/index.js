@@ -29,3 +29,4 @@ export { canInvoke, tryInvoke } from './invoke';
 export { default as makeArray } from './make-array';
 export { default as applyStr } from './apply-str';
 export { default as toString } from './to-string';
+export { functionMetaFor, peekFunctionMeta } from './function-meta';
