@@ -184,8 +184,8 @@ interface ComponentTestOptions {
 }
 
 interface TagOptions {
-  attrs?: Object;
-  props?: Object;
+  attributes?: Object;
+  args?: Object;
   blockParams?: string[];
   template?: string;
 }
@@ -218,7 +218,7 @@ function isExpected(expected: string | Expected): expected is Expected {
 function testComponent(title: string, { kind, layout, invokeAs = {}, expected, skip, updates = [] }: ComponentTestOptions) {
   if (skip === true) return;
 
-  let { attrs = {}, props = {}, context, blockParams, template, inverse } = invokeAs;
+  let { attributes = {}, args = {}, context, blockParams, template, inverse } = invokeAs;
 
   if (!kind || kind === 'curly') {
     let test = skip === 'curly' ? QUnit.skip : QUnit.test;
@@ -229,13 +229,13 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
       env.registerEmberishCurlyComponent('test-component', EmberishCurlyComponent, layout as string);
       let list = ['test-component'];
 
-      Object.keys(attrs).forEach(key => {
+      Object.keys(attributes).forEach(key => {
         throw new Error("Cannot use attrs in a curly component test");
         // list.push(`${key}="${attrs[key]}"`);
       });
 
-      Object.keys(props).forEach(key => {
-        list.push(`${key}=${toCurly(props[key])}`);
+      Object.keys(args).forEach(key => {
+        list.push(`${key}=${toCurly(args[key])}`);
       });
 
       if (blockParams) list.push(`as |${blockParams.join(' ')}|`);
@@ -269,13 +269,13 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
 
       let list = ['component', 'componentName'];
 
-      Object.keys(attrs).forEach(key => {
+      Object.keys(attributes).forEach(key => {
         throw new Error("Cannot use attrs in a curly component test");
         // list.push(`${key}="${attrs[key]}"`);
       });
 
-      Object.keys(props).forEach(key => {
-        list.push(`${key}=${toCurly(props[key])}`);
+      Object.keys(args).forEach(key => {
+        list.push(`${key}=${toCurly(args[key])}`);
       });
 
       if (blockParams) list.push(`as |${blockParams.join(' ')}|`);
@@ -330,7 +330,7 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
       let layoutOptions: TagOptions;
 
       if (typeof layout === 'string') {
-        layoutOptions = { attrs: {}, props: {}, template: layout as string };
+        layoutOptions = { attributes: {}, args: {}, template: layout as string };
       } else {
         layoutOptions = layout;
       }
@@ -346,26 +346,26 @@ function testComponent(title: string, { kind, layout, invokeAs = {}, expected, s
 
       appendViewFor(invocation, context || {});
 
-      assertExpected('aside', expected, attrs);
+      assertExpected('aside', expected, attributes);
 
       updates.forEach(update => {
         ok(true, `Updating with ${JSON.stringify(update)}`);
         view.rerender(update.context);
-        assertExpected('aside', update.expected, attrs);
+        assertExpected('aside', update.expected, attributes);
       });
     });
   }
 }
 
-function glimmerTag(tagName: string, { blockParams = null, attrs = {}, props = {}, template = null }: TagOptions) {
+function glimmerTag(tagName: string, { blockParams = null, attributes = {}, args = {}, template = null }: TagOptions) {
   let list = [tagName];
 
-  Object.keys(attrs).forEach(key => {
-    list.push(`${key}="${attrs[key]}"`);
+  Object.keys(attributes).forEach(key => {
+    list.push(`${key}="${attributes[key]}"`);
   });
 
-  Object.keys(props).forEach(key => {
-    list.push(`${key}={{${toGlimmer(props[key])}}}`);
+  Object.keys(args).forEach(key => {
+    list.push(`@${key}={{${toGlimmer(args[key])}}}`);
   });
 
   if (blockParams) list.push(`as |${blockParams.join(' ')}|`);
@@ -419,7 +419,7 @@ testComponent('yield inside a conditional on the component', {
   layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
   invokeAs: {
     template: 'In template',
-    props: { predicate: 'predicate' },
+    args: { predicate: 'predicate' },
     context: { predicate: true }
   },
   expected: {
@@ -439,13 +439,13 @@ testComponent('yield inside a conditional on the component', {
 
 testComponent('non-block with properties on attrs', {
   layout: 'In layout - someProp: {{@someProp}}',
-  invokeAs: { props: { someProp: '"something here"' } },
+  invokeAs: { args: { someProp: '"something here"' } },
   expected: 'In layout - someProp: something here'
 });
 
 testComponent('block with properties on attrs', {
   layout: 'In layout - someProp: {{@someProp}} - {{yield}}',
-  invokeAs: { template: 'In template', props: { someProp: '"something here"' } },
+  invokeAs: { template: 'In template', args: { someProp: '"something here"' } },
   expected: 'In layout - someProp: something here - In template',
 });
 
@@ -453,7 +453,7 @@ testComponent('with ariaRole specified', {
   skip: true,
   kind: 'curly',
   layout: 'Here!',
-  invokeAs: { attrs: { id: '"aria-test"', ariaRole: '"main"' } },
+  invokeAs: { attributes: { id: '"aria-test"', ariaRole: '"main"' } },
   expected: {
     content: 'Here!',
     attrs: { id: '"aria-test"', role: '"main"' }
@@ -464,7 +464,7 @@ testComponent('with ariaRole and class specified', {
   skip: true,
   kind: 'curly',
   layout: 'Here!',
-  invokeAs: { attrs: { id: '"aria-test"', class: '"foo"', ariaRole: '"main"' } },
+  invokeAs: { attributes: { id: '"aria-test"', class: '"foo"', ariaRole: '"main"' } },
   expected: {
     content: 'Here!',
     attrs: { id: '"aria-test"', class: classes('ember-view foo'), role: '"main"' }
@@ -477,7 +477,7 @@ testComponent('with ariaRole specified as an outer binding', {
   layout: 'Here!',
 
   invokeAs: {
-    attrs: { id: '"aria-test"', class: '"foo"', ariaRole: 'ariaRole' },
+    attributes: { id: '"aria-test"', class: '"foo"', ariaRole: 'ariaRole' },
     context: { ariaRole: 'main' },
   },
 
@@ -492,7 +492,7 @@ testComponent('glimmer component with role specified as an outer binding and cop
   kind: 'glimmer',
   layout: 'Here!',
   invokeAs: {
-    attrs: { id: '"aria-test"', role: '"{{myRole}}"' },
+    attributes: { id: '"aria-test"', role: '"{{myRole}}"' },
     context: { myRole: 'main' }
   },
 
@@ -512,7 +512,7 @@ testComponent('yield', {
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
 
   invokeAs: {
-    props: { predicate: 'activated', someValue: '42' },
+    args: { predicate: 'activated', someValue: '42' },
     context: { activated: true, outer: "outer" },
     blockParams: ['result'],
     template: 'Hello{{result}}{{outer}}',
@@ -527,7 +527,7 @@ testComponent('yield to inverse', {
   layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
 
   invokeAs: {
-    props: { predicate: 'activated', someValue: '42'},
+    args: { predicate: 'activated', someValue: '42'},
     context: { activated: false, outer: "outer" },
     blockParams: ['result'],
     template: 'Hello{{result}}{{outer}}',
@@ -1025,13 +1025,13 @@ module("Components - integration - scope");
 testComponent('correct scope - conflicting local names', {
   layout: stripTight`{{#with @a as |item|}}{{@a}}: {{item}}, {{#with @b as |item|}}
                      {{@b}}: {{item}}, {{#with @c as |item|}}{{@c}}: {{item}}{{/with}}{{/with}}{{/with}}`,
-  invokeAs: { props: { a: '"A"', b: '"B"', c: '"C"' } },
+  invokeAs: { args: { a: '"A"', b: '"B"', c: '"C"' } },
   expected: 'A: A, B: B, C: C'
 });
 
 testComponent('correct scope - conflicting block param and attr names', {
   layout: 'Outer: {{@conflict}} {{#with @item as |conflict|}}Inner: {{@conflict}} Block: {{conflict}}{{/with}}',
-  invokeAs: { props: { item: '"from block"', conflict: '"from attr"' } },
+  invokeAs: { args: { item: '"from block"', conflict: '"from attr"' } },
   expected: 'Outer: from attr Inner: from attr Block: from block'
 });
 
@@ -1053,7 +1053,7 @@ QUnit.test('correct scope - self', assert => {
     stripTight`
       <div>
         <foo-bar />
-        <foo-bar baz={{zomg}} />
+        <foo-bar @baz={{zomg}} />
       </div>`,
     { zomg: "zomg" }
   );
@@ -1116,7 +1116,7 @@ QUnit.test('correct scope - simple', assert => {
   appendViewFor(
     stripTight`
       {{#each items key="id" as |item|}}
-        <sub-item name={{item.id}} />
+        <sub-item @name={{item.id}} />
       {{/each}}`
     , { items: subitems });
 
@@ -1133,7 +1133,7 @@ QUnit.test('correct scope - complex', assert => {
       <aside>{{@item.id}}:
         {{#if @item.visible}}
           {{#each @item.subitems key="id" as |subitem|}}
-             <sub-item name={{subitem.id}} />
+             <sub-item @name={{subitem.id}} />
           {{/each}}
         {{/if}}
       </aside>`);
@@ -1162,7 +1162,7 @@ QUnit.test('correct scope - complex', assert => {
     appendViewFor(
       stripTight`
         <article>{{#each items key="id" as |item|}}
-          <my-item item={{item}} />
+          <my-item @item={{item}} />
         {{/each}}</article>`
       , { items });
 
@@ -1192,7 +1192,7 @@ QUnit.test('correct scope - self', assert => {
     stripTight`
       <div>
         <foo-bar />
-        <foo-bar baz={{zomg}} />
+        <foo-bar @baz={{zomg}} />
       </div>`,
     { zomg: "zomg" }
   );
@@ -1668,14 +1668,14 @@ module("Glimmer Component - shadowing");
 testComponent('shadowing: normal outer attributes are reflected', {
   kind: 'glimmer',
   layout: 'In layout - someProp: {{@someProp}}',
-  invokeAs: { attrs: { someProp: 'something here' } },
+  invokeAs: { attributes: { someProp: 'something here' } },
   expected: { attrs: { someProp: 'something here' }, content: 'In layout - someProp: something here' }
 });
 
 testComponent('shadowing - normal outer attributes clobber inner attributes', {
   kind: 'glimmer',
-  layout: { attrs: { 'data-name': 'Godfrey', 'data-foo': 'foo' } },
-  invokeAs: { attrs: { 'data-name': 'Godhuda', 'data-bar': 'bar' } },
+  layout: { attributes: { 'data-name': 'Godfrey', 'data-foo': 'foo' } },
+  invokeAs: { attributes: { 'data-name': 'Godhuda', 'data-bar': 'bar' } },
   expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo', 'data-bar': 'bar' }, content: '' }
 });
 
@@ -1684,7 +1684,7 @@ testComponent('shadowing: outer attributes with concat are reflected', {
   layout: 'In layout - someProp: {{@someProp}}',
   invokeAs: {
     context: { someProp: 'something here' },
-    attrs: { someProp: '{{someProp}}' }
+    attributes: { someProp: '{{someProp}}' }
   },
   expected: { attrs: { someProp: 'something here' }, content: 'In layout - someProp: something here' },
   updates: [{
@@ -1703,10 +1703,10 @@ testComponent('shadowing: outer attributes with concat are reflected', {
 
 testComponent('shadowing: outer attributes with concat clobber inner attributes', {
   kind: 'glimmer',
-  layout: { attrs: { 'data-name': 'Godfrey', 'data-foo': 'foo' } },
+  layout: { attributes: { 'data-name': 'Godfrey', 'data-foo': 'foo' } },
   invokeAs: {
     context: { name: 'Godhuda', foo: 'foo' },
-    attrs: { 'data-name': '{{name}}', 'data-foo': '{{foo}}-bar' }
+    attributes: { 'data-name': '{{name}}', 'data-foo': '{{foo}}-bar' }
   },
   expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' },
   updates: [{
@@ -1725,11 +1725,11 @@ testComponent('shadowing: outer attributes with concat clobber inner attributes'
 
 testComponent('shadowing: outer attributes clobber inner attributes with concat', {
   kind: 'glimmer',
-  layout: { attrs: { 'data-name': '{{@name}}', 'data-foo': '{{@foo}}-bar' } },
+  layout: { attributes: { 'data-name': '{{@name}}', 'data-foo': '{{@foo}}-bar' } },
   invokeAs: {
     context: { name: 'Godfrey', foo: 'foo' },
-    props: { name: 'name', foo: 'foo' },
-    attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }
+    args: { name: 'name', foo: 'foo' },
+    attributes: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }
   },
   expected: { attrs: { 'data-name': 'Godhuda', 'data-foo': 'foo-bar' }, content: '' },
   updates: [{
@@ -1781,7 +1781,7 @@ styles.forEach(style => {
       `  <${style.tagName} such="{{@stability}}">In layout</${style.tagName}>  `
     );
 
-    appendViewFor('<non-block stability={{stability}} />', { stability: 'stability' });
+    appendViewFor('<non-block @stability={{stability}} />', { stability: 'stability' });
 
     let node = view.element;
     equalsElement(node, style.tagName, { such: 'stability', class: 'ember-view', id: regex(/^ember\d*$/) }, 'In layout');
@@ -2226,7 +2226,7 @@ QUnit.test('Glimmer component hooks', function() {
 
   env.registerEmberishGlimmerComponent('non-block', inspectHooks(NonBlock), '<div>In layout - someProp: {{@someProp}}</div>');
 
-  appendViewFor('<non-block someProp={{someProp}} />', { someProp: 'wycats' });
+  appendViewFor('<non-block @someProp={{someProp}} />', { someProp: 'wycats' });
 
   assertFired(instance, 'didReceiveAttrs');
   assertFired(instance, 'willRender');

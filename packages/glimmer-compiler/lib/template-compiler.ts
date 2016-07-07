@@ -89,14 +89,26 @@ export default class TemplateCompiler {
 
     let isStatic = this.prepareAttributeValue(value);
 
-    if (isStatic) {
-      this.opcode('staticAttr', action, name, namespace);
-    } else if (action.value.type === 'MustacheStatement') {
-      assert(name.indexOf(':') === -1, `Namespaced attributes cannot be set as props. Perhaps you meant ${name}="{{title}}"`);
-      this.opcode('dynamicProp', action, name);
+    if (name.charAt(0) === '@') {
+      // Arguments
+      if (isStatic) {
+        this.opcode('staticArg', action, name);
+      } else if (action.value.type === 'MustacheStatement') {
+        this.opcode('dynamicArg', action, name);
+      } else {
+        this.opcode('dynamicArg', action, name);
+      }
     } else {
-      this.opcode('dynamicAttr', action, name, namespace);
+      if (isStatic) {
+        this.opcode('staticAttr', action, name, namespace);
+      } else if (action.value.type === 'MustacheStatement') {
+        this.opcode('dynamicAttr', action, name);
+      } else {
+        this.opcode('dynamicAttr', action, name, namespace);
+      }
     }
+
+
   }
 
   modifier([action]) {
@@ -125,9 +137,9 @@ export default class TemplateCompiler {
 
   /// Internal actions, not found in the original processed actions
 
-  attr([path]) {
+  arg([path]) {
     let { parts } = path;
-    this.opcode('attr', path, parts);
+    this.opcode('arg', path, parts);
   }
 
   mustacheExpression(expr) {
@@ -135,8 +147,8 @@ export default class TemplateCompiler {
       this.builtInHelper(expr);
     } else if (isLiteral(expr)) {
       this.opcode('literal', expr, expr.path.value);
-    } else if (isAttr(expr)) {
-      this.attr([expr.path]);
+    } else if (isArg(expr)) {
+      this.arg([expr.path]);
     } else if (isHelper(expr)) {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
@@ -183,7 +195,7 @@ export default class TemplateCompiler {
 
   PathExpression(expr) {
     if (expr.data) {
-      this.attr([expr]);
+      this.arg([expr]);
     } else {
       this.opcode('get', expr, expr.parts);
     }
@@ -312,7 +324,7 @@ function isYield({ path }) {
   return path.original === 'yield';
 }
 
-function isAttr({ path }) {
+function isArg({ path }) {
   return path.data;
 }
 

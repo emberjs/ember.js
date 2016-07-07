@@ -1,9 +1,9 @@
-import { ConcreteBounds, SingleNodeBounds, Bounds } from './bounds';
-import applyTableElementFix from './compat/inner-html-fix';
-import applySVGElementFix from './compat/svg-inner-html-fix';
-import applyTextNodeMergingFix from './compat/text-node-merging-fix';
+import { ConcreteBounds, SingleNodeBounds, Bounds } from '../bounds';
+import applyTableElementFix from '../compat/inner-html-fix';
+import applySVGElementFix from '../compat/svg-inner-html-fix';
+import applyTextNodeMergingFix from '../compat/text-node-merging-fix';
 
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };

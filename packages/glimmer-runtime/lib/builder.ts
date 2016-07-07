@@ -1,6 +1,6 @@
 import Bounds, { clear, Cursor } from './bounds';
 
-import { DOMHelper } from './dom';
+import { DOMHelper } from './dom/helper';
 
 import { Destroyable, InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
