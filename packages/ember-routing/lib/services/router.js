@@ -4,36 +4,34 @@
 */
 
 import Service from 'ember-runtime/system/service';
-import RouteInfo from '../system/route_info';
-import alias from
 
 export default Service.extend({
-  router: null,
-  currentRoute: null, // RouteInfo
-  currentRouteName: Ember.computed.alias('currentRoute.name'),
-  currentURL: Ember.computed('currentRoute', {
-    // serialized string
-  }),
-
-  // CURRENT API
-  location: null,
-  rootURL: null,
-  map() {
-  },
-  willTransition() {
-  },
-  didTransition() {
-  },
+  _routing: Ember.inject.service('-routing'),
 
   // NEW API
-  transitionTo(routeName, [models], queryParams) {
-  },
-  replaceWith(routeName, [models], queryParams) {
+  transitionTo(routeName, ...models, queryParams, shouldReplace) {
+    this.get('_routing').transitionto(
+      routeName,
+      models,
+      queryParams,
+      shouldReplace
+    );
   },
 
-  isActive(routeName, [models], queryParams) {
+  replaceWith(routeName, ...models, queryParams) {
   },
 
-  url() {
+  isActive(routeName, ...models, queryParams) {
+  },
+
+  isActiveTarget(routeName, ...models, queryParams) {
+  },
+
+  urlFor(routeName, ...models, queryParams) {
+    return this.get('_routing').generateUrl(
+      routeName,
+      models,
+      queryParams
+    );
   }
 });
