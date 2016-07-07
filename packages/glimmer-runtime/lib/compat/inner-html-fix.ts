@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMHelper } from '../dom';
+import { moveNodesBefore, DOMHelper } from '../dom/helper';
 
 // Patch:    innerHTML Fix
 // Browsers: IE9

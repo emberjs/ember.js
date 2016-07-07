@@ -6,8 +6,11 @@ import {
 
 import {
   ATTRIBUTE as ATTRIBUTE_SYNTAX,
+  ARGUMENT as ARGUMENT_SYNTAX,
   CompileInto,
+  Parameter as ParameterSyntax,
   Attribute as AttributeSyntax,
+  Argument as ArgumentSyntax,
   Expression as ExpressionSyntax,
   Statement as StatementSyntax,
   PrettyPrint,
@@ -84,7 +87,6 @@ import {
   StaticAttrOpcode,
   DynamicAttrOpcode,
   DynamicAttrNSOpcode,
-  DynamicPropOpcode,
   CommentOpcode
 } from '../compiled/opcodes/dom';
 
@@ -276,49 +278,77 @@ export class Modifier extends StatementSyntax {
   }
 }
 
-export class DynamicProp extends AttributeSyntax<Opaque> {
-  "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
-  type = "dynamic-prop";
+export class StaticArg extends ArgumentSyntax<string> {
+  public type: string = "static-arg";
+  name: InternedString;
+  value: InternedString;
 
-  static fromSpec(sexp: SerializedStatements.DynamicProp): DynamicProp {
+  static fromSpec(node: SerializedStatements.StaticArg): StaticArg {
+    let [, name, value] = node;
+
+    return new StaticArg({ name: name as InternedString, value: value as InternedString });
+  }
+
+  static build(name: string, value: string, namespace: string=null): StaticArg {
+    return new this({ name: intern(name), value: intern(value) });
+  }
+
+  constructor({ name, value }) {
+    super();
+    this.name = name;
+    this.value = value;
+  }
+
+  compile() {
+    throw new Error(`Cannot compiler StaticArg "${this.name}" as it is a delegate for ValueSyntax<string>.`);
+  }
+
+  valueSyntax(): ExpressionSyntax<string> {
+    return Value.build(this.value as string);
+  }
+
+  prettyPrint() {
+    return new PrettyPrint('staticArg', 'staticArg', [this.name, this.value]);
+  }
+}
+
+export class DynamicArg extends ArgumentSyntax<Opaque> {
+  static fromSpec(sexp: SerializedStatements.DynamicArg): DynamicArg {
     let [, name, value] = sexp;
 
-    return new DynamicProp({
+    return new DynamicArg({
       name: name as InternedString,
       value: buildExpression(value)
     });
   }
 
-  static build(name: string, value: any): DynamicProp {
-    return new this({ name: intern(name), value });
+  static build(_name: string, value: ExpressionSyntax<string>): DynamicArg {
+    let name = intern(_name);
+    return new this({ name, value });
   }
 
-  public name: InternedString;
-  public value: ExpressionSyntax<Opaque>;
+  name: InternedString;
+  value: ExpressionSyntax<Opaque>;
+  namespace: InternedString;
 
-  constructor(options: { name: InternedString, value: ExpressionSyntax<Opaque> }) {
+  constructor({ name, value, namespace = null }: { name: InternedString, value: ExpressionSyntax<Opaque>, namespace?: InternedString }) {
     super();
-    this.name = options.name;
-    this.value = options.value;
+    this.name = name;
+    this.value = value;
+    this.namespace = namespace;
+  }
+
+  compile() {
+    throw new Error(`Cannot compile DynamicArg for "${this.name}" as it is delegate for ExpressionSyntax<Opaque>.`);
   }
 
   prettyPrint() {
     let { name, value } = this;
-
-    return new PrettyPrint('attr', 'prop', [name, value.prettyPrint()]);
+    return new PrettyPrint('staticArg', 'staticArg', [name, value.prettyPrint()])
   }
 
-  compile(compiler: CompileInto & SymbolLookup, env: Environment) {
-    compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env) }));
-    compiler.append(new DynamicPropOpcode(this));
-  }
-
-  valueSyntax(): ExpressionSyntax<Opaque> {
+  valueSyntax() {
     return this.value;
-  }
-
-  isAttribute(): boolean {
-    return false;
   }
 }
 
@@ -363,10 +393,6 @@ export class StaticAttr extends AttributeSyntax<string> {
 
   valueSyntax(): ExpressionSyntax<string> {
     return Value.build(this.value as string);
-  }
-
-  isAttribute(): boolean {
-    return true;
   }
 }
 
@@ -423,10 +449,6 @@ export class DynamicAttr extends AttributeSyntax<string> {
 
   valueSyntax(): ExpressionSyntax<string> {
     return this.value;
-  }
-
-  isAttribute(): boolean {
-    return true;
   }
 }
 
@@ -537,13 +559,10 @@ export class OpenElement extends StatementSyntax {
     let { tag } = this;
 
     if (scanner.env.hasComponentDefinition([tag])) {
-      let { args, attrs } = this.attributes(scanner);
+      let { args, attrs } = this.parameters(scanner);
       scanner.startBlock();
       this.tagContents(scanner);
       let template = scanner.endBlock();
-
-      // let template = new InlineBlock({ symbolTable: null, children: [], program: contents, locals: [] });
-
       return new Component({ tag, args, attrs, template });
     } else {
       return new OpenPrimitiveElement({ tag });
@@ -564,19 +583,24 @@ export class OpenElement extends StatementSyntax {
     return new OpenPrimitiveElement({ tag });
   }
 
-  private attributes(scanner: BlockScanner): { args: Args, attrs: InternedString[] } {
+  private parameters(scanner: BlockScanner): { args: Args, attrs: InternedString[] } {
     let current = scanner.next();
     let args = dict<ExpressionSyntax<Opaque>>();
     let attrs: InternedString[] = [];
 
-    while (current[ATTRIBUTE_SYNTAX] || current[MODIFIER_SYNTAX]) {
+    while (current[ATTRIBUTE_SYNTAX] || current[MODIFIER_SYNTAX] || current[ARGUMENT_SYNTAX]) {
       if (current[MODIFIER_SYNTAX]) {
         throw new Error(`Compile Error: Element modifiers are not allowed in components`);
       }
 
-      let attr = <AttributeSyntax<Opaque>>current;
-      args[<string>attr.name] = attr.valueSyntax();
-      if (attr.isAttribute()) attrs.push(attr.name);
+      let param = <ParameterSyntax<Opaque>>current;
+
+      if (current[ATTRIBUTE_SYNTAX]) {
+        attrs.push(param.name);
+      }
+
+      args[param.name] = param.valueSyntax();
+
       current = scanner.next();
     }
 
@@ -790,16 +814,16 @@ export class Get extends ExpressionSyntax<Opaque> {
   }
 }
 
-export class GetNamedParameter<T> extends ExpressionSyntax<T> {
-  type = "get-named-parameter";
+export class GetArgument<T> extends ExpressionSyntax<T> {
+  type = "get-argument";
 
-  static fromSpec(sexp: SerializedExpressions.Attr): GetNamedParameter<Opaque> {
+  static fromSpec(sexp: SerializedExpressions.Arg): GetArgument<Opaque> {
     let [, parts] = sexp;
 
-    return new GetNamedParameter<Opaque>({ parts: parts as InternedString[] });
+    return new GetArgument<Opaque>({ parts: parts as InternedString[] });
   }
 
-  static build(path: string): GetNamedParameter<Opaque> {
+  static build(path: string): GetArgument<Opaque> {
     return new this<Opaque>({ parts: path.split('.').map(intern) });
   }
 
@@ -811,7 +835,7 @@ export class GetNamedParameter<T> extends ExpressionSyntax<T> {
   }
 
   prettyPrint() {
-    return new PrettyPrint('expr', 'get-named', [this.parts.join('.')], null);
+    return new PrettyPrint('expr', 'get-argument', [this.parts.join('.')], null);
   }
 
   compile(lookup: SymbolLookup): CompiledExpression<T> {

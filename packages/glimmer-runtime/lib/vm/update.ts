@@ -17,7 +17,7 @@ import {
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
-import { DOMHelper } from '../dom';
+import { DOMHelper } from '../dom/helper';
 
 import VM from './append';
 
@@ -336,7 +336,7 @@ export class ListBlockOpcode extends BlockOpcode {
     let elementStack = ElementStack.forInitialRender(
       this.env,
       this.bounds.parentElement(),
-      nextSibling,
+      nextSibling
     );
 
     return new VM({ env, scope, dynamicScope, elementStack });

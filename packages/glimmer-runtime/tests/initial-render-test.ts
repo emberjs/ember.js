@@ -786,12 +786,6 @@ test("Case-sensitive tag has capitalization preserved", function() {
   compilesTo('<svg><linearGradient id="gradient"></linearGradient></svg>');
 });
 
-test("Namespaced attribute with unquoted expression throws", function() {
-  QUnit.throws(function() {
-    compile("<svg xlink:title={{title}}>content</svg>");
-  }, /Namespaced attributes cannot be set as props. Perhaps you meant xlink:title="{{title}}"/);
-});
-
 let warnings = 0;
 let orignalAttributeFor;
 

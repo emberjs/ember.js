@@ -148,9 +148,14 @@ export default class JavaScriptCompiler {
     this.push(['dynamicAttr', name, value, namespace]);
   }
 
-  dynamicProp(name: string) {
+  staticArg(name: str) {
     let value = this.popValue<Expression>();
-    this.push(['dynamicProp', name, value]);
+    this.push(['staticArg', name.slice(1), value]);
+  }
+
+  dynamicArg(name: str) {
+    let value = this.popValue<Expression>();
+    this.push(['dynamicArg', name.slice(1), value]);
   }
 
   yield(to: string) {
@@ -179,9 +184,9 @@ export default class JavaScriptCompiler {
     this.pushValue(['unknown', path]);
   }
 
-  attr(path: string[]) {
+  arg(path: string[]) {
     this.template.named.add(path[0]);
-    this.pushValue(['attr', path]);
+    this.pushValue(['arg', path]);
   }
 
   get(path: string[]) {

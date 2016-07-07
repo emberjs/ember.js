@@ -13,11 +13,11 @@ import {
   isModified
 } from 'glimmer-reference';
 import { ModifierManager } from '../../modifier/interfaces';
-import { DOMHelper } from '../../dom';
+import { DOMHelper } from '../../dom/helper';
 import { NULL_REFERENCE } from '../../references';
 import { ValueReference } from '../../compiled/expressions/value';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
-import { IChangeList } from '../../change-lists';
+import { IChangeList } from '../../dom/change-lists';
 
 export class TextOpcode extends Opcode {
   public type = "text";
@@ -196,7 +196,6 @@ export class StaticAttrOpcode extends Opcode {
 
   evaluate(vm: VM) {
     let { name, value, namespace } = this;
-
     if (namespace) {
       vm.stack().setAttributeNS(namespace, name, value);
     } else {
@@ -418,33 +417,6 @@ export class DynamicAttrNSOpcode extends Opcode {
 
 export class DynamicAttrOpcode extends Opcode {
   public type = "dynamic-attr";
-  public name: InternedString;
-
-  constructor({ name }: { name: InternedString }) {
-    super();
-    this.name = name;
-  }
-
-  evaluate(vm: VM) {
-    let { name } = this;
-    let reference = vm.frame.getOperand();
-    vm.stack().setAttribute(name, reference);
-  }
-
-  toJSON(): OpcodeJSON {
-    let { _guid: guid, type, name } = this;
-
-    let details = dict<string>();
-
-    details["name"] = JSON.stringify(name);
-    details["value"] = "$OPERAND";
-
-    return { guid, type, details };
-  }
-}
-
-export class DynamicPropOpcode extends Opcode {
-  public type = "dynamic-prop";
   public name: InternedString;
 
   constructor({ name }: { name: InternedString }) {
