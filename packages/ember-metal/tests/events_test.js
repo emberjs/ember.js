@@ -267,5 +267,5 @@ QUnit.test('DEPRECATED: adding didInitAttrs as a listener is deprecated', functi
 
   expectDeprecation(() => {
     addListener(obj, 'didInitAttrs');
-  }, /\[DEPRECATED\] didInitAttrs called in <\Ember.Component\:ember[\d+]+>\./);
+  }, /didInitAttrs called in <\Ember.Component\:ember[\d+]+>\./);
 });
