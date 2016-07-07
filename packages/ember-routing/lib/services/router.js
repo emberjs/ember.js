@@ -9,26 +9,32 @@ import inject from 'ember-runtime/inject';
 export default Service.extend({
   _routing: inject.service('-routing'),
 
-  // NEW API
-  transitionTo(routeName, ...models, queryParams, shouldReplace) {
-    this.get('_routing').transitionto(
+  transitionTo(routeName, models, queryParams) {
+    this.get('_routing').transitionTo(
       routeName,
       models,
-      queryParams,
-      shouldReplace
+      queryParams
     );
   },
 
-  replaceWith(routeName, ...models, queryParams) {
+  replaceWith(routeName, models, queryParams) {
+    let shouldReplace = true;
+
+    this.get('_routing').transitionTo(
+      routeName,
+      models,
+      queryParams,
+      shoudReplace
+    );
   },
 
-  isActive(routeName, ...models, queryParams) {
+  isActive(routeName, models, queryParams) {
   },
 
-  isActiveTarget(routeName, ...models, queryParams) {
+  isActiveTarget(routeName, models, queryParams) {
   },
 
-  urlFor(routeName, ...models, queryParams) {
+  urlFor(routeName, models, queryParams) {
     return this.get('_routing').generateUrl(
       routeName,
       models,
