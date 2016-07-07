@@ -523,7 +523,8 @@ let LinkComponent = EmberComponent.extend({
     this.on(eventName, this, this._invoke);
   },
 
-  router: inject.service(),
+  _routing: inject.service('-routing'),
+  router: inject.service('router'),
 
   /**
     Accessed as a classname binding to apply the `LinkComponent`'s `disabledClass`
@@ -548,6 +549,7 @@ let LinkComponent = EmberComponent.extend({
     if (get(this, 'loading')) { return false; }
 
     let router = get(this, 'router');
+    // let routing = get(this, '_routing');
     let models = get(this, 'models');
     let resolvedQueryParams = get(this, 'resolvedQueryParams');
 
@@ -555,9 +557,9 @@ let LinkComponent = EmberComponent.extend({
     let isCurrentWhenSpecified = !!currentWhen;
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');
-
+debugger;
     for (let i = 0; i < currentWhen.length; i++) {
-      if (routing.isActiveForRoute(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
+      if (router.isActive(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
         return get(this, 'activeClass');
       }
     }
