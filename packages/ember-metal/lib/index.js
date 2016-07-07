@@ -126,7 +126,6 @@ import {
   removeObserver
 } from 'ember-metal/observer';
 import {
-  IS_BINDING,
   NAME_KEY,
   Mixin,
   aliasMethod,
@@ -266,7 +265,6 @@ Ember.removeObserver = removeObserver;
 Ember._suspendObserver = _suspendObserver;
 Ember._suspendObservers = _suspendObservers;
 
-Ember.IS_BINDING = IS_BINDING;
 Ember.required = required;
 Ember.aliasMethod = aliasMethod;
 Ember.observer = observer;

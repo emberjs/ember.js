@@ -255,13 +255,14 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
   }
 }
 
-let IS_BINDING = /^.+Binding$/;
+export function detectBinding(key) {
+  var length = key.length;
 
-function detectBinding(obj, key, value, m) {
-  if (IS_BINDING.test(key)) {
-    m.writeBindings(key, value);
-  }
+  return length > 7 && key.charCodeAt(length - 7) === 66 && key.indexOf('inding', length - 6) !== -1;
 }
+// warm both paths of above function
+detectBinding('notbound');
+detectBinding('fooBinding');
 
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
@@ -367,7 +368,11 @@ function applyMixin(obj, mixins, partial) {
     if (desc === undefined && value === undefined) { continue; }
 
     replaceObserversAndListeners(obj, key, value);
-    detectBinding(obj, key, value, m);
+
+    if (detectBinding(key)) {
+      m.writeBindings(key, value);
+    }
+
     defineProperty(obj, key, desc, value, m);
   }
 
@@ -856,7 +861,6 @@ export function _beforeObserver(...args) {
 }
 
 export {
-  IS_BINDING,
   Mixin,
   required,
   REQUIRED
