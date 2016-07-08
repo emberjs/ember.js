@@ -28,7 +28,9 @@ function render(template: Template, context={}) {
 
 function rerender(context: Object={}) {
   self.update(opaque(context));
+  env.begin();
   result.rerender();
+  env.commit();
 }
 
 function assertInvariants(result) {
