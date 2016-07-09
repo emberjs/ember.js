@@ -1,8 +1,11 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import Controller from 'ember-runtime/controllers/controller';
+import Route from 'ember-routing/system/route';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import { LinkTo } from '../../utils/helpers';
+import { classes as classMatcher } from '../../utils/test-helpers';
+import isEnabled from 'ember-metal/features';
 
 moduleFor('Link-to component', class extends ApplicationTest {
   runTask(fn) {
@@ -121,6 +124,59 @@ moduleFor('Link-to component', class extends ApplicationTest {
 
     return this.visit('/').then(() => {
       this.assertText('Hello');
+    });
+  }
+});
+
+moduleFor('Link-to component with query-params', class extends ApplicationTest {
+  constructor() {
+    super(...arguments);
+
+    if (isEnabled('ember-routing-route-configured-query-params')) {
+      this.registerRoute('index', Route.extend({
+        queryParams: {
+          foo: {
+            defaultValue: '123'
+          },
+          bar: {
+            defaultValue: 'yes'
+          }
+        }
+      }));
+    } else {
+      this.registerController('index', Controller.extend({
+        queryParams: ['foo'],
+        foo: '123',
+        bar: 'yes'
+      }));
+    }
+  }
+
+  runTask(fn) {
+    run(fn);
+  }
+
+  ['@test populates href with fully supplied query param values'](assert) {
+    this.registerTemplate('index', `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`);
+
+    return this.visit('/').then(() => {
+      this.assertComponentElement(this.firstChild.firstElementChild, {
+        tagName: 'a',
+        attrs: { href: '/?bar=NAW&foo=456' },
+        content: 'Index'
+      });
+    });
+  }
+
+  ['@test populates href with partially supplied query param values, but omits if value is default value']() {
+    this.registerTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
+
+    return this.visit('/').then(() => {
+      this.assertComponentElement(this.firstChild.firstElementChild, {
+        tagName: 'a',
+        attrs: { href: '/', class: classMatcher('ember-view active') },
+        content: 'Index'
+      });
     });
   }
 });
