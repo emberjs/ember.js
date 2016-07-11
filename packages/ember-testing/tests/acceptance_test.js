@@ -207,7 +207,7 @@ test('Nested async helpers', function() {
   });
 });
 
-test('Multiple nested async helpers', function() {
+QUnit.test('Multiple nested async helpers', function() {
   expect(3);
 
   visit('/posts');
