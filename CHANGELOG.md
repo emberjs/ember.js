@@ -18,6 +18,11 @@
 - [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](http://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
 - [#13599](https://github.com/emberjs/ember.js/pull/13599) [FEATURE] Enable `ember-runtime-computed-uniq-by` feature.
 
+### 2.6.2 (July 11, 2016)
+
+- [#13781](https://github.com/emberjs/ember.js/pull/13781) [BUGFIX] Fix NoneLocation#getURL
+- [#13797](https://github.com/emberjs/ember.js/pull/13797) [BUGFIX] Ensure didInitAttrs deprecation is stripped in prod.
+
 ### 2.6.1 (June 27, 2016)
 
 - [#13634](https://github.com/emberjs/ember.js/pull/13634) [BUGFIX] Fix issues with rerendering blockless and tagless components.
