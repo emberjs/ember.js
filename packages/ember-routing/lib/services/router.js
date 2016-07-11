@@ -9,7 +9,9 @@ import inject from 'ember-runtime/inject';
 export default Service.extend({
   _routing: inject.service('-routing'),
 
-  transitionTo(routeName, models, queryParams) {
+  transitionTo(routeName, ...models) {
+    let queryParams = models.pop();
+
     this.get('_routing').transitionTo(
       routeName,
       models,
@@ -17,7 +19,8 @@ export default Service.extend({
     );
   },
 
-  replaceWith(routeName, models, queryParams) {
+  replaceWith(routeName, ...models) {
+    let queryParams = models.pop();
     let shouldReplace = true;
 
     this.get('_routing').transitionTo(
@@ -28,10 +31,10 @@ export default Service.extend({
     );
   },
 
-  isActive(routeName, models, queryParams) {
+  isActive(routeName, ...models) {
   },
 
-  isActiveTarget(routeName, models, queryParams) {
+  isActiveTarget(routeName, ...models) {
   },
 
   urlFor(routeName, models, queryParams) {
