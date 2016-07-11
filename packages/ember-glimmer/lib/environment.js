@@ -212,12 +212,12 @@ export default class Environment extends GlimmerEnvironment {
         return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], parentMeta));
       }
 
-      assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key));
+      assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key, parentMeta));
     }
 
-    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key));
+    assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, parentMeta));
 
-    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key) ? !isModifier : true);
+    assert(`Helpers may not be used in the element form.`, !nativeSyntax && key && this.hasHelper(key, parentMeta) ? !isModifier : true);
   }
 
   hasComponentDefinition() {
@@ -257,12 +257,18 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name) {
-    return !!builtInHelpers[name[0]] || this.owner.hasRegistration(`helper:${name}`);
+  hasHelper(name, parentMeta) {
+    let options = parentMeta && { source: `template:${parentMeta.moduleName}` } || {};
+    return !!builtInHelpers[name[0]] ||
+      this.owner.hasRegistration(`helper:${name}`, options) ||
+      this.owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name) {
-    let helper = builtInHelpers[name[0]] || this.owner.lookup(`helper:${name}`);
+  lookupHelper(name, parentMeta) {
+    let options = parentMeta && { source: `template:${parentMeta.moduleName}` } || {};
+    let helper = builtInHelpers[name[0]] ||
+      this.owner.lookup(`helper:${name}`, options) ||
+      this.owner.lookup(`helper:${name}`);
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {
       return (args) => helper.toReference(args);

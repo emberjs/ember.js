@@ -104,7 +104,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('yall finished or yall done?');
   }
 
-  ['@htmlbars it can lookup a local helper']() {
+  ['@test it can lookup a local helper']() {
     this.registerHelper('x-outer/x-helper', () => {
       return 'Who dis?';
     });
