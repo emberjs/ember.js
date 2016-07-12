@@ -41,7 +41,7 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.runPropertyTest('value', ['foo', 'bar']);
   }
 
-  ['@htmlbars input placeholder attribute']() {
+  ['@test input placeholder attribute']() {
     this.runAttributeTest('placeholder', ['foo', 'bar']);
   }
 
@@ -49,7 +49,7 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.runAttributeTest('name', ['nam', 'name']);
   }
 
-  ['@htmlbars input maxlength attribute']() {
+  ['@test input maxlength attribute']() {
     this.runAttributeTest('maxlength', [2, 3]);
   }
 
@@ -57,7 +57,7 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.runAttributeTest('size', [2, 3]);
   }
 
-  ['@htmlbars input tabindex attribute']() {
+  ['@test input tabindex attribute']() {
     this.runAttributeTest('tabindex', [2, 3]);
   }
 
