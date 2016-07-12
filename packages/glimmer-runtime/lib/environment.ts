@@ -1,8 +1,11 @@
 import { Statement as StatementSyntax } from './syntax';
 
-import { DOMHelper } from './dom';
+import { DOMHelper } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
 import { NULL_REFERENCE, ConditionalReference } from './references';
+import {
+  defaultChangeLists
+} from './dom/change-lists';
 
 import {
   PartialDefinition
@@ -13,6 +16,12 @@ import {
   ComponentManager,
   ComponentDefinition
 } from './component/interfaces';
+
+import {
+  IChangeList
+} from './dom/change-lists';
+
+import { requiresSanitization } from './dom/sanitized-values';
 
 import {
   ModifierManager
@@ -214,6 +223,11 @@ export abstract class Environment {
 
   abstract hasHelper(helperName: InternedString[], blockMeta: BlockMeta): boolean;
   abstract lookupHelper(helperName: InternedString[], blockMeta: BlockMeta): Helper;
+
+  attributeFor(element: Element, attr: InternedString, reference: Reference<Opaque>, namespace?: InternedString): IChangeList {
+    return defaultChangeLists(element, attr, namespace);
+  }
+
   abstract hasPartial(partialName: InternedString[]): boolean;
   abstract lookupPartial(PartialName: InternedString[]): PartialDefinition;
   abstract hasComponentDefinition(tagName: InternedString[]): boolean;

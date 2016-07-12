@@ -1,5 +1,5 @@
 import { EvaluatedArgs } from '../compiled/expressions/args';
-import { DOMHelper } from '../dom';
+import { DOMHelper } from '../dom/helper';
 import { DynamicScope } from '../environment';
 import { Destroyable } from 'glimmer-util';
 

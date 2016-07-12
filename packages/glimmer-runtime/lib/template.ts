@@ -40,7 +40,7 @@ export default class Template {
   }
 
   render(self: PathReference<any>, env: Environment, { dynamicScope, appendTo }: RenderOptions, blockArguments: any[]=null) {
-    let elementStack = ElementStack.forInitialRender({ dom: env.getDOM(), parentNode: appendTo, nextSibling: null });
+    let elementStack = ElementStack.forInitialRender(env, appendTo, null);
     let compiled = this.raw.compile(env);
     let vm = VM.initial(env, { self, dynamicScope, elementStack, size: compiled.symbols });
 

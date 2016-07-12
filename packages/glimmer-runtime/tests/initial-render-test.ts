@@ -1,7 +1,8 @@
-import { forEach } from "glimmer-util";
+import { forEach, InternedString } from "glimmer-util";
 import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
-import { Template } from 'glimmer-runtime';
+import { Template, AttributeChangeList, DOMHelper } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
+import { Reference } from 'glimmer-reference';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
@@ -24,8 +25,8 @@ function rootElement(): HTMLDivElement {
   return env.getDOM().createElement('div', document.body) as HTMLDivElement;
 }
 
-function commonSetup() {
-  env = new TestEnvironment(); // TODO: Support SimpleDOM
+function commonSetup(customEnv = new TestEnvironment()) {
+  env = customEnv; // TODO: Support SimpleDOM
   root = rootElement();
 }
 
@@ -35,7 +36,7 @@ function render(template: Template, self: any) {
 
 function module(name: string) {
   return QUnit.module(name, {
-    setup: commonSetup
+    setup() { commonSetup(); }
   });
 }
 
@@ -785,8 +786,48 @@ test("Case-sensitive tag has capitalization preserved", function() {
   compilesTo('<svg><linearGradient id="gradient"></linearGradient></svg>');
 });
 
-test("Namespaced attribute with unquoted expression throws", function() {
-  QUnit.throws(function() {
-    compile("<svg xlink:title={{title}}>content</svg>");
-  }, /Namespaced attributes cannot be set as props. Perhaps you meant xlink:title="{{title}}"/);
+let warnings = 0;
+let orignalAttributeFor;
+
+const StyleAttribute = {
+  setAttribute(dom, element, attr, value) {
+    warnings++;
+    AttributeChangeList.setAttribute(dom, element, attr, value);
+  },
+  updateAttribute() {}
+}
+
+QUnit.module('Style attributes', {
+  setup() {
+    class StyleEnv extends TestEnvironment {
+      attributeFor(element, attr, reference) {
+        if (attr === 'style') {
+          return StyleAttribute;
+        }
+
+        return super.attributeFor(element, attr, reference);
+      }
+    }
+
+    commonSetup(new StyleEnv())
+
+  },
+  teardown() {
+    warnings = 0;
+  }
+})
+
+test(`using an inline style on an element gives you a warning`, function(assert) {
+  let template = compile(`<div style="background: red">Thing</div>`);
+  render(template, {});
+
+  assert.equal(warnings, 1);
+});
+
+test(`using an inline style on an namespaced element gives you a warning`, function(assert) {
+  let template = compile(`<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red" />`);
+
+  render(template, {});
+
+  assert.equal(warnings, 1);
 });

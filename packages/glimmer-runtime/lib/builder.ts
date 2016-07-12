@@ -1,6 +1,6 @@
 import Bounds, { clear, Cursor } from './bounds';
 
-import { DOMHelper } from './dom';
+import { DOMHelper } from './dom/helper';
 
 import { Destroyable, InternedString, Stack, LinkedList, LinkedListNode, assert } from 'glimmer-util';
 
@@ -11,11 +11,7 @@ import {
 } from 'glimmer-reference';
 
 import {
-  ElementOperation,
-  EmptyStringResetingProperty,
-  NamespacedAttribute,
-  NonNamespacedAttribute,
-  Property
+  Attribute
 } from './compiled/opcodes/dom';
 
 interface FirstNode {
@@ -68,16 +64,17 @@ class BlockStackElement {
 export interface ElementOperations {
   addAttribute(name: InternedString, value: PathReference<string>);
   addAttributeNS(namespace: InternedString, name: InternedString, value: PathReference<string>);
-  addProperty(name: InternedString, value: PathReference<any>);
 }
 
 class GroupedElementOperations implements ElementOperations {
-  public groups: ElementOperation[][];
-  public group: ElementOperation[];
+  public groups: Attribute[][];
+  public group: Attribute[];
 
+  private env: Environment;
   private element: Element;
 
-  constructor(element: Element) {
+  constructor(element: Element, env: Environment) {
+    this.env = env;
     this.element = element;
     let group = this.group = [];
     this.groups = [group];
@@ -89,18 +86,16 @@ class GroupedElementOperations implements ElementOperations {
   }
 
   addAttribute(name: InternedString, reference: PathReference<string>) {
-    if (this.element.tagName === 'INPUT' && name === 'value') {
-      this.group.push(new EmptyStringResetingProperty(this.element, name, reference));
-    }
-    this.group.push(new NonNamespacedAttribute(this.element, name, reference));
+    let attributeManager = this.env.attributeFor(this.element, name, reference);
+    let attribute = new Attribute(this.element, attributeManager, name, reference);
+    this.group.push(attribute);
   }
 
   addAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>) {
-    this.group.push(new NamespacedAttribute(this.element, namespace, name, reference));
-  }
+    let attributeManager = this.env.attributeFor(this.element, name, reference, namespace);
+    let nsAttribute = new Attribute(this.element, attributeManager, name, reference, namespace);
 
-  addProperty(name: InternedString, reference: PathReference<any>) {
-    this.group.push(new Property(this.element, name, reference));
+    this.group.push(nsAttribute);
   }
 }
 
@@ -145,27 +140,29 @@ export class ElementStack implements Cursor {
   public dom: DOMHelper;
   public element: Element;
   public elementOperations: GroupedElementOperations = null;
+  public env: Environment;
 
   private elementStack = new Stack<Element>();
   private nextSiblingStack = new Stack<Node>();
   private elementOperationsStack = new Stack<GroupedElementOperations>();
   private blockStack = new Stack<Tracker>();
 
-  static forInitialRender({ parentNode, nextSibling, dom }: InitialRenderOptions) {
-    return new ElementStack({ dom, parentNode, nextSibling });
+  static forInitialRender(env: Environment, parentNode: Element, nextSibling: Node) {
+    return new ElementStack(env, parentNode, nextSibling);
   }
 
-  static resume({ tracker, nextSibling, dom }: UpdateTrackerOptions) {
+  static resume(env: Environment, tracker: Tracker, nextSibling: Node) {
     let parentNode = tracker.parentElement();
 
-    let stack = new ElementStack({ dom, parentNode, nextSibling });
+    let stack = new ElementStack(env, parentNode, nextSibling);
     stack.pushBlockTracker(tracker);
 
     return stack;
   }
 
-  constructor({ dom, parentNode, nextSibling }: ElementStackOptions) {
-    this.dom = dom;
+  constructor(env: Environment, parentNode: Element, nextSibling: Node) {
+    this.env = env;
+    this.dom = env.getDOM();
     this.element = parentNode;
     this.nextSibling = nextSibling;
 
@@ -179,7 +176,7 @@ export class ElementStack implements Cursor {
 
   private pushElement(tag: InternedString): Element {
     let element = this.dom.createElement(tag, this.element);
-    let elementOperations = new GroupedElementOperations(element);
+    let elementOperations = new GroupedElementOperations(element, this.env);
 
     this.elementOperations = elementOperations;
     this.element = element;
@@ -273,24 +270,12 @@ export class ElementStack implements Cursor {
     return comment;
   }
 
-  // setAttribute(name: InternedString, value: any) {
-  //   this.dom.setAttribute(this.element, name, value);
-  // }
-
-  // setAttributeNS(namespace: InternedString, name: InternedString, value: any) {
-  //   this.dom.setAttributeNS(this.element, name, value, namespace);
-  // }
-
   setAttribute(name: InternedString, reference: PathReference<string>) {
     this.elementOperations.addAttribute(name, reference);
   }
 
   setAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>) {
     this.elementOperations.addAttributeNS(namespace, name, reference);
-  }
-
-  setProperty(name: InternedString, reference: PathReference<any>) {
-    this.elementOperations.addProperty(name, reference);
   }
 
   closeElement() {

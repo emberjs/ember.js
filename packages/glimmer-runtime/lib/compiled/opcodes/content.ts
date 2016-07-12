@@ -10,7 +10,7 @@ import Upsert, {
   cautiousInsert,
   trustingInsert
 } from '../../upsert';
-import { DOMHelper } from '../../dom';
+import { DOMHelper } from '../../dom/helper';
 import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { VM, UpdatingVM } from '../../vm';
 import { Reference, ReferenceCache, isModified, isConst, map } from 'glimmer-reference';

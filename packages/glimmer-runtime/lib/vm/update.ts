@@ -17,7 +17,7 @@ import {
 import { EvaluatedArgs } from '../compiled/expressions/args';
 import { OpcodeJSON, OpSeq, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { LabelOpcode } from '../compiled/opcodes/vm';
-import { DOMHelper } from '../dom';
+import { DOMHelper } from '../dom/helper';
 
 import VM from './append';
 
@@ -176,11 +176,11 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   handleException() {
     let { env, scope, dynamicScope } = this;
 
-    let elementStack = ElementStack.resume({
-      dom: this.env.getDOM(),
-      tracker: this.bounds,
-      nextSibling: this.bounds.reset(env)
-    });
+    let elementStack = ElementStack.resume(
+      this.env,
+      this.bounds,
+      this.bounds.reset(env)
+    );
 
     let vm = new VM({ env, scope, dynamicScope, elementStack });
     let result = vm.execute(this.ops);
@@ -333,11 +333,11 @@ export class ListBlockOpcode extends BlockOpcode {
   vmForInsertion(nextSibling: Node) {
     let { env, scope, dynamicScope } = this;
 
-    let elementStack = ElementStack.forInitialRender({
-      dom: this.env.getDOM(),
-      parentNode: this.bounds.parentElement(),
+    let elementStack = ElementStack.forInitialRender(
+      this.env,
+      this.bounds.parentElement(),
       nextSibling
-    });
+    );
 
     return new VM({ env, scope, dynamicScope, elementStack });
   }

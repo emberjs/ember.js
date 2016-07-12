@@ -1,5 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import { moveNodesBefore, DOMHelper } from '../dom';
+import { moveNodesBefore, DOMHelper } from '../dom/helper';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
