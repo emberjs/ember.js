@@ -31,7 +31,7 @@ abstract class Upsert {
 
 export default Upsert;
 
- export function cautiousInsert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
+export function cautiousInsert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
   if (isString(value)) {
     return TextUpsert.insert(dom, cursor, value);
   }

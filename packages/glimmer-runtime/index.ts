@@ -100,9 +100,14 @@ export {
 export {
   IChangeList,
   AttributeChangeList,
+  PropertyChangeList,
   SafeHrefAttributeChangeList,
+  SafeHrefPropertyChangeList,
   NullValueAttributeChangeList,
-  defaultChangeLists
+  NullValuePropertyChangeList,
+  defaultChangeLists,
+  defaultAttributeChangeLists,
+  defaultPropertyChangeLists
 } from './lib/dom/change-lists';
 
 export {
@@ -139,7 +144,7 @@ export {
 
 export { PublicVM as VM, UpdatingVM, RenderResult } from './lib/vm';
 
-export { SafeString } from './lib/upsert';
+export { SafeString, isSafeString } from './lib/upsert';
 
 export {
   Scope,
