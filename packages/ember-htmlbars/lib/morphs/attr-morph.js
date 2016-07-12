@@ -1,14 +1,9 @@
 import { warn, debugSeal } from 'ember-metal/debug';
 import DOMHelper from 'dom-helper';
 import isNone from 'ember-metal/is_none';
+import { STYLE_WARNING } from 'ember-views/system/utils';
 
 const HTMLBarsAttrMorph = DOMHelper.prototype.AttrMorphClass;
-
-export var styleWarning = '' +
-  'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
-  'please ensure that values being bound are properly escaped. For more information, ' +
-  'including how to disable this warning, see ' +
-  'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
 
 let proto = HTMLBarsAttrMorph.prototype;
 
@@ -20,7 +15,7 @@ proto.didInit = function() {
 
 function deprecateEscapedStyle(morph, value) {
   warn(
-    styleWarning,
+    STYLE_WARNING,
     (function(name, value, escaped) {
       // SafeString
       if (isNone(value) || (value && value.toHTML)) {

@@ -95,7 +95,7 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertHTML('<a href="BORK"></a>');
   }
 
-  ['@htmlbars should property escape unsafe hrefs']() {
+  ['@test should property escape unsafe hrefs']() {
     let unsafeUrls = emberA([
       {
         name: 'Bob',
