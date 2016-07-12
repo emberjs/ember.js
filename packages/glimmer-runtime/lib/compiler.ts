@@ -390,7 +390,7 @@ class ComponentAttrsBuilder implements Component.ComponentAttrsBuilder {
   }
 
   dynamic(name: string, value: FunctionExpression<string>) {
-    this.buffer.push(new Syntax.DynamicAttr({ name: name as FIXME<'intern'>, value: makeFunctionExpression(value) }));
+    this.buffer.push(new Syntax.DynamicAttr({ name: name as FIXME<'intern'>, value: makeFunctionExpression(value), isTrusting: false }));
   }
 }
 
