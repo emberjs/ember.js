@@ -44,25 +44,24 @@ module.exports = function() {
 
   var tsOptions = buildTSOptions();
 
-  var demoTrees = [
-    find(__dirname + '/demos', {
-      include: ['*.html'],
-      destDir: 'demos'
-    }),
-    find(__dirname + '/bench', {
-      include: ['*.html'],
-      destDir: 'demos'
-    })
-  ];
+  var benchmarkTrees = [find(__dirname + '/bench', {
+    include: ['*.html'],
+    destDir: 'bench'
+  })];
 
   var benchmarkPath = __dirname + '/node_modules/benchmark';
+
   if (existsSync(benchmarkPath)) {
-    demoTrees.push(find(benchmarkPath, {
+    benchmarkTrees.push(find(benchmarkPath, {
       include: ['benchmark.js'],
-      destDir: 'demos'
+      destDir: 'bench'
     }));
   }
-  var demos = merge(demoTrees);
+
+  var demos = find(__dirname + '/demos', {
+    include: ['*.html'],
+    destDir: 'demos'
+  });
 
   /*
    * ES6 Build
@@ -156,6 +155,15 @@ module.exports = function() {
     })
   ]);
 
+  var glimmerBenchmarks = merge([
+    find(libTree, {
+      include: [
+        'glimmer-test-helpers/**/*.js',
+        'glimmer-benchmarks/**/*.js',
+      ]
+    })
+  ]);
+
   var glimmerTests = merge([
     find(jsTree, { include: ['*/tests/**/*.js'] }),
     find(jsTree, { include: ['glimmer-test-helpers/**/*.js'] })
@@ -222,6 +230,16 @@ module.exports = function() {
     }
   });
 
+  glimmerBenchmarks = concat(glimmerBenchmarks, {
+    inputFiles: ['**/*.js'],
+    outputFile: '/amd/glimmer-benchmarks.amd.js',
+    sourceMapConfig: {
+      enabled: true,
+      cache: null,
+      sourceRoot: '/'
+    }
+  });
+
   glimmerTests = concat(glimmerTests, {
     inputFiles: ['**/*.js'],
     outputFile: '/amd/glimmer-tests.amd.js',
@@ -235,11 +253,13 @@ module.exports = function() {
   var finalTrees = [
     testHarness,
     demos,
+    merge(benchmarkTrees),
     glimmerCommon,
     glimmerCompiler,
     glimmerRuntime,
     glimmerTests,
     glimmerDemos,
+    glimmerBenchmarks,
     cjsTree,
     es5LibTree,
     es6LibTree
