@@ -1,5 +1,5 @@
 import { Bounds } from '../bounds';
-import { DOMHelper } from '../dom';
+import { DOMHelper } from '../dom/helper';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open

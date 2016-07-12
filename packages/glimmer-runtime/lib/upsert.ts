@@ -1,5 +1,5 @@
 import { Opaque } from 'glimmer-util';
-import { DOMHelper } from './dom';
+import { DOMHelper } from './dom/helper';
 import { Bounds, Cursor, SingleNodeBounds, clear } from './bounds';
 
 export interface SafeString {

@@ -37,7 +37,7 @@ export namespace Expressions {
   type Hash = Core.Hash;
 
   export type Unknown        = ['unknown', Path];
-  export type Attr           = ['attr', Path];
+  export type Arg            = ['arg', Path];
   export type Get            = ['get', Path];
   export type Value          = str | number | boolean;
   export type HasBlock       = ['hasBlock', str];
@@ -45,7 +45,7 @@ export namespace Expressions {
 
   export type Expression =
       Unknown
-    | Attr
+    | Arg
     | Get
     | Concat
     | HasBlock
@@ -67,7 +67,7 @@ export namespace Expressions {
   }
 
   export const isUnknown        = is<Unknown>('unknown');
-  export const isAttr           = is<Attr>('attr');
+  export const isArg            = is<Arg>('arg');
   export const isGet            = is<Get>('get');
   export const isConcat         = is<Concat>('concat');
   export const isHelper         = is<Helper>('helper');
@@ -96,8 +96,9 @@ export namespace Statements {
   export type CloseElement  = ['closeElement'];
   export type StaticAttr    = ['staticAttr', str, Expression, str];
   export type DynamicAttr   = ['dynamicAttr', str, Expression, str];
-  export type DynamicProp   = ['dynamicProp', str, Expression];
   export type Yield         = ['yield', YieldTo, Params];
+  export type DynamicArg    = ['dynamicArg', str, Expression];
+  export type StaticArg     = ['staticArg', str, Expression];
 
   export const isText         = is<Text>('text');
   export const isAppend       = is<Append>('append');
@@ -108,8 +109,9 @@ export namespace Statements {
   export const isCloseElement = is<CloseElement>('closeElement');
   export const isStaticAttr   = is<StaticAttr>('staticAttr');
   export const isDynamicAttr  = is<DynamicAttr>('dynamicAttr');
-  export const isDynamicProp  = is<DynamicProp>('dynamicProp');
   export const isYield        = is<Yield>('yield');
+  export const isDynamicArg   = is<DynamicArg>('dynamicArg');
+  export const isStaticArg    = is<StaticArg>('staticArg');
 
   export type Statement =
       Text
@@ -121,8 +123,9 @@ export namespace Statements {
     | CloseElement
     | StaticAttr
     | DynamicAttr
-    | DynamicProp
     | Yield
+    | StaticArg
+    | DynamicArg
     ;
 }
 

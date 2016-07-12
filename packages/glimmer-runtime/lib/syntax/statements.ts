@@ -3,13 +3,14 @@ import {
   Block,
   Append,
   DynamicAttr,
-  DynamicProp,
   Text,
   Comment,
   OpenElement,
   CloseElement,
   StaticAttr,
-  Modifier
+  Modifier,
+  DynamicArg,
+  StaticArg
 } from './core';
 
 import { InlineBlock } from '../compiled/blocks';
@@ -24,13 +25,14 @@ const {
   isBlock,
   isAppend,
   isDynamicAttr,
-  isDynamicProp,
   isText,
   isComment,
   isOpenElement,
   isCloseElement,
   isStaticAttr,
-  isModifier
+  isModifier,
+  isDynamicArg,
+  isStaticArg
 } = SerializedStatements;
 
 export default function(sexp: SerializedStatement, blocks: InlineBlock[]): StatementSyntax {
@@ -38,11 +40,12 @@ export default function(sexp: SerializedStatement, blocks: InlineBlock[]): State
   if (isBlock(sexp)) return Block.fromSpec(sexp, blocks);
   if (isAppend(sexp)) return Append.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
-  if (isDynamicProp(sexp)) return DynamicProp.fromSpec(sexp);
+  if (isDynamicArg(sexp)) return DynamicArg.fromSpec(sexp);
   if (isText(sexp)) return Text.fromSpec(sexp);
   if (isComment(sexp)) return Comment.fromSpec(sexp);
   if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp);
   if (isCloseElement(sexp)) return CloseElement.fromSpec();
   if (isStaticAttr(sexp)) return StaticAttr.fromSpec(sexp);
+  if (isStaticArg(sexp)) return StaticArg.fromSpec(sexp);
   if (isModifier(sexp)) return Modifier.fromSpec(sexp);
 };

@@ -1173,33 +1173,6 @@ test("non-standard namespaced attribute nodes w/ concat follow the normal dirtyi
   equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", "After reset");
 });
 
-test("property nodes follow the normal dirtying rules", function() {
-  let template = compile("<div foo={{value}}>hello</div>");
-  let object = { value: true };
-
-  render(template, object);
-
-  equalTokens(root, "<div>hello</div>", "Initial render");
-  strictEqual(root.firstChild['foo'], true, "Initial render");
-
-  object.value = false;
-  rerender(); // without setting the node to dirty
-
-  equalTokens(root, "<div>hello</div>", "Revalidating without dirtying");
-  strictEqual(root.firstChild['foo'], false, "Revalidating without dirtying");
-
-  rerender();
-
-  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
-  strictEqual(root.firstChild['foo'], false, "Revalidating after dirtying");
-
-  object.value = true;
-  rerender();
-
-  equalTokens(root, "<div>hello</div>", "Revalidating after dirtying");
-  strictEqual(root.firstChild['foo'], true, "Revalidating after dirtying");
-});
-
 test("top-level bounds are correct when swapping order", assert => {
   let template = compile("{{#each list key='key' as |item|}}{{item.name}}{{/each}}");
 

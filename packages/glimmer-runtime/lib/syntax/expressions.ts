@@ -1,6 +1,6 @@
 import {
   Value as ValueSyntax,
-  GetNamedParameter as AttrSyntax,
+  GetArgument as ArgSyntax,
   Concat as ConcatSyntax,
   Get as GetSyntax,
   HasBlock as HasBlockSyntax,
@@ -15,7 +15,7 @@ import {
 } from 'glimmer-wire-format';
 
 const {
-  isAttr,
+  isArg,
   isConcat,
   isGet,
   isHasBlock,
@@ -29,7 +29,7 @@ export default function(sexp: SerializedExpression): any {
   if (isValue(sexp)) {
     return ValueSyntax.fromSpec(sexp);
   } else {
-    if (isAttr(sexp)) return AttrSyntax.fromSpec(sexp);
+    if (isArg(sexp)) return ArgSyntax.fromSpec(sexp);
     if (isConcat(sexp)) return ConcatSyntax.fromSpec(sexp);
     if (isGet(sexp)) return GetSyntax.fromSpec(sexp);
     if (isHelper(sexp)) return HelperSyntax.fromSpec(sexp);

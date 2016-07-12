@@ -21,12 +21,11 @@ export {
   Unknown,
   StaticAttr,
   DynamicAttr,
-  DynamicProp,
   Args as ArgsSyntax,
   NamedArgs as NamedArgsSyntax,
   PositionalArgs as PositionalArgsSyntax,
   Ref as RefSyntax,
-  GetNamedParameter as GetNamedParameterSyntax,
+  GetArgument as GetNamedParameterSyntax,
   Get as GetSyntax,
   Value as ValueSyntax,
   OpenElement,
@@ -99,6 +98,14 @@ export {
 } from './lib/compiled/opcodes/dom';
 
 export {
+  IChangeList,
+  AttributeChangeList,
+  SafeHrefAttributeChangeList,
+  NullValueAttributeChangeList,
+  defaultChangeLists
+} from './lib/dom/change-lists';
+
+export {
   normalizeTextValue
 } from './lib/compiled/opcodes/content';
 
@@ -159,5 +166,5 @@ export {
   ModifierManager
 } from './lib/modifier/interfaces';
 
-export { default as DOMHelper, DOMHelper as IDOMHelper, isWhitespace } from './lib/dom';
+export { default as DOMHelper, DOMHelper as IDOMHelper, isWhitespace } from './lib/dom/helper';
 export { ElementStack, ElementOperations } from './lib/builder';
