@@ -119,7 +119,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Who dat? Who dis?', 'Re-render works');
   }
 
-  ['@htmlbars it overrides global helper lookup']() {
+  ['@test it overrides global helper lookup']() {
     this.registerHelper('x-outer/x-helper', () => {
       return 'Who dis?';
     });
@@ -139,7 +139,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     this.assertText('Who dat? Who dis? I dunno', 'Re-render works');
   }
 
-  ['@htmlbars lookup without match issues standard assertion (with local helper name)']() {
+  ['@test lookup without match issues standard assertion (with local helper name)']() {
     this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
 
     expectAssertion(() => {
@@ -147,7 +147,7 @@ moduleFor('Components test: local lookup', class extends RenderingTest {
     }, /A helper named "x-inner" could not be found/);
   }
 
-  ['@htmlbars overrides global lookup']() {
+  ['@test overrides global lookup']() {
     this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
     this.registerComponent('x-outer/x-inner', { template: 'Nested template says (from local): {{yield}}' });
     this.registerComponent('x-inner', { template: 'Nested template says (from global): {{yield}}' });

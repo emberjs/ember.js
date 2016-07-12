@@ -212,7 +212,7 @@ export default class Environment extends GlimmerEnvironment {
         return generateBuiltInSyntax(statement, (path) => this.getComponentDefinition([path], parentMeta));
       }
 
-      assert(`Could not find component named "${key}" (no component or template with that name was found)`, !isBlock || this.hasHelper(key, parentMeta));
+      assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, parentMeta));
     }
 
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, parentMeta));
