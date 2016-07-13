@@ -21,8 +21,6 @@ import {
   IChangeList
 } from './dom/change-lists';
 
-import { requiresSanitization } from './dom/sanitized-values';
-
 import {
   ModifierManager
 } from './modifier/interfaces';

@@ -22,8 +22,6 @@ import {
   Block as CompiledBlock
 } from '../compiled/blocks';
 
-import SymbolTable from '../symbol-table';
-
 import {
   Opcode
 } from '../opcodes';
@@ -344,7 +342,7 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
 
   prettyPrint() {
     let { name, value } = this;
-    return new PrettyPrint('staticArg', 'staticArg', [name, value.prettyPrint()])
+    return new PrettyPrint('staticArg', 'staticArg', [name, value.prettyPrint()]);
   }
 
   valueSyntax() {

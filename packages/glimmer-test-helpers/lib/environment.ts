@@ -85,8 +85,7 @@ import {
   OpaqueIterable,
   AbstractIterable,
   IterationItem,
-  isConst,
-  combine
+  isConst
 } from "glimmer-reference";
 
 import {
@@ -384,7 +383,7 @@ class ProcessedArgs {
   tag: RevisionTag;
   named: EvaluatedNamedArgs;
   positional: EvaluatedPositionalArgs;
-  positionalParamNames: Array<string>
+  positionalParamNames: Array<string>;
 
   constructor(args: EvaluatedArgs, positionalParamsDefinition: string[]) {
     this.tag = args.tag;
@@ -396,7 +395,7 @@ class ProcessedArgs {
   value() {
     let { named, positional, positionalParamNames } = this;
 
-    let result = this.named.value();
+    let result = named.value();
 
     if (positionalParamNames && positionalParamNames.length) {
       for (let i = 0; i < positionalParamNames.length; i++) {
@@ -426,7 +425,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
   create(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let processedArgs = processArgs(args, klass['positionalParams']);
-    let { attrs, props } = processedArgs.value();
+    let { attrs } = processedArgs.value();
     let merged = assign({}, attrs, { attrs }, { args: processedArgs });
     let component = klass.create(merged);
 
