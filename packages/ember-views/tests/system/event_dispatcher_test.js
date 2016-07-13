@@ -333,3 +333,11 @@ QUnit.test('default events can be disabled via `customEvents`', function () {
   jQuery('#leView').trigger('click');
   jQuery('#leView').trigger('dblclick');
 });
+
+QUnit.test('throws an error if rootElement was not found', function () {
+  expect(1);
+
+  run(() => {
+    throws(() => dispatcher.setup({ myevent: 'myEvent' }, '.unexisting-custom-root'));
+  });
+});
