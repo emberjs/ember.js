@@ -1,5 +1,5 @@
-import { FIXME, InternedString, Opaque } from 'glimmer-util';
-import { SafeString, isSafeString } from '../upsert';
+import { FIXME, Opaque } from 'glimmer-util';
+import { isSafeString } from '../upsert';
 import { DOMHelper } from './helper';
 
 const badProtocols = [

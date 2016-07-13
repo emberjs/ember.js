@@ -114,7 +114,7 @@ export interface StatementCompilationBuffer extends CompileInto, SymbolLookup, O
 export type Program = Slice<Statement>;
 
 export const ATTRIBUTE = "e1185d30-7cac-4b12-b26a-35327d905d92";
-export const ARGUMENT = "0f3802314-d747-bbc5-0168-97875185c3rt"
+export const ARGUMENT = "0f3802314-d747-bbc5-0168-97875185c3rt";
 
 export type Parameter<T> = Attribute<T> | Argument<T>;
 

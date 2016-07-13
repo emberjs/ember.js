@@ -5,13 +5,13 @@
  * @returns {Object} { name, type }
  */
 export function normalizeProperty(element, slotName) {
-  var type, normalized;
+  let type, normalized;
 
   if (slotName in element) {
     normalized = slotName;
     type = 'prop';
   } else {
-    var lower = slotName.toLowerCase();
+    let lower = slotName.toLowerCase();
     if (lower in element) {
       type = 'prop';
       normalized = lower;
