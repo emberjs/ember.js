@@ -170,7 +170,9 @@ export default EmberObject.extend({
 
     rootElement.addClass(ROOT_ELEMENT_CLASS);
 
-    assert(`Unable to add '${ROOT_ELEMENT_CLASS}' class to rootElement. Make sure you set rootElement to the body or an element in the body.`, rootElement.is(ROOT_ELEMENT_SELECTOR));
+    if (!rootElement.is(ROOT_ELEMENT_SELECTOR)) {
+      throw new TypeError(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector || rootElement[0].tagName}). Make sure you set rootElement to the body or an element in the body.`);
+    }
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
