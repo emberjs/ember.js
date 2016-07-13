@@ -108,14 +108,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       enableLoadingSubstates: !!moduleBasedResolver
     };
 
-    if (isEnabled('ember-route-serializers')) {
-      options.router = this;
-    }
-
     if (isEnabled('ember-application-engines')) {
       let owner = getOwner(this);
       let router = this;
 
+      options.router = router;
       options.enableLoadingSubstates = !!moduleBasedResolver;
 
       options.resolveRouteMap = function(name) {
@@ -140,13 +137,10 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
 
-    if (isEnabled('ember-route-serializers')) {
-      this._serializeMethods = new EmptyObject();
-    }
-
     if (isEnabled('ember-application-engines')) {
       this._engineInstances = new EmptyObject();
       this._engineInfoByRoute = new EmptyObject();
+      this._serializeMethods = new EmptyObject();
     }
   },
 
@@ -639,7 +633,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     router.getHandler = this._getHandlerFunction();
 
-    if (isEnabled('ember-route-serializers')) {
+    if (isEnabled('ember-application-engines')) {
       router.getSerializer = this._getSerializerFunction();
     }
 

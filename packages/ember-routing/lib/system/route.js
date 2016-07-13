@@ -58,7 +58,7 @@ function defaultSerialize(model, params) {
 
 const DEFAULT_SERIALIZE = symbol('DEFAULT_SERIALIZE');
 
-if (isEnabled('ember-route-serializers')) {
+if (isEnabled('ember-application-engines')) {
   defaultSerialize[DEFAULT_SERIALIZE] = true;
 }
 

@@ -15,10 +15,6 @@ for a detailed explanation.
   Implements RFC https://github.com/emberjs/rfcs/pull/38, adding support for
   routable components.
 
-* `ember-route-serializers`
-
-  Deprecates `Route#serialize` and introduces a `serialize` option to the router DSL as a replacement (as per the [Route Serializers RFC](https://github.com/emberjs/rfcs/blob/master/text/0120-route-serializers.md)).
-
 * `ember-runtime-computed-uniq-by`
 
   Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.

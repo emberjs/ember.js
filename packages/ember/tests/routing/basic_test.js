@@ -894,7 +894,7 @@ QUnit.asyncTest('Nested callbacks are not exited when moving to siblings', funct
     return this._super(...arguments);
   }
 
-  if (isEnabled('ember-route-serializers')) {
+  if (isEnabled('ember-application-engines')) {
     Router.map(function() {
       this.route('root', { path: '/', serialize: serializeRootRoute }, function() {
         this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
@@ -2045,7 +2045,7 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
   deepEqual(router.location.path, '/posts/emberjs');
 });
 
-if (isEnabled('ember-route-serializers')) {
+if (isEnabled('ember-application-engines')) {
   QUnit.test('Custom Route#serialize method still works [DEPRECATED]', function() {
     Router.map(function() {
       this.route('posts', function() {
@@ -2901,7 +2901,7 @@ QUnit.test('Redirecting with null model doesn\'t error out', function() {
     }
   }
 
-  if (isEnabled('ember-route-serializers')) {
+  if (isEnabled('ember-application-engines')) {
     Router.map(function() {
       this.route('home', { path: '/' });
       this.route('about', { path: '/about/:hurhurhur', serialize: serializeAboutRoute });

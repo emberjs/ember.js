@@ -14,7 +14,7 @@ function DSL(name, options) {
   this.explicitIndex = undefined;
   this.options = options;
 
-  if (isEnabled('ember-route-serializers')) {
+  if (isEnabled('ember-application-engines')) {
     this.router = options && options.router;
   }
 }
@@ -47,7 +47,7 @@ DSL.prototype = {
       createRoute(this, `${name}_error`, { path: dummyErrorRoute });
     }
 
-    if (isEnabled('ember-route-serializers') && options.serialize && this.router) {
+    if (isEnabled('ember-application-engines') && options.serialize && this.router) {
       this.router._serializeMethods[name] = options.serialize;
     }
 
