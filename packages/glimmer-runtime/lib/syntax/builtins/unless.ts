@@ -1,21 +1,8 @@
 import {
-  CompileInto,
-  SymbolLookup,
   Statement as StatementSyntax
 } from '../../syntax';
 
 import * as Syntax from '../core';
-
-import {
-  LabelOpcode,
-  EnterOpcode,
-  PutArgsOpcode,
-  TestOpcode,
-  JumpIfOpcode,
-  JumpOpcode,
-  EvaluateOpcode,
-  ExitOpcode
-} from '../../compiled/opcodes/vm';
 
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
@@ -58,7 +45,7 @@ export default class UnlessSyntax extends StatementSyntax {
 
       if (templates.inverse) {
         dsl.jumpIf('ELSE');
-        dsl.evaluate('default')
+        dsl.evaluate('default');
         dsl.jump('END');
         dsl.label('ELSE');
         dsl.evaluate('inverse');

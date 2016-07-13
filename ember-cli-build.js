@@ -8,6 +8,7 @@ var typescript = require('broccoli-typescript-compiler');
 var transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var stew = require('broccoli-stew');
+var TSLint = require('broccoli-tslinter');
 var mv = stew.mv;
 var find = stew.find;
 var rename = stew.rename;
@@ -74,8 +75,9 @@ module.exports = function() {
     include: ['**/*.ts'],
     exclude: ['**/*.d.ts']
   });
+  var tsLintTree = new TSLint(tsTree);
 
-  var jsTree = typescript(tsTree, tsOptions);
+  var jsTree = typescript(tsLintTree, tsOptions);
 
   var libTree = find(jsTree, {
     include: ['*/index.js', '*/lib/**/*.js']
