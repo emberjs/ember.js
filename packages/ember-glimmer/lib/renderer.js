@@ -6,10 +6,11 @@ import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
 const { backburner } = run;
 
 class DynamicScope {
-  constructor({ view, controller, outletState, isTopLevel, targetObject }) {
+  constructor({ view, controller, outletState, rootOutletState, isTopLevel, targetObject }) {
     this.view = view;
     this.controller = controller;
     this.outletState = outletState;
+    this.rootOutletState = rootOutletState;
     this.isTopLevel = isTopLevel;
     this.targetObject = targetObject;
   }
@@ -132,11 +133,13 @@ class Renderer {
     let env = this._env;
     let self = new RootReference(view);
     let controller = view.outletState.render.controller;
+    let ref = view.toReference();
     let dynamicScope = new DynamicScope({
       view,
       controller,
       targetObject: controller,
-      outletState: view.toReference(),
+      outletState: ref,
+      rootOutletState: ref,
       isTopLevel: true
     });
 
@@ -161,6 +164,7 @@ class Renderer {
       // instance
       targetObject: view,
       outletState: UNDEFINED_REFERENCE,
+      rootOutletState: UNDEFINED_REFERENCE,
       isTopLevel: true
     });
 

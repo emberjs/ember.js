@@ -22,7 +22,6 @@ import { Transition } from 'router/transition';
 import copy from 'ember-runtime/copy';
 import { addObserver } from 'ember-metal/observer';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
 
 let trim = jQuery.trim;
 
@@ -3409,46 +3408,46 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
   equal(trim(jQuery('#qunit-fixture').text()), 'hi');
 });
 
-test('Can this.render({into:...}) the render helper', function() {
-  setTemplate('application', compile('{{render "foo"}}'));
-  setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
+QUnit.test('Can this.render({into:...}) the render helper', function() {
+  setTemplate('application', compile('{{render "sidebar"}}'));
+  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('bar', compile('bar'));
 
   App.IndexRoute = Route.extend({
     renderTemplate() {
-      this.render({ into: 'foo' });
+      this.render({ into: 'sidebar' });
     },
     actions: {
       changeToBar() {
         this.disconnectOutlet({
-          parentView: 'foo',
+          parentView: 'sidebar',
           outlet: 'main'
         });
-        this.render('bar', { into: 'foo' });
+        this.render('bar', { into: 'sidebar' });
       }
     }
   });
 
   bootApplication();
-  equal(jQuery('#qunit-fixture .foo').text(), 'other');
+  equal(jQuery('#qunit-fixture .sidebar').text(), 'other');
   run(router, 'send', 'changeToBar');
-  equal(jQuery('#qunit-fixture .foo').text(), 'bar');
+  equal(jQuery('#qunit-fixture .sidebar').text(), 'bar');
 });
 
-test('Can disconnect from the render helper', function() {
-  setTemplate('application', compile('{{render "foo"}}'));
-  setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
+QUnit.test('Can disconnect from the render helper', function() {
+  setTemplate('application', compile('{{render "sidebar"}}'));
+  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
   App.IndexRoute = Route.extend({
     renderTemplate() {
-      this.render({ into: 'foo' });
+      this.render({ into: 'sidebar' });
     },
     actions: {
       disconnect: function() {
         this.disconnectOutlet({
-          parentView: 'foo',
+          parentView: 'sidebar',
           outlet: 'main'
         });
       }
@@ -3456,21 +3455,21 @@ test('Can disconnect from the render helper', function() {
   });
 
   bootApplication();
-  equal(jQuery('#qunit-fixture .foo').text(), 'other');
+  equal(jQuery('#qunit-fixture .sidebar').text(), 'other');
   run(router, 'send', 'disconnect');
-  equal(jQuery('#qunit-fixture .foo').text(), '');
+  equal(jQuery('#qunit-fixture .sidebar').text(), '');
 });
 
-test('Can this.render({into:...}) the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "foo"}}'));
-  setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
+QUnit.test('Can this.render({into:...}) the render helper\'s children', function() {
+  setTemplate('application', compile('{{render "sidebar"}}'));
+  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
   setTemplate('bar', compile('bar'));
 
   App.IndexRoute = Route.extend({
     renderTemplate() {
-      this.render({ into: 'foo' });
+      this.render({ into: 'sidebar' });
       this.render('other', { into: 'index' });
     },
     actions: {
@@ -3485,20 +3484,20 @@ test('Can this.render({into:...}) the render helper\'s children', function() {
   });
 
   bootApplication();
-  equal(jQuery('#qunit-fixture .foo .index').text(), 'other');
+  equal(jQuery('#qunit-fixture .sidebar .index').text(), 'other');
   run(router, 'send', 'changeToBar');
-  equal(jQuery('#qunit-fixture .foo .index').text(), 'bar');
+  equal(jQuery('#qunit-fixture .sidebar .index').text(), 'bar');
 });
 
-test('Can disconnect from the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "foo"}}'));
-  setTemplate('foo', compile('<div class="foo">{{outlet}}</div>'));
+QUnit.test('Can disconnect from the render helper\'s children', function() {
+  setTemplate('application', compile('{{render "sidebar"}}'));
+  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
 
   App.IndexRoute = Route.extend({
     renderTemplate() {
-      this.render({ into: 'foo' });
+      this.render({ into: 'sidebar' });
       this.render('other', { into: 'index' });
     },
     actions: {
@@ -3512,53 +3511,53 @@ test('Can disconnect from the render helper\'s children', function() {
   });
 
   bootApplication();
-  equal(jQuery('#qunit-fixture .foo .index').text(), 'other');
+  equal(jQuery('#qunit-fixture .sidebar .index').text(), 'other');
   run(router, 'send', 'disconnect');
-  equal(jQuery('#qunit-fixture .foo .index').text(), '');
+  equal(jQuery('#qunit-fixture .sidebar .index').text(), '');
 });
 
-test('Can this.render({into:...}) nested render helpers', function() {
-  setTemplate('application', compile('{{render "foo"}}'));
-  setTemplate('foo', compile('<div class="foo">{{render "bar"}}</div>'));
-  setTemplate('bar', compile('<div class="bar">{{outlet}}</div>'));
+QUnit.test('Can this.render({into:...}) nested render helpers', function() {
+  setTemplate('application', compile('{{render "sidebar"}}'));
+  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('baz', compile('baz'));
 
   App.IndexRoute = Route.extend({
     renderTemplate() {
-      this.render({ into: 'bar' });
+      this.render({ into: 'cart' });
     },
     actions: {
       changeToBaz() {
         this.disconnectOutlet({
-          parentView: 'bar',
+          parentView: 'cart',
           outlet: 'main'
         });
-        this.render('baz', { into: 'bar' });
+        this.render('baz', { into: 'cart' });
       }
     }
   });
 
   bootApplication();
-  equal(jQuery('#qunit-fixture .bar').text(), 'other');
+  equal(jQuery('#qunit-fixture .cart').text(), 'other');
   run(router, 'send', 'changeToBaz');
-  equal(jQuery('#qunit-fixture .bar').text(), 'baz');
+  equal(jQuery('#qunit-fixture .cart').text(), 'baz');
 });
 
-test('Can disconnect from nested render helpers', function() {
-  setTemplate('application', compile('{{render "foo"}}'));
-  setTemplate('foo', compile('<div class="foo">{{render "bar"}}</div>'));
-  setTemplate('bar', compile('<div class="bar">{{outlet}}</div>'));
+QUnit.test('Can disconnect from nested render helpers', function() {
+  setTemplate('application', compile('{{render "sidebar"}}'));
+  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
   App.IndexRoute = Route.extend({
     renderTemplate() {
-      this.render({ into: 'bar' });
+      this.render({ into: 'cart' });
     },
     actions: {
       disconnect() {
         this.disconnectOutlet({
-          parentView: 'bar',
+          parentView: 'cart',
           outlet: 'main'
         });
       }
@@ -3566,9 +3565,9 @@ test('Can disconnect from nested render helpers', function() {
   });
 
   bootApplication();
-  equal(jQuery('#qunit-fixture .bar').text(), 'other');
+  equal(jQuery('#qunit-fixture .cart').text(), 'other');
   run(router, 'send', 'disconnect');
-  equal(jQuery('#qunit-fixture .bar').text(), '');
+  equal(jQuery('#qunit-fixture .cart').text(), '');
 });
 
 QUnit.test('Components inside an outlet have their didInsertElement hook invoked when the route is displayed', function(assert) {

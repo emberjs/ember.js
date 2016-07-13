@@ -1,5 +1,6 @@
 import assign from 'ember-metal/assign';
 import { DirtyableTag } from 'glimmer-reference';
+import EmptyObject from 'ember-metal/empty_object';
 
 /**
 @module ember
@@ -22,6 +23,46 @@ class OutletStateReference {
 
   get isTopLevel() {
     return true;
+  }
+
+  getOrphan(name) {
+    return new OrphanedOutletStateReference(this, name);
+  }
+
+  update(state) {
+    this.outletView.setOutletState(state);
+  }
+}
+
+// So this is a relic of the past that SHOULD go away
+// in 3.0. Preferably it is deprecated in the release that
+// follows the Glimmer release.
+class OrphanedOutletStateReference extends OutletStateReference {
+  constructor(root, name) {
+    super(root.outletView);
+    this.root = root;
+    this.name = name;
+  }
+
+  value() {
+    let rootState = this.root.value();
+
+    let orphans = rootState.outlets.__ember_orphans__;
+
+    if (!orphans) {
+      return null;
+    }
+
+    let matched = orphans.outlets[this.name];
+
+    if (!matched) {
+      return null;
+    }
+
+    let state = new EmptyObject();
+    state[matched.render.outlet] = matched;
+    matched.wasUsed = true;
+    return { outlets: state };
   }
 }
 

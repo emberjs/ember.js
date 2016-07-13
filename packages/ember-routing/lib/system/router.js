@@ -1274,7 +1274,8 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   let target;
   let myState = {
     render: renderOptions,
-    outlets: new EmptyObject()
+    outlets: new EmptyObject(),
+    wasUsed: false
   };
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
@@ -1285,7 +1286,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
     if (renderOptions.into) {
-      // Megahax time. Post-2.0-breaking-changes, we will just assert
+      // Megahax time. Post-3.0-breaking-changes, we will just assert
       // right here that the user tried to target a nonexistent
       // thing. But for now we still need to support the `render`
       // helper, and people are allowed to target templates rendered
@@ -1313,8 +1314,7 @@ function appendOrphan(liveRoutes, into, myState) {
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
   run.schedule('afterRender', function() {
-    // `wasUsed` gets set by the render helper. See the function
-    // `impersonateAnOutlet`.
+    // `wasUsed` gets set by the render helper.
     assert('You attempted to render into \'' + into + '\' but it was not found',
                  liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
   });

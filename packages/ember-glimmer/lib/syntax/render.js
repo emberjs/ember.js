@@ -2,6 +2,7 @@ import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 import { ConstReference, isConst } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import { RootReference } from '../utils/references';
+import { generateControllerFactory } from 'ember-routing/system/generate_controller';
 
 function makeComponentDefinition(vm) {
   let env     = vm.env;
@@ -25,11 +26,11 @@ function makeComponentDefinition(vm) {
     assert(`The controller argument for {{render}} must be quoted, e.g. {{render "sidebar" controller="foo"}}.`, isConst(controllerNameRef));
 
     controllerName = controllerNameRef.value();
+
+    assert(`The controller name you supplied '${controllerName}' did not resolve to a controller.`, env.owner.hasRegistration(`controller:${controllerName}`));
   } else {
     controllerName = templateName;
   }
-
-  assert(`The controller name you supplied '${controllerName}' did not resolve to a controller.`, env.owner.hasRegistration(`controller:${controllerName}`));
 
   if (args.positional.length === 1) {
     return new ConstReference(new RenderDefinition(controllerName, template, env, SINGLETON_RENDER_MANAGER));
@@ -69,7 +70,7 @@ class AbstractRenderManager {
   }
 
   getDestructor(state) {
-    return null;
+    return state.controller;
   }
 
   didCreateElement() {}
@@ -83,6 +84,10 @@ class SingletonRenderManager extends AbstractRenderManager {
     let { name, env } = definition;
     let controller = env.owner.lookup(`controller:${name}`);
 
+    if (dynamicScope.rootOutletState) {
+      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
+    }
+
     return { controller };
   }
 }
@@ -94,8 +99,12 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     let { name, env } = definition;
     let modelRef = args.positional.at(0);
 
-    let factory = env.owner._lookupFactory(`controller:${name}`);
+    let factory = env.owner._lookupFactory(`controller:${name}`) || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
+
+    if (dynamicScope.rootOutletState) {
+      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
+    }
 
     return { controller };
   }
