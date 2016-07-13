@@ -221,7 +221,7 @@ export default {
   }
 };
 
-function childOutletState(name, env) {
+export function childOutletState(name, env) {
   let topLevel = env.view.ownerView;
   if (!topLevel || !topLevel.outletState) { return; }
 

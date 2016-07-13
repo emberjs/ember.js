@@ -106,11 +106,11 @@ export default {
   },
 
   isStable(lastState, nextState) {
-    return isStable(lastState.outletState, nextState.outletState);
+    return isOutletStable(lastState.outletState, nextState.outletState);
   },
 
   isEmpty(state) {
-    return isEmpty(state.outletState);
+    return isOutletEmpty(state.outletState);
   },
 
   render(renderNode, env, scope, params, hash, _template, inverse, visitor) {
@@ -169,11 +169,11 @@ export default {
   }
 };
 
-function isEmpty(outletState) {
+function isOutletEmpty(outletState) {
   return !outletState || (!outletState.render.ViewClass && !outletState.render.template);
 }
 
-function isStable(a, b) {
+export function isOutletStable(a, b) {
   if (!a && !b) {
     return true;
   }
