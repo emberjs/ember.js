@@ -6,8 +6,6 @@ import Checkbox from 'ember-glimmer/components/checkbox';
 import LinkToComponent from 'ember-glimmer/components/link-to';
 
 export function setupApplicationRegistry(registry) {
-  let Environment = require('ember-glimmer/environment').default;
-  registry.register('service:-glimmer-environment', Environment);
   registry.injection('service:-glimmer-environment', 'dom', 'service:-dom-helper');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
@@ -31,6 +29,9 @@ export function setupEngineRegistry(registry) {
   registry.register(P`template:components/-default`, glimmerComponentTemplate);
   registry.register('template:-outlet', glimmerOutletTemplate);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
+
+  let Environment = require('ember-glimmer/environment').default;
+  registry.register('service:-glimmer-environment', Environment);
   registry.injection('template', 'env', 'service:-glimmer-environment');
 
   registry.optionsForType('helper', { instantiate: false });
