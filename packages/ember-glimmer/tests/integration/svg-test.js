@@ -3,7 +3,7 @@ import { set } from 'ember-metal/property_set';
 import { strip } from '../utils/abstract-test-case';
 
 moduleFor('SVG element tests', class extends RenderingTest {
-  ['@htmlbars unquoted viewBox property is output'](assert) {
+  ['@test unquoted viewBox property is output'](assert) {
     let viewBoxString = '0 0 100 100';
 
     this.render('<div><svg viewBox={{model.viewBoxString}}></svg></div>', {
@@ -39,7 +39,7 @@ moduleFor('SVG element tests', class extends RenderingTest {
     `);
   }
 
-  ['@htmlbars quoted viewBox property is output'](assert) {
+  ['@test quoted viewBox property is output'](assert) {
     let viewBoxString = '0 0 100 100';
 
     this.render('<div><svg viewBox="{{model.viewBoxString}}"></svg></div>', {
@@ -75,7 +75,7 @@ moduleFor('SVG element tests', class extends RenderingTest {
     `);
   }
 
-  ['@htmlbars quoted viewBox property is concat']() {
+  ['@test quoted viewBox property is concat']() {
     let viewBoxString = '100 100';
 
     this.render('<div><svg viewBox="0 0 {{model.viewBoxString}}"></svg></div>', {
@@ -115,7 +115,7 @@ moduleFor('SVG element tests', class extends RenderingTest {
     `);
   }
 
-  ['@htmlbars class is output']() {
+  ['@test class is output']() {
     this.render('<div><svg class=\'{{model.color}} tall\'></svg></div>', {
       model: {
         color: 'blue'
