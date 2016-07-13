@@ -13,10 +13,6 @@ function DSL(name, options) {
   this.matches = [];
   this.explicitIndex = undefined;
   this.options = options;
-
-  if (isEnabled('ember-application-engines')) {
-    this.router = options && options.router;
-  }
 }
 
 export default DSL;
@@ -47,10 +43,6 @@ DSL.prototype = {
       createRoute(this, `${name}_error`, { path: dummyErrorRoute });
     }
 
-    if (isEnabled('ember-application-engines') && options.serialize && this.router) {
-      this.router._serializeMethods[name] = options.serialize;
-    }
-
     if (callback) {
       let fullName = getFullName(this, name, options.resetNamespace);
       let dsl = new DSL(fullName, this.options);
@@ -66,7 +58,7 @@ DSL.prototype = {
     }
   },
 
-  push(url, name, callback) {
+  push(url, name, callback, serialize) {
     let parts = name.split('.');
 
     if (isEnabled('ember-application-engines')) {
@@ -74,7 +66,13 @@ DSL.prototype = {
         let localFullName = name.slice(this.options.engineInfo.fullName.length + 1);
         let routeInfo = assign({ localFullName }, this.options.engineInfo);
 
+        if (serialize) {
+          routeInfo.serializeMethod = serialize;
+        }
+
         this.options.addRouteForEngine(name, routeInfo);
+      } else if (serialize) {
+        throw new Error(`Defining a route serializer on route '${name}' outside an Engine is not allowed.`);
       }
     }
 
@@ -135,7 +133,7 @@ function createRoute(dsl, name, options, callback) {
     options.path = `/${name}`;
   }
 
-  dsl.push(options.path, fullName, callback);
+  dsl.push(options.path, fullName, callback, options.serialize);
 }
 
 DSL.map = function(callback) {

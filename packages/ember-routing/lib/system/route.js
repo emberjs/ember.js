@@ -36,7 +36,7 @@ const { slice } = Array.prototype;
 
 function K() { return this; }
 
-function defaultSerialize(model, params) {
+export function defaultSerialize(model, params) {
   if (params.length < 1) { return; }
   if (!model) { return; }
 

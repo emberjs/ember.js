@@ -1,5 +1,5 @@
 import Logger from 'ember-console';
-import { assert, info, deprecate } from 'ember-metal/debug';
+import { assert, info } from 'ember-metal/debug';
 import EmberError from 'ember-metal/error';
 import isEnabled from 'ember-metal/features';
 import { get } from 'ember-metal/property_get';
@@ -11,7 +11,7 @@ import assign from 'ember-metal/assign';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Evented from 'ember-runtime/mixins/evented';
-import { hasDefaultSerialize } from 'ember-routing/system/route';
+import { defaultSerialize, hasDefaultSerialize } from 'ember-routing/system/route';
 import EmberRouterDSL from 'ember-routing/system/dsl';
 import EmberLocation from 'ember-routing/location/api';
 import {
@@ -112,7 +112,6 @@ const EmberRouter = EmberObject.extend(Evented, {
       let owner = getOwner(this);
       let router = this;
 
-      options.router = router;
       options.enableLoadingSubstates = !!moduleBasedResolver;
 
       options.resolveRouteMap = function(name) {
@@ -140,7 +139,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (isEnabled('ember-application-engines')) {
       this._engineInstances = new EmptyObject();
       this._engineInfoByRoute = new EmptyObject();
-      this._serializeMethods = new EmptyObject();
     }
   },
 
@@ -568,9 +566,10 @@ const EmberRouter = EmberObject.extend(Evented, {
     return (name) => {
       let routeName = name;
       let routeOwner = owner;
+      let engineInfo;
 
       if (isEnabled('ember-application-engines')) {
-        let engineInfo = this._engineInfoByRoute[routeName];
+        engineInfo = this._engineInfoByRoute[routeName];
 
         if (engineInfo) {
           let engineInstance = this._getEngineInstance(engineInfo);
@@ -603,27 +602,24 @@ const EmberRouter = EmberObject.extend(Evented, {
 
       handler.routeName = routeName;
 
+      if (engineInfo && !hasDefaultSerialize(handler)) {
+        throw new Error('Defining a custom serialize method on an Engine route is not supported.');
+      }
+
       return handler;
     };
   },
 
   _getSerializerFunction() {
     return (name) => {
-      let serializer = this._serializeMethods[name];
+      let engineInfo = this._engineInfoByRoute[name];
 
-      if (!serializer) {
-        let handler = this.router.getHandler(name);
-
-        deprecate(
-          `Defining a serialize function on route '${name}' is deprecated. Instead, define it in the router's map as an option.`,
-          hasDefaultSerialize(handler),
-          { id: 'ember-routing.serialize-function', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_route-serialize' }
-        );
-
-        this._serializeMethods[name] = handler.serialize;
+      // If this is not an Engine route, we fall back to the handler for serialization
+      if (!engineInfo) {
+        return;
       }
 
-      return serializer;
+      return engineInfo.serializeMethod || defaultSerialize;
     };
   },
 
