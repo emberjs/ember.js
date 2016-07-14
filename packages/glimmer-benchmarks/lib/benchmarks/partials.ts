@@ -2,7 +2,7 @@ import { TemplateBenchmarkScenario } from '../bench';
 
 class StaticPartialScenario extends TemplateBenchmarkScenario {
   name = "static partial";
-  description = "`{{partial 'greeting'}}`"
+  description = "`{{partial 'greeting'}}`";
 
   start() {
     this.glimmerEnv.registerPartial('greeting', `Hi {{person1.name}} from a partial`);
@@ -29,7 +29,7 @@ class StaticPartialScenario extends TemplateBenchmarkScenario {
 
 class DynamicPartialScenario extends TemplateBenchmarkScenario {
   name = "dynamic partial";
-  description = "`{{partial partialName}}`"
+  description = "`{{partial partialName}}`";
 
   start() {
     this.glimmerEnv.registerPartial('greeting', `Hi {{person1.name}} from a partial`);
@@ -57,7 +57,7 @@ class DynamicPartialScenario extends TemplateBenchmarkScenario {
 
 class BaselineScenario extends TemplateBenchmarkScenario {
   name = "baseline";
-  description = "a template with no partial"
+  description = "a template with no partial";
 
   template() {
     return `[Hi {{person1.name}} from a template]`;

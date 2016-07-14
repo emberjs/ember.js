@@ -3,7 +3,6 @@ import JavaScriptCompiler from "./javascript-compiler";
 import { FIXME, getAttrNamespace } from "glimmer-util";
 import { isHelper } from "glimmer-syntax";
 import { assert } from "glimmer-util";
-import { Environment } from "glimmer-runtime";
 
 export interface CompileOptions {
   buildMeta?: FIXME<'currently does nothing'>;
@@ -107,8 +106,6 @@ export default class TemplateCompiler {
         this.opcode('dynamicAttr', action, name, namespace);
       }
     }
-
-
   }
 
   modifier([action]) {

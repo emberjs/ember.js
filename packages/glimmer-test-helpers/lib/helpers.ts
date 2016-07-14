@@ -1,5 +1,5 @@
 import { tokenize } from "simple-html-tokenizer";
-import { FIXME, forEach } from "glimmer-util";
+import { forEach } from "glimmer-util";
 import { SerializedTemplate } from 'glimmer-wire-format';
 import { Environment, Template, Layout } from "glimmer-runtime";
 import { TemplateSpec, compileSpec, CompileOptions } from "glimmer-compiler";

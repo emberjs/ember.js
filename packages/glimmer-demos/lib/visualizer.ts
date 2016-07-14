@@ -166,10 +166,6 @@ const UI =
   </div>
 {{/if}}`;
 
-function $(selector) {
-  return document.querySelectorAll(selector);
-}
-
 let $inputs:   Element,
     $data:     HTMLTextAreaElement,
     $template: HTMLTextAreaElement,

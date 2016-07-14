@@ -45,7 +45,6 @@ export function init() {
   });
 
   document.body.insertBefore(div, document.body.firstChild);
-
 }
 
 function getJsonFromUrl(hashBased?) {
