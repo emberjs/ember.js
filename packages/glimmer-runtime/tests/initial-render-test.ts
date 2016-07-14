@@ -798,12 +798,12 @@ const StyleAttribute = {
 QUnit.module('Style attributes', {
   setup() {
     class StyleEnv extends TestEnvironment {
-      attributeFor(element, attr, reference) {
-        if (attr === 'style') {
+      attributeFor(element, attr, reference, isTrusting) {
+        if (attr === 'style' && !isTrusting) {
           return StyleAttribute;
         }
 
-        return super.attributeFor(element, attr, reference);
+        return super.attributeFor(element, attr, reference, isTrusting);
       }
     }
 
@@ -820,6 +820,13 @@ test(`using an inline style on an element gives you a warning`, function(assert)
   render(template, {});
 
   assert.equal(warnings, 1);
+});
+
+test(`triple curlies are trusted`, function(assert) {
+  let template = compile(`<div foo={{foo}} style={{{styles}}}>Thing</div>`);
+  render(template, {styles: 'background: red'});
+
+  assert.equal(warnings, 0);
 });
 
 test(`using an inline style on an namespaced element gives you a warning`, function(assert) {

@@ -222,8 +222,8 @@ export abstract class Environment {
   abstract hasHelper(helperName: InternedString[], blockMeta: BlockMeta): boolean;
   abstract lookupHelper(helperName: InternedString[], blockMeta: BlockMeta): Helper;
 
-  attributeFor(element: Element, attr: InternedString, reference: Reference<Opaque>, namespace?: InternedString): IChangeList {
-    return defaultChangeLists(element, attr, namespace);
+  attributeFor(element: Element, attr: InternedString, reference: Reference<Opaque>, isTrusting: boolean, namespace?: InternedString): IChangeList {
+    return defaultChangeLists(element, attr, isTrusting, namespace);
   }
 
   abstract hasPartial(partialName: InternedString[]): boolean;

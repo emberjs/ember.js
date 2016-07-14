@@ -62,8 +62,8 @@ class BlockStackElement {
 }
 
 export interface ElementOperations {
-  addAttribute(name: InternedString, value: PathReference<string>);
-  addAttributeNS(namespace: InternedString, name: InternedString, value: PathReference<string>);
+  addAttribute(name: InternedString, value: PathReference<string>, isTrusting: boolean);
+  addAttributeNS(namespace: InternedString, name: InternedString, value: PathReference<string>, isTrusting: boolean);
 }
 
 class GroupedElementOperations implements ElementOperations {
@@ -85,14 +85,14 @@ class GroupedElementOperations implements ElementOperations {
     this.groups.push(group);
   }
 
-  addAttribute(name: InternedString, reference: PathReference<string>) {
-    let attributeManager = this.env.attributeFor(this.element, name, reference);
+  addAttribute(name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(this.element, name, reference, isTrusting);
     let attribute = new Attribute(this.element, attributeManager, name, reference);
     this.group.push(attribute);
   }
 
-  addAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>) {
-    let attributeManager = this.env.attributeFor(this.element, name, reference, namespace);
+  addAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+    let attributeManager = this.env.attributeFor(this.element, name, reference,isTrusting, namespace);
     let nsAttribute = new Attribute(this.element, attributeManager, name, reference, namespace);
 
     this.group.push(nsAttribute);
@@ -270,12 +270,12 @@ export class ElementStack implements Cursor {
     return comment;
   }
 
-  setAttribute(name: InternedString, reference: PathReference<string>) {
-    this.elementOperations.addAttribute(name, reference);
+  setAttribute(name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+    this.elementOperations.addAttribute(name, reference, isTrusting);
   }
 
-  setAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>) {
-    this.elementOperations.addAttributeNS(namespace, name, reference);
+  setAttributeNS(namespace: InternedString, name: InternedString, reference: PathReference<string>, isTrusting: boolean) {
+    this.elementOperations.addAttributeNS(namespace, name, reference, isTrusting);
   }
 
   closeElement() {

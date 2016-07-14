@@ -457,7 +457,7 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
         let attribute = bindings[i] as InternedString;
         let reference = rootRef.get(attribute) as PathReference<string>;
 
-        operations.addAttribute(attribute, reference);
+        operations.addAttribute(attribute, reference, false);
       }
     }
   }

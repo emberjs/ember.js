@@ -350,13 +350,32 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
   }
 }
 
+export class TrustingAttr {
+  static fromSpec(sexp: SerializedStatements.TrustingAttr): DynamicAttr {
+    let [, name, value, namespace] = sexp;
+    return new DynamicAttr({
+      name: name as InternedString,
+      namespace: namespace as InternedString,
+      isTrusting: true,
+      value: buildExpression(value)
+    });
+  }
+
+  static build(_name: string, value: ExpressionSyntax<string>, isTrusting: boolean, _namespace: string=null): DynamicAttr {
+    let name = intern(_name);
+    let namespace = _namespace ? intern(_namespace) : null;
+    return new DynamicAttr({ name, value, namespace, isTrusting });
+  }
+
+  compile() { throw new Error('Attempting to compile a TrustingAttr which is just a delegate for DynamicAttr.'); }
+}
+
 export class StaticAttr extends AttributeSyntax<string> {
   "e1185d30-7cac-4b12-b26a-35327d905d92" = true;
   type = "static-attr";
 
   static fromSpec(node: SerializedStatements.StaticAttr): StaticAttr {
     let [, name, value, namespace] = node;
-
     return new StaticAttr({ name: name as InternedString, value: value as InternedString, namespace: namespace as InternedString });
   }
 
@@ -367,6 +386,7 @@ export class StaticAttr extends AttributeSyntax<string> {
   name: InternedString;
   value: InternedString;
   namespace: InternedString;
+  isTrusting = false;
 
   constructor({ name, value, namespace = null }: { name: InternedString, value: InternedString, namespace?: InternedString }) {
     super();
@@ -400,7 +420,6 @@ export class DynamicAttr extends AttributeSyntax<string> {
 
   static fromSpec(sexp: SerializedStatements.DynamicAttr): DynamicAttr {
     let [, name, value, namespace] = sexp;
-
     return new DynamicAttr({
       name: name as InternedString,
       namespace: namespace as InternedString,
@@ -408,21 +427,23 @@ export class DynamicAttr extends AttributeSyntax<string> {
     });
   }
 
-  static build(_name: string, value: ExpressionSyntax<string>, _namespace: string=null): DynamicAttr {
+  static build(_name: string, value: ExpressionSyntax<string>, isTrusting: boolean = false, _namespace: string=null): DynamicAttr {
     let name = intern(_name);
     let namespace = _namespace ? intern(_namespace) : null;
-    return new this({ name, value, namespace });
+    return new this({ name, value, namespace, isTrusting });
   }
 
   name: InternedString;
   value: ExpressionSyntax<string>;
   namespace: InternedString;
+  isTrusting: boolean;
 
-  constructor({ name, value, namespace = null }: { name: InternedString, value: ExpressionSyntax<string>, namespace?: InternedString }) {
+  constructor({ name, value, isTrusting = false, namespace = null }: { name: InternedString, isTrusting?: boolean, value: ExpressionSyntax<string>, namespace?: InternedString }) {
     super();
     this.name = name;
     this.value = value;
     this.namespace = namespace;
+    this.isTrusting = isTrusting;
   }
 
   prettyPrint() {

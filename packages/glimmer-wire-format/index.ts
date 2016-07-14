@@ -99,6 +99,7 @@ export namespace Statements {
   export type Yield         = ['yield', YieldTo, Params];
   export type DynamicArg    = ['dynamicArg', str, Expression];
   export type StaticArg     = ['staticArg', str, Expression];
+  export type TrustingAttr  = ['trustingAttr', str, Expression, str];
 
   export const isText         = is<Text>('text');
   export const isAppend       = is<Append>('append');
@@ -112,6 +113,7 @@ export namespace Statements {
   export const isYield        = is<Yield>('yield');
   export const isDynamicArg   = is<DynamicArg>('dynamicArg');
   export const isStaticArg    = is<StaticArg>('staticArg');
+  export const isTrustingAttr = is<TrustingAttr>('trustingAttr');
 
   export type Statement =
       Text
@@ -126,6 +128,7 @@ export namespace Statements {
     | Yield
     | StaticArg
     | DynamicArg
+    | TrustingAttr
     ;
 }
 

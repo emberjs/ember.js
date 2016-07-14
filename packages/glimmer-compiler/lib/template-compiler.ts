@@ -9,6 +9,10 @@ export interface CompileOptions {
   moduleName?: string;
 }
 
+function isTrustedValue(value) {
+  return value.escaped !== undefined && !value.escaped;
+}
+
 export default class TemplateCompiler {
   static compile(options: CompileOptions, ast) {
     let templateVisitor = new TemplateVisitor();
@@ -98,8 +102,12 @@ export default class TemplateCompiler {
         this.opcode('dynamicArg', action, name);
       }
     } else {
+      let isTrusting = isTrustedValue(value);
+
       if (isStatic) {
         this.opcode('staticAttr', action, name, namespace);
+      } else if (isTrusting) {
+        this.opcode('trustingAttr', action, name, namespace);
       } else if (action.value.type === 'MustacheStatement') {
         this.opcode('dynamicAttr', action, name);
       } else {

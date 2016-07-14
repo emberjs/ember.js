@@ -11,7 +11,7 @@ export interface IChangeList {
   updateAttribute(dom: DOMHelper, element: Element, attr: string, value: any, namespace?: string): void;
 }
 
-export function defaultChangeLists(element: Element, attr: string, namespace: string) {
+export function defaultChangeLists(element: Element, attr: string, isTrusting: boolean, namespace: string) {
   let tagName = element.tagName;
   let isSVG = element.namespaceURI === SVG_NAMESPACE;
 
