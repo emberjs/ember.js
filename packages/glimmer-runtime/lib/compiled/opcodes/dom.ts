@@ -396,9 +396,9 @@ export class DynamicAttrNSOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    let { name, namespace } = this;
+    let { name, namespace, isTrusting } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttributeNS(namespace, name, reference, this.isTrusting);
+    vm.stack().setAttributeNS(namespace, name, reference, isTrusting);
   }
 
   toJSON(): OpcodeJSON {
@@ -429,9 +429,9 @@ export class DynamicAttrOpcode extends Opcode {
   }
 
   evaluate(vm: VM) {
-    let { name } = this;
+    let { name, isTrusting } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttribute(name, reference, this.isTrusting);
+    vm.stack().setAttribute(name, reference, isTrusting);
   }
 
   toJSON(): OpcodeJSON {
