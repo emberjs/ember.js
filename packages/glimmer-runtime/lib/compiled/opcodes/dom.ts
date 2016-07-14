@@ -164,7 +164,7 @@ export class CloseElementOpcode extends Opcode {
 
     let className = classList.toReference();
     let attr = 'class' as InternedString;
-    let attributeManager = vm.env.attributeFor(element, attr, className);
+    let attributeManager = vm.env.attributeFor(element, attr, className, false);
     let attribute = new Attribute(element, attributeManager, attr, className);
     let opcode = attribute.flush(dom);
 
@@ -187,7 +187,7 @@ export class StaticAttrOpcode extends Opcode {
   public name: InternedString;
   public value: ValueReference<string>;
 
-  constructor({ namespace, name, value,  }: { namespace: InternedString, name: InternedString, value: InternedString }) {
+  constructor({ namespace, name, value }: { namespace: InternedString, name: InternedString, value: InternedString }) {
     super();
     this.namespace = namespace;
     this.name = name;
@@ -197,9 +197,9 @@ export class StaticAttrOpcode extends Opcode {
   evaluate(vm: VM) {
     let { name, value, namespace } = this;
     if (namespace) {
-      vm.stack().setAttributeNS(namespace, name, value);
+      vm.stack().setAttributeNS(namespace, name, value, false);
     } else {
-      vm.stack().setAttribute(name, value);
+      vm.stack().setAttribute(name, value, false);
     }
   }
 
@@ -386,17 +386,19 @@ export class DynamicAttrNSOpcode extends Opcode {
   public type = "dynamic-attr";
   public name: InternedString;
   public namespace: InternedString;
+  public isTrusting: boolean;
 
-  constructor({ name, namespace }: { name: InternedString, namespace: InternedString }) {
+  constructor({ name, namespace, isTrusting }: { name: InternedString, namespace: InternedString, isTrusting: boolean }) {
     super();
     this.name = name;
     this.namespace = namespace;
+    this.isTrusting = isTrusting;
   }
 
   evaluate(vm: VM) {
     let { name, namespace } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttributeNS(namespace, name, reference);
+    vm.stack().setAttributeNS(namespace, name, reference, this.isTrusting);
   }
 
   toJSON(): OpcodeJSON {
@@ -418,16 +420,18 @@ export class DynamicAttrNSOpcode extends Opcode {
 export class DynamicAttrOpcode extends Opcode {
   public type = "dynamic-attr";
   public name: InternedString;
+  public isTrusting: boolean;
 
-  constructor({ name }: { name: InternedString }) {
+  constructor({ name, isTrusting }: { name: InternedString, isTrusting: boolean }) {
     super();
     this.name = name;
+    this.isTrusting = isTrusting;
   }
 
   evaluate(vm: VM) {
     let { name } = this;
     let reference = vm.frame.getOperand();
-    vm.stack().setAttribute(name, reference);
+    vm.stack().setAttribute(name, reference, this.isTrusting);
   }
 
   toJSON(): OpcodeJSON {

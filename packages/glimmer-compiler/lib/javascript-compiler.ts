@@ -143,9 +143,14 @@ export default class JavaScriptCompiler {
     this.push(['staticAttr', name, value, namespace]);
   }
 
-  dynamicAttr(name: string, namespace: string) {
+  dynamicAttr(name: str, namespace: str) {
     let value = this.popValue<Expression>();
     this.push(['dynamicAttr', name, value, namespace]);
+  }
+
+  trustingAttr(name: str, namespace: str) {
+    let value = this.popValue<Expression>();
+    this.push(['trustingAttr', name, value, namespace]);
   }
 
   staticArg(name: str) {
