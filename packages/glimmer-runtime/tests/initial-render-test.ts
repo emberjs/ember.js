@@ -1,8 +1,7 @@
-import { forEach, InternedString } from "glimmer-util";
+import { forEach } from "glimmer-util";
 import { TestEnvironment, TestDynamicScope, normalizeInnerHTML, getTextContent, equalTokens } from "glimmer-test-helpers";
-import { Template, AttributeChangeList, DOMHelper } from 'glimmer-runtime';
+import { Template, AttributeChangeList } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
-import { Reference } from 'glimmer-reference';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
@@ -787,7 +786,6 @@ test("Case-sensitive tag has capitalization preserved", function() {
 });
 
 let warnings = 0;
-let orignalAttributeFor;
 
 const StyleAttribute = {
   setAttribute(dom, element, attr, value) {
@@ -795,7 +793,7 @@ const StyleAttribute = {
     AttributeChangeList.setAttribute(dom, element, attr, value);
   },
   updateAttribute() {}
-}
+};
 
 QUnit.module('Style attributes', {
   setup() {
@@ -809,13 +807,13 @@ QUnit.module('Style attributes', {
       }
     }
 
-    commonSetup(new StyleEnv())
+    commonSetup(new StyleEnv());
 
   },
   teardown() {
     warnings = 0;
   }
-})
+});
 
 test(`using an inline style on an element gives you a warning`, function(assert) {
   let template = compile(`<div style="background: red">Thing</div>`);

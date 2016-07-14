@@ -128,7 +128,6 @@ export function init() {
   console.timeEnd('initial render');
 }
 
-
 export function toggle() {
   if (playing) {
     window['playpause'].innerHTML = "Play";

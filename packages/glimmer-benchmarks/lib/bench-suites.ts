@@ -8,4 +8,4 @@ export default {
   If,
   Partials,
   Components
-}
+};

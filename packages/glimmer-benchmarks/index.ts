@@ -4,4 +4,4 @@ import suites from './lib/bench-suites';
 
 export const Benchmark = benchmark;
 export const Stats = stats;
-export const Suites = suites
+export const Suites = suites;

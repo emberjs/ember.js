@@ -125,7 +125,7 @@ export const NullValueAttributeChangeList = {
 
 export const SafeHrefPropertyChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: any) {
-    PropertyChangeList.setAttribute(dom, element, attr, sanitizeAttributeValue(dom, element, attr, value))
+    PropertyChangeList.setAttribute(dom, element, attr, sanitizeAttributeValue(dom, element, attr, value));
   },
 
   updateAttribute(dom: DOMHelper, element: Element, attr: string, value: any) {
