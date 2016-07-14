@@ -209,4 +209,62 @@ if (isEnabled('ember-application-engines')) {
       ['bleep', 'bloop', 'blork'],
       'segments are properly associated with mounted engine with aliased name');
   });
+
+  QUnit.test('should add loading and error routes to a mount if _isRouterMapResult is true', function() {
+    Router.map(function() {
+      this.mount('chat');
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create({
+      _hasModuleBasedResolver() { return true; }
+    });
+    setOwner(router, engineInstance);
+    router._initRouterJs();
+
+    ok(router.router.recognizer.names['chat'], 'main route was created');
+    ok(router.router.recognizer.names['chat_loading'], 'loading route was added');
+    ok(router.router.recognizer.names['chat_error'], 'error route was added');
+  });
+
+  QUnit.test('should add loading and error routes to a mount alias if _isRouterMapResult is true', function() {
+    Router.map(function() {
+      this.mount('chat', { as: 'shoutbox' });
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create({
+      _hasModuleBasedResolver() { return true; }
+    });
+    setOwner(router, engineInstance);
+    router._initRouterJs();
+
+    ok(router.router.recognizer.names['shoutbox'], 'main route was created');
+    ok(router.router.recognizer.names['shoutbox_loading'], 'loading route was added');
+    ok(router.router.recognizer.names['shoutbox_error'], 'error route was added');
+  });
+
+  QUnit.test('should not add loading and error routes to a mount if _isRouterMapResult is false', function() {
+    Router.map(function() {
+      this.mount('chat');
+    });
+
+    let engineInstance = buildOwner({
+      routable: true
+    });
+
+    let router = Router.create();
+    setOwner(router, engineInstance);
+    router._initRouterJs(false);
+
+    ok(router.router.recognizer.names['chat'], 'main route was created');
+    ok(!router.router.recognizer.names['chat_loading'], 'loading route was not added');
+    ok(!router.router.recognizer.names['chat_error'], 'error route was not added');
+  });
 }
