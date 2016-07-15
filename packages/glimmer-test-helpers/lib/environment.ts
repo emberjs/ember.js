@@ -4,6 +4,7 @@ import {
   DynamicScope,
 
   // Compiler
+  Compilable,
   CompileInto,
   CompiledBlock,
   StatementCompilationBuffer,
@@ -948,7 +949,7 @@ class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<Embe
   public ComponentClass: EmberishGlimmerComponentFactory;
 }
 
-abstract class GenericComponentLayoutCompiler {
+abstract class GenericComponentLayoutCompiler implements Compilable {
   constructor(private layoutString: string) {}
 
   protected compileLayout(env: Environment) {

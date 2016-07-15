@@ -160,7 +160,7 @@ export interface CompiledComponentParts {
   main: CompileIntoList;
 }
 
-interface Compilable {
+export interface Compilable {
   compile(builder: ComponentLayoutBuilder);
 }
 
