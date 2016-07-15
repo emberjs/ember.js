@@ -1004,7 +1004,17 @@ function logError(_error, initialMessage) {
 function findChildRouteName(parentRoute, originatingChildRoute, name) {
   let router = parentRoute.router;
   let childName;
-  let targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
+  let originatingChildRouteName = originatingChildRoute.routeName;
+
+  if (isEnabled('ember-application-engines')) {
+    // The only time the originatingChildRoute's name should be 'application'
+    // is if we're entering an engine
+    if (originatingChildRouteName === 'application') {
+      originatingChildRouteName = getOwner(originatingChildRoute).mountPoint;
+    }
+  }
+
+  let targetChildRouteName = originatingChildRouteName.split('.').pop();
   let namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
   // First, try a named loading state, e.g. 'foo_loading'
