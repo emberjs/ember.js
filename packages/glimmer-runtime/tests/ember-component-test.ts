@@ -2794,15 +2794,20 @@ QUnit.test('components inside the root are destroyed when the render result is d
   env.registerEmberishGlimmerComponent('destroy-me1', DestroyMe1Component as any, '<div>Destry me!</div>');
   env.registerEmberishCurlyComponent('destroy-me2', DestroyMe2Component as any, 'Destroy me too!');
 
-  appendViewFor(`<destroy-me1 />{{destroy-me2}}`);
+  appendViewFor(`<destroy-me1 id="destroy-me1"/>{{destroy-me2 id="destroy-me2"}}`);
 
   assert.strictEqual(glimmerDestroyed, false, 'the glimmer component should not be destroyed');
   assert.strictEqual(curlyDestroyed, false, 'the curly component should not be destroyed');
 
   view.destroy();
 
-  assert.strictEqual(glimmerDestroyed, true, 'the glimmer component should be destroyed');
-  assert.strictEqual(curlyDestroyed, true, 'the curly component should be destroyed');
+  assert.strictEqual(glimmerDestroyed, true, 'the glimmer component destroy hook was called');
+  assert.strictEqual(curlyDestroyed, true, 'the glimmer component destroy hook was called');
+
+  assert.strictEqual(document.querySelectorAll('#destroy-me1').length, 0, 'component DOM node was removed from DOM');
+  assert.strictEqual(document.querySelectorAll('#destroy-me2').length, 0, 'component DOM node was removed from DOM');
+
+  assert.strictEqual(document.querySelector('#qunit-fixture').childElementCount, 0, 'root view was removed from DOM');
 });
 
 QUnit.test('tagless components render properly', function(assert) {
