@@ -38,6 +38,7 @@ export {
 export {
   default as Compiler,
   CompileIntoList,
+  compileLayout,
   layoutFor
 } from './lib/compiler';
 
@@ -50,6 +51,7 @@ export {
 export {
   Block,
   BlockOptions,
+  CompiledBlock,
   Layout,
   LayoutOptions,
   InlineBlock,

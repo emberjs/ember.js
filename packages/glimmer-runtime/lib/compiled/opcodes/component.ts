@@ -4,7 +4,6 @@ import { Component, ComponentManager, ComponentDefinition } from '../../componen
 import { VM, UpdatingVM } from '../../vm';
 import { CompiledArgs, EvaluatedArgs } from '../../compiled/expressions/args';
 import { Templates } from '../../syntax/core';
-import { layoutFor } from '../../compiler';
 import { DynamicScope } from '../../environment';
 import { InternedString, Opaque } from 'glimmer-util';
 import { ReferenceCache, Revision, combine, isConst } from 'glimmer-reference';
@@ -89,11 +88,11 @@ export class OpenComponentOpcode extends Opcode {
     let destructor = manager.getDestructor(component);
     if (destructor) vm.newDestroyable(destructor);
     args.internal["component"] = component;
-    args.internal["definition"] = definition = manager.ensureCompilable(definition, component, vm.env);
+    args.internal["definition"] = definition;
     args.internal["shadow"] = shadow;
 
     vm.beginCacheGroup();
-    let layout = layoutFor(definition, vm.env);
+    let layout = manager.layoutFor(definition, component, vm.env);
     let callerScope = vm.scope();
     let selfRef = manager.getSelf(component);
     vm.pushRootScope(selfRef, layout.symbols);
