@@ -2,6 +2,7 @@ import { environment } from 'ember-environment';
 
 import { hooks } from 'htmlbars-runtime';
 import assign from 'ember-metal/assign';
+import isEnabled from 'ember-metal/features';
 
 import subexpr from 'ember-htmlbars/hooks/subexpr';
 import concat from 'ember-htmlbars/hooks/concat';
@@ -74,6 +75,7 @@ import outlet from 'ember-htmlbars/keywords/outlet';
 import unbound from 'ember-htmlbars/keywords/unbound';
 import componentKeyword from 'ember-htmlbars/keywords/component';
 import elementComponent from 'ember-htmlbars/keywords/element-component';
+import mount from 'ember-htmlbars/keywords/mount';
 import partial from 'ember-htmlbars/keywords/partial';
 import input from 'ember-htmlbars/keywords/input';
 import textarea from 'ember-htmlbars/keywords/textarea';
@@ -91,6 +93,9 @@ registerKeyword('outlet', outlet);
 registerKeyword('unbound', unbound);
 registerKeyword('component', componentKeyword);
 registerKeyword('@element_component', elementComponent);
+if (isEnabled('ember-application-engines')) {
+  registerKeyword('mount', mount);
+}
 registerKeyword('partial', partial);
 registerKeyword('input', input);
 registerKeyword('textarea', textarea);
