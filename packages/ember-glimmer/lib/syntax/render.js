@@ -1,4 +1,4 @@
-import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
+import { ArgsSyntax, StatementSyntax, compileLayout } from 'glimmer-runtime';
 import { ConstReference, isConst } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import { RootReference } from '../utils/references';
@@ -57,8 +57,8 @@ export class RenderSyntax extends StatementSyntax {
 class AbstractRenderManager {
   /* abstract create(definition, args, dynamicScope); */
 
-  ensureCompilable(definition) {
-    return definition;
+  layoutFor(definition, bucket, env) {
+    return compileLayout(new RenderLayoutCompiler(definition.template), env);
   }
 
   getSelf({ controller }) {
@@ -125,6 +125,12 @@ class RenderDefinition extends ComponentDefinition {
     this.name = name;
     this.template = template;
     this.env = env;
+  }
+}
+
+class RenderLayoutCompiler {
+  constructor(template) {
+    this.template = template;
   }
 
   compile(builder) {

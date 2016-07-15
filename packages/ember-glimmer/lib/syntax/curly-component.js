@@ -1,4 +1,4 @@
-import { StatementSyntax, ValueReference } from 'glimmer-runtime';
+import { StatementSyntax, ValueReference, compileLayout } from 'glimmer-runtime';
 import { TO_ROOT_REFERENCE, AttributeBindingReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert } from 'ember-metal/debug';
@@ -127,9 +127,9 @@ class CurlyComponentManager {
     return bucket;
   }
 
-  ensureCompilable(definition, bucket, env) {
+  layoutFor(definition, bucket, env) {
     if (definition.template) {
-      return definition;
+      return compileLayout(new CurlyComponentLayoutCompiler(definition.template), env);
     }
 
     let { component } = bucket;
@@ -155,7 +155,7 @@ class CurlyComponentManager {
       }
     }
 
-    return definition.lateBound(template);
+    return compileLayout(new CurlyComponentLayoutCompiler(template), env);
   }
 
   getSelf({ component }) {
@@ -256,6 +256,12 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     this.template = template;
     this._cache = undefined;
   }
+}
+
+class CurlyComponentLayoutCompiler {
+  constructor(template) {
+    this.template = template;
+  }
 
   compile(builder) {
     builder.wrapLayout(this.template.asLayout());
@@ -263,19 +269,5 @@ export class CurlyComponentDefinition extends ComponentDefinition {
     builder.attrs.dynamic('id', elementId);
     builder.attrs.dynamic('role', ariaRole);
     builder.attrs.static('class', 'ember-view');
-  }
-
-  lateBound(template) {
-    let definition;
-    if (this._cache) {
-      definition = this._cache[template.id];
-    } else {
-      this._cache = {};
-    }
-    if (!definition) {
-      definition = new CurlyComponentDefinition(this.name, this.ComponentClass, template);
-      this._cache[template.id] = definition;
-    }
-    return definition;
   }
 }
