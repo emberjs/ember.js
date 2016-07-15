@@ -13,6 +13,7 @@ import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
 import { compile } from 'ember-template-compiler/tests/utils/helpers';
 import Application from 'ember-application/system/application';
+import Engine from 'ember-application/system/engine';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import NoneLocation from 'ember-routing/location/none_location';
 import HistoryLocation from 'ember-routing/location/history_location';
@@ -889,56 +890,31 @@ QUnit.asyncTest('Moving from one page to another triggers the correct callbacks'
 });
 
 QUnit.asyncTest('Nested callbacks are not exited when moving to siblings', function() {
-  function serializeRootRoute() {
-    rootSerialize++;
-    return this._super(...arguments);
-  }
-
-  if (isEnabled('ember-route-serializers')) {
-    Router.map(function() {
-      this.route('root', { path: '/', serialize: serializeRootRoute }, function() {
-        this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
-      });
+  Router.map(function() {
+    this.route('root', { path: '/' }, function() {
+      this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
     });
+  });
 
-    App.RootRoute = Route.extend({
-      model() {
-        rootModel++;
-        return this._super(...arguments);
-      },
+  App.RootRoute = Route.extend({
+    model() {
+      rootModel++;
+      return this._super(...arguments);
+    },
 
-      setupController() {
-        rootSetup++;
-      },
+    setupController() {
+      rootSetup++;
+    },
 
-      renderTemplate() {
-        rootRender++;
-      }
-    });
-  } else {
-    Router.map(function() {
-      this.route('root', { path: '/' }, function() {
-        this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
-      });
-    });
+    renderTemplate() {
+      rootRender++;
+    },
 
-    App.RootRoute = Route.extend({
-      model() {
-        rootModel++;
-        return this._super(...arguments);
-      },
-
-      setupController() {
-        rootSetup++;
-      },
-
-      renderTemplate() {
-        rootRender++;
-      },
-
-      serialize: serializeRootRoute
-    });
-  }
+    serialize: function() {
+      rootSerialize++;
+      return this._super(...arguments);
+    }
+  });
 
   let currentPath;
 
@@ -2045,33 +2021,6 @@ QUnit.test('Nested index route is not overriden by parent\'s implicit index rout
   deepEqual(router.location.path, '/posts/emberjs');
 });
 
-if (isEnabled('ember-route-serializers')) {
-  QUnit.test('Custom Route#serialize method still works [DEPRECATED]', function() {
-    Router.map(function() {
-      this.route('posts', function() {
-        this.route('index', {
-          path: ':category'
-        });
-      });
-    });
-
-    App.PostsIndexRoute = Route.extend({
-      serialize(model) {
-        return { category: model.category };
-      }
-    });
-
-    bootApplication();
-
-    run(() => {
-      expectDeprecation(() => router.transitionTo('posts', { category: 'emberjs' }),
-                        'Defining a serialize function on route \'posts.index\' is deprecated. Instead, define it in the router\'s map as an option.');
-    });
-
-    deepEqual(router.location.path, '/posts/emberjs');
-  });
-}
-
 QUnit.test('Application template does not duplicate when re-rendered', function() {
   setTemplate('application', compile('<h3>I Render Once</h3>{{outlet}}'));
 
@@ -2895,27 +2844,18 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
 });
 
 QUnit.test('Redirecting with null model doesn\'t error out', function() {
-  function serializeAboutRoute(model) {
-    if (model === null) {
-      return { hurhurhur: 'TreeklesMcGeekles' };
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('about', { path: '/about/:hurhurhur' });
+  });
+
+  App.AboutRoute = Route.extend({
+    serialize: function(model) {
+      if (model === null) {
+        return { hurhurhur: 'TreeklesMcGeekles' };
+      }
     }
-  }
-
-  if (isEnabled('ember-route-serializers')) {
-    Router.map(function() {
-      this.route('home', { path: '/' });
-      this.route('about', { path: '/about/:hurhurhur', serialize: serializeAboutRoute });
-    });
-  } else {
-    Router.map(function() {
-      this.route('home', { path: '/' });
-      this.route('about', { path: '/about/:hurhurhur' });
-    });
-
-    App.AboutRoute = Route.extend({
-      serialize: serializeAboutRoute
-    });
-  }
+  });
 
   App.HomeRoute = Route.extend({
     beforeModel() {
@@ -3725,3 +3665,58 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
     run(() => router.send('hideModal'));
   }, /You passed undefined as the outlet name/);
 });
+
+if (isEnabled('ember-application-engines')) {
+  QUnit.test('Route serializers work for Engines', function() {
+    expect(2);
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    registry.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let postSerialize = function(params) {
+      ok(true, 'serialize hook runs');
+      return {
+        post_id: params.id
+      };
+    };
+    let BlogMap = function() {
+      this.route('post', { path: '/post/:post_id', serialize: postSerialize });
+    };
+    registry.register('route-map:blog', BlogMap);
+
+    Router.map(function() {
+      this.mount('blog');
+    });
+
+    bootApplication();
+
+    equal(router.router.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+  });
+
+  QUnit.test('Defining a Route#serialize method in an Engine throws an error', function() {
+    expect(1);
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    registry.register('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {
+      this.route('post');
+    };
+    registry.register('route-map:blog', BlogMap);
+
+    Router.map(function() {
+      this.mount('blog');
+    });
+
+    bootApplication();
+
+    let PostRoute = Route.extend({ serialize() {} });
+    container.lookup('engine:blog').register('route:post', PostRoute);
+
+    throws(() => router.transitionTo('blog.post'), /Defining a custom serialize method on an Engine route is not supported/);
+  });
+}

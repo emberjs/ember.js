@@ -115,6 +115,16 @@ QUnit.test('should not add loading and error routes if _isRouterMapResult is fal
 });
 
 if (isEnabled('ember-application-engines')) {
+  QUnit.test('should throw an error when defining a route serializer outside an engine', function() {
+    Router.map(function() {
+      throws(() => {
+        this.route('posts', { serialize: function() {} });
+      }, /Defining a route serializer on route 'posts' outside an Engine is not allowed/);
+    });
+
+    Router.create()._initRouterJs();
+  });
+
   QUnit.module('Ember Router DSL with engines', {
     setup,
     teardown
