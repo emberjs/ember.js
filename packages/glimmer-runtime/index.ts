@@ -37,6 +37,7 @@ export {
 
 export {
   default as Compiler,
+  Compilable,
   CompileIntoList,
   compileLayout,
   layoutFor
