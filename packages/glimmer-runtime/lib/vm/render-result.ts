@@ -1,6 +1,6 @@
 import { Destroyable, LinkedList } from 'glimmer-util';
 import Environment from '../environment';
-import { Bounds } from '../bounds';
+import { Bounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
 
@@ -55,5 +55,6 @@ export default class RenderResult implements Bounds, Destroyable, ExceptionHandl
 
   destroy() {
     this.bounds.destroy();
+    clear(this.bounds);
   }
 }
