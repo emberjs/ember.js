@@ -51,8 +51,8 @@ to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blo
   var plainString = 'plain string',
       safeString = Ember.String.htmlSafe('<div>someValue</div>');
 
-  Ember.String.isHtmlSafe(plainString); // false
-  Ember.String.isHtmlSafe(safeString);  // true
+  Ember.String.isHTMLSafe(plainString); // false
+  Ember.String.isHTMLSafe(safeString);  // true
   ```
 
 * `ember-testing-check-waiters`

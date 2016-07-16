@@ -46,27 +46,27 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   var plainString = 'plain string',
       safeString = Ember.String.htmlSafe('<div>someValue</div>');
 
-  Ember.String.isHtmlSafe(plainString); // false
-  Ember.String.isHtmlSafe(safeString);  // true
+  Ember.String.isHTMLSafe(plainString); // false
+  Ember.String.isHTMLSafe(safeString);  // true
   ```
 
-  @method isHtmlSafe
+  @method isHTMLSafe
   @for Ember.String
   @static
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public
 */
-function isHtmlSafe(str) {
+function isHTMLSafe(str) {
   return str && typeof str.toHTML === 'function';
 }
 
 if (isEnabled('ember-string-ishtmlsafe')) {
-  EmberStringUtils.isHtmlSafe = isHtmlSafe;
+  EmberStringUtils.isHTMLSafe = isHTMLSafe;
 }
 
 export {
   SafeString,
   htmlSafe,
-  isHtmlSafe,
+  isHTMLSafe,
   escapeExpression
 };
