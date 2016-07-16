@@ -1,4 +1,4 @@
-import { ArgsSyntax, StatementSyntax, compileLayout } from 'glimmer-runtime';
+import { ArgsSyntax, StatementSyntax } from 'glimmer-runtime';
 import { generateGuid, guidFor } from 'ember-metal/utils';
 import { RootReference } from '../utils/references';
 
@@ -124,7 +124,7 @@ class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
   }
 
   layoutFor(definition, bucket, env) {
-    return compileLayout(new TopLevelOutletLayoutCompiler(definition.template), env);
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }
 
@@ -139,7 +139,7 @@ class OutletComponentManager extends AbstractOutletComponentManager {
   }
 
   layoutFor(definition, bucket, env) {
-    return compileLayout(new OutletLayoutCompiler(definition.template), env);
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 }
 
@@ -175,6 +175,8 @@ class TopLevelOutletLayoutCompiler {
   }
 }
 
+TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
+
 class OutletComponentDefinition extends AbstractOutletComponentDefinition {
   constructor(outletName, template) {
     super(MANAGER, outletName, template);
@@ -190,3 +192,5 @@ class OutletLayoutCompiler {
     builder.wrapLayout(this.template.asLayout());
   }
 }
+
+OutletLayoutCompiler.id = 'outlet';

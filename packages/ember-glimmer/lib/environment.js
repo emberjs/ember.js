@@ -3,9 +3,10 @@ import {
   Environment as GlimmerEnvironment,
   HelperSyntax,
   AttributeChangeList,
-  isSafeString
+  isSafeString,
+  compileLayout
 } from 'glimmer-runtime';
-import Dict from 'ember-metal/empty_object';
+import Cache from 'ember-metal/cache';
 import { assert, warn } from 'ember-metal/debug';
 import { CurlyComponentSyntax, CurlyComponentDefinition } from './syntax/curly-component';
 import { DynamicComponentSyntax } from './syntax/dynamic-component';
@@ -142,41 +143,60 @@ export default class Environment extends GlimmerEnvironment {
   constructor({ dom, [OWNER]: owner }) {
     super(dom);
     this.owner = owner;
-    this._components = new Dict();
-    this._templateCache = new Dict();
+
+    this._definitionCache = new Cache(2000, ({ name, source }) => {
+      let { component: ComponentClass, layout } = lookupComponent(owner, name, { source });
+      if (ComponentClass || layout) {
+        return new CurlyComponentDefinition(name, ComponentClass, layout);
+      }
+    }, ({ name, source }) => {
+      return source && owner._resolveLocalLookupName(name, source) || name;
+    });
+
+    this._templateCache = new Cache(1000, Template => {
+      return new Template(this);
+    }, template => template.id);
+
+    this._compilerCache = new Cache(10, Compiler => {
+      return new Cache(2000, template => {
+        let compilable = new Compiler(template);
+        return compileLayout(compilable, this);
+      }, template => template.id);
+    }, Compiler => Compiler.id);
+
     this.builtInModifiers = {
       action: new ActionModifierManager()
     };
   }
 
-   // Hello future traveler, welcome to the world of syntax refinement.
-   // The method below is called by Glimmer's runtime compiler to allow
-   // us to take generic statement syntax and refine it to more meaniful
-   // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
-   // and dandy, however Ember has precedence on statement refinement that you
-   // need to be aware of. The presendence for language constructs is as follows:
-   //
-   // ------------------------
-   // Native & Built-in Syntax
-   // ------------------------
-   //   User-land components
-   // ------------------------
-   //     User-land helpers
-   // ------------------------
-   //
-   // The one caveat here is that Ember also allows for dashed references that are
-   // not a component or helper:
-   //
-   // export default Component.extend({
-   //   'foo-bar': 'LAME'
-   // });
-   //
-   // {{foo-bar}}
-   //
-   // The heuristic for the above situation is a dashed "key" in inline form
-   // that does not resolve to a defintion. In this case refine statement simply
-   // isn't going to return any syntax and the Glimmer engine knows how to handle
-   // this case.
+  // Hello future traveler, welcome to the world of syntax refinement.
+  // The method below is called by Glimmer's runtime compiler to allow
+  // us to take generic statement syntax and refine it to more meaniful
+  // syntax for Ember's use case. This on the fly switch-a-roo sounds fine
+  // and dandy, however Ember has precedence on statement refinement that you
+  // need to be aware of. The presendence for language constructs is as follows:
+  //
+  // ------------------------
+  // Native & Built-in Syntax
+  // ------------------------
+  //   User-land components
+  // ------------------------
+  //     User-land helpers
+  // ------------------------
+  //
+  // The one caveat here is that Ember also allows for dashed references that are
+  // not a component or helper:
+  //
+  // export default Component.extend({
+  //   'foo-bar': 'LAME'
+  // });
+  //
+  // {{foo-bar}}
+  //
+  // The heuristic for the above situation is a dashed "key" in inline form
+  // that does not resolve to a defintion. In this case refine statement simply
+  // isn't going to return any syntax and the Glimmer engine knows how to handle
+  // this case.
 
   refineStatement(statement, parentMeta) {
     // 1. resolve any native syntax – if, unless, with, each, and partial
@@ -244,20 +264,22 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   getComponentDefinition(path, parentMeta) {
-    let source = parentMeta && `template:${parentMeta.moduleName}`;
     let name = path[0];
-    let cacheKey = (source && this.owner._resolveLocalLookupName(name, source)) || name;
-    let definition = this._components[cacheKey];
+    let source = parentMeta && `template:${parentMeta.moduleName}`;
+    return this._definitionCache.get({ name, source });
+  }
 
-    if (!definition) {
-      let { component: ComponentClass, layout } = lookupComponent(this.owner, name, { source });
+  // normally templates should be exported at the proper module name
+  // and cached in the container, but this cache supports templates
+  // that have been set directly on the component's layout property
+  getTemplate(Template) {
+    return this._templateCache.get(Template);
+  }
 
-      if (ComponentClass || layout) {
-        definition = this._components[cacheKey] = new CurlyComponentDefinition(name, ComponentClass, layout);
-      }
-    }
-
-    return definition;
+  // a Compiler can wrap the template so it needs its own cache
+  getCompiledBlock(Compiler, template) {
+    let compilerCache = this._compilerCache.get(Compiler);
+    return compilerCache.get(template);
   }
 
   hasPartial(name) {
