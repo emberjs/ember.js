@@ -1,5 +1,5 @@
 import EmberHandlebars from 'ember-htmlbars/compat';
-import { isHtmlSafe } from 'ember-htmlbars/utils/string';
+import { isHTMLSafe } from 'ember-htmlbars/utils/string';
 import { TestCase } from '../utils/abstract-test-case';
 import { moduleFor } from '../utils/test-case';
 import isEnabled from 'ember-metal/features';
@@ -29,7 +29,7 @@ moduleFor('compat - SafeString', class extends TestCase {
     }
   }
 
-  ['@test isHtmlSafe should detect SafeString']() {
+  ['@test isHTMLSafe should detect SafeString']() {
     let safeString;
 
     if (isEnabled('ember-string-ishtmlsafe')) {
@@ -40,6 +40,6 @@ moduleFor('compat - SafeString', class extends TestCase {
       safeString = new EmberHandlebars.SafeString('<b>test</b>');
     }
 
-    this.assert.ok(isHtmlSafe(safeString));
+    this.assert.ok(isHTMLSafe(safeString));
   }
 });
