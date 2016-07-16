@@ -955,6 +955,8 @@ abstract class GenericComponentLayoutCompiler implements Compilable {
   protected compileLayout(env: Environment) {
     return rawCompileLayout(this.layoutString, { env });
   }
+
+  abstract compile(builder: ComponentLayoutBuilder);
 }
 
 class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {

@@ -312,7 +312,7 @@ export class Attribute {
   private element: Element;
   private reference: Reference<Opaque>;
   private cache: ReferenceCache<Opaque>;
-  private namespace?: string;
+  private namespace: string | undefined;
 
   protected name: InternedString;
 
