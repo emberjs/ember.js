@@ -820,6 +820,8 @@ test(`using an inline style on an element gives you a warning`, function(assert)
   render(template, {});
 
   assert.equal(warnings, 1);
+
+  equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
 });
 
 test(`triple curlies are trusted`, function(assert) {
@@ -827,6 +829,8 @@ test(`triple curlies are trusted`, function(assert) {
   render(template, {styles: 'background: red'});
 
   assert.equal(warnings, 0);
+
+  equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
 });
 
 test(`using an inline style on an namespaced element gives you a warning`, function(assert) {
@@ -835,4 +839,6 @@ test(`using an inline style on an namespaced element gives you a warning`, funct
   render(template, {});
 
   assert.equal(warnings, 1);
+
+  equalTokens(root, '<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red"></svg>', "initial render");
 });

@@ -10,7 +10,8 @@ import {
   StaticAttr,
   Modifier,
   DynamicArg,
-  StaticArg
+  StaticArg,
+  TrustingAttr
 } from './core';
 
 import { InlineBlock } from '../compiled/blocks';
@@ -32,7 +33,8 @@ const {
   isStaticAttr,
   isModifier,
   isDynamicArg,
-  isStaticArg
+  isStaticArg,
+  isTrustingAttr
 } = SerializedStatements;
 
 export default function(sexp: SerializedStatement, blocks: InlineBlock[]): StatementSyntax {
@@ -41,6 +43,7 @@ export default function(sexp: SerializedStatement, blocks: InlineBlock[]): State
   if (isAppend(sexp)) return Append.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
   if (isDynamicArg(sexp)) return DynamicArg.fromSpec(sexp);
+  if (isTrustingAttr(sexp)) return TrustingAttr.fromSpec(sexp);
   if (isText(sexp)) return Text.fromSpec(sexp);
   if (isComment(sexp)) return Comment.fromSpec(sexp);
   if (isOpenElement(sexp)) return OpenElement.fromSpec(sexp);

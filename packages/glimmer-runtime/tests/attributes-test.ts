@@ -125,3 +125,16 @@ test("div[href] is not not marked as unsafe", () => {
 
   equalTokens(root, '<div href="javascript:foo()"></div>');
 });
+
+test("triple curlies in attribute position", assert => {
+
+  let template = compile('<div data-bar="bar" data-foo={{{rawString}}}>Hello</div>');
+
+  render(template, { rawString: 'TRIPLE' });
+
+  equalTokens(root, '<div data-foo="TRIPLE" data-bar="bar">Hello</div>', "initial render");
+
+  rerender({ rawString: 'DOUBLE' });
+
+  equalTokens(root, '<div data-foo="DOUBLE" data-bar="bar">Hello</div>', "initial render");
+});
