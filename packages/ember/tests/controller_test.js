@@ -45,9 +45,7 @@ QUnit.module('Template scoping examples', {
   }
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-test('Actions inside an outlet go to the associated controller', function() {
+QUnit.test('Actions inside an outlet go to the associated controller', function() {
   expect(1);
 
   setTemplate('index', compile('{{component-with-action action=\'componentAction\'}}'));

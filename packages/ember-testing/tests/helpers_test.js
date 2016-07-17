@@ -458,7 +458,7 @@ QUnit.test('`click` triggers native events with simulated X/Y coordinates', func
   });
 });
 
-test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
+QUnit.test('`triggerEvent` with mouseenter triggers native events with simulated X/Y coordinates', function() {
   expect(5);
 
   var triggerEvent, wait, evt;
