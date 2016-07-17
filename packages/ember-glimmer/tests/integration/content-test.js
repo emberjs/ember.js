@@ -7,7 +7,7 @@ import EmberObject from 'ember-runtime/system/object';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { classes } from '../utils/test-helpers';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
-import { styleWarning } from 'ember-htmlbars/morphs/attr-morph';
+import { createStyleWarning } from 'ember-htmlbars/morphs/attr-morph';
 import { Component } from '../utils/helpers';
 import { SafeString } from 'ember-htmlbars/utils/string';
 
@@ -961,7 +961,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, [styleWarning]);
+      assert.deepEqual(warnings, [createStyleWarning('width: 42px')]);
     }
 
     ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
@@ -975,7 +975,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, [styleWarning]);
+      assert.deepEqual(warnings, [createStyleWarning('width: 42px')]);
     }
 
     ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
