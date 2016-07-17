@@ -164,10 +164,6 @@ export interface Compilable {
   compile(builder: ComponentLayoutBuilder);
 }
 
-export function layoutFor(...args) {
-
-}
-
 export function compileLayout(compilable: Compilable, env: Environment): CompiledBlock {
   let builder = new ComponentLayoutBuilder(env);
 

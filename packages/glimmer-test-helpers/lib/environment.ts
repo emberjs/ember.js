@@ -189,14 +189,14 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
 
     if (Array.isArray(iterable)) {
       return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+    } else if (iterable === undefined || iterable === null) {
+      return EMPTY_ITERATOR;
     } else if (iterable.forEach !== undefined) {
       let array = [];
       iterable.forEach(function(item) {
         array.push(item);
       });
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
-    } else if (iterable === undefined || iterable === null) {
-      return EMPTY_ITERATOR;
     } else if (typeof iterable === 'object') {
        let keys = Object.keys(iterable);
        return keys.length > 0 ? new ObjectKeysIterator(keys, keys.map(key => iterable[key]), keyFor) : EMPTY_ITERATOR;

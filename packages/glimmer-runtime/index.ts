@@ -39,8 +39,7 @@ export {
   default as Compiler,
   Compilable,
   CompileIntoList,
-  compileLayout,
-  layoutFor
+  compileLayout
 } from './lib/compiler';
 
 export {
