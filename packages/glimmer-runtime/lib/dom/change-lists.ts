@@ -72,7 +72,7 @@ export const PropertyChangeList = {
 
 export const AttributeChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: any, namespace?: string) {
-    if (value !== null) {
+    if (value !== null && value !== undefined) {
       if (namespace) {
         dom.setAttributeNS(element, namespace, attr, value);
       } else {
