@@ -6,6 +6,8 @@ import isEmpty from 'ember-metal/is_empty';
 import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
 import expandProperties from 'ember-metal/expand_properties';
+import isEnabled from 'ember-metal/features';
+import { A as emberA } from 'ember-runtime/system/native_array';
 
 /**
 @module ember
@@ -657,4 +659,45 @@ export function deprecatingAlias(dependentKey, options) {
       return value;
     }
   });
+}
+
+/**
+  A computed property that returns true if the provided dependent property
+  includes the provided value.
+
+  Example
+
+  ```javascript
+  let Hamster = Ember.Object.extend({
+    hasABanana: Ember.computed.includes('possessions', 'banana')
+  });
+
+  let hamster = Hamster.create();
+
+  hamster.get('hasABanana'); // false
+  hamster.set('possessions', ['orange']);
+  hamster.get('hasABanana'); // false
+  hamster.set('possessions', ['banana']);
+  hamster.get('hasABanana'); // true
+  ```
+
+  @method includes
+  @for Ember.computed
+  @param {String} dependentKey
+  @param {String|Number|Boolean} value
+  @return {Ember.ComputedProperty} computed property which returns true if the
+  the original value for property is an array and includes the given value
+  @public
+ */
+export function includes(dependentKey, value) {
+  if (isEnabled('ember-computed-includes')) {
+    return computed(dependentKey, function () {
+      let array = get(this, dependentKey);
+      if (Array.isArray(array)) {
+        array = emberA(array);
+        return array.includes(value);
+      }
+      return false;
+    });
+  }
 }
