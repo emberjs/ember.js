@@ -5,7 +5,8 @@ import {
 import { UpdatableReference } from 'glimmer-object-reference';
 
 import { compileSpec } from 'glimmer-compiler';
-import { layoutFor } from 'glimmer-runtime';
+
+import { EvaluatedArgs } from 'glimmer-runtime';
 
 const DEFAULT_DATA =
 `{
@@ -142,16 +143,30 @@ const UI =
     </div>
     <div id="initial">
       <div class="header">Opcodes (Top-Level)</div>
-      <block-inspector class="content" block={{template.opcodes}} />
+      <div class="content">
+        <h3>Opcodes</h3>
+        <ol>
+          {{#each template.opcodes key="guid" as |opcode|}}
+            <opcode-inspector opcode={{opcode}} />
+          {{/each}}
+        </ol>
+      </div>
       <div class="header secondary">Opcodes (&lt;h-card&gt;)</div>
-      <block-inspector class="content" block={{layout.opcodes}} />
+      <div class="content">
+        <h3>Opcodes</h3>
+        <ol>
+          {{#each layout.opcodes key="guid" as |opcode|}}
+            <opcode-inspector opcode={{opcode}} />
+          {{/each}}
+        </ol>
+      </div>
     </div>
     <div id="updating">
       <div class="header">Updating Opcodes</div>
       <div class="content full-height">
         <h3>Opcodes</h3>
         <ol>
-          {{#each updatingOpcodes key="@index" as |opcode|}}
+          {{#each updatingOpcodes key="guid" as |opcode|}}
             <opcode-inspector opcode={{opcode}} />
           {{/each}}
         </ol>
@@ -294,20 +309,6 @@ function renderUI() {
   {{/if}}
 </li>`);
 
-  env.registerEmberishGlimmerComponent("block-inspector", null,
-`<div>
-  <h3>Opcodes</h3>
-  <ol>
-    {{#each @block.opcodes key="guid" as |opcode|}}
-      <opcode-inspector opcode={{opcode}} />
-    {{/each}}
-  </ol>
-  <hr />
-  {{#each @block.children key="@index" as |inner|}}
-    <div class="indent">{{block-inspector block=inner}}</div>
-  {{/each}}
-</div>`);
-
   env.begin();
   let self = new UpdatableReference(ui);
   let res = env.compile(UI).render(self, env, { appendTo: document.body, dynamicScope: new TestDynamicScope(null) });
@@ -366,29 +367,30 @@ function renderContent() {
 
   function compileLayout(component) {
     let definition = env.getComponentDefinition([component]);
-    let compiled = layoutFor(definition, env);
-    let children = definition['compileLayout'](env).children;
 
-    // Fake a Block
-    return { compiled, children, compile() {} };
+    let manager = definition.manager;
+    let instance = manager.create(definition, EvaluatedArgs.empty(), new TestDynamicScope(null), false);
+    let compiled = manager.layoutFor(definition, instance, env);
+
+    return processOpcodes(compiled.ops);
   }
 
-  function compileInner(block) {
-    block.compile(env);
-    block.children.forEach(compileInner);
-  }
+  function processOpcodes(list) {
+    return list.toArray().map(op => {
+      let json = op.toJSON();
 
-  function processOpcodes(block) {
-    compileInner(block);
+      if (op.block) {
+        json.children = processOpcodes(op.block.compile(env).ops);
+      } else {
+        json.children = [];
+      }
 
-    return {
-      opcodes: block.compiled.ops.toArray().map(op => op.toJSON()),
-      children: block.children.map(processOpcodes)
-    };
+      return json;
+    });
   }
 
   function processUpdatingOpcodes(list) {
-    return res['updating'].toArray().map(op => op.toJSON());
+    return list.toArray().map(op => op.toJSON());
   }
 
   let div = document.createElement('div');
@@ -402,11 +404,11 @@ function renderContent() {
 
   ui.template.source = $template.value;
   ui.template.wireFormat = JSON.parse(compileSpec($template.value, {}));
-  ui.template.opcodes = processOpcodes(app.raw);
+  ui.template.opcodes = processOpcodes(app.raw['compiled'].ops);
 
   ui.layout.source = $layout.value;
   ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
-  ui.layout.opcodes = processOpcodes(compileLayout("h-card"));
+  ui.layout.opcodes = compileLayout("h-card");
 
   ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
 

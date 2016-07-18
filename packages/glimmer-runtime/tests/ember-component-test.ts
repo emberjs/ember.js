@@ -2811,9 +2811,9 @@ QUnit.test('components inside the root are destroyed when the render result is d
 });
 
 QUnit.test('tagless components render properly', function(assert) {
-  class FooBar extends EmberishCurlyComponent {}
+  class FooBar extends BasicComponent {}
 
-  env.registerEmberishCurlyTaglessComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
+  env.registerStaticTaglessComponent('foo-bar', FooBar, `Michael Jordan says "Go Tagless"`);
 
   appendViewFor(`{{foo-bar}}`);
   assertAppended('Michael Jordan says "Go Tagless"');

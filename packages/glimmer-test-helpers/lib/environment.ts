@@ -4,10 +4,13 @@ import {
   DynamicScope,
 
   // Compiler
+  Compilable,
   CompileInto,
+  CompiledBlock,
   StatementCompilationBuffer,
   OpcodeBuilder,
   SymbolLookup,
+  compileLayout,
 
   // Environment
   ParsedStatement,
@@ -186,14 +189,14 @@ class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque,
 
     if (Array.isArray(iterable)) {
       return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+    } else if (iterable === undefined || iterable === null) {
+      return EMPTY_ITERATOR;
     } else if (iterable.forEach !== undefined) {
       let array = [];
       iterable.forEach(function(item) {
         array.push(item);
       });
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
-    } else if (iterable === undefined || iterable === null) {
-      return EMPTY_ITERATOR;
     } else if (typeof iterable === 'object') {
        let keys = Object.keys(iterable);
        return keys.length > 0 ? new ObjectKeysIterator(keys, keys.map(key => iterable[key]), keyFor) : EMPTY_ITERATOR;
@@ -290,8 +293,8 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return new klass(args.named.value());
   }
 
-  ensureCompilable(definition: BasicComponentDefinition, component: BasicComponent): BasicComponentDefinition {
-    return definition;
+  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: Environment): CompiledBlock {
+    return compileLayout(new BasicComponentLayoutCompiler(definition.layoutString), env);
   }
 
   getSelf(component: BasicComponent): PathReference<Opaque> {
@@ -321,6 +324,14 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
+class StaticTaglessComponentManager extends BasicComponentManager {
+  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: Environment): CompiledBlock {
+    return compileLayout(new StaticTaglessComponentLayoutCompiler(definition.layoutString), env);
+  }
+}
+
+const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
+
 const BaseEmberishGlimmerComponent = EmberishGlimmerComponent.extend() as typeof EmberishGlimmerComponent;
 
 class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerComponent> {
@@ -337,8 +348,8 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return component;
   }
 
-  ensureCompilable(definition: ComponentDefinition<EmberishGlimmerComponent>, component: EmberishGlimmerComponent): ComponentDefinition<EmberishGlimmerComponent> {
-    return definition;
+  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: Environment): CompiledBlock {
+    return compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.layoutString), env);
   }
 
   getSelf(component: EmberishGlimmerComponent): PathReference<Opaque> {
@@ -437,9 +448,14 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component;
   }
 
-  ensureCompilable(definition: GenericComponentDefinition<EmberishCurlyComponent>, component: EmberishCurlyComponent): ComponentDefinition<EmberishCurlyComponent> {
-    if (definition.isCompilable()) return definition;
-    return definition.cloneWithLayout(component["layout"]);
+  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: Environment): CompiledBlock {
+    let layoutString = definition.layoutString;
+
+    if (!layoutString && layoutString !== '') {
+      layoutString = component['layout'];
+    }
+
+    return compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
@@ -661,13 +677,13 @@ export class TestEnvironment extends Environment {
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishCurlyComponent(name: string, Component: EmberishCurlyComponentFactory, layout: string): ComponentDefinition<EmberishCurlyComponentDefinition> {
-    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component, layout);
+  registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layout: string): ComponentDefinition<BasicComponentFactory> {
+    let definition = new StaticTaglessComponentDefinition(name, STATIC_TAGLESS_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
 
-  registerEmberishCurlyTaglessComponent(name: string, Component: EmberishCurlyComponentFactory, layout: string): ComponentDefinition<EmberishCurlyTaglessComponentDefinition> {
-    let definition = new EmberishCurlyTaglessComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component, layout);
+  registerEmberishCurlyComponent(name: string, Component: EmberishCurlyComponentFactory, layout: string): ComponentDefinition<EmberishCurlyComponentDefinition> {
+    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component, layout);
     return this.registerComponent(name, definition);
   }
 
@@ -900,41 +916,59 @@ interface BasicComponentFactory {
 }
 
 abstract class GenericComponentDefinition<T> extends ComponentDefinition<T> {
-  private layoutString : string;
-  private compiledLayout: Layout;
+  public layoutString : string;
 
   constructor(name: string, manager: ComponentManager<T>, ComponentClass: any, layout: string) {
     super(name, manager, ComponentClass);
     this.layoutString = layout;
   }
-
-  protected compileLayout(env: Environment) {
-    if (this.compiledLayout) return this.compiledLayout;
-    return this.compiledLayout = rawCompileLayout(this.layoutString, { env });
-  }
-
-  public isCompilable(): boolean {
-    return this.layoutString !== null && this.layoutString !== undefined;
-  }
-
-  abstract cloneWithLayout(layoutString: string): GenericComponentDefinition<T>;
 }
 
 class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
   public ComponentClass: BasicComponentFactory;
+}
 
-  cloneWithLayout(layoutString: string) {
-    return new BasicComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
-  }
-
-  compile(builder: ComponentLayoutBuilder) {
-    builder.fromLayout(this.compileLayout(builder.env));
-  }
+class StaticTaglessComponentDefinition extends GenericComponentDefinition<BasicComponent> {
+  public ComponentClass: BasicComponentFactory;
 }
 
 interface EmberishCurlyComponentFactory {
   positionalParams?: string[];
   create(options: { attrs: Attrs }): EmberishCurlyComponent;
+}
+
+class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
+  public ComponentClass: EmberishCurlyComponentFactory;
+}
+
+interface EmberishGlimmerComponentFactory {
+  create(options: { attrs: Attrs }): EmberishGlimmerComponent;
+}
+
+class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerComponent> {
+  public ComponentClass: EmberishGlimmerComponentFactory;
+}
+
+abstract class GenericComponentLayoutCompiler implements Compilable {
+  constructor(private layoutString: string) {}
+
+  protected compileLayout(env: Environment) {
+    return rawCompileLayout(this.layoutString, { env });
+  }
+
+  abstract compile(builder: ComponentLayoutBuilder);
+}
+
+class BasicComponentLayoutCompiler extends GenericComponentLayoutCompiler {
+  compile(builder: ComponentLayoutBuilder) {
+    builder.fromLayout(this.compileLayout(builder.env));
+  }
+}
+
+class StaticTaglessComponentLayoutCompiler extends GenericComponentLayoutCompiler {
+  compile(builder: ComponentLayoutBuilder) {
+    builder.wrapLayout(this.compileLayout(builder.env));
+  }
 }
 
 function EmberTagName(vm: VM): PathReference<string> {
@@ -949,27 +983,7 @@ function EmberID(vm: VM): PathReference<string> {
   return new ValueReference(`ember${self._guid}`);
 }
 
-class EmberishCurlyTaglessComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
-  public ComponentClass: EmberishCurlyComponentFactory;
-
-  cloneWithLayout(layoutString: string) {
-    return new EmberishCurlyTaglessComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
-  }
-
-  compile(builder: ComponentLayoutBuilder) {
-    builder.wrapLayout(this.compileLayout(builder.env));
-    builder.attrs.static('class', 'ember-view');
-    builder.attrs.dynamic('id', EmberID);
-  }
-}
-
-class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
-  public ComponentClass: EmberishCurlyComponentFactory;
-
-  cloneWithLayout(layoutString: string) {
-    return new EmberishCurlyComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
-  }
-
+class EmberishCurlyComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder) {
     builder.wrapLayout(this.compileLayout(builder.env));
     builder.tag.dynamic(EmberTagName);
@@ -978,17 +992,7 @@ class EmberishCurlyComponentDefinition extends GenericComponentDefinition<Emberi
   }
 }
 
-interface EmberishGlimmerComponentFactory {
-  create(options: { attrs: Attrs }): EmberishGlimmerComponent;
-}
-
-class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerComponent> {
-  public ComponentClass: EmberishGlimmerComponentFactory;
-
-  cloneWithLayout(layoutString: string) {
-    return new EmberishGlimmerComponentDefinition(this.name, this.manager, this.ComponentClass, layoutString);
-  }
-
+class EmberishGlimmerComponentLayoutCompiler extends GenericComponentLayoutCompiler {
   compile(builder: ComponentLayoutBuilder) {
     builder.fromLayout(this.compileLayout(builder.env));
     builder.attrs.static('class', 'ember-view');
