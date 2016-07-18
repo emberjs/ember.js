@@ -1013,6 +1013,56 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: value set in instance');
   }
 
+  // Note: Hooks are not re-run for idempotent re-renders
+  ['@glimmer rerendering component with attrs from parent'](assert) {
+    let willUpdate = 0;
+    let didReceiveAttrs = 0;
+
+    this.registerComponent('non-block', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs() {
+          didReceiveAttrs++;
+        },
+
+        willUpdate() {
+          willUpdate++;
+        }
+      }),
+      template: 'In layout - someProp: {{someProp}}'
+    });
+
+    this.render('{{non-block someProp=someProp}}', {
+      someProp: 'wycats'
+    });
+
+    assert.equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired');
+    this.assertText('In layout - someProp: wycats');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: wycats');
+    assert.equal(didReceiveAttrs, 1, 'The didReceiveAttrs hook fired again');
+    assert.equal(willUpdate, 0, 'The willUpdate hook fired once');
+
+    this.runTask(() => this.context.set('someProp', 'tomdale'));
+
+    this.assertText('In layout - someProp: tomdale');
+    assert.equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
+    assert.equal(willUpdate, 1, 'The willUpdate hook fired again');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: tomdale');
+    assert.equal(didReceiveAttrs, 2, 'The didReceiveAttrs hook fired again');
+    assert.equal(willUpdate, 1, 'The willUpdate hook fired again');
+
+    this.runTask(() => this.context.set('someProp', 'wycats'));
+
+    this.assertText('In layout - someProp: wycats');
+    assert.equal(didReceiveAttrs, 3, 'The didReceiveAttrs hook fired again in the R step');
+    assert.equal(willUpdate, 2, 'The willUpdate hook fired again in the R step');
+  }
+
   ['@htmlbars rerendering component with attrs from parent'](assert) {
     let willUpdate = 0;
     let didReceiveAttrs = 0;
