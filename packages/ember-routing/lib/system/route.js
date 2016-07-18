@@ -936,11 +936,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     ```javascript
     this.transitionTo('blogPost', 1, {
-      queryParams: {showComments: 'true'}
+      queryParams: { showComments: 'true' }
     });
 
     // if you just want to transition the query parameters without changing the route
-    this.transitionTo({queryParams: {sort: 'date'}});
+    this.transitionTo({ queryParams: { sort: 'date' } });
     ```
 
     See also [replaceWith](#method_replaceWith).
@@ -1020,7 +1020,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     App.IndexRoute = Ember.Route.extend({
       actions: {
         transitionToApples: function() {
-          this.transitionTo('fruits.apples', {queryParams: {color: 'red'}});
+          this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
         }
       }
     });

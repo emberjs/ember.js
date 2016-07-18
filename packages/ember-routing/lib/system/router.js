@@ -493,9 +493,9 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if these methods are called in succession:
     this._activeQPChanged('foo', '10');
-      // results in _queuedQPChanges = {foo: '10'}
+      // results in _queuedQPChanges = { foo: '10' }
     this._activeQPChanged('bar', false);
-      // results in _queuedQPChanges = {foo: '10', bar: false}
+      // results in _queuedQPChanges = { foo: '10', bar: false }
 
 
     _queuedQPChanges will represent both of these changes
