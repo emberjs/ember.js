@@ -52,6 +52,21 @@ export function defaultAttributeChangeLists(tagName: string, attr: string) {
   return AttributeChangeList;
 }
 
+export function readDOMAttr(element: Element, attr: string) {
+   let isSVG = element.namespaceURI === SVG_NAMESPACE;
+   let { type, normalized } = normalizeProperty(element, attr);
+
+   if (isSVG) {
+     return element.getAttribute(normalized);
+   }
+
+   if (type === 'attr') {
+     return element.getAttribute(normalized);
+   } {
+     return element[normalized];
+   }
+};
+
 export const PropertyChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: any, namespace?: string) {
     if (value !== null) {
