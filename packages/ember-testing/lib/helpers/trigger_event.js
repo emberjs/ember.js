@@ -1,4 +1,3 @@
-import run from 'ember-metal/run_loop';
 import { fireEvent } from '../events';
 
 export default function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions) {
@@ -33,7 +32,7 @@ export default function triggerEvent(app, selector, contextOrType, typeOrOptions
   let $el = app.testHelpers.findWithAssert(selector, context);
   let el = $el[0];
 
-  run(null, fireEvent, el, type, options);
+  fireEvent(el, type, options);
 
   return app.testHelpers.wait();
 }
