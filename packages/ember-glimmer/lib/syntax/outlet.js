@@ -183,7 +183,7 @@ class OutletComponentDefinition extends AbstractOutletComponentDefinition {
   }
 }
 
-class OutletLayoutCompiler {
+export class OutletLayoutCompiler {
   constructor(template) {
     this.template = template;
   }

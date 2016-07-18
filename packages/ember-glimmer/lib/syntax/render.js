@@ -3,6 +3,7 @@ import { ConstReference, isConst } from 'glimmer-reference';
 import { assert } from 'ember-metal/debug';
 import { RootReference } from '../utils/references';
 import { generateControllerFactory } from 'ember-routing/system/generate_controller';
+import { OutletLayoutCompiler } from './outlet';
 
 function makeComponentDefinition(vm) {
   let env     = vm.env;
@@ -58,7 +59,7 @@ class AbstractRenderManager {
   /* abstract create(definition, args, dynamicScope); */
 
   layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(RenderLayoutCompiler, definition.template);
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
   getSelf({ controller }) {
@@ -127,15 +128,3 @@ class RenderDefinition extends ComponentDefinition {
     this.env = env;
   }
 }
-
-class RenderLayoutCompiler {
-  constructor(template) {
-    this.template = template;
-  }
-
-  compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
-  }
-}
-
-RenderLayoutCompiler.id = 'render';
