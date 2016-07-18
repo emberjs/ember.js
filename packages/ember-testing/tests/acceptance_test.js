@@ -13,8 +13,6 @@ import { setTemplates, set as setTemplate } from 'ember-templates/template_regis
 
 var App, find, click, fillIn, currentRoute, currentURL, visit, originalAdapter, andThen, indexHitCount;
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
 QUnit.module('ember-testing Acceptance', {
   setup() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
@@ -103,7 +101,7 @@ QUnit.module('ember-testing Acceptance', {
   }
 });
 
-test('helpers can be chained with then', function() {
+QUnit.test('helpers can be chained with then', function() {
   expect(6);
 
   currentRoute = 'index';
@@ -130,7 +128,7 @@ test('helpers can be chained with then', function() {
 
 // Keep this for backwards compatibility
 
-test('helpers can be chained to each other', function() {
+QUnit.test('helpers can be chained to each other', function() {
   expect(7);
 
   currentRoute = 'index';
@@ -155,7 +153,7 @@ test('helpers can be chained to each other', function() {
   });
 });
 
-test('helpers don\'t need to be chained', function() {
+QUnit.test('helpers don\'t need to be chained', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -180,7 +178,7 @@ test('helpers don\'t need to be chained', function() {
   });
 });
 
-test('Nested async helpers', function() {
+QUnit.test('Nested async helpers', function() {
   expect(5);
 
   currentRoute = 'index';
@@ -226,7 +224,7 @@ QUnit.test('Multiple nested async helpers', function() {
   });
 });
 
-test('Helpers nested in thens', function() {
+QUnit.test('Helpers nested in thens', function() {
   expect(5);
 
   currentRoute = 'index';
