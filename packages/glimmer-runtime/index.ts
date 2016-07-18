@@ -105,8 +105,8 @@ export {
   PropertyChangeList,
   SafeHrefAttributeChangeList,
   SafeHrefPropertyChangeList,
-  NullValueAttributeChangeList,
-  NullValuePropertyChangeList,
+  InputValueAttributeChangeList,
+  InputValuePropertyChangeList,
   defaultChangeLists,
   defaultAttributeChangeLists,
   defaultPropertyChangeLists
