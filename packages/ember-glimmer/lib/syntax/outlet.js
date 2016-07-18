@@ -99,10 +99,6 @@ class AbstractOutletComponentManager {
     throw new Error('Not implemented: create');
   }
 
-  ensureCompilable(definition) {
-    return definition;
-  }
-
   getSelf(state) {
     return new RootReference(state.render.controller);
   }
@@ -126,6 +122,10 @@ class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
     dynamicScope.isTopLevel = false;
     return dynamicScope.outletState.value();
   }
+
+  layoutFor(definition, bucket, env) {
+    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
+  }
 }
 
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
@@ -136,6 +136,10 @@ class OutletComponentManager extends AbstractOutletComponentManager {
     let outletState = outletStateReference.value();
     dynamicScope.targetObject = dynamicScope.controller = outletState.render.controller;
     return outletState;
+  }
+
+  layoutFor(definition, bucket, env) {
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 }
 
@@ -150,15 +154,17 @@ class AbstractOutletComponentDefinition extends ComponentDefinition {
     this.template = template;
     generateGuid(this);
   }
-
-  compile() {
-    throw new Error('Unimplemented: compile');
-  }
 }
 
 class TopLevelOutletComponentDefinition extends AbstractOutletComponentDefinition {
   constructor(template) {
     super(TOP_LEVEL_MANAGER, null, template);
+  }
+}
+
+class TopLevelOutletLayoutCompiler {
+  constructor(template) {
+    this.template = template;
   }
 
   compile(builder) {
@@ -169,12 +175,22 @@ class TopLevelOutletComponentDefinition extends AbstractOutletComponentDefinitio
   }
 }
 
+TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
+
 class OutletComponentDefinition extends AbstractOutletComponentDefinition {
   constructor(outletName, template) {
     super(MANAGER, outletName, template);
+  }
+}
+
+export class OutletLayoutCompiler {
+  constructor(template) {
+    this.template = template;
   }
 
   compile(builder) {
     builder.wrapLayout(this.template.asLayout());
   }
 }
+
+OutletLayoutCompiler.id = 'outlet';
