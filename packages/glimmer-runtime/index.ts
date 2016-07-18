@@ -109,7 +109,8 @@ export {
   InputValuePropertyChangeList,
   defaultChangeLists,
   defaultAttributeChangeLists,
-  defaultPropertyChangeLists
+  defaultPropertyChangeLists,
+  readDOMAttr
 } from './lib/dom/change-lists';
 
 export {
