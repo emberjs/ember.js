@@ -1,4 +1,4 @@
-import { Template, RenderResult } from "glimmer-runtime";
+import { Template, RenderResult, readDOMAttr } from "glimmer-runtime";
 import { TestEnvironment, TestDynamicScope, equalTokens } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
@@ -137,4 +137,28 @@ test("triple curlies in attribute position", assert => {
   rerender({ rawString: 'DOUBLE' });
 
   equalTokens(root, '<div data-foo="DOUBLE" data-bar="bar">Hello</div>', "initial render");
+});
+
+test('can read attributes', assert => {
+  let template = compile('<div data-bar="bar"></div>');
+
+  render(template);
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'data-bar'), 'bar');
+});
+
+test('can read attributes from namespace elements', assert => {
+  let template = compile('<svg viewBox="0 0 0 0"></svg>');
+
+  render(template);
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'viewBox'), '0 0 0 0');
+});
+
+test('can read properties', assert => {
+  let template = compile('<input value="gnargnar" />');
+
+  render(template);
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'gnargnar');
 });
