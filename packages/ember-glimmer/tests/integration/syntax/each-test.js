@@ -332,7 +332,7 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertInvariants(oldSnapshot, this.takeSnapshot());
   }
 
-  [`@htmlbars it renders all items with duplicate key values`]() {
+  [`@test it renders all items with duplicate key values`]() {
     this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
       list: emberA([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }])
     });
