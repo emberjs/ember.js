@@ -34,7 +34,7 @@ export function defaultPropertyChangeLists(tagName: string, attr: string) {
   }
 
   if (isInputValue(tagName, attr)) {
-    return NullValuePropertyChangeList;
+    return InputValuePropertyChangeList;
   }
 
   return PropertyChangeList;
@@ -46,7 +46,7 @@ export function defaultAttributeChangeLists(tagName: string, attr: string) {
   }
 
   if (isInputValue(tagName, attr)) {
-    return NullValueAttributeChangeList;
+    return InputValueAttributeChangeList;
   }
 
   return AttributeChangeList;
@@ -102,10 +102,15 @@ function normalizedInputValue(value) {
   return value === null ? '' : value;
 }
 
-export const NullValuePropertyChangeList = {
+export const InputValuePropertyChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: any) {
-    let normalized = attr.toLowerCase();
-    element[normalized] = normalizedInputValue(value);
+    let input = <HTMLInputElement>element;
+    let currentValue = input.value;
+    let normalizedValue = normalizedInputValue(value);
+
+    if (currentValue !== normalizedValue) {
+      input.value = normalizedValue;
+    }
   },
 
   updateAttribute(dom: DOMHelper, element: Element, attr: string, value: any) {
@@ -113,7 +118,7 @@ export const NullValuePropertyChangeList = {
   }
 };
 
-export const NullValueAttributeChangeList = {
+export const InputValueAttributeChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: any) {
     AttributeChangeList.setAttribute(dom, element, attr, normalizedInputValue(value));
   },
