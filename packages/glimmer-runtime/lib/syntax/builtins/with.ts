@@ -59,16 +59,13 @@ export default class WithSyntax extends StatementSyntax {
 
     if (this.templates.inverse) {
       compiler.append(new JumpUnlessOpcode({ target: ELSE }));
-    } else {
-      compiler.append(new JumpUnlessOpcode({ target: END }));
-    }
-
-    compiler.append(new EvaluateOpcode({ debug: "default", block: this.templates.default }));
-    compiler.append(new JumpOpcode({ target: END }));
-
-    if (this.templates.inverse) {
+      compiler.append(new EvaluateOpcode({ debug: "default", block: this.templates.default }));
+      compiler.append(new JumpOpcode({ target: END }));
       compiler.append(ELSE);
       compiler.append(new EvaluateOpcode({ debug: "inverse", block: this.templates.inverse }));
+    } else {
+      compiler.append(new JumpUnlessOpcode({ target: END }));
+      compiler.append(new EvaluateOpcode({ debug: "default", block: this.templates.default }));
     }
 
     compiler.append(END);
