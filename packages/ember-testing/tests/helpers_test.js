@@ -636,7 +636,7 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
   });
 });
 
-test('`fillIn` takes context into consideration', function() {
+QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
