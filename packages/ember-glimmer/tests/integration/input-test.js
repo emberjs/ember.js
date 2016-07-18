@@ -61,7 +61,7 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.runAttributeTest('tabindex', [2, 3]);
   }
 
-  ['@htmlbars cursor position is not lost when updating content']() {
+  ['@test cursor position is not lost when updating content']() {
     let template = `<input value={{value}}>`;
     this.render(template, { value: 'hola' });
 

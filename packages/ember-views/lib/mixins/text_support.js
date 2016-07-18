@@ -196,9 +196,7 @@ export default Mixin.create(TargetActionSupport, {
   },
 
   _elementValueDidChange() {
-    // Using readDOMAttr will ensure that HTMLBars knows the last
-    // value.
-    set(this, 'value', this.readDOMAttr('value'));
+    set(this, 'value', this.element.value);
   },
 
   change(event) {

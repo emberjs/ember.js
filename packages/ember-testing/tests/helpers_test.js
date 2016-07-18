@@ -345,8 +345,6 @@ QUnit.test('`wait` helper can be passed a resolution value', function() {
   });
 });
 
-import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
-
 QUnit.test('`click` triggers appropriate events in order', function() {
   expect(5);
 
@@ -636,7 +634,7 @@ QUnit.test('`triggerEvent` can be used to trigger arbitrary events', function() 
   });
 });
 
-test('`fillIn` takes context into consideration', function() {
+QUnit.test('`fillIn` takes context into consideration', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
@@ -652,15 +650,14 @@ test('`fillIn` takes context into consideration', function() {
 
   visit('/');
   fillIn('.current', '#parent', 'current value');
-  andThen(function() {
+
+  return andThen(function() {
     equal(find('#first').val(), 'current value');
     equal(find('#second').val(), '');
   });
-
-  return wait();
 });
 
-test('`fillIn` focuses on the element', function() {
+QUnit.test('`fillIn` focuses on the element', function() {
   expect(2);
   var fillIn, find, visit, andThen, wait;
 
