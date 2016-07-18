@@ -452,7 +452,7 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     }, /You cannot use class as an attributeBinding, use classNameBindings instead./i);
   }
 
-  ['@htmlbars blacklists href bindings based on protocol']() {
+  ['@test blacklists href bindings based on protocol']() {
     /* jshint scripturl:true */
 
     let FooBarComponent = Component.extend({

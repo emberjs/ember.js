@@ -10,6 +10,12 @@ export function isSimpleClick(event) {
   return !modifier && !secondaryClick;
 }
 
+export const STYLE_WARNING = '' +
+  'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
+  'please ensure that values being bound are properly escaped. For more information, ' +
+  'including how to disable this warning, see ' +
+  'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
+
 /**
   @private
   @method getViewRange
