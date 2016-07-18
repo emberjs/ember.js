@@ -5,14 +5,14 @@ class NestedEmberishCurleyTaglessComponentsScenario extends TemplateBenchmarkSce
   description = "10 outer components, each with 10 inner components";
 
   start() {
-    this.glimmerEnv.registerEmberishCurlyTaglessComponent("parent-component", null,
+    this.glimmerEnv.registerStaticTaglessComponent("parent-component", null,
       `<h1>{{parent.name}}</h1>
         <ul>
           {{#each parent.children key="@index" as |child|}}
             {{child-component child=child parent=parent}}
           {{/each}}
         </ul>`);
-    this.glimmerEnv.registerEmberishCurlyTaglessComponent("child-component", null,
+    this.glimmerEnv.registerStaticTaglessComponent("child-component", null,
       `<li>{{child.name}} (from {{parent.name}})</li>`);
 
     super.start();

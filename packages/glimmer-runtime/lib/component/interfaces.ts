@@ -17,8 +17,11 @@ export interface ComponentManager<T extends Component> {
   // an opaque token, but in practice it is probably a component object.
   create(definition: ComponentDefinition<T>, args: EvaluatedArgs, dynamicScope: DynamicScope, hasDefaultBlock: boolean): T;
 
-  // Check if definition is compilable should default it and return a new definition
-  ensureCompilable(definition: ComponentDefinition<T>, component: T, env: Environment): ComponentDefinition<T>;
+  // Return the compiled layout to use for this component. This is called
+  // *after* the component instance has been created, because you might
+  // want to return a different layout per-instance for optimization reasons
+  // or to implement features like Ember's "late-bound" layouts.
+  layoutFor(definition: ComponentDefinition<T>, component: T, env: Environment): CompiledBlock;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
@@ -72,20 +75,14 @@ export interface ComponentAttrsBuilder {
   dynamic(name: string, value: FunctionExpression<string>);
 }
 
-export const CACHED_LAYOUT = "CACHED_LAYOUT [d990e194-8529-4f3b-8ee9-11c58a70f7a4]";
-
 export abstract class ComponentDefinition<T> {
   public name: string; // for debugging
   public manager: ComponentManager<T>;
   public ComponentClass: ComponentClass;
-
-  private "CACHED_LAYOUT [d990e194-8529-4f3b-8ee9-11c58a70f7a4]": CompiledBlock = null;
 
   constructor(name: string, manager: ComponentManager<T>, ComponentClass: ComponentClass) {
     this.name = name;
     this.manager = manager;
     this.ComponentClass = ComponentClass;
   }
-
-  protected abstract compile(builder: ComponentLayoutBuilder);
 }

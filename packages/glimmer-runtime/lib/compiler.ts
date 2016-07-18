@@ -52,7 +52,6 @@ import {
 } from './compiled/expressions/function';
 
 import * as Component from './component/interfaces';
-import { CACHED_LAYOUT } from './component/interfaces';
 
 abstract class Compiler {
   public env: Environment;
@@ -161,15 +160,16 @@ export interface CompiledComponentParts {
   main: CompileIntoList;
 }
 
-export function layoutFor(definition: Component.ComponentDefinition<any>, env: Environment): CompiledBlock {
-  let layout = definition[CACHED_LAYOUT];
-  if (layout) return layout;
+export interface Compilable {
+  compile(builder: ComponentLayoutBuilder);
+}
 
+export function compileLayout(compilable: Compilable, env: Environment): CompiledBlock {
   let builder = new ComponentLayoutBuilder(env);
 
-  definition['compile'](builder);
+  compilable.compile(builder);
 
-  return definition[CACHED_LAYOUT] = builder.compile();
+  return builder.compile();
 }
 
 class ComponentLayoutBuilder implements Component.ComponentLayoutBuilder {
