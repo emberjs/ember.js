@@ -1,6 +1,4 @@
-import require from 'require';
-
-let { wrap } = require('htmlbars-runtime/hooks');
+import { wrap } from 'htmlbars-runtime/hooks';
 
 export default function template(templateSpec) {
   if (!templateSpec.render) {
