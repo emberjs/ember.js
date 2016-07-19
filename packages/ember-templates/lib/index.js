@@ -3,7 +3,6 @@ import {
   getTemplates,
   setTemplates
 } from './template_registry';
-import './bootstrap';
 import { Renderer } from './renderer';
 import Component from './component';
 import Helper, { helper } from './helper';
