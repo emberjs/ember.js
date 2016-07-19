@@ -152,6 +152,7 @@ QUnit.test('builds a registry', function() {
   verifyInjection(application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
   verifyInjection(application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   verifyRegistration(application, 'container-debug-adapter:main');
+  verifyRegistration(application, 'component-lookup:main');
 
   if (isEnabled('ember-glimmer')) {
     verifyRegistration(application, 'service:-glimmer-environment');
