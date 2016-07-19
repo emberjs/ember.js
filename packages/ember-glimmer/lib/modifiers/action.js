@@ -3,6 +3,7 @@ import run from 'ember-metal/run_loop';
 import { uuid } from 'ember-metal/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
+import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -120,19 +121,30 @@ export class ActionState {
     }
 
     run(() => {
+      let args = this.getActionArgs();
+      let payload = {
+        args,
+        target
+      };
       if (typeof actionName === 'function') {
-        actionName.apply(target, this.getActionArgs());
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          actionName.apply(target, args);
+        });
         return;
       }
+      payload.name = actionName;
       if (target.send) {
-        target.send.apply(target, [actionName, ...this.getActionArgs()]);
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          target.send.apply(target, [actionName, ...args]);
+        });
       } else {
         assert(
           `The action '${actionName}' did not exist on ${target}`,
           typeof target[actionName] === 'function'
         );
-
-        target[actionName].apply(target, this.getActionArgs());
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          target[actionName].apply(target, args);
+        });
       }
     });
   }

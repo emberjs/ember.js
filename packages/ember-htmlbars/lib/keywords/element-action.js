@@ -5,6 +5,7 @@ import run from 'ember-metal/run_loop';
 import { readUnwrappedModel } from 'ember-htmlbars/streams/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
+import { flaggedInstrument } from 'ember-metal/instrumentation';
 
 export default {
   setupState(state, env, scope, params, hash) {
@@ -93,19 +94,29 @@ ActionHelper.registerAction = function({ actionId, node, eventName, preventDefau
       let { target, actionName, actionArgs } = node.getState();
 
       run(function runRegisteredAction() {
+        let payload = {
+          target,
+          args: actionArgs
+        };
         if (typeof actionName === 'function') {
-          actionName.apply(target, actionArgs);
+          flaggedInstrument('interaction.ember-action', payload, () => {
+            actionName.apply(target, actionArgs);
+          });
           return;
         }
+        payload.name = actionName;
         if (target.send) {
-          target.send.apply(target, [actionName, ...actionArgs]);
+          flaggedInstrument('interaction.ember-action', payload, () => {
+            target.send.apply(target, [actionName, ...actionArgs]);
+          });
         } else {
           assert(
             'The action \'' + actionName + '\' did not exist on ' + target,
             typeof target[actionName] === 'function'
           );
-
-          target[actionName].apply(target, actionArgs);
+          flaggedInstrument('interaction.ember-action', payload, () => {
+            target[actionName].apply(target, actionArgs);
+          });
         }
       });
     }
