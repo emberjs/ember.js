@@ -1,5 +1,4 @@
-import SafeString from 'htmlbars-util/safe-string';
-import { htmlSafe, isHTMLSafe } from 'ember-htmlbars/utils/string';
+import { SafeString, htmlSafe, isHTMLSafe } from 'ember-glimmer/utils/string';
 import isEnabled from 'ember-metal/features';
 import { TestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';

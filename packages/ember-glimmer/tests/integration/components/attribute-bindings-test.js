@@ -342,6 +342,7 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { href: 'cat.html' } });
   }
 
+  // Note: There are no observers in Glimmer
   ['@htmlbars should teardown observers'](assert) {
     let component;
     let FooBarComponent = Component.extend({

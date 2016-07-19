@@ -61,7 +61,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
     });
   }
 
-  ['@htmlbars escaped inline form with (-html-safe) does not escape link title'](assert) {
+  ['@test escaped inline form with (-html-safe) does not escape link title'](assert) {
     this.registerTemplate('application', `{{link-to (-html-safe title) 'index'}}`);
     this.registerController('application', Controller.extend({
       title: '<b>blah</b>'
@@ -73,7 +73,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
     });
   }
 
-  ['@htmlbars unescaped inline form (triple curlies) does not escape link title'](assert) {
+  ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
     this.registerTemplate('application', `{{{link-to title 'index'}}}`);
     this.registerController('application', Controller.extend({
       title: '<b>blah</b>'

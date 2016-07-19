@@ -120,10 +120,6 @@ import queryParamsHelper from 'ember-htmlbars/helpers/query-params';
 
 export { default as template } from './system/template';
 
-// Importing ember-htmlbars/compat updates the
-// Ember.Handlebars global if htmlbars is enabled.
-import 'ember-htmlbars/compat';
-
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
 registerHelper('with', withHelper);

@@ -11,6 +11,10 @@ import Checkbox from './components/checkbox';
 import TextField from './components/text_field';
 import TextArea from './components/text_area';
 import LinkComponent from './components/link-to';
+import {
+  htmlSafe
+} from './string';
+import { ENV } from 'ember-environment';
 
 import './compat';
 
@@ -22,6 +26,12 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
+
+if (ENV.EXTEND_PROTOTYPES.String) {
+  String.prototype.htmlSafe = function() {
+    return htmlSafe(this);
+  };
+}
 
 /**
   Global hash of shared templates. This will automatically be populated
