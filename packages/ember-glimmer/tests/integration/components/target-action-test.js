@@ -120,7 +120,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
     this.assertNamedSendCount('didStartPlaying', 1);
   }
 
-  ['@htmlbars Calling sendAction on a component with a {{mut}} attr calls the function with arguments']() {
+  ['@test Calling sendAction on a component with a {{mut}} attr calls the function with arguments']() {
     this.renderDelegate('{{action-delegate playing=(mut playing)}}', {
       playing: null
     });
