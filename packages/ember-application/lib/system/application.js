@@ -30,6 +30,7 @@ import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine, { GLIMMER } from './engine';
 import require from 'require';
+import ComponentLookup from 'ember-views/component_lookup';
 
 let librariesRegistered = false;
 
@@ -1049,6 +1050,8 @@ function commonSetupRegistry(registry) {
   registry.register('location:none', NoneLocation);
 
   registry.register(P`-bucket-cache:main`, BucketCache);
+
+  registry.register('component-lookup:main', ComponentLookup);
 }
 
 function registerLibraries() {
