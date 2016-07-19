@@ -1,11 +1,8 @@
-/*globals Handlebars */
-
 /**
 @module ember
 @submodule ember-templates
 */
 
-import ComponentLookup from 'ember-views/component_lookup';
 import jQuery from 'ember-views/system/jquery';
 import EmberError from 'ember-metal/error';
 import { onLoad } from 'ember-runtime/system/lazy_load';
@@ -28,8 +25,6 @@ import {
 
   Script tags with `text/x-handlebars` will be compiled
   with Ember's template compiler and are suitable for use as a view's template.
-  Those with type `text/x-raw-handlebars` will be compiled with regular
-  Handlebars and are suitable for use in views' computed properties.
 
   @private
   @method bootstrap
@@ -38,7 +33,7 @@ import {
   @param ctx
 */
 function bootstrap(ctx) {
-  let selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
+  let selectors = 'script[type="text/x-handlebars"]';
 
   jQuery(selectors, ctx)
   .each(function() {
@@ -51,14 +46,9 @@ function bootstrap(ctx) {
     let templateName = script.attr('data-template-name') || script.attr('id') || 'application';
     let template;
 
-    if (script.attr('type') === 'text/x-raw-handlebars') {
-      let compile = jQuery.proxy(Handlebars.compile, Handlebars);
-      template = compile(script.html());
-    } else {
-      template = compile(script.html(), {
-        moduleName: templateName
-      });
-    }
+    template = compile(script.html(), {
+      moduleName: templateName
+    });
 
     // Check if template of same name already exists.
     if (hasTemplate(templateName)) {
@@ -77,10 +67,6 @@ function _bootstrap() {
   bootstrap(jQuery(document));
 }
 
-function registerComponentLookup(app) {
-  app.register('component-lookup:main', ComponentLookup);
-}
-
 /*
   We tie this to application.load to ensure that we've at least
   attempted to bootstrap at the point that the application is loaded.
@@ -96,11 +82,6 @@ onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: 'domTemplates',
     initialize: environment.hasDOM ? _bootstrap : function() { }
-  });
-
-  Application.instanceInitializer({
-    name: 'registerComponentLookup',
-    initialize: registerComponentLookup
   });
 });
 
