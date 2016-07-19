@@ -28,5 +28,4 @@ module('ember-template-compiler.js', {
 test('can be required', function(assert) {
   assert.ok(typeof templateCompiler.precompile === 'function', 'precompile function is present');
   assert.ok(typeof templateCompiler.compile === 'function', 'compile function is present');
-  assert.ok(typeof templateCompiler.template === 'function', 'template function is present');
 });

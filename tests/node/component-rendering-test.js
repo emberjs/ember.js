@@ -8,8 +8,15 @@ var distPath = path.join(__dirname, '../../dist');
 var emberPath = path.join(distPath, 'ember.debug.js');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
-var compile = require(templateCompilerPath).compile;
 var Ember, DOMHelper, run;
+
+var precompile = require(templateCompilerPath).precompile;
+var compile = function(templateString, options) {
+  var templateSpec = precompile(templateString, options);
+  var template = new Function('return ' + templateSpec)();
+
+  return Ember.HTMLBars.template(template);
+};
 
 QUnit.module("Components can be rendered without a DOM dependency", {
   beforeEach: function() {

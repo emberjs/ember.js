@@ -85,7 +85,14 @@ module.exports = function(moduleName) {
 
       Ember.testing = true;
 
-      this.compile = require(templateCompilerPath).compile;
+      var precompile = require(templateCompilerPath).precompile;
+      this.compile = function(templateString, options) {
+        var templateSpec = precompile(templateString, options);
+        var template = new Function('return ' + templateSpec)();
+
+        return Ember.HTMLBars.template(template);
+      };
+
       this.run = Ember.run;
       this.all = Ember.RSVP.all;
 
