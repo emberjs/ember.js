@@ -19,6 +19,7 @@ import symbol from 'ember-metal/symbol';
 import Controller from 'ember-runtime/controllers/controller';
 import RoutingService from 'ember-routing/services/routing';
 import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';
+import ComponentLookup from 'ember-views/component_lookup';
 import require from 'require';
 
 export const GLIMMER = symbol('GLIMMER');
@@ -512,6 +513,8 @@ function commonSetupRegistry(registry) {
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
+
+  registry.register('component-lookup:main', ComponentLookup);
 }
 
 export default Engine;
