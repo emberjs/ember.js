@@ -9,6 +9,8 @@ import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 import ActionManager from 'ember-views/system/action_manager';
 import jQuery from 'ember-views/system/jquery';
+import isEnabled from 'ember-metal/features';
+import { subscribe, reset } from 'ember-metal/instrumentation';
 
 function getActionAttributes(element) {
   let attributes = element.attributes;
@@ -24,6 +26,57 @@ function getActionAttributes(element) {
 
   return actionAttrs;
 }
+
+if (isEnabled('ember-improved-instrumentation')) {
+  moduleFor('Helpers test: element action instrumentation', class extends RenderingTest {
+    teardown() {
+      super.teardown();
+      reset();
+    }
+
+    ['@test action should fire interaction event with proper params']() {
+      let subscriberCallCount = 0;
+      let subscriberPayload = null;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          foo() {}
+        }
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: '<button {{action "foo" "bar"}}>Click me</button>'
+      });
+
+      subscribe('interaction.ember-action', {
+        before() {
+          subscriberCallCount++;
+        },
+        after(name, time, payload) {
+          subscriberPayload = payload;
+        }
+      });
+
+      this.render('{{example-component}}');
+
+      this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
+
+      this.runTask(() => this.rerender());
+
+      this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
+
+      this.runTask(() => {
+        this.$('button').click();
+      });
+
+      this.assert.equal(subscriberCallCount, 1, 'subscriber has been called 1 time');
+      this.assert.equal(subscriberPayload.name, 'foo', 'subscriber called with correct name');
+      this.assert.equal(subscriberPayload.args[0], 'bar', 'subscriber called with correct args');
+    }
+  });
+}
+
 
 moduleFor('Helpers test: element action', class extends RenderingTest {
 
