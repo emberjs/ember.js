@@ -648,6 +648,7 @@ const LinkComponent = EmberComponent.extend({
     let shouldReplace = get(this, 'replace');
 
     let payload = {
+      target: this,
       queryParams,
       routeName: qualifiedRouteName
     };
