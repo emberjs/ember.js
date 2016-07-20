@@ -361,6 +361,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[] []');
   }
 
+  // Unspecified behavior in HTMLBars.
   ['@htmlbars get helper value should be updatable using {{input}} and (mut) - dynamic key'](assert) {
     this.registerComponent('-text-field', { ComponentClass: TextField });
 
@@ -403,6 +404,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     assert.strictEqual(this.$('#get-input').val(), 'banana');
   }
 
+  // Unspecified behavior in HTMLBars.
   ['@htmlbars get helper value should be updatable using {{input}} and (mut) - dynamic nested key'](assert) {
     this.registerComponent('-text-field', { ComponentClass: TextField });
 
@@ -438,6 +440,7 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
   }
 
+  // Unspecified behavior in HTMLBars.
   ['@htmlbars get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
     this.registerComponent('-text-field', { ComponentClass: TextField });
 

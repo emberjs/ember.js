@@ -1,1 +1,0 @@
-../../../ember-glimmer/tests/compat/safe-string-test.js

@@ -40,6 +40,7 @@ import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as queryParams } from './helpers/query-param';
 import { default as eachIn } from './helpers/each-in';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { OWNER } from 'container/owner';
 
 const builtInComponents = {
@@ -114,7 +115,8 @@ const builtInHelpers = {
   '-class': classHelper,
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
-  '-normalize-class': normalizeClassHelper
+  '-normalize-class': normalizeClassHelper,
+  '-html-safe': htmlSafeHelper
 };
 
 import { default as ActionModifierManager } from './modifiers/action';
