@@ -3,11 +3,9 @@ import run from 'ember-metal/run_loop';
 
 import Application from 'ember-application/system/application';
 import Router from 'ember-routing/system/router';
-import { compile } from 'ember-template-compiler/tests/utils/helpers';
-import helpers from 'ember-htmlbars/helpers';
+import { compile } from 'ember-template-compiler';
 import Component from 'ember-templates/component';
 import jQuery from 'ember-views/system/jquery';
-import { A as emberA } from 'ember-runtime/system/native_array';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 import isEnabled from 'ember-metal/features';
 import require from 'require';
@@ -20,15 +18,10 @@ if (isEnabled('ember-glimmer')) {
 }
 
 let App, appInstance;
-let originalHelpers;
-
-const { keys } = Object;
 
 function prepare() {
   setTemplate('components/expand-it', compile('<p>hello {{yield}}</p>'));
   setTemplate('application', compile('Hello world {{#expand-it}}world{{/expand-it}}'));
-
-  originalHelpers = emberA(keys(helpers));
 }
 
 function cleanup() {
@@ -40,26 +33,8 @@ function cleanup() {
       App = appInstance = null;
     } finally {
       setTemplates({});
-      cleanupHelpers();
     }
   });
-}
-
-function cleanupHelpers() {
-  let included;
-
-  keys(helpers).
-    forEach(name => {
-      if (isEnabled('ember-runtime-enumerable-includes')) {
-        included = originalHelpers.includes(name);
-      } else {
-        included = originalHelpers.contains(name);
-      }
-
-      if (!included) {
-        delete helpers[name];
-      }
-    });
 }
 
 QUnit.module('Application Lifecycle - Component Registration', {
@@ -117,7 +92,6 @@ QUnit.test('Late-registered components can be rendered with custom `layout` prop
   });
 
   equal(jQuery('#wrapper').text(), 'there goes watch him as he GOES', 'The component is composed correctly');
-  ok(!helpers['my-hero'], 'Component wasn\'t saved to global helpers hash');
 });
 
 QUnit.test('Late-registered components can be rendered with template registered on the container', function() {
@@ -129,7 +103,6 @@ QUnit.test('Late-registered components can be rendered with template registered 
   });
 
   equal(jQuery('#wrapper').text(), 'hello world funkytowny-funkytowny!!!', 'The component is composed correctly');
-  ok(!helpers['sally-rutherford'], 'Component wasn\'t saved to global helpers hash');
 });
 
 QUnit.test('Late-registered components can be rendered with ONLY the template registered on the container', function() {
@@ -140,7 +113,6 @@ QUnit.test('Late-registered components can be rendered with ONLY the template re
   });
 
   equal(jQuery('#wrapper').text(), 'hello world goodfreakingTIMES-goodfreakingTIMES!!!', 'The component is composed correctly');
-  ok(!helpers['borf-snorlax'], 'Component wasn\'t saved to global helpers hash');
 });
 
 QUnit.test('Assigning layoutName to a component should setup the template as a layout', function() {

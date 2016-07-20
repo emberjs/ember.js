@@ -1,6 +1,6 @@
 import { Mixin } from 'ember-metal/mixin';
 import { meta } from 'ember-metal/meta';
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 
 import {
   on,
