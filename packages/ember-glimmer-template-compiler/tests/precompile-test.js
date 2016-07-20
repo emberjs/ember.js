@@ -1,4 +1,5 @@
-import { precompile, compile, template } from 'ember-glimmer-template-compiler';
+import { precompile, compile } from 'ember-glimmer-template-compiler';
+import { template } from 'ember-glimmer';
 
 QUnit.module(`Glimmer Precompile:`);
 

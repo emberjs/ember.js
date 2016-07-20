@@ -29,4 +29,8 @@ if (isEnabled('ember-application-engines')) {
   Ember.ApplicationInstance = ApplicationInstance;
 }
 
+// add domTemplates initializer (only does something if `ember-template-compiler`
+// is loaded already)
+import './initializers/dom-templates';
+
 runLoadHooks('Ember.Application', Application);

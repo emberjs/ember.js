@@ -3,6 +3,9 @@ export { default as precompile } from 'ember-template-compiler/system/precompile
 export { default as compile } from 'ember-template-compiler/system/compile';
 export { default as registerPlugin } from 'ember-template-compiler/system/register-plugin';
 export { default as defaultCompileOptions } from 'ember-template-compiler/system/compile-options';
-export { default as template } from 'ember-template-compiler/system/template';
+
 // used for adding Ember.Handlebars.compile for backwards compat
-import 'ember-template-compiler/compat';
+import './compat';
+
+// used to bootstrap templates
+import './system/bootstrap';

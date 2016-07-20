@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import jQuery from 'ember-views/system/jquery';
 import Component from 'ember-templates/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
-import bootstrap from 'ember-templates/bootstrap';
+import bootstrap from 'ember-template-compiler/system/bootstrap';
 import { setTemplates, get as getTemplate } from 'ember-templates/template_registry';
 import isEnabled from 'ember-metal/features';
 import require from 'require';
@@ -16,10 +16,10 @@ if (isEnabled('ember-glimmer')) {
 
 const { trim } = jQuery;
 
-let component;
+let component, fixture;
 
 function checkTemplate(templateName) {
-  run(() => bootstrap(jQuery('#qunit-fixture')));
+  run(() => bootstrap(fixture));
 
   let template = getTemplate(templateName);
 
@@ -42,6 +42,9 @@ function checkTemplate(templateName) {
 }
 
 QUnit.module('ember-htmlbars: bootstrap', {
+  setup() {
+    fixture = document.getElementById('qunit-fixture');
+  },
   teardown() {
     setTemplates({});
     runDestroy(component);
@@ -70,7 +73,7 @@ if (typeof Handlebars === 'object') {
   QUnit.test('template with type text/x-raw-handlebars should be parsed', function() {
     jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
-    run(() => bootstrap(jQuery('#qunit-fixture')));
+    run(() => bootstrap(fixture));
 
     let template = getTemplate('funkyTemplate');
 
@@ -84,7 +87,7 @@ if (typeof Handlebars === 'object') {
 QUnit.test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
-  throws(() => bootstrap(jQuery('#qunit-fixture')),
+  throws(() => bootstrap(fixture),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -92,7 +95,7 @@ QUnit.test('duplicated default application templates should throw exception', fu
 QUnit.test('default application template and id application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
-  throws(() => bootstrap(jQuery('#qunit-fixture')),
+  throws(() => bootstrap(fixture),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -100,7 +103,7 @@ QUnit.test('default application template and id application template present sho
 QUnit.test('default application template and data-template-name application template present should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
-  throws(() => bootstrap(jQuery('#qunit-fixture')),
+  throws(() => bootstrap(fixture),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -108,7 +111,7 @@ QUnit.test('default application template and data-template-name application temp
 QUnit.test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
-  throws(() => bootstrap(jQuery('#qunit-fixture')),
+  throws(() => bootstrap(fixture),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });
@@ -116,7 +119,7 @@ QUnit.test('duplicated template id should throw exception', function() {
 QUnit.test('duplicated template data-template-name should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
-  throws(() => bootstrap(jQuery('#qunit-fixture')),
+  throws(() => bootstrap(fixture),
          /Template named "[^"]+" already exists\./,
          'duplicate templates should not be allowed');
 });

@@ -4,9 +4,8 @@ import compiler from './compiler';
 let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
 let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
 
-let { precompile, compile, template, registerPlugin } = compiler();
+let { precompile, compile, registerPlugin } = compiler();
 
 EmberHTMLBars.precompile = EmberHandlebars.precompile = precompile;
 EmberHTMLBars.compile = EmberHandlebars.compile = compile;
-EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHTMLBars.registerPlugin = registerPlugin;

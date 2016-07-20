@@ -118,6 +118,8 @@ import hashHelper from 'ember-htmlbars/helpers/hash';
 import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import queryParamsHelper from 'ember-htmlbars/helpers/query-params';
 
+export { default as template } from './system/template';
+
 // Importing ember-htmlbars/compat updates the
 // Ember.Handlebars global if htmlbars is enabled.
 import 'ember-htmlbars/compat';

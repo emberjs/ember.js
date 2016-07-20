@@ -19,16 +19,6 @@ import Registry from 'container/registry';
 import RegistryProxy from 'ember-runtime/mixins/registry_proxy';
 import ContainerProxy from 'ember-runtime/mixins/container_proxy';
 import { get as getTemplate, has as hasTemplate } from 'ember-templates/template_registry';
-import plugins, { registerPlugin } from 'ember-template-compiler/plugins';
-
-function registerAstPlugin(plugin) {
-  registerPlugin('ast', plugin);
-}
-
-function removeAstPlugin(plugin) {
-  let index = plugins['ast'].indexOf(plugin);
-  plugins['ast'].splice(index, 1);
-}
 
 function buildAppInstance() {
   let registry;
@@ -85,8 +75,6 @@ function resolverFor(namespace) {
 }
 
 export {
-  registerAstPlugin,
-  removeAstPlugin,
   resolverFor,
   buildAppInstance
 };

@@ -1,9 +1,9 @@
 import Ember from 'ember-metal/core'; // reexports
+
 import {
   getTemplates,
   setTemplates
 } from './template_registry';
-import './bootstrap';
 import { Renderer } from './renderer';
 import Component from './component';
 import Helper, { helper } from './helper';
@@ -11,6 +11,8 @@ import Checkbox from './components/checkbox';
 import TextField from './components/text_field';
 import TextArea from './components/text_area';
 import LinkComponent from './components/link-to';
+
+import './compat';
 
 Ember._Renderer = Renderer;
 Ember.Component = Component;
