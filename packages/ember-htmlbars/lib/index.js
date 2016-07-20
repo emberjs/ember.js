@@ -94,9 +94,7 @@
   @main ember-htmlbars
   @public
 */
-import Ember from 'ember-metal/core'; // reexports
-
-import makeBoundHelper from 'ember-htmlbars/system/make_bound_helper';
+import Ember from 'ember-metal/core'; // exposing Ember.HTMLBars
 
 import {
   registerHelper
@@ -115,8 +113,8 @@ import concatHelper from 'ember-htmlbars/helpers/concat';
 import joinClassesHelper from 'ember-htmlbars/helpers/-join-classes';
 import htmlSafeHelper from 'ember-htmlbars/helpers/-html-safe';
 import hashHelper from 'ember-htmlbars/helpers/hash';
-import DOMHelper from 'ember-htmlbars/system/dom-helper';
 import queryParamsHelper from 'ember-htmlbars/helpers/query-params';
+import DOMHelper from 'ember-htmlbars/system/dom-helper';
 
 export { default as template } from './system/template';
 
@@ -135,6 +133,5 @@ registerHelper('hash', hashHelper);
 registerHelper('query-params', queryParamsHelper);
 
 Ember.HTMLBars = {
-  makeBoundHelper: makeBoundHelper,
   DOMHelper
 };

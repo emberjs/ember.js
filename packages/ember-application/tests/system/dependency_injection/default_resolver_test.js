@@ -4,17 +4,14 @@ import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import run from 'ember-metal/run_loop';
 import Controller from 'ember-runtime/controllers/controller';
 import Route from 'ember-routing/system/route';
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 import View from 'ember-views/views/view';
 import Service from 'ember-runtime/system/service';
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 import Application from 'ember-application/system/application';
-import Helper, { helper as makeHelper } from 'ember-htmlbars/helper';
-import makeHTMLBarsBoundHelper from 'ember-htmlbars/system/make_bound_helper';
-import {
-  registerHelper
-} from 'ember-htmlbars/helpers';
+import Helper, { helper as makeHelper } from 'ember-templates/helper';
+import makeHTMLBarsBoundHelper from 'ember-templates/make-bound-helper';
 import { compile } from 'ember-template-compiler';
 import { setTemplates, set as setTemplate } from 'ember-templates/template_registry';
 
@@ -88,22 +85,6 @@ QUnit.test('the default resolver resolves *:main on the namespace', function() {
   application.FooBar = EmberObject.extend({});
 
   detectEqual(application.FooBar, locator.lookupFactory('foo-bar:main'), 'looks up FooBar type without name on application');
-});
-
-QUnit.test('the default resolver resolves helpers', function() {
-  expect(2);
-
-  function fooresolvertestHelper() {
-    ok(true, 'found fooresolvertestHelper');
-  }
-  function barBazResolverTestHelper() {
-    ok(true, 'found barBazResolverTestHelper');
-  }
-  registerHelper('fooresolvertest', fooresolvertestHelper);
-  registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
-
-  fooresolvertestHelper();
-  barBazResolverTestHelper();
 });
 
 QUnit.test('the default resolver resolves container-registered helpers', function() {

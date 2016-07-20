@@ -16,6 +16,7 @@ export { default as TextArea } from 'ember-htmlbars/components/text_area';
 export { default as TextField } from 'ember-htmlbars/components/text_field';
 export { default as LinkTo } from 'ember-htmlbars/components/link-to';
 export { InteractiveRenderer, InertRenderer } from 'ember-htmlbars/renderer';
+export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);

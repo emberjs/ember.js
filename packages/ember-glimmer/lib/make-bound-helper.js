@@ -1,9 +1,9 @@
 /**
 @module ember
-@submodule ember-htmlbars
+@submodule ember-templates
 */
 import { deprecate } from 'ember-metal/debug';
-import { helper } from 'ember-htmlbars/helper';
+import { helper } from './helper';
 
 /**
   Create a bound helper. Accepts a function that receives the ordered and hash parameters
