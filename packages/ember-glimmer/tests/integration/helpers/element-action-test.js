@@ -1436,7 +1436,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.equal(event.isDefaultPrevented(), true, 'should preventDefault');
   }
 
-  ['@htmlbars it should target the proper component when `action` is in yielded block [GH #12409]']() {
+  ['@test it should target the proper component when `action` is in yielded block [GH #12409]']() {
     let outerActionCalled = false;
     let innerClickCalled = false;
 

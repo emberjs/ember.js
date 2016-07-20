@@ -132,7 +132,9 @@ export default Mixin.create({
       if (!shouldBubble) { return; }
     }
 
-    if (target = get(this, 'target')) {
+    target = get(this, 'target') || get(this, '_targetObject');
+
+    if (target) {
       assert(
         'The `target` for ' + this + ' (' + target +
         ') does not have a `send` method',
