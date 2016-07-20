@@ -13,16 +13,10 @@ import {
 } from 'ember-views/system/utils';
 import 'ember-views/system/ext';  // for the side effect of extending Ember.run.queues
 
-import { Renderer } from 'ember-htmlbars/renderer';
-import Component from 'ember-htmlbars/component';
-
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import ViewTargetActionSupport from 'ember-views/mixins/view_target_action_support';
 import ComponentLookup from 'ember-views/component_lookup';
-import Checkbox from 'ember-htmlbars/components/checkbox';
 import TextSupport from 'ember-views/mixins/text_support';
-import TextField from 'ember-htmlbars/components/text_field';
-import TextArea from 'ember-htmlbars/components/text_area';
 
 // END IMPORTS
 
@@ -44,15 +38,8 @@ ViewUtils.isSimpleClick = isSimpleClick;
 ViewUtils.getViewClientRects = getViewClientRects;
 ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
-Ember._Renderer = Renderer;
-
-Ember.Checkbox = Checkbox;
-Ember.TextField = TextField;
-Ember.TextArea = TextArea;
-
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
-Ember.Component = Component;
 Ember.EventDispatcher = EventDispatcher;
 
 // END EXPORTS
