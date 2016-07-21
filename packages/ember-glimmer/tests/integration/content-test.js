@@ -67,7 +67,6 @@ moduleFor('Static content tests', class extends RenderingTest {
 });
 
 class DynamicContentTest extends RenderingTest {
-
   /* abstract */
   renderPath(path, context = {}) {
     throw new Error('Not implemented: `renderValues`');
@@ -273,7 +272,6 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('hello');
     this.assertInvariants();
   }
-
 }
 
 const EMPTY = {};
@@ -934,34 +932,90 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
 
     this.assertElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'class': 'foo  static   bar' } });
   }
+
+});
+
+let warnings, originalWarn;
+class StyleTest extends RenderingTest {
+  constructor() {
+    super(...arguments);
+    warnings = [];
+    originalWarn = getDebugFunction('warn');
+    setDebugFunction('warn', function(message, test) {
+      if (!test) {
+        warnings.push(message);
+      }
+    });
+  }
+
+  teardown() {
+    super.teardown(...arguments);
+    setDebugFunction('warn', originalWarn);
+  }
+
+  assertStyleWarning() {
+    this.assert.deepEqual(warnings, [STYLE_WARNING]);
+  }
+
+  assertNoWarning() {
+    this.assert.deepEqual(warnings, []);
+  }
+}
+
+moduleFor('Inline style tests', class extends StyleTest {
+  ['@test can set dynamic style']() {
+    this.render('<div style={{model.style}}></div>', {
+      model: {
+        style: 'width: 60px;'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'height: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+  }
+
+  ['@htmlbars can set dynamic style with -html-safe']() {
+    this.render('<div style={{-html-safe model.style}}></div>', {
+      model: {
+        style: 'width: 60px;'
+      }
+    });
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'height: 60px;' } });
+
+    this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
+  }
 });
 
 if (!EmberDev.runningProdBuild) {
-  let warnings, originalWarn;
-
-  moduleFor('Inline style tests', class extends RenderingTest {
-    constructor() {
-      super(...arguments);
-      warnings = [];
-      originalWarn = getDebugFunction('warn');
-      setDebugFunction('warn', function(message, test) {
-        if (!test) {
-          warnings.push(message);
-        }
-      });
-    }
-
-    teardown() {
-      super.teardown(...arguments);
-      setDebugFunction('warn', originalWarn);
-    }
-
+  moduleFor('Inline style tests - warnings', class extends StyleTest {
     ['@test specifying <div style={{userValue}}></div> generates a warning'](assert) {
       this.render('<div style={{userValue}}></div>', {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, [STYLE_WARNING]);
+      this.assertStyleWarning();
     }
 
     ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
@@ -975,7 +1029,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, [STYLE_WARNING]);
+      this.assertStyleWarning();
     }
 
     ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
@@ -983,7 +1037,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: 'width: 42px'
       });
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
     ['@test specifying `<div style={{userValue}}></div>` works properly with a SafeString'](assert) {
@@ -991,7 +1045,7 @@ if (!EmberDev.runningProdBuild) {
         userValue: new SafeString('width: 42px')
       });
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
     ['@test null value do not generate htmlsafe warning'](assert) {
@@ -999,14 +1053,21 @@ if (!EmberDev.runningProdBuild) {
         userValue: null
       });
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
     ['@test undefined value do not generate htmlsafe warning'](assert) {
       this.render('<div style={{userValue}}></div>');
 
-      assert.deepEqual(warnings, []);
+      this.assertNoWarning();
     }
 
+    ['@test no warnings are triggered when using `-html-safe`'](assert) {
+      this.render('<div style={{-html-safe userValue}}></div>', {
+        userValue: 'width: 42px'
+      });
+
+      this.assertNoWarning();
+    }
   });
 }
