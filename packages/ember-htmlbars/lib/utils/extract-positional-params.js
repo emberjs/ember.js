@@ -10,8 +10,12 @@ export default function extractPositionalParams(renderNode, component, params, a
   }
 }
 
+export function isRestPositionalParams(positionalParams) {
+  return typeof positionalParams === 'string';
+}
+
 export function processPositionalParams(renderNode, positionalParams, params, attrs, raiseAssertions = true) {
-  let isRest = typeof positionalParams === 'string';
+  let isRest = isRestPositionalParams(positionalParams);
 
   if (isRest) {
     processRestPositionalParameters(renderNode, positionalParams, params, attrs, raiseAssertions);

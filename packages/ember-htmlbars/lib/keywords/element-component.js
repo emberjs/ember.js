@@ -1,7 +1,8 @@
 import assign from 'ember-metal/assign';
 import {
-  COMPONENT_PATH,
   COMPONENT_HASH,
+  COMPONENT_PATH,
+  COMPONENT_POSITIONAL_PARAMS,
   isComponentCell,
   mergeInNewHash,
   processPositionalParamsFromCell,
@@ -69,8 +70,11 @@ function render(morph, env, scope, [path, ...params], hash, template, inverse, v
 
     // This needs to be done in each nesting level to avoid raising assertions
     processPositionalParamsFromCell(closureComponent, params, hash);
+    hash = mergeInNewHash(closureComponent[COMPONENT_HASH],
+                          hash,
+                          closureComponent[COMPONENT_POSITIONAL_PARAMS],
+                          params);
     params = [];
-    hash = mergeInNewHash(closureComponent[COMPONENT_HASH], hash);
   }
 
   let templates = { default: template, inverse };
