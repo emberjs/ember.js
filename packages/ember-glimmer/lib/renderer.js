@@ -2,6 +2,8 @@ import { RootReference } from './utils/references';
 import run from 'ember-metal/run_loop';
 import { setHasViews } from 'ember-metal/tags';
 import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
+import { assert } from 'ember-metal/debug';
 
 const { backburner } = run;
 
@@ -115,12 +117,13 @@ class Scheduler {
 }
 
 class Renderer {
-  constructor({ dom, env, destinedForDOM = false }) {
+  constructor({ dom, env, _viewRegistry, destinedForDOM = false }) {
     this._root = null;
     this._dom = dom;
     this._env = env;
     this._destinedForDOM = destinedForDOM;
     this._scheduler = new Scheduler();
+    this._viewRegistry = _viewRegistry || fallbackViewRegistry;
   }
 
   destroy() {
@@ -209,16 +212,25 @@ class Renderer {
     // TODO: Implement this
     // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
   }
+
+  _register(view) {
+    assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[this.elementId]);
+    this._viewRegistry[view.elementId] = view;
+  }
+
+  _unregister(view) {
+    delete this._viewRegistry[this.elementId];
+  }
 }
 
 export const InertRenderer = {
-  create({ dom, env }) {
-    return new Renderer({ dom, env, destinedForDOM: false });
+  create({ dom, env, _viewRegistry }) {
+    return new Renderer({ dom, env, _viewRegistry, destinedForDOM: false });
   }
 };
 
 export const InteractiveRenderer = {
-  create({ dom, env }) {
-    return new Renderer({ dom, env, destinedForDOM: true });
+  create({ dom, env, _viewRegistry }) {
+    return new Renderer({ dom, env, _viewRegistry, destinedForDOM: true });
   }
 };

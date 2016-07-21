@@ -515,14 +515,6 @@ var View = CoreView.extend(
   ViewMixin, {
     attributeBindings: ['ariaRole:role'],
 
-    init() {
-      this._super(...arguments);
-
-      if (!this._viewRegistry) {
-        this._viewRegistry = View.views;
-      }
-    },
-
     /**
       Given a property name, returns a dasherized version of that
       property name if the property evaluates to a non-falsy value.
@@ -567,18 +559,6 @@ var View = CoreView.extend(
 
 // once the view has been inserted into the DOM, legal manipulations
 // are done on the DOM element.
-
-View.reopenClass({
-  /**
-    Global views hash
-
-    @property views
-    @static
-    @type Object
-    @private
-  */
-  views: {}
-});
 
 export default View;
 

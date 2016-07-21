@@ -23,6 +23,9 @@ export function buildOwner(options) {
   owner.inject('service:-dom-helper', 'document', 'service:-document');
   owner.inject('component', 'renderer', 'renderer:-dom');
   owner.inject('template', 'env', 'service:-glimmer-environment');
+
+  owner.register('-view-registry:main', { create() { return {}; } });
+  owner.inject('renderer', '_viewRegistry', '-view-registry:main');
+
   return owner;
 }
-

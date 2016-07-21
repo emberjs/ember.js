@@ -16,7 +16,7 @@ assign(inDOM, {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
     if (view.tagName !== '') {
-      view._register();
+      view.renderer._register(view);
     }
 
     runInDebug(() => {
@@ -28,7 +28,7 @@ assign(inDOM, {
 
   exit(view) {
     if (view.tagName !== '') {
-      view._unregister();
+      view.renderer._unregister(view);
     }
   }
 });

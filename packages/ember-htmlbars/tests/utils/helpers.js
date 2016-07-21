@@ -23,5 +23,11 @@ export function buildOwner(options) {
   setupApplicationRegistry(owner.__registry__);
   owner.register('service:-htmlbars-environment', new Environment(), { instantiate: false });
   owner.inject('service:-htmlbars-environment', 'dom', 'service:-dom-helper');
+
+  owner.register('-view-registry:main', { create() { return {}; } });
+  owner.inject('renderer', '_viewRegistry', '-view-registry:main');
+  owner.inject('renderer', 'dom', 'service:-dom-helper');
+  owner.inject('component', 'renderer', 'renderer:-dom');
+
   return owner;
 }

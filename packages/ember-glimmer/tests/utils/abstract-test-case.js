@@ -319,6 +319,7 @@ export class AbstractRenderingTest extends TestCase {
     this.component = null;
 
     owner.register('event_dispatcher:main', EventDispatcher);
+    owner.inject('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
     owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), owner.element);
   }
 
