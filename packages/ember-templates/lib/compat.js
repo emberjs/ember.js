@@ -8,6 +8,7 @@ import {
 } from './string';
 import EmberStringUtil from 'ember-runtime/system/string';
 import isEnabled from 'ember-metal/features';
+import makeBoundHelper from './make-bound-helper';
 
 export let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
 export let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
@@ -24,3 +25,4 @@ EmberStringUtil.htmlSafe = htmlSafe;
 if (isEnabled('ember-string-ishtmlsafe')) {
   EmberStringUtil.isHTMLSafe = isHTMLSafe;
 }
+EmberHTMLBars.makeBoundHelper = makeBoundHelper;

@@ -17,7 +17,8 @@ QUnit.module('ember-templates reexports');
   ['Handlebars.template', 'ember-templates/template', 'default'],
   ['Handlebars.SafeString', 'ember-templates/string', { get: 'getSafeString' }],
   ['Handlebars.Utils.escapeExpression', 'ember-templates/string', 'escapeExpression'],
-  ['String.htmlSafe', 'ember-templates/string', 'htmlSafe']
+  ['String.htmlSafe', 'ember-templates/string', 'htmlSafe'],
+  ['HTMLBars.makeBoundHelper', 'ember-templates/make-bound-helper', 'default']
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
   QUnit.test(`Ember.${path} exports correctly`, assert => {

@@ -14,6 +14,7 @@ export { default as TextField } from 'ember-glimmer/components/text_field';
 export { default as LinkTo } from 'ember-glimmer/components/link-to';
 export { DOMHelper } from 'glimmer-runtime';
 export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
+export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);

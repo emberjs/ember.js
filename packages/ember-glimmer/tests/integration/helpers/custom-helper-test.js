@@ -1,4 +1,5 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { makeBoundHelper } from '../../utils/helpers';
 import { runDestroy } from 'ember-runtime/tests/utils';
 import { set } from 'ember-metal/property_set';
 
@@ -16,6 +17,24 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
   ['@test it can resolve custom simple helpers with or without dashes']() {
     this.registerHelper('hello', () => 'hello');
     this.registerHelper('hello-world', () => 'hello world');
+
+    this.render('{{hello}} | {{hello-world}}');
+
+    this.assertText('hello | hello world');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello | hello world');
+  }
+
+  ['@test it can resolve custom makeBoundHelper with or without dashes [DEPRECATED]']() {
+    expectDeprecation(() => {
+      this.owner.register('helper:hello', makeBoundHelper(() => 'hello'));
+    }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
+
+    expectDeprecation(() => {
+      this.owner.register('helper:hello-world', makeBoundHelper(() => 'hello world'));
+    }, 'Using `Ember.HTMLBars.makeBoundHelper` is deprecated. Please refactor to use `Ember.Helper` or `Ember.Helper.helper`.');
 
     this.render('{{hello}} | {{hello-world}}');
 
