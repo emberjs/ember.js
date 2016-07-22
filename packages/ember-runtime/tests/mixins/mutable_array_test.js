@@ -3,10 +3,6 @@ import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
 import MutableArray from 'ember-runtime/mixins/mutable_array';
 import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import {
-  arrayContentDidChange,
-  arrayContentWillChange
-} from 'ember-runtime/mixins/array';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
@@ -25,12 +21,12 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
     let removeAmt = amt;
     let addAmt    = args.length;
 
-    arrayContentWillChange(this, idx, removeAmt, addAmt);
+    this.arrayContentWillChange(idx, removeAmt, addAmt);
 
     args.unshift(amt);
     args.unshift(idx);
     this._content.splice.apply(this._content, args);
-    arrayContentDidChange(this, idx, removeAmt, addAmt);
+    this.arrayContentDidChange(idx, removeAmt, addAmt);
     return this;
   },
 

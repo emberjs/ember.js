@@ -5,7 +5,6 @@ import { set } from 'ember-metal/property_set';
 
 import EmberObject from 'ember-runtime/system/object';
 import { A as emberA } from 'ember-runtime/system/native_array';
-import { removeAt } from 'ember-runtime/mixins/mutable_array';
 
 import ActionManager from 'ember-views/system/action_manager';
 import jQuery from 'ember-views/system/jquery';
@@ -815,7 +814,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     var actionId = this.$('a[data-ember-action]').attr('data-ember-action');
 
     this.runTask(() => {
-      removeAt(things, 0);
+      things.removeAt(0);
     });
 
     ok(!ActionManager.registeredActions[actionId], 'After the virtual view was destroyed, the action was unregistered');

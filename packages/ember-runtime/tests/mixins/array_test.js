@@ -9,8 +9,6 @@ import EmberObject from 'ember-runtime/system/object';
 import EmberArray, {
   addArrayObserver,
   removeArrayObserver,
-  arrayContentDidChange,
-  arrayContentWillChange,
   objectAt
 } from 'ember-runtime/mixins/array';
 import { A as emberA } from 'ember-runtime/system/native_array';
@@ -31,15 +29,15 @@ const TestArray = EmberObject.extend(EmberArray, {
   // MutableArray is just a standard API for mutation but not required.
   addObject(obj) {
     let idx = this._content.length;
-    arrayContentWillChange(this, idx, 0, 1);
+    this.arrayContentWillChange(idx, 0, 1);
     this._content.push(obj);
-    arrayContentDidChange(this, idx, 0, 1);
+    this.arrayContentDidChange(idx, 0, 1);
   },
 
   removeFirst(idx) {
-    arrayContentWillChange(this, 0, 1, 0);
+    this.arrayContentWillChange(0, 1, 0);
     this._content.shift();
-    arrayContentDidChange(this, 0, 1, 0);
+    this.arrayContentDidChange(0, 1, 0);
   },
 
   objectAt(idx) {
@@ -126,8 +124,8 @@ QUnit.test('should notify observers of []', function() {
 
   equal(obj._count, 0, 'should not have invoked yet');
 
-  arrayContentWillChange(obj, 0, 1, 1);
-  arrayContentDidChange(obj, 0, 1, 1);
+  obj.arrayContentWillChange(0, 1, 1);
+  obj.arrayContentDidChange(0, 1, 1);
 
   equal(obj._count, 1, 'should have invoked');
 });
@@ -155,27 +153,27 @@ QUnit.module('notify observers of length', {
 });
 
 QUnit.test('should notify observers when call with no params', function() {
-  arrayContentWillChange(obj);
+  obj.arrayContentWillChange();
   equal(obj._after, 0);
 
-  arrayContentDidChange(obj);
+  obj.arrayContentDidChange();
   equal(obj._after, 1);
 });
 
 // API variation that included items only
 QUnit.test('should not notify when passed lengths are same', function() {
-  arrayContentWillChange(obj, 0, 1, 1);
+  obj.arrayContentWillChange(0, 1, 1);
   equal(obj._after, 0);
 
-  arrayContentDidChange(obj, 0, 1, 1);
+  obj.arrayContentDidChange(0, 1, 1);
   equal(obj._after, 0);
 });
 
 QUnit.test('should notify when passed lengths are different', function() {
-  arrayContentWillChange(obj, 0, 1, 2);
+  obj.arrayContentWillChange(0, 1, 2);
   equal(obj._after, 0);
 
-  arrayContentDidChange(obj, 0, 1, 2);
+  obj.arrayContentDidChange(0, 1, 2);
   equal(obj._after, 1);
 });
 
@@ -212,36 +210,36 @@ QUnit.module('notify array observers', {
 });
 
 QUnit.test('should notify enumerable observers when called with no params', function() {
-  arrayContentWillChange(obj);
+  obj.arrayContentWillChange();
   deepEqual(observer._before, [obj, 0, -1, -1]);
 
-  arrayContentDidChange(obj);
+  obj.arrayContentDidChange();
   deepEqual(observer._after, [obj, 0, -1, -1]);
 });
 
 // API variation that included items only
 QUnit.test('should notify when called with same length items', function() {
-  arrayContentWillChange(obj, 0, 1, 1);
+  obj.arrayContentWillChange(0, 1, 1);
   deepEqual(observer._before, [obj, 0, 1, 1]);
 
-  arrayContentDidChange(obj, 0, 1, 1);
+  obj.arrayContentDidChange(0, 1, 1);
   deepEqual(observer._after, [obj, 0, 1, 1]);
 });
 
 QUnit.test('should notify when called with diff length items', function() {
-  arrayContentWillChange(obj, 0, 2, 1);
+  obj.arrayContentWillChange(0, 2, 1);
   deepEqual(observer._before, [obj, 0, 2, 1]);
 
-  arrayContentDidChange(obj, 0, 2, 1);
+  obj.arrayContentDidChange(0, 2, 1);
   deepEqual(observer._after, [obj, 0, 2, 1]);
 });
 
 QUnit.test('removing enumerable observer should disable', function() {
   removeArrayObserver(obj, observer);
-  arrayContentWillChange(obj);
+  obj.arrayContentWillChange();
   deepEqual(observer._before, null);
 
-  arrayContentDidChange(obj);
+  obj.arrayContentDidChange();
   deepEqual(observer._after, null);
 });
 
@@ -277,36 +275,36 @@ QUnit.module('notify enumerable observers as well', {
 });
 
 QUnit.test('should notify enumerable observers when called with no params', function() {
-  arrayContentWillChange(obj);
+  obj.arrayContentWillChange();
   deepEqual(observer._before, [obj, null, null], 'before');
 
-  arrayContentDidChange(obj);
+  obj.arrayContentDidChange();
   deepEqual(observer._after, [obj, null, null], 'after');
 });
 
 // API variation that included items only
 QUnit.test('should notify when called with same length items', function() {
-  arrayContentWillChange(obj, 0, 1, 1);
+  obj.arrayContentWillChange(0, 1, 1);
   deepEqual(observer._before, [obj, ['ITEM-0'], 1], 'before');
 
-  arrayContentDidChange(obj, 0, 1, 1);
+  obj.arrayContentDidChange(0, 1, 1);
   deepEqual(observer._after, [obj, 1, ['ITEM-0']], 'after');
 });
 
 QUnit.test('should notify when called with diff length items', function() {
-  arrayContentWillChange(obj, 0, 2, 1);
+  obj.arrayContentWillChange(0, 2, 1);
   deepEqual(observer._before, [obj, ['ITEM-0', 'ITEM-1'], 1], 'before');
 
-  arrayContentDidChange(obj, 0, 2, 1);
+  obj.arrayContentDidChange(0, 2, 1);
   deepEqual(observer._after, [obj, 2, ['ITEM-0']], 'after');
 });
 
 QUnit.test('removing enumerable observer should disable', function() {
   obj.removeEnumerableObserver(observer);
-  arrayContentWillChange(obj);
+  obj.arrayContentWillChange();
   deepEqual(observer._before, null, 'before');
 
-  arrayContentDidChange(obj);
+  obj.arrayContentDidChange();
   deepEqual(observer._after, null, 'after');
 });
 
