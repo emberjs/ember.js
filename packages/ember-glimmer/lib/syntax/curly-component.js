@@ -62,6 +62,10 @@ class ComponentStateBucket {
 }
 
 class CurlyComponentManager {
+  prepareArgs(definition, args) {
+    return args;
+  }
+
   create(definition, args, dynamicScope, hasBlock) {
     let parentView = dynamicScope.view;
 
