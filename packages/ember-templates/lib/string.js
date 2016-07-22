@@ -13,3 +13,4 @@ export const SafeString = strings.SafeString;
 export const escapeExpression = strings.escapeExpression;
 export const htmlSafe = strings.htmlSafe;
 export const isHTMLSafe = strings.isHTMLSafe;
+export const getSafeString = strings.getSafeString;

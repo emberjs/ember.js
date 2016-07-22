@@ -3,6 +3,9 @@
 @submodule ember-glimmer
 */
 
+import isEnabled from 'ember-metal/features';
+import { deprecate } from 'ember-metal/debug';
+
 export class SafeString {
   constructor(string) {
     this.string = string;
@@ -15,6 +18,20 @@ export class SafeString {
   toHTML() {
     return this.toString();
   }
+}
+
+export function getSafeString() {
+  deprecate(
+    'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
+    !isEnabled('ember-string-ishtmlsafe'),
+    {
+      id: 'ember-htmlbars.ember-handlebars-safestring',
+      until: '3.0.0',
+      url: 'http://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
+    }
+  );
+
+  return SafeString;
 }
 
 const escape = {
