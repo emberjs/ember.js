@@ -8,7 +8,7 @@
     "ember-runtime-computed-uniq-by": true,
     "ember-improved-instrumentation": null,
     "ember-runtime-enumerable-includes": true,
-    "ember-string-ishtmlsafe": null,
+    "ember-string-ishtmlsafe": true,
     "ember-testing-check-waiters": null,
     "ember-metal-weakmap": null
   }
