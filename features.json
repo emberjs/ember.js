@@ -3,13 +3,13 @@
     "features-stripped-test": null,
     "ember-routing-route-configured-query-params": null,
     "ember-libraries-isregistered": null,
-    "ember-application-engines": null,
+    "ember-application-engines": true,
     "ember-glimmer": null,
     "ember-runtime-computed-uniq-by": true,
     "ember-improved-instrumentation": null,
-    "ember-runtime-enumerable-includes": null,
-    "ember-string-ishtmlsafe": null,
-    "ember-testing-check-waiters": null,
+    "ember-runtime-enumerable-includes": true,
+    "ember-string-ishtmlsafe": true,
+    "ember-testing-check-waiters": true,
     "ember-metal-weakmap": null
   }
 }
