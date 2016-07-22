@@ -7,7 +7,6 @@ import AriaRoleSupport from 'ember-views/mixins/aria_role_support';
 import ViewMixin from 'ember-views/mixins/view_support';
 import ActionSupport from 'ember-views/mixins/action_support';
 import TargetActionSupport from 'ember-runtime/mixins/target_action_support';
-import EmberView from 'ember-views/views/view';
 import symbol from 'ember-metal/symbol';
 import EmptyObject from 'ember-metal/empty_object';
 import { get } from 'ember-metal/property_get';
@@ -48,7 +47,6 @@ const Component = CoreView.extend(
 
     init() {
       this._super(...arguments);
-      this._viewRegistry = this._viewRegistry || EmberView.views;
       this[DIRTY_TAG] = new DirtyableTag();
       this[ROOT_REF] = null;
       this[REFS] = new EmptyObject();

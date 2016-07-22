@@ -169,7 +169,6 @@ export function createComponent(_component, props, renderNode, env, attrs = {}) 
 
   setOwner(props, env.owner);
   props.renderer = props.parentView ? props.parentView.renderer : env.owner.lookup('renderer:-dom');
-  props._viewRegistry = props.parentView ? props.parentView._viewRegistry : env.owner.lookup('-view-registry:main');
 
   let component = _component.create(props);
 

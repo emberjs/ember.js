@@ -553,32 +553,5 @@ export default Mixin.create({
   */
   handleEvent(eventName, evt) {
     return this._currentState.handleEvent(this, eventName, evt);
-  },
-
-  /**
-    Registers the view in the view registry, keyed on the view's `elementId`.
-    This is used by the EventDispatcher to locate the view in response to
-    events.
-
-    This method should only be called once the view has been inserted into the
-    DOM.
-
-    @method _register
-    @private
-  */
-  _register() {
-    assert('Attempted to register a view with an id already in use: ' + this.elementId, !this._viewRegistry[this.elementId]);
-    this._viewRegistry[this.elementId] = this;
-  },
-
-  /**
-    Removes the view from the view registry. This should be called when the
-    view is removed from DOM.
-
-    @method _unregister
-    @private
-  */
-  _unregister() {
-    delete this._viewRegistry[this.elementId];
   }
 });

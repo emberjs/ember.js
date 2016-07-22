@@ -11,10 +11,10 @@ import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import jQuery from 'ember-views/system/jquery';
 import ActionManager from 'ember-views/system/action_manager';
-import View from 'ember-views/views/view';
 import assign from 'ember-metal/assign';
 import { getOwner } from 'container/owner';
 import { environment } from 'ember-environment';
+import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = '.' + ROOT_ELEMENT_CLASS;
@@ -199,7 +199,7 @@ export default EmberObject.extend({
     let self = this;
 
     let owner = getOwner(this);
-    let viewRegistry = owner && owner.lookup('-view-registry:main') || View.views;
+    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
 
     if (eventName === null) {
       return;

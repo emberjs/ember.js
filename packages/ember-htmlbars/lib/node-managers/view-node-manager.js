@@ -191,7 +191,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
     setOwner(props, owner);
     props.renderer = options.parentView ? options.parentView.renderer : owner && owner.lookup('renderer:-dom');
-    props._viewRegistry = options.parentView ? options.parentView._viewRegistry : owner && owner.lookup('-view-registry:main');
 
     if (proto.controller !== defaultController || hasSuppliedController) {
       delete props._context;

@@ -12,7 +12,6 @@ import Namespace, {
 } from 'ember-runtime/system/namespace';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 import run from 'ember-metal/run_loop';
-import EmberView from 'ember-views/views/view';
 import EventDispatcher from 'ember-views/system/event_dispatcher';
 import jQuery from 'ember-views/system/jquery';
 import Route from 'ember-routing/system/route';
@@ -403,10 +402,10 @@ const Application = Engine.extend({
 
     This is orthogonal to autoboot: the deprecated instance needs to
     be created at Application construction (not boot) time to expose
-    App.__container__ and the global Ember.View.views registry. If
-    autoboot sees that this instance exists, it will continue booting
-    it to avoid doing unncessary work (as opposed to building a new
-    instance at boot time), but they are otherwise unrelated.
+    App.__container__. If autoboot sees that this instance exists,
+    it will continue booting it to avoid doing unncessary work (as
+    opposed to building a new instance at boot time), but they are
+    otherwise unrelated.
 
     @private
     @method _buildDeprecatedInstance
@@ -419,10 +418,6 @@ const Application = Engine.extend({
     // on App that rely on a single, default instance.
     this.__deprecatedInstance__ = instance;
     this.__container__ = instance.__container__;
-
-    // For the default instance only, set the view registry to the global
-    // Ember.View.views hash for backwards-compatibility.
-    EmberView.views = instance.lookup('-view-registry:main');
   },
 
   /**

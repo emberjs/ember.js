@@ -7,8 +7,10 @@ import buildComponentTemplate from 'ember-htmlbars/system/build-component-templa
 import { environment } from 'ember-environment';
 import { internal } from 'htmlbars-runtime';
 import { renderHTMLBarsBlock } from 'ember-htmlbars/system/render-view';
+import fallbackViewRegistry from 'ember-views/compat/fallback-view-registry';
+import { assert } from 'ember-metal/debug';
 
-export function Renderer(domHelper, { destinedForDOM } = {}) {
+export function Renderer(domHelper, { destinedForDOM, _viewRegistry } = {}) {
   this._dom = domHelper;
 
   // This flag indicates whether the resulting rendered element will be
@@ -20,6 +22,8 @@ export function Renderer(domHelper, { destinedForDOM } = {}) {
   this._destinedForDOM = destinedForDOM === undefined ?
     environment.hasDOM :
     destinedForDOM;
+
+  this._viewRegistry = _viewRegistry || fallbackViewRegistry;
 }
 
 Renderer.prototype.prerenderTopLevelView =
@@ -281,14 +285,24 @@ Renderer.prototype.didDestroyElement = function (view) {
   }
 };
 
+
+Renderer.prototype._register = function Renderer_register(view) {
+  assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[this.elementId]);
+  this._viewRegistry[view.elementId] = view;
+};
+
+Renderer.prototype._unregister = function Renderer_unregister(view) {
+  delete this._viewRegistry[this.elementId];
+};
+
 export const InertRenderer = {
-  create({ dom }) {
-    return new Renderer(dom, { destinedForDOM: false });
+  create({ dom, _viewRegistry }) {
+    return new Renderer(dom, { destinedForDOM: false, _viewRegistry });
   }
 };
 
 export const InteractiveRenderer = {
-  create({ dom }) {
-    return new Renderer(dom, { destinedForDOM: true });
+  create({ dom, _viewRegistry }) {
+    return new Renderer(dom, { destinedForDOM: true, _viewRegistry });
   }
 };

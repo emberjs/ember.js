@@ -1968,54 +1968,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(outer.parentView, this.context, 'x-outer receives the ambient scope as its parentView');
   }
 
-  ['@htmlbars component should receive the viewRegistry from the parentView'](assert) {
-    let outer, innerTemplate, innerLayout;
-
-    let viewRegistry = {};
-
-    this.registerComponent('x-outer', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          outer = this;
-        }
-      }),
-      template: '{{x-inner-in-layout}}{{yield}}'
-    });
-
-    this.registerComponent('x-inner-in-template', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          innerTemplate = this;
-        }
-      })
-    });
-
-    this.registerComponent('x-inner-in-layout', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          innerLayout = this;
-        }
-      })
-    });
-
-    this.render('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}', {
-      _viewRegistry: viewRegistry
-    });
-
-    assert.equal(innerTemplate._viewRegistry, viewRegistry);
-    assert.equal(innerLayout._viewRegistry, viewRegistry);
-    assert.equal(outer._viewRegistry, viewRegistry);
-
-    this.runTask(() => this.rerender());
-
-    assert.equal(innerTemplate._viewRegistry, viewRegistry);
-    assert.equal(innerLayout._viewRegistry, viewRegistry);
-    assert.equal(outer._viewRegistry, viewRegistry);
-  }
-
   ['@htmlbars component should rerender when a property is changed during children\'s rendering'](assert) {
     expectDeprecation(/modified value twice in a single render/);
 
