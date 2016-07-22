@@ -288,6 +288,10 @@ export class EmberishGlimmerComponent extends GlimmerObject {
 }
 
 class BasicComponentManager implements ComponentManager<BasicComponent> {
+  prepareArgs(definition: BasicComponentDefinition, args: EvaluatedArgs): EvaluatedArgs {
+    return args;
+  }
+
   create(definition: BasicComponentDefinition, args: EvaluatedArgs): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
     return new klass(args.named.value());
@@ -335,6 +339,10 @@ const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 const BaseEmberishGlimmerComponent = EmberishGlimmerComponent.extend() as typeof EmberishGlimmerComponent;
 
 class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimmerComponent> {
+  prepareArgs(definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs): EvaluatedArgs {
+    return args;
+  }
+
   create(definition: EmberishGlimmerComponentDefinition, args: EvaluatedArgs, dynamicScope, hasDefaultBlock: boolean): EmberishGlimmerComponent {
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.named.value();
@@ -433,6 +441,10 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyComponent> {
+  prepareArgs(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs): EvaluatedArgs {
+    return args;
+  }
+
   create(definition: EmberishCurlyComponentDefinition, args: EvaluatedArgs): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let processedArgs = processArgs(args, klass['positionalParams']);
