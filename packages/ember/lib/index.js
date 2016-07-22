@@ -1,15 +1,21 @@
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
+import require, { has } from 'require';
+
 import 'ember-metal';
 import 'ember-runtime';
 import 'ember-views';
 import 'ember-routing';
 import 'ember-application';
 import 'ember-extension-support';
-import 'ember-htmlbars';
+if (has('ember-htmlbars')) {
+  require('ember-htmlbars');
+}
+if (has('ember-glimmer')) {
+  require('ember-glimmer');
+}
 import 'ember-templates';
 
-import require, { has } from 'require';
 import { runLoadHooks } from 'ember-runtime/system/lazy_load';
 
 if (has('ember-template-compiler')) {
