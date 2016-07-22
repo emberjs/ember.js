@@ -1,4 +1,5 @@
 import Ember from 'ember-templates';
+import isEnabled from 'ember-metal/features';
 import require from 'require';
 
 QUnit.module('ember-templates reexports');
@@ -12,20 +13,34 @@ QUnit.module('ember-templates reexports');
   ['LinkComponent', 'ember-templates/components/link-to',    'default'],
   ['TextArea',      'ember-templates/components/text_area',  'default'],
   ['TextField',     'ember-templates/components/text_field', 'default'],
-  ['TEMPLATES',     'ember-templates/template_registry',     { get: 'getTemplates', set: 'setTemplates' }]
+  ['TEMPLATES',     'ember-templates/template_registry',     { get: 'getTemplates', set: 'setTemplates' }],
+  ['Handlebars.template', 'ember-templates/template', 'default'],
+  ['Handlebars.SafeString', 'ember-templates/string', { get: 'getSafeString' }],
+  ['Handlebars.Utils.escapeExpression', 'ember-templates/string', 'escapeExpression'],
+  ['String.htmlSafe', 'ember-templates/string', 'htmlSafe']
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
   QUnit.test(`Ember.${path} exports correctly`, assert => {
-    let desc = getDescriptor(Ember, path);
-    let mod = require(moduleId);
-    if (typeof exportName === 'string') {
-      assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
-    } else {
-      assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
-      assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
-    }
+    confirmExport(assert, path, moduleId, exportName);
   });
 });
+
+if (isEnabled('ember-string-ishtmlsafe')) {
+  QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
+    confirmExport(assert, 'String.isHTMLSafe', 'ember-templates/string', 'isHTMLSafe');
+  });
+}
+
+function confirmExport(assert, path, moduleId, exportName) {
+  let desc = getDescriptor(Ember, path);
+  let mod = require(moduleId);
+  if (typeof exportName === 'string') {
+    assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+  } else {
+    assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
+    assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
+  }
+}
 
 function getDescriptor(obj, path) {
   let parts = path.split('.');
