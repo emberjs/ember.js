@@ -1,6 +1,6 @@
 import { Stream } from 'ember-htmlbars/streams/stream';
+import concat from 'ember-htmlbars/streams/concat';
 import {
-  concat,
   read,
   isStream
 } from 'ember-htmlbars/streams/utils';

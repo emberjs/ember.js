@@ -1,6 +1,6 @@
 import getValue from 'ember-htmlbars/hooks/get-value';
 import { assert } from 'ember-metal/debug';
-import BasicStream, { Stream, IS_STREAM } from './stream';
+import { Stream, IS_STREAM } from './stream';
 import { get } from 'ember-metal/property_get';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
@@ -177,56 +177,6 @@ export function scanHash(hash) {
   }
 
   return containsStream;
-}
-
-const ConcatStream = BasicStream.extend({
-  init(array, separator) {
-    this.array = array;
-    this.separator = separator;
-
-    // Used by angle bracket components to detect an attribute was provided
-    // as a string literal.
-    this.isConcat = true;
-  },
-
-  label() {
-    let labels = labelsFor(this.array);
-    return `concat([${labels.join(', ')}]; separator=${inspect(this.separator)})`;
-  },
-
-  compute() {
-    return concat(readArray(this.array), this.separator);
-  }
-});
-
-/*
- Join an array, with any streams replaced by their current values.
-
- @private
- @for Ember.stream
- @function concat
- @param {Array} array An array containing zero or more stream objects and
-                      zero or more non-stream objects.
- @param {String} separator String to be used to join array elements.
- @return {String} String with array elements concatenated and joined by the
-                  provided separator, and any stream array members having been
-                  replaced by the current value of the stream.
- */
-export function concat(array, separator) {
-  // TODO: Create subclass ConcatStream < Stream. Defer
-  // subscribing to streams until the value() is called.
-  let hasStream = scanArray(array);
-  if (hasStream) {
-    let stream = new ConcatStream(array, separator);
-
-    for (let i = 0; i < array.length; i++) {
-      addDependency(stream, array[i]);
-    }
-
-    return stream;
-  } else {
-    return array.join(separator);
-  }
 }
 
 export function labelsFor(streams) {
