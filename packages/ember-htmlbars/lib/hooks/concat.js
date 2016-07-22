@@ -3,9 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import {
-  concat as streamConcat
-} from '../streams/utils';
+import streamConcat from '../streams/concat';
 
 export default function concat(env, parts) {
   return streamConcat(parts, '');
