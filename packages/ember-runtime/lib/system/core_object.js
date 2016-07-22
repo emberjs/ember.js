@@ -28,7 +28,7 @@ import { meta } from 'ember-metal/meta';
 import { finishChains } from 'ember-metal/chains';
 import { sendEvent } from 'ember-metal/events';
 import {
-  IS_BINDING,
+  detectBinding,
   Mixin,
   REQUIRED
 } from 'ember-metal/mixin';
@@ -100,7 +100,7 @@ function makeCtor() {
           var keyName = keyNames[j];
           var value = properties[keyName];
 
-          if (IS_BINDING.test(keyName)) {
+          if (detectBinding(keyName)) {
             m.writeBindings(keyName, value);
           }
 
