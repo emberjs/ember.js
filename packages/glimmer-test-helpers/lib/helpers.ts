@@ -174,10 +174,10 @@ export function getTextContent(el) {
   }
 }
 
-export function strip(strings: string[]) {
+export function strip(strings: TemplateStringsArray) {
   return strings[0].split('\n').map(s => s.trim()).join(' ');
 }
 
-export function stripTight(strings: string[]) {
+export function stripTight(strings: TemplateStringsArray) {
   return strings[0].split('\n').map(s => s.trim()).join('');
 }

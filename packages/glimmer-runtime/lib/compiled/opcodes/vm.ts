@@ -1,4 +1,4 @@
-import { AbstractOpcode, Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
+import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
 import { VM, UpdatingVM, BindDynamicScopeCallback } from '../../vm';
@@ -17,20 +17,6 @@ export class PushChildScopeOpcode extends Opcode {
 
   evaluate(vm: VM) {
     vm.pushChildScope();
-  }
-}
-
-export class PushRootScopeOpcode extends Opcode {
-  public type = "push-root-scope";
-  public size: number;
-
-  constructor({ size }: { size: number }) {
-    super();
-    this.size = size;
-  }
-
-  evaluate(vm: VM) {
-    vm.pushRootScope(vm.frame.getOperand(), this.size);
   }
 }
 
@@ -88,12 +74,16 @@ export class PutValueOpcode extends Opcode {
   }
 }
 
+export interface PutArgsOptions {
+  args: CompiledArgs;
+}
+
 export class PutArgsOpcode extends Opcode {
   public type = "put-args";
 
   private args: CompiledArgs;
 
-  constructor({ args }: { args: CompiledArgs }) {
+  constructor({ args }: PutArgsOptions) {
     super();
     this.args = args;
   }
@@ -114,13 +104,17 @@ export class PutArgsOpcode extends Opcode {
   }
 }
 
+export interface BindPositionalArgsOptions {
+  block: InlineBlock;
+}
+
 export class BindPositionalArgsOpcode extends Opcode {
   public type = "bind-positional-args";
 
   private names: string[];
   private positional: number[];
 
-  constructor({ block }: { block: InlineBlock }) {
+  constructor({ block }: BindPositionalArgsOptions) {
     super();
 
     this.names = block.locals;
@@ -142,6 +136,10 @@ export class BindPositionalArgsOpcode extends Opcode {
       args: [`[${this.names.map(name => JSON.stringify(name)).join(", ")}]`]
     };
   }
+}
+
+export interface BindNamedArgsOptions {
+  named: Dict<number>;
 }
 
 export class BindNamedArgsOpcode extends Opcode {
@@ -181,6 +179,10 @@ export class BindNamedArgsOpcode extends Opcode {
   }
 }
 
+export interface BindBlocksOptions {
+  blocks: Dict<number>;
+}
+
 export class BindBlocksOpcode extends Opcode {
   public type = "bind-blocks";
 
@@ -205,6 +207,8 @@ export class BindBlocksOpcode extends Opcode {
   }
 }
 
+export { BindDynamicScopeCallback };
+
 export class BindDynamicScopeOpcode extends Opcode {
   public type = "bind-dynamic-scope";
 
@@ -220,11 +224,16 @@ export class BindDynamicScopeOpcode extends Opcode {
   }
 }
 
+export interface EnterOptions {
+  begin: LabelOpcode;
+  end: LabelOpcode;
+}
+
 export class EnterOpcode extends Opcode {
   public type = "enter";
   private slice: Slice<Opcode>;
 
-  constructor({ begin, end }: { begin: LabelOpcode, end: LabelOpcode }) {
+  constructor({ begin, end }: EnterOptions) {
     super();
     this.slice = new ListSlice(begin, end);
   }
@@ -258,7 +267,11 @@ export class ExitOpcode extends Opcode {
   }
 }
 
-export class LabelOpcode extends AbstractOpcode implements Opcode, UpdatingOpcode {
+export interface LabelOptions {
+  label?: string;
+}
+
+export class LabelOpcode extends Opcode implements UpdatingOpcode {
   public tag = CONSTANT_TAG;
   public type = "label";
   public label: string = null;
@@ -266,7 +279,7 @@ export class LabelOpcode extends AbstractOpcode implements Opcode, UpdatingOpcod
   prev: any = null;
   next: any = null;
 
-  constructor({ label }: { label?: string }) {
+  constructor({ label }: LabelOptions) {
     super();
     if (label) this.label = label;
   }
@@ -284,6 +297,11 @@ export class LabelOpcode extends AbstractOpcode implements Opcode, UpdatingOpcod
       args: [JSON.stringify(this.inspect())]
     };
   }
+}
+
+export interface EvaluateOptions {
+  debug: string;
+  block: InlineBlock;
 }
 
 export class EvaluateOpcode extends Opcode {
@@ -388,6 +406,10 @@ export class TestOpcode extends Opcode {
       args: ["$OPERAND"]
     };
   }
+}
+
+export interface JumpOptions {
+  target: LabelOpcode;
 }
 
 export class JumpOpcode extends Opcode {
