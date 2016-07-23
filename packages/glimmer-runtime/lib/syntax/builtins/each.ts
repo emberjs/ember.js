@@ -1,29 +1,10 @@
 import {
-  StatementCompilationBuffer,
   Statement as StatementSyntax
 } from '../../syntax';
 
 import * as Syntax from '../core';
 
-import {
-  EnterOpcode,
-  LabelOpcode,
-  PutArgsOpcode,
-  JumpOpcode,
-  JumpUnlessOpcode,
-  EvaluateOpcode,
-  ExitOpcode,
-  PushChildScopeOpcode,
-  PopScopeOpcode
-} from '../../compiled/opcodes/vm';
-
-import {
-  PutIteratorOpcode,
-  EnterListOpcode,
-  NextIterOpcode,
-  EnterWithKeyOpcode,
-  ExitListOpcode
-} from '../../compiled/opcodes/lists';
+import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
 import Environment from '../../environment';
 
@@ -44,7 +25,7 @@ export default class EachSyntax extends StatementSyntax {
     return `#each ${this.args.prettyPrint()}`;
   }
 
-  compile(compiler: StatementCompilationBuffer, env: Environment) {
+  compile(dsl: OpcodeBuilderDSL, env: Environment) {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
     //         PutArgs
@@ -69,46 +50,29 @@ export default class EachSyntax extends StatementSyntax {
     // END:    Noop
     //         Exit
 
-    let BEGIN = new LabelOpcode({ label: "BEGIN" });
-    let ITER = new LabelOpcode({ label: "ITER" });
-    let BEGIN2 = new LabelOpcode({ label: "BEGIN2" });
-    let END2 = new LabelOpcode({ label: "END2" });
-    let BREAK = new LabelOpcode({ label: "BREAK" });
-    let ELSE = new LabelOpcode({ label: "ELSE" });
-    let END = new LabelOpcode({ label: "END" });
+    let { args, templates } = this;
 
-    compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
-    compiler.append(BEGIN);
-    compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
-    compiler.append(new PutIteratorOpcode());
+    dsl.block({ templates, args }, (dsl, BEGIN, END) => {
+      dsl.putIterator();
 
-    if (this.templates.inverse) {
-      compiler.append(new JumpUnlessOpcode({ target: ELSE }));
-    } else {
-      compiler.append(new JumpUnlessOpcode({ target: END }));
-    }
+      if (templates.inverse) {
+        dsl.jumpUnless('ELSE');
+      } else {
+        dsl.jumpUnless(END);
+      }
 
-    compiler.append(new EnterListOpcode(BEGIN2, END2));
-    compiler.append(ITER);
-    compiler.append(new NextIterOpcode(BREAK));
-    compiler.append(new EnterWithKeyOpcode(BEGIN2, END2));
-    compiler.append(BEGIN2);
-    compiler.append(new PushChildScopeOpcode());
-    compiler.append(new EvaluateOpcode({ debug: "default", block: this.templates.default }));
-    compiler.append(new PopScopeOpcode());
-    compiler.append(END2);
-    compiler.append(new ExitOpcode());
-    compiler.append(new JumpOpcode({ target: ITER }));
-    compiler.append(BREAK);
-    compiler.append(new ExitListOpcode());
-    compiler.append(new JumpOpcode({ target: END }));
+      dsl.iter({ templates }, (dsl, BEGIN, END) => {
+        dsl.pushChildScope();
+        dsl.evaluate('default');
+        dsl.popScope();
+      });
 
-    if (this.templates.inverse) {
-      compiler.append(ELSE);
-      compiler.append(new EvaluateOpcode({ debug: "inverse", block: this.templates.inverse }));
-    }
+      dsl.jump(END);
 
-    compiler.append(END);
-    compiler.append(new ExitOpcode());
+      if (templates.inverse) {
+        dsl.label('ELSE');
+        dsl.evaluate('inverse');
+      }
+    });
   }
 }
