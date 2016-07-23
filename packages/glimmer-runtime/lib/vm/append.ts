@@ -58,6 +58,7 @@ export interface PublicVM {
   getArgs(): EvaluatedArgs;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
+  newDestroyable(d: Destroyable);
 }
 
 type OpList = Range<Opcode>;
