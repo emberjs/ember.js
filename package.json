@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "aws-sdk": "~2.2.43",
-    "babel-plugin-feature-flags": "~0.2.0",
+    "babel-plugin-feature-flags": "~0.2.1",
     "babel-plugin-filter-imports": "~0.2.0",
     "bower": "~1.7.7",
     "broccoli-stew": "^1.2.0",
@@ -37,7 +37,7 @@
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "github": "^0.2.3",
-    "glimmer-engine": "tildeio/glimmer#13556d2",
+    "glimmer-engine": "tildeio/glimmer#0a13e7b",
     "glob": "^5.0.13",
     "htmlbars": "0.14.24",
     "mocha": "^2.4.5",

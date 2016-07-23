@@ -320,7 +320,7 @@ export class AbstractRenderingTest extends TestCase {
 
     owner.register('event_dispatcher:main', EventDispatcher);
     owner.inject('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
-    owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), owner.element);
+    owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
   }
 
   compile() {
@@ -423,6 +423,10 @@ export class AbstractRenderingTest extends TestCase {
     } else {
       throw new Error(`Registered template "${name}" must be a string`);
     }
+  }
+
+  registerService(name, klass) {
+    this.owner.register(`service:${name}`, klass);
   }
 
   assertTextNode(node, text) {

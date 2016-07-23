@@ -322,11 +322,11 @@ export default class Environment extends GlimmerEnvironment {
       this.owner.lookup(`helper:${name}`);
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {
-      return (args) => helper.toReference(args);
+      return (vm, args) => helper.toReference(args);
     } else if (helper.isHelperInstance) {
-      return (args) => SimpleHelperReference.create(helper.compute, args);
+      return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {
-      return (args) => ClassBasedHelperReference.create(helper, args);
+      return (vm, args) => ClassBasedHelperReference.create(helper, vm, args);
     } else {
       throw new Error(`${name} is not a helper`);
     }

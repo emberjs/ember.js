@@ -8,8 +8,7 @@ import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { classes } from '../utils/test-helpers';
 import { getDebugFunction, setDebugFunction } from 'ember-metal/debug';
 import { STYLE_WARNING } from 'ember-views/system/utils';
-import { Component } from '../utils/helpers';
-import { SafeString } from 'ember-htmlbars/utils/string';
+import { Component, SafeString } from '../utils/helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
