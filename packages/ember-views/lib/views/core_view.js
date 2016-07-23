@@ -5,7 +5,6 @@ import Evented from 'ember-runtime/mixins/evented';
 import ActionHandler, { deprecateUnderscoreActions } from 'ember-runtime/mixins/action_handler';
 import { typeOf } from 'ember-runtime/utils';
 
-import { InteractiveRenderer } from 'ember-htmlbars/renderer';
 import { cloneStates, states } from 'ember-views/views/states';
 import require from 'require';
 
@@ -55,8 +54,7 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     // Fallback for legacy cases where the view was created directly
     // via `create()` instead of going through the container.
     if (!this.renderer) {
-      let DOMHelper = domHelper();
-      renderer = renderer || InteractiveRenderer.create({ dom: new DOMHelper() });
+      renderer = renderer || htmlbarsRenderer();
       this.renderer = renderer;
     }
   },
@@ -112,9 +110,12 @@ CoreView.reopenClass({
   isViewFactory: true
 });
 
-let _domHelper;
-function domHelper() {
-  return _domHelper = _domHelper || require('ember-htmlbars/system/dom-helper').default;
+let InteractiveRenderer, DOMHelper;
+function htmlbarsRenderer() {
+  DOMHelper = DOMHelper || require('ember-htmlbars/system/dom-helper').default;
+  InteractiveRenderer = InteractiveRenderer || require('ember-htmlbars/renderer').InteractiveRenderer;
+
+  return InteractiveRenderer.create({ dom: new DOMHelper() });
 }
 
 export default CoreView;
