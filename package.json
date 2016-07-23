@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "aws-sdk": "~2.2.43",
-    "babel-plugin-feature-flags": "~0.2.0",
+    "babel-plugin-feature-flags": "~0.2.1",
     "babel-plugin-filter-imports": "~0.2.0",
     "bower": "~1.7.7",
     "broccoli-stew": "^1.2.0",
