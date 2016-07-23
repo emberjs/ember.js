@@ -61,7 +61,9 @@ test("HTML tags re-rendered", function() {
 
   let oldFirstChild = root.firstChild;
 
+  env.begin();
   result.rerender();
+  env.commit();
 
   strictEqual(root.firstChild, oldFirstChild);
   equalTokens(root, "<h1>hello!</h1><div>content</div>");

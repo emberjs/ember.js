@@ -46,7 +46,9 @@ class EmberishRootView extends EmberObject {
       this.setProperties(context);
     }
 
+    this.env.begin();
     this._result.rerender();
+    this.env.commit();
 
     this.element = this.parent.firstElementChild;
   }
