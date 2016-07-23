@@ -27,6 +27,7 @@ import {
 } from './helpers/if-unless';
 
 import { default as action } from './helpers/action';
+import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
@@ -102,6 +103,7 @@ const builtInDynamicComponents = {
 const builtInHelpers = {
   if: inlineIf,
   action,
+  component: componentHelper,
   concat,
   get,
   hash,
