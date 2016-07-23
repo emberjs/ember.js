@@ -1,5 +1,5 @@
 import { FIXME, LinkedList, ListNode, InternedString, Opaque, dict } from 'glimmer-util';
-import { VersionedPathReference as PathReference } from './validators';
+import { VersionedPathReference as PathReference, RevisionTag } from './validators';
 
 export interface IterationItem<T, U> {
   key: string;
@@ -13,6 +13,7 @@ export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
 }
 
 export interface AbstractIterable<T, U, ItemType extends IterationItem<T, U>, ValueReferenceType extends PathReference<T>, MemoReferenceType extends PathReference<U>> {
+  tag: RevisionTag;
   iterate(): AbstractIterator<T, U, ItemType>;
 
   valueReferenceFor(item: ItemType): ValueReferenceType;
@@ -60,12 +61,15 @@ class ListItem extends ListNode<PathReference<Opaque>> implements IterationItem<
 }
 
 export class IterationArtifacts {
+  public tag: RevisionTag;
+
   private iterable: OpaqueIterable;
   private iterator: OpaqueIterator;
   private map = dict<ListItem>();
   private list = new LinkedList<ListItem>();
 
   constructor(iterable: OpaqueIterable) {
+    this.tag = iterable.tag;
     this.iterable = iterable;
   }
 
