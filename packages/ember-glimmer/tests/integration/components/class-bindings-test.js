@@ -3,8 +3,9 @@ import { Component } from '../../utils/helpers';
 import { classes } from '../../utils/test-helpers';
 import { set } from 'ember-metal/property_set';
 import { strip } from '../../utils/abstract-test-case';
+import computed from 'ember-metal/computed';
 
-moduleFor('ClassNameBindings intigration', class extends RenderingTest {
+moduleFor('ClassNameBindings integration', class extends RenderingTest {
 
   ['@test it can have class name bindings']() {
     let FooBarComponent = Component.extend({
@@ -189,9 +190,22 @@ moduleFor('ClassNameBindings intigration', class extends RenderingTest {
     this.assertComponentElement(this.nthChild(3), { tagName: 'div', attrs: { 'class': classes('ember-view foo') }, content: 'hello' });
   }
 
+  ['@test using a computed property for classNameBindings triggers an assertion']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: computed(function() {
+        return ['isHappy:happy:sad'];
+      })
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /Only arrays are allowed/);
+  }
 });
 
-moduleFor('ClassBinding intigration', class extends RenderingTest {
+moduleFor('ClassBinding integration', class extends RenderingTest {
   ['@test it should apply classBinding without condition always']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
