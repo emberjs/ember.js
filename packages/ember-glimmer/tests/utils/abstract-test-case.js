@@ -425,6 +425,10 @@ export class AbstractRenderingTest extends TestCase {
     }
   }
 
+  registerService(name, klass) {
+    this.owner.register(`service:${name}`, klass);
+  }
+
   assertTextNode(node, text) {
     if (!(node instanceof TextNode)) {
       throw new Error(`Expecting a text node, but got ${node}`);

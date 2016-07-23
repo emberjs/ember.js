@@ -10,6 +10,8 @@ import { classes, equalTokens, equalsElement } from '../../utils/test-helpers';
 import { htmlSafe } from 'ember-htmlbars/utils/string';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
+import inject from 'ember-runtime/inject';
+import Service from 'ember-runtime/system/service';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -2316,5 +2318,78 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => { this.component.set('localBar', 'initial value'); });
 
     this.assertText('initial value');
+  }
+
+  ['@test services can be injected into components']() {
+    let service;
+    this.registerService('name', Service.extend({
+      init() {
+        this._super(...arguments);
+        service = this;
+      },
+      last: 'Jackson'
+    }));
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        name: inject.service()
+      }),
+      template: '{{name.last}}'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('Jackson');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Jackson');
+
+    this.runTask(() => { service.set('last', 'McGuffey'); });
+
+    this.assertText('McGuffey');
+
+    this.runTask(() => { service.set('last', 'Jackson'); });
+
+    this.assertText('Jackson');
+  }
+
+  ['@test can access `actions` hash via `_actions` [DEPRECATED]']() {
+    let component;
+
+    function derp() { }
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          component = this;
+        },
+
+        actions: {
+          derp
+        }
+      })
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assert.strictEqual(component.actions.derp, derp);
+
+    expectDeprecation(() => {
+      this.assert.strictEqual(component._actions.derp, derp);
+    }, 'Usage of `_actions` is deprecated, use `actions` instead.');
+  }
+
+  ['@test throws if `this._super` is not called from `init`']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {}
+      })
+    });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
   }
 });
