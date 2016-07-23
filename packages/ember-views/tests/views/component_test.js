@@ -2,7 +2,7 @@ import run from 'ember-metal/run_loop';
 import Service from 'ember-runtime/system/service';
 import inject from 'ember-runtime/inject';
 
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import computed from 'ember-metal/computed';
