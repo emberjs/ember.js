@@ -81,13 +81,11 @@ import {
 } from 'glimmer-util';
 
 import {
-  TextOpcode,
   OpenPrimitiveElementOpcode,
   CloseElementOpcode,
   StaticAttrOpcode,
   DynamicAttrOpcode,
-  DynamicAttrNSOpcode,
-  CommentOpcode
+  DynamicAttrNSOpcode
 } from '../compiled/opcodes/dom';
 
 import {
@@ -429,7 +427,7 @@ export class DynamicAttr extends AttributeSyntax<string> {
     });
   }
 
-  static build(_name: string, value: ExpressionSyntax<string>, isTrusting: boolean = false, _namespace: string=null): DynamicAttr {
+  static build(_name: string, value: ExpressionSyntax<string>, isTrusting = false, _namespace: string=null): DynamicAttr {
     let name = intern(_name);
     let namespace = _namespace ? intern(_namespace) : null;
     return new this({ name, value, namespace, isTrusting });

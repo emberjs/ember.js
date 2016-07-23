@@ -1,19 +1,6 @@
 import {
-  CompileInto,
-  SymbolLookup,
   Statement as StatementSyntax
 } from '../../syntax';
-
-import {
-  LabelOpcode,
-  EnterOpcode,
-  PutArgsOpcode,
-  TestOpcode,
-  JumpUnlessOpcode,
-  JumpOpcode,
-  EvaluateOpcode,
-  ExitOpcode
-} from '../../compiled/opcodes/vm';
 
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 

@@ -6,7 +6,6 @@ import { Opcode, OpSeq } from './opcodes';
 import { InlineBlock, Block } from './compiled/blocks';
 
 import OpcodeBuilder from './opcode-builder';
-import OpcodeBuilderDSL from './compiled/opcodes/builder';
 
 import {
   Statement as SerializedStatement,

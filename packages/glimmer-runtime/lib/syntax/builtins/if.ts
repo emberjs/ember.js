@@ -1,25 +1,10 @@
 import {
-  CompileInto,
-  SymbolLookup,
   Statement as StatementSyntax
 } from '../../syntax';
 
 import * as Syntax from '../core';
 
-import {
-  LabelOpcode,
-  EnterOpcode,
-  PutArgsOpcode,
-  TestOpcode,
-  JumpUnlessOpcode,
-  JumpOpcode,
-  EvaluateOpcode,
-  ExitOpcode
-} from '../../compiled/opcodes/vm';
-
-import OpcodeBuilderDSL from '../../compiled/opcodes/builder'
-
-import Environment from '../../environment';
+import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
 export default class IfSyntax extends StatementSyntax {
   type = "if-statement";
