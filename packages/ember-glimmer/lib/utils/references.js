@@ -221,8 +221,10 @@ export class SimpleHelperReference extends CachedReference {
 }
 
 export class ClassBasedHelperReference extends CachedReference {
-  static create(helperClass, args) {
-    return new ClassBasedHelperReference(helperClass.create(), args);
+  static create(helperClass, vm, args) {
+    let instance = helperClass.create();
+    vm.newDestroyable(instance);
+    return new ClassBasedHelperReference(instance, args);
   }
 
   constructor(instance, args) {

@@ -370,7 +370,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     }, /Helpers may not be used in the element form/);
   }
 
-  ['@htmlbars class-based helper is torn down']() {
+  ['@test class-based helper is torn down']() {
     let destroyCalled = 0;
 
     this.registerHelper('some-helper', {
@@ -486,7 +486,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }
 
-  ['@htmlbars class-based helper used in subexpression is destroyed']() {
+  ['@test class-based helper used in subexpression is destroyed']() {
     let destroyCount = 0;
 
     this.registerHelper('dynamic-segment', {
