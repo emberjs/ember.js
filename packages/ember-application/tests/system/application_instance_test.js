@@ -159,7 +159,6 @@ if (isEnabled('ember-application-engines')) {
         [
           'route:basic',
           'event_dispatcher:main',
-          P`-bucket-cache:main`,
           'service:-routing'
         ].forEach(key => {
           assert.strictEqual(
@@ -170,6 +169,7 @@ if (isEnabled('ember-application-engines')) {
 
         [
           'router:main',
+          P`-bucket-cache:main`,
           '-view-registry:main'
         ].forEach(key => {
           assert.strictEqual(
