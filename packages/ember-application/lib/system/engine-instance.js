@@ -173,12 +173,12 @@ if (isEnabled('ember-application-engines')) {
       [
         'route:basic',
         'event_dispatcher:main',
-        P`-bucket-cache:main`,
         'service:-routing'
       ].forEach(key => this.register(key, parent.resolveRegistration(key)));
 
       [
         'router:main',
+        P`-bucket-cache:main`,
         '-view-registry:main'
       ].forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
     }
