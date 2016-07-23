@@ -1,29 +1,8 @@
 import {
-  StatementCompilationBuffer,
   Statement as StatementSyntax
 } from '../../syntax';
 
 import * as Syntax from '../core';
-
-import {
-  EnterOpcode,
-  LabelOpcode,
-  PutArgsOpcode,
-  JumpOpcode,
-  JumpUnlessOpcode,
-  EvaluateOpcode,
-  ExitOpcode,
-  PushChildScopeOpcode,
-  PopScopeOpcode
-} from '../../compiled/opcodes/vm';
-
-import {
-  PutIteratorOpcode,
-  EnterListOpcode,
-  NextIterOpcode,
-  EnterWithKeyOpcode,
-  ExitListOpcode
-} from '../../compiled/opcodes/lists';
 
 import OpcodeBuilderDSL from '../../compiled/opcodes/builder';
 
