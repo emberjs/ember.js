@@ -1,4 +1,4 @@
-import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference } from "glimmer-runtime";
+import { EvaluatedArgs, Template, RenderResult, SafeString, ValueReference, VM } from "glimmer-runtime";
 import { TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight } from "glimmer-test-helpers";
 import { PathReference } from "glimmer-reference";
 import { UpdatableReference } from "glimmer-object-reference";
@@ -524,7 +524,7 @@ test("triple curlies with empty string initial value", assert => {
 test("double curlies with const SafeString", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+  env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
     return new ValueReference<Opaque>(makeSafeString(rawString));
   });
 
@@ -545,7 +545,7 @@ test("double curlies with const SafeString", assert => {
 test("double curlies with const Node", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+  env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
     return new ValueReference<Opaque>(document.createTextNode(rawString));
   });
 
@@ -566,7 +566,7 @@ test("double curlies with const Node", assert => {
 test("triple curlies with const SafeString", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+  env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
     return new ValueReference<Opaque>(makeSafeString(rawString));
   });
 
@@ -587,7 +587,7 @@ test("triple curlies with const SafeString", assert => {
 test("triple curlies with const Node", assert => {
   let rawString = '<b>bold</b> and spicy';
 
-  env.registerInternalHelper('const-foobar', (args: EvaluatedArgs) => {
+  env.registerInternalHelper('const-foobar', (vm: VM, args: EvaluatedArgs) => {
     return new ValueReference<Opaque>(document.createTextNode(rawString));
   });
 
@@ -603,6 +603,36 @@ test("triple curlies with const Node", assert => {
 
   equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', "no change");
   strictEqual(root.firstChild, valueNode, "The node was not blown away");
+});
+
+test("helpers can add destroyables", assert => {
+  let destroyable = {
+    count: 0,
+    destroy() {
+      this.count++;
+    }
+  };
+
+  env.registerInternalHelper('destroy-me', (vm: VM, args: EvaluatedArgs) => {
+    vm.newDestroyable(destroyable);
+    return new ValueReference<Opaque>('destroy me!');
+  });
+
+  let template = compile('<div>{{destroy-me}}</div>');
+
+  render(template, {});
+
+  equalTokens(root, '<div>destroy me!</div>', 'initial render');
+  strictEqual(destroyable.count, 0, 'not destroyed');
+
+  rerender();
+
+  equalTokens(root, '<div>destroy me!</div>', 'no change');
+  strictEqual(destroyable.count, 0, 'not destroyed');
+
+  result.destroy();
+
+  strictEqual(destroyable.count, 1, 'is destroyed');
 });
 
 test("dynamically scoped keywords can be passed to render, and used in curlies", assert => {

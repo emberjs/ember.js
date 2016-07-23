@@ -643,7 +643,7 @@ export class TestEnvironment extends Environment {
   }
 
   registerHelper(name: string, helper: UserHelper) {
-    this.helpers[name] = (args: EvaluatedArgs) => new HelperReference(helper, args);
+    this.helpers[name] = (vm: VM, args: EvaluatedArgs) => new HelperReference(helper, args);
   }
 
   registerInternalHelper(name: string, helper: GlimmerHelper) {

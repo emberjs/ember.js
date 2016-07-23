@@ -4,7 +4,8 @@ import { DOMHelper } from './dom/helper';
 import { Reference, OpaqueIterable } from 'glimmer-reference';
 import { NULL_REFERENCE, ConditionalReference } from './references';
 import {
-  defaultChangeLists
+  defaultChangeLists,
+  IChangeList
 } from './dom/change-lists';
 
 import {
@@ -18,10 +19,6 @@ import {
 } from './component/interfaces';
 
 import {
-  IChangeList
-} from './dom/change-lists';
-
-import {
   ModifierManager
 } from './modifier/interfaces';
 
@@ -30,6 +27,9 @@ import {
 } from 'glimmer-reference';
 
 import {
+  Destroyable,
+  Dict,
+  Opaque,
   HasGuid,
   InternedString,
   intern,
@@ -44,8 +44,6 @@ import { EvaluatedArgs } from './compiled/expressions/args';
 
 import { InlineBlock } from './compiled/blocks';
 
-import { Destroyable, Dict, Opaque } from 'glimmer-util';
-
 import * as Syntax from './syntax/core';
 
 import IfSyntax from './syntax/builtins/if';
@@ -53,6 +51,8 @@ import UnlessSyntax from './syntax/builtins/unless';
 import WithSyntax from './syntax/builtins/with';
 import EachSyntax from './syntax/builtins/each';
 import PartialSyntax from './syntax/builtins/partial';
+
+import { PublicVM } from './vm/append';
 
 type ScopeSlot = PathReference<Opaque> | InlineBlock;
 
@@ -241,7 +241,7 @@ type PositionalArguments = Opaque[];
 type KeywordArguments = Dict<Opaque>;
 
 export interface Helper {
-  (args: EvaluatedArgs): PathReference<Opaque>;
+  (vm: PublicVM, args: EvaluatedArgs): PathReference<Opaque>;
 }
 
 export interface ParsedStatement {
