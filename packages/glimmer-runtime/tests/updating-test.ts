@@ -49,7 +49,9 @@ function render(template: Template, context = {}, view: PathReference<Opaque> = 
 
 function rerender(context: any = null) {
   if (context !== null) self.update(context);
+  env.begin();
   result.rerender();
+  env.commit();
 }
 
 function getNodeByClassName(className) {

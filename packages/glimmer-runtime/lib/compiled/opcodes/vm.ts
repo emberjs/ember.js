@@ -534,7 +534,7 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   evaluate(vm: UpdatingVM) {
     let { tag, target, lastRevision } = this;
 
-    if (tag.validate(lastRevision)) {
+    if (!vm.alwaysRevalidate && tag.validate(lastRevision)) {
       vm.goto(target);
     }
   }

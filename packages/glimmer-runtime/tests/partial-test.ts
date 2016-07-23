@@ -42,7 +42,9 @@ function rerender(context: Object = {}, params: RerenderParams = { assertStable:
     snapshot = generateSnapshot(root);
   }
   self.update(opaque(context));
+  env.begin();
   result.rerender();
+  env.commit();
   if (params.assertStable) {
     equalSnapshots(generateSnapshot(root), snapshot);
   }

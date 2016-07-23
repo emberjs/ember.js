@@ -21,16 +21,10 @@ export default class RenderResult implements Bounds, Destroyable, ExceptionHandl
     this.bounds = bounds;
   }
 
-  rerender() {
+  rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
     let { env, updating } = this;
-
-    env.begin();
-
-    let vm = new UpdatingVM(env);
-
+    let vm = new UpdatingVM(env, { alwaysRevalidate });
     vm.execute(updating, this);
-
-    env.commit();
   }
 
   parentElement() {
