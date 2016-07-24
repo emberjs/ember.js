@@ -3,13 +3,14 @@ import { VM } from '../../vm';
 import { LabelOpcode } from '../../compiled/opcodes/vm';
 import { EvaluatedArgs } from '../expressions/args';
 import { FIXME, ListSlice, Slice } from 'glimmer-util';
-import { VOLATILE_TAG, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
+import { RevisionTag, Reference, ConstReference, ReferenceIterator, IterationArtifacts } from 'glimmer-reference';
 
 class IterablePresenceReference implements Reference<boolean> {
+  public tag: RevisionTag;
   private artifacts: IterationArtifacts;
-  public tag = VOLATILE_TAG as FIXME<'Can we do better than this?'>;
 
   constructor(artifacts: IterationArtifacts) {
+    this.tag = artifacts.tag;
     this.artifacts = artifacts;
   }
 

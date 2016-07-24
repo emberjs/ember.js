@@ -2,6 +2,7 @@ import {
   VOLATILE_TAG,
   BasicReference,
   Reference,
+  RevisionTag,
   AbstractIterable,
   Iterator,
   IterationItem,
@@ -111,9 +112,11 @@ class TestIterator implements Iterator<Opaque, Opaque> {
 }
 
 class TestIterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque, Opaque>, UpdatableReference<Opaque>, UpdatableReference<Opaque>> {
+  public tag: RevisionTag;
   private arrayRef: UpdatableReference<TestItem[]>;
 
   constructor(arrayRef: UpdatableReference<TestItem[]>) {
+    this.tag = arrayRef.tag;
     this.arrayRef = arrayRef;
   }
 
