@@ -286,8 +286,12 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
     return new klass(args.named.value());
   }
 
-  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: Environment): CompiledBlock {
-    return compileLayout(new BasicComponentLayoutCompiler(definition.layoutString), env);
+  layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledBlock {
+    if (env.compiledLayouts[definition.name]) {
+      return env.compiledLayouts[definition.name];
+    }
+
+    return env.compiledLayouts[definition.name] = compileLayout(new BasicComponentLayoutCompiler(definition.layoutString), env);
   }
 
   getSelf(component: BasicComponent): PathReference<Opaque> {
@@ -318,8 +322,12 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
-  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: Environment): CompiledBlock {
-    return compileLayout(new StaticTaglessComponentLayoutCompiler(definition.layoutString), env);
+  layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledBlock {
+    if (env.compiledLayouts[definition.name]) {
+      return env.compiledLayouts[definition.name];
+    }
+
+    return env.compiledLayouts[definition.name] = compileLayout(new StaticTaglessComponentLayoutCompiler(definition.layoutString), env);
   }
 }
 
@@ -341,8 +349,11 @@ class EmberishGlimmerComponentManager implements ComponentManager<EmberishGlimme
     return component;
   }
 
-  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: Environment): CompiledBlock {
-    return compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.layoutString), env);
+  layoutFor(definition: EmberishGlimmerComponentDefinition, component: EmberishGlimmerComponent, env: TestEnvironment): CompiledBlock {
+    if (env.compiledLayouts[definition.name]) {
+      return env.compiledLayouts[definition.name];
+    }
+    return env.compiledLayouts[definition.name] = compileLayout(new EmberishGlimmerComponentLayoutCompiler(definition.layoutString), env);
   }
 
   getSelf(component: EmberishGlimmerComponent): PathReference<Opaque> {
@@ -441,14 +452,18 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
     return component;
   }
 
-  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: Environment): CompiledBlock {
+  layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledBlock {
     let layoutString = definition.layoutString;
 
     if (!layoutString && layoutString !== '') {
       layoutString = component['layout'];
     }
 
-    return compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
+    if (env.compiledLayouts[definition.name]) {
+      return env.compiledLayouts[definition.name];
+    }
+
+    return env.compiledLayouts[definition.name] = compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
@@ -635,6 +650,7 @@ export class TestEnvironment extends Environment {
   private modifiers = dict<ModifierManager<Opaque>>();
   private partials = dict<PartialDefinition>();
   private components = dict<ComponentDefinition<any>>();
+  public compiledLayouts = dict<CompiledBlock>();
 
   constructor(dom?: IDOMHelper) {
     super(dom || new DOMHelper(document));
