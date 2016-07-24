@@ -185,7 +185,11 @@ class Renderer {
   }
 
   rerender(view) {
+    let env = this._env;
+
+    env.begin();
     (view['_renderResult'] || this._root['_renderResult']).rerender();
+    env.commit();
   }
 
   remove(view) {
