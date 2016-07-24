@@ -165,10 +165,12 @@ class EmptyIterator implements OpaqueIterator {
 const EMPTY_ITERATOR = new EmptyIterator();
 
 class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque, Opaque>, UpdatableReference<Opaque>, UpdatableReference<Opaque>> {
+  public tag: RevisionTag;
   private ref: Reference<Opaque>;
   private keyFor: KeyFor<Opaque>;
 
   constructor(ref: Reference<Opaque>, keyFor: KeyFor<Opaque>) {
+    this.tag = ref.tag;
     this.ref = ref;
     this.keyFor = keyFor;
   }
