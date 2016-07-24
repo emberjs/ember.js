@@ -15,6 +15,7 @@ export { default as LinkTo } from 'ember-glimmer/components/link-to';
 export { DOMHelper } from 'glimmer-runtime';
 export { InteractiveRenderer, InertRenderer } from 'ember-glimmer/renderer';
 export { default as makeBoundHelper } from 'ember-glimmer/make-bound-helper';
+export { htmlSafe, SafeString } from 'ember-glimmer/utils/string';
 
 export function buildOwner(options) {
   let owner = _buildOwner(options);

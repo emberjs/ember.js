@@ -2,12 +2,11 @@
 import isEnabled from 'ember-metal/features';
 import { set } from 'ember-metal/property_set';
 import { observer } from 'ember-metal/mixin';
-import { Component, compile } from '../../utils/helpers';
+import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes, equalTokens, equalsElement } from '../../utils/test-helpers';
-import { htmlSafe } from 'ember-htmlbars/utils/string';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import inject from 'ember-runtime/inject';

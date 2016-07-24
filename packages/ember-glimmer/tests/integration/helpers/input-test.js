@@ -1,15 +1,12 @@
 import { set } from 'ember-metal/property_set';
-import { TextField, Checkbox } from '../../utils/helpers';
+import { TextField, Checkbox, Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'ember-runtime/tests/utils';
+import assign from 'ember-metal/assign';
 
 class InputRenderingTest extends RenderingTest {
   constructor() {
     super();
-
-    // Modifying input.selectionStart, which is utilized in the cursor tests,
-    // causes an event in Safari.
-    runDestroy(this.owner.lookup('event_dispatcher:main'));
 
     this.registerComponent('-text-field', { ComponentClass: TextField });
     this.registerComponent('-checkbox', { ComponentClass: Checkbox });
@@ -67,6 +64,17 @@ class InputRenderingTest extends RenderingTest {
     let input = this.$input()[0];
     this.assert.equal(input.selectionStart, start, `the cursor start position should be ${start}`);
     this.assert.equal(input.selectionEnd, end, `the cursor end position should be ${end}`);
+  }
+
+  triggerEvent(type, options) {
+    let event = document.createEvent('Events');
+    event.initEvent(type, true, true);
+    assign(event, options);
+
+    let element = this.$input()[0];
+    this.runTask(() => {
+      element.dispatchEvent(event);
+    });
   }
 }
 
@@ -218,6 +226,10 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
   }
 
   ['@test cursor selection range'](assert) {
+    // Modifying input.selectionStart, which is utilized in the cursor tests,
+    // causes an event in Safari.
+    runDestroy(this.owner.lookup('event_dispatcher:main'));
+
     this.render(`{{input type="text" value=value}}`, { value: 'original' });
 
     let input = this.$input()[0];
@@ -255,6 +267,153 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     }, `Using '{{input on="focus-in" action="doFoo"}}' ('-top-level' @ L1:C0) is deprecated. Please use '{{input focus-in="doFoo"}}' instead.`);
   }
 
+  ['@test sends an action with `{{input action="foo"}}` when <enter> is pressed [DEPRECATED]'](assert) {
+    assert.expect(2);
+
+    expectDeprecation(() => {
+      this.render(`{{input action='foo'}}`, {
+        actions: {
+          foo() {
+            assert.ok(true, 'action was triggered');
+          }
+        }
+      });
+    }, /Please use '{{input enter="foo"}}' instead/);
+
+    this.triggerEvent('keyup', {
+      keyCode: 13
+    });
+  }
+
+  ['@test sends an action with `{{input enter="foo"}}` when <enter> is pressed'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input enter='foo'}}`, {
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.triggerEvent('keyup', {
+      keyCode: 13
+    });
+  }
+
+  ['@test sends an action with `{{input key-press="foo"}}` is pressed'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input value=value key-press='foo'}}`, {
+      value: 'initial',
+
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.triggerEvent('keypress', {
+      keyCode: 65
+    });
+  }
+
+  ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
+    assert.expect(1);
+
+    let ParentComponent = Component.extend({
+      change() {
+        assert.ok(true, 'bubbled upwards');
+      }
+    });
+
+    this.registerComponent('x-parent', {
+      ComponentClass: ParentComponent,
+      template: `{{input bubbles=true}}`
+    });
+    this.render(`{{x-parent}}`);
+
+    this.triggerEvent('change');
+  }
+
+  ['@test triggers `focus-in` when focused'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input focus-in='foo'}}`, {
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.runTask(() => { this.$input().trigger('focusin'); });
+  }
+
+  ['@test sends `insert-newline` when <enter> is pressed'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input insert-newline='foo'}}`, {
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.triggerEvent('keyup', {
+      keyCode: 13
+    });
+  }
+
+  ['@test sends an action with `{{input escape-press="foo"}}` when <escape> is pressed'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input escape-press='foo'}}`, {
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.triggerEvent('keyup', {
+      keyCode: 27
+    });
+  }
+
+  ['@test sends an action with `{{input key-down="foo"}}` when a key is pressed'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input key-down='foo'}}`, {
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.triggerEvent('keydown', {
+      keyCode: 65
+    });
+  }
+
+  ['@test sends an action with `{{input key-up="foo"}}` when a key is pressed'](assert) {
+    assert.expect(1);
+
+    this.render(`{{input key-up='foo'}}`, {
+      actions: {
+        foo() {
+          assert.ok(true, 'action was triggered');
+        }
+      }
+    });
+
+    this.triggerEvent('keyup', {
+      keyCode: 65
+    });
+  }
 });
 
 moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRenderingTest {
