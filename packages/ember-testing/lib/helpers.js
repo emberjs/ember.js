@@ -40,24 +40,6 @@ import wait from './helpers/wait';
   @public
 */
 asyncHelper('visit', visit);
-
-/**
-  Clicks an element and triggers any actions triggered by the element's `click`
-  event.
-
-  Example:
-
-  ```javascript
-  click('.some-jQuery-selector').then(function() {
-    // assert something
-  });
-  ```
-
-  @method click
-  @param {String} selector jQuery selector for finding element on the DOM
-  @return {RSVP.Promise}
-  @public
-*/
 asyncHelper('click', click);
 
 /**
@@ -162,25 +144,27 @@ helper('findWithAssert', findWithAssert);
 */
 asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
-helper('currentRouteName', currentRouteName);
+
+
 /**
-  Returns the current path.
+  Returns the currently active route name.
 
 Example:
 
 ```javascript
-function validateURL() {
-  equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
+function validateRouteName() {
+  equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
 }
 
-click('#some-link-id').then(validateURL);
+visit('/some/path').then(validateRouteName)
 ```
 
-@method currentPath
-@return {Object} The currently active path.
+@method currentRouteName
+@return {Object} The name of the currently active route.
 @since 1.5.0
 @public
 */
+helper('currentRouteName', currentRouteName);
 helper('currentPath', currentPath);
 
 /**
@@ -202,5 +186,50 @@ click('#some-link-id').then(validateURL);
 @public
 */
 helper('currentURL', currentURL);
+
+/**
+ Pauses the current test - this is useful for debugging while testing or for test-driving.
+ It allows you to inspect the state of your application at any point.
+
+ Example (The test will pause before clicking the button):
+
+ ```javascript
+ visit('/')
+ return pauseTest();
+
+ click('.btn');
+ ```
+
+ @since 1.9.0
+ @method pauseTest
+ @return {Object} A promise that will never resolve
+ @public
+*/
 asyncHelper('pauseTest', pauseTest);
+
+/**
+  Triggers the given DOM event on the element identified by the provided selector.
+
+  Example:
+
+  ```javascript
+  triggerEvent('#some-elem-id', 'blur');
+  ```
+
+  This is actually used internally by the `keyEvent` helper like so:
+
+  ```javascript
+  triggerEvent('#some-elem-id', 'keypress', { keyCode: 13 });
+  ```
+
+ @method triggerEvent
+ @param {String} selector jQuery selector for finding element on the DOM
+ @param {String} [context] jQuery selector that will limit the selector
+                           argument to find only within the context's children
+ @param {String} type The event type to be triggered.
+ @param {Object} [options] The options to be passed to jQuery.Event.
+ @return {RSVP.Promise}
+ @since 1.5.0
+ @public
+*/
 asyncHelper('triggerEvent', triggerEvent);
