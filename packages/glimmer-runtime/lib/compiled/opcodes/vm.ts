@@ -232,7 +232,7 @@ export interface EnterOptions {
 
 export class EnterOpcode extends Opcode {
   public type = "enter";
-  private slice: Slice<Opcode>;
+  public slice: Slice<Opcode>; // Public because it's used by lazy content deopt
 
   constructor({ begin, end }: EnterOptions) {
     super();

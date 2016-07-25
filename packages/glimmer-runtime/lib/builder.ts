@@ -295,7 +295,7 @@ export interface Tracker extends Bounds, Destroyable {
   reset(env: Environment);
 }
 
-class BlockTracker implements Tracker {
+export class BlockTracker implements Tracker {
   private first: FirstNode = null;
   private last: LastNode = null;
   private destroyables: Destroyable[] = null;
