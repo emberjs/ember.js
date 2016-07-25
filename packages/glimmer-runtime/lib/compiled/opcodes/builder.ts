@@ -263,8 +263,18 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.EvaluateOpcode({ debug: name, block }));
   }
 
-  test() {
-    this.append(new vm.TestOpcode());
+  test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
+    if (testFunc === 'const') {
+      this.append(new vm.TestOpcode(vm.ConstTest));
+    } else if (testFunc === 'simple') {
+      this.append(new vm.TestOpcode(vm.SimpleTest));
+    } else if (testFunc === 'environment') {
+      this.append(new vm.TestOpcode(vm.EnvironmentTest));
+    } else if (typeof testFunc === 'function') {
+      this.append(new vm.TestOpcode(testFunc));
+    } else {
+      throw 'unreachable';
+    }
   }
 
   jump(target: string) {
