@@ -87,6 +87,24 @@ function curryArgs(definition, newArgs) {
     validatePositionalParameters(newArgs.named, slicedPositionalArgs, positionalParams);
   }
 
+  let isRest = typeof positionalParams === 'string';
+
+  // For non-rest position params, we need to perform the position -> name mapping
+  // at each layer to avoid a collision later when the args are used to construct
+  // the component instance (inside of processArgs(), inside of create()).
+  let positionalToNamedParams = {};
+
+  if (!isRest && positionalParams && positionalParams.length > 0) {
+    let limit = Math.min(positionalParams.length, slicedPositionalArgs.length);
+
+    for (let i = 0; i < limit; i++) {
+      let name = positionalParams[i];
+      positionalToNamedParams[name] = slicedPositionalArgs[i];
+    }
+
+    slicedPositionalArgs.length = 0; // Throw them away since you're merged in.
+  }
+
   // args (aka 'oldArgs') may be undefined or simply be empty args, so
   // we need to fall back to an empty array or object.
   let oldNamed = args && args.named && args.named.map || {};
@@ -98,7 +116,7 @@ function curryArgs(definition, newArgs) {
   mergedPositional.splice(0, slicedPositionalArgs.length, ...slicedPositionalArgs);
 
   // Merge named maps
-  let mergedNamed = assign({}, oldNamed, newArgs.named.map);
+  let mergedNamed = assign({}, oldNamed, positionalToNamedParams, newArgs.named.map);
 
   let mergedArgs = EvaluatedArgs.create({
     named: EvaluatedNamedArgs.create({

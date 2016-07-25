@@ -1,6 +1,6 @@
 import { CONSTANT_TAG } from 'glimmer-reference';
 import symbol from 'ember-metal/symbol';
-import { assert } from 'ember-metal/debug';
+// import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
@@ -117,14 +117,14 @@ class PositionalArgs {
       positionalParamNames = positionalParamNames.slice(0, args.positional.length);
     }
 
-    for (let i = 0; i < positionalParamNames.length; i++) {
-      let name = positionalParamNames[i];
+    // for (let i = 0; i < positionalParamNames.length; i++) {
+    //   let name = positionalParamNames[i];
 
-      // assert(
-      //   `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-      //   !args.named.has(name)
-      // );
-    }
+    //   // assert(
+    //   //   `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+    //   //   !args.named.has(name)
+    //   // );
+    // }
 
     return new PositionalArgs(args, positionalParamNames);
   }
