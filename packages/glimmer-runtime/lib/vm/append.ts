@@ -207,6 +207,10 @@ export default class VM implements PublicVM {
     if (callerScope) this.frame.setCallerScope(callerScope);
   }
 
+  pushEvalFrame(ops: OpSeq) {
+    this.frame.push(ops);
+  }
+
   popFrame() {
     let { frame } = this;
 

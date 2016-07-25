@@ -40,6 +40,7 @@ import {
   // Concrete Syntax
   Templates,
   ArgsSyntax,
+  OptimizedAppend,
 
   // References
   ValueReference,
@@ -723,6 +724,7 @@ export class TestEnvironment extends Environment {
 
   refineStatement(statement: ParsedStatement, parentMeta: BlockMeta): StatementSyntax {
     let {
+      appendType,
       isSimple,
       isBlock,
       isInline,
@@ -753,6 +755,10 @@ export class TestEnvironment extends Environment {
       if (component) {
         return new CurlyComponentSyntax({ args, definition: component, templates });
       }
+    }
+
+    if (!isSimple && appendType === 'unknown') {
+      return (statement.original as OptimizedAppend).deopt();
     }
 
     return super.refineStatement(statement, parentMeta);

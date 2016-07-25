@@ -88,8 +88,10 @@ import {
 } from '../compiled/opcodes/dom';
 
 import {
-  CautiousAppendOpcode,
-  TrustingAppendOpcode
+  OptimizedCautiousAppendOpcode,
+  OptimizedTrustingAppendOpcode,
+  GuardedCautiousAppendOpcode,
+  GuardedTrustingAppendOpcode
 } from '../compiled/opcodes/content';
 
 import {
@@ -182,17 +184,14 @@ export class Unknown extends ExpressionSyntax<any> {
   }
 }
 
-export class Append extends StatementSyntax {
-  public type = "append";
+interface AppendOpcode {
+  new(): Opcode;
+}
 
+abstract class Append extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Append): Append {
     let [, value, trustingMorph] = sexp;
-
-    return new Append({ value: buildExpression(value), trustingMorph });
-  }
-
-  static build(value: ExpressionSyntax<any>, trustingMorph: boolean) {
-    return new this({ value, trustingMorph });
+    return new OptimizedAppend({ value: buildExpression(value), trustingMorph });
   }
 
   value: ExpressionSyntax<any>;
@@ -203,16 +202,36 @@ export class Append extends StatementSyntax {
     this.value = value;
     this.trustingMorph = trustingMorph;
   }
+}
 
+export class OptimizedAppend extends Append {
+  public type = "optimized-append";
+
+  deopt(): UnoptimizedAppend {
+    return new UnoptimizedAppend(this);
   }
 
   compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
     compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env, block.meta) }));
 
     if (this.trustingMorph) {
-      compiler.append(new TrustingAppendOpcode());
+      compiler.append(new OptimizedTrustingAppendOpcode());
     } else {
-      compiler.append(new CautiousAppendOpcode());
+      compiler.append(new OptimizedCautiousAppendOpcode());
+    }
+  }
+}
+
+export class UnoptimizedAppend extends Append {
+  public type = "unoptimized-append";
+
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
+    let expression = this.value.compile(compiler, env, block.meta);
+
+    if (this.trustingMorph) {
+      compiler.append(new GuardedTrustingAppendOpcode(expression));
+    } else {
+      compiler.append(new GuardedCautiousAppendOpcode(expression));
     }
   }
 }
