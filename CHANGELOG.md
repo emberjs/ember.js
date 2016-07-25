@@ -1,25 +1,17 @@
 # Ember Changelog
 
-### 2.7.0-beta.4 (July 11, 2016)
+### 2.7.0 (July 25, 2016)
 
+- [#13764](https://github.com/emberjs/ember.js/pull/13764) [BUGFIX] Keep rest positional parameters when nesting contextual components if needed.
 - [#13781](https://github.com/emberjs/ember.js/pull/13781) [BUGFIX] Fix NoneLocation#getURL
 - [#13797](https://github.com/emberjs/ember.js/pull/13797) [BUGFIX] Ensure didInitAttrs deprecation is stripped in prod.
-
-### 2.7.0-beta.3 (July 5, 2016)
-
 - [#13768](https://github.com/emberjs/ember.js/pull/13768) [BUGFIX] Update route-recognizer to v0.2.0. This addresses a large number of per-existing bugs related to URL encoding. However, in doing so, it might inevitably break existing workarounds in this area. Please refer to the linked pull request for more details.
-
-### 2.7.0-beta.2 (June 27, 2016)
-
 - [#13634](https://github.com/emberjs/ember.js/pull/13634) [BUGFIX] Fix issues with rerendering blockless and tagless components.
 - [#13605](https://github.com/emberjs/ember.js/pull/13605) [BUGFIX] Ensure `pauseTest` runs after other async helpers.
 - [#13655](https://github.com/emberjs/ember.js/pull/13655) [BUGFIX] Make debugging `this._super` much easier (remove manual `.call` / `.apply` optimizations).
 - [#13672](https://github.com/emberjs/ember.js/pull/13672) [BUGFIX] Fix issue with `this.render` and `this.disconnectOutlet` in routes.
 - [#13716](https://github.com/emberjs/ember.js/pull/13716) [BUGFIX] Ensure that `Ember.Test.waiters` allows access to configured test waiters.
 - [#13273](https://github.com/emberjs/ember.js/pull/13273) [BUGFIX] Fix a number of query param related issues reported.
-
-### 2.7.0-beta.1 (June 8, 2016)
-
 - [#13424](https://github.com/emberjs/ember.js/pull/13424) [DEPRECATE] Deprecate Ember.Binding. See [the deprecation guide](http://emberjs.com/deprecations/v2.x/#toc_ember-binding) for more details.
 - [#13599](https://github.com/emberjs/ember.js/pull/13599) [FEATURE] Enable `ember-runtime-computed-uniq-by` feature.
 
