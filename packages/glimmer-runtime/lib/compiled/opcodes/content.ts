@@ -92,7 +92,7 @@ export abstract class AppendOpcode<T extends Insertion> extends Opcode {
 
     stack.newBounds(bounds);
 
-    if (!isConst(reference)) {
+    if (cache /* i.e. !isConst(reference) */) {
       vm.updateWith(this.updateWith(vm, reference, cache, bounds, upsert));
     }
   }
