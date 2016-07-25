@@ -109,7 +109,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     let labels = this.labels;
 
     if (labels[label]) return labels[label];
-    else return labels[label] = new vm.LabelOpcode(label);
+    else return labels[label] = new vm.LabelOpcode({ label });
   }
 
   // components
