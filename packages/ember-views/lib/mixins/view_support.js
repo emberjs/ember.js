@@ -114,9 +114,6 @@ export default Mixin.create({
   /**
     Appends the view's element to the specified parent element.
 
-    If the view does not have an HTML representation yet, `createElement()`
-    will be called automatically.
-
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
     finished synchronizing.
@@ -295,26 +292,6 @@ export default Mixin.create({
   findElementInParentElement(parentElem) {
     let id = '#' + this.elementId;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
-  },
-
-  /**
-    Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method. Once the element is created,
-    it sets the `element` property of the view to the rendered element.
-
-    After the element has been inserted into the DOM, `didInsertElement` will
-    be called on this view and all of its child views.
-
-    @method createElement
-    @return {Ember.View} receiver
-    @private
-  */
-  createElement() {
-    if (this.element) { return this; }
-
-    this.renderer.createElement(this);
-
-    return this;
   },
 
   /**

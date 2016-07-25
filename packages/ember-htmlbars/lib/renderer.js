@@ -64,11 +64,7 @@ Renderer.prototype.revalidateTopLevelView =
     // This guard prevents revalidation on an already-destroyed view.
     if (view._renderNode.lastResult) {
       view._renderNode.lastResult.revalidate(view.env);
-      // supports createElement, which operates without moving the view into
-      // the inDOM state.
-      if (view._state === 'inDOM') {
-        this.dispatchLifecycleHooks(view.env);
-      }
+      this.dispatchLifecycleHooks(view.env);
       this.clearRenderedViews(view.env);
     }
   };
@@ -147,13 +143,6 @@ Renderer.prototype.replaceIn =
     morph.ownerNode = morph;
     view._willInsert = true;
     run.scheduleOnce('render', this, this.renderTopLevelView, view, morph);
-  };
-
-Renderer.prototype.createElement =
-  function Renderer_createElement(view) {
-    let morph = this._dom.createFragmentMorph();
-    morph.ownerNode = morph;
-    this.prerenderTopLevelView(view, morph);
   };
 
 Renderer.prototype.didCreateElement = function (view, element) {
