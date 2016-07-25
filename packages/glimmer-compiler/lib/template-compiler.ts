@@ -1,7 +1,7 @@
 import TemplateVisitor from "./template-visitor";
 import JavaScriptCompiler from "./javascript-compiler";
 import { FIXME, getAttrNamespace } from "glimmer-util";
-import { isHelper } from "glimmer-syntax";
+import { isHelper, isSelfGet } from "glimmer-syntax";
 import { assert } from "glimmer-util";
 
 export interface CompileOptions {
@@ -157,6 +157,8 @@ export default class TemplateCompiler {
     } else if (isHelper(expr)) {
       this.prepareHelper(expr);
       this.opcode('helper', expr, expr.path.parts);
+    } else if (isSelfGet(expr)) {
+      this.opcode('selfGet', expr, expr.path.parts);
     } else {
       this.opcode('unknown', expr, expr.path.parts);
     }

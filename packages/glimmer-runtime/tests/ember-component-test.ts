@@ -2900,6 +2900,38 @@ QUnit.test('it works on unoptimized appends (dot paths)', function(assert) {
   assertEmberishElement('div', {}, 'foo bar');
 });
 
+QUnit.test('it works on unoptimized appends (this paths)', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{this.foo}}', { foo: definition });
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  rerender();
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  view.rerender({ foo: 'lol' });
+
+  assertAppended('lol');
+
+  rerender();
+
+  assertAppended('lol');
+
+  view.rerender({ foo: 'omg' });
+
+  assertAppended('omg');
+
+  view.rerender({ foo: definition });
+
+  assertEmberishElement('div', {}, 'foo bar');
+});
+
 QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
   class FooBar extends EmberishCurlyComponent {}
 
@@ -2924,6 +2956,34 @@ QUnit.test('it works on unoptimized appends when initially not a component (dot 
   assertEmberishElement('div', {}, 'foo bar');
 
   view.rerender({ foo: { bar: 'lol' } });
+
+  assertAppended('lol');
+});
+
+QUnit.test('it works on unoptimized appends when initially not a component (this paths)', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{this.foo}}', { foo: 'lol' });
+
+  assertAppended('lol');
+
+  rerender();
+
+  assertAppended('lol');
+
+  view.rerender({ foo: definition });
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  rerender();
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  view.rerender({ foo: 'lol' });
 
   assertAppended('lol');
 });
