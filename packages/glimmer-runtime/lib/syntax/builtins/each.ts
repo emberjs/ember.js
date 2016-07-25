@@ -63,9 +63,8 @@ export default class EachSyntax extends StatementSyntax {
         dsl.popScope();
       });
 
-      dsl.jump(END);
-
       if (templates.inverse) {
+        dsl.jump(END);
         dsl.label('ELSE');
         dsl.evaluate('inverse');
       }
