@@ -4,6 +4,15 @@ import isEnabled from 'ember-metal/features';
 import { subscribe, reset } from 'ember-metal/instrumentation';
 import run from 'ember-metal/run_loop';
 
+let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
+
+function fireNativeWithDataTransfer(node, type, dataTransfer) {
+  let event = document.createEvent('HTMLEvents');
+  event.initEvent(type, true, true);
+  event.dataTransfer = dataTransfer;
+  node.dispatchEvent(event);
+}
+
 moduleFor('EventDispatcher', class extends RenderingTest {
   ['@test events bubble view hierarchy for form elements'](assert) {
     let receivedEvent;
@@ -220,6 +229,26 @@ if (isEnabled('ember-improved-instrumentation')) {
       assert.equal(clicked, 2, 'precond - The click handler was invoked');
       assert.equal(clickInstrumented, 2, 'The click was instrumented');
       assert.strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
+    }
+  });
+}
+
+if (canDataTransfer) {
+  moduleFor('EventDispatcher - Event Properties', class extends RenderingTest {
+    ['@test dataTransfer property is added to drop event'](assert) {
+      let receivedEvent;
+      this.registerComponent('x-foo', {
+        ComponentClass: Component.extend({
+          drop(event) {
+            receivedEvent = event;
+          }
+        })
+      });
+
+      this.render(`{{x-foo}}`);
+
+      fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
+      assert.equal(receivedEvent.dataTransfer, 'success');
     }
   });
 }
