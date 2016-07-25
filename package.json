@@ -37,6 +37,7 @@
     "git-repo-version": "^0.1.2",
     "handlebars": "^3.0.2",
     "qunit": "^0.7.2",
+    "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.2.5",
     "typescript": "next"
   },
@@ -44,9 +45,12 @@
     "loader.js": "^4.0.10",
     "benchmark": "^1.0.0",
     "bower": "~1.3.3",
+    "chalk": "^1.1.3",
     "ember-cli": "^2.4.2",
     "ember-cli-release": "^1.0.0-beta.1",
     "ember-cli-sauce": "^1.3.0",
+    "glob": "^7.0.5",
+    "qunitjs": "^2.0.1",
     "tslint": "next"
   }
 }
