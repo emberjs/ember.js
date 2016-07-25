@@ -37,7 +37,8 @@ Container.prototype = {
    @property owner
    @type Object
    */
-  owner: null;
+  owner: null,
+  
   /**
    @private
    @property registry
@@ -45,24 +46,28 @@ Container.prototype = {
    @since 1.11.0
    */
   registry: null,
+  
   /**
    @private
    @property cache
    @type InheritingDict
    */
   cache: null,
+  
   /**
    @private
    @property factoryCache
    @type InheritingDict
    */
   factoryCache: null,
+  
   /**
    @private
    @property validationCache
    @type InheritingDict
    */
   validationCache: null,
+  
   /**
    Given a fullName return a corresponding instance.
    The default behaviour is for lookup to return a singleton instance.
@@ -214,13 +219,13 @@ returns {hash table}
 */
 function buildInjections(/* container, ...injections */) {
   let hash = {};        // created a hash table
-  if (arguments.length > 1) {     // if the length of argument is greater than 1 then set first element of  argument array as container
+  if (arguments.length > 1) {   // if the length of argument is greater than 1 then set first element of  argument array as container
     let container = arguments[0];
-    let injections = [];               //created a new array called injections
+    let injections = [];           //created a new array called injections
     let injection;
     for (let i = 1; i < arguments.length; i++) {
       if (arguments[i]) {
-        injections = injections.concat(arguments[i]);      // appending all the elements of the arguments array in injection array
+        injections = injections.concat(arguments[i]); // appending all the elements of the arguments array in injection array
       }
     }
     container.registry.validateInjections(injections);     // to validate the elements in injection array
