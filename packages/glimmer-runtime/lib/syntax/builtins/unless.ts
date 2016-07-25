@@ -21,10 +21,6 @@ export default class UnlessSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#unless ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop

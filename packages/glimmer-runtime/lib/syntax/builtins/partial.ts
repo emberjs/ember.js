@@ -32,10 +32,6 @@ export default class PartialSyntax extends StatementSyntax {
     this.args = args;
   }
 
-  prettyPrint() {
-    return `partial ${this.args.prettyPrint()}`;
-  }
-
   compile(compiler: CompileInto & SymbolLookup, env: Environment, block: Block) {
 
     /*
