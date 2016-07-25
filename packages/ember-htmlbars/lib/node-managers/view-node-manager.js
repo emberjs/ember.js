@@ -3,7 +3,6 @@ import { assert, warn } from 'ember-metal/debug';
 import buildComponentTemplate from 'ember-htmlbars/system/build-component-template';
 import { get } from 'ember-metal/property_get';
 import setProperties from 'ember-metal/set_properties';
-import View from 'ember-views/views/view';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
@@ -42,17 +41,6 @@ ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs,
     if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
     if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
-
-    if (found.component.create && contentScope) {
-      let _self = contentScope.getSelf();
-      if (_self) {
-        options._context = getValue(contentScope.getSelf());
-      }
-    }
-
-    if (found.self) {
-      options._context = getValue(found.self);
-    }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, found.createOptions, renderNode, env, attrs);
 
@@ -170,8 +158,6 @@ function getTemplate(componentOrView) {
 export function createOrUpdateComponent(component, options, createOptions, renderNode, env, attrs = {}) {
   let snapshot = takeSnapshot(attrs);
   let props = assign({}, options);
-  let defaultController = View.proto().controller;
-  let hasSuppliedController = 'controller' in attrs || 'controller' in props;
 
   if (!props.ownerView && options.parentView) {
     props.ownerView = options.parentView.ownerView;
@@ -179,8 +165,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
   props.attrs = snapshot;
   if (component.create) {
-    let proto = component.proto();
-
     if (createOptions) {
       assign(props, createOptions);
     }
@@ -191,10 +175,6 @@ export function createOrUpdateComponent(component, options, createOptions, rende
 
     setOwner(props, owner);
     props.renderer = options.parentView ? options.parentView.renderer : owner && owner.lookup('renderer:-dom');
-
-    if (proto.controller !== defaultController || hasSuppliedController) {
-      delete props._context;
-    }
 
     component = component.create(props);
   } else {
