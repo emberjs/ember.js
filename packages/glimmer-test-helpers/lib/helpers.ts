@@ -171,7 +171,7 @@ export function equalSnapshots(a, b) {
 
 // detect side-effects of cloning svg elements in IE9-11
 let ieSVGInnerHTML = (function () {
-  if (!document.createElementNS) {
+  if (typeof document === 'undefined' || !document.createElementNS) {
     return false;
   }
   let div = document.createElement('div');
@@ -195,16 +195,26 @@ export function normalizeInnerHTML(actualHTML) {
   return actualHTML;
 }
 
-// detect weird IE8 checked element string
-let checkedInput = document.createElement('input');
-checkedInput.setAttribute('checked', 'checked');
-let checkedInputString = checkedInput.outerHTML;
-export function isCheckedInputHTML(element) {
-  equal(element.outerHTML, checkedInputString);
+let isCheckedInputHTML;
+
+if (typeof document === 'undefined') {
+  isCheckedInputHTML = function(element) {
+  }
+} else {
+  // detect weird IE8 checked element string
+  let checkedInput = document.createElement('input');
+  checkedInput.setAttribute('checked', 'checked');
+  let checkedInputString = checkedInput.outerHTML;
+
+  isCheckedInputHTML = function(element) {
+    equal(element.outerHTML, checkedInputString);
+  };
 }
 
+export { isCheckedInputHTML };
+
 // check which property has the node's text content
-let textProperty = document.createElement('div').textContent === undefined ? 'innerText' : 'textContent';
+let textProperty = typeof document === 'object' && document.createElement('div').textContent === undefined ? 'innerText' : 'textContent';
 export function getTextContent(el) {
   // textNode
   if (el.nodeType === 3) {
