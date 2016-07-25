@@ -4,7 +4,7 @@ dist: trusty
 
 node_js:
   - "5"
-  
+
 cache:
   directories:
     - node_modules
@@ -22,12 +22,6 @@ install:
 
 after_success:
   - "./bin/publish_builds"
-
-branches:
-  only:
-    - master
-    - beta
-    - stable
 
 env:
   global:
