@@ -135,31 +135,6 @@ helper('find', find);
   @public
 */
 helper('findWithAssert', findWithAssert);
-
-/**
-  Causes the run loop to process any pending events. This is used to ensure that
-  any async operations from other helpers (or your assertions) have been processed.
-
-  This is most often used as the return value for the helper functions (see 'click',
-  'fillIn','visit',etc).
-
-  Example:
-
-  ```javascript
-  Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
-    visit('secured/path/here')
-    .fillIn('#username', username)
-    .fillIn('#password', password)
-    .click('.submit')
-
-    return app.testHelpers.wait();
-  });
-
-  @method wait
-  @param {Object} value The value to be returned.
-  @return {RSVP.Promise}
-  @public
-*/
 asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
 helper('currentRouteName', currentRouteName);
@@ -182,25 +157,6 @@ click('#some-link-id').then(validateURL);
 @public
 */
 helper('currentPath', currentPath);
-
-/**
-  Returns the current URL.
-
-Example:
-
-```javascript
-function validateURL() {
-  equal(currentURL(), '/some/path', "correct URL was transitioned into.");
-}
-
-click('#some-link-id').then(validateURL);
-```
-
-@method currentURL
-@return {Object} The currently active URL.
-@since 1.5.0
-@public
-*/
 helper('currentURL', currentURL);
 asyncHelper('pauseTest', pauseTest);
 asyncHelper('triggerEvent', triggerEvent);
