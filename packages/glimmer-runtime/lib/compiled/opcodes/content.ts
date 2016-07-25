@@ -249,7 +249,7 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
 
     let details = dict<string>();
 
-    details["lastValue"] = JSON.stringify(this.cache.peek());
+    details["lastValue"] = this.cache && JSON.stringify(this.cache.peek());
 
     return { guid, type, details };
   }

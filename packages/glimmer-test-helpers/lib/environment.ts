@@ -671,6 +671,12 @@ export class TestEnvironment extends Environment {
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerModifier("action", new InertModifierManager());
+
+    this.registerInternalHelper("component", (vm, args) => {
+      return new DynamicComponentReference({ nameRef: args.positional.at(0), env: vm.env, args: EvaluatedArgs.empty() });
+    });
+
+    this.registerInternalHelper("hash", (vm, args) => args.named);
   }
 
   registerHelper(name: string, helper: UserHelper) {
