@@ -11,5 +11,6 @@
     "ember-string-ishtmlsafe": true,
     "ember-testing-check-waiters": true,
     "ember-metal-weakmap": null
+    "ember-computed-includes": null
   }
 }

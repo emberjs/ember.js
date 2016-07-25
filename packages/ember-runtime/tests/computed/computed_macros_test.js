@@ -15,6 +15,7 @@ import {
   deprecatingAlias,
   and,
   or,
+  includes
 } from 'ember-runtime/computed/computed_macros';
 
 import alias from 'ember-metal/alias';
@@ -22,6 +23,7 @@ import { defineProperty } from 'ember-metal/properties';
 import EmberObject from 'ember-runtime/system/object';
 import { testBoth } from 'ember-metal/tests/props_helper';
 import { A as emberA } from 'ember-runtime/system/native_array';
+import isEnabled from 'ember-metal/features';
 
 QUnit.module('CP macros');
 
@@ -499,4 +501,49 @@ testBoth('computed.deprecatingAlias', function(get, set) {
   equal(get(obj, 'bar'), 'newBar');
   equal(get(obj, 'baz'), 'newBaz');
   equal(get(obj, 'quz'), null);
+});
+
+testBoth('computed.includes', function (get, set) {
+  if (!isEnabled('ember-computed-includes')) {
+    expect(0);
+    return;
+  }
+
+  let obj = { array: ['one', '2', 3] };
+
+  defineProperty(obj, 'includesOne', includes('array', 'one'));
+
+  equal(get(obj, 'includesOne'), true, 'includes one');
+
+  defineProperty(obj, 'includesTwo', includes('array', '2'));
+
+  equal(get(obj, 'includesTwo'), true, 'includes two');
+
+  defineProperty(obj, 'includesThree', includes('array', 3));
+
+  equal(get(obj, 'includesThree'), true, 'includes three');
+
+  defineProperty(obj, 'includesNumericTwo', includes('array', 2));
+
+  equal(get(obj, 'includesNumericTwo'), false, 'does not contain numeric two');
+
+  defineProperty(obj, 'includesStringThree', includes('array', '3'));
+
+  equal(get(obj, 'includesStringThree'), false, 'does not contain string three');
+
+  set(obj, 'array', []);
+
+  equal(get(obj, 'includesOne'), false, 'false on empty array');
+
+  set(obj, 'array', 3);
+
+  equal(get(obj, 'includesOne'), false, 'false when not array');
+
+  set(obj, 'array', undefined);
+
+  equal(get(obj, 'includesOne'), false, 'false on undefined');
+
+  set(obj, 'array', emberA(['one']));
+
+  equal(get(obj, 'includesOne'), true, 'Supports ember arrays');
 });

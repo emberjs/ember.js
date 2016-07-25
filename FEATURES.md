@@ -59,3 +59,21 @@ to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blo
 
 Expose a simple mechanism for test tooling to determine if all foreign async has been
 handled before continueing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
+
+* `ember-computed-includes`
+
+  Introduces a new macro for Ember.computed to detect if an array includes a given element. Example:
+
+  ```javascript
+  let Hamster = Ember.Object.extend({
+    hasABanana: Ember.computed.includes('possessions', 'banana')
+  });
+
+  let hamster = Hamster.create();
+
+  hamster.get('hasABanana'); // false
+  hamster.set('possessions', ['orange']);
+  hamster.get('hasABanana'); // false
+  hamster.set('possessions', ['banana']);
+  hamster.get('hasABanana'); // true
+  ```
