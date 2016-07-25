@@ -6,7 +6,7 @@ import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { classes, equalTokens, equalsElement } from '../../utils/test-helpers';
+import { classes, equalTokens, equalsElement, styles } from '../../utils/test-helpers';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import inject from 'ember-runtime/inject';
@@ -2390,5 +2390,72 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     expectAssertion(() => {
       this.render('{{foo-bar}}');
     }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
+  }
+
+  ['@htmlbars should toggle visibility with isVisible'](assert) {
+    let assertStyle = (expected) => {
+      let matcher = styles(expected);
+      let actual = this.firstChild.getAttribute('style');
+
+      assert.pushResult({
+        result: matcher.match(actual),
+        message: matcher.message(),
+        actual,
+        expected
+      });
+    };
+
+    this.registerComponent('foo-bar', {
+      template: `<p>foo</p>`
+    });
+
+    this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+      visible: false
+    });
+
+    assertStyle('display: none;');
+
+    this.assertStableRerender();
+
+    this.runTask(() => { set(this.context, 'visible', true); });
+    assertStyle('');
+
+    this.runTask(() => { set(this.context, 'visible', false); });
+    assertStyle('display: none;');
+  }
+
+  ['@htmlbars isVisible does not overwrite component style'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['style'],
+        style: htmlSafe('color: blue;')
+      }),
+
+      template: `<p>foo</p>`
+    });
+
+    this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+      visible: false
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar',  style: styles('color: blue; display: none;') }
+    });
+
+    this.assertStableRerender();
+
+    this.runTask(() => { set(this.context, 'visible', true); });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar', style: styles('color: blue;') }
+    });
+
+    this.runTask(() => { set(this.context, 'visible', false); });
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { id: 'foo-bar',  style: styles('color: blue; display: none;') }
+    });
   }
 });
