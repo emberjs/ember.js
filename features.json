@@ -10,6 +10,7 @@
     "ember-runtime-enumerable-includes": true,
     "ember-string-ishtmlsafe": true,
     "ember-testing-check-waiters": true,
-    "ember-metal-weakmap": null
+    "ember-metal-weakmap": null,
+    "ember-glimmer-allow-backtracking-rerender": null
   }
 }

@@ -67,14 +67,12 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       },
 
       didReceiveAttrs() {
-        this.set('first', this.getAttr('first').toUpperCase());
+        this.set('first', this.get('first').toUpperCase());
       }
     });
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{first}}' });
 
-    this.render(`{{foo-bar first=firstAttr}}`, {
-      firstAttr: 'first attr'
-    });
+    this.render(`{{foo-bar first="first attr"}}`);
 
     assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses local state');
     this.assertText('FIRST ATTR');
@@ -84,16 +82,8 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
     assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses local state during rerender');
     this.assertText('FIRST ATTR');
 
-    // TODO: For some reason didReceiveAttrs is not called after this mutation occurs,
-    // See https://github.com/emberjs/ember.js/pull/13203
-    // this.runTask(() => set(this.context, 'firstAttr', 'second attr'));
-    // assert.equal(instance.get('first'), 'SECOND ATTR', 'component lookup uses modified local state');
-    // this.assertText('SECOND ATTR');
-
-    this.runTask(() => set(this.context, 'firstAttr', 'first attr'));
-
-    assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses reset local state');
-    this.assertText('FIRST ATTR');
+    // This is testing that passing string literals for use as initial values,
+    // so there is no update step
   }
 
   ['@test should be able to access unspecified attr #12035'](assert) {

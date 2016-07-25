@@ -19,7 +19,6 @@ import {
   RootReference,
   PropertyReference
 } from './utils/references';
-import { isReadonly } from './helpers/readonly';
 import { DirtyableTag } from 'glimmer-reference';
 import { assert, deprecate } from 'ember-metal/debug';
 import { NAME_KEY } from 'ember-metal/mixin';
@@ -103,19 +102,8 @@ const Component = CoreView.extend(
       let args, reference;
 
       if ((args = this[ARGS]) && (reference = args[key])) {
-        let value = get(this, key);
-
         if (reference[UPDATE]) {
-          reference[UPDATE](value);
-        } else if (!isReadonly(reference)) {
-          let name = this._debugContainerKey.split(':')[1];
-
-          throw new Error(strip`
-            Cannot set the \`${key}\` property (on component ${name}) to
-            \`${value}\`. The \`${key}\` property came from an immutable
-            binding in the template, such as {{${name} ${key}="string"}}
-            or {{${name} ${key}=(if theTruth "truth" "false")}}.
-          `);
+          reference[UPDATE](get(this, key));
         }
       }
     },
@@ -148,32 +136,9 @@ const Component = CoreView.extend(
 
       if (ref) {
         return ref;
-      }
-
-      let args = this[ARGS];
-      ref = args && args[key];
-
-      if (!ref || isReadonly(ref)) {
+      } else {
         return refs[key] = new PropertyReference(this[TO_ROOT_REFERENCE](), key);
       }
-
-      let { concatenatedProperties } = this;
-
-      if (concatenatedProperties &&
-          concatenatedProperties.length > 0 &&
-          concatenatedProperties.indexOf(key) >= 0) {
-        return refs[key] = new PropertyReference(this[TO_ROOT_REFERENCE](), key);
-      }
-
-      let { mergedProperties } = this;
-
-      if (mergedProperties &&
-          mergedProperties.length > 0 &&
-          mergedProperties.indexOf(key) >= 0) {
-        return refs[key] = new PropertyReference(this[TO_ROOT_REFERENCE](), key);
-      }
-
-      return refs[key] = ref;
     }
   }
 );
@@ -183,13 +148,5 @@ Component[NAME_KEY] = 'Ember.Component';
 Component.reopenClass({
   isComponentFactory: true
 });
-
-function strip([...strings], ...values) {
-  let str = strings.map((string, index) => {
-    let interpolated = values[index];
-    return string + (interpolated !== undefined ? interpolated : '');
-  }).join('');
-  return str.split('\n').map(s => s.trim()).join(' ');
-}
 
 export default Component;

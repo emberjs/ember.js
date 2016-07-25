@@ -13,7 +13,7 @@
   to
 
   ```handlebars
- {{foo.bar}}
+ {{@foo.bar}}
   ```
 
   as well as `{{#if attrs.foo}}`, `{{deeply (nested attrs.foobar.baz)}}` etc
@@ -38,7 +38,10 @@ TransformAttrsToProps.prototype.transform = function TransformAttrsToProps_trans
   traverse(ast, {
     PathExpression(node) {
       if (node.parts[0] === 'attrs') {
-        return b.path(node.original.substr(6));
+        let path = b.path(node.original.substr(6));
+        path.original = `@${path.original}`;
+        path.data = true;
+        return path;
       }
     }
   });

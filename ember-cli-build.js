@@ -25,6 +25,13 @@ function babelConfigFor(environment) {
 
   var features = JSON.parse(featuresJson).features;
   features['mandatory-setter'] = isDevelopment;
+  features['ember-glimmer-detect-backtracking-rerender'] = isDevelopment;
+  features['ember-glimmer-allow-backtracking-rerender'] = false;
+
+  if (process.env.ALLOW_BACKTRACKING) {
+    features['ember-glimmer-allow-backtracking-rerender'] = true;
+    features['ember-glimmer-detect-backtracking-rerender'] = false;
+  }
 
   var plugins = [];
 

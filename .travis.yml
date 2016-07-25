@@ -4,7 +4,7 @@ dist: trusty
 
 node_js:
   - "5"
-  
+
 cache:
   directories:
     - node_modules
@@ -55,3 +55,4 @@ env:
     - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=blueprints
     - TEST_SUITE=sauce
+    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true
