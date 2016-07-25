@@ -190,11 +190,13 @@ export default EmberObject.extend({
 
     this._popstateHandler = () => {
       var url = this.getURL();
+      var shouldHandleURL = this._shouldHandleURL(url);
       // Ignore initial page load popstate event in Chrome
       if (!popstateFired) {
         popstateFired = true;
-        if (!this._shouldHandleURL(url)) { return; }
+        if (!shouldHandleURL) { return; }
       }
+      if (!shouldHandleURL) { return; }
       callback(url);
     };
 
