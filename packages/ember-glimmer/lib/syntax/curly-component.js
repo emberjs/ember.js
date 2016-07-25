@@ -1,9 +1,10 @@
-import { StatementSyntax, ValueReference } from 'glimmer-runtime';
+import { StatementSyntax, ValueReference, EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs } from 'glimmer-runtime';
 import { TO_ROOT_REFERENCE, AttributeBindingReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
 import { privatize as P } from 'container/registry';
+import assign from 'ember-metal/assign';
 import get from 'ember-metal/property_get';
 import { ComponentDefinition } from 'glimmer-runtime';
 import Component from '../component';
@@ -63,6 +64,43 @@ class ComponentStateBucket {
 
 class CurlyComponentManager {
   prepareArgs(definition, args) {
+    if (definition.args) {
+      // args (aka 'oldArgs') may be undefined or simply be empty args, so
+      // we need to fall back to an empty array or object.
+      let newNamed = args && args.named && args.named.map || {};
+      let newPositional = args && args.positional && args.positional.values || [];
+
+      let oldNamed = definition.args.named.map;
+      let oldPositional = definition.args.positional.values;
+
+      // Merge positional arrays
+      let mergedPositional = new Array(Math.max(oldPositional.length, newPositional.length));
+      mergedPositional.splice(0, oldPositional.length, ...oldPositional);
+      mergedPositional.splice(0, newPositional.length, ...newPositional);
+
+      // Merge named maps
+      let mergedNamed = assign({}, oldNamed, newNamed);
+
+      // THOUGHT: It might be nice to have a static method on EvaluatedArgs that
+      // can merge two sets of args for us.
+      let mergedArgs = EvaluatedArgs.create({
+        named: EvaluatedNamedArgs.create({
+          map: mergedNamed
+        }),
+        positional: EvaluatedPositionalArgs.create({
+          values: mergedPositional
+        })
+      }).withInternal();
+
+      // Preserve the invocation args' `internal` storage.
+      mergedArgs.internal = args.internal;
+
+      return mergedArgs;
+    } 
+    // else {
+      // No merge necessary!
+    // }
+
     return args;
   }
 
@@ -248,9 +286,10 @@ function ariaRole(vm) {
 }
 
 export class CurlyComponentDefinition extends ComponentDefinition {
-  constructor(name, ComponentClass, template) {
+  constructor(name, ComponentClass, template, args) {
     super(name, MANAGER, ComponentClass || Component);
     this.template = template;
+    this.args = args;
   }
 }
 

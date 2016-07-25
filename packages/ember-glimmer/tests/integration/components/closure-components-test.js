@@ -4,7 +4,7 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import assign from 'ember-metal/assign';
 import isEmpty from 'ember-metal/is_empty';
 
-moduleFor('@htmlbars Components test: closure components', class extends RenderingTest {
+moduleFor('Components test: closure components', class extends RenderingTest {
   ['@test renders with component helper']() {
     let expectedText = 'Hodi';
 
@@ -74,6 +74,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Gabon Zack');
   }
 
+  // Take a look at this one. Seems to pass even when currying isn't implemented.
   ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
@@ -252,7 +253,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Hodi');
   }
 
-  ['@test updates when curried hash arguments is bound in block form']() {
+  ['@htmlbars updates when curried hash arguments is bound in block form']() {
     this.registerComponent('-looked-up', {
       template: '{{greeting}}'
     });
@@ -497,10 +498,10 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
       this.render('{{component (component compName)}}', {
         compName: 'not-a-component'
       });
-    }, 'The component helper cannot be used without a valid component name. You used "not-a-component" via (component compName)');
+    }, /The component helper cannot be used without a valid component name. You used "not-a-component" via \(component .*\)/);
   }
 
-  ['@test renders with dot path']() {
+  ['@htmlbars renders with dot path']() {
     let expectedText = 'Hodi';
     this.registerComponent('-looked-up', {
       template: expectedText
@@ -518,7 +519,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText(expectedText);
   }
 
-  ['@test renders with dot path and attr']() {
+  ['@htmlbars renders with dot path and attr']() {
     let expectedText = 'Hodi';
     this.registerComponent('-looked-up', {
       template: '{{expectedText}}'
@@ -549,7 +550,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText(expectedText);
   }
 
-  ['@test renders with dot path and curried over attr']() {
+  ['@htmlbars renders with dot path and curried over attr']() {
     let expectedText = 'Hodi';
     this.registerComponent('-looked-up', {
       template: '{{expectedText}}'
@@ -580,7 +581,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText(expectedText);
   }
 
-  ['@test renders with dot path and with rest positional parameters']() {
+  ['@htmlbars renders with dot path and with rest positional parameters']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'params'
@@ -615,7 +616,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText(`${expectedText},Hola`);
   }
 
-  ['@test renders with dot path and rest parameter does not leak'](assert) {
+  ['@htmlbars renders with dot path and rest parameter does not leak'](assert) {
     // In the original implementation, positional parameters were not handled
     // correctly causing the first positional parameter to be the closure
     // component itself.
@@ -640,7 +641,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     assert.ok(isEmpty(value), 'value is an empty parameter');
   }
 
-  ['@test renders with dot path and updates attributes'](assert) {
+  ['@htmlbars renders with dot path and updates attributes'](assert) {
     this.registerComponent('my-nested-component', {
       ComponentClass: Component.extend({
         didReceiveAttrs() {
@@ -693,7 +694,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     assert.equal(this.$('#nested-prop').text(), '1');
   }
 
-  ['@test adding parameters to a closure component\'s instance does not add it to other instances']() {
+  ['@htmlbars adding parameters to a closure component\'s instance does not add it to other instances']() {
     // If parameters and attributes are not handled correctly, setting a value
     // in an invokation can leak to others invocation.
     this.registerComponent('select-box', {
@@ -860,4 +861,4 @@ applyMixins(ClosureComponentMutableParamsTest,
   ])
 );
 
-moduleFor('@htmlbars Components test: closure components -- mutable params', ClosureComponentMutableParamsTest);
+moduleFor('Components test: closure components -- mutable params', ClosureComponentMutableParamsTest);
