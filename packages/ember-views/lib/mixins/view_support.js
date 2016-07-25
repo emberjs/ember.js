@@ -326,30 +326,6 @@ export default Mixin.create({
   willClearRender: K,
 
   /**
-    Destroys any existing element along with the element for any child views
-    as well. If the view does not currently have a element, then this method
-    will do nothing.
-
-    If you implement `willDestroyElement()` on your view, then this method will
-    be invoked on your view before your element is destroyed to give you a
-    chance to clean up any event handlers, etc.
-
-    If you write a `willDestroyElement()` handler, you can assume that your
-    `didInsertElement()` handler was called earlier for the same element.
-
-    You should not call or override this method yourself, but you may
-    want to implement the above callbacks.
-
-    @method destroyElement
-    @return {Ember.View} receiver
-    @private
-  */
-  destroyElement() {
-    this._currentState.destroyElement(this);
-    return this;
-  },
-
-  /**
     You must call `destroy` on a view to destroy the view (and all of its
     child views). This will remove the view from any parent node, then make
     sure that the DOM element managed by the view can be released by the

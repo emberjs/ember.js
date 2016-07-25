@@ -88,28 +88,6 @@ QUnit.test('raises an assert when a target does not exist in the DOM', function(
 });
 
 
-QUnit.test('remove removes an element from the DOM', function() {
-  willDestroyCalled = 0;
-
-  view = View.create({
-    willDestroyElement() {
-      willDestroyCalled++;
-    }
-  });
-
-  ok(!get(view, 'element'), 'precond - should not have an element');
-
-  run(() => view.append());
-
-  ok(jQuery('#' + get(view, 'elementId')).length === 1, 'precond - element was inserted');
-
-  run(() => view.destroyElement());
-
-  ok(jQuery('#' + get(view, 'elementId')).length === 0, 'remove removes an element from the DOM');
-  ok(!get(view, 'element'), 'remove nulls out the element');
-  equal(willDestroyCalled, 1, 'the willDestroyElement hook was called once');
-});
-
 QUnit.test('destroy more forcibly removes the view', function() {
   willDestroyCalled = 0;
 

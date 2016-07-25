@@ -38,8 +38,6 @@ export default {
     return true; // continue event propagation
   },
 
-  destroyElement() { },
-
   destroy() { },
 
   rerender(view) {
