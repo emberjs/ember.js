@@ -365,7 +365,7 @@ export class OptimizedCautiousAppendOpcode extends AppendOpcode<CautiousInsertio
 }
 
 class OptimizedCautiousUpdateOpcode extends UpdateOpcode<CautiousInsertion> {
-  type = 'cautious-update';
+  type = 'optimized-cautious-update';
 
   protected insert(dom: DOMHelper, cursor: Cursor, value: CautiousInsertion): Upsert {
     return cautiousInsert(dom, cursor, value);
@@ -415,7 +415,7 @@ export class OptimizedTrustingAppendOpcode extends AppendOpcode<TrustingInsertio
 }
 
 class OptimizedTrustingUpdateOpcode extends UpdateOpcode<TrustingInsertion> {
-  type = 'trusting-update';
+  type = 'optimized-trusting-update';
 
   protected insert(dom: DOMHelper, cursor: Cursor, value: TrustingInsertion): Upsert {
     return trustingInsert(dom, cursor, value);
