@@ -77,7 +77,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     super(inner);
   }
 
-  abstract compile<E>(expr: Represents<E> | E): E;
+  abstract compile<E>(expr: Represents<E>): E;
 
   // helpers
 
@@ -105,11 +105,15 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.labelsStack.pop();
   }
 
-  labelFor(label: string): vm.LabelOpcode {
+  labelFor(name: string): vm.LabelOpcode {
     let labels = this.labels;
+    let label = labels[name];
 
-    if (labels[label]) return labels[label];
-    else return labels[label] = new vm.LabelOpcode({ label });
+    if (!label) {
+      label = labels[name] = new vm.LabelOpcode(name);
+    }
+
+    return label;
   }
 
   // components
@@ -276,7 +280,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     } else if (typeof testFunc === 'function') {
       this.append(new vm.TestOpcode(testFunc));
     } else {
-      throw 'unreachable';
+      throw new Error('unreachable');
     }
   }
 
@@ -293,12 +297,20 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 }
 
+function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E> {
+  return expr && typeof expr['compile'] === 'function';
+}
+
+type BlockArgs = { templates: Syntax.Templates, args?: Syntax.Args };
+
+const SIMPLE_BLOCK: BlockArgs = { templates: null };
+
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
   compile<E>(expr: Represents<E>): E {
-    if (typeof expr['compile'] === 'function') {
-      return (expr as CompilesInto<E>).compile(this, this.env, this._block);
+    if (isCompilableExpression(expr)) {
+      return expr.compile(this, this.env, this._block);
     } else {
-      return expr as E;
+      return expr;
     }
   }
 
@@ -315,7 +327,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.append(vm.BindBlocksOpcode.create(layout));
   }
 
-  block({ templates, args }: { templates: Syntax.Templates, args?: Syntax.Args }, callback: BlockCallback) {
+  simpleBlock(callback: BlockCallback) {
+    this.block(SIMPLE_BLOCK, callback);
+  }
+
+  block({ templates, args }: BlockArgs, callback: BlockCallback) {
     this.startLabels();
     this.startBlock({ templates });
     this.enter('BEGIN', 'END');
