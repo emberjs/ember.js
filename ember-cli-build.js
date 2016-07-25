@@ -75,9 +75,9 @@ module.exports = function() {
     include: ['**/*.ts'],
     exclude: ['**/*.d.ts']
   });
-  var tsLintTree = new TSLint(tsTree);
 
-  var jsTree = typescript(tsLintTree, tsOptions);
+  var tsLintTree = new TSLint(tsTree);
+  var jsTree = typescript(merge([tsTree, tsLintTree]), tsOptions);
 
   var libTree = find(jsTree, {
     include: ['*/index.js', '*/lib/**/*.js']
