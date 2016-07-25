@@ -11,6 +11,31 @@ import Component from '../component';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
+export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
+  if (!named || !positional || !positional.length) {
+    return;
+  }
+
+  let paramType = typeof positionalParamsDefinition;
+
+  if (paramType === 'string') {
+    assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
+  } else {
+    if (positional.length < positionalParamsDefinition.length) {
+      positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
+    }
+
+    for (let i = 0; i < positionalParamsDefinition.length; i++) {
+      let name = positionalParamsDefinition[i];
+
+      assert(
+        `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+        !named.has(name)
+      );
+    }
+  }
+}
+
 function aliasIdToElementId(args, props) {
   if (args.named.has('id')) {
     assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
@@ -64,6 +89,8 @@ class ComponentStateBucket {
 
 class CurlyComponentManager {
   prepareArgs(definition, args) {
+    validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
+
     if (definition.args) {
       // args (aka 'oldArgs') may be undefined or simply be empty args, so
       // we need to fall back to an empty array or object.
@@ -96,10 +123,7 @@ class CurlyComponentManager {
       mergedArgs.internal = args.internal;
 
       return mergedArgs;
-    } 
-    // else {
-      // No merge necessary!
-    // }
+    }
 
     return args;
   }

@@ -86,7 +86,7 @@ class MutableCell {
 
 class RestArgs {
   static create(args, restArgName) {
-    assert(`You cannot specify positional parameters and the hash argument \`${restArgName}\`.`, !args.named.has(restArgName));
+    // assert(`You cannot specify positional parameters and the hash argument \`${restArgName}\`.`, !args.named.has(restArgName));
 
     return new RestArgs(args, restArgName);
   }
@@ -120,10 +120,10 @@ class PositionalArgs {
     for (let i = 0; i < positionalParamNames.length; i++) {
       let name = positionalParamNames[i];
 
-      assert(
-        `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-        !args.named.has(name)
-      );
+      // assert(
+      //   `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+      //   !args.named.has(name)
+      // );
     }
 
     return new PositionalArgs(args, positionalParamNames);
