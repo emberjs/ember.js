@@ -21,10 +21,6 @@ export default class EachSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#each ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop

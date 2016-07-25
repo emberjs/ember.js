@@ -860,6 +860,7 @@ export class TestDynamicScope implements DynamicScope {
 }
 
 class CurlyComponentSyntax extends StatementSyntax implements StaticComponentOptions {
+  public type = "curly-component";
   public definition: ComponentDefinition<any>;
   public args: ArgsSyntax;
   public shadow: InternedString[] = null;
@@ -913,6 +914,7 @@ function dynamicComponentFor(vm: VM) {
 };
 
 class DynamicComponentSyntax extends StatementSyntax implements DynamicComponentOptions {
+  public type = "dynamic-component";
   public definitionArgs: ArgsSyntax;
   public definition: FunctionExpression<ComponentDefinition<Opaque>>;
   public args: ArgsSyntax;

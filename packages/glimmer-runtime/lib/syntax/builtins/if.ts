@@ -19,10 +19,6 @@ export default class IfSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#if ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
