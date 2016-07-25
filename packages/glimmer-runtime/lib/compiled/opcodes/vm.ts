@@ -280,7 +280,7 @@ export class LabelOpcode extends Opcode implements UpdatingOpcode {
   prev: any = null;
   next: any = null;
 
-  constructor({ label }: LabelOptions) {
+  constructor(label: string) {
     super();
     if (label) this.label = label;
   }

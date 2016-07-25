@@ -52,8 +52,8 @@ export default class PartialSyntax extends StatementSyntax {
 
     let compiledPartialNameExpression = this.args.positional.values[0].compile(compiler, env);
 
-    let BEGIN = new LabelOpcode({ label: "BEGIN" });
-    let END = new LabelOpcode({ label: "END" });
+    let BEGIN = new LabelOpcode("BEGIN");
+    let END = new LabelOpcode("END");
 
     compiler.append(new EnterOpcode({ begin: BEGIN, end: END }));
     compiler.append(BEGIN);
