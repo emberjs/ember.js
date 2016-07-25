@@ -8,6 +8,8 @@ import { compileSpec } from 'glimmer-compiler';
 
 import { EvaluatedArgs } from 'glimmer-runtime';
 
+import { ListSlice } from 'glimmer-util';
+
 const DEFAULT_DATA =
 `{
   "contacts": [
@@ -299,7 +301,7 @@ function renderUI() {
 
   env.registerEmberishGlimmerComponent("opcode-inspector", null,
 `<li>
-  <span class="pre">{{pp-opcode @opcode}}</span>
+  <span class="pre">{{#if @opcode.deopted}}[DEOPT] <del>{{pp-opcode @opcode}}</del>{{else}}{{pp-opcode @opcode}}{{/if}}</span>
   {{#if @opcode.children}}
     <ol>
       {{#each @opcode.children key="guid" as |opcode|}}
@@ -360,9 +362,10 @@ function renderContent() {
 
   let env = new TestEnvironment();
 
-  env.registerHelper('foo', function(){
-    return 'FOOOOOOO';
+  env.registerHelper('foo-bar', function(){
+    return 'FOO BAR!!!';
   });
+
   env.registerEmberishGlimmerComponent("h-card", null, $layout.value);
 
   let app = env.compile($template.value);
@@ -374,7 +377,7 @@ function renderContent() {
     let instance = manager.create(definition, EvaluatedArgs.empty(), new TestDynamicScope(null), false);
     let compiled = manager.layoutFor(definition, instance, env);
 
-    return processOpcodes(compiled.ops);
+    return compiled.ops;
   }
 
   function processOpcodes(list) {
@@ -383,6 +386,9 @@ function renderContent() {
 
       if (op.block) {
         json.children = processOpcodes(op.block.compile(env).ops);
+      } else if(op.deopted) {
+        json.deopted = true;
+        json.children = processOpcodes(op.deopted);
       } else {
         json.children = [];
       }
@@ -392,7 +398,18 @@ function renderContent() {
   }
 
   function processUpdatingOpcodes(list) {
-    return list.toArray().map(op => op.toJSON());
+    return list.toArray().map(op => {
+      let json = op.toJSON();
+
+      if (op.children) {
+        json.children = processUpdatingOpcodes(op.children);
+      } else if (op.deopted) {
+        json.deopted = true;
+        json.children = processUpdatingOpcodes(new ListSlice(op.deopted, op.deopted));
+      }
+
+      return json;
+    });
   }
 
   let div = document.createElement('div');
@@ -402,15 +419,18 @@ function renderContent() {
   let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope(null) });
   env.commit();
 
+  let templateOps = app.raw['compiled'].ops;
+  let layoutOps = compileLayout("h-card");
+
   ui.rendered = true;
 
   ui.template.source = $template.value;
   ui.template.wireFormat = JSON.parse(compileSpec($template.value, {}));
-  ui.template.opcodes = processOpcodes(app.raw['compiled'].ops);
+  ui.template.opcodes = processOpcodes(templateOps);
 
   ui.layout.source = $layout.value;
   ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
-  ui.layout.opcodes = compileLayout("h-card");
+  ui.layout.opcodes = processOpcodes(layoutOps);
 
   ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
 
@@ -424,6 +444,8 @@ function renderContent() {
     env.begin();
     res.rerender();
     env.commit();
+    ui.template.opcodes = processOpcodes(templateOps);
+    ui.layout.opcodes = processOpcodes(layoutOps);
     ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
     ui.html = div.innerHTML;
     rerenderUI();
