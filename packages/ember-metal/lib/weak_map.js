@@ -58,11 +58,12 @@ WeakMap.prototype.get = function(obj) {
   if (meta) {
     let map = meta.readableWeak();
     if (map) {
-      if (map[this._id] === UNDEFINED) {
+      let value = map.get(this._id);
+      if (value === UNDEFINED) {
         return undefined;
       }
 
-      return map[this._id];
+      return value;
     }
   }
 };
@@ -82,7 +83,7 @@ WeakMap.prototype.set = function(obj, value) {
     value = UNDEFINED;
   }
 
-  metaFor(obj).writableWeak()[this._id] = value;
+  metaFor(obj).writableWeak().set(this._id, value);
 
   return this;
 };
@@ -101,7 +102,7 @@ WeakMap.prototype.has = function(obj) {
   if (meta) {
     let map = meta.readableWeak();
     if (map) {
-      return map[this._id] !== undefined;
+      return map.get(this._id) !== undefined;
     }
   }
 
@@ -115,7 +116,7 @@ WeakMap.prototype.has = function(obj) {
  */
 WeakMap.prototype.delete = function(obj) {
   if (this.has(obj)) {
-    delete metaFor(obj).writableWeak()[this._id];
+    metaFor(obj).writableWeak().delete(this._id);
     return true;
   } else {
     return false;
