@@ -1,8 +1,30 @@
+/**
+@module ember
+@submodule ember-testing
+*/
 import { checkWaiters } from '../test/waiters';
 import RSVP from 'ember-runtime/ext/rsvp';
 import run from 'ember-metal/run_loop';
 import { pendingRequests } from '../test/pending_requests';
-
+/**
+  Causes the run loop to process any pending events. This is used to ensure that
+  any async operations from other helpers (or your assertions) have been processed.
+  This is most often used as the return value for the helper functions (see 'click',
+  'fillIn','visit',etc).
+  Example:
+  ```javascript
+  Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
+    visit('secured/path/here')
+    .fillIn('#username', username)
+    .fillIn('#password', password)
+    .click('.submit')
+    return app.testHelpers.wait();
+  });
+  @method wait
+  @param {Object} value The value to be returned.
+  @return {RSVP.Promise}
+  @public
+*/
 export default function wait(app, value) {
   return new RSVP.Promise(function(resolve) {
     let router = app.__container__.lookup('router:main');

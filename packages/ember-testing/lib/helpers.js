@@ -21,24 +21,6 @@ import wait from './helpers/wait';
 @submodule ember-testing
 */
 
-/**
-  Loads a route, sets up any controllers, and renders any templates associated
-  with the route as though a real user had triggered the route change while
-  using your app.
-
-  Example:
-
-  ```javascript
-  visit('posts/index').then(function() {
-    // assert something
-  });
-  ```
-
-  @method visit
-  @param {String} url the name of the route
-  @return {RSVP.Promise}
-  @public
-*/
 asyncHelper('visit', visit);
 
 /**
@@ -136,30 +118,6 @@ helper('find', find);
 */
 helper('findWithAssert', findWithAssert);
 
-/**
-  Causes the run loop to process any pending events. This is used to ensure that
-  any async operations from other helpers (or your assertions) have been processed.
-
-  This is most often used as the return value for the helper functions (see 'click',
-  'fillIn','visit',etc).
-
-  Example:
-
-  ```javascript
-  Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
-    visit('secured/path/here')
-    .fillIn('#username', username)
-    .fillIn('#password', password)
-    .click('.submit')
-
-    return app.testHelpers.wait();
-  });
-
-  @method wait
-  @param {Object} value The value to be returned.
-  @return {RSVP.Promise}
-  @public
-*/
 asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
 helper('currentRouteName', currentRouteName);
