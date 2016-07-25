@@ -68,6 +68,13 @@ export function isHelper(mustache) {
     (mustache.hash && mustache.hash.pairs.length > 0);
 }
 
+export function isSelfGet(mustache) {
+  let isSimple = (!mustache.params || mustache.params.length === 0) &&
+    (!mustache.hash || mustache.hash.pairs.length === 0);
+
+  return isSimple && mustache.path.original.match(/^this./);
+}
+
 export function unwrapMustache(mustache) {
   if (isHelper(mustache)) {
     return mustache;

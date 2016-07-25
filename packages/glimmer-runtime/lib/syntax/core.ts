@@ -778,6 +778,25 @@ export class Get extends ExpressionSyntax<Opaque> {
     this.ref = options.ref;
   }
 
+  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
+    return this.ref.compile(compiler);
+  }
+}
+
+export class SelfGet extends ExpressionSyntax<Opaque> {
+  type = "self-get";
+
+  static fromSpec(sexp: SerializedExpressions.SelfGet): SelfGet {
+    let [, parts] = sexp;
+
+    return new SelfGet({ ref: new Ref({ parts: parts as InternedString[] }) });
+  }
+
+  public ref: Ref;
+
+  constructor(options) {
+    super();
+    this.ref = options.ref;
   }
 
   compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
