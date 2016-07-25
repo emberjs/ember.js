@@ -6,11 +6,12 @@ import { Layout, InlineBlock, PartialBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
 import SymbolTable from '../../symbol-table';
-import { PathReference } from 'glimmer-reference';
+import { Reference, PathReference, ConstReference } from 'glimmer-reference';
 import { ValueReference } from '../expressions/value';
 import { ListSlice, Opaque, Slice, Dict, dict, assign, InternedString } from 'glimmer-util';
 import { CONSTANT_TAG, ReferenceCache, Revision, RevisionTag, isConst, isModified } from 'glimmer-reference';
 import Scanner from '../../scanner';
+import Environment from '../../environment';
 
 export class PushChildScopeOpcode extends Opcode {
   public type = "push-child-scope";
@@ -392,18 +393,36 @@ export class NameToPartialOpcode extends Opcode {
   }
 }
 
+export type TestFunction = (ref: Reference<Opaque>, env: Environment) => Reference<boolean>;
+
+export const ConstTest: TestFunction = function(ref: Reference<Opaque>, env: Environment): Reference<boolean> {
+  return new ConstReference(!!ref.value());
+};
+
+export const SimpleTest: TestFunction = function(ref: Reference<Opaque>, env: Environment): Reference<boolean> {
+  return ref as Reference<boolean>;
+};
+
+export const EnvironmentTest: TestFunction = function(ref: Reference<Opaque>, env: Environment): Reference<boolean> {
+  return env.toConditionalReference(ref);
+};
+
 export class TestOpcode extends Opcode {
   public type = "test";
 
+  constructor(private testFunc: TestFunction) {
+    super();
+  }
+
   evaluate(vm: VM) {
-    vm.frame.setCondition(vm.env.toConditionalReference(vm.frame.getOperand()));
+    vm.frame.setCondition(this.testFunc(vm.frame.getOperand(), vm.env));
   }
 
   toJSON(): OpcodeJSON {
     return {
       guid: this._guid,
       type: this.type,
-      args: ["$OPERAND"]
+      args: ["$OPERAND", this.testFunc.name]
     };
   }
 }

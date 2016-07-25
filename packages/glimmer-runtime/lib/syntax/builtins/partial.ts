@@ -10,6 +10,7 @@ import {
   LabelOpcode,
   EnterOpcode,
   PutArgsOpcode,
+  SimpleTest,
   TestOpcode,
   JumpUnlessOpcode,
   NameToPartialOpcode,
@@ -58,7 +59,7 @@ export default class PartialSyntax extends StatementSyntax {
     compiler.append(BEGIN);
     compiler.append(new PutArgsOpcode({ args: this.args.compile(compiler, env) }));
     compiler.append(new NameToPartialOpcode());
-    compiler.append(new TestOpcode());
+    compiler.append(new TestOpcode(SimpleTest));
 
     compiler.append(new JumpUnlessOpcode({ target: END }));
     compiler.append(new EvaluatePartialOpcode({
