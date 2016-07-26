@@ -7,7 +7,7 @@ import assign from 'ember-metal/assign';
 const CLOSURE_COMPONENT = 'ba564e81-ceda-4475-84a7-1c44f1c42c0e';
 
 export function isClosureComponent(object) {
-  return object && !!object[CLOSURE_COMPONENT];
+  return typeof object === 'object' && object && object[CLOSURE_COMPONENT];
 }
 
 class ClosureComponentDefinition extends CurlyComponentDefinition {
