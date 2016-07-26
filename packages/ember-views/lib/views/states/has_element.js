@@ -33,10 +33,6 @@ assign(hasElement, {
     view.renderer.rerender(view);
   },
 
-  destroyElement(view) {
-    view.renderer.remove(view, false);
-  },
-
   destroy(view) {
     view.renderer.remove(view, true);
   },

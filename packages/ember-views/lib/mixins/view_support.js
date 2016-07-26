@@ -114,9 +114,6 @@ export default Mixin.create({
   /**
     Appends the view's element to the specified parent element.
 
-    If the view does not have an HTML representation yet, `createElement()`
-    will be called automatically.
-
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
     finished synchronizing.
@@ -298,26 +295,6 @@ export default Mixin.create({
   },
 
   /**
-    Creates a DOM representation of the view and all of its child views by
-    recursively calling the `render()` method. Once the element is created,
-    it sets the `element` property of the view to the rendered element.
-
-    After the element has been inserted into the DOM, `didInsertElement` will
-    be called on this view and all of its child views.
-
-    @method createElement
-    @return {Ember.View} receiver
-    @private
-  */
-  createElement() {
-    if (this.element) { return this; }
-
-    this.renderer.createElement(this);
-
-    return this;
-  },
-
-  /**
     Called when a view is going to insert an element into the DOM.
 
     @event willInsertElement
@@ -347,30 +324,6 @@ export default Mixin.create({
     @public
   */
   willClearRender: K,
-
-  /**
-    Destroys any existing element along with the element for any child views
-    as well. If the view does not currently have a element, then this method
-    will do nothing.
-
-    If you implement `willDestroyElement()` on your view, then this method will
-    be invoked on your view before your element is destroyed to give you a
-    chance to clean up any event handlers, etc.
-
-    If you write a `willDestroyElement()` handler, you can assume that your
-    `didInsertElement()` handler was called earlier for the same element.
-
-    You should not call or override this method yourself, but you may
-    want to implement the above callbacks.
-
-    @method destroyElement
-    @return {Ember.View} receiver
-    @private
-  */
-  destroyElement() {
-    this._currentState.destroyElement(this);
-    return this;
-  },
 
   /**
     You must call `destroy` on a view to destroy the view (and all of its
