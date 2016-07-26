@@ -1,10 +1,11 @@
 import * as QUnit from 'qunitjs';
 import * as SimpleDOM from 'simple-dom';
+
 import { forEach } from "glimmer-util";
 import { TestEnvironment, TestDynamicScope} from "glimmer-test-helpers/lib/environment";
 import { Template, AttributeChangeList } from 'glimmer-runtime';
 import { UpdatableReference } from 'glimmer-object-reference';
-import { DOMHelper } from 'glimmer-runtime';
+import NodeDOMHelper from 'glimmer-node/lib/node-dom-helper';
 
 let HTMLSerializer = SimpleDOM.HTMLSerializer;
 let voidMap = SimpleDOM.voidMap;
@@ -17,20 +18,6 @@ const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 let env: TestEnvironment, root: HTMLElement;
 let helper: NodeDOMHelper;
-
-class NodeDOMHelper extends DOMHelper {
-  constructor() {
-    super(new SimpleDOM.Document());
-  }
-
-  createTextNode(text: string): Text {
-    return this.document.createTextNode(text);
-  }
-
-  createElement(tag: string, context?: Element): Element {
-    return this.document.createElement(tag);
-  }
-}
 
 function compile(template: string) {
   return env.compile(template);
@@ -109,7 +96,100 @@ QUnit.test("HTML boolean attribute 'disabled'", function(assert) {
   let template = compile('<input disabled>');
   render(template, {});
 
-  assert.deepEqual((root.firstChild as HTMLElement).attributes, [{
-    name: 'disabled', value: '', specified: true
-  }], 'disabled without value set as property is true');
+  assert.equal(serializer.serializeChildren(root), '<input disabled>', 'disabled without value set as property is true');
+});
+
+QUnit.skip("Quoted attribute expression is coerced to a string", function(assert) {
+  let template = compile('<input disabled="{{isDisabled}}">');
+  render(template, { isDisabled: null });
+
+  assert.equal(serializer.serializeChildren(root), '<input disabled="null">', 'string of "null" set as property');
+});
+
+QUnit.test("Unquoted attribute expression with null value is not coerced", function(assert) {
+  let template = compile('<input disabled={{isDisabled}}>');
+  render(template, { isDisabled: null });
+
+  assert.equal(serializer.serializeChildren(root), '<input>');
+});
+
+QUnit.test("Attribute expression can be followed by another attribute", function(assert) {
+  let template = compile('<div foo="{{funstuff}}" name="Alice"></div>');
+  render(template, {funstuff: "oh my"});
+
+  assert.equal(serializer.serializeChildren(root), '<div foo="oh my" name="Alice"></div>');
+});
+
+QUnit.test("HTML tag with data- attribute", function(assert) {
+  let template = compile("<div data-some-data='foo'>content</div>");
+  render(template, {});
+
+  assert.ok(serializer.serializeChildren(root), '<div data-some-data="foo">content</div>');
+});
+
+QUnit.test("The compiler can handle nesting", function(assert) {
+  let html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div>&nbsp;More content';
+  let template = compile(html);
+  render(template, {});
+
+  // Note that the space after the closing div tag is a non-breaking space (Unicode 0xA0)
+  assert.equal(serializer.serializeChildren(root), '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div> More content');
+});
+
+QUnit.test("The compiler can handle comments", function(assert) {
+  let html = '<div><!-- Just passing through --></div>';
+  let template = compile(html);
+  render(template, {});
+  assert.equal(serializer.serializeChildren(root), html);
+});
+
+QUnit.test("The compiler can handle HTML comments with mustaches in them", function(assert) {
+  let template = compile('<div><!-- {{foo}} --></div>');
+  render(template, { foo: 'bar' });
+
+  assert.equal(serializer.serializeChildren(root), '<div><!-- {{foo}} --></div>');
+});
+
+QUnit.test("The compiler can handle HTML comments with complex mustaches in them", function(assert) {
+  let template = compile('<div><!-- {{foo bar baz}} --></div>');
+  render(template, { foo: 'bar' });
+
+  assert.equal(serializer.serializeChildren(root), '<div><!-- {{foo bar baz}} --></div>');
+});
+
+QUnit.test("The compiler can handle HTML comments with multi-line mustaches in them", function(assert) {
+  let html = '<div><!-- {{#each foo as |bar|}}\n{{bar}}\n\n{{/each}} --></div>';
+  let template = compile(html);
+  render(template, { foo: 'bar' });
+
+  assert.equal(serializer.serializeChildren(root), html);
+});
+
+QUnit.test("The compiler can handle comments with no parent element", function(assert) {
+  let html = '<!-- {{foo}} -->';
+  let template = compile(html);
+  render(template, { foo: 'bar' });
+
+  assert.equal(serializer.serializeChildren(root), html);
+});
+
+QUnit.test("The compiler can handle simple handlebars", function(assert) {
+  let template = compile('<div>{{title}}</div>');
+  render(template, { title: 'hello' });
+
+  assert.equal(serializer.serializeChildren(root), '<div>hello</div>');
+});
+
+QUnit.test("The compiler can handle escaping HTML", function(assert) {
+  let template = compile('<div>{{title}}</div>');
+  render(template, { title: '<strong>hello</strong>' });
+
+  assert.equal(serializer.serializeChildren(root), '<div>&lt;strong&gt;hello&lt;/strong&gt;</div>');
+});
+
+QUnit.test("The compiler can handle unescaped HTML", function(assert) {
+  let template = compile('<div>{{{title}}}</div>');
+  render(template, { title: '<strong>hello</strong>' });
+
+  assert.equal(serializer.serializeChildren(root), '<div><strong>hello</strong></div>');
 });
