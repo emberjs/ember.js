@@ -5,6 +5,7 @@ import { VM, UpdatingVM } from './vm';
 export interface OpcodeJSON {
   guid: number;
   type: string;
+  deopted?: boolean;
   args?: string[];
   details?: Dict<string>;
   children?: OpcodeJSON[];

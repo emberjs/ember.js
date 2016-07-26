@@ -8,8 +8,6 @@ import { compileSpec } from 'glimmer-compiler';
 
 import { EvaluatedArgs } from 'glimmer-runtime';
 
-import { ListSlice } from 'glimmer-util';
-
 const DEFAULT_DATA =
 `{
   "contacts": [
@@ -380,36 +378,18 @@ function renderContent() {
     return compiled.ops;
   }
 
-  function processOpcodes(list) {
-    return list.toArray().map(op => {
-      let json = op.toJSON();
-
+  function eagerCompile(ops) {
+    ops.toArray().forEach(op => {
       if (op.block) {
-        json.children = processOpcodes(op.block.compile(env).ops);
-      } else if(op.deopted) {
-        json.deopted = true;
-        json.children = processOpcodes(op.deopted);
-      } else {
-        json.children = [];
+        eagerCompile(op.block.compile(env).ops);
       }
-
-      return json;
     });
+
+    return ops;
   }
 
-  function processUpdatingOpcodes(list) {
-    return list.toArray().map(op => {
-      let json = op.toJSON();
-
-      if (op.children) {
-        json.children = processUpdatingOpcodes(op.children);
-      } else if (op.deopted) {
-        json.deopted = true;
-        json.children = processUpdatingOpcodes(new ListSlice(op.deopted, op.deopted));
-      }
-
-      return json;
-    });
+  function toJSON(ops) {
+    return ops.toArray().map(op => op.toJSON());
   }
 
   let div = document.createElement('div');
@@ -426,13 +406,13 @@ function renderContent() {
 
   ui.template.source = $template.value;
   ui.template.wireFormat = JSON.parse(compileSpec($template.value, {}));
-  ui.template.opcodes = processOpcodes(templateOps);
+  ui.template.opcodes = toJSON(eagerCompile(templateOps));
 
   ui.layout.source = $layout.value;
   ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
-  ui.layout.opcodes = processOpcodes(layoutOps);
+  ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
 
-  ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
+  ui.updatingOpcodes = toJSON(res['updating']);
 
   ui.html = div.innerHTML;
 
@@ -444,9 +424,9 @@ function renderContent() {
     env.begin();
     res.rerender();
     env.commit();
-    ui.template.opcodes = processOpcodes(templateOps);
-    ui.layout.opcodes = processOpcodes(layoutOps);
-    ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
+    ui.template.opcodes = toJSON(eagerCompile(templateOps));
+    ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
+    ui.updatingOpcodes = toJSON(res['updating']);
     ui.html = div.innerHTML;
     rerenderUI();
   };

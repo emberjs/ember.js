@@ -18,7 +18,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { TryOpcode, VMState } from '../../vm/update';
 import { EnterOpcode } from './vm';
 import { Reference, ReferenceCache, UpdatableTag, isModified, isConst, map } from 'glimmer-reference';
-import { Opaque, LinkedList, dict } from 'glimmer-util';
+import { Opaque, LinkedList } from 'glimmer-util';
 import { Cursor, clear } from '../../bounds';
 import { Fragment } from '../../builder';
 import { CompileIntoList } from '../../compiler';
@@ -204,6 +204,25 @@ export abstract class GuardedAppendOpcode<T extends Insertion> extends AppendOpc
 
     return deopted;
   }
+
+  toJSON(): OpcodeJSON {
+    let { _guid: guid, type, deopted } = this;
+
+    if (deopted) {
+      return {
+        guid,
+        type,
+        deopted: true,
+        children: deopted.toArray().map(op => op.toJSON())
+      };
+    } else {
+      return {
+        guid,
+        type,
+        args: [this.expression.toJSON()]
+      };
+    }
+  }
 }
 
 class IsComponentDefinitionReference extends ConditionalReference {
@@ -245,13 +264,13 @@ abstract class UpdateOpcode<T extends Insertion> extends UpdatingOpcode {
   }
 
   toJSON(): OpcodeJSON {
-    let { _guid: guid, type } = this;
+    let { _guid: guid, type, cache } = this;
 
-    let details = dict<string>();
-
-    details["lastValue"] = this.cache && JSON.stringify(this.cache.peek());
-
-    return { guid, type, details };
+    return {
+      guid,
+      type,
+      details: { lastValue: JSON.stringify(cache.peek()) }
+    };
   }
 }
 
@@ -345,6 +364,21 @@ export abstract class GuardedUpdateOpcode<T extends Insertion> extends UpdateOpc
     this.upsert       = null;
     this.appendOpcode = null;
     this.state        = null;
+  }
+
+  toJSON(): OpcodeJSON {
+    let { _guid: guid, type, deopted } = this;
+
+    if (deopted) {
+      return {
+        guid,
+        type,
+        deopted: true,
+        children: [deopted.toJSON()]
+      };
+    } else {
+      return super.toJSON();
+    }
   }
 }
 
