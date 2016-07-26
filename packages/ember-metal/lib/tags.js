@@ -16,7 +16,7 @@ export function tagFor(object, _meta) {
     throw new Error('Cannot call tagFor without Glimmer');
   }
 
-  if (object && typeof object === 'object') {
+  if (typeof object === 'object' && object) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
   } else {

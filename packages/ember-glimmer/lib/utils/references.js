@@ -153,7 +153,7 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
       _parentObjectTag.update(tagFor(parentValue));
     }
 
-    if (parentValue && typeof parentValue === 'object') {
+    if (typeof parentValue === 'object' && parentValue) {
       if (isEnabled('mandatory-setter')) {
         let meta = metaFor(parentValue);
         watchKey(parentValue, _propertyKey, meta);

@@ -590,7 +590,7 @@ function _detect(curMixin, targetMixin, seen) {
   @private
 */
 MixinPrototype.detect = function(obj) {
-  if (!obj) { return false; }
+  if (typeof obj !== 'object' || obj === null) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
   let m = peekMeta(obj);
   if (!m) { return false; }
