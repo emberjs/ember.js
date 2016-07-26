@@ -94,7 +94,7 @@ moduleFor('Input element tests', class extends RenderingTest {
     this.assertValue('', 'Value is updated the second time');
   }
 
-  ['@skip DOM is SSOT if value is set']() {
+  ['@test DOM is SSOT if value is set']() {
     let template = `<input value={{value}}>`;
     this.render(template, { value: 'hola' });
 
@@ -108,9 +108,19 @@ moduleFor('Input element tests', class extends RenderingTest {
 
     this.assertValue('hola', 'DOM is used');
 
-    this.setComponentValue('hello');
+    this.setComponentValue('bye');
 
-    this.assertValue('hello', 'DOM is used');
+    this.assertValue('bye', 'Value is used');
+
+    // Simulates setting the input to the same value as it already is which won't cause a rerender
+
+    this.setDOMValue('hola');
+
+    this.assertValue('hola', 'DOM is used');
+
+    this.setComponentValue('hola');
+
+    this.assertValue('hola', 'Value is used');
   }
 
   // private helpers and assertions
