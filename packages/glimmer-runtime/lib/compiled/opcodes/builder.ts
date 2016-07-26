@@ -13,10 +13,13 @@ import { CompiledExpression } from '../expressions';
 import { ComponentDefinition } from '../../component/interfaces';
 import Environment from '../../environment';
 import { InlineBlock, Layout, Block } from '../blocks';
+import { EMPTY_ARRAY } from '../../utils';
 
 interface CompilesInto<T> {
   compile(dsl: OpcodeBuilder, env: Environment, block: Block): T;
 }
+
+type Represents<E> = CompilesInto<E> | E;
 
 export type Label = string;
 
@@ -74,7 +77,7 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     super(inner);
   }
 
-  abstract compile<E>(expr: CompilesInto<E>): E;
+  abstract compile<E>(expr: Represents<E>): E;
 
   // helpers
 
@@ -102,24 +105,28 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.labelsStack.pop();
   }
 
-  labelFor(label: string): vm.LabelOpcode {
+  labelFor(name: string): vm.LabelOpcode {
     let labels = this.labels;
+    let label = labels[name];
 
-    if (labels[label]) return labels[label];
-    else return labels[label] = new vm.LabelOpcode(label);
+    if (!label) {
+      label = labels[name] = new vm.LabelOpcode(name);
+    }
+
+    return label;
   }
 
   // components
 
-  putComponentDefinition(args: CompilesInto<CompiledArgs>, definition: ComponentDefinition<Opaque>) {
+  putComponentDefinition(args: Represents<CompiledArgs>, definition: ComponentDefinition<Opaque>) {
     this.append(new component.PutComponentDefinitionOpcode({ args: this.compile(args), definition }));
   }
 
-  putDynamicComponentDefinition(args: CompilesInto<CompiledArgs>) {
+  putDynamicComponentDefinition(args: Represents<CompiledArgs>) {
     this.append(new component.PutDynamicComponentDefinitionOpcode({ args: this.compile(args) }));
   }
 
-  openComponent(shadow: InternedString[]) {
+  openComponent(shadow: InternedString[] = EMPTY_ARRAY) {
     this.append(new component.OpenComponentOpcode({ shadow, templates: this.templates }));
   }
 
@@ -138,11 +145,11 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   // content
 
   cautiousAppend() {
-    this.append(new content.CautiousAppendOpcode());
+    this.append(new content.OptimizedCautiousAppendOpcode());
   }
 
   trustingAppend() {
-    this.append(new content.TrustingAppendOpcode());
+    this.append(new content.OptimizedTrustingAppendOpcode());
   }
 
   // dom
@@ -227,11 +234,11 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.PutNullOpcode());
   }
 
-  putValue(expression: CompilesInto<CompiledExpression<Opaque>>) {
+  putValue(expression: Represents<CompiledExpression<Opaque>>) {
     this.append(new vm.PutValueOpcode({ expression: this.compile(expression) }));
   }
 
-  putArgs(args: CompilesInto<CompiledArgs>) {
+  putArgs(args: Represents<CompiledArgs>) {
     this.append(new vm.PutArgsOpcode({ args: this.compile(args) }));
   }
 
@@ -263,8 +270,18 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
     this.append(new vm.EvaluateOpcode({ debug: name, block }));
   }
 
-  test() {
-    this.append(new vm.TestOpcode());
+  test(testFunc: 'const' | 'simple' | 'environment' | vm.TestFunction) {
+    if (testFunc === 'const') {
+      this.append(new vm.TestOpcode(vm.ConstTest));
+    } else if (testFunc === 'simple') {
+      this.append(new vm.TestOpcode(vm.SimpleTest));
+    } else if (testFunc === 'environment') {
+      this.append(new vm.TestOpcode(vm.EnvironmentTest));
+    } else if (typeof testFunc === 'function') {
+      this.append(new vm.TestOpcode(testFunc));
+    } else {
+      throw new Error('unreachable');
+    }
   }
 
   jump(target: string) {
@@ -280,9 +297,21 @@ export abstract class BasicOpcodeBuilder extends StatementCompilationBufferProxy
   }
 }
 
+function isCompilableExpression<E>(expr: Represents<E>): expr is CompilesInto<E> {
+  return expr && typeof expr['compile'] === 'function';
+}
+
+type BlockArgs = { templates: Syntax.Templates, args?: Syntax.Args };
+
+const SIMPLE_BLOCK: BlockArgs = { templates: null };
+
 export default class OpcodeBuilder extends BasicOpcodeBuilder {
-  compile<E>(expr: CompilesInto<E>): E {
-    return expr.compile(this, this.env, this._block);
+  compile<E>(expr: Represents<E>): E {
+    if (isCompilableExpression(expr)) {
+      return expr.compile(this, this.env, this._block);
+    } else {
+      return expr;
+    }
   }
 
   setupDynamicScope(callback: vm.BindDynamicScopeCallback) {
@@ -298,7 +327,11 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.append(vm.BindBlocksOpcode.create(layout));
   }
 
-  block({ templates, args }, callback: BlockCallback) {
+  simpleBlock(callback: BlockCallback) {
+    this.block(SIMPLE_BLOCK, callback);
+  }
+
+  block({ templates, args }: BlockArgs, callback: BlockCallback) {
     this.startLabels();
     this.startBlock({ templates });
     this.enter('BEGIN', 'END');
@@ -314,7 +347,7 @@ export default class OpcodeBuilder extends BasicOpcodeBuilder {
     this.stopLabels();
   }
 
-  iter({ templates }, callback: BlockCallback) {
+  iter({ templates }: { templates: Syntax.Templates }, callback: BlockCallback) {
     this.startLabels();
     this.startBlock({ templates });
     this.enterList('BEGIN', 'END');

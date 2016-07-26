@@ -2841,3 +2841,149 @@ QUnit.test('can bind the layout late', function(assert) {
     id: regex(/^ember\d*$/)
   }, 'Swap - YIELD');
 });
+
+module('appendable components');
+
+QUnit.test('it does not work on optimized appends', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{foo}}', { foo: definition });
+
+  assertAppended('[object Object]');
+
+  rerender();
+
+  assertAppended('[object Object]');
+
+  view.rerender({ foo: 'foo' });
+
+  assertAppended('foo');
+
+  view.rerender({ foo: definition });
+
+  assertAppended('[object Object]');
+});
+
+QUnit.test('it works on unoptimized appends (dot paths)', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{foo.bar}}', { foo: { bar: definition } });
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  rerender();
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  view.rerender({ foo: { bar: 'lol' } });
+
+  assertAppended('lol');
+
+  rerender();
+
+  assertAppended('lol');
+
+  view.rerender({ foo: { bar: 'omg' } });
+
+  assertAppended('omg');
+
+  view.rerender({ foo: { bar: definition } });
+
+  assertEmberishElement('div', {}, 'foo bar');
+});
+
+QUnit.test('it works on unoptimized appends (this paths)', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{this.foo}}', { foo: definition });
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  rerender();
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  view.rerender({ foo: 'lol' });
+
+  assertAppended('lol');
+
+  rerender();
+
+  assertAppended('lol');
+
+  view.rerender({ foo: 'omg' });
+
+  assertAppended('omg');
+
+  view.rerender({ foo: definition });
+
+  assertEmberishElement('div', {}, 'foo bar');
+});
+
+QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{foo.bar}}', { foo: { bar: 'lol' } });
+
+  assertAppended('lol');
+
+  rerender();
+
+  assertAppended('lol');
+
+  view.rerender({ foo: { bar: definition } });
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  rerender();
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  view.rerender({ foo: { bar: 'lol' } });
+
+  assertAppended('lol');
+});
+
+QUnit.test('it works on unoptimized appends when initially not a component (this paths)', function(assert) {
+  class FooBar extends EmberishCurlyComponent {}
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBar, 'foo bar');
+
+  let definition = env.getComponentDefinition(['foo-bar'] as any);
+
+  appendViewFor('{{this.foo}}', { foo: 'lol' });
+
+  assertAppended('lol');
+
+  rerender();
+
+  assertAppended('lol');
+
+  view.rerender({ foo: definition });
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  rerender();
+
+  assertEmberishElement('div', {}, 'foo bar');
+
+  view.rerender({ foo: 'lol' });
+
+  assertAppended('lol');
+});

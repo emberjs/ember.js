@@ -20,15 +20,11 @@ export default class WithSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#with ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        PutArgs
-    //        Test
+    //        Test(Environment)
     //        JumpUnless(ELSE)
     //        Evaluate(default)
     //        Jump(END)
@@ -40,7 +36,7 @@ export default class WithSyntax extends StatementSyntax {
     let { args, templates } = this;
 
     dsl.block({ templates, args }, (dsl, BEGIN, END) => {
-      dsl.test();
+      dsl.test('environment');
 
       if (templates.inverse) {
         dsl.jumpUnless('ELSE');

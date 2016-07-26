@@ -10,6 +10,7 @@ export default function make<T>(func: FunctionExpression<T>): ExpressionSyntax<T
 }
 
 class FunctionExpressionSyntax<T> extends ExpressionSyntax<T> {
+  public type = "function-expression";
   private func: FunctionExpression<T>;
 
   constructor(func: FunctionExpression<T>) {
@@ -23,8 +24,7 @@ class FunctionExpressionSyntax<T> extends ExpressionSyntax<T> {
 }
 
 class CompiledFunctionExpression<T> extends CompiledExpression<T> {
-  type = "function";
-
+  public type = "function";
   private func: FunctionExpression<T>;
 
   constructor(func: FunctionExpression<T>) {

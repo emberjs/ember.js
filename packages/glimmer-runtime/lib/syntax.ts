@@ -1,4 +1,4 @@
-import { Dict, LinkedListNode, Slice, InternedString } from 'glimmer-util';
+import { LinkedListNode, Slice, InternedString } from 'glimmer-util';
 import { BlockScanner } from './scanner';
 import { Environment } from './environment';
 import { CompiledExpression } from './compiled/expressions';
@@ -13,36 +13,6 @@ import {
   BlockMeta
 } from 'glimmer-wire-format';
 
-export type PrettyPrintValue = PrettyPrint | string | string[] | PrettyPrintValueArray | PrettyPrintValueDict;
-
-interface PrettyPrintValueArray extends Array<PrettyPrintValue> {
-
-}
-
-interface PrettyPrintValueDict extends Dict<PrettyPrintValue> {
-
-}
-
-export class PrettyPrint {
-  type: string;
-  operation: string;
-  params: PrettyPrintValue[];
-  hash: Dict<PrettyPrintValue>;
-  templates: Dict<number>;
-
-  constructor(type: string, operation: string, params: PrettyPrintValue[]=null, hash: Dict<PrettyPrintValue>=null, templates: Dict<number>=null) {
-    this.type = type;
-    this.operation = operation;
-    this.params = params;
-    this.hash = hash;
-    this.templates = templates;
-  }
-}
-
-export interface PrettyPrintable {
-  prettyPrint(): PrettyPrint;
-}
-
 interface StatementClass<T extends SerializedStatement, U extends Statement> {
   fromSpec(spec: T, blocks?: InlineBlock[]): U;
 }
@@ -52,13 +22,9 @@ export abstract class Statement implements LinkedListNode {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
-  public type: string;
+  public abstract type: string;
   public next: Statement = null;
   public prev: Statement = null;
-
-  prettyPrint(): PrettyPrintValue {
-    return new PrettyPrint(this.type, this.type);
-  }
 
   clone(): this {
     // not type safe but the alternative is extreme boilerplate per
@@ -82,11 +48,7 @@ export abstract class Expression<T> {
     throw new Error(`You need to implement fromSpec on ${this}`);
   }
 
-  public type: string;
-
-  prettyPrint(): PrettyPrintValue {
-    return `${this.type}`;
-  }
+  public abstract type: string;
 
   abstract compile(compiler: SymbolLookup, env: Environment, parentMeta?: BlockMeta): CompiledExpression<T>;
 }

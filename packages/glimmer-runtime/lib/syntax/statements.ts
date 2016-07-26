@@ -1,7 +1,7 @@
 import {
   Yield,
   Block,
-  Append,
+  OptimizedAppend,
   DynamicAttr,
   Text,
   Comment,
@@ -40,7 +40,7 @@ const {
 export default function(sexp: SerializedStatement, blocks: InlineBlock[]): StatementSyntax {
   if (isYield(sexp)) return Yield.fromSpec(sexp);
   if (isBlock(sexp)) return Block.fromSpec(sexp, blocks);
-  if (isAppend(sexp)) return Append.fromSpec(sexp);
+  if (isAppend(sexp)) return OptimizedAppend.fromSpec(sexp);
   if (isDynamicAttr(sexp)) return DynamicAttr.fromSpec(sexp);
   if (isDynamicArg(sexp)) return DynamicArg.fromSpec(sexp);
   if (isTrustingAttr(sexp)) return TrustingAttr.fromSpec(sexp);

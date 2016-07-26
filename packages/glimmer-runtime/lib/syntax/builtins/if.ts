@@ -19,15 +19,11 @@ export default class IfSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#if ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        PutArgs
-    //        Test
+    //        Test(Environment)
     //        JumpUnless(ELSE)
     //        Evaluate(default)
     //        Jump(END)
@@ -39,7 +35,7 @@ export default class IfSyntax extends StatementSyntax {
     let { args, templates } = this;
 
     dsl.block({ templates, args }, (dsl, BEGIN, END) => {
-      dsl.test();
+      dsl.test('environment');
 
       if (templates.inverse) {
         dsl.jumpUnless('ELSE');
