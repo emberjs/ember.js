@@ -76,7 +76,7 @@ export function equalTokens(actualContainer, expectedHTML, message = null) {
 const MATCHER_BRAND = '3d4ef194-13be-4ccf-8dc7-862eea02c93e';
 
 function isMatcher(obj) {
-  return typeof obj === 'object' && MATCHER_BRAND in obj;
+  return typeof obj === 'object' && obj !== null && MATCHER_BRAND in obj;
 }
 
 const HTMLElement = window.HTMLElement;
@@ -88,9 +88,10 @@ export function equalsElement(element, tagName, attributes, content) {
   let expectedCount = 0;
 
   for (let name in attributes) {
-    expectedCount++;
-
     let expected = attributes[name];
+    if (expected !== null) {
+      expectedCount++;
+    }
 
     let matcher = isMatcher(expected) ? expected : equalsAttr(expected);
 
@@ -186,8 +187,12 @@ export function styles(expected) {
     [MATCHER_BRAND]: true,
 
     match(actual) {
+      // coerce `null` or `undefined` to an empty string
+      // needed for matching empty styles on IE9 - IE11
+      actual = actual || '';
       actual = actual.trim();
-      return actual && (
+
+      return (
         expected.split(';').map(s => s.trim()).filter(s => s).sort().join('; ') ===
         actual.split(';').map(s => s.trim()).filter(s => s).sort().join('; ')
       );
