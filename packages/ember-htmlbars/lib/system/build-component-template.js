@@ -32,9 +32,22 @@ export default function buildComponentTemplate({ component, tagName, layout, out
       elementTemplate.meta = meta;
 
       blockToRender = createElementBlock(elementTemplate, blockToRender, component);
-    } else {
-      validateTaglessComponent(component);
     }
+
+    assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
+      let { classNameBindings } = component;
+      return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
+    })());
+
+    assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
+      let { elementId } = component;
+      return tagName !== '' || (!elementId && elementId !== '');
+    })());
+
+    assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
+      let { attributeBindings } = component;
+      return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
+    })());
   }
 
   // tagName is one of:
@@ -124,7 +137,7 @@ function tagNameFor(view) {
   let tagName = view.tagName;
 
   if (tagName === null || tagName === undefined) {
-    tagName = view._defaultTagName || 'div';
+    tagName = 'div';
   }
 
   return tagName;
@@ -135,7 +148,6 @@ function tagNameFor(view) {
 function normalizeComponentAttributes(component, attrs) {
   let normalized = {};
   let attributeBindings = component.attributeBindings;
-  let streamBasePath = component.isComponent ? '' : 'view.';
 
   if (attrs.id && getValue(attrs.id)) {
     // Do not allow binding to the `id`
@@ -154,7 +166,7 @@ function normalizeComponentAttributes(component, attrs) {
       if (colonIndex !== -1) {
         let attrProperty = attr.substring(0, colonIndex);
         attrName = attr.substring(colonIndex + 1);
-        expression = buildStatement('get', `${streamBasePath}${attrProperty}`);
+        expression = buildStatement('get', attrProperty);
       } else if (attrs[attr]) {
         // TODO: For compatibility with 1.x, we probably need to `set`
         // the component's attribute here if it is a CP, but we also
@@ -164,7 +176,7 @@ function normalizeComponentAttributes(component, attrs) {
         expression = buildStatement('value', attrs[attr]);
       } else {
         attrName = attr;
-        expression = buildStatement('get', `${streamBasePath}${attr}`);
+        expression = buildStatement('get', attr);
       }
 
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attrName !== 'class');
@@ -172,11 +184,13 @@ function normalizeComponentAttributes(component, attrs) {
     }
   }
 
+  normalized.role = buildStatement('get', 'ariaRole');
+
   if (attrs.tagName) {
     component.tagName = attrs.tagName;
   }
 
-  let normalizedClass = normalizeClass(component, attrs, streamBasePath);
+  let normalizedClass = normalizeClass(component, attrs);
   if (normalizedClass) {
     normalized.class = normalizedClass;
   }
@@ -195,7 +209,7 @@ function normalizeComponentAttributes(component, attrs) {
   return normalized;
 }
 
-function normalizeClass(component, attrs, streamBasePath) {
+function normalizeClass(component, attrs) {
   let normalizedClass = [];
   let classNames = get(component, 'classNames');
   let classNameBindings = get(component, 'classNameBindings');
@@ -209,7 +223,7 @@ function normalizeClass(component, attrs, streamBasePath) {
   }
 
   if (attrs.classBinding) {
-    normalizeClasses(attrs.classBinding.split(' '), normalizedClass, streamBasePath);
+    normalizeClasses(attrs.classBinding.split(' '), normalizedClass);
   }
 
   if (classNames) {
@@ -219,7 +233,7 @@ function normalizeClass(component, attrs, streamBasePath) {
   }
 
   if (classNameBindings) {
-    normalizeClasses(classNameBindings, normalizedClass, streamBasePath);
+    normalizeClasses(classNameBindings, normalizedClass);
   }
 
   if (normalizeClass.length) {
@@ -240,23 +254,14 @@ function normalizeClasses(classes, output, streamBasePath) {
       continue;
     }
 
-    let prop = `${streamBasePath}${propName}`;
-
     output.push(buildStatement('subexpr', '-normalize-class', [
       // params
       buildStatement('value', propName),
-      buildStatement('get', prop)
+      buildStatement('get', propName)
     ], [
       // hash
       'activeClass', activeClass,
       'inactiveClass', inactiveClass
     ]));
   }
-}
-
-function validateTaglessComponent(component) {
-  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
-    let classNameBindings = component.classNameBindings;
-    return !classNameBindings || classNameBindings.length === 0;
-  })());
 }
