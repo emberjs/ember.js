@@ -767,6 +767,44 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     assert.equal(this.$().text(), '');
   }
 
+  ['@test GH#13494 tagless blockless component with property binding'](assert) {
+    this.registerComponent('outer-component', {
+      ComponentClass: Component.extend({
+        message: 'hello',
+        actions: {
+          change() {
+            this.set('message', 'goodbye');
+          }
+        }
+      }),
+      template: strip`
+        message: {{message}}{{inner-component message=message}}
+        <button onclick={{action "change"}} />`
+    });
+
+    this.registerComponent('inner-component', {
+      ComponentClass: Component.extend({
+        tagName: ''
+      })
+    });
+
+    this.render(`{{outer-component}}`);
+
+    assert.equal(this.$().text(), 'message: hello');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$().text(), 'message: hello');
+
+    this.runTask(() => this.$('button').click());
+
+    assert.equal(this.$().text(), 'message: goodbye');
+
+    this.runTask(() => this.rerender());
+
+    assert.equal(this.$().text(), 'message: goodbye');
+  }
+
 });
 
 class ClosureComponentMutableParamsTest extends RenderingTest {
