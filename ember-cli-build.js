@@ -40,6 +40,7 @@ function buildTSOptions(compilerOptions) {
 
 module.exports = function() {
   var packages = __dirname + '/packages';
+  var tslintConfig = __dirname + '/tslint.json';
   var bower = __dirname + '/bower_components';
   var hasBower = existsSync(bower);
 
@@ -76,7 +77,9 @@ module.exports = function() {
     exclude: ['**/*.d.ts']
   });
 
-  var tsLintTree = new TSLint(tsTree);
+  var tsLintTree = new TSLint(tsTree, {
+    configuration: tslintConfig
+  });
   var jsTree = typescript(merge([tsTree, tsLintTree]), tsOptions);
 
   var libTree = find(jsTree, {
