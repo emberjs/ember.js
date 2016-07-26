@@ -48,7 +48,7 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._isDispatchingAttrs = false;
     this._isVisible = false;
     this.element = null;
-    this.env = null;
+    this._env = null;
     this._isVisible = get(this, 'isVisible');
 
     // Fallback for legacy cases where the view was created directly

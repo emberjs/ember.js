@@ -9,13 +9,13 @@ export default BasicStream.extend({
     this.helper = helper;
     this.params = params;
     this.templates = templates;
-    this.env = env;
+    this._env = env;
     this.scope = scope;
     this.hash = hash;
     this.label = label;
   },
 
   compute() {
-    return this.helper(getArrayValues(this.params), getHashValues(this.hash), this.templates, this.env, this.scope);
+    return this.helper(getArrayValues(this.params), getHashValues(this.hash), this.templates, this._env, this.scope);
   }
 });

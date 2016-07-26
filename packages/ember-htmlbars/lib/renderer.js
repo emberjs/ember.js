@@ -46,7 +46,7 @@ Renderer.prototype.prerenderTopLevelView =
 
     renderHTMLBarsBlock(view, block, renderNode);
     view.lastResult = renderNode.lastResult;
-    this.clearRenderedViews(view.env);
+    this.clearRenderedViews(view._env);
   };
 
 Renderer.prototype.renderTopLevelView =
@@ -55,7 +55,7 @@ Renderer.prototype.renderTopLevelView =
     if (view._willInsert) {
       view._willInsert = false;
       this.prerenderTopLevelView(view, renderNode);
-      this.dispatchLifecycleHooks(view.env);
+      this.dispatchLifecycleHooks(view._env);
     }
   };
 
@@ -63,9 +63,9 @@ Renderer.prototype.revalidateTopLevelView =
   function Renderer_revalidateTopLevelView(view) {
     // This guard prevents revalidation on an already-destroyed view.
     if (view._renderNode.lastResult) {
-      view._renderNode.lastResult.revalidate(view.env);
-      this.dispatchLifecycleHooks(view.env);
-      this.clearRenderedViews(view.env);
+      view._renderNode.lastResult.revalidate(view._env);
+      this.dispatchLifecycleHooks(view._env);
+      this.clearRenderedViews(view._env);
     }
   };
 
@@ -94,7 +94,7 @@ Renderer.prototype.dispatchLifecycleHooks =
 
 Renderer.prototype.ensureViewNotRendering =
   function Renderer_ensureViewNotRendering(view) {
-    let env = view.ownerView.env;
+    let env = view.ownerView._env;
     if (env && env.renderedViews.indexOf(view.elementId) !== -1) {
       throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
     }
