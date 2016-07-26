@@ -1,7 +1,7 @@
 import { StatementSyntax, ValueReference, EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs } from 'glimmer-runtime';
 import { TO_ROOT_REFERENCE, AttributeBindingReference, applyClassNameBinding } from '../utils/references';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
-import { assert } from 'ember-metal/debug';
+import { assert, runInDebug } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
 import { privatize as P } from 'container/registry';
 import assign from 'ember-metal/assign';
@@ -12,28 +12,30 @@ import Component from '../component';
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
 export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
-  if (!named || !positional || !positional.length) {
-    return;
-  }
-
-  let paramType = typeof positionalParamsDefinition;
-
-  if (paramType === 'string') {
-    assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
-  } else {
-    if (positional.length < positionalParamsDefinition.length) {
-      positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
+  runInDebug(() => {
+    if (!named || !positional || !positional.length) {
+      return;
     }
 
-    for (let i = 0; i < positionalParamsDefinition.length; i++) {
-      let name = positionalParamsDefinition[i];
+    let paramType = typeof positionalParamsDefinition;
 
-      assert(
-        `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-        !named.has(name)
-      );
+    if (paramType === 'string') {
+      assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
+    } else {
+      if (positional.length < positionalParamsDefinition.length) {
+        positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
+      }
+
+      for (let i = 0; i < positionalParamsDefinition.length; i++) {
+        let name = positionalParamsDefinition[i];
+
+        assert(
+          `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+          !named.has(name)
+        );
+      }
     }
-  }
+  });
 }
 
 function aliasIdToElementId(args, props) {
