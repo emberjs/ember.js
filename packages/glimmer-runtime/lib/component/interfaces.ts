@@ -85,7 +85,7 @@ export interface ComponentAttrsBuilder {
 const COMPONENT_DEFINITION_BRAND = 'COMPONENT DEFINITION [id=e59c754e-61eb-4392-8c4a-2c0ac72bfcd4]';
 
 export function isComponentDefinition(obj: any): obj is ComponentDefinition<Opaque> {
-  return obj && obj[COMPONENT_DEFINITION_BRAND];
+  return typeof obj === 'object' && obj && obj[COMPONENT_DEFINITION_BRAND];
 }
 
 export abstract class ComponentDefinition<T> {
