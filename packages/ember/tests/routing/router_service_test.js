@@ -110,7 +110,7 @@ QUnit.module('Router Service', {
   }
 });
 
-QUnit.test('The Homepage', function() {
+QUnit.test('Basic route', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
     this.route('camelot');
@@ -119,7 +119,11 @@ QUnit.test('The Homepage', function() {
   App.HomeRoute = Route.extend({
   });
 
+  App.CamelotRoute = Route.extend({
+  });
+
   var currentPath;
+  var currentRouteName;
   var controller;
 
   App.ApplicationController = Controller.extend({
@@ -131,6 +135,7 @@ QUnit.test('The Homepage', function() {
     currentPathDidChange: observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
     }),
+
     actions: {
       moveToCamelot() {
         get(this, 'router').transitionTo('camelot');
@@ -148,8 +153,107 @@ QUnit.test('The Homepage', function() {
 
   run(function() {
     controller.send('moveToCamelot');
-  })
+  });
+
+  var currentRouteName = get(controller, 'router.currentRouteName');
 
   equal(currentPath, 'camelot');
   equal(jQuery('h3:contains(silly)', '#qunit-fixture').length, 1, 'The camelot template was rendered');
+});
+
+QUnit.test('Dynamic section - Skip model hook', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('homepage', { path: 'homepage/:post_id' });
+  });
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.HomepageRoute = Route.extend({
+  });
+
+  var currentPath;
+  var currentRouteName;
+  var controller;
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+    },
+    currentPathDidChange: observer('currentPath', function() {
+      currentPath = get(this, 'currentPath');
+    }),
+
+    actions: {
+      moveToRoute() {
+        var router = get(this, 'router');
+        var obj = { id: 1, home: 'Homepage' };
+        get(this, 'router').transitionTo('homepage', obj);
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToRoute');
+  });
+
+  equal(currentPath, 'homepage');
+  equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
+  console.log(jQuery('p'));
+  equal(jQuery('p:contains(Homepage)', '#qunit-fixture').length, 1, 'The model was not set properly');
+});
+
+QUnit.test('Dynamic section - trigger model hook', function() {
+  Router.map(function() {
+    this.route('home', { path: '/' });
+    this.route('homepage', { path: 'homepage/:post_id' });
+  });
+
+  App.HomeRoute = Route.extend({
+  });
+
+  App.HomepageRoute = Route.extend({
+    model() {
+      var obj = { id: 1, home: 'Homepage' };
+
+      return obj;
+    }
+  });
+
+  var currentPath;
+  var currentRouteName;
+  var controller;
+
+  App.ApplicationController = Controller.extend({
+    router: inject.service(),
+    init() {
+      this._super.apply(arguments);
+      controller = this;
+    },
+    currentPathDidChange: observer('currentPath', function() {
+      currentPath = get(this, 'currentPath');
+    }),
+
+    actions: {
+      moveToRoute() {
+        var router = get(this, 'router');
+        get(this, 'router').transitionTo('homepage', 1);
+      }
+    }
+  });
+
+  bootApplication();
+
+  run(function() {
+    controller.send('moveToRoute');
+  });
+
+  equal(currentPath, 'homepage');
+  equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
+  equal(jQuery('p:contains(Homepage)', '#qunit-fixture').length, 1, 'The model was not set properly');
 });

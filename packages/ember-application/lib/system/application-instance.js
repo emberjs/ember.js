@@ -13,6 +13,7 @@ import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
 import isEnabled from 'ember-metal/features';
+import RouterService from 'ember-routing/services/router';
 
 let BootOptions;
 

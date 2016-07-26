@@ -5,30 +5,22 @@
 
 import Service from 'ember-runtime/system/service';
 import inject from 'ember-runtime/inject';
+import { readOnly } from 'ember-runtime/computed/computed_macros';
+import { get } from 'ember-metal/property_get';
 
 export default Service.extend({
-  _routing: inject.service('-routing'),
+  currentRouteName: readOnly('router.currentRouteName'),
 
-  transitionTo(routeName, ...models) {
-    let queryParams = models.pop();
+  transitionTo() {
+    let router = get(this, 'router');
 
-    this.get('_routing').transitionTo(
-      routeName,
-      models,
-      queryParams
-    );
+    router.transitionTo(...arguments);
   },
 
-  replaceWith(routeName, ...models) {
-    let queryParams = models.pop();
-    let shouldReplace = true;
+  replaceWith() {
+    let router = get(this, 'router');
 
-    this.get('_routing').transitionTo(
-      routeName,
-      models,
-      queryParams,
-      shouldReplace
-    );
+    router.replaceWith(...arguments);
   },
 
   isActive(routeName, ...models) {
@@ -37,11 +29,9 @@ export default Service.extend({
   isActiveTarget(routeName, ...models) {
   },
 
-  urlFor(routeName, models, queryParams) {
-    return this.get('_routing').generateUrl(
-      routeName,
-      models,
-      queryParams
-    );
+  urlFor() {
+    let router = get(this, 'router');
+
+    router.generate(...arguments);
   }
 });
