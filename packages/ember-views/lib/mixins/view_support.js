@@ -428,14 +428,6 @@ export default Mixin.create({
   // the default case and a user-specified tag.
   tagName: null,
 
-  /*
-    Used to specify a default tagName that can be overridden when extending
-    or invoking from a template.
-
-    @property _defaultTagName
-    @private
-  */
-
   // .......................................................
   // CORE DISPLAY METHODS
   //

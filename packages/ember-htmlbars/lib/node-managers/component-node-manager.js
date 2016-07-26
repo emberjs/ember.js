@@ -4,7 +4,7 @@ import getCellOrValue from 'ember-htmlbars/hooks/get-cell-or-value';
 import { get } from 'ember-metal/property_get';
 import { MUTABLE_CELL } from 'ember-views/compat/attrs-proxy';
 import { instrument } from 'ember-htmlbars/system/instrumentation-support';
-import LegacyEmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
+import EmberComponent, { HAS_BLOCK } from 'ember-htmlbars/component';
 import extractPositionalParams from 'ember-htmlbars/utils/extract-positional-params';
 import { setOwner, getOwner } from 'container/owner';
 
@@ -33,7 +33,7 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
         layout,
         templates } = options;
 
-  component = component || LegacyEmberComponent;
+  component = component || EmberComponent;
 
   let createOptions = {
     parentView,
@@ -74,7 +74,6 @@ ComponentNodeManager.create = function ComponentNodeManager_create(renderNode, e
   return new ComponentNodeManager(component, parentScope, renderNode, attrs, results.block, results.createdElement);
 };
 
-
 function configureTagName(attrs, tagName, component, createOptions) {
   if (attrs.tagName) {
     createOptions.tagName = getValue(attrs.tagName);
@@ -86,7 +85,6 @@ function configureCreateOptions(attrs, createOptions) {
   // instance. Make sure we use getValue() to get them from `attrs` since
   // they are still streams.
   if (attrs.id) { createOptions.elementId = getValue(attrs.id); }
-  if (attrs._defaultTagName) { createOptions._defaultTagName = getValue(attrs._defaultTagName); }
 }
 
 ComponentNodeManager.prototype.render = function ComponentNodeManager_render(_env, visitor) {

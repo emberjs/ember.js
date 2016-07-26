@@ -512,24 +512,7 @@ var View = CoreView.extend(
   VisibilitySupport,
   CompatAttrsProxy,
   AriaRoleSupport,
-  ViewMixin, {
-    attributeBindings: ['ariaRole:role'],
-
-    /**
-      Given a property name, returns a dasherized version of that
-      property name if the property evaluates to a non-falsy value.
-
-      For example, if the view has property `isUrgent` that evaluates to true,
-      passing `isUrgent` to this method will return `"is-urgent"`.
-
-      @method _classStringForProperty
-      @param property
-      @private
-    */
-    _classStringForProperty(parsedPath) {
-      return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
-    }
-  });
+  ViewMixin);
 
 // jscs:enable validateIndentation
 

@@ -40,7 +40,6 @@ ViewNodeManager.create = function ViewNodeManager_create(renderNode, env, attrs,
 
     if (attrs && attrs.id) { options.elementId = getValue(attrs.id); }
     if (attrs && attrs.tagName) { options.tagName = getValue(attrs.tagName); }
-    if (attrs && attrs._defaultTagName) { options._defaultTagName = getValue(attrs._defaultTagName); }
 
     component = componentInfo.component = createOrUpdateComponent(found.component, options, found.createOptions, renderNode, env, attrs);
 
