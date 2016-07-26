@@ -330,7 +330,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Hodi Sigmundur 33');
   }
 
-  ['@skip bound outer named parameters get updated in the right scope']() {
+  ['@glimmer bound outer named parameters get updated in the right scope']() {
     this.registerComponent('-inner-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['comp']
@@ -376,7 +376,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Inner 28');
   }
 
-  ['@skip bound outer hash parameters get updated in the right scope']() {
+  ['@test bound outer hash parameters get updated in the right scope']() {
     this.registerComponent('-inner-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['comp']

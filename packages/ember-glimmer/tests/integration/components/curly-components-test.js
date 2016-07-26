@@ -978,7 +978,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: something here');
   }
 
-  ['@skip non-block with properties overridden in init']() {
+  ['@glimmer non-block with properties overridden in init']() {
     let instance;
     this.registerComponent('non-block', {
       ComponentClass: Component.extend({
