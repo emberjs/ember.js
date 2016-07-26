@@ -34,6 +34,8 @@ import ApplicationInstance from './application-instance';
 import { privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
+import RouterService from 'ember-routing/services/router';
+import isEnabled from '../features';
 
 let librariesRegistered = false;
 
@@ -1039,6 +1041,11 @@ function commonSetupRegistry(registry) {
   registry.register('location:none', NoneLocation);
 
   registry.register(P`-bucket-cache:main`, BucketCache);
+
+  if (isEnabled('ember-routing-router-service')) {
+    registry.register('service:router', RouterService);
+    registry.injection('service:router', 'router', 'router:main');
+  }
 }
 
 function registerLibraries() {

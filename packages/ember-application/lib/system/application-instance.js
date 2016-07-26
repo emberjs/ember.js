@@ -300,11 +300,6 @@ ApplicationInstance.reopenClass({
     registry.injection('view', '_environment', '-environment:main');
     registry.injection('route', '_environment', '-environment:main');
 
-    if (isEnabled('ember-routing-router-service')) {
-      let router = get(this, 'router');
-      registry.register('service:router', router, { instantiate: false });
-    }
-
     registry.register('service:-document', options.document, { instantiate: false });
 
     this._super(registry, options);
