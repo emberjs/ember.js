@@ -194,6 +194,10 @@ export default class JavaScriptCompiler {
     this.pushValue(['arg', path]);
   }
 
+  selfGet(path: string[]) {
+    this.pushValue(['self-get', path]);
+  }
+
   get(path: string[]) {
     this.pushValue(['get', path]);
   }

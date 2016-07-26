@@ -299,7 +299,7 @@ function renderUI() {
 
   env.registerEmberishGlimmerComponent("opcode-inspector", null,
 `<li>
-  <span class="pre">{{pp-opcode @opcode}}</span>
+  <span class="pre">{{#if @opcode.deopted}}[DEOPT] <del>{{pp-opcode @opcode}}</del>{{else}}{{pp-opcode @opcode}}{{/if}}</span>
   {{#if @opcode.children}}
     <ol>
       {{#each @opcode.children key="guid" as |opcode|}}
@@ -360,9 +360,10 @@ function renderContent() {
 
   let env = new TestEnvironment();
 
-  env.registerHelper('foo', function(){
-    return 'FOOOOOOO';
+  env.registerHelper('foo-bar', function(){
+    return 'FOO BAR!!!';
   });
+
   env.registerEmberishGlimmerComponent("h-card", null, $layout.value);
 
   let app = env.compile($template.value);
@@ -374,25 +375,21 @@ function renderContent() {
     let instance = manager.create(definition, EvaluatedArgs.empty(), new TestDynamicScope(null), false);
     let compiled = manager.layoutFor(definition, instance, env);
 
-    return processOpcodes(compiled.ops);
+    return compiled.ops;
   }
 
-  function processOpcodes(list) {
-    return list.toArray().map(op => {
-      let json = op.toJSON();
-
+  function eagerCompile(ops) {
+    ops.toArray().forEach(op => {
       if (op.block) {
-        json.children = processOpcodes(op.block.compile(env).ops);
-      } else {
-        json.children = [];
+        eagerCompile(op.block.compile(env).ops);
       }
-
-      return json;
     });
+
+    return ops;
   }
 
-  function processUpdatingOpcodes(list) {
-    return list.toArray().map(op => op.toJSON());
+  function toJSON(ops) {
+    return ops.toArray().map(op => op.toJSON());
   }
 
   let div = document.createElement('div');
@@ -402,17 +399,20 @@ function renderContent() {
   let res = app.render(self, env, { appendTo: div, dynamicScope: new TestDynamicScope(null) });
   env.commit();
 
+  let templateOps = app.raw['compiled'].ops;
+  let layoutOps = compileLayout("h-card");
+
   ui.rendered = true;
 
   ui.template.source = $template.value;
   ui.template.wireFormat = JSON.parse(compileSpec($template.value, {}));
-  ui.template.opcodes = processOpcodes(app.raw['compiled'].ops);
+  ui.template.opcodes = toJSON(eagerCompile(templateOps));
 
   ui.layout.source = $layout.value;
   ui.layout.wireFormat = JSON.parse(compileSpec($layout.value, {}));
-  ui.layout.opcodes = compileLayout("h-card");
+  ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
 
-  ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
+  ui.updatingOpcodes = toJSON(res['updating']);
 
   ui.html = div.innerHTML;
 
@@ -424,7 +424,9 @@ function renderContent() {
     env.begin();
     res.rerender();
     env.commit();
-    ui.updatingOpcodes = processUpdatingOpcodes(res['updating']);
+    ui.template.opcodes = toJSON(eagerCompile(templateOps));
+    ui.layout.opcodes = toJSON(eagerCompile(layoutOps));
+    ui.updatingOpcodes = toJSON(res['updating']);
     ui.html = div.innerHTML;
     rerenderUI();
   };

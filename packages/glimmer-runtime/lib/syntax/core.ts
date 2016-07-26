@@ -13,7 +13,6 @@ import {
   Argument as ArgumentSyntax,
   Expression as ExpressionSyntax,
   Statement as StatementSyntax,
-  PrettyPrint,
   SymbolLookup
 } from '../syntax';
 
@@ -89,8 +88,10 @@ import {
 } from '../compiled/opcodes/dom';
 
 import {
-  CautiousAppendOpcode,
-  TrustingAppendOpcode
+  OptimizedCautiousAppendOpcode,
+  OptimizedTrustingAppendOpcode,
+  GuardedCautiousAppendOpcode,
+  GuardedTrustingAppendOpcode
 } from '../compiled/opcodes/content';
 
 import {
@@ -144,14 +145,6 @@ export class Block extends StatementSyntax {
   compile(ops: CompileInto) {
     throw new Error("SyntaxError");
   }
-
-  prettyPrint() {
-    return null;
-
-    // let [params, hash] = this.args.prettyPrint();
-    // let block = new PrettyPrint('expr', this.path.join('.'), params, hash);
-    // return new PrettyPrint('block', 'block', [block], null, this.templates.prettyPrint());
-  }
 }
 
 export class Unknown extends ExpressionSyntax<any> {
@@ -191,17 +184,14 @@ export class Unknown extends ExpressionSyntax<any> {
   }
 }
 
-export class Append extends StatementSyntax {
-  public type = "append";
+interface AppendOpcode {
+  new(): Opcode;
+}
 
+abstract class Append extends StatementSyntax {
   static fromSpec(sexp: SerializedStatements.Append): Append {
     let [, value, trustingMorph] = sexp;
-
-    return new Append({ value: buildExpression(value), trustingMorph });
-  }
-
-  static build(value: ExpressionSyntax<any>, trustingMorph: boolean) {
-    return new this({ value, trustingMorph });
+    return new OptimizedAppend({ value: buildExpression(value), trustingMorph });
   }
 
   value: ExpressionSyntax<any>;
@@ -212,19 +202,36 @@ export class Append extends StatementSyntax {
     this.value = value;
     this.trustingMorph = trustingMorph;
   }
+}
 
-  prettyPrint(): PrettyPrint {
-    let operation = this.trustingMorph ? 'html' : 'text';
-    return new PrettyPrint('append', operation, [this.value.prettyPrint()]);
+export class OptimizedAppend extends Append {
+  public type = "optimized-append";
+
+  deopt(): UnoptimizedAppend {
+    return new UnoptimizedAppend(this);
   }
 
   compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
     compiler.append(new PutValueOpcode({ expression: this.value.compile(compiler, env, block.meta) }));
 
     if (this.trustingMorph) {
-      compiler.append(new TrustingAppendOpcode());
+      compiler.append(new OptimizedTrustingAppendOpcode());
     } else {
-      compiler.append(new CautiousAppendOpcode());
+      compiler.append(new OptimizedCautiousAppendOpcode());
+    }
+  }
+}
+
+export class UnoptimizedAppend extends Append {
+  public type = "unoptimized-append";
+
+  compile(compiler: CompileInto & SymbolLookup, env: Environment, block: CompiledBlock) {
+    let expression = this.value.compile(compiler, env, block.meta);
+
+    if (this.trustingMorph) {
+      compiler.append(new GuardedTrustingAppendOpcode(expression));
+    } else {
+      compiler.append(new GuardedCautiousAppendOpcode(expression));
     }
   }
 }
@@ -277,7 +284,7 @@ export class Modifier extends StatementSyntax {
 }
 
 export class StaticArg extends ArgumentSyntax<string> {
-  public type: string = "static-arg";
+  public type = "static-arg";
   name: InternedString;
   value: InternedString;
 
@@ -304,13 +311,10 @@ export class StaticArg extends ArgumentSyntax<string> {
   valueSyntax(): ExpressionSyntax<string> {
     return Value.build(this.value as string);
   }
-
-  prettyPrint() {
-    return new PrettyPrint('staticArg', 'staticArg', [this.name, this.value]);
-  }
 }
 
 export class DynamicArg extends ArgumentSyntax<Opaque> {
+  public type = 'dynamic-arg';
   static fromSpec(sexp: SerializedStatements.DynamicArg): DynamicArg {
     let [, name, value] = sexp;
 
@@ -338,11 +342,6 @@ export class DynamicArg extends ArgumentSyntax<Opaque> {
 
   compile() {
     throw new Error(`Cannot compile DynamicArg for "${this.name}" as it is delegate for ExpressionSyntax<Opaque>.`);
-  }
-
-  prettyPrint() {
-    let { name, value } = this;
-    return new PrettyPrint('staticArg', 'staticArg', [name, value.prettyPrint()]);
   }
 
   valueSyntax() {
@@ -395,16 +394,6 @@ export class StaticAttr extends AttributeSyntax<string> {
     this.namespace = namespace;
   }
 
-  prettyPrint() {
-    let { name, value, namespace } = this;
-
-    if (namespace) {
-      return new PrettyPrint('attr', 'attr', [name, value], { namespace });
-    } else {
-      return new PrettyPrint('attr', 'attr', [name, value]);
-    }
-  }
-
   compile(compiler: CompileInto) {
     compiler.append(new StaticAttrOpcode(this));
   }
@@ -446,16 +435,6 @@ export class DynamicAttr extends AttributeSyntax<string> {
     this.isTrusting = isTrusting;
   }
 
-  prettyPrint() {
-    let { name, value, namespace } = this;
-
-    if (namespace) {
-      return new PrettyPrint('attr', 'attr', [name, value.prettyPrint()], { namespace });
-    } else {
-      return new PrettyPrint('attr', 'attr', [name, value.prettyPrint()]);
-    }
-  }
-
   compile(compiler: CompileInto & SymbolLookup, env: Environment) {
     let {namespace, value} = this;
     compiler.append(new PutValueOpcode({ expression: value.compile(compiler, env) }));
@@ -480,10 +459,6 @@ export class CloseElement extends StatementSyntax {
 
   static build() {
     return new this();
-  }
-
-  prettyPrint() {
-    return new PrettyPrint('element', 'close-element');
   }
 
   compile(compiler: CompileInto) {
@@ -511,10 +486,6 @@ export class Text extends StatementSyntax {
     this.content = options.content;
   }
 
-  prettyPrint() {
-    return new PrettyPrint('append', 'text', [this.content]);
-  }
-
   compile(dsl: OpcodeBuilderDSL) {
     dsl.text(this.content);
   }
@@ -538,10 +509,6 @@ export class Comment extends StatementSyntax {
   constructor(options) {
     super();
     this.comment = options.value;
-  }
-
-  prettyPrint() {
-    return new PrettyPrint('append', 'append-comment', [this.comment]);
   }
 
   compile(dsl: OpcodeBuilderDSL) {
@@ -586,11 +553,6 @@ export class OpenElement extends StatementSyntax {
     } else {
       return new OpenPrimitiveElement({ tag });
     }
-  }
-
-  prettyPrint() {
-    let params = new PrettyPrint('block-params', 'as', this.blockParams);
-    return new PrettyPrint('element', 'open-element', [this.tag, params]);
   }
 
   compile(list: CompileInto, env: Environment) {
@@ -694,10 +656,6 @@ export class OpenPrimitiveElement extends StatementSyntax {
     this.tag = options.tag;
   }
 
-  prettyPrint() {
-    return new PrettyPrint('element', 'open-element', [this.tag]);
-  }
-
   compile(compiler: CompileInto) {
     compiler.append(new OpenPrimitiveElementOpcode({ tag: this.tag }));
   }
@@ -791,10 +749,6 @@ export class Value<T extends SerializedExpressions.Value> extends ExpressionSynt
     this.value = value;
   }
 
-  prettyPrint() {
-    return String(this.value);
-  }
-
   inner(): T {
     return this.value;
   }
@@ -824,8 +778,25 @@ export class Get extends ExpressionSyntax<Opaque> {
     this.ref = options.ref;
   }
 
-  prettyPrint() {
-    return new PrettyPrint('expr', 'get', [this.ref.prettyPrint()], null);
+  compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
+    return this.ref.compile(compiler);
+  }
+}
+
+export class SelfGet extends ExpressionSyntax<Opaque> {
+  type = "self-get";
+
+  static fromSpec(sexp: SerializedExpressions.SelfGet): SelfGet {
+    let [, parts] = sexp;
+
+    return new SelfGet({ ref: new Ref({ parts: parts as InternedString[] }) });
+  }
+
+  public ref: Ref;
+
+  constructor(options) {
+    super();
+    this.ref = options.ref;
   }
 
   compile(compiler: SymbolLookup): CompiledExpression<Opaque> {
@@ -851,10 +822,6 @@ export class GetArgument<T> extends ExpressionSyntax<T> {
   constructor(options: { parts: InternedString[] }) {
     super();
     this.parts = options.parts;
-  }
-
-  prettyPrint() {
-    return new PrettyPrint('expr', 'get-argument', [this.parts.join('.')], null);
   }
 
   compile(lookup: SymbolLookup): CompiledExpression<T> {
@@ -886,10 +853,6 @@ export class Ref extends ExpressionSyntax<Opaque> {
   constructor({ parts }: { parts: InternedString[] }) {
     super();
     this.parts = parts;
-  }
-
-  prettyPrint() {
-    return this.parts.join('.');
   }
 
   compile(lookup: SymbolLookup): CompiledExpression<Opaque> {
@@ -944,17 +907,12 @@ export class Helper extends ExpressionSyntax<Opaque> {
     this.args = options.args;
   }
 
-  prettyPrint() {
-    let [params, hash] = this.args.prettyPrint();
-    return new PrettyPrint('expr', this.ref.prettyPrint(), params, hash);
-  }
-
   compile(compiler: SymbolLookup, env: Environment, parentMeta: BlockMeta): CompiledExpression<Opaque> {
     if (env.hasHelper(this.ref.parts, parentMeta)) {
       let { args, ref } = this;
       return new CompiledHelper({ name: ref.parts, helper: env.lookupHelper(ref.parts, parentMeta), args: args.compile(compiler, env) });
     } else {
-      throw new Error(`Compile Error: ${this.ref.prettyPrint()} is not a helper`);
+      throw new Error(`Compile Error: ${this.ref.path().join('.')} is not a helper`);
     }
   }
 
@@ -983,10 +941,6 @@ export class HasBlock extends ExpressionSyntax<boolean> {
   constructor({ blockName }: { blockName: InternedString }) {
     super();
     this.blockName = blockName;
-  }
-
-  prettyPrint() {
-    return new PrettyPrint('expr', 'has-block', [this.blockName]);
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledHasBlock {
@@ -1019,10 +973,6 @@ export class HasBlockParams extends ExpressionSyntax<boolean> {
     this.blockName = blockName;
   }
 
-  prettyPrint() {
-    return new PrettyPrint('expr', 'has-block-params', [this.blockName]);
-  }
-
   compile(compiler: SymbolLookup, env: Environment): CompiledHasBlockParams {
     return new CompiledHasBlockParams({
       blockName: this.blockName,
@@ -1049,10 +999,6 @@ export class Concat {
 
   constructor({ parts }: { parts: ExpressionSyntax<Opaque>[] }) {
     this.parts = parts;
-  }
-
-  prettyPrint() {
-    return new PrettyPrint('expr', 'concat', this.parts.map(p => p.prettyPrint()));
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledConcat {
@@ -1092,11 +1038,6 @@ export class Args {
   constructor(options: { positional: PositionalArgs, named: NamedArgs }) {
     this.positional = options.positional;
     this.named = options.named;
-  }
-
-  prettyPrint() {
-    // return [this.positional.prettyPrint(), this.named.prettyPrint()];
-    return null;
   }
 
   compile(compiler: SymbolLookup, env: Environment): CompiledArgs {
@@ -1187,10 +1128,6 @@ export class NamedArgs {
 
   constructor({ map }: { map: Dict<ExpressionSyntax<Opaque>> }) {
     this.map = map;
-  }
-
-  prettyPrint() {
-    return JSON.stringify(this.map);
   }
 
   add(key: InternedString, value: ExpressionSyntax<Opaque>) {

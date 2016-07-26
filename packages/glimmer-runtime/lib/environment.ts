@@ -248,38 +248,36 @@ export interface ParsedStatement {
   isSimple: boolean;
   path: InternedString[];
   key: InternedString;
+  appendType: string;
   args: Syntax.Args;
   isInline: boolean;
   isBlock: boolean;
   isModifier: boolean;
   templates: Syntax.Templates;
+  original: StatementSyntax;
 }
 
 function parseStatement(statement: StatementSyntax): ParsedStatement {
     let type = statement.type;
     let block = type === 'block' ? <Syntax.Block>statement : null;
-    let append = type === 'append' ? <Syntax.Append>statement : null;
+    let append = type === 'optimized-append' ? <Syntax.OptimizedAppend>statement : null;
     let modifier = type === 'modifier' ? <Syntax.Modifier>statement : null;
+    let appendType = append && append.value.type;
 
-    let named: Syntax.NamedArgs;
+    type AppendValue = Syntax.Unknown | Syntax.Get;
     let args: Syntax.Args;
     let path: InternedString[];
-    let unknown: Syntax.Unknown;
-    let helper: Syntax.Helper;
 
     if (block) {
       args = block.args;
-      named = args.named;
       path = block.path;
-    } else if (append && append.value.type === 'unknown') {
-      unknown = <Syntax.Unknown>append.value;
+    } else if (append && (appendType === 'unknown' || appendType === 'get')) {
+      let appendValue = <AppendValue>append.value;
       args = Syntax.Args.empty();
-      named = Syntax.NamedArgs.empty();
-      path = unknown.ref.path();
+      path = appendValue.ref.path();
     } else if (append && append.value.type === 'helper') {
-      helper = <Syntax.Helper>append.value;
+      let helper = <Syntax.Helper>append.value;
       args = helper.args;
-      named = args.named;
       path = helper.ref.path();
     } else if (modifier) {
       path = modifier.path;
@@ -298,6 +296,8 @@ function parseStatement(statement: StatementSyntax): ParsedStatement {
       path,
       key,
       args,
+      appendType,
+      original: statement,
       isInline: !!append,
       isBlock: !!block,
       isModifier: !!modifier,

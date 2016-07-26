@@ -40,6 +40,7 @@ import {
   // Concrete Syntax
   Templates,
   ArgsSyntax,
+  OptimizedAppend,
 
   // References
   ValueReference,
@@ -291,8 +292,10 @@ class BasicComponentManager implements ComponentManager<BasicComponent> {
   }
 
   layoutFor(definition: BasicComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledBlock {
-    if (env.compiledLayouts[definition.name]) {
-      return env.compiledLayouts[definition.name];
+    let layout = env.compiledLayouts[definition.name];
+
+    if (layout) {
+      return layout;
     }
 
     return env.compiledLayouts[definition.name] = compileLayout(new BasicComponentLayoutCompiler(definition.layoutString), env);
@@ -327,8 +330,10 @@ const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 class StaticTaglessComponentManager extends BasicComponentManager {
   layoutFor(definition: StaticTaglessComponentDefinition, component: BasicComponent, env: TestEnvironment): CompiledBlock {
-    if (env.compiledLayouts[definition.name]) {
-      return env.compiledLayouts[definition.name];
+    let layout = env.compiledLayouts[definition.name];
+
+    if (layout) {
+      return layout;
     }
 
     return env.compiledLayouts[definition.name] = compileLayout(new StaticTaglessComponentLayoutCompiler(definition.layoutString), env);
@@ -465,17 +470,22 @@ class EmberishCurlyComponentManager implements ComponentManager<EmberishCurlyCom
   }
 
   layoutFor(definition: EmberishCurlyComponentDefinition, component: EmberishCurlyComponent, env: TestEnvironment): CompiledBlock {
+    let layout = env.compiledLayouts[definition.name];
+
+    if (layout) {
+      return layout;
+    }
+
     let layoutString = definition.layoutString;
+    let lateBound = !layoutString;
 
     if (!layoutString && layoutString !== '') {
       layoutString = component['layout'];
     }
 
-    if (env.compiledLayouts[definition.name]) {
-      return env.compiledLayouts[definition.name];
-    }
+    layout = compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
 
-    return env.compiledLayouts[definition.name] = compileLayout(new EmberishCurlyComponentLayoutCompiler(layoutString), env);
+    return lateBound ? layout : (env.compiledLayouts[definition.name] = layout);
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
@@ -670,6 +680,12 @@ export class TestEnvironment extends Environment {
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerModifier("action", new InertModifierManager());
+
+    this.registerInternalHelper("component", (vm, args) => {
+      return new DynamicComponentReference({ nameRef: args.positional.at(0), env: vm.env, args: EvaluatedArgs.empty() });
+    });
+
+    this.registerInternalHelper("hash", (vm, args) => args.named);
   }
 
   registerHelper(name: string, helper: UserHelper) {
@@ -723,6 +739,7 @@ export class TestEnvironment extends Environment {
 
   refineStatement(statement: ParsedStatement, parentMeta: BlockMeta): StatementSyntax {
     let {
+      appendType,
       isSimple,
       isBlock,
       isInline,
@@ -753,6 +770,10 @@ export class TestEnvironment extends Environment {
       if (component) {
         return new CurlyComponentSyntax({ args, definition: component, templates });
       }
+    }
+
+    if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
+      return (statement.original as OptimizedAppend).deopt();
     }
 
     return super.refineStatement(statement, parentMeta);
@@ -860,6 +881,7 @@ export class TestDynamicScope implements DynamicScope {
 }
 
 class CurlyComponentSyntax extends StatementSyntax implements StaticComponentOptions {
+  public type = "curly-component";
   public definition: ComponentDefinition<any>;
   public args: ArgsSyntax;
   public shadow: InternedString[] = null;
@@ -913,6 +935,7 @@ function dynamicComponentFor(vm: VM) {
 };
 
 class DynamicComponentSyntax extends StatementSyntax implements DynamicComponentOptions {
+  public type = "dynamic-component";
   public definitionArgs: ArgsSyntax;
   public definition: FunctionExpression<ComponentDefinition<Opaque>>;
   public args: ArgsSyntax;

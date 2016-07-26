@@ -21,10 +21,6 @@ export default class EachSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#each ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
@@ -67,9 +63,8 @@ export default class EachSyntax extends StatementSyntax {
         dsl.popScope();
       });
 
-      dsl.jump(END);
-
       if (templates.inverse) {
+        dsl.jump(END);
         dsl.label('ELSE');
         dsl.evaluate('inverse');
       }

@@ -21,15 +21,11 @@ export default class UnlessSyntax extends StatementSyntax {
     this.templates = templates;
   }
 
-  prettyPrint() {
-    return `#unless ${this.args.prettyPrint()}`;
-  }
-
   compile(dsl: OpcodeBuilderDSL, env: Environment) {
     //        Enter(BEGIN, END)
     // BEGIN: Noop
     //        PutArgs
-    //        Test
+    //        Test(Environment)
     //        JumpIf(ELSE)
     //        Evaluate(default)
     //        Jump(END)
@@ -41,7 +37,7 @@ export default class UnlessSyntax extends StatementSyntax {
     let { args, templates } = this;
 
     dsl.block({ templates, args }, dsl => {
-      dsl.test();
+      dsl.test('environment');
 
       if (templates.inverse) {
         dsl.jumpIf('ELSE');

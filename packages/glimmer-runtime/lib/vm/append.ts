@@ -111,7 +111,7 @@ export default class VM implements PublicVM {
     //        DidModify
     // END:   Noop
 
-    let END = new LabelOpcode({ label: "END" });
+    let END = new LabelOpcode("END");
 
     let opcodes = this.updatingOpcodeStack.current;
     let marker = this.cacheGroups.pop();
@@ -205,6 +205,10 @@ export default class VM implements PublicVM {
     if (args) this.frame.setArgs(args);
     if (blocks) this.frame.setBlocks(blocks);
     if (callerScope) this.frame.setCallerScope(callerScope);
+  }
+
+  pushEvalFrame(ops: OpSeq) {
+    this.frame.push(ops);
   }
 
   popFrame() {

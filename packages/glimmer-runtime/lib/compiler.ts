@@ -253,7 +253,7 @@ class WrappedBuilder {
 
     if (this.tag.isDynamic) {
       dsl.putValue(this.tag.dynamicTagName);
-      dsl.test();
+      dsl.test('simple');
       dsl.jumpUnless('BODY');
       dsl.openDynamicPrimitiveElement();
       dsl.didCreateElement();
@@ -277,7 +277,7 @@ class WrappedBuilder {
 
     if (this.tag.isDynamic) {
       dsl.putValue(this.tag.dynamicTagName);
-      dsl.test();
+      dsl.test('simple');
       dsl.jumpUnless('END');
       dsl.closeElement();
       dsl.label('END');
@@ -398,7 +398,7 @@ class ComponentBuilder {
       dsl.label('BEGIN');
       dsl.putArgs(definitionArgs);
       dsl.putValue(makeFunctionExpression(definition));
-      dsl.test();
+      dsl.test('simple');
       dsl.jumpUnless('END');
       dsl.putDynamicComponentDefinition(args);
       dsl.openComponent(shadow);
