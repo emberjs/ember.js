@@ -339,9 +339,7 @@ QUnit.test('visit() returns a promise that resolves when the view has rendered',
   });
 });
 
-import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
-
-testModule('Ember.Application - visit() Integration Tests', {
+QUnit.module('Ember.Application - visit() Integration Tests', {
   teardown() {
     if (instances) {
       run(instances, 'forEach', (i) => i.destroy());
@@ -355,7 +353,7 @@ testModule('Ember.Application - visit() Integration Tests', {
   }
 });
 
-test('Ember Islands-style setup', function(assert) {
+QUnit.test('Ember Islands-style setup', function(assert) {
   let xFooInitCalled = false;
   let xFooDidInsertElementCalled = false;
 
