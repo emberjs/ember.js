@@ -56,7 +56,7 @@ export default function componentHook(renderNode, env, scope, _tagName, params, 
     let templateMeta = null;
     if (sm.block) {
       templateMeta = sm.block.template.meta;
-    } else if (sm.scope && sm.scope._view) {
+    } else if (sm.scope && sm.scope._view && sm.scope._view.template) {
       templateMeta = sm.scope._view.template.meta;
     }
     env.meta.moduleName = (templateMeta && templateMeta.moduleName) || (env.meta && env.meta.moduleName);
