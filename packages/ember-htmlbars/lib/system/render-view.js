@@ -7,7 +7,7 @@ export function renderHTMLBarsBlock(view, block, renderNode) {
   let meta = block && block.template && block.template.meta;
   let env = RenderEnv.build(view, meta);
 
-  view.env = env;
+  view._env = env;
   createOrUpdateComponent(view, {}, null, renderNode, env);
   let nodeManager = new ViewNodeManager(view, null, renderNode, block, view.tagName !== '');
 
