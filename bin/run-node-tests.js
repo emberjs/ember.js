@@ -11,6 +11,11 @@ QUnit.moduleStart(function(details) {
   }
 });
 
+QUnit.done(function(details) {
+  if (details.failed > 0) {
+    process.exitCode = 1;
+  }
+});
 
 QUnit.log(function( details ) {
   if (!details.result) {
