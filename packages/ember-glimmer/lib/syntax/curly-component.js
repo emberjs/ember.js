@@ -119,7 +119,7 @@ class CurlyComponentManager {
         positional: EvaluatedPositionalArgs.create({
           values: mergedPositional
         })
-      }).withInternal();
+      });
 
       // Preserve the invocation args' `internal` storage.
       mergedArgs.internal = args.internal;
