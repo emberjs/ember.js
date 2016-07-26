@@ -175,6 +175,12 @@ class Iterable {
       return new EmberArrayIterator(iterable, keyFor);
     } else if (Array.isArray(iterable)) {
       return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+    } else if (typeof iterable.forEach === 'function') {
+      let array = [];
+      iterable.forEach(function(item) {
+        array.push(item);
+      });
+      return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
     } else if (isEachIn(ref)) {
       let keys = Object.keys(iterable);
       let values = keys.map(key => iterable[key]);

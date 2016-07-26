@@ -4,6 +4,7 @@ import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA } from 'ember-runtime/system/native_array';
 import { removeAt } from 'ember-runtime/mixins/mutable_array';
+import { propertyDidChange } from 'ember-metal/property_events';
 
 import {
   BasicConditionalsTest,
@@ -118,6 +119,113 @@ moduleFor('Syntax test: {{#each as}}', class extends EachTest {
     this.assertText('Empty');
 
     this.runTask(() => set(this.context, 'list', [{ text: 'hello' }]));
+
+    this.assertText('hello');
+  }
+
+  ['@test it repeats the given block for each item using an objects forEach']() {
+    class ObjectWithForEach {
+      constructor(items) {
+        this._array = items || [];
+      }
+
+      get length() {
+        return this._array.length;
+      }
+
+      forEach(cb) {
+        this._array.forEach(cb);
+      }
+
+      pushObject(item) {
+        this._array.push(item);
+        propertyDidChange(this, 'length');
+      }
+
+      removeAt(index) {
+        this._array.splice(index, 1);
+        propertyDidChange(this, 'length');
+      }
+
+      insertAt(index, item) {
+        this._array.splice(index, 0, item);
+        propertyDidChange(this, 'length');
+      }
+
+      clear() {
+        this._array.length = 0;
+        propertyDidChange(this, 'length');
+      }
+    }
+
+    let firstItem = { text: 'hello' };
+    this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`, {
+      list: new ObjectWithForEach([firstItem])
+    });
+
+    this.assertText('hello');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      set(firstItem, 'text', 'Hello');
+    });
+
+    this.assertText('Hello');
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: ' ' });
+      list.pushObject({ text: 'World' });
+      this.component.rerender();
+    });
+
+    this.assertText('Hello World');
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: 'Earth' });
+      list.removeAt(1);
+      list.insertAt(1, { text: 'Globe' });
+      this.component.rerender();
+    });
+
+    this.assertText('HelloGlobeWorldEarth');
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: 'Planet' });
+      list.removeAt(1);
+      list.insertAt(1, { text: ' ' });
+      list.pushObject({ text: ' ' });
+      list.pushObject({ text: 'Earth' });
+      list.removeAt(3);
+      this.component.rerender();
+    });
+
+    this.assertText('Hello WorldPlanet Earth');
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject({ text: 'Globe' });
+      list.removeAt(1);
+      list.insertAt(1, { text: ' ' });
+      list.pushObject({ text: ' ' });
+      list.pushObject({ text: 'World' });
+      list.removeAt(2);
+      this.component.rerender();
+    });
+
+    this.assertText('Hello Planet EarthGlobe World');
+
+    this.runTask(() => {
+      get(this.context, 'list').clear();
+      this.component.rerender();
+    });
+
+    this.assertText('Empty');
+
+    this.runTask(() => set(this.context, 'list', new ObjectWithForEach([{ text: 'hello' }])));
 
     this.assertText('hello');
   }
