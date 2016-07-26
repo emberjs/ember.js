@@ -2,7 +2,7 @@ import { Opcode, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
 import { CompiledExpression } from '../expressions';
 import { CompiledArgs, EvaluatedArgs } from '../expressions/args';
 import { VM, UpdatingVM, BindDynamicScopeCallback } from '../../vm';
-import { Layout, InlineBlock, PartialBlock } from '../blocks';
+import { CompiledBlock, Layout, InlineBlock, PartialBlock } from '../blocks';
 import { turbocharge } from '../../utils';
 import { NULL_REFERENCE } from '../../references';
 import SymbolTable from '../../symbol-table';
@@ -321,10 +321,22 @@ export class EvaluateOpcode extends Opcode {
   }
 
   toJSON(): OpcodeJSON {
+    let { _guid: guid, type, debug, block } = this;
+
+    let compiled: CompiledBlock = block['compiled'];
+    let children: OpcodeJSON[];
+
+    if (compiled) {
+      children = compiled.ops.toArray().map(op => op.toJSON());
+    } else {
+      children = [{ guid: null, type: '[ UNCOMPILED BLOCK ]' }];
+    }
+
     return {
-      guid: this._guid,
-      type: this.type,
-      args: [this.debug]
+      guid,
+      type,
+      args: [debug],
+      children
     };
   }
 }

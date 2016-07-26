@@ -81,7 +81,6 @@ export interface ComponentAttrsBuilder {
   dynamic(name: string, value: FunctionExpression<string>);
 }
 
-
 const COMPONENT_DEFINITION_BRAND = 'COMPONENT DEFINITION [id=e59c754e-61eb-4392-8c4a-2c0ac72bfcd4]';
 
 export function isComponentDefinition(obj: any): obj is ComponentDefinition<Opaque> {
