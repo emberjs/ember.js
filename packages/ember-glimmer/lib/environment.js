@@ -211,6 +211,7 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     let {
+      appendType,
       isSimple,
       isInline,
       isBlock,
@@ -256,6 +257,10 @@ export default class Environment extends GlimmerEnvironment {
       }
 
       assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, parentMeta));
+    }
+
+    if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
+      return statement.original.deopt();
     }
 
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, parentMeta));
