@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var QUnit = require('qunitjs');
 var chalk = require('chalk');
 var path = require('path');
