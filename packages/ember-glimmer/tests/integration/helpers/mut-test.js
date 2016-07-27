@@ -386,9 +386,7 @@ moduleFor('Helpers test: {{mut}}', class extends RenderingTest {
     this.assertText('');
   }
 
-  // TODO: This is not really consistent with how the rest of the system works. Investigate if we need to
-  // support this, if not then this test can be deleted.
-  ['@htmlbars automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
+  ['@test automatic mutable bindings tolerate constant non-stream inputs and attempts to set them']() {
     let inner;
 
     this.registerComponent('x-inner', {
