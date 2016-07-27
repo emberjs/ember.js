@@ -979,6 +979,10 @@ moduleFor('Inline style tests', class extends StyleTest {
 
     this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'height: 60px;' } });
 
+    this.runTask(() => set(this.context, 'model.style', null));
+
+    this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { } });
+
     this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
 
     this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
