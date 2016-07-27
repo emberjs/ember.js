@@ -59,7 +59,7 @@ git remote rm origin
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git &> /dev/null
 git add -A
-git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commits/${TRAVIS_COMMIT}."
+git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commit/${TRAVIS_COMMIT}."
 
 # Sending output to /dev/null to prevent GH_TOKEN leak on error.
 git push -fq origin ${CHANNEL} &> /dev/null
