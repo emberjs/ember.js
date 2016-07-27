@@ -15,8 +15,13 @@ import {
 
 class EachInTest extends BasicConditionalsTest {
 
-  get truthyValue() { return { 'Not Empty': 1 }; }
-  get falsyValue() { return {}; }
+  get truthyValue() {
+    return { 'Not Empty': 1 };
+  }
+
+  get falsyValue() {
+    return {};
+  }
 
 }
 
@@ -303,5 +308,40 @@ moduleFor('Syntax test: {{#each-in}} undefined path', class extends RenderingTes
     this.runTask(() => set(this.context, 'foo', {}));
 
     this.assertText('');
+  }
+});
+
+moduleFor('Syntax test: {{#each-in}}  for array', class extends RenderingTest {
+  ['@test it iterate over array with `in` instead of walking over elements'](assert) {
+    let arr = [1, 2, 3];
+
+    this.render(strip`
+      {{#each-in arr as |key value|}}
+        [{{key}}:{{value}}]
+      {{/each-in}}`, { arr });
+
+    this.assertText('[0:1][1:2][2:3]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[0:1][1:2][2:3]');
+
+    this.runTask(() => {
+      set(arr, 'someKey', 'someKeyValue');
+      this.rerender();
+    });
+
+    this.assertText('[0:1][1:2][2:3][someKey:someKeyValue]');
+
+    this.runTask(() => {
+      delete arr.someKey;
+      this.rerender();
+    });
+
+    this.assertText('[0:1][1:2][2:3]');
+
+    this.runTask(() => set(this.context, 'arr', [1, 2, 3]));
+
+    this.assertText('[0:1][1:2][2:3]');
   }
 });
