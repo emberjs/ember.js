@@ -453,7 +453,7 @@ export default Mixin.create({
     this.scheduledRevalidation = false;
   },
 
-  scheduleRevalidate(node, label, manualRerender) {
+  scheduleRevalidate(node, label, manualRerender, revalidationSource) {
     if (node && !this._dispatching && this.env.renderedNodes.has(node)) {
       if (manualRerender) {
         deprecate(
@@ -473,7 +473,7 @@ export default Mixin.create({
     }
 
     deprecate(
-      `A property of ${this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
+      `A property of ${revalidationSource || this} was modified inside the ${this._dispatching} hook. You should never change properties on components, services or models during ${this._dispatching} because it causes significant performance degradation.`,
       !this._dispatching,
       { id: 'ember-views.dispatching-modify-property', until: '3.0.0' }
     );

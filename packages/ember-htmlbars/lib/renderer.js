@@ -85,6 +85,7 @@ Renderer.prototype.dispatchLifecycleHooks =
         case 'didUpdate': this.didUpdate(hook.view); break;
       }
 
+      ownerView._dispatching = 'didRender';
       this.didRender(hook.view);
     }
 
