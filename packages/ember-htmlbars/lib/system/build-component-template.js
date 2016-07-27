@@ -162,6 +162,8 @@ function normalizeComponentAttributes(component, attrs) {
       let attr = attributeBindings[i];
       let colonIndex = attr.indexOf(':');
 
+      assert(`Illegal attributeBinding: '${attr}' is not a valid attribute name.`, colonIndex !== -1 || attr.indexOf('.') === -1);
+
       let attrName, expression;
       if (colonIndex !== -1) {
         let attrProperty = attr.substring(0, colonIndex);

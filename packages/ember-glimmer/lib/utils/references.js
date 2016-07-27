@@ -314,6 +314,7 @@ export class AttributeBindingReference extends CachedReference {
     let attr;
 
     if (parsedMicroSyntax.length === 1) {
+      assert(`Illegal attributeBinding: '${prop}' is not a valid attribute name.`, prop.indexOf('.') === -1);
       reference = new this(component, prop);
     } else {
       attr = parsedMicroSyntax[1];

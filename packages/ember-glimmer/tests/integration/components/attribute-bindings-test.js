@@ -36,6 +36,38 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'foo', 'data-bar': 'bar' }, content: 'hello' });
   }
 
+  ['@test it can have attribute bindings with a nested path']() {
+    let FooBarComponent = Component.extend({
+      attributeBindings: ['foo.bar:data-foo-bar']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar foo=foo}}', { foo: { bar: 'foo-bar' } });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo-bar': 'foo-bar' }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo-bar': 'foo-bar' }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo.bar', 'FOO-BAR'));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo-bar': 'FOO-BAR' }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo.bar', undefined));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'foo', { bar: 'foo-bar' }));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo-bar': 'foo-bar' }, content: 'hello' });
+  }
+
   ['@test handles non-microsyntax attributeBindings']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['type']
@@ -47,19 +79,35 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       submit: 'submit'
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'submit' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'submit' }, content: 'hello' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'submit' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'submit' }, content: 'hello' });
 
     this.runTask(() => set(this.context, 'submit', 'password'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'submit', null));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { }, content: 'hello' });
 
     this.runTask(() => set(this.context, 'submit', 'submit'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'submit' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'submit' }, content: 'hello' });
+  }
+
+  ['@test non-microsyntax attributeBindings cannot contain nested paths']() {
+    let FooBarComponent = Component.extend({
+      attributeBindings: ['foo.bar']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar foo=foo}}', { foo: { bar: 'foo-bar' } });
+    }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
   }
 
   ['@glimmer normalizes attributeBinding names']() {
@@ -73,19 +121,19 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       bool: true
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
 
     this.runTask(() => set(this.context, 'bool', null));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: {}, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
     this.runTask(() => set(this.context, 'bool', true));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
   }
 
   ['@test normalizes attributeBinding names']() {
@@ -99,19 +147,19 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       bool: true
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
 
     this.runTask(() => set(this.context, 'bool', false));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: {}, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
     this.runTask(() => set(this.context, 'bool', true));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
   }
 
   ['@test attributeBindings handles null/undefined']() {
@@ -126,25 +174,25 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       bar: undefined
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: {}, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: {}, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
     this.runTask(() => {
       set(this.context, 'fizz', 'fizz');
       set(this.context, 'bar', 'bar');
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { fizz: 'fizz', bar: 'bar' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { fizz: 'fizz', bar: 'bar' }, content: 'hello' });
 
     this.runTask(() => {
       set(this.context, 'fizz', null);
       set(this.context, 'bar', undefined);
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: {}, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
   }
 
   ['@test attributeBindings handles number value']() {
@@ -158,19 +206,19 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       size: 21
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { size: '21' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { size: '21' }, content: 'hello' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { size: '21' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { size: '21' }, content: 'hello' });
 
     this.runTask(() => set(this.context, 'size', 0));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { size: '0' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { size: '0' }, content: 'hello' });
 
     this.runTask(() => set(this.context, 'size', 21));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { size: '21' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { size: '21' }, content: 'hello' });
   }
 
   ['@test handles internal and external changes']() {
@@ -188,19 +236,19 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
 
     this.render('{{foo-bar}}');
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
 
     this.runTask(() => set(component, 'type', 'checkbox'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'checkbox' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'checkbox' }, content: 'hello' });
 
     this.runTask(() => set(component, 'type', 'password'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { type: 'password' }, content: 'hello' });
   }
 
   ['@test can set attributeBindings on component with a different tagName']() {
@@ -216,25 +264,25 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       disabled: false
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'input', attrs: { type: 'password' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { type: 'password' } });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'input', attrs: { type: 'password' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { type: 'password' } });
 
     this.runTask(() => {
       set(this.context, 'type', 'checkbox');
       set(this.context, 'disabled', true);
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'input', attrs: { type: 'checkbox', disabled: '' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { type: 'checkbox', disabled: '' } });
 
     this.runTask(() => {
       set(this.context, 'type', 'password');
       set(this.context, 'disabled', false);
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'input', attrs: { type: 'password' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'input', attrs: { type: 'password' } });
   }
 
   ['@test should allow namespaced attributes in micro syntax']() {
@@ -248,19 +296,19 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       xlinkHref: '/foo.png'
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'xlink:href': '/foo.png' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'xlink:href': '/foo.png' } });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'xlink:href': '/foo.png' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'xlink:href': '/foo.png' } });
 
     this.runTask(() => set(this.context, 'xlinkHref', '/lol.png'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'xlink:href': '/lol.png' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'xlink:href': '/lol.png' } });
 
     this.runTask(() => set(this.context, 'xlinkHref', '/foo.png'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'xlink:href': '/foo.png' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'xlink:href': '/foo.png' } });
   }
 
   // This comes into play when using the {{#each}} helper. If the
@@ -277,19 +325,19 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       foo: (function() { return this; }).call('bar')
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'foo': 'bar' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'foo': 'bar' } });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'foo': 'bar' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'foo': 'bar' } });
 
     this.runTask(() => set(this.context, 'foo', (function() { return this; }).call('baz')));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'foo': 'baz' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'foo': 'baz' } });
 
     this.runTask(() => set(this.context, 'foo', (function() { return this; }).call('bar')));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'foo': 'bar' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'foo': 'bar' } });
   }
 
   // Bug in both systems. Should not be able to update id post creation.
@@ -304,15 +352,15 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       sauce: 'special-sauce'
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'id': 'special-sauce' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'id': 'special-sauce' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
 
     this.runTask(() => set(this.context, 'sauce', 'foo'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { 'id': 'special-sauce' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'id': 'special-sauce' } });
   }
 
   ['@test attributeBindings are overwritten']() {
@@ -331,15 +379,15 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       href: 'dog.html'
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { href: 'dog.html' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { href: 'dog.html' } });
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { href: 'dog.html' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { href: 'dog.html' } });
 
     this.runTask(() => set(this.context, 'href', 'cat.html'));
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'div', attrs: { href: 'cat.html' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { href: 'cat.html' } });
   }
 
   // Note: There are no observers in Glimmer
@@ -467,6 +515,6 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
       xss: 'javascript:alert(\'foo\')'
     });
 
-    this.assertComponentElement(this.nthChild(0), { tagName: 'a', attrs: { href: 'unsafe:javascript:alert(\'foo\')' } });
+    this.assertComponentElement(this.firstChild, { tagName: 'a', attrs: { href: 'unsafe:javascript:alert(\'foo\')' } });
   }
 });
