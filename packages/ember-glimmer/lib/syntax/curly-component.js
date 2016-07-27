@@ -1,5 +1,6 @@
 import { StatementSyntax, ValueReference, EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs } from 'glimmer-runtime';
-import { TO_ROOT_REFERENCE, AttributeBindingReference, applyClassNameBinding } from '../utils/references';
+import { TO_ROOT_REFERENCE } from '../utils/references';
+import { AttributeBinding, ClassNameBinding, IsVisibleBinding } from '../utils/bindings';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert, runInDebug } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
@@ -54,15 +55,19 @@ function applyAttributeBindings(attributeBindings, component, operations) {
 
   while (i !== -1) {
     let binding = attributeBindings[i];
-    let parsedMicroSyntax = AttributeBindingReference.parseMicroSyntax(binding);
-    let [ prop ] = parsedMicroSyntax;
+    let parsed = AttributeBinding.parse(binding);
+    let attribute = parsed[1];
 
-    if (seen.indexOf(prop) === -1) {
-      seen.push(prop);
-      AttributeBindingReference.apply(component, parsedMicroSyntax, operations);
+    if (seen.indexOf(attribute) === -1) {
+      seen.push(attribute);
+      AttributeBinding.apply(component, parsed, operations);
     }
 
     i--;
+  }
+
+  if (!seen['style']) {
+    IsVisibleBinding.apply(component, operations);
   }
 }
 
@@ -230,6 +235,8 @@ class CurlyComponentManager {
 
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(attributeBindings, component, operations);
+    } else {
+      IsVisibleBinding.apply(component, operations);
     }
 
     if (classRef) {
@@ -244,7 +251,7 @@ class CurlyComponentManager {
 
     if (classNameBindings && classNameBindings.length) {
       classNameBindings.forEach(binding => {
-        applyClassNameBinding(component, binding, operations);
+        ClassNameBinding.apply(component, binding, operations);
       });
     }
 

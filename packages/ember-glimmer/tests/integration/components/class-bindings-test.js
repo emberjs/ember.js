@@ -45,6 +45,92 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo enabled sad') }, content: 'hello' });
   }
 
+  ['@test it can have class name bindings with nested paths']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar foo=foo is=is}}', { foo: { bar: 'foo-bar' }, is: { enabled: true, happy: false } });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar enabled sad') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar enabled sad') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'foo.bar', 'FOO-BAR');
+      set(this.context, 'is.enabled', false);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view FOO-BAR sad') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'foo.bar', null);
+      set(this.context, 'is.happy', true);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view happy') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'foo', null);
+      set(this.context, 'is', null);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view sad') }, content: 'hello' });
+
+
+    this.runTask(() => {
+      set(this.context, 'foo', { bar: 'foo-bar' });
+      set(this.context, 'is', { enabled: true, happy: false });
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar enabled sad') }, content: 'hello' });
+  }
+
+  ['@test it should dasherize the path when the it resolves to true']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: ['fooBar', 'nested.fooBarBaz']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar fooBar=fooBar nested=nested}}', { fooBar: true, nested: { fooBarBaz: false } });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'fooBar', false);
+      set(this.context, 'nested.fooBarBaz', true);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar-baz') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'fooBar', 'FOO-BAR');
+      set(this.context, 'nested.fooBarBaz', null);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view FOO-BAR') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'nested', null));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view FOO-BAR') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'fooBar', true);
+      set(this.context, 'nested', { fooBarBaz: false });
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo-bar') }, content: 'hello' });
+  }
+
   ['@test const bindings can be set as attrs']() {
     this.registerComponent('foo-bar', { template: 'hello' });
     this.render('{{foo-bar classNameBindings="foo:enabled:disabled"}}', {
