@@ -99,17 +99,16 @@ class CurlyComponentManager {
     validatePositionalParameters(args.named, args.positional.values, definition.ComponentClass.positionalParams);
 
     if (definition.args) {
-      // args (aka 'oldArgs') may be undefined or simply be empty args, so
-      // we need to fall back to an empty array or object.
-      let newNamed = args && args.named && args.named.map || {};
-      let newPositional = args && args.positional && args.positional.values || [];
+      let newNamed = args.named.map;
+      let newPositional = args.positional.values;
 
       let oldNamed = definition.args.named.map;
       let oldPositional = definition.args.positional.values;
 
       // Merge positional arrays
       let mergedPositional = [];
-      mergedPositional.splice(0, oldPositional.length, ...oldPositional);
+
+      mergedPositional.push(...oldPositional);
       mergedPositional.splice(0, newPositional.length, ...newPositional);
 
       // Merge named maps
