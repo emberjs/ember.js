@@ -18,8 +18,8 @@ export let CoreOutletView = View.extend(TemplateSupport, {
   setOutletState(state) {
     this.outletState = { main: state };
 
-    if (this.env) {
-      this.env.outletState = this.outletState;
+    if (this._env) {
+      this._env.outletState = this.outletState;
     }
 
     if (this.lastResult) {
