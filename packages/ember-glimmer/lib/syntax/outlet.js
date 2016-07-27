@@ -95,6 +95,10 @@ function revalidate(definition, lastState, newState) {
 }
 
 class AbstractOutletComponentManager {
+  prepareArgs(definition, args) {
+    return args;
+  }
+
   create(definition, args, dynamicScope) {
     throw new Error('Not implemented: create');
   }

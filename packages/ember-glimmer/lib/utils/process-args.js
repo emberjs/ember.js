@@ -1,6 +1,5 @@
 import { CONSTANT_TAG } from 'glimmer-reference';
 import symbol from 'ember-metal/symbol';
-import { assert } from 'ember-metal/debug';
 import EmptyObject from 'ember-metal/empty_object';
 import { ARGS } from '../component';
 import { UPDATE } from './references';
@@ -86,8 +85,6 @@ class MutableCell {
 
 class RestArgs {
   static create(args, restArgName) {
-    assert(`You cannot specify positional parameters and the hash argument \`${restArgName}\`.`, !args.named.has(restArgName));
-
     return new RestArgs(args, restArgName);
   }
 
@@ -115,15 +112,6 @@ class PositionalArgs {
   static create(args, positionalParamNames) {
     if (args.positional.length < positionalParamNames.length) {
       positionalParamNames = positionalParamNames.slice(0, args.positional.length);
-    }
-
-    for (let i = 0; i < positionalParamNames.length; i++) {
-      let name = positionalParamNames[i];
-
-      assert(
-        `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-        !args.named.has(name)
-      );
     }
 
     return new PositionalArgs(args, positionalParamNames);

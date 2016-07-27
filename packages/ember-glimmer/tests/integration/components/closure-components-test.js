@@ -4,7 +4,7 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import assign from 'ember-metal/assign';
 import isEmpty from 'ember-metal/is_empty';
 
-moduleFor('@htmlbars Components test: closure components', class extends RenderingTest {
+moduleFor('Components test: closure components', class extends RenderingTest {
   ['@test renders with component helper']() {
     let expectedText = 'Hodi';
 
@@ -74,6 +74,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Gabon Zack');
   }
 
+  // Take a look at this one. Seems to pass even when currying isn't implemented.
   ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
@@ -330,7 +331,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
     this.assertText('Hodi Sigmundur 33');
   }
 
-  ['@glimmer bound outer named parameters get updated in the right scope']() {
+  ['@skip bound outer named parameters get updated in the right scope']() {
     this.registerComponent('-inner-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['comp']
@@ -497,7 +498,7 @@ moduleFor('@htmlbars Components test: closure components', class extends Renderi
       this.render('{{component (component compName)}}', {
         compName: 'not-a-component'
       });
-    }, 'The component helper cannot be used without a valid component name. You used "not-a-component" via (component compName)');
+    }, /The component helper cannot be used without a valid component name. You used "not-a-component" via \(component .*\)/);
   }
 
   ['@test renders with dot path']() {
@@ -898,4 +899,4 @@ applyMixins(ClosureComponentMutableParamsTest,
   ])
 );
 
-moduleFor('@htmlbars Components test: closure components -- mutable params', ClosureComponentMutableParamsTest);
+moduleFor('Components test: closure components -- mutable params', ClosureComponentMutableParamsTest);
