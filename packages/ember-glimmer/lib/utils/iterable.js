@@ -6,7 +6,7 @@ import { objectAt, isEmberArray } from 'ember-runtime/mixins/array';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 import { UpdatableReference, UpdatablePrimitiveReference } from './references';
 import { isEachIn } from '../helpers/each-in';
-import { CURRENT_TAG, VOLATILE_TAG, UpdatableTag, combine } from 'glimmer-reference';
+import { CURRENT_TAG, UpdatableTag, combine } from 'glimmer-reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -164,7 +164,7 @@ class Iterable {
     let iterable = ref.value();
 
     if (isProxy(iterable)) {
-      valueTag.update(VOLATILE_TAG);
+      valueTag.update(CURRENT_TAG);
     } else {
       valueTag.update(tagFor(iterable));
     }
