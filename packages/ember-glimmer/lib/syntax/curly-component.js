@@ -1,6 +1,6 @@
 import { StatementSyntax, ValueReference, EvaluatedArgs, EvaluatedNamedArgs, EvaluatedPositionalArgs } from 'glimmer-runtime';
 import { TO_ROOT_REFERENCE } from '../utils/references';
-import { AttributeBinding, ClassNameBinding } from '../utils/bindings';
+import { AttributeBinding, ClassNameBinding, IsVisibleBinding } from '../utils/bindings';
 import { DIRTY_TAG, IS_DISPATCHING_ATTRS, HAS_BLOCK } from '../component';
 import { assert, runInDebug } from 'ember-metal/debug';
 import processArgs from '../utils/process-args';
@@ -64,6 +64,10 @@ function applyAttributeBindings(attributeBindings, component, operations) {
     }
 
     i--;
+  }
+
+  if (!seen['style']) {
+    IsVisibleBinding.apply(component, operations);
   }
 }
 
@@ -231,6 +235,8 @@ class CurlyComponentManager {
 
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(attributeBindings, component, operations);
+    } else {
+      IsVisibleBinding.apply(component, operations);
     }
 
     if (classRef) {

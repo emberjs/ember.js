@@ -36,6 +36,12 @@ export const AttributeBinding = {
 
     assert(`Illegal attributeBinding: '${prop}' is not a valid attribute name.`, !(isSimple && isPath));
 
+    if (attribute === 'style') {
+      reference = new StyleBindingReference(value, referenceForKey(component, 'isVisible'));
+    } else {
+      reference = map(value, this.mapAttributeValue);
+    }
+
     operations.addAttribute(attribute, reference);
   },
 
@@ -60,6 +66,39 @@ export const AttributeBinding = {
     } else {
       return value;
     }
+  }
+};
+
+const DISPLAY_NONE = 'display: none;';
+
+class StyleBindingReference extends CachedReference {
+  constructor(inner, isVisible) {
+    super();
+
+    this.tag = inner.tag;
+    this.inner = inner;
+    this.isVisible = isVisible;
+  }
+
+  compute() {
+    let value = this.inner.value();
+    let isVisible = this.isVisible.value();
+
+    if (isVisible === false) {
+      return value ? DISPLAY_NONE + value : DISPLAY_NONE;
+    } else {
+      return value;
+    }
+  }
+}
+
+export const IsVisibleBinding = {
+  apply(component, operations) {
+    operations.addAttribute('style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
+  },
+
+  mapStyleValue(isVisible) {
+    return isVisible === false ? DISPLAY_NONE : null;
   }
 };
 

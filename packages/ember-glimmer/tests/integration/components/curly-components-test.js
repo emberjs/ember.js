@@ -2619,7 +2619,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
   }
 
-  ['@htmlbars should toggle visibility with isVisible'](assert) {
+  ['@test should toggle visibility with isVisible'](assert) {
     let assertStyle = (expected) => {
       let matcher = styles(expected);
       let actual = this.firstChild.getAttribute('style');
@@ -2651,7 +2651,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assertStyle('display: none;');
   }
 
-  ['@htmlbars isVisible does not overwrite component style'](assert) {
+  ['@test isVisible does not overwrite component style'](assert) {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         attributeBindings: ['style'],
