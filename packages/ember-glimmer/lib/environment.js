@@ -27,6 +27,7 @@ import {
 } from './helpers/if-unless';
 
 import { default as action } from './helpers/action';
+import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
@@ -102,6 +103,7 @@ const builtInDynamicComponents = {
 const builtInHelpers = {
   if: inlineIf,
   action,
+  component: componentHelper,
   concat,
   get,
   hash,
@@ -209,6 +211,7 @@ export default class Environment extends GlimmerEnvironment {
     }
 
     let {
+      appendType,
       isSimple,
       isInline,
       isBlock,
@@ -254,6 +257,10 @@ export default class Environment extends GlimmerEnvironment {
       }
 
       assert(`A helper named "${key}" could not be found`, !isBlock || this.hasHelper(key, parentMeta));
+    }
+
+    if ((!isSimple && appendType === 'unknown') || appendType === 'self-get') {
+      return statement.original.deopt();
     }
 
     assert(`Helpers may not be used in the block form, for example {{#${key}}}{{/${key}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${key})}}{{/if}}.`, !isBlock || !this.hasHelper(key, parentMeta));
@@ -322,7 +329,7 @@ export default class Environment extends GlimmerEnvironment {
       this.owner.lookup(`helper:${name}`);
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helper.isInternalHelper) {
-      return (vm, args) => helper.toReference(args);
+      return (vm, args) => helper.toReference(args, this);
     } else if (helper.isHelperInstance) {
       return (vm, args) => SimpleHelperReference.create(helper.compute, args);
     } else if (helper.isHelperFactory) {

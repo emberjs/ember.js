@@ -56,6 +56,10 @@ export class RenderSyntax extends StatementSyntax {
 }
 
 class AbstractRenderManager {
+  prepareArgs(definition, args) {
+    return args;
+  }
+
   /* abstract create(definition, args, dynamicScope); */
 
   layoutFor(definition, bucket, env) {
