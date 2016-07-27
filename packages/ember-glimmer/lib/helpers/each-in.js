@@ -6,9 +6,7 @@
 import symbol from 'ember-metal/symbol';
 
 /**
-  The `{{each-in}}` helper loops over properties on an object. It is unbound,
-  in that new (or removed) properties added to the target object will not be
-  rendered.
+  The `{{each-in}}` helper loops over properties on an object.
 
   For example, given a `user` object that looks like:
 

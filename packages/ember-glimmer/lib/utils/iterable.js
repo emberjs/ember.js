@@ -171,6 +171,10 @@ class Iterable {
 
     if (iterable === undefined || iterable === null) {
       return EMPTY_ITERATOR;
+    } else if (isEachIn(ref)) {
+      let keys = Object.keys(iterable);
+      let values = keys.map(key => iterable[key]);
+      return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
     } else if (isEmberArray(iterable)) {
       return new EmberArrayIterator(iterable, keyFor);
     } else if (Array.isArray(iterable)) {
@@ -181,10 +185,6 @@ class Iterable {
         array.push(item);
       });
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
-    } else if (isEachIn(ref)) {
-      let keys = Object.keys(iterable);
-      let values = keys.map(key => iterable[key]);
-      return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
     } else {
       throw new Error(`Don't know how to {{#each ${iterable}}}`);
     }
