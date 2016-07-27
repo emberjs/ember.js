@@ -2,7 +2,7 @@ import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { strip } from '../../utils/abstract-test-case';
 import { applyMixins } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor } from '../../utils/test-case';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import EmberObject from 'ember-runtime/system/object';
 
@@ -86,9 +86,11 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
       set(this.context, 'categories.Smartphones', 100);
       set(this.context, 'categories.Tweets', 443115);
 
-      // {{#each-in}} does not currently observe internal mutations to the hash
-      // so we manually trigger a rerender. This behavior may change in the future.
-      this.rerender();
+      if (this.isHTMLBars) {
+        // {{#each-in}} in HTMLBars does not observe internal mutations to the
+        // hash so we manually trigger a rerender.
+        this.rerender();
+      }
     });
 
     this.assertHTML(strip`
@@ -194,9 +196,11 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
       set(protoCategories, 'Robots', 666);
       set(categories, 'Tweets', 443115);
 
-      // {{#each-in}} does not currently observe internal mutations to the hash
-      // so we manually trigger a rerender. This behavior may change in the future.
-      this.rerender();
+      if (this.isHTMLBars) {
+        // {{#each-in}} in HTMLBars does not observe internal mutations to the
+        // hash so we manually trigger a rerender.
+        this.rerender();
+      }
     });
 
     this.assertHTML(strip`
@@ -221,7 +225,7 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     `);
   }
 
-  [`@test it does not observe property mutations on the object`]() {
+  [`@test it does not observe direct property mutations (not going through set) on the object`]() {
     this.render(strip`
       <ul>
         {{#each-in categories as |category count|}}
@@ -275,7 +279,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
         'Smartphones': 8203,
         'JavaScript Frameworks': Infinity
       });
-      this.rerender();
     });
 
     this.assertHTML(strip`
@@ -286,9 +289,6 @@ moduleFor('Syntax test: {{#each-in}}', class extends EachInTest {
     `);
   }
 
-});
-
-moduleFor('Syntax test: {{#each-in}} undefined path', class extends RenderingTest {
   ['@test keying off of `undefined` does not render'](assert) {
     this.render(strip`
       {{#each-in foo.bar.baz as |thing|}}
@@ -309,39 +309,40 @@ moduleFor('Syntax test: {{#each-in}} undefined path', class extends RenderingTes
 
     this.assertText('');
   }
-});
 
-moduleFor('Syntax test: {{#each-in}}  for array', class extends RenderingTest {
   ['@test it iterate over array with `in` instead of walking over elements'](assert) {
     let arr = [1, 2, 3];
+    arr.foo = 'bar';
 
     this.render(strip`
       {{#each-in arr as |key value|}}
         [{{key}}:{{value}}]
       {{/each-in}}`, { arr });
 
-    this.assertText('[0:1][1:2][2:3]');
+    this.assertText('[0:1][1:2][2:3][foo:bar]');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('[0:1][1:2][2:3]');
+    this.assertText('[0:1][1:2][2:3][foo:bar]');
 
     this.runTask(() => {
-      set(arr, 'someKey', 'someKeyValue');
-      this.rerender();
+      set(arr, 'zomg', 'lol');
+
+      if (this.isHTMLBars) {
+        // {{#each-in}} in HTMLBars does not observe internal mutations to the
+        // hash so we manually trigger a rerender.
+        this.rerender();
+      }
     });
 
-    this.assertText('[0:1][1:2][2:3][someKey:someKeyValue]');
+    this.assertText('[0:1][1:2][2:3][foo:bar][zomg:lol]');
 
-    this.runTask(() => {
-      delete arr.someKey;
-      this.rerender();
-    });
+    arr = [1, 2, 3];
+    arr.foo = 'bar';
 
-    this.assertText('[0:1][1:2][2:3]');
+    this.runTask(() => set(this.context, 'arr', arr));
 
-    this.runTask(() => set(this.context, 'arr', [1, 2, 3]));
-
-    this.assertText('[0:1][1:2][2:3]');
+    this.assertText('[0:1][1:2][2:3][foo:bar]');
   }
+
 });
