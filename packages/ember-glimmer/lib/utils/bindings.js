@@ -2,6 +2,7 @@ import { assert } from 'ember-metal/debug';
 import { dasherize } from 'ember-runtime/system/string';
 import { CachedReference, map, referenceFromParts } from 'glimmer-reference';
 import { REFERENCE_FOR_KEY, TO_ROOT_REFERENCE } from './references';
+import { htmlSafe, isHTMLSafe } from './string';
 
 function referenceForKey(component, key) {
   return component[REFERENCE_FOR_KEY](key);
@@ -70,6 +71,7 @@ export const AttributeBinding = {
 };
 
 const DISPLAY_NONE = 'display: none;';
+const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
 
 class StyleBindingReference extends CachedReference {
   constructor(inner, isVisible) {
@@ -84,10 +86,13 @@ class StyleBindingReference extends CachedReference {
     let value = this.inner.value();
     let isVisible = this.isVisible.value();
 
-    if (isVisible === false) {
-      return value ? DISPLAY_NONE + value : DISPLAY_NONE;
-    } else {
+    if (isVisible !== false) {
       return value;
+    } else if (!value && value !== 0) {
+      return SAFE_DISPLAY_NONE;
+    } else {
+      let style = value + ' ' + DISPLAY_NONE;
+      return isHTMLSafe(value) ? htmlSafe(style) : style;
     }
   }
 }
@@ -98,7 +103,7 @@ export const IsVisibleBinding = {
   },
 
   mapStyleValue(isVisible) {
-    return isVisible === false ? DISPLAY_NONE : null;
+    return isVisible === false ? SAFE_DISPLAY_NONE : null;
   }
 };
 

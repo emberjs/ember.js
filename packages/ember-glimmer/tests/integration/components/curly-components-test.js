@@ -2680,9 +2680,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.runTask(() => { set(this.context, 'visible', false); });
+
     this.assertComponentElement(this.firstChild, {
       tagName: 'div',
       attrs: { id: 'foo-bar',  style: styles('color: blue; display: none;') }
     });
   }
+
 });
