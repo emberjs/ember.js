@@ -988,7 +988,7 @@ moduleFor('Inline style tests', class extends StyleTest {
     this.assertElement(this.firstChild, { tagName: 'div', content: '', attrs: { 'style': 'width: 60px;' } });
   }
 
-  ['@htmlbars can set dynamic style with -html-safe']() {
+  ['@test can set dynamic style with -html-safe']() {
     this.render('<div style={{-html-safe model.style}}></div>', {
       model: {
         style: 'width: 60px;'
