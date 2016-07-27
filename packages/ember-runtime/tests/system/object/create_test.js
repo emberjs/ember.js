@@ -49,8 +49,7 @@ if (isEnabled('mandatory-setter')) {
 QUnit.test('allows bindings to be defined', function() {
   let obj;
 
-  let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-    ' using an `alias` computed property instead.';
+  let deprecationMessage = /`Ember.Binding` is deprecated/;
 
   expectDeprecation(() => {
     obj = EmberObject.create({
