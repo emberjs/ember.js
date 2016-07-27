@@ -983,7 +983,7 @@ test("class attribute follow the normal dirtying rules", function() {
   equalTokens(root, "<div class='world'>hello</div>", "Initial render");
 
   object.value = "universe";
-  rerender(); // without setting the node to dirty
+  rerender();
 
   equalTokens(root, "<div class='universe'>hello</div>", "Revalidating without dirtying");
 
@@ -1065,7 +1065,7 @@ test("attribute nodes follow the normal dirtying rules", function() {
   equalTokens(root, "<div data-value='world'>hello</div>", "Initial render");
 
   object.value = "universe";
-  rerender(); // without setting the node to dirty
+  rerender();
 
   equalTokens(root, "<div data-value='universe'>hello</div>", "Revalidating without dirtying");
 
@@ -1109,6 +1109,42 @@ test("attribute nodes w/ concat follow the normal dirtying rules", function() {
   rerender();
 
   equalTokens(root, "<div data-value='hello world'>hello</div>");
+});
+
+test("attributes values are normalized correctly", function() {
+  let template = compile("<div data-value={{value}}>hello</div>");
+  let object = { value: { toString() { return "world"; } } };
+
+  render(template, object);
+
+  equalTokens(root, "<div data-value='world'>hello</div>", "Initial render");
+
+  rerender();
+
+  equalTokens(root, "<div data-value='world'>hello</div>", "Initial render");
+
+  object.value = 123;
+  rerender();
+
+  equalTokens(root, "<div data-value='123'>hello</div>", "Revalidating without dirtying");
+
+  rerender();
+
+  equalTokens(root, "<div data-value='123'>hello</div>", "Revalidating after dirtying");
+
+  object.value = false;
+  rerender();
+
+  equalTokens(root, "<div data-value='false'>hello</div>", "Revalidating after dirtying");
+
+  rerender();
+
+  equalTokens(root, "<div data-value='false'>hello</div>", "Revalidating after dirtying");
+
+  object.value = { toString() { return "world"; } };
+  rerender();
+
+  equalTokens(root, "<div data-value='world'>hello</div>", "Revalidating after dirtying");
 });
 
 if (serializesNSAttributesCorrectly) {
