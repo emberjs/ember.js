@@ -735,7 +735,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let previousAttributes = getActionAttributes(component.$('a').get(0));
 
-    this.rerender();
+    this.runTask(() => this.rerender());
 
     let rerenderedAttributes = getActionAttributes(component.$('a').get(0));
 
