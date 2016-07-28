@@ -15,8 +15,8 @@ QUnit.test('chains should copy forward to subclasses when prototype created', fu
       aBinding: 'obj.a' // add chain
     });
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
+
+    let deprecationMessage = /`Ember.Binding` is deprecated/;
 
     expectDeprecation(() => {
       // realize prototype

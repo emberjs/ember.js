@@ -528,14 +528,11 @@ QUnit.test('nested dependent keys should propagate after they update', function(
       })
     });
 
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       bindObj = ObservableObject.extend({
         priceBinding: 'DepObj.price'
       }).create();
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
   });
 
   equal(bindObj.get('price'), 5, 'precond - binding propagates');
@@ -870,12 +867,9 @@ QUnit.module('Bind function', {
 QUnit.test('should bind property with method parameter as undefined', function() {
   // creating binding
   run(function() {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       objectA.bind('name', 'Namespace.objectB.normal', undefined);
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
   });
 
   // now make a change to see if the binding triggers.

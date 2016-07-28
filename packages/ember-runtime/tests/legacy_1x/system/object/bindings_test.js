@@ -58,13 +58,10 @@ QUnit.module('bind() method', {
 
 QUnit.test('bind(TestNamespace.fromObject.bar) should follow absolute path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject.bind('foo', 'TestNamespace.fromObject.bar');
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
 
     // now make a change to see if the binding triggers.
     set(fromObject, 'bar', 'changedValue');
@@ -75,13 +72,10 @@ QUnit.test('bind(TestNamespace.fromObject.bar) should follow absolute path', fun
 
 QUnit.test('bind(.bar) should bind to relative path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject.bind('foo', 'bar');
-    }, deprecationMessage);
+    }, /`Ember.Binding` is deprecated/);
 
     // now make a change to see if the binding triggers.
     set(testObject, 'bar', 'changedValue');
@@ -122,11 +116,10 @@ QUnit.module('fooBinding method', {
   }
 });
 
+let deprecationMessage = /`Ember.Binding` is deprecated/;
+
 QUnit.test('fooBinding: TestNamespace.fromObject.bar should follow absolute path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject = TestObject.extend({
@@ -143,9 +136,6 @@ QUnit.test('fooBinding: TestNamespace.fromObject.bar should follow absolute path
 
 QUnit.test('fooBinding: .bar should bind to relative path', function() {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Consider' +
-      ' using an `alias` computed property instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject = TestObject.extend({
@@ -162,9 +152,6 @@ QUnit.test('fooBinding: .bar should bind to relative path', function() {
 
 QUnit.test('fooBinding: should disconnect bindings when destroyed', function () {
   run(() => {
-    let deprecationMessage = '`Ember.Binding` is deprecated. Since you' +
-      ' are binding to a global consider using a service instead.';
-
     expectDeprecation(() => {
       // create binding
       testObject = TestObject.extend({
