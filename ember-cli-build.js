@@ -271,8 +271,8 @@ module.exports = function() {
   ];
 
   if (hasBower) {
-    var loader = find(bower, {
-      srcDir: '/loader.js',
+    var loader = find(__dirname + '/node_modules', {
+      srcDir: '/loader.js/lib/loader',
       files: [ 'loader.js' ],
       destDir: '/assets'
     });
