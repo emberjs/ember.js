@@ -36,118 +36,65 @@ class DynamicScope {
   }
 }
 
-class SchedulerRegistrar {
-  constructor() {
-    this.callback = null;
-    this.callbacks = null;
+const renderers = [];
 
-    backburner.on('begin', (arg1, arg2) => {
-      if (this.callback) {
-        this.callback(arg1, arg2);
-      } else if (this.callbacks) {
-        for (let i = 0; i < this.callbacks.length; ++i) {
-          this.callbacks[i](arg1, arg2);
-        }
-      }
-    });
-  }
+setHasViews(() => renderers.length > 0);
 
-  register(callback) {
-    if (this.callbacks) {
-      this.callbacks.push(callback);
-    } else if (!this.callback) {
-      this.callback = callback;
-    } else {
-      this.callbacks = [this.callback, callback];
-      this.callback = null;
-    }
-  }
+function register(renderer) {
+  assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
+  renderers.push(renderer);
+}
 
-  deregister(callback) {
-    let foundCallback = false;
-    if (this.callbacks) {
-      let callbackIndex = this.callbacks.indexOf(callback);
-      foundCallback = ~callbackIndex;
-      if (foundCallback) {
-        this.callbacks.splice(callbackIndex, 1);
-      }
-    } else if (this.callback === callback) {
-      this.callback = null;
-      foundCallback = true;
-    }
+function deregister(renderer) {
+  let index = renderers.indexOf(renderer);
+  assert('Cannot deregister unknown unregistered renderer', index !== -1);
+  renderers.splice(index, 1);
+}
 
-    if (!foundCallback) {
-      throw new TypeError('Cannot deregister a callback that has not been registered.');
-    }
-  }
-
-  hasRegistrations() {
-    return !!this.callback || !!this.callbacks && !!this.callbacks.length;
+function loopBegin() {
+  for (let i = 0; i < renderers.length; i++) {
+    renderers[i]._scheduleRevalidate();
   }
 }
-const schedulerRegistrar = new SchedulerRegistrar();
 
-setHasViews(function rendererHasViews() {
-  return schedulerRegistrar.hasRegistrations();
-});
+function K() {}
 
-class Scheduler {
-  constructor() {
-    this._root = null;
-    this._scheduleMaybeUpdate = () => {
-      run.backburner.schedule('render', this, this._maybeUpdate, CURRENT_TAG.value());
-    };
-  }
-
-  destroy() {
-    if (this._root) {
-      this.deregisterView(this._root);
+let loops = 0;
+function loopEnd(current, next) {
+  for (let i = 0; i < renderers.length; i++) {
+    if (!renderers[i]._isValid()) {
+      if (loops > 10) {
+        loops = 0;
+        // TODO: do something better
+        renderers[i].destroy();
+        throw new Error('infinite rendering invalidation detected');
+      }
+      loops++;
+      return backburner.join(null, K);
     }
   }
-
-  registerView(view) {
-    if (!this.root) {
-      schedulerRegistrar.register(this._scheduleMaybeUpdate);
-      this._root = view;
-    } else {
-      throw new TypeError('Cannot register more than one root view.');
-    }
-  }
-
-  deregisterView(view) {
-    if (this._root === view) {
-      this._root = null;
-      schedulerRegistrar.deregister(this._scheduleMaybeUpdate);
-    }
-  }
-
-  _maybeUpdate(lastTagValue) {
-    if (CURRENT_TAG.validate(lastTagValue)) { return; }
-    let view = this._root;
-    if (view) {
-      view.renderer.rerender(view);
-    }
-  }
+  loops = 0;
 }
+
+backburner.on('begin', loopBegin);
+backburner.on('end', loopEnd);
 
 class Renderer {
-  constructor({ dom, env, _viewRegistry, destinedForDOM = false }) {
-    this._root = null;
+  constructor({ dom, env, _viewRegistry = fallbackViewRegistry, destinedForDOM = false }) {
     this._dom = dom;
     this._env = env;
+    this._viewRegistry = _viewRegistry;
     this._destinedForDOM = destinedForDOM;
-    this._scheduler = new Scheduler();
-    this._viewRegistry = _viewRegistry || fallbackViewRegistry;
+    this._destroyed = false;
+    this._root = null;
+    this._result = null;
+    this._lastRevision = null;
+    this._transaction = null;
   }
 
-  destroy() {
-    this._scheduler.destroy();
-  }
+  // renderer HOOKS
 
   appendOutletView(view, target) {
-    this._root = view;
-
-    let env = this._env;
     let self = new RootReference(view);
     let controller = view.outletState.render.controller;
     let ref = view.toReference();
@@ -159,31 +106,10 @@ class Renderer {
       rootOutletState: ref,
       isTopLevel: true
     });
-
-    let result, shouldReflush, afterRender, didChangeAfterRender;
-
-    let callback = () => {
-      result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
-    };
-
-    let rerender = () => result.rerender({ alwaysRevalidate: shouldReflush });
-
-    do {
-      env.begin();
-      shouldReflush = runInTransaction(callback);
-      afterRender = CURRENT_TAG.value();
-      env.commit();
-      didChangeAfterRender = !CURRENT_TAG.validate(afterRender);
-      callback = rerender;
-    } while (shouldReflush || didChangeAfterRender);
-
-    this._scheduler.registerView(view);
-
-    return result;
+    this._renderRoot(view, view.template, self, target, dynamicScope);
   }
 
   appendTo(view, target) {
-    let env = this._env;
     let self = new RootReference(view);
     let dynamicScope = new DynamicScope({
       view,
@@ -197,65 +123,11 @@ class Renderer {
       rootOutletState: UNDEFINED_REFERENCE,
       isTopLevel: true
     });
-
-    let result, shouldReflush, afterRender, didChangeAfterRender;
-
-    let callback = () => {
-      result = view.template.asEntryPoint().render(self, env, { appendTo: target, dynamicScope });
-    };
-
-    let rerender = () => result.rerender({ alwaysRevalidate: shouldReflush });
-
-    do {
-      env.begin();
-      shouldReflush = runInTransaction(callback);
-      afterRender = CURRENT_TAG.value();
-      env.commit();
-      didChangeAfterRender = !CURRENT_TAG.validate(afterRender);
-      callback = rerender;
-    } while (shouldReflush || didChangeAfterRender);
-
-    this._scheduler.registerView(view);
-
-    // FIXME: Store this somewhere else
-    view['_renderResult'] = result;
-
-    // FIXME: This should happen inside `env.commit()`
-    view._transitionTo('inDOM');
+    this._renderRoot(view, view.template, self, target, dynamicScope);
   }
 
   rerender(view) {
-    let { _env: env } = this;
-
-    let renderResult = view['_renderResult'] || this._root['_renderResult'];
-    let shouldReflush = false;
-    let afterRender, didChangeAfterRender;
-
-    let callback = () => renderResult.rerender({ alwaysRevalidate: shouldReflush });
-
-    do {
-      env.begin();
-      shouldReflush = runInTransaction(callback);
-      afterRender = CURRENT_TAG.value();
-      env.commit();
-      didChangeAfterRender = !CURRENT_TAG.validate(afterRender);
-    } while (shouldReflush || didChangeAfterRender);
-  }
-
-  remove(view) {
-    this._scheduler.deregisterView(view);
-    view.trigger('willDestroyElement');
-    view._transitionTo('destroying');
-
-    let { _renderResult } = view;
-
-    if (_renderResult) {
-      _renderResult.destroy();
-    }
-
-    if (!view.isDestroying) {
-      view.destroy();
-    }
+    this._scheduleRevalidate();
   }
 
   componentInitAttrs() {
@@ -267,13 +139,115 @@ class Renderer {
     // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
   }
 
-  _register(view) {
+  register(view) {
     assert('Attempted to register a view with an id already in use: ' + view.elementId, !this._viewRegistry[this.elementId]);
     this._viewRegistry[view.elementId] = view;
   }
 
-  _unregister(view) {
+  unregister(view) {
     delete this._viewRegistry[this.elementId];
+  }
+
+  remove(view) {
+    view.trigger('willDestroyElement');
+    view._transitionTo('destroying');
+
+    if (this._root === view) {
+      this._clearRoot();
+    }
+
+    if (!view.isDestroying) {
+      view.destroy();
+    }
+  }
+
+  destroy() {
+    if (this._destroyed) {
+      return;
+    }
+    this._destroyed = true;
+    this._clearRoot();
+  }
+
+  _renderRoot(root, template, self, parentElement, dynamicScope) {
+    assert('Cannot append multiple root views', !this._root);
+    this._root = root;
+    register(this);
+
+    let options = {
+      alwaysRevalidate: false
+    };
+    let { _env: env } = this;
+    let render = () => {
+      let result = template.asEntryPoint().render(self, env, {
+        appendTo: parentElement,
+        dynamicScope
+      });
+      this._result = result;
+      this._lastRevision = CURRENT_TAG.value();
+
+      if (root._transitionTo) {
+        root._transitionTo('inDOM');
+      }
+
+      render = () => {
+        result.rerender(options);
+        this._lastRevision = CURRENT_TAG.value();
+      };
+    };
+
+    let transaction = () => {
+      let shouldReflush = false;
+      do {
+        env.begin();
+        options.alwaysRevalidate = shouldReflush;
+        shouldReflush = runInTransaction(render);
+        env.commit();
+      } while (shouldReflush);
+    };
+
+    this._transaction = () => {
+      try {
+        transaction();
+      } catch (e) {
+        this.destroy();
+        throw e;
+      }
+    };
+
+    this._transaction();
+  }
+
+  _clearRoot() {
+    let root = this._root;
+    let result = this._result;
+    this._root = null;
+    this._result = null;
+    this._lastRevision = null;
+    this._transaction = null;
+
+    if (root) {
+      deregister(this);
+    }
+
+    if (result) {
+      result.destroy();
+    }
+  }
+
+  _scheduleRevalidate() {
+    backburner.scheduleOnce('render', this, this._revalidate);
+  }
+
+  _isValid() {
+    return !this._root || CURRENT_TAG.validate(this._lastRevision);
+  }
+
+  _revalidate() {
+    if (this._isValid()) {
+      return;
+    }
+    this._transaction();
   }
 }
 

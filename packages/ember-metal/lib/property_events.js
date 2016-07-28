@@ -105,10 +105,12 @@ function propertyDidChange(obj, keyName) {
     notifyObservers(obj, keyName);
   }
 
+
   if (obj[PROPERTY_DID_CHANGE]) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
+  if (obj.isDestroying) { return; }
   markObjectAsDirty(m);
 
   if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
