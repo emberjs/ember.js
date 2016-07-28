@@ -33,6 +33,10 @@ function babelConfigFor(environment) {
     features['ember-glimmer-detect-backtracking-rerender'] = false;
   }
 
+  if (process.env.EMBER_GLIMMER) {
+    features['ember-glimmer'] = true;
+  }
+
   var plugins = [];
 
   plugins.push(applyFeatureFlags({
