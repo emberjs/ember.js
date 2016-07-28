@@ -3,14 +3,15 @@ import run from 'ember-metal/run_loop';
 
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
-import { compile } from 'ember-htmlbars-template-compiler';
 import ComponentLookup from 'ember-views/component_lookup';
-import Component from 'ember-htmlbars/component';
+import Component from 'ember-templates/component';
 import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
 import buildOwner from 'container/tests/test-helpers/build-owner';
 import { OWNER } from 'container/owner';
+import { test, testModule } from 'internal-test-helpers/tests/skip-if-glimmer';
+import require from 'require';
 
-let owner, View, view, otherView, willDestroyCalled;
+let compile, owner, View, view, otherView, willDestroyCalled;
 
 function commonSetup() {
   owner = buildOwner();
@@ -18,10 +19,13 @@ function commonSetup() {
   owner.registerOptionsForType('view', { singleton: false });
   owner.registerOptionsForType('template', { instantiate: false });
   owner.register('component-lookup:main', ComponentLookup);
+
+  compile = require('ember-htmlbars-template-compiler').compile;
 }
 
-QUnit.module('EmberView - append() and appendTo()', {
+testModule('EmberView - append() and appendTo()', {
   setup() {
+    commonSetup();
     View = EmberView.extend({});
   },
 
@@ -31,7 +35,7 @@ QUnit.module('EmberView - append() and appendTo()', {
   }
 });
 
-QUnit.test('can call `appendTo` for multiple views #11109', function() {
+test('can call `appendTo` for multiple views #11109', function() {
   let elem;
   jQuery('#qunit-fixture').html('<div id="menu"></div><div id="other-menu"></div>');
 
@@ -53,7 +57,7 @@ QUnit.test('can call `appendTo` for multiple views #11109', function() {
   ok(elem.length > 0, 'creates and appends the second view\'s element');
 });
 
-QUnit.test('should be added to the specified element when calling appendTo()', function() {
+test('should be added to the specified element when calling appendTo()', function() {
   jQuery('#qunit-fixture').html('<div id="menu"></div>');
 
   view = View.create();
@@ -66,7 +70,7 @@ QUnit.test('should be added to the specified element when calling appendTo()', f
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
-QUnit.test('should be added to the document body when calling append()', function() {
+test('should be added to the document body when calling append()', function() {
   view = View.create({
     template: compile('foo bar baz')
   });
@@ -79,7 +83,7 @@ QUnit.test('should be added to the document body when calling append()', functio
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
-QUnit.test('raises an assert when a target does not exist in the DOM', function() {
+test('raises an assert when a target does not exist in the DOM', function() {
   view = View.create();
 
   expectAssertion(() => {
@@ -88,7 +92,7 @@ QUnit.test('raises an assert when a target does not exist in the DOM', function(
 });
 
 
-QUnit.test('destroy more forcibly removes the view', function() {
+test('destroy more forcibly removes the view', function() {
   willDestroyCalled = 0;
 
   view = View.create({
@@ -111,7 +115,7 @@ QUnit.test('destroy more forcibly removes the view', function() {
   equal(willDestroyCalled, 1, 'the willDestroyElement hook was called once');
 });
 
-QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
+testModule('EmberView - append() and appendTo() in a view hierarchy', {
   setup() {
     commonSetup();
 
@@ -130,7 +134,7 @@ QUnit.module('EmberView - append() and appendTo() in a view hierarchy', {
   }
 });
 
-QUnit.test('should be added to the specified element when calling appendTo()', function() {
+test('should be added to the specified element when calling appendTo()', function() {
   jQuery('#qunit-fixture').html('<div id="menu"></div>');
 
   view = View.create();
@@ -143,7 +147,7 @@ QUnit.test('should be added to the specified element when calling appendTo()', f
   ok(viewElem.length > 0, 'creates and appends the view\'s element');
 });
 
-QUnit.test('should be added to the document body when calling append()', function() {
+test('should be added to the document body when calling append()', function() {
   jQuery('#qunit-fixture').html('<div id="menu"></div>');
 
   view = View.create();
