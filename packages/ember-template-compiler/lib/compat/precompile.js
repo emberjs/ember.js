@@ -3,13 +3,12 @@
 @submodule ember-template-compiler
 */
 import require, { has } from 'require';
-import isEnabled from 'ember-metal/features';
 
 
 let compile, compileSpec, compileOptions;
 
 // Note we don't really want to expose this from main file
-if (isEnabled('ember-glimmer')) {
+if (require.has('glimmer-compiler')) {
   compileOptions = require('ember-glimmer-template-compiler/system/compile-options').default;
 } else {
   compileOptions = require('ember-htmlbars-template-compiler/system/compile-options').default;
