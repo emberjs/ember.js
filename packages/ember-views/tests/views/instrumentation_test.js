@@ -43,7 +43,8 @@ QUnit.module('EmberView#instrumentation', {
   }
 });
 
-QUnit.test('generates the proper instrumentation details when called directly', function() {
+import { test } from 'internal-test-helpers/tests/skip-if-glimmer';
+test('generates the proper instrumentation details when called directly', function() {
   let payload = {};
 
   view.instrumentDetails(payload);

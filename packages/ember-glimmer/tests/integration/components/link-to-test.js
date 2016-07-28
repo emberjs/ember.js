@@ -22,6 +22,26 @@ moduleFor('Link-to component', class extends ApplicationTest {
     return p;
   }
 
+  ['@test accessing `currentWhen` triggers a deprecation'](assert) {
+    let component;
+    this.registerComponent('link-to', {
+      ComponentClass: LinkTo.extend({
+        init() {
+          this._super(...arguments);
+          component = this;
+        }
+      })
+    });
+
+    this.registerTemplate('application', `{{link-to 'Index' 'index'}}`);
+
+    return this.visit('/').then(() => {
+      expectDeprecation(() => {
+        component.get('currentWhen');
+      }, /Usage of `currentWhen` is deprecated, use `current-when` instead/);
+    });
+  }
+
   ['@test should be able to be inserted in DOM when the router is not present']() {
     this.registerTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
 

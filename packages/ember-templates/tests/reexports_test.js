@@ -56,10 +56,3 @@ function getDescriptor(obj, path) {
   let last = parts[parts.length - 1];
   return Object.getOwnPropertyDescriptor(value, last);
 }
-
-// TODO: This test should go somewhere else
-QUnit.test('`LinkComponent#currentWhen` is deprecated in favour of `current-when` (DEPRECATED)', function() {
-  expectDeprecation(/Usage of `currentWhen` is deprecated, use `current-when` instead/);
-  let link = Ember.LinkComponent.create();
-  link.get('currentWhen');
-});
