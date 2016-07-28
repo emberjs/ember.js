@@ -8,7 +8,7 @@
 var fs = require('fs');
 
 var EmberBuild = require('emberjs-build');
-var packages   = require('./lib/packages');
+var getPackages   = require('./lib/packages');
 
 var applyFeatureFlags = require('babel-plugin-feature-flags');
 var filterImports = require('babel-plugin-filter-imports');
@@ -19,13 +19,27 @@ var vendoredES6Package = require('emberjs-build/lib/es6-vendored-package');
 
 var featuresJson = fs.readFileSync('./features.json', { encoding: 'utf8' });
 
-function babelConfigFor(environment) {
-  var isDevelopment = (environment === 'development');
-  var isProduction = (environment === 'production');
-
+function getFeatures(environment) {
   var features = JSON.parse(featuresJson).features;
-  features['mandatory-setter'] = isDevelopment;
-  features['ember-glimmer-detect-backtracking-rerender'] = isDevelopment;
+  var featureName;
+
+  if (process.env.BUILD_TYPE === 'alpha') {
+    for (featureName in features) {
+      if (features[featureName] === null) {
+        features[featureName] = false;
+      }
+    }
+  }
+
+  if (process.env.OVERRIDE_FEATURES) {
+    var forcedFeatures = process.env.OVERRIDE_FEATURES.split(',');
+    for (var i = 0; i < forcedFeatures.length; i++) {
+      featureName = forcedFeatures[i];
+
+      features[featureName] = true;
+    }
+  }
+
   features['ember-glimmer-allow-backtracking-rerender'] = false;
 
   if (process.env.ALLOW_BACKTRACKING) {
@@ -33,17 +47,29 @@ function babelConfigFor(environment) {
     features['ember-glimmer-detect-backtracking-rerender'] = false;
   }
 
-  if (process.env.EMBER_GLIMMER) {
-    features['ember-glimmer'] = true;
-  }
+  var isDevelopment = (environment === 'development');
+  var isProduction = (environment === 'production');
 
+  features['mandatory-setter'] = isDevelopment;
+  features['ember-glimmer-detect-backtracking-rerender'] = isDevelopment;
+
+  return features;
+}
+
+function babelConfigFor(environment) {
   var plugins = [];
 
-  plugins.push(applyFeatureFlags({
+  var features = getFeatures(environment);
+  var featureFlagPlugin = applyFeatureFlags({
     import: { module: 'ember-metal/features' },
     features: features
-  }));
+  });
+  featureFlagPlugin._augmentCacheKey = function() {
+    return JSON.stringify(features);
+  };
+  plugins.push(featureFlagPlugin);
 
+  var isProduction = (environment === 'production');
   if (isProduction) {
     plugins.push(filterImports({
       'ember-metal/debug': ['assert', 'debug', 'deprecate', 'info', 'runInDebug', 'warn', 'debugSeal']
@@ -61,7 +87,7 @@ function addGlimmerPackage(vendoredPackages, name) {
 }
 
 module.exports = function() {
-  var features = JSON.parse(featuresJson).features;
+  var features = getFeatures();
 
   var vendorPackages = {
     'loader':                vendoredPackage('loader'),
@@ -99,8 +125,12 @@ module.exports = function() {
       development: babelConfigFor('development'),
       production: babelConfigFor('production')
     },
+    features: {
+      development: getFeatures('development'),
+      production: getFeatures('production')
+    },
     htmlbars: require('htmlbars'),
-    packages: packages,
+    packages: getPackages(features),
     vendoredPackages: vendorPackages
   });
 
