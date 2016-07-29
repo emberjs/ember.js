@@ -202,7 +202,10 @@ function chainsWillChange(obj, keyName, m) {
   var i, l;
 
   for (i = 0, l = nodes.length; i < l; i++) {
-    nodes[i].willChange(events);
+    var node = nodes[i];
+    if (node) {
+      node.willChange(events);
+    }
   }
 
   for (i = 0, l = events.length; i < l; i += 2) {
@@ -221,7 +224,10 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
   var i, l;
 
   for (i = 0, l = nodes.length; i < l; i++) {
-    nodes[i].didChange(events);
+    var node = nodes[i];
+    if (node) {
+      node.didChange(events);
+    }
   }
 
   if (suppressEvents) {
