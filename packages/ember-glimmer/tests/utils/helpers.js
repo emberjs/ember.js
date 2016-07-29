@@ -26,6 +26,7 @@ export function buildOwner(options) {
   owner.register('service:-document', document, { instantiate: false });
   owner.register('-environment:main', {
     isInteractive: true,
+    hasDOM: true,
     options: { jQuery }
   }, { instantiate: false });
   owner.inject('view', '_environment', '-environment:main');
