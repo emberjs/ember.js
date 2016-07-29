@@ -1,8 +1,6 @@
 import { get } from 'ember-metal/property_get';
-import { guidFor } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import HashLocation from 'ember-routing/location/hash_location';
-import jQuery from 'ember-views/system/jquery';
 
 let HashTestLocation, location;
 
@@ -30,6 +28,12 @@ function mockBrowserLocation(path) {
     protocol: protocol,
     search: tmp.search
   };
+}
+
+function triggerHashchange() {
+  var event = document.createEvent('HTMLEvents');
+  event.initEvent('hashchange', true, false);
+  window.dispatchEvent(event);
 }
 
 QUnit.module('Ember.HashLocation', {
@@ -121,35 +125,6 @@ QUnit.test('HashLocation.replaceURL() correctly replaces to the path with a page
   equal(get(location, 'lastSetURL'), '/foo');
 });
 
-QUnit.test('HashLocation.onUpdateURL() registers a hashchange callback', function() {
-  expect(3);
-
-  let oldInit = jQuery.fn.init;
-
-  jQuery.fn.init = function(element) {
-    equal(element, window);
-
-    return {
-      on(eventName, callback) {
-        equal(eventName, 'hashchange.ember-location-' + guid);
-        equal(Object.prototype.toString.call(callback), '[object Function]');
-      }
-    };
-  };
-
-  createLocation({
-    // Mock so test teardown doesn't fail
-    willDestroy() {}
-  });
-
-  let guid = guidFor(location);
-
-  location.onUpdateURL(function () {});
-
-  // clean up
-  jQuery.fn.init = oldInit;
-});
-
 QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() {
   expect(1);
 
@@ -163,7 +138,7 @@ QUnit.test('HashLocation.onUpdateURL callback executes as expected', function() 
 
   location.onUpdateURL(callback);
 
-  jQuery(window).trigger('hashchange');
+  triggerHashchange();
 });
 
 QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL === path', function() {
@@ -182,7 +157,7 @@ QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL ===
 
   location.onUpdateURL(callback);
 
-  jQuery(window).trigger('hashchange');
+  triggerHashchange();
 });
 
 QUnit.test('HashLocation.formatURL() prepends a # to the provided string', function() {
@@ -194,29 +169,20 @@ QUnit.test('HashLocation.formatURL() prepends a # to the provided string', funct
 });
 
 QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', function() {
-  expect(2);
-
-  let oldInit = jQuery.fn.init;
-
-  jQuery.fn.init = function(element) {
-    equal(element, window);
-
-    return {
-      off(eventName) {
-        equal(eventName, 'hashchange.ember-location-' + guid);
-      }
-    };
-  };
+  expect(1);
 
   createLocation();
 
-  let guid = guidFor(location);
+  let callback = function (param) {
+    ok(true, 'should invoke callback once');
+  };
 
-  location.willDestroy();
+  location.onUpdateURL(callback);
 
-  // noop so test teardown doesn't call our mocked jQuery again
-  location.willDestroy = function() {};
+  triggerHashchange();
 
-  // clean up
-  jQuery.fn.init = oldInit;
+  run(location, 'destroy');
+  location = null;
+
+  triggerHashchange();
 });

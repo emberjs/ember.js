@@ -1,10 +1,8 @@
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-import { guidFor } from 'ember-metal/utils';
 
 import EmberObject from 'ember-runtime/system/object';
 import EmberLocation from 'ember-routing/location/api';
-import jQuery from 'ember-views/system/jquery';
 
 /**
 @module ember
@@ -26,8 +24,15 @@ export default EmberObject.extend({
   implementation: 'history',
 
   init() {
+    this._super(...arguments);
+
+    let base = document.querySelector('base');
+    let baseURL = base ? base.getAttribute('href') : '';
+
+    set(this, 'baseURL', baseURL);
     set(this, 'location', get(this, 'location') || window.location);
-    set(this, 'baseURL', jQuery('base').attr('href') || '');
+
+    this._popstateHandler = undefined;
   },
 
   /**
@@ -181,16 +186,18 @@ export default EmberObject.extend({
     @param callback {Function}
   */
   onUpdateURL(callback) {
-    let guid = guidFor(this);
+    this._removeEventListener();
 
-    jQuery(window).on(`popstate.ember-location-${guid}`, (e) => {
+    this._popstateHandler = () => {
       // Ignore initial page load popstate event in Chrome
       if (!popstateFired) {
         popstateFired = true;
         if (this.getURL() === this._previousURL) { return; }
       }
       callback(this.getURL());
-    });
+    };
+
+    window.addEventListener('popstate', this._popstateHandler);
   },
 
   /**
@@ -225,9 +232,7 @@ export default EmberObject.extend({
     @method willDestroy
   */
   willDestroy() {
-    let guid = guidFor(this);
-
-    jQuery(window).off(`popstate.ember-location-${guid}`);
+    this._removeEventListener();
   },
 
   /**
@@ -237,5 +242,11 @@ export default EmberObject.extend({
 
     @method getHash
   */
-  getHash: EmberLocation._getHash
+  getHash: EmberLocation._getHash,
+
+  _removeEventListener() {
+    if (this._popstateHandler) {
+      window.removeEventListener('popstate', this._popstateHandler);
+    }
+  }
 });
