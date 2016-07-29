@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.9.0-alpha.1 (July 29, 2016)
+
+- Enable Glimmer v2 engine by default. Details here [emberjs/ember.js#13949](https://github.com/emberjs/ember.js/issues/13949).
+
 ### 2.8.0-beta.1 (July 25, 2016)
 
 - [#13757](https://github.com/emberjs/ember.js/pull/13757) / [#13773](https://github.com/emberjs/ember.js/pull/13773) [CLEANUP] Remove legacy view layer features.
