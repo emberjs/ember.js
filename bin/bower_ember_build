@@ -46,7 +46,7 @@ esac
 echo -e "CHANNEL: ${CHANNEL}\n"
 
 if [[ -n $BUILD_TYPE ]]; then
-  CHANNEL=$BUILD_TYPE ;;
+  CHANNEL=$BUILD_TYPE
   echo -e "CHANNEL OVERRIDE: ${CHANNEL}\n"
 fi
 
