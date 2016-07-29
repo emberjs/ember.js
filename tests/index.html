@@ -43,13 +43,15 @@
   <script>
     var testMatch;
     if (packagesToTest) {
-      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*-test$");
+      testMatch = new RegExp("^(" + packagesToTest.join("|") + ").*(-test|.tslint)$");
     } else {
-      testMatch = /\-test$/;
+      testMatch = /(\-test|.tslint)$/;
     }
 
     Object.keys(requireModule.entries).forEach(function(entry) {
-      if (entry.match(testMatch)) requireModule(entry);
+      if (entry.match(testMatch)) {
+        requireModule(entry)
+      };
     });
   </script>
 </body>
