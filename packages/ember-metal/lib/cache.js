@@ -11,31 +11,36 @@ export default class Cache {
     this.store  = store || new DefaultStore();
   }
 
-  set(obj, value) {
-    if (this.limit > this.size) {
-      let key = this.key === undefined ? obj : this.key(obj);
-      this.size ++;
-      if (value === undefined) {
-        this.store.set(key, UNDEFINED);
-      } else {
-        this.store.set(key, value);
-      }
-    }
-    return value;
-  }
-
   get(obj) {
     let key = this.key === undefined ? obj : this.key(obj);
     let value = this.store.get(key);
     if (value === undefined) {
       this.misses ++;
-      value = this.set(key, this.func(obj));
+      value = this._set(key, this.func(obj));
     } else if (value === UNDEFINED) {
       this.hits ++;
       value = undefined;
     } else {
       this.hits ++;
       // nothing to translate
+    }
+
+    return value;
+  }
+
+  set(obj, value) {
+    let key = this.key === undefined ? obj : this.key(obj);
+    return this._set(key, value);
+  }
+
+  _set(key, value) {
+    if (this.limit > this.size) {
+      this.size ++;
+      if (value === undefined) {
+        this.store.set(key, UNDEFINED);
+      } else {
+        this.store.set(key, value);
+      }
     }
 
     return value;
