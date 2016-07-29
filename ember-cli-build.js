@@ -6,9 +6,11 @@
 // DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
 var fs = require('fs');
+var path = require('path');
 
 var EmberBuild = require('emberjs-build');
 var getPackages   = require('./lib/packages');
+var getGitInfo = require('git-repo-info');
 
 var applyFeatureFlags = require('babel-plugin-feature-flags');
 var filterImports = require('babel-plugin-filter-imports');
@@ -86,8 +88,23 @@ function addGlimmerPackage(vendoredPackages, name) {
   vendoredPackages[name] = find(glimmerEngine, 'named-amd/' + name + '/**/*.js');
 }
 
+function getVersion() {
+  var projectPath = process.cwd();
+  var info = getGitInfo(projectPath);
+  if (info.tag) {
+    return info.tag;
+  }
+
+  var packageVersion  = require(path.join(projectPath, 'package.json')).version;
+  var sha = info.sha || '';
+  var prefix = packageVersion + '-' + (process.env.BUILD_TYPE || info.branch);
+
+  return prefix + '+' + sha.slice(0, 8);
+}
+
 module.exports = function() {
   var features = getFeatures();
+  var version = getVersion();
 
   var vendorPackages = {
     'loader':                vendoredPackage('loader'),
@@ -131,7 +148,8 @@ module.exports = function() {
     },
     htmlbars: require('htmlbars'),
     packages: getPackages(features),
-    vendoredPackages: vendorPackages
+    vendoredPackages: vendorPackages,
+    version: version
   });
 
   return emberBuild.getDistTrees();

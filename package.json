@@ -1,7 +1,7 @@
 {
   "name": "ember",
   "license": "MIT",
-  "version": "2.9.0-canary",
+  "version": "2.9.0",
   "keywords": [
     "ember-addon"
   ],
@@ -33,9 +33,11 @@
     "ember-cli-sauce": "^1.4.2",
     "ember-cli-yuidoc": "0.8.4",
     "ember-publisher": "0.0.7",
-    "emberjs-build": "0.12.1",
+    "emberjs-build": "0.13.2",
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
+    "git-repo-info": "^1.1.4",
+    "git-repo-version": "^0.3.1",
     "github": "^0.2.3",
     "glimmer-engine": "tildeio/glimmer#8f4bb56",
     "glob": "^5.0.13",
