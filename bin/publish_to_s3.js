@@ -20,13 +20,13 @@ var configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js')
 var publisher = new S3Publisher({ projectConfigPath: configPath });
 
 publisher.currentBranch = function() {
-  return {
+  return process.env.BUILD_TYPE || {
     master: 'canary',
     beta: 'beta',
     release: 'release',
     'lts-2-4': 'lts-2-4',
     'release-1-13': 'release-1-13'
-  }[this.CURRENT_BRANCH] || process.env.BUILD_TYPE;
+  }[this.CURRENT_BRANCH];
 };
 
 publisher.publish();
