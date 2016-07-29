@@ -22,6 +22,11 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
   var obj =  {
     contentType: contentType,
     destinations: {
+      alpha: [
+        "alpha" + fullName,
+        "alpha/daily/" + date + fullName,
+        "alpha/shas/" + currentRevision + fullName
+      ],
       canary: [
         "latest" + fullName,
         "canary" + fullName,
