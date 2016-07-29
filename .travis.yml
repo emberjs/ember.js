@@ -55,5 +55,5 @@ env:
     - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=blueprints
     - TEST_SUITE=sauce
-    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true
+    - TEST_SUITE=allow-backtracking-rerender ALLOW_BACKTRACKING=true DISABLE_PUBLISHING=true
     - TEST_SUITE=each-package-tests OVERRIDE_FEATURES=ember-glimmer BUILD_TYPE=alpha
