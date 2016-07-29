@@ -4,8 +4,7 @@ import { set } from 'ember-metal/property_set';
 import { Binding } from 'ember-metal/binding';
 
 moduleFor('Binding integration tests', class extends RenderingTest {
-
-  ['@htmlbars should accept bindings as a string or an Ember.binding']() {
+  ['@test should accept bindings as a string or an Ember.binding']() {
     let FooBarComponent = Component.extend({
       twoWayTestBinding: Binding.from('direction'),
       stringTestBinding: 'direction',

@@ -1,5 +1,6 @@
 import { setupApplicationRegistry, setupEngineRegistry } from 'ember-glimmer/setup-registry';
 import { default as _buildOwner } from 'container/tests/test-helpers/build-owner';
+import jQuery from 'ember-views/system/jquery';
 
 export {
   compile,
@@ -21,8 +22,16 @@ export function buildOwner(options) {
   let owner = _buildOwner(options);
   setupEngineRegistry(owner.__registry__);
   setupApplicationRegistry(owner.__registry__);
+
   owner.register('service:-document', document, { instantiate: false });
+  owner.register('-environment:main', {
+    isInteractive: true,
+    options: { jQuery }
+  }, { instantiate: false });
+  owner.inject('view', '_environment', '-environment:main');
+  owner.inject('component', '_environment', '-environment:main');
   owner.inject('service:-dom-helper', 'document', 'service:-document');
+  owner.inject('view', 'renderer', 'renderer:-dom');
   owner.inject('component', 'renderer', 'renderer:-dom');
   owner.inject('template', 'env', 'service:-glimmer-environment');
 

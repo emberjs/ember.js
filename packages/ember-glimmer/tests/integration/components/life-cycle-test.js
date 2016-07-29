@@ -2,6 +2,7 @@ import { set } from 'ember-metal/property_set';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
+import run from 'ember-metal/run_loop';
 
 class LifeCycleHooksTest extends RenderingTest {
   constructor() {
@@ -680,6 +681,53 @@ moduleFor('Components test: lifecycle hooks (curly components)', class extends L
     }
   }
 
+});
+
+moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
+  ['@test afterRender set']() {
+    let ComponentClass = Component.extend({
+      width: '5',
+      didInsertElement() {
+        run.scheduleOnce('afterRender', () => {
+          this.set('width', '10');
+        });
+      }
+    });
+
+    let template = `{{width}}`;
+    this.registerComponent('foo-bar', { ComponentClass, template });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('10');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('10');
+  }
+
+  ['@test afterRender set on parent']() {
+    let ComponentClass = Component.extend({
+      didInsertElement() {
+        run.scheduleOnce('afterRender', () => {
+          let parent = this.get('parent');
+          parent.set('foo', 'wat');
+        });
+      }
+    });
+
+    let template = `{{foo}}`;
+
+    this.registerComponent('foo-bar', { ComponentClass, template });
+
+    this.render('{{foo-bar parent=this foo=foo}}');
+
+    this.assertText('wat');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('wat');
+  }
 });
 
 function bind(func, thisArg) {
