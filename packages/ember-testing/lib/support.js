@@ -27,7 +27,7 @@ function testCheckboxClick(handler) {
     .remove();
 }
 
-if (environment.hasDOM) {
+if (environment.hasDOM && typeof $ === 'function') {
   $(function() {
     /*
       Determine whether a checkbox checked using jQuery's "click" method will have
