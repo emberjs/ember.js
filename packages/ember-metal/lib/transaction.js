@@ -17,6 +17,13 @@ if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
   };
 }
 
+let implication;
+if (isEnabled('ember-glimmer-allow-backtracking-rerender')) {
+  implication = 'will be removed in Ember 3.0.';
+} else if (isEnabled('ember-glimmer-detect-backtracking-rerender')) {
+  implication = 'is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.';
+}
+
 if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
     isEnabled('ember-glimmer-allow-backtracking-rerender')) {
   let counter = 0;
@@ -55,12 +62,20 @@ if (isEnabled('ember-glimmer-detect-backtracking-rerender') ||
           let parts = [];
           let lastRef = ref[key];
 
-          while (lastRef && lastRef._propertyKey && lastRef._parentReference) {
-            parts.unshift(lastRef._propertyKey);
-            lastRef = lastRef._parentReference;
+          let label;
+
+          if (lastRef) {
+            while (lastRef && lastRef._propertyKey && lastRef._parentReference) {
+              parts.unshift(lastRef._propertyKey);
+              lastRef = lastRef._parentReference;
+            }
+
+            label = parts.join();
+          } else {
+            label = 'the same value';
           }
 
-          return `You modified ${parts.join('.')} twice in a single render. This was unreliable and slow in Ember 1.x and will be removed in Ember 3.0.`;
+          return `You modified ${parts.join('.')} twice in a single render. This was unreliable and slow in Ember 1.x and ${implication}`;
         }()),
         false);
 
