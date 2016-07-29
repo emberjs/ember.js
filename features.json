@@ -1,16 +1,16 @@
 {
   "features": {
-    "features-stripped-test": null,
-    "ember-routing-route-configured-query-params": null,
-    "ember-libraries-isregistered": null,
+    "features-stripped-test": false,
+    "ember-routing-route-configured-query-params": false,
+    "ember-libraries-isregistered": false,
     "ember-application-engines": true,
-    "ember-glimmer": null,
+    "ember-glimmer": true,
     "ember-runtime-computed-uniq-by": true,
-    "ember-improved-instrumentation": null,
+    "ember-improved-instrumentation": false,
     "ember-runtime-enumerable-includes": true,
     "ember-string-ishtmlsafe": true,
     "ember-testing-check-waiters": true,
-    "ember-metal-weakmap": null,
-    "ember-glimmer-allow-backtracking-rerender": null
+    "ember-metal-weakmap": false,
+    "ember-glimmer-allow-backtracking-rerender": false
   }
 }
