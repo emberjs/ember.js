@@ -33,7 +33,7 @@
     "ember-cli-sauce": "^1.4.2",
     "ember-cli-yuidoc": "0.8.4",
     "ember-publisher": "0.0.7",
-    "emberjs-build": "0.11.1",
+    "emberjs-build": "0.12.1",
     "express": "^4.5.0",
     "finalhandler": "^0.4.0",
     "github": "^0.2.3",
