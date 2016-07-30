@@ -47,10 +47,6 @@ export function defaultAttributeChangeLists(tagName: string, attr: string) {
     return SafeHrefAttributeChangeList;
   }
 
-  if (isInputValue(tagName, attr)) {
-    return InputValueAttributeChangeList;
-  }
-
   return AttributeChangeList;
 }
 
@@ -123,16 +119,6 @@ export const InputValuePropertyChangeList = {
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue;
     }
-  },
-
-  updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    this.setAttribute(dom, element, attr, value);
-  }
-};
-
-export const InputValueAttributeChangeList = {
-  setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    AttributeChangeList.setAttribute(dom, element, attr, normalizeTextValue(value));
   },
 
   updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
