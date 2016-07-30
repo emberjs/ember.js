@@ -352,8 +352,8 @@ class SimpleRenderer {
     let { reference, lastTicket } = this;
 
     if (!reference.tag.validate(lastTicket)) {
-      this.lastTicket = reference.tag.value();
       this.textNode.textContent = reference.value();
+      this.lastTicket = reference.tag.value();
     }
   }
 }
@@ -516,14 +516,14 @@ let nameReference: VersionedReference<string> {
 
 let uppercaseReference = new UppercaseReference(nameReference);
 
-uppercaseReference.value(); // => 'GODFREY CHAN'
-uppercaseReference.tag.value(); // => 1
+uppercaseReference.value();         // => 'GODFREY CHAN'
+uppercaseReference.tag.value();     // => 1
 
 set(person, 'name', 'Yehuda Katz');
 
 uppercaseReference.tag.validate(1); // => false
-uppercaseReference.tag.value(); // => 2
-uppercaseReference.value(); // => 'YEHUDA KATZ'
+uppercaseReference.value();         // => 'YEHUDA KATZ'
+uppercaseReference.tag.value();     // => 2
 ```
 
 Since we can now assume that validation tickets are revision numbers, we can
