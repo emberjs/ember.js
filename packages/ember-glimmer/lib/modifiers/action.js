@@ -4,6 +4,7 @@ import { uuid } from 'ember-metal/utils';
 import { isSimpleClick } from 'ember-views/system/utils';
 import ActionManager from 'ember-views/system/action_manager';
 import { flaggedInstrument } from 'ember-metal/instrumentation';
+import { INVOKE } from '../helpers/action';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -126,6 +127,12 @@ export class ActionState {
         args,
         target
       };
+      if (typeof actionName[INVOKE] === 'function') {
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          actionName[INVOKE].apply(actionName, args);
+        });
+        return;
+      }
       if (typeof actionName === 'function') {
         flaggedInstrument('interaction.ember-action', payload, () => {
           actionName.apply(target, args);
@@ -160,18 +167,26 @@ export default class ActionModifierManager {
     let { named, positional } = args;
     let implicitTarget;
     let actionName;
+    let actionNameRef;
 
     if (positional.length > 1) {
       implicitTarget = positional.at(0);
-      actionName = positional.at(1).value();
+      actionNameRef = positional.at(1);
+
+      if (actionNameRef[INVOKE]) {
+        actionName = actionNameRef;
+      } else {
+        actionName = actionNameRef.value();
+
+        assert(
+          'You specified a quoteless path to the {{action}} helper ' +
+            'which did not resolve to an action name (a string). ' +
+            'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
+          typeof actionName === 'string' || typeof actionName === 'function'
+        );
+      }
     }
 
-    assert(
-      'You specified a quoteless path to the {{action}} helper ' +
-      'which did not resolve to an action name (a string). ' +
-      'Perhaps you meant to use a quoted actionName? (e.g. {{action \'save\'}}).',
-      typeof actionName === 'string' || typeof actionName === 'function'
-    );
 
     let actionArgs = [];
     // The first two arguments are (1) `this` and (2) the action name.
@@ -194,7 +209,11 @@ export default class ActionModifierManager {
   update(modifier, element, args, dom, dynamicScope) {
     let { positional } = args;
 
-    modifier.actionName = positional.at(1).value();
+    let actionNameRef = positional.at(1);
+
+    if (!actionNameRef[INVOKE]) {
+      modifier.actionName = actionNameRef.value();
+    }
     modifier.eventName = modifier.getEventName();
 
     // Not sure if this is needed? If we mutate the actionState is that good enough?

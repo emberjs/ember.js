@@ -1104,4 +1104,51 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.assert.equal(actionArgs, 123);
     this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
   }
+
+  ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {
+    let component;
+
+    let ExampleComponent = Component.extend({
+      label: undefined,
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('example-component', {
+      ComponentClass: ExampleComponent,
+      template: '<button onclick={{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>'
+    });
+
+    this.render('{{example-component}}');
+
+    this.assertText('Click me');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assertText('Clicked!');
+
+    this.runTask(() => {
+      component.set('label', 'Dun clicked');
+    });
+
+    this.assertText('Dun clicked');
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assertText('Clicked!');
+
+    this.runTask(() => {
+      component.set('label', undefined);
+    });
+
+    this.assertText('Click me');
+  }
 });

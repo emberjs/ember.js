@@ -41,11 +41,11 @@ export class ClosureActionReference extends CachedReference {
     let actionType = typeof rawAction;
     let action = rawAction;
 
-    if (isNone(rawAction)) {
-      throw new EmberError(`Action passed is null or undefined in (action) from ${target}.`);
-    } else if (rawActionRef[INVOKE]) {
+    if (rawActionRef[INVOKE]) {
       target = rawActionRef;
       action = rawActionRef[INVOKE];
+    } else if (isNone(rawAction)) {
+      throw new EmberError(`Action passed is null or undefined in (action) from ${target}.`);
     } else if (actionType === 'string') {
       // on-change={{action 'setName'}}
       let actionName = rawAction;

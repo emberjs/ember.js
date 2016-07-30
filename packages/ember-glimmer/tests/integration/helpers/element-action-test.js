@@ -1489,4 +1489,51 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.ok(outerActionCalled, 'the action fired on the proper target');
     this.assert.ok(innerClickCalled, 'the click was triggered');
   }
+
+  ['@glimmer element action with (mut undefinedThing) works properly']() {
+    let component;
+
+    let ExampleComponent = Component.extend({
+      label: undefined,
+      init() {
+        this._super(...arguments);
+        component = this;
+      }
+    });
+
+    this.registerComponent('example-component', {
+      ComponentClass: ExampleComponent,
+      template: '<button {{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>'
+    });
+
+    this.render('{{example-component}}');
+
+    this.assertText('Click me');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assertText('Clicked!');
+
+    this.runTask(() => {
+      component.set('label', 'Dun clicked');
+    });
+
+    this.assertText('Dun clicked');
+
+    this.runTask(() => {
+      this.$('button').click();
+    });
+
+    this.assertText('Clicked!');
+
+    this.runTask(() => {
+      component.set('label', undefined);
+    });
+
+    this.assertText('Click me');
+  }
 });
