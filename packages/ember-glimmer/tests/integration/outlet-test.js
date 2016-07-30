@@ -1,46 +1,50 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { runAppend, runDestroy } from 'ember-runtime/tests/utils';
+import { runAppend } from 'ember-runtime/tests/utils';
 
 moduleFor('outlet view', class extends RenderingTest {
   constructor() {
     super(...arguments);
 
     let CoreOutlet = this.owner._lookupFactory('view:-outlet');
-    this.top = CoreOutlet.create();
-  }
-
-  teardown() {
-    runDestroy(this.top);
-
-    super.teardown(...arguments);
-  }
-
-  withTemplate(string) {
-    return {
-      render: {
-        template: this.compile(string)
-      },
-      outlets: {}
-    };
-  }
-
-  appendTop() {
-    runAppend(this.top);
+    this.component = CoreOutlet.create();
   }
 
   ['@htmlbars should render the outlet when set after DOM insertion']() {
-    let routerState = this.withTemplate('<h1>HI</h1>{{outlet}}');
-    this.top.setOutletState(routerState);
+    let outletState = {
+      render: {
+        owner: this.owner,
+        into: undefined,
+        outlet: 'main',
+        name: 'application',
+        controller: {},
+        ViewClass: undefined,
+        template: this.compile('HI{{outlet}}')
+      },
+      outlets: Object.create(null)
+    };
 
-    this.appendTop();
+    this.runTask(() => this.component.setOutletState(outletState));
+
+    runAppend(this.component);
 
     this.assertText('HI');
 
     this.assertStableRerender();
 
-    routerState.outlets.main = this.withTemplate('<p>BYE</p>');
+    outletState.outlets.main = {
+      render: {
+        owner: this.owner,
+        into: undefined,
+        outlet: 'main',
+        name: 'application',
+        controller: {},
+        ViewClass: undefined,
+        template: this.compile('<p>BYE</p>')
+      },
+      outlets: Object.create(null)
+    };
 
-    this.runTask(() => this.top.setOutletState(routerState));
+    this.runTask(() => this.component.setOutletState(outletState));
 
     this.assertText('HIBYE');
   }
