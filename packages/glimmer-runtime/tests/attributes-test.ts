@@ -164,3 +164,28 @@ test('can read properties', assert => {
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'gnargnar');
 });
+
+test('handles null input values', assert => {
+  let template = compile('<input value={{isNull}} />');
+
+  render(template, { isNull: null });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+});
+
+test('handles undefined input values', assert => {
+  let template = compile('<input value={{isUndefined}} />');
+
+  render(template, { isUndefined: undefined });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+});
+
+test('handles undefined `toString` input values', assert => {
+  let obj = Object.create(null);
+  let template = compile('<input value={{obj}} />');
+
+  render(template, { obj });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+});

@@ -115,16 +115,11 @@ function isInputValue(tagName: string, attribute: string) {
   return tagName === 'INPUT' && attribute === 'value';
 }
 
-function normalizedInputValue(value) {
-  return value === null ? '' : value;
-}
-
 export const InputValuePropertyChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
     let input = <HTMLInputElement>element;
     let currentValue = input.value;
-    let normalizedValue = normalizedInputValue(value);
-
+    let normalizedValue = normalizeTextValue(value);
     if (currentValue !== normalizedValue) {
       input.value = normalizedValue;
     }
@@ -137,7 +132,7 @@ export const InputValuePropertyChangeList = {
 
 export const InputValueAttributeChangeList = {
   setAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
-    AttributeChangeList.setAttribute(dom, element, attr, normalizedInputValue(value));
+    AttributeChangeList.setAttribute(dom, element, attr, normalizeTextValue(value));
   },
 
   updateAttribute(dom: DOMHelper, element: Element, attr: string, value: Opaque) {
