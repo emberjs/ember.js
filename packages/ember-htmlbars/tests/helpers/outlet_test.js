@@ -24,21 +24,6 @@ QUnit.module('ember-htmlbars: {{outlet}} helper', {
   }
 });
 
-QUnit.test('view should render the outlet when set after dom insertion', function() {
-  let routerState = withTemplate('<h1>HI</h1>{{outlet}}');
-  top.setOutletState(routerState);
-  runAppend(top);
-
-  equal(top.$().text(), 'HI');
-
-  routerState.outlets.main = withTemplate('<p>BYE</p>');
-
-  run(() => top.setOutletState(routerState));
-
-  // Replace whitespace for older IE
-  equal(trim(top.$().text()), 'HIBYE');
-});
-
 QUnit.test('a top-level outlet should always be a view', function() {
   appInstance.register('view:toplevel', EmberView.extend({
     elementId: 'top-level'
