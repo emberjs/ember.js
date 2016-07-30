@@ -220,7 +220,7 @@ export interface VersionedPathReference<T> extends PathReference<T>, Tagged<Revi
 }
 
 export abstract class CachedReference<T> implements VersionedReference<T> {
-  public tag: RevisionTag;
+  public abstract tag: RevisionTag;
 
   private lastRevision: Revision = null;
   private lastValue: T = null;
@@ -229,8 +229,8 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
     let { tag, lastRevision, lastValue } = this;
 
     if (!lastRevision || !tag.validate(lastRevision)) {
-      this.lastRevision = tag.value();
       lastValue = this.lastValue = this.compute();
+      this.lastRevision = tag.value();
     }
 
     return lastValue;
