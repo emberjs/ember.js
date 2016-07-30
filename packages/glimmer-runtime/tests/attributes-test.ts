@@ -171,12 +171,28 @@ test('handles null input values', assert => {
   render(template, { isNull: null });
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+
+  rerender({ isNull: 'hey' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'hey');
+
+  rerender({ isNull: null });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
 
 test('handles undefined input values', assert => {
   let template = compile('<input value={{isUndefined}} />');
 
   render(template, { isUndefined: undefined });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+
+  rerender({ isUndefined: 'hey' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'hey');
+
+  rerender({ isUndefined: undefined });
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
@@ -186,6 +202,14 @@ test('handles undefined `toString` input values', assert => {
   let template = compile('<input value={{obj}} />');
 
   render(template, { obj });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
+
+  rerender({ obj: 'hello' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'value'), 'hello');
+
+  rerender({ obj });
 
   assert.equal(readDOMAttr(root.firstChild as Element, 'value'), '');
 });
