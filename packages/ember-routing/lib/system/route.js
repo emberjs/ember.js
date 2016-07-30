@@ -1941,7 +1941,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let name;
 
     if (typeof _name === 'object' && !options) {
-      name = this.routeName;
+      name = this.templateName || this.routeName;
       options = _name;
     } else {
       name = _name;
