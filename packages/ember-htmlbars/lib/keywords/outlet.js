@@ -3,8 +3,6 @@
 @submodule ember-templates
 */
 
-import { info } from 'ember-metal/debug';
-import { get } from 'ember-metal/property_get';
 import ViewNodeManager from 'ember-htmlbars/node-managers/view-node-manager';
 import topLevelViewTemplate from 'ember-htmlbars/templates/top-level-view';
 import isEnabled from 'ember-metal/features';
@@ -119,8 +117,7 @@ export default {
     let parentView = env.view;
     let outletState = state.outletState;
     let toRender = outletState.render;
-    let namespace = owner.lookup('application:main');
-    let LOG_VIEW_LOOKUPS = get(namespace, 'LOG_VIEW_LOOKUPS');
+
 
     let ViewClass = outletState.render.ViewClass;
 
@@ -142,10 +139,6 @@ export default {
     };
 
     let template = _template || toRender.template && toRender.template.raw;
-
-    if (LOG_VIEW_LOOKUPS && ViewClass) {
-      info('Rendering ' + toRender.name + ' with ' + ViewClass, { fullName: 'view:' + toRender.name });
-    }
 
     if (state.manager) {
       state.manager.destroy();
