@@ -131,21 +131,7 @@ const ApplicationInstance = EngineInstance.extend({
   },
 
   setupRegistry(options) {
-    let registry = this.__registry__;
-
-    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
-    registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
-
-    registry.register('service:-document', options.document, { instantiate: false });
-
-    if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
-    }
+    this.constructor.setupRegistry(this.__registry__, options);
   },
 
   router: computed(function() {
@@ -285,6 +271,30 @@ const ApplicationInstance = EngineInstance.extend({
 
     // getURL returns the set url with the rootURL stripped off
     return router.handleURL(location.getURL()).then(handleResolve, handleReject);
+  }
+});
+
+ApplicationInstance.reopenClass({
+  /**
+   @private
+   @method setupRegistry
+   @param {Registry} registry
+   @param {BootOptions} options
+  */
+  setupRegistry(registry, options = new BootOptions()) {
+    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
+    registry.injection('view', '_environment', '-environment:main');
+    registry.injection('route', '_environment', '-environment:main');
+
+    registry.register('service:-document', options.document, { instantiate: false });
+
+    if (options.isInteractive) {
+      registry.injection('view', 'renderer', 'renderer:-dom');
+      registry.injection('component', 'renderer', 'renderer:-dom');
+    } else {
+      registry.injection('view', 'renderer', 'renderer:-inert');
+      registry.injection('component', 'renderer', 'renderer:-inert');
+    }
   }
 });
 

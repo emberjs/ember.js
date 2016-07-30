@@ -6,6 +6,7 @@ import jQuery from 'ember-views/system/jquery';
 import factory from 'container/tests/test-helpers/factory';
 import isEnabled from 'ember-metal/features';
 import { privatize as P } from 'container/registry';
+import EmberObject from 'ember-runtime/system/object';
 
 let application, appInstance;
 
@@ -178,5 +179,17 @@ if (isEnabled('ember-application-engines')) {
             `Engine and parent app share singleton '${key}'`);
         });
       });
+  });
+
+  QUnit.test('can build a registry via Ember.ApplicationInstance.setupRegistry() -- simulates ember-test-helpers', function(assert) {
+    let namespace = EmberObject.create({
+      Resolver: { create: function() { } }
+    });
+
+    let registry = Application.buildRegistry(namespace);
+
+    ApplicationInstance.setupRegistry(registry);
+
+    assert.equal(registry.resolve('service:-document'), document);
   });
 }
