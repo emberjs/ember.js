@@ -23,4 +23,3 @@ QUnit.test('Paths beginning with @ are not valid', function() {
     });
   }, `'@foo' is not a valid path. ('baz/foo-bar' @ L1:C17) `);
 });
-

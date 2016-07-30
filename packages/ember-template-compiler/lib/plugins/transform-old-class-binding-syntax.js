@@ -1,3 +1,6 @@
+import { assert } from 'ember-metal/debug';
+import calculateLocationDisplay from 'ember-template-compiler/system/calculate-location-display';
+
 export default function TransformOldClassBindingSyntax(options) {
   this.syntax = null;
   this.options = options;
@@ -6,6 +9,7 @@ export default function TransformOldClassBindingSyntax(options) {
 TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassBindingSyntax_transform(ast) {
   let b = this.syntax.builders;
   let walker = new this.syntax.Walker();
+  let moduleName = this.options.moduleName;
 
   walker.visit(ast, node => {
     if (!validate(node)) { return; }
@@ -41,13 +45,17 @@ TransformOldClassBindingSyntax.prototype.transform = function TransformOldClassB
       node.hash.pairs.splice(index, 1);
     });
 
-    each(allOfTheMicrosyntaxes, ({ value, loc }) => {
+    each(allOfTheMicrosyntaxes, ({ value, loc, key }) => {
       let sexprs = [];
       // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
       // be removed.
 
       if (value.type === 'StringLiteral') {
         let microsyntax = parseMicrosyntax(value.original);
+
+        if (key === 'classNameBindings') {
+          assertValidClassNameBindings(microsyntax, moduleName, loc);
+        }
 
         buildSexprs(microsyntax, sexprs, b);
 
@@ -120,4 +128,17 @@ function parseMicrosyntax(string) {
   }
 
   return segments;
+}
+
+function assertValidClassNameBindings(microsyntax, moduleName, loc) {
+  each(microsyntax, (segment) => {
+    if (segment.length === 1) {
+      assert(invalidClassNameBindingsMessage(segment, moduleName, loc));
+    }
+  });
+}
+
+function invalidClassNameBindingsMessage(segment, moduleName, loc) {
+  let source = calculateLocationDisplay(moduleName, loc);
+  return `'${segment[0]}' is not a valid classNameBinding. ${source}`;
 }
