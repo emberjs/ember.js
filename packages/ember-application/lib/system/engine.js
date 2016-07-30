@@ -403,12 +403,17 @@ Engine.reopenClass({
 
     commonSetupRegistry(registry);
 
-    if (options[GLIMMER]) {
+    if (isEnabled('ember-glimmer')) {
       let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
       glimmerSetupRegistry(registry);
     } else {
-      let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
-      htmlbarsSetupRegistry(registry);
+      if (options[GLIMMER]) {
+        let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupEngineRegistry;
+        glimmerSetupRegistry(registry);
+      } else {
+        let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupEngineRegistry;
+        htmlbarsSetupRegistry(registry);
+      }
     }
 
     return registry;

@@ -401,3 +401,13 @@ QUnit.test('does not leak itself in onLoad._loaded', function() {
   run(app, 'destroy');
   equal(_loaded.application, undefined);
 });
+
+QUnit.test('can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers', function(assert) {
+  let namespace = EmberObject.create({
+    Resolver: { create: function() { } }
+  });
+
+  let registry = Application.buildRegistry(namespace);
+
+  assert.equal(registry.resolve('application:main'), namespace);
+});

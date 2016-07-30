@@ -29,6 +29,7 @@ import { environment } from 'ember-environment';
 import RSVP from 'ember-runtime/ext/rsvp';
 import Engine, { GLIMMER } from './engine';
 import require from 'require';
+import isEnabled from 'ember-metal/features';
 
 let librariesRegistered = false;
 
@@ -1018,12 +1019,17 @@ Application.reopenClass({
 
     commonSetupRegistry(registry);
 
-    if (options[GLIMMER]) {
+    if (isEnabled('ember-glimmer')) {
       let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
       glimmerSetupRegistry(registry);
     } else {
-      let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
-      htmlbarsSetupRegistry(registry);
+      if (options[GLIMMER]) {
+        let glimmerSetupRegistry = require('ember-glimmer/setup-registry').setupApplicationRegistry;
+        glimmerSetupRegistry(registry);
+      } else {
+        let htmlbarsSetupRegistry = require('ember-htmlbars/setup-registry').setupApplicationRegistry;
+        htmlbarsSetupRegistry(registry);
+      }
     }
 
     return registry;
