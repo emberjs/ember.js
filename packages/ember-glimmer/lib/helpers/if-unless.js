@@ -5,7 +5,7 @@
 
 import { assert } from 'ember-metal/debug';
 import { UNDEFINED_REFERENCE, CachedReference, ConditionalReference } from '../utils/references';
-import { CURRENT_TAG, UpdatableTag, combine, isConst } from 'glimmer-reference';
+import { CONSTANT_TAG, UpdatableTag, combine, isConst } from 'glimmer-reference';
 
 class ConditionalHelperReference extends CachedReference {
   static create(_condRef, _truthyRef, _falsyRef) {
@@ -23,7 +23,7 @@ class ConditionalHelperReference extends CachedReference {
   constructor(cond, truthy, falsy) {
     super();
 
-    this.branchTag = new UpdatableTag(CURRENT_TAG);
+    this.branchTag = new UpdatableTag(CONSTANT_TAG);
     this.tag = combine([cond.tag, this.branchTag]);
 
     this.cond = cond;

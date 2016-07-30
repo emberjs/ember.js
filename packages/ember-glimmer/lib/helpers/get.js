@@ -1,5 +1,5 @@
 import { CachedReference } from '../utils/references';
-import { CURRENT_TAG, CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
+import { CONSTANT_TAG, UpdatableTag, combine, isConst, referenceFromParts } from 'glimmer-reference';
 
 /**
 @module ember
@@ -58,7 +58,6 @@ export default {
   }
 };
 
-
 class GetHelperReference extends CachedReference {
   static create(sourceReference, pathReference) {
     if (isConst(pathReference)) {
@@ -77,7 +76,7 @@ class GetHelperReference extends CachedReference {
     this.lastPath = null;
     this.innerReference = null;
 
-    let innerTag = this.innerTag = new UpdatableTag(CURRENT_TAG);
+    let innerTag = this.innerTag = new UpdatableTag(CONSTANT_TAG);
 
     this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
   }
