@@ -6,7 +6,7 @@ import { objectAt, isEmberArray } from 'ember-runtime/mixins/array';
 import { isProxy } from 'ember-runtime/mixins/-proxy';
 import { UpdatableReference, UpdatablePrimitiveReference } from './references';
 import { isEachIn } from '../helpers/each-in';
-import { CURRENT_TAG, UpdatableTag, combine } from 'glimmer-reference';
+import { CONSTANT_TAG, CURRENT_TAG, UpdatableTag, combine } from 'glimmer-reference';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -151,7 +151,7 @@ const EMPTY_ITERATOR = new EmptyIterator();
 
 class Iterable {
   constructor(ref, keyFor) {
-    let valueTag = this.valueTag = new UpdatableTag(CURRENT_TAG);
+    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
 
     this.tag = combine([ref.tag, valueTag]);
     this.ref = ref;

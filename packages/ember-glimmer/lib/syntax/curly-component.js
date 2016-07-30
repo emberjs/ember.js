@@ -271,9 +271,9 @@ class CurlyComponentManager {
     let { component, args, argsRevision } = bucket;
 
     if (!args.tag.validate(argsRevision)) {
-      bucket.argsRevision = args.tag.value();
-
       let { attrs, props } = args.value();
+
+      bucket.argsRevision = args.tag.value();
 
       let oldAttrs = component.attrs;
       let newAttrs = attrs;

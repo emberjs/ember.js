@@ -48,8 +48,8 @@ export class CachedReference extends EmberPathReference {
     let { tag, _lastRevision, _lastValue } = this;
 
     if (!_lastRevision || !tag.validate(_lastRevision)) {
-      this._lastRevision = tag.value();
       _lastValue = this._lastValue = this.compute();
+      this._lastRevision = tag.value();
     }
 
     return _lastValue;
@@ -126,7 +126,7 @@ export class PropertyReference extends CachedReference { // jshint ignore:line
     super();
 
     let parentReferenceTag = parentReference.tag;
-    let parentObjectTag = new UpdatableTag(CURRENT_TAG);
+    let parentObjectTag = new UpdatableTag(CONSTANT_TAG);
 
     this._parentReference = parentReference;
     this._parentObjectTag = parentObjectTag;
@@ -219,7 +219,7 @@ export class ConditionalReference extends GlimmerConditionalReference {
   constructor(reference) {
     super(reference);
 
-    this.objectTag = new UpdatableTag(CURRENT_TAG);
+    this.objectTag = new UpdatableTag(CONSTANT_TAG);
     this.tag = combine([reference.tag, this.objectTag]);
   }
 
